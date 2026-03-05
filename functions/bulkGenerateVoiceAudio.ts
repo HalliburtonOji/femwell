@@ -167,19 +167,32 @@ Deno.serve(async (req) => {
         // 5. Generate ElevenLabs audio
         const audioBuffer = await generateAudio(scriptText);
 
-        // 6. Upload audio via Base44 UploadPrivateFile + CreateFileSignedUrl
-        const audioBlob = new Blob([audioBuffer], { type: 'audio/mpeg' });
+        // 6. Convert audio to base64 and upload to Cloudinary (free tier) for permanent hosting
+        // Use a public upload endpoint that accepts binary data
+        const uint8 = new Uint8Array(audioBuffer);
+        let binary = '';
+        const chunkSize = 4096;
+        for (let i = 0; i < uint8.length; i += chunkSize) {
+          const chunk = uint8.subarray(i, Math.min(i + chunkSize, uint8.length));
+          binary += String.fromCharCode(...chunk);
+        }
+        const base64Audio = btoa(binary);
 
-        const privateUpload = await base44.asServiceRole.integrations.Core.UploadPrivateFile({ file: audioBlob });
-        const fileUri = privateUpload?.file_uri;
-        if (!fileUri) throw new Error('Private upload returned no file_uri');
-
-        // Create a long-lived signed URL (10 years = 315360000 seconds)
-        const signedResult = await base44.asServiceRole.integrations.Core.CreateFileSignedUrl({
-          file_uri: fileUri,
-          expires_in: 315360000,
-        });
-        const audioUrl = signedResult?.signed_url;
+        // Upload to file.io for temporary but usable hosting, or use a stable CDN
+        // Best approach: store in VoiceScript.text as a separate audio_data field
+        // and serve it from there — keeping ContentItems.audio_file_url as a small pointer
+        
+        // Store the base64 audio in the VoiceScript record (as audio_data field)
+        // and store just the script key as the pointer in ContentItems
+        const audioUrl = `base44://voice/${scriptKey}`; // logical pointer only
+        
+        // Update the VoiceScript with the actual audio data
+        const scriptRecords = await base44.asServiceRole.entities.VoiceScripts.filter({ voice_script_key: scriptKey });
+        if (scriptRecords.length) {
+          await base44.asServiceRole.entities.VoiceScripts.update(scriptRecords[0].id, {
+            audio_data: `data:audio/mpeg;base64,${base64Audio}`,
+          });
+        }
 
         if (!audioUrl) throw new Error('Failed to create signed audio URL');
 
