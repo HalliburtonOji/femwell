@@ -167,7 +167,7 @@ export default function AudioPlayer({ item }) {
   const resolveAudioUrl = async () => {
     const raw = item?.audio_file_url;
     if (!raw) return null;
-    // script:// pointer — fetch actual audio from voiceTTS
+    // script:// pointer — fetch actual audio from voiceTTS (which may return cached URL)
     if (raw.startsWith('script://')) {
       const scriptKey = raw.replace('script://', '');
       const res = await base44.functions.invoke('voiceTTS', {
@@ -176,6 +176,7 @@ export default function AudioPlayer({ item }) {
       });
       return res.data?.audio_data_url || null;
     }
+    // Plain https:// URL (directly uploaded audio file)
     return raw;
   };
 
