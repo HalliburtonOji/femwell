@@ -167,40 +167,16 @@ Deno.serve(async (req) => {
         // 5. Generate ElevenLabs audio
         const audioBuffer = await generateAudio(scriptText);
 
-        // 6. Upload audio file — write to /tmp and upload via multipart
-        const tmpPath = `/tmp/${scriptKey}.mp3`;
-        await Deno.writeFile(tmpPath, new Uint8Array(audioBuffer));
-
-        const fileBytes = await Deno.readFile(tmpPath);
-        const fileBlob = new Blob([fileBytes], { type: 'audio/mpeg' });
-        const uploadForm = new FormData();
-        uploadForm.append('file', fileBlob, `${scriptKey}.mp3`);
-
-        // Use the Base44 upload endpoint directly via service role headers
-        const APP_ID = Deno.env.get('BASE44_APP_ID');
-        const uploadRes = await fetch(`https://api.base44.com/api/apps/${APP_ID}/files/upload`, {
-          method: 'POST',
-          headers: {
-            'X-API-Key': `app_${APP_ID}`,
-          },
-          body: uploadForm,
-        });
-
-        let audioUrl = null;
-        if (uploadRes.ok) {
-          const uploadData = await uploadRes.json();
-          audioUrl = uploadData?.file_url || uploadData?.url;
+        // 6. Store audio as base64 in the VoiceScript text field as data URL
+        // (Base44 UploadFile integration expects a File object not available server-side)
+        // We store the audio_data_url directly so the player can use it immediately
+        const uint8 = new Uint8Array(audioBuffer);
+        let binary = '';
+        const chunkSize = 8192;
+        for (let i = 0; i < uint8.length; i += chunkSize) {
+          binary += String.fromCharCode(...uint8.subarray(i, Math.min(i + chunkSize, uint8.length)));
         }
-
-        // Fallback: store as permanent data URL if upload fails
-        if (!audioUrl) {
-          const uint8 = new Uint8Array(audioBuffer);
-          let binary = '';
-          for (let i = 0; i < uint8.length; i++) binary += String.fromCharCode(uint8[i]);
-          audioUrl = `data:audio/mpeg;base64,${btoa(binary)}`;
-        }
-
-        await Deno.remove(tmpPath).catch(() => {});
+        const audioUrl = `data:audio/mpeg;base64,${btoa(binary)}`;
 
         if (!audioUrl) throw new Error('Upload returned no URL');
 
