@@ -83,7 +83,8 @@ export default function Explore() {
   };
 
   const filtered = content.filter((item) => {
-    if (search && !item.title?.toLowerCase().includes(search.toLowerCase()) && !item.tags?.some(t => t.toLowerCase().includes(search.toLowerCase()))) return false;
+    const tagList = item.tags ? item.tags.split(",").map(t => t.trim()) : [];
+    if (search && !item.title?.toLowerCase().includes(search.toLowerCase()) && !tagList.some(t => t.toLowerCase().includes(search.toLowerCase()))) return false;
     if (activeType !== "All" && item.content_type?.toLowerCase() !== activeType.toLowerCase()) return false;
     if (activeCollection) {
       const colMap = { sleep: ["sleep"], pms: ["pms", "cramps"], quick_calm: ["calm"], low_energy: ["energy"], mobility: ["mobility", "pain"], menopause: ["menopause"], postpartum: ["postpartum"], desk_reset: ["desk", "office"] };
