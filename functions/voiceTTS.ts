@@ -20,6 +20,12 @@ Deno.serve(async (req) => {
       const scripts = await base44.asServiceRole.entities.VoiceScripts.filter({ voice_script_key });
       if (!scripts.length) return Response.json({ error: 'Script not found' }, { status: 404 });
       const script = scripts[0];
+
+      // Return pre-generated audio if available — avoids re-generating TTS
+      if (script.audio_data) {
+        return Response.json({ audio_data_url: script.audio_data, cached: true });
+      }
+
       scriptText = script.text;
       scriptProfileKey = script.voice_profile_key || scriptProfileKey;
     }
