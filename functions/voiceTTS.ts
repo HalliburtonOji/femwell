@@ -17,8 +17,8 @@ Deno.serve(async (req) => {
     const user = await base44.auth.me();
     if (!user) return Response.json({ error: 'Unauthorized' }, { status: 401 });
 
-    const { content_key, voice_script_key, voice_id } = await req.json();
-    if (!voice_script_key) return Response.json({ error: 'voice_script_key required' }, { status: 400 });
+    const { content_key, voice_script_key, voice_id, dynamic_text, voice_profile_key: dynamic_profile_key } = await req.json();
+    if (!voice_script_key && !dynamic_text) return Response.json({ error: 'voice_script_key or dynamic_text required' }, { status: 400 });
 
     const ELEVENLABS_API_KEY = Deno.env.get('ELEVENLABS_API_KEY');
     const DEFAULT_VOICE_ID = voice_id || 'EXAVITQu4vr4xnSDxMaL'; // Bella - calm female voice
