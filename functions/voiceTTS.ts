@@ -61,7 +61,7 @@ Deno.serve(async (req) => {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        text: script.text,
+        text: scriptText,
         model_id: 'eleven_turbo_v2',
         voice_settings: {
           stability: profile.stability || 0.85,
