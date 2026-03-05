@@ -1,6 +1,6 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect } from "react";
 import { base44 } from "@/api/base44Client";
-import { ArrowLeft, Play, Lock, BookmarkCheck, Bookmark, ExternalLink } from "lucide-react";
+import { ArrowLeft, Play, Lock, BookmarkCheck, Bookmark } from "lucide-react";
 import { createPageUrl } from "@/utils";
 import BreathworkPlayer from "../components/content/BreathworkPlayer";
 
@@ -21,37 +21,27 @@ function getVimeoId(url) {
 function VideoPlayer({ embedUrl }) {
   const [clicked, setClicked] = useState(false);
   const ytId = getYoutubeId(embedUrl);
-  const vimeoId = getVimeoId(embedUrl);
-
-  const thumbUrl = ytId
-    ? `https://i.ytimg.com/vi/${ytId}/hqdefault.jpg`
-    : null;
+  const thumbUrl = ytId ? `https://i.ytimg.com/vi/${ytId}/hqdefault.jpg` : null;
 
   let iframeSrc = embedUrl;
   if (ytId) {
-    iframeSrc = `https://www.youtube-nocookie.com/embed/${ytId}?autoplay=1&playsinline=1&cc_load_policy=1&cc_lang_pref=en&rel=0`;
-  } else if (vimeoId) {
-    iframeSrc = `https://player.vimeo.com/video/${vimeoId}?autoplay=1&playsinline=1`;
+    iframeSrc = `https://www.youtube-nocookie.com/embed/${ytId}?autoplay=1&playsinline=1&rel=0`;
+  } else {
+    const vimeoId = getVimeoId(embedUrl);
+    if (vimeoId) iframeSrc = `https://player.vimeo.com/video/${vimeoId}?autoplay=1&playsinline=1`;
   }
 
   if (!clicked) {
     return (
-      <div
-        className="relative w-full aspect-video bg-gray-900 rounded-2xl overflow-hidden cursor-pointer group"
-        onClick={() => setClicked(true)}
-      >
-        {thumbUrl ? (
-          <img src={thumbUrl} alt="Video thumbnail" className="w-full h-full object-cover" />
-        ) : (
-          <div className="w-full h-full bg-gradient-to-br from-rose-900 to-pink-900" />
-        )}
+      <div className="relative w-full aspect-video bg-gray-900 rounded-2xl overflow-hidden cursor-pointer group" onClick={() => setClicked(true)}>
+        {thumbUrl
+          ? <img src={thumbUrl} alt="Video thumbnail" className="w-full h-full object-cover" />
+          : <div className="w-full h-full bg-gradient-to-br from-rose-900 to-pink-900" />
+        }
         <div className="absolute inset-0 bg-black/30 group-hover:bg-black/20 transition-colors flex items-center justify-center">
           <div className="w-16 h-16 bg-white/90 rounded-full flex items-center justify-center shadow-xl group-hover:scale-110 transition-transform">
             <Play className="w-7 h-7 text-rose-600 ml-1" />
           </div>
-        </div>
-        <div className="absolute bottom-3 left-3 bg-black/60 text-white text-xs px-2 py-1 rounded-full">
-          Tap to play
         </div>
       </div>
     );
@@ -59,52 +49,52 @@ function VideoPlayer({ embedUrl }) {
 
   return (
     <div className="w-full aspect-video rounded-2xl overflow-hidden bg-black">
-      <iframe
-        src={iframeSrc}
-        className="w-full h-full"
-        allow="autoplay; fullscreen; picture-in-picture"
-        allowFullScreen
-        title="Content Player"
-      />
+      <iframe src={iframeSrc} className="w-full h-full" allow="autoplay; fullscreen; picture-in-picture" allowFullScreen title="Content Player" />
     </div>
   );
 }
 
 export default function ContentPlayer() {
   const urlParams = new URLSearchParams(window.location.search);
-  const contentId = urlParams.get("id");
+  const contentKey = urlParams.get("key");
+  const contentId = urlParams.get("id"); // fallback for old links
 
   const [user, setUser] = useState(null);
   const [item, setItem] = useState(null);
-  const [mediaAsset, setMediaAsset] = useState(null);
   const [userPlan, setUserPlan] = useState("free");
   const [bookmarked, setBookmarked] = useState(false);
   const [bookmarkId, setBookmarkId] = useState(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    if (!contentId) return;
     (async () => {
       const u = await base44.auth.me();
       setUser(u);
-      const [items, ents, bookmarks] = await Promise.all([
-        base44.entities.ContentItems.filter({ id: contentId }),
+      const [ents, bookmarks] = await Promise.all([
         base44.entities.Entitlements.filter({ user_id: u.id }),
-        base44.entities.ContentBookmarks.filter({ user_id: u.id, content_id: contentId }),
+        contentKey
+          ? base44.entities.ContentBookmarks.filter({ user_id: u.id })
+          : Promise.resolve([]),
       ]);
-      const ci = items[0] || null;
-      setItem(ci);
       if (ents[0]) setUserPlan(ents[0].plan || "free");
-      if (bookmarks[0]) { setBookmarked(true); setBookmarkId(bookmarks[0].id); }
 
-      const assetId = ci?.primary_media_asset_id || ci?.media_asset_id;
-      if (assetId) {
-        const assets = await base44.entities.MediaAssets.filter({ id: assetId });
-        if (assets[0]) setMediaAsset(assets[0]);
+      let ci = null;
+      if (contentKey) {
+        const items = await base44.entities.ContentItems.filter({ content_key: contentKey });
+        ci = items[0] || null;
+      } else if (contentId) {
+        const items = await base44.entities.ContentItems.filter({ id: contentId });
+        ci = items[0] || null;
+      }
+
+      setItem(ci);
+      if (ci) {
+        const bm = bookmarks.find((b) => b.content_id === ci.id);
+        if (bm) { setBookmarked(true); setBookmarkId(bm.id); }
       }
       setLoading(false);
     })();
-  }, [contentId]);
+  }, [contentKey, contentId]);
 
   const toggleBookmark = async () => {
     if (!user || !item) return;
@@ -130,13 +120,12 @@ export default function ContentPlayer() {
   );
 
   const locked = (TIER_ORDER[item.access_tier] || 0) > (TIER_ORDER[userPlan] || 0);
-  const isBreathwork = item.content_type?.toLowerCase() === "breathwork";
-  const embedUrl = mediaAsset?.embed_url || null;
+  const isBreathwork = item.content_type?.toUpperCase() === "BREATHWORK" && item.play_mode === "GUIDED";
+  const embedUrl = item.embed_url || null;
 
   return (
     <div className="min-h-screen femwell-gradient pb-10">
       <div className="max-w-md mx-auto px-4">
-        {/* Header */}
         <div className="pt-12 pb-4 flex items-center justify-between">
           <button onClick={() => window.history.back()} className="w-9 h-9 rounded-full bg-white/80 flex items-center justify-center">
             <ArrowLeft className="w-4 h-4 text-gray-700" />
@@ -149,7 +138,6 @@ export default function ContentPlayer() {
           </button>
         </div>
 
-        {/* Player area */}
         {locked ? (
           <div className="aspect-video rounded-2xl bg-gradient-to-br from-rose-100 to-pink-100 flex flex-col items-center justify-center gap-3">
             <Lock className="w-10 h-10 text-rose-300" />
@@ -166,7 +154,6 @@ export default function ContentPlayer() {
           </div>
         )}
 
-        {/* Meta */}
         <div className="mt-5 space-y-3">
           <div>
             <div className="flex items-start justify-between gap-2">
@@ -178,24 +165,32 @@ export default function ContentPlayer() {
             <div className="flex gap-3 mt-1 text-xs text-gray-400">
               {item.duration_minutes && <span>{item.duration_minutes} min</span>}
               {item.content_type && <span className="capitalize">{item.content_type.toLowerCase()}</span>}
-              {item.level && <span className="capitalize">{item.level}</span>}
+              {item.level && <span>{item.level}</span>}
             </div>
           </div>
 
-          {item.description && (
-            <p className="text-sm text-gray-500 leading-relaxed">{item.description}</p>
-          )}
+          {item.summary && <p className="text-sm text-gray-500 leading-relaxed">{item.summary}</p>}
 
-          {item.tags?.length > 0 && (
-            <div className="flex flex-wrap gap-1.5">
-              {item.tags.map((tag) => (
-                <span key={tag} className="text-xs bg-rose-50 text-rose-400 px-2 py-1 rounded-full capitalize">{tag}</span>
-              ))}
+          {item.safety_notes && (
+            <div className="bg-amber-50 border border-amber-200 rounded-xl p-3">
+              <p className="text-xs font-semibold text-amber-700 mb-1">Safety notes</p>
+              <p className="text-xs text-amber-600">{item.safety_notes}</p>
             </div>
           )}
 
-          {item.instructor && (
-            <p className="text-xs text-gray-400">With {item.instructor}</p>
+          {item.modifications && (
+            <div className="bg-blue-50 border border-blue-100 rounded-xl p-3">
+              <p className="text-xs font-semibold text-blue-600 mb-1">Modifications</p>
+              <p className="text-xs text-blue-500">{item.modifications}</p>
+            </div>
+          )}
+
+          {item.tags && (
+            <div className="flex flex-wrap gap-1.5">
+              {item.tags.split(",").map((tag) => (
+                <span key={tag} className="text-xs bg-rose-50 text-rose-400 px-2 py-1 rounded-full capitalize">{tag.trim()}</span>
+              ))}
+            </div>
           )}
         </div>
       </div>
