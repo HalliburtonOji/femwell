@@ -364,8 +364,8 @@ export default function GuidedPlayer({ item }) {
               : "bg-gradient-to-r from-rose-400 to-pink-500 text-white hover:shadow-lg hover:scale-105"
           } disabled:opacity-60`}
         >
-          {audioLoading ? (
-            <><Loader2 className="w-4 h-4 animate-spin" /> Preparing...</>
+          {audioLoading || scriptGenerating ? (
+            <><Loader2 className="w-4 h-4 animate-spin" /> {scriptGenerating ? "Generating script..." : "Preparing..."}</>
           ) : running ? (
             "Stop"
           ) : done ? (
