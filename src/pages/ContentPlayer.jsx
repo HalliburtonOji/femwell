@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { base44 } from "@/api/base44Client";
 import { ArrowLeft, Play, Lock, BookmarkCheck, Bookmark } from "lucide-react";
 import { createPageUrl } from "@/utils";
-import BreathworkPlayer from "../components/content/BreathworkPlayer";
+import GuidedPlayer from "../components/content/GuidedPlayer";
 
 const TIER_ORDER = { free: 0, plus: 1, pro: 2 };
 

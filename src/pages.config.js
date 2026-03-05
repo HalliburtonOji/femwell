@@ -47,32 +47,32 @@
  *
  * The mainPage value must match a key in the PAGES object exactly.
  */
+import ContentPlayer from './pages/ContentPlayer';
+import CycleSettings from './pages/CycleSettings';
+import Explore from './pages/Explore';
 import Onboarding from './pages/Onboarding';
 import Profile from './pages/Profile';
 import ProgramDay from './pages/ProgramDay';
 import ProgramDetail from './pages/ProgramDetail';
-import Today from './pages/Today';
-import Upgrade from './pages/Upgrade';
-import Explore from './pages/Explore';
-import ContentPlayer from './pages/ContentPlayer';
 import ProgramsHub from './pages/ProgramsHub';
+import Today from './pages/Today';
 import Track from './pages/Track';
-import CycleSettings from './pages/CycleSettings';
+import Upgrade from './pages/Upgrade';
 import __Layout from './Layout.jsx';
 
 
 export const PAGES = {
+    "ContentPlayer": ContentPlayer,
+    "CycleSettings": CycleSettings,
+    "Explore": Explore,
     "Onboarding": Onboarding,
     "Profile": Profile,
     "ProgramDay": ProgramDay,
     "ProgramDetail": ProgramDetail,
-    "Today": Today,
-    "Upgrade": Upgrade,
-    "Explore": Explore,
-    "ContentPlayer": ContentPlayer,
     "ProgramsHub": ProgramsHub,
+    "Today": Today,
     "Track": Track,
-    "CycleSettings": CycleSettings,
+    "Upgrade": Upgrade,
 }
 
 export const pagesConfig = {
