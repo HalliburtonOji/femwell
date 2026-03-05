@@ -22,7 +22,7 @@ export default function ContentCard({ item, locked, bookmarked, onToggleBookmark
   return (
     <div className="relative group rounded-2xl overflow-hidden bg-white/80 border border-rose-50 shadow-sm hover:shadow-md transition-all">
       {/* Thumbnail */}
-      <Link to={createPageUrl(`ContentPlayer?id=${item.id}`)} className="block">
+      <Link to={createPageUrl(`ContentPlayer?key=${item.content_key || item.id}`)} className="block">
         <div className="relative aspect-video bg-gradient-to-br from-rose-100 to-pink-100 overflow-hidden">
           {item.thumbnail_url ? (
             <img
