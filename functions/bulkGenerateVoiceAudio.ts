@@ -117,11 +117,12 @@ Deno.serve(async (req) => {
     // Fetch all content items that are GUIDED (not VIDEO) or have no embed_url
     const allItems = await base44.asServiceRole.entities.ContentItems.list('-created_date', 200);
     
-    // Filter to only non-video guided content items
+    // Filter to only non-video guided content items that don't yet have audio
     const targets = allItems.filter(item => {
       if (item.play_mode === 'VIDEO') return false;
       if (item.embed_url && !item.guided_config) return false; // pure video, skip
       if (!content_types.includes(item.content_type)) return false;
+      if (item.audio_file_url) return false; // already has audio, skip
       return true;
     });
 
