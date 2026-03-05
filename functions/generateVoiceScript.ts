@@ -82,7 +82,7 @@ Output ONLY the script text — no titles, no labels, no explanations.`;
     const scriptText = completion.choices[0].message.content.trim();
 
     // Generate a unique script key tied to this specific content item
-    const scriptKey = `gen_${item.content_key || item.id}_${Date.now()}`;
+    const scriptKey = `gen_${item.content_key || item.id}`;
 
     // Save the generated script
     await base44.asServiceRole.entities.VoiceScripts.create({

@@ -83,8 +83,13 @@ export default function GuidedPlayer({ item }) {
 
   // Auto-generate voice script if content has none
   useEffect(() => {
-    if (resolvedScriptKey) return;
     if (!item?.content_key && !item?.id) return;
+    // If script key exists but isn't a generated one, clear it so we generate a unique one
+    if (resolvedScriptKey && !resolvedScriptKey.startsWith('gen_')) {
+      setResolvedScriptKey(null);
+      return;
+    }
+    if (resolvedScriptKey) return;
     const SCRIPTABLE = ["BREATHWORK", "MEDITATION", "GUIDE"];
     if (!SCRIPTABLE.includes(item?.content_type)) return;
 

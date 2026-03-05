@@ -25,15 +25,6 @@ Deno.serve(async (req) => {
     let scriptText = dynamic_text || null;
     let scriptProfileKey = dynamic_profile_key || null;
 
-    // Check cache first (only for keyed scripts)
-    const cacheKey = voice_script_key ? makeHash(`${voice_script_key}:${DEFAULT_VOICE_ID}`) : null;
-    if (cacheKey) {
-      const cached = await base44.asServiceRole.entities.VoiceCache.filter({ cache_key: cacheKey });
-      if (cached.length > 0 && cached[0].audio_file_url) {
-        return Response.json({ audio_data_url: cached[0].audio_file_url, cached: true });
-      }
-    }
-
     // Fetch voice script if key provided
     if (voice_script_key && !scriptText) {
       const scripts = await base44.asServiceRole.entities.VoiceScripts.filter({ voice_script_key });
