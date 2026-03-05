@@ -10,6 +10,34 @@ function makeHash(str) {
   return Math.abs(hash).toString(36);
 }
 
+async function uploadAudioBuffer(audioBuffer, base44) {
+  const tmpPath = `/tmp/audio_${Date.now()}.mp3`;
+  await Deno.writeFile(tmpPath, new Uint8Array(audioBuffer));
+  const fileBytes = await Deno.readFile(tmpPath);
+  const blob = new Blob([fileBytes], { type: 'audio/mpeg' });
+
+  const formData = new FormData();
+  formData.append('file', blob, 'audio.mp3');
+
+  const APP_ID = Deno.env.get('BASE44_APP_ID');
+  const uploadRes = await fetch(`https://api.base44.com/api/apps/${APP_ID}/integrations/Core/UploadFile`, {
+    method: 'POST',
+    body: formData,
+    headers: {
+      'X-Service-Role': 'true',
+      'Authorization': `Bearer ${Deno.env.get('BASE44_API_KEY') || ''}`,
+    },
+  });
+
+  await Deno.remove(tmpPath).catch(() => {});
+
+  if (!uploadRes.ok) {
+    throw new Error(`Upload failed: ${await uploadRes.text()}`);
+  }
+  const data = await uploadRes.json();
+  return data.file_url;
+}
+
 Deno.serve(async (req) => {
   try {
     const base44 = createClientFromRequest(req);
@@ -78,25 +106,41 @@ Deno.serve(async (req) => {
     }
 
     const audioBuffer = await ttsRes.arrayBuffer();
+    const base64 = btoa(String.fromCharCode(...new Uint8Array(audioBuffer)));
+    const audio_data_url = `data:audio/mpeg;base64,${base64}`;
 
-    // Upload the audio file and get a URL instead of storing base64
-    const uploadRes = await base44.asServiceRole.integrations.Core.UploadFile({
-      file: new Blob([audioBuffer], { type: 'audio/mpeg' }),
-    });
-    const audioUrl = uploadRes.file_url;
-
-    // Cache it (only for keyed scripts)
+    // Cache it using the file URL (only for keyed scripts)
     if (cacheKey) {
-      await base44.asServiceRole.entities.VoiceCache.create({
-        cache_key: cacheKey,
-        content_key: content_key || '',
-        voice_script_key: voice_script_key || '',
-        audio_file_url: audioUrl,
-        created_at: new Date().toISOString(),
-      });
+      // Try to upload to get a URL; if it fails, skip caching
+      try {
+        const tmpPath = `/tmp/audio_${cacheKey}.mp3`;
+        await Deno.writeFile(tmpPath, new Uint8Array(audioBuffer));
+        const fileBytes = await Deno.readFile(tmpPath);
+        const blob = new Blob([fileBytes], { type: 'audio/mpeg' });
+        const formData = new FormData();
+        formData.append('file', blob, 'audio.mp3');
+        const APP_ID = Deno.env.get('BASE44_APP_ID');
+        const uploadRes = await fetch(`https://api.base44.com/api/apps/${APP_ID}/integrations/Core/UploadFile`, {
+          method: 'POST',
+          body: formData,
+        });
+        await Deno.remove(tmpPath).catch(() => {});
+        if (uploadRes.ok) {
+          const uploadData = await uploadRes.json();
+          await base44.asServiceRole.entities.VoiceCache.create({
+            cache_key: cacheKey,
+            content_key: content_key || '',
+            voice_script_key: voice_script_key || '',
+            audio_file_url: uploadData.file_url,
+            created_at: new Date().toISOString(),
+          });
+        }
+      } catch (cacheErr) {
+        console.error('Cache write failed (non-fatal):', cacheErr.message);
+      }
     }
 
-    return Response.json({ audio_data_url: audioUrl, cached: false });
+    return Response.json({ audio_data_url, cached: false });
   } catch (error) {
     return Response.json({ error: error.message }, { status: 500 });
   }
