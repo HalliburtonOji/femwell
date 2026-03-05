@@ -202,6 +202,7 @@ Deno.serve(async (req) => {
       success: true,
       processed: results.length,
       failed: errors.length,
+      remaining: targets.length - batch.length,
       results,
       errors,
     });
