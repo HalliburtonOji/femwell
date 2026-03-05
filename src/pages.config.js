@@ -56,6 +56,8 @@ import Upgrade from './pages/Upgrade';
 import Explore from './pages/Explore';
 import ContentPlayer from './pages/ContentPlayer';
 import ProgramsHub from './pages/ProgramsHub';
+import Track from './pages/Track';
+import CycleSettings from './pages/CycleSettings';
 import __Layout from './Layout.jsx';
 
 
@@ -69,6 +71,8 @@ export const PAGES = {
     "Explore": Explore,
     "ContentPlayer": ContentPlayer,
     "ProgramsHub": ProgramsHub,
+    "Track": Track,
+    "CycleSettings": CycleSettings,
 }
 
 export const pagesConfig = {
