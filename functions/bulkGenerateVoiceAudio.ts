@@ -164,28 +164,24 @@ Deno.serve(async (req) => {
           text: scriptText,
         });
 
-        // 5. Generate ElevenLabs audio and encode to base64
+        // 5. Generate ElevenLabs audio
         const audioBuffer = await generateAudio(scriptText);
-        const uint8 = new Uint8Array(audioBuffer);
-        let binary = '';
-        const chunkSize = 4096;
-        for (let i = 0; i < uint8.length; i += chunkSize) {
-          binary += String.fromCharCode(...uint8.subarray(i, Math.min(i + chunkSize, uint8.length)));
-        }
-        const base64Audio = btoa(binary);
-        const audioDataUrl = `data:audio/mpeg;base64,${base64Audio}`;
 
-        // 6. Update the VoiceScript record with the audio data
+        // 6. Upload audio file and get a public URL
+        const formData = new FormData();
+        formData.append('file', new Blob([audioBuffer], { type: 'audio/mpeg' }), `${scriptKey}.mp3`);
+        const uploadRes = await base44.asServiceRole.integrations.Core.UploadFile({ file: new Blob([audioBuffer], { type: 'audio/mpeg' }) });
+        const audioUrl = uploadRes.file_url;
+
+        // 7. Store the file URL on the VoiceScript record
         const newScripts = await base44.asServiceRole.entities.VoiceScripts.filter({ voice_script_key: scriptKey });
         if (newScripts.length) {
           await base44.asServiceRole.entities.VoiceScripts.update(newScripts[0].id, {
-            audio_data: audioDataUrl,
+            audio_data: audioUrl,
           });
         }
 
-        const audioUrl = `script://${scriptKey}`;
-
-        // 7. Update ContentItem with audio URL and script key
+        // 8. Update ContentItem with audio URL and script key
         await base44.asServiceRole.entities.ContentItems.update(item.id, {
           voice_script_key: scriptKey,
           audio_file_url: audioUrl,
