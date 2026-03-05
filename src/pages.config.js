@@ -47,24 +47,30 @@
  *
  * The mainPage value must match a key in the PAGES object exactly.
  */
-import Onboarding from './pages/Onboarding';
-import Track from './pages/Track';
-import Insights from './pages/Insights';
-import Explore from './pages/Explore';
-import Profile from './pages/Profile';
 import ContentPlayer from './pages/ContentPlayer';
+import Explore from './pages/Explore';
+import Insights from './pages/Insights';
+import Onboarding from './pages/Onboarding';
+import Profile from './pages/Profile';
 import Today from './pages/Today';
+import Track from './pages/Track';
+import Upgrade from './pages/Upgrade';
+import ProgramDetail from './pages/ProgramDetail';
+import ProgramDay from './pages/ProgramDay';
 import __Layout from './Layout.jsx';
 
 
 export const PAGES = {
-    "Onboarding": Onboarding,
-    "Track": Track,
-    "Insights": Insights,
-    "Explore": Explore,
-    "Profile": Profile,
     "ContentPlayer": ContentPlayer,
+    "Explore": Explore,
+    "Insights": Insights,
+    "Onboarding": Onboarding,
+    "Profile": Profile,
     "Today": Today,
+    "Track": Track,
+    "Upgrade": Upgrade,
+    "ProgramDetail": ProgramDetail,
+    "ProgramDay": ProgramDay,
 }
 
 export const pagesConfig = {
