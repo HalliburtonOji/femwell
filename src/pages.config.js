@@ -53,6 +53,7 @@ import Insights from './pages/Insights';
 import Explore from './pages/Explore';
 import Profile from './pages/Profile';
 import ContentPlayer from './pages/ContentPlayer';
+import Today from './pages/Today';
 import __Layout from './Layout.jsx';
 
 
@@ -63,6 +64,7 @@ export const PAGES = {
     "Explore": Explore,
     "Profile": Profile,
     "ContentPlayer": ContentPlayer,
+    "Today": Today,
 }
 
 export const pagesConfig = {
