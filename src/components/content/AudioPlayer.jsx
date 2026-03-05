@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from "react";
-import { Play, Pause, Volume2, RotateCcw, Loader2 } from "lucide-react";
+import { Play, Pause, RotateCcw, Loader2 } from "lucide-react";
+import { base44 } from "@/api/base44Client";
 
 const PHASE_COLORS = {
   BREATHWORK: { from: "#e8a4b0", to: "#c97b8a", text: "#c97b8a" },
