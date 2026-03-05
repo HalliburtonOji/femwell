@@ -178,7 +178,7 @@ Deno.serve(async (req) => {
         }
         const audioUrl = `data:audio/mpeg;base64,${btoa(binary)}`;
 
-        if (!audioUrl) throw new Error('Upload returned no URL');
+        if (!audioUrl) throw new Error('Failed to generate audio URL');
 
         // 7. Update ContentItem with audio URL and script key
         await base44.asServiceRole.entities.ContentItems.update(item.id, {
