@@ -120,7 +120,7 @@ export default function ContentPlayer() {
   );
 
   const locked = (TIER_ORDER[item.access_tier] || 0) > (TIER_ORDER[userPlan] || 0);
-  const isBreathwork = item.content_type?.toUpperCase() === "BREATHWORK" && item.play_mode === "GUIDED";
+  const isGuided = item.play_mode === "GUIDED";
   const embedUrl = item.embed_url || null;
 
   return (
