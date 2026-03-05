@@ -206,8 +206,11 @@ export default function GuidedPlayer({ item }) {
     setAudioLoading(false);
     setRunning(true);
 
-    // Play the AI-generated script if available, else fallback to dynamic greeting
-    if (resolvedScriptKey) {
+    // Play the pre-generated audio or AI script, else fallback to dynamic greeting
+    if (item?.audio_file_url?.startsWith('script://')) {
+      const scriptKey = item.audio_file_url.replace('script://', '');
+      playCue(scriptKey);
+    } else if (resolvedScriptKey) {
       playCue(resolvedScriptKey);
     } else {
       playDynamic(greetingText, profileKey);
