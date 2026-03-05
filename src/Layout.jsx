@@ -1,14 +1,14 @@
 import { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { createPageUrl } from "@/utils";
-import { Sun, BarChart2, Compass, User, Activity } from "lucide-react";
+import { Sun, Compass, User, Activity, Layers } from "lucide-react";
 import { base44 } from "@/api/base44Client";
 
 const NAV = [
   { label: "Today", icon: Sun, page: "Today" },
   { label: "Track", icon: Activity, page: "Track" },
-  { label: "Insights", icon: BarChart2, page: "Insights" },
   { label: "Explore", icon: Compass, page: "Explore" },
+  { label: "Programs", icon: Layers, page: "ProgramsHub" },
   { label: "Profile", icon: User, page: "Profile" },
 ];
 
