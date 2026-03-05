@@ -52,6 +52,7 @@ import Track from './pages/Track';
 import Insights from './pages/Insights';
 import Explore from './pages/Explore';
 import Profile from './pages/Profile';
+import ContentPlayer from './pages/ContentPlayer';
 import __Layout from './Layout.jsx';
 
 
@@ -61,6 +62,7 @@ export const PAGES = {
     "Insights": Insights,
     "Explore": Explore,
     "Profile": Profile,
+    "ContentPlayer": ContentPlayer,
 }
 
 export const pagesConfig = {
