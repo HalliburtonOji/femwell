@@ -145,10 +145,10 @@ export default function ContentPlayer() {
             <p className="font-semibold text-gray-600 text-sm">Requires {item.access_tier} plan</p>
             <a href={createPageUrl("Upgrade")} className="btn-primary text-sm px-5 py-2">Upgrade to unlock</a>
           </div>
-        ) : item.audio_file_url ? (
-          <AudioPlayer item={item} />
         ) : isGuided ? (
           <GuidedPlayer item={item} />
+        ) : item.audio_file_url ? (
+          <AudioPlayer item={item} />
         ) : embedUrl ? (
           <VideoPlayer embedUrl={embedUrl} />
         ) : (
