@@ -18,6 +18,7 @@ function buildPhases(cfg) {
 function DemoVideo({ demoEmbedUrl }) {
   const [show, setShow] = useState(false);
   if (!demoEmbedUrl) return null;
+  // hooks are always called above — safe to return early after
   return (
     <div className="mt-4">
       <button
