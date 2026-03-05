@@ -167,15 +167,40 @@ Deno.serve(async (req) => {
         // 5. Generate ElevenLabs audio
         const audioBuffer = await generateAudio(scriptText);
 
-        // 6. Upload audio file to Base44 storage as base64 data URL
-        const uint8 = new Uint8Array(audioBuffer);
-        let binary = '';
-        for (let i = 0; i < uint8.length; i++) binary += String.fromCharCode(uint8[i]);
-        const base64Audio = btoa(binary);
-        const dataUrl = `data:audio/mpeg;base64,${base64Audio}`;
+        // 6. Upload audio file — write to /tmp and upload via multipart
+        const tmpPath = `/tmp/${scriptKey}.mp3`;
+        await Deno.writeFile(tmpPath, new Uint8Array(audioBuffer));
 
-        const uploadRes = await base44.asServiceRole.integrations.Core.UploadFile({ file: dataUrl });
-        const audioUrl = uploadRes?.file_url;
+        const fileBytes = await Deno.readFile(tmpPath);
+        const fileBlob = new Blob([fileBytes], { type: 'audio/mpeg' });
+        const uploadForm = new FormData();
+        uploadForm.append('file', fileBlob, `${scriptKey}.mp3`);
+
+        // Use the Base44 upload endpoint directly via service role headers
+        const APP_ID = Deno.env.get('BASE44_APP_ID');
+        const uploadRes = await fetch(`https://api.base44.com/api/apps/${APP_ID}/files/upload`, {
+          method: 'POST',
+          headers: {
+            'X-API-Key': `app_${APP_ID}`,
+          },
+          body: uploadForm,
+        });
+
+        let audioUrl = null;
+        if (uploadRes.ok) {
+          const uploadData = await uploadRes.json();
+          audioUrl = uploadData?.file_url || uploadData?.url;
+        }
+
+        // Fallback: store as permanent data URL if upload fails
+        if (!audioUrl) {
+          const uint8 = new Uint8Array(audioBuffer);
+          let binary = '';
+          for (let i = 0; i < uint8.length; i++) binary += String.fromCharCode(uint8[i]);
+          audioUrl = `data:audio/mpeg;base64,${btoa(binary)}`;
+        }
+
+        await Deno.remove(tmpPath).catch(() => {});
 
         if (!audioUrl) throw new Error('Upload returned no URL');
 
