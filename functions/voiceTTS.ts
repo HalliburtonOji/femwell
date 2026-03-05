@@ -1,6 +1,5 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.20';
 
-// Generate a simple hash for cache key
 function makeHash(str) {
   let hash = 0;
   for (let i = 0; i < str.length; i++) {
@@ -21,19 +20,19 @@ Deno.serve(async (req) => {
     if (!voice_script_key && !dynamic_text) return Response.json({ error: 'voice_script_key or dynamic_text required' }, { status: 400 });
 
     const ELEVENLABS_API_KEY = Deno.env.get('ELEVENLABS_API_KEY');
-    const DEFAULT_VOICE_ID = voice_id || 'EXAVITQu4vr4xnSDxMaL'; // Bella - calm female voice
+    const DEFAULT_VOICE_ID = voice_id || 'EXAVITQu4vr4xnSDxMaL';
 
     let scriptText = dynamic_text || null;
     let scriptProfileKey = dynamic_profile_key || null;
 
-    // Build cache key (only for keyed scripts, not dynamic)
+    // Cache key only for keyed scripts
     const cacheKey = voice_script_key ? makeHash(`${voice_script_key}:${DEFAULT_VOICE_ID}`) : null;
 
-    // Check cache first (only for keyed scripts)
+    // Check cache first
     if (cacheKey) {
       const cached = await base44.asServiceRole.entities.VoiceCache.filter({ cache_key: cacheKey });
-      if (cached.length > 0) {
-        return Response.json({ audio_data_url: cached[0].audio_data_url, cached: true });
+      if (cached.length > 0 && cached[0].audio_file_url) {
+        return Response.json({ audio_data_url: cached[0].audio_file_url, cached: true });
       }
     }
 
@@ -79,21 +78,25 @@ Deno.serve(async (req) => {
     }
 
     const audioBuffer = await ttsRes.arrayBuffer();
-    const base64 = btoa(String.fromCharCode(...new Uint8Array(audioBuffer)));
-    const audio_data_url = `data:audio/mpeg;base64,${base64}`;
 
-    // Store in cache (only for keyed scripts)
+    // Upload the audio file and get a URL instead of storing base64
+    const uploadRes = await base44.asServiceRole.integrations.Core.UploadFile({
+      file: new Blob([audioBuffer], { type: 'audio/mpeg' }),
+    });
+    const audioUrl = uploadRes.file_url;
+
+    // Cache it (only for keyed scripts)
     if (cacheKey) {
       await base44.asServiceRole.entities.VoiceCache.create({
         cache_key: cacheKey,
         content_key: content_key || '',
-        voice_script_key,
-        audio_data_url,
+        voice_script_key: voice_script_key || '',
+        audio_file_url: audioUrl,
         created_at: new Date().toISOString(),
       });
     }
 
-    return Response.json({ audio_data_url, cached: false });
+    return Response.json({ audio_data_url: audioUrl, cached: false });
   } catch (error) {
     return Response.json({ error: error.message }, { status: 500 });
   }
