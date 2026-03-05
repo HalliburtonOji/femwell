@@ -167,16 +167,10 @@ Deno.serve(async (req) => {
         // 5. Generate ElevenLabs audio
         const audioBuffer = await generateAudio(scriptText);
 
-        // 6. Store audio as base64 in the VoiceScript text field as data URL
-        // (Base44 UploadFile integration expects a File object not available server-side)
-        // We store the audio_data_url directly so the player can use it immediately
-        const uint8 = new Uint8Array(audioBuffer);
-        let binary = '';
-        const chunkSize = 8192;
-        for (let i = 0; i < uint8.length; i += chunkSize) {
-          binary += String.fromCharCode(...uint8.subarray(i, Math.min(i + chunkSize, uint8.length)));
-        }
-        const audioUrl = `data:audio/mpeg;base64,${btoa(binary)}`;
+        // 6. Upload via Base44 UploadFile integration (pass Blob directly)
+        const audioBlob = new Blob([audioBuffer], { type: 'audio/mpeg' });
+        const uploadResult = await base44.asServiceRole.integrations.Core.UploadFile({ file: audioBlob });
+        const audioUrl = uploadResult?.file_url;
 
         if (!audioUrl) throw new Error('Failed to generate audio URL');
 
