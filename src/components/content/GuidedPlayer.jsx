@@ -81,6 +81,24 @@ export default function GuidedPlayer({ item }) {
     }).catch(() => {});
   }, []);
 
+  // Auto-generate voice script if content has none
+  useEffect(() => {
+    if (resolvedScriptKey) return;
+    if (!item?.content_key && !item?.id) return;
+    const SCRIPTABLE = ["BREATHWORK", "MEDITATION", "GUIDE"];
+    if (!SCRIPTABLE.includes(item?.content_type)) return;
+
+    setScriptGenerating(true);
+    base44.functions.invoke("generateVoiceScript", {
+      content_key: item.content_key || undefined,
+      content_id: item.id || undefined,
+    }).then((res) => {
+      if (res.data?.voice_script_key) {
+        setResolvedScriptKey(res.data.voice_script_key);
+      }
+    }).catch(() => {}).finally(() => setScriptGenerating(false));
+  }, [item?.id]);
+
   const loadCueAudio = async (scriptKey) => {
     if (cueAudiosRef.current[scriptKey]) return cueAudiosRef.current[scriptKey];
     try {
