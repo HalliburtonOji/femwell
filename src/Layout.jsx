@@ -21,12 +21,16 @@ export default function Layout({ children, currentPageName }) {
   const navigate = useNavigate();
 
   useEffect(() => {
-    if (NO_GUARD.includes(currentPageName)) return;
+    if (NO_GUARD.includes(currentPageName)) {
+      setChecking(false);
+      return;
+    }
     (async () => {
       try {
         const u = await base44.auth.me();
         const profiles = await base44.entities.UserProfile.filter({ user_id: u.id });
-        if (!profiles[0]?.onboarding_complete) {
+        // Only redirect to onboarding if the user has never completed it (no profile at all)
+        if (profiles.length === 0) {
           navigate(createPageUrl("Onboarding"), { replace: true });
         }
       } catch {
