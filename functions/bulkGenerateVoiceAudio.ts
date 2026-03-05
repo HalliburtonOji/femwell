@@ -167,24 +167,19 @@ Deno.serve(async (req) => {
         // 5. Generate ElevenLabs audio
         const audioBuffer = await generateAudio(scriptText);
 
-        // 6. Upload audio to Base44 file storage via multipart/form-data
+        // 6. Upload audio via Base44 UploadPrivateFile + CreateFileSignedUrl
         const audioBlob = new Blob([audioBuffer], { type: 'audio/mpeg' });
-        const APP_ID = Deno.env.get('BASE44_APP_ID');
-        const uploadForm = new FormData();
-        uploadForm.append('file', audioBlob, `${scriptKey}.mp3`);
 
-        const uploadRes = await fetch(`https://api.base44.com/api/apps/${APP_ID}/files/upload`, {
-          method: 'POST',
-          body: uploadForm,
+        const privateUpload = await base44.asServiceRole.integrations.Core.UploadPrivateFile({ file: audioBlob });
+        const fileUri = privateUpload?.file_uri;
+        if (!fileUri) throw new Error('Private upload returned no file_uri');
+
+        // Create a long-lived signed URL (10 years = 315360000 seconds)
+        const signedResult = await base44.asServiceRole.integrations.Core.CreateFileSignedUrl({
+          file_uri: fileUri,
+          expires_in: 315360000,
         });
-
-        if (!uploadRes.ok) {
-          const uploadErr = await uploadRes.text();
-          throw new Error(`Upload failed: ${uploadErr}`);
-        }
-
-        const uploadData = await uploadRes.json();
-        const audioUrl = uploadData?.file_url || uploadData?.url;
+        const audioUrl = signedResult?.signed_url;
 
         if (!audioUrl) throw new Error('Failed to generate audio URL');
 
