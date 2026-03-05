@@ -23,24 +23,33 @@ Deno.serve(async (req) => {
     const ELEVENLABS_API_KEY = Deno.env.get('ELEVENLABS_API_KEY');
     const DEFAULT_VOICE_ID = voice_id || 'EXAVITQu4vr4xnSDxMaL'; // Bella - calm female voice
 
-    // Build cache key
-    const cacheKey = makeHash(`${voice_script_key}:${DEFAULT_VOICE_ID}`);
+    let scriptText = dynamic_text || null;
+    let scriptProfileKey = dynamic_profile_key || null;
 
-    // Check cache first
-    const cached = await base44.asServiceRole.entities.VoiceCache.filter({ cache_key: cacheKey });
-    if (cached.length > 0) {
-      return Response.json({ audio_data_url: cached[0].audio_data_url, cached: true });
+    // Build cache key (only for keyed scripts, not dynamic)
+    const cacheKey = voice_script_key ? makeHash(`${voice_script_key}:${DEFAULT_VOICE_ID}`) : null;
+
+    // Check cache first (only for keyed scripts)
+    if (cacheKey) {
+      const cached = await base44.asServiceRole.entities.VoiceCache.filter({ cache_key: cacheKey });
+      if (cached.length > 0) {
+        return Response.json({ audio_data_url: cached[0].audio_data_url, cached: true });
+      }
     }
 
-    // Fetch voice script
-    const scripts = await base44.asServiceRole.entities.VoiceScripts.filter({ voice_script_key });
-    if (!scripts.length) return Response.json({ error: 'Script not found' }, { status: 404 });
-    const script = scripts[0];
+    // Fetch voice script if key provided
+    if (voice_script_key && !scriptText) {
+      const scripts = await base44.asServiceRole.entities.VoiceScripts.filter({ voice_script_key });
+      if (!scripts.length) return Response.json({ error: 'Script not found' }, { status: 404 });
+      const script = scripts[0];
+      scriptText = script.text;
+      scriptProfileKey = script.voice_profile_key || scriptProfileKey;
+    }
 
     // Fetch voice profile
     let profile = { speed: 0.85, stability: 0.85, similarity_boost: 0.85, style: 0, use_speaker_boost: true };
-    if (script.voice_profile_key) {
-      const profiles = await base44.asServiceRole.entities.VoiceProfiles.filter({ profile_key: script.voice_profile_key });
+    if (scriptProfileKey) {
+      const profiles = await base44.asServiceRole.entities.VoiceProfiles.filter({ profile_key: scriptProfileKey });
       if (profiles.length) profile = { ...profile, ...profiles[0] };
     }
 
