@@ -167,21 +167,11 @@ Deno.serve(async (req) => {
         // 5. Generate ElevenLabs audio
         const audioBuffer = await generateAudio(scriptText);
 
-        // 6. Upload audio file via multipart/form-data to get a public URL
-        const appId = Deno.env.get('BASE44_APP_ID');
-        const formData = new FormData();
-        formData.append('file', new Blob([audioBuffer], { type: 'audio/mpeg' }), `${scriptKey}.mp3`);
-        formData.append('app_id', appId);
-        const uploadRes = await fetch('https://api.base44.com/api/apps/app/integrations/Core/UploadFile', {
-          method: 'POST',
-          headers: { 'Authorization': req.headers.get('Authorization') },
-          body: formData,
+        // 6. Upload audio file via Base44 integrations UploadFile
+        const uploadRes = await base44.asServiceRole.integrations.Core.UploadFile({
+          file: new File([audioBuffer], `${scriptKey}.mp3`, { type: 'audio/mpeg' }),
         });
-        if (!uploadRes.ok) {
-          const errText = await uploadRes.text();
-          throw new Error(`Upload failed: ${errText}`);
-        }
-        const { file_url: audioUrl } = await uploadRes.json();
+        const audioUrl = uploadRes.file_url;
 
         // 7. Store the file URL on the VoiceScript record
         const newScripts = await base44.asServiceRole.entities.VoiceScripts.filter({ voice_script_key: scriptKey });
