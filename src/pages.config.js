@@ -51,6 +51,7 @@ import Onboarding from './pages/Onboarding';
 import Track from './pages/Track';
 import Insights from './pages/Insights';
 import Explore from './pages/Explore';
+import Profile from './pages/Profile';
 import __Layout from './Layout.jsx';
 
 
@@ -59,6 +60,7 @@ export const PAGES = {
     "Track": Track,
     "Insights": Insights,
     "Explore": Explore,
+    "Profile": Profile,
 }
 
 export const pagesConfig = {
