@@ -112,7 +112,7 @@ Deno.serve(async (req) => {
     }
 
     const body = await req.json().catch(() => ({}));
-    const { dry_run = false, content_types = ['BREATHWORK', 'MEDITATION', 'GUIDE', 'WORKOUT', 'MOBILITY'] } = body;
+    const { dry_run = false, content_types = ['BREATHWORK', 'MEDITATION', 'GUIDE', 'WORKOUT', 'MOBILITY'], limit = 3 } = body;
 
     // Fetch all content items that are GUIDED (not VIDEO) or have no embed_url
     const allItems = await base44.asServiceRole.entities.ContentItems.list('-created_date', 200);
