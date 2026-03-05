@@ -82,14 +82,16 @@ Deno.serve(async (req) => {
     const base64 = btoa(String.fromCharCode(...new Uint8Array(audioBuffer)));
     const audio_data_url = `data:audio/mpeg;base64,${base64}`;
 
-    // Store in cache
-    await base44.asServiceRole.entities.VoiceCache.create({
-      cache_key: cacheKey,
-      content_key: content_key || '',
-      voice_script_key,
-      audio_data_url,
-      created_at: new Date().toISOString(),
-    });
+    // Store in cache (only for keyed scripts)
+    if (cacheKey) {
+      await base44.asServiceRole.entities.VoiceCache.create({
+        cache_key: cacheKey,
+        content_key: content_key || '',
+        voice_script_key,
+        audio_data_url,
+        created_at: new Date().toISOString(),
+      });
+    }
 
     return Response.json({ audio_data_url, cached: false });
   } catch (error) {
