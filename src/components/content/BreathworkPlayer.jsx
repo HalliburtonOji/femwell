@@ -10,13 +10,24 @@ const PHASE_TEXT = { inhale: "Breathe in", hold: "Hold", exhale: "Breathe out", 
 const PHASE_COLOR = { inhale: "#e8a4b0", hold: "#c97b8a", exhale: "#8fada0", hold2: "#c97b8a" };
 
 function buildPhases(p) {
-    const list = [];
-    list.push({ name: "inhale", duration: p.inhale });
-    if (p.hold) list.push({ name: "hold", duration: p.hold });
-    list.push({ name: "exhale", duration: p.exhale });
-    if (p.hold2) list.push({ name: "hold2", duration: p.hold2 });
-    return list;
-  }
+  const list = [];
+  list.push({ name: "inhale", duration: p.inhale });
+  if (p.hold) list.push({ name: "hold", duration: p.hold });
+  list.push({ name: "exhale", duration: p.exhale });
+  if (p.hold2) list.push({ name: "hold2", duration: p.hold2 });
+  return list;
+}
+
+export default function BreathworkPlayer({ item }) {
+  const pattern = PATTERNS[item?.breathwork_pattern] || PATTERNS["4-7-8"];
+  const phases = buildPhases(pattern);
+
+  const [running, setRunning] = useState(false);
+  const [phaseIdx, setPhaseIdx] = useState(0);
+  const [secondsLeft, setSecondsLeft] = useState(phases[0].duration);
+  const [cycles, setCycles] = useState(0);
+  const timerRef = useRef(null);
+  const speakRef = useRef(null);
 
   const speak = (text) => {
     if (!("speechSynthesis" in window)) return;
