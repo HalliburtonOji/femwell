@@ -63,6 +63,8 @@ export default function GuidedPlayer({ item }) {
   const [audioError, setAudioError] = useState(null);
   const [userName, setUserName] = useState(null);
   const [phaseTransition, setPhaseTransition] = useState(false);
+  const [resolvedScriptKey, setResolvedScriptKey] = useState(item?.voice_script_key || null);
+  const [scriptGenerating, setScriptGenerating] = useState(false);
 
   const timerRef = useRef(null);
   const audioRef = useRef(null);
