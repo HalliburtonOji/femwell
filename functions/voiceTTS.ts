@@ -1,0 +1,89 @@
+import { createClientFromRequest } from 'npm:@base44/sdk@0.8.20';
+
+// Generate a simple hash for cache key
+function makeHash(str) {
+  let hash = 0;
+  for (let i = 0; i < str.length; i++) {
+    const char = str.charCodeAt(i);
+    hash = ((hash << 5) - hash) + char;
+    hash = hash & hash;
+  }
+  return Math.abs(hash).toString(36);
+}
+
+Deno.serve(async (req) => {
+  try {
+    const base44 = createClientFromRequest(req);
+    const user = await base44.auth.me();
+    if (!user) return Response.json({ error: 'Unauthorized' }, { status: 401 });
+
+    const { content_key, voice_script_key, voice_id } = await req.json();
+    if (!voice_script_key) return Response.json({ error: 'voice_script_key required' }, { status: 400 });
+
+    const ELEVENLABS_API_KEY = Deno.env.get('ELEVENLABS_API_KEY');
+    const DEFAULT_VOICE_ID = voice_id || 'EXAVITQu4vr4xnSDxMaL'; // Bella - calm female voice
+
+    // Build cache key
+    const cacheKey = makeHash(`${voice_script_key}:${DEFAULT_VOICE_ID}`);
+
+    // Check cache first
+    const cached = await base44.asServiceRole.entities.VoiceCache.filter({ cache_key: cacheKey });
+    if (cached.length > 0) {
+      return Response.json({ audio_data_url: cached[0].audio_data_url, cached: true });
+    }
+
+    // Fetch voice script
+    const scripts = await base44.asServiceRole.entities.VoiceScripts.filter({ voice_script_key });
+    if (!scripts.length) return Response.json({ error: 'Script not found' }, { status: 404 });
+    const script = scripts[0];
+
+    // Fetch voice profile
+    let profile = { speed: 0.85, stability: 0.85, similarity_boost: 0.85, style: 0, use_speaker_boost: true };
+    if (script.voice_profile_key) {
+      const profiles = await base44.asServiceRole.entities.VoiceProfiles.filter({ profile_key: script.voice_profile_key });
+      if (profiles.length) profile = { ...profile, ...profiles[0] };
+    }
+
+    // Call ElevenLabs TTS
+    const ttsRes = await fetch(`https://api.elevenlabs.io/v1/text-to-speech/${DEFAULT_VOICE_ID}`, {
+      method: 'POST',
+      headers: {
+        'xi-api-key': ELEVENLABS_API_KEY,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        text: script.text,
+        model_id: 'eleven_turbo_v2',
+        voice_settings: {
+          stability: profile.stability || 0.85,
+          similarity_boost: profile.similarity_boost || 0.85,
+          style: profile.style || 0,
+          use_speaker_boost: profile.use_speaker_boost !== false,
+          speed: profile.speed || 0.85,
+        },
+      }),
+    });
+
+    if (!ttsRes.ok) {
+      const err = await ttsRes.text();
+      return Response.json({ error: `ElevenLabs error: ${err}` }, { status: 500 });
+    }
+
+    const audioBuffer = await ttsRes.arrayBuffer();
+    const base64 = btoa(String.fromCharCode(...new Uint8Array(audioBuffer)));
+    const audio_data_url = `data:audio/mpeg;base64,${base64}`;
+
+    // Store in cache
+    await base44.asServiceRole.entities.VoiceCache.create({
+      cache_key: cacheKey,
+      content_key: content_key || '',
+      voice_script_key,
+      audio_data_url,
+      created_at: new Date().toISOString(),
+    });
+
+    return Response.json({ audio_data_url, cached: false });
+  } catch (error) {
+    return Response.json({ error: error.message }, { status: 500 });
+  }
+});
