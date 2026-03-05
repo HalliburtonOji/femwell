@@ -49,12 +49,14 @@
  */
 import Onboarding from './pages/Onboarding';
 import Track from './pages/Track';
+import Insights from './pages/Insights';
 import __Layout from './Layout.jsx';
 
 
 export const PAGES = {
     "Onboarding": Onboarding,
     "Track": Track,
+    "Insights": Insights,
 }
 
 export const pagesConfig = {
