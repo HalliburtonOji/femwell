@@ -133,10 +133,12 @@ Deno.serve(async (req) => {
       });
     }
 
+    // Process a limited batch at a time to avoid timeouts
+    const batch = targets.slice(0, limit);
     const results = [];
     const errors = [];
 
-    for (const item of targets) {
+    for (const item of batch) {
       try {
         // 1. Clear old voice script key (but keep video embed_url intact)
         await base44.asServiceRole.entities.ContentItems.update(item.id, {
