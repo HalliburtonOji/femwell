@@ -21,8 +21,9 @@ Deno.serve(async (req) => {
       if (!scripts.length) return Response.json({ error: 'Script not found' }, { status: 404 });
       const script = scripts[0];
 
-      // Return pre-generated audio if available — avoids re-generating TTS
+      // Return pre-generated audio URL if available — avoids re-generating TTS
       if (script.audio_data) {
+        // audio_data may be a plain https:// URL (uploaded file) or a data URL
         return Response.json({ audio_data_url: script.audio_data, cached: true });
       }
 
