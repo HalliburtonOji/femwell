@@ -89,7 +89,7 @@ export default function Explore() {
     if (activeCollection) {
       const colMap = { sleep: ["sleep"], pms: ["pms", "cramps"], quick_calm: ["calm"], low_energy: ["energy"], mobility: ["mobility", "pain"], menopause: ["menopause"], postpartum: ["postpartum"], desk_reset: ["desk", "office"] };
       const keywords = colMap[activeCollection] || [];
-      if (!keywords.some(k => item.title?.toLowerCase().includes(k) || item.tags?.some(t => t.toLowerCase().includes(k)))) return false;
+      if (!keywords.some(k => item.title?.toLowerCase().includes(k) || tagList.some(t => t.toLowerCase().includes(k)))) return false;
     }
     if (filters.showFreeOnly && item.access_tier !== "free") return false;
     if (filters.level !== "all" && item.level !== filters.level) return false;
