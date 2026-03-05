@@ -196,14 +196,14 @@ export default function GuidedPlayer({ item }) {
       loadCueAudio("cue_hold"),
       loadCueAudio("cue_exhale"),
       loadCueAudio("cue_finish"),
-      item?.voice_script_key ? loadCueAudio(item.voice_script_key) : Promise.resolve(),
+      resolvedScriptKey ? loadCueAudio(resolvedScriptKey) : Promise.resolve(),
     ]);
     setAudioLoading(false);
     setRunning(true);
 
-    // Play personalized greeting first, then the full script if available
-    if (item?.voice_script_key) {
-      playCue(item.voice_script_key);
+    // Play the AI-generated script if available, else fallback to dynamic greeting
+    if (resolvedScriptKey) {
+      playCue(resolvedScriptKey);
     } else {
       playDynamic(greetingText, profileKey);
     }
