@@ -167,12 +167,14 @@ Deno.serve(async (req) => {
         // 5. Generate ElevenLabs audio
         const audioBuffer = await generateAudio(scriptText);
 
-        // 6. Upload audio file to Base44 storage
-        const blob = new Blob([audioBuffer], { type: 'audio/mpeg' });
-        const formData = new FormData();
-        formData.append('file', blob, `${scriptKey}.mp3`);
+        // 6. Upload audio file to Base44 storage as base64 data URL
+        const uint8 = new Uint8Array(audioBuffer);
+        let binary = '';
+        for (let i = 0; i < uint8.length; i++) binary += String.fromCharCode(uint8[i]);
+        const base64Audio = btoa(binary);
+        const dataUrl = `data:audio/mpeg;base64,${base64Audio}`;
 
-        const uploadRes = await base44.asServiceRole.integrations.Core.UploadFile({ file: blob });
+        const uploadRes = await base44.asServiceRole.integrations.Core.UploadFile({ file: dataUrl });
         const audioUrl = uploadRes?.file_url;
 
         if (!audioUrl) throw new Error('Upload returned no URL');
