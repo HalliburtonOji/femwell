@@ -72,9 +72,9 @@ export default function ContentCard({ item, locked, bookmarked, onToggleBookmark
             {item.level && (
               <span className="text-[10px] text-gray-400 capitalize">{item.level}</span>
             )}
-            {item.tags?.slice(0, 1).map((tag) => (
-              <span key={tag} className="text-[10px] bg-rose-50 text-rose-400 px-1.5 py-0.5 rounded-full capitalize">{tag}</span>
-            ))}
+            {item.tags && (
+              <span className="text-[10px] bg-rose-50 text-rose-400 px-1.5 py-0.5 rounded-full capitalize">{item.tags.split(",")[0]?.trim()}</span>
+            )}
           </div>
 
           <button
