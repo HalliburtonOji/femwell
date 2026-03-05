@@ -164,6 +164,21 @@ export default function AudioPlayer({ item }) {
     };
   }, []);
 
+  const resolveAudioUrl = async () => {
+    const raw = item?.audio_file_url;
+    if (!raw) return null;
+    // script:// pointer — fetch actual audio from voiceTTS
+    if (raw.startsWith('script://')) {
+      const scriptKey = raw.replace('script://', '');
+      const res = await base44.functions.invoke('voiceTTS', {
+        voice_script_key: scriptKey,
+        content_key: item?.content_key || '',
+      });
+      return res.data?.audio_data_url || null;
+    }
+    return raw;
+  };
+
   const handlePlayPause = async () => {
     if (finished) {
       // Restart
@@ -179,7 +194,9 @@ export default function AudioPlayer({ item }) {
     if (!audioRef.current) {
       if (!item?.audio_file_url) return;
       setLoading(true);
-      const audio = new Audio(item.audio_file_url);
+      const resolvedUrl = await resolveAudioUrl();
+      if (!resolvedUrl) { setLoading(false); return; }
+      const audio = new Audio(resolvedUrl);
       audioRef.current = audio;
 
       audio.addEventListener("loadedmetadata", () => {
