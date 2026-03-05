@@ -63,7 +63,7 @@ export default function ContentCard({ item, locked, bookmarked, onToggleBookmark
 
       {/* Card body */}
       <div className="p-2.5">
-        <Link to={createPageUrl(`ContentPlayer?id=${item.id}`)}>
+        <Link to={createPageUrl(`ContentPlayer?key=${item.content_key || item.id}`)}>
           <p className="text-xs font-semibold text-gray-800 leading-tight line-clamp-2 mb-1">{item.title}</p>
         </Link>
 
