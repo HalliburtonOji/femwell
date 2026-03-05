@@ -97,8 +97,9 @@ export default function ContentPlayer() {
       if (ents[0]) setUserPlan(ents[0].plan || "free");
       if (bookmarks[0]) { setBookmarked(true); setBookmarkId(bookmarks[0].id); }
 
-      if (ci?.media_asset_id) {
-        const assets = await base44.entities.MediaAssets.filter({ id: ci.media_asset_id });
+      const assetId = ci?.primary_media_asset_id || ci?.media_asset_id;
+      if (assetId) {
+        const assets = await base44.entities.MediaAssets.filter({ id: assetId });
         if (assets[0]) setMediaAsset(assets[0]);
       }
       setLoading(false);

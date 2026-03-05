@@ -12,8 +12,8 @@ const NAV = [
   { label: "Profile", icon: User, page: "Profile" },
 ];
 
-const HIDE_NAV = ["Onboarding", "ContentPlayer", "ProgramDay"];
-const NO_GUARD = ["Onboarding"];
+const HIDE_NAV = ["Onboarding", "ContentPlayer", "ProgramDay", "CycleSettings"];
+const NO_GUARD = ["Onboarding", "CycleSettings"];
 
 export default function Layout({ children, currentPageName }) {
   const showNav = !HIDE_NAV.includes(currentPageName);
