@@ -164,15 +164,26 @@ Deno.serve(async (req) => {
           text: scriptText,
         });
 
-        // 5. Generate ElevenLabs audio
+        // 5. Generate ElevenLabs audio and encode to base64
         const audioBuffer = await generateAudio(scriptText);
+        const uint8 = new Uint8Array(audioBuffer);
+        let binary = '';
+        const chunkSize = 4096;
+        for (let i = 0; i < uint8.length; i += chunkSize) {
+          binary += String.fromCharCode(...uint8.subarray(i, Math.min(i + chunkSize, uint8.length)));
+        }
+        const base64Audio = btoa(binary);
+        const audioDataUrl = `data:audio/mpeg;base64,${base64Audio}`;
 
-        // 6. Save audio buffer to /tmp and serve via this function's endpoint
-        // Store a reference URL that the voiceTTS function can resolve
-        // The audio_file_url will be the script key — the player will call voiceTTS to stream it
+        // 6. Update the VoiceScript record with the audio data
+        const newScripts = await base44.asServiceRole.entities.VoiceScripts.filter({ voice_script_key: scriptKey });
+        if (newScripts.length) {
+          await base44.asServiceRole.entities.VoiceScripts.update(newScripts[0].id, {
+            audio_data: audioDataUrl,
+          });
+        }
+
         const audioUrl = `script://${scriptKey}`;
-
-        if (!audioUrl) throw new Error('Failed to create signed audio URL');
 
         // 7. Update ContentItem with audio URL and script key
         await base44.asServiceRole.entities.ContentItems.update(item.id, {
