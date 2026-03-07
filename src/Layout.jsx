@@ -12,7 +12,7 @@ const NAV = [
   { label: "Profile", icon: User, page: "Profile" },
 ];
 
-const HIDE_NAV = ["Onboarding", "ContentPlayer", "ProgramDay", "ProgramDetail", "CycleSettings"];
+const HIDE_NAV = ["Onboarding", "ContentPlayer", "ProgramDay", "ProgramDetail", "CycleSettings", "Journal"];
 const NO_GUARD = ["Onboarding", "CycleSettings"];
 
 export default function Layout({ children, currentPageName }) {
