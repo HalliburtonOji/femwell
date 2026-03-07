@@ -106,6 +106,7 @@ export default function BreathworkLoopPlayer({ item, user }) {
   const [coachText, setCoachText] = useState("");
   const [coachVisible, setCoachVisible] = useState(false);
   const [showConfetti, setShowConfetti] = useState(false);
+  const [showReview, setShowReview] = useState(false);
 
   const audioRef = useRef(null);
   const elapsedRef = useRef(0);
