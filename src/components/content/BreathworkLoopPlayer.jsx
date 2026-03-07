@@ -318,6 +318,9 @@ export default function BreathworkLoopPlayer({ item, user }) {
 
   return (
     <>
+      {showReview && user && (
+        <SessionReviewModal item={item} user={user} onClose={() => setShowReview(false)} />
+      )}
       <style>{`
         @keyframes breathPulse {
           0%, 100% { transform: scale(0.92); opacity: 0.8; }
