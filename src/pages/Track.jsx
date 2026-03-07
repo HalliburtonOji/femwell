@@ -376,6 +376,47 @@ export default function Track() {
             )}
           </div>
         )}
+
+        {/* SESSIONS TAB */}
+        {activeTab === "Sessions" && (
+          <div className="space-y-3">
+            {sessionHistory.length > 0 ? sessionHistory.map((s) => {
+              const content = sessionContent[s.content_id];
+              const durationMin = s.duration_seconds ? Math.round(s.duration_seconds / 60) : s.duration_done;
+              return (
+                <div key={s.id} className="card-glass rounded-2xl p-4 flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-purple-200 to-pink-200 flex items-center justify-center text-lg flex-shrink-0">
+                    {content?.content_type === "MEDITATION" ? "🧘" : content?.content_type === "BREATHWORK" ? "🌬️" : content?.content_type === "WORKOUT" ? "💪" : "✨"}
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-semibold text-gray-800 truncate">{content?.title || s.content_key || "Session"}</p>
+                    <div className="flex items-center gap-2 mt-0.5">
+                      {durationMin > 0 && <span className="text-xs text-gray-400">{durationMin} min</span>}
+                      <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${s.completion_method === "MANUAL" ? "bg-amber-100 text-amber-600" : "bg-emerald-100 text-emerald-600"}`}>
+                        {s.completion_method === "MANUAL" ? "Manual" : "Auto"} ✓
+                      </span>
+                    </div>
+                  </div>
+                  <button
+                    onClick={async () => {
+                      await base44.entities.ContentHistory.update(s.id, { is_deleted: true });
+                      setSessionHistory((prev) => prev.filter((x) => x.id !== s.id));
+                    }}
+                    className="w-8 h-8 rounded-full bg-red-50 flex items-center justify-center hover:bg-red-100 transition-colors"
+                  >
+                    <Trash2 className="w-3.5 h-3.5 text-red-400" />
+                  </button>
+                </div>
+              );
+            }) : (
+              <div className="card-glass rounded-2xl p-6 text-center text-gray-400">
+                <Play className="w-8 h-8 mx-auto mb-2 text-rose-200" />
+                <p className="text-sm">No sessions logged for this day.</p>
+                <p className="text-xs mt-1 text-gray-300">Complete a session or mark one manually.</p>
+              </div>
+            )}
+          </div>
+        )}
       </div>
     </div>
   );
