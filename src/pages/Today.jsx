@@ -249,22 +249,36 @@ export default function Today() {
               <a href={createPageUrl("Explore")} className="text-xs text-rose-400 font-medium">See all</a>
             </div>
             <div className="space-y-3">
-              {recentContent.map((item) => (
-                <a
-                  key={item.id}
-                  href={createPageUrl(`ContentPlayer?id=${item.id}`)}
-                  className="card-glass rounded-2xl p-4 flex items-center gap-3 hover:shadow-md transition-shadow block"
-                >
-                  <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-purple-200 to-pink-200 flex items-center justify-center flex-shrink-0 text-xl">
-                    {item.content_type === "MEDITATION" ? "🧘" : item.content_type === "BREATHWORK" ? "🌬️" : item.content_type === "WORKOUT" ? "💪" : "📖"}
+              {recentContent.map((item) => {
+                const isComplete = todayCompletions.some((c) => c.content_id === item.id || c.content_key === item.content_key);
+                return (
+                  <div key={item.id} className="card-glass rounded-2xl p-4 flex items-center gap-3 hover:shadow-md transition-shadow">
+                    <a href={createPageUrl(`ContentPlayer?id=${item.id}`)} className="flex items-center gap-3 flex-1 min-w-0">
+                      <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-purple-200 to-pink-200 flex items-center justify-center flex-shrink-0 text-xl relative">
+                        {item.content_type === "MEDITATION" ? "🧘" : item.content_type === "BREATHWORK" ? "🌬️" : item.content_type === "WORKOUT" ? "💪" : "📖"}
+                        {isComplete && (
+                          <div className="absolute -top-1 -right-1 w-4 h-4 bg-emerald-500 rounded-full flex items-center justify-center">
+                            <span className="text-white text-[8px]">✓</span>
+                          </div>
+                        )}
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <p className="font-medium text-gray-800 text-sm truncate">{item.title}</p>
+                        <p className="text-xs text-gray-400">{item.duration_minutes ? `${item.duration_minutes} min · ` : ""}{item.content_type}</p>
+                      </div>
+                    </a>
+                    {!isComplete && user && (
+                      <ManualCompleteButton
+                        item={item}
+                        user={user}
+                        source="TODAY"
+                        onDone={(r) => setTodayCompletions((p) => [...p, r])}
+                      />
+                    )}
+                    {isComplete && <span className="text-xs text-emerald-500 font-medium flex-shrink-0">Done ✓</span>}
                   </div>
-                  <div className="flex-1 min-w-0">
-                    <p className="font-medium text-gray-800 text-sm truncate">{item.title}</p>
-                    <p className="text-xs text-gray-400">{item.duration_minutes ? `${item.duration_minutes} min · ` : ""}{item.content_type}</p>
-                  </div>
-                  <ChevronRight className="w-4 h-4 text-gray-300 flex-shrink-0" />
-                </a>
-              ))}
+                );
+              })}
             </div>
           </div>
         )}
