@@ -1,7 +1,8 @@
 import { useState, useRef, useEffect } from "react";
 import { base44 } from "@/api/base44Client";
-import { Send, BookmarkPlus, ChevronRight, Loader2 } from "lucide-react";
+import { Send, BookmarkPlus, ChevronRight, Loader2, Settings2 } from "lucide-react";
 import ReactMarkdown from "react-markdown";
+import CoachSettingsSheet from "../coach/CoachSettingsSheet";
 
 const TOPICS = [
   { id: "womens_health", label: "Women's Health", emoji: "🌸" },
@@ -9,33 +10,49 @@ const TOPICS = [
   { id: "sleep", label: "Sleep", emoji: "💤" },
   { id: "stress", label: "Stress", emoji: "🌊" },
   { id: "relationships", label: "Relationships", emoji: "💛" },
+  { id: "habits", label: "Habits", emoji: "🔥" },
 ];
 
-const TONES = ["Gentle", "Calm", "Straight talk"];
+const ARCHETYPE_LABELS = {
+  empathetic: "Empathetic Listener",
+  motivator: "Direct Motivator",
+  analyst: "Data-Driven Analyst",
+  nurturing: "Gentle Nurturer",
+};
 
 const FOLLOW_UPS = [
   "What should I try today?",
   "Can you explain more?",
   "Are there any sessions for this?",
   "When should I see a doctor?",
+  "Suggest a habit for this",
 ];
 
 export default function AICoachTab({ user }) {
   const [topic, setTopic] = useState("womens_health");
-  const [tone, setTone] = useState("Gentle");
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
   const [includeJournal, setIncludeJournal] = useState(true);
   const [includeCheckins, setIncludeCheckins] = useState(true);
   const [includeCycle, setIncludeCycle] = useState(true);
+  const [includeHabits, setIncludeHabits] = useState(true);
   const [conversation, setConversation] = useState(null);
   const [messages, setMessages] = useState([]);
   const [saved, setSaved] = useState(false);
+  const [showSettings, setShowSettings] = useState(false);
+  const [coachPrefs, setCoachPrefs] = useState({
+    coach_name: user.coach_name || "Luna",
+    coach_archetype: user.coach_archetype || "empathetic",
+    coach_tone: user.coach_tone || "Warm",
+  });
   const bottomRef = useRef(null);
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages, loading]);
+
+  const coachName = coachPrefs.coach_name || "Luna";
+  const archetypeLabel = ARCHETYPE_LABELS[coachPrefs.coach_archetype] || "Empathetic Listener";
 
   const startOrContinue = async (questionText) => {
     if (!questionText.trim()) return;
@@ -51,7 +68,7 @@ export default function AICoachTab({ user }) {
       if (!convo) {
         convo = await base44.agents.createConversation({
           agent_name: "womens_health_coach",
-          metadata: { topic, tone },
+          metadata: { topic, tone: coachPrefs.coach_tone, archetype: coachPrefs.coach_archetype },
         });
         setConversation(convo);
       }
@@ -60,10 +77,10 @@ export default function AICoachTab({ user }) {
       if (includeJournal) contextNote.push("journal entries");
       if (includeCheckins) contextNote.push("check-ins");
       if (includeCycle) contextNote.push("cycle data");
+      if (includeHabits) contextNote.push("habit logs");
 
-      const fullPrompt = contextNote.length > 0
-        ? `[Tone: ${tone}. Use context from my ${contextNote.join(", ")} if relevant.]\n\n${questionText}`
-        : `[Tone: ${tone}]\n\n${questionText}`;
+      const styleNote = `[Coaching style: ${archetypeLabel}. Tone: ${coachPrefs.coach_tone}.${contextNote.length > 0 ? ` Use context from my ${contextNote.join(", ")} if relevant.` : ""}]`;
+      const fullPrompt = `${styleNote}\n\n${questionText}`;
 
       const updatedConvo = await base44.agents.addMessage(convo, {
         role: "user",
@@ -97,6 +114,39 @@ export default function AICoachTab({ user }) {
 
   return (
     <div className="flex flex-col h-full">
+      {showSettings && (
+        <CoachSettingsSheet
+          user={{ ...user, ...coachPrefs }}
+          onClose={() => setShowSettings(false)}
+          onSaved={(prefs) => {
+            setCoachPrefs(prefs);
+            // Reset conversation when style changes
+            setConversation(null);
+            setMessages([]);
+          }}
+        />
+      )}
+
+      {/* Coach header */}
+      <div className="flex items-center justify-between mb-3">
+        <div className="flex items-center gap-2">
+          <div className="w-8 h-8 rounded-full bg-gradient-to-br from-rose-300 to-pink-400 flex items-center justify-center text-sm">
+            🌸
+          </div>
+          <div>
+            <p className="text-sm font-bold text-gray-800">{coachName}</p>
+            <p className="text-[10px] text-gray-400">{archetypeLabel}</p>
+          </div>
+        </div>
+        <button
+          onClick={() => setShowSettings(true)}
+          className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-gray-100 hover:bg-rose-50 transition-colors"
+        >
+          <Settings2 className="w-3.5 h-3.5 text-gray-500" />
+          <span className="text-xs text-gray-500">Customise</span>
+        </button>
+      </div>
+
       {/* Topic chips */}
       <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-hide mb-3">
         {TOPICS.map((t) => (
@@ -119,6 +169,7 @@ export default function AICoachTab({ user }) {
           { label: "Journal", state: includeJournal, set: setIncludeJournal },
           { label: "Check-ins", state: includeCheckins, set: setIncludeCheckins },
           { label: "Cycle", state: includeCycle, set: setIncludeCycle },
+          { label: "Habits", state: includeHabits, set: setIncludeHabits },
         ].map(({ label, state, set }) => (
           <button
             key={label}
@@ -127,24 +178,9 @@ export default function AICoachTab({ user }) {
               state ? "bg-emerald-100 text-emerald-600" : "bg-gray-100 text-gray-400 line-through"
             }`}
           >
-            {state ? "✓" : ""} {label}
+            {state ? "✓ " : ""}{label}
           </button>
         ))}
-
-        {/* Tone selector */}
-        <div className="ml-auto flex gap-1">
-          {TONES.map((t) => (
-            <button
-              key={t}
-              onClick={() => setTone(t)}
-              className={`text-xs px-2 py-1 rounded-full transition-all ${
-                tone === t ? "bg-rose-100 text-rose-600 font-semibold" : "text-gray-400 hover:bg-gray-100"
-              }`}
-            >
-              {t}
-            </button>
-          ))}
-        </div>
       </div>
 
       {/* Chat area */}
@@ -152,8 +188,8 @@ export default function AICoachTab({ user }) {
         {messages.length === 0 && (
           <div className="text-center py-10 text-gray-400 text-sm">
             <p className="text-3xl mb-3">🌸</p>
-            <p className="font-medium text-gray-600">Ask Luna anything</p>
-            <p className="text-xs mt-1">Your personal women's health coach</p>
+            <p className="font-medium text-gray-600">Ask {coachName} anything</p>
+            <p className="text-xs mt-1">{archetypeLabel} · {coachPrefs.coach_tone} tone</p>
           </div>
         )}
         {messages.map((msg, i) => (
@@ -176,7 +212,7 @@ export default function AICoachTab({ user }) {
                   {msg.content}
                 </ReactMarkdown>
               ) : (
-                <p>{msg.content.replace(/^\[Tone:.*?\]\n\n/, "")}</p>
+                <p>{msg.content.replace(/^\[Coaching style:.*?\]\n\n/, "")}</p>
               )}
             </div>
           </div>
@@ -185,7 +221,7 @@ export default function AICoachTab({ user }) {
           <div className="flex justify-start">
             <div className="bg-white/90 rounded-2xl rounded-bl-sm px-4 py-3 shadow-sm border border-rose-50 flex items-center gap-2">
               <Loader2 className="w-4 h-4 text-rose-400 animate-spin" />
-              <span className="text-xs text-gray-400">Luna is thinking…</span>
+              <span className="text-xs text-gray-400">{coachName} is thinking…</span>
             </div>
           </div>
         )}
@@ -225,7 +261,7 @@ export default function AICoachTab({ user }) {
           value={input}
           onChange={(e) => setInput(e.target.value)}
           onKeyDown={(e) => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); startOrContinue(input); } }}
-          placeholder="Ask your coach…"
+          placeholder={`Ask ${coachName}…`}
           rows={2}
           className="flex-1 p-3 rounded-2xl border border-rose-100 bg-white/80 text-sm resize-none focus:outline-none focus:ring-2 focus:ring-rose-200 text-gray-700"
         />
