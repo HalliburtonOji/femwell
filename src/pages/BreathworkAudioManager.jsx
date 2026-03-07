@@ -45,7 +45,11 @@ export default function BreathworkAudioManager() {
       const u = await base44.auth.me();
       setUser(u);
       if (u?.role === "admin") {
-        const items = await base44.entities.ContentItems.filter({ content_type: "BREATHWORK" });
+        const [bw, med] = await Promise.all([
+          base44.entities.ContentItems.filter({ content_type: "BREATHWORK" }),
+          base44.entities.ContentItems.filter({ content_type: "MEDITATION" }),
+        ]);
+        const items = [...bw, ...med];
         setBreathItems(items.sort((a, b) => a.title.localeCompare(b.title)));
       }
     })();

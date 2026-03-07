@@ -47,6 +47,7 @@
  *
  * The mainPage value must match a key in the PAGES object exactly.
  */
+import BreathworkAudioManager from './pages/BreathworkAudioManager';
 import ContentPlayer from './pages/ContentPlayer';
 import CycleSettings from './pages/CycleSettings';
 import Explore from './pages/Explore';
@@ -58,11 +59,11 @@ import ProgramsHub from './pages/ProgramsHub';
 import Today from './pages/Today';
 import Track from './pages/Track';
 import Upgrade from './pages/Upgrade';
-import BreathworkAudioManager from './pages/BreathworkAudioManager';
 import __Layout from './Layout.jsx';
 
 
 export const PAGES = {
+    "BreathworkAudioManager": BreathworkAudioManager,
     "ContentPlayer": ContentPlayer,
     "CycleSettings": CycleSettings,
     "Explore": Explore,
@@ -74,7 +75,6 @@ export const PAGES = {
     "Today": Today,
     "Track": Track,
     "Upgrade": Upgrade,
-    "BreathworkAudioManager": BreathworkAudioManager,
 }
 
 export const pagesConfig = {
