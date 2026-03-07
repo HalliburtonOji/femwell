@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import { base44 } from "@/api/base44Client";
 import { Play, Pause, RotateCcw, Plus, ChevronDown, ChevronUp } from "lucide-react";
+import SessionReviewModal from "./SessionReviewModal";
 
 const COACH_PROMPTS = [
   "Soft jaw.", "Shoulders down.", "Gentle breath.",
