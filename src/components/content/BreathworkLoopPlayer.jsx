@@ -183,6 +183,7 @@ export default function BreathworkLoopPlayer({ item, user }) {
       }).catch(() => {});
     }
     setTimeout(() => setShowConfetti(false), 4000);
+    setTimeout(() => setShowReview(true), 1500);
   }, [user, item]);
 
   const playNextSegment = useCallback(() => {
