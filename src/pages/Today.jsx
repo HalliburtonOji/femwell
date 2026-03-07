@@ -289,7 +289,7 @@ export default function Today() {
           <div className="grid grid-cols-3 gap-3">
             {[
               { label: "Log Cycle", emoji: "🩸", page: "Track" },
-              { label: "Symptoms", emoji: "📝", page: "Track" },
+              { label: "Journal", emoji: "📓", page: "Journal" },
               { label: "Explore", emoji: "✨", page: "Explore" },
             ].map((a) => (
               <a
