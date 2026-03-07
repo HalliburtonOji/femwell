@@ -142,6 +142,19 @@ export default function ContentPlayer() {
           </button>
         </div>
 
+        {/* Manual complete card — shown for video/audio content */}
+        {!locked && !isBreathwork && (
+          <div className="mt-3 card-glass rounded-2xl p-4 flex items-center justify-between">
+            <div>
+              <p className="text-sm font-semibold text-gray-700">Mark as complete</p>
+              <p className="text-xs text-gray-400">Log this session manually</p>
+            </div>
+            {user && item && (
+              <ManualCompleteButton item={item} user={user} source="CONTENT_PLAYER" />
+            )}
+          </div>
+        )}
+
         {locked ? (
           <div className="aspect-video rounded-2xl bg-gradient-to-br from-rose-100 to-pink-100 flex flex-col items-center justify-center gap-3">
             <Lock className="w-10 h-10 text-rose-300" />
