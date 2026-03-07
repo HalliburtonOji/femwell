@@ -1,32 +1,28 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect } from "react";
 import { base44 } from "@/api/base44Client";
-import { createPageUrl } from "@/utils";
-import { Search, Bookmark, SlidersHorizontal, Lock, X } from "lucide-react";
-import ContentCard from "../components/explore/ContentCard";
+import { Search, SlidersHorizontal, X, Headphones, Play } from "lucide-react";
 import FilterDrawer from "../components/explore/FilterDrawer";
+import ExploreContentCard from "../components/explore/ExploreContentCard";
 
-const COLLECTIONS = [
-  { id: "sleep", label: "Sleep Switch" },
-  { id: "pms", label: "PMS Toolkit" },
-  { id: "quick_calm", label: "Quick Calm" },
-  { id: "low_energy", label: "Low Energy Days" },
-  { id: "mobility", label: "Mobility & Pain Relief" },
-  { id: "menopause", label: "Menopause Calm" },
-  { id: "postpartum", label: "Postpartum Return" },
-  { id: "desk_reset", label: "Desk Reset" },
+const TYPE_TABS = [
+  { id: "All", label: "All", emoji: "✨" },
+  { id: "FITNESS", label: "Fitness", emoji: "💪" },
+  { id: "MOBILITY", label: "Mobility", emoji: "🤸" },
+  { id: "GUIDE", label: "Guides", emoji: "📖" },
 ];
 
-const TYPE_TABS = ["All", "Meditation", "Breathwork", "Fitness", "Mobility", "Guides"];
-
-const SORT_OPTIONS = [
-  { id: "recommended", label: "Recommended" },
-  { id: "newest", label: "Newest" },
-  { id: "trending", label: "Trending" },
-  { id: "shortest", label: "Shortest" },
-  { id: "longest", label: "Longest" },
+const COLLECTIONS = [
+  { id: "sleep", label: "💤 Sleep" },
+  { id: "pms", label: "🌸 PMS" },
+  { id: "calm", label: "🌿 Calm" },
+  { id: "energy", label: "⚡ Energy" },
+  { id: "pain", label: "🩹 Pain Relief" },
+  { id: "menopause", label: "🌙 Menopause" },
+  { id: "postpartum", label: "💝 Postpartum" },
 ];
 
 const TIER_ORDER = { free: 0, plus: 1, pro: 2 };
+const AUDIO_TYPES = ["BREATHWORK", "MEDITATION"];
 
 export default function Explore() {
   const [user, setUser] = useState(null);
@@ -34,14 +30,9 @@ export default function Explore() {
   const [content, setContent] = useState([]);
   const [bookmarkIds, setBookmarkIds] = useState(new Set());
   const [loading, setLoading] = useState(true);
-  const [loadingMore, setLoadingMore] = useState(false);
-  const [page, setPage] = useState(0);
-  const [hasMore, setHasMore] = useState(true);
-
   const [search, setSearch] = useState("");
   const [activeCollection, setActiveCollection] = useState(null);
   const [activeType, setActiveType] = useState("All");
-  const [sort, setSort] = useState("recommended");
   const [showFilters, setShowFilters] = useState(false);
   const [filters, setFilters] = useState({ showFreeOnly: false, level: "all", durationBucket: "all" });
 
@@ -49,26 +40,17 @@ export default function Explore() {
     (async () => {
       const u = await base44.auth.me();
       setUser(u);
-      const [ents, bookmarks] = await Promise.all([
+      const [ents, bookmarks, items] = await Promise.all([
         base44.entities.Entitlements.filter({ user_id: u.id }),
         base44.entities.ContentBookmarks.filter({ user_id: u.id }),
+        base44.entities.ContentItems.list("-created_date", 60),
       ]);
       if (ents[0]) setUserPlan(ents[0].plan || "free");
       setBookmarkIds(new Set(bookmarks.map((b) => b.content_id)));
-      await loadContent(0, u.id);
+      setContent(items);
+      setLoading(false);
     })();
   }, []);
-
-  const loadContent = async (pageNum, userId) => {
-    if (pageNum === 0) setLoading(true); else setLoadingMore(true);
-    const sortField = sort === "newest" ? "-created_date" : sort === "shortest" ? "duration_minutes" : sort === "longest" ? "-duration_minutes" : "-created_date";
-    const items = await base44.entities.ContentItems.list(sortField, 24, pageNum * 24);
-    if (pageNum === 0) setContent(items); else setContent((c) => [...c, ...items]);
-    setHasMore(items.length === 24);
-    setPage(pageNum);
-    setLoading(false);
-    setLoadingMore(false);
-  };
 
   const toggleBookmark = async (contentId) => {
     if (!user) return;
@@ -82,14 +64,21 @@ export default function Explore() {
     }
   };
 
+  const isLocked = (item) => (TIER_ORDER[item.access_tier] || 0) > (TIER_ORDER[userPlan] || 0);
+
   const filtered = content.filter((item) => {
-    const tagList = item.tags ? item.tags.split(",").map(t => t.trim()) : [];
-    if (search && !item.title?.toLowerCase().includes(search.toLowerCase()) && !tagList.some(t => t.toLowerCase().includes(search.toLowerCase()))) return false;
-    if (activeType !== "All" && item.content_type?.toLowerCase() !== activeType.toLowerCase()) return false;
+    const tagList = item.tags ? item.tags.split(",").map((t) => t.trim().toLowerCase()) : [];
+    if (search) {
+      const q = search.toLowerCase();
+      if (!item.title?.toLowerCase().includes(q) && !tagList.some((t) => t.includes(q))) return false;
+    }
+    if (activeType !== "All") {
+      if (item.content_type !== activeType) return false;
+    }
     if (activeCollection) {
-      const colMap = { sleep: ["sleep"], pms: ["pms", "cramps"], quick_calm: ["calm"], low_energy: ["energy"], mobility: ["mobility", "pain"], menopause: ["menopause"], postpartum: ["postpartum"], desk_reset: ["desk", "office"] };
+      const colMap = { sleep: ["sleep"], pms: ["pms", "cramps"], calm: ["calm", "anxiety", "stress"], energy: ["energy"], pain: ["pain", "mobility"], menopause: ["menopause"], postpartum: ["postpartum"] };
       const keywords = colMap[activeCollection] || [];
-      if (!keywords.some(k => item.title?.toLowerCase().includes(k) || tagList.some(t => t.toLowerCase().includes(k)))) return false;
+      if (!keywords.some((k) => item.title?.toLowerCase().includes(k) || tagList.some((t) => t.includes(k)))) return false;
     }
     if (filters.showFreeOnly && item.access_tier !== "free") return false;
     if (filters.level !== "all" && item.level !== filters.level) return false;
@@ -102,43 +91,52 @@ export default function Explore() {
     return true;
   });
 
-  const isLocked = (item) => (TIER_ORDER[item.access_tier] || 0) > (TIER_ORDER[userPlan] || 0);
+  // Split audio vs video
+  const audioItems = filtered.filter((i) => AUDIO_TYPES.includes(i.content_type));
+  const videoItems = filtered.filter((i) => !AUDIO_TYPES.includes(i.content_type));
+  const showAudioSection = activeType === "All" && audioItems.length > 0;
 
   return (
     <div className="min-h-screen femwell-gradient pb-28">
-      {/* Sticky header */}
-      <div className="sticky top-0 z-40 bg-white/90 backdrop-blur-xl border-b border-rose-50 px-4 pt-12 pb-3 space-y-3">
+      {/* Header */}
+      <div className="sticky top-0 z-40 bg-white/95 backdrop-blur-xl border-b border-rose-50 px-4 pt-12 pb-3 space-y-3">
         {/* Search row */}
         <div className="flex items-center gap-2">
           <div className="flex-1 flex items-center gap-2 bg-rose-50/80 rounded-2xl px-3 py-2.5">
             <Search className="w-4 h-4 text-gray-400 flex-shrink-0" />
             <input
               className="flex-1 bg-transparent text-sm text-gray-700 placeholder-gray-400 outline-none"
-              placeholder="Search sleep, cramps, breathwork…"
+              placeholder="Search sessions, topics…"
               value={search}
               onChange={(e) => setSearch(e.target.value)}
             />
-            {search && <button onClick={() => setSearch("")}><X className="w-4 h-4 text-gray-400" /></button>}
+            {search && (
+              <button onClick={() => setSearch("")}>
+                <X className="w-4 h-4 text-gray-400" />
+              </button>
+            )}
           </div>
-          <a href={createPageUrl("Bookmarks")} className="w-10 h-10 rounded-2xl bg-rose-50 flex items-center justify-center">
-            <Bookmark className="w-4 h-4 text-rose-400" />
-          </a>
-          <button onClick={() => setShowFilters(true)} className="w-10 h-10 rounded-2xl bg-rose-50 flex items-center justify-center relative">
+          <button
+            onClick={() => setShowFilters(true)}
+            className="w-10 h-10 rounded-2xl bg-rose-50 flex items-center justify-center relative flex-shrink-0"
+          >
             <SlidersHorizontal className="w-4 h-4 text-rose-400" />
             {(filters.showFreeOnly || filters.level !== "all" || filters.durationBucket !== "all") && (
-              <div className="absolute top-1 right-1 w-2 h-2 bg-rose-500 rounded-full" />
+              <div className="absolute top-1.5 right-1.5 w-2 h-2 bg-rose-500 rounded-full" />
             )}
           </button>
         </div>
 
-        {/* Collections chips */}
-        <div className="flex gap-2 overflow-x-auto no-scrollbar pb-1">
+        {/* Collections */}
+        <div className="flex gap-2 overflow-x-auto pb-1" style={{ scrollbarWidth: "none" }}>
           {COLLECTIONS.map((c) => (
             <button
               key={c.id}
               onClick={() => setActiveCollection(activeCollection === c.id ? null : c.id)}
               className={`flex-shrink-0 px-3 py-1.5 rounded-full text-xs font-medium transition-all ${
-                activeCollection === c.id ? "bg-rose-500 text-white shadow-md" : "bg-white/80 text-gray-600 border border-rose-100"
+                activeCollection === c.id
+                  ? "bg-rose-500 text-white shadow-sm"
+                  : "bg-white border border-rose-100 text-gray-600"
               }`}
             >
               {c.label}
@@ -146,35 +144,28 @@ export default function Explore() {
           ))}
         </div>
 
-        {/* Type tabs + Sort */}
-        <div className="flex items-center gap-2">
-          <div className="flex gap-1 overflow-x-auto no-scrollbar flex-1">
-            {TYPE_TABS.map((t) => (
-              <button
-                key={t}
-                onClick={() => setActiveType(t)}
-                className={`flex-shrink-0 px-3 py-1 rounded-full text-xs font-medium transition-all ${
-                  activeType === t ? "bg-rose-100 text-rose-700 font-bold" : "text-gray-500 hover:text-gray-700"
-                }`}
-              >
-                {t}
-              </button>
-            ))}
-          </div>
-          <select
-            value={sort}
-            onChange={(e) => setSort(e.target.value)}
-            className="text-xs text-gray-500 bg-transparent border-none outline-none flex-shrink-0 cursor-pointer"
-          >
-            {SORT_OPTIONS.map((o) => <option key={o.id} value={o.id}>{o.label}</option>)}
-          </select>
+        {/* Type tabs */}
+        <div className="flex gap-1 overflow-x-auto" style={{ scrollbarWidth: "none" }}>
+          {TYPE_TABS.map((t) => (
+            <button
+              key={t.id}
+              onClick={() => setActiveType(t.id)}
+              className={`flex-shrink-0 flex items-center gap-1 px-3 py-1.5 rounded-full text-xs font-medium transition-all ${
+                activeType === t.id
+                  ? "bg-rose-100 text-rose-700 font-bold"
+                  : "text-gray-500 hover:text-gray-700 hover:bg-rose-50"
+              }`}
+            >
+              <span>{t.emoji}</span> {t.label}
+            </button>
+          ))}
         </div>
       </div>
 
-      <div className="max-w-screen-lg mx-auto px-4 pt-4">
+      <div className="max-w-screen-lg mx-auto px-4 pt-5 space-y-8">
         {loading ? (
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
-            {Array.from({ length: 8 }).map((_, i) => (
+          <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+            {Array.from({ length: 6 }).map((_, i) => (
               <div key={i} className="aspect-video bg-rose-50/60 rounded-2xl animate-pulse" />
             ))}
           </div>
@@ -184,29 +175,57 @@ export default function Explore() {
             <p className="text-sm">No content found. Try a different search or filter.</p>
           </div>
         ) : (
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
-            {filtered.map((item) => (
-              <ContentCard
-                key={item.id}
-                item={item}
-                locked={isLocked(item)}
-                bookmarked={bookmarkIds.has(item.id)}
-                onToggleBookmark={() => toggleBookmark(item.id)}
-              />
-            ))}
-          </div>
-        )}
+          <>
+            {/* Audio Section */}
+            {showAudioSection && (
+              <section>
+                <div className="flex items-center gap-2 mb-3">
+                  <div className="w-7 h-7 rounded-xl bg-purple-100 flex items-center justify-center">
+                    <Headphones className="w-4 h-4 text-purple-500" />
+                  </div>
+                  <h2 className="text-base font-bold text-gray-800">Breathwork & Meditation</h2>
+                </div>
+                <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+                  {audioItems.map((item) => (
+                    <ExploreContentCard
+                      key={item.id}
+                      item={item}
+                      locked={isLocked(item)}
+                      bookmarked={bookmarkIds.has(item.id)}
+                      onToggleBookmark={() => toggleBookmark(item.id)}
+                      isAudio
+                    />
+                  ))}
+                </div>
+              </section>
+            )}
 
-        {hasMore && !loading && (
-          <div className="flex justify-center mt-6">
-            <button
-              onClick={() => loadContent(page + 1, user?.id)}
-              disabled={loadingMore}
-              className="btn-secondary text-sm px-6 py-2"
-            >
-              {loadingMore ? "Loading…" : "Load more"}
-            </button>
-          </div>
+            {/* Video Section */}
+            {videoItems.length > 0 && (
+              <section>
+                {showAudioSection && (
+                  <div className="flex items-center gap-2 mb-3">
+                    <div className="w-7 h-7 rounded-xl bg-rose-100 flex items-center justify-center">
+                      <Play className="w-4 h-4 text-rose-500" />
+                    </div>
+                    <h2 className="text-base font-bold text-gray-800">Fitness, Mobility & Guides</h2>
+                  </div>
+                )}
+                <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+                  {videoItems.map((item) => (
+                    <ExploreContentCard
+                      key={item.id}
+                      item={item}
+                      locked={isLocked(item)}
+                      bookmarked={bookmarkIds.has(item.id)}
+                      onToggleBookmark={() => toggleBookmark(item.id)}
+                      isAudio={false}
+                    />
+                  ))}
+                </div>
+              </section>
+            )}
+          </>
         )}
       </div>
 
