@@ -51,6 +51,7 @@ import BreathworkAudioManager from './pages/BreathworkAudioManager';
 import ContentPlayer from './pages/ContentPlayer';
 import CycleSettings from './pages/CycleSettings';
 import Explore from './pages/Explore';
+import Journal from './pages/Journal';
 import Onboarding from './pages/Onboarding';
 import Profile from './pages/Profile';
 import ProgramDay from './pages/ProgramDay';
@@ -60,7 +61,6 @@ import Today from './pages/Today';
 import Track from './pages/Track';
 import Upgrade from './pages/Upgrade';
 import VideoManager from './pages/VideoManager';
-import Journal from './pages/Journal';
 import Lifestyle from './pages/Lifestyle';
 import __Layout from './Layout.jsx';
 
@@ -70,6 +70,7 @@ export const PAGES = {
     "ContentPlayer": ContentPlayer,
     "CycleSettings": CycleSettings,
     "Explore": Explore,
+    "Journal": Journal,
     "Onboarding": Onboarding,
     "Profile": Profile,
     "ProgramDay": ProgramDay,
@@ -79,7 +80,6 @@ export const PAGES = {
     "Track": Track,
     "Upgrade": Upgrade,
     "VideoManager": VideoManager,
-    "Journal": Journal,
     "Lifestyle": Lifestyle,
 }
 
