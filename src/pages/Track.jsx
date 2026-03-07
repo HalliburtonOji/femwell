@@ -1,9 +1,10 @@
 import { useState, useEffect } from "react";
 import { base44 } from "@/api/base44Client";
 import { format, parseISO } from "date-fns";
-import { Plus, ChevronLeft, ChevronRight, Droplets, Activity, Heart, Pill } from "lucide-react";
+import { Plus, ChevronLeft, ChevronRight, Droplets, Activity, Heart, Pill, Play, CheckCircle, Trash2 } from "lucide-react";
+import ManualCompleteButton from "../components/sessions/ManualCompleteButton";
 
-const TABS = ["Cycle", "Symptoms", "Habits", "Meds"];
+const TABS = ["Cycle", "Symptoms", "Habits", "Meds", "Sessions"];
 
 const FLOW_OPTIONS = [
   { value: "light", label: "Light", emoji: "💧" },
