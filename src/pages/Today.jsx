@@ -1,7 +1,8 @@
 import { useState, useEffect } from "react";
 import { base44 } from "@/api/base44Client";
 import { createPageUrl } from "@/utils";
-import { Sun, ChevronRight, Plus, Sparkles } from "lucide-react";
+import { Sun, ChevronRight, Plus, Sparkles, BookOpen } from "lucide-react";
+import ManualCompleteButton from "../components/sessions/ManualCompleteButton";
 import { format, differenceInDays, addDays, parseISO } from "date-fns";
 
 const PHASE_INFO = {

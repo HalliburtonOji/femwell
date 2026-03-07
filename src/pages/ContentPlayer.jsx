@@ -5,6 +5,7 @@ import { createPageUrl } from "@/utils";
 import GuidedPlayer from "../components/content/GuidedPlayer";
 import AudioPlayer from "../components/content/AudioPlayer";
 import BreathworkLoopPlayer from "../components/content/BreathworkLoopPlayer";
+import ManualCompleteButton from "../components/sessions/ManualCompleteButton";
 
 const TIER_ORDER = { free: 0, plus: 1, pro: 2 };
 
