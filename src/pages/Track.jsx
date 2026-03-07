@@ -3,6 +3,8 @@ import { base44 } from "@/api/base44Client";
 import { format, parseISO } from "date-fns";
 import { Plus, ChevronLeft, ChevronRight, Droplets, Activity, Heart, Pill, Play, CheckCircle, Trash2 } from "lucide-react";
 import ManualCompleteButton from "../components/sessions/ManualCompleteButton";
+import HabitCard from "../components/habits/HabitCard";
+import StreakMilestoneToast from "../components/habits/StreakMilestoneToast";
 
 const TABS = ["Cycle", "Symptoms", "Habits", "Meds", "Sessions"];
 
