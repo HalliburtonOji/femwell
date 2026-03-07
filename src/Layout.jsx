@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { createPageUrl } from "@/utils";
-import { Sun, Compass, User, Activity, BookOpen } from "lucide-react";
+import { Sun, Compass, User, Activity, BookOpen, Newspaper } from "lucide-react";
 import { base44 } from "@/api/base44Client";
 
 const NAV = [
