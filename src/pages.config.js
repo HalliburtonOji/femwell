@@ -61,6 +61,7 @@ import Track from './pages/Track';
 import Upgrade from './pages/Upgrade';
 import VideoManager from './pages/VideoManager';
 import Journal from './pages/Journal';
+import Lifestyle from './pages/Lifestyle';
 import __Layout from './Layout.jsx';
 
 
@@ -79,6 +80,7 @@ export const PAGES = {
     "Upgrade": Upgrade,
     "VideoManager": VideoManager,
     "Journal": Journal,
+    "Lifestyle": Lifestyle,
 }
 
 export const pagesConfig = {
