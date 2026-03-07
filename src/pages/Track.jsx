@@ -70,6 +70,9 @@ export default function Track() {
       const u = await base44.auth.me();
       setUser(u);
       await loadData(u.id, selectedDate);
+      // Load all habit logs for streak calc
+      const all = await base44.entities.HabitLogs.filter({ user_id: u.id });
+      setAllHabitLogs(all);
       setLoading(false);
     })();
   }, []);
