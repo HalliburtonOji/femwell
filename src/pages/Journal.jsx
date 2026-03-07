@@ -9,7 +9,7 @@ import AICoachTab from "../components/journal/AICoachTab";
 
 const TABS = [
   { id: "journal", label: "Journal", icon: PenLine },
-  { id: "coach", label: "AI Coach", icon: Sparkles },
+  { id: "coach", label: "My Coach", icon: Sparkles },
 ];
 
 function groupByDate(entries) {
