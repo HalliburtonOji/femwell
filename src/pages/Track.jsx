@@ -54,6 +54,10 @@ export default function Track() {
   // Meds
   const [medLogs, setMedLogs] = useState([]);
 
+  // Sessions
+  const [sessionHistory, setSessionHistory] = useState([]);
+  const [sessionContent, setSessionContent] = useState({});
+
   useEffect(() => {
     (async () => {
       const u = await base44.auth.me();
@@ -64,16 +68,27 @@ export default function Track() {
   }, []);
 
   const loadData = async (userId, date) => {
-    const [events, symptoms, habits, meds] = await Promise.all([
+    const [events, symptoms, habits, meds, sessions] = await Promise.all([
       base44.entities.CycleEvents.filter({ user_id: userId, date }),
       base44.entities.SymptomLogs.filter({ user_id: userId, date }),
       base44.entities.HabitLogs.filter({ user_id: userId, date }),
       base44.entities.MedicationLogs.filter({ user_id: userId, date }),
+      base44.entities.ContentHistory.filter({ user_id: userId, session_date: date }),
     ]);
     setCycleEvents(events);
     setSymptomLogs(symptoms);
     setHabitLogs(habits);
     setMedLogs(meds);
+    const activeSessions = sessions.filter((s) => !s.is_deleted);
+    setSessionHistory(activeSessions);
+    // Load content titles
+    const ids = [...new Set(activeSessions.map((s) => s.content_id).filter(Boolean))];
+    if (ids.length > 0) {
+      const items = await base44.entities.ContentItems.filter({});
+      const map = {};
+      items.forEach((it) => { map[it.id] = it; });
+      setSessionContent(map);
+    }
   };
 
   const changeDate = async (offset) => {
