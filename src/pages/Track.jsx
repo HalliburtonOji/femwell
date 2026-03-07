@@ -148,6 +148,84 @@ export default function Track() {
     await loadData(user.id, selectedDate);
   };
 
+  // Unique habit names from all logs
+  const allHabitNames = [...new Set(allHabitLogs.map((l) => l.habit_type || l.habit_name).filter(Boolean))];
+
+  const calcStreak = (habitName) => {
+    const todayStr2 = new Date().toISOString().split("T")[0];
+    let count = 0;
+    const check = new Date();
+    const todayDone = allHabitLogs.some(
+      (l) => (l.habit_type === habitName || l.habit_name === habitName) && l.completed && l.date === todayStr2
+    );
+    if (!todayDone) check.setDate(check.getDate() - 1);
+    while (true) {
+      const ds = check.toISOString().split("T")[0];
+      const found = allHabitLogs.find(
+        (l) => (l.habit_type === habitName || l.habit_name === habitName) && l.completed && l.date === ds
+      );
+      if (!found) break;
+      count++;
+      check.setDate(check.getDate() - 1);
+    }
+    return count;
+  };
+
+  const handleHabitComplete = async (habitName) => {
+    const existing = habitLogs.find(
+      (l) => (l.habit_type === habitName || l.habit_name === habitName) && l.date === selectedDate
+    );
+    if (existing) {
+      await base44.entities.HabitLogs.update(existing.id, { completed: true });
+    } else {
+      await base44.entities.HabitLogs.create({
+        user_id: user.id,
+        date: selectedDate,
+        habit_type: habitName,
+        habit_name: habitName,
+        completed: true,
+      });
+    }
+    const all = await base44.entities.HabitLogs.filter({ user_id: user.id });
+    setAllHabitLogs(all);
+    await loadData(user.id, selectedDate);
+
+    // Check milestone
+    const newStreak = calcStreak(habitName) + 1; // +1 since we just completed
+    const MILESTONES = [7, 14, 30, 60, 100];
+    if (MILESTONES.includes(newStreak)) {
+      setMilestone({ streak: newStreak, habitName });
+    }
+  };
+
+  const handleAddHabit = async () => {
+    if (!newHabitName.trim()) return;
+    setSavingHabit(true);
+    await base44.entities.HabitLogs.create({
+      user_id: user.id,
+      date: selectedDate,
+      habit_type: newHabitName.trim(),
+      habit_name: newHabitName.trim(),
+      completed: false,
+    });
+    const all = await base44.entities.HabitLogs.filter({ user_id: user.id });
+    setAllHabitLogs(all);
+    await loadData(user.id, selectedDate);
+    setNewHabitName("");
+    setAddingHabit(false);
+    setSavingHabit(false);
+  };
+
+  const handleDeleteHabit = async (habitName) => {
+    const toDelete = allHabitLogs.filter(
+      (l) => l.habit_type === habitName || l.habit_name === habitName
+    );
+    await Promise.all(toDelete.map((l) => base44.entities.HabitLogs.delete(l.id)));
+    const all = await base44.entities.HabitLogs.filter({ user_id: user.id });
+    setAllHabitLogs(all);
+    await loadData(user.id, selectedDate);
+  };
+
   if (loading) return (
     <div className="min-h-screen femwell-gradient flex items-center justify-center">
       <div className="w-10 h-10 border-4 border-rose-300 border-t-rose-600 rounded-full animate-spin" />
