@@ -95,6 +95,7 @@ export default function Today() {
   const [recommendations, setRecommendations] = useState([]);
   const [showCheckin, setShowCheckin] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [todayCompletions, setTodayCompletions] = useState([]);
 
   const todayStr = new Date().toISOString().split("T")[0];
 
@@ -103,17 +104,19 @@ export default function Today() {
       const u = await base44.auth.me();
       setUser(u);
 
-      const [profiles, checkins, content, recs] = await Promise.all([
+      const [profiles, checkins, content, recs, completions] = await Promise.all([
         base44.entities.UserProfile.filter({ user_id: u.id }),
         base44.entities.DailyCheckins.filter({ user_id: u.id, date: todayStr }),
         base44.entities.ContentItems.filter({ is_featured: true }, "-created_date", 3),
         base44.entities.TodayRecommendations.filter({ user_id: u.id, date: todayStr }),
+        base44.entities.ContentHistory.filter({ user_id: u.id, session_date: todayStr }),
       ]);
 
       if (profiles[0]) setProfile(profiles[0]);
       if (checkins[0]) setTodayCheckin(checkins[0]);
       setRecentContent(content);
       setRecommendations(recs);
+      setTodayCompletions(completions.filter((c) => !c.is_deleted));
       setLoading(false);
     })();
   }, []);
