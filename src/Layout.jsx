@@ -7,7 +7,7 @@ import { base44 } from "@/api/base44Client";
 const NAV = [
   { label: "Today", icon: Sun, page: "Today" },
   { label: "Track", icon: Activity, page: "Track" },
-  { label: "Explore", icon: Compass, page: "Explore" },
+  { label: "Lifestyle", icon: Newspaper, page: "Lifestyle" },
   { label: "Journal", icon: BookOpen, page: "Journal" },
   { label: "Profile", icon: User, page: "Profile" },
 ];
