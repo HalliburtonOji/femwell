@@ -426,20 +426,73 @@ export default function Track() {
         {/* HABITS TAB */}
         {activeTab === "Habits" && (
           <div className="space-y-3">
-            {habitLogs.length > 0 ? habitLogs.map((h) => (
-              <div key={h.id} className="card-glass rounded-2xl p-4">
-                <div className="flex items-center gap-2">
-                  <Heart className="w-4 h-4 text-rose-400" />
-                  <p className="text-sm font-semibold text-gray-800 capitalize">{h.habit_name || h.habit_type || "Habit"}</p>
-                  {h.completed && <span className="ml-auto text-emerald-500 text-xs font-medium">✓ Done</span>}
-                </div>
-              </div>
+            {milestone && (
+              <StreakMilestoneToast
+                streak={milestone.streak}
+                habitName={milestone.habitName}
+                onDismiss={() => setMilestone(null)}
+              />
+            )}
+
+            {allHabitNames.length > 0 ? allHabitNames.map((habitName) => (
+              <HabitCard
+                key={habitName}
+                habit={habitName}
+                habitLogs={habitLogs}
+                allHabitLogs={allHabitLogs}
+                selectedDate={selectedDate}
+                todayStr={todayStr}
+                onComplete={handleHabitComplete}
+                onDelete={handleDeleteHabit}
+              />
             )) : (
               <div className="card-glass rounded-2xl p-6 text-center text-gray-400">
                 <Heart className="w-8 h-8 mx-auto mb-2 text-rose-200" />
-                <p className="text-sm">No habits logged for this day.</p>
-                <p className="text-xs mt-1">Habit tracking coming soon.</p>
+                <p className="text-sm font-medium">No habits yet.</p>
+                <p className="text-xs mt-1">Add your first habit below to start building streaks!</p>
               </div>
+            )}
+
+            {addingHabit ? (
+              <div className="card-glass rounded-2xl p-4 space-y-3">
+                <p className="font-semibold text-gray-700 text-sm">New Habit</p>
+                <input
+                  type="text"
+                  placeholder="e.g. Drink 8 glasses of water, Morning walk..."
+                  value={newHabitName}
+                  onChange={(e) => setNewHabitName(e.target.value)}
+                  onKeyDown={(e) => e.key === "Enter" && handleAddHabit()}
+                  className="w-full p-3 rounded-xl border border-rose-100 bg-white/80 text-sm focus:outline-none focus:ring-2 focus:ring-rose-200"
+                  autoFocus
+                />
+                <div className="flex gap-2 flex-wrap">
+                  {["Drink water", "Morning walk", "Meditate", "Stretch", "Read", "Journal", "No screen before bed"].map((s) => (
+                    <button
+                      key={s}
+                      onClick={() => setNewHabitName(s)}
+                      className="text-xs px-2.5 py-1 rounded-full bg-rose-50 text-rose-500 hover:bg-rose-100 transition-colors"
+                    >
+                      {s}
+                    </button>
+                  ))}
+                </div>
+                <div className="flex gap-2">
+                  <button onClick={() => { setAddingHabit(false); setNewHabitName(""); }} className="btn-secondary flex-1 py-2 text-sm">Cancel</button>
+                  <button onClick={handleAddHabit} disabled={!newHabitName.trim() || savingHabit} className="btn-primary flex-1 py-2 text-sm">
+                    {savingHabit ? "Adding…" : "Add Habit"}
+                  </button>
+                </div>
+              </div>
+            ) : (
+              <button
+                onClick={() => setAddingHabit(true)}
+                className="w-full card-glass rounded-2xl p-4 flex items-center gap-3 hover:bg-rose-50/50 transition-colors"
+              >
+                <div className="w-9 h-9 rounded-xl bg-rose-100 flex items-center justify-center">
+                  <Plus className="w-4 h-4 text-rose-500" />
+                </div>
+                <p className="text-sm font-medium text-gray-700">Add a new habit</p>
+              </button>
             )}
           </div>
         )}
