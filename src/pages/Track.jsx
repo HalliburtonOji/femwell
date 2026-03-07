@@ -52,6 +52,11 @@ export default function Track() {
 
   // Habits
   const [habitLogs, setHabitLogs] = useState([]);
+  const [allHabitLogs, setAllHabitLogs] = useState([]);
+  const [addingHabit, setAddingHabit] = useState(false);
+  const [newHabitName, setNewHabitName] = useState("");
+  const [savingHabit, setSavingHabit] = useState(false);
+  const [milestone, setMilestone] = useState(null); // { streak, habitName }
 
   // Meds
   const [medLogs, setMedLogs] = useState([]);
