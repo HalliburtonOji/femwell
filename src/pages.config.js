@@ -58,6 +58,7 @@ import ProgramsHub from './pages/ProgramsHub';
 import Today from './pages/Today';
 import Track from './pages/Track';
 import Upgrade from './pages/Upgrade';
+import BreathworkAudioManager from './pages/BreathworkAudioManager';
 import __Layout from './Layout.jsx';
 
 
@@ -73,6 +74,7 @@ export const PAGES = {
     "Today": Today,
     "Track": Track,
     "Upgrade": Upgrade,
+    "BreathworkAudioManager": BreathworkAudioManager,
 }
 
 export const pagesConfig = {
