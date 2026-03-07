@@ -59,6 +59,7 @@ import ProgramsHub from './pages/ProgramsHub';
 import Today from './pages/Today';
 import Track from './pages/Track';
 import Upgrade from './pages/Upgrade';
+import VideoManager from './pages/VideoManager';
 import __Layout from './Layout.jsx';
 
 
@@ -75,6 +76,7 @@ export const PAGES = {
     "Today": Today,
     "Track": Track,
     "Upgrade": Upgrade,
+    "VideoManager": VideoManager,
 }
 
 export const pagesConfig = {
