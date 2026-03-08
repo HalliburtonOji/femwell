@@ -1,17 +1,23 @@
 import { useState, useEffect } from "react";
 import { base44 } from "@/api/base44Client";
 import { format } from "date-fns";
-import { Loader2, ChevronLeft, ChevronRight, Calendar } from "lucide-react";
+import { Loader2, ChevronLeft, ChevronRight } from "lucide-react";
 import NutritionTodayTab from "../components/nutrition/NutritionTodayTab";
 import NutritionPlanTab from "../components/nutrition/NutritionPlanTab";
 import NutritionProgressTab from "../components/nutrition/NutritionProgressTab";
 import NutritionInsightsTab from "../components/nutrition/NutritionInsightsTab";
+import RecipeGeneratorTab from "../components/nutrition/RecipeGeneratorTab";
+import MealPlanGeneratorTab from "../components/nutrition/MealPlanGeneratorTab";
+import ShoppingListTab from "../components/nutrition/ShoppingListTab";
 
 const TABS = [
-  { id: "today", label: "Today", emoji: "🍽️" },
-  { id: "plan", label: "Plan", emoji: "📅" },
+  { id: "today",    label: "Today",    emoji: "🍽️" },
+  { id: "plan",     label: "My Plan",  emoji: "📅" },
+  { id: "recipes",  label: "Recipes",  emoji: "👩‍🍳" },
+  { id: "mealgen",  label: "AI Plan",  emoji: "✨" },
+  { id: "shopping", label: "Shop",     emoji: "🛒" },
   { id: "progress", label: "Progress", emoji: "📈" },
-  { id: "insights", label: "Insights", emoji: "✨" },
+  { id: "insights", label: "Insights", emoji: "💡" },
 ];
 
 export default function Nutrition() {
@@ -88,45 +94,47 @@ export default function Nutrition() {
           </div>
         )}
 
-        {/* Tab bar */}
-        <div className="flex gap-1 mb-5 bg-white/60 rounded-2xl p-1">
-          {TABS.map((tab) => (
-            <button key={tab.id} onClick={() => setActiveTab(tab.id)}
-              className={`flex-1 flex flex-col items-center py-2 rounded-xl text-xs font-semibold transition-all ${activeTab === tab.id ? "bg-rose-500 text-white shadow-sm" : "text-gray-500"}`}>
-              <span className="text-base">{tab.emoji}</span>
-              <span>{tab.label}</span>
-            </button>
-          ))}
+        {/* Tab bar — horizontally scrollable */}
+        <div className="overflow-x-auto pb-1 mb-5 -mx-1 px-1">
+          <div className="flex gap-1 w-max">
+            {TABS.map((tab) => (
+              <button key={tab.id} onClick={() => setActiveTab(tab.id)}
+                className={`flex flex-col items-center px-3.5 py-2 rounded-xl text-[11px] font-semibold whitespace-nowrap transition-all flex-shrink-0 ${activeTab === tab.id ? "bg-rose-500 text-white shadow-sm" : "bg-white/60 text-gray-500 hover:bg-white/80"}`}>
+                <span className="text-base mb-0.5">{tab.emoji}</span>
+                {tab.label}
+              </button>
+            ))}
+          </div>
         </div>
 
         {/* Tab content */}
         {activeTab === "today" && user && (
           <NutritionTodayTab
-            user={user}
-            profile={profile}
+            user={user} profile={profile}
             nutritionProfile={nutritionProfile}
-            dayKey={dayKey}
-            checkin={checkin}
+            dayKey={dayKey} checkin={checkin}
           />
         )}
         {activeTab === "plan" && user && (
-          <NutritionPlanTab
-            user={user}
-            nutritionProfile={nutritionProfile}
-          />
+          <NutritionPlanTab user={user} nutritionProfile={nutritionProfile} />
+        )}
+        {activeTab === "recipes" && user && (
+          <RecipeGeneratorTab user={user} />
+        )}
+        {activeTab === "mealgen" && user && (
+          <MealPlanGeneratorTab user={user} nutritionProfile={nutritionProfile} />
+        )}
+        {activeTab === "shopping" && user && (
+          <ShoppingListTab user={user} />
         )}
         {activeTab === "progress" && user && (
           <NutritionProgressTab
-            user={user}
-            nutritionProfile={nutritionProfile}
+            user={user} nutritionProfile={nutritionProfile}
             onProfileUpdated={loadNutritionProfile}
           />
         )}
         {activeTab === "insights" && user && (
-          <NutritionInsightsTab
-            user={user}
-            profile={profile}
-          />
+          <NutritionInsightsTab user={user} profile={profile} />
         )}
       </div>
     </div>
