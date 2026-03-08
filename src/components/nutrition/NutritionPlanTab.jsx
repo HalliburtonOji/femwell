@@ -13,6 +13,15 @@ const SUGGESTED_MEALS = {
   snack: ["Apple + almond butter", "Rice cakes + hummus", "Mixed nuts + dark chocolate", "Boiled eggs + fruit"],
 };
 
+const WELLNESS_GOALS = [
+  { id: "energy", label: "Boost Energy", emoji: "⚡" },
+  { id: "digestion", label: "Improve Digestion", emoji: "🌿" },
+  { id: "sleep", label: "Better Sleep", emoji: "💤" },
+  { id: "mood", label: "Mood Support", emoji: "😊" },
+  { id: "hydration", label: "Stay Hydrated", emoji: "💧" },
+  { id: "hormone", label: "Hormone Balance", emoji: "🌸" },
+];
+
 export default function NutritionPlanTab({ user, nutritionProfile }) {
   const [plan, setPlan] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -20,6 +29,7 @@ export default function NutritionPlanTab({ user, nutritionProfile }) {
   const [addingSlot, setAddingSlot] = useState(null); // { dayIndex, mealType }
   const [mealInput, setMealInput] = useState("");
   const [templates, setTemplates] = useState([]);
+  const [planGoal, setPlanGoal] = useState(null);
 
   const weekStart = startOfWeek(new Date(), { weekStartsOn: 1 });
   const days = Array.from({ length: 7 }, (_, i) => addDays(weekStart, i));
@@ -38,12 +48,14 @@ export default function NutritionPlanTab({ user, nutritionProfile }) {
     setTemplates(tmpl);
     if (plans[0]) {
       setPlan(plans[0]);
+      if (plans[0].wellness_goal) setPlanGoal(plans[0].wellness_goal);
     } else {
       const newPlan = await base44.entities.MealPlans.create({
         user_id: user.id,
         week_start: weekKey,
         plan_json: JSON.stringify({}),
         shopping_list_json: JSON.stringify([]),
+        is_active: true,
       });
       setPlan(newPlan);
     }
@@ -91,11 +103,31 @@ export default function NutritionPlanTab({ user, nutritionProfile }) {
     </div>
   );
 
+  const savePlanGoal = async (goalId) => {
+    if (!plan) return;
+    const updated = await base44.entities.MealPlans.update(plan.id, { wellness_goal: goalId });
+    setPlan(updated);
+    setPlanGoal(goalId);
+  };
+
   const planData = getPlanData();
   const shoppingItems = generateShoppingList();
 
   return (
     <div className="space-y-4">
+      {/* Wellness goal for this week's plan */}
+      <div className="card-glass rounded-2xl p-4">
+        <p className="text-xs font-bold text-gray-600 mb-2">🎯 This week's focus</p>
+        <div className="flex flex-wrap gap-1.5">
+          {WELLNESS_GOALS.map((g) => (
+            <button key={g.id} onClick={() => savePlanGoal(g.id)}
+              className={`px-2.5 py-1.5 rounded-full text-xs font-medium transition-all ${planGoal === g.id ? "bg-rose-500 text-white" : "bg-white/70 text-gray-600 border border-rose-100 hover:bg-rose-50"}`}>
+              {g.emoji} {g.label}
+            </button>
+          ))}
+        </div>
+      </div>
+
       {/* Day selector */}
       <div className="flex gap-1.5 overflow-x-auto pb-1">
         {days.map((day, i) => (
