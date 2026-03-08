@@ -735,6 +735,7 @@ export default function Today() {
                     <p className="text-sm font-medium text-gray-700">Log a medication</p>
                   </button>
                 )}
+                {user && <MedReminderSection user={user} />}
               </div>
             )}
 
