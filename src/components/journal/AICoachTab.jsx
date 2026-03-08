@@ -261,37 +261,66 @@ export default function AICoachTab({ user }) {
           {/* Chat area */}
           <div className="flex-1 overflow-y-auto space-y-4 mb-4 min-h-0 max-h-96">
             {messages.length === 0 && (
-              <div className="text-center py-10 text-gray-400 text-sm">
-                <p className="text-3xl mb-3">🌸</p>
-                <p className="font-medium text-gray-600">Ask {coachName} anything</p>
-                <p className="text-xs mt-1">{archetypeLabel} · {coachPrefs.coach_tone} tone</p>
-              </div>
-            )}
-            {messages.map((msg, i) => (
-              <div key={i} className={`flex ${msg.role === "user" ? "justify-end" : "justify-start"}`}>
-                <div
-                  className={`max-w-[85%] rounded-2xl px-4 py-3 text-sm ${
-                    msg.role === "user"
-                      ? "bg-rose-500 text-white rounded-br-sm"
-                      : "bg-white/90 text-gray-700 shadow-sm border border-rose-50 rounded-bl-sm"
-                  }`}
-                >
-                  {msg.role === "assistant" ? (
-                    <ReactMarkdown
-                      className="prose prose-sm max-w-none prose-p:my-1 prose-ul:my-1 prose-li:my-0"
-                      components={{
-                        p: ({ children }) => <p className="leading-relaxed">{children}</p>,
-                        strong: ({ children }) => <strong className="text-rose-700">{children}</strong>,
-                      }}
+              <div className="py-4">
+                <div className="text-center mb-4 text-gray-400 text-sm">
+                  <p className="text-3xl mb-2">🌸</p>
+                  <p className="font-medium text-gray-600">Ask {coachName} anything</p>
+                  <p className="text-xs mt-1">{archetypeLabel} · {coachPrefs.coach_tone} tone</p>
+                </div>
+                <div className="grid grid-cols-2 gap-2">
+                  {DEFAULT_STARTERS.map((q) => (
+                    <button
+                      key={q}
+                      onClick={() => startOrContinue(q)}
+                      className="text-left text-xs px-3 py-2.5 rounded-2xl bg-white/80 text-gray-600 hover:bg-rose-50 hover:text-rose-600 border border-rose-100 transition-all font-medium leading-snug"
                     >
-                      {msg.content}
-                    </ReactMarkdown>
-                  ) : (
-                    <p>{msg.content.replace(/^\[Coaching style:.*?\]\n\n/, "")}</p>
-                  )}
+                      {q}
+                    </button>
+                  ))}
                 </div>
               </div>
-            ))}
+            )}
+            {messages.map((msg, i) => {
+              if (msg.role === "assistant") {
+                const { text, options } = parseOptions(msg.content);
+                const isLast = i === messages.length - 1;
+                return (
+                  <div key={i} className="flex flex-col items-start gap-2">
+                    <div className="max-w-[85%] rounded-2xl rounded-bl-sm px-4 py-3 text-sm bg-white/90 text-gray-700 shadow-sm border border-rose-50">
+                      <ReactMarkdown
+                        className="prose prose-sm max-w-none prose-p:my-1 prose-ul:my-1 prose-li:my-0"
+                        components={{
+                          p: ({ children }) => <p className="leading-relaxed">{children}</p>,
+                          strong: ({ children }) => <strong className="text-rose-700">{children}</strong>,
+                        }}
+                      >
+                        {text}
+                      </ReactMarkdown>
+                    </div>
+                    {isLast && options.length > 0 && !loading && (
+                      <div className="flex flex-wrap gap-2 ml-1">
+                        {options.map((opt) => (
+                          <button
+                            key={opt}
+                            onClick={() => startOrContinue(opt)}
+                            className="text-xs px-3 py-2 rounded-2xl bg-rose-50 text-rose-600 hover:bg-rose-100 border border-rose-200 font-medium transition-all"
+                          >
+                            {opt}
+                          </button>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                );
+              }
+              return (
+                <div key={i} className="flex justify-end">
+                  <div className="max-w-[85%] rounded-2xl rounded-br-sm px-4 py-3 text-sm bg-rose-500 text-white">
+                    <p>{msg.content.replace(/^\[Coaching style:.*?\]\n\n/, "")}</p>
+                  </div>
+                </div>
+              );
+            })}
             {loading && (
               <div className="flex justify-start">
                 <div className="bg-white/90 rounded-2xl rounded-bl-sm px-4 py-3 shadow-sm border border-rose-50 flex items-center gap-2">
@@ -302,21 +331,6 @@ export default function AICoachTab({ user }) {
             )}
             <div ref={bottomRef} />
           </div>
-
-          {/* Follow-up quick buttons */}
-          {messages.length > 0 && !loading && (
-            <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-hide mb-3">
-              {FOLLOW_UPS.map((q) => (
-                <button
-                  key={q}
-                  onClick={() => startOrContinue(q)}
-                  className="flex items-center gap-1 text-xs px-3 py-1.5 rounded-full bg-rose-50 text-rose-500 hover:bg-rose-100 whitespace-nowrap flex-shrink-0 transition-colors"
-                >
-                  {q} <ChevronRight className="w-3 h-3" />
-                </button>
-              ))}
-            </div>
-          )}
 
           {/* Save advice */}
           {messages.some((m) => m.role === "assistant") && !loading && (
