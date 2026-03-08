@@ -415,6 +415,16 @@ export default function NutritionTodayTab({ user, profile, nutritionProfile, day
           ))}
         </div>
       </div>
+    </div>{/* end left column */}
+
+    {/* ── Right column (macro dashboard — stacks below on mobile) ── */}
+    <div className="mt-4 lg:mt-0 lg:sticky lg:top-6 space-y-4">
+      <MacroDashboard
+        meals={meals}
+        hydrationLogs={hydrationLogs}
+        nutritionProfile={nutritionProfile}
+      />
+    </div>
     </div>
   );
 }
