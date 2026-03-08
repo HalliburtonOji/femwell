@@ -378,6 +378,36 @@ export default function Today() {
               )}
             </div>
 
+            {/* Quick Meal Log */}
+            <div className="card-glass rounded-2xl p-4 mb-4">
+              <p className="font-semibold text-gray-700 text-sm mb-3">🍴 Quick Meal Log</p>
+              <textarea
+                value={quickMealText}
+                onChange={(e) => setQuickMealText(e.target.value)}
+                placeholder="What did you eat? (e.g. oats + banana)"
+                rows={2}
+                className="w-full p-3 rounded-xl border border-rose-100 bg-white/80 text-sm resize-none focus:outline-none focus:ring-2 focus:ring-rose-200 text-gray-700 mb-2"
+              />
+              <div className="flex gap-1.5 mb-3 overflow-x-auto pb-1">
+                {MEAL_TYPES.map((t) => (
+                  <button key={t} onClick={() => setQuickMealType(t)}
+                    className={`px-3 py-1.5 rounded-full text-xs font-semibold capitalize whitespace-nowrap transition-all ${quickMealType === t ? "bg-rose-500 text-white" : "bg-white/70 text-gray-500 border border-rose-100"}`}>
+                    {MEAL_EMOJIS[t]} {t}
+                  </button>
+                ))}
+              </div>
+              <div className="flex items-center justify-between">
+                <button onClick={quickLogMeal} disabled={!quickMealText.trim() || quickLogging}
+                  className="btn-primary px-6 py-2.5 text-sm flex items-center gap-2">
+                  {quickLogging ? <Loader2 className="w-4 h-4 animate-spin" /> : <Plus className="w-4 h-4" />}
+                  {quickLogging ? "Logging…" : "Log Meal"}
+                </button>
+                <a href={createPageUrl("Nutrition")} className="text-xs text-rose-400 font-medium hover:text-rose-600">
+                  Full nutrition tracker →
+                </a>
+              </div>
+            </div>
+
             {/* Recommendations */}
             {recommendations.length > 0 && (
               <div className="mb-4">
