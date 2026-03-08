@@ -240,6 +240,24 @@ export default function Today() {
     await loadTrackData(user.id, selectedDate);
   };
 
+  const MEAL_TYPES = ["breakfast", "lunch", "dinner", "snack"];
+  const MEAL_EMOJIS = { breakfast: "🌅", lunch: "☀️", dinner: "🌙", snack: "🍎" };
+
+  const quickLogMeal = async () => {
+    if (!quickMealText.trim()) return;
+    setQuickLogging(true);
+    await base44.entities.MealLog.create({
+      user_id: user.id,
+      day_key: todayStr,
+      logged_at: new Date().toISOString(),
+      meal_type: quickMealType,
+      method: "text",
+      raw_text: quickMealText.trim(),
+    });
+    setQuickMealText("");
+    setQuickLogging(false);
+  };
+
   const cycleInfo = profile?.last_period_start_date
     ? getCyclePhase(profile.last_period_start_date, profile.cycle_avg_length || 28, profile.period_length || 5)
     : null;
