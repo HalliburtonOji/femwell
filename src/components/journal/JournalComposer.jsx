@@ -33,6 +33,7 @@ export default function JournalComposer({ user, onSaved }) {
     setSaving(true);
     const entry = await base44.entities.JournalEntries.create({
       user_id: user.id,
+      content_id: "free_entry",
       text: text.trim(),
       mood_rating: mood ? MOODS.findIndex((m) => m.value === mood) + 1 : undefined,
       tags: tags.join(","),
