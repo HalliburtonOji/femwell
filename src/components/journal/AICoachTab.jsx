@@ -57,6 +57,7 @@ export default function AICoachTab({ user }) {
   const [conversation, setConversation] = useState(null);
   const [messages, setMessages] = useState([]);
   const [saved, setSaved] = useState(false);
+  const [loadingHistory, setLoadingHistory] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
   const [coachPrefs, setCoachPrefs] = useState({
     coach_name: user.coach_name || "Luna",
@@ -75,6 +76,37 @@ export default function AICoachTab({ user }) {
       if (profiles[0]) setProfile(profiles[0]);
     })();
   }, [user]);
+
+  // Load existing conversation for this topic from localStorage
+  useEffect(() => {
+    const loadConversation = async () => {
+      const storageKey = `coach_convo_${user.id}_${topic}`;
+      const savedId = localStorage.getItem(storageKey);
+      if (!savedId) { setConversation(null); setMessages([]); return; }
+      setLoadingHistory(true);
+      try {
+        const convo = await base44.agents.getConversation(savedId);
+        if (convo && convo.messages?.length > 0) {
+          setConversation(convo);
+          // Deduplicate: only keep user messages with style prefix stripped + assistant messages
+          const cleaned = convo.messages.map((m) => ({
+            ...m,
+            content: m.role === "user" ? m.content.replace(/^\[Coaching style:.*?\]\n\n/, "") : m.content,
+          }));
+          setMessages(cleaned);
+        } else {
+          setConversation(null);
+          setMessages([]);
+        }
+      } catch {
+        localStorage.removeItem(storageKey);
+        setConversation(null);
+        setMessages([]);
+      }
+      setLoadingHistory(false);
+    };
+    loadConversation();
+  }, [topic, user.id]);
 
   const coachName = coachPrefs.coach_name || "Luna";
   const archetypeLabel = ARCHETYPE_LABELS[coachPrefs.coach_archetype] || "Empathetic Listener";
@@ -96,6 +128,7 @@ export default function AICoachTab({ user }) {
           metadata: { topic, tone: coachPrefs.coach_tone, archetype: coachPrefs.coach_archetype },
         });
         setConversation(convo);
+        localStorage.setItem(`coach_convo_${user.id}_${topic}`, convo.id);
       }
 
       const contextNote = [];
@@ -228,7 +261,7 @@ export default function AICoachTab({ user }) {
             {TOPICS.map((t) => (
               <button
                 key={t.id}
-                onClick={() => { setTopic(t.id); setConversation(null); setMessages([]); }}
+                onClick={() => { setTopic(t.id); }}
                 className={`flex items-center gap-1.5 px-3 py-2 rounded-full text-xs font-medium whitespace-nowrap transition-all flex-shrink-0 ${
                   topic === t.id ? "bg-rose-500 text-white shadow-sm" : "bg-white/80 text-gray-600 hover:bg-rose-50"
                 }`}
@@ -261,7 +294,12 @@ export default function AICoachTab({ user }) {
 
           {/* Chat area */}
           <div className="flex-1 overflow-y-auto space-y-4 mb-4 min-h-0 max-h-96">
-            {messages.length === 0 && (
+            {loadingHistory && (
+              <div className="flex items-center justify-center py-6">
+                <Loader2 className="w-5 h-5 text-rose-300 animate-spin" />
+              </div>
+            )}
+            {!loadingHistory && messages.length === 0 && (
               <div className="py-4">
                 <div className="text-center mb-4 text-gray-400 text-sm">
                   <p className="text-3xl mb-2">🌸</p>
@@ -281,7 +319,7 @@ export default function AICoachTab({ user }) {
                 </div>
               </div>
             )}
-            {messages.map((msg, i) => {
+            {!loadingHistory && messages.map((msg, i) => {
               if (msg.role === "assistant") {
                 const { text, options } = parseOptions(msg.content);
                 const isLast = i === messages.length - 1;
