@@ -21,13 +21,27 @@ const ARCHETYPE_LABELS = {
   nurturing: "Gentle Nurturer",
 };
 
-const FOLLOW_UPS = [
-  "What should I try today?",
-  "Can you explain more?",
-  "Are there any sessions for this?",
-  "When should I see a doctor?",
-  "Suggest a habit for this",
+const DEFAULT_STARTERS = [
+  "How am I doing this week? 🌸",
+  "I'm feeling tired today",
+  "Help with PMS symptoms",
+  "I need a habit idea",
+  "How's my sleep looking?",
+  "I'm feeling stressed",
 ];
+
+function parseOptions(content) {
+  if (!content) return { text: content, options: [] };
+  const match = content.match(/```options\s*\n([\s\S]*?)\n```/);
+  if (!match) return { text: content, options: [] };
+  try {
+    const options = JSON.parse(match[1].trim());
+    const text = content.replace(/```options\s*\n[\s\S]*?\n```/, "").trim();
+    return { text, options: Array.isArray(options) ? options : [] };
+  } catch {
+    return { text: content, options: [] };
+  }
+}
 
 export default function AICoachTab({ user }) {
   const [coachView, setCoachView] = useState("chat"); // "chat" | "dashboard"
