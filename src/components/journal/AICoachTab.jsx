@@ -19,6 +19,7 @@ const ARCHETYPE_LABELS = {
   motivator: "Direct Motivator",
   analyst: "Data-Driven Analyst",
   nurturing: "Gentle Nurturer",
+  bestie: "Your Twin / Bestie 👯",
 };
 
 const DEFAULT_STARTERS = [

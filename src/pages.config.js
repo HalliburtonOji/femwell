@@ -62,6 +62,7 @@ import Today from './pages/Today';
 import Track from './pages/Track';
 import Upgrade from './pages/Upgrade';
 import VideoManager from './pages/VideoManager';
+import Trends from './pages/Trends';
 import __Layout from './Layout.jsx';
 
 
@@ -81,6 +82,7 @@ export const PAGES = {
     "Track": Track,
     "Upgrade": Upgrade,
     "VideoManager": VideoManager,
+    "Trends": Trends,
 }
 
 export const pagesConfig = {

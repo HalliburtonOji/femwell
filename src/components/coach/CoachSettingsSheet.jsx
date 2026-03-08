@@ -27,6 +27,12 @@ const ARCHETYPES = [
     emoji: "🌸",
     description: "Soft, patient, and holistic. Takes a self-compassion approach.",
   },
+  {
+    id: "bestie",
+    label: "My Twin / Bestie",
+    emoji: "👯",
+    description: "Mirrors your vibe and language. Funny, real, like texting your bestie who knows health stuff.",
+  },
 ];
 
 const TONES = ["Warm", "Neutral", "Direct", "Encouraging", "Calm"];
