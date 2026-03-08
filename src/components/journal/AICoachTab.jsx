@@ -97,13 +97,17 @@ export default function AICoachTab({ user }) {
         content: fullPrompt,
       });
 
-      const assistantMsg = updatedConvo.messages?.slice(-1)[0];
-      if (assistantMsg?.role === "assistant") {
-        setMessages((prev) => [...prev, assistantMsg]);
+      // Find the last assistant message
+      const allMsgs = updatedConvo.messages || [];
+      const assistantMsgs = allMsgs.filter((m) => m.role === "assistant");
+      const lastAssistant = assistantMsgs[assistantMsgs.length - 1];
+      if (lastAssistant) {
+        setMessages((prev) => [...prev, lastAssistant]);
       }
       setConversation(updatedConvo);
     } catch (e) {
-      setMessages((prev) => [...prev, { role: "assistant", content: "Something went wrong. Please try again." }]);
+      console.error("AI Coach error:", e);
+      setMessages((prev) => [...prev, { role: "assistant", content: "I'm having trouble connecting right now. Please try again in a moment." }]);
     }
     setLoading(false);
   };
@@ -139,10 +143,6 @@ export default function AICoachTab({ user }) {
           <BarChart2 className="w-3.5 h-3.5" /> Insights
         </button>
       </div>
-
-      {coachView === "dashboard" && (
-        <CycleSymptomDashboard user={user} profile={profile} />
-      )}
 
       {showSettings && (
         <CoachSettingsSheet
