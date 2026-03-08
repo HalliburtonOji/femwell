@@ -2,13 +2,14 @@ import { useState } from "react";
 import { Link } from "react-router-dom";
 import { createPageUrl } from "@/utils";
 import { motion, AnimatePresence } from "framer-motion";
-import { Sun, Compass, User, BookOpen, Newspaper, Utensils, X, Menu } from "lucide-react";
+import { Sun, Compass, User, BookOpen, Newspaper, Utensils, X, Menu, Map } from "lucide-react";
 
 const NAV = [
   { label: "Today", icon: Sun, page: "Today", emoji: "🌅" },
   { label: "Nutrition", icon: Utensils, page: "Nutrition", emoji: "🍽️" },
-  { label: "Lifestyle", icon: BookOpen, page: "Lifestyle", emoji: "📖" },
+  { label: "Programs", icon: Map, page: "ProgramsHub", emoji: "🗺️" },
   { label: "Explore", icon: Compass, page: "Explore", emoji: "✨" },
+  { label: "Lifestyle", icon: BookOpen, page: "Lifestyle", emoji: "📖" },
   { label: "Journal", icon: Newspaper, page: "Journal", emoji: "📓" },
   { label: "Profile", icon: User, page: "Profile", emoji: "👤" },
 ];

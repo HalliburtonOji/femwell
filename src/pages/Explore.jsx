@@ -6,6 +6,7 @@ import ExploreContentCard from "../components/explore/ExploreContentCard";
 
 const TYPE_TABS = [
   { id: "All", label: "All", emoji: "✨" },
+  { id: "Saved", label: "Saved", emoji: "🔖" },
   { id: "FITNESS", label: "Fitness", emoji: "💪" },
   { id: "MOBILITY", label: "Mobility", emoji: "🤸" },
   { id: "GUIDE", label: "Guides", emoji: "📖" },

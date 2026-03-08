@@ -9,6 +9,7 @@ import StreakMilestoneToast from "../components/habits/StreakMilestoneToast";
 import CheckinModal from "../components/today/CheckinModal";
 import WeeklyInsightCard from "../components/today/WeeklyInsightCard";
 import TrackCalendar from "../components/today/TrackCalendar";
+import MedReminderSection from "../components/today/MedReminderSection";
 import { format, differenceInDays, parseISO } from "date-fns";
 
 // ── Cycle phase helper ──────────────────────────────────────────────────────
