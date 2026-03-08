@@ -6,6 +6,8 @@ import ManualCompleteButton from "../components/sessions/ManualCompleteButton";
 import HabitCard from "../components/habits/HabitCard";
 import StreakMilestoneToast from "../components/habits/StreakMilestoneToast";
 import CheckinModal from "../components/today/CheckinModal";
+import WeeklyInsightCard from "../components/today/WeeklyInsightCard";
+import TrackCalendar from "../components/today/TrackCalendar";
 import { format, differenceInDays, parseISO } from "date-fns";
 
 // ── Cycle phase helper ──────────────────────────────────────────────────────
