@@ -89,25 +89,53 @@ export default function AICoachTab({ user }) {
       if (includeCycle) contextNote.push("cycle data");
       if (includeHabits) contextNote.push("habit logs");
 
-      const styleNote = `[Coaching style: ${archetypeLabel}. Tone: ${coachPrefs.coach_tone}.${contextNote.length > 0 ? ` Use context from my ${contextNote.join(", ")} if relevant.` : ""}]`;
+      const styleNote = `[Coaching style: ${archetypeLabel}. Tone: ${coachPrefs.coach_tone}.${contextNote.length > 0 ? ` Use context from my ${contextNote.join(", ")} if relevant.` : " Respond with general health and wellness advice if no user data is available."}]`;
       const fullPrompt = `${styleNote}\n\n${questionText}`;
 
-      const updatedConvo = await base44.agents.addMessage(convo, {
-        role: "user",
-        content: fullPrompt,
+      // Subscribe to streaming updates
+      const unsubscribe = base44.agents.subscribeToConversation(convo.id, (data) => {
+        const allMsgs = data.messages || [];
+        const assistantMsgs = allMsgs.filter((m) => m.role === "assistant");
+        const lastAssistant = assistantMsgs[assistantMsgs.length - 1];
+        if (lastAssistant?.content) {
+          setMessages((prev) => {
+            const withoutLast = prev.filter((m) => m.role !== "assistant" || prev.indexOf(m) < prev.length - 1 || m !== prev[prev.length - 1]);
+            // Replace or append the streaming assistant message
+            const lastIdx = withoutLast.map((m) => m.role).lastIndexOf("assistant");
+            if (lastIdx >= 0 && withoutLast[lastIdx].content !== lastAssistant.content) {
+              const updated = [...withoutLast];
+              updated[lastIdx] = lastAssistant;
+              return updated;
+            }
+            if (lastIdx === -1) return [...withoutLast, lastAssistant];
+            return withoutLast;
+          });
+        }
       });
 
-      // Find the last assistant message
-      const allMsgs = updatedConvo.messages || [];
-      const assistantMsgs = allMsgs.filter((m) => m.role === "assistant");
+      await base44.agents.addMessage(convo, { role: "user", content: fullPrompt });
+      unsubscribe();
+
+      // Final state: fetch latest convo
+      const finalConvo = await base44.agents.getConversation(convo.id);
+      const finalMsgs = finalConvo.messages || [];
+      const assistantMsgs = finalMsgs.filter((m) => m.role === "assistant");
       const lastAssistant = assistantMsgs[assistantMsgs.length - 1];
       if (lastAssistant) {
-        setMessages((prev) => [...prev, lastAssistant]);
+        setMessages((prev) => {
+          const lastIdx = prev.map((m) => m.role).lastIndexOf("assistant");
+          if (lastIdx >= 0) {
+            const updated = [...prev];
+            updated[lastIdx] = lastAssistant;
+            return updated;
+          }
+          return [...prev, lastAssistant];
+        });
       }
-      setConversation(updatedConvo);
+      setConversation(finalConvo);
     } catch (e) {
       console.error("AI Coach error:", e);
-      setMessages((prev) => [...prev, { role: "assistant", content: "I'm having trouble connecting right now. Please try again in a moment." }]);
+      setMessages((prev) => [...prev, { role: "assistant", content: "I'm having trouble connecting right now. Please try again." }]);
     }
     setLoading(false);
   };
