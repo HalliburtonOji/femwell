@@ -57,6 +57,8 @@ export default function Trends() {
   const [checkins, setCheckins]         = useState([]);
   const [symptomLogs, setSymptomLogs]   = useState([]);
   const [symptomTypes, setSymptomTypes] = useState([]);
+  const [habitLogs, setHabitLogs]       = useState([]);
+  const [habitNames, setHabitNames]     = useState([]);
 
   useEffect(() => {
     (async () => {
@@ -64,10 +66,11 @@ export default function Trends() {
       setUser(u);
       const cutoff = subMonths(new Date(), 6).toISOString().split("T")[0];
 
-      const [events, ckins, slogs] = await Promise.all([
+      const [events, ckins, slogs, hlogs] = await Promise.all([
         base44.entities.CycleEvents.filter({ user_id: u.id }),
         base44.entities.DailyCheckins.filter({ user_id: u.id }),
         base44.entities.SymptomLogs.filter({ user_id: u.id }),
+        base44.entities.HabitLogs.filter({ user_id: u.id }, "-date", 500),
       ]);
 
       setCycleEvents(events.filter((e) => e.date >= cutoff));
@@ -77,6 +80,11 @@ export default function Trends() {
       setSymptomLogs(filtered);
       const types = [...new Set(filtered.map((s) => s.symptom_type).filter(Boolean))];
       setSymptomTypes(types);
+
+      const hFiltered = hlogs.filter((h) => h.date >= cutoff);
+      setHabitLogs(hFiltered);
+      const hNames = [...new Set(hlogs.map((h) => h.habit_type || h.habit_name).filter(Boolean))];
+      setHabitNames(hNames);
 
       setLoading(false);
     })();
