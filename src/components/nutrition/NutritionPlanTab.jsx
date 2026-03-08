@@ -113,11 +113,6 @@ export default function NutritionPlanTab({ user, nutritionProfile }) {
   const planData = getPlanData();
   const shoppingItems = generateShoppingList();
 
-  const reloadTemplates = async () => {
-    const tmpl = await base44.entities.MealTemplates.filter({ user_id: user.id });
-    setTemplates(tmpl);
-  };
-
   return (
     <div className="space-y-4">
       {/* Wellness goal for this week's plan */}
