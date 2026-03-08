@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import { base44 } from "@/api/base44Client";
 import { Sparkles, RefreshCw, ChevronDown, ChevronUp } from "lucide-react";
 import ReactMarkdown from "react-markdown";
