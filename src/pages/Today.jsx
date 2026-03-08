@@ -306,6 +306,9 @@ export default function Today() {
               </div>
             )}
 
+            {/* Weekly Insight */}
+            {user && <WeeklyInsightCard user={user} />}
+
             {/* Daily check-in */}
             <div className="card-glass rounded-2xl p-4 mb-4">
               {todayCheckin ? (
@@ -439,16 +442,22 @@ export default function Today() {
         {/* ── MY TRACK ───────────────────────────────────────────────────── */}
         {mainTab === "track" && (
           <div>
-            {/* Date navigator */}
-            <div className="flex items-center justify-between card-glass rounded-2xl px-4 py-3 mb-4">
-              <button onClick={() => changeDate(-1)} className="p-1"><ChevronLeft className="w-5 h-5 text-gray-500" /></button>
-              <div className="text-center">
-                <p className="font-semibold text-gray-800">{displayDate}</p>
-                {!isToday && <p className="text-xs text-gray-400">{selectedDate}</p>}
-              </div>
-              <button onClick={() => changeDate(1)} disabled={isToday} className="p-1 disabled:opacity-30">
-                <ChevronRight className="w-5 h-5 text-gray-500" />
-              </button>
+            {/* Calendar */}
+            {user && (
+              <TrackCalendar
+                user={user}
+                selectedDate={selectedDate}
+                onSelectDate={async (date) => {
+                  setSelectedDate(date);
+                  await loadTrackData(user.id, date);
+                }}
+              />
+            )}
+
+            {/* Selected date label */}
+            <div className="text-center mb-4">
+              <p className="font-semibold text-gray-800">{displayDate}</p>
+              {!isToday && <p className="text-xs text-gray-400">{selectedDate}</p>}
             </div>
 
             {/* Track sub-tabs */}
