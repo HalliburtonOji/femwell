@@ -95,6 +95,9 @@ export default function Today() {
   const [savingMed, setSavingMed] = useState(false);
   const [sessionHistory, setSessionHistory] = useState([]);
   const [sessionContent, setSessionContent] = useState({});
+  const [quickMealText, setQuickMealText] = useState("");
+  const [quickMealType, setQuickMealType] = useState("lunch");
+  const [quickLogging, setQuickLogging] = useState(false);
 
   useEffect(() => {
     (async () => {
