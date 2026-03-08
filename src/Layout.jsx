@@ -41,8 +41,11 @@ export default function Layout({ children, currentPageName }) {
 
   return (
     <div className="min-h-screen femwell-gradient">
-      <div className={showNav ? "pb-8" : ""}>{children}</div>
       {showNav && <FloatingSidebar currentPageName={currentPageName} />}
+      {/* On desktop push content right of the 256px sidebar */}
+      <div className={`${showNav ? "lg:pl-64" : ""} ${showNav ? "pb-8" : ""}`}>
+        {children}
+      </div>
     </div>
   );
 }
