@@ -10,7 +10,7 @@ Deno.serve(async (req) => {
     if (!user) return Response.json({ error: 'Unauthorized' }, { status: 401 });
 
     const body = await req.json();
-    const { raw_text, cycle_phase, energy_level, digestion_score } = body;
+    const { raw_text, cycle_phase, energy_level, digestion_score, wellness_goal } = body;
 
     if (!raw_text) return Response.json({ error: 'raw_text required' }, { status: 400 });
 
@@ -19,7 +19,7 @@ Deno.serve(async (req) => {
       messages: [
         {
           role: "system",
-          content: `You are a friendly, supportive nutrition assistant for a women's wellness app. 
+          content: `You are a friendly, supportive nutrition assistant for a women's wellness app.
 Analyse meal descriptions and return structured JSON with warm, non-diagnostic insights.
 Never make medical claims. Use language like "may support", "you might notice", "consider".
 Return valid JSON only.`
@@ -27,7 +27,7 @@ Return valid JSON only.`
         {
           role: "user",
           content: `Meal: "${raw_text}"
-User context: cycle phase: ${cycle_phase || 'unknown'}, energy: ${energy_level || 'unknown'}/10, digestion: ${digestion_score || 'unknown'}/10
+User context: cycle phase: ${cycle_phase || 'unknown'}, energy: ${energy_level || 'unknown'}/10, digestion: ${digestion_score || 'unknown'}/10, wellness goal: ${wellness_goal || 'general wellness'}
 
 Return this exact JSON structure:
 {
@@ -38,7 +38,15 @@ Return this exact JSON structure:
     "micro_action": "string",
     "action_type": "water|breathwork|walk|snack|journal"
   },
-  "meal_score": {"protein": 5, "veg_fiber": 5, "balance": 5}
+  "meal_score": {"protein": 5, "veg_fiber": 5, "balance": 5},
+  "insight": {
+    "headline": "catchy 5-8 word headline e.g. 'Great fuel for your afternoon!'",
+    "wellness_impact": "2-3 warm sentences on how this meal may support general wellbeing",
+    "action_items": "1-2 practical next steps as a short string",
+    "smart_swap": "one simple ingredient swap suggestion",
+    "confidence": "low|medium|high",
+    "tone_safety_note": "brief reminder this is general info not medical advice"
+  }
 }`
         }
       ],
