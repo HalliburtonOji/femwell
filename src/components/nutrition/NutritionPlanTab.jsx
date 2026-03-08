@@ -114,8 +114,22 @@ export default function NutritionPlanTab({ user, nutritionProfile }) {
   const planData = getPlanData();
   const shoppingItems = generateShoppingList();
 
+  const reloadTemplates = async () => {
+    const tmpl = await base44.entities.MealTemplates.filter({ user_id: user.id });
+    setTemplates(tmpl);
+  };
+
   return (
     <div className="space-y-4">
+      {/* AI Generator */}
+      <AIRecipeGenerator
+        user={user}
+        planGoal={planGoal}
+        plan={plan}
+        setPlan={setPlan}
+        onSaveTemplate={reloadTemplates}
+      />
+
       {/* Wellness goal for this week's plan */}
       <div className="card-glass rounded-2xl p-4">
         <p className="text-xs font-bold text-gray-600 mb-2">🎯 This week's focus</p>
