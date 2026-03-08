@@ -417,6 +417,18 @@ export default function Today() {
               </div>
             )}
 
+            {/* Nutrition card */}
+            <a href={createPageUrl("Nutrition")} className="card-glass rounded-2xl p-4 mb-4 flex items-center gap-3 hover:shadow-md transition-shadow block">
+              <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-emerald-200 to-teal-300 flex items-center justify-center flex-shrink-0">
+                <Utensils className="w-6 h-6 text-white" />
+              </div>
+              <div className="flex-1">
+                <p className="font-semibold text-gray-800">Nutrition</p>
+                <p className="text-xs text-gray-400">Log meals · Water · Weekly plan</p>
+              </div>
+              <ChevronRight className="w-4 h-4 text-gray-300" />
+            </a>
+
             {/* Quick actions */}
             <div className="mb-4">
               <h2 className="font-semibold text-gray-700 text-sm mb-3">Quick Actions</h2>
