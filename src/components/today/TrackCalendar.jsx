@@ -23,13 +23,19 @@ export default function TrackCalendar({ user, onSelectDate, selectedDate }) {
     const start = startOfMonth(currentMonth).toISOString().split("T")[0];
     const end = endOfMonth(currentMonth).toISOString().split("T")[0];
 
-    const [cycles, symptoms, habits, meds, sessions] = await Promise.all([
-      base44.entities.CycleEvents.filter({ user_id: user.id }),
-      base44.entities.SymptomLogs.filter({ user_id: user.id }),
-      base44.entities.HabitLogs.filter({ user_id: user.id }),
-      base44.entities.MedicationLogs.filter({ user_id: user.id }),
-      base44.entities.ContentHistory.filter({ user_id: user.id }),
-    ]);
+    let cycles = [], symptoms = [], habits = [], meds = [], sessions = [];
+    try {
+      [cycles, symptoms, habits, meds, sessions] = await Promise.all([
+        base44.entities.CycleEvents.filter({ user_id: user.id }, "-date", 200),
+        base44.entities.SymptomLogs.filter({ user_id: user.id }, "-date", 200),
+        base44.entities.HabitLogs.filter({ user_id: user.id }, "-date", 200),
+        base44.entities.MedicationLogs.filter({ user_id: user.id }, "-date", 200),
+        base44.entities.ContentHistory.filter({ user_id: user.id }, "-session_date", 200),
+      ]);
+    } catch (e) {
+      console.warn("TrackCalendar: failed to load month data", e);
+      return;
+    }
 
     const map = {};
     const addDot = (date, type) => {
