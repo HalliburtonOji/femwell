@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { base44 } from "@/api/base44Client";
 import { createPageUrl } from "@/utils";
-import { LogOut, ChevronRight, Bell, Moon, Heart, Shield, Settings } from "lucide-react";
+import { LogOut, ChevronRight, Bell, Moon, Heart, Shield, Settings, TrendingUp } from "lucide-react";
 
 export default function Profile() {
   const [user, setUser] = useState(null);
@@ -152,6 +152,21 @@ export default function Profile() {
             <ChevronRight className="w-4 h-4 text-gray-300" />
           </button>
         </div>
+
+        {/* Trends */}
+        <a
+          href={createPageUrl("Trends")}
+          className="card-glass rounded-2xl p-4 mb-4 flex items-center gap-3 hover:bg-rose-50/50 transition-colors block"
+        >
+          <div className="w-8 h-8 rounded-lg bg-rose-100 flex items-center justify-center">
+            <TrendingUp className="w-4 h-4 text-rose-500" />
+          </div>
+          <div className="flex-1">
+            <p className="text-sm font-medium text-gray-700">Symptom Trends</p>
+            <p className="text-xs text-gray-400">See how symptoms correlate with your cycle</p>
+          </div>
+          <ChevronRight className="w-4 h-4 text-gray-300" />
+        </a>
 
         {/* Onboarding redo */}
         <a
