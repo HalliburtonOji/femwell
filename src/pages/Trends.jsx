@@ -330,6 +330,68 @@ export default function Trends() {
           </div>
         )}
 
+        {/* Habit Completion Rates */}
+        {habitNames.length > 0 && (() => {
+          const habitData = habitNames.map((name) => {
+            const logsInRange = habitLogs.filter((h) => (h.habit_type === name || h.habit_name === name) && h.date >= cutoffDate);
+            const completedDays = logsInRange.filter((h) => h.completed).length;
+            // Count unique dates in range that have any habit log
+            const uniqueDates = [...new Set(logsInRange.map(h => h.date))].length;
+            const pct = uniqueDates > 0 ? Math.round((completedDays / uniqueDates) * 100) : 0;
+            return { name: name.length > 16 ? name.slice(0, 16) + "…" : name, pct, full: name };
+          });
+          return (
+            <div className="card-glass rounded-2xl p-4 mb-4">
+              <h3 className="text-sm font-bold text-gray-700 mb-0.5">Habit Completion Rates</h3>
+              <p className="text-xs text-gray-400 mb-4">Last {timeRange} months</p>
+              <div className="space-y-3">
+                {habitData.map((h) => (
+                  <div key={h.full}>
+                    <div className="flex justify-between items-center mb-1">
+                      <span className="text-xs text-gray-700 font-medium capitalize">{h.name}</span>
+                      <span className="text-xs font-bold text-rose-500">{h.pct}%</span>
+                    </div>
+                    <div className="w-full h-2 bg-rose-50 rounded-full overflow-hidden">
+                      <div className="h-full bg-gradient-to-r from-rose-300 to-pink-400 rounded-full transition-all duration-500"
+                        style={{ width: `${h.pct}%` }} />
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          );
+        })()}
+
+        {/* Sleep vs Mood Correlation */}
+        {checkins.filter(c => c.date >= cutoffDate && c.sleep_quality != null && c.mood != null).length > 3 && (() => {
+          const data = checkins
+            .filter(c => c.date >= cutoffDate && c.sleep_quality != null && c.mood != null)
+            .map(c => ({ label: format(parseISO(c.date), "MMM d"), sleep: c.sleep_quality, mood: c.mood, energy: c.energy }))
+            .slice(-30);
+          return (
+            <div className="card-glass rounded-2xl p-4 mb-4">
+              <h3 className="text-sm font-bold text-gray-700 mb-0.5">Sleep Quality vs Mood & Energy</h3>
+              <p className="text-xs text-gray-400 mb-4">Last 30 data points</p>
+              <ResponsiveContainer width="100%" height={180}>
+                <LineChart data={data} margin={{ top: 5, right: 5, left: -20, bottom: 5 }}>
+                  <CartesianGrid strokeDasharray="3 3" stroke="#f0e4e8" />
+                  <XAxis dataKey="label" tick={{ fontSize: 10, fill: "#999" }} interval="preserveStartEnd" />
+                  <YAxis tick={{ fontSize: 11, fill: "#999" }} domain={[0, 10]} />
+                  <Tooltip contentStyle={{ borderRadius: "12px", border: "1px solid #fce7ec", fontSize: 12 }} />
+                  <Line type="monotone" dataKey="sleep" stroke="#34d399" strokeWidth={2} dot={false} name="Sleep" />
+                  <Line type="monotone" dataKey="mood" stroke="#f472b6" strokeWidth={2} dot={false} name="Mood" />
+                  <Line type="monotone" dataKey="energy" stroke="#fb923c" strokeWidth={2} dot={false} name="Energy" />
+                </LineChart>
+              </ResponsiveContainer>
+              <div className="flex gap-4 mt-2 justify-center">
+                {[{c:"#34d399",l:"Sleep"},{c:"#f472b6",l:"Mood"},{c:"#fb923c",l:"Energy"}].map(x => (
+                  <div key={x.l} className="flex items-center gap-1"><div className="w-2.5 h-2.5 rounded-full" style={{backgroundColor:x.c}}/><span className="text-[10px] text-gray-500">{x.l}</span></div>
+                ))}
+              </div>
+            </div>
+          );
+        })()}
+
       </div>
     </div>
   );
