@@ -68,39 +68,41 @@ export default function Nutrition() {
 
   return (
     <div className="min-h-screen femwell-gradient pb-28">
-      <div className="max-w-md mx-auto px-4">
+      <div className="max-w-screen-xl mx-auto px-4 md:px-8">
         {/* Header */}
-        <div className="pt-12 pb-4">
-          <h1 className="text-2xl font-black text-rose-900">Nutrition</h1>
-          <p className="text-sm text-gray-400 mt-0.5">Nourish. Track. Thrive.</p>
+        <div className="pt-10 pb-4 flex items-end justify-between flex-wrap gap-3">
+          <div>
+            <h1 className="text-2xl md:text-3xl font-black text-rose-900">Nutrition</h1>
+            <p className="text-sm text-gray-400 mt-0.5">Nourish. Track. Thrive.</p>
+          </div>
+
+          {/* Date selector (today tab only, desktop inline) */}
+          {activeTab === "today" && (
+            <div className="flex items-center gap-2 bg-white/60 rounded-2xl px-3 py-2">
+              <button onClick={() => changeDay(-1)} className="w-7 h-7 rounded-xl hover:bg-rose-50 flex items-center justify-center">
+                <ChevronLeft className="w-4 h-4 text-gray-500" />
+              </button>
+              <div className="text-center min-w-[110px]">
+                <p className="text-sm font-bold text-gray-800">
+                  {isToday ? "Today" : format(selectedDate, "EEEE")}
+                </p>
+                <p className="text-xs text-gray-400">{format(selectedDate, "MMMM d, yyyy")}</p>
+              </div>
+              <button onClick={() => changeDay(1)} disabled={isToday}
+                className="w-7 h-7 rounded-xl hover:bg-rose-50 flex items-center justify-center disabled:opacity-30">
+                <ChevronRight className="w-4 h-4 text-gray-500" />
+              </button>
+            </div>
+          )}
         </div>
 
-        {/* Date selector (only on Today tab) */}
-        {activeTab === "today" && (
-          <div className="flex items-center justify-between mb-4 bg-white/60 rounded-2xl p-2">
-            <button onClick={() => changeDay(-1)} className="w-8 h-8 rounded-xl hover:bg-rose-50 flex items-center justify-center">
-              <ChevronLeft className="w-4 h-4 text-gray-500" />
-            </button>
-            <div className="text-center">
-              <p className="text-sm font-bold text-gray-800">
-                {isToday ? "Today" : format(selectedDate, "EEEE")}
-              </p>
-              <p className="text-xs text-gray-400">{format(selectedDate, "MMMM d, yyyy")}</p>
-            </div>
-            <button onClick={() => changeDay(1)} disabled={isToday}
-              className="w-8 h-8 rounded-xl hover:bg-rose-50 flex items-center justify-center disabled:opacity-30">
-              <ChevronRight className="w-4 h-4 text-gray-500" />
-            </button>
-          </div>
-        )}
-
-        {/* Tab bar — horizontally scrollable */}
-        <div className="overflow-x-auto pb-1 mb-5 -mx-1 px-1">
-          <div className="flex gap-1 w-max">
+        {/* Tab bar */}
+        <div className="overflow-x-auto pb-1 mb-6 -mx-1 px-1">
+          <div className="flex gap-1.5 w-max md:w-auto md:flex-wrap">
             {TABS.map((tab) => (
               <button key={tab.id} onClick={() => setActiveTab(tab.id)}
-                className={`flex flex-col items-center px-3.5 py-2 rounded-xl text-[11px] font-semibold whitespace-nowrap transition-all flex-shrink-0 ${activeTab === tab.id ? "bg-rose-500 text-white shadow-sm" : "bg-white/60 text-gray-500 hover:bg-white/80"}`}>
-                <span className="text-base mb-0.5">{tab.emoji}</span>
+                className={`flex items-center gap-1.5 px-4 py-2.5 rounded-xl text-xs font-semibold whitespace-nowrap transition-all flex-shrink-0 ${activeTab === tab.id ? "bg-rose-500 text-white shadow-sm" : "bg-white/60 text-gray-500 hover:bg-white/80"}`}>
+                <span className="text-sm">{tab.emoji}</span>
                 {tab.label}
               </button>
             ))}
