@@ -307,6 +307,9 @@ export default function Today() {
               </div>
             )}
 
+            {/* Daily Insight Banner */}
+            {user && <DailyInsightBanner user={user} />}
+
             {/* Weekly Insight */}
             {user && <WeeklyInsightCard user={user} />}
 
