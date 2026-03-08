@@ -1,16 +1,8 @@
 import { useEffect, useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { createPageUrl } from "@/utils";
-import { Sun, Compass, User, BookOpen, Newspaper } from "lucide-react";
 import { base44 } from "@/api/base44Client";
-
-const NAV = [
-  { label: "Today", icon: Sun, page: "Today" },
-  { label: "Lifestyle", icon: BookOpen, page: "Lifestyle" },
-  { label: "Explore", icon: Compass, page: "Explore" },
-  { label: "Journal", icon: Newspaper, page: "Journal" },
-  { label: "Profile", icon: User, page: "Profile" },
-];
+import FloatingSidebar from "./components/layout/FloatingSidebar";
 
 const HIDE_NAV = ["Onboarding", "ContentPlayer", "ProgramDay", "ProgramDetail", "CycleSettings"];
 const NO_GUARD = ["Onboarding", "CycleSettings"];
@@ -49,27 +41,8 @@ export default function Layout({ children, currentPageName }) {
 
   return (
     <div className="min-h-screen femwell-gradient">
-      <div className={showNav ? "pb-24" : ""}>{children}</div>
-      {showNav && (
-        <nav className="fixed bottom-0 left-0 right-0 bg-white/95 backdrop-blur-xl border-t border-rose-100 z-50" style={{ paddingBottom: "env(safe-area-inset-bottom)" }}>
-          <div className="flex items-center justify-around max-w-md mx-auto px-2">
-            {NAV.map(({ label, icon: Icon, page }) => {
-              const active = currentPageName === page;
-              return (
-                <Link
-                  key={page}
-                  to={createPageUrl(page)}
-                  className={`flex flex-col items-center gap-0.5 py-3 px-3 min-w-0 transition-all ${active ? "text-rose-600" : "text-gray-400 hover:text-gray-600"}`}
-                >
-                  <Icon className={`w-5 h-5 ${active ? "stroke-[2.5px]" : ""}`} />
-                  <span className={`text-[10px] font-medium ${active ? "font-bold" : ""}`}>{label}</span>
-                  {active && <div className="w-1 h-1 rounded-full bg-rose-500 mt-0.5" />}
-                </Link>
-              );
-            })}
-          </div>
-        </nav>
-      )}
+      <div className={showNav ? "pb-8" : ""}>{children}</div>
+      {showNav && <FloatingSidebar currentPageName={currentPageName} />}
     </div>
   );
 }

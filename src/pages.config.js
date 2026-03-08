@@ -53,6 +53,7 @@ import CycleSettings from './pages/CycleSettings';
 import Explore from './pages/Explore';
 import Journal from './pages/Journal';
 import Lifestyle from './pages/Lifestyle';
+import Nutrition from './pages/Nutrition';
 import Onboarding from './pages/Onboarding';
 import Profile from './pages/Profile';
 import ProgramDay from './pages/ProgramDay';
@@ -63,7 +64,6 @@ import Track from './pages/Track';
 import Trends from './pages/Trends';
 import Upgrade from './pages/Upgrade';
 import VideoManager from './pages/VideoManager';
-import Nutrition from './pages/Nutrition';
 import __Layout from './Layout.jsx';
 
 
@@ -74,6 +74,7 @@ export const PAGES = {
     "Explore": Explore,
     "Journal": Journal,
     "Lifestyle": Lifestyle,
+    "Nutrition": Nutrition,
     "Onboarding": Onboarding,
     "Profile": Profile,
     "ProgramDay": ProgramDay,
@@ -84,7 +85,6 @@ export const PAGES = {
     "Trends": Trends,
     "Upgrade": Upgrade,
     "VideoManager": VideoManager,
-    "Nutrition": Nutrition,
 }
 
 export const pagesConfig = {
