@@ -426,6 +426,6 @@ export default function NutritionTodayTab({ user, profile, nutritionProfile, day
       />
     </div>
 
-    </div>{/* end outer grid */}
+    </div>
   );
 }
