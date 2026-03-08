@@ -1,8 +1,7 @@
 import { useState, useEffect } from "react";
 import { base44 } from "@/api/base44Client";
-import { Plus, Loader2, X, ChevronRight } from "lucide-react";
+import { Plus, Loader2, X } from "lucide-react";
 import { format, startOfWeek, addDays } from "date-fns";
-import AIRecipeGenerator from "./AIRecipeGenerator";
 
 const MEAL_TYPES = ["breakfast", "lunch", "dinner", "snack"];
 const MEAL_EMOJIS = { breakfast: "🌅", lunch: "☀️", dinner: "🌙", snack: "🍎" };
