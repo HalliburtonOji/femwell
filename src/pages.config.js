@@ -60,9 +60,10 @@ import ProgramDetail from './pages/ProgramDetail';
 import ProgramsHub from './pages/ProgramsHub';
 import Today from './pages/Today';
 import Track from './pages/Track';
+import Trends from './pages/Trends';
 import Upgrade from './pages/Upgrade';
 import VideoManager from './pages/VideoManager';
-import Trends from './pages/Trends';
+import Nutrition from './pages/Nutrition';
 import __Layout from './Layout.jsx';
 
 
@@ -80,9 +81,10 @@ export const PAGES = {
     "ProgramsHub": ProgramsHub,
     "Today": Today,
     "Track": Track,
+    "Trends": Trends,
     "Upgrade": Upgrade,
     "VideoManager": VideoManager,
-    "Trends": Trends,
+    "Nutrition": Nutrition,
 }
 
 export const pagesConfig = {
