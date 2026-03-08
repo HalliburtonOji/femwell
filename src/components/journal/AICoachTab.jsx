@@ -1,8 +1,9 @@
 import { useState, useRef, useEffect } from "react";
 import { base44 } from "@/api/base44Client";
-import { Send, BookmarkPlus, ChevronRight, Loader2, Settings2 } from "lucide-react";
+import { Send, BookmarkPlus, ChevronRight, Loader2, Settings2, BarChart2, MessageCircle } from "lucide-react";
 import ReactMarkdown from "react-markdown";
 import CoachSettingsSheet from "../coach/CoachSettingsSheet";
+import CycleSymptomDashboard from "./CycleSymptomDashboard";
 
 const TOPICS = [
   { id: "womens_health", label: "Women's Health", emoji: "🌸" },
@@ -29,6 +30,8 @@ const FOLLOW_UPS = [
 ];
 
 export default function AICoachTab({ user }) {
+  const [coachView, setCoachView] = useState("chat"); // "chat" | "dashboard"
+  const [profile, setProfile] = useState(null);
   const [topic, setTopic] = useState("womens_health");
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
@@ -50,6 +53,13 @@ export default function AICoachTab({ user }) {
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages, loading]);
+
+  useEffect(() => {
+    (async () => {
+      const profiles = await base44.entities.UserProfile.filter({ user_id: user.id });
+      if (profiles[0]) setProfile(profiles[0]);
+    })();
+  }, [user]);
 
   const coachName = coachPrefs.coach_name || "Luna";
   const archetypeLabel = ARCHETYPE_LABELS[coachPrefs.coach_archetype] || "Empathetic Listener";
@@ -114,7 +124,27 @@ export default function AICoachTab({ user }) {
 
   return (
     <div className="flex flex-col h-full">
-      {showSettings && (
+      {/* View switcher */}
+      <div className="flex gap-1 mb-4 bg-white/60 rounded-2xl p-1">
+        <button
+          onClick={() => setCoachView("chat")}
+          className={`flex-1 flex items-center justify-center gap-1.5 py-2 rounded-xl text-xs font-semibold transition-all ${coachView === "chat" ? "bg-rose-500 text-white shadow-sm" : "text-gray-500"}`}
+        >
+          <MessageCircle className="w-3.5 h-3.5" /> Chat
+        </button>
+        <button
+          onClick={() => setCoachView("dashboard")}
+          className={`flex-1 flex items-center justify-center gap-1.5 py-2 rounded-xl text-xs font-semibold transition-all ${coachView === "dashboard" ? "bg-rose-500 text-white shadow-sm" : "text-gray-500"}`}
+        >
+          <BarChart2 className="w-3.5 h-3.5" /> Insights
+        </button>
+      </div>
+
+      {coachView === "dashboard" && (
+        <CycleSymptomDashboard user={user} profile={profile} />
+      )}
+
+      {coachView === "chat" && showSettings && (
         <CoachSettingsSheet
           user={{ ...user, ...coachPrefs }}
           onClose={() => setShowSettings(false)}
@@ -127,6 +157,7 @@ export default function AICoachTab({ user }) {
         />
       )}
 
+      {coachView === "chat" && <>{/* Chat view */}</>}
       {/* Coach header */}
       <div className="flex items-center justify-between mb-3">
         <div className="flex items-center gap-2">
