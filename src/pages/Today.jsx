@@ -261,7 +261,7 @@ export default function Today() {
         />
       )}
 
-      <div className="max-w-md mx-auto px-4">
+      <div className="max-w-3xl mx-auto px-4">
         {/* Header */}
         <div className="pt-12 pb-3 flex items-start justify-between">
           <div>

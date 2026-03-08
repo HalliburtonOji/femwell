@@ -106,7 +106,7 @@ export default function Lifestyle() {
         .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
       `}</style>
 
-      <div className="max-w-md mx-auto px-4">
+      <div className="max-w-3xl mx-auto px-4">
         {/* Header */}
         <div className="pt-12 pb-4 flex items-center justify-between">
           <div>
