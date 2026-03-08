@@ -217,6 +217,8 @@ export default function NutritionTodayTab({ user, profile, nutritionProfile, day
   const balancedScore = meals.length > 0 ? Math.min(5, Math.round((proteinMeals / meals.length) * 5)) : 0;
 
   return (
+    <div className="lg:grid lg:grid-cols-[1fr_340px] lg:gap-6 lg:items-start">
+    {/* ── Left column (main content) ── */}
     <div className="space-y-4">
       {/* Daily Snapshot */}
       <div className="grid grid-cols-4 gap-2">
