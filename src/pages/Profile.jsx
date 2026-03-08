@@ -45,7 +45,7 @@ export default function Profile() {
 
   return (
     <div className="min-h-screen femwell-gradient pb-28">
-      <div className="max-w-md mx-auto px-4">
+      <div className="max-w-3xl mx-auto px-4">
         <div className="pt-12 pb-6">
           <h1 className="text-2xl font-bold text-rose-900">Profile</h1>
         </div>

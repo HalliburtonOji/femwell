@@ -62,7 +62,7 @@ export default function Journal() {
         <JournalEntrySheet entry={selectedEntry} onClose={() => setSelectedEntry(null)} />
       )}
 
-      <div className="max-w-md mx-auto px-4">
+      <div className="max-w-3xl mx-auto px-4">
         {/* Header */}
         <div className="pt-12 pb-4 flex items-center gap-3">
           <button onClick={() => window.history.back()} className="w-9 h-9 rounded-full bg-white/80 flex items-center justify-center">

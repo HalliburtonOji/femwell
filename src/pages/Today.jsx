@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { base44 } from "@/api/base44Client";
 import { createPageUrl } from "@/utils";
-import { Sun, ChevronRight, Plus, Sparkles, ChevronLeft, Droplets, Activity, Heart, Pill, Play, CheckCircle, Trash2, Utensils } from "lucide-react";
+import { Sun, ChevronRight, Plus, Sparkles, ChevronLeft, Droplets, Activity, Heart, Pill, Play, CheckCircle, Trash2, Utensils, Loader2 } from "lucide-react";
 import ManualCompleteButton from "../components/sessions/ManualCompleteButton";
 import DailyInsightBanner from "../components/today/DailyInsightBanner";
 import HabitCard from "../components/habits/HabitCard";

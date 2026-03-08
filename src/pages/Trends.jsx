@@ -160,7 +160,7 @@ export default function Trends() {
 
   return (
     <div className="min-h-screen femwell-gradient pb-28">
-      <div className="max-w-md mx-auto px-4">
+      <div className="max-w-3xl mx-auto px-4">
 
         {/* Header */}
         <div className="pt-12 pb-4 flex items-center gap-3">
