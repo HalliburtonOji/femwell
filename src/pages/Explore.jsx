@@ -69,6 +69,7 @@ export default function Explore() {
 
   const filtered = content.filter((item) => {
     const tagList = item.tags ? item.tags.split(",").map((t) => t.trim().toLowerCase()) : [];
+    if (activeType === "Saved") return bookmarkIds.has(item.id);
     if (search) {
       const q = search.toLowerCase();
       if (!item.title?.toLowerCase().includes(q) && !tagList.some((t) => t.includes(q))) return false;
