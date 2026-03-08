@@ -415,9 +415,9 @@ export default function NutritionTodayTab({ user, profile, nutritionProfile, day
           ))}
         </div>
       </div>
-    </div>{/* end left column */}
+    </div>
 
-    {/* ── Right column (macro dashboard — stacks below on mobile) ── */}
+    {/* Right column — macro dashboard, stacks below on mobile */}
     <div className="mt-4 lg:mt-0 lg:sticky lg:top-6 space-y-4">
       <MacroDashboard
         meals={meals}
@@ -425,6 +425,7 @@ export default function NutritionTodayTab({ user, profile, nutritionProfile, day
         nutritionProfile={nutritionProfile}
       />
     </div>
-    </div>
+
+    </div>{/* end outer grid */}
   );
 }
