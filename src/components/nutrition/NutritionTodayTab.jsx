@@ -4,6 +4,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { Plus, Droplets, Star, RefreshCw, Loader2, ChevronRight, X, BookmarkPlus, Target } from "lucide-react";
 import { format } from "date-fns";
 import { createPageUrl } from "@/utils";
+import MacroDashboard from "./MacroDashboard";
 
 const MEAL_TYPES = ["breakfast", "lunch", "dinner", "snack"];
 const MEAL_EMOJIS = { breakfast: "🌅", lunch: "☀️", dinner: "🌙", snack: "🍎" };
