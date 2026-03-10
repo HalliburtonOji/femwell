@@ -3,6 +3,43 @@ import { base44 } from "@/api/base44Client";
 import { Search, SlidersHorizontal, X, Headphones, Play } from "lucide-react";
 import FilterDrawer from "../components/explore/FilterDrawer";
 import ExploreContentCard from "../components/explore/ExploreContentCard";
+import YouTubeVideoCard from "../components/explore/YouTubeVideoCard";
+
+const YOUTUBE_VIDEOS = [
+  { url: "https://youtu.be/GwR_jzbH8ZY?si=WZv5Nvx5-TdvSbws", tags: ["women's health", "guide"] },
+  { url: "https://youtu.be/g_tea8ZNk5A?si=D3pChzqBAEhN6qBa", tags: ["women's health", "guide"] },
+  { url: "https://youtu.be/mMdAZ242G8E?si=vOfP2yspgcDpJ1rQ", tags: ["women's health", "guide"] },
+  { url: "https://youtu.be/P-3WEOSzD3A?si=KQbX4uY99dt7LaXg", tags: ["women's health", "guide"] },
+  { url: "https://youtu.be/9R8Duj1cHPg?si=pgxOh-amwEioKONz", tags: ["women's health", "guide"] },
+  { url: "https://youtu.be/-hSZqmuN41E?si=ms_Gk2APbnV7yN3C", tags: ["women's health", "guide"] },
+  { url: "https://youtu.be/uC9fHDyH4-E?si=EN43koIgtB6ZpraM", tags: ["women's health", "guide"] },
+  { url: "https://youtu.be/L2yHEXpTesc?si=3U1I0KX8R2B3PYmz", tags: ["women's health", "guide"] },
+  { url: "https://youtu.be/JrxyEHg48Pc?si=6lPPWKaFNlgqb98J", tags: ["women's health", "guide"] },
+  { url: "https://youtu.be/AsBkohDwQVk?si=NdyeB6kzRR2ruyIv", tags: ["women's health", "guide"] },
+  { url: "https://youtu.be/IdUrixeWbis?si=G52aBCHFisCzrb1O", tags: ["women's health", "guide"] },
+  { url: "https://www.youtube.com/watch?v=BDVnSMzBGpA", title: "Pelvic Floor Health for Women at Every Age", tags: ["pelvic floor", "women's health", "menopause", "postpartum"] },
+  { url: "https://www.youtube.com/watch?v=xdcOLeFZtuY", title: "Hormones, Periods, and Pelvic Floor Health", tags: ["hormones", "periods", "pelvic floor", "pms"] },
+  { url: "https://www.youtube.com/watch?v=taDU2H-wPi0", title: "Pelvic Floor Health and Aging: What's Common, What's Treatable", tags: ["aging", "pelvic floor", "menopause"] },
+  { url: "https://www.youtube.com/watch?v=jihMIubXXfc", title: "Pelvic Power: What Every Woman Should Know", tags: ["pelvic floor", "pregnancy", "postpartum", "menopause"] },
+];
+
+const YOUTUBE_COLLECTION_MAP = {
+  sleep: ["sleep"],
+  pms: ["pms", "periods", "hormones"],
+  calm: ["stress", "calm"],
+  energy: ["energy", "fitness"],
+  pain: ["pain", "pelvic floor", "mobility"],
+  menopause: ["menopause", "aging"],
+  postpartum: ["postpartum", "pregnancy", "prenatal"],
+};
+
+function matchesYouTubeVideo(video, search, activeCollection) {
+  const haystack = `${video.title || ""} ${(video.tags || []).join(" ")}`.toLowerCase();
+  if (search && !haystack.includes(search.toLowerCase())) return false;
+  if (!activeCollection) return true;
+  return (YOUTUBE_COLLECTION_MAP[activeCollection] || []).some((keyword) => haystack.includes(keyword));
+}
+
 
 const TYPE_TABS = [
   { id: "All", label: "All", emoji: "✨" },
@@ -97,6 +134,8 @@ export default function Explore() {
   const audioItems = filtered.filter((i) => AUDIO_TYPES.includes(i.content_type));
   const videoItems = filtered.filter((i) => !AUDIO_TYPES.includes(i.content_type));
   const showAudioSection = activeType === "All" && audioItems.length > 0;
+  const youtubeVideos = YOUTUBE_VIDEOS.filter((video) => matchesYouTubeVideo(video, search, activeCollection));
+  const showYoutubeSection = activeType !== "Saved" && (activeType === "All" || activeType === "GUIDE") && youtubeVideos.length > 0;
 
   return (
     <div className="min-h-screen femwell-gradient pb-28">
@@ -171,13 +210,29 @@ export default function Explore() {
               <div key={i} className="aspect-video bg-rose-50/60 rounded-2xl animate-pulse" />
             ))}
           </div>
-        ) : filtered.length === 0 ? (
+        ) : filtered.length === 0 && !showYoutubeSection ? (
           <div className="text-center py-20 text-gray-400">
             <p className="text-3xl mb-2">🔍</p>
             <p className="text-sm">No content found. Try a different search or filter.</p>
           </div>
         ) : (
           <>
+            {showYoutubeSection && (
+              <section>
+                <div className="flex items-center gap-2 mb-3">
+                  <div className="w-7 h-7 rounded-xl bg-red-100 flex items-center justify-center">
+                    <Play className="w-4 h-4 text-red-500" fill="currentColor" />
+                  </div>
+                  <h2 className="text-base font-bold text-gray-800">Women&apos;s Health Videos</h2>
+                </div>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {youtubeVideos.map((video) => (
+                    <YouTubeVideoCard key={video.url} video={video} />
+                  ))}
+                </div>
+              </section>
+            )}
+
             {/* Audio Section */}
             {showAudioSection && (
               <section>
