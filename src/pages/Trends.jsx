@@ -8,6 +8,8 @@ import {
 import { TrendingUp, ArrowLeft } from "lucide-react";
 import { createPageUrl } from "@/utils";
 import { Link } from "react-router-dom";
+import HealthOverviewSection from "../components/trends/HealthOverviewSection";
+import AIHealthSummaryCard from "../components/trends/AIHealthSummaryCard";
 
 const PHASES = [
   { key: "Menstrual",  label: "Menstrual",  color: "#f43f5e", days: "Days 1–5"  },
@@ -193,6 +195,22 @@ export default function Trends() {
             </button>
           ))}
         </div>
+
+        <HealthOverviewSection
+          checkins={checkins}
+          symptomLogs={symptomLogs}
+          habitLogs={habitLogs}
+          cutoffDate={cutoffDate}
+          timeRange={timeRange}
+        />
+
+        <AIHealthSummaryCard
+          timeRange={timeRange}
+          checkins={checkins}
+          symptomLogs={symptomLogs}
+          habitLogs={habitLogs}
+          cutoffDate={cutoffDate}
+        />
 
         {/* Data source toggle */}
         <div className="flex gap-1 mb-4 bg-white/60 rounded-2xl p-1">
