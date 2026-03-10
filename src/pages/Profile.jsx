@@ -153,6 +153,20 @@ export default function Profile() {
           </button>
         </div>
 
+        <a
+          href={createPageUrl("LifeStageCare")}
+          className="card-glass rounded-2xl p-4 mb-4 flex items-center gap-3 hover:bg-rose-50/50 transition-colors block"
+        >
+          <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-rose-200 to-violet-200 flex items-center justify-center text-sm">
+            ✨
+          </div>
+          <div className="flex-1">
+            <p className="text-sm font-medium text-gray-700">Pregnancy & Menopause Support</p>
+            <p className="text-xs text-gray-400">Daily tracking, setup, and AI guidance</p>
+          </div>
+          <ChevronRight className="w-4 h-4 text-gray-300" />
+        </a>
+
         {/* Trends */}
         <a
           href={createPageUrl("Trends")}
