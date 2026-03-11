@@ -206,7 +206,7 @@ export default function Lifestyle() {
                 <p className="text-sm text-gray-400 mt-1">
                   {mode === "following"
                     ? "Follow topics to see content here"
-                    : "Check back soon — we're curating fresh content"}
+                    : "Your feed is waking up — fresh stories publish automatically as they’re processed."}
                 </p>
               </div>
             ) : (
