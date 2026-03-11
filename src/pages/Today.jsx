@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { base44 } from "@/api/base44Client";
 import { createPageUrl } from "@/utils";
-import { Sun, ChevronRight, Plus, Sparkles, ChevronLeft, Droplets, Activity, Heart, Pill, Play, CheckCircle, Trash2, Utensils, Loader2 } from "lucide-react";
+import { Sun, ChevronRight, Plus, Sparkles, ChevronLeft, Droplets, Activity, Heart, Pill, Play, CheckCircle, Trash2, Utensils, Loader2, Bell, Flame } from "lucide-react";
 import ManualCompleteButton from "../components/sessions/ManualCompleteButton";
 import DailyInsightBanner from "../components/today/DailyInsightBanner";
 import HabitCard from "../components/habits/HabitCard";
@@ -29,6 +29,13 @@ function getCyclePhase(lastPeriodDate, cycleLength, periodLength) {
   if (dayOfCycle <= Math.round(cycleLength * 0.4)) return { phase: "follicular", day: dayOfCycle };
   if (dayOfCycle <= Math.round(cycleLength * 0.55)) return { phase: "ovulatory", day: dayOfCycle };
   return { phase: "luteal", day: dayOfCycle };
+}
+
+function isReminderDue(reminderTime) {
+  if (!reminderTime) return false;
+  const now = new Date();
+  const current = `${String(now.getHours()).padStart(2, "0")}:${String(now.getMinutes()).padStart(2, "0")}`;
+  return current >= reminderTime;
 }
 
 // ── Track constants ─────────────────────────────────────────────────────────
@@ -99,23 +106,29 @@ export default function Today() {
   const [quickMealText, setQuickMealText] = useState("");
   const [quickMealType, setQuickMealType] = useState("lunch");
   const [quickLogging, setQuickLogging] = useState(false);
+  const [activePrograms, setActivePrograms] = useState([]);
+  const [programLibrary, setProgramLibrary] = useState([]);
 
   useEffect(() => {
     (async () => {
       const u = await base44.auth.me();
       setUser(u);
-      const [profiles, checkins, content, recs, completions] = await Promise.all([
+      const [profiles, checkins, content, recs, completions, userPrograms, allPrograms] = await Promise.all([
         base44.entities.UserProfile.filter({ user_id: u.id }),
         base44.entities.DailyCheckins.filter({ user_id: u.id, date: todayStr }),
         base44.entities.ContentItems.filter({ is_featured: true }, "-created_date", 3),
         base44.entities.TodayRecommendations.filter({ user_id: u.id, date: todayStr }),
         base44.entities.ContentHistory.filter({ user_id: u.id, session_date: todayStr }),
+        base44.entities.UserPrograms.filter({ user_id: u.id }),
+        base44.entities.Programs.list("-created_date", 50),
       ]);
       if (profiles[0]) setProfile(profiles[0]);
       if (checkins[0]) setTodayCheckin(checkins[0]);
       setRecentContent(content);
       setRecommendations(recs);
       setTodayCompletions(completions.filter((c) => !c.is_deleted));
+      setActivePrograms(userPrograms.filter((entry) => entry.is_saved || entry.status === "active"));
+      setProgramLibrary(allPrograms);
 
       // Track data
       const all = await base44.entities.HabitLogs.filter({ user_id: u.id });
@@ -266,6 +279,14 @@ export default function Today() {
   const allHabitNames = [...new Set(allHabitLogs.map((l) => l.habit_type || l.habit_name).filter(Boolean))];
   const isToday = selectedDate === todayStr;
   const displayDate = isToday ? "Today" : format(parseISO(selectedDate), "EEE, MMM d");
+  const activeProgramEntry = [...activePrograms].sort((a, b) => {
+    if ((b.last_activity_date || "") !== (a.last_activity_date || "")) {
+      return (b.last_activity_date || "").localeCompare(a.last_activity_date || "");
+    }
+    return (b.current_day || 1) - (a.current_day || 1);
+  })[0];
+  const activeProgram = activeProgramEntry ? programLibrary.find((program) => program.id === activeProgramEntry.program_id) : null;
+  const showProgramReminder = activeProgramEntry?.reminder_time && isReminderDue(activeProgramEntry.reminder_time);
 
   if (loading) return (
     <div className="min-h-screen femwell-gradient flex items-center justify-center">
@@ -334,6 +355,39 @@ export default function Today() {
 
             {/* Weekly Insight */}
             {user && <WeeklyInsightCard user={user} />}
+
+            {/* Program card */}
+            {activeProgram && (
+              <div className="card-glass rounded-2xl p-4 mb-4">
+                <div className="flex items-start justify-between gap-3">
+                  <div>
+                    <p className="text-sm font-semibold text-gray-700">Program momentum</p>
+                    <h2 className="mt-1 text-lg font-bold text-gray-900">{activeProgram.title}</h2>
+                    <p className="mt-1 text-xs text-gray-400">Day {activeProgramEntry.current_day || 1} · pick up where you left off</p>
+                  </div>
+                  {activeProgramEntry.streak_count > 0 && (
+                    <div className="inline-flex items-center gap-1 rounded-full bg-rose-50 px-2.5 py-1 text-xs font-semibold text-rose-600">
+                      <Flame className="w-3.5 h-3.5" /> {activeProgramEntry.streak_count} day streak
+                    </div>
+                  )}
+                </div>
+
+                {showProgramReminder && (
+                  <div className="mt-3 inline-flex items-center gap-1.5 rounded-full bg-amber-50 px-3 py-1.5 text-xs font-semibold text-amber-700">
+                    <Bell className="w-3.5 h-3.5" /> Day {activeProgramEntry.current_day || 1} is ready
+                  </div>
+                )}
+
+                <div className="mt-4 flex gap-2">
+                  <a href={createPageUrl(`ProgramDay?key=${activeProgram.program_key}&day=${activeProgramEntry.current_day || 1}`)} className="btn-primary flex-1 py-2.5 text-sm text-center">
+                    Continue Program
+                  </a>
+                  <a href={createPageUrl(`ProgramDetail?key=${activeProgram.program_key}`)} className="btn-secondary flex-1 py-2.5 text-sm text-center">
+                    Open Day List
+                  </a>
+                </div>
+              </div>
+            )}
 
             {/* Daily check-in */}
             <div className="card-glass rounded-2xl p-4 mb-4">
