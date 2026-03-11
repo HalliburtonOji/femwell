@@ -26,11 +26,11 @@ const ARCHETYPE_LABELS = {
 
 const DEFAULT_STARTERS = [
   "How am I doing this week? 🌸",
-  "I'm feeling tired today",
+  "Show my last program day",
+  "Recommend a quick reset",
+  "Log meal: oats + banana",
   "Help with PMS symptoms",
-  "I need a habit idea",
-  "How's my sleep looking?",
-  "I'm feeling stressed",
+  "Why am I craving more?",
 ];
 
 function parseOptions(content) {
