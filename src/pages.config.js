@@ -52,6 +52,7 @@ import ContentPlayer from './pages/ContentPlayer';
 import CycleSettings from './pages/CycleSettings';
 import Explore from './pages/Explore';
 import Journal from './pages/Journal';
+import LifeStageCare from './pages/LifeStageCare';
 import Lifestyle from './pages/Lifestyle';
 import Nutrition from './pages/Nutrition';
 import Onboarding from './pages/Onboarding';
@@ -64,7 +65,6 @@ import Track from './pages/Track';
 import Trends from './pages/Trends';
 import Upgrade from './pages/Upgrade';
 import VideoManager from './pages/VideoManager';
-import LifeStageCare from './pages/LifeStageCare';
 import __Layout from './Layout.jsx';
 
 
@@ -74,6 +74,7 @@ export const PAGES = {
     "CycleSettings": CycleSettings,
     "Explore": Explore,
     "Journal": Journal,
+    "LifeStageCare": LifeStageCare,
     "Lifestyle": Lifestyle,
     "Nutrition": Nutrition,
     "Onboarding": Onboarding,
@@ -86,7 +87,6 @@ export const PAGES = {
     "Trends": Trends,
     "Upgrade": Upgrade,
     "VideoManager": VideoManager,
-    "LifeStageCare": LifeStageCare,
 }
 
 export const pagesConfig = {

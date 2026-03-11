@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import { Play } from "lucide-react";
+import { Bookmark, BookmarkCheck, Play } from "lucide-react";
 
 function getYouTubeId(videoUrl) {
   const url = new URL(videoUrl);
@@ -7,12 +7,12 @@ function getYouTubeId(videoUrl) {
   return url.searchParams.get("v");
 }
 
-export default function YouTubeVideoCard({ video }) {
+export default function YouTubeVideoCard({ video, bookmarked, onToggleBookmark }) {
   const [playing, setPlaying] = useState(false);
   const [title, setTitle] = useState(video.title || "");
   const [thumbnail, setThumbnail] = useState(video.thumbnail_url || "");
-  const videoId = useMemo(() => getYouTubeId(video.url), [video.url]);
-  const embedUrl = `https://www.youtube.com/embed/${videoId}?rel=0&modestbranding=1&autoplay=1`;
+  const videoId = useMemo(() => video.video_id || getYouTubeId(video.url), [video.video_id, video.url]);
+  const embedUrl = `https://www.youtube-nocookie.com/embed/${videoId}?rel=0&modestbranding=1&playsinline=1&autoplay=1&origin=${encodeURIComponent(window.location.origin)}`;
   const fallbackThumbnail = `https://i.ytimg.com/vi/${videoId}/hqdefault.jpg`;
 
   useEffect(() => {
@@ -27,7 +27,7 @@ export default function YouTubeVideoCard({ video }) {
 
   return (
     <div className="overflow-hidden rounded-3xl border border-rose-100 bg-white shadow-sm">
-      <div className="aspect-video bg-rose-50">
+      <div className="relative aspect-video bg-rose-50">
         {playing ? (
           <iframe
             src={embedUrl}
@@ -35,6 +35,7 @@ export default function YouTubeVideoCard({ video }) {
             className="h-full w-full"
             allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
             allowFullScreen
+            referrerPolicy="strict-origin-when-cross-origin"
           />
         ) : (
           <button onClick={() => setPlaying(true)} className="relative h-full w-full">
@@ -48,9 +49,28 @@ export default function YouTubeVideoCard({ video }) {
           </button>
         )}
       </div>
-      <div className="space-y-1 p-4">
-        <p className="line-clamp-2 text-sm font-semibold text-gray-800">{title || "Loading title..."}</p>
-        <p className="text-xs text-gray-400">YouTube</p>
+      <div className="space-y-2 p-4">
+        <div className="flex items-start justify-between gap-3">
+          <p className="line-clamp-2 text-sm font-semibold text-gray-800">{title || "Loading title..."}</p>
+          <button
+            onClick={onToggleBookmark}
+            className="flex-shrink-0 text-gray-300 hover:text-rose-400 transition-colors"
+            aria-label={bookmarked ? "Remove favorite" : "Add favorite"}
+          >
+            {bookmarked ? <BookmarkCheck className="h-4 w-4 text-rose-400" /> : <Bookmark className="h-4 w-4" />}
+          </button>
+        </div>
+        <div className="flex items-center justify-between">
+          <p className="text-xs text-gray-400">YouTube</p>
+          <a
+            href={video.url}
+            target="_blank"
+            rel="noreferrer"
+            className="text-xs font-medium text-rose-500 hover:text-rose-600"
+          >
+            Open on YouTube
+          </a>
+        </div>
       </div>
     </div>
   );

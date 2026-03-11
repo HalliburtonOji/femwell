@@ -6,44 +6,117 @@ import ExploreContentCard from "../components/explore/ExploreContentCard";
 import YouTubeVideoCard from "../components/explore/YouTubeVideoCard";
 
 const YOUTUBE_VIDEOS = [
-  { url: "https://youtu.be/GwR_jzbH8ZY?si=WZv5Nvx5-TdvSbws", tags: ["women's health", "guide"] },
-  { url: "https://youtu.be/g_tea8ZNk5A?si=D3pChzqBAEhN6qBa", tags: ["women's health", "guide"] },
-  { url: "https://youtu.be/mMdAZ242G8E?si=vOfP2yspgcDpJ1rQ", tags: ["women's health", "guide"] },
-  { url: "https://youtu.be/P-3WEOSzD3A?si=KQbX4uY99dt7LaXg", tags: ["women's health", "guide"] },
-  { url: "https://youtu.be/9R8Duj1cHPg?si=pgxOh-amwEioKONz", tags: ["women's health", "guide"] },
-  { url: "https://youtu.be/-hSZqmuN41E?si=ms_Gk2APbnV7yN3C", tags: ["women's health", "guide"] },
-  { url: "https://youtu.be/uC9fHDyH4-E?si=EN43koIgtB6ZpraM", tags: ["women's health", "guide"] },
-  { url: "https://youtu.be/L2yHEXpTesc?si=3U1I0KX8R2B3PYmz", tags: ["women's health", "guide"] },
-  { url: "https://youtu.be/JrxyEHg48Pc?si=6lPPWKaFNlgqb98J", tags: ["women's health", "guide"] },
-  { url: "https://youtu.be/AsBkohDwQVk?si=NdyeB6kzRR2ruyIv", tags: ["women's health", "guide"] },
-  { url: "https://youtu.be/IdUrixeWbis?si=G52aBCHFisCzrb1O", tags: ["women's health", "guide"] },
-  { url: "https://www.youtube.com/watch?v=BDVnSMzBGpA", title: "Pelvic Floor Health for Women at Every Age", tags: ["pelvic floor", "women's health", "menopause", "postpartum"] },
-  { url: "https://www.youtube.com/watch?v=xdcOLeFZtuY", title: "Hormones, Periods, and Pelvic Floor Health", tags: ["hormones", "periods", "pelvic floor", "pms"] },
-  { url: "https://www.youtube.com/watch?v=taDU2H-wPi0", title: "Pelvic Floor Health and Aging: What's Common, What's Treatable", tags: ["aging", "pelvic floor", "menopause"] },
-  { url: "https://www.youtube.com/watch?v=jihMIubXXfc", title: "Pelvic Power: What Every Woman Should Know", tags: ["pelvic floor", "pregnancy", "postpartum", "menopause"] },
+  {
+    video_id: "v4uk1cD8ar8",
+    url: "https://www.youtube.com/watch?v=v4uk1cD8ar8",
+    title: "Sleep Reset (10 Days)",
+    thumbnail_url: "https://i.ytimg.com/vi/v4uk1cD8ar8/hqdefault.jpg",
+    content_type: "GUIDE",
+    tags: ["sleep", "stress", "wind down"],
+  },
+  {
+    video_id: "n6RbW2LtdFs",
+    url: "https://www.youtube.com/watch?v=n6RbW2LtdFs",
+    title: "Calm & Anxiety Toolkit (7 Days)",
+    thumbnail_url: "https://i.ytimg.com/vi/n6RbW2LtdFs/hqdefault.jpg",
+    content_type: "GUIDE",
+    tags: ["anxiety", "calm", "stress", "breathing"],
+  },
+  {
+    video_id: "4JaCcp39iVI",
+    url: "https://www.youtube.com/watch?v=4JaCcp39iVI",
+    title: "PMS Relief (7 Days)",
+    thumbnail_url: "https://i.ytimg.com/vi/4JaCcp39iVI/hqdefault.jpg",
+    content_type: "GUIDE",
+    tags: ["pms", "cramps", "periods"],
+  },
+  {
+    video_id: "vYZyXCKGFC8",
+    url: "https://www.youtube.com/watch?v=vYZyXCKGFC8",
+    title: "Beginner Fitness Kickstart (14 Days)",
+    thumbnail_url: "https://i.ytimg.com/vi/vYZyXCKGFC8/hqdefault.jpg",
+    content_type: "FITNESS",
+    tags: ["fitness", "energy", "strength"],
+  },
+  {
+    video_id: "2aEceax_be4",
+    url: "https://www.youtube.com/watch?v=2aEceax_be4",
+    title: "Postpartum Gentle Return (14 Days)",
+    thumbnail_url: "https://i.ytimg.com/vi/2aEceax_be4/hqdefault.jpg",
+    content_type: "MOBILITY",
+    tags: ["postpartum", "pelvic floor", "recovery"],
+  },
+  {
+    video_id: "dVYKJ6OwQF8",
+    url: "https://www.youtube.com/watch?v=dVYKJ6OwQF8",
+    title: "Menopause Strength & Calm (14 Days)",
+    thumbnail_url: "https://i.ytimg.com/vi/dVYKJ6OwQF8/hqdefault.jpg",
+    content_type: "FITNESS",
+    tags: ["menopause", "sleep", "strength", "energy"],
+  },
+  {
+    video_id: "8oWmGJc8NWI",
+    url: "https://www.youtube.com/watch?v=8oWmGJc8NWI",
+    title: "Stress Reset (7 Days)",
+    thumbnail_url: "https://i.ytimg.com/vi/8oWmGJc8NWI/hqdefault.jpg",
+    content_type: "GUIDE",
+    tags: ["stress", "focus", "calm"],
+  },
+  {
+    video_id: "dHNT2DgCD3s",
+    url: "https://www.youtube.com/watch?v=dHNT2DgCD3s",
+    title: "Guided Sleep Affirmations | Relaxation for Fresh Starts",
+    thumbnail_url: "https://i.ytimg.com/vi/dHNT2DgCD3s/hqdefault.jpg",
+    content_type: "GUIDE",
+    tags: ["sleep", "relaxation", "calm"],
+  },
+  {
+    video_id: "NOaeKRft-gc",
+    url: "https://www.youtube.com/watch?v=NOaeKRft-gc",
+    title: "3 things that can cause painful periods - Chen X. Chen",
+    thumbnail_url: "https://i.ytimg.com/vi/NOaeKRft-gc/hqdefault.jpg",
+    content_type: "GUIDE",
+    tags: ["pms", "periods", "cramps", "women's health"],
+  },
+  {
+    video_id: "tEmt1Znux58",
+    url: "https://www.youtube.com/watch?v=tEmt1Znux58",
+    title: "Box breathing relaxation technique: how to calm feelings of stress or anxiety",
+    thumbnail_url: "https://i.ytimg.com/vi/tEmt1Znux58/hqdefault.jpg",
+    content_type: "GUIDE",
+    tags: ["stress", "anxiety", "calm", "breathing"],
+  },
+  {
+    video_id: "QNZfEtZ53RY",
+    url: "https://www.youtube.com/watch?v=QNZfEtZ53RY",
+    title: "Managing Menopause | Women's Health",
+    thumbnail_url: "https://i.ytimg.com/vi/QNZfEtZ53RY/hqdefault.jpg",
+    content_type: "GUIDE",
+    tags: ["menopause", "women's health"],
+  },
+  {
+    video_id: "cYWGzXLZFAk",
+    url: "https://www.youtube.com/watch?v=cYWGzXLZFAk",
+    title: "Here Comes Baby - Postpartum Recovery",
+    thumbnail_url: "https://i.ytimg.com/vi/cYWGzXLZFAk/hqdefault.jpg",
+    content_type: "GUIDE",
+    tags: ["postpartum", "recovery", "women's health"],
+  },
+  {
+    video_id: "ByEh91tyj60",
+    url: "https://www.youtube.com/watch?v=ByEh91tyj60",
+    title: "10-Minute Pelvic Floor Release & Mobility Flow | Pregnancy-Safe | Pelvic Floor PT",
+    thumbnail_url: "https://i.ytimg.com/vi/ByEh91tyj60/hqdefault.jpg",
+    content_type: "MOBILITY",
+    tags: ["mobility", "pelvic floor", "pregnancy", "postpartum"],
+  },
 ];
-
-const YOUTUBE_COLLECTION_MAP = {
-  sleep: ["sleep"],
-  pms: ["pms", "periods", "hormones"],
-  calm: ["stress", "calm"],
-  energy: ["energy", "fitness"],
-  pain: ["pain", "pelvic floor", "mobility"],
-  menopause: ["menopause", "aging"],
-  postpartum: ["postpartum", "pregnancy", "prenatal"],
-};
-
-function matchesYouTubeVideo(video, search, activeCollection) {
-  const haystack = `${video.title || ""} ${(video.tags || []).join(" ")}`.toLowerCase();
-  if (search && !haystack.includes(search.toLowerCase())) return false;
-  if (!activeCollection) return true;
-  return (YOUTUBE_COLLECTION_MAP[activeCollection] || []).some((keyword) => haystack.includes(keyword));
-}
-
 
 const TYPE_TABS = [
   { id: "All", label: "All", emoji: "✨" },
   { id: "Saved", label: "Saved", emoji: "🔖" },
+  { id: "Videos", label: "Videos", emoji: "🎥" },
+  { id: "Audio", label: "Audio", emoji: "🎧" },
   { id: "FITNESS", label: "Fitness", emoji: "💪" },
   { id: "MOBILITY", label: "Mobility", emoji: "🤸" },
   { id: "GUIDE", label: "Guides", emoji: "📖" },
@@ -52,15 +125,40 @@ const TYPE_TABS = [
 const COLLECTIONS = [
   { id: "sleep", label: "💤 Sleep" },
   { id: "pms", label: "🌸 PMS" },
-  { id: "calm", label: "🌿 Calm" },
+  { id: "anxiety", label: "🌿 Calm" },
   { id: "energy", label: "⚡ Energy" },
-  { id: "pain", label: "🩹 Pain Relief" },
+  { id: "mobility", label: "🤸 Mobility" },
   { id: "menopause", label: "🌙 Menopause" },
   { id: "postpartum", label: "💝 Postpartum" },
+  { id: "stress", label: "🧘 Stress" },
 ];
+
+const COLLECTION_KEYWORDS = {
+  sleep: ["sleep", "wind down", "rest"],
+  pms: ["pms", "period", "cramps"],
+  anxiety: ["anxiety", "calm", "breathing"],
+  energy: ["energy", "fitness", "strength"],
+  mobility: ["mobility", "posture", "pelvic floor"],
+  menopause: ["menopause"],
+  postpartum: ["postpartum", "pregnancy", "recovery", "pelvic floor"],
+  stress: ["stress", "focus", "calm", "breathing"],
+};
 
 const TIER_ORDER = { free: 0, plus: 1, pro: 2 };
 const AUDIO_TYPES = ["BREATHWORK", "MEDITATION"];
+
+function getTextHaystack(title, tags) {
+  return `${title || ""} ${Array.isArray(tags) ? tags.join(" ") : tags || ""}`.toLowerCase();
+}
+
+function matchesCollection(haystack, activeCollection) {
+  if (!activeCollection) return true;
+  return (COLLECTION_KEYWORDS[activeCollection] || []).some((keyword) => haystack.includes(keyword));
+}
+
+function getYoutubeBookmarkId(video) {
+  return `youtube:${video.video_id}`;
+}
 
 export default function Explore() {
   const [user, setUser] = useState(null);
@@ -95,7 +193,11 @@ export default function Explore() {
     if (bookmarkIds.has(contentId)) {
       const bms = await base44.entities.ContentBookmarks.filter({ user_id: user.id, content_id: contentId });
       if (bms[0]) await base44.entities.ContentBookmarks.delete(bms[0].id);
-      setBookmarkIds((s) => { const n = new Set(s); n.delete(contentId); return n; });
+      setBookmarkIds((s) => {
+        const n = new Set(s);
+        n.delete(contentId);
+        return n;
+      });
     } else {
       await base44.entities.ContentBookmarks.create({ user_id: user.id, content_id: contentId });
       setBookmarkIds((s) => new Set([...s, contentId]));
@@ -104,44 +206,46 @@ export default function Explore() {
 
   const isLocked = (item) => (TIER_ORDER[item.access_tier] || 0) > (TIER_ORDER[userPlan] || 0);
 
-  const filtered = content.filter((item) => {
-    const tagList = item.tags ? item.tags.split(",").map((t) => t.trim().toLowerCase()) : [];
-    if (activeType === "Saved") return bookmarkIds.has(item.id);
-    if (search) {
-      const q = search.toLowerCase();
-      if (!item.title?.toLowerCase().includes(q) && !tagList.some((t) => t.includes(q))) return false;
-    }
-    if (activeType !== "All") {
-      if (item.content_type !== activeType) return false;
-    }
-    if (activeCollection) {
-      const colMap = { sleep: ["sleep"], pms: ["pms", "cramps"], calm: ["calm", "anxiety", "stress"], energy: ["energy"], pain: ["pain", "mobility"], menopause: ["menopause"], postpartum: ["postpartum"] };
-      const keywords = colMap[activeCollection] || [];
-      if (!keywords.some((k) => item.title?.toLowerCase().includes(k) || tagList.some((t) => t.includes(k)))) return false;
-    }
+  const filteredContent = content.filter((item) => {
+    const haystack = getTextHaystack(item.title, item.tags);
+    const duration = item.duration_minutes || 0;
+
+    if (activeType === "Saved" && !bookmarkIds.has(item.id)) return false;
+    if (search && !haystack.includes(search.toLowerCase())) return false;
+    if (!matchesCollection(haystack, activeCollection)) return false;
+
+    if (activeType === "Audio" && !AUDIO_TYPES.includes(item.content_type)) return false;
+    if (activeType === "Videos" && AUDIO_TYPES.includes(item.content_type)) return false;
+    if (!["All", "Saved", "Videos", "Audio"].includes(activeType) && item.content_type !== activeType) return false;
+
     if (filters.showFreeOnly && item.access_tier !== "free") return false;
     if (filters.level !== "all" && item.level !== filters.level) return false;
-    if (filters.durationBucket !== "all") {
-      const d = item.duration_minutes || 0;
-      if (filters.durationBucket === "short" && d > 10) return false;
-      if (filters.durationBucket === "medium" && (d < 10 || d > 30)) return false;
-      if (filters.durationBucket === "long" && d < 30) return false;
-    }
+    if (filters.durationBucket === "short" && duration > 10) return false;
+    if (filters.durationBucket === "medium" && (duration < 10 || duration > 30)) return false;
+    if (filters.durationBucket === "long" && duration < 30) return false;
+
     return true;
   });
 
-  // Split audio vs video
-  const audioItems = filtered.filter((i) => AUDIO_TYPES.includes(i.content_type));
-  const videoItems = filtered.filter((i) => !AUDIO_TYPES.includes(i.content_type));
-  const showAudioSection = activeType === "All" && audioItems.length > 0;
-  const youtubeVideos = YOUTUBE_VIDEOS.filter((video) => matchesYouTubeVideo(video, search, activeCollection));
-  const showYoutubeSection = activeType !== "Saved" && (activeType === "All" || activeType === "GUIDE") && youtubeVideos.length > 0;
+  const youtubeVideos = YOUTUBE_VIDEOS.filter((video) => {
+    const haystack = getTextHaystack(video.title, video.tags);
+
+    if (activeType === "Saved" && !bookmarkIds.has(getYoutubeBookmarkId(video))) return false;
+    if (search && !haystack.includes(search.toLowerCase())) return false;
+    if (!matchesCollection(haystack, activeCollection)) return false;
+    if (activeType === "Audio") return false;
+    if (!["All", "Saved", "Videos"].includes(activeType) && video.content_type !== activeType) return false;
+
+    return true;
+  });
+
+  const audioItems = filteredContent.filter((item) => AUDIO_TYPES.includes(item.content_type));
+  const libraryVideoItems = filteredContent.filter((item) => !AUDIO_TYPES.includes(item.content_type));
+  const hasAnyResults = audioItems.length > 0 || libraryVideoItems.length > 0 || youtubeVideos.length > 0;
 
   return (
     <div className="min-h-screen femwell-gradient pb-28">
-      {/* Header */}
       <div className="sticky top-0 z-40 bg-white/95 backdrop-blur-xl border-b border-rose-50 px-4 pt-12 pb-3 space-y-3">
-        {/* Search row */}
         <div className="flex items-center gap-2">
           <div className="flex-1 flex items-center gap-2 bg-rose-50/80 rounded-2xl px-3 py-2.5">
             <Search className="w-4 h-4 text-gray-400 flex-shrink-0" />
@@ -168,7 +272,6 @@ export default function Explore() {
           </button>
         </div>
 
-        {/* Collections */}
         <div className="flex gap-2 overflow-x-auto pb-1" style={{ scrollbarWidth: "none" }}>
           {COLLECTIONS.map((c) => (
             <button
@@ -185,7 +288,6 @@ export default function Explore() {
           ))}
         </div>
 
-        {/* Type tabs */}
         <div className="flex gap-1 overflow-x-auto" style={{ scrollbarWidth: "none" }}>
           {TYPE_TABS.map((t) => (
             <button
@@ -210,37 +312,41 @@ export default function Explore() {
               <div key={i} className="aspect-video bg-rose-50/60 rounded-2xl animate-pulse" />
             ))}
           </div>
-        ) : filtered.length === 0 && !showYoutubeSection ? (
+        ) : !hasAnyResults ? (
           <div className="text-center py-20 text-gray-400">
             <p className="text-3xl mb-2">🔍</p>
             <p className="text-sm">No content found. Try a different search or filter.</p>
           </div>
         ) : (
           <>
-            {showYoutubeSection && (
+            {youtubeVideos.length > 0 && (
               <section>
                 <div className="flex items-center gap-2 mb-3">
                   <div className="w-7 h-7 rounded-xl bg-red-100 flex items-center justify-center">
                     <Play className="w-4 h-4 text-red-500" fill="currentColor" />
                   </div>
-                  <h2 className="text-base font-bold text-gray-800">Women&apos;s Health Videos</h2>
+                  <h2 className="text-base font-bold text-gray-800">YouTube Videos</h2>
                 </div>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   {youtubeVideos.map((video) => (
-                    <YouTubeVideoCard key={video.url} video={video} />
+                    <YouTubeVideoCard
+                      key={video.video_id}
+                      video={video}
+                      bookmarked={bookmarkIds.has(getYoutubeBookmarkId(video))}
+                      onToggleBookmark={() => toggleBookmark(getYoutubeBookmarkId(video))}
+                    />
                   ))}
                 </div>
               </section>
             )}
 
-            {/* Audio Section */}
-            {showAudioSection && (
+            {audioItems.length > 0 && (
               <section>
                 <div className="flex items-center gap-2 mb-3">
                   <div className="w-7 h-7 rounded-xl bg-purple-100 flex items-center justify-center">
                     <Headphones className="w-4 h-4 text-purple-500" />
                   </div>
-                  <h2 className="text-base font-bold text-gray-800">Breathwork & Meditation</h2>
+                  <h2 className="text-base font-bold text-gray-800">Audio Sessions</h2>
                 </div>
                 <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
                   {audioItems.map((item) => (
@@ -257,19 +363,16 @@ export default function Explore() {
               </section>
             )}
 
-            {/* Video Section */}
-            {videoItems.length > 0 && (
+            {libraryVideoItems.length > 0 && (
               <section>
-                {showAudioSection && (
-                  <div className="flex items-center gap-2 mb-3">
-                    <div className="w-7 h-7 rounded-xl bg-rose-100 flex items-center justify-center">
-                      <Play className="w-4 h-4 text-rose-500" />
-                    </div>
-                    <h2 className="text-base font-bold text-gray-800">Fitness, Mobility & Guides</h2>
+                <div className="flex items-center gap-2 mb-3">
+                  <div className="w-7 h-7 rounded-xl bg-rose-100 flex items-center justify-center">
+                    <Play className="w-4 h-4 text-rose-500" />
                   </div>
-                )}
+                  <h2 className="text-base font-bold text-gray-800">App Videos</h2>
+                </div>
                 <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
-                  {videoItems.map((item) => (
+                  {libraryVideoItems.map((item) => (
                     <ExploreContentCard
                       key={item.id}
                       item={item}
@@ -289,7 +392,10 @@ export default function Explore() {
       {showFilters && (
         <FilterDrawer
           filters={filters}
-          onApply={(f) => { setFilters(f); setShowFilters(false); }}
+          onApply={(f) => {
+            setFilters(f);
+            setShowFilters(false);
+          }}
           onClose={() => setShowFilters(false)}
         />
       )}
