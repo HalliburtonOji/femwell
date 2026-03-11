@@ -343,7 +343,7 @@ export default function ProgramDetail() {
                       {starting ? "Opening…" : userProgram ? `Resume day ${currentDay}` : "Start program"}
                     </button>
                     <a href={createPageUrl(`ProgramDay?key=${programKey}&day=${currentDay}`)} className="btn-secondary block w-full text-center">
-                      Open day list
+                      Open current day
                     </a>
                   </div>
 
