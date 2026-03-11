@@ -1,7 +1,7 @@
 import { createPageUrl } from "@/utils";
 import { BookOpen, CheckCircle2, ExternalLink, Headphones, Play, SkipForward, Sparkles } from "lucide-react";
 
-export default function ProgramTaskCard({ task, content, done, index, onComplete, onSkip }) {
+export default function ProgramTaskCard({ task, content, done, index, opened, onOpen, onComplete, onSkip }) {
   const isRead = task.task_type === "READ";
   const isJournal = task.task_type === "JOURNAL";
   const isExternal = Boolean(task.external_url);
@@ -9,9 +9,10 @@ export default function ProgramTaskCard({ task, content, done, index, onComplete
   const resourceLinks = task.resource_links_json ? JSON.parse(task.resource_links_json) : [];
   const taskLabel = task.label || task.title || `Task ${index + 1}`;
   const usesAudio = content && ["BREATHWORK", "MEDITATION"].includes(content.content_type);
+  const needsOpenStep = isInternal || isExternal;
 
   return (
-    <div className={`card-glass rounded-3xl p-4 md:p-5 border border-white/60 ${done ? "opacity-70" : ""}`}>
+    <div className={`card-glass rounded-3xl border border-white/60 p-4 md:p-5 ${done ? "opacity-70" : ""}`}>
       <div className="flex items-start gap-3">
         <div className={`mt-0.5 flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-2xl ${done ? "bg-emerald-100" : "bg-rose-100"}`}>
           {done ? (
@@ -70,41 +71,49 @@ export default function ProgramTaskCard({ task, content, done, index, onComplete
       </div>
 
       {!done && (
-        <div className="ml-13 mt-4 flex flex-wrap gap-2">
-          {isInternal ? (
-            <a
-              href={createPageUrl(`ContentPlayer?key=${content.content_key}`)}
-              onClick={onComplete}
-              className="inline-flex items-center gap-1.5 rounded-2xl bg-rose-500 px-4 py-2 text-xs font-semibold text-white"
-            >
-              {usesAudio ? <Headphones className="h-3.5 w-3.5" /> : <Play className="h-3.5 w-3.5" />} Open session
-            </a>
-          ) : isExternal ? (
-            <a
-              href={task.external_url}
-              target="_blank"
-              rel="noreferrer"
-              onClick={onComplete}
-              className="inline-flex items-center gap-1.5 rounded-2xl bg-rose-500 px-4 py-2 text-xs font-semibold text-white"
-            >
-              <Play className="h-3.5 w-3.5" /> Watch video
-            </a>
-          ) : (
-            <button
-              onClick={onComplete}
-              className="inline-flex items-center gap-1.5 rounded-2xl bg-rose-500 px-4 py-2 text-xs font-semibold text-white"
-            >
-              {isRead || isJournal ? <BookOpen className="h-3.5 w-3.5" /> : <CheckCircle2 className="h-3.5 w-3.5" />}
-              {isRead ? "Mark read" : isJournal ? "Done" : "Mark done"}
-            </button>
+        <div className="ml-[3.25rem] mt-4 space-y-2">
+          {needsOpenStep && !opened && (
+            <p className="text-xs text-gray-400">Open this step first, then mark it complete when you’re done.</p>
           )}
 
-          <button
-            onClick={onSkip}
-            className="inline-flex items-center gap-1.5 rounded-2xl bg-gray-100 px-3 py-2 text-xs font-medium text-gray-500"
-          >
-            <SkipForward className="h-3.5 w-3.5" /> Skip
-          </button>
+          <div className="flex flex-wrap gap-2">
+            {isInternal ? (
+              <a
+                href={createPageUrl(`ContentPlayer?key=${content.content_key}`)}
+                onClick={onOpen}
+                className="inline-flex items-center gap-1.5 rounded-2xl bg-rose-500 px-4 py-2 text-xs font-semibold text-white"
+              >
+                {usesAudio ? <Headphones className="h-3.5 w-3.5" /> : <Play className="h-3.5 w-3.5" />} Open session
+              </a>
+            ) : isExternal ? (
+              <a
+                href={task.external_url}
+                target="_blank"
+                rel="noreferrer"
+                onClick={onOpen}
+                className="inline-flex items-center gap-1.5 rounded-2xl bg-rose-500 px-4 py-2 text-xs font-semibold text-white"
+              >
+                <Play className="h-3.5 w-3.5" /> Watch video
+              </a>
+            ) : null}
+
+            {(!needsOpenStep || opened) && (
+              <button
+                onClick={onComplete}
+                className="inline-flex items-center gap-1.5 rounded-2xl bg-emerald-500 px-4 py-2 text-xs font-semibold text-white"
+              >
+                {isRead || isJournal ? <BookOpen className="h-3.5 w-3.5" /> : <CheckCircle2 className="h-3.5 w-3.5" />}
+                {isRead ? "Mark read" : "Mark complete"}
+              </button>
+            )}
+
+            <button
+              onClick={onSkip}
+              className="inline-flex items-center gap-1.5 rounded-2xl bg-gray-100 px-3 py-2 text-xs font-medium text-gray-500"
+            >
+              <SkipForward className="h-3.5 w-3.5" /> Skip
+            </button>
+          </div>
         </div>
       )}
     </div>

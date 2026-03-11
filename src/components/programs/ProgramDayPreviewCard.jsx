@@ -1,15 +1,36 @@
-import { BookOpen, Clock, ExternalLink, Headphones, Play } from "lucide-react";
+import { createPageUrl } from "@/utils";
+import { BookOpen, CheckCircle2, ChevronDown, ChevronUp, Clock, ExternalLink, Headphones, Lock, Play } from "lucide-react";
 
-export default function ProgramDayPreviewCard({ day, tasks, expanded, onToggle }) {
+const STATUS_STYLES = {
+  completed: {
+    label: "Completed",
+    tone: "bg-emerald-50 text-emerald-700",
+    icon: <CheckCircle2 className="h-3.5 w-3.5" />,
+  },
+  current: {
+    label: "Current",
+    tone: "bg-rose-50 text-rose-600",
+    icon: <Play className="h-3.5 w-3.5" />,
+  },
+  upcoming: {
+    label: "Upcoming",
+    tone: "bg-gray-100 text-gray-600",
+    icon: <Lock className="h-3.5 w-3.5" />,
+  },
+};
+
+export default function ProgramDayPreviewCard({ day, tasks, expanded, onToggle, programKey, status = "upcoming" }) {
   const readCount = tasks.filter((task) => task.task_type === "READ").length;
   const externalCount = tasks.filter((task) => task.external_url).length;
   const sessionCount = tasks.filter((task) => task.content_key).length;
   const title = day.title || day.theme_title || `Day ${day.day_number}`;
   const summary = day.focus || day.theme_description;
+  const openHref = createPageUrl(`ProgramDay?key=${programKey}&day=${day.day_number}`);
+  const statusStyle = STATUS_STYLES[status] || STATUS_STYLES.upcoming;
 
   return (
     <div className="overflow-hidden rounded-3xl border border-rose-100 bg-white shadow-sm">
-      <button onClick={onToggle} className="w-full p-4 text-left md:p-5">
+      <a href={openHref} className="block p-4 text-left transition-colors hover:bg-rose-50/50 md:p-5">
         <div className="flex items-start gap-4">
           <div className="flex h-11 w-11 flex-shrink-0 items-center justify-center rounded-2xl bg-rose-100 text-sm font-bold text-rose-600">
             {day.day_number}
@@ -17,6 +38,10 @@ export default function ProgramDayPreviewCard({ day, tasks, expanded, onToggle }
           <div className="min-w-0 flex-1">
             <div className="flex flex-wrap items-center gap-2">
               <h3 className="text-sm font-semibold text-gray-800 md:text-base">{title}</h3>
+              <span className={`inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-[10px] font-semibold ${statusStyle.tone}`}>
+                {statusStyle.icon}
+                {statusStyle.label}
+              </span>
               {day.estimated_minutes ? (
                 <span className="inline-flex items-center gap-1 rounded-full bg-rose-50 px-2 py-1 text-[10px] font-medium text-rose-600">
                   <Clock className="h-3 w-3" /> {day.estimated_minutes} min
@@ -43,7 +68,17 @@ export default function ProgramDayPreviewCard({ day, tasks, expanded, onToggle }
             </div>
           </div>
         </div>
-      </button>
+      </a>
+
+      <div className="flex items-center gap-2 border-t border-rose-50 px-4 py-3 md:px-5">
+        <a href={openHref} className="inline-flex items-center gap-1.5 rounded-2xl bg-rose-500 px-4 py-2 text-xs font-semibold text-white">
+          Open day
+        </a>
+        <button onClick={onToggle} className="inline-flex items-center gap-1.5 rounded-2xl bg-gray-100 px-4 py-2 text-xs font-semibold text-gray-600">
+          {expanded ? <ChevronUp className="h-3.5 w-3.5" /> : <ChevronDown className="h-3.5 w-3.5" />}
+          Preview
+        </button>
+      </div>
 
       {expanded && (
         <div className="border-t border-rose-50 px-4 pb-4 pt-3 md:px-5 md:pb-5">
