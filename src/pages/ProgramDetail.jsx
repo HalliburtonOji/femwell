@@ -296,7 +296,7 @@ export default function ProgramDetail() {
               <OverviewCard title="What you’ll do daily" body={program.daily_activities_summary || "Guided sessions, supportive videos, and quick read-ups — all in one clear daily flow."} />
               <OverviewCard title="Time per day" body={`${minPerDay}–${maxPerDay} minutes per day, with an average of about ${averagePerDay} minutes.`} />
               <OverviewCard title="What you’ll need" body={program.what_you_need || "A quiet corner, your phone, and headphones when you want to fully settle into the session."} />
-              <OverviewCard title="Results to expect" body={program.expected_results || "More consistency, more calm, and a clearer feeling of progress without needing to overthink what to do next."} />
+              <OverviewCard title="Who it’s best for" body={program.best_for_tags?.length ? `${program.best_for_tags.join(", ")}. ${program.expected_results || ""}`.trim() : (program.expected_results || "Ideal if you want a calmer, more guided structure you can actually stick with.")} />
             </div>
 
             <div className="rounded-[28px] border border-rose-100 bg-white p-5 shadow-sm md:p-6">
