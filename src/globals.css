@@ -25,6 +25,7 @@ body {
   color: var(--charcoal);
 }
 
+
 .femwell-gradient {
   background: linear-gradient(135deg, #fdf6f8 0%, #f5ede8 40%, #eef4f1 100%);
 }
