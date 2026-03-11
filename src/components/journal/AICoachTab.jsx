@@ -84,7 +84,7 @@ export default function AICoachTab({ user }) {
   // Load existing conversation for this topic from localStorage
   useEffect(() => {
     const loadConversation = async () => {
-      const storageKey = `coach_convo_${user.id}_${topic}`;
+      const storageKey = `assistant_convo_${user.id}_${topic}`;
       const savedId = localStorage.getItem(storageKey);
       if (!savedId) { setConversation(null); setMessages([]); return; }
       setLoadingHistory(true);
@@ -132,7 +132,7 @@ export default function AICoachTab({ user }) {
           metadata: { topic, tone: coachPrefs.coach_tone, archetype: coachPrefs.coach_archetype },
         });
         setConversation(convo);
-        localStorage.setItem(`coach_convo_${user.id}_${topic}`, convo.id);
+        localStorage.setItem(`assistant_convo_${user.id}_${topic}`, convo.id);
       }
 
       const contextNote = [];
