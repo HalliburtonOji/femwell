@@ -1,8 +1,8 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { createPageUrl } from "@/utils";
 import { motion, AnimatePresence } from "framer-motion";
-import { Sun, Compass, User, BookOpen, Newspaper, Utensils, X, Menu, Map } from "lucide-react";
+import { Sun, Compass, User, BookOpen, Newspaper, Utensils, X, Menu, Map, Sparkles } from "lucide-react";
 
 const NAV = [
   { label: "Today", icon: Sun, page: "Today", emoji: "🌅" },
@@ -11,6 +11,7 @@ const NAV = [
   { label: "Explore", icon: Compass, page: "Explore", emoji: "✨" },
   { label: "Lifestyle", icon: BookOpen, page: "Lifestyle", emoji: "📖" },
   { label: "Journal", icon: Newspaper, page: "Journal", emoji: "📓" },
+  { label: "Assistant", icon: Sparkles, page: "Assistant", emoji: "🪄" },
   { label: "Profile", icon: User, page: "Profile", emoji: "👤" },
 ];
 
@@ -57,14 +58,20 @@ function DesktopSidebar({ currentPageName }) {
 }
 
 /* ── Mobile / tablet floating button + drawer ──────────────────────────── */
-export default function FloatingSidebar({ currentPageName }) {
+export default function FloatingSidebar({ currentPageName, mode = "full" }) {
   const [open, setOpen] = useState(false);
   const currentNav = NAV.find((n) => n.page === currentPageName);
+
+  useEffect(() => {
+    const openDrawer = () => setOpen(true);
+    window.addEventListener("open-nav-drawer", openDrawer);
+    return () => window.removeEventListener("open-nav-drawer", openDrawer);
+  }, []);
 
   return (
     <>
       {/* Always-visible desktop sidebar */}
-      <DesktopSidebar currentPageName={currentPageName} />
+      {mode === "full" && <DesktopSidebar currentPageName={currentPageName} />}
 
       {/* Mobile floating button (hidden on lg+) */}
       <button

@@ -3,12 +3,16 @@ import { useNavigate } from "react-router-dom";
 import { createPageUrl } from "@/utils";
 import { base44 } from "@/api/base44Client";
 import FloatingSidebar from "./components/layout/FloatingSidebar";
+import QuickSwitchOverlay from "./components/layout/QuickSwitchOverlay";
 
-const HIDE_NAV = ["Onboarding", "ContentPlayer", "ProgramDay", "ProgramDetail", "CycleSettings"];
+const HIDE_NAV = ["Onboarding", "ContentPlayer", "CycleSettings"];
+const LITE_NAV = ["ProgramDay", "ProgramDetail"];
 const NO_GUARD = ["Onboarding", "CycleSettings"];
 
 export default function Layout({ children, currentPageName }) {
-  const showNav = !HIDE_NAV.includes(currentPageName);
+  const showNav = !HIDE_NAV.includes(currentPageName) || LITE_NAV.includes(currentPageName);
+  const navMode = LITE_NAV.includes(currentPageName) ? "lite" : "full";
+  const showQuickSwitch = !NO_GUARD.includes(currentPageName);
   const [checking, setChecking] = useState(!NO_GUARD.includes(currentPageName));
   const navigate = useNavigate();
 
@@ -41,9 +45,10 @@ export default function Layout({ children, currentPageName }) {
 
   return (
     <div className="min-h-screen femwell-gradient">
-      {showNav && <FloatingSidebar currentPageName={currentPageName} />}
+      {showNav && <FloatingSidebar currentPageName={currentPageName} mode={navMode} />}
+      {showQuickSwitch && <QuickSwitchOverlay currentPageName={currentPageName} />}
       {/* On desktop push content right of the 256px sidebar */}
-      <div className={`${showNav ? "lg:pl-64" : ""} ${showNav ? "pb-8" : ""}`}>
+      <div className={`${navMode === "full" ? "lg:pl-64" : ""} ${showNav ? "pb-8" : ""}`}>
         {children}
       </div>
     </div>
