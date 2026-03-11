@@ -4,6 +4,7 @@ import { RefreshCw } from "lucide-react";
 import LifestyleCard from "../components/lifestyle/LifestyleCard";
 import FeedSkeleton from "../components/lifestyle/FeedSkeleton";
 import TrendingStrip from "../components/lifestyle/TrendingStrip";
+import DailyPulseStrip from "../components/lifestyle/DailyPulseStrip";
 
 const MODES = [
   { id: "for_you", label: "For You" },
@@ -30,7 +31,14 @@ export default function Lifestyle() {
   const loaderRef = useRef(null);
 
   useEffect(() => {
-    base44.auth.me().then(setUser);
+    (async () => {
+      const currentUser = await base44.auth.me();
+      setUser(currentUser);
+      const profiles = await base44.entities.LifestyleProfile.filter({ user_id: currentUser.id });
+      if (!profiles[0]) {
+        await base44.entities.LifestyleProfile.create({ user_id: currentUser.id });
+      }
+    })();
   }, []);
 
   const loadFeed = useCallback(async (newMode, newPage = 0, refresh = false) => {
@@ -155,6 +163,16 @@ export default function Lifestyle() {
             </button>
           ))}
         </div>
+
+        <div className="card-glass rounded-2xl p-4 mb-4">
+          <p className="text-xs font-semibold uppercase tracking-[0.2em] text-gray-400">Automated feed</p>
+          <h2 className="mt-2 text-lg font-bold text-gray-900">Fresh stories without manual posting</h2>
+          <p className="mt-1 text-sm leading-relaxed text-gray-500">New items roll in automatically from trusted sources, then the feed learns from your saves, likes, and hides.</p>
+        </div>
+
+        {!loading && mode === "for_you" && items.length > 0 && (
+          <DailyPulseStrip items={items} />
+        )}
 
         {loading ? (
           <FeedSkeleton />

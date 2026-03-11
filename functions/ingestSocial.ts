@@ -88,6 +88,7 @@ Deno.serve(async (req) => {
           source_logo_url: source.logo_url || '',
           title: title.slice(0, 200),
           content_url: postUrl,
+          embed_url: postUrl,
           content_url_hash: hash,
           image_url,
           category: source.category || 'Lifestyle',

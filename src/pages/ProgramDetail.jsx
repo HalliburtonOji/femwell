@@ -4,6 +4,7 @@ import { createPageUrl } from "@/utils";
 import { ArrowLeft, Bell, BookOpen, Bookmark, BookmarkCheck, Clock, Flame, Headphones, Lock, Play, RotateCcw } from "lucide-react";
 import ProgramDayPreviewCard from "../components/programs/ProgramDayPreviewCard";
 import ProgramProgressBar from "../components/programs/ProgramProgressBar";
+import ProgramPageToolbar from "../components/programs/ProgramPageToolbar";
 
 const TIER_ORDER = { free: 0, plus: 1, pro: 2 };
 const TIER_STYLES = {
@@ -226,6 +227,7 @@ export default function ProgramDetail() {
 
   return (
     <div className="min-h-screen femwell-gradient pb-10">
+      <ProgramPageToolbar title={program.title} subtitle="Program detail" showToday />
       <div className="mx-auto max-w-6xl">
         <div className="relative overflow-hidden bg-gradient-to-br from-rose-200 to-pink-300">
           <div className="absolute inset-0">
@@ -234,10 +236,6 @@ export default function ProgramDetail() {
           </div>
 
           <div className="relative z-10 px-4 pb-8 pt-12 md:px-6 md:pb-10">
-            <button onClick={() => window.history.back()} className="mb-6 flex h-10 w-10 items-center justify-center rounded-full bg-white/85">
-              <ArrowLeft className="h-4 w-4 text-gray-700" />
-            </button>
-
             <div className="max-w-3xl space-y-4 text-white">
               <div className="flex flex-wrap gap-2 text-xs">
                 <span className={`rounded-full px-3 py-1 font-semibold capitalize ${TIER_STYLES[program.access_tier] || "bg-white/90 text-gray-700"}`}>
@@ -338,12 +336,15 @@ export default function ProgramDetail() {
                     </div>
                   )}
 
-                  <div className="grid gap-2 sm:grid-cols-2">
-                    <button onClick={startProgram} disabled={starting} className="btn-primary w-full">
+                  <div className="flex flex-wrap gap-2">
+                    <button onClick={startProgram} disabled={starting} className="btn-primary w-full sm:w-auto">
                       {starting ? "Opening…" : userProgram ? `Resume day ${currentDay}` : "Start program"}
                     </button>
-                    <a href={createPageUrl(`ProgramDay?key=${programKey}&day=${currentDay}`)} className="btn-secondary block w-full text-center">
+                    <a href={createPageUrl(`ProgramDay?key=${programKey}&day=${currentDay}`)} className="btn-secondary block w-full text-center sm:w-auto">
                       Open current day
+                    </a>
+                    <a href={createPageUrl("ProgramsHub")} className="inline-flex w-full items-center justify-center rounded-full border border-rose-200 bg-white px-5 py-3 text-sm font-semibold text-rose-600 sm:w-auto">
+                      Back to Programs
                     </a>
                   </div>
 

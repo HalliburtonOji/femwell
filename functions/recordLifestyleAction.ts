@@ -31,7 +31,7 @@ Deno.serve(async (req) => {
 
     // Update user lifestyle profile (followed topics, hidden items)
     const profiles = await base44.entities.LifestyleProfile.filter({ user_id: user.id });
-    const profile = profiles[0];
+    const profile = profiles[0] || await base44.entities.LifestyleProfile.create({ user_id: user.id });
 
     if (action === 'hide' && profile) {
       const hidden = profile.hidden_item_ids ? profile.hidden_item_ids.split(',').filter(Boolean) : [];

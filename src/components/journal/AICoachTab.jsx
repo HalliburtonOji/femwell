@@ -12,6 +12,8 @@ const TOPICS = [
   { id: "stress", label: "Stress", emoji: "🌊" },
   { id: "relationships", label: "Relationships", emoji: "💛" },
   { id: "habits", label: "Habits", emoji: "🔥" },
+  { id: "programs", label: "Programs", emoji: "🗺️" },
+  { id: "nutrition", label: "Nutrition", emoji: "🍽️" },
 ];
 
 const ARCHETYPE_LABELS = {
@@ -54,6 +56,8 @@ export default function AICoachTab({ user }) {
   const [includeCheckins, setIncludeCheckins] = useState(true);
   const [includeCycle, setIncludeCycle] = useState(true);
   const [includeHabits, setIncludeHabits] = useState(true);
+  const [includePrograms, setIncludePrograms] = useState(true);
+  const [includeNutrition, setIncludeNutrition] = useState(true);
   const [conversation, setConversation] = useState(null);
   const [messages, setMessages] = useState([]);
   const [saved, setSaved] = useState(false);
@@ -124,7 +128,7 @@ export default function AICoachTab({ user }) {
       let convo = conversation;
       if (!convo) {
         convo = await base44.agents.createConversation({
-          agent_name: "womens_health_coach",
+          agent_name: "personal_assistant",
           metadata: { topic, tone: coachPrefs.coach_tone, archetype: coachPrefs.coach_archetype },
         });
         setConversation(convo);
@@ -136,6 +140,8 @@ export default function AICoachTab({ user }) {
       if (includeCheckins) contextNote.push("check-ins");
       if (includeCycle) contextNote.push("cycle data");
       if (includeHabits) contextNote.push("habit logs");
+      if (includePrograms) contextNote.push("program progress");
+      if (includeNutrition) contextNote.push("nutrition logs");
 
       const styleNote = `[Coaching style: ${archetypeLabel}. Tone: ${coachPrefs.coach_tone}.${contextNote.length > 0 ? ` Use context from my ${contextNote.join(", ")} if relevant.` : " Respond with general health and wellness advice if no user data is available."}]`;
       const fullPrompt = `${styleNote}\n\n${questionText}`;
@@ -279,6 +285,8 @@ export default function AICoachTab({ user }) {
               { label: "Check-ins", state: includeCheckins, set: setIncludeCheckins },
               { label: "Cycle", state: includeCycle, set: setIncludeCycle },
               { label: "Habits", state: includeHabits, set: setIncludeHabits },
+              { label: "Programs", state: includePrograms, set: setIncludePrograms },
+              { label: "Nutrition", state: includeNutrition, set: setIncludeNutrition },
             ].map(({ label, state, set }) => (
               <button
                 key={label}

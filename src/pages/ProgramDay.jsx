@@ -1,11 +1,12 @@
 import { useEffect, useState } from "react";
 import { base44 } from "@/api/base44Client";
 import { createPageUrl } from "@/utils";
-import { ArrowLeft, Bell, BookOpen, Clock, Flame, Lock, Sparkles } from "lucide-react";
+import { Bell, BookOpen, Clock, Flame, Lock, Sparkles } from "lucide-react";
 import ProgramTaskCard from "../components/programs/ProgramTaskCard";
 import ProgramProgressBar from "../components/programs/ProgramProgressBar";
 import ProgramDayStickyNav from "../components/programs/ProgramDayStickyNav";
 import ProgramReflectionCard from "../components/programs/ProgramReflectionCard";
+import ProgramPageToolbar from "../components/programs/ProgramPageToolbar";
 
 const TIER_ORDER = { free: 0, plus: 1, pro: 2 };
 
@@ -220,18 +221,23 @@ export default function ProgramDay() {
 
   return (
     <div className="min-h-screen femwell-gradient pb-10">
+      <ProgramPageToolbar title={dayTitle} subtitle={program?.title} showToday />
       <div className="mx-auto max-w-4xl px-4 md:px-6">
-        <div className="flex items-center gap-3 pb-5 pt-12">
-          <button onClick={() => window.history.back()} className="flex h-10 w-10 items-center justify-center rounded-full bg-white/85">
-            <ArrowLeft className="h-4 w-4 text-gray-700" />
-          </button>
-          <div>
-            <p className="text-xs font-medium text-rose-500">{program?.title} · Day {dayNumber}</p>
-            <h1 className="text-2xl font-bold text-gray-900">{dayTitle}</h1>
-          </div>
+        <div className="pb-5 pt-8">
+          <p className="text-xs font-medium text-rose-500">{program?.title} · Day {dayNumber}</p>
+          <h1 className="text-2xl font-bold text-gray-900">{dayTitle}</h1>
         </div>
 
         <ProgramDayStickyNav programKey={programKey} currentDay={dayNumber} days={allDays} />
+
+        <div className="mt-4 flex flex-wrap gap-2">
+          <a href={createPageUrl(`ProgramDetail?key=${programKey}`)} className="inline-flex items-center justify-center rounded-full border border-rose-200 bg-white px-4 py-2 text-sm font-semibold text-rose-600">
+            Back to Program
+          </a>
+          <a href={createPageUrl("Today")} className="inline-flex items-center justify-center rounded-full border border-gray-200 bg-white px-4 py-2 text-sm font-semibold text-gray-600">
+            Back to Today
+          </a>
+        </div>
 
         <div className="grid gap-4 md:grid-cols-[1.15fr_0.85fr]">
           <div className="rounded-[28px] border border-rose-100 bg-white p-5 shadow-sm md:p-6">
