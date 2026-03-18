@@ -61,7 +61,7 @@ export default function AIHealthSummaryCard({ timeRange, checkins, symptomLogs, 
             <Sparkles className="w-4 h-4 text-violet-600" />
           </div>
           <div>
-            <p className="text-sm font-bold text-gray-800">AI Health Summary</p>
+            <p className="text-sm font-bold text-gray-800">Smart Insights</p>
             <p className="text-xs text-gray-400">A guided readout of your recent patterns.</p>
           </div>
         </div>
@@ -80,7 +80,7 @@ export default function AIHealthSummaryCard({ timeRange, checkins, symptomLogs, 
           onClick={generateSummary}
           className="w-full py-2.5 rounded-xl bg-gradient-to-r from-violet-100 to-rose-100 text-sm font-medium text-violet-700 hover:from-violet-200 hover:to-rose-200 transition-all"
         >
-          ✨ Generate health summary
+          ✨ Generate smart insight
         </button>
       )}
 

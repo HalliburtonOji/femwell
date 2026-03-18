@@ -1,11 +1,12 @@
 import { useState, useEffect } from "react";
 import { base44 } from "@/api/base44Client";
 import { createPageUrl } from "@/utils";
-import { LogOut, ChevronRight, Bell, Moon, Heart, Shield, Settings, TrendingUp } from "lucide-react";
+import { LogOut, ChevronRight, Bell, Moon, Heart, Shield, Settings, TrendingUp, Bookmark, Ticket, CalendarDays } from "lucide-react";
 
 export default function Profile() {
   const [user, setUser] = useState(null);
   const [profile, setProfile] = useState(null);
+  const [preferences, setPreferences] = useState(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [editTone, setEditTone] = useState(false);
@@ -14,8 +15,12 @@ export default function Profile() {
     (async () => {
       const u = await base44.auth.me();
       setUser(u);
-      const profiles = await base44.entities.UserProfile.filter({ user_id: u.id });
+      const [profiles, prefs] = await Promise.all([
+        base44.entities.UserProfile.filter({ user_id: u.id }),
+        base44.entities.UserPreferences.filter({ user_id: u.id }),
+      ]);
       if (profiles[0]) setProfile(profiles[0]);
+      if (prefs[0]) setPreferences(prefs[0]);
       setLoading(false);
     })();
   }, []);
@@ -25,6 +30,12 @@ export default function Profile() {
     setSaving(true);
     await base44.entities.UserProfile.update(profile.id, { tone_preference: tone });
     setProfile((p) => ({ ...p, tone_preference: tone }));
+
+    if (preferences) {
+      await base44.entities.UserPreferences.update(preferences.id, { coach_tone: tone });
+      setPreferences((current) => ({ ...current, coach_tone: tone }));
+    }
+
     setSaving(false);
     setEditTone(false);
   };
@@ -36,12 +47,12 @@ export default function Profile() {
   );
 
   const tones = [
-    { id: "warm", label: "Warm & Nurturing", emoji: "🌸" },
-    { id: "clinical", label: "Clear & Clinical", emoji: "🔬" },
-    { id: "motivational", label: "Bold & Motivational", emoji: "⚡" },
+    { id: "gentle", label: "Gentle", emoji: "🌸" },
+    { id: "straight", label: "Straight talk", emoji: "🪄" },
+    { id: "minimal", label: "Minimal", emoji: "✨" },
   ];
 
-  const currentTone = tones.find((t) => t.id === profile?.tone_preference) || tones[0];
+  const currentTone = tones.find((t) => t.id === (preferences?.coach_tone || profile?.tone_preference)) || tones[0];
 
   return (
     <div className="min-h-screen femwell-gradient pb-28">
@@ -181,6 +192,49 @@ export default function Profile() {
           </div>
           <ChevronRight className="w-4 h-4 text-gray-300" />
         </a>
+
+        <div className="grid gap-4 md:grid-cols-3">
+          <a
+            href={createPageUrl("Saved")}
+            className="card-glass rounded-2xl p-4 flex items-center gap-3 hover:bg-rose-50/50 transition-colors block"
+          >
+            <div className="w-8 h-8 rounded-lg bg-rose-100 flex items-center justify-center">
+              <Bookmark className="w-4 h-4 text-rose-500" />
+            </div>
+            <div className="flex-1">
+              <p className="text-sm font-medium text-gray-700">Saved</p>
+              <p className="text-xs text-gray-400">Advice, content, and programs</p>
+            </div>
+          </a>
+
+          <a
+            href={createPageUrl("Deals")}
+            className="card-glass rounded-2xl p-4 flex items-center gap-3 hover:bg-rose-50/50 transition-colors block"
+          >
+            <div className="w-8 h-8 rounded-lg bg-amber-100 flex items-center justify-center">
+              <Ticket className="w-4 h-4 text-amber-600" />
+            </div>
+            <div className="flex-1">
+              <p className="text-sm font-medium text-gray-700">Deals</p>
+              <p className="text-xs text-gray-400">Coupon codes and offers</p>
+            </div>
+          </a>
+
+          <a
+            href={createPageUrl("Events")}
+            className="card-glass rounded-2xl p-4 flex items-center gap-3 hover:bg-rose-50/50 transition-colors block"
+          >
+            <div className="w-8 h-8 rounded-lg bg-purple-100 flex items-center justify-center">
+              <CalendarDays className="w-4 h-4 text-purple-500" />
+            </div>
+            <div className="flex-1">
+              <p className="text-sm font-medium text-gray-700">Events</p>
+              <p className="text-xs text-gray-400">Free and paid listings</p>
+            </div>
+          </a>
+        </div>
+
+        <div className="h-4" />
 
         {/* Onboarding redo */}
         <a

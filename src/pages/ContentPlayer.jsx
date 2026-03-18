@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { base44 } from "@/api/base44Client";
 import { ArrowLeft, Play, Lock, BookmarkCheck, Bookmark } from "lucide-react";
 import { createPageUrl } from "@/utils";
+import { saveItem, removeSavedItem } from "@/lib/savedItems";
 import GuidedPlayer from "../components/content/GuidedPlayer";
 import AudioPlayer from "../components/content/AudioPlayer";
 import BreathworkLoopPlayer from "../components/content/BreathworkLoopPlayer";
@@ -73,11 +74,10 @@ export default function ContentPlayer() {
     (async () => {
       const u = await base44.auth.me();
       setUser(u);
-      const [ents, bookmarks] = await Promise.all([
+      const [ents, bookmarks, saved] = await Promise.all([
         base44.entities.Entitlements.filter({ user_id: u.id }),
-        contentKey
-          ? base44.entities.ContentBookmarks.filter({ user_id: u.id })
-          : Promise.resolve([]),
+        contentKey ? base44.entities.ContentBookmarks.filter({ user_id: u.id }) : Promise.resolve([]),
+        base44.entities.SavedItems.filter({ user_id: u.id, item_type: "CONTENT" }, "-created_at", 200),
       ]);
       if (ents[0]) setUserPlan(ents[0].plan || "free");
 
@@ -93,7 +93,9 @@ export default function ContentPlayer() {
       setItem(ci);
       if (ci) {
         const bm = bookmarks.find((b) => b.content_id === ci.id);
+        const savedItem = saved.find((entry) => entry.item_id === ci.id);
         if (bm) { setBookmarked(true); setBookmarkId(bm.id); }
+        if (savedItem) setBookmarked(true);
       }
       setLoading(false);
     })();
@@ -103,10 +105,20 @@ export default function ContentPlayer() {
     if (!user || !item) return;
     if (bookmarked) {
       if (bookmarkId) await base44.entities.ContentBookmarks.delete(bookmarkId);
-      setBookmarked(false); setBookmarkId(null);
+      await removeSavedItem("CONTENT", item.id);
+      setBookmarked(false);
+      setBookmarkId(null);
     } else {
       const bm = await base44.entities.ContentBookmarks.create({ user_id: user.id, content_id: item.id });
-      setBookmarked(true); setBookmarkId(bm.id);
+      await saveItem({
+        itemType: "CONTENT",
+        itemId: item.id,
+        title: item.title,
+        previewText: item.summary || "",
+        meta: { route: createPageUrl(`ContentPlayer?id=${item.id}`) },
+      });
+      setBookmarked(true);
+      setBookmarkId(bm.id);
     }
   };
 

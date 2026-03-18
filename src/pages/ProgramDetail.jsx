@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { base44 } from "@/api/base44Client";
 import { createPageUrl } from "@/utils";
+import { saveItem, removeSavedItem } from "@/lib/savedItems";
 import { ArrowLeft, Bell, BookOpen, Bookmark, BookmarkCheck, Clock, Flame, Headphones, Lock, Play, RotateCcw } from "lucide-react";
 import ProgramDayPreviewCard from "../components/programs/ProgramDayPreviewCard";
 import ProgramProgressBar from "../components/programs/ProgramProgressBar";
@@ -135,6 +136,18 @@ export default function ProgramDetail() {
         status: "paused",
         is_saved: true,
       });
+    }
+
+    if (nextProgram.is_saved) {
+      await saveItem({
+        itemType: "PROGRAM",
+        itemId: program.id,
+        title: program.title,
+        previewText: program.summary || program.description || "",
+        meta: { route: createPageUrl(`ProgramDetail?key=${programKey}`) },
+      });
+    } else {
+      await removeSavedItem("PROGRAM", program.id);
     }
 
     setUserProgram(nextProgram);

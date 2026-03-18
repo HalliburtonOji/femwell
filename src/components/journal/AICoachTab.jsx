@@ -1,5 +1,7 @@
 import { useState, useRef, useEffect } from "react";
 import { base44 } from "@/api/base44Client";
+import { createPageUrl } from "@/utils";
+import { saveItem } from "@/lib/savedItems";
 import { Send, BookmarkPlus, ChevronRight, Loader2, Settings2, BarChart2, MessageCircle } from "lucide-react";
 import ReactMarkdown from "react-markdown";
 import CoachSettingsSheet from "../coach/CoachSettingsSheet";
@@ -198,13 +200,19 @@ export default function AICoachTab({ user }) {
     const lastUser = [...messages].reverse().find((m) => m.role === "user");
     const lastAssistant = [...messages].reverse().find((m) => m.role === "assistant");
     if (!lastUser || !lastAssistant) return;
-    await base44.entities.AdviceHistory.create({
-      user_id: user.id,
-      topic,
-      question: lastUser.content,
-      advice_summary: lastAssistant.content?.slice(0, 500),
-      saved_at: new Date().toISOString(),
+
+    await saveItem({
+      itemType: "ADVICE",
+      itemId: `${conversation?.id || topic}-${messages.length}`,
+      title: lastUser.content.replace(/^\[Coaching style:.*?\]\n\n/, "").slice(0, 80),
+      previewText: lastAssistant.content?.replace(/[#*_`]/g, "").slice(0, 180),
+      meta: {
+        route: createPageUrl("Assistant"),
+        topic,
+        question: lastUser.content,
+      },
     });
+
     setSaved(true);
   };
 
@@ -253,13 +261,21 @@ export default function AICoachTab({ user }) {
                 <p className="text-[10px] text-gray-400">{archetypeLabel}</p>
               </div>
             </div>
-            <button
-              onClick={() => setShowSettings(true)}
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-gray-100 hover:bg-rose-50 transition-colors"
-            >
-              <Settings2 className="w-3.5 h-3.5 text-gray-500" />
-              <span className="text-xs text-gray-500">Customise</span>
-            </button>
+            <div className="flex items-center gap-2">
+              <a
+                href={createPageUrl("Saved")}
+                className="flex items-center gap-1.5 rounded-full bg-rose-50 px-3 py-1.5 text-xs font-medium text-rose-600 transition-colors hover:bg-rose-100"
+              >
+                <BookmarkPlus className="h-3.5 w-3.5" /> Saved
+              </a>
+              <button
+                onClick={() => setShowSettings(true)}
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-gray-100 hover:bg-rose-50 transition-colors"
+              >
+                <Settings2 className="w-3.5 h-3.5 text-gray-500" />
+                <span className="text-xs text-gray-500">Customise</span>
+              </button>
+            </div>
           </div>
 
           {/* Topic chips */}
@@ -311,7 +327,7 @@ export default function AICoachTab({ user }) {
               <div className="py-4">
                 <div className="text-center mb-4 text-gray-400 text-sm">
                   <p className="text-3xl mb-2">🌸</p>
-                  <p className="font-medium text-gray-600">Ask {coachName} anything</p>
+                  <p className="font-medium text-gray-600">Ask the Assistant anything</p>
                   <p className="text-xs mt-1">{archetypeLabel} · {coachPrefs.coach_tone} tone</p>
                 </div>
                 <div className="grid grid-cols-2 gap-2">
@@ -387,7 +403,7 @@ export default function AICoachTab({ user }) {
               className="flex items-center gap-2 text-xs text-gray-400 hover:text-rose-500 transition-colors mb-3 disabled:text-emerald-500"
             >
               <BookmarkPlus className="w-4 h-4" />
-              {saved ? "Saved to Advice History ✓" : "Save this advice"}
+              {saved ? "Saved to Saved ✓" : "Save this advice"}
             </button>
           )}
 

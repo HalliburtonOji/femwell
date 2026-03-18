@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Bookmark, ThumbsUp, ThumbsDown, ExternalLink, Volume2, X, ChevronRight } from "lucide-react";
 import CategoryPill from "./CategoryPill";
 import { createPageUrl } from "@/utils";
+import { toggleSavedItem } from "@/lib/savedItems";
 import { base44 } from "@/api/base44Client";
 
 function timeAgo(dateStr) {
@@ -43,10 +44,22 @@ export default function LifestyleCard({ item, onHide, onSave, onLike, onDislike,
     onDislike?.(item.id);
   };
 
-  const handleSave = () => {
-    setLocalSaved(!localSaved);
+  const handleSave = async () => {
+    const result = await toggleSavedItem({
+      itemType: 'LIFESTYLE',
+      itemId: item.id,
+      title: item.title,
+      previewText: item.summary || '',
+      meta: {
+        url: item.content_url,
+        content_url: item.content_url,
+        provider: item.provider,
+        category: item.category,
+      },
+    });
+    setLocalSaved(result.saved);
     handleAction('save');
-    onSave?.(item.id);
+    onSave?.(item.id, result.saved);
   };
 
   const handleHide = () => {
@@ -57,7 +70,7 @@ export default function LifestyleCard({ item, onHide, onSave, onLike, onDislike,
 
   const handleOpen = () => {
     handleAction('open');
-    window.open(item.content_url, '_blank');
+    window.open(item.content_url || item.embed_url, '_blank');
   };
 
   const handleListen = () => {
@@ -68,6 +81,9 @@ export default function LifestyleCard({ item, onHide, onSave, onLike, onDislike,
     speechSynthesis.speak(utterance);
   };
 
+  const takeaways = Array.isArray(item.takeaways) && item.takeaways.length > 0
+    ? item.takeaways
+    : [item.takeaway_1, item.takeaway_2, item.takeaway_3].filter(Boolean);
   const isVideo = item.media_type === 'TIKTOK' || item.media_type === 'VIDEO' || item.media_type === 'INSTAGRAM' || item.media_type === 'CLIP';
 
   return (
@@ -129,9 +145,9 @@ export default function LifestyleCard({ item, onHide, onSave, onLike, onDislike,
         )}
 
         {/* Takeaways */}
-        {(item.takeaway_1 || item.takeaway_2) && (
+        {takeaways.length > 0 && (
           <div className="bg-rose-50/60 rounded-xl p-3 mb-3 space-y-1.5">
-            {[item.takeaway_1, item.takeaway_2, item.takeaway_3].filter(Boolean).map((t, i) => (
+            {takeaways.map((t, i) => (
               <p key={i} className="text-xs text-gray-700 flex gap-2">
                 <span className="text-rose-400 font-bold flex-shrink-0">•</span>
                 {t}
@@ -190,7 +206,7 @@ export default function LifestyleCard({ item, onHide, onSave, onLike, onDislike,
             className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs text-gray-400 hover:bg-gray-100 hover:text-gray-600 transition-colors ml-auto"
           >
             <ExternalLink className="w-3.5 h-3.5" />
-            <span>Read</span>
+            <span>{isVideo ? "Watch" : "Read"}</span>
           </button>
         </div>
       </div>
