@@ -33,7 +33,7 @@ export default function Assistant() {
                 Ask anything, pull in journal or program context, get recommendations, and jump straight into the next best action.
               </p>
             </div>
-            <a href="/Saved" className="rounded-2xl bg-rose-50 px-4 py-2.5 text-sm font-semibold text-rose-600">
+            <a href={createPageUrl("Saved")} className="rounded-2xl bg-rose-50 px-4 py-2.5 text-sm font-semibold text-rose-600">
               Saved
             </a>
           </div>
