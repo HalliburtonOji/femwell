@@ -113,7 +113,7 @@ export default function Profile() {
                   key={t.id}
                   onClick={() => updateTone(t.id)}
                   className={`w-full text-left p-3 rounded-xl text-sm flex items-center gap-3 transition-all ${
-                    profile?.tone_preference === t.id ? "bg-rose-100 text-rose-700 font-medium" : "bg-white/60 text-gray-600 hover:bg-white"
+                    (preferences?.coach_tone || profile?.tone_preference) === t.id ? "bg-rose-100 text-rose-700 font-medium" : "bg-white/60 text-gray-600 hover:bg-white"
                   }`}
                 >
                   <span>{t.emoji}</span>{t.label}
@@ -173,7 +173,7 @@ export default function Profile() {
           </div>
           <div className="flex-1">
             <p className="text-sm font-medium text-gray-700">Pregnancy & Menopause Support</p>
-            <p className="text-xs text-gray-400">Daily tracking, setup, and AI guidance</p>
+            <p className="text-xs text-gray-400">Daily tracking, setup, and personal guidance</p>
           </div>
           <ChevronRight className="w-4 h-4 text-gray-300" />
         </a>
