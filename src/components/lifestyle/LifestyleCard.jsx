@@ -75,7 +75,8 @@ export default function LifestyleCard({ item, onHide, onSave, onLike, onDislike,
 
   const handleListen = () => {
     handleAction('listen');
-    const text = `${item.title}. ${item.summary || ''}. Key takeaways: ${[item.takeaway_1, item.takeaway_2, item.takeaway_3].filter(Boolean).join('. ')}`;
+    const spokenTakeaways = (Array.isArray(item.takeaways) && item.takeaways.length > 0 ? item.takeaways : [item.takeaway_1, item.takeaway_2, item.takeaway_3].filter(Boolean)).join('. ');
+    const text = `${item.title}. ${item.summary || ''}. Key takeaways: ${spokenTakeaways}`;
     const utterance = new SpeechSynthesisUtterance(text);
     utterance.rate = 0.95;
     speechSynthesis.speak(utterance);

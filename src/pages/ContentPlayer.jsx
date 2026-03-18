@@ -220,8 +220,8 @@ export default function ContentPlayer() {
 
           {item.tags && (
             <div className="flex flex-wrap gap-1.5">
-              {item.tags.split(",").map((tag) => (
-                <span key={tag} className="text-xs bg-rose-50 text-rose-400 px-2 py-1 rounded-full capitalize">{tag.trim()}</span>
+              {(Array.isArray(item.tags) ? item.tags : item.tags.split(",")).map((tag) => (
+                <span key={tag} className="text-xs bg-rose-50 text-rose-400 px-2 py-1 rounded-full capitalize">{String(tag).trim()}</span>
               ))}
             </div>
           )}

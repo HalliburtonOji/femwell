@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback, useRef } from "react";
 import { base44 } from "@/api/base44Client";
-import { RefreshCw } from "lucide-react";
+import { createPageUrl } from "@/utils";
+import { Bookmark, RefreshCw } from "lucide-react";
 import LifestyleCard from "../components/lifestyle/LifestyleCard";
 import FeedSkeleton from "../components/lifestyle/FeedSkeleton";
 import TrendingStrip from "../components/lifestyle/TrendingStrip";
@@ -10,16 +11,17 @@ const MODES = [
   { id: "for_you", label: "For You" },
   { id: "following", label: "Following" },
   { id: "trending", label: "Trending" },
+  { id: "clips", label: "Clips" },
 ];
 
-const CATEGORIES = ["All", "Womens Health", "Relationships", "Professional", "Mental Health", "Nutrition", "Lifestyle", "Beauty", "Fitness"];
+const CATEGORIES = ["All", "Womens Health", "Relationships", "Career & Money", "Mental Wellness", "Food", "Lifestyle", "Beauty", "Fitness", "Culture", "Parenting", "Sex Education", "Menopause", "PCOS", "PMS"];
 
 export default function Lifestyle() {
-  const [user, setUser] = useState(null);
   const [mode, setMode] = useState("for_you");
   const [items, setItems] = useState([]);
   const [editorPick, setEditorPick] = useState(null);
   const [trendingItems, setTrendingItems] = useState([]);
+  const [interests, setInterests] = useState([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [page, setPage] = useState(0);
@@ -33,11 +35,18 @@ export default function Lifestyle() {
   useEffect(() => {
     (async () => {
       const currentUser = await base44.auth.me();
-      setUser(currentUser);
-      const profiles = await base44.entities.LifestyleProfile.filter({ user_id: currentUser.id });
+      const [profiles, preferences, saved] = await Promise.all([
+        base44.entities.LifestyleProfile.filter({ user_id: currentUser.id }),
+        base44.entities.UserPreferences.filter({ user_id: currentUser.id }),
+        base44.entities.SavedItems.filter({ user_id: currentUser.id, item_type: "LIFESTYLE" }, "-created_at", 200),
+      ]);
+
       if (!profiles[0]) {
         await base44.entities.LifestyleProfile.create({ user_id: currentUser.id });
       }
+
+      setInterests(preferences[0]?.lifestyle_interests || []);
+      setSavedIds(new Set(saved.map((item) => item.item_id)));
     })();
   }, []);
 
@@ -50,28 +59,30 @@ export default function Lifestyle() {
     }
 
     try {
-      const res = await base44.functions.invoke('getLifestyleFeed', {
+      const functionName = newMode === "clips" ? "rankLifestyleClips" : "rankLifestyleFeed";
+      const res = await base44.functions.invoke(functionName, {
         mode: newMode,
         page: newPage,
         page_size: 15,
       });
       const data = res.data;
+
       if (newPage === 0) {
         setItems(data.items || []);
         setEditorPick(data.editor_pick || null);
       } else {
         setItems((prev) => [...prev, ...(data.items || [])]);
       }
+
       setHasMore(data.has_more || false);
       setPage(newPage);
 
-      // Load trending separately on first load
-      if (newPage === 0 && newMode !== 'trending') {
-        const tRes = await base44.functions.invoke('getLifestyleFeed', { mode: 'trending', page: 0, page_size: 6 });
-        setTrendingItems(tRes.data?.items || []);
+      if (newPage === 0 && newMode === "for_you") {
+        const trendingRes = await base44.functions.invoke("rankLifestyleFeed", { mode: "trending", page: 0, page_size: 6 });
+        setTrendingItems(trendingRes.data?.items || []);
       }
-    } catch (e) {
-      console.error(e);
+    } catch (error) {
+      console.error(error);
     }
 
     setLoading(false);
@@ -81,9 +92,8 @@ export default function Lifestyle() {
 
   useEffect(() => {
     loadFeed(mode, 0);
-  }, [mode]);
+  }, [mode, loadFeed]);
 
-  // Infinite scroll
   useEffect(() => {
     if (!loaderRef.current) return;
     const observer = new IntersectionObserver((entries) => {
@@ -95,13 +105,16 @@ export default function Lifestyle() {
     return () => observer.disconnect();
   }, [hasMore, loadingMore, page, mode, loadFeed]);
 
-  const displayedItems = filterCategory === "All"
-    ? items
-    : items.filter((i) => i.category === filterCategory);
+  const displayedItems = filterCategory === "All" ? items : items.filter((item) => item.category === filterCategory);
 
-  const handleHide = (id) => setItems((prev) => prev.filter((i) => i.id !== id));
-  const handleSave = (id) => setSavedIds((prev) => { const s = new Set(prev); s.has(id) ? s.delete(id) : s.add(id); return s; });
-  const handleLike = (id) => setLikedIds((prev) => { const s = new Set(prev); s.add(id); return s; });
+  const handleHide = (id) => setItems((prev) => prev.filter((item) => item.id !== id));
+  const handleSave = (id, nextSaved) => setSavedIds((prev) => {
+    const next = new Set(prev);
+    if (nextSaved) next.add(id);
+    else next.delete(id);
+    return next;
+  });
+  const handleLike = (id) => setLikedIds((prev) => new Set(prev).add(id));
 
   return (
     <div className="min-h-screen femwell-gradient pb-28">
@@ -115,49 +128,53 @@ export default function Lifestyle() {
       `}</style>
 
       <div className="max-w-3xl mx-auto px-4">
-        {/* Header */}
-        <div className="pt-12 pb-4 flex items-center justify-between">
+        <div className="pt-12 pb-4 flex items-center justify-between gap-3">
           <div>
             <h1 className="text-2xl font-bold text-rose-900">Lifestyle</h1>
             <p className="text-xs text-gray-400 mt-0.5">Your personalised wellness feed</p>
           </div>
-          <button
-            onClick={() => loadFeed(mode, 0, true)}
-            disabled={refreshing}
-            className="w-9 h-9 rounded-xl bg-white/80 flex items-center justify-center shadow-sm hover:bg-rose-50 transition-colors"
-          >
-            <RefreshCw className={`w-4 h-4 text-rose-400 ${refreshing ? "animate-spin" : ""}`} />
-          </button>
+          <div className="flex items-center gap-2">
+            <a href={createPageUrl("Saved")} className="w-9 h-9 rounded-xl bg-white/80 flex items-center justify-center shadow-sm hover:bg-rose-50 transition-colors">
+              <Bookmark className="w-4 h-4 text-rose-500" />
+            </a>
+            <button
+              onClick={() => loadFeed(mode, 0, true)}
+              disabled={refreshing}
+              className="w-9 h-9 rounded-xl bg-white/80 flex items-center justify-center shadow-sm hover:bg-rose-50 transition-colors"
+            >
+              <RefreshCw className={`w-4 h-4 text-rose-400 ${refreshing ? "animate-spin" : ""}`} />
+            </button>
+          </div>
         </div>
 
-        {/* Mode tabs */}
-        <div className="flex gap-2 mb-4">
-          {MODES.map((m) => (
+        <div className="flex gap-2 mb-4 overflow-x-auto pb-1">
+          {MODES.map((tab) => (
             <button
-              key={m.id}
-              onClick={() => { setMode(m.id); setFilterCategory("All"); }}
-              className={`px-4 py-2 rounded-xl text-sm font-semibold transition-all ${
-                mode === m.id
-                  ? "bg-rose-500 text-white shadow-sm"
-                  : "bg-white/70 text-gray-500 hover:bg-white"
-              }`}
+              key={tab.id}
+              onClick={() => { setMode(tab.id); setFilterCategory("All"); }}
+              className={`px-4 py-2 rounded-xl text-sm font-semibold transition-all ${mode === tab.id ? "bg-rose-500 text-white shadow-sm" : "bg-white/70 text-gray-500 hover:bg-white"}`}
             >
-              {m.label}
+              {tab.label}
             </button>
           ))}
         </div>
 
-        {/* Category filter strip */}
+        {interests.length > 0 && (
+          <div className="mb-4 flex gap-2 overflow-x-auto pb-1">
+            {interests.map((interest) => (
+              <button key={interest} onClick={() => setFilterCategory(interest)} className="rounded-full bg-rose-50 px-3 py-1.5 text-xs font-semibold text-rose-600">
+                {interest}
+              </button>
+            ))}
+          </div>
+        )}
+
         <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-hide mb-4">
           {CATEGORIES.map((cat) => (
             <button
               key={cat}
               onClick={() => setFilterCategory(cat)}
-              className={`flex-shrink-0 px-3 py-1.5 rounded-full text-xs font-medium transition-all ${
-                filterCategory === cat
-                  ? "bg-rose-100 text-rose-600 font-semibold"
-                  : "bg-white/60 text-gray-400 hover:bg-white hover:text-gray-600"
-              }`}
+              className={`flex-shrink-0 px-3 py-1.5 rounded-full text-xs font-medium transition-all ${filterCategory === cat ? "bg-rose-100 text-rose-600 font-semibold" : "bg-white/60 text-gray-400 hover:bg-white hover:text-gray-600"}`}
             >
               {cat}
             </button>
@@ -166,24 +183,18 @@ export default function Lifestyle() {
 
         <div className="card-glass rounded-2xl p-4 mb-4">
           <p className="text-xs font-semibold uppercase tracking-[0.2em] text-gray-400">Automated feed</p>
-          <h2 className="mt-2 text-lg font-bold text-gray-900">Fresh stories without manual posting</h2>
-          <p className="mt-1 text-sm leading-relaxed text-gray-500">New items roll in automatically from trusted sources, then the feed learns from your saves, likes, and hides.</p>
+          <h2 className="mt-2 text-lg font-bold text-gray-900">Fresh stories, clips, and social finds</h2>
+          <p className="mt-1 text-sm leading-relaxed text-gray-500">New items roll in automatically from trusted sources, then the feed learns from your saves, likes, hides, interests, and activity.</p>
         </div>
 
-        {!loading && mode === "for_you" && items.length > 0 && (
-          <DailyPulseStrip items={items} />
-        )}
+        {!loading && mode === "for_you" && items.length > 0 && <DailyPulseStrip items={items} />}
 
         {loading ? (
           <FeedSkeleton />
         ) : (
           <>
-            {/* Trending strip (for_you only) */}
-            {mode === "for_you" && trendingItems.length > 0 && (
-              <TrendingStrip items={trendingItems} />
-            )}
+            {mode === "for_you" && trendingItems.length > 0 && <TrendingStrip items={trendingItems} />}
 
-            {/* Editor pick pinned card */}
             {editorPick && mode === "for_you" && (
               <div className="mb-4">
                 <p className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2 px-1">✦ Editor's Pick Today</p>
@@ -198,15 +209,16 @@ export default function Lifestyle() {
               </div>
             )}
 
-            {/* Main feed */}
             {displayedItems.length === 0 ? (
               <div className="text-center py-16">
                 <p className="text-4xl mb-3">🌸</p>
                 <p className="font-semibold text-gray-700">No content yet</p>
                 <p className="text-sm text-gray-400 mt-1">
                   {mode === "following"
-                    ? "Follow topics to see content here"
-                    : "Your feed is waking up — fresh stories publish automatically as they’re processed."}
+                    ? "Follow more topics to build this stream."
+                    : mode === "clips"
+                      ? "Clips will appear here as new video finds are ranked."
+                      : "Your feed is waking up — fresh stories publish automatically as they’re processed."}
                 </p>
               </div>
             ) : (
@@ -225,16 +237,13 @@ export default function Lifestyle() {
               </div>
             )}
 
-            {/* Infinite scroll loader */}
             <div ref={loaderRef} className="py-6 text-center">
               {loadingMore && (
                 <div className="flex justify-center">
                   <div className="w-6 h-6 border-2 border-rose-300 border-t-rose-500 rounded-full animate-spin" />
                 </div>
               )}
-              {!hasMore && items.length > 0 && (
-                <p className="text-xs text-gray-300">You're all caught up ✨</p>
-              )}
+              {!hasMore && items.length > 0 && <p className="text-xs text-gray-300">You're all caught up ✨</p>}
             </div>
           </>
         )}
