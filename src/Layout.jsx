@@ -37,8 +37,8 @@ export default function Layout({ children, currentPageName }) {
 
   if (checking && !NO_GUARD.includes(currentPageName)) {
     return (
-      <div className="min-h-screen femwell-gradient flex items-center justify-center">
-        <div className="w-10 h-10 border-4 border-rose-300 border-t-rose-600 rounded-full animate-spin" />
+      <div className="min-h-screen flex items-center justify-center" style={{background:'#0C0C1A'}}>
+        <div className="w-10 h-10 border-4 rounded-full animate-spin" style={{borderColor:'#242436',borderTopColor:'#C96B9E'}} />
       </div>
     );
   }
@@ -48,7 +48,7 @@ export default function Layout({ children, currentPageName }) {
       {showNav && <FloatingSidebar currentPageName={currentPageName} mode={navMode} />}
       {showQuickSwitch && <QuickSwitchOverlay currentPageName={currentPageName} />}
       {/* On desktop push content right of the 256px sidebar */}
-      <div className={`${navMode === "full" ? "lg:pl-64" : ""} ${showNav ? "pb-8" : ""}`}>
+      <div className={`${navMode === "full" ? "lg:pl-64" : ""} ${showNav ? "pb-20" : ""}`}>
         {children}
       </div>
     </div>
