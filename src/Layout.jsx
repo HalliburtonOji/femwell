@@ -48,7 +48,7 @@ export default function Layout({ children, currentPageName }) {
       {showNav && <FloatingSidebar currentPageName={currentPageName} mode={navMode} />}
       {showQuickSwitch && <QuickSwitchOverlay currentPageName={currentPageName} />}
       {/* On desktop push content right of the 256px sidebar */}
-      <div className={`${navMode === "full" ? "lg:pl-64" : ""} ${showNav ? "pb-8" : ""}`}>
+      <div className={`${navMode === "full" ? "lg:pl-64" : ""} ${showNav ? "pb-24 lg:pb-8" : ""}`}>
         {children}
       </div>
     </div>

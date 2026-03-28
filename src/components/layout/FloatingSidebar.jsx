@@ -1,155 +1,177 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { Link } from "react-router-dom";
 import { createPageUrl } from "@/utils";
 import { motion, AnimatePresence } from "framer-motion";
-import { Sun, Compass, User, BookOpen, Newspaper, Utensils, X, Menu, Map, Sparkles } from "lucide-react";
+import {
+  Sun, Compass, User, BookOpen, Newspaper, Utensils, X, MoreHorizontal,
+  Map, Sparkles, Activity, ChevronRight
+} from "lucide-react";
 
-const NAV = [
-  { label: "Today", icon: Sun, page: "Today", emoji: "🌅" },
-  { label: "Nutrition", icon: Utensils, page: "Nutrition", emoji: "🍽️" },
-  { label: "Programs", icon: Map, page: "ProgramsHub", emoji: "🗺️" },
-  { label: "Explore", icon: Compass, page: "Explore", emoji: "✨" },
-  { label: "Lifestyle", icon: BookOpen, page: "Lifestyle", emoji: "📖" },
-  { label: "Journal", icon: Newspaper, page: "Journal", emoji: "📓" },
-  { label: "Assistant", icon: Sparkles, page: "Assistant", emoji: "🪄" },
-  { label: "Profile", icon: User, page: "Profile", emoji: "👤" },
+const PRIMARY_NAV = [
+  { label: "Today",     icon: Sun,       page: "Today" },
+  { label: "Explore",   icon: Compass,   page: "Explore" },
+  { label: "Programs",  icon: Map,       page: "ProgramsHub" },
+  { label: "Journal",   icon: Newspaper, page: "Journal" },
+  { label: "Me",        icon: User,      page: "Profile" },
 ];
 
-/* ── Desktop sidebar (always visible on lg+) ───────────────────────────── */
+const MORE_NAV = [
+  { label: "Nutrition",  icon: Utensils,  page: "Nutrition" },
+  { label: "Lifestyle",  icon: BookOpen,  page: "Lifestyle" },
+  { label: "Assistant",  icon: Sparkles,  page: "Assistant" },
+];
+
+const ALL_NAV = [...PRIMARY_NAV, ...MORE_NAV];
+
+/* ── Desktop sidebar ─────────────────────────────────────────── */
 function DesktopSidebar({ currentPageName }) {
   return (
-    <aside className="hidden lg:flex flex-col fixed top-0 left-0 bottom-0 w-64 bg-white/95 backdrop-blur-xl shadow-lg border-r border-rose-50 z-30">
-      {/* Brand */}
-      <div className="px-6 pt-10 pb-6 border-b border-rose-50">
-        <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-rose-300 to-pink-400 flex items-center justify-center text-2xl mb-3 shadow-sm">
-          🌸
+    <aside className="hidden lg:flex flex-col fixed top-0 left-0 bottom-0 w-64 z-30"
+      style={{ background: "#13131F", borderRight: "1px solid #242436" }}>
+      <div className="px-6 pt-10 pb-6" style={{ borderBottom: "1px solid #242436" }}>
+        <div className="w-10 h-10 rounded-2xl flex items-center justify-center mb-3"
+          style={{ background: "linear-gradient(135deg, #C96B9E, #7C6AF5)" }}>
+          <Activity className="w-5 h-5 text-white" />
         </div>
-        <h2 className="text-xl font-black text-rose-900">FemWell</h2>
-        <p className="text-xs text-gray-400 mt-0.5">Your wellness companion</p>
+        <h2 className="text-lg font-black" style={{ color: "#F2F2FF" }}>FemWell</h2>
+        <p className="text-xs mt-0.5" style={{ color: "#4A4A65" }}>Your wellness companion</p>
       </div>
 
-      {/* Nav */}
-      <nav className="flex-1 px-3 py-5 space-y-1 overflow-y-auto">
-        {NAV.map(({ label, page, emoji }) => {
+      <nav className="flex-1 px-3 py-5 space-y-0.5 overflow-y-auto">
+        {ALL_NAV.map(({ label, icon: Icon, page }) => {
           const active = currentPageName === page;
           return (
-            <Link
-              key={page}
-              to={createPageUrl(page)}
-              className={`flex items-center gap-3.5 px-4 py-3 rounded-2xl transition-all ${
-                active
-                  ? "bg-rose-500 text-white shadow-sm"
-                  : "text-gray-600 hover:bg-rose-50 hover:text-rose-600"
-              }`}
-            >
-              <span className="text-xl w-6 text-center">{emoji}</span>
-              <span className="font-semibold text-sm">{label}</span>
-              {active && <div className="ml-auto w-2 h-2 rounded-full bg-white/60" />}
+            <Link key={page} to={createPageUrl(page)}
+              className="flex items-center gap-3 px-4 py-3 rounded-2xl transition-all group"
+              style={{
+                background: active ? "rgba(201,107,158,0.15)" : "transparent",
+                color: active ? "#C96B9E" : "#8A8AAA",
+              }}>
+              <Icon className="w-4.5 h-4.5 flex-shrink-0" style={{ width: 18, height: 18 }} />
+              <span className="font-medium text-sm">{label}</span>
+              {active && <ChevronRight className="ml-auto w-3.5 h-3.5 opacity-50" />}
             </Link>
           );
         })}
       </nav>
 
-      <div className="px-6 py-4 border-t border-rose-50">
-        <p className="text-[10px] text-gray-300 text-center">FemWell · Your wellness, your way 🌸</p>
+      <div className="px-6 py-4" style={{ borderTop: "1px solid #242436" }}>
+        <p className="text-[10px] text-center" style={{ color: "#2E2E45" }}>FemWell · Your wellness, your way</p>
       </div>
     </aside>
   );
 }
 
-/* ── Mobile / tablet floating button + drawer ──────────────────────────── */
+/* ── Mobile bottom tab bar ───────────────────────────────────── */
 export default function FloatingSidebar({ currentPageName, mode = "full" }) {
-  const [open, setOpen] = useState(false);
-  const currentNav = NAV.find((n) => n.page === currentPageName);
+  const [showMore, setShowMore] = useState(false);
+  const [visible, setVisible] = useState(true);
+  const lastScrollY = useRef(0);
 
+  // Collapse on scroll down, reveal on scroll up
   useEffect(() => {
-    const openDrawer = () => setOpen(true);
+    const onScroll = () => {
+      const y = window.scrollY;
+      if (y > lastScrollY.current + 8) setVisible(false);
+      else if (y < lastScrollY.current - 8) setVisible(true);
+      lastScrollY.current = y;
+    };
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => window.removeEventListener("scroll", onScroll);
+  }, []);
+
+  // Listen for programmatic open
+  useEffect(() => {
+    const openDrawer = () => setShowMore(true);
     window.addEventListener("open-nav-drawer", openDrawer);
     return () => window.removeEventListener("open-nav-drawer", openDrawer);
   }, []);
 
   return (
     <>
-      {/* Always-visible desktop sidebar */}
       {mode === "full" && <DesktopSidebar currentPageName={currentPageName} />}
 
-      {/* Mobile floating button (hidden on lg+) */}
-      <button
-        onClick={() => setOpen(!open)}
-        className="lg:hidden fixed bottom-6 right-5 z-50 w-14 h-14 rounded-full bg-gradient-to-br from-rose-400 to-pink-500 shadow-xl flex items-center justify-center text-white active:scale-95 transition-transform"
-        style={{ paddingBottom: "env(safe-area-inset-bottom, 0px)" }}
-      >
-        <AnimatePresence mode="wait">
-          {open ? (
-            <motion.div key="close" initial={{ rotate: -90, opacity: 0 }} animate={{ rotate: 0, opacity: 1 }}
-              exit={{ rotate: 90, opacity: 0 }} transition={{ duration: 0.15 }}>
-              <X className="w-6 h-6" />
-            </motion.div>
-          ) : (
-            <motion.div key="menu" initial={{ rotate: 90, opacity: 0 }} animate={{ rotate: 0, opacity: 1 }}
-              exit={{ rotate: -90, opacity: 0 }} transition={{ duration: 0.15 }}>
-              <Menu className="w-6 h-6" />
-            </motion.div>
-          )}
-        </AnimatePresence>
-      </button>
-
-      {/* Current page pill (mobile, closed state) */}
+      {/* More drawer backdrop */}
       <AnimatePresence>
-        {!open && currentNav && (
+        {showMore && (
+          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+            onClick={() => setShowMore(false)}
+            className="lg:hidden fixed inset-0 z-40 bg-black/50 backdrop-blur-sm" />
+        )}
+      </AnimatePresence>
+
+      {/* More drawer — slides up from above the bottom bar */}
+      <AnimatePresence>
+        {showMore && (
           <motion.div
-            initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: 20 }}
-            className="lg:hidden fixed bottom-8 right-[76px] z-40 bg-white/90 backdrop-blur-md px-3 py-1.5 rounded-full shadow-md flex items-center gap-1.5 pointer-events-none"
+            initial={{ y: 20, opacity: 0 }}
+            animate={{ y: 0, opacity: 1 }}
+            exit={{ y: 20, opacity: 0 }}
+            transition={{ type: "spring", damping: 28, stiffness: 340 }}
+            className="lg:hidden fixed z-40 rounded-2xl overflow-hidden shadow-2xl"
+            style={{
+              bottom: "calc(72px + env(safe-area-inset-bottom, 0px) + 8px)",
+              left: "50%", transform: "translateX(-50%)",
+              background: "#1C1C2E",
+              border: "1px solid #2E2E45",
+              minWidth: 220,
+            }}
           >
-            <span className="text-sm">{currentNav.emoji}</span>
-            <span className="text-xs font-semibold text-gray-700">{currentNav.label}</span>
+            {MORE_NAV.map(({ label, icon: Icon, page }) => {
+              const active = currentPageName === page;
+              return (
+                <Link key={page} to={createPageUrl(page)} onClick={() => setShowMore(false)}
+                  className="flex items-center gap-3 px-5 py-3.5 transition-all"
+                  style={{ color: active ? "#C96B9E" : "#8A8AAA", borderBottom: "1px solid #242436" }}>
+                  <Icon style={{ width: 18, height: 18 }} />
+                  <span className="text-sm font-medium">{label}</span>
+                </Link>
+              );
+            })}
           </motion.div>
         )}
       </AnimatePresence>
 
-      {/* Mobile drawer */}
-      <AnimatePresence>
-        {open && (
-          <>
-            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-              onClick={() => setOpen(false)}
-              className="lg:hidden fixed inset-0 z-40 bg-black/40 backdrop-blur-sm" />
+      {/* Bottom tab bar */}
+      <motion.div
+        animate={{ y: visible ? 0 : 80 }}
+        transition={{ type: "spring", damping: 30, stiffness: 300 }}
+        className="lg:hidden fixed bottom-0 inset-x-0 z-40 flex items-stretch"
+        style={{
+          height: "calc(64px + env(safe-area-inset-bottom, 0px))",
+          background: "#13131F",
+          borderTop: "1px solid #242436",
+        }}
+      >
+        <div className="flex flex-1 items-center justify-around px-1"
+          style={{ paddingBottom: "env(safe-area-inset-bottom, 0px)" }}>
+          {PRIMARY_NAV.map(({ label, icon: Icon, page }) => {
+            const active = currentPageName === page;
+            return (
+              <Link key={page} to={createPageUrl(page)}
+                className="flex flex-col items-center justify-center gap-1 flex-1 h-full transition-all active:scale-95"
+                style={{ color: active ? "#C96B9E" : "#4A4A65" }}>
+                <Icon style={{ width: 20, height: 20 }} strokeWidth={active ? 2.5 : 1.8} />
+                <span className="text-[10px] font-medium"
+                  style={{ color: active ? "#C96B9E" : "#4A4A65" }}>
+                  {label}
+                </span>
+              </Link>
+            );
+          })}
 
-            <motion.div
-              initial={{ x: "-100%" }} animate={{ x: 0 }} exit={{ x: "-100%" }}
-              transition={{ type: "spring", damping: 28, stiffness: 320 }}
-              className="lg:hidden fixed top-0 left-0 bottom-0 z-40 w-72 bg-white/96 backdrop-blur-xl shadow-2xl flex flex-col"
-              style={{ paddingBottom: "env(safe-area-inset-bottom, 0px)" }}
-            >
-              <div className="px-6 pt-14 pb-5 border-b border-rose-50">
-                <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-rose-300 to-pink-400 flex items-center justify-center text-2xl mb-3 shadow-sm">🌸</div>
-                <h2 className="text-xl font-black text-rose-900">FemWell</h2>
-                <p className="text-xs text-gray-400 mt-0.5">Your wellness companion</p>
-              </div>
-
-              <nav className="flex-1 px-3 py-4 space-y-1 overflow-y-auto">
-                {NAV.map(({ label, page, emoji }) => {
-                  const active = currentPageName === page;
-                  return (
-                    <Link key={page} to={createPageUrl(page)} onClick={() => setOpen(false)}
-                      className={`flex items-center gap-3.5 px-4 py-3.5 rounded-2xl transition-all ${
-                        active ? "bg-rose-500 text-white shadow-sm" : "text-gray-600 hover:bg-rose-50 hover:text-rose-600"
-                      }`}>
-                      <span className="text-xl w-6 text-center">{emoji}</span>
-                      <span className="font-semibold text-sm">{label}</span>
-                      {active && <div className="ml-auto w-2 h-2 rounded-full bg-white/60" />}
-                    </Link>
-                  );
-                })}
-              </nav>
-
-              <div className="px-6 py-4 border-t border-rose-50">
-                <p className="text-[10px] text-gray-300 text-center">FemWell · Your wellness, your way 🌸</p>
-              </div>
-            </motion.div>
-          </>
-        )}
-      </AnimatePresence>
+          {/* More button */}
+          <button
+            onClick={() => setShowMore(!showMore)}
+            className="flex flex-col items-center justify-center gap-1 flex-1 h-full transition-all active:scale-95"
+            style={{ color: showMore ? "#C96B9E" : "#4A4A65" }}>
+            <MoreHorizontal style={{ width: 20, height: 20 }} strokeWidth={showMore ? 2.5 : 1.8} />
+            <span className="text-[10px] font-medium" style={{ color: showMore ? "#C96B9E" : "#4A4A65" }}>
+              More
+            </span>
+          </button>
+        </div>
+      </motion.div>
     </>
   );
 }
