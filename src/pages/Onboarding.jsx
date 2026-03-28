@@ -1,69 +1,76 @@
 import { useState } from "react";
 import { base44 } from "@/api/base44Client";
 import { createPageUrl } from "@/utils";
-import { ChevronLeft, ChevronRight } from "lucide-react";
+import { Bell, ChevronLeft, ChevronRight, Droplets, Flower2, Sparkles } from "lucide-react";
 
 const GOALS = [
-  { id: "better_sleep", label: "Better Sleep" },
-  { id: "stress_relief", label: "Stress Relief" },
-  { id: "track_cycle", label: "Track my Cycle" },
-  { id: "mindfulness", label: "Mindfulness" },
-  { id: "nutrition", label: "Nutrition" },
-  { id: "energy", label: "Energy" },
+  { id: "calm", label: "Calm", emoji: "🫶" },
+  { id: "sleep", label: "Sleep", emoji: "💤" },
+  { id: "energy", label: "Energy", emoji: "⚡" },
+  { id: "fitness", label: "Fitness", emoji: "💪" },
+  { id: "nutrition", label: "Nutrition", emoji: "🥗" },
+  { id: "hormone_support", label: "Hormone support", emoji: "🌙" },
+  { id: "relationships", label: "Relationships", emoji: "💛" },
+  { id: "confidence", label: "Confidence", emoji: "✨" },
+];
+
+const INTERESTS = [
+  "Womens Health",
+  "Relationships",
+  "Career & Money",
+  "Beauty",
+  "Fitness",
+  "Food",
+  "Mental Wellness",
+  "Culture",
+  "Parenting",
+  "Sex Education",
+  "Menopause",
+  "PCOS",
+  "PMS",
 ];
 
 const TONES = [
-  { id: "gentle", label: "Gentle", sub: "Soft, caring, supportive" },
-  { id: "warm", label: "Warm", sub: "Friendly and encouraging" },
-  { id: "straight", label: "Direct", sub: "Clear, no-fluff" },
+  { id: "gentle", label: "Gentle", description: "Soft, warm, and encouraging" },
+  { id: "straight", label: "Straight talk", description: "Clear, practical, and direct" },
+  { id: "minimal", label: "Minimal", description: "Short, calm, and to the point" },
 ];
 
-const STEPS = ["welcome", "name", "cycle", "goals", "tone", "done"];
+const BODY_GOALS = [
+  { id: "", label: "Skip for now" },
+  { id: "fat_loss", label: "Fat loss" },
+  { id: "tone", label: "Tone" },
+  { id: "energy", label: "More energy" },
+  { id: "hormone_support", label: "Hormone support" },
+  { id: "postpartum", label: "Postpartum" },
+  { id: "menopause", label: "Menopause" },
+];
 
-function Dots({ step }) {
-  return (
-    <div className="flex items-center justify-center gap-2 mb-8">
-      {[1, 2, 3, 4, 5].map((i) => (
-        <div
-          key={i}
-          style={{
-            width: i === step ? 10 : 8,
-            height: i === step ? 10 : 8,
-            borderRadius: "50%",
-            background: i <= step ? "#C96B9E" : "#2E2E45",
-            transition: "all 0.2s",
-          }}
-        />
-      ))}
-    </div>
-  );
-}
+const STEPS = ["welcome", "goals", "interests", "preferences", "setup", "done"];
 
 export default function Onboarding() {
   const [step, setStep] = useState(0);
-  const [name, setName] = useState("");
-  const [cycleLength, setCycleLength] = useState(28);
-  const [periodLength, setPeriodLength] = useState(5);
   const [goals, setGoals] = useState([]);
+  const [interests, setInterests] = useState([]);
   const [tone, setTone] = useState("gentle");
+  const [notificationTime, setNotificationTime] = useState("morning");
+  const [hydrationTarget, setHydrationTarget] = useState(2000);
+  const [bodyGoal, setBodyGoal] = useState("");
+  const [cycleTrackingEnabled, setCycleTrackingEnabled] = useState(true);
   const [saving, setSaving] = useState(false);
 
-  const toggleGoal = (id) => {
-    setGoals((g) =>
-      g.includes(id)
-        ? g.filter((x) => x !== id)
-        : g.length < 3
-        ? [...g, id]
-        : g
-    );
+  const toggleValue = (value, setter) => {
+    setter((current) => (current.includes(value) ? current.filter((item) => item !== value) : [...current, value]));
   };
 
   const handleFinish = async () => {
     setSaving(true);
     const user = await base44.auth.me();
-    const [profiles, preferences, lifestyleProfiles] = await Promise.all([
+
+    const [profiles, preferences, nutritionProfiles, lifestyleProfiles] = await Promise.all([
       base44.entities.UserProfile.filter({ user_id: user.id }),
       base44.entities.UserPreferences.filter({ user_id: user.id }),
+      base44.entities.NutritionProfile.filter({ user_id: user.id }),
       base44.entities.LifestyleProfile.filter({ user_id: user.id }),
     ]);
 
@@ -73,285 +80,251 @@ export default function Onboarding() {
       onboarding_complete: true,
       goals,
       tone_preference: tone,
+      modules_enabled: cycleTrackingEnabled ? ["cycle"] : [],
     };
+
     if (profiles[0]) {
       await base44.entities.UserProfile.update(profiles[0].id, profilePayload);
     } else {
       await base44.entities.UserProfile.create(profilePayload);
     }
 
-    const prefPayload = {
+    const preferencePayload = {
       user_id: user.id,
       goals,
+      lifestyle_interests: interests,
       coach_tone: tone,
-      cycle_tracking_enabled: true,
+      notification_time: notificationTime,
+      hydration_target_ml: hydrationTarget,
+      body_goal: bodyGoal || undefined,
+      cycle_tracking_enabled: cycleTrackingEnabled,
     };
+
     if (preferences[0]) {
-      await base44.entities.UserPreferences.update(preferences[0].id, prefPayload);
+      await base44.entities.UserPreferences.update(preferences[0].id, preferencePayload);
     } else {
-      await base44.entities.UserPreferences.create(prefPayload);
+      await base44.entities.UserPreferences.create(preferencePayload);
     }
 
-    const lsPayload = { user_id: user.id };
-    if (lifestyleProfiles[0]) {
-      await base44.entities.LifestyleProfile.update(lifestyleProfiles[0].id, lsPayload);
+    const nutritionPayload = {
+      user_id: user.id,
+      hydration_target_ml: hydrationTarget,
+      ...(bodyGoal ? { goal_mode: bodyGoal } : {}),
+    };
+
+    if (nutritionProfiles[0]) {
+      await base44.entities.NutritionProfile.update(nutritionProfiles[0].id, nutritionPayload);
     } else {
-      await base44.entities.LifestyleProfile.create(lsPayload);
+      await base44.entities.NutritionProfile.create(nutritionPayload);
+    }
+
+    const lifestylePayload = {
+      user_id: user.id,
+      followed_topics: interests.join(","),
+      category_weights_json: JSON.stringify(Object.fromEntries(interests.map((item) => [item, 5]))),
+    };
+
+    if (lifestyleProfiles[0]) {
+      await base44.entities.LifestyleProfile.update(lifestyleProfiles[0].id, lifestylePayload);
+    } else {
+      await base44.entities.LifestyleProfile.create(lifestylePayload);
     }
 
     window.location.href = createPageUrl("Today");
   };
 
   const current = STEPS[step];
+  const progress = (step / (STEPS.length - 1)) * 100;
 
   return (
-    <div
-      className="min-h-screen flex flex-col"
-      style={{ background: "#0C0C1A", color: "#F2F2FF" }}
-    >
-      {/* Content */}
-      <div className="flex-1 flex flex-col px-5 pt-16 pb-6 max-w-md mx-auto w-full">
-        {/* WELCOME */}
+    <div className="min-h-screen femwell-gradient flex flex-col">
+      {step > 0 && step < STEPS.length - 1 && (
+        <div className="px-6 pt-12 pb-2">
+          <div className="h-1 overflow-hidden rounded-full bg-rose-100">
+            <div className="h-full rounded-full bg-gradient-to-r from-rose-400 to-pink-400 transition-all duration-500" style={{ width: `${progress}%` }} />
+          </div>
+        </div>
+      )}
+
+      <div className="mx-auto flex w-full max-w-md flex-1 flex-col items-center justify-center px-6 py-8">
         {current === "welcome" && (
-          <div className="flex-1 flex flex-col justify-center">
-            <h1
-              className="text-center font-bold"
-              style={{ fontSize: 32, letterSpacing: "-0.04em", lineHeight: 1.1, color: "#C96B9E" }}
-            >
-              FemWell
-            </h1>
-            <p className="text-center mt-3" style={{ fontSize: 17, color: "#8A8AAA", lineHeight: 1.5 }}>
-              Built around your cycle. Designed for you.
-            </p>
-            <div className="mt-10 space-y-5">
-              {[
-                { dot: "#E05C7A", text: "Understand your cycle, phase by phase" },
-                { dot: "#7ECBA1", text: "Daily check-ins that take 30 seconds" },
-                { dot: "#7C6AF5", text: "Content matched to where you are today" },
-              ].map((row) => (
-                <div key={row.text} className="flex items-center gap-3">
-                  <div
-                    style={{ width: 8, height: 8, borderRadius: "50%", background: row.dot, flexShrink: 0 }}
-                  />
-                  <p style={{ fontSize: 14, color: "#8A8AAA" }}>{row.text}</p>
-                </div>
+          <div className="space-y-6 text-center">
+            <div className="mx-auto flex h-20 w-20 items-center justify-center rounded-3xl bg-gradient-to-br from-rose-200 to-pink-300 shadow-xl">
+              <Flower2 className="h-10 w-10 text-white" />
+            </div>
+            <div>
+              <h1 className="mb-2 text-3xl font-bold text-rose-900">Welcome to FemWell</h1>
+              <p className="leading-relaxed text-gray-500">Let’s shape your feed, guidance style, and daily rhythm in under a minute.</p>
+            </div>
+            <button className="btn-primary w-full" onClick={() => setStep(1)}>
+              Get Started <ChevronRight className="ml-1 inline h-4 w-4" />
+            </button>
+          </div>
+        )}
+
+        {current === "goals" && (
+          <div className="w-full space-y-5">
+            <div>
+              <h2 className="text-2xl font-bold text-rose-900">What do you want more of?</h2>
+              <p className="mt-1 text-sm text-gray-500">Pick the goals that matter most right now.</p>
+            </div>
+            <div className="grid grid-cols-2 gap-3">
+              {GOALS.map((goal) => (
+                <button
+                  key={goal.id}
+                  onClick={() => toggleValue(goal.id, setGoals)}
+                  className={`rounded-2xl border-2 p-4 text-left transition-all ${goals.includes(goal.id) ? "border-rose-400 bg-rose-50" : "border-transparent bg-white/70"}`}
+                >
+                  <div className="mb-1 text-2xl">{goal.emoji}</div>
+                  <div className="text-sm font-medium text-gray-700">{goal.label}</div>
+                </button>
               ))}
             </div>
           </div>
         )}
 
-        {/* STEP 1 — Name */}
-        {current === "name" && (
-          <div className="flex-1 flex flex-col justify-center">
-            <Dots step={1} />
-            <h2 className="font-bold mb-1" style={{ fontSize: 24, letterSpacing: "-0.02em" }}>
-              What should we call you?
-            </h2>
-            <p style={{ fontSize: 14, color: "#8A8AAA", marginBottom: 24 }}>
-              We'll use this to personalise your experience.
-            </p>
-            <input
-              type="text"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              placeholder="Your first name"
-              autoFocus
-              className="w-full"
-              style={{
-                background: "#13131F",
-                border: "1px solid #2E2E45",
-                borderRadius: 12,
-                height: 52,
-                padding: "0 16px",
-                fontSize: 16,
-                color: "#F2F2FF",
-                outline: "none",
-              }}
-            />
-          </div>
-        )}
-
-        {/* STEP 2 — Cycle */}
-        {current === "cycle" && (
-          <div className="flex-1 flex flex-col justify-center">
-            <Dots step={2} />
-            <h2 className="font-bold mb-1" style={{ fontSize: 24, letterSpacing: "-0.02em" }}>
-              Tell us about your cycle
-            </h2>
-            <p style={{ fontSize: 14, color: "#8A8AAA", marginBottom: 28 }}>
-              Helps us give phase-aware recommendations.
-            </p>
-            <div className="space-y-6">
-              <div>
-                <div className="flex justify-between mb-2">
-                  <span style={{ fontSize: 14, color: "#8A8AAA" }}>Average cycle length</span>
-                  <span style={{ fontSize: 14, fontWeight: 700, color: "#C96B9E" }}>{cycleLength} days</span>
-                </div>
-                <input
-                  type="range"
-                  min="21"
-                  max="45"
-                  value={cycleLength}
-                  onChange={(e) => setCycleLength(Number(e.target.value))}
-                  style={{ accentColor: "#E05C7A" }}
-                />
-              </div>
-              <div>
-                <div className="flex justify-between mb-2">
-                  <span style={{ fontSize: 14, color: "#8A8AAA" }}>Period duration</span>
-                  <span style={{ fontSize: 14, fontWeight: 700, color: "#C96B9E" }}>{periodLength} days</span>
-                </div>
-                <input
-                  type="range"
-                  min="2"
-                  max="10"
-                  value={periodLength}
-                  onChange={(e) => setPeriodLength(Number(e.target.value))}
-                  style={{ accentColor: "#E05C7A" }}
-                />
-              </div>
+        {current === "interests" && (
+          <div className="w-full space-y-5">
+            <div>
+              <h2 className="text-2xl font-bold text-rose-900">Choose your lifestyle interests</h2>
+              <p className="mt-1 text-sm text-gray-500">This powers your personalised feed from day one.</p>
+            </div>
+            <div className="flex flex-wrap gap-2">
+              {INTERESTS.map((interest) => (
+                <button
+                  key={interest}
+                  onClick={() => toggleValue(interest, setInterests)}
+                  className={`rounded-full px-4 py-2 text-sm font-medium transition-all ${interests.includes(interest) ? "bg-rose-500 text-white" : "bg-white/80 text-gray-600"}`}
+                >
+                  {interest}
+                </button>
+              ))}
             </div>
           </div>
         )}
 
-        {/* STEP 3 — Goals */}
-        {current === "goals" && (
-          <div className="flex-1 flex flex-col justify-center">
-            <Dots step={3} />
-            <h2 className="font-bold mb-1" style={{ fontSize: 24, letterSpacing: "-0.02em" }}>
-              What do you want to focus on?
-            </h2>
-            <p style={{ fontSize: 12, color: "#8A8AAA", marginBottom: 20 }}>Choose up to 3</p>
-            <div className="flex flex-wrap gap-3">
-              {GOALS.map((g) => {
-                const sel = goals.includes(g.id);
-                return (
-                  <button
-                    key={g.id}
-                    onClick={() => toggleGoal(g.id)}
-                    style={{
-                      borderRadius: 999,
-                      padding: "8px 16px",
-                      fontSize: 12,
-                      border: sel ? "2px solid #C96B9E" : "1px solid #242436",
-                      background: sel ? "rgba(201,107,158,0.15)" : "#13131F",
-                      color: sel ? "#F2F2FF" : "#8A8AAA",
-                      cursor: "pointer",
-                      transition: "all 0.15s",
-                    }}
-                  >
-                    {g.label}
-                  </button>
-                );
-              })}
+        {current === "preferences" && (
+          <div className="w-full space-y-6">
+            <div>
+              <h2 className="text-2xl font-bold text-rose-900">How should FemWell show up?</h2>
+              <p className="mt-1 text-sm text-gray-500">Choose your guidance style and your best reminder window.</p>
             </div>
-          </div>
-        )}
 
-        {/* STEP 4 — Tone */}
-        {current === "tone" && (
-          <div className="flex-1 flex flex-col justify-center">
-            <Dots step={4} />
-            <h2 className="font-bold mb-1" style={{ fontSize: 24, letterSpacing: "-0.02em" }}>
-              How should FemWell talk to you?
-            </h2>
-            <p style={{ fontSize: 14, color: "#8A8AAA", marginBottom: 20 }}>
-              You can change this any time.
-            </p>
             <div className="space-y-3">
-              {TONES.map((t) => {
-                const sel = tone === t.id;
-                return (
+              {TONES.map((item) => (
+                <button
+                  key={item.id}
+                  onClick={() => setTone(item.id)}
+                  className={`w-full rounded-2xl border-2 p-4 text-left transition-all ${tone === item.id ? "border-rose-400 bg-rose-50" : "border-transparent bg-white/70"}`}
+                >
+                  <div className="font-medium text-gray-800">{item.label}</div>
+                  <div className="mt-1 text-xs text-gray-500">{item.description}</div>
+                </button>
+              ))}
+            </div>
+
+            <div>
+              <p className="mb-2 text-sm font-medium text-gray-600">Reminder time</p>
+              <div className="grid grid-cols-2 gap-3">
+                {[{ id: "morning", label: "Morning", icon: "☀️" }, { id: "evening", label: "Evening", icon: "🌙" }].map((item) => (
                   <button
-                    key={t.id}
-                    onClick={() => setTone(t.id)}
-                    className="w-full text-left"
-                    style={{
-                      background: sel ? "rgba(201,107,158,0.12)" : "#13131F",
-                      border: sel ? "2px solid #C96B9E" : "1px solid #242436",
-                      borderRadius: 16,
-                      padding: 16,
-                      cursor: "pointer",
-                      transition: "all 0.15s",
-                    }}
+                    key={item.id}
+                    onClick={() => setNotificationTime(item.id)}
+                    className={`rounded-2xl border px-4 py-3 text-sm font-semibold transition-all ${notificationTime === item.id ? "border-rose-400 bg-rose-50 text-rose-600" : "border-rose-100 bg-white text-gray-600"}`}
                   >
-                    <p style={{ fontWeight: 700, color: "#F2F2FF", fontSize: 15 }}>{t.label}</p>
-                    <p style={{ fontSize: 13, color: "#8A8AAA", marginTop: 2 }}>{t.sub}</p>
+                    <Bell className="mr-1 inline h-4 w-4" /> {item.icon} {item.label}
                   </button>
-                );
-              })}
+                ))}
+              </div>
             </div>
           </div>
         )}
 
-        {/* STEP 5 — Done */}
+        {current === "setup" && (
+          <div className="w-full space-y-6">
+            <div>
+              <h2 className="text-2xl font-bold text-rose-900">Quick setup</h2>
+              <p className="mt-1 text-sm text-gray-500">Set a hydration goal and any optional wellness focus.</p>
+            </div>
+
+            <div className="rounded-[24px] bg-white/80 p-4">
+              <label className="mb-2 block text-sm font-medium text-gray-600">
+                <Droplets className="mr-1 inline h-4 w-4 text-rose-500" /> Hydration goal
+              </label>
+              <input
+                type="number"
+                min="500"
+                step="100"
+                value={hydrationTarget}
+                onChange={(event) => setHydrationTarget(Number(event.target.value) || 2000)}
+                className="w-full rounded-xl border border-rose-100 bg-white px-4 py-3 text-sm text-gray-700 outline-none focus:ring-2 focus:ring-rose-200"
+              />
+            </div>
+
+            <div>
+              <p className="mb-2 text-sm font-medium text-gray-600">Optional body goal</p>
+              <div className="flex flex-wrap gap-2">
+                {BODY_GOALS.map((item) => (
+                  <button
+                    key={item.label}
+                    onClick={() => setBodyGoal(item.id)}
+                    className={`rounded-full px-4 py-2 text-sm font-medium transition-all ${bodyGoal === item.id ? "bg-rose-500 text-white" : "bg-white/80 text-gray-600"}`}
+                  >
+                    {item.label}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            <button
+              onClick={() => setCycleTrackingEnabled((value) => !value)}
+              className={`flex w-full items-center justify-between rounded-[24px] border p-4 text-left transition-all ${cycleTrackingEnabled ? "border-rose-300 bg-rose-50" : "border-rose-100 bg-white"}`}
+            >
+              <div>
+                <p className="font-medium text-gray-800">Cycle tracking</p>
+                <p className="mt-1 text-xs text-gray-500">Turn this on if you want phase-aware tips and trends.</p>
+              </div>
+              <div className={`rounded-full px-3 py-1 text-xs font-semibold ${cycleTrackingEnabled ? "bg-rose-500 text-white" : "bg-gray-100 text-gray-500"}`}>
+                {cycleTrackingEnabled ? "Enabled" : "Off"}
+              </div>
+            </button>
+          </div>
+        )}
+
         {current === "done" && (
-          <div className="flex-1 flex flex-col items-center justify-center text-center">
-            <Dots step={5} />
-            <div
-              className="w-20 h-20 rounded-full flex items-center justify-center mb-6"
-              style={{ background: "#4ABFA3" }}
-            >
-              <svg width="36" height="36" viewBox="0 0 36 36" fill="none">
-                <path
-                  d="M8 18.5L14.5 25L28 11"
-                  stroke="white"
-                  strokeWidth="3"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                />
-              </svg>
+          <div className="space-y-6 text-center">
+            <div className="text-6xl">✨</div>
+            <div>
+              <h2 className="text-2xl font-bold text-rose-900">You’re all set</h2>
+              <p className="mt-2 leading-relaxed text-gray-500">Your assistant, feed, and recommendations are now tuned to you.</p>
             </div>
-            <h2 style={{ fontSize: 24, fontWeight: 700, color: "#F2F2FF" }}>You are in your</h2>
-            <p style={{ fontSize: 32, fontWeight: 700, color: "#C96B9E", letterSpacing: "-0.04em" }}>
-              Follicular phase
-            </p>
-            <p style={{ fontSize: 14, color: "#8A8AAA", marginTop: 20, lineHeight: 1.6, maxWidth: 280 }}>
-              Energy is building. This is your most creative and focused window.
-            </p>
+            <div className="rounded-[24px] bg-white/80 p-4 text-left">
+              <div className="inline-flex items-center gap-2 rounded-full bg-rose-50 px-3 py-1 text-xs font-semibold text-rose-600">
+                <Sparkles className="h-3.5 w-3.5" /> Personalisation ready
+              </div>
+              <p className="mt-3 text-sm text-gray-600">You’ll see smarter lifestyle picks, a more human assistant, and faster recommendations from the moment you enter.</p>
+            </div>
+            <button className="btn-primary w-full" onClick={handleFinish} disabled={saving}>
+              {saving ? "Setting up..." : "Enter FemWell →"}
+            </button>
           </div>
         )}
-
-        {/* CTA button — always pinned to bottom */}
-        <div className="mt-auto pt-8">
-          {current === "done" ? (
-            <button
-              className="w-full btn-primary"
-              style={{ height: 56 }}
-              onClick={handleFinish}
-              disabled={saving}
-            >
-              {saving ? "Setting up..." : "Enter FemWell"}
-            </button>
-          ) : current === "welcome" ? (
-            <button
-              className="w-full btn-primary"
-              style={{ height: 56 }}
-              onClick={() => setStep(1)}
-            >
-              Get Started <ChevronRight className="inline ml-1" size={18} />
-            </button>
-          ) : (
-            <div className="flex gap-3">
-              <button
-                className="btn-secondary"
-                style={{ height: 52, paddingLeft: 20, paddingRight: 20 }}
-                onClick={() => setStep((s) => s - 1)}
-              >
-                <ChevronLeft size={18} />
-              </button>
-              <button
-                className="btn-primary flex-1"
-                style={{ height: 52 }}
-                onClick={() => setStep((s) => s + 1)}
-                disabled={current === "goals" && goals.length === 0}
-              >
-                Continue <ChevronRight className="inline ml-1" size={18} />
-              </button>
-            </div>
-          )}
-        </div>
       </div>
+
+      {step > 0 && step < STEPS.length - 1 && (
+        <div className="mx-auto flex w-full max-w-md gap-3 px-6 pb-10">
+          <button onClick={() => setStep((currentStep) => currentStep - 1)} className="btn-secondary flex items-center gap-1">
+            <ChevronLeft className="h-4 w-4" /> Back
+          </button>
+          <button
+            onClick={() => setStep((currentStep) => currentStep + 1)}
+            className="btn-primary flex-1"
+            disabled={(current === "goals" && goals.length === 0) || (current === "interests" && interests.length === 0)}
+          >
+            Continue <ChevronRight className="ml-1 inline h-4 w-4" />
+          </button>
+        </div>
+      )}
     </div>
   );
 }
