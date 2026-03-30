@@ -13,7 +13,7 @@ const NAV = [
   { label: "Explore",   icon: Compass,   page: "Explore" },
   { label: "Lifestyle", icon: BookOpen,  page: "Lifestyle" },
   { label: "Journal",   icon: Newspaper, page: "Journal" },
-  { label: "Assistant", icon: Sparkles,  page: "Assistant" },
+  { label: "Guide",     icon: Sparkles,  page: "Assistant" },
   { label: "Profile",   icon: User,      page: "Profile" },
 ];
 
