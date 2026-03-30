@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { base44 } from "@/api/base44Client";
 import { createPageUrl } from "@/utils";
 import { Sun, ChevronRight, Plus, Sparkles, ChevronLeft, Droplets, Activity, Heart, Pill, Play, CheckCircle, Trash2, Utensils, Loader2, Bell, Flame } from "lucide-react";
+import TodayHeroSection from "../components/today/TodayHeroSection";
 import ManualCompleteButton from "../components/sessions/ManualCompleteButton";
 import DailyInsightBanner from "../components/today/DailyInsightBanner";
 import HabitCard from "../components/habits/HabitCard";
@@ -289,8 +290,8 @@ export default function Today() {
   const showProgramReminder = activeProgramEntry?.reminder_time && isReminderDue(activeProgramEntry.reminder_time);
 
   if (loading) return (
-    <div className="min-h-screen femwell-gradient flex items-center justify-center">
-      <div className="w-10 h-10 border-4 border-rose-300 border-t-rose-600 rounded-full animate-spin" />
+    <div className="min-h-screen flex items-center justify-center" style={{ backgroundColor: "var(--ivory)" }}>
+      <div className="w-8 h-8 rounded-full border-2 border-t-transparent animate-spin" style={{ borderColor: "var(--rose-dust-light)", borderTopColor: "var(--rose-dust)" }} />
     </div>
   );
 
@@ -305,22 +306,18 @@ export default function Today() {
       )}
 
       <div className="max-w-3xl mx-auto px-4">
-        {/* Header */}
-        <div className="pt-12 pb-3 flex items-start justify-between">
-          <div>
-            <p className="text-sm text-gray-400">{format(new Date(), "EEEE, MMMM d")}</p>
-            <h1 className="text-2xl font-bold text-rose-900">
-              Good {new Date().getHours() < 12 ? "morning" : new Date().getHours() < 17 ? "afternoon" : "evening"},{" "}
-              {user?.full_name?.split(" ")[0] || ""}
-            </h1>
-          </div>
-          <div className="w-10 h-10 rounded-2xl bg-gradient-to-br from-rose-300 to-pink-400 flex items-center justify-center text-white font-bold shadow-md">
-            {user?.full_name?.[0]?.toUpperCase() || "?"}
-          </div>
+        {/* Hero — premium top section */}
+        <div className="pt-8">
+          <TodayHeroSection
+            user={user}
+            cycleInfo={cycleInfo}
+            todayCheckin={todayCheckin}
+            onOpenCheckin={() => setShowCheckin(true)}
+          />
         </div>
 
         {/* Sub-nav */}
-        <div className="flex gap-1 mb-5 bg-white/60 rounded-2xl p-1">
+        <div className="flex gap-1 mb-5 rounded-2xl p-1" style={{ backgroundColor: "rgba(255,255,255,0.6)" }}>
           <button
             onClick={() => setMainTab("today")}
             className={`flex-1 py-2 rounded-xl text-sm font-semibold transition-all ${mainTab === "today" ? "bg-rose-500 text-white shadow-sm" : "text-gray-500"}`}
@@ -338,18 +335,6 @@ export default function Today() {
         {/* ── MY DAY ─────────────────────────────────────────────────────── */}
         {mainTab === "today" && (
           <>
-            {/* Cycle phase card */}
-            {phaseData && (
-              <div className={`card-glass rounded-2xl p-5 mb-4 bg-gradient-to-r ${phaseData.color} bg-opacity-10 relative overflow-hidden`}>
-                <div className="relative z-10">
-                  <p className="text-xs font-medium text-white/80 mb-0.5">Day {cycleInfo.day} of cycle</p>
-                  <h2 className="text-lg font-bold text-white">{phaseData.emoji} {phaseData.label}</h2>
-                  <p className="text-sm text-white/90 mt-1">{phaseData.tip}</p>
-                </div>
-                <div className="absolute right-4 top-1/2 -translate-y-1/2 text-5xl opacity-30">{phaseData.emoji}</div>
-              </div>
-            )}
-
             {/* Daily Insight Banner */}
             {user && <DailyInsightBanner user={user} />}
 
@@ -389,49 +374,6 @@ export default function Today() {
               </div>
             )}
 
-            {/* Daily check-in */}
-            <div className="card-glass rounded-2xl p-4 mb-4">
-              {todayCheckin ? (
-                <div>
-                  <div className="flex items-center justify-between mb-3">
-                    <p className="font-semibold text-gray-700 text-sm">Today's Check-in ✓</p>
-                    <button onClick={() => setShowCheckin(true)} className="text-xs text-rose-400 font-medium">Edit</button>
-                  </div>
-                  <div className="grid grid-cols-4 gap-2">
-                    {[
-                      { label: "Mood", emoji: "😊", value: todayCheckin.mood, unit: "/5" },
-                      { label: "Energy", emoji: "⚡", value: todayCheckin.energy, unit: "/5" },
-                      { label: "Stress", emoji: "🌊", value: todayCheckin.stress, unit: "/5" },
-                      { label: "Sleep", emoji: "💤", value: todayCheckin.sleep_hours, unit: "h" },
-                    ].map((m) => (
-                      <div key={m.label} className="text-center">
-                        <p className="text-lg">{m.emoji}</p>
-                        <p className="text-sm font-bold text-gray-700">{m.value}{m.unit}</p>
-                        <p className="text-xs text-gray-400">{m.label}</p>
-                      </div>
-                    ))}
-                  </div>
-                  {todayCheckin.hydration_glasses != null && (
-                    <div className="mt-2 flex flex-wrap gap-2">
-                      {todayCheckin.hydration_glasses != null && <span className="text-xs bg-blue-50 text-blue-500 px-2 py-0.5 rounded-full">💧 {todayCheckin.hydration_glasses} glasses</span>}
-                      {todayCheckin.exercise_done && <span className="text-xs bg-green-50 text-green-600 px-2 py-0.5 rounded-full">🏃 {todayCheckin.exercise_type || "Exercise"} {todayCheckin.exercise_minutes ? `${todayCheckin.exercise_minutes}m` : ""}</span>}
-                      {todayCheckin.focus != null && <span className="text-xs bg-purple-50 text-purple-500 px-2 py-0.5 rounded-full">🎯 Focus {todayCheckin.focus}/5</span>}
-                    </div>
-                  )}
-                </div>
-              ) : (
-                <button onClick={() => setShowCheckin(true)} className="w-full flex items-center gap-4 text-left">
-                  <div className="w-12 h-12 rounded-2xl bg-rose-100 flex items-center justify-center flex-shrink-0">
-                    <Sun className="w-6 h-6 text-rose-400" />
-                  </div>
-                  <div className="flex-1">
-                    <p className="font-semibold text-gray-700">Daily Check-in</p>
-                    <p className="text-xs text-gray-400">Tap to log your mood, energy & more</p>
-                  </div>
-                  <Plus className="w-5 h-5 text-rose-400" />
-                </button>
-              )}
-            </div>
 
             {/* Quick Meal Log */}
             <div className="card-glass rounded-2xl p-4 mb-4">

@@ -1,0 +1,271 @@
+import { format } from "date-fns";
+import { Sun, Moon, Sunset, Circle, ChevronRight, Plus } from "lucide-react";
+
+// Phase config — no emojis, clean
+const PHASE_META = {
+  menstrual:  { label: "Menstrual",  accent: "#C4849A", subtle: "#F5ECF0", tip: "Rest and restore. Your body is working hard." },
+  follicular: { label: "Follicular", accent: "#7A9E8E", subtle: "#EBF2EF", tip: "Energy rising — a good time to start new things." },
+  ovulatory:  { label: "Ovulatory",  accent: "#B89E6A", subtle: "#F5F0E6", tip: "Peak clarity and confidence. Make the most of today." },
+  luteal:     { label: "Luteal",     accent: "#8A7E88", subtle: "#F0EBF0", tip: "Wind down, reflect, and nourish yourself." },
+};
+
+function getGreeting() {
+  const h = new Date().getHours();
+  if (h < 12) return { word: "Good morning", Icon: Sun };
+  if (h < 17) return { word: "Good afternoon", Icon: Sunset };
+  return { word: "Good evening", Icon: Moon };
+}
+
+// Ambient hero background — pure CSS, no images needed
+function HeroAmbient({ phase }) {
+  const meta = phase ? PHASE_META[phase] : null;
+  const baseColor = meta?.accent || "#C4849A";
+  // Two slow-drifting soft orbs
+  return (
+    <div
+      className="absolute inset-0 overflow-hidden rounded-[28px]"
+      aria-hidden="true"
+      style={{ background: `linear-gradient(145deg, var(--ivory) 0%, ${meta?.subtle || "#F5ECF0"} 100%)` }}
+    >
+      {/* Orb 1 */}
+      <div
+        style={{
+          position: "absolute",
+          top: "-30%",
+          right: "-10%",
+          width: "55%",
+          paddingBottom: "55%",
+          borderRadius: "50%",
+          background: `radial-gradient(circle, ${baseColor}26 0%, transparent 70%)`,
+          animation: "fw-drift-a 18s ease-in-out infinite alternate",
+        }}
+      />
+      {/* Orb 2 */}
+      <div
+        style={{
+          position: "absolute",
+          bottom: "-20%",
+          left: "-8%",
+          width: "45%",
+          paddingBottom: "45%",
+          borderRadius: "50%",
+          background: `radial-gradient(circle, ${baseColor}18 0%, transparent 70%)`,
+          animation: "fw-drift-b 22s ease-in-out infinite alternate",
+        }}
+      />
+      {/* Subtle noise-texture line */}
+      <div
+        style={{
+          position: "absolute",
+          inset: 0,
+          backgroundImage: `repeating-linear-gradient(
+            135deg,
+            transparent,
+            transparent 60px,
+            ${baseColor}07 60px,
+            ${baseColor}07 61px
+          )`,
+        }}
+      />
+      <style>{`
+        @keyframes fw-drift-a {
+          from { transform: translate(0,0) scale(1); }
+          to   { transform: translate(3%,5%) scale(1.08); }
+        }
+        @keyframes fw-drift-b {
+          from { transform: translate(0,0) scale(1); }
+          to   { transform: translate(-3%,-4%) scale(1.06); }
+        }
+      `}</style>
+    </div>
+  );
+}
+
+export default function TodayHeroSection({
+  user,
+  cycleInfo,
+  todayCheckin,
+  onOpenCheckin,
+}) {
+  const { word: greetWord, Icon: GreetIcon } = getGreeting();
+  const firstName = user?.full_name?.split(" ")[0] || "";
+  const phaseMeta = cycleInfo ? PHASE_META[cycleInfo.phase] : null;
+  const today = new Date();
+
+  return (
+    <div className="relative rounded-[28px] overflow-hidden mb-6" style={{ boxShadow: "var(--shadow-md)" }}>
+      <HeroAmbient phase={cycleInfo?.phase} />
+
+      {/* Content layer */}
+      <div className="relative z-10 px-6 pt-8 pb-6 md:px-8 md:pt-10 md:pb-8">
+
+        {/* Welcome row */}
+        <div className="flex items-start justify-between gap-4 mb-6">
+          <div>
+            {/* Date line */}
+            <p
+              className="text-xs font-medium tracking-widest uppercase mb-2"
+              style={{ color: "var(--mauve)", fontFamily: "'Inter', sans-serif", letterSpacing: "0.12em" }}
+            >
+              {format(today, "EEEE, MMMM d")}
+            </p>
+
+            {/* Greeting */}
+            <h1
+              className="text-3xl md:text-4xl leading-tight"
+              style={{
+                fontFamily: "'Playfair Display', serif",
+                color: "var(--plum)",
+                letterSpacing: "-0.02em",
+                fontWeight: 600,
+              }}
+            >
+              {greetWord}
+              {firstName && (
+                <span style={{ color: phaseMeta?.accent || "var(--rose-dust)", display: "block" }}>
+                  {firstName}.
+                </span>
+              )}
+            </h1>
+          </div>
+
+          {/* Avatar */}
+          <div
+            className="flex-shrink-0 w-11 h-11 rounded-2xl flex items-center justify-center text-base font-semibold"
+            style={{
+              backgroundColor: phaseMeta?.subtle || "var(--rose-dust-subtle)",
+              color: phaseMeta?.accent || "var(--rose-dust)",
+              border: `1.5px solid ${phaseMeta?.accent || "var(--rose-dust-light)"}40`,
+              fontFamily: "'Playfair Display', serif",
+              fontSize: "1.1rem",
+            }}
+          >
+            {user?.full_name?.[0]?.toUpperCase() || "·"}
+          </div>
+        </div>
+
+        {/* Divider */}
+        <div
+          style={{ height: "1px", backgroundColor: `${phaseMeta?.accent || "var(--rose-dust)"}20`, marginBottom: "1.25rem" }}
+        />
+
+        {/* Cycle context — premium, text-led */}
+        {cycleInfo && phaseMeta && (
+          <div className="mb-5 flex items-start gap-4">
+            <div
+              className="flex-shrink-0 w-2.5 h-2.5 rounded-full mt-1"
+              style={{ backgroundColor: phaseMeta.accent, boxShadow: `0 0 8px ${phaseMeta.accent}60` }}
+            />
+            <div>
+              <p
+                className="text-xs font-semibold uppercase tracking-widest mb-0.5"
+                style={{ color: phaseMeta.accent, fontFamily: "'Inter', sans-serif", letterSpacing: "0.1em" }}
+              >
+                {phaseMeta.label} · Day {cycleInfo.day}
+              </p>
+              <p
+                className="text-sm leading-relaxed"
+                style={{ color: "var(--plum)", opacity: 0.7, fontFamily: "'Inter', sans-serif" }}
+              >
+                {phaseMeta.tip}
+              </p>
+            </div>
+          </div>
+        )}
+
+        {/* Primary daily focus — check-in CTA or summary */}
+        {todayCheckin ? (
+          <div
+            className="rounded-2xl px-4 py-4"
+            style={{
+              backgroundColor: "rgba(255,255,255,0.7)",
+              border: "1px solid rgba(255,255,255,0.9)",
+              backdropFilter: "blur(8px)",
+            }}
+          >
+            <div className="flex items-center justify-between mb-3">
+              <p
+                className="text-xs font-semibold uppercase tracking-widest"
+                style={{ color: "var(--mauve)", fontFamily: "'Inter', sans-serif", letterSpacing: "0.1em" }}
+              >
+                Today's check-in
+              </p>
+              <button
+                onClick={onOpenCheckin}
+                className="text-xs font-medium transition-opacity hover:opacity-70"
+                style={{ color: phaseMeta?.accent || "var(--rose-dust)", fontFamily: "'Inter', sans-serif" }}
+              >
+                Edit
+              </button>
+            </div>
+
+            <div className="grid grid-cols-4 gap-3">
+              {[
+                { label: "Mood",   value: todayCheckin.mood,        unit: "/5" },
+                { label: "Energy", value: todayCheckin.energy,      unit: "/5" },
+                { label: "Stress", value: todayCheckin.stress,      unit: "/5" },
+                { label: "Sleep",  value: todayCheckin.sleep_hours, unit: "h" },
+              ].map((m) => (
+                <div key={m.label} className="text-center">
+                  <p
+                    className="text-xl font-semibold leading-none"
+                    style={{ color: "var(--plum)", fontFamily: "'Playfair Display', serif" }}
+                  >
+                    {m.value ?? "—"}
+                    <span className="text-xs font-normal" style={{ color: "var(--mauve)" }}>{m.unit}</span>
+                  </p>
+                  <p
+                    className="text-[10px] mt-1 uppercase tracking-wider"
+                    style={{ color: "var(--mauve)", fontFamily: "'Inter', sans-serif", letterSpacing: "0.08em" }}
+                  >
+                    {m.label}
+                  </p>
+                </div>
+              ))}
+            </div>
+          </div>
+        ) : (
+          <button
+            onClick={onOpenCheckin}
+            className="w-full flex items-center gap-4 rounded-2xl px-4 py-4 text-left transition-all duration-200 group"
+            style={{
+              backgroundColor: "rgba(255,255,255,0.65)",
+              border: "1px solid rgba(255,255,255,0.9)",
+              backdropFilter: "blur(8px)",
+            }}
+          >
+            <div
+              className="w-11 h-11 rounded-2xl flex items-center justify-center flex-shrink-0 transition-transform group-hover:scale-105"
+              style={{
+                backgroundColor: phaseMeta?.subtle || "var(--rose-dust-subtle)",
+                color: phaseMeta?.accent || "var(--rose-dust)",
+              }}
+            >
+              <GreetIcon className="w-5 h-5" strokeWidth={1.5} />
+            </div>
+            <div className="flex-1">
+              <p
+                className="font-semibold text-sm"
+                style={{ color: "var(--plum)", fontFamily: "'Inter', sans-serif" }}
+              >
+                How are you today?
+              </p>
+              <p
+                className="text-xs mt-0.5"
+                style={{ color: "var(--mauve)", fontFamily: "'Inter', sans-serif" }}
+              >
+                Log mood, energy, sleep and more
+              </p>
+            </div>
+            <div
+              className="w-7 h-7 rounded-full flex items-center justify-center"
+              style={{ backgroundColor: phaseMeta?.subtle || "var(--rose-dust-subtle)", color: phaseMeta?.accent || "var(--rose-dust)" }}
+            >
+              <Plus className="w-3.5 h-3.5" />
+            </div>
+          </button>
+        )}
+      </div>
+    </div>
+  );
+}
