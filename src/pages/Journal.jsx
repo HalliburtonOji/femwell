@@ -179,7 +179,25 @@ export default function Journal() {
 
         {/* ── WRITE TAB ───────────────────────────────────────────────── */}
         {activeTab === "write" && user && (
-          <JournalComposer user={user} onSaved={handleSaved} />
+          <div className="space-y-4">
+            {entries.length > 0 && entries[0].session_date === new Date().toISOString().split("T")[0] && (
+              <div className="rounded-[16px] p-3.5 flex items-center justify-between"
+                style={{ backgroundColor: "var(--ivory-dark)", border: "1px solid var(--border)" }}>
+                <div className="flex-1 min-w-0">
+                  <p className="text-xs font-semibold" style={{ color: "var(--plum)", fontFamily: "'Inter', sans-serif" }}>You wrote today</p>
+                  <p className="text-xs mt-0.5 truncate" style={{ color: "var(--mauve)", fontFamily: "'Inter', sans-serif" }}>
+                    {entries[0].text?.slice(0, 60)}{entries[0].text?.length > 60 ? "…" : ""}
+                  </p>
+                </div>
+                <button onClick={() => setSelectedEntry(entries[0])}
+                  className="text-xs font-semibold ml-4 flex-shrink-0"
+                  style={{ color: "var(--rose-dust)", fontFamily: "'Inter', sans-serif" }}>
+                  Read
+                </button>
+              </div>
+            )}
+            <JournalComposer user={user} onSaved={handleSaved} />
+          </div>
         )}
 
         {/* ── LIBRARY TAB ─────────────────────────────────────────────── */}

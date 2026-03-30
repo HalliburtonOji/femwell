@@ -1,13 +1,19 @@
 import { useState } from "react";
-import { Flame, ChevronDown, ChevronUp, CheckCircle, Circle } from "lucide-react";
+import { ChevronDown, ChevronUp, Circle, CheckCircle2 } from "lucide-react";
 import HabitStreakCalendar from "./HabitStreakCalendar";
 
-const MILESTONE_MESSAGES = {
-  7: "🎉 7-day streak! You're on fire!",
-  14: "🌟 2 weeks strong! Keep going!",
-  30: "🏆 30 days! Incredible dedication!",
-  60: "💎 60-day legend! Unstoppable!",
-  100: "🚀 100 days! You're a habit master!",
+const card = {
+  backgroundColor: "var(--surface)",
+  border: "1px solid var(--border)",
+  boxShadow: "var(--shadow-sm)",
+};
+
+const MILESTONE_LABELS = {
+  7:   "7 days",
+  14:  "2 weeks",
+  30:  "30 days",
+  60:  "60 days",
+  100: "100 days",
 };
 
 export default function HabitCard({ habit, habitLogs, allHabitLogs, selectedDate, todayStr, onComplete, onDelete }) {
@@ -18,11 +24,9 @@ export default function HabitCard({ habit, habitLogs, allHabitLogs, selectedDate
     (l) => (l.habit_type === habit || l.habit_name === habit) && l.completed && l.date === selectedDate
   );
 
-  // Calculate streak
   const streak = (() => {
     let count = 0;
     const check = new Date();
-    // If today not completed, start from yesterday
     const todayCompleted = allHabitLogs.some(
       (l) => (l.habit_type === habit || l.habit_name === habit) && l.completed && l.date === todayStr
     );
@@ -39,69 +43,86 @@ export default function HabitCard({ habit, habitLogs, allHabitLogs, selectedDate
     return count;
   })();
 
-  const milestoneMsg = MILESTONE_MESSAGES[streak];
+  const isMilestone = MILESTONE_LABELS[streak];
 
   return (
-    <div className={`card-glass rounded-2xl overflow-hidden transition-all ${isCompleted ? "border border-emerald-200" : ""}`}>
+    <div className="rounded-[20px] overflow-hidden transition-all"
+      style={{
+        ...card,
+        border: isCompleted ? "1px solid var(--sage-light)" : "1px solid var(--border)",
+      }}>
       <div className="p-4">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-3 flex-1 min-w-0">
-            {/* Complete button */}
-            <button
-              onClick={() => !isCompleted && isToday && onComplete(habit)}
-              disabled={isCompleted || !isToday}
-              className={`flex-shrink-0 transition-all ${isCompleted ? "cursor-default" : isToday ? "hover:scale-110 active:scale-95" : "opacity-40 cursor-not-allowed"}`}
-            >
-              {isCompleted
-                ? <CheckCircle className="w-6 h-6 text-emerald-500" />
-                : <Circle className="w-6 h-6 text-gray-300" />
-              }
-            </button>
+        <div className="flex items-center gap-3.5">
+          {/* Complete toggle */}
+          <button
+            onClick={() => !isCompleted && isToday && onComplete(habit)}
+            disabled={isCompleted || !isToday}
+            className="flex-shrink-0 transition-all"
+            style={{ opacity: !isToday && !isCompleted ? 0.35 : 1 }}
+          >
+            {isCompleted
+              ? <CheckCircle2 className="w-6 h-6" style={{ color: "var(--sage)" }} />
+              : <Circle className="w-6 h-6" style={{ color: "var(--border)" }} />
+            }
+          </button>
 
-            <div className="min-w-0">
-              <p className={`text-sm font-semibold capitalize truncate ${isCompleted ? "text-emerald-700 line-through" : "text-gray-800"}`}>
-                {habit}
+          {/* Habit info */}
+          <div className="flex-1 min-w-0">
+            <p className="font-semibold text-sm truncate"
+              style={{
+                color: isCompleted ? "var(--sage)" : "var(--plum)",
+                fontFamily: "'Inter', sans-serif",
+                textDecoration: isCompleted ? "line-through" : "none",
+                textDecorationColor: "var(--sage-light)",
+              }}>
+              {habit}
+            </p>
+            {streak > 0 && (
+              <p className="text-xs mt-0.5" style={{ color: "var(--mauve)", fontFamily: "'Inter', sans-serif" }}>
+                {streak} day{streak !== 1 ? "s" : ""} in a row
               </p>
-              {streak > 0 && (
-                <div className="flex items-center gap-1 mt-0.5">
-                  <Flame className="w-3 h-3 text-orange-400" />
-                  <span className="text-xs text-orange-500 font-medium">{streak} day streak</span>
-                </div>
-              )}
-            </div>
+            )}
           </div>
 
-          <div className="flex items-center gap-2 flex-shrink-0">
-            {streak >= 7 && (
-              <span className="text-xs bg-orange-100 text-orange-500 px-2 py-0.5 rounded-full font-semibold">
-                🔥 {streak}
-              </span>
-            )}
-            <button
-              onClick={() => setExpanded((v) => !v)}
-              className="w-7 h-7 rounded-full bg-gray-100 flex items-center justify-center hover:bg-rose-50 transition-colors"
-            >
-              {expanded ? <ChevronUp className="w-3.5 h-3.5 text-gray-500" /> : <ChevronDown className="w-3.5 h-3.5 text-gray-500" />}
-            </button>
-          </div>
+          {/* Streak badge */}
+          {streak >= 7 && (
+            <span className="text-xs font-semibold px-2.5 py-1 rounded-full flex-shrink-0"
+              style={{ backgroundColor: "var(--sage-subtle)", color: "var(--sage)", fontFamily: "'Inter', sans-serif" }}>
+              {streak}d
+            </span>
+          )}
+
+          {/* Expand toggle */}
+          <button onClick={() => setExpanded((v) => !v)}
+            className="w-7 h-7 rounded-xl flex items-center justify-center flex-shrink-0 transition-colors"
+            style={{ backgroundColor: "var(--ivory-dark)", color: "var(--mauve)" }}>
+            {expanded ? <ChevronUp className="w-3.5 h-3.5" /> : <ChevronDown className="w-3.5 h-3.5" />}
+          </button>
         </div>
 
-        {/* Milestone message */}
-        {milestoneMsg && (
-          <div className="mt-2 bg-gradient-to-r from-rose-50 to-orange-50 rounded-xl px-3 py-2">
-            <p className="text-xs text-rose-600 font-medium">{milestoneMsg}</p>
+        {/* Milestone acknowledgement */}
+        {isMilestone && isCompleted && (
+          <div className="mt-3 rounded-[14px] px-3.5 py-2.5"
+            style={{ backgroundColor: "var(--sage-subtle)", border: "1px solid var(--sage-light)" }}>
+            <p className="text-xs font-semibold" style={{ color: "var(--sage)", fontFamily: "'Inter', sans-serif" }}>
+              {MILESTONE_LABELS[streak]} consistent
+            </p>
+            <p className="text-xs mt-0.5" style={{ color: "var(--sage)", fontFamily: "'Inter', sans-serif", opacity: 0.75 }}>
+              That's a meaningful rhythm you've built.
+            </p>
           </div>
         )}
       </div>
 
-      {/* Expanded streak calendar */}
+      {/* Expanded calendar */}
       {expanded && (
-        <div className="px-4 pb-4 border-t border-gray-100">
-          <HabitStreakCalendar habitLogs={allHabitLogs} habitName={habit} />
-          <button
-            onClick={() => onDelete(habit)}
-            className="mt-3 text-[11px] text-red-300 hover:text-red-500 transition-colors"
-          >
+        <div className="px-4 pb-4" style={{ borderTop: "1px solid var(--border-subtle)" }}>
+          <div className="pt-3">
+            <HabitStreakCalendar habitLogs={allHabitLogs} habitName={habit} />
+          </div>
+          <button onClick={() => onDelete(habit)}
+            className="mt-3 text-xs font-medium"
+            style={{ color: "var(--mauve)", fontFamily: "'Inter', sans-serif" }}>
             Remove habit
           </button>
         </div>

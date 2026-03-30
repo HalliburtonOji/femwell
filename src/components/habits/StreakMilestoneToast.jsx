@@ -2,11 +2,11 @@ import { useEffect, useRef } from "react";
 import confetti from "canvas-confetti";
 
 const MILESTONES = {
-  7: { title: "7-Day Streak! 🔥", message: "You've built a real habit. Keep it going!" },
-  14: { title: "2 Weeks Strong! 🌟", message: "Two whole weeks of consistency. Amazing!" },
-  30: { title: "30-Day Champion! 🏆", message: "A full month! You're unstoppable." },
-  60: { title: "60 Days! 💎", message: "Diamond-level dedication. Incredible!" },
-  100: { title: "100-Day Legend! 🚀", message: "You've mastered this habit!" },
+  7:   { label: "7 days",  message: "A week of consistency. Well done."     },
+  14:  { label: "2 weeks", message: "Two weeks of showing up for yourself."  },
+  30:  { label: "30 days", message: "A full month. That's a real habit now." },
+  60:  { label: "60 days", message: "Two months of daily care."              },
+  100: { label: "100 days",message: "A hundred days. Quietly remarkable."   },
 };
 
 export default function StreakMilestoneToast({ streak, habitName, onDismiss }) {
@@ -17,28 +17,15 @@ export default function StreakMilestoneToast({ streak, habitName, onDismiss }) {
     if (!milestone || firedRef.current) return;
     firedRef.current = true;
 
-    // Fire confetti
-    const duration = 3000;
-    const end = Date.now() + duration;
-
-    const frame = () => {
-      confetti({
-        particleCount: 3,
-        angle: 60,
-        spread: 55,
-        origin: { x: 0 },
-        colors: ["#f43f5e", "#fb7185", "#fda4af", "#fbbf24", "#a3e635"],
-      });
-      confetti({
-        particleCount: 3,
-        angle: 120,
-        spread: 55,
-        origin: { x: 1 },
-        colors: ["#f43f5e", "#fb7185", "#fda4af", "#fbbf24", "#a3e635"],
-      });
-      if (Date.now() < end) requestAnimationFrame(frame);
-    };
-    frame();
+    // Restrained single confetti burst
+    confetti({
+      particleCount: 40,
+      spread: 60,
+      origin: { y: 0.3 },
+      colors: ["#C4849A", "#7A9E8E", "#C5BAC3", "#EAD7CC"],
+      scalar: 0.85,
+      gravity: 0.9,
+    });
 
     const t = setTimeout(onDismiss, 5000);
     return () => clearTimeout(t);
@@ -47,17 +34,33 @@ export default function StreakMilestoneToast({ streak, habitName, onDismiss }) {
   if (!milestone) return null;
 
   return (
-    <div className="fixed top-6 left-1/2 -translate-x-1/2 z-50 w-[90vw] max-w-sm animate-bounce">
-      <div className="card-glass rounded-2xl p-4 shadow-2xl border border-rose-200">
-        <div className="flex items-center gap-3">
-          <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-rose-400 to-orange-400 flex items-center justify-center text-2xl flex-shrink-0">
-            🏆
-          </div>
-          <div>
-            <p className="font-bold text-gray-800 text-sm">{milestone.title}</p>
-            <p className="text-xs text-gray-500 mt-0.5">{habitName} — {milestone.message}</p>
-          </div>
+    <div className="fixed top-6 left-1/2 -translate-x-1/2 z-50 w-[88vw] max-w-sm"
+      style={{ animation: "fade-up 0.3s ease-out" }}>
+      <div className="rounded-[20px] p-4 flex items-center gap-4"
+        style={{
+          backgroundColor: "var(--surface)",
+          border: "1px solid var(--sage-light)",
+          boxShadow: "var(--shadow-lg)",
+        }}>
+        <div className="w-10 h-10 rounded-2xl flex items-center justify-center flex-shrink-0"
+          style={{ backgroundColor: "var(--sage-subtle)", color: "var(--sage)" }}>
+          <span className="text-sm font-bold" style={{ fontFamily: "'Playfair Display', serif" }}>
+            {streak}
+          </span>
         </div>
+        <div className="flex-1 min-w-0">
+          <p className="font-semibold text-sm" style={{ color: "var(--plum)", fontFamily: "'Inter', sans-serif" }}>
+            {milestone.label} — {habitName}
+          </p>
+          <p className="text-xs mt-0.5" style={{ color: "var(--mauve)", fontFamily: "'Inter', sans-serif" }}>
+            {milestone.message}
+          </p>
+        </div>
+        <button onClick={onDismiss}
+          className="text-xs flex-shrink-0"
+          style={{ color: "var(--mauve)", fontFamily: "'Inter', sans-serif" }}>
+          ✕
+        </button>
       </div>
     </div>
   );
