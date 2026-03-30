@@ -11,6 +11,84 @@ import GuideSettingsSheet from "../coach/CoachSettingsSheet";
 import GuideThreadSidebar from "../guide/GuideThreadSidebar";
 import GuideVoiceMode from "../guide/GuideVoiceMode";
 
+// ── Intent detection — deterministic action router ────────────────────────
+function detectIntent(text) {
+  const t = text.toLowerCase().trim();
+
+  // Hydration
+  const waterMatch = t.match(/(\d+)\s*(ml|litre|liter|l\b)/) ||
+    t.match(/(\d+)\s*glass/) ||
+    (/(log|add|drank?|had|drink).*water/.test(t) ? ['', '1', 'glass'] : null);
+  if (waterMatch && /(log|add|drank?|had|drink|glass|water|hydrat)/.test(t)) {
+    let ml = 250;
+    if (waterMatch[2] === 'ml') ml = parseInt(waterMatch[1]);
+    else if (/litre|liter|^l$/.test(waterMatch[2])) ml = parseInt(waterMatch[1]) * 1000;
+    else if (waterMatch[1]) ml = parseInt(waterMatch[1]) * 250;
+    return { action: 'log_hydration', payload: { amount_ml: ml } };
+  }
+
+  // Medication
+  const medMatch = t.match(/(?:log|took?|taken|i had|give me)\s+([a-z0-9 ]+?)\s+(\d+\s*mg|\d+\s*ml|\d+\s*mcg|\d+\s*g)?/i);
+  if (medMatch && /(log|took?|taken|i had).*(?:mg|tablet|pill|capsule|paracetamol|ibuprofen|aspirin|medication|med)/.test(t)) {
+    const rawName = medMatch[1].replace(/^(log|took?|taken|i had|give me)\s*/i, '').trim();
+    const dose = medMatch[2] || '';
+    return { action: 'log_medication', payload: { item_name: rawName || t, dose: dose.trim() } };
+  }
+  if (/(log|took?|taken|i had).*(paracetamol|ibuprofen|aspirin|metformin|medication|supplement)/.test(t)) {
+    const nameMatch = t.match(/(paracetamol|ibuprofen|aspirin|metformin|medication|supplement|[a-z]+cin|[a-z]+pam|[a-z]+ol\b)/i);
+    const doseMatch = t.match(/(\d+\s*(?:mg|ml|mcg|g))/i);
+    return { action: 'log_medication', payload: { item_name: nameMatch?.[0] || 'medication', dose: doseMatch?.[0] || '' } };
+  }
+
+  // Symptom
+  const symptomMatch = t.match(/log\s+([a-z ]+?)\s+(?:severity\s+)?(\d+)/i);
+  if (symptomMatch && /(headache|cramp|pain|nausea|bloat|fatigue|anxiety|stress|mood)/.test(t)) {
+    return { action: 'log_symptom', payload: { symptom_type: symptomMatch[1].trim(), severity: parseInt(symptomMatch[2]) } };
+  }
+  if (/(log).*(headache|cramp|pain|nausea|bloating|fatigue)/.test(t)) {
+    const symMatch = t.match(/(headache|cramp|pain|nausea|bloating|fatigue|anxiety)/);
+    const sevMatch = t.match(/(\d+)/);
+    return { action: 'log_symptom', payload: { symptom_type: symMatch?.[0] || 'symptom', severity: sevMatch ? parseInt(sevMatch[0]) : 3 } };
+  }
+
+  // Cycle
+  if (/(period start|my period started|log period|period began|menstruation)/.test(t)) {
+    return { action: 'log_cycle_event', payload: { type: 'PeriodStart', flow_level: /heavy/.test(t) ? 'heavy' : /light/.test(t) ? 'light' : 'medium' } };
+  }
+  if (/(period end|my period ended|period stopped|period over)/.test(t)) {
+    return { action: 'log_cycle_event', payload: { type: 'PeriodEnd' } };
+  }
+  if (/spotting/.test(t)) {
+    return { action: 'log_cycle_event', payload: { type: 'Spotting' } };
+  }
+
+  // Habit
+  if (/(mark|done|complete|finished|did).*(habit|water habit|sleep|meditation|workout|walk|steps|journaling)/.test(t)) {
+    const habitMatch = t.match(/(water habit|sleep|meditation|workout|walk|steps|journaling|yoga|reading|exercise|[a-z]+ habit)/i);
+    return { action: 'complete_habit', payload: { habit_name: habitMatch?.[0]?.replace(/ habit$/i, '').trim() || 'habit' } };
+  }
+
+  // Meal
+  if (/(log|ate|had|eaten).*(breakfast|lunch|dinner|snack|meal)/.test(t) || /(log meal|log food|log what i ate)/.test(t)) {
+    const mealTypeMatch = t.match(/(breakfast|lunch|dinner|snack)/);
+    const mealText = text.replace(/^(log|i ate|i had|eaten?|log meal|log food)/i, '').trim();
+    return { action: 'log_meal', payload: { meal_text: mealText || text, meal_type: mealTypeMatch?.[0] || 'meal' } };
+  }
+
+  // Program
+  if (/(what.?s next|next (?:in my )?program|my program|program day|continue program)/.test(t)) {
+    return { action: 'get_program_next', payload: {} };
+  }
+
+  // Content search
+  if (/(suggest|find|something for|session for|quick session|breathing|meditation|workout|play).*(tonight|now|quick|calm|sleep|stress|energy|relax)/.test(t)) {
+    const queryMatch = t.match(/(sleep|stress|calm|energy|anxiety|relax|breathing|focus|pms|cycle)/);
+    return { action: 'search_content', payload: { query: queryMatch?.[0] || 'wellness', limit: 3 } };
+  }
+
+  return null; // fall through to agent
+}
+
 // ── Smart starters ──────────────────────────────────────────────────────────
 const STARTERS = [
   { label: "Plan my day",                    action: "plan_day"   },
@@ -30,8 +108,8 @@ const STARTER_PROMPTS = {
   log:       "I want to log something — what can you help me track right now?",
 };
 
-// ── Unique pending message key ──────────────────────────────────────────────
 const PENDING = "__guide_pending__";
+
 
 // ── Action chip helper ──────────────────────────────────────────────────────
 function parseOptions(content) {
@@ -164,13 +242,38 @@ export default function AICoachTab({ user }) {
     setSaved(false);
     setInput("");
 
-    // 1. Append user message + pending assistant placeholder immediately
+    // Show user bubble + pending assistant immediately
     const userMsg = { role: "user", content: questionText, id: `user_${Date.now()}` };
     const pendingMsg = { role: "assistant", content: "", id: PENDING };
     setMessages(prev => [...prev, userMsg, pendingMsg]);
 
+    // ── Direct action router — bypass agent for deterministic commands
+    const intent = detectIntent(questionText);
+    if (intent) {
+      try {
+        const res = await base44.functions.invoke("guideActions", { action: intent.action, payload: intent.payload });
+        const data = res.data || {};
+        let replyText = data.message || (data.success ? "Done." : "Something went wrong — please try again.");
+        if (intent.action === "search_content" && data.success && Array.isArray(data.data) && data.data.length > 0) {
+          replyText = `Here's something that might help:\n\n${data.data.map(i => `**${i.title}** (${i.duration_minutes || "?"}\u202fmin)`).join("\n")}`;
+        }
+        if (intent.action === "get_program_next" && data.success && data.data?.tasks?.length > 0) {
+          replyText += `\n\nToday: ${data.data.tasks.map(t => t.title).join(", ")}.`;
+        }
+        setMessages(prev => prev.map(m =>
+          m.id === PENDING ? { role: "assistant", content: replyText, id: `ast_${Date.now()}` } : m
+        ));
+      } catch {
+        setMessages(prev => prev.map(m =>
+          m.id === PENDING ? { role: "assistant", content: "I couldn't complete that action. Please try again.", id: `ast_err_${Date.now()}` } : m
+        ));
+      }
+      setLoading(false);
+      return;
+    }
+
+    // ── Agent path for conversational / fuzzy requests
     try {
-      // Create conversation if needed
       let convo = conversationRef.current;
       if (!convo) {
         convo = await base44.agents.createConversation({
@@ -181,7 +284,6 @@ export default function AICoachTab({ user }) {
         conversationRef.current = convo;
       }
 
-      // 2. Subscribe to stream updates into the PENDING slot only
       const unsubscribe = base44.agents.subscribeToConversation(convo.id, (data) => {
         const assistantMsgs = (data.messages || []).filter(m => m.role === "assistant");
         const latest = assistantMsgs[assistantMsgs.length - 1];
@@ -192,11 +294,10 @@ export default function AICoachTab({ user }) {
         }
       });
 
-      // 3. Send the clean user message — no hidden context injected into the message
+      // Send only the clean user message — no hidden context injected
       await base44.agents.addMessage(convo, { role: "user", content: questionText });
       unsubscribe();
 
-      // 4. Finalize: fetch and lock the pending message
       const final = await base44.agents.getConversation(convo.id);
       const finalAssistant = (final.messages || []).filter(m => m.role === "assistant");
       const lastFinal = finalAssistant[finalAssistant.length - 1];

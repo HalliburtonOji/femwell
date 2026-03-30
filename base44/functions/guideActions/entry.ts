@@ -178,6 +178,27 @@ Deno.serve(async (req) => {
       return Response.json({ success: true, data: results });
     }
 
+    // ── LOG MEDICATION ─────────────────────────────────────────────────────
+    if (action === 'log_medication') {
+      const { item_name, dose, notes } = payload || {};
+      if (!item_name) return Response.json({ success: false, message: 'What medication should I log?' });
+      await base44.entities.MedicationLogs.create({ user_id: user.id, date: today, item_name, dose: dose || '', notes: notes || '', taken: true });
+      return Response.json({ success: true, message: `Done — I logged ${item_name}${dose ? ` ${dose}` : ''} for today.` });
+    }
+
+    // ── SAVE / UNSAVE CONTENT ──────────────────────────────────────────────
+    if (action === 'toggle_saved_item') {
+      const { item_id, item_type = 'CONTENT', title, preview_text } = payload || {};
+      if (!item_id || !title) return Response.json({ success: false, message: 'Missing item details.' });
+      const existing = await base44.entities.SavedItems.filter({ user_id: user.id, item_id });
+      if (existing.length > 0) {
+        await base44.entities.SavedItems.delete(existing[0].id);
+        return Response.json({ success: true, message: `Removed "${title}" from your saved items.` });
+      }
+      await base44.entities.SavedItems.create({ user_id: user.id, item_id, item_type, title, preview_text: preview_text || '', created_at: new Date().toISOString() });
+      return Response.json({ success: true, message: `Saved "${title}" to your items.` });
+    }
+
     // ── TTS (ElevenLabs) ───────────────────────────────────────────────────
     if (action === 'tts') {
       const { text, voice_id = 'EXAVITQu4vr4xnSDxMaL' } = payload || {};
