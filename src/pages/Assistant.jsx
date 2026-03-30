@@ -11,7 +11,7 @@ export default function Assistant() {
 
   if (!user) {
     return (
-      <div className="min-h-screen flex items-center justify-center" style={{ backgroundColor: "var(--ivory)" }}>
+      <div className="fixed inset-0 flex items-center justify-center" style={{ backgroundColor: "var(--ivory)" }}>
         <div className="w-8 h-8 rounded-full border-2 border-t-transparent animate-spin"
           style={{ borderColor: "var(--rose-dust-light)", borderTopColor: "var(--rose-dust)" }} />
       </div>
