@@ -4,7 +4,7 @@ import { createPageUrl } from "@/utils";
 import { saveItem } from "@/lib/savedItems";
 import {
   Send, BookmarkPlus, Loader2, Settings2, Mic,
-  CheckCircle2, PanelLeft, ChevronDown
+  CheckCircle2, PanelLeft
 } from "lucide-react";
 import ReactMarkdown from "react-markdown";
 import GuideSettingsSheet from "../coach/CoachSettingsSheet";
@@ -72,6 +72,11 @@ export default function AICoachTab({ user }) {
   const [loadingHistory, setLoadingHistory] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
   const [showVoice, setShowVoice] = useState(false);
+  const [voicePrefs, setVoicePrefs] = useState({
+    voice_id: user.voice_id || "shimmer",
+    speaking_pace: user.speaking_pace || "normal",
+    default_mode: user.default_mode || "text",
+  });
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
   const [saved, setSaved] = useState(false);
@@ -84,7 +89,6 @@ export default function AICoachTab({ user }) {
   const bottomRef = useRef(null);
   const textareaRef = useRef(null);
   const guideName = coachPrefs.coach_name || "Guide";
-
   const STYLE_MAP = {
     empathetic: "Warm & supportive",
     motivator:  "Direct & action-focused",
@@ -135,10 +139,14 @@ export default function AICoachTab({ user }) {
     setInput("");
   }, []);
 
-  // Build system note for Guide prompt
+  // Build system note for Guide prompt — also used for voice instructions
+  const buildInstructions = useCallback(() => {
+    return `You are ${guideName}, the private operational guide embedded in FemWell, a premium women's wellness app. Style: ${styleDesc}. Tone: ${coachPrefs.coach_tone}. You have full access to the user's journal, check-ins, cycle data, habit logs, program progress, and nutrition logs — reference this context specifically when relevant. You are action-oriented: when the user asks you to do something, attempt it immediately and confirm clearly. Do not ask for information already available in the user's profile or auth context. Never sound evasive. Be warm, calm, direct, and useful. When you log or act on something, confirm specifically (e.g. 'Done — I logged 300 ml of water for today.').`;
+  }, [guideName, styleDesc, coachPrefs.coach_tone]);
+
   const buildStyleNote = useCallback(() => {
-    return `[Guide style: ${styleDesc}. Tone: ${coachPrefs.coach_tone}. You are the operational AI guide embedded in FemWell, a premium women's wellness app. You have access to context from the user's journal, check-ins, cycle data, habit logs, program progress, and nutrition logs — use this context intelligently and reference it specifically when relevant. You are action-oriented: when the user asks you to do something, attempt it immediately. When you log or act on something, confirm it clearly and specifically. Do not ask for information already available in the user's profile or auth context. Never sound evasive or deflecting. Be warm, calm, direct, and useful.]`;
-  }, [styleDesc, coachPrefs.coach_tone]);
+    return `[Guide style: ${styleDesc}. Tone: ${coachPrefs.coach_tone}. ${buildInstructions()}]`;
+  }, [styleDesc, coachPrefs.coach_tone, buildInstructions]);
 
   // ── SEND MESSAGE ──────────────────────────────────────────────────────────
   const sendMessage = useCallback(async (questionText) => {
@@ -204,6 +212,30 @@ export default function AICoachTab({ user }) {
     setLoading(false);
   }, [loading, conversation, coachPrefs, buildStyleNote]);
 
+  // ── VOICE CALLBACKS — same thread ─────────────────────────────────────────
+  const handleVoiceUserTranscript = useCallback((text) => {
+    setMessages(prev => [...prev, { role: "user", content: text, id: `voice_user_${Date.now()}`, source: "voice" }]);
+  }, []);
+
+  const handleVoiceAssistantTranscript = useCallback((text, isFinal) => {
+    setMessages(prev => {
+      const hasPending = prev.some(m => m.id === PENDING);
+      if (!hasPending && !isFinal) {
+        return [...prev, { role: "assistant", content: text, id: PENDING, source: "voice" }];
+      }
+      if (hasPending) {
+        return prev.map(m =>
+          m.id === PENDING
+            ? isFinal
+              ? { role: "assistant", content: text, id: `voice_ast_${Date.now()}`, source: "voice" }
+              : { ...m, content: text }
+            : m
+        );
+      }
+      return prev;
+    });
+  }, []);
+
   // ── SAVE ──────────────────────────────────────────────────────────────────
   const handleSave = async () => {
     const lastUser = [...messages].reverse().find(m => m.role === "user");
@@ -219,31 +251,32 @@ export default function AICoachTab({ user }) {
     setSaved(true);
   };
 
-  // Last assistant message for voice mode TTS
-  const lastAssistantText = [...messages].reverse().find(m => m.role === "assistant" && m.id !== PENDING)?.content || "";
+  const voiceInstructions = buildInstructions();
 
   // ── RENDER ────────────────────────────────────────────────────────────────
   return (
     <div className="flex h-screen overflow-hidden" style={{ backgroundColor: "var(--ivory)" }}>
 
-      {/* Voice mode overlay */}
+      {/* Voice mode overlay — same-thread wiring */}
       {showVoice && (
         <GuideVoiceMode
           guideName={guideName}
+          voiceId={voicePrefs.voice_id}
+          instructions={voiceInstructions}
           onClose={() => setShowVoice(false)}
-          onSendText={sendMessage}
-          lastAssistantText={lastAssistantText}
-          loading={loading}
+          onUserTranscript={handleVoiceUserTranscript}
+          onAssistantTranscript={handleVoiceAssistantTranscript}
         />
       )}
 
       {/* Settings sheet */}
       {showSettings && (
         <GuideSettingsSheet
-          user={{ ...user, ...coachPrefs }}
+          user={{ ...user, ...coachPrefs, ...voicePrefs }}
           onClose={() => setShowSettings(false)}
           onSaved={(prefs) => {
-            setCoachPrefs(prefs);
+            setCoachPrefs({ coach_name: prefs.coach_name, coach_archetype: prefs.coach_archetype, coach_tone: prefs.coach_tone });
+            setVoicePrefs({ voice_id: prefs.voice_id, speaking_pace: prefs.speaking_pace, default_mode: prefs.default_mode });
             startNewThread();
           }}
         />
