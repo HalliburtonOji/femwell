@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { base44 } from "@/api/base44Client";
 import { format } from "date-fns";
-import { Loader2, ChevronLeft, ChevronRight } from "lucide-react";
+import { ChevronLeft, ChevronRight } from "lucide-react";
 import NutritionTodayTab from "../components/nutrition/NutritionTodayTab";
 import NutritionPlanTab from "../components/nutrition/NutritionPlanTab";
 import NutritionProgressTab from "../components/nutrition/NutritionProgressTab";
@@ -11,25 +11,34 @@ import MealPlanGeneratorTab from "../components/nutrition/MealPlanGeneratorTab";
 import ShoppingListTab from "../components/nutrition/ShoppingListTab";
 
 const TABS = [
-  { id: "today",    label: "Today",    emoji: "🍽️" },
-  { id: "plan",     label: "My Plan",  emoji: "📅" },
-  { id: "recipes",  label: "Recipes",  emoji: "👩‍🍳" },
-  { id: "mealgen",  label: "AI Plan",  emoji: "✨" },
-  { id: "shopping", label: "Shop",     emoji: "🛒" },
-  { id: "progress", label: "Progress", emoji: "📈" },
-  { id: "insights", label: "Insights", emoji: "💡" },
+  { id: "today",    label: "Today"    },
+  { id: "plan",     label: "My Plan"  },
+  { id: "recipes",  label: "Recipes"  },
+  { id: "mealgen",  label: "AI Plan"  },
+  { id: "shopping", label: "Shop"     },
+  { id: "progress", label: "Progress" },
+  { id: "insights", label: "Insights" },
 ];
 
-export default function Nutrition() {
-  const [user, setUser] = useState(null);
-  const [profile, setProfile] = useState(null);
-  const [nutritionProfile, setNutritionProfile] = useState(null);
-  const [checkin, setCheckin] = useState(null);
-  const [loading, setLoading] = useState(true);
-  const [activeTab, setActiveTab] = useState("today");
-  const [selectedDate, setSelectedDate] = useState(new Date());
+const sLabel = {
+  fontSize: "0.6rem",
+  fontWeight: 600,
+  textTransform: "uppercase",
+  letterSpacing: "0.1em",
+  color: "var(--mauve)",
+  fontFamily: "'Inter', sans-serif",
+};
 
-  const dayKey = format(selectedDate, "yyyy-MM-dd");
+export default function Nutrition() {
+  const [user, setUser]                       = useState(null);
+  const [profile, setProfile]                 = useState(null);
+  const [nutritionProfile, setNutritionProfile] = useState(null);
+  const [checkin, setCheckin]                 = useState(null);
+  const [loading, setLoading]                 = useState(true);
+  const [activeTab, setActiveTab]             = useState("today");
+  const [selectedDate, setSelectedDate]       = useState(new Date());
+
+  const dayKey  = format(selectedDate, "yyyy-MM-dd");
   const isToday = dayKey === format(new Date(), "yyyy-MM-dd");
 
   useEffect(() => {
@@ -41,9 +50,9 @@ export default function Nutrition() {
         base44.entities.NutritionProfile.filter({ user_id: u.id }),
         base44.entities.DailyCheckins.filter({ user_id: u.id, date: format(new Date(), "yyyy-MM-dd") }),
       ]);
-      if (profiles[0]) setProfile(profiles[0]);
+      if (profiles[0])    setProfile(profiles[0]);
       if (nutProfiles[0]) setNutritionProfile(nutProfiles[0]);
-      if (checkins[0]) setCheckin(checkins[0]);
+      if (checkins[0])    setCheckin(checkins[0]);
       setLoading(false);
     })();
   }, []);
@@ -61,83 +70,82 @@ export default function Nutrition() {
   };
 
   if (loading) return (
-    <div className="min-h-screen femwell-gradient flex items-center justify-center">
-      <div className="w-10 h-10 border-4 border-rose-300 border-t-rose-600 rounded-full animate-spin" />
+    <div className="min-h-screen flex items-center justify-center" style={{ backgroundColor: "var(--ivory)" }}>
+      <div className="w-8 h-8 rounded-full border-2 border-t-transparent animate-spin"
+        style={{ borderColor: "var(--rose-dust-light)", borderTopColor: "var(--rose-dust)" }} />
     </div>
   );
 
   return (
-    <div className="min-h-screen femwell-gradient pb-28">
+    <div className="min-h-screen pb-28" style={{ backgroundColor: "var(--ivory)" }}>
       <div className="max-w-screen-xl mx-auto px-4 md:px-8">
-        {/* Header */}
-        <div className="pt-10 pb-4 flex items-end justify-between flex-wrap gap-3">
+
+        {/* ── Page Header ─────────────────────────────────────────────── */}
+        <div className="pt-10 pb-5 flex items-end justify-between flex-wrap gap-4">
           <div>
-            <h1 className="text-2xl md:text-3xl font-black text-rose-900">Nutrition</h1>
-            <p className="text-sm text-gray-400 mt-0.5">Nourish. Track. Thrive.</p>
+            <p style={sLabel} className="mb-1.5">Wellness Studio</p>
+            <h1 className="text-2xl md:text-3xl font-bold leading-tight"
+              style={{ fontFamily: "'Playfair Display', serif", color: "var(--plum)", letterSpacing: "-0.02em" }}>
+              Nutrition
+            </h1>
+            <p className="text-sm mt-1" style={{ color: "var(--mauve)", fontFamily: "'Inter', sans-serif" }}>
+              Nourish with intention
+            </p>
           </div>
 
-          {/* Date selector (today tab only, desktop inline) */}
           {activeTab === "today" && (
-            <div className="flex items-center gap-2 bg-white/60 rounded-2xl px-3 py-2">
-              <button onClick={() => changeDay(-1)} className="w-7 h-7 rounded-xl hover:bg-rose-50 flex items-center justify-center">
-                <ChevronLeft className="w-4 h-4 text-gray-500" />
+            <div className="flex items-center gap-2 rounded-2xl px-3 py-2"
+              style={{ backgroundColor: "var(--surface)", border: "1px solid var(--border)" }}>
+              <button onClick={() => changeDay(-1)}
+                className="w-7 h-7 rounded-xl flex items-center justify-center transition-colors"
+                style={{ color: "var(--mauve)" }}
+                onMouseEnter={e => e.currentTarget.style.backgroundColor = "var(--ivory-dark)"}
+                onMouseLeave={e => e.currentTarget.style.backgroundColor = "transparent"}>
+                <ChevronLeft className="w-4 h-4" />
               </button>
               <div className="text-center min-w-[110px]">
-                <p className="text-sm font-bold text-gray-800">
+                <p className="text-sm font-semibold" style={{ color: "var(--plum)", fontFamily: "'Inter', sans-serif" }}>
                   {isToday ? "Today" : format(selectedDate, "EEEE")}
                 </p>
-                <p className="text-xs text-gray-400">{format(selectedDate, "MMMM d, yyyy")}</p>
+                <p className="text-xs" style={{ color: "var(--mauve)" }}>{format(selectedDate, "MMMM d, yyyy")}</p>
               </div>
               <button onClick={() => changeDay(1)} disabled={isToday}
-                className="w-7 h-7 rounded-xl hover:bg-rose-50 flex items-center justify-center disabled:opacity-30">
-                <ChevronRight className="w-4 h-4 text-gray-500" />
+                className="w-7 h-7 rounded-xl flex items-center justify-center transition-colors disabled:opacity-30"
+                style={{ color: "var(--mauve)" }}
+                onMouseEnter={e => e.currentTarget.style.backgroundColor = "var(--ivory-dark)"}
+                onMouseLeave={e => e.currentTarget.style.backgroundColor = "transparent"}>
+                <ChevronRight className="w-4 h-4" />
               </button>
             </div>
           )}
         </div>
 
-        {/* Tab bar */}
-        <div className="overflow-x-auto pb-1 mb-6 -mx-1 px-1">
-          <div className="flex gap-1.5 w-max md:w-auto md:flex-wrap">
+        {/* ── Tab Bar ─────────────────────────────────────────────────── */}
+        <div className="overflow-x-auto pb-1 mb-6" style={{ scrollbarWidth: "none" }}>
+          <div className="flex gap-1 w-max p-1 rounded-2xl"
+            style={{ backgroundColor: "var(--surface)", border: "1px solid var(--border)" }}>
             {TABS.map((tab) => (
               <button key={tab.id} onClick={() => setActiveTab(tab.id)}
-                className={`flex items-center gap-1.5 px-4 py-2.5 rounded-xl text-xs font-semibold whitespace-nowrap transition-all flex-shrink-0 ${activeTab === tab.id ? "bg-rose-500 text-white shadow-sm" : "bg-white/60 text-gray-500 hover:bg-white/80"}`}>
-                <span className="text-sm">{tab.emoji}</span>
+                className="px-4 py-2.5 rounded-xl text-xs font-semibold whitespace-nowrap transition-all flex-shrink-0"
+                style={{
+                  backgroundColor: activeTab === tab.id ? "var(--plum)" : "transparent",
+                  color: activeTab === tab.id ? "white" : "var(--mauve)",
+                  fontFamily: "'Inter', sans-serif",
+                }}>
                 {tab.label}
               </button>
             ))}
           </div>
         </div>
 
-        {/* Tab content */}
-        {activeTab === "today" && user && (
-          <NutritionTodayTab
-            user={user} profile={profile}
-            nutritionProfile={nutritionProfile}
-            dayKey={dayKey} checkin={checkin}
-          />
-        )}
-        {activeTab === "plan" && user && (
-          <NutritionPlanTab user={user} nutritionProfile={nutritionProfile} />
-        )}
-        {activeTab === "recipes" && user && (
-          <RecipeGeneratorTab user={user} />
-        )}
-        {activeTab === "mealgen" && user && (
-          <MealPlanGeneratorTab user={user} nutritionProfile={nutritionProfile} />
-        )}
-        {activeTab === "shopping" && user && (
-          <ShoppingListTab user={user} />
-        )}
-        {activeTab === "progress" && user && (
-          <NutritionProgressTab
-            user={user} nutritionProfile={nutritionProfile}
-            onProfileUpdated={loadNutritionProfile}
-          />
-        )}
-        {activeTab === "insights" && user && (
-          <NutritionInsightsTab user={user} profile={profile} />
-        )}
+        {/* ── Tab Content ─────────────────────────────────────────────── */}
+        {activeTab === "today"    && user && <NutritionTodayTab user={user} profile={profile} nutritionProfile={nutritionProfile} dayKey={dayKey} checkin={checkin} />}
+        {activeTab === "plan"     && user && <NutritionPlanTab user={user} nutritionProfile={nutritionProfile} />}
+        {activeTab === "recipes"  && user && <RecipeGeneratorTab user={user} />}
+        {activeTab === "mealgen"  && user && <MealPlanGeneratorTab user={user} nutritionProfile={nutritionProfile} />}
+        {activeTab === "shopping" && user && <ShoppingListTab user={user} />}
+        {activeTab === "progress" && user && <NutritionProgressTab user={user} nutritionProfile={nutritionProfile} onProfileUpdated={loadNutritionProfile} />}
+        {activeTab === "insights" && user && <NutritionInsightsTab user={user} profile={profile} />}
       </div>
     </div>
   );
