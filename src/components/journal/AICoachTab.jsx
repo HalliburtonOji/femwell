@@ -27,17 +27,20 @@ function detectIntent(text) {
     return { action: 'log_hydration', payload: { amount_ml: ml } };
   }
 
-  // Medication
-  const medMatch = t.match(/(?:log|took?|taken|i had|give me)\s+([a-z0-9 ]+?)\s+(\d+\s*mg|\d+\s*ml|\d+\s*mcg|\d+\s*g)?/i);
-  if (medMatch && /(log|took?|taken|i had).*(?:mg|tablet|pill|capsule|paracetamol|ibuprofen|aspirin|medication|med)/.test(t)) {
-    const rawName = medMatch[1].replace(/^(log|took?|taken|i had|give me)\s*/i, '').trim();
-    const dose = medMatch[2] || '';
-    return { action: 'log_medication', payload: { item_name: rawName || t, dose: dose.trim() } };
-  }
-  if (/(log|took?|taken|i had).*(paracetamol|ibuprofen|aspirin|metformin|medication|supplement)/.test(t)) {
-    const nameMatch = t.match(/(paracetamol|ibuprofen|aspirin|metformin|medication|supplement|[a-z]+cin|[a-z]+pam|[a-z]+ol\b)/i);
+  // Medication — extract drug name and dose regardless of order
+  // e.g. "log a 100mg of paracetamol" or "took paracetamol 500mg" or "log paracetamol 100mg"
+  if (/(log|took?|taken|i had|give me).*(mg|ml|mcg|tablet|pill|capsule|paracetamol|ibuprofen|aspirin|metformin|medication|supplement|[a-z]+cin|[a-z]+pam|[a-z]+ol\b)/.test(t)) {
+    // Extract dose (e.g. 100mg, 500 mg)
     const doseMatch = t.match(/(\d+\s*(?:mg|ml|mcg|g))/i);
-    return { action: 'log_medication', payload: { item_name: nameMatch?.[0] || 'medication', dose: doseMatch?.[0] || '' } };
+    // Extract known drug name — prefer explicit drug names over generic words
+    const nameMatch = t.match(/(paracetamol|ibuprofen|aspirin|metformin|omeprazole|sertraline|fluoxetine|amoxicillin|diazepam|[a-z]{4,}(?:cin|pam|ol|in|an)\b)/i);
+    // Fall back: last meaningful word that isn't a filler
+    let itemName = nameMatch?.[0];
+    if (!itemName) {
+      const words = t.replace(/(log|took?|taken|i had|give me|a |an |of |for |today|mg|ml|mcg|\d+)/gi, ' ').trim().split(/\s+/).filter(w => w.length > 2);
+      itemName = words[words.length - 1] || 'medication';
+    }
+    return { action: 'log_medication', payload: { item_name: itemName, dose: doseMatch?.[0]?.replace(/\s/g, '') || '' } };
   }
 
   // Symptom
@@ -255,7 +258,7 @@ export default function AICoachTab({ user }) {
         const data = res.data || {};
         let replyText = data.message || (data.success ? "Done." : "Something went wrong — please try again.");
         if (intent.action === "search_content" && data.success && Array.isArray(data.data) && data.data.length > 0) {
-          replyText = `Here's something that might help:\n\n${data.data.map(i => `**${i.title}** (${i.duration_minutes || "?"}\u202fmin)`).join("\n")}`;
+          replyText = `Here's something that might help:\n\n${data.data.map(i => `**${i.title}** (${i.duration_minutes || "?"} min)`).join("\n")}`;
         }
         if (intent.action === "get_program_next" && data.success && data.data?.tasks?.length > 0) {
           replyText += `\n\nToday: ${data.data.tasks.map(t => t.title).join(", ")}.`;
@@ -263,6 +266,22 @@ export default function AICoachTab({ user }) {
         setMessages(prev => prev.map(m =>
           m.id === PENDING ? { role: "assistant", content: replyText, id: `ast_${Date.now()}` } : m
         ));
+        // Save to agent conversation so it appears in history
+        try {
+          let convo = conversationRef.current;
+          if (!convo) {
+            convo = await base44.agents.createConversation({
+              agent_name: "personal_assistant",
+              metadata: { tone: coachPrefs.coach_tone, archetype: coachPrefs.coach_archetype },
+            });
+            setConversation(convo);
+            conversationRef.current = convo;
+          }
+          await base44.agents.addMessage(convo, { role: "user", content: questionText });
+          await base44.agents.addMessage(convo, { role: "assistant", content: replyText });
+          const updated = await base44.agents.getConversation(convo.id);
+          setConversation(updated);
+        } catch {}
       } catch {
         setMessages(prev => prev.map(m =>
           m.id === PENDING ? { role: "assistant", content: "I couldn't complete that action. Please try again.", id: `ast_err_${Date.now()}` } : m
