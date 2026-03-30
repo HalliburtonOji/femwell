@@ -37,17 +37,16 @@ export default function Layout({ children, currentPageName }) {
 
   if (checking && !NO_GUARD.includes(currentPageName)) {
     return (
-      <div className="min-h-screen femwell-gradient flex items-center justify-center">
-        <div className="w-10 h-10 border-4 border-rose-300 border-t-rose-600 rounded-full animate-spin" />
+      <div className="min-h-screen flex items-center justify-center" style={{ backgroundColor: "var(--ivory)" }}>
+        <div className="w-8 h-8 rounded-full border-2 border-t-transparent animate-spin" style={{ borderColor: "var(--rose-dust-light)", borderTopColor: "var(--rose-dust)" }} />
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen femwell-gradient">
+    <div className="min-h-screen" style={{ backgroundColor: "var(--ivory)" }}>
       {showNav && <FloatingSidebar currentPageName={currentPageName} mode={navMode} />}
       {showQuickSwitch && <QuickSwitchOverlay currentPageName={currentPageName} />}
-      {/* On desktop push content right of the 256px sidebar */}
       <div className={`${navMode === "full" ? "lg:pl-64" : ""} ${showNav ? "pb-8" : ""}`}>
         {children}
       </div>

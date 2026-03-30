@@ -5,14 +5,14 @@ import { createPageUrl } from "@/utils";
 import { BookOpen, Compass, Map, MessageCircle, Sparkles, Sun, Utensils, X, Zap } from "lucide-react";
 
 const PAGE_META = {
-  Today: { label: "Today", emoji: "🌅" },
-  Nutrition: { label: "Nutrition", emoji: "🍽️" },
-  ProgramsHub: { label: "Programs", emoji: "🗺️" },
-  Explore: { label: "Explore", emoji: "✨" },
-  Lifestyle: { label: "Lifestyle", emoji: "📖" },
-  Journal: { label: "Journal", emoji: "📓" },
-  Profile: { label: "Profile", emoji: "👤" },
-  Assistant: { label: "Assistant", emoji: "🪄" },
+  Today:       { label: "Today" },
+  Nutrition:   { label: "Nutrition" },
+  ProgramsHub: { label: "Programs" },
+  Explore:     { label: "Explore" },
+  Lifestyle:   { label: "Lifestyle" },
+  Journal:     { label: "Journal" },
+  Profile:     { label: "Profile" },
+  Assistant:   { label: "Assistant" },
 };
 
 export default function QuickSwitchOverlay({ currentPageName }) {
@@ -25,152 +25,163 @@ export default function QuickSwitchOverlay({ currentPageName }) {
   useEffect(() => {
     const storageKey = "quick_switch_recent_pages";
     const existing = JSON.parse(localStorage.getItem(storageKey) || "[]");
-    const next = [currentPageName, ...existing.filter((page) => page !== currentPageName)].slice(0, 6);
+    const next = [currentPageName, ...existing.filter((p) => p !== currentPageName)].slice(0, 6);
     localStorage.setItem(storageKey, JSON.stringify(next));
-    setRecentPages(next.filter((page) => page !== currentPageName));
+    setRecentPages(next.filter((p) => p !== currentPageName));
   }, [currentPageName]);
 
   useEffect(() => {
     (async () => {
       const user = await base44.auth.me().catch(() => null);
       if (!user) return;
-
       const [programs, userPrograms, contentItems] = await Promise.all([
         base44.entities.Programs.list("-created_date", 50),
         base44.entities.UserPrograms.filter({ user_id: user.id }),
         base44.entities.ContentItems.list("-created_date", 120),
       ]);
-
       const nextProgram = userPrograms
-        .filter((entry) => entry.status === "active" || entry.is_saved)
-        .sort((a, b) => (b.last_activity_date || "").localeCompare(a.last_activity_date || "") || (b.current_day || 1) - (a.current_day || 1))[0];
-
+        .filter((e) => e.status === "active" || e.is_saved)
+        .sort((a, b) => (b.last_activity_date || "").localeCompare(a.last_activity_date || ""))[0];
       if (nextProgram) {
-        const program = programs.find((item) => item.id === nextProgram.program_id);
+        const program = programs.find((p) => p.id === nextProgram.program_id);
         if (program?.program_key) {
           setContinueHref(createPageUrl(`ProgramDay?key=${program.program_key}&day=${nextProgram.current_day || 1}`));
           setContinueLabel(`Day ${nextProgram.current_day || 1}`);
         }
       }
-
       const resetItem = contentItems
-        .filter((item) => ["BREATHWORK", "MEDITATION"].includes(item.content_type))
+        .filter((i) => ["BREATHWORK", "MEDITATION"].includes(i.content_type))
         .sort((a, b) => (a.duration_minutes || 99) - (b.duration_minutes || 99))[0];
-
-      if (resetItem?.content_key) {
-        setResetHref(createPageUrl(`ContentPlayer?key=${resetItem.content_key}`));
-      }
+      if (resetItem?.content_key) setResetHref(createPageUrl(`ContentPlayer?key=${resetItem.content_key}`));
     })();
   }, []);
 
-  const shortcuts = useMemo(
-    () => [
-      { label: continueLabel, href: continueHref, icon: <Map className="h-4 w-4 text-rose-500" />, tone: "bg-rose-50 text-rose-700" },
-      { label: "1-minute reset", href: resetHref, icon: <Zap className="h-4 w-4 text-amber-500" />, tone: "bg-amber-50 text-amber-700" },
-      { label: "Log meal", href: createPageUrl("Nutrition"), icon: <Utensils className="h-4 w-4 text-emerald-500" />, tone: "bg-emerald-50 text-emerald-700" },
-      { label: "Write journal", href: createPageUrl("Journal"), icon: <BookOpen className="h-4 w-4 text-sky-500" />, tone: "bg-sky-50 text-sky-700" },
-      { label: "Open lifestyle", href: createPageUrl("Lifestyle"), icon: <Compass className="h-4 w-4 text-violet-500" />, tone: "bg-violet-50 text-violet-700" },
-      { label: "Ask assistant", href: createPageUrl("Assistant"), icon: <MessageCircle className="h-4 w-4 text-fuchsia-500" />, tone: "bg-fuchsia-50 text-fuchsia-700" },
-    ],
-    [continueHref, continueLabel, resetHref]
-  );
-
-  const pinnedActions = [
-    { label: "Start day", href: createPageUrl("Today") },
-    { label: "Programs", href: createPageUrl("ProgramsHub") },
-    { label: "Explore", href: createPageUrl("Explore") },
-  ];
+  const shortcuts = useMemo(() => [
+    { label: continueLabel, href: continueHref, icon: <Map className="h-3.5 w-3.5" /> },
+    { label: "1-min reset",  href: resetHref,    icon: <Zap className="h-3.5 w-3.5" /> },
+    { label: "Log meal",     href: createPageUrl("Nutrition"), icon: <Utensils className="h-3.5 w-3.5" /> },
+    { label: "Write journal",href: createPageUrl("Journal"),   icon: <BookOpen className="h-3.5 w-3.5" /> },
+    { label: "Lifestyle",    href: createPageUrl("Lifestyle"), icon: <Compass className="h-3.5 w-3.5" /> },
+    { label: "Ask assistant",href: createPageUrl("Assistant"), icon: <MessageCircle className="h-3.5 w-3.5" /> },
+  ], [continueHref, continueLabel, resetHref]);
 
   return (
     <>
+      {/* Trigger — small pill, bottom-left, above nav */}
       <button
         onClick={() => setOpen(true)}
-        className="fixed bottom-6 left-5 z-50 inline-flex h-14 items-center gap-2 rounded-full bg-white/92 px-4 shadow-xl ring-1 ring-rose-100 backdrop-blur-xl transition-transform active:scale-95"
+        className="fixed bottom-6 left-5 z-50 flex items-center gap-1.5 h-9 px-3.5 rounded-full transition-all duration-200 active:scale-95"
+        style={{
+          backgroundColor: "var(--surface)",
+          border: "1px solid var(--border)",
+          boxShadow: "var(--shadow-sm)",
+          color: "var(--mauve)",
+        }}
       >
-        <Sparkles className="h-4 w-4 text-rose-500" />
-        <span className="text-sm font-semibold text-gray-700">Quick Switch</span>
+        <Sparkles className="h-3 w-3" style={{ color: "var(--rose-dust)" }} />
+        <span className="text-xs font-medium" style={{ fontFamily: "'Inter', sans-serif", color: "var(--plum)" }}>
+          Quick Switch
+        </span>
       </button>
 
       <AnimatePresence>
         {open && (
           <>
             <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
+              initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
               onClick={() => setOpen(false)}
-              className="fixed inset-0 z-50 bg-black/35 backdrop-blur-sm"
+              className="fixed inset-0 z-50"
+              style={{ backgroundColor: "rgba(42,32,53,0.3)", backdropFilter: "blur(4px)" }}
             />
 
             <motion.div
-              initial={{ y: "100%" }}
-              animate={{ y: 0 }}
-              exit={{ y: "100%" }}
-              transition={{ type: "spring", damping: 24, stiffness: 260 }}
-              className="fixed inset-x-0 bottom-0 z-50 rounded-t-[32px] bg-white p-5 shadow-2xl"
+              initial={{ y: "100%", opacity: 0 }}
+              animate={{ y: 0, opacity: 1 }}
+              exit={{ y: "100%", opacity: 0 }}
+              transition={{ type: "spring", damping: 28, stiffness: 300 }}
+              className="fixed inset-x-0 bottom-0 z-50 rounded-t-3xl"
+              style={{
+                backgroundColor: "var(--surface)",
+                borderTop: "1px solid var(--border)",
+                boxShadow: "var(--shadow-lg)",
+                padding: "1.5rem 1.25rem 2rem",
+              }}
             >
-              <div className="mx-auto max-w-3xl">
-                <div className="mb-5 flex items-center justify-between">
+              <div className="mx-auto max-w-2xl">
+                {/* Handle */}
+                <div className="w-8 h-1 rounded-full mx-auto mb-5" style={{ backgroundColor: "var(--border)" }} />
+
+                <div className="flex items-center justify-between mb-5">
                   <div>
-                    <p className="text-xs font-semibold uppercase tracking-[0.2em] text-gray-400">Always available</p>
-                    <h2 className="text-xl font-bold text-gray-900">Quick Switch</h2>
+                    <p className="text-xs font-semibold uppercase tracking-widest mb-1" style={{ color: "var(--mauve)", fontFamily: "'Inter', sans-serif" }}>
+                      Always available
+                    </p>
+                    <h2 className="text-lg font-semibold" style={{ color: "var(--plum)", fontFamily: "'Playfair Display', serif" }}>
+                      Quick Switch
+                    </h2>
                   </div>
                   <button
                     onClick={() => setOpen(false)}
-                    className="inline-flex h-10 w-10 items-center justify-center rounded-full bg-gray-100 text-gray-500"
+                    className="w-9 h-9 flex items-center justify-center rounded-full transition-colors"
+                    style={{ backgroundColor: "var(--ivory-dark)", color: "var(--mauve)" }}
                   >
                     <X className="h-4 w-4" />
                   </button>
                 </div>
 
-                <div className="grid grid-cols-2 gap-3 md:grid-cols-3">
-                  {shortcuts.map((shortcut) => (
+                {/* Shortcuts grid */}
+                <div className="grid grid-cols-3 gap-2.5 md:grid-cols-6">
+                  {shortcuts.map((s) => (
                     <a
-                      key={shortcut.label}
-                      href={shortcut.href}
-                      className={`rounded-3xl p-4 shadow-sm ${shortcut.tone}`}
+                      key={s.label}
+                      href={s.href}
+                      className="flex flex-col items-center gap-2 p-3.5 rounded-2xl transition-all duration-150 text-center"
+                      style={{
+                        backgroundColor: "var(--ivory)",
+                        border: "1px solid var(--border-subtle)",
+                        color: "var(--plum)",
+                      }}
+                      onMouseEnter={e => { e.currentTarget.style.backgroundColor = "var(--ivory-dark)"; }}
+                      onMouseLeave={e => { e.currentTarget.style.backgroundColor = "var(--ivory)"; }}
                     >
-                      <div className="mb-3 inline-flex h-10 w-10 items-center justify-center rounded-2xl bg-white/80">
-                        {shortcut.icon}
+                      <div
+                        className="w-8 h-8 flex items-center justify-center rounded-xl"
+                        style={{ backgroundColor: "var(--rose-dust-subtle)", color: "var(--rose-dust)" }}
+                      >
+                        {s.icon}
                       </div>
-                      <p className="text-sm font-semibold">{shortcut.label}</p>
+                      <p className="text-xs font-medium leading-tight" style={{ fontFamily: "'Inter', sans-serif", color: "var(--plum)" }}>
+                        {s.label}
+                      </p>
                     </a>
                   ))}
                 </div>
 
+                {/* Recent pages */}
                 {recentPages.length > 0 && (
-                  <div className="mt-6">
-                    <p className="mb-3 text-xs font-semibold uppercase tracking-[0.2em] text-gray-400">Recent pages</p>
+                  <div className="mt-5">
+                    <p className="text-xs font-semibold uppercase tracking-widest mb-3" style={{ color: "var(--mauve)", fontFamily: "'Inter', sans-serif" }}>
+                      Recent
+                    </p>
                     <div className="flex flex-wrap gap-2">
-                      {recentPages.filter((page) => PAGE_META[page]).slice(0, 5).map((page) => (
+                      {recentPages.filter((p) => PAGE_META[p]).slice(0, 5).map((p) => (
                         <a
-                          key={page}
-                          href={createPageUrl(page)}
-                          className="inline-flex items-center gap-2 rounded-full border border-rose-100 bg-rose-50 px-3 py-2 text-xs font-semibold text-gray-700"
+                          key={p}
+                          href={createPageUrl(p)}
+                          className="inline-flex items-center gap-2 px-3.5 py-2 rounded-full text-xs font-medium transition-colors"
+                          style={{
+                            backgroundColor: "var(--ivory)",
+                            border: "1px solid var(--border)",
+                            color: "var(--plum)",
+                            fontFamily: "'Inter', sans-serif",
+                          }}
                         >
-                          <span>{PAGE_META[page].emoji}</span>
-                          {PAGE_META[page].label}
+                          {PAGE_META[p].label}
                         </a>
                       ))}
                     </div>
                   </div>
                 )}
-
-                <div className="mt-6">
-                  <p className="mb-3 text-xs font-semibold uppercase tracking-[0.2em] text-gray-400">Pinned actions</p>
-                  <div className="flex flex-wrap gap-2">
-                    {pinnedActions.map((action) => (
-                      <a
-                        key={action.label}
-                        href={action.href}
-                        className="inline-flex items-center gap-2 rounded-full bg-gray-100 px-3 py-2 text-xs font-semibold text-gray-700"
-                      >
-                        <Sun className="h-3.5 w-3.5 text-rose-500" />
-                        {action.label}
-                      </a>
-                    ))}
-                  </div>
-                </div>
               </div>
             </motion.div>
           </>
