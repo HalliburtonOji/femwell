@@ -3,6 +3,7 @@ import { base44 } from "@/api/base44Client";
 import { Loader2, RefreshCw, ChevronDown, ChevronUp } from "lucide-react";
 import { format, subDays, startOfWeek, endOfWeek, parseISO } from "date-fns";
 import ReactMarkdown from "react-markdown";
+import NutritionTrendDashboard from "./NutritionTrendDashboard";
 
 const card = {
   backgroundColor: "var(--surface)",
@@ -208,6 +209,27 @@ Guidelines:
   }, {});
   const topGoal = Object.entries(goalCounts).sort((a, b) => b[1] - a[1])[0];
 
+  const trendDays = Array.from({ length: 7 }, (_, index) => {
+    const date = subDays(new Date(), 6 - index);
+    const dayKey = format(date, "yyyy-MM-dd");
+    const dayMeals = mealLogs.filter(log => log.day_key === dayKey);
+    const dayHydration = hydrationLogs.filter(log => log.day_key === dayKey);
+    const calories = dayMeals.reduce((sum, meal) => {
+      const ai = meal.ai_analysis;
+      if (ai?.total_calories) return sum + Number(ai.total_calories || 0);
+      if (meal.calories) return sum + Number(meal.calories || 0);
+      if (meal.total_calories) return sum + Number(meal.total_calories || 0);
+      return sum;
+    }, 0);
+    return {
+      dayKey,
+      label: format(date, "EEE"),
+      hydration: dayHydration.reduce((sum, log) => sum + Number(log.amount_ml || log.total_ml || 0), 0),
+      calories,
+      meals: dayMeals.length,
+    };
+  });
+
   if (loading) return (
     <div className="flex items-center justify-center py-16">
       <div className="w-6 h-6 rounded-full border-2 border-t-transparent animate-spin"
@@ -217,6 +239,7 @@ Guidelines:
 
   return (
     <div className="space-y-4">
+      <NutritionTrendDashboard days={trendDays} />
       <RuleInsight logs={{ hydration: hydrationLogs }} checkins={checkins} />
 
       {/* Top goal pattern */}

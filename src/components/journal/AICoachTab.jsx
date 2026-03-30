@@ -152,6 +152,7 @@ export default function AICoachTab({ user }) {
   const [conversation, setConversation] = useState(null);
   const [loadingHistory, setLoadingHistory] = useState(false);
   const [appContext, setAppContext] = useState(null);
+  const [pendingAction, setPendingAction] = useState(null);
   const [showSettings, setShowSettings] = useState(false);
   const [showVoice, setShowVoice] = useState(false);
   const [voicePrefs, setVoicePrefs] = useState({
@@ -250,12 +251,35 @@ export default function AICoachTab({ user }) {
     const pendingMsg = { role: "assistant", content: "", id: PENDING };
     setMessages(prev => [...prev, userMsg, pendingMsg]);
 
+    // ── Resolve pending follow-up first
+    if (pendingAction && questionText.trim().split(/\s+/).length <= 6) {
+      try {
+        const res = await base44.functions.invoke("guideActions", {
+          action: "resolve_pending_action",
+          payload: { pending_action: pendingAction, user_reply: questionText.trim() },
+        });
+        const data = res.data || {};
+        setPendingAction(data.needs_follow_up ? data.pending_action || pendingAction : null);
+        setMessages(prev => prev.map(m =>
+          m.id === PENDING ? { role: "assistant", content: data.message || "Done.", id: `ast_${Date.now()}` } : m
+        ));
+        setLoading(false);
+        return;
+      } catch {
+        setPendingAction(null);
+      }
+    }
+
     // ── Direct action router — bypass agent for deterministic commands
     const intent = detectIntent(questionText);
     if (intent) {
       try {
         const res = await base44.functions.invoke("guideActions", { action: intent.action, payload: intent.payload });
         const data = res.data || {};
+        setPendingAction(data.needs_follow_up ? data.pending_action || null : null);
+        if (data.success) {
+          base44.entities.HydrationLog.list?.();
+        }
         let replyText = data.message || (data.success ? "Done." : "Something went wrong — please try again.");
         if (intent.action === "search_content" && data.success && Array.isArray(data.data) && data.data.length > 0) {
           replyText = `Here's something that might help:\n\n${data.data.map(i => `**${i.title}** (${i.duration_minutes || "?"} min)`).join("\n")}`;
@@ -338,7 +362,7 @@ export default function AICoachTab({ user }) {
       );
     }
     setLoading(false);
-  }, [loading, coachPrefs]);
+  }, [loading, coachPrefs, pendingAction]);
 
   // ── VOICE CALLBACKS — same thread, ensure a thread exists ──────────────────
   const handleVoiceUserTranscript = useCallback(async (text) => {

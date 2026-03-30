@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { base44 } from "@/api/base44Client";
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell } from "recharts";
-import { differenceInDays, parseISO, subMonths, format } from "date-fns";
+import { differenceInDays, parseISO, subMonths } from "date-fns";
 import { Loader2 } from "lucide-react";
 
 const PHASE_COLORS = {

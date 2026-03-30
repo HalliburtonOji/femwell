@@ -1,7 +1,8 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { base44 } from "@/api/base44Client";
-import { format, parseISO, subDays, startOfWeek, endOfWeek, isWithinInterval } from "date-fns";
+import { format, parseISO, subDays, differenceInDays } from "date-fns";
 import { Loader2, RefreshCw } from "lucide-react";
+import CycleMoodPatternChart from "./CycleMoodPatternChart";
 
 const MOOD_MAP = {
   1: { label: "Calm",      accent: "var(--sage)"       },
@@ -30,6 +31,19 @@ const sLabel = {
 export default function JournalInsightsTab({ user, entries }) {
   const [weeklySummary, setWeeklySummary] = useState(null);
   const [generatingSummary, setGeneratingSummary] = useState(false);
+  const [checkins, setCheckins] = useState([]);
+  const [cycleEvents, setCycleEvents] = useState([]);
+
+  useEffect(() => {
+    (async () => {
+      const [dailyCheckins, events] = await Promise.all([
+        base44.entities.DailyCheckins.filter({ user_id: user.id }),
+        base44.entities.CycleEvents.filter({ user_id: user.id }, '-date', 100),
+      ]);
+      setCheckins(dailyCheckins);
+      setCycleEvents(events);
+    })();
+  }, [user.id]);
 
   // Compute stats
   const last30 = entries.filter((e) => {
@@ -97,8 +111,74 @@ Return as plain text, no markdown.`,
     setGeneratingSummary(false);
   };
 
+  const cyclePatternData = useMemo(() => {
+    const phases = {
+      Menstrual: { mood: [], energy: [] },
+      Follicular: { mood: [], energy: [] },
+      Ovulatory: { mood: [], energy: [] },
+      Luteal: { mood: [], energy: [] },
+    };
+    const periodStarts = cycleEvents.filter(event => event.type === 'PeriodStart').sort((a, b) => a.date.localeCompare(b.date));
+    if (!periodStarts.length) return [];
+    const recentEntries = entries.filter(entry => {
+      const date = entry.session_date || entry.created_date?.split('T')[0];
+      return date && date >= format(subDays(new Date(), 90), 'yyyy-MM-dd');
+    });
+    recentEntries.forEach(entry => {
+      const date = entry.session_date || entry.created_date?.split('T')[0];
+      const periodStart = [...periodStarts].reverse().find(event => event.date <= date);
+      if (!periodStart) return;
+      const day = differenceInDays(parseISO(date), parseISO(periodStart.date)) + 1;
+      const phase = day <= 5 ? 'Menstrual' : day <= 13 ? 'Follicular' : day <= 16 ? 'Ovulatory' : 'Luteal';
+      if (entry.mood_rating) phases[phase].mood.push(Number(entry.mood_rating));
+      const checkin = checkins.find(item => item.date === date);
+      if (checkin?.energy != null) phases[phase].energy.push(Number(checkin.energy));
+    });
+    return Object.entries(phases).map(([label, values]) => ({
+      label,
+      mood: values.mood.length ? Number((values.mood.reduce((sum, value) => sum + value, 0) / values.mood.length).toFixed(1)) : 0,
+      energy: values.energy.length ? Number((values.energy.reduce((sum, value) => sum + value, 0) / values.energy.length).toFixed(1)) : 0,
+      samples: Math.max(values.mood.length, values.energy.length),
+    })).filter(item => item.samples > 0);
+  }, [entries, checkins, cycleEvents]);
+
+  const cyclePatternSummary = useMemo(() => {
+    if (!cyclePatternData.length) return null;
+    const lowestEnergy = [...cyclePatternData].sort((a, b) => a.energy - b.energy)[0];
+    const highestMood = [...cyclePatternData].sort((a, b) => b.mood - a.mood)[0];
+    return `Your energy tends to dip most in ${lowestEnergy.label.toLowerCase()}, while your calmest or strongest journal mood shows up most in ${highestMood.label.toLowerCase()}.`;
+  }, [cyclePatternData]);
+
   return (
     <div className="space-y-4">
+
+      {cyclePatternData.length > 0 ? (
+        <div className="rounded-[24px] p-5" style={card}>
+          <p style={sLabel} className="mb-4">Cycle & Mood Patterns</p>
+          <CycleMoodPatternChart data={cyclePatternData} />
+          <div className="mt-4 grid grid-cols-2 md:grid-cols-4 gap-2">
+            {cyclePatternData.map((item) => (
+              <div key={item.label} className="rounded-2xl px-3 py-3" style={{ backgroundColor: "var(--ivory)", border: "1px solid var(--border-subtle)" }}>
+                <p className="text-[10px] font-semibold uppercase mb-1" style={{ color: "var(--mauve)", fontFamily: "'Inter', sans-serif" }}>{item.label}</p>
+                <p className="text-xs" style={{ color: "var(--plum)", fontFamily: "'Inter', sans-serif" }}>Mood {item.mood}/10</p>
+                <p className="text-xs" style={{ color: "var(--plum)", fontFamily: "'Inter', sans-serif" }}>Energy {item.energy}/10</p>
+              </div>
+            ))}
+          </div>
+          {cyclePatternSummary && (
+            <div className="mt-4 rounded-2xl p-4" style={{ backgroundColor: "var(--rose-dust-subtle)", border: "1px solid var(--rose-dust-light)" }}>
+              <p className="text-sm leading-relaxed" style={{ color: "var(--plum)", fontFamily: "'Inter', sans-serif" }}>{cyclePatternSummary}</p>
+            </div>
+          )}
+        </div>
+      ) : (
+        <div className="rounded-[24px] p-5" style={card}>
+          <p style={sLabel} className="mb-2">Cycle & Mood Patterns</p>
+          <p className="text-sm" style={{ color: "var(--mauve)", fontFamily: "'Inter', sans-serif" }}>
+            Keep logging journal mood, energy, and cycle events to unlock this pattern view.
+          </p>
+        </div>
+      )}
 
       {/* Writing rhythm */}
       <div className="rounded-[24px] p-5" style={card}>

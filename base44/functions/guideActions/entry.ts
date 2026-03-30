@@ -1,5 +1,85 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.23';
 
+const MEDICATION_FAMILIES = {
+  paracetamol: ["paracetamol", "acetaminophen", "tylenol", "panadol", "calpol"],
+  ibuprofen: ["ibuprofen", "advil", "nurofen", "motrin"],
+};
+
+function normalizeMedicationName(name = '') {
+  const normalized = name.toLowerCase().trim();
+  const family = Object.entries(MEDICATION_FAMILIES).find(([, aliases]) => aliases.some(alias => normalized.includes(alias)));
+  return {
+    input: name,
+    normalized,
+    family: family?.[0] || normalized,
+    canonical_name: family?.[0] === 'paracetamol' ? 'paracetamol' : family?.[0] || normalized,
+  };
+}
+
+function parseDoseMg(dose = '') {
+  const match = String(dose).toLowerCase().match(/(\d+(?:\.\d+)?)\s*(mg|g|mcg)/);
+  if (!match) return null;
+  const value = parseFloat(match[1]);
+  const unit = match[2];
+  if (unit === 'g') return value * 1000;
+  if (unit === 'mcg') return value / 1000;
+  return value;
+}
+
+function toDateTimeFromLog(record) {
+  return new Date(record.created_date || `${record.date}T12:00:00.000Z`);
+}
+
+function evaluateMedicationSafety(history, itemName, dose) {
+  const med = normalizeMedicationName(itemName);
+  const currentDoseMg = parseDoseMg(dose);
+  const relevantHistory = history.filter(log => normalizeMedicationName(log.item_name).family === med.family);
+  const now = new Date();
+  const last24h = relevantHistory.filter(log => now.getTime() - toDateTimeFromLog(log).getTime() <= 24 * 60 * 60 * 1000);
+  const total24hMg = last24h.reduce((sum, log) => sum + (parseDoseMg(log.dose) || 0), 0) + (currentDoseMg || 0);
+  const latest = relevantHistory.sort((a, b) => toDateTimeFromLog(b).getTime() - toDateTimeFromLog(a).getTime())[0];
+  const hoursSinceLastDose = latest ? Number(((now.getTime() - toDateTimeFromLog(latest).getTime()) / (1000 * 60 * 60)).toFixed(1)) : null;
+
+  let severity = 'none';
+  let display_message = '';
+  if (med.family === 'paracetamol') {
+    if (hoursSinceLastDose !== null && hoursSinceLastDose < 4) {
+      severity = 'warning';
+      display_message = `This was logged ${hoursSinceLastDose} hours after your previous paracetamol entry, so please double-check the timing before taking more.`;
+    }
+    if (total24hMg >= 4000) {
+      severity = 'urgent';
+      display_message = `You've logged ${Math.round(total24hMg)} mg of paracetamol in the past 24 hours. Please get urgent medical advice or contact poison help now.`;
+    } else if (total24hMg >= 3000 && severity !== 'urgent') {
+      severity = 'caution';
+      display_message = `You've logged ${Math.round(total24hMg)} mg of paracetamol in the past 24 hours, so be careful not to exceed your daily limit.`;
+    }
+  }
+
+  return {
+    severity,
+    reason: display_message || null,
+    total_24h_mg: currentDoseMg ? Math.round(total24hMg) : null,
+    last_dose_interval_hours: hoursSinceLastDose,
+    ingredient_family: med.family,
+    canonical_name: med.canonical_name,
+    display_message,
+  };
+}
+
+function parseReminderTime(input = '') {
+  const text = input.toLowerCase().trim();
+  const match = text.match(/^(\d{1,2})(?::(\d{2}))?\s*(am|pm)?$/i);
+  if (!match) return null;
+  let hours = parseInt(match[1], 10);
+  const minutes = match[2] ? parseInt(match[2], 10) : 0;
+  const meridiem = match[3]?.toLowerCase();
+  if (meridiem === 'pm' && hours < 12) hours += 12;
+  if (meridiem === 'am' && hours === 12) hours = 0;
+  if (hours > 23 || minutes > 59) return null;
+  return `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}`;
+}
+
 Deno.serve(async (req) => {
   try {
     const base44 = createClientFromRequest(req);
@@ -8,6 +88,35 @@ Deno.serve(async (req) => {
 
     const { action, payload } = await req.json();
     const today = new Date().toISOString().split('T')[0];
+
+    if (action === 'resolve_pending_action') {
+      const { pending_action, user_reply } = payload || {};
+      if (!pending_action?.type || !user_reply) {
+        return Response.json({ success: false, message: 'Missing follow-up details.' });
+      }
+      if (pending_action.type === 'set_program_reminder') {
+        const reminder_time = parseReminderTime(user_reply);
+        if (!reminder_time) {
+          return Response.json({
+            success: false,
+            needs_follow_up: true,
+            pending_action,
+            message: 'What time should I set it for? For example: 9pm.',
+          });
+        }
+        const programs = await base44.entities.UserPrograms.filter({ user_id: user.id });
+        const activeProgram = programs.find(p => p.is_saved || p.status === 'active');
+        if (!activeProgram) {
+          return Response.json({ success: false, message: "I couldn't find an active program reminder to update." });
+        }
+        await base44.entities.UserPrograms.update(activeProgram.id, { reminder_time });
+        return Response.json({
+          success: true,
+          message: `Done — I set your program reminder for ${reminder_time}.`,
+          data: { reminder_time, user_program_id: activeProgram.id },
+        });
+      }
+    }
 
     // ── GET RICH CONTEXT (used to prime Guide system prompt) ───────────────
     if (action === 'get_context') {
@@ -131,6 +240,30 @@ Deno.serve(async (req) => {
       return Response.json({ success: true, message: `Done — "${habit_name}" marked complete for today.` });
     }
 
+    // ── SET PROGRAM REMINDER ───────────────────────────────────────────────
+    if (action === 'set_program_reminder') {
+      const reminder_time = parseReminderTime(payload?.reminder_time || '');
+      const programs = await base44.entities.UserPrograms.filter({ user_id: user.id });
+      const activeProgram = programs.find(p => p.is_saved || p.status === 'active');
+      if (!activeProgram) {
+        return Response.json({ success: false, message: "You don't have an active program yet, so I can't set that reminder." });
+      }
+      if (!reminder_time) {
+        return Response.json({
+          success: false,
+          needs_follow_up: true,
+          pending_action: { type: 'set_program_reminder', user_program_id: activeProgram.id },
+          message: 'What time should I set the reminder?',
+        });
+      }
+      await base44.entities.UserPrograms.update(activeProgram.id, { reminder_time });
+      return Response.json({
+        success: true,
+        message: `Done — I set your program reminder for ${reminder_time}.`,
+        data: { reminder_time, user_program_id: activeProgram.id },
+      });
+    }
+
     // ── GET NEXT PROGRAM DAY ───────────────────────────────────────────────
     if (action === 'get_program_next') {
       const ups = await base44.entities.UserPrograms.filter({ user_id: user.id });
@@ -182,8 +315,16 @@ Deno.serve(async (req) => {
     if (action === 'log_medication') {
       const { item_name, dose, notes } = payload || {};
       if (!item_name) return Response.json({ success: false, message: 'What medication should I log?' });
-      await base44.entities.MedicationLogs.create({ user_id: user.id, date: today, item_name, dose: dose || '', notes: notes || '', taken: true });
-      return Response.json({ success: true, message: `Done — I logged ${item_name}${dose ? ` ${dose}` : ''} for today.` });
+      const history = await base44.entities.MedicationLogs.filter({ user_id: user.id }, '-created_date', 50);
+      const safety = evaluateMedicationSafety(history, item_name, dose || '');
+      await base44.entities.MedicationLogs.create({ user_id: user.id, date: today, item_name: safety.canonical_name || item_name, dose: dose || '', notes: notes || '', taken: true });
+      return Response.json({
+        success: true,
+        message: safety.display_message
+          ? `Done — I logged ${safety.canonical_name || item_name}${dose ? ` ${dose}` : ''} for today.\n\n${safety.display_message}`
+          : `Done — I logged ${safety.canonical_name || item_name}${dose ? ` ${dose}` : ''} for today.`,
+        data: { safety },
+      });
     }
 
     // ── SAVE / UNSAVE CONTENT ──────────────────────────────────────────────
