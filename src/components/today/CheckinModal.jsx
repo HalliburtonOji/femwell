@@ -6,11 +6,11 @@ const BODY_TEMP_OPTIONS = ["cold", "normal", "warm", "hot_flashes"];
 const MUCUS_OPTIONS = ["dry", "sticky", "creamy", "watery", "egg_white"];
 const INTENSITY_OPTIONS = ["light", "moderate", "intense"];
 
-function SliderRow({ emoji, label, value, onChange, min = 1, max = 5, unit = "/5" }) {
+function SliderRow({ label, value, onChange, min = 1, max = 5, unit = "/5" }) {
   return (
     <div>
       <label className="text-sm font-medium text-gray-600 flex justify-between mb-1">
-        <span>{emoji} {label}</span>
+        <span>{label}</span>
         <span className="text-rose-600 font-bold">{value}{unit}</span>
       </label>
       <input type="range" min={min} max={max} value={value} onChange={(e) => onChange(Number(e.target.value))} />
@@ -113,7 +113,7 @@ export default function CheckinModal({ existing, onClose, onSave }) {
           {/* Exercise */}
           <div>
             <div className="flex items-center justify-between mb-2">
-              <p className="text-sm font-medium text-gray-600">🏃 Exercise today?</p>
+              <p className="text-sm font-medium text-gray-600">Exercise today?</p>
               <button
                 type="button"
                 onClick={() => setExerciseDone(!exerciseDone)}
@@ -131,13 +131,13 @@ export default function CheckinModal({ existing, onClose, onSave }) {
                   onChange={(e) => setExerciseType(e.target.value)}
                   className="w-full p-2.5 rounded-xl border border-rose-100 bg-rose-50/30 text-sm focus:outline-none focus:ring-2 focus:ring-rose-200"
                 />
-                <SliderRow emoji="⏱" label="Duration" value={exerciseMinutes} onChange={setExerciseMinutes} min={5} max={120} unit=" min" />
+                <SliderRow label="Duration" value={exerciseMinutes} onChange={setExerciseMinutes} min={5} max={120} unit=" min" /> value={exerciseMinutes} onChange={setExerciseMinutes} min={5} max={120} unit=" min" />
                 <PillSelect label="Intensity" options={INTENSITY_OPTIONS} value={exerciseIntensity} onChange={setExerciseIntensity} />
               </div>
             )}
           </div>
 
-          <PillSelect label="🍽 Appetite" options={APPETITE_OPTIONS} value={appetite} onChange={setAppetite} />
+          <PillSelect label="Appetite" options={APPETITE_OPTIONS} value={appetite} onChange={setAppetite} />
 
           {/* Physical symptoms — collapsible */}
           <div>
@@ -146,17 +146,17 @@ export default function CheckinModal({ existing, onClose, onSave }) {
               onClick={() => setShowPhysical(!showPhysical)}
               className="w-full flex items-center justify-between text-sm font-medium text-gray-600 py-1"
             >
-              <span>🩹 Physical Symptoms (optional)</span>
+              <span>Physical Symptoms (optional)</span>
               {showPhysical ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
             </button>
             {showPhysical && (
               <div className="space-y-4 mt-3">
-                <SliderRow emoji="😣" label="Pain level" value={pain} onChange={setPain} />
-                <SliderRow emoji="🌀" label="Cramps" value={cramps} onChange={setCramps} />
-                <SliderRow emoji="🎈" label="Bloating" value={bloating} onChange={setBloating} />
-                <SliderRow emoji="🤕" label="Headache" value={headache} onChange={setHeadache} />
-                <SliderRow emoji="🌸" label="Breast tenderness" value={breastTenderness} onChange={setBreastTenderness} />
-                <SliderRow emoji="🌿" label="Digestion" value={digestion} onChange={setDigestion} />
+                <SliderRow label="Pain level" value={pain} onChange={setPain} />
+                <SliderRow label="Cramps" value={cramps} onChange={setCramps} />
+                <SliderRow label="Bloating" value={bloating} onChange={setBloating} />
+                <SliderRow label="Headache" value={headache} onChange={setHeadache} />
+                <SliderRow label="Breast tenderness" value={breastTenderness} onChange={setBreastTenderness} />
+                <SliderRow label="Digestion" value={digestion} onChange={setDigestion} />
               </div>
             )}
           </div>
@@ -168,15 +168,15 @@ export default function CheckinModal({ existing, onClose, onSave }) {
               onClick={() => setShowBody(!showBody)}
               className="w-full flex items-center justify-between text-sm font-medium text-gray-600 py-1"
             >
-              <span>🔬 Body & Cycle Signals (optional)</span>
+              <span>Body & Cycle Signals (optional)</span>
               {showBody ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
             </button>
             {showBody && (
               <div className="space-y-4 mt-3">
-                <SliderRow emoji="✨" label="Skin" value={skin} onChange={setSkin} />
-                <SliderRow emoji="🌹" label="Libido" value={libido} onChange={setLibido} />
-                <PillSelect label="🌡 Body temperature feel" options={BODY_TEMP_OPTIONS} value={bodyTemp} onChange={setBodyTemp} formatter={(o) => o.replace(/_/g, " ")} />
-                <PillSelect label="💧 Cervical mucus" options={MUCUS_OPTIONS} value={mucus} onChange={setMucus} formatter={(o) => o.replace(/_/g, " ")} />
+                <SliderRow label="Skin" value={skin} onChange={setSkin} />
+                <SliderRow label="Libido" value={libido} onChange={setLibido} />
+                <PillSelect label="Body temperature feel" options={BODY_TEMP_OPTIONS} value={bodyTemp} onChange={setBodyTemp} formatter={(o) => o.replace(/_/g, " ")} />
+                <PillSelect label="Cervical mucus" options={MUCUS_OPTIONS} value={mucus} onChange={setMucus} formatter={(o) => o.replace(/_/g, " ")} />
               </div>
             )}
           </div>
@@ -193,7 +193,7 @@ export default function CheckinModal({ existing, onClose, onSave }) {
         {/* Fixed footer */}
         <div className="px-6 pb-5 pt-3 border-t border-rose-50 flex-shrink-0">
           <button onClick={handleSave} disabled={saving} className="btn-primary w-full">
-            {saving ? "Saving..." : "Save Check-in ✓"}
+            {saving ? "Saving…" : "Save Check-in"}
           </button>
         </div>
       </div>

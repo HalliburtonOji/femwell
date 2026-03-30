@@ -193,24 +193,24 @@ const YOUTUBE_VIDEOS = [
 ];
 
 const TYPE_TABS = [
-  { id: "All", label: "All", emoji: "✨" },
-  { id: "Saved", label: "Saved", emoji: "🔖" },
-  { id: "Videos", label: "Videos", emoji: "🎥" },
-  { id: "Audio", label: "Audio", emoji: "🎧" },
-  { id: "FITNESS", label: "Fitness", emoji: "💪" },
-  { id: "MOBILITY", label: "Mobility", emoji: "🤸" },
-  { id: "GUIDE", label: "Guides", emoji: "📖" },
+  { id: "All",      label: "All"      },
+  { id: "Saved",    label: "Saved"    },
+  { id: "Videos",   label: "Videos"   },
+  { id: "Audio",    label: "Audio"    },
+  { id: "FITNESS",  label: "Fitness"  },
+  { id: "MOBILITY", label: "Mobility" },
+  { id: "GUIDE",    label: "Guides"   },
 ];
 
 const COLLECTIONS = [
-  { id: "sleep", label: "💤 Sleep" },
-  { id: "pms", label: "🌸 PMS" },
-  { id: "anxiety", label: "🌿 Calm" },
-  { id: "energy", label: "⚡ Energy" },
-  { id: "mobility", label: "🤸 Mobility" },
-  { id: "menopause", label: "🌙 Menopause" },
-  { id: "postpartum", label: "💝 Postpartum" },
-  { id: "stress", label: "🧘 Stress" },
+  { id: "sleep",      label: "Sleep"      },
+  { id: "pms",        label: "PMS"        },
+  { id: "anxiety",    label: "Calm"       },
+  { id: "energy",     label: "Energy"     },
+  { id: "mobility",   label: "Mobility"   },
+  { id: "menopause",  label: "Menopause"  },
+  { id: "postpartum", label: "Postpartum" },
+  { id: "stress",     label: "Stress"     },
 ];
 
 const COLLECTION_KEYWORDS = {
@@ -379,7 +379,7 @@ export default function Explore() {
                   : "text-gray-500 hover:text-gray-700 hover:bg-rose-50"
               }`}
             >
-              <span>{t.emoji}</span> {t.label}
+              {t.label}
             </button>
           ))}
         </div>
@@ -393,9 +393,12 @@ export default function Explore() {
             ))}
           </div>
         ) : !hasAnyResults ? (
-          <div className="text-center py-20 text-gray-400">
-            <p className="text-3xl mb-2">🔍</p>
-            <p className="text-sm">No content found. Try a different search or filter.</p>
+          <div className="text-center py-20">
+            <div className="w-12 h-12 rounded-2xl flex items-center justify-center mx-auto mb-4" style={{ backgroundColor: "var(--ivory-dark)" }}>
+              <Search className="w-5 h-5" style={{ color: "var(--mauve)" }} />
+            </div>
+            <p className="text-sm font-medium mb-1" style={{ color: "var(--plum)" }}>No content found</p>
+            <p className="text-xs" style={{ color: "var(--mauve)" }}>Try a different search or filter.</p>
           </div>
         ) : (
           <>

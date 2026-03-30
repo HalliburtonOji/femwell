@@ -10,13 +10,12 @@ const MEAL_TYPES = ["breakfast", "lunch", "dinner", "snack"];
 
 const MEAL_LABELS = { breakfast: "Morning", lunch: "Midday", dinner: "Evening", snack: "Snack" };
 
-const WELLNESS_GOALS = [
-  { id: "energy",     label: "Energy",          Icon: Zap   },
-  { id: "digestion",  label: "Digestion",        Icon: Leaf  },
-  { id: "sleep",      label: "Sleep",            Icon: Moon  },
-  { id: "mood",       label: "Mood",             Icon: Smile },
-  { id: "hydration",  label: "Hydration",        Icon: Droplets },
-  { id: "hormone",    label: "Hormone Balance",  Icon: Wind  },
+// Gentle cycle-aware nutrient tips — no medical claims
+const CYCLE_WELLNESS_TIPS = [
+  { phase: "menstrual",  tip: "Iron-rich foods like lentils, leafy greens, and dark chocolate may help support energy this week." },
+  { phase: "follicular", tip: "Light, energising meals may complement your natural rise in energy — think colourful salads and whole grains." },
+  { phase: "ovulatory",  tip: "You might feel your best this week. Staying well-hydrated may support your natural vitality." },
+  { phase: "luteal",     tip: "Magnesium-rich foods like nuts, seeds, and leafy greens may gently support mood and reduce bloating." },
 ];
 
 const card = {
@@ -238,9 +237,32 @@ export default function NutritionTodayTab({ user, profile, nutritionProfile, day
   const balancedScore   = meals.length > 0 ? Math.min(5, Math.round((meals.filter(m => m.ai_analysis).length / meals.length) * 5)) : 0;
   const selectedGoalObj = WELLNESS_GOALS.find(g => g.id === selectedGoal);
 
+  // Derive cycle phase from profile if available
+  const cycleWellnessTip = (() => {
+    if (!profile?.last_period_start_date) return null;
+    const cycleLen  = profile.cycle_avg_length || 28;
+    const periodLen = profile.period_length    || 5;
+    const daysSince = Math.floor((Date.now() - new Date(profile.last_period_start_date).getTime()) / 86400000);
+    const dayOfCycle = (daysSince % cycleLen) + 1;
+    const phase = dayOfCycle <= periodLen ? "menstrual"
+      : dayOfCycle <= Math.round(cycleLen * 0.4) ? "follicular"
+      : dayOfCycle <= Math.round(cycleLen * 0.55) ? "ovulatory"
+      : "luteal";
+    return CYCLE_WELLNESS_TIPS.find(t => t.phase === phase) || null;
+  })();
+
   return (
     <div className="lg:grid lg:grid-cols-[1fr_320px] lg:gap-6 lg:items-start">
       <div className="space-y-4">
+
+        {/* Cycle wellness context */}
+        {cycleWellnessTip && (
+          <div className="rounded-[20px] px-4 py-3 mb-0" style={{ backgroundColor: "var(--rose-dust-subtle)", border: "1px solid var(--rose-dust-light)" }}>
+            <p className="text-xs leading-relaxed" style={{ color: "var(--rose-dust)", fontFamily: "'Inter', sans-serif" }}>
+              {cycleWellnessTip.tip}
+            </p>
+          </div>
+        )}
 
         {/* Daily Snapshot */}
         <div className="grid grid-cols-4 gap-2">

@@ -19,15 +19,15 @@ const PHASES = [
 ];
 
 const CHECKIN_METRICS = [
-  { id: "cramps",            label: "Cramps 😣",          color: "#f43f5e" },
-  { id: "mood",              label: "Mood 😊",             color: "#f472b6" },
-  { id: "energy",            label: "Energy ⚡",           color: "#fb923c" },
-  { id: "stress",            label: "Stress 🌊",           color: "#a78bfa" },
-  { id: "bloating",          label: "Bloating",            color: "#6ee7b7" },
-  { id: "headache",          label: "Headache",            color: "#93c5fd" },
-  { id: "breast_tenderness", label: "Breast Tenderness",   color: "#c084fc" },
-  { id: "sleep_quality",     label: "Sleep Quality 💤",    color: "#34d399" },
-  { id: "pain",              label: "Pain",                color: "#ef4444" },
+  { id: "cramps",            label: "Cramps",             color: "#f43f5e" },
+  { id: "mood",              label: "Mood",               color: "#f472b6" },
+  { id: "energy",            label: "Energy",             color: "#fb923c" },
+  { id: "stress",            label: "Stress",             color: "#a78bfa" },
+  { id: "bloating",          label: "Bloating",           color: "#6ee7b7" },
+  { id: "headache",          label: "Headache",           color: "#93c5fd" },
+  { id: "breast_tenderness", label: "Breast Tenderness",  color: "#c084fc" },
+  { id: "sleep_quality",     label: "Sleep Quality",      color: "#34d399" },
+  { id: "pain",              label: "Pain",               color: "#ef4444" },
 ];
 
 function getPhase(dayOfCycle) {
@@ -251,9 +251,11 @@ export default function Trends() {
         {/* No cycle data */}
         {!hasCycleData && (
           <div className="card-glass rounded-2xl p-5 mb-4 text-center">
-            <p className="text-3xl mb-2">🌙</p>
+            <div className="w-10 h-10 rounded-2xl mx-auto mb-3 flex items-center justify-center" style={{ backgroundColor: "var(--rose-dust-subtle)" }}>
+              <TrendingUp className="w-4 h-4" style={{ color: "var(--rose-dust)" }} />
+            </div>
             <p className="text-sm font-medium text-gray-700 mb-1">No cycle data yet</p>
-            <p className="text-xs text-gray-400">Log your period in Today → Track to see phase correlations.</p>
+            <p className="text-xs text-gray-400">Log your period in Today — Track to see phase correlations.</p>
           </div>
         )}
 
@@ -298,7 +300,7 @@ export default function Trends() {
         {/* Pattern insight */}
         {patternInsight && (
           <div className="card-glass rounded-2xl p-4 mb-4 border-l-4" style={{ borderLeftColor: PHASES.find((p) => p.key === patternInsight.highest.phase)?.color }}>
-            <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1.5">💡 Pattern Insight</p>
+            <p className="text-xs font-semibold uppercase tracking-wide mb-1.5" style={{ color: "var(--mauve)", letterSpacing: "0.1em" }}>Pattern Insight</p>
             <p className="text-sm text-gray-700 leading-relaxed">
               Your <strong className="capitalize">{currentLabel}</strong> tends to peak during the{" "}
               <strong style={{ color: PHASES.find((p) => p.key === patternInsight.highest.phase)?.color }}>
@@ -342,7 +344,6 @@ export default function Trends() {
 
         {timeSeriesData.length === 0 && (
           <div className="card-glass rounded-2xl p-5 text-center">
-            <p className="text-3xl mb-2">📊</p>
             <p className="text-sm font-medium text-gray-700 mb-1">No data for this metric yet</p>
             <p className="text-xs text-gray-400">Keep logging daily check-ins to see trends here.</p>
           </div>
