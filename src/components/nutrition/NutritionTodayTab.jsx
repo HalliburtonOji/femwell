@@ -8,6 +8,16 @@ import MacroDashboard from "./MacroDashboard";
 
 const MEAL_TYPES = ["breakfast", "lunch", "dinner", "snack"];
 
+const WELLNESS_GOALS = [
+  { id: "energy",          label: "Energy" },
+  { id: "hormone_support", label: "Hormone Support" },
+  { id: "gut_health",      label: "Gut Health" },
+  { id: "weight_balance",  label: "Weight Balance" },
+  { id: "anti_inflammatory", label: "Anti-inflammatory" },
+  { id: "mood_support",    label: "Mood Support" },
+  { id: "general_wellness", label: "General Wellness" },
+];
+
 const MEAL_LABELS = { breakfast: "Morning", lunch: "Midday", dinner: "Evening", snack: "Snack" };
 
 // Gentle cycle-aware nutrient tips — no medical claims
