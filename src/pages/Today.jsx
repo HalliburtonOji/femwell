@@ -1,8 +1,11 @@
 import { useState, useEffect } from "react";
 import { base44 } from "@/api/base44Client";
 import { createPageUrl } from "@/utils";
-import { Sun, ChevronRight, Plus, Sparkles, ChevronLeft, Droplets, Activity, Heart, Pill, Play, CheckCircle, Trash2, Utensils, Loader2, Bell, Flame } from "lucide-react";
-import TodayHeroSection from "../components/today/TodayHeroSection";
+import {
+  Sun, ChevronRight, Plus, Sparkles, Droplets, Activity, Heart,
+  Pill, Play, Trash2, Utensils, Loader2, Bell, Flame,
+  BookOpen, Compass, Droplet, Zap, CheckCircle2
+} from "lucide-react";
 import ManualCompleteButton from "../components/sessions/ManualCompleteButton";
 import DailyInsightBanner from "../components/today/DailyInsightBanner";
 import HabitCard from "../components/habits/HabitCard";
@@ -11,14 +14,15 @@ import CheckinModal from "../components/today/CheckinModal";
 import WeeklyInsightCard from "../components/today/WeeklyInsightCard";
 import TrackCalendar from "../components/today/TrackCalendar";
 import MedReminderSection from "../components/today/MedReminderSection";
+import TodayHeroSection from "../components/today/TodayHeroSection";
 import { format, differenceInDays, parseISO } from "date-fns";
 
 // ── Cycle phase helper ──────────────────────────────────────────────────────
 const PHASE_INFO = {
-  menstrual: { label: "Menstrual Phase", emoji: "🩸", color: "from-rose-300 to-pink-400", tip: "Rest and restore. Your body is working hard." },
-  follicular: { label: "Follicular Phase", emoji: "🌱", color: "from-emerald-300 to-teal-400", tip: "Energy rising — great time to start new things." },
-  ovulatory: { label: "Ovulatory Phase", emoji: "☀️", color: "from-amber-300 to-yellow-400", tip: "Peak energy and confidence. Shine today!" },
-  luteal: { label: "Luteal Phase", emoji: "🌙", color: "from-purple-300 to-indigo-400", tip: "Wind down, reflect, and nourish yourself." },
+  menstrual:  { label: "Menstrual Phase",  color: "from-rose-300 to-pink-400",    tip: "Rest and restore. Your body is working hard." },
+  follicular: { label: "Follicular Phase", color: "from-emerald-300 to-teal-400", tip: "Energy rising — great time to start new things." },
+  ovulatory:  { label: "Ovulatory Phase",  color: "from-amber-300 to-yellow-400", tip: "Peak energy and confidence. Shine today!" },
+  luteal:     { label: "Luteal Phase",     color: "from-purple-300 to-indigo-400", tip: "Wind down, reflect, and nourish yourself." },
 };
 
 function getCyclePhase(lastPeriodDate, cycleLength, periodLength) {
@@ -43,15 +47,15 @@ function isReminderDue(reminderTime) {
 const TRACK_TABS = ["Cycle", "Symptoms", "Habits", "Meds", "Sessions"];
 
 const FLOW_OPTIONS = [
-  { value: "light", label: "Light", emoji: "💧" },
-  { value: "medium", label: "Medium", emoji: "💧💧" },
-  { value: "heavy", label: "Heavy", emoji: "💧💧💧" },
+  { value: "light",  label: "Light" },
+  { value: "medium", label: "Medium" },
+  { value: "heavy",  label: "Heavy" },
 ];
 
 const PERIOD_TYPES = [
   { value: "PeriodStart", label: "Period Start" },
-  { value: "PeriodEnd", label: "Period End" },
-  { value: "Spotting", label: "Spotting" },
+  { value: "PeriodEnd",   label: "Period End" },
+  { value: "Spotting",    label: "Spotting" },
 ];
 
 const COMMON_SYMPTOMS = [
@@ -62,21 +66,34 @@ const COMMON_SYMPTOMS = [
 
 const SEVERITY_LABELS = ["", "Mild", "Moderate", "Significant", "Severe", "Extreme"];
 
+// ── Shared card style ───────────────────────────────────────────────────────
+const card = {
+  backgroundColor: "var(--surface)",
+  border: "1px solid var(--border)",
+  boxShadow: "var(--shadow-sm)",
+};
+const label = {
+  fontSize: "0.65rem",
+  fontWeight: 600,
+  textTransform: "uppercase",
+  letterSpacing: "0.1em",
+  color: "var(--mauve)",
+  fontFamily: "'Inter', sans-serif",
+};
+
 // ── Main component ──────────────────────────────────────────────────────────
 export default function Today() {
-  const [mainTab, setMainTab] = useState("today"); // "today" | "track"
+  const [mainTab, setMainTab] = useState("today");
   const [user, setUser] = useState(null);
   const [profile, setProfile] = useState(null);
   const [loading, setLoading] = useState(true);
 
-  // Today tab state
   const [todayCheckin, setTodayCheckin] = useState(null);
   const [recentContent, setRecentContent] = useState([]);
   const [recommendations, setRecommendations] = useState([]);
   const [showCheckin, setShowCheckin] = useState(false);
   const [todayCompletions, setTodayCompletions] = useState([]);
 
-  // Track tab state
   const [trackTab, setTrackTab] = useState("Cycle");
   const todayStr = new Date().toISOString().split("T")[0];
   const [selectedDate, setSelectedDate] = useState(todayStr);
@@ -128,10 +145,9 @@ export default function Today() {
       setRecentContent(content);
       setRecommendations(recs);
       setTodayCompletions(completions.filter((c) => !c.is_deleted));
-      setActivePrograms(userPrograms.filter((entry) => entry.is_saved || entry.status === "active"));
+      setActivePrograms(userPrograms.filter((e) => e.is_saved || e.status === "active"));
       setProgramLibrary(allPrograms);
 
-      // Track data
       const all = await base44.entities.HabitLogs.filter({ user_id: u.id });
       setAllHabitLogs(all);
       await loadTrackData(u.id, todayStr);
@@ -181,7 +197,6 @@ export default function Today() {
     }
   };
 
-  // Track actions
   const saveCycleEvent = async () => {
     await base44.entities.CycleEvents.create({
       user_id: user.id, date: selectedDate, type: cycleEventType,
@@ -256,7 +271,6 @@ export default function Today() {
   };
 
   const MEAL_TYPES = ["breakfast", "lunch", "dinner", "snack"];
-  const MEAL_EMOJIS = { breakfast: "🌅", lunch: "☀️", dinner: "🌙", snack: "🍎" };
 
   const quickLogMeal = async () => {
     if (!quickMealText.trim()) return;
@@ -276,7 +290,6 @@ export default function Today() {
   const cycleInfo = profile?.last_period_start_date
     ? getCyclePhase(profile.last_period_start_date, profile.cycle_avg_length || 28, profile.period_length || 5)
     : null;
-  const phaseData = cycleInfo ? PHASE_INFO[cycleInfo.phase] : null;
   const allHabitNames = [...new Set(allHabitLogs.map((l) => l.habit_type || l.habit_name).filter(Boolean))];
   const isToday = selectedDate === todayStr;
   const displayDate = isToday ? "Today" : format(parseISO(selectedDate), "EEE, MMM d");
@@ -286,7 +299,7 @@ export default function Today() {
     }
     return (b.current_day || 1) - (a.current_day || 1);
   })[0];
-  const activeProgram = activeProgramEntry ? programLibrary.find((program) => program.id === activeProgramEntry.program_id) : null;
+  const activeProgram = activeProgramEntry ? programLibrary.find((p) => p.id === activeProgramEntry.program_id) : null;
   const showProgramReminder = activeProgramEntry?.reminder_time && isReminderDue(activeProgramEntry.reminder_time);
 
   if (loading) return (
@@ -296,17 +309,14 @@ export default function Today() {
   );
 
   return (
-    <div className="min-h-screen femwell-gradient pb-28">
+    <div className="min-h-screen pb-28" style={{ backgroundColor: "var(--ivory)" }}>
       {showCheckin && (
-        <CheckinModal
-          existing={todayCheckin}
-          onClose={() => setShowCheckin(false)}
-          onSave={handleSaveCheckin}
-        />
+        <CheckinModal existing={todayCheckin} onClose={() => setShowCheckin(false)} onSave={handleSaveCheckin} />
       )}
 
       <div className="max-w-3xl mx-auto px-4">
-        {/* Hero — premium top section */}
+
+        {/* ── HERO ─────────────────────────────────────────────────────────── */}
         <div className="pt-8">
           <TodayHeroSection
             user={user}
@@ -316,148 +326,91 @@ export default function Today() {
           />
         </div>
 
-        {/* Sub-nav */}
-        <div className="flex gap-1 mb-5 rounded-2xl p-1" style={{ backgroundColor: "rgba(255,255,255,0.6)" }}>
-          <button
-            onClick={() => setMainTab("today")}
-            className={`flex-1 py-2 rounded-xl text-sm font-semibold transition-all ${mainTab === "today" ? "bg-rose-500 text-white shadow-sm" : "text-gray-500"}`}
-          >
-            My Day
-          </button>
-          <button
-            onClick={() => setMainTab("track")}
-            className={`flex-1 py-2 rounded-xl text-sm font-semibold transition-all ${mainTab === "track" ? "bg-rose-500 text-white shadow-sm" : "text-gray-500"}`}
-          >
-            My Track
-          </button>
+        {/* ── TAB SWITCHER ─────────────────────────────────────────────────── */}
+        <div className="flex gap-1 mb-6 p-1 rounded-2xl" style={{ ...card }}>
+          {["today", "track"].map((tab) => (
+            <button
+              key={tab}
+              onClick={() => setMainTab(tab)}
+              className="flex-1 py-2.5 rounded-xl text-sm font-semibold transition-all capitalize"
+              style={{
+                backgroundColor: mainTab === tab ? "var(--plum)" : "transparent",
+                color: mainTab === tab ? "white" : "var(--mauve)",
+                fontFamily: "'Inter', sans-serif",
+              }}
+            >
+              {tab === "today" ? "My Day" : "My Track"}
+            </button>
+          ))}
         </div>
 
-        {/* ── MY DAY ─────────────────────────────────────────────────────── */}
+        {/* ── MY DAY ───────────────────────────────────────────────────────── */}
         {mainTab === "today" && (
           <>
-            {/* Daily Insight Banner */}
             {user && <DailyInsightBanner user={user} />}
-
-            {/* Weekly Insight */}
             {user && <WeeklyInsightCard user={user} />}
 
-            {/* Program card */}
+            {/* Program momentum */}
             {activeProgram && (
-              <div className="card-glass rounded-2xl p-4 mb-4">
-                <div className="flex items-start justify-between gap-3">
+              <div className="rounded-[24px] p-5 mb-4" style={card}>
+                <div className="flex items-start justify-between gap-3 mb-4">
                   <div>
-                    <p className="text-sm font-semibold text-gray-700">Program momentum</p>
-                    <h2 className="mt-1 text-lg font-bold text-gray-900">{activeProgram.title}</h2>
-                    <p className="mt-1 text-xs text-gray-400">Day {activeProgramEntry.current_day || 1} · pick up where you left off</p>
+                    <p className="mb-1" style={label}>Active Program</p>
+                    <h3 className="text-lg font-semibold leading-tight" style={{ color: "var(--plum)", fontFamily: "'Playfair Display', serif" }}>{activeProgram.title}</h3>
+                    <p className="text-xs mt-1" style={{ color: "var(--mauve)", fontFamily: "'Inter', sans-serif" }}>Day {activeProgramEntry.current_day || 1} · pick up where you left off</p>
                   </div>
                   {activeProgramEntry.streak_count > 0 && (
-                    <div className="inline-flex items-center gap-1 rounded-full bg-rose-50 px-2.5 py-1 text-xs font-semibold text-rose-600">
-                      <Flame className="w-3.5 h-3.5" /> {activeProgramEntry.streak_count} day streak
+                    <div className="inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-semibold flex-shrink-0" style={{ backgroundColor: "var(--rose-dust-subtle)", color: "var(--rose-dust)" }}>
+                      <Flame className="w-3 h-3" />{activeProgramEntry.streak_count} day streak
                     </div>
                   )}
                 </div>
-
                 {showProgramReminder && (
-                  <div className="mt-3 inline-flex items-center gap-1.5 rounded-full bg-amber-50 px-3 py-1.5 text-xs font-semibold text-amber-700">
-                    <Bell className="w-3.5 h-3.5" /> Day {activeProgramEntry.current_day || 1} is ready
+                  <div className="inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-medium mb-4" style={{ backgroundColor: "#FFF8EE", color: "#A07830" }}>
+                    <Bell className="w-3 h-3" /> Day {activeProgramEntry.current_day || 1} is ready
                   </div>
                 )}
-
-                <div className="mt-4 flex gap-2">
-                  <a href={createPageUrl(`ProgramDay?key=${activeProgram.program_key}&day=${activeProgramEntry.current_day || 1}`)} className="btn-primary flex-1 py-2.5 text-sm text-center">
+                <div className="flex gap-2.5">
+                  <a href={createPageUrl(`ProgramDay?key=${activeProgram.program_key}&day=${activeProgramEntry.current_day || 1}`)}
+                    className="flex-1 py-2.5 rounded-xl text-sm font-semibold text-center"
+                    style={{ backgroundColor: "var(--plum)", color: "white", fontFamily: "'Inter', sans-serif" }}>
                     Continue Program
                   </a>
-                  <a href={createPageUrl(`ProgramDetail?key=${activeProgram.program_key}`)} className="btn-secondary flex-1 py-2.5 text-sm text-center">
-                    Open Day List
+                  <a href={createPageUrl(`ProgramDetail?key=${activeProgram.program_key}`)}
+                    className="flex-1 py-2.5 rounded-xl text-sm font-semibold text-center"
+                    style={{ border: "1.5px solid var(--border)", color: "var(--plum)", fontFamily: "'Inter', sans-serif" }}>
+                    Day List
                   </a>
                 </div>
               </div>
             )}
 
-
-            {/* Quick Meal Log */}
-            <div className="card-glass rounded-2xl p-4 mb-4">
-              <p className="font-semibold text-gray-700 text-sm mb-3">🍴 Quick Meal Log</p>
-              <textarea
-                value={quickMealText}
-                onChange={(e) => setQuickMealText(e.target.value)}
-                placeholder="What did you eat? (e.g. oats + banana)"
-                rows={2}
-                className="w-full p-3 rounded-xl border border-rose-100 bg-white/80 text-sm resize-none focus:outline-none focus:ring-2 focus:ring-rose-200 text-gray-700 mb-2"
-              />
-              <div className="flex gap-1.5 mb-3 overflow-x-auto pb-1">
-                {MEAL_TYPES.map((t) => (
-                  <button key={t} onClick={() => setQuickMealType(t)}
-                    className={`px-3 py-1.5 rounded-full text-xs font-semibold capitalize whitespace-nowrap transition-all ${quickMealType === t ? "bg-rose-500 text-white" : "bg-white/70 text-gray-500 border border-rose-100"}`}>
-                    {MEAL_EMOJIS[t]} {t}
-                  </button>
-                ))}
-              </div>
-              <div className="flex items-center justify-between">
-                <button onClick={quickLogMeal} disabled={!quickMealText.trim() || quickLogging}
-                  className="btn-primary px-6 py-2.5 text-sm flex items-center gap-2">
-                  {quickLogging ? <Loader2 className="w-4 h-4 animate-spin" /> : <Plus className="w-4 h-4" />}
-                  {quickLogging ? "Logging…" : "Log Meal"}
-                </button>
-                <a href={createPageUrl("Nutrition")} className="text-xs text-rose-400 font-medium hover:text-rose-600">
-                  Full nutrition tracker →
-                </a>
-              </div>
-            </div>
-
-            {/* Recommendations */}
-            {recommendations.length > 0 && (
-              <div className="mb-4">
-                <h2 className="font-semibold text-gray-700 text-sm mb-3 flex items-center gap-1.5">
-                  <Sparkles className="w-4 h-4 text-rose-400" /> For You Today
-                </h2>
-                <div className="space-y-2">
-                  {recommendations.map((rec) => (
-                    <a key={rec.id} href={rec.action_route || "#"} className="card-glass rounded-2xl p-4 flex items-center gap-3 hover:shadow-md transition-shadow block">
-                      <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-rose-200 to-pink-300 flex items-center justify-center flex-shrink-0">
-                        <Sparkles className="w-4 h-4 text-white" />
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <p className="font-medium text-gray-800 text-sm truncate">{rec.title}</p>
-                        {rec.reason && <p className="text-xs text-gray-400 truncate">{rec.reason}</p>}
-                      </div>
-                      <ChevronRight className="w-4 h-4 text-gray-300 flex-shrink-0" />
-                    </a>
-                  ))}
-                </div>
-              </div>
-            )}
-
-            {/* Featured content */}
+            {/* Recommended practices */}
             {recentContent.length > 0 && (
               <div className="mb-4">
                 <div className="flex items-center justify-between mb-3">
-                  <h2 className="font-semibold text-gray-700 text-sm">Recommended Practices</h2>
-                  <a href={createPageUrl("Explore")} className="text-xs text-rose-400 font-medium">See all</a>
+                  <p style={label}>Recommended for You</p>
+                  <a href={createPageUrl("Explore")} className="text-xs font-medium" style={{ color: "var(--rose-dust)", fontFamily: "'Inter', sans-serif" }}>See all</a>
                 </div>
-                <div className="space-y-3">
+                <div className="space-y-2.5">
                   {recentContent.map((item) => {
                     const isComplete = todayCompletions.some((c) => c.content_id === item.id || c.content_key === item.content_key);
+                    const TypeIcon = item.content_type === "MEDITATION" ? Sparkles : item.content_type === "BREATHWORK" ? Droplet : item.content_type === "WORKOUT" ? Zap : BookOpen;
                     return (
-                      <div key={item.id} className="card-glass rounded-2xl p-4 flex items-center gap-3 hover:shadow-md transition-shadow">
-                        <a href={createPageUrl(`ContentPlayer?id=${item.id}`)} className="flex items-center gap-3 flex-1 min-w-0">
-                          <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-purple-200 to-pink-200 flex items-center justify-center flex-shrink-0 text-xl relative">
-                            {item.content_type === "MEDITATION" ? "🧘" : item.content_type === "BREATHWORK" ? "🌬️" : item.content_type === "WORKOUT" ? "💪" : "📖"}
-                            {isComplete && (
-                              <div className="absolute -top-1 -right-1 w-4 h-4 bg-emerald-500 rounded-full flex items-center justify-center">
-                                <span className="text-white text-[8px]">✓</span>
-                              </div>
-                            )}
+                      <div key={item.id} className="flex items-center gap-3.5 rounded-[20px] p-4" style={{ ...card, border: `1px solid ${isComplete ? "var(--sage-light)" : "var(--border)"}` }}>
+                        <a href={createPageUrl(`ContentPlayer?id=${item.id}`)} className="flex items-center gap-3.5 flex-1 min-w-0">
+                          <div className="w-11 h-11 rounded-2xl flex items-center justify-center flex-shrink-0" style={{ backgroundColor: isComplete ? "var(--sage-subtle)" : "var(--rose-dust-subtle)", color: isComplete ? "var(--sage)" : "var(--rose-dust)" }}>
+                            {isComplete ? <CheckCircle2 className="w-5 h-5" /> : <TypeIcon className="w-4 h-4" strokeWidth={1.5} />}
                           </div>
                           <div className="flex-1 min-w-0">
-                            <p className="font-medium text-gray-800 text-sm truncate">{item.title}</p>
-                            <p className="text-xs text-gray-400">{item.duration_minutes ? `${item.duration_minutes} min · ` : ""}{item.content_type}</p>
+                            <p className="font-medium text-sm truncate" style={{ color: "var(--plum)", fontFamily: "'Inter', sans-serif" }}>{item.title}</p>
+                            <p className="text-xs mt-0.5" style={{ color: "var(--mauve)", fontFamily: "'Inter', sans-serif" }}>{item.duration_minutes ? `${item.duration_minutes} min · ` : ""}{item.content_type?.toLowerCase()}</p>
                           </div>
                         </a>
                         {!isComplete && user && (
                           <ManualCompleteButton item={item} user={user} source="TODAY" onDone={(r) => setTodayCompletions((p) => [...p, r])} />
                         )}
-                        {isComplete && <span className="text-xs text-emerald-500 font-medium flex-shrink-0">Done ✓</span>}
+                        {isComplete && <span className="text-xs font-semibold flex-shrink-0" style={{ color: "var(--sage)" }}>Done</span>}
                       </div>
                     );
                   })}
@@ -465,48 +418,111 @@ export default function Today() {
               </div>
             )}
 
-            {/* Nutrition card */}
-            <a href={createPageUrl("Nutrition")} className="card-glass rounded-2xl p-4 mb-4 flex items-center gap-3 hover:shadow-md transition-shadow block">
-              <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-emerald-200 to-teal-300 flex items-center justify-center flex-shrink-0">
-                <Utensils className="w-6 h-6 text-white" />
+            {/* AI Recommendations */}
+            {recommendations.length > 0 && (
+              <div className="mb-4">
+                <p className="mb-3" style={label}>For You Today</p>
+                <div className="space-y-2">
+                  {recommendations.map((rec) => (
+                    <a key={rec.id} href={rec.action_route || "#"} className="flex items-center gap-3.5 rounded-[20px] p-4 transition-all block" style={card}>
+                      <div className="w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0" style={{ backgroundColor: "var(--rose-dust-subtle)", color: "var(--rose-dust)" }}>
+                        <Sparkles className="w-4 h-4" />
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <p className="font-medium text-sm truncate" style={{ color: "var(--plum)", fontFamily: "'Inter', sans-serif" }}>{rec.title}</p>
+                        {rec.reason && <p className="text-xs truncate mt-0.5" style={{ color: "var(--mauve)", fontFamily: "'Inter', sans-serif" }}>{rec.reason}</p>}
+                      </div>
+                      <ChevronRight className="w-4 h-4 flex-shrink-0" style={{ color: "var(--border)" }} />
+                    </a>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Quick meal log */}
+            <div className="rounded-[24px] p-5 mb-4" style={card}>
+              <div className="flex items-center justify-between mb-4">
+                <div>
+                  <p style={label}>Quick Meal Log</p>
+                  <p className="text-sm font-semibold mt-0.5" style={{ color: "var(--plum)", fontFamily: "'Inter', sans-serif" }}>What did you eat?</p>
+                </div>
+                <a href={createPageUrl("Nutrition")} className="text-xs font-medium" style={{ color: "var(--rose-dust)", fontFamily: "'Inter', sans-serif" }}>Full tracker</a>
+              </div>
+              <textarea
+                value={quickMealText}
+                onChange={(e) => setQuickMealText(e.target.value)}
+                placeholder="e.g. oats with banana and almond milk…"
+                rows={2}
+                className="w-full p-3.5 rounded-2xl text-sm resize-none focus:outline-none transition-all"
+                style={{ backgroundColor: "var(--ivory)", border: "1.5px solid var(--border)", color: "var(--plum)", fontFamily: "'Inter', sans-serif", lineHeight: 1.6 }}
+                onFocus={e => e.target.style.borderColor = "var(--rose-dust-light)"}
+                onBlur={e => e.target.style.borderColor = "var(--border)"}
+              />
+              <div className="flex gap-1.5 mt-3 mb-4 overflow-x-auto pb-1" style={{ scrollbarWidth: "none" }}>
+                {MEAL_TYPES.map((t) => (
+                  <button key={t} onClick={() => setQuickMealType(t)}
+                    className="px-3.5 py-1.5 rounded-full text-xs font-semibold capitalize whitespace-nowrap transition-all"
+                    style={{
+                      backgroundColor: quickMealType === t ? "var(--plum)" : "var(--ivory)",
+                      color: quickMealType === t ? "white" : "var(--mauve)",
+                      border: `1px solid ${quickMealType === t ? "var(--plum)" : "var(--border)"}`,
+                      fontFamily: "'Inter', sans-serif",
+                    }}>
+                    {t}
+                  </button>
+                ))}
+              </div>
+              <button onClick={quickLogMeal} disabled={!quickMealText.trim() || quickLogging}
+                className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full text-sm font-semibold transition-all"
+                style={{ backgroundColor: "var(--plum)", color: "white", fontFamily: "'Inter', sans-serif", opacity: (!quickMealText.trim() || quickLogging) ? 0.5 : 1 }}>
+                {quickLogging ? <Loader2 className="w-4 h-4 animate-spin" /> : <Plus className="w-4 h-4" />}
+                {quickLogging ? "Logging…" : "Log Meal"}
+              </button>
+            </div>
+
+            {/* Nutrition shortcut */}
+            <a href={createPageUrl("Nutrition")} className="flex items-center gap-3.5 rounded-[20px] p-4 mb-4 transition-all block" style={card}>
+              <div className="w-11 h-11 rounded-2xl flex items-center justify-center flex-shrink-0" style={{ backgroundColor: "var(--sage-subtle)", color: "var(--sage)" }}>
+                <Utensils className="w-5 h-5" strokeWidth={1.5} />
               </div>
               <div className="flex-1">
-                <p className="font-semibold text-gray-800">Nutrition</p>
-                <p className="text-xs text-gray-400">Log meals · Water · Weekly plan</p>
+                <p className="font-semibold text-sm" style={{ color: "var(--plum)", fontFamily: "'Inter', sans-serif" }}>Nutrition</p>
+                <p className="text-xs mt-0.5" style={{ color: "var(--mauve)", fontFamily: "'Inter', sans-serif" }}>Log meals · Water · Weekly plan</p>
               </div>
-              <ChevronRight className="w-4 h-4 text-gray-300" />
+              <ChevronRight className="w-4 h-4" style={{ color: "var(--border)" }} />
             </a>
 
             {/* Quick actions */}
             <div className="mb-4">
-              <h2 className="font-semibold text-gray-700 text-sm mb-3">Quick Actions</h2>
+              <p className="mb-3" style={label}>Quick Actions</p>
               <div className="grid grid-cols-3 gap-3">
                 {[
-                  { label: "Log Cycle", emoji: "🩸", action: () => { setMainTab("track"); setTrackTab("Cycle"); } },
-                  { label: "Journal", emoji: "📓", href: createPageUrl("Journal") },
-                  { label: "Explore", emoji: "✨", href: createPageUrl("Explore") },
-                ].map((a) => (
-                  a.href ? (
-                    <a key={a.label} href={a.href} className="card-glass rounded-2xl p-3 text-center hover:shadow-md transition-shadow block">
-                      <p className="text-2xl mb-1">{a.emoji}</p>
-                      <p className="text-xs font-medium text-gray-600">{a.label}</p>
-                    </a>
+                  { lab: "Log Cycle", Icon: Droplets, action: () => { setMainTab("track"); setTrackTab("Cycle"); } },
+                  { lab: "Journal",   Icon: BookOpen,  href: createPageUrl("Journal") },
+                  { lab: "Explore",   Icon: Compass,   href: createPageUrl("Explore") },
+                ].map((a) => {
+                  const inner = (
+                    <>
+                      <div className="w-9 h-9 rounded-xl flex items-center justify-center mx-auto mb-2" style={{ backgroundColor: "var(--rose-dust-subtle)", color: "var(--rose-dust)" }}>
+                        <a.Icon className="w-4 h-4" strokeWidth={1.5} />
+                      </div>
+                      <p className="text-xs font-semibold" style={{ color: "var(--plum)", fontFamily: "'Inter', sans-serif" }}>{a.lab}</p>
+                    </>
+                  );
+                  return a.href ? (
+                    <a key={a.lab} href={a.href} className="flex flex-col items-center rounded-[20px] p-4 text-center block" style={card}>{inner}</a>
                   ) : (
-                    <button key={a.label} onClick={a.action} className="card-glass rounded-2xl p-3 text-center hover:shadow-md transition-shadow">
-                      <p className="text-2xl mb-1">{a.emoji}</p>
-                      <p className="text-xs font-medium text-gray-600">{a.label}</p>
-                    </button>
-                  )
-                ))}
+                    <button key={a.lab} onClick={a.action} className="flex flex-col items-center rounded-[20px] p-4 text-center w-full" style={card}>{inner}</button>
+                  );
+                })}
               </div>
             </div>
           </>
         )}
 
-        {/* ── MY TRACK ───────────────────────────────────────────────────── */}
+        {/* ── MY TRACK ─────────────────────────────────────────────────────── */}
         {mainTab === "track" && (
           <div>
-            {/* Calendar */}
             {user && (
               <TrackCalendar
                 user={user}
@@ -518,18 +534,21 @@ export default function Today() {
               />
             )}
 
-            {/* Selected date label */}
-            <div className="text-center mb-4">
-              <p className="font-semibold text-gray-800">{displayDate}</p>
-              {!isToday && <p className="text-xs text-gray-400">{selectedDate}</p>}
+            <div className="text-center mb-5">
+              <p className="font-semibold" style={{ color: "var(--plum)", fontFamily: "'Playfair Display', serif", fontSize: "1.1rem" }}>{displayDate}</p>
+              {!isToday && <p className="text-xs mt-0.5" style={{ color: "var(--mauve)" }}>{selectedDate}</p>}
             </div>
 
-            {/* Track sub-tabs */}
-            <div className="flex gap-1 mb-5 bg-white/60 rounded-2xl p-1 overflow-x-auto">
+            <div className="flex gap-1 mb-5 p-1 overflow-x-auto rounded-2xl" style={{ ...card, scrollbarWidth: "none" }}>
               {TRACK_TABS.map((tab) => (
                 <button key={tab} onClick={() => setTrackTab(tab)}
-                  className={`flex-1 py-2 rounded-xl text-xs font-semibold transition-all whitespace-nowrap ${trackTab === tab ? "bg-rose-500 text-white shadow-sm" : "text-gray-500"}`}
-                >
+                  className="flex-1 py-2 rounded-xl text-xs font-semibold whitespace-nowrap transition-all"
+                  style={{
+                    backgroundColor: trackTab === tab ? "var(--plum)" : "transparent",
+                    color: trackTab === tab ? "white" : "var(--mauve)",
+                    fontFamily: "'Inter', sans-serif",
+                    minWidth: "fit-content",
+                  }}>
                   {tab}
                 </button>
               ))}
@@ -539,55 +558,59 @@ export default function Today() {
             {trackTab === "Cycle" && (
               <div className="space-y-3">
                 {cycleEvents.length > 0 ? cycleEvents.map((e) => (
-                  <div key={e.id} className="card-glass rounded-2xl p-4 flex items-center justify-between">
+                  <div key={e.id} className="flex items-center justify-between rounded-[20px] p-4" style={card}>
                     <div className="flex items-center gap-3">
-                      <span className="text-2xl">{e.type === "PeriodStart" ? "🩸" : e.type === "PeriodEnd" ? "🏁" : "🔴"}</span>
+                      <div className="w-9 h-9 rounded-xl flex items-center justify-center" style={{ backgroundColor: "var(--rose-dust-subtle)", color: "var(--rose-dust)" }}>
+                        <Droplets className="w-4 h-4" />
+                      </div>
                       <div>
-                        <p className="font-semibold text-gray-800 text-sm">{e.type.replace(/([A-Z])/g, " $1").trim()}</p>
-                        {e.flow_level && <p className="text-xs text-gray-400 capitalize">{e.flow_level} flow</p>}
+                        <p className="font-semibold text-sm" style={{ color: "var(--plum)", fontFamily: "'Inter', sans-serif" }}>{e.type.replace(/([A-Z])/g, " $1").trim()}</p>
+                        {e.flow_level && <p className="text-xs capitalize" style={{ color: "var(--mauve)" }}>{e.flow_level} flow</p>}
                       </div>
                     </div>
-                    <button onClick={async () => { await base44.entities.CycleEvents.delete(e.id); await loadTrackData(user.id, selectedDate); }} className="text-xs text-red-400">Remove</button>
+                    <button onClick={async () => { await base44.entities.CycleEvents.delete(e.id); await loadTrackData(user.id, selectedDate); }} className="text-xs font-medium" style={{ color: "var(--mauve)" }}>Remove</button>
                   </div>
                 )) : (
-                  <div className="card-glass rounded-2xl p-6 text-center text-gray-400">
-                    <Droplets className="w-8 h-8 mx-auto mb-2 text-rose-200" />
-                    <p className="text-sm">No cycle events logged for this day.</p>
+                  <div className="rounded-[20px] p-8 text-center" style={card}>
+                    <Droplets className="w-7 h-7 mx-auto mb-3" style={{ color: "var(--rose-dust-light)" }} />
+                    <p className="text-sm" style={{ color: "var(--mauve)", fontFamily: "'Inter', sans-serif" }}>No cycle events logged for this day.</p>
                   </div>
                 )}
                 {addingCycleEvent ? (
-                  <div className="card-glass rounded-2xl p-4 space-y-4">
-                    <p className="font-semibold text-gray-700 text-sm">Log Cycle Event</p>
+                  <div className="rounded-[24px] p-5 space-y-4" style={card}>
+                    <p className="font-semibold text-sm" style={{ color: "var(--plum)", fontFamily: "'Inter', sans-serif" }}>Log Cycle Event</p>
                     <div className="grid grid-cols-3 gap-2">
                       {PERIOD_TYPES.map((t) => (
                         <button key={t.value} onClick={() => setCycleEventType(t.value)}
-                          className={`py-2 rounded-xl text-xs font-medium transition-all ${cycleEventType === t.value ? "bg-rose-500 text-white" : "bg-white/70 text-gray-600"}`}>
+                          className="py-2.5 rounded-xl text-xs font-semibold transition-all"
+                          style={{ backgroundColor: cycleEventType === t.value ? "var(--plum)" : "var(--ivory)", color: cycleEventType === t.value ? "white" : "var(--mauve)", border: `1px solid ${cycleEventType === t.value ? "var(--plum)" : "var(--border)"}` }}>
                           {t.label}
                         </button>
                       ))}
                     </div>
                     {cycleEventType !== "PeriodEnd" && (
                       <div>
-                        <p className="text-xs text-gray-500 mb-2">Flow level</p>
+                        <p className="text-xs font-medium mb-2.5" style={{ color: "var(--mauve)", fontFamily: "'Inter', sans-serif" }}>Flow level</p>
                         <div className="flex gap-2">
                           {FLOW_OPTIONS.map((f) => (
                             <button key={f.value} onClick={() => setFlowLevel(f.value)}
-                              className={`flex-1 py-2 rounded-xl text-xs font-medium transition-all ${flowLevel === f.value ? "bg-rose-100 border-2 border-rose-400 text-rose-700" : "bg-white/70 text-gray-600"}`}>
-                              {f.emoji}<br />{f.label}
+                              className="flex-1 py-2.5 rounded-xl text-xs font-semibold transition-all"
+                              style={{ backgroundColor: flowLevel === f.value ? "var(--rose-dust-subtle)" : "var(--ivory)", color: flowLevel === f.value ? "var(--rose-dust)" : "var(--mauve)", border: `1.5px solid ${flowLevel === f.value ? "var(--rose-dust)" : "var(--border)"}` }}>
+                              {f.label}
                             </button>
                           ))}
                         </div>
                       </div>
                     )}
                     <div className="flex gap-2">
-                      <button onClick={() => setAddingCycleEvent(false)} className="btn-secondary flex-1 py-2 text-sm">Cancel</button>
-                      <button onClick={saveCycleEvent} className="btn-primary flex-1 py-2 text-sm">Save</button>
+                      <button onClick={() => setAddingCycleEvent(false)} className="flex-1 py-2.5 rounded-xl text-sm font-semibold" style={{ border: "1.5px solid var(--border)", color: "var(--plum)" }}>Cancel</button>
+                      <button onClick={saveCycleEvent} className="flex-1 py-2.5 rounded-xl text-sm font-semibold" style={{ backgroundColor: "var(--plum)", color: "white" }}>Save</button>
                     </div>
                   </div>
                 ) : (
-                  <button onClick={() => setAddingCycleEvent(true)} className="w-full card-glass rounded-2xl p-4 flex items-center gap-3 hover:bg-rose-50/50 transition-colors">
-                    <div className="w-9 h-9 rounded-xl bg-rose-100 flex items-center justify-center"><Plus className="w-4 h-4 text-rose-500" /></div>
-                    <p className="text-sm font-medium text-gray-700">Log cycle event</p>
+                  <button onClick={() => setAddingCycleEvent(true)} className="w-full flex items-center gap-3 rounded-[20px] p-4 transition-all" style={card}>
+                    <div className="w-9 h-9 rounded-xl flex items-center justify-center" style={{ backgroundColor: "var(--rose-dust-subtle)", color: "var(--rose-dust)" }}><Plus className="w-4 h-4" /></div>
+                    <p className="text-sm font-medium" style={{ color: "var(--plum)", fontFamily: "'Inter', sans-serif" }}>Log cycle event</p>
                   </button>
                 )}
               </div>
@@ -597,51 +620,55 @@ export default function Today() {
             {trackTab === "Symptoms" && (
               <div className="space-y-3">
                 {symptomLogs.length > 0 ? symptomLogs.map((s) => (
-                  <div key={s.id} className="card-glass rounded-2xl p-4 flex items-center justify-between">
+                  <div key={s.id} className="flex items-center justify-between rounded-[20px] p-4" style={card}>
                     <div>
-                      <p className="font-semibold text-gray-800 text-sm capitalize">{s.symptom_type}</p>
-                      <p className="text-xs text-gray-400">{SEVERITY_LABELS[s.severity] || `Severity ${s.severity}`}</p>
-                      {s.notes && <p className="text-xs text-gray-500 mt-0.5 italic">"{s.notes}"</p>}
+                      <p className="font-semibold text-sm capitalize" style={{ color: "var(--plum)", fontFamily: "'Inter', sans-serif" }}>{s.symptom_type}</p>
+                      <p className="text-xs mt-0.5" style={{ color: "var(--mauve)" }}>{SEVERITY_LABELS[s.severity] || `Severity ${s.severity}`}</p>
+                      {s.notes && <p className="text-xs mt-0.5 italic" style={{ color: "var(--mauve)" }}>"{s.notes}"</p>}
                     </div>
-                    <button onClick={async () => { await base44.entities.SymptomLogs.delete(s.id); await loadTrackData(user.id, selectedDate); }} className="text-xs text-red-400">Remove</button>
+                    <button onClick={async () => { await base44.entities.SymptomLogs.delete(s.id); await loadTrackData(user.id, selectedDate); }} className="text-xs font-medium" style={{ color: "var(--mauve)" }}>Remove</button>
                   </div>
                 )) : (
-                  <div className="card-glass rounded-2xl p-6 text-center text-gray-400">
-                    <Activity className="w-8 h-8 mx-auto mb-2 text-rose-200" />
-                    <p className="text-sm">No symptoms logged for this day.</p>
+                  <div className="rounded-[20px] p-8 text-center" style={card}>
+                    <Activity className="w-7 h-7 mx-auto mb-3" style={{ color: "var(--rose-dust-light)" }} />
+                    <p className="text-sm" style={{ color: "var(--mauve)", fontFamily: "'Inter', sans-serif" }}>No symptoms logged for this day.</p>
                   </div>
                 )}
                 {addingSymptom ? (
-                  <div className="card-glass rounded-2xl p-4 space-y-4">
-                    <p className="font-semibold text-gray-700 text-sm">Log a Symptom</p>
+                  <div className="rounded-[24px] p-5 space-y-4" style={card}>
+                    <p className="font-semibold text-sm" style={{ color: "var(--plum)", fontFamily: "'Inter', sans-serif" }}>Log a Symptom</p>
                     <div className="flex flex-wrap gap-2">
                       {COMMON_SYMPTOMS.map((s) => (
                         <button key={s} onClick={() => { setSymptomType(s); setCustomSymptom(""); }}
-                          className={`px-3 py-1.5 rounded-full text-xs font-medium capitalize ${symptomType === s ? "bg-rose-500 text-white" : "bg-white/70 text-gray-600 border border-rose-100"}`}>
+                          className="px-3 py-1.5 rounded-full text-xs font-medium capitalize transition-all"
+                          style={{ backgroundColor: symptomType === s ? "var(--plum)" : "var(--ivory)", color: symptomType === s ? "white" : "var(--plum)", border: `1px solid ${symptomType === s ? "var(--plum)" : "var(--border)"}` }}>
                           {s}
                         </button>
                       ))}
                     </div>
-                    <input type="text" placeholder="Or type a custom symptom..." value={customSymptom}
+                    <input type="text" placeholder="Or type a custom symptom…" value={customSymptom}
                       onChange={(e) => { setCustomSymptom(e.target.value); setSymptomType(""); }}
-                      className="w-full p-3 rounded-xl border border-rose-100 bg-white/80 text-sm focus:outline-none focus:ring-2 focus:ring-rose-200" />
+                      className="w-full p-3.5 rounded-2xl text-sm focus:outline-none"
+                      style={{ backgroundColor: "var(--ivory)", border: "1.5px solid var(--border)", color: "var(--plum)", fontFamily: "'Inter', sans-serif" }} />
                     <div>
-                      <label className="text-xs text-gray-500 flex justify-between mb-1">
-                        <span>Severity</span><span className="text-rose-600 font-semibold">{SEVERITY_LABELS[severity]}</span>
-                      </label>
+                      <div className="flex justify-between text-xs mb-2" style={{ color: "var(--mauve)" }}>
+                        <span>Severity</span>
+                        <span className="font-semibold" style={{ color: "var(--rose-dust)" }}>{SEVERITY_LABELS[severity]}</span>
+                      </div>
                       <input type="range" min="1" max="5" value={severity} onChange={(e) => setSeverity(Number(e.target.value))} />
                     </div>
                     <textarea placeholder="Notes (optional)" value={symptomNotes} onChange={(e) => setSymptomNotes(e.target.value)} rows={2}
-                      className="w-full p-3 rounded-xl border border-rose-100 bg-rose-50/30 text-sm resize-none focus:outline-none focus:ring-2 focus:ring-rose-200" />
+                      className="w-full p-3.5 rounded-2xl text-sm resize-none focus:outline-none"
+                      style={{ backgroundColor: "var(--ivory)", border: "1.5px solid var(--border)", color: "var(--plum)", fontFamily: "'Inter', sans-serif" }} />
                     <div className="flex gap-2">
-                      <button onClick={() => setAddingSymptom(false)} className="btn-secondary flex-1 py-2 text-sm">Cancel</button>
-                      <button onClick={saveSymptom} disabled={!symptomType && !customSymptom.trim()} className="btn-primary flex-1 py-2 text-sm">Save</button>
+                      <button onClick={() => setAddingSymptom(false)} className="flex-1 py-2.5 rounded-xl text-sm font-semibold" style={{ border: "1.5px solid var(--border)", color: "var(--plum)" }}>Cancel</button>
+                      <button onClick={saveSymptom} disabled={!symptomType && !customSymptom.trim()} className="flex-1 py-2.5 rounded-xl text-sm font-semibold" style={{ backgroundColor: "var(--plum)", color: "white", opacity: (!symptomType && !customSymptom.trim()) ? 0.5 : 1 }}>Save</button>
                     </div>
                   </div>
                 ) : (
-                  <button onClick={() => setAddingSymptom(true)} className="w-full card-glass rounded-2xl p-4 flex items-center gap-3 hover:bg-rose-50/50 transition-colors">
-                    <div className="w-9 h-9 rounded-xl bg-rose-100 flex items-center justify-center"><Plus className="w-4 h-4 text-rose-500" /></div>
-                    <p className="text-sm font-medium text-gray-700">Log a symptom</p>
+                  <button onClick={() => setAddingSymptom(true)} className="w-full flex items-center gap-3 rounded-[20px] p-4 transition-all" style={card}>
+                    <div className="w-9 h-9 rounded-xl flex items-center justify-center" style={{ backgroundColor: "var(--rose-dust-subtle)", color: "var(--rose-dust)" }}><Plus className="w-4 h-4" /></div>
+                    <p className="text-sm font-medium" style={{ color: "var(--plum)", fontFamily: "'Inter', sans-serif" }}>Log a symptom</p>
                   </button>
                 )}
               </div>
@@ -655,34 +682,37 @@ export default function Today() {
                   <HabitCard key={habitName} habit={habitName} habitLogs={habitLogs} allHabitLogs={allHabitLogs}
                     selectedDate={selectedDate} todayStr={todayStr} onComplete={handleHabitComplete} onDelete={handleDeleteHabit} />
                 )) : (
-                  <div className="card-glass rounded-2xl p-6 text-center text-gray-400">
-                    <Heart className="w-8 h-8 mx-auto mb-2 text-rose-200" />
-                    <p className="text-sm font-medium">No habits yet.</p>
-                    <p className="text-xs mt-1">Add your first habit below!</p>
+                  <div className="rounded-[20px] p-8 text-center" style={card}>
+                    <Heart className="w-7 h-7 mx-auto mb-3" style={{ color: "var(--rose-dust-light)" }} />
+                    <p className="text-sm font-medium" style={{ color: "var(--plum)", fontFamily: "'Inter', sans-serif" }}>No habits yet.</p>
+                    <p className="text-xs mt-1" style={{ color: "var(--mauve)" }}>Add your first habit below.</p>
                   </div>
                 )}
                 {addingHabit ? (
-                  <div className="card-glass rounded-2xl p-4 space-y-3">
-                    <p className="font-semibold text-gray-700 text-sm">New Habit</p>
-                    <input type="text" placeholder="e.g. Drink 8 glasses of water..." value={newHabitName}
+                  <div className="rounded-[24px] p-5 space-y-3" style={card}>
+                    <p className="font-semibold text-sm" style={{ color: "var(--plum)", fontFamily: "'Inter', sans-serif" }}>New Habit</p>
+                    <input type="text" placeholder="e.g. Drink 8 glasses of water…" value={newHabitName}
                       onChange={(e) => setNewHabitName(e.target.value)} onKeyDown={(e) => e.key === "Enter" && handleAddHabit()}
-                      className="w-full p-3 rounded-xl border border-rose-100 bg-white/80 text-sm focus:outline-none focus:ring-2 focus:ring-rose-200" autoFocus />
-                    <div className="flex gap-2 flex-wrap">
+                      className="w-full p-3.5 rounded-2xl text-sm focus:outline-none"
+                      style={{ backgroundColor: "var(--ivory)", border: "1.5px solid var(--border)", color: "var(--plum)", fontFamily: "'Inter', sans-serif" }} autoFocus />
+                    <div className="flex flex-wrap gap-2">
                       {["Drink water", "Morning walk", "Meditate", "Stretch", "Read", "Journal", "No screen before bed"].map((s) => (
-                        <button key={s} onClick={() => setNewHabitName(s)} className="text-xs px-2.5 py-1 rounded-full bg-rose-50 text-rose-500 hover:bg-rose-100">{s}</button>
+                        <button key={s} onClick={() => setNewHabitName(s)}
+                          className="text-xs px-3 py-1.5 rounded-full transition-all"
+                          style={{ backgroundColor: "var(--ivory)", color: "var(--plum)", border: "1px solid var(--border)", fontFamily: "'Inter', sans-serif" }}>{s}</button>
                       ))}
                     </div>
                     <div className="flex gap-2">
-                      <button onClick={() => { setAddingHabit(false); setNewHabitName(""); }} className="btn-secondary flex-1 py-2 text-sm">Cancel</button>
-                      <button onClick={handleAddHabit} disabled={!newHabitName.trim() || savingHabit} className="btn-primary flex-1 py-2 text-sm">
+                      <button onClick={() => { setAddingHabit(false); setNewHabitName(""); }} className="flex-1 py-2.5 rounded-xl text-sm font-semibold" style={{ border: "1.5px solid var(--border)", color: "var(--plum)" }}>Cancel</button>
+                      <button onClick={handleAddHabit} disabled={!newHabitName.trim() || savingHabit} className="flex-1 py-2.5 rounded-xl text-sm font-semibold" style={{ backgroundColor: "var(--plum)", color: "white", opacity: (!newHabitName.trim() || savingHabit) ? 0.5 : 1 }}>
                         {savingHabit ? "Adding…" : "Add Habit"}
                       </button>
                     </div>
                   </div>
                 ) : (
-                  <button onClick={() => setAddingHabit(true)} className="w-full card-glass rounded-2xl p-4 flex items-center gap-3 hover:bg-rose-50/50 transition-colors">
-                    <div className="w-9 h-9 rounded-xl bg-rose-100 flex items-center justify-center"><Plus className="w-4 h-4 text-rose-500" /></div>
-                    <p className="text-sm font-medium text-gray-700">Add a new habit</p>
+                  <button onClick={() => setAddingHabit(true)} className="w-full flex items-center gap-3 rounded-[20px] p-4 transition-all" style={card}>
+                    <div className="w-9 h-9 rounded-xl flex items-center justify-center" style={{ backgroundColor: "var(--rose-dust-subtle)", color: "var(--rose-dust)" }}><Plus className="w-4 h-4" /></div>
+                    <p className="text-sm font-medium" style={{ color: "var(--plum)", fontFamily: "'Inter', sans-serif" }}>Add a new habit</p>
                   </button>
                 )}
               </div>
@@ -692,43 +722,45 @@ export default function Today() {
             {trackTab === "Meds" && (
               <div className="space-y-3">
                 {medLogs.length > 0 ? medLogs.map((m) => (
-                  <div key={m.id} className="card-glass rounded-2xl p-4 flex items-center justify-between">
+                  <div key={m.id} className="flex items-center justify-between rounded-[20px] p-4" style={card}>
                     <div className="flex items-center gap-3">
-                      <Pill className="w-4 h-4 text-purple-400" />
+                      <div className="w-9 h-9 rounded-xl flex items-center justify-center" style={{ backgroundColor: "var(--mauve-subtle)", color: "var(--mauve)" }}>
+                        <Pill className="w-4 h-4" />
+                      </div>
                       <div>
-                        <p className="text-sm font-semibold text-gray-800">{m.item_name}</p>
-                        {m.dose && <p className="text-xs text-gray-400">{m.dose}</p>}
-                        {m.notes && <p className="text-xs text-gray-400 italic">{m.notes}</p>}
+                        <p className="text-sm font-semibold" style={{ color: "var(--plum)", fontFamily: "'Inter', sans-serif" }}>{m.item_name}</p>
+                        {m.dose && <p className="text-xs" style={{ color: "var(--mauve)" }}>{m.dose}</p>}
+                        {m.notes && <p className="text-xs italic" style={{ color: "var(--mauve)" }}>{m.notes}</p>}
                       </div>
                     </div>
-                    <button onClick={async () => { await base44.entities.MedicationLogs.delete(m.id); await loadTrackData(user.id, selectedDate); }} className="text-xs text-red-400">Remove</button>
+                    <button onClick={async () => { await base44.entities.MedicationLogs.delete(m.id); await loadTrackData(user.id, selectedDate); }} className="text-xs font-medium" style={{ color: "var(--mauve)" }}>Remove</button>
                   </div>
                 )) : (
-                  <div className="card-glass rounded-2xl p-6 text-center text-gray-400">
-                    <Pill className="w-8 h-8 mx-auto mb-2 text-purple-200" />
-                    <p className="text-sm">No medications logged for this day.</p>
+                  <div className="rounded-[20px] p-8 text-center" style={card}>
+                    <Pill className="w-7 h-7 mx-auto mb-3" style={{ color: "var(--mauve-light)" }} />
+                    <p className="text-sm" style={{ color: "var(--mauve)", fontFamily: "'Inter', sans-serif" }}>No medications logged for this day.</p>
                   </div>
                 )}
                 {addingMed ? (
-                  <div className="card-glass rounded-2xl p-4 space-y-3">
-                    <p className="font-semibold text-gray-700 text-sm">Log Medication</p>
+                  <div className="rounded-[24px] p-5 space-y-3" style={card}>
+                    <p className="font-semibold text-sm" style={{ color: "var(--plum)", fontFamily: "'Inter', sans-serif" }}>Log Medication</p>
                     <input type="text" placeholder="Medication name *" value={medName} onChange={(e) => setMedName(e.target.value)}
-                      className="w-full p-3 rounded-xl border border-rose-100 bg-white/80 text-sm focus:outline-none focus:ring-2 focus:ring-rose-200" autoFocus />
+                      className="w-full p-3.5 rounded-2xl text-sm focus:outline-none" style={{ backgroundColor: "var(--ivory)", border: "1.5px solid var(--border)", color: "var(--plum)", fontFamily: "'Inter', sans-serif" }} autoFocus />
                     <input type="text" placeholder="Dose (e.g. 500mg, optional)" value={medDose} onChange={(e) => setMedDose(e.target.value)}
-                      className="w-full p-3 rounded-xl border border-rose-100 bg-white/80 text-sm focus:outline-none focus:ring-2 focus:ring-rose-200" />
+                      className="w-full p-3.5 rounded-2xl text-sm focus:outline-none" style={{ backgroundColor: "var(--ivory)", border: "1.5px solid var(--border)", color: "var(--plum)", fontFamily: "'Inter', sans-serif" }} />
                     <textarea placeholder="Notes (optional)" value={medNotes} onChange={(e) => setMedNotes(e.target.value)} rows={2}
-                      className="w-full p-3 rounded-xl border border-rose-100 bg-rose-50/30 text-sm resize-none focus:outline-none focus:ring-2 focus:ring-rose-200" />
+                      className="w-full p-3.5 rounded-2xl text-sm resize-none focus:outline-none" style={{ backgroundColor: "var(--ivory)", border: "1.5px solid var(--border)", color: "var(--plum)", fontFamily: "'Inter', sans-serif" }} />
                     <div className="flex gap-2">
-                      <button onClick={() => { setAddingMed(false); setMedName(""); setMedDose(""); setMedNotes(""); }} className="btn-secondary flex-1 py-2 text-sm">Cancel</button>
-                      <button onClick={saveMed} disabled={!medName.trim() || savingMed} className="btn-primary flex-1 py-2 text-sm">
+                      <button onClick={() => { setAddingMed(false); setMedName(""); setMedDose(""); setMedNotes(""); }} className="flex-1 py-2.5 rounded-xl text-sm font-semibold" style={{ border: "1.5px solid var(--border)", color: "var(--plum)" }}>Cancel</button>
+                      <button onClick={saveMed} disabled={!medName.trim() || savingMed} className="flex-1 py-2.5 rounded-xl text-sm font-semibold" style={{ backgroundColor: "var(--plum)", color: "white", opacity: (!medName.trim() || savingMed) ? 0.5 : 1 }}>
                         {savingMed ? "Saving…" : "Save"}
                       </button>
                     </div>
                   </div>
                 ) : (
-                  <button onClick={() => setAddingMed(true)} className="w-full card-glass rounded-2xl p-4 flex items-center gap-3 hover:bg-rose-50/50 transition-colors">
-                    <div className="w-9 h-9 rounded-xl bg-purple-100 flex items-center justify-center"><Plus className="w-4 h-4 text-purple-500" /></div>
-                    <p className="text-sm font-medium text-gray-700">Log a medication</p>
+                  <button onClick={() => setAddingMed(true)} className="w-full flex items-center gap-3 rounded-[20px] p-4 transition-all" style={card}>
+                    <div className="w-9 h-9 rounded-xl flex items-center justify-center" style={{ backgroundColor: "var(--mauve-subtle)", color: "var(--mauve)" }}><Plus className="w-4 h-4" /></div>
+                    <p className="text-sm font-medium" style={{ color: "var(--plum)", fontFamily: "'Inter', sans-serif" }}>Log a medication</p>
                   </button>
                 )}
                 {user && <MedReminderSection user={user} />}
@@ -742,29 +774,29 @@ export default function Today() {
                   const content = sessionContent[s.content_id];
                   const durationMin = s.duration_seconds ? Math.round(s.duration_seconds / 60) : s.duration_done;
                   return (
-                    <div key={s.id} className="card-glass rounded-2xl p-4 flex items-center gap-3">
-                      <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-purple-200 to-pink-200 flex items-center justify-center text-lg flex-shrink-0">
-                        {content?.content_type === "MEDITATION" ? "🧘" : content?.content_type === "BREATHWORK" ? "🌬️" : content?.content_type === "WORKOUT" ? "💪" : "✨"}
+                    <div key={s.id} className="flex items-center gap-3.5 rounded-[20px] p-4" style={card}>
+                      <div className="w-10 h-10 rounded-2xl flex items-center justify-center flex-shrink-0" style={{ backgroundColor: "var(--rose-dust-subtle)", color: "var(--rose-dust)" }}>
+                        <Play className="w-4 h-4" />
                       </div>
                       <div className="flex-1 min-w-0">
-                        <p className="text-sm font-semibold text-gray-800 truncate">{content?.title || s.content_key || "Session"}</p>
+                        <p className="text-sm font-semibold truncate" style={{ color: "var(--plum)", fontFamily: "'Inter', sans-serif" }}>{content?.title || s.content_key || "Session"}</p>
                         <div className="flex items-center gap-2 mt-0.5">
-                          {durationMin > 0 && <span className="text-xs text-gray-400">{durationMin} min</span>}
-                          <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${s.completion_method === "MANUAL" ? "bg-amber-100 text-amber-600" : "bg-emerald-100 text-emerald-600"}`}>
-                            {s.completion_method === "MANUAL" ? "Manual" : "Auto"} ✓
+                          {durationMin > 0 && <span className="text-xs" style={{ color: "var(--mauve)" }}>{durationMin} min</span>}
+                          <span className="text-xs px-2 py-0.5 rounded-full font-medium" style={{ backgroundColor: s.completion_method === "MANUAL" ? "#FFF8EE" : "var(--sage-subtle)", color: s.completion_method === "MANUAL" ? "#A07830" : "var(--sage)" }}>
+                            {s.completion_method === "MANUAL" ? "Manual" : "Completed"}
                           </span>
                         </div>
                       </div>
                       <button onClick={async () => { await base44.entities.ContentHistory.update(s.id, { is_deleted: true }); setSessionHistory((prev) => prev.filter((x) => x.id !== s.id)); }}
-                        className="w-8 h-8 rounded-full bg-red-50 flex items-center justify-center hover:bg-red-100">
-                        <Trash2 className="w-3.5 h-3.5 text-red-400" />
+                        className="w-8 h-8 rounded-full flex items-center justify-center transition-colors" style={{ backgroundColor: "var(--ivory)", color: "var(--mauve)" }}>
+                        <Trash2 className="w-3.5 h-3.5" />
                       </button>
                     </div>
                   );
                 }) : (
-                  <div className="card-glass rounded-2xl p-6 text-center text-gray-400">
-                    <Play className="w-8 h-8 mx-auto mb-2 text-rose-200" />
-                    <p className="text-sm">No sessions logged for this day.</p>
+                  <div className="rounded-[20px] p-8 text-center" style={card}>
+                    <Play className="w-7 h-7 mx-auto mb-3" style={{ color: "var(--rose-dust-light)" }} />
+                    <p className="text-sm" style={{ color: "var(--mauve)", fontFamily: "'Inter', sans-serif" }}>No sessions logged for this day.</p>
                   </div>
                 )}
               </div>
