@@ -2,123 +2,127 @@ import { Bookmark, BookmarkCheck, Clock, Lock, Headphones, Play } from "lucide-r
 import { createPageUrl } from "@/utils";
 import { Link } from "react-router-dom";
 
-const TIER_COLOR = {
-  plus: "bg-rose-400 text-white",
-  pro: "bg-purple-500 text-white",
-};
-
-const AUDIO_GRADIENT = {
-  BREATHWORK: "from-indigo-200 via-purple-200 to-pink-200",
-  MEDITATION: "from-teal-100 via-emerald-100 to-cyan-200",
-};
-
-const AUDIO_ICON_BG = {
-  BREATHWORK: "bg-purple-100",
-  MEDITATION: "bg-teal-100",
-};
-
-const AUDIO_ICON_COLOR = {
-  BREATHWORK: "text-purple-500",
-  MEDITATION: "text-teal-500",
+const AUDIO_BG = {
+  BREATHWORK: { from: "#E8DFF7", to: "#D6C9F0", icon: "#8A6FC4" },
+  MEDITATION: { from: "#D4EDE8", to: "#C2E0DA", icon: "#4A8A7E" },
 };
 
 const TYPE_LABEL = {
   BREATHWORK: "Breathwork",
   MEDITATION: "Meditation",
-  FITNESS: "Fitness",
-  MOBILITY: "Mobility",
-  GUIDE: "Guide",
+  FITNESS:    "Fitness",
+  MOBILITY:   "Mobility",
+  GUIDE:      "Guide",
+};
+
+const TIER_STYLE = {
+  plus: { backgroundColor: "var(--rose-dust)", color: "white" },
+  pro:  { backgroundColor: "var(--mauve)",     color: "white" },
 };
 
 export default function ExploreContentCard({ item, locked, bookmarked, onToggleBookmark, isAudio }) {
-  const gradient = AUDIO_GRADIENT[item.content_type] || "from-rose-100 to-pink-100";
-  const iconBg = AUDIO_ICON_BG[item.content_type] || "bg-rose-100";
-  const iconColor = AUDIO_ICON_COLOR[item.content_type] || "text-rose-400";
-  const typeLabel = TYPE_LABEL[item.content_type] || item.content_type;
-  const playerUrl = createPageUrl(`ContentPlayer?key=${item.content_key || item.id}`);
+  const typeLabel  = TYPE_LABEL[item.content_type] || item.content_type;
+  const playerUrl  = createPageUrl(`ContentPlayer?key=${item.content_key || item.id}`);
+  const audioBg    = AUDIO_BG[item.content_type];
+
+  const placeholderStyle = audioBg
+    ? { background: `linear-gradient(135deg, ${audioBg.from} 0%, ${audioBg.to} 100%)` }
+    : { background: "linear-gradient(135deg, var(--ivory-dark) 0%, var(--rose-dust-subtle) 100%)" };
+
+  const typeTagStyle = audioBg
+    ? { backgroundColor: "rgba(255,255,255,0.85)", color: audioBg.icon }
+    : { backgroundColor: "rgba(255,255,255,0.85)", color: "var(--rose-dust)" };
 
   return (
-    <div className="relative group rounded-2xl overflow-hidden bg-white shadow-sm hover:shadow-md transition-all border border-gray-100">
+    <div className="relative group rounded-[20px] overflow-hidden transition-all hover:-translate-y-0.5"
+      style={{ backgroundColor: "var(--surface)", border: "1px solid var(--border)", boxShadow: "var(--shadow-sm)" }}>
       <Link to={playerUrl} className="block">
         <div className={`relative overflow-hidden ${isAudio ? "aspect-square" : "aspect-video"}`}>
           {item.thumbnail_url ? (
-            <img
-              src={item.thumbnail_url}
-              alt={item.title}
-              className="w-full h-full object-cover"
-              loading="lazy"
-            />
+            <img src={item.thumbnail_url} alt={item.title} className="w-full h-full object-cover" loading="lazy" />
           ) : (
-            <div className={`w-full h-full bg-gradient-to-br ${gradient} flex items-center justify-center`}>
+            <div className="w-full h-full flex items-center justify-center" style={placeholderStyle}>
               {isAudio ? (
-                <div className={`w-12 h-12 rounded-2xl ${iconBg} flex items-center justify-center`}>
-                  <Headphones className={`w-6 h-6 ${iconColor}`} />
+                <div className="w-12 h-12 rounded-2xl flex items-center justify-center"
+                  style={{ backgroundColor: "rgba(255,255,255,0.7)" }}>
+                  <Headphones className="w-5 h-5" style={{ color: audioBg?.icon || "var(--mauve)" }} />
                 </div>
               ) : (
-                <div className="w-12 h-12 rounded-2xl bg-white/60 flex items-center justify-center">
-                  <Play className="w-6 h-6 text-rose-400" />
+                <div className="w-12 h-12 rounded-2xl flex items-center justify-center"
+                  style={{ backgroundColor: "rgba(255,255,255,0.7)" }}>
+                  <Play className="w-5 h-5" style={{ color: "var(--rose-dust)" }} />
                 </div>
               )}
-            </div>
-          )}
-
-          {/* Thumbnail overlay for audio: show headphones icon */}
-          {isAudio && item.thumbnail_url && (
-            <div className="absolute bottom-2 right-2">
-              <div className={`w-6 h-6 rounded-lg ${iconBg} flex items-center justify-center shadow-sm`}>
-                <Headphones className={`w-3.5 h-3.5 ${iconColor}`} />
-              </div>
+              {/* Type label centered for audio no-thumb */}
+              <p className="absolute bottom-4 left-0 right-0 text-center text-xs font-semibold"
+                style={{ color: audioBg?.icon || "var(--mauve)", fontFamily: "'Inter', sans-serif" }}>
+                {typeLabel}
+              </p>
             </div>
           )}
 
           {/* Duration */}
-          {item.duration_minutes && (
-            <div className="absolute bottom-2 left-2 flex items-center gap-1 bg-black/50 rounded-full px-2 py-0.5">
+          {item.duration_minutes > 0 && (
+            <div className="absolute bottom-2 left-2 flex items-center gap-1 rounded-full px-2 py-0.5"
+              style={{ backgroundColor: "rgba(0,0,0,0.52)" }}>
               <Clock className="w-2.5 h-2.5 text-white" />
               <span className="text-white text-[10px] font-medium">{item.duration_minutes}m</span>
             </div>
           )}
 
-          {/* Lock overlay */}
+          {/* Audio badge on thumbnail */}
+          {isAudio && item.thumbnail_url && (
+            <div className="absolute bottom-2 right-2 w-6 h-6 rounded-lg flex items-center justify-center"
+              style={{ backgroundColor: "rgba(255,255,255,0.88)" }}>
+              <Headphones className="w-3.5 h-3.5" style={{ color: audioBg?.icon || "var(--mauve)" }} />
+            </div>
+          )}
+
+          {/* Lock */}
           {locked && (
-            <div className="absolute inset-0 bg-black/40 flex items-center justify-center">
-              <div className="bg-white/90 rounded-full p-2">
-                <Lock className="w-4 h-4 text-rose-500" />
+            <div className="absolute inset-0 flex items-center justify-center"
+              style={{ backgroundColor: "rgba(42,32,53,0.45)" }}>
+              <div className="w-9 h-9 rounded-full flex items-center justify-center"
+                style={{ backgroundColor: "rgba(255,255,255,0.9)" }}>
+                <Lock className="w-4 h-4" style={{ color: "var(--plum)" }} />
               </div>
             </div>
           )}
 
           {/* Tier badge */}
           {item.access_tier && item.access_tier !== "free" && (
-            <div className={`absolute top-2 left-2 px-2 py-0.5 rounded-full text-[10px] font-bold uppercase ${TIER_COLOR[item.access_tier] || "bg-gray-700 text-white"}`}>
+            <div className="absolute top-2 left-2 px-2 py-0.5 rounded-full text-[10px] font-bold uppercase"
+              style={TIER_STYLE[item.access_tier] || { backgroundColor: "var(--plum)", color: "white" }}>
               {item.access_tier}
             </div>
           )}
         </div>
       </Link>
 
-      {/* Card body */}
       <div className="p-3">
         <Link to={playerUrl}>
-          <p className="text-xs font-semibold text-gray-800 leading-tight line-clamp-2 mb-1.5">{item.title}</p>
+          <p className="text-xs font-semibold leading-tight line-clamp-2 mb-1.5"
+            style={{ color: "var(--plum)", fontFamily: "'Inter', sans-serif" }}>
+            {item.title}
+          </p>
         </Link>
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-1.5 flex-wrap">
-            <span className={`text-[10px] font-medium px-2 py-0.5 rounded-full ${
-              isAudio ? `${iconBg} ${iconColor}` : "bg-rose-50 text-rose-400"
-            }`}>
+            <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full"
+              style={isAudio && audioBg
+                ? { backgroundColor: audioBg.from, color: audioBg.icon }
+                : { backgroundColor: "var(--rose-dust-subtle)", color: "var(--rose-dust)", fontFamily: "'Inter', sans-serif" }}>
               {typeLabel}
             </span>
             {item.level && (
-              <span className="text-[10px] text-gray-400 capitalize">{item.level}</span>
+              <span className="text-[10px] capitalize" style={{ color: "var(--mauve)", fontFamily: "'Inter', sans-serif" }}>{item.level}</span>
             )}
           </div>
-          <button
-            onClick={(e) => { e.stopPropagation(); onToggleBookmark(); }}
-            className="ml-1 flex-shrink-0 text-gray-300 hover:text-rose-400 transition-colors"
-          >
+          <button onClick={(e) => { e.stopPropagation(); onToggleBookmark(); }}
+            className="ml-1 flex-shrink-0 transition-colors"
+            style={{ color: bookmarked ? "var(--rose-dust)" : "var(--border)" }}>
             {bookmarked
-              ? <BookmarkCheck className="w-3.5 h-3.5 text-rose-400" />
+              ? <BookmarkCheck className="w-3.5 h-3.5" style={{ color: "var(--rose-dust)" }} />
               : <Bookmark className="w-3.5 h-3.5" />
             }
           </button>

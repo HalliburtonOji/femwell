@@ -1,64 +1,79 @@
 import { useEffect, useState } from "react";
 import { base44 } from "@/api/base44Client";
 import { createPageUrl } from "@/utils";
-import { ArrowRight, Bell, BookOpen, Clock, Flame, Headphones, Lock, Play, Search, Sparkles } from "lucide-react";
+import { ArrowRight, Bell, BookOpen, Clock, Flame, Headphones, Lock, Play, Search, ChevronRight } from "lucide-react";
 import ProgramProgressBar from "../components/programs/ProgramProgressBar";
 
 const NEEDS = [
-  { id: null, label: "All", emoji: "✨" },
-  { id: "sleep", label: "Sleep", emoji: "💤" },
-  { id: "stress", label: "Stress", emoji: "🧘" },
-  { id: "pms", label: "PMS", emoji: "🌸" },
-  { id: "mobility", label: "Mobility", emoji: "🤸" },
-  { id: "menopause", label: "Menopause", emoji: "🌙" },
-  { id: "postpartum", label: "Postpartum", emoji: "💝" },
+  { id: null,          label: "All"         },
+  { id: "sleep",       label: "Sleep"       },
+  { id: "stress",      label: "Stress"      },
+  { id: "pms",         label: "PMS"         },
+  { id: "mobility",    label: "Mobility"    },
+  { id: "menopause",   label: "Menopause"   },
+  { id: "postpartum",  label: "Postpartum"  },
 ];
 
 const COLLECTIONS = [
-  { title: "Sleep & calm", tags: ["sleep", "stress", "calm"] },
-  { title: "Hormone support", tags: ["hormone", "cycle", "menopause"] },
-  { title: "PMS relief", tags: ["pms", "cramps", "luteal"] },
-  { title: "Postpartum reset", tags: ["postpartum", "recovery"] },
-  { title: "Mobility & energy", tags: ["mobility", "energy", "movement"] },
+  { title: "Sleep & calm",       tags: ["sleep", "stress", "calm"]             },
+  { title: "Hormone support",    tags: ["hormone", "cycle", "menopause"]        },
+  { title: "PMS relief",         tags: ["pms", "cramps", "luteal"]              },
+  { title: "Postpartum reset",   tags: ["postpartum", "recovery"]               },
+  { title: "Mobility & energy",  tags: ["mobility", "energy", "movement"]       },
 ];
 
 const TIER_ORDER = { free: 0, plus: 1, pro: 2 };
-const TIER_STYLES = {
-  free: "bg-emerald-50 text-emerald-700",
-  plus: "bg-rose-50 text-rose-700",
-  pro: "bg-purple-50 text-purple-700",
+
+// Shared FemWell styles
+const card = {
+  backgroundColor: "var(--surface)",
+  border: "1px solid var(--border)",
+  boxShadow: "var(--shadow-sm)",
+};
+const sLabel = {
+  fontSize: "0.6rem", fontWeight: 600, textTransform: "uppercase",
+  letterSpacing: "0.12em", color: "var(--mauve)", fontFamily: "'Inter', sans-serif",
 };
 
-function getTagText(program) {
-  return [
-    program.title || "",
-    program.summary || "",
-    program.need_tags || "",
-    program.category || "",
-    ...(program.goal_tags || []),
-    ...(program.best_for_tags || []),
-  ]
-    .join(" ")
-    .toLowerCase();
+function isReminderDue(t) {
+  if (!t) return false;
+  const now = new Date();
+  const cur = `${String(now.getHours()).padStart(2,"0")}:${String(now.getMinutes()).padStart(2,"0")}`;
+  return cur >= t;
 }
 
-function isReminderDue(reminderTime) {
-  if (!reminderTime) return false;
-  const now = new Date();
-  const current = `${String(now.getHours()).padStart(2, "0")}:${String(now.getMinutes()).padStart(2, "0")}`;
-  return current >= reminderTime;
+function getTagText(p) {
+  return [p.title||"", p.summary||"", p.need_tags||"", p.category||"", ...(p.goal_tags||[]), ...(p.best_for_tags||[])].join(" ").toLowerCase();
+}
+
+function SectionLabel({ children }) {
+  return <p style={sLabel} className="mb-3">{children}</p>;
+}
+
+function TierBadge({ tier }) {
+  if (!tier || tier === "free") return null;
+  const styles = {
+    plus: { backgroundColor: "var(--rose-dust-subtle)", color: "var(--rose-dust)", border: "1px solid var(--rose-dust-light)" },
+    pro:  { backgroundColor: "var(--mauve-subtle)",     color: "var(--mauve)",     border: "1px solid var(--mauve-light)"     },
+  };
+  return (
+    <span className="text-[10px] font-bold uppercase px-2 py-0.5 rounded-full"
+      style={styles[tier] || { backgroundColor: "var(--ivory-dark)", color: "var(--mauve)" }}>
+      {tier}
+    </span>
+  );
 }
 
 export default function ProgramsHub() {
-  const [userPlan, setUserPlan] = useState("free");
-  const [programs, setPrograms] = useState([]);
+  const [userPlan, setUserPlan]       = useState("free");
+  const [programs, setPrograms]       = useState([]);
   const [userPrograms, setUserPrograms] = useState([]);
-  const [days, setDays] = useState([]);
-  const [tasks, setTasks] = useState([]);
-  const [activeNeed, setActiveNeed] = useState(null);
-  const [search, setSearch] = useState("");
-  const [sort, setSort] = useState("recommended");
-  const [loading, setLoading] = useState(true);
+  const [days, setDays]               = useState([]);
+  const [tasks, setTasks]             = useState([]);
+  const [activeNeed, setActiveNeed]   = useState(null);
+  const [search, setSearch]           = useState("");
+  const [sort, setSort]               = useState("recommended");
+  const [loading, setLoading]         = useState(true);
 
   useEffect(() => {
     (async () => {
@@ -70,7 +85,6 @@ export default function ProgramsHub() {
         base44.entities.ProgramDays.list("day_number", 250),
         base44.entities.ProgramTasks.list("order_index", 500),
       ]);
-
       setPrograms(progs);
       setUserPrograms(ups);
       setDays(programDays);
@@ -80,136 +94,118 @@ export default function ProgramsHub() {
     })();
   }, []);
 
-  const getUserProgram = (programId) => userPrograms.find((entry) => entry.program_id === programId);
-  const isLocked = (program) => (TIER_ORDER[program.access_tier] || 0) > (TIER_ORDER[userPlan] || 0);
-  const getThumbnail = (program) => program.cover_thumbnail_url || program.thumbnail_url;
-  const getProgramDays = (programKey) => days.filter((day) => day.program_key === programKey);
-  const getProgramTasks = (programKey) => tasks.filter((task) => task.program_key === programKey);
+  const getUserProgram  = (id)  => userPrograms.find((e) => e.program_id === id);
+  const isLocked        = (p)   => (TIER_ORDER[p.access_tier] || 0) > (TIER_ORDER[userPlan] || 0);
+  const getThumbnail    = (p)   => p.cover_thumbnail_url || p.thumbnail_url;
+  const getProgramDays  = (key) => days.filter((d) => d.program_key === key);
+  const getProgramTasks = (key) => tasks.filter((t) => t.program_key === key);
 
-  const getProgramMeta = (programKey) => {
-    const programTasks = getProgramTasks(programKey);
+  const getProgramMeta = (key) => {
+    const pt = getProgramTasks(key);
     return {
-      readUps: programTasks.filter((task) => task.task_type === "READ").length,
-      videos: programTasks.filter((task) => task.external_url).length,
-      sessions: programTasks.filter((task) => task.content_key).length,
-      dayCount: getProgramDays(programKey).length,
+      readUps:  pt.filter((t) => t.task_type === "READ").length,
+      videos:   pt.filter((t) => t.external_url).length,
+      sessions: pt.filter((t) => t.content_key).length,
+      dayCount: getProgramDays(key).length,
     };
   };
 
-  const getProgress = (program, userProgram) => {
-    const totalDays = getProgramMeta(program.program_key).dayCount || program.duration_days || 1;
-    if (!userProgram) return 0;
-    if (userProgram.status === "completed") return 100;
-    return (Math.max((userProgram.current_day || 1) - 1, 0) / totalDays) * 100;
+  const getProgress = (program, up) => {
+    const total = getProgramMeta(program.program_key).dayCount || program.duration_days || 1;
+    if (!up) return 0;
+    if (up.status === "completed") return 100;
+    return (Math.max((up.current_day || 1) - 1, 0) / total) * 100;
   };
 
   const visiblePrograms = programs
-    .filter((program) => !activeNeed || getTagText(program).includes(activeNeed))
-    .filter((program) => !search.trim() || getTagText(program).includes(search.trim().toLowerCase()))
+    .filter((p) => !activeNeed || getTagText(p).includes(activeNeed))
+    .filter((p) => !search.trim() || getTagText(p).includes(search.trim().toLowerCase()))
     .sort((a, b) => {
       if (sort === "shortest") return (a.duration_days || 999) - (b.duration_days || 999);
-      if (sort === "newest") return new Date(b.created_date || 0) - new Date(a.created_date || 0);
-      const aScore = (a.is_featured ? 3 : 0) + (getUserProgram(a.id) ? 4 : 0);
-      const bScore = (b.is_featured ? 3 : 0) + (getUserProgram(b.id) ? 4 : 0);
-      return bScore - aScore;
+      if (sort === "newest")   return new Date(b.created_date || 0) - new Date(a.created_date || 0);
+      const aS = (a.is_featured ? 3 : 0) + (getUserProgram(a.id) ? 4 : 0);
+      const bS = (b.is_featured ? 3 : 0) + (getUserProgram(b.id) ? 4 : 0);
+      return bS - aS;
     });
 
-  const featuredProgram = visiblePrograms.find((program) => program.is_featured) || visiblePrograms[0];
-  const browsePrograms = visiblePrograms.filter((program) => program.id !== featuredProgram?.id);
-
+  const featuredProgram    = visiblePrograms.find((p) => p.is_featured) || visiblePrograms[0];
+  const browsePrograms     = visiblePrograms.filter((p) => p.id !== featuredProgram?.id);
   const activeProgramItems = userPrograms
-    .filter((entry) => entry.is_saved || entry.status === "active")
-    .map((entry) => ({ entry, program: programs.find((program) => program.id === entry.program_id) }))
-    .filter((item) => item.program)
-    .sort((a, b) => {
-      if ((b.entry.last_activity_date || "") !== (a.entry.last_activity_date || "")) {
-        return (b.entry.last_activity_date || "").localeCompare(a.entry.last_activity_date || "");
-      }
-      return (b.entry.current_day || 1) - (a.entry.current_day || 1);
-    });
+    .filter((e) => e.is_saved || e.status === "active")
+    .map((e) => ({ entry: e, program: programs.find((p) => p.id === e.program_id) }))
+    .filter((i) => i.program)
+    .sort((a, b) => (b.entry.last_activity_date || "").localeCompare(a.entry.last_activity_date || ""));
 
-  const continueItem = activeProgramItems[0] || null;
-  const collectionRows = COLLECTIONS.map((row) => ({
-    ...row,
-    items: visiblePrograms.filter((program) => row.tags.some((tag) => getTagText(program).includes(tag))).slice(0, 6),
-  })).filter((row) => row.items.length > 0);
+  const continueItem    = activeProgramItems[0] || null;
+  const collectionRows  = COLLECTIONS
+    .map((row) => ({ ...row, items: visiblePrograms.filter((p) => row.tags.some((tag) => getTagText(p).includes(tag))).slice(0, 6) }))
+    .filter((row) => row.items.length > 0);
 
-  if (loading) {
-    return (
-      <div className="min-h-screen femwell-gradient flex items-center justify-center">
-        <div className="h-10 w-10 animate-spin rounded-full border-4 border-rose-300 border-t-rose-600" />
-      </div>
-    );
-  }
+  if (loading) return (
+    <div className="min-h-screen flex items-center justify-center" style={{ backgroundColor: "var(--ivory)" }}>
+      <div className="w-8 h-8 rounded-full border-2 border-t-transparent animate-spin"
+        style={{ borderColor: "var(--rose-dust-light)", borderTopColor: "var(--rose-dust)" }} />
+    </div>
+  );
 
   return (
-    <div className="min-h-screen femwell-gradient pb-28">
-      <div className="border-b border-rose-100 bg-white/90 backdrop-blur-xl">
-        <div className="mx-auto max-w-6xl px-4 pb-6 pt-12 md:px-6">
-          <div className="grid gap-4 md:grid-cols-[1.4fr_0.9fr] md:items-end">
-            <div className="space-y-3">
-              <span className="inline-flex items-center gap-2 rounded-full bg-rose-50 px-3 py-1 text-xs font-semibold text-rose-600">
-                <Sparkles className="h-3.5 w-3.5" /> Guided program library
-              </span>
-              <div>
-                <h1 className="text-3xl font-bold tracking-tight text-gray-900 md:text-4xl">Programs that feel like a real guided journey</h1>
-                <p className="mt-2 max-w-2xl text-sm leading-relaxed text-gray-500 md:text-base">
-                  Continue where you left off, browse curated collections, and follow day-by-day flows with progress built in.
-                </p>
-              </div>
-            </div>
+    <div className="min-h-screen pb-28" style={{ backgroundColor: "var(--ivory)" }}>
 
-            <div className="grid grid-cols-3 gap-3">
-              <StatCard icon={<Play className="h-4 w-4 text-red-500" />} value={tasks.filter((task) => task.external_url).length} label="Video steps" />
-              <StatCard icon={<Headphones className="h-4 w-4 text-purple-500" />} value={tasks.filter((task) => task.content_key).length} label="Audio steps" />
-              <StatCard icon={<BookOpen className="h-4 w-4 text-amber-600" />} value={tasks.filter((task) => task.task_type === "READ").length} label="Read-ups" />
-            </div>
-          </div>
+      {/* ── Header ──────────────────────────────────────────────────────────── */}
+      <div style={{ backgroundColor: "var(--surface)", borderBottom: "1px solid var(--border)" }}>
+        <div className="mx-auto max-w-6xl px-4 pb-6 pt-10 md:px-6">
+          <p style={sLabel} className="mb-1.5">Guided journeys</p>
+          <h1 className="text-3xl font-bold leading-tight md:text-4xl"
+            style={{ fontFamily: "'Playfair Display', serif", color: "var(--plum)", letterSpacing: "-0.02em" }}>
+            Programs
+          </h1>
+          <p className="mt-1.5 text-sm md:text-base" style={{ color: "var(--mauve)", fontFamily: "'Inter', sans-serif" }}>
+            Multi-day structured journeys. Follow at your own pace, one day at a time.
+          </p>
 
-          <div className="mt-5 grid gap-3 lg:grid-cols-[1fr_auto] lg:items-center">
-            <div className="rounded-3xl border border-rose-100 bg-white px-4 py-3 shadow-sm">
-              <div className="flex items-center gap-3">
-                <Search className="h-4 w-4 text-gray-400" />
-                <input
-                  value={search}
-                  onChange={(event) => setSearch(event.target.value)}
-                  placeholder="Search programs by title, need, or tags"
-                  className="w-full bg-transparent text-sm text-gray-700 outline-none"
-                />
-              </div>
+          {/* Search + sort */}
+          <div className="mt-5 flex gap-2">
+            <div className="flex-1 flex items-center gap-2.5 rounded-2xl px-4 py-2.5"
+              style={{ backgroundColor: "var(--ivory)", border: "1.5px solid var(--border)" }}>
+              <Search className="w-4 h-4 flex-shrink-0" style={{ color: "var(--mauve)" }} />
+              <input value={search} onChange={(e) => setSearch(e.target.value)}
+                placeholder="Search by title, need, or goal…"
+                className="w-full bg-transparent text-sm outline-none"
+                style={{ color: "var(--plum)", fontFamily: "'Inter', sans-serif" }} />
             </div>
-
-            <select
-              value={sort}
-              onChange={(event) => setSort(event.target.value)}
-              className="rounded-2xl border border-rose-100 bg-white px-4 py-3 text-sm font-medium text-gray-700 shadow-sm outline-none"
-            >
+            <select value={sort} onChange={(e) => setSort(e.target.value)}
+              className="rounded-2xl px-3 py-2.5 text-xs font-semibold outline-none"
+              style={{ backgroundColor: "var(--ivory)", border: "1.5px solid var(--border)", color: "var(--plum)", fontFamily: "'Inter', sans-serif" }}>
               <option value="recommended">Recommended</option>
               <option value="shortest">Shortest</option>
               <option value="newest">Newest</option>
             </select>
           </div>
 
-          <div className="mt-5 flex gap-2 overflow-x-auto pb-1" style={{ scrollbarWidth: "none" }}>
+          {/* Need filters */}
+          <div className="mt-4 flex gap-1.5 overflow-x-auto pb-1" style={{ scrollbarWidth: "none" }}>
             {NEEDS.map((need) => (
-              <button
-                key={String(need.id)}
-                onClick={() => setActiveNeed(need.id)}
-                className={`flex-shrink-0 rounded-full px-3 py-1.5 text-xs font-medium transition-all ${
-                  activeNeed === need.id ? "bg-rose-500 text-white shadow-sm" : "border border-rose-100 bg-white text-gray-600"
-                }`}
-              >
-                {need.emoji} {need.label}
+              <button key={String(need.id)} onClick={() => setActiveNeed(need.id)}
+                className="flex-shrink-0 px-3.5 py-1.5 rounded-full text-xs font-semibold transition-all"
+                style={{
+                  backgroundColor: activeNeed === need.id ? "var(--plum)" : "var(--ivory-dark)",
+                  color: activeNeed === need.id ? "white" : "var(--mauve)",
+                  border: `1px solid ${activeNeed === need.id ? "var(--plum)" : "var(--border)"}`,
+                  fontFamily: "'Inter', sans-serif",
+                }}>
+                {need.label}
               </button>
             ))}
           </div>
         </div>
       </div>
 
-      <div className="mx-auto max-w-6xl space-y-8 px-4 pt-6 md:px-6">
+      <div className="mx-auto max-w-6xl space-y-10 px-4 pt-8 md:px-6">
+
+        {/* ── Continue ──────────────────────────────────────────────────────── */}
         {continueItem && (
-          <section className="space-y-3">
-            <SectionLabel>Continue where you left off</SectionLabel>
+          <section>
+            <SectionLabel>Continue your journey</SectionLabel>
             <ContinueCard
               program={continueItem.program}
               userProgram={continueItem.entry}
@@ -218,27 +214,23 @@ export default function ProgramsHub() {
               locked={isLocked(continueItem.program)}
               progress={getProgress(continueItem.program, continueItem.entry)}
             />
-
             {activeProgramItems.length > 1 && (
-              <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
+              <div className="mt-3 grid gap-3 md:grid-cols-2 xl:grid-cols-3">
                 {activeProgramItems.slice(1).map(({ program, entry }) => (
-                  <ActiveProgramMiniCard
-                    key={entry.id}
-                    program={program}
-                    userProgram={entry}
+                  <ActiveMiniCard key={entry.id} program={program} userProgram={entry}
                     meta={getProgramMeta(program.program_key)}
-                    progress={getProgress(program, entry)}
-                  />
+                    progress={getProgress(program, entry)} />
                 ))}
               </div>
             )}
           </section>
         )}
 
+        {/* ── Featured ──────────────────────────────────────────────────────── */}
         {featuredProgram && (
-          <section className="space-y-3">
-            <SectionLabel>Start here</SectionLabel>
-            <FeaturedProgramCard
+          <section>
+            <SectionLabel>A good place to start</SectionLabel>
+            <FeaturedCard
               program={featuredProgram}
               userProgram={getUserProgram(featuredProgram.id)}
               locked={isLocked(featuredProgram)}
@@ -249,12 +241,13 @@ export default function ProgramsHub() {
           </section>
         )}
 
+        {/* ── Collections ───────────────────────────────────────────────────── */}
         {collectionRows.map((row) => (
-          <section key={row.title} className="space-y-3">
+          <section key={row.title}>
             <SectionLabel>{row.title}</SectionLabel>
             <div className="flex gap-4 overflow-x-auto pb-1" style={{ scrollbarWidth: "none" }}>
               {row.items.map((program) => (
-                <div key={program.id} className="w-[285px] flex-shrink-0">
+                <div key={program.id} className="w-72 flex-shrink-0">
                   <ProgramCard
                     program={program}
                     userProgram={getUserProgram(program.id)}
@@ -269,17 +262,22 @@ export default function ProgramsHub() {
           </section>
         ))}
 
-        <section className="space-y-3">
+        {/* ── Browse all ────────────────────────────────────────────────────── */}
+        <section>
           <SectionLabel>Browse all journeys</SectionLabel>
           {visiblePrograms.length === 0 ? (
-            <div className="rounded-3xl border border-rose-100 bg-white p-10 text-center text-sm text-gray-400">
-              No programs found for that search yet.
+            <div className="rounded-[24px] p-12 text-center" style={card}>
+              <p className="text-sm font-medium mb-1.5" style={{ color: "var(--plum)", fontFamily: "'Inter', sans-serif" }}>Nothing matches that search</p>
+              <button onClick={() => { setSearch(""); setActiveNeed(null); }}
+                className="text-xs font-semibold mt-1"
+                style={{ color: "var(--rose-dust)", fontFamily: "'Inter', sans-serif" }}>
+                Clear filters
+              </button>
             </div>
           ) : (
             <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
               {(browsePrograms.length > 0 ? browsePrograms : featuredProgram ? [featuredProgram] : []).map((program) => (
-                <ProgramCard
-                  key={program.id}
+                <ProgramCard key={program.id}
                   program={program}
                   userProgram={getUserProgram(program.id)}
                   locked={isLocked(program)}
@@ -296,79 +294,89 @@ export default function ProgramsHub() {
   );
 }
 
-function StatCard({ icon, value, label }) {
-  return (
-    <div className="rounded-3xl border border-rose-100 bg-white p-4 text-center shadow-sm">
-      <div className="mx-auto mb-2 flex h-9 w-9 items-center justify-center rounded-2xl bg-rose-50">{icon}</div>
-      <p className="text-lg font-bold text-gray-900">{value}</p>
-      <p className="text-[11px] text-gray-500">{label}</p>
-    </div>
-  );
-}
+// ── Sub-components ──────────────────────────────────────────────────────────
 
-function SectionLabel({ children }) {
-  return <h2 className="text-sm font-bold uppercase tracking-[0.2em] text-gray-500">{children}</h2>;
+function MetaChip({ icon: Icon, label, value }) {
+  if (!value) return null;
+  return (
+    <span className="inline-flex items-center gap-1 text-xs px-2.5 py-1 rounded-full"
+      style={{ backgroundColor: "var(--ivory-dark)", color: "var(--mauve)", fontFamily: "'Inter', sans-serif" }}>
+      <Icon className="w-3 h-3" /> {value} {label}
+    </span>
+  );
 }
 
 function ContinueCard({ program, userProgram, meta, thumb, locked, progress }) {
   const reminderDue = isReminderDue(userProgram.reminder_time);
+  const totalDays   = meta.dayCount || program.duration_days;
 
   return (
-    <div className="overflow-hidden rounded-[28px] border border-rose-100 bg-white shadow-sm">
-      <div className="grid md:grid-cols-[1.05fr_0.95fr]">
-        <div className="relative min-h-[250px] bg-gradient-to-br from-rose-200 to-pink-300">
-          {thumb && <img src={thumb} alt={program.title} className="absolute inset-0 h-full w-full object-cover" />}
-          <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent" />
-          <div className="absolute left-5 top-5 flex flex-wrap gap-2">
-            <span className={`rounded-full px-3 py-1 text-[11px] font-semibold capitalize ${TIER_STYLES[program.access_tier] || "bg-gray-100 text-gray-700"}`}>
-              {program.access_tier || "free"}
+    <div className="overflow-hidden rounded-[28px]" style={card}>
+      <div className="grid md:grid-cols-[1.1fr_0.9fr]">
+        {/* Image */}
+        <div className="relative min-h-[240px]"
+          style={{ backgroundColor: "var(--plum)" }}>
+          {thumb && <img src={thumb} alt={program.title} className="absolute inset-0 w-full h-full object-cover" />}
+          <div className="absolute inset-0" style={{ background: "linear-gradient(to top, rgba(42,32,53,0.75) 0%, rgba(42,32,53,0.2) 50%, transparent 100%)" }} />
+          <div className="absolute left-5 top-5 flex gap-2">
+            <TierBadge tier={program.access_tier} />
+            <span className="text-[10px] font-semibold px-2.5 py-1 rounded-full"
+              style={{ backgroundColor: "rgba(255,255,255,0.9)", color: "var(--plum)", fontFamily: "'Inter', sans-serif" }}>
+              Day {userProgram.current_day} of {totalDays}
             </span>
-            <span className="rounded-full bg-white/90 px-3 py-1 text-[11px] font-semibold text-gray-700">Day {userProgram.current_day}</span>
           </div>
           <div className="absolute bottom-5 left-5 right-5 text-white">
-            <p className="text-xs uppercase tracking-[0.2em] text-white/75">Continue</p>
-            <h3 className="mt-1 text-2xl font-bold leading-tight">{program.title}</h3>
-            <p className="mt-2 text-sm text-white/85">{program.summary || program.description}</p>
+            <p style={{ fontSize: "0.6rem", fontWeight: 600, letterSpacing: "0.12em", textTransform: "uppercase", opacity: 0.7 }}>Continue</p>
+            <h3 className="mt-1 text-2xl font-bold leading-tight" style={{ fontFamily: "'Playfair Display', serif" }}>{program.title}</h3>
           </div>
         </div>
 
-        <div className="space-y-5 p-5 md:p-6">
+        {/* Detail */}
+        <div className="space-y-4 p-5 md:p-6">
           <div>
-            <div className="mb-2 flex items-center justify-between text-sm font-medium text-gray-600">
-              <span>Current progress</span>
-              <span>Day {userProgram.current_day} / {meta.dayCount || program.duration_days}</span>
+            <div className="flex items-center justify-between text-xs mb-2"
+              style={{ color: "var(--mauve)", fontFamily: "'Inter', sans-serif" }}>
+              <span>Progress</span>
+              <span>{Math.round(progress)}%</span>
             </div>
             <ProgramProgressBar value={progress} />
           </div>
 
-          <div className="flex flex-wrap gap-2 text-xs">
+          <div className="flex flex-wrap gap-1.5">
             {userProgram.streak_count > 0 && (
-              <span className="inline-flex items-center gap-1 rounded-full bg-rose-50 px-3 py-1.5 font-semibold text-rose-600">
-                <Flame className="h-3.5 w-3.5" /> {userProgram.streak_count} day streak
+              <span className="inline-flex items-center gap-1.5 text-xs px-2.5 py-1 rounded-full font-semibold"
+                style={{ backgroundColor: "var(--rose-dust-subtle)", color: "var(--rose-dust)" }}>
+                <Flame className="w-3 h-3" /> {userProgram.streak_count} day streak
               </span>
             )}
             {userProgram.reminder_time && (
-              <span className={`inline-flex items-center gap-1 rounded-full px-3 py-1.5 font-semibold ${reminderDue ? "bg-amber-50 text-amber-700" : "bg-gray-100 text-gray-600"}`}>
-                <Bell className="h-3.5 w-3.5" /> {reminderDue ? `Day ${userProgram.current_day} is ready` : `Reminder ${userProgram.reminder_time}`}
+              <span className="inline-flex items-center gap-1.5 text-xs px-2.5 py-1 rounded-full font-semibold"
+                style={{ backgroundColor: reminderDue ? "#FFF8EE" : "var(--ivory-dark)", color: reminderDue ? "#A07830" : "var(--mauve)" }}>
+                <Bell className="w-3 h-3" />
+                {reminderDue ? `Day ${userProgram.current_day} is ready` : `Daily at ${userProgram.reminder_time}`}
               </span>
             )}
           </div>
 
-          <div className="rounded-3xl bg-rose-50 p-4 text-sm text-gray-600">
-            <p className="font-semibold text-gray-800">What’s inside</p>
-            <p className="mt-1 leading-relaxed">{meta.sessions} audio sessions, {meta.videos} videos, and {meta.readUps} read-ups across {meta.dayCount || program.duration_days} days.</p>
+          <div className="rounded-[16px] p-3.5"
+            style={{ backgroundColor: "var(--ivory)", border: "1px solid var(--border)" }}>
+            <p style={{ ...sLabel, marginBottom: "4px" }}>What's inside</p>
+            <p className="text-xs leading-relaxed" style={{ color: "var(--plum)", fontFamily: "'Inter', sans-serif" }}>
+              {meta.sessions} audio sessions · {meta.videos} videos · {meta.readUps} read-ups across {totalDays} days
+            </p>
           </div>
 
-          <div className="flex flex-wrap gap-2">
-            <a
-              href={locked ? createPageUrl("Upgrade") : createPageUrl(`ProgramDay?key=${program.program_key}&day=${userProgram.current_day}`)}
-              className="inline-flex items-center gap-2 rounded-2xl bg-rose-500 px-4 py-2.5 text-sm font-semibold text-white"
-            >
+          <div className="flex gap-2">
+            <a href={locked ? createPageUrl("Upgrade") : createPageUrl(`ProgramDay?key=${program.program_key}&day=${userProgram.current_day}`)}
+              className="flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-xl text-sm font-semibold"
+              style={{ backgroundColor: "var(--plum)", color: "white", fontFamily: "'Inter', sans-serif" }}>
               Continue day {userProgram.current_day}
-              <ArrowRight className="h-4 w-4" />
+              <ArrowRight className="w-3.5 h-3.5" />
             </a>
-            <a href={createPageUrl(`ProgramDetail?key=${program.program_key}`)} className="inline-flex items-center gap-2 rounded-2xl border border-rose-200 px-4 py-2.5 text-sm font-semibold text-rose-600">
-              Open day list
+            <a href={createPageUrl(`ProgramDetail?key=${program.program_key}`)}
+              className="px-3 py-2.5 rounded-xl text-sm font-semibold flex items-center"
+              style={{ border: "1.5px solid var(--border)", color: "var(--plum)", fontFamily: "'Inter', sans-serif" }}>
+              <ChevronRight className="w-4 h-4" />
             </a>
           </div>
         </div>
@@ -377,87 +385,102 @@ function ContinueCard({ program, userProgram, meta, thumb, locked, progress }) {
   );
 }
 
-function ActiveProgramMiniCard({ program, userProgram, meta, progress }) {
+function ActiveMiniCard({ program, userProgram, meta, progress }) {
+  const totalDays = meta.dayCount || program.duration_days;
   return (
-    <div className="rounded-[28px] border border-rose-100 bg-white p-5 shadow-sm">
-      <div className="flex items-start justify-between gap-3">
-        <div>
-          <p className="text-xs uppercase tracking-[0.2em] text-gray-400">Active</p>
-          <h3 className="mt-1 text-lg font-semibold text-gray-900">{program.title}</h3>
+    <div className="rounded-[24px] p-5" style={card}>
+      <div className="flex items-start justify-between gap-2 mb-3">
+        <div className="flex-1 min-w-0">
+          <p style={sLabel} className="mb-1">Active</p>
+          <h3 className="font-semibold leading-tight" style={{ color: "var(--plum)", fontFamily: "'Playfair Display', serif" }}>{program.title}</h3>
+          <p className="text-xs mt-1" style={{ color: "var(--mauve)", fontFamily: "'Inter', sans-serif" }}>
+            Day {userProgram.current_day} of {totalDays}
+          </p>
         </div>
         {userProgram.streak_count > 0 && (
-          <span className="inline-flex items-center gap-1 rounded-full bg-rose-50 px-2.5 py-1 text-[11px] font-semibold text-rose-600">
-            <Flame className="h-3 w-3" /> {userProgram.streak_count}
+          <span className="text-xs font-semibold px-2.5 py-1 rounded-full flex-shrink-0"
+            style={{ backgroundColor: "var(--rose-dust-subtle)", color: "var(--rose-dust)" }}>
+            {userProgram.streak_count}d
           </span>
         )}
       </div>
-      <p className="mt-2 text-sm text-gray-500">Day {userProgram.current_day} of {meta.dayCount || program.duration_days}</p>
-      <ProgramProgressBar value={progress} className="mt-3" />
+      <ProgramProgressBar value={progress} />
       <div className="mt-4 flex gap-2">
-        <a href={createPageUrl(`ProgramDay?key=${program.program_key}&day=${userProgram.current_day}`)} className="flex-1 rounded-2xl bg-rose-500 px-4 py-2.5 text-center text-sm font-semibold text-white">
+        <a href={createPageUrl(`ProgramDay?key=${program.program_key}&day=${userProgram.current_day}`)}
+          className="flex-1 py-2 rounded-xl text-sm font-semibold text-center"
+          style={{ backgroundColor: "var(--plum)", color: "white", fontFamily: "'Inter', sans-serif" }}>
           Continue
         </a>
-        <a href={createPageUrl(`ProgramDetail?key=${program.program_key}`)} className="flex-1 rounded-2xl border border-rose-200 px-4 py-2.5 text-center text-sm font-semibold text-rose-600">
-          Day list
+        <a href={createPageUrl(`ProgramDetail?key=${program.program_key}`)}
+          className="flex-1 py-2 rounded-xl text-sm font-semibold text-center"
+          style={{ border: "1.5px solid var(--border)", color: "var(--plum)", fontFamily: "'Inter', sans-serif" }}>
+          Days
         </a>
       </div>
     </div>
   );
 }
 
-function FeaturedProgramCard({ program, userProgram, locked, thumb, meta, progress }) {
+function FeaturedCard({ program, userProgram, locked, thumb, meta, progress }) {
+  const totalDays = meta.dayCount || program.duration_days;
   return (
-    <div className="overflow-hidden rounded-[28px] border border-rose-100 bg-white shadow-sm">
+    <div className="overflow-hidden rounded-[28px]" style={card}>
       <div className="grid md:grid-cols-[1.1fr_0.9fr]">
-        <div className="relative min-h-[260px] bg-gradient-to-br from-rose-200 to-pink-300">
-          {thumb && <img src={thumb} alt={program.title} className="absolute inset-0 h-full w-full object-cover" />}
-          <div className="absolute inset-0 bg-gradient-to-t from-black/55 via-black/15 to-transparent" />
-          <div className="absolute left-5 top-5 flex flex-wrap gap-2">
-            <span className={`rounded-full px-3 py-1 text-[11px] font-semibold capitalize ${TIER_STYLES[program.access_tier] || "bg-gray-100 text-gray-700"}`}>
-              {program.access_tier || "free"}
+        <div className="relative min-h-[260px]" style={{ backgroundColor: "var(--plum)" }}>
+          {thumb && <img src={thumb} alt={program.title} className="absolute inset-0 w-full h-full object-cover" />}
+          <div className="absolute inset-0" style={{ background: "linear-gradient(to top, rgba(42,32,53,0.75) 0%, rgba(42,32,53,0.2) 50%, transparent 100%)" }} />
+          <div className="absolute left-5 top-5 flex gap-2">
+            <TierBadge tier={program.access_tier} />
+            <span className="text-[10px] font-semibold px-2.5 py-1 rounded-full"
+              style={{ backgroundColor: "rgba(255,255,255,0.9)", color: "var(--plum)", fontFamily: "'Inter', sans-serif" }}>
+              {totalDays} days
             </span>
-            <span className="rounded-full bg-white/90 px-3 py-1 text-[11px] font-semibold text-gray-700">{meta.dayCount || program.duration_days} days</span>
           </div>
           <div className="absolute bottom-5 left-5 right-5 text-white">
-            <p className="text-xs uppercase tracking-[0.2em] text-white/75">Featured journey</p>
-            <h3 className="mt-1 text-2xl font-bold leading-tight">{program.title}</h3>
-            <p className="mt-2 max-w-md text-sm text-white/85">{program.summary || program.description}</p>
+            <p style={{ fontSize: "0.6rem", fontWeight: 600, letterSpacing: "0.12em", textTransform: "uppercase", opacity: 0.7 }}>
+              {program.is_featured ? "Featured journey" : "Guided journey"}
+            </p>
+            <h3 className="mt-1 text-2xl font-bold leading-tight" style={{ fontFamily: "'Playfair Display', serif" }}>{program.title}</h3>
+            <p className="mt-2 text-sm leading-relaxed" style={{ color: "rgba(255,255,255,0.8)" }}>{program.summary || program.description}</p>
           </div>
         </div>
 
-        <div className="space-y-5 p-5 md:p-6">
-          <div className="grid grid-cols-3 gap-3 text-center">
-            <MiniMeta icon={<Play className="h-3.5 w-3.5 text-red-500" />} label="Videos" value={meta.videos} />
-            <MiniMeta icon={<Headphones className="h-3.5 w-3.5 text-purple-500" />} label="Audio" value={meta.sessions} />
-            <MiniMeta icon={<BookOpen className="h-3.5 w-3.5 text-amber-600" />} label="Read-ups" value={meta.readUps} />
+        <div className="space-y-4 p-5 md:p-6">
+          <div className="flex flex-wrap gap-2">
+            <MetaChip icon={Play}      label="videos"   value={meta.videos}   />
+            <MetaChip icon={Headphones} label="audio"   value={meta.sessions} />
+            <MetaChip icon={BookOpen}  label="read-ups" value={meta.readUps}  />
           </div>
 
           {userProgram && (
             <div>
-              <div className="mb-2 flex items-center justify-between text-sm font-medium text-gray-600">
+              <div className="flex justify-between text-xs mb-2" style={{ color: "var(--mauve)", fontFamily: "'Inter', sans-serif" }}>
                 <span>Progress</span>
-                <span>Day {userProgram.current_day} / {meta.dayCount || program.duration_days}</span>
+                <span>Day {userProgram.current_day} / {totalDays}</span>
               </div>
               <ProgramProgressBar value={progress} />
             </div>
           )}
 
-          <div className="rounded-3xl bg-rose-50 p-4 text-sm text-gray-600">
-            <p className="font-semibold text-gray-800">What makes this different</p>
-            <p className="mt-1 leading-relaxed">Each day gives you one clear flow: a session, a supporting video, and a short educational card with extra reading.</p>
+          <div className="rounded-[16px] p-3.5" style={{ backgroundColor: "var(--ivory)", border: "1px solid var(--border)" }}>
+            <p style={{ ...sLabel, marginBottom: "4px" }}>How it works</p>
+            <p className="text-xs leading-relaxed" style={{ color: "var(--plum)", fontFamily: "'Inter', sans-serif" }}>
+              Each day has one clear flow — a session, a supporting video, and a short educational card.
+            </p>
           </div>
 
           <div className="flex flex-wrap gap-2">
-            <a
-              href={createPageUrl(`ProgramDetail?key=${program.program_key}`)}
-              className="inline-flex items-center gap-2 rounded-2xl bg-rose-500 px-4 py-2.5 text-sm font-semibold text-white"
-            >
+            <a href={createPageUrl(`ProgramDetail?key=${program.program_key}`)}
+              className="flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-xl text-sm font-semibold"
+              style={{ backgroundColor: "var(--plum)", color: "white", fontFamily: "'Inter', sans-serif" }}>
               {userProgram ? `Continue day ${userProgram.current_day}` : locked ? "Preview journey" : "View journey"}
-              <ArrowRight className="h-4 w-4" />
+              <ArrowRight className="w-3.5 h-3.5" />
             </a>
             {locked && (
-              <a href={createPageUrl("Upgrade")} className="inline-flex items-center gap-2 rounded-2xl border border-rose-200 px-4 py-2.5 text-sm font-semibold text-rose-600">
-                <Lock className="h-4 w-4" /> Upgrade
+              <a href={createPageUrl("Upgrade")}
+                className="flex items-center gap-1.5 px-3 py-2.5 rounded-xl text-sm font-semibold"
+                style={{ border: "1.5px solid var(--border)", color: "var(--plum)", fontFamily: "'Inter', sans-serif" }}>
+                <Lock className="w-3.5 h-3.5" /> Unlock
               </a>
             )}
           </div>
@@ -467,87 +490,59 @@ function FeaturedProgramCard({ program, userProgram, locked, thumb, meta, progre
   );
 }
 
-function MiniMeta({ icon, label, value }) {
-  return (
-    <div className="rounded-2xl border border-rose-100 bg-white p-3">
-      <div className="mx-auto mb-1 flex h-8 w-8 items-center justify-center rounded-2xl bg-rose-50">{icon}</div>
-      <p className="text-base font-bold text-gray-900">{value}</p>
-      <p className="text-[11px] text-gray-500">{label}</p>
-    </div>
-  );
-}
-
 function ProgramCard({ program, userProgram, locked, thumb, meta, progress }) {
+  const totalDays = meta.dayCount || program.duration_days;
   return (
-    <div className="overflow-hidden rounded-[28px] border border-rose-100 bg-white shadow-sm transition-all hover:-translate-y-0.5 hover:shadow-md">
-      <div className="relative h-44 bg-gradient-to-br from-rose-200 to-pink-300">
-        {thumb && <img src={thumb} alt={program.title} className="h-full w-full object-cover" />}
-        <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/10 to-transparent" />
-        <div className="absolute left-4 top-4 flex flex-wrap gap-2">
-          <span className={`rounded-full px-2.5 py-1 text-[10px] font-semibold capitalize ${TIER_STYLES[program.access_tier] || "bg-gray-100 text-gray-700"}`}>
-            {program.access_tier || "free"}
-          </span>
+    <div className="overflow-hidden rounded-[24px] transition-all hover:-translate-y-0.5" style={card}>
+      <div className="relative h-44" style={{ backgroundColor: "var(--plum)" }}>
+        {thumb && <img src={thumb} alt={program.title} className="w-full h-full object-cover" />}
+        <div className="absolute inset-0" style={{ background: "linear-gradient(to top, rgba(42,32,53,0.65) 0%, transparent 55%)" }} />
+        <div className="absolute left-3.5 top-3.5 flex gap-1.5">
+          <TierBadge tier={program.access_tier} />
           {locked && (
-            <span className="inline-flex items-center gap-1 rounded-full bg-white/90 px-2.5 py-1 text-[10px] font-semibold text-gray-700">
-              <Lock className="h-3 w-3" /> Locked
+            <span className="inline-flex items-center gap-1 text-[10px] font-semibold px-2 py-0.5 rounded-full"
+              style={{ backgroundColor: "rgba(255,255,255,0.9)", color: "var(--plum)" }}>
+              <Lock className="w-2.5 h-2.5" /> Locked
             </span>
           )}
         </div>
       </div>
 
-      <div className="space-y-4 p-5">
+      <div className="p-4 space-y-3.5">
         <div>
-          <div className="mb-2 flex items-center gap-2 text-[11px] text-gray-400">
-            <span className="inline-flex items-center gap-1"><Clock className="h-3 w-3" /> {meta.dayCount || program.duration_days} days</span>
-            {program.level && <span className="capitalize">{program.level}</span>}
+          <div className="flex items-center gap-1.5 mb-2">
+            <span className="inline-flex items-center gap-1 text-[10px]" style={{ color: "var(--mauve)", fontFamily: "'Inter', sans-serif" }}>
+              <Clock className="w-3 h-3" /> {totalDays} days
+            </span>
+            {program.level && <span className="text-[10px] capitalize" style={{ color: "var(--mauve)", fontFamily: "'Inter', sans-serif" }}>{program.level}</span>}
           </div>
-          <h3 className="text-lg font-semibold leading-tight text-gray-900">{program.title}</h3>
-          <p className="mt-2 line-clamp-3 text-sm leading-relaxed text-gray-500">{program.summary || program.description}</p>
+          <h3 className="font-semibold leading-tight" style={{ color: "var(--plum)", fontFamily: "'Playfair Display', serif" }}>{program.title}</h3>
+          <p className="mt-1.5 text-xs leading-relaxed line-clamp-2" style={{ color: "var(--mauve)", fontFamily: "'Inter', sans-serif" }}>{program.summary || program.description}</p>
         </div>
 
         {userProgram && (
           <div>
-            <div className="mb-2 flex items-center justify-between text-[11px] font-medium text-gray-500">
-              <span>Day {userProgram.current_day} / {meta.dayCount || program.duration_days}</span>
+            <div className="flex justify-between text-[10px] mb-1.5" style={{ color: "var(--mauve)", fontFamily: "'Inter', sans-serif" }}>
+              <span>Day {userProgram.current_day} / {totalDays}</span>
               <span>{Math.round(progress)}%</span>
             </div>
             <ProgramProgressBar value={progress} />
           </div>
         )}
 
-        <div className="grid grid-cols-3 gap-2 text-center text-[11px]">
-          <Pill tone="red" icon={<Play className="h-3 w-3" />} value={meta.videos} />
-          <Pill tone="purple" icon={<Headphones className="h-3 w-3" />} value={meta.sessions} />
-          <Pill tone="amber" icon={<BookOpen className="h-3 w-3" />} value={meta.readUps} />
-        </div>
-
         <div className="flex gap-2">
-          <a href={createPageUrl(`ProgramDetail?key=${program.program_key}`)} className="flex-1 rounded-2xl border border-rose-200 px-4 py-2.5 text-center text-sm font-semibold text-rose-600 hover:bg-rose-50">
+          <a href={createPageUrl(`ProgramDetail?key=${program.program_key}`)}
+            className="flex-1 py-2 rounded-xl text-xs font-semibold text-center"
+            style={{ border: "1.5px solid var(--border)", color: "var(--plum)", fontFamily: "'Inter', sans-serif" }}>
             {locked ? "Preview" : "Details"}
           </a>
-          <a
-            href={userProgram ? createPageUrl(`ProgramDay?key=${program.program_key}&day=${userProgram.current_day}`) : locked ? createPageUrl("Upgrade") : createPageUrl(`ProgramDetail?key=${program.program_key}`)}
-            className="flex-1 rounded-2xl bg-rose-500 px-4 py-2.5 text-center text-sm font-semibold text-white"
-          >
+          <a href={userProgram ? createPageUrl(`ProgramDay?key=${program.program_key}&day=${userProgram.current_day}`) : locked ? createPageUrl("Upgrade") : createPageUrl(`ProgramDetail?key=${program.program_key}`)}
+            className="flex-1 py-2 rounded-xl text-xs font-semibold text-center"
+            style={{ backgroundColor: "var(--plum)", color: "white", fontFamily: "'Inter', sans-serif" }}>
             {userProgram ? "Continue" : locked ? "Unlock" : "Start"}
           </a>
         </div>
       </div>
-    </div>
-  );
-}
-
-function Pill({ tone, icon, value }) {
-  const tones = {
-    red: "bg-red-50 text-red-600",
-    purple: "bg-purple-50 text-purple-600",
-    amber: "bg-amber-50 text-amber-700",
-  };
-
-  return (
-    <div className={`rounded-2xl px-2 py-2 font-medium ${tones[tone]}`}>
-      <div className="mb-1 flex items-center justify-center">{icon}</div>
-      <div>{value}</div>
     </div>
   );
 }

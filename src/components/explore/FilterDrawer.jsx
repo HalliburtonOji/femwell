@@ -1,39 +1,59 @@
 import { X } from "lucide-react";
 import { useState } from "react";
 
+const sLabel = {
+  fontSize: "0.6rem", fontWeight: 600, textTransform: "uppercase",
+  letterSpacing: "0.12em", color: "var(--mauve)", fontFamily: "'Inter', sans-serif",
+};
+
 export default function FilterDrawer({ filters, onApply, onClose }) {
   const [local, setLocal] = useState({ ...filters });
 
   return (
     <div className="fixed inset-0 z-50 flex items-end justify-center">
-      <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={onClose} />
-      <div className="relative bg-white rounded-t-3xl w-full max-w-md p-6 space-y-5 shadow-2xl">
-        <div className="flex items-center justify-between mb-1">
-          <h2 className="text-lg font-bold text-gray-800">Filters</h2>
-          <button onClick={onClose}><X className="w-5 h-5 text-gray-400" /></button>
+      <div className="absolute inset-0 backdrop-blur-sm" style={{ backgroundColor: "rgba(42,32,53,0.35)" }} onClick={onClose} />
+      <div className="relative w-full max-w-md rounded-t-[28px] p-6 space-y-5"
+        style={{ backgroundColor: "var(--surface)", boxShadow: "var(--shadow-lg)" }}>
+
+        {/* Handle */}
+        <div className="w-8 h-1 rounded-full mx-auto -mt-1 mb-2" style={{ backgroundColor: "var(--border)" }} />
+
+        <div className="flex items-center justify-between">
+          <p className="font-semibold" style={{ color: "var(--plum)", fontFamily: "'Playfair Display', serif" }}>Filter sessions</p>
+          <button onClick={onClose}
+            className="w-8 h-8 rounded-full flex items-center justify-center transition-colors"
+            style={{ backgroundColor: "var(--ivory-dark)", color: "var(--mauve)" }}>
+            <X className="w-4 h-4" />
+          </button>
         </div>
 
-        {/* Free only toggle */}
-        <div className="flex items-center justify-between">
-          <p className="text-sm font-medium text-gray-700">Show free content only</p>
-          <button
-            onClick={() => setLocal((l) => ({ ...l, showFreeOnly: !l.showFreeOnly }))}
-            className={`w-12 h-6 rounded-full transition-colors relative ${local.showFreeOnly ? "bg-rose-500" : "bg-gray-200"}`}
-          >
-            <div className={`absolute top-1 w-4 h-4 bg-white rounded-full shadow transition-transform ${local.showFreeOnly ? "translate-x-7" : "translate-x-1"}`} />
+        {/* Free only */}
+        <div className="flex items-center justify-between py-1">
+          <div>
+            <p className="text-sm font-semibold" style={{ color: "var(--plum)", fontFamily: "'Inter', sans-serif" }}>Free content only</p>
+            <p className="text-xs mt-0.5" style={{ color: "var(--mauve)", fontFamily: "'Inter', sans-serif" }}>Hide plus and pro sessions</p>
+          </div>
+          <button onClick={() => setLocal((l) => ({ ...l, showFreeOnly: !l.showFreeOnly }))}
+            className="relative w-11 h-6 rounded-full transition-colors flex-shrink-0"
+            style={{ backgroundColor: local.showFreeOnly ? "var(--plum)" : "var(--border)" }}>
+            <div className={`absolute top-1 w-4 h-4 rounded-full shadow transition-transform ${local.showFreeOnly ? "translate-x-6" : "translate-x-1"}`}
+              style={{ backgroundColor: "white" }} />
           </button>
         </div>
 
         {/* Level */}
         <div>
-          <p className="text-sm font-medium text-gray-700 mb-2">Level</p>
-          <div className="flex gap-2 flex-wrap">
+          <p style={sLabel} className="mb-2.5">Level</p>
+          <div className="flex gap-1.5 flex-wrap">
             {["all", "beginner", "intermediate", "advanced"].map((l) => (
-              <button
-                key={l}
-                onClick={() => setLocal((f) => ({ ...f, level: l }))}
-                className={`px-3 py-1.5 rounded-full text-xs font-medium transition-all capitalize ${local.level === l ? "bg-rose-500 text-white" : "bg-rose-50 text-gray-600"}`}
-              >
+              <button key={l} onClick={() => setLocal((f) => ({ ...f, level: l }))}
+                className="px-3.5 py-1.5 rounded-full text-xs font-semibold capitalize transition-all"
+                style={{
+                  backgroundColor: local.level === l ? "var(--plum)" : "var(--ivory)",
+                  color: local.level === l ? "white" : "var(--mauve)",
+                  border: `1px solid ${local.level === l ? "var(--plum)" : "var(--border)"}`,
+                  fontFamily: "'Inter', sans-serif",
+                }}>
                 {l === "all" ? "Any level" : l}
               </button>
             ))}
@@ -42,32 +62,40 @@ export default function FilterDrawer({ filters, onApply, onClose }) {
 
         {/* Duration */}
         <div>
-          <p className="text-sm font-medium text-gray-700 mb-2">Duration</p>
-          <div className="flex gap-2 flex-wrap">
+          <p style={sLabel} className="mb-2.5">Duration</p>
+          <div className="flex gap-1.5 flex-wrap">
             {[
-              { id: "all", label: "Any" },
-              { id: "short", label: "≤ 10 min" },
-              { id: "medium", label: "10–30 min" },
-              { id: "long", label: "30+ min" },
+              { id: "all",    label: "Any"      },
+              { id: "short",  label: "≤ 10 min" },
+              { id: "medium", label: "10–30 min"},
+              { id: "long",   label: "30+ min"  },
             ].map((d) => (
-              <button
-                key={d.id}
-                onClick={() => setLocal((f) => ({ ...f, durationBucket: d.id }))}
-                className={`px-3 py-1.5 rounded-full text-xs font-medium transition-all ${local.durationBucket === d.id ? "bg-rose-500 text-white" : "bg-rose-50 text-gray-600"}`}
-              >
+              <button key={d.id} onClick={() => setLocal((f) => ({ ...f, durationBucket: d.id }))}
+                className="px-3.5 py-1.5 rounded-full text-xs font-semibold transition-all"
+                style={{
+                  backgroundColor: local.durationBucket === d.id ? "var(--plum)" : "var(--ivory)",
+                  color: local.durationBucket === d.id ? "white" : "var(--mauve)",
+                  border: `1px solid ${local.durationBucket === d.id ? "var(--plum)" : "var(--border)"}`,
+                  fontFamily: "'Inter', sans-serif",
+                }}>
                 {d.label}
               </button>
             ))}
           </div>
         </div>
 
-        <button onClick={() => onApply(local)} className="btn-primary w-full">Apply Filters</button>
-        <button
-          onClick={() => onApply({ showFreeOnly: false, level: "all", durationBucket: "all" })}
-          className="w-full text-center text-xs text-gray-400 hover:text-rose-400"
-        >
-          Reset all filters
-        </button>
+        <div className="space-y-2 pt-1">
+          <button onClick={() => onApply(local)}
+            className="w-full py-3 rounded-2xl text-sm font-semibold transition-all"
+            style={{ backgroundColor: "var(--plum)", color: "white", fontFamily: "'Inter', sans-serif" }}>
+            Apply
+          </button>
+          <button onClick={() => onApply({ showFreeOnly: false, level: "all", durationBucket: "all" })}
+            className="w-full text-center text-xs py-2"
+            style={{ color: "var(--mauve)", fontFamily: "'Inter', sans-serif" }}>
+            Reset filters
+          </button>
+        </div>
       </div>
     </div>
   );
