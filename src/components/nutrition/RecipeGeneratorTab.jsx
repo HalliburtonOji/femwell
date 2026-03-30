@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { base44 } from "@/api/base44Client";
 import { motion, AnimatePresence } from "framer-motion";
-import { Sparkles, Loader2, X, ChefHat, Plus, CheckCircle, Copy, BookmarkPlus, ChevronDown, ChevronUp, Shuffle } from "lucide-react";
+import { Loader2, X, ChefHat, Plus, CheckCircle, Copy, BookmarkPlus, ChevronDown, ChevronUp, Shuffle } from "lucide-react";
 
 const WELLNESS_GOALS = [
   { id: "energy",    label: "Energy"          },
@@ -389,7 +389,7 @@ export default function RecipeGeneratorTab({ user }) {
           <button onClick={() => generate(false)} disabled={generating}
             className="flex-1 py-3 rounded-2xl text-sm font-semibold flex items-center justify-center gap-2 transition-all"
             style={{ backgroundColor: "var(--plum)", color: "white", opacity: generating ? 0.7 : 1 }}>
-            {generating ? <><Loader2 className="w-4 h-4 animate-spin" /> Generating…</> : <><Sparkles className="w-4 h-4" /> Generate Recipe</>}
+            {generating ? <><Loader2 className="w-4 h-4 animate-spin" /> Generating…</> : "Generate Recipe"}
           </button>
         </div>
 

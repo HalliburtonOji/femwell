@@ -122,7 +122,7 @@ export default function NutritionProgressTab({ user, nutritionProfile, onProfile
       {showGoalPicker ? (
         <div className="rounded-[24px] p-5" style={card}>
           <p className="font-semibold mb-1" style={{ color: "var(--plum)", fontFamily: "'Playfair Display', serif" }}>What's your goal?</p>
-          <p className="text-xs mb-5" style={{ color: "var(--mauve)" }}>Choose what feels right for you right now.</p>
+          <p className="text-xs mb-5" style={{ color: "var(--mauve)" }}>Choose what feels right for you right now. You can change this any time.</p>
           <div className="space-y-2 mb-5">
             {GOAL_MODES.map((g) => (
               <button key={g.key} onClick={() => setSelectedGoal(g.key)}
@@ -186,7 +186,7 @@ export default function NutritionProgressTab({ user, nutritionProfile, onProfile
         <div className="rounded-[24px] p-5" style={card}>
           <div className="flex items-center gap-2 mb-4">
             <TrendingUp className="w-4 h-4" style={{ color: "var(--rose-dust)" }} />
-            <p style={sLabel}>Weight Trend</p>
+            <p style={sLabel}>Body Trend</p>
           </div>
           <ResponsiveContainer width="100%" height={160}>
             <LineChart data={weightData}>

@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { base44 } from "@/api/base44Client";
-import { Loader2, RefreshCw, Sparkles, ChevronDown, ChevronUp } from "lucide-react";
+import { Loader2, RefreshCw, ChevronDown, ChevronUp } from "lucide-react";
 import { format, subDays, startOfWeek, endOfWeek, parseISO } from "date-fns";
 import ReactMarkdown from "react-markdown";
 
@@ -247,7 +247,6 @@ Guidelines:
       <div className="rounded-[24px] p-5" style={card}>
         <div className="flex items-center justify-between mb-4">
           <div className="flex items-center gap-2">
-            <Sparkles className="w-4 h-4" style={{ color: "var(--rose-dust)" }} />
             <p style={sLabel}>Weekly Summary</p>
           </div>
           <button onClick={generateWeekInsight} disabled={generating}

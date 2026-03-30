@@ -89,7 +89,7 @@ export default function Nutrition() {
               Nutrition
             </h1>
             <p className="text-sm mt-1" style={{ color: "var(--mauve)", fontFamily: "'Inter', sans-serif" }}>
-              Nourish with intention
+              Plan, log, and understand your food
             </p>
           </div>
 

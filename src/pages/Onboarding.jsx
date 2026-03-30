@@ -1,17 +1,17 @@
 import { useState } from "react";
 import { base44 } from "@/api/base44Client";
 import { createPageUrl } from "@/utils";
-import { Bell, ChevronLeft, ChevronRight, Droplets, Flower2, Sparkles } from "lucide-react";
+import { Bell, ChevronLeft, ChevronRight, Droplets, Flower2 } from "lucide-react";
 
 const GOALS = [
-  { id: "calm", label: "Calm", emoji: "🫶" },
-  { id: "sleep", label: "Sleep", emoji: "💤" },
-  { id: "energy", label: "Energy", emoji: "⚡" },
-  { id: "fitness", label: "Fitness", emoji: "💪" },
-  { id: "nutrition", label: "Nutrition", emoji: "🥗" },
-  { id: "hormone_support", label: "Hormone support", emoji: "🌙" },
-  { id: "relationships", label: "Relationships", emoji: "💛" },
-  { id: "confidence", label: "Confidence", emoji: "✨" },
+  { id: "calm",             label: "Calm"             },
+  { id: "sleep",            label: "Sleep"            },
+  { id: "energy",           label: "Energy"           },
+  { id: "fitness",          label: "Fitness"          },
+  { id: "nutrition",        label: "Nutrition"        },
+  { id: "hormone_support",  label: "Hormone support"  },
+  { id: "relationships",    label: "Relationships"    },
+  { id: "confidence",       label: "Confidence"       },
 ];
 
 const INTERESTS = [
@@ -175,7 +175,6 @@ export default function Onboarding() {
                   onClick={() => toggleValue(goal.id, setGoals)}
                   className={`rounded-2xl border-2 p-4 text-left transition-all ${goals.includes(goal.id) ? "border-rose-400 bg-rose-50" : "border-transparent bg-white/70"}`}
                 >
-                  <div className="mb-1 text-2xl">{goal.emoji}</div>
                   <div className="text-sm font-medium text-gray-700">{goal.label}</div>
                 </button>
               ))}
@@ -226,15 +225,15 @@ export default function Onboarding() {
             <div>
               <p className="mb-2 text-sm font-medium text-gray-600">Reminder time</p>
               <div className="grid grid-cols-2 gap-3">
-                {[{ id: "morning", label: "Morning", icon: "☀️" }, { id: "evening", label: "Evening", icon: "🌙" }].map((item) => (
+                {[{ id: "morning", label: "Morning" }, { id: "evening", label: "Evening" }].map((item) => (
                   <button
                     key={item.id}
                     onClick={() => setNotificationTime(item.id)}
                     className={`rounded-2xl border px-4 py-3 text-sm font-semibold transition-all ${notificationTime === item.id ? "border-rose-400 bg-rose-50 text-rose-600" : "border-rose-100 bg-white text-gray-600"}`}
                   >
-                    <Bell className="mr-1 inline h-4 w-4" /> {item.icon} {item.label}
+                    <Bell className="mr-1 inline h-4 w-4" /> {item.label}
                   </button>
-                ))}
+              ))}
               </div>
             </div>
           </div>
@@ -293,14 +292,16 @@ export default function Onboarding() {
 
         {current === "done" && (
           <div className="space-y-6 text-center">
-            <div className="text-6xl">✨</div>
+            <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-rose-200 to-pink-300 flex items-center justify-center mx-auto shadow-md">
+              <Flower2 className="h-7 w-7 text-white" />
+            </div>
             <div>
               <h2 className="text-2xl font-bold text-rose-900">You’re all set</h2>
               <p className="mt-2 leading-relaxed text-gray-500">Your assistant, feed, and recommendations are now tuned to you.</p>
             </div>
             <div className="rounded-[24px] bg-white/80 p-4 text-left">
               <div className="inline-flex items-center gap-2 rounded-full bg-rose-50 px-3 py-1 text-xs font-semibold text-rose-600">
-                <Sparkles className="h-3.5 w-3.5" /> Personalisation ready
+                Personalisation ready
               </div>
               <p className="mt-3 text-sm text-gray-600">You’ll see smarter lifestyle picks, a more human assistant, and faster recommendations from the moment you enter.</p>
             </div>

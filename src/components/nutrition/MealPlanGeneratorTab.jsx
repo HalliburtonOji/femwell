@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { base44 } from "@/api/base44Client";
 import { motion, AnimatePresence } from "framer-motion";
-import { Sparkles, Loader2, X, CalendarDays, Plus, CheckCircle, Copy, BookmarkPlus } from "lucide-react";
+import { Loader2, X, CalendarDays, Plus, CheckCircle, Copy, BookmarkPlus } from "lucide-react";
 import { format, startOfWeek } from "date-fns";
 
 const WELLNESS_GOALS = [
@@ -414,7 +414,7 @@ Return JSON: {"items": [{"ingredient": "name", "category": "CategoryName", "quan
           style={{ backgroundColor: "var(--plum)", color: "white", opacity: generating ? 0.7 : 1 }}>
           {generating
             ? <><Loader2 className="w-4 h-4 animate-spin" /> Generating your plan…</>
-            : <><Sparkles className="w-4 h-4" /> Generate {duration}-Day Plan</>}
+            : `Generate ${duration}-Day Plan`}
         </button>
 
         {error && (
