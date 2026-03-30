@@ -70,6 +70,7 @@ export default function AICoachTab({ user }) {
   const [loading, setLoading] = useState(false);
   const [conversation, setConversation] = useState(null);
   const [loadingHistory, setLoadingHistory] = useState(false);
+  const [appContext, setAppContext] = useState(null);
   const [showSettings, setShowSettings] = useState(false);
   const [showVoice, setShowVoice] = useState(false);
   const [voicePrefs, setVoicePrefs] = useState({
@@ -88,6 +89,7 @@ export default function AICoachTab({ user }) {
 
   const bottomRef = useRef(null);
   const textareaRef = useRef(null);
+  const conversationRef = useRef(null);
   const guideName = coachPrefs.coach_name || "Guide";
   const STYLE_MAP = {
     empathetic: "Warm & supportive",
@@ -97,6 +99,16 @@ export default function AICoachTab({ user }) {
     bestie:     "Real & casual",
   };
   const styleDesc = STYLE_MAP[coachPrefs.coach_archetype] || "Warm & supportive";
+
+  // Keep conversationRef in sync so voice callbacks always have the latest
+  useEffect(() => { conversationRef.current = conversation; }, [conversation]);
+
+  // Load live app context once on mount
+  useEffect(() => {
+    base44.functions.invoke("guideActions", { action: "get_context", payload: {} })
+      .then(res => { if (res.data?.success) setAppContext(res.data.data); })
+      .catch(() => {});
+  }, []);
 
   // Scroll to bottom when messages change
   useEffect(() => {
@@ -139,14 +151,41 @@ export default function AICoachTab({ user }) {
     setInput("");
   }, []);
 
-  // Build system note for Guide prompt — also used for voice instructions
-  const buildInstructions = useCallback(() => {
-    return `You are ${guideName}, the private operational guide embedded in FemWell, a premium women's wellness app. Style: ${styleDesc}. Tone: ${coachPrefs.coach_tone}. You have full access to the user's journal, check-ins, cycle data, habit logs, program progress, and nutrition logs — reference this context specifically when relevant. You are action-oriented: when the user asks you to do something, attempt it immediately and confirm clearly. Do not ask for information already available in the user's profile or auth context. Never sound evasive. Be warm, calm, direct, and useful. When you log or act on something, confirm specifically (e.g. 'Done — I logged 300 ml of water for today.').`;
-  }, [guideName, styleDesc, coachPrefs.coach_tone]);
-
+  // Build rich context-primed system note
   const buildStyleNote = useCallback(() => {
-    return `[Guide style: ${styleDesc}. Tone: ${coachPrefs.coach_tone}. ${buildInstructions()}]`;
-  }, [styleDesc, coachPrefs.coach_tone, buildInstructions]);
+    const ctx = appContext;
+    const ctxLines = [];
+    if (ctx?.active_program) ctxLines.push(`Active program: "${ctx.active_program.title}" — Day ${ctx.active_program.current_day}/${ctx.active_program.total_days}, streak ${ctx.active_program.streak} days.`);
+    if (ctx?.today_checkin) {
+      const c = ctx.today_checkin;
+      const parts = [];
+      if (c.mood != null) parts.push(`mood ${c.mood}/10`);
+      if (c.energy != null) parts.push(`energy ${c.energy}/10`);
+      if (c.stress != null) parts.push(`stress ${c.stress}/10`);
+      if (c.sleep_hours != null) parts.push(`sleep ${c.sleep_hours}h`);
+      if (parts.length) ctxLines.push(`Today's check-in: ${parts.join(', ')}.`);
+    }
+    if (ctx?.hydration_today?.total_ml) ctxLines.push(`Hydration today: ${ctx.hydration_today.total_ml} ml logged.`);
+    if (ctx?.latest_cycle_event) ctxLines.push(`Last cycle event: ${ctx.latest_cycle_event.type} on ${ctx.latest_cycle_event.date}.`);
+    if (ctx?.recent_journals?.length) ctxLines.push(`Recent journal mood: ${ctx.recent_journals[0].mood_rating || 'not set'}. Latest snippet: "${ctx.recent_journals[0].snippet || ''}"`);
+    if (ctx?.meals_today?.length) ctxLines.push(`Meals logged today: ${ctx.meals_today.map(m => m.raw_text || m.meal_type).join(', ')}.`);
+    if (ctx?.habits_today?.length) {
+      const done = ctx.habits_today.filter(h => h.completed).map(h => h.habit_type || h.habit_name);
+      if (done.length) ctxLines.push(`Habits completed today: ${done.join(', ')}.`);
+    }
+    const ctxBlock = ctxLines.length ? `\n\nCURRENT USER CONTEXT (use this, do not ask for it again):\n${ctxLines.join('\n')}` : '';
+    return `[Guide: ${guideName}. Style: ${styleDesc}. Tone: ${coachPrefs.coach_tone}.${ctxBlock}]`;
+  }, [guideName, styleDesc, coachPrefs.coach_tone, appContext]);
+
+  const buildInstructions = useCallback(() => {
+    const ctx = appContext;
+    const ctxLines = [];
+    if (ctx?.active_program) ctxLines.push(`Active program: "${ctx.active_program.title}" Day ${ctx.active_program.current_day}.`);
+    if (ctx?.today_checkin?.mood != null) ctxLines.push(`Today mood: ${ctx.today_checkin.mood}/10, energy: ${ctx.today_checkin.energy}/10.`);
+    if (ctx?.hydration_today?.total_ml) ctxLines.push(`Hydration today: ${ctx.hydration_today.total_ml} ml.`);
+    const ctxBlock = ctxLines.length ? ` Current user context: ${ctxLines.join(' ')}` : '';
+    return `You are ${guideName}, the private operational guide embedded in FemWell. Style: ${styleDesc}. Tone: ${coachPrefs.coach_tone}. Be concise, warm, and action-oriented. Act immediately when asked. Confirm actions specifically. Never ask for user ID.${ctxBlock}`;
+  }, [guideName, styleDesc, coachPrefs.coach_tone, appContext]);
 
   // ── SEND MESSAGE ──────────────────────────────────────────────────────────
   const sendMessage = useCallback(async (questionText) => {
@@ -162,13 +201,14 @@ export default function AICoachTab({ user }) {
 
     try {
       // Create conversation if needed
-      let convo = conversation;
+      let convo = conversationRef.current;
       if (!convo) {
         convo = await base44.agents.createConversation({
           agent_name: "personal_assistant",
           metadata: { tone: coachPrefs.coach_tone, archetype: coachPrefs.coach_archetype },
         });
         setConversation(convo);
+        conversationRef.current = convo;
       }
 
       const styleNote = buildStyleNote();
@@ -212,29 +252,21 @@ export default function AICoachTab({ user }) {
     setLoading(false);
   }, [loading, conversation, coachPrefs, buildStyleNote]);
 
-  // ── VOICE CALLBACKS — same thread ─────────────────────────────────────────
-  const handleVoiceUserTranscript = useCallback((text) => {
+  // ── VOICE CALLBACKS — same thread, ensure a thread exists ──────────────────
+  const handleVoiceUserTranscript = useCallback(async (text) => {
+    // Ensure a thread exists for voice (creates one if needed)
+    if (!conversationRef.current) {
+      try {
+        const convo = await base44.agents.createConversation({
+          agent_name: "personal_assistant",
+          metadata: { tone: coachPrefs.coach_tone, archetype: coachPrefs.coach_archetype, source: "voice" },
+        });
+        setConversation(convo);
+        conversationRef.current = convo;
+      } catch {}
+    }
     setMessages(prev => [...prev, { role: "user", content: text, id: `voice_user_${Date.now()}`, source: "voice" }]);
-  }, []);
-
-  const handleVoiceAssistantTranscript = useCallback((text, isFinal) => {
-    setMessages(prev => {
-      const hasPending = prev.some(m => m.id === PENDING);
-      if (!hasPending && !isFinal) {
-        return [...prev, { role: "assistant", content: text, id: PENDING, source: "voice" }];
-      }
-      if (hasPending) {
-        return prev.map(m =>
-          m.id === PENDING
-            ? isFinal
-              ? { role: "assistant", content: text, id: `voice_ast_${Date.now()}`, source: "voice" }
-              : { ...m, content: text }
-            : m
-        );
-      }
-      return prev;
-    });
-  }, []);
+  }, [coachPrefs]);
 
   // ── SAVE ──────────────────────────────────────────────────────────────────
   const handleSave = async () => {
