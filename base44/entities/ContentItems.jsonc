@@ -1,0 +1,150 @@
+{
+  "name": "ContentItems",
+  "type": "object",
+  "properties": {
+    "content_key": {
+      "type": "string"
+    },
+    "title": {
+      "type": "string"
+    },
+    "content_type": {
+      "type": "string",
+      "enum": [
+        "BREATHWORK",
+        "MEDITATION",
+        "WORKOUT",
+        "MOBILITY",
+        "GUIDE"
+      ]
+    },
+    "play_mode": {
+      "type": "string",
+      "enum": [
+        "VIDEO",
+        "GUIDED"
+      ]
+    },
+    "duration_minutes": {
+      "type": "number"
+    },
+    "level": {
+      "type": "string",
+      "enum": [
+        "Beginner",
+        "Intermediate",
+        "Advanced"
+      ]
+    },
+    "summary": {
+      "type": "string"
+    },
+    "tags": {
+      "type": "string"
+    },
+    "cycle_phases": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "embed_url": {
+      "type": "string"
+    },
+    "demo_embed_url": {
+      "type": "string"
+    },
+    "thumbnail_url": {
+      "type": "string"
+    },
+    "video_provider": {
+      "type": "string"
+    },
+    "video_id": {
+      "type": "string"
+    },
+    "source_url": {
+      "type": "string"
+    },
+    "guided_config": {
+      "type": "string"
+    },
+    "voice_mode": {
+      "type": "string"
+    },
+    "voice_profile_key": {
+      "type": "string"
+    },
+    "voice_script_key": {
+      "type": "string"
+    },
+    "audio_file_url": {
+      "type": "string"
+    },
+    "primary_mode_note": {
+      "type": "string"
+    },
+    "safety_notes": {
+      "type": "string"
+    },
+    "modifications": {
+      "type": "string"
+    },
+    "evidence_note": {
+      "type": "string"
+    },
+    "is_featured": {
+      "type": "boolean",
+      "default": false
+    },
+    "is_premium": {
+      "type": "boolean",
+      "default": false
+    },
+    "premium_tier": {
+      "type": "string",
+      "enum": [
+        "FREE",
+        "PLUS",
+        "PRO"
+      ],
+      "default": "FREE"
+    },
+    "access_tier": {
+      "type": "string",
+      "enum": [
+        "free",
+        "plus",
+        "pro"
+      ],
+      "default": "free"
+    },
+    "target_seconds": {
+      "type": "number",
+      "default": 300
+    },
+    "player_style": {
+      "type": "string",
+      "enum": [
+        "BREATH_RING",
+        "BREATH_WAVES",
+        "BREATH_GLOW"
+      ],
+      "default": "BREATH_RING"
+    },
+    "accent_color": {
+      "type": "string",
+      "default": "#EAD7FF"
+    },
+    "breath_pattern_label": {
+      "type": "string"
+    },
+    "breath_safety_note": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "title",
+    "content_type"
+  ]
+}

@@ -1,0 +1,78 @@
+{
+  "name": "UserProfile",
+  "type": "object",
+  "properties": {
+    "user_id": {
+      "type": "string"
+    },
+    "user_email": {
+      "type": "string"
+    },
+    "onboarding_complete": {
+      "type": "boolean",
+      "default": false
+    },
+    "modules_enabled": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "goals": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "cycle_avg_length": {
+      "type": "number"
+    },
+    "period_length": {
+      "type": "number"
+    },
+    "last_period_start_date": {
+      "type": "string"
+    },
+    "reminder_checkin_time": {
+      "type": "string"
+    },
+    "reminder_meditation_time": {
+      "type": "string"
+    },
+    "reminder_workout_days": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "units": {
+      "type": "string",
+      "enum": [
+        "metric",
+        "imperial"
+      ],
+      "default": "metric"
+    },
+    "tone_preference": {
+      "type": "string",
+      "enum": [
+        "warm",
+        "clinical",
+        "motivational"
+      ],
+      "default": "warm"
+    },
+    "condition_flags": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "skin_type": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "user_id"
+  ]
+}

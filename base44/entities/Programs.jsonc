@@ -1,0 +1,96 @@
+{
+  "name": "Programs",
+  "type": "object",
+  "properties": {
+    "program_key": {
+      "type": "string"
+    },
+    "title": {
+      "type": "string"
+    },
+    "summary": {
+      "type": "string"
+    },
+    "description": {
+      "type": "string"
+    },
+    "need_tags": {
+      "type": "string"
+    },
+    "duration_days": {
+      "type": "number"
+    },
+    "goal_tags": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "level": {
+      "type": "string",
+      "enum": [
+        "beginner",
+        "intermediate",
+        "advanced"
+      ]
+    },
+    "access_tier": {
+      "type": "string",
+      "enum": [
+        "free",
+        "plus",
+        "pro"
+      ],
+      "default": "free"
+    },
+    "tier": {
+      "type": "string"
+    },
+    "thumbnail_url": {
+      "type": "string"
+    },
+    "cover_thumbnail_url": {
+      "type": "string"
+    },
+    "cover_embed_url": {
+      "type": "string"
+    },
+    "is_featured": {
+      "type": "boolean",
+      "default": false
+    },
+    "category": {
+      "type": "string"
+    },
+    "daily_activities_summary": {
+      "type": "string"
+    },
+    "time_per_day_min": {
+      "type": "number"
+    },
+    "time_per_day_max": {
+      "type": "number"
+    },
+    "what_you_need": {
+      "type": "string"
+    },
+    "best_for_tags": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "expected_results": {
+      "type": "string"
+    },
+    "trigger_phase": {
+      "type": "string"
+    },
+    "trigger_condition": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "title"
+  ]
+}
