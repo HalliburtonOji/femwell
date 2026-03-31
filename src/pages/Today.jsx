@@ -115,12 +115,14 @@ function getRecommendationTypeMeta(type) {
 function RecommendationSkeletonCard() {
   return (
     <div
-      className="w-full rounded-[14px] mb-[10px]"
       style={{
-        minHeight: "80px",
+        minWidth: "220px",
+        maxWidth: "220px",
+        height: "110px",
+        flexShrink: 0,
+        borderRadius: "16px",
         backgroundColor: "var(--ivory-dark)",
         border: "1px solid var(--border)",
-        padding: "14px 16px",
       }}
     />
   );
@@ -136,15 +138,21 @@ function TodayRecommendationCard({ item, onTap }) {
         e.preventDefault();
         onTap(item);
       }}
-      className="flex items-center w-full rounded-[14px] mb-[10px]"
+      className="flex"
       style={{
         ...card,
-        minHeight: "80px",
-        padding: "14px 16px",
+        minWidth: "220px",
+        maxWidth: "220px",
+        flexShrink: 0,
+        scrollSnapAlign: "start",
+        borderRadius: "16px",
+        padding: "16px",
+        flexDirection: "column",
+        gap: "10px",
       }}
     >
       <div
-        className="w-10 h-10 rounded-[10px] flex items-center justify-center flex-shrink-0"
+        className="w-9 h-9 rounded-[10px] flex items-center justify-center flex-shrink-0"
         style={{ backgroundColor: typeMeta.backgroundColor, color: typeMeta.color }}
       >
         <span
@@ -154,46 +162,33 @@ function TodayRecommendationCard({ item, onTap }) {
           {typeMeta.abbr}
         </span>
       </div>
-      <div className="flex-1 min-w-0 ml-3">
-        <p
-          className="truncate"
-          style={{ color: "var(--plum)", fontSize: "14px", fontWeight: 700, fontFamily: "'Inter', sans-serif" }}
-        >
-          {item.title}
-        </p>
-        <p
-          className="mt-[3px] overflow-hidden"
-          style={{
-            color: "var(--mauve)",
-            fontSize: "12px",
-            fontFamily: "'Inter', sans-serif",
-            display: "-webkit-box",
-            WebkitLineClamp: 2,
-            WebkitBoxOrient: "vertical",
-          }}
-        >
-          {item.reason}
-        </p>
-        {item.source_name && (
-          <p
-            className="mt-1"
-            style={{
-              color: "var(--mauve)",
-              fontSize: "11px",
-              fontFamily: "'Inter', sans-serif",
-              opacity: 0.7,
-            }}
-          >
-            {item.source_name}
-          </p>
-        )}
-      </div>
-      <span
-        className="flex-shrink-0 ml-3"
-        style={{ color: "var(--mauve)", fontSize: "18px", lineHeight: 1 }}
+      <p
+        style={{
+          color: "var(--plum)",
+          fontSize: "13px",
+          fontWeight: 700,
+          fontFamily: "'Inter', sans-serif",
+          display: "-webkit-box",
+          WebkitLineClamp: 2,
+          WebkitBoxOrient: "vertical",
+          overflow: "hidden",
+        }}
       >
-        ›
-      </span>
+        {item.title}
+      </p>
+      <p
+        style={{
+          color: "var(--mauve)",
+          fontSize: "11px",
+          fontFamily: "'Inter', sans-serif",
+          display: "-webkit-box",
+          WebkitLineClamp: 2,
+          WebkitBoxOrient: "vertical",
+          overflow: "hidden",
+        }}
+      >
+        {item.reason}
+      </p>
     </a>
   );
 }
@@ -201,6 +196,7 @@ function TodayRecommendationCard({ item, onTap }) {
 function RecommendedForYouTodaySection({ loading, items, onTap }) {
   return (
     <div className="mt-6 mb-4">
+      <style>{`.recommended-scroll::-webkit-scrollbar{display:none;}`}</style>
       <div className="flex items-center justify-between mb-3">
         <p style={{ color: "var(--plum)", fontSize: "16px", fontWeight: 700, fontFamily: "'Inter', sans-serif" }}>
           Recommended for you
@@ -210,14 +206,57 @@ function RecommendedForYouTodaySection({ loading, items, onTap }) {
         </p>
       </div>
 
-      {loading ? (
-        <>
-          <RecommendationSkeletonCard />
-          <RecommendationSkeletonCard />
-        </>
-      ) : (
-        items.map((item) => <TodayRecommendationCard key={item.id} item={item} onTap={onTap} />)
-      )}
+      <div
+        className="recommended-scroll flex gap-3 overflow-x-auto pb-1"
+        style={{ scrollbarWidth: "none", WebkitOverflowScrolling: "touch", scrollSnapType: "x mandatory" }}
+      >
+        {loading
+          ? [0, 1, 2].map((index) => <RecommendationSkeletonCard key={index} />)
+          : items.map((item) => <TodayRecommendationCard key={item.id} item={item} onTap={onTap} />)}
+      </div>
+    </div>
+  );
+}
+
+function DailyStoriesRow() {
+  const stories = [
+    { id: "cycle", label: "Cycle", color: "#FFE4F0", route: createPageUrl("CycleSettings") },
+    { id: "journal", label: "Journal", color: "#E8F4FF", route: createPageUrl("Journal") },
+    { id: "breathe", label: "Breathe", color: "#E6FFF6", route: createPageUrl("ContentPlayer") },
+    { id: "nutrition", label: "Nutrition", color: "#FFFBE6", route: createPageUrl("Nutrition") },
+    { id: "explore", label: "Explore", color: "#F0EEFF", route: createPageUrl("Explore") },
+  ];
+
+  return (
+    <div className="mx-[-16px] mt-3 mb-4">
+      <style>{`.daily-stories-scroll::-webkit-scrollbar{display:none;}.daily-story-circle:active{transform:scale(0.92);}`}</style>
+      <div className="daily-stories-scroll flex gap-4 overflow-x-auto px-4" style={{ scrollbarWidth: "none" }}>
+        {stories.map((story) => (
+          <button
+            key={story.id}
+            onClick={() => { window.location.href = story.route; }}
+            className="flex flex-col items-center text-center flex-shrink-0"
+          >
+            <div
+              className="daily-story-circle flex h-14 w-14 items-center justify-center rounded-full transition-transform"
+              style={{
+                backgroundColor: story.color,
+                border: `2px solid ${story.color}80`,
+              }}
+            >
+              <span style={{ fontSize: "18px", fontWeight: 700, color: "rgba(42,32,53,0.7)", fontFamily: "'Inter', sans-serif" }}>
+                {story.label.charAt(0).toUpperCase()}
+              </span>
+            </div>
+            <span
+              className="mt-1.5 max-w-[64px] truncate"
+              style={{ fontSize: "11px", fontWeight: 600, color: "var(--mauve)", fontFamily: "'Inter', sans-serif", textAlign: "center" }}
+            >
+              {story.label}
+            </span>
+          </button>
+        ))}
+      </div>
     </div>
   );
 }
@@ -515,7 +554,7 @@ export default function Today() {
   const handleRecommendationTap = (item) => {
     try {
       if (!item?.action_route && item?.type === "READ" && item?.id) {
-        window.location.href = createPageUrl(`LifestyleDetail?id=${item.id}`);
+        window.location.href = createPageUrl("Lifestyle");
         return;
       }
       if (!item?.action_route) return;
@@ -534,9 +573,8 @@ export default function Today() {
         window.location.href = createPageUrl(`ContentPlayer?id=${id}`);
         return;
       }
-      if (item.action_route.startsWith('/LifestyleDetail?id=')) {
-        const id = item.action_route.split('/LifestyleDetail?id=')[1];
-        window.location.href = createPageUrl(`LifestyleDetail?id=${id}`);
+      if (item.type === "READ" || item.action_route.startsWith('/LifestyleDetail?id=')) {
+        window.location.href = createPageUrl("Lifestyle");
         return;
       }
       window.location.href = item.action_route.startsWith('/') ? item.action_route : createPageUrl(item.action_route);
@@ -568,6 +606,8 @@ export default function Today() {
             onOpenCheckin={() => setShowCheckin(true)}
           />
         </div>
+
+        <DailyStoriesRow />
 
         {/* ── TAB SWITCHER ─────────────────────────────────────────────────── */}
         <div className="flex gap-1 mb-6 p-1 rounded-2xl" style={{ ...card }}>
@@ -635,26 +675,6 @@ export default function Today() {
               onTap={handleRecommendationTap}
             />
 
-            {/* AI Recommendations */}
-            {recommendations.length > 0 && (
-              <div className="mb-4">
-                <p className="mb-3" style={label}>For You Today</p>
-                <div className="space-y-2">
-                  {recommendations.map((rec) => (
-                    <a key={rec.id} href={rec.action_route || "#"} className="flex items-center gap-3.5 rounded-[20px] p-4 transition-all block" style={card}>
-                      <div className="w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0" style={{ backgroundColor: "var(--rose-dust-subtle)", color: "var(--rose-dust)" }}>
-                        <Sparkles className="w-4 h-4" />
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <p className="font-medium text-sm truncate" style={{ color: "var(--plum)", fontFamily: "'Inter', sans-serif" }}>{rec.title}</p>
-                        {rec.reason && <p className="text-xs truncate mt-0.5" style={{ color: "var(--mauve)", fontFamily: "'Inter', sans-serif" }}>{rec.reason}</p>}
-                      </div>
-                      <ChevronRight className="w-4 h-4 flex-shrink-0" style={{ color: "var(--border)" }} />
-                    </a>
-                  ))}
-                </div>
-              </div>
-            )}
 
             {/* Quick meal log */}
             <div className="rounded-[24px] p-5 mb-4" style={card}>
