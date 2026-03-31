@@ -269,7 +269,6 @@ export default function Today() {
   const [loading, setLoading] = useState(true);
 
   const [todayCheckin, setTodayCheckin] = useState(null);
-  const [recommendations, setRecommendations] = useState([]);
   const [homeRecommendations, setHomeRecommendations] = useState([]);
   const [loadingHomeRecommendations, setLoadingHomeRecommendations] = useState(true);
   const [showCheckin, setShowCheckin] = useState(false);
@@ -312,18 +311,16 @@ export default function Today() {
     (async () => {
       const u = await base44.auth.me();
       setUser(u);
-      const [profiles, checkins, recs, completions, userPrograms, allPrograms, featuredBreathwork] = await Promise.all([
+      const [profiles, checkins, recs, completions, userPrograms, allPrograms] = await Promise.all([
         base44.entities.UserProfile.filter({ user_id: u.id }),
         base44.entities.DailyCheckins.filter({ user_id: u.id, date: todayStr }),
         base44.entities.TodayRecommendations.filter({ user_id: u.id, date: todayStr }),
         base44.entities.ContentHistory.filter({ user_id: u.id, session_date: todayStr }),
         base44.entities.UserPrograms.filter({ user_id: u.id }),
         base44.entities.Programs.list("-created_date", 50),
-        base44.entities.ContentItems.list("-is_featured", 100),
       ]);
       if (profiles[0]) setProfile(profiles[0]);
       if (checkins[0]) setTodayCheckin(checkins[0]);
-      setRecommendations(recs);
       setTodayCompletions(completions.filter((c) => !c.is_deleted));
       setActivePrograms(userPrograms.filter((e) => e.is_saved || e.status === "active"));
       setProgramLibrary(allPrograms);
@@ -333,7 +330,7 @@ export default function Today() {
         const latestRead = lifestyleItems
           .filter((item) => item.status === "PUBLISHED" || item.status === "NEEDS_REVIEW")
           .sort((a, b) => new Date(b.pub_date || 0) - new Date(a.pub_date || 0))[0];
-        const todayItems = await TodayRecommendations.filter({ date: todayStr }, "created_date", 3);
+        const todayItems = recs.slice(0, 3);
         const fallbackItems = latestRead
           ? [{
               id: latestRead.id,
@@ -383,7 +380,7 @@ export default function Today() {
     setSessionHistory(activeSessions);
     const ids = [...new Set(activeSessions.map((s) => s.content_id).filter(Boolean))];
     if (ids.length > 0) {
-      const items = await base44.entities.ContentItems.filter({});
+      const items = await base44.entities.ContentItems.list("-created_date", 100);
       const map = {};
       items.forEach((it) => { map[it.id] = it; });
       setSessionContent(map);
