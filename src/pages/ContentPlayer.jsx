@@ -1,6 +1,13 @@
 import { useState, useEffect } from "react";
 import { base44 } from "@/api/base44Client";
 import { ArrowLeft, Play, Lock, BookmarkCheck, Bookmark } from "lucide-react";
+
+const PHASE_ACCENTS = {
+  menstrual: "#C96B9E",
+  follicular: "#9B7FCC",
+  ovulatory: "#E8B84B",
+  luteal: "#4ABFA3",
+};
 import { createPageUrl } from "@/utils";
 import { saveItem, removeSavedItem } from "@/lib/savedItems";
 import GuidedPlayer from "../components/content/GuidedPlayer";
@@ -68,17 +75,20 @@ export default function ContentPlayer() {
   const [userPlan, setUserPlan] = useState("free");
   const [bookmarked, setBookmarked] = useState(false);
   const [bookmarkId, setBookmarkId] = useState(null);
+  const [userProfile, setUserProfile] = useState(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     (async () => {
       const u = await base44.auth.me();
       setUser(u);
-      const [ents, bookmarks, saved] = await Promise.all([
+      const [ents, bookmarks, saved, profiles] = await Promise.all([
         base44.entities.Entitlements.filter({ user_id: u.id }),
         contentKey ? base44.entities.ContentBookmarks.filter({ user_id: u.id }) : Promise.resolve([]),
         base44.entities.SavedItems.filter({ user_id: u.id, item_type: "CONTENT" }, "-created_at", 200),
+        base44.entities.UserProfile.filter({ user_id: u.id }),
       ]);
+      setUserProfile(profiles[0] || null);
       if (ents[0]) setUserPlan(ents[0].plan || "free");
 
       let ci = null;
@@ -139,6 +149,24 @@ export default function ContentPlayer() {
   const isGuided = item.play_mode === "GUIDED";
   const embedUrl = item.embed_url || null;
 
+  const shouldShowPhaseTag = Array.isArray(item.cycle_phases)
+    && item.cycle_phases.length > 0
+    && !(item.cycle_phases.length === 1 && String(item.cycle_phases[0]).toLowerCase() === "all")
+    && userProfile?.last_period_start_date;
+
+  const currentPhase = (() => {
+    if (!shouldShowPhaseTag) return null;
+    const today = new Date();
+    const lastPeriod = new Date(userProfile.last_period_start_date);
+    const daysSince = Math.floor((today - lastPeriod) / (1000 * 60 * 60 * 24));
+    const cycleDay = (daysSince % userProfile.cycle_avg_length) + 1;
+    const periodLength = userProfile.period_length || 5;
+    return cycleDay <= periodLength ? 'menstrual'
+      : cycleDay <= 13 ? 'follicular'
+      : cycleDay <= 17 ? 'ovulatory'
+      : 'luteal';
+  })();
+
   return (
     <div className="min-h-screen femwell-gradient pb-10">
       <div className="max-w-md mx-auto px-4">
@@ -153,6 +181,25 @@ export default function ContentPlayer() {
             }
           </button>
         </div>
+
+        {currentPhase && (
+          <div className="mb-3">
+            <span
+              className="inline-flex rounded-full"
+              style={{
+                fontSize: "12px",
+                padding: "4px 12px",
+                borderRadius: "20px",
+                color: PHASE_ACCENTS[currentPhase],
+                backgroundColor: `${PHASE_ACCENTS[currentPhase]}1F`,
+                border: `1px solid ${PHASE_ACCENTS[currentPhase]}40`,
+                fontFamily: "'Inter', sans-serif",
+              }}
+            >
+              Recommended for your {currentPhase.charAt(0).toUpperCase() + currentPhase.slice(1)} phase
+            </span>
+          </div>
+        )}
 
         {/* Manual complete card — shown for video/audio content */}
         {!locked && !isBreathwork && (

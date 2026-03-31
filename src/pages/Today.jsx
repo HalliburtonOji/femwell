@@ -284,8 +284,21 @@ export default function Today() {
       setProgramLibrary(allPrograms);
 
       try {
+        const lifestyleItems = await base44.entities.LifestyleItems.list("-pub_date", 20);
+        const latestRead = lifestyleItems
+          .filter((item) => item.status === "PUBLISHED" || item.status === "NEEDS_REVIEW")
+          .sort((a, b) => new Date(b.pub_date || 0) - new Date(a.pub_date || 0))[0];
         const todayItems = await TodayRecommendations.filter({ date: todayStr }, "created_date", 3);
-        setHomeRecommendations(todayItems.length > 0 ? todayItems.slice(0, 3) : fallbackTodayRecommendations);
+        const fallbackItems = latestRead
+          ? [{
+              id: latestRead.id,
+              type: "GUIDE",
+              title: latestRead.title,
+              reason: latestRead.summary || "Open the latest read.",
+              action_route: latestRead.content_url,
+            }, ...fallbackTodayRecommendations].slice(0, 3)
+          : fallbackTodayRecommendations;
+        setHomeRecommendations(todayItems.length > 0 ? todayItems.slice(0, 3) : fallbackItems);
       } catch {
         setHomeRecommendations(fallbackTodayRecommendations);
       }

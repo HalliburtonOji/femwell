@@ -14,7 +14,7 @@ export default function Deals() {
   useEffect(() => {
     (async () => {
       const deals = await base44.entities.DealsItems.list("-created_date", 200);
-      setItems(deals.filter((item) => item.is_active !== false));
+      setItems(deals);
       setLoading(false);
     })();
   }, []);
@@ -26,6 +26,9 @@ export default function Deals() {
       return matchesSearch && matchesCategory;
     });
   }, [items, search, category]);
+
+  const activeItems = visibleItems.filter((item) => item.is_active !== false);
+  const expiredItems = visibleItems.filter((item) => item.is_active === false);
 
   const copyCode = async (code) => {
     await navigator.clipboard.writeText(code);
@@ -62,34 +65,67 @@ export default function Deals() {
 
         {visibleItems.length === 0 ? (
           <div className="rounded-[28px] border border-rose-100 bg-white p-10 text-center shadow-sm">
-            <p className="text-4xl">🛍️</p>
             <p className="mt-3 text-base font-semibold text-gray-900">No deals found yet</p>
             <p className="mt-1 text-sm text-gray-500">Fresh codes will appear here after the next refresh.</p>
           </div>
         ) : (
-          <div className="grid gap-4 md:grid-cols-2">
-            {visibleItems.map((item) => (
-              <div key={item.id} className="rounded-[24px] border border-rose-100 bg-white p-4 shadow-sm">
-                <div className="flex items-start justify-between gap-3">
-                  <div>
-                    <p className="text-xs font-semibold uppercase tracking-[0.16em] text-gray-400">{item.category}</p>
-                    <h3 className="mt-2 text-lg font-semibold text-gray-900">{item.store_name}</h3>
-                    {item.terms && <p className="mt-2 text-sm text-gray-500">{item.terms}</p>}
+          <>
+            <div className="grid gap-4 md:grid-cols-2">
+              {activeItems.map((item) => (
+                <div key={item.id} className="rounded-[24px] border border-rose-100 bg-white p-4 shadow-sm">
+                  <div className="flex items-start justify-between gap-3">
+                    <div>
+                      <p className="text-xs font-semibold uppercase tracking-[0.16em] text-gray-400">{item.category}</p>
+                      <h3 className="mt-2 text-lg font-semibold text-gray-900">{item.store_name}</h3>
+                      {item.terms && <p className="mt-2 text-sm text-gray-500">{item.terms}</p>}
+                    </div>
+                    {item.expiry && <span className="rounded-full bg-rose-50 px-3 py-1 text-xs font-semibold text-rose-600">{item.expiry}</span>}
                   </div>
-                  {item.expiry && <span className="rounded-full bg-rose-50 px-3 py-1 text-xs font-semibold text-rose-600">{item.expiry}</span>}
+                  <div className="mt-4 flex items-center justify-between rounded-2xl bg-rose-50 px-4 py-3">
+                    <p className="text-base font-bold tracking-[0.2em] text-rose-700">{item.code}</p>
+                    <button onClick={() => copyCode(item.code)} className="inline-flex items-center gap-2 rounded-full bg-white px-3 py-2 text-xs font-semibold text-gray-700">
+                      <Copy className="h-3.5 w-3.5" /> {copied === item.code ? "Copied" : "Copy code"}
+                    </button>
+                  </div>
+                  <a href={item.link} target="_blank" rel="noreferrer" className="mt-4 inline-flex rounded-2xl bg-rose-500 px-4 py-2.5 text-sm font-semibold text-white">
+                    Open store
+                  </a>
                 </div>
-                <div className="mt-4 flex items-center justify-between rounded-2xl bg-rose-50 px-4 py-3">
-                  <p className="text-base font-bold tracking-[0.2em] text-rose-700">{item.code}</p>
-                  <button onClick={() => copyCode(item.code)} className="inline-flex items-center gap-2 rounded-full bg-white px-3 py-2 text-xs font-semibold text-gray-700">
-                    <Copy className="h-3.5 w-3.5" /> {copied === item.code ? "Copied" : "Copy code"}
-                  </button>
+              ))}
+            </div>
+
+            {expiredItems.length > 0 && (
+              <div className="mt-6">
+                <p className="mb-3" style={{ fontSize: "13px", color: "var(--mauve)", fontFamily: "'Inter', sans-serif" }}>Recently expired</p>
+                <div className="grid gap-4 md:grid-cols-2">
+                  {expiredItems.map((item) => (
+                    <div key={item.id} className="rounded-[24px] border border-rose-100 bg-white p-4 shadow-sm" style={{ opacity: 0.5 }}>
+                      <div className="flex items-start justify-between gap-3">
+                        <div>
+                          <p className="text-xs font-semibold uppercase tracking-[0.16em] text-gray-400">{item.category}</p>
+                          <h3 className="mt-2 text-lg font-semibold text-gray-900">{item.store_name}</h3>
+                          {item.terms && <p className="mt-2 text-sm text-gray-500">{item.terms}</p>}
+                        </div>
+                        <div className="flex flex-col items-end gap-2">
+                          <span style={{ fontSize: "11px", color: "#E05C7A", fontFamily: "'Inter', sans-serif" }}>Expired</span>
+                          {item.expiry && <span className="rounded-full bg-rose-50 px-3 py-1 text-xs font-semibold text-rose-600">{item.expiry}</span>}
+                        </div>
+                      </div>
+                      <div className="mt-4 flex items-center justify-between rounded-2xl bg-rose-50 px-4 py-3">
+                        <p className="text-base font-bold tracking-[0.2em] text-rose-700" style={{ textDecorationLine: 'line-through' }}>{item.code}</p>
+                        <button onClick={() => copyCode(item.code)} className="inline-flex items-center gap-2 rounded-full bg-white px-3 py-2 text-xs font-semibold text-gray-700">
+                          <Copy className="h-3.5 w-3.5" /> {copied === item.code ? "Copied" : "Copy code"}
+                        </button>
+                      </div>
+                      <a href={item.link} target="_blank" rel="noreferrer" className="mt-4 inline-flex rounded-2xl bg-rose-500 px-4 py-2.5 text-sm font-semibold text-white">
+                        Open store
+                      </a>
+                    </div>
+                  ))}
                 </div>
-                <a href={item.link} target="_blank" rel="noreferrer" className="mt-4 inline-flex rounded-2xl bg-rose-500 px-4 py-2.5 text-sm font-semibold text-white">
-                  Open store
-                </a>
               </div>
-            ))}
-          </div>
+            )}
+          </>
         )}
       </div>
     </div>

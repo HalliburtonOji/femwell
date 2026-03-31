@@ -183,16 +183,35 @@ export default function NutritionTodayTab({ user, profile, nutritionProfile, day
     setMeals((prev) => [...prev, log]);
     setMealText("");
     try {
+      let phasePromptAppend = "";
+      if (profile?.last_period_start_date) {
+        const today = new Date();
+        const lastPeriod = new Date(profile.last_period_start_date);
+        const daysSince = Math.floor((today - lastPeriod) / (1000 * 60 * 60 * 24));
+        const cycleDay = (daysSince % profile.cycle_avg_length) + 1;
+        const periodLength = profile.period_length || 5;
+        const phase = cycleDay <= periodLength ? 'menstrual'
+          : cycleDay <= 13 ? 'follicular'
+          : cycleDay <= 17 ? 'ovulatory'
+          : 'luteal';
+        phasePromptAppend = ` The user is currently in their ${phase} phase. Context for your analysis: menstrual = rest and restoration, iron and anti-inflammatory foods are beneficial; follicular = oestrogen rising, cruciferous vegetables and fermented foods support this phase; ovulatory = peak energy, antioxidants and zinc-rich foods are ideal; luteal = progesterone rising then dropping, magnesium and complex carbohydrates reduce PMS symptoms and support serotonin. In one sentence only at the end of your response, note how the logged meal relates to this phase. Do not make it the main focus.`;
+      }
+
       const res = await base44.functions.invoke("analyzeMeal", {
         raw_text: text.trim(), energy_level: checkin?.energy,
         digestion_score: checkin?.digestion,
         wellness_goal: selectedGoal || "general wellness",
+        prompt_append: phasePromptAppend,
       });
       if (res.data) {
         setLastAnalysis(res.data);
         setShowQuickCheck(true);
         if (res.data.items?.length > 0) {
           await base44.entities.MealLog.update(log.id, { ai_analysis: JSON.stringify(res.data) });
+          const nutritionProfiles = await base44.entities.NutritionProfile.filter({ user_id: user.id });
+          if (nutritionProfiles[0]?.goal_mode) {
+            await base44.entities.MealLog.update(log.id, { wellness_goal: nutritionProfiles[0].goal_mode });
+          }
         }
         if (res.data.insight) {
           const { headline, wellness_impact, action_items, smart_swap, confidence, tone_safety_note } = res.data.insight;

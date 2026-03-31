@@ -59,27 +59,22 @@ export default function Lifestyle() {
     }
 
     try {
-      const functionName = newMode === "clips" ? "rankLifestyleClips" : "rankLifestyleFeed";
-      const res = await base44.functions.invoke(functionName, {
-        mode: newMode,
-        page: newPage,
-        page_size: 15,
-      });
-      const data = res.data;
+      const allItems = await base44.entities.LifestyleItems.list("-pub_date", 200);
+      const filteredItems = allItems.filter((item) => item.status === "PUBLISHED" || item.status === "NEEDS_REVIEW");
 
       if (newPage === 0) {
-        setItems(data.items || []);
-        setEditorPick(data.editor_pick || null);
+        setItems(filteredItems.slice(0, 15));
+        setEditorPick(filteredItems.find((item) => item.is_editor_pick) || null);
       } else {
-        setItems((prev) => [...prev, ...(data.items || [])]);
+        const start = newPage * 15;
+        setItems((prev) => [...prev, ...filteredItems.slice(start, start + 15)]);
       }
 
-      setHasMore(data.has_more || false);
+      setHasMore(filteredItems.length > (newPage + 1) * 15);
       setPage(newPage);
 
       if (newPage === 0 && newMode === "for_you") {
-        const trendingRes = await base44.functions.invoke("rankLifestyleFeed", { mode: "trending", page: 0, page_size: 6 });
-        setTrendingItems(trendingRes.data?.items || []);
+        setTrendingItems(filteredItems.filter((item) => item.is_trending).slice(0, 6));
       }
     } catch (error) {
       console.error(error);
