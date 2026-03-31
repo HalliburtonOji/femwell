@@ -144,7 +144,7 @@ export default function ProgramDetail() {
         itemId: program.id,
         title: program.title,
         previewText: program.summary || program.description || "",
-        meta: { route: createPageUrl(`ProgramDetail?key=${programKey}`) },
+        meta: { route: createPageUrl(`ProgramsHub?program_key=${programKey}`) },
       });
     } else {
       await removeSavedItem("PROGRAM", program.id);

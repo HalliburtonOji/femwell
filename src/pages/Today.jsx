@@ -126,22 +126,16 @@ function RecommendationSkeletonCard() {
   );
 }
 
-function TodayRecommendationCard({ item }) {
+function TodayRecommendationCard({ item, onTap }) {
   const typeMeta = getRecommendationTypeMeta(item.type);
-  const handleOpen = (e) => {
-    e.preventDefault();
-    try {
-      if (!item.action_route) return;
-      window.open(item.action_route, '_blank');
-    } catch {
-      // do nothing
-    }
-  };
 
   return (
     <a
-      href={item.action_route || "#"}
-      onClick={handleOpen}
+      href="#"
+      onClick={(e) => {
+        e.preventDefault();
+        onTap(item);
+      }}
       className="flex items-center w-full rounded-[14px] mb-[10px]"
       style={{
         ...card,
@@ -204,7 +198,7 @@ function TodayRecommendationCard({ item }) {
   );
 }
 
-function RecommendedForYouTodaySection({ loading, items }) {
+function RecommendedForYouTodaySection({ loading, items, onTap }) {
   return (
     <div className="mt-6 mb-4">
       <div className="flex items-center justify-between mb-3">
@@ -222,7 +216,7 @@ function RecommendedForYouTodaySection({ loading, items }) {
           <RecommendationSkeletonCard />
         </>
       ) : (
-        items.map((item) => <TodayRecommendationCard key={item.id} item={item} />)
+        items.map((item) => <TodayRecommendationCard key={item.id} item={item} onTap={onTap} />)
       )}
     </div>
   );
@@ -279,13 +273,14 @@ export default function Today() {
     (async () => {
       const u = await base44.auth.me();
       setUser(u);
-      const [profiles, checkins, recs, completions, userPrograms, allPrograms] = await Promise.all([
+      const [profiles, checkins, recs, completions, userPrograms, allPrograms, featuredBreathwork] = await Promise.all([
         base44.entities.UserProfile.filter({ user_id: u.id }),
         base44.entities.DailyCheckins.filter({ user_id: u.id, date: todayStr }),
         base44.entities.TodayRecommendations.filter({ user_id: u.id, date: todayStr }),
         base44.entities.ContentHistory.filter({ user_id: u.id, session_date: todayStr }),
         base44.entities.UserPrograms.filter({ user_id: u.id }),
         base44.entities.Programs.list("-created_date", 50),
+        base44.entities.ContentItems.list("-is_featured", 100),
       ]);
       if (profiles[0]) setProfile(profiles[0]);
       if (checkins[0]) setTodayCheckin(checkins[0]);
@@ -300,16 +295,29 @@ export default function Today() {
           .filter((item) => item.status === "PUBLISHED" || item.status === "NEEDS_REVIEW")
           .sort((a, b) => new Date(b.pub_date || 0) - new Date(a.pub_date || 0))[0];
         const todayItems = await TodayRecommendations.filter({ date: todayStr }, "created_date", 3);
+        const fallbackBreathwork = featuredBreathwork.filter((item) => item.content_type === "BREATHWORK").sort((a, b) => Number(b.is_featured || false) - Number(a.is_featured || false))[0];
         const fallbackItems = latestRead
           ? [{
               id: latestRead.id,
-              type: "GUIDE",
+              type: "READ",
               title: latestRead.title,
               reason: latestRead.summary || "Open the latest read.",
-              action_route: latestRead.source_url,
+              action_route: `/LifestyleDetail?id=${latestRead.id}`,
               source_name: latestRead.source_name,
-            }, ...fallbackTodayRecommendations].slice(0, 3)
-          : fallbackTodayRecommendations;
+            }, {
+              ...fallbackTodayRecommendations[0],
+              action_route: fallbackBreathwork ? `/ContentPlayer?id=${fallbackBreathwork.id}` : null,
+            }, {
+              ...fallbackTodayRecommendations[1],
+              action_route: "/ProgramsHub?program_key=prog_pms_relief_path",
+            }].slice(0, 3)
+          : [{
+              ...fallbackTodayRecommendations[0],
+              action_route: fallbackBreathwork ? `/ContentPlayer?id=${fallbackBreathwork.id}` : null,
+            }, {
+              ...fallbackTodayRecommendations[1],
+              action_route: "/ProgramsHub?program_key=prog_pms_relief_path",
+            }];
         setHomeRecommendations(todayItems.length > 0 ? todayItems.slice(0, 3) : fallbackItems);
       } catch {
         setHomeRecommendations(fallbackTodayRecommendations);
@@ -507,6 +515,39 @@ export default function Today() {
   const activeProgram = activeProgramEntry ? programLibrary.find((p) => p.id === activeProgramEntry.program_id) : null;
   const showProgramReminder = activeProgramEntry?.reminder_time && isReminderDue(activeProgramEntry.reminder_time);
 
+  const handleRecommendationTap = (item) => {
+    try {
+      if (!item?.action_route && item?.type === "READ" && item?.id) {
+        window.location.href = createPageUrl(`LifestyleDetail?id=${item.id}`);
+        return;
+      }
+      if (!item?.action_route) return;
+      if (item.action_route.startsWith('/ProgramsHub?program_key=')) {
+        const programKey = item.action_route.split('/ProgramsHub?program_key=')[1];
+        window.location.href = createPageUrl(`ProgramsHub?program_key=${programKey}`);
+        return;
+      }
+      if (item.action_route.startsWith('/ProgramDetail?key=')) {
+        const programKey = item.action_route.split('/ProgramDetail?key=')[1];
+        window.location.href = createPageUrl(`ProgramsHub?program_key=${programKey}`);
+        return;
+      }
+      if (item.action_route.startsWith('/ContentPlayer?id=')) {
+        const id = item.action_route.split('/ContentPlayer?id=')[1];
+        window.location.href = createPageUrl(`ContentPlayer?id=${id}`);
+        return;
+      }
+      if (item.action_route.startsWith('/LifestyleDetail?id=')) {
+        const id = item.action_route.split('/LifestyleDetail?id=')[1];
+        window.location.href = createPageUrl(`LifestyleDetail?id=${id}`);
+        return;
+      }
+      window.location.href = item.action_route.startsWith('/') ? item.action_route : createPageUrl(item.action_route);
+    } catch {
+      // do nothing
+    }
+  };
+
   if (loading) return (
     <div className="min-h-screen flex items-center justify-center" style={{ backgroundColor: "var(--ivory)" }}>
       <div className="w-8 h-8 rounded-full border-2 border-t-transparent animate-spin" style={{ borderColor: "var(--rose-dust-light)", borderTopColor: "var(--rose-dust)" }} />
@@ -594,6 +635,7 @@ export default function Today() {
             <RecommendedForYouTodaySection
               loading={loadingHomeRecommendations}
               items={homeRecommendations}
+              onTap={handleRecommendationTap}
             />
 
             {/* AI Recommendations */}

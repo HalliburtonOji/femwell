@@ -2,7 +2,6 @@ import { useState, useEffect, useCallback, useRef } from "react";
 import { base44 } from "@/api/base44Client";
 import { createPageUrl } from "@/utils";
 import { RefreshCw } from "lucide-react";
-import { toast } from "sonner";
 import LifestyleCard from "../components/lifestyle/LifestyleCard";
 import FeedSkeleton from "../components/lifestyle/FeedSkeleton";
 import TrendingStrip from "../components/lifestyle/TrendingStrip";
@@ -30,32 +29,27 @@ export default function Lifestyle() {
   const [savedIds, setSavedIds] = useState(new Set());
   const [likedIds, setLikedIds] = useState(new Set());
   const [filterCategory, setFilterCategory] = useState("All");
-  const [userProfile, setUserProfile] = useState(null);
-  const [userProfileId, setUserProfileId] = useState(null);
+  const [lifestyleProfile, setLifestyleProfile] = useState(null);
   const [contentCategories, setContentCategories] = useState(["All"]);
   const loaderRef = useRef(null);
 
   useEffect(() => {
     (async () => {
       const currentUser = await base44.auth.me();
-      const [profiles, preferences, contentSources, userProfiles] = await Promise.all([
+      const [profiles, preferences, contentSources, interactions] = await Promise.all([
         base44.entities.LifestyleProfile.filter({ user_id: currentUser.id }),
         base44.entities.UserPreferences.filter({ user_id: currentUser.id }),
-        base44.entities.ContentSources.list('priority', 200),
-        base44.entities.UserProfile.filter({ user_id: currentUser.id })
+        base44.entities.LifestyleSources.list('priority', 200),
+        base44.entities.LifestyleInteractions.filter({ user_id: currentUser.id }, '-acted_at', 500)
       ]);
 
-      if (!profiles[0]) {
-        await base44.entities.LifestyleProfile.create({ user_id: currentUser.id });
-      }
-
-      const nextUserProfile = userProfiles[0] || null;
-      setUserProfile(nextUserProfile);
-      setUserProfileId(nextUserProfile?.id || null);
+      const nextLifestyleProfile = profiles[0] || await base44.entities.LifestyleProfile.create({ user_id: currentUser.id });
+      const savedFromProfile = String(nextLifestyleProfile.saved_item_ids || '').split(',').map((item) => item.trim()).filter(Boolean);
+      const likedFromInteractions = interactions.filter((item) => item.action === 'like').map((item) => item.item_id);
+      setLifestyleProfile(nextLifestyleProfile);
       setInterests(preferences[0]?.lifestyle_interests || []);
-      setSavedIds(new Set(nextUserProfile?.saved_item_ids || []));
-      setLikedIds(new Set(nextUserProfile?.liked_item_ids || []));
-      setFilterCategory(nextUserProfile?.last_used_category || "All");
+      setSavedIds(new Set(savedFromProfile));
+      setLikedIds(new Set(likedFromInteractions));
       setContentCategories(["All", ...new Set(contentSources.map((item) => item.category).filter(Boolean))]);
     })();
   }, []);
@@ -70,15 +64,16 @@ export default function Lifestyle() {
 
     try {
       const allItems = await base44.entities.LifestyleItems.list("-pub_date", 200);
-      const blockedSourceIds = userProfile?.blocked_source_ids || [];
-      let filteredItems = allItems.filter((item) => item.status === "PUBLISHED" && !blockedSourceIds.includes(item.source_id));
+      const blockedSourceIds = Array.isArray(lifestyleProfile?.blocked_sources) ? lifestyleProfile.blocked_sources : [];
+      const savedList = String(lifestyleProfile?.saved_item_ids || '').split(',').map((item) => item.trim()).filter(Boolean);
+      const followed = interests.length > 0 ? new Set(interests) : new Set();
+      let filteredItems = allItems.filter((item) => (item.status === "PUBLISHED" || item.status === "NEEDS_REVIEW") && !blockedSourceIds.includes(item.source_id));
       if (newMode === "saved") {
-        filteredItems = filteredItems.filter((item) => (userProfile?.saved_item_ids || []).includes(item.id));
+        filteredItems = filteredItems.filter((item) => savedList.includes(item.id));
       } else if (newMode === "following") {
-        filteredItems = filteredItems.filter((item) => (userProfile?.followed_categories || []).includes(item.category));
+        filteredItems = filteredItems.filter((item) => followed.has(item.category));
       }
       if (newMode === "for_you") {
-        const followed = new Set(userProfile?.followed_categories || []);
         filteredItems = [...filteredItems].sort((a, b) => {
           const aFollowed = followed.has(a.category) ? 1 : 0;
           const bFollowed = followed.has(b.category) ? 1 : 0;
@@ -127,44 +122,39 @@ export default function Lifestyle() {
 
   const displayedItems = filterCategory === "All" ? items : items.filter((item) => item.category === filterCategory);
 
-  const updateUserProfile = async (patch) => {
-    if (!userProfileId) return;
-    await base44.entities.UserProfile.update(userProfileId, patch);
-    setUserProfile((prev) => prev ? { ...prev, ...patch } : prev);
-  };
-
   const handleHide = (id) => setItems((prev) => prev.filter((item) => item.id !== id));
-  const handleSave = async (id, nextSaved) => {
-    const current = userProfile?.saved_item_ids || [];
-    const nextList = nextSaved ? [...current, id] : current.filter((itemId) => itemId !== id);
-    setSavedIds(new Set(nextList));
-    await updateUserProfile({ saved_item_ids: nextList });
-    toast(nextSaved ? 'Article saved' : 'Article removed');
+  const handleSave = (id, nextSaved) => {
+    setSavedIds((prev) => {
+      const next = new Set(prev);
+      if (nextSaved) next.add(id);
+      else next.delete(id);
+      return next;
+    });
   };
-  const handleLike = async (id, nextLiked) => {
-    const current = userProfile?.liked_item_ids || [];
-    const nextList = nextLiked ? [...current, id] : current.filter((itemId) => itemId !== id);
-    setLikedIds(new Set(nextList));
-    await updateUserProfile({ liked_item_ids: nextList });
-    toast(nextLiked ? 'Article liked' : 'Like removed');
+  const handleLike = (id, nextLiked) => {
+    setLikedIds((prev) => {
+      const next = new Set(prev);
+      if (nextLiked) next.add(id);
+      else next.delete(id);
+      return next;
+    });
   };
-  const handleMuteSource = async (sourceId, sourceName) => {
-    const current = userProfile?.blocked_source_ids || [];
-    if (current.includes(sourceId)) return;
-    const nextList = [...current, sourceId];
-    await updateUserProfile({ blocked_source_ids: nextList });
-    setItems((prev) => prev.filter((item) => item.source_id !== sourceId));
-    toast(`Hide content from ${sourceName}`);
-  };
-  const handleCategorySelect = async (category) => {
-    setFilterCategory(category);
-    if (!userProfile) return;
-    const followed = userProfile.followed_categories || [];
-    const patch = { last_used_category: category };
-    if (category !== 'All' && !followed.includes(category)) {
-      patch.followed_categories = [...followed, category];
+  const handleMuteSource = async (sourceId) => {
+    try {
+      const profiles = await base44.entities.LifestyleProfile.filter({ user_id: (await base44.auth.me()).id });
+      const profile = profiles[0];
+      if (!profile) return;
+      const blocked = Array.isArray(profile.blocked_sources) ? profile.blocked_sources : [];
+      if (blocked.includes(sourceId)) return;
+      await base44.entities.LifestyleProfile.update(profile.id, { blocked_sources: [...blocked, sourceId] });
+      setLifestyleProfile((prev) => prev ? { ...prev, blocked_sources: [...blocked, sourceId] } : prev);
+      setItems((prev) => prev.filter((item) => item.source_id !== sourceId));
+    } catch {
+      // do nothing
     }
-    await updateUserProfile(patch);
+  };
+  const handleCategorySelect = (category) => {
+    setFilterCategory(category);
   };
 
   return (

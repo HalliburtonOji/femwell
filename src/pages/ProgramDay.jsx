@@ -231,7 +231,7 @@ export default function ProgramDay() {
         <ProgramDayStickyNav programKey={programKey} currentDay={dayNumber} days={allDays} />
 
         <div className="mt-4 flex flex-wrap gap-2">
-          <a href={createPageUrl(`ProgramDetail?key=${programKey}`)} className="inline-flex items-center justify-center rounded-full border border-rose-200 bg-white px-4 py-2 text-sm font-semibold text-rose-600">
+          <a href={createPageUrl(`ProgramsHub?program_key=${programKey}`)} className="inline-flex items-center justify-center rounded-full border border-rose-200 bg-white px-4 py-2 text-sm font-semibold text-rose-600">
             Back to Program
           </a>
           <a href={createPageUrl("Today")} className="inline-flex items-center justify-center rounded-full border border-gray-200 bg-white px-4 py-2 text-sm font-semibold text-gray-600">

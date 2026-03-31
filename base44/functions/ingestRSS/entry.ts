@@ -37,7 +37,7 @@ Deno.serve(async (req) => {
       return Response.json({ error: 'Admin only' }, { status: 403 });
     }
 
-    const activeSources = await base44.asServiceRole.entities.ContentSources.filter({ is_active: true }, 'priority', 15);
+    const activeSources = await base44.asServiceRole.entities.LifestyleSources.filter({ is_active: true }, 'priority', 15);
     let ingested = 0;
     let skipped = 0;
 

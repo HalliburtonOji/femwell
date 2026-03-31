@@ -444,7 +444,7 @@ function ContinueCard({ program, userProgram, meta, thumb, locked, progress }) {
               Continue day {userProgram.current_day}
               <ArrowRight className="w-3.5 h-3.5" />
             </a>
-            <a href={createPageUrl(`ProgramDetail?key=${program.program_key}`)}
+            <a href={createPageUrl(`ProgramsHub?program_key=${program.program_key}`)}
               className="px-3 py-2.5 rounded-xl text-sm font-semibold flex items-center"
               style={{ border: "1.5px solid var(--border)", color: "var(--plum)", fontFamily: "'Inter', sans-serif" }}>
               <ChevronRight className="w-4 h-4" />
@@ -482,7 +482,7 @@ function ActiveMiniCard({ program, userProgram, meta, progress }) {
           style={{ backgroundColor: "var(--plum)", color: "white", fontFamily: "'Inter', sans-serif" }}>
           Continue
         </a>
-        <a href={createPageUrl(`ProgramDetail?key=${program.program_key}`)}
+        <a href={createPageUrl(`ProgramsHub?program_key=${program.program_key}`)}
           className="flex-1 py-2 rounded-xl text-sm font-semibold text-center"
           style={{ border: "1.5px solid var(--border)", color: "var(--plum)", fontFamily: "'Inter', sans-serif" }}>
           Days
@@ -541,7 +541,7 @@ function FeaturedCard({ program, userProgram, locked, thumb, meta, progress }) {
           </div>
 
           <div className="flex flex-wrap gap-2">
-            <a href={createPageUrl(`ProgramDetail?key=${program.program_key}`)}
+            <a href={createPageUrl(`ProgramsHub?program_key=${program.program_key}`)}
               className="flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-xl text-sm font-semibold"
               style={{ backgroundColor: "var(--plum)", color: "white", fontFamily: "'Inter', sans-serif" }}>
               {userProgram ? `Continue day ${userProgram.current_day}` : locked ? "Preview journey" : "View journey"}
@@ -602,7 +602,7 @@ function ProgramCard({ program, userProgram, locked, thumb, meta, progress }) {
         )}
 
         <div className="flex gap-2">
-          <a href={createPageUrl(`ProgramDetail?key=${program.program_key}`)}
+          <a href={createPageUrl(`ProgramsHub?program_key=${program.program_key}`)}
             className="flex-1 py-2 rounded-xl text-xs font-semibold text-center"
             style={{ border: "1.5px solid var(--border)", color: "var(--plum)", fontFamily: "'Inter', sans-serif" }}>
             {locked ? "Preview" : "Details"}
