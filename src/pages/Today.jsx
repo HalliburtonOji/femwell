@@ -225,7 +225,6 @@ export default function Today() {
   const [loading, setLoading] = useState(true);
 
   const [todayCheckin, setTodayCheckin] = useState(null);
-  const [recentContent, setRecentContent] = useState([]);
   const [recommendations, setRecommendations] = useState([]);
   const [homeRecommendations, setHomeRecommendations] = useState([]);
   const [loadingHomeRecommendations, setLoadingHomeRecommendations] = useState(true);
@@ -269,10 +268,9 @@ export default function Today() {
     (async () => {
       const u = await base44.auth.me();
       setUser(u);
-      const [profiles, checkins, content, recs, completions, userPrograms, allPrograms] = await Promise.all([
+      const [profiles, checkins, recs, completions, userPrograms, allPrograms] = await Promise.all([
         base44.entities.UserProfile.filter({ user_id: u.id }),
         base44.entities.DailyCheckins.filter({ user_id: u.id, date: todayStr }),
-        base44.entities.ContentItems.filter({ is_featured: true }, "-created_date", 3),
         base44.entities.TodayRecommendations.filter({ user_id: u.id, date: todayStr }),
         base44.entities.ContentHistory.filter({ user_id: u.id, session_date: todayStr }),
         base44.entities.UserPrograms.filter({ user_id: u.id }),
@@ -280,7 +278,6 @@ export default function Today() {
       ]);
       if (profiles[0]) setProfile(profiles[0]);
       if (checkins[0]) setTodayCheckin(checkins[0]);
-      setRecentContent(content);
       setRecommendations(recs);
       setTodayCompletions(completions.filter((c) => !c.is_deleted));
       setActivePrograms(userPrograms.filter((e) => e.is_saved || e.status === "active"));
@@ -531,38 +528,6 @@ export default function Today() {
               </div>
             )}
 
-            {/* Recommended practices */}
-            {recentContent.length > 0 && (
-              <div className="mb-4">
-                <div className="flex items-center justify-between mb-3">
-                  <p style={label}>Recommended for You</p>
-                  <a href={createPageUrl("Explore")} className="text-xs font-medium" style={{ color: "var(--rose-dust)", fontFamily: "'Inter', sans-serif" }}>See all</a>
-                </div>
-                <div className="space-y-2.5">
-                  {recentContent.map((item) => {
-                    const isComplete = todayCompletions.some((c) => c.content_id === item.id || c.content_key === item.content_key);
-                    const TypeIcon = item.content_type === "MEDITATION" ? Sparkles : item.content_type === "BREATHWORK" ? Droplet : item.content_type === "WORKOUT" ? Zap : BookOpen;
-                    return (
-                      <div key={item.id} className="flex items-center gap-3.5 rounded-[20px] p-4" style={{ ...card, border: `1px solid ${isComplete ? "var(--sage-light)" : "var(--border)"}` }}>
-                        <a href={createPageUrl(`ContentPlayer?id=${item.id}`)} className="flex items-center gap-3.5 flex-1 min-w-0">
-                          <div className="w-11 h-11 rounded-2xl flex items-center justify-center flex-shrink-0" style={{ backgroundColor: isComplete ? "var(--sage-subtle)" : "var(--rose-dust-subtle)", color: isComplete ? "var(--sage)" : "var(--rose-dust)" }}>
-                            {isComplete ? <CheckCircle2 className="w-5 h-5" /> : <TypeIcon className="w-4 h-4" strokeWidth={1.5} />}
-                          </div>
-                          <div className="flex-1 min-w-0">
-                            <p className="font-medium text-sm truncate" style={{ color: "var(--plum)", fontFamily: "'Inter', sans-serif" }}>{item.title}</p>
-                            <p className="text-xs mt-0.5" style={{ color: "var(--mauve)", fontFamily: "'Inter', sans-serif" }}>{item.duration_minutes ? `${item.duration_minutes} min · ` : ""}{item.content_type?.toLowerCase()}</p>
-                          </div>
-                        </a>
-                        {!isComplete && user && (
-                          <ManualCompleteButton item={item} user={user} source="TODAY" onDone={(r) => setTodayCompletions((p) => [...p, r])} />
-                        )}
-                        {isComplete && <span className="text-xs font-semibold flex-shrink-0" style={{ color: "var(--sage)" }}>Done</span>}
-                      </div>
-                    );
-                  })}
-                </div>
-              </div>
-            )}
 
             <RecommendedForYouTodaySection
               loading={loadingHomeRecommendations}

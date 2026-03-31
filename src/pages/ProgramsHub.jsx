@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { base44 } from "@/api/base44Client";
+import { Programs } from '@/api/entities';
 import { createPageUrl } from "@/utils";
 import { ArrowRight, Bell, BookOpen, Clock, Flame, Headphones, Lock, Play, Search, ChevronRight } from "lucide-react";
 import ProgramProgressBar from "../components/programs/ProgramProgressBar";
@@ -33,6 +34,13 @@ const card = {
 const sLabel = {
   fontSize: "0.6rem", fontWeight: 600, textTransform: "uppercase",
   letterSpacing: "0.12em", color: "var(--mauve)", fontFamily: "'Inter', sans-serif",
+};
+
+const PHASE_ACCENTS = {
+  menstrual: "#C96B9E",
+  follicular: "#9B7FCC",
+  ovulatory: "#E8B84B",
+  luteal: "#4ABFA3",
 };
 
 function isReminderDue(t) {
@@ -73,19 +81,46 @@ export default function ProgramsHub() {
   const [activeNeed, setActiveNeed]   = useState(null);
   const [search, setSearch]           = useState("");
   const [sort, setSort]               = useState("recommended");
+  const [phaseRecommendations, setPhaseRecommendations] = useState([]);
+  const [currentPhase, setCurrentPhase] = useState(null);
   const [loading, setLoading]         = useState(true);
 
   useEffect(() => {
     (async () => {
       const user = await base44.auth.me();
-      const [progs, ups, ents, programDays, programTasks] = await Promise.all([
+      const [progs, ups, ents, programDays, programTasks, profiles] = await Promise.all([
         base44.entities.Programs.list("-created_date", 50),
         base44.entities.UserPrograms.filter({ user_id: user.id }),
         base44.entities.Entitlements.filter({ user_id: user.id }),
         base44.entities.ProgramDays.list("day_number", 250),
         base44.entities.ProgramTasks.list("order_index", 500),
+        base44.entities.UserProfile.filter({ user_id: user.id }),
       ]);
       setPrograms(progs);
+
+      try {
+        const userProfile = profiles[0];
+        if (userProfile?.last_period_start_date) {
+          const today = new Date();
+          const lastPeriod = new Date(userProfile.last_period_start_date);
+          const daysSince = Math.floor((today - lastPeriod) / (1000 * 60 * 60 * 24));
+          const cycleDay = (daysSince % userProfile.cycle_avg_length) + 1;
+          const periodLength = userProfile.period_length || 5;
+          const phase = cycleDay <= periodLength ? 'menstrual'
+            : cycleDay <= 13 ? 'follicular'
+            : cycleDay <= 17 ? 'ovulatory'
+            : 'luteal';
+
+          const phasePrograms = await Programs.list("-is_featured", 50);
+          setCurrentPhase(phase);
+          setPhaseRecommendations(
+            phasePrograms
+              .filter((program) => program.trigger_phase === "any" || program.trigger_phase?.includes(phase))
+              .slice(0, 2)
+          );
+        }
+      } catch {}
+
       setUserPrograms(ups);
       setDays(programDays);
       setTasks(programTasks);
@@ -261,6 +296,42 @@ export default function ProgramsHub() {
             </div>
           </section>
         ))}
+
+        {currentPhase && phaseRecommendations.length > 0 && (
+          <section>
+            <div className="flex items-center justify-between mb-3">
+              <p style={{ color: "var(--plum)", fontSize: "16px", fontWeight: 700, fontFamily: "'Inter', sans-serif" }}>
+                For your {currentPhase.charAt(0).toUpperCase() + currentPhase.slice(1)} phase
+              </p>
+              <span
+                className="rounded-full px-[10px] py-[4px] font-bold"
+                style={{
+                  fontSize: "11px",
+                  color: PHASE_ACCENTS[currentPhase],
+                  border: `1px solid ${PHASE_ACCENTS[currentPhase]}`,
+                  backgroundColor: `${PHASE_ACCENTS[currentPhase]}1F`,
+                  fontFamily: "'Inter', sans-serif",
+                }}
+              >
+                {currentPhase.charAt(0).toUpperCase() + currentPhase.slice(1)}
+              </span>
+            </div>
+            <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+              {phaseRecommendations.map((program) => (
+                <ProgramCard key={program.id}
+                  program={program}
+                  userProgram={getUserProgram(program.id)}
+                  locked={isLocked(program)}
+                  thumb={getThumbnail(program)}
+                  meta={getProgramMeta(program.program_key)}
+                  progress={getProgress(program, getUserProgram(program.id))}
+                />
+              ))}
+            </div>
+            <div className="h-4" />
+            <div style={{ borderTop: "1px solid var(--border)" }} />
+          </section>
+        )}
 
         {/* ── Browse all ────────────────────────────────────────────────────── */}
         <section>
