@@ -40,7 +40,7 @@ export default function WeeklyInsightsPage() {
     (async () => {
       try {
         const user = await base44.auth.me();
-        const records = await WeeklyInsights.filter({ created_by: user.email }, "-week_start", 50);
+        const records = await WeeklyInsights.filter({ created_by: user.email }, "-week_start", 24);
         setItems(records);
       } catch {}
       setLoading(false);

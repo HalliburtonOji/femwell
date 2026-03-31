@@ -16,10 +16,10 @@ export default function Events() {
   useEffect(() => {
     (async () => {
       const [events, user] = await Promise.all([
-        base44.entities.EventsItems.list("date", 200),
+        base44.entities.EventsItems.list("date", 120),
         base44.auth.me(),
       ]);
-      const saved = await base44.entities.SavedItems.filter({ user_id: user.id, item_type: "EVENT" }, "-created_at", 200);
+      const saved = await base44.entities.SavedItems.filter({ user_id: user.id, item_type: "EVENT" }, "-created_at", 120);
       setSavedIds(new Set(saved.map((item) => item.item_id)));
       setItems(events);
       setLoading(false);

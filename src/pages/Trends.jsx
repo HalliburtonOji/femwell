@@ -72,7 +72,7 @@ export default function Trends() {
         base44.entities.CycleEvents.filter({ user_id: u.id }),
         base44.entities.DailyCheckins.filter({ user_id: u.id }),
         base44.entities.SymptomLogs.filter({ user_id: u.id }),
-        base44.entities.HabitLogs.filter({ user_id: u.id }, "-date", 500),
+        base44.entities.HabitLogs.filter({ user_id: u.id }, "-date", 250),
       ]);
 
       setCycleEvents(events.filter((e) => e.date >= cutoff));

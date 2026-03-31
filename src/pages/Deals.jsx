@@ -13,7 +13,7 @@ export default function Deals() {
 
   useEffect(() => {
     (async () => {
-      const deals = await base44.entities.DealsItems.list("-created_date", 200);
+      const deals = await base44.entities.DealsItems.list("-created_date", 120);
       setItems(deals);
       setLoading(false);
     })();

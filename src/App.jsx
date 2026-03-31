@@ -2,7 +2,7 @@ import { Toaster } from "@/components/ui/toaster"
 import { QueryClientProvider } from '@tanstack/react-query'
 import { queryClientInstance } from '@/lib/query-client'
 import { pagesConfig } from './pages.config'
-import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
+import { BrowserRouter as Router, Route, Routes, Navigate } from 'react-router-dom';
 import PageNotFound from './lib/PageNotFound';
 import { AuthProvider, useAuth } from '@/lib/AuthContext';
 import UserNotRegisteredError from '@/components/UserNotRegisteredError';
@@ -62,6 +62,7 @@ const AuthenticatedApp = () => {
           }
         />
       ))}
+      <Route path="/Track" element={<Navigate to="/Today" replace />} />
       <Route path="/Saved" element={<LayoutWrapper currentPageName="Saved"><Saved /></LayoutWrapper>} />
       <Route path="/Deals" element={<LayoutWrapper currentPageName="Deals"><Deals /></LayoutWrapper>} />
       <Route path="/Events" element={<LayoutWrapper currentPageName="Events"><Events /></LayoutWrapper>} />

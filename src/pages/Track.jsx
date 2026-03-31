@@ -144,7 +144,7 @@ export default function Track() {
     setSessionHistory(activeSessions);
     const ids = [...new Set(activeSessions.map((s) => s.content_id).filter(Boolean))];
     if (ids.length > 0) {
-      const items = await base44.entities.ContentItems.filter({});
+      const items = await base44.entities.ContentItems.list("-created_date", 120);
       const map = {};
       items.forEach((it) => { map[it.id] = it; });
       setSessionContent(map);

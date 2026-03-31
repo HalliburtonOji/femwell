@@ -20,7 +20,7 @@ export default function Saved() {
     (async () => {
       const currentUser = await base44.auth.me();
       setUser(currentUser);
-      const saved = await base44.entities.SavedItems.filter({ user_id: currentUser.id }, "-created_at", 300);
+      const saved = await base44.entities.SavedItems.filter({ user_id: currentUser.id }, "-created_at", 150);
       setItems(saved);
       setLoading(false);
     })();

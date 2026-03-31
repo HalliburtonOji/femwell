@@ -37,7 +37,7 @@ export default function QuickSwitchOverlay({ currentPageName }) {
       const [programs, userPrograms, contentItems] = await Promise.all([
         base44.entities.Programs.list("-created_date", 50),
         base44.entities.UserPrograms.filter({ user_id: user.id }),
-        base44.entities.ContentItems.list("-created_date", 120),
+        base44.entities.ContentItems.list("-created_date", 40),
       ]);
       const nextProgram = userPrograms
         .filter((e) => e.status === "active" || e.is_saved)
