@@ -43,6 +43,7 @@ Deno.serve(async (req) => {
 
       const phase = getCycleInfo(profile).phase;
       const phaseContent = allContent.filter(item => {
+        if (item.content_key === 'energising-breath') return false;
         const phases = item.cycle_phases || [];
         return phases.includes(phase) || phases.includes('all');
       }).slice(0, 2);

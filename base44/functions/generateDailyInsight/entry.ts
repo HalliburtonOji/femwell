@@ -11,8 +11,8 @@ const PHASE_ROUTES = {
   menstrual: '/ContentPlayer?id=69ac3d2217940aebdf578c21',
   follicular: '/ContentPlayer?id=69ac3d2217940aebdf578c22',
   ovulatory: '/ContentPlayer?id=69ac3d2217940aebdf578c23',
-  luteal: '/ProgramDetail?key=prog_pms_relief_path',
-  any: '/ProgramDetail?key=prog_sleep_reset_rebuilt',
+  luteal: '/ProgramsHub?program_key=prog_pms_relief_path',
+  any: '/ProgramsHub?program_key=prog_sleep_reset_rebuilt',
 };
 
 function getCycleInfo(profile) {

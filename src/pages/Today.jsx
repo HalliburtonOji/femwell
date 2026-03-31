@@ -86,9 +86,9 @@ const fallbackTodayRecommendations = [
   {
     id: "fallback-breathwork",
     type: "BREATHWORK",
-    title: "Start with your breath",
-    reason: "A 5-minute session is the easiest way to reset your nervous system today.",
-    action_route: null,
+    title: "3-Minute Breathing Space",
+    reason: "A short, effective breathwork session to reset your nervous system.",
+    action_route: "/ContentPlayer?id=69ac3d2217940aebdf578c19",
   },
   {
     id: "fallback-programme",
@@ -295,7 +295,6 @@ export default function Today() {
           .filter((item) => item.status === "PUBLISHED" || item.status === "NEEDS_REVIEW")
           .sort((a, b) => new Date(b.pub_date || 0) - new Date(a.pub_date || 0))[0];
         const todayItems = await TodayRecommendations.filter({ date: todayStr }, "created_date", 3);
-        const fallbackBreathwork = featuredBreathwork.filter((item) => item.content_type === "BREATHWORK").sort((a, b) => Number(b.is_featured || false) - Number(a.is_featured || false))[0];
         const fallbackItems = latestRead
           ? [{
               id: latestRead.id,
@@ -306,14 +305,12 @@ export default function Today() {
               source_name: latestRead.source_name,
             }, {
               ...fallbackTodayRecommendations[0],
-              action_route: fallbackBreathwork ? `/ContentPlayer?id=${fallbackBreathwork.id}` : null,
             }, {
               ...fallbackTodayRecommendations[1],
               action_route: "/ProgramsHub?program_key=prog_pms_relief_path",
             }].slice(0, 3)
           : [{
               ...fallbackTodayRecommendations[0],
-              action_route: fallbackBreathwork ? `/ContentPlayer?id=${fallbackBreathwork.id}` : null,
             }, {
               ...fallbackTodayRecommendations[1],
               action_route: "/ProgramsHub?program_key=prog_pms_relief_path",
@@ -522,13 +519,13 @@ export default function Today() {
         return;
       }
       if (!item?.action_route) return;
-      if (item.action_route.startsWith('/ProgramsHub?program_key=')) {
-        const programKey = item.action_route.split('/ProgramsHub?program_key=')[1];
+      if (item.action_route.includes('ProgramsHub') && item.action_route.includes('program_key=')) {
+        const programKey = item.action_route.split('program_key=')[1];
         window.location.href = createPageUrl(`ProgramsHub?program_key=${programKey}`);
         return;
       }
-      if (item.action_route.startsWith('/ProgramDetail?key=')) {
-        const programKey = item.action_route.split('/ProgramDetail?key=')[1];
+      if (item.action_route.includes('ProgramDetail') && item.action_route.includes('key=')) {
+        const programKey = item.action_route.split('key=')[1];
         window.location.href = createPageUrl(`ProgramsHub?program_key=${programKey}`);
         return;
       }
