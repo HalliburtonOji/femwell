@@ -1,10 +1,14 @@
 import { useState } from "react";
-import { X, ChevronDown, ChevronUp } from "lucide-react";
+import { ChevronDown, ChevronUp, Plus, Minus } from "lucide-react";
 
 const APPETITE_OPTIONS = ["low", "normal", "high", "cravings"];
 const BODY_TEMP_OPTIONS = ["cold", "normal", "warm", "hot_flashes"];
 const MUCUS_OPTIONS = ["dry", "sticky", "creamy", "watery", "egg_white"];
 const INTENSITY_OPTIONS = ["light", "moderate", "intense"];
+const SKIN_CONDITION_OPTIONS = ["Clear", "Mild breakout", "Moderate breakout", "Very oily", "Very dry"];
+const BREAKOUT_LOCATION_OPTIONS = ["Chin", "Jaw", "Cheeks", "Forehead", "Nose"];
+const HAIR_SHEDDING_OPTIONS = ["Normal", "More than usual", "A lot"];
+const SCALP_CONDITION_OPTIONS = ["Normal", "Oily", "Dry/flaky"];
 
 function SliderRow({ label, value, onChange, min = 1, max = 5, unit = "/5" }) {
   return (
@@ -69,6 +73,11 @@ export default function CheckinModal({ existing, onClose, onSave }) {
   const [saving, setSaving] = useState(false);
   const [showPhysical, setShowPhysical] = useState(false);
   const [showBody, setShowBody] = useState(false);
+  const [showSkinHair, setShowSkinHair] = useState(false);
+  const [skinCondition, setSkinCondition] = useState(init.skin_condition ?? null);
+  const [breakoutLocation, setBreakoutLocation] = useState(init.breakout_location ?? []);
+  const [hairShedding, setHairShedding] = useState(init.hair_shedding ?? null);
+  const [scalpCondition, setScalpCondition] = useState(init.scalp_condition ?? null);
 
   const handleSave = async () => {
     setSaving(true);
@@ -82,6 +91,10 @@ export default function CheckinModal({ existing, onClose, onSave }) {
       exercise_minutes: exerciseDone ? exerciseMinutes : undefined,
       exercise_intensity: exerciseDone ? exerciseIntensity : undefined,
       appetite, body_temp_feel: bodyTemp, cervical_mucus: mucus,
+      skin_condition: skinCondition,
+      breakout_location: breakoutLocation,
+      hair_shedding: hairShedding,
+      scalp_condition: scalpCondition,
       notes,
     });
     setSaving(false);
@@ -177,6 +190,65 @@ export default function CheckinModal({ existing, onClose, onSave }) {
                 <SliderRow label="Libido" value={libido} onChange={setLibido} />
                 <PillSelect label="Body temperature feel" options={BODY_TEMP_OPTIONS} value={bodyTemp} onChange={setBodyTemp} formatter={(o) => o.replace(/_/g, " ")} />
                 <PillSelect label="Cervical mucus" options={MUCUS_OPTIONS} value={mucus} onChange={setMucus} formatter={(o) => o.replace(/_/g, " ")} />
+              </div>
+            )}
+          </div>
+
+          <div>
+            <button
+              type="button"
+              onClick={() => setShowSkinHair(!showSkinHair)}
+              className="w-full flex items-center justify-between text-sm font-medium text-gray-600 py-1"
+            >
+              <span>Skin & Hair</span>
+              {showSkinHair ? <Minus className="w-4 h-4" /> : <Plus className="w-4 h-4" />}
+            </button>
+            {showSkinHair && (
+              <div className="space-y-4 mt-3">
+                <div>
+                  <p className="text-sm font-medium text-gray-600 mb-2">How's your skin today?</p>
+                  <div className="flex flex-wrap gap-2">
+                    {SKIN_CONDITION_OPTIONS.map((option) => {
+                      const selected = skinCondition === option;
+                      return (
+                        <button
+                          key={option}
+                          type="button"
+                          onClick={() => setSkinCondition(selected ? null : option)}
+                          className="px-3 py-1.5 rounded-full text-xs font-medium transition-all"
+                          style={selected ? { backgroundColor: '#9B7FCC26', border: '1px solid #9B7FCC', color: '#9B7FCC' } : { backgroundColor: '#FFF1F2', border: '1px solid #FFE4E6', color: '#4B5563' }}
+                        >
+                          {option}
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+
+                {(skinCondition === 'Mild breakout' || skinCondition === 'Moderate breakout') && (
+                  <div>
+                    <p className="text-sm font-medium text-gray-600 mb-2">Where?</p>
+                    <div className="flex flex-wrap gap-2">
+                      {BREAKOUT_LOCATION_OPTIONS.map((option) => {
+                        const selected = breakoutLocation.includes(option);
+                        return (
+                          <button
+                            key={option}
+                            type="button"
+                            onClick={() => setBreakoutLocation((prev) => selected ? prev.filter((item) => item !== option) : [...prev, option])}
+                            className="px-3 py-1.5 rounded-full text-xs font-medium transition-all"
+                            style={selected ? { backgroundColor: '#9B7FCC26', border: '1px solid #9B7FCC', color: '#9B7FCC' } : { backgroundColor: '#FFF1F2', border: '1px solid #FFE4E6', color: '#4B5563' }}
+                          >
+                            {option}
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </div>
+                )}
+
+                <PillSelect label="Hair shedding today?" options={HAIR_SHEDDING_OPTIONS} value={hairShedding} onChange={setHairShedding} />
+                <PillSelect label="Scalp?" options={SCALP_CONDITION_OPTIONS} value={scalpCondition} onChange={setScalpCondition} />
               </div>
             )}
           </div>

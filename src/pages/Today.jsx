@@ -344,12 +344,49 @@ export default function Today() {
 
   const handleSaveCheckin = async (data) => {
     const payload = { user_id: user.id, date: todayStr, ...data, updated_at: new Date().toISOString() };
+    let savedCheckin;
     if (todayCheckin) {
       await base44.entities.DailyCheckins.update(todayCheckin.id, payload);
-      setTodayCheckin({ ...todayCheckin, ...payload });
+      savedCheckin = { ...todayCheckin, ...payload };
+      setTodayCheckin(savedCheckin);
     } else {
-      const created = await base44.entities.DailyCheckins.create(payload);
-      setTodayCheckin(created);
+      savedCheckin = await base44.entities.DailyCheckins.create(payload);
+      setTodayCheckin(savedCheckin);
+    }
+
+    if (profile?.last_period_start_date && (data.skin_condition || data.hair_shedding || data.scalp_condition || (data.breakout_location || []).length > 0)) {
+      const today = new Date();
+      const lastPeriod = new Date(profile.last_period_start_date);
+      const daysSince = Math.floor((today - lastPeriod) / (1000 * 60 * 60 * 24));
+      const cycleDay = (daysSince % profile.cycle_avg_length) + 1;
+      const periodLength = profile.period_length || 5;
+      const phase = cycleDay <= periodLength ? 'menstrual'
+        : cycleDay <= 13 ? 'follicular'
+        : cycleDay <= 17 ? 'ovulatory'
+        : 'luteal';
+
+      const hasBreakout = data.skin_condition === 'Mild breakout' || data.skin_condition === 'Moderate breakout';
+      const hasDry = data.skin_condition === 'Very dry';
+      const skinTipMap = {
+        'menstrual_breakout': 'Hormonal drops trigger inflammation — keep your routine minimal and gentle. Avoid harsh exfoliants this week.',
+        'menstrual_dry': 'Low oestrogen reduces skin moisture. Layer a hydrating serum before your moisturiser.',
+        'follicular_oily': 'Rising oestrogen can increase oil production. A light gel cleanser twice daily helps.',
+        'ovulatory_breakout': 'The testosterone spike around ovulation drives chin and jaw breakouts. Salicylic acid spot treatment works well here.',
+        'luteal_breakout': 'Progesterone increases sebum — hormonal breakouts peak in the luteal phase. Double-cleanse in the evenings.',
+        'luteal_dry': 'Progesterone can cause dehydration. Drink more water and use a heavier moisturiser at night.',
+        'default': 'Tracking your skin across your cycle reveals hormonal patterns. Keep logging to build your personal picture.',
+      };
+
+      const key = hasBreakout ? `${phase}_breakout` : hasDry ? `${phase}_dry` : data.skin_condition === 'Very oily' && phase === 'follicular' ? 'follicular_oily' : 'default';
+      await base44.entities.InsightCards.create({
+        user_id: user.id,
+        source: 'skin_tracker',
+        cycle_phase: phase,
+        insight_date: todayStr,
+        title: `Your skin this ${phase} phase`,
+        insight_text: skinTipMap[key] || skinTipMap.default,
+        recommended_action_route: null,
+      });
     }
   };
 

@@ -1,0 +1,19 @@
+{
+  "name": "InsightCards",
+  "type": "object",
+  "properties": {
+    "user_id": { "type": "string" },
+    "user_email": { "type": "string" },
+    "date_range": { "type": "string" },
+    "title": { "type": "string" },
+    "insight_text": { "type": "string" },
+    "confidence": { "type": "number" },
+    "evidence_text": { "type": "string" },
+    "recommended_action_route": { "type": "string" },
+    "insight_date": { "type": "string" },
+    "cycle_phase": { "type": "string" },
+    "source": { "type": "string" },
+    "is_read": { "type": "boolean", "default": false }
+  },
+  "required": ["user_id", "insight_text"]
+}
