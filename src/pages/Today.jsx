@@ -111,18 +111,6 @@ function getRecommendationTypeMeta(type) {
   return recommendationTypeStyles[type] || recommendationTypeStyles.default;
 }
 
-function resolveRecommendationHref(actionRoute) {
-  if (!actionRoute) return createPageUrl("Explore");
-  if (actionRoute.startsWith("/ProgramDetail?key=")) {
-    const key = actionRoute.split("/ProgramDetail?key=")[1];
-    return createPageUrl(`ProgramDetail?key=${key}`);
-  }
-  if (actionRoute.startsWith("/ContentPlayer?id=")) {
-    const id = actionRoute.split("/ContentPlayer?id=")[1];
-    return createPageUrl(`ContentPlayer?id=${id}`);
-  }
-  return actionRoute.startsWith("/") ? actionRoute : createPageUrl(actionRoute);
-}
 
 function RecommendationSkeletonCard() {
   return (
@@ -140,10 +128,20 @@ function RecommendationSkeletonCard() {
 
 function TodayRecommendationCard({ item }) {
   const typeMeta = getRecommendationTypeMeta(item.type);
+  const handleOpen = (e) => {
+    e.preventDefault();
+    try {
+      if (!item.action_route) return;
+      window.open(item.action_route, '_blank');
+    } catch {
+      // do nothing
+    }
+  };
 
   return (
     <a
-      href={resolveRecommendationHref(item.action_route)}
+      href={item.action_route || "#"}
+      onClick={handleOpen}
       className="flex items-center w-full rounded-[14px] mb-[10px]"
       style={{
         ...card,
@@ -182,6 +180,19 @@ function TodayRecommendationCard({ item }) {
         >
           {item.reason}
         </p>
+        {item.source_name && (
+          <p
+            className="mt-1"
+            style={{
+              color: "var(--mauve)",
+              fontSize: "11px",
+              fontFamily: "'Inter', sans-serif",
+              opacity: 0.7,
+            }}
+          >
+            {item.source_name}
+          </p>
+        )}
       </div>
       <span
         className="flex-shrink-0 ml-3"
@@ -295,7 +306,8 @@ export default function Today() {
               type: "GUIDE",
               title: latestRead.title,
               reason: latestRead.summary || "Open the latest read.",
-              action_route: latestRead.content_url,
+              action_route: latestRead.source_url,
+              source_name: latestRead.source_name,
             }, ...fallbackTodayRecommendations].slice(0, 3)
           : fallbackTodayRecommendations;
         setHomeRecommendations(todayItems.length > 0 ? todayItems.slice(0, 3) : fallbackItems);
