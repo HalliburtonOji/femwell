@@ -222,7 +222,7 @@ function DailyStoriesRow() {
   const stories = [
     { id: "cycle", label: "Cycle", color: "#FFE4F0", route: createPageUrl("CycleSettings") },
     { id: "journal", label: "Journal", color: "#E8F4FF", route: createPageUrl("Journal") },
-    { id: "breathe", label: "Breathe", color: "#E6FFF6", route: createPageUrl("ContentPlayer") },
+    { id: "breathe", label: "Breathe", color: "#E6FFF6", route: createPageUrl("Explore") + "?type=Audio" },
     { id: "nutrition", label: "Nutrition", color: "#FFFBE6", route: createPageUrl("Nutrition") },
     { id: "explore", label: "Explore", color: "#F0EEFF", route: createPageUrl("Explore") },
   ];

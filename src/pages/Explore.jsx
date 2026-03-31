@@ -1,6 +1,8 @@
 import { useState, useEffect } from "react";
 import { base44 } from "@/api/base44Client";
-import { Search, SlidersHorizontal, X } from "lucide-react";
+import { Search, SlidersHorizontal, X, Lock } from "lucide-react";
+import { differenceInDays, parseISO } from "date-fns";
+import { createPageUrl } from "@/utils";
 import FilterDrawer from "../components/explore/FilterDrawer";
 import ExploreContentCard from "../components/explore/ExploreContentCard";
 import YouTubeVideoCard from "../components/explore/YouTubeVideoCard";
@@ -240,7 +242,27 @@ function getYoutubeBookmarkId(video) {
   return `youtube:${video.video_id}`;
 }
 
+function getCurrentPhase(lastPeriodDate, cycleLength = 28, periodLength = 5) {
+  if (!lastPeriodDate) return null;
+  const today = new Date();
+  const last = parseISO(lastPeriodDate);
+  const dayOfCycle = (differenceInDays(today, last) % cycleLength) + 1;
+  if (dayOfCycle <= periodLength) return "menstrual";
+  if (dayOfCycle <= Math.round(cycleLength * 0.4)) return "follicular";
+  if (dayOfCycle <= Math.round(cycleLength * 0.55)) return "ovulatory";
+  return "luteal";
+}
+
+const PHASE_META = {
+  menstrual:  { label: "Menstrual",  accent: "#C4849A", subtle: "#F5ECF0" },
+  follicular: { label: "Follicular", accent: "#7A9E8E", subtle: "#EBF2EF" },
+  ovulatory:  { label: "Ovulatory",  accent: "#B89E6A", subtle: "#F5F0E6" },
+  luteal:     { label: "Luteal",     accent: "#8A7E88", subtle: "#F0EBF0" },
+};
+
 export default function Explore() {
+  const urlParams = new URLSearchParams(window.location.search);
+  const typeFromUrl = urlParams.get("type");
   const [user, setUser] = useState(null);
   const [userPlan, setUserPlan] = useState("free");
   const [content, setContent] = useState([]);
@@ -248,22 +270,25 @@ export default function Explore() {
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
   const [activeCollection, setActiveCollection] = useState(null);
-  const [activeType, setActiveType] = useState("All");
+  const [activeType, setActiveType] = useState(typeFromUrl || "All");
   const [showFilters, setShowFilters] = useState(false);
   const [filters, setFilters] = useState({ showFreeOnly: false, level: "all", durationBucket: "all" });
+  const [userProfile, setUserProfile] = useState(null);
 
   useEffect(() => {
     (async () => {
       const u = await base44.auth.me();
       setUser(u);
-      const [ents, bookmarks, items] = await Promise.all([
+      const [ents, bookmarks, items, profileResult] = await Promise.all([
         base44.entities.Entitlements.filter({ user_id: u.id }),
         base44.entities.ContentBookmarks.filter({ user_id: u.id }),
         base44.entities.ContentItems.list("-created_date", 60),
+        base44.entities.UserProfile.filter({ user_id: u.id }),
       ]);
       if (ents[0]) setUserPlan(ents[0].plan || "free");
       setBookmarkIds(new Set(bookmarks.map((b) => b.content_id)));
       setContent(items);
+      if (profileResult?.[0]) setUserProfile(profileResult[0]);
       setLoading(false);
     })();
   }, []);
@@ -322,6 +347,19 @@ export default function Explore() {
   const audioItems = filteredContent.filter((item) => AUDIO_TYPES.includes(item.content_type));
   const libraryVideoItems = filteredContent.filter((item) => !AUDIO_TYPES.includes(item.content_type));
   const hasAnyResults = audioItems.length > 0 || libraryVideoItems.length > 0 || youtubeVideos.length > 0;
+  const currentPhase = userProfile
+    ? getCurrentPhase(
+        userProfile.last_period_start_date,
+        userProfile.cycle_avg_length,
+        userProfile.period_length
+      )
+    : null;
+  const phaseMeta = currentPhase ? PHASE_META[currentPhase] : null;
+  const phaseContent = currentPhase
+    ? content
+        .filter(item => Array.isArray(item.cycle_phases) && item.cycle_phases.includes(currentPhase))
+        .slice(0, 8)
+    : [];
 
   return (
     <div className="min-h-screen pb-28" style={{ backgroundColor: "var(--ivory)" }}>
@@ -401,6 +439,85 @@ export default function Explore() {
       </div>
 
       <div className="max-w-screen-lg mx-auto px-4 pt-5 space-y-10">
+        {!loading && !search && !activeCollection && activeType === "All" && phaseContent.length > 0 && (
+          <section>
+            <div className="flex items-center justify-between mb-3">
+              <div>
+                <p style={{ fontSize: "16px", fontWeight: 700, color: "var(--plum)", fontFamily: "'Inter', sans-serif" }}>
+                  For your phase
+                </p>
+                <p style={{ fontSize: "12px", color: "var(--mauve)", fontFamily: "'Inter', sans-serif", marginTop: "2px" }}>
+                  {phaseMeta.label} · matched to where you are
+                </p>
+              </div>
+              <div style={{
+                fontSize: "11px", fontWeight: 600,
+                color: phaseMeta.accent,
+                backgroundColor: phaseMeta.subtle,
+                padding: "4px 10px", borderRadius: "9999px",
+                fontFamily: "'Inter', sans-serif",
+              }}>
+                {phaseMeta.label}
+              </div>
+            </div>
+
+            <div
+              className="flex gap-3 overflow-x-auto pb-2"
+              style={{ scrollbarWidth: "none", WebkitOverflowScrolling: "touch", scrollSnapType: "x mandatory" }}
+            >
+              {phaseContent.map((item) => {
+                const locked = isLocked(item);
+                return (
+                  <div
+                    key={item.id}
+                    onClick={() => { if (!locked) window.location.href = createPageUrl("ContentPlayer") + "?id=" + item.id; }}
+                    style={{
+                      minWidth: "160px", maxWidth: "160px", flexShrink: 0,
+                      scrollSnapAlign: "start", borderRadius: "16px", overflow: "hidden",
+                      cursor: locked ? "default" : "pointer", position: "relative",
+                    }}
+                  >
+                    <div style={{ backgroundColor: phaseMeta.subtle, padding: "14px" }}>
+                      <div style={{
+                        display: "inline-flex", alignItems: "center", justifyContent: "center",
+                        backgroundColor: "rgba(255,255,255,0.7)",
+                        borderRadius: "8px", padding: "3px 8px", marginBottom: "10px",
+                      }}>
+                        <span style={{ fontSize: "11px", fontWeight: 700, color: phaseMeta.accent, fontFamily: "'Inter', sans-serif" }}>
+                          {item.content_type}
+                        </span>
+                      </div>
+                      <p style={{
+                        fontSize: "13px", fontWeight: 700, color: "var(--plum)",
+                        fontFamily: "'Inter', sans-serif", lineHeight: 1.35,
+                        display: "-webkit-box", WebkitLineClamp: 2,
+                        WebkitBoxOrient: "vertical", overflow: "hidden", marginBottom: "6px",
+                      }}>
+                        {item.title}
+                      </p>
+                      {item.duration_minutes && (
+                        <p style={{ fontSize: "11px", color: "var(--mauve)", fontFamily: "'Inter', sans-serif" }}>
+                          {item.duration_minutes} min
+                        </p>
+                      )}
+                    </div>
+                    {locked && (
+                      <div style={{
+                        position: "absolute", top: "10px", right: "10px",
+                        width: "22px", height: "22px", borderRadius: "50%",
+                        backgroundColor: "white", display: "flex",
+                        alignItems: "center", justifyContent: "center",
+                        boxShadow: "0 1px 4px rgba(0,0,0,0.12)",
+                      }}>
+                        <Lock style={{ width: "11px", height: "11px", color: "var(--plum)" }} />
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+          </section>
+        )}
         {loading ? (
           <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
             {Array.from({ length: 6 }).map((_, i) => (
