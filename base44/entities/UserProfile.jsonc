@@ -70,6 +70,33 @@
     },
     "skin_type": {
       "type": "string"
+    },
+    "followed_categories": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "liked_item_ids": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "saved_item_ids": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "blocked_source_ids": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "last_used_category": {
+      "type": "string"
     }
   },
   "required": [

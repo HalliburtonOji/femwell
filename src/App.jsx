@@ -10,6 +10,7 @@ import Saved from './pages/Saved';
 import Deals from './pages/Deals';
 import Events from './pages/Events';
 import WeeklyInsights from './pages/WeeklyInsights';
+import LifestyleDetail from './pages/LifestyleDetail';
 
 const { Pages, Layout, mainPage } = pagesConfig;
 const mainPageKey = mainPage ?? Object.keys(Pages)[0];
@@ -65,6 +66,7 @@ const AuthenticatedApp = () => {
       <Route path="/Deals" element={<LayoutWrapper currentPageName="Deals"><Deals /></LayoutWrapper>} />
       <Route path="/Events" element={<LayoutWrapper currentPageName="Events"><Events /></LayoutWrapper>} />
       <Route path="/WeeklyInsights" element={<LayoutWrapper currentPageName="WeeklyInsights"><WeeklyInsights /></LayoutWrapper>} />
+      <Route path="/LifestyleDetail" element={<LayoutWrapper currentPageName="LifestyleDetail"><LifestyleDetail /></LayoutWrapper>} />
       <Route path="*" element={<PageNotFound />} />
     </Routes>
   );

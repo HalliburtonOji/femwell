@@ -1,0 +1,157 @@
+{
+  "name": "LifestyleItems",
+  "type": "object",
+  "properties": {
+    "source_id": {
+      "type": "string"
+    },
+    "source_name": {
+      "type": "string"
+    },
+    "source_logo_url": {
+      "type": "string"
+    },
+    "title": {
+      "type": "string"
+    },
+    "content_url": {
+      "type": "string"
+    },
+    "source_url": {
+      "type": "string"
+    },
+    "embed_url": {
+      "type": "string"
+    },
+    "content_url_hash": {
+      "type": "string"
+    },
+    "image_url": {
+      "type": "string"
+    },
+    "category": {
+      "type": "string",
+      "enum": [
+        "Womens Health",
+        "Relationships",
+        "Career & Money",
+        "Beauty",
+        "Lifestyle",
+        "Mental Wellness",
+        "Food",
+        "Fitness",
+        "Culture",
+        "Parenting",
+        "Sex Education",
+        "Menopause",
+        "PCOS",
+        "PMS",
+        "Mental Health",
+        "Women's Health",
+        "Nutrition",
+        "Mindfulness",
+        "Sleep",
+        "Hormones & Cycle",
+        "Skin & Hair",
+        "Gut Health",
+        "Fertility",
+        "Body Image",
+        "Supplements",
+        "Stress",
+        "Self Care"
+      ],
+      "default": "Lifestyle"
+    },
+    "summary": {
+      "type": "string"
+    },
+    "takeaways": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "takeaway_1": {
+      "type": "string"
+    },
+    "takeaway_2": {
+      "type": "string"
+    },
+    "takeaway_3": {
+      "type": "string"
+    },
+    "why_it_matters": {
+      "type": "string"
+    },
+    "try_this_content_key": {
+      "type": "string"
+    },
+    "try_this_label": {
+      "type": "string"
+    },
+    "pub_date": {
+      "type": "string"
+    },
+    "published_at": {
+      "type": "string"
+    },
+    "ingested_at": {
+      "type": "string"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "NEEDS_REVIEW",
+        "SUMMARIZED",
+        "PUBLISHED",
+        "HIDDEN"
+      ],
+      "default": "NEEDS_REVIEW"
+    },
+    "is_editor_pick": {
+      "type": "boolean",
+      "default": false
+    },
+    "is_trending": {
+      "type": "boolean",
+      "default": false
+    },
+    "media_type": {
+      "type": "string",
+      "enum": [
+        "ARTICLE",
+        "VIDEO",
+        "TIKTOK",
+        "INSTAGRAM",
+        "CLIP"
+      ],
+      "default": "ARTICLE"
+    },
+    "provider": {
+      "type": "string",
+      "enum": [
+        "RSS",
+        "BLOG",
+        "NEWS",
+        "YOUTUBE",
+        "TIKTOK",
+        "INSTAGRAM"
+      ],
+      "default": "RSS"
+    },
+    "engagement_score": {
+      "type": "number",
+      "default": 0
+    },
+    "tags": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    }
+  },
+  "required": [
+    "title",
+    "content_url"
+  ]
+}

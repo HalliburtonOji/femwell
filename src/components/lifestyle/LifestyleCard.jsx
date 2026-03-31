@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Bookmark, ThumbsUp, ThumbsDown, ExternalLink, Volume2, X, ChevronRight } from "lucide-react";
+import { Bookmark, BookmarkCheck, Heart, MoreHorizontal, ExternalLink, Volume2, X, ChevronRight } from "lucide-react";
 import CategoryPill from "./CategoryPill";
 import { createPageUrl } from "@/utils";
 import { toggleSavedItem } from "@/lib/savedItems";
@@ -16,7 +16,7 @@ function timeAgo(dateStr) {
   return `${Math.floor(d / 7)}w ago`;
 }
 
-export default function LifestyleCard({ item, onHide, onSave, onLike, onDislike, saved, liked }) {
+export default function LifestyleCard({ item, onHide, onSave, onLike, onDislike, onMuteSource, saved, liked }) {
   const [expanded, setExpanded] = useState(false);
   const [localSaved, setLocalSaved] = useState(saved);
   const [localLiked, setLocalLiked] = useState(liked);
@@ -34,9 +34,10 @@ export default function LifestyleCard({ item, onHide, onSave, onLike, onDislike,
   };
 
   const handleLike = () => {
-    setLocalLiked(true);
-    handleAction('like');
-    onLike?.(item.id);
+    const nextLiked = !localLiked;
+    setLocalLiked(nextLiked);
+    handleAction(nextLiked ? 'like' : 'dislike');
+    onLike?.(item.id, nextLiked);
   };
 
   const handleDislike = () => {
@@ -70,7 +71,7 @@ export default function LifestyleCard({ item, onHide, onSave, onLike, onDislike,
 
   const handleOpen = () => {
     handleAction('open');
-    window.open(item.content_url || item.embed_url, '_blank');
+    window.location.href = createPageUrl(`LifestyleDetail?id=${item.id}`);
   };
 
   const handleListen = () => {
@@ -131,9 +132,14 @@ export default function LifestyleCard({ item, onHide, onSave, onLike, onDislike,
           <span className="text-xs text-gray-400">{timeAgo(item.pub_date)}</span>
           <div className="ml-auto flex items-center gap-2">
             <CategoryPill category={item.category} />
-            <button onClick={handleHide} className="text-gray-300 hover:text-gray-500 transition-colors">
-              <X className="w-3.5 h-3.5" />
-            </button>
+            <div className="flex items-center gap-2">
+              <button onClick={() => onMuteSource?.(item.source_id, item.source_name)} className="text-gray-300 hover:text-gray-500 transition-colors">
+                <MoreHorizontal className="w-3.5 h-3.5" />
+              </button>
+              <button onClick={handleHide} className="text-gray-300 hover:text-gray-500 transition-colors">
+                <X className="w-3.5 h-3.5" />
+              </button>
+            </div>
           </div>
         </div>
 
@@ -182,19 +188,13 @@ export default function LifestyleCard({ item, onHide, onSave, onLike, onDislike,
             onClick={handleLike}
             className={`flex items-center gap-1 px-2.5 py-1.5 rounded-xl text-xs font-medium transition-all ${localLiked ? "bg-rose-100 text-rose-600" : "text-gray-400 hover:bg-rose-50 hover:text-rose-400"}`}
           >
-            <ThumbsUp className="w-3.5 h-3.5" />
-          </button>
-          <button
-            onClick={handleDislike}
-            className="flex items-center gap-1 px-2.5 py-1.5 rounded-xl text-xs text-gray-300 hover:text-gray-500 transition-colors"
-          >
-            <ThumbsDown className="w-3.5 h-3.5" />
+            <Heart className={`w-3.5 h-3.5 ${localLiked ? "fill-rose-500" : ""}`} />
           </button>
           <button
             onClick={handleSave}
             className={`flex items-center gap-1 px-2.5 py-1.5 rounded-xl text-xs font-medium transition-all ${localSaved ? "bg-amber-100 text-amber-600" : "text-gray-400 hover:bg-amber-50 hover:text-amber-400"}`}
           >
-            <Bookmark className={`w-3.5 h-3.5 ${localSaved ? "fill-amber-500" : ""}`} />
+            {localSaved ? <BookmarkCheck className="w-3.5 h-3.5" /> : <Bookmark className="w-3.5 h-3.5" />}
           </button>
           <button
             onClick={handleListen}

@@ -1,7 +1,8 @@
 import { useState, useEffect, useCallback, useRef } from "react";
 import { base44 } from "@/api/base44Client";
 import { createPageUrl } from "@/utils";
-import { Bookmark, RefreshCw } from "lucide-react";
+import { RefreshCw } from "lucide-react";
+import { toast } from "sonner";
 import LifestyleCard from "../components/lifestyle/LifestyleCard";
 import FeedSkeleton from "../components/lifestyle/FeedSkeleton";
 import TrendingStrip from "../components/lifestyle/TrendingStrip";
@@ -9,12 +10,11 @@ import DailyPulseStrip from "../components/lifestyle/DailyPulseStrip";
 
 const MODES = [
   { id: "for_you", label: "For You" },
+  { id: "saved", label: "Saved" },
   { id: "following", label: "Following" },
   { id: "trending", label: "Trending" },
   { id: "clips", label: "Clips" },
 ];
-
-const CATEGORIES = ["All", "Womens Health", "Relationships", "Career & Money", "Mental Wellness", "Food", "Lifestyle", "Beauty", "Fitness", "Culture", "Parenting", "Sex Education", "Menopause", "PCOS", "PMS"];
 
 export default function Lifestyle() {
   const [mode, setMode] = useState("for_you");
@@ -30,23 +30,33 @@ export default function Lifestyle() {
   const [savedIds, setSavedIds] = useState(new Set());
   const [likedIds, setLikedIds] = useState(new Set());
   const [filterCategory, setFilterCategory] = useState("All");
+  const [userProfile, setUserProfile] = useState(null);
+  const [userProfileId, setUserProfileId] = useState(null);
+  const [contentCategories, setContentCategories] = useState(["All"]);
   const loaderRef = useRef(null);
 
   useEffect(() => {
     (async () => {
       const currentUser = await base44.auth.me();
-      const [profiles, preferences, saved] = await Promise.all([
+      const [profiles, preferences, contentSources, userProfiles] = await Promise.all([
         base44.entities.LifestyleProfile.filter({ user_id: currentUser.id }),
         base44.entities.UserPreferences.filter({ user_id: currentUser.id }),
-        base44.entities.SavedItems.filter({ user_id: currentUser.id, item_type: "LIFESTYLE" }, "-created_at", 200),
+        base44.entities.ContentSources.list('priority', 200),
+        base44.entities.UserProfile.filter({ user_id: currentUser.id })
       ]);
 
       if (!profiles[0]) {
         await base44.entities.LifestyleProfile.create({ user_id: currentUser.id });
       }
 
+      const nextUserProfile = userProfiles[0] || null;
+      setUserProfile(nextUserProfile);
+      setUserProfileId(nextUserProfile?.id || null);
       setInterests(preferences[0]?.lifestyle_interests || []);
-      setSavedIds(new Set(saved.map((item) => item.item_id)));
+      setSavedIds(new Set(nextUserProfile?.saved_item_ids || []));
+      setLikedIds(new Set(nextUserProfile?.liked_item_ids || []));
+      setFilterCategory(nextUserProfile?.last_used_category || "All");
+      setContentCategories(["All", ...new Set(contentSources.map((item) => item.category).filter(Boolean))]);
     })();
   }, []);
 
@@ -60,7 +70,22 @@ export default function Lifestyle() {
 
     try {
       const allItems = await base44.entities.LifestyleItems.list("-pub_date", 200);
-      const filteredItems = allItems.filter((item) => item.status === "PUBLISHED" || item.status === "NEEDS_REVIEW");
+      const blockedSourceIds = userProfile?.blocked_source_ids || [];
+      let filteredItems = allItems.filter((item) => item.status === "PUBLISHED" && !blockedSourceIds.includes(item.source_id));
+      if (newMode === "saved") {
+        filteredItems = filteredItems.filter((item) => (userProfile?.saved_item_ids || []).includes(item.id));
+      } else if (newMode === "following") {
+        filteredItems = filteredItems.filter((item) => (userProfile?.followed_categories || []).includes(item.category));
+      }
+      if (newMode === "for_you") {
+        const followed = new Set(userProfile?.followed_categories || []);
+        filteredItems = [...filteredItems].sort((a, b) => {
+          const aFollowed = followed.has(a.category) ? 1 : 0;
+          const bFollowed = followed.has(b.category) ? 1 : 0;
+          if (aFollowed !== bFollowed) return bFollowed - aFollowed;
+          return new Date(b.pub_date || 0) - new Date(a.pub_date || 0);
+        });
+      }
 
       if (newPage === 0) {
         setItems(filteredItems.slice(0, 15));
@@ -102,14 +127,45 @@ export default function Lifestyle() {
 
   const displayedItems = filterCategory === "All" ? items : items.filter((item) => item.category === filterCategory);
 
+  const updateUserProfile = async (patch) => {
+    if (!userProfileId) return;
+    await base44.entities.UserProfile.update(userProfileId, patch);
+    setUserProfile((prev) => prev ? { ...prev, ...patch } : prev);
+  };
+
   const handleHide = (id) => setItems((prev) => prev.filter((item) => item.id !== id));
-  const handleSave = (id, nextSaved) => setSavedIds((prev) => {
-    const next = new Set(prev);
-    if (nextSaved) next.add(id);
-    else next.delete(id);
-    return next;
-  });
-  const handleLike = (id) => setLikedIds((prev) => new Set(prev).add(id));
+  const handleSave = async (id, nextSaved) => {
+    const current = userProfile?.saved_item_ids || [];
+    const nextList = nextSaved ? [...current, id] : current.filter((itemId) => itemId !== id);
+    setSavedIds(new Set(nextList));
+    await updateUserProfile({ saved_item_ids: nextList });
+    toast(nextSaved ? 'Article saved' : 'Article removed');
+  };
+  const handleLike = async (id, nextLiked) => {
+    const current = userProfile?.liked_item_ids || [];
+    const nextList = nextLiked ? [...current, id] : current.filter((itemId) => itemId !== id);
+    setLikedIds(new Set(nextList));
+    await updateUserProfile({ liked_item_ids: nextList });
+    toast(nextLiked ? 'Article liked' : 'Like removed');
+  };
+  const handleMuteSource = async (sourceId, sourceName) => {
+    const current = userProfile?.blocked_source_ids || [];
+    if (current.includes(sourceId)) return;
+    const nextList = [...current, sourceId];
+    await updateUserProfile({ blocked_source_ids: nextList });
+    setItems((prev) => prev.filter((item) => item.source_id !== sourceId));
+    toast(`Hide content from ${sourceName}`);
+  };
+  const handleCategorySelect = async (category) => {
+    setFilterCategory(category);
+    if (!userProfile) return;
+    const followed = userProfile.followed_categories || [];
+    const patch = { last_used_category: category };
+    if (category !== 'All' && !followed.includes(category)) {
+      patch.followed_categories = [...followed, category];
+    }
+    await updateUserProfile(patch);
+  };
 
   return (
     <div className="min-h-screen femwell-gradient pb-28">
@@ -129,9 +185,6 @@ export default function Lifestyle() {
             <p className="text-xs text-gray-400 mt-0.5">Your personalised wellness feed</p>
           </div>
           <div className="flex items-center gap-2">
-            <a href={createPageUrl("Saved")} className="w-9 h-9 rounded-xl bg-white/80 flex items-center justify-center shadow-sm hover:bg-rose-50 transition-colors">
-              <Bookmark className="w-4 h-4 text-rose-500" />
-            </a>
             <button
               onClick={() => loadFeed(mode, 0, true)}
               disabled={refreshing}
@@ -165,11 +218,11 @@ export default function Lifestyle() {
         )}
 
         <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-hide mb-4">
-          {CATEGORIES.map((cat) => (
+          {contentCategories.map((cat) => (
             <button
               key={cat}
-              onClick={() => setFilterCategory(cat)}
-              className={`flex-shrink-0 px-3 py-1.5 rounded-full text-xs font-medium transition-all ${filterCategory === cat ? "bg-rose-100 text-rose-600 font-semibold" : "bg-white/60 text-gray-400 hover:bg-white hover:text-gray-600"}`}
+              onClick={() => handleCategorySelect(cat)}
+              className={`flex-shrink-0 px-3 py-1.5 rounded-full text-xs font-medium transition-all border ${filterCategory === cat ? "bg-rose-500 text-white border-rose-500" : "bg-white/60 text-gray-400 border-rose-100 hover:bg-white hover:text-gray-600"}`}
             >
               {cat}
             </button>
@@ -198,6 +251,7 @@ export default function Lifestyle() {
                   onHide={handleHide}
                   onSave={handleSave}
                   onLike={handleLike}
+                  onMuteSource={handleMuteSource}
                   saved={savedIds.has(editorPick.id)}
                   liked={likedIds.has(editorPick.id)}
                 />
@@ -206,14 +260,15 @@ export default function Lifestyle() {
 
             {displayedItems.length === 0 ? (
               <div className="text-center py-16">
-                <p className="text-4xl mb-3">🌸</p>
-                <p className="font-semibold text-gray-700">No content yet</p>
+                <p className="font-semibold text-gray-700">{mode === "saved" ? "Articles you save will appear here" : "No content yet"}</p>
                 <p className="text-sm text-gray-400 mt-1">
                   {mode === "following"
                     ? "Follow more topics to build this stream."
                     : mode === "clips"
                       ? "Clips will appear here as new video finds are ranked."
-                      : "Your feed is waking up — fresh stories publish automatically as they’re processed."}
+                      : mode === "saved"
+                        ? ""
+                        : "Your feed is waking up — fresh stories publish automatically as they’re processed."}
                 </p>
               </div>
             ) : (
@@ -225,6 +280,7 @@ export default function Lifestyle() {
                     onHide={handleHide}
                     onSave={handleSave}
                     onLike={handleLike}
+                    onMuteSource={handleMuteSource}
                     saved={savedIds.has(item.id)}
                     liked={likedIds.has(item.id)}
                   />

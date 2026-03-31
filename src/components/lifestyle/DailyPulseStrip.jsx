@@ -15,16 +15,17 @@ export default function DailyPulseStrip({ items }) {
         {items.slice(0, 5).map((item, index) => (
           <a
             key={item.id}
-            href={item.content_url}
-            target="_blank"
-            rel="noopener noreferrer"
+            href={`/LifestyleDetail?id=${item.id}`}
             className="w-[230px] flex-shrink-0 rounded-3xl border border-rose-100 bg-white p-4 shadow-sm"
           >
             <div className="mb-3 inline-flex rounded-full bg-rose-50 px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.15em] text-rose-600">
               Pulse {index + 1}
             </div>
             <h3 className="text-sm font-semibold leading-snug text-gray-900">{item.title}</h3>
-            <p className="mt-2 text-xs leading-relaxed text-gray-500">{item.summary || "Open for the quick breakdown and key takeaways."}</p>
+            <p className="mt-2 text-[12px] leading-relaxed text-gray-500 overflow-hidden" style={{ display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical' }}>
+              {item.summary || "Open for the quick breakdown and key takeaways."}
+            </p>
+            <p className="mt-2 text-[11px] text-gray-500 opacity-70">{item.source_name}</p>
           </a>
         ))}
       </div>

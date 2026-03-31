@@ -1,40 +1,32 @@
-import { createClientFromRequest } from 'npm:@base44/sdk@0.8.20';
+import { createClientFromRequest } from 'npm:@base44/sdk@0.8.23';
+
+function stripHtml(text) {
+  return (text || '').replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim().slice(0, 300);
+}
 
 async function parseRSS(url) {
   const res = await fetch(url, { headers: { 'User-Agent': 'FemWell/1.0 RSS Reader' } });
   const text = await res.text();
   const items = [];
-
-  // Extract <item> blocks
-  const itemRegex = /<item[^>]*>([\s\S]*?)<\/item>/gi;
+  const itemRegex = /<item[^>]*>([\s\S]*?)<\/item>|<entry[^>]*>([\s\S]*?)<\/entry>/gi;
   let match;
   while ((match = itemRegex.exec(text)) !== null) {
-    const block = match[1];
+    const block = match[1] || match[2] || '';
     const get = (tag) => {
-      const m = block.match(new RegExp(`<${tag}[^>]*><!\\[CDATA\\[([\\s\\S]*?)\\]\\]><\\/${tag}>`, 'i'))
-        || block.match(new RegExp(`<${tag}[^>]*>([^<]*)<\\/${tag}>`, 'i'));
-      return m ? m[1].trim() : '';
+      const cdata = block.match(new RegExp(`<${tag}[^>]*><!\\[CDATA\\[([\\s\\S]*?)\\]\\]><\\/${tag}>`, 'i'));
+      if (cdata?.[1]) return cdata[1].trim();
+      const plain = block.match(new RegExp(`<${tag}[^>]*>([\\s\\S]*?)<\\/${tag}>`, 'i'));
+      return plain?.[1]?.replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim() || '';
     };
-    const imgMatch = block.match(/url="([^"]+\.(?:jpg|jpeg|png|webp)[^"]*)"/i)
-      || block.match(/<media:content[^>]+url="([^"]+)"/i)
-      || block.match(/<enclosure[^>]+url="([^"]+)"/i);
+    const linkAttr = block.match(/<link[^>]+href="([^"]+)"/i);
     items.push({
       title: get('title'),
-      link: get('link') || get('guid'),
-      pubDate: get('pubDate'),
-      description: get('description'),
-      image_url: imgMatch ? imgMatch[1] : '',
+      link: linkAttr?.[1] || get('link') || get('guid'),
+      pubDate: get('pubDate') || get('published') || new Date().toISOString(),
+      description: get('description') || get('summary') || ''
     });
   }
   return items;
-}
-
-function simpleHash(str) {
-  let h = 0;
-  for (let i = 0; i < str.length; i++) {
-    h = (Math.imul(31, h) + str.charCodeAt(i)) | 0;
-  }
-  return Math.abs(h).toString(36);
 }
 
 Deno.serve(async (req) => {
@@ -45,46 +37,45 @@ Deno.serve(async (req) => {
       return Response.json({ error: 'Admin only' }, { status: 403 });
     }
 
-    const sources = await base44.asServiceRole.entities.LifestyleSources.filter({ is_active: true, source_type: 'RSS' });
+    const activeSources = await base44.asServiceRole.entities.ContentSources.filter({ is_active: true }, 'priority', 15);
     let ingested = 0;
     let skipped = 0;
 
-    for (const source of sources) {
-      if (!source.feed_url) continue;
+    for (const source of activeSources) {
+      if (!source.rss_url) continue;
       try {
-        const rssItems = await parseRSS(source.feed_url);
+        const rssItems = await parseRSS(source.rss_url);
         for (const item of rssItems.slice(0, 20)) {
           if (!item.title || !item.link) continue;
-          const hash = simpleHash(item.link);
-
-          // Check dedupe
-          const existing = await base44.asServiceRole.entities.LifestyleItems.filter({ content_url_hash: hash });
-          if (existing.length > 0) { skipped++; continue; }
+          const existing = await base44.asServiceRole.entities.LifestyleItems.filter({ source_url: item.link });
+          if (existing.length > 0) {
+            skipped += 1;
+            continue;
+          }
 
           await base44.asServiceRole.entities.LifestyleItems.create({
             source_id: source.id,
             source_name: source.name,
-            source_logo_url: source.logo_url || '',
-            title: item.title.slice(0, 200),
+            title: item.title.slice(0, 220),
             content_url: item.link,
-            content_url_hash: hash,
-            image_url: item.image_url || '',
-            category: source.category || 'Lifestyle',
-            summary: item.description?.replace(/<[^>]+>/g, '').slice(0, 300) || '',
+            source_url: item.link,
+            summary: stripHtml(item.description),
             pub_date: item.pubDate || new Date().toISOString(),
-            ingested_at: new Date().toISOString(),
-            status: 'NEEDS_REVIEW',
+            category: source.category,
             media_type: 'ARTICLE',
-            tags: source.category || 'Lifestyle',
+            status: 'PUBLISHED',
+            tags: Array.isArray(source.tags) ? source.tags : [],
+            ingested_at: new Date().toISOString(),
+            provider: 'RSS'
           });
-          ingested++;
+          ingested += 1;
         }
-      } catch (e) {
-        console.error(`Failed source ${source.name}:`, e.message);
+      } catch {
+        // do nothing
       }
     }
 
-    return Response.json({ ingested, skipped, sources: sources.length });
+    return Response.json({ ingested, skipped, sources: activeSources.length });
   } catch (error) {
     return Response.json({ error: error.message }, { status: 500 });
   }
