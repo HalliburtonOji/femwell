@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { base44 } from "@/api/base44Client";
+import { TodayRecommendations } from '@/api/entities';
 import { createPageUrl } from "@/utils";
 import {
   Sun, ChevronRight, Plus, Sparkles, Droplets, Activity, Heart,
@@ -81,6 +82,141 @@ const label = {
   fontFamily: "'Inter', sans-serif",
 };
 
+const fallbackTodayRecommendations = [
+  {
+    id: "fallback-breathwork",
+    type: "BREATHWORK",
+    title: "Start with your breath",
+    reason: "A 5-minute session is the easiest way to reset your nervous system today.",
+    action_route: null,
+  },
+  {
+    id: "fallback-programme",
+    type: "PROGRAMME",
+    title: "PMS Relief Path",
+    reason: "A gentle, structured programme to support you through hormonal shifts.",
+    action_route: "/ProgramDetail?key=prog_pms_relief_path",
+  },
+];
+
+const recommendationTypeStyles = {
+  BREATHWORK: { backgroundColor: "#EEE6FF", color: "#9B7FCC", abbr: "BR" },
+  MEDITATION: { backgroundColor: "#FFE6F2", color: "#C96B9E", abbr: "MD" },
+  PROGRAMME: { backgroundColor: "#E6FFF8", color: "#4ABFA3", abbr: "PG" },
+  NUTRITION: { backgroundColor: "#FFF8E6", color: "#E8B84B", abbr: "NT" },
+  default: { backgroundColor: "#F0F0F8", color: "#8888A8", abbr: "RC" },
+};
+
+function getRecommendationTypeMeta(type) {
+  return recommendationTypeStyles[type] || recommendationTypeStyles.default;
+}
+
+function resolveRecommendationHref(actionRoute) {
+  if (!actionRoute) return createPageUrl("Explore");
+  if (actionRoute.startsWith("/ProgramDetail?key=")) {
+    const key = actionRoute.split("/ProgramDetail?key=")[1];
+    return createPageUrl(`ProgramDetail?key=${key}`);
+  }
+  if (actionRoute.startsWith("/ContentPlayer?id=")) {
+    const id = actionRoute.split("/ContentPlayer?id=")[1];
+    return createPageUrl(`ContentPlayer?id=${id}`);
+  }
+  return actionRoute.startsWith("/") ? actionRoute : createPageUrl(actionRoute);
+}
+
+function RecommendationSkeletonCard() {
+  return (
+    <div
+      className="w-full rounded-[14px] mb-[10px]"
+      style={{
+        minHeight: "80px",
+        backgroundColor: "var(--ivory-dark)",
+        border: "1px solid var(--border)",
+        padding: "14px 16px",
+      }}
+    />
+  );
+}
+
+function TodayRecommendationCard({ item }) {
+  const typeMeta = getRecommendationTypeMeta(item.type);
+
+  return (
+    <a
+      href={resolveRecommendationHref(item.action_route)}
+      className="flex items-center w-full rounded-[14px] mb-[10px]"
+      style={{
+        ...card,
+        minHeight: "80px",
+        padding: "14px 16px",
+      }}
+    >
+      <div
+        className="w-10 h-10 rounded-[10px] flex items-center justify-center flex-shrink-0"
+        style={{ backgroundColor: typeMeta.backgroundColor, color: typeMeta.color }}
+      >
+        <span
+          className="font-bold"
+          style={{ fontSize: "13px", lineHeight: 1, fontFamily: "'Inter', sans-serif" }}
+        >
+          {typeMeta.abbr}
+        </span>
+      </div>
+      <div className="flex-1 min-w-0 ml-3">
+        <p
+          className="truncate"
+          style={{ color: "var(--plum)", fontSize: "14px", fontWeight: 700, fontFamily: "'Inter', sans-serif" }}
+        >
+          {item.title}
+        </p>
+        <p
+          className="mt-[3px] overflow-hidden"
+          style={{
+            color: "var(--mauve)",
+            fontSize: "12px",
+            fontFamily: "'Inter', sans-serif",
+            display: "-webkit-box",
+            WebkitLineClamp: 2,
+            WebkitBoxOrient: "vertical",
+          }}
+        >
+          {item.reason}
+        </p>
+      </div>
+      <span
+        className="flex-shrink-0 ml-3"
+        style={{ color: "var(--mauve)", fontSize: "18px", lineHeight: 1 }}
+      >
+        ›
+      </span>
+    </a>
+  );
+}
+
+function RecommendedForYouTodaySection({ loading, items }) {
+  return (
+    <div className="mt-6 mb-4">
+      <div className="flex items-center justify-between mb-3">
+        <p style={{ color: "var(--plum)", fontSize: "16px", fontWeight: 700, fontFamily: "'Inter', sans-serif" }}>
+          Recommended for you
+        </p>
+        <p style={{ color: "var(--mauve)", fontSize: "12px", fontFamily: "'Inter', sans-serif" }}>
+          Today
+        </p>
+      </div>
+
+      {loading ? (
+        <>
+          <RecommendationSkeletonCard />
+          <RecommendationSkeletonCard />
+        </>
+      ) : (
+        items.map((item) => <TodayRecommendationCard key={item.id} item={item} />)
+      )}
+    </div>
+  );
+}
+
 // ── Main component ──────────────────────────────────────────────────────────
 export default function Today() {
   const [mainTab, setMainTab] = useState("today");
@@ -91,6 +227,8 @@ export default function Today() {
   const [todayCheckin, setTodayCheckin] = useState(null);
   const [recentContent, setRecentContent] = useState([]);
   const [recommendations, setRecommendations] = useState([]);
+  const [homeRecommendations, setHomeRecommendations] = useState([]);
+  const [loadingHomeRecommendations, setLoadingHomeRecommendations] = useState(true);
   const [showCheckin, setShowCheckin] = useState(false);
   const [todayCompletions, setTodayCompletions] = useState([]);
 
@@ -147,6 +285,14 @@ export default function Today() {
       setTodayCompletions(completions.filter((c) => !c.is_deleted));
       setActivePrograms(userPrograms.filter((e) => e.is_saved || e.status === "active"));
       setProgramLibrary(allPrograms);
+
+      try {
+        const todayItems = await TodayRecommendations.filter({ date: todayStr }, "created_date", 3);
+        setHomeRecommendations(todayItems.length > 0 ? todayItems.slice(0, 3) : fallbackTodayRecommendations);
+      } catch {
+        setHomeRecommendations(fallbackTodayRecommendations);
+      }
+      setLoadingHomeRecommendations(false);
 
       const all = await base44.entities.HabitLogs.filter({ user_id: u.id });
       setAllHabitLogs(all);
@@ -417,6 +563,11 @@ export default function Today() {
                 </div>
               </div>
             )}
+
+            <RecommendedForYouTodaySection
+              loading={loadingHomeRecommendations}
+              items={homeRecommendations}
+            />
 
             {/* AI Recommendations */}
             {recommendations.length > 0 && (
