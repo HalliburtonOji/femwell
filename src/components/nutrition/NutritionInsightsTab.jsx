@@ -129,6 +129,84 @@ function SavedInsightCard({ insight, onFeedback }) {
   );
 }
 
+function FoodSkinCorrelation({ mealLogs, checkins }) {
+  const pairedDays = checkins.filter(c =>
+    c.skin_condition &&
+    mealLogs.some(m => m.day_key === c.date)
+  );
+
+  if (pairedDays.length < 5) return null;
+
+  const CLEAR_CONDITIONS    = ["Clear", "Glowing", "Normal"];
+  const REACTIVE_CONDITIONS = ["Mild breakout", "Moderate breakout", "Very oily", "Very dry"];
+
+  const clearDays    = pairedDays.filter(c => CLEAR_CONDITIONS.includes(c.skin_condition));
+  const reactiveDays = pairedDays.filter(c => REACTIVE_CONDITIONS.includes(c.skin_condition));
+
+  if (clearDays.length < 2 && reactiveDays.length < 2) return null;
+
+  const getMealWords = (days) => {
+    return days.flatMap(c =>
+      mealLogs
+        .filter(m => m.day_key === c.date)
+        .map(m => (m.raw_text || "").toLowerCase())
+    ).join(" ");
+  };
+
+  const WATCHLIST = [
+    { label: "dairy",     terms: ["milk", "cheese", "yogurt", "yoghurt", "cream", "butter", "whey", "latte", "cappuccino"] },
+    { label: "sugar",     terms: ["sugar", "sweets", "chocolate", "biscuit", "cake", "ice cream", "fizzy", "soda", "cola"] },
+    { label: "gluten",    terms: ["bread", "pasta", "wheat", "flour", "bagel", "toast", "croissant", "noodles"] },
+    { label: "processed", terms: ["crisps", "chips", "takeaway", "fast food", "fried", "nuggets", "pizza"] },
+  ];
+
+  const clearText    = getMealWords(clearDays);
+  const reactiveText = getMealWords(reactiveDays);
+
+  const findings = WATCHLIST
+    .map(({ label, terms }) => {
+      const inClear    = terms.filter(t => clearText.includes(t)).length;
+      const inReactive = terms.filter(t => reactiveText.includes(t)).length;
+      const clearRate    = clearDays.length    ? inClear    / clearDays.length    : 0;
+      const reactiveRate = reactiveDays.length ? inReactive / reactiveDays.length : 0;
+      return { label, clearRate, reactiveRate, diff: reactiveRate - clearRate };
+    })
+    .filter(f => f.diff > 0.1)
+    .sort((a, b) => b.diff - a.diff)
+    .slice(0, 2);
+
+  if (findings.length === 0) return null;
+
+  return (
+    <div className="rounded-[24px] p-5" style={card}>
+      <p style={sLabel} className="mb-1">Food & Skin Patterns</p>
+      <p style={{ fontSize: "12px", color: "var(--mauve)", fontFamily: "'Inter', sans-serif", marginBottom: "14px" }}>
+        Based on {pairedDays.length} days where both food and skin were logged
+      </p>
+      <div className="space-y-3">
+        {findings.map(f => (
+          <div key={f.label}
+               className="rounded-2xl p-4 flex gap-3 items-start"
+               style={{ backgroundColor: "var(--ivory)", border: "1px solid var(--border-subtle)" }}>
+            <div className="w-1.5 h-1.5 rounded-full flex-shrink-0 mt-1.5"
+                 style={{ backgroundColor: "var(--rose-dust)" }} />
+            <p style={{ fontSize: "12px", lineHeight: 1.6, color: "var(--plum)", fontFamily: "'Inter', sans-serif" }}>
+              <strong>{f.label.charAt(0).toUpperCase() + f.label.slice(1)}</strong>
+              {" "}appeared more often on days when your skin was reactive
+              than on clearer days. This is a personal pattern in your
+              data — not a diagnosis.
+            </p>
+          </div>
+        ))}
+      </div>
+      <p style={{ fontSize: "10px", color: "var(--mauve)", marginTop: "12px", fontFamily: "'Inter', sans-serif", fontStyle: "italic" }}>
+        Pattern is based on keyword matching in your logged meals.
+        Log more days for stronger signals.
+      </p>
+    </div>
+  );
+}
+
 export default function NutritionInsightsTab({ user, profile }) {
   const [loading, setLoading]       = useState(true);
   const [generating, setGenerating] = useState(false);
@@ -300,6 +378,8 @@ Guidelines:
           </p>
         )}
       </div>
+
+      <FoodSkinCorrelation mealLogs={mealLogs} checkins={checkins} />
 
       {/* Best day */}
       {checkins.length > 0 && (() => {

@@ -540,6 +540,8 @@ export default function Today() {
   const allHabitNames = [...new Set(allHabitLogs.map((l) => l.habit_type || l.habit_name).filter(Boolean))];
   const isToday = selectedDate === todayStr;
   const displayDate = isToday ? "Today" : format(parseISO(selectedDate), "EEE, MMM d");
+  const hasSkinLog = !!(todayCheckin?.skin_condition || todayCheckin?.hair_shedding);
+
   const activeProgramEntry = [...activePrograms].sort((a, b) => {
     if ((b.last_activity_date || "") !== (a.last_activity_date || "")) {
       return (b.last_activity_date || "").localeCompare(a.last_activity_date || "");
@@ -726,6 +728,47 @@ export default function Today() {
               </div>
               <ChevronRight className="w-4 h-4" style={{ color: "var(--border)" }} />
             </a>
+
+            {todayCheckin && !hasSkinLog && (
+              <button
+                onClick={() => setShowCheckin(true)}
+                style={{
+                  display: "flex", alignItems: "center", gap: "12px",
+                  width: "100%", textAlign: "left", cursor: "pointer",
+                  backgroundColor: "var(--rose-dust-subtle)",
+                  border: "1px solid var(--rose-dust-light)",
+                  borderRadius: "20px", padding: "14px 16px",
+                  marginBottom: "16px",
+                }}
+              >
+                <div style={{
+                  width: "36px", height: "36px", borderRadius: "12px",
+                  backgroundColor: "var(--rose-dust)",
+                  display: "flex", alignItems: "center",
+                  justifyContent: "center", flexShrink: 0,
+                }}>
+                  <Feather style={{ width: "16px", height: "16px", color: "white" }} />
+                </div>
+                <div style={{ flex: 1 }}>
+                  <p style={{
+                    fontSize: "13px", fontWeight: 600, color: "var(--plum)",
+                    fontFamily: "'Inter', sans-serif", marginBottom: "2px",
+                  }}>
+                    How's your skin today?
+                  </p>
+                  <p style={{
+                    fontSize: "12px", color: "var(--rose-dust)",
+                    fontFamily: "'Inter', sans-serif",
+                  }}>
+                    Tap to add skin & hair to today's check-in
+                  </p>
+                </div>
+                <ChevronRight style={{
+                  width: "16px", height: "16px",
+                  color: "var(--rose-dust)", flexShrink: 0,
+                }} />
+              </button>
+            )}
 
             {/* Quick actions */}
             <div className="mb-4">

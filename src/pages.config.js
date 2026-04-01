@@ -67,6 +67,13 @@ import Upgrade from './pages/Upgrade';
 import VideoManager from './pages/VideoManager';
 import Assistant from './pages/Assistant';
 import SkinHair from './pages/SkinHair';
+import Pulse from './pages/Pulse';
+import WeeklyInsights from './pages/WeeklyInsights';
+import Saved from './pages/Saved';
+import Deals from './pages/Deals';
+import Events from './pages/Events';
+import LifestyleDetail from './pages/LifestyleDetail';
+import Track from './pages/Track';
 import __Layout from './Layout.jsx';
 
 
@@ -90,6 +97,13 @@ export const PAGES = {
     "VideoManager": VideoManager,
     "Assistant": Assistant,
     "SkinHair": SkinHair,
+    "Pulse": Pulse,
+    "WeeklyInsights": WeeklyInsights,
+    "Saved": Saved,
+    "Deals": Deals,
+    "Events": Events,
+    "LifestyleDetail": LifestyleDetail,
+    "Track": Track,
 }
 
 export const pagesConfig = {

@@ -9,18 +9,24 @@ export default function Profile() {
   const [preferences, setPreferences] = useState(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [checkins, setCheckins] = useState([]);
   const [editTone, setEditTone] = useState(false);
 
   useEffect(() => {
     (async () => {
       const u = await base44.auth.me();
       setUser(u);
-      const [profiles, prefs] = await Promise.all([
+      const [profiles, prefs, allCheckins] = await Promise.all([
         base44.entities.UserProfile.filter({ user_id: u.id }),
         base44.entities.UserPreferences.filter({ user_id: u.id }),
+        base44.entities.DailyCheckins.filter({ user_id: u.id }),
       ]);
       if (profiles[0]) setProfile(profiles[0]);
       if (prefs[0]) setPreferences(prefs[0]);
+      const cutoff = new Date();
+      cutoff.setDate(cutoff.getDate() - 90);
+      const cutoffStr = cutoff.toISOString().split("T")[0];
+      setCheckins(allCheckins.filter(c => c.date >= cutoffStr));
       setLoading(false);
     })();
   }, []);
@@ -54,6 +60,17 @@ export default function Profile() {
 
   const currentTone = tones.find((t) => t.id === (preferences?.coach_tone || profile?.tone_preference)) || tones[0];
 
+  const skinCheckins = checkins.filter(c => c.skin_condition);
+  const daysLoggedSkin = skinCheckins.length;
+  const skinConditionMode = daysLoggedSkin
+    ? Object.entries(
+        skinCheckins.reduce((acc, c) => {
+          acc[c.skin_condition] = (acc[c.skin_condition] || 0) + 1;
+          return acc;
+        }, {})
+      ).sort((a, b) => b[1] - a[1])[0][0]
+    : null;
+
   return (
     <div className="min-h-screen femwell-gradient pb-28">
       <div className="max-w-3xl mx-auto px-4">
@@ -86,6 +103,15 @@ export default function Profile() {
                 </span>
               ))}
             </div>
+            {profile?.skin_type && (
+              <p style={{
+                fontSize: "12px", color: "var(--mauve)",
+                fontFamily: "'Inter', sans-serif", marginTop: "10px"
+              }}>
+                Skin type:{" "}
+                <strong style={{ color: "var(--plum)" }}>{profile.skin_type}</strong>
+              </p>
+            )}
           </div>
         )}
 
@@ -180,32 +206,72 @@ export default function Profile() {
 
         {/* Trends */}
         <a
-          href={createPageUrl("Trends")}
+          href={createPageUrl("Pulse")}
           className="card-glass rounded-2xl p-4 mb-4 flex items-center gap-3 hover:bg-rose-50/50 transition-colors block"
         >
           <div className="w-8 h-8 rounded-lg bg-rose-100 flex items-center justify-center">
             <TrendingUp className="w-4 h-4 text-rose-500" />
           </div>
           <div className="flex-1">
-            <p className="text-sm font-medium text-gray-700">Symptom Trends</p>
-            <p className="text-xs text-gray-400">See how symptoms correlate with your cycle</p>
+            <p className="text-sm font-medium text-gray-700">Pulse</p>
+            <p className="text-xs text-gray-400">Weekly summaries & pattern charts</p>
           </div>
           <ChevronRight className="w-4 h-4 text-gray-300" />
         </a>
 
         <a
           href={createPageUrl("SkinHair")}
-          className="card-glass rounded-2xl p-4 mb-4 flex items-center gap-3 hover:bg-rose-50/50 transition-colors block"
+          className="card-glass rounded-2xl p-4 mb-4 block"
+          style={{ textDecoration: "none" }}
         >
-          <div className="w-8 h-8 rounded-lg flex items-center justify-center"
-               style={{ backgroundColor: "var(--rose-dust-subtle)" }}>
-            <Feather className="w-4 h-4" style={{ color: "var(--rose-dust)" }} />
+          <div className="flex items-center gap-3">
+            <div className="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0"
+                 style={{ backgroundColor: "var(--rose-dust-subtle)" }}>
+              <Feather className="w-4 h-4" style={{ color: "var(--rose-dust)" }} />
+            </div>
+            <div className="flex-1">
+              <p className="text-sm font-medium"
+                 style={{ color: "var(--plum)", fontFamily: "'Inter', sans-serif" }}>
+                Skin & Hair
+              </p>
+              {daysLoggedSkin === 0 && (
+                <p className="text-xs"
+                   style={{ color: "var(--mauve)", fontFamily: "'Inter', sans-serif" }}>
+                  Phase patterns, breakouts & shedding trends
+                </p>
+              )}
+            </div>
+            <ChevronRight className="w-4 h-4" style={{ color: "var(--border)" }} />
           </div>
-          <div className="flex-1">
-            <p className="text-sm font-medium text-gray-700">Skin &amp; Hair</p>
-            <p className="text-xs text-gray-400">Phase patterns, breakouts &amp; shedding trends</p>
-          </div>
-          <ChevronRight className="w-4 h-4 text-gray-300" />
+          {daysLoggedSkin > 0 && (
+            <div className="flex gap-2 flex-wrap mt-3">
+              <span style={{
+                backgroundColor: "var(--rose-dust-subtle)", color: "var(--rose-dust)",
+                fontSize: "11px", fontWeight: 600, borderRadius: "9999px",
+                padding: "3px 10px", fontFamily: "'Inter', sans-serif"
+              }}>
+                {daysLoggedSkin} days logged
+              </span>
+              {skinConditionMode && (
+                <span style={{
+                  backgroundColor: "var(--rose-dust-subtle)", color: "var(--rose-dust)",
+                  fontSize: "11px", fontWeight: 600, borderRadius: "9999px",
+                  padding: "3px 10px", fontFamily: "'Inter', sans-serif"
+                }}>
+                  {skinConditionMode}
+                </span>
+              )}
+              {profile?.skin_type && (
+                <span style={{
+                  backgroundColor: "var(--rose-dust-subtle)", color: "var(--rose-dust)",
+                  fontSize: "11px", fontWeight: 600, borderRadius: "9999px",
+                  padding: "3px 10px", fontFamily: "'Inter', sans-serif"
+                }}>
+                  {profile.skin_type} skin
+                </span>
+              )}
+            </div>
+          )}
         </a>
 
         <div className="grid gap-4 md:grid-cols-3">
