@@ -1,12 +1,117 @@
 import { useState, useEffect } from "react";
 import { Lock, Plus, X, ChevronDown, ChevronUp } from "lucide-react";
 import { base44 } from "@/api/base44Client";
-import { differenceInDays, subDays, parseISO, format } from "date-fns";
+import { differenceInDays, subDays, parseISO, format, addDays } from "date-fns";
 import { createPageUrl } from "@/utils";
 import {
   BarChart, Bar, LineChart, Line, XAxis, YAxis, Tooltip,
   ResponsiveContainer, Cell, ReferenceLine
 } from "recharts";
+
+// ── Ingredient data ─────────────────────────────────────────────────────────
+const SKIN_INGREDIENTS = {
+  menstrual: {
+    use: [
+      { name: "Ceramides", why: "Restore the compromised skin barrier" },
+      { name: "Hyaluronic acid", why: "Deep hydration without irritation" },
+      { name: "Centella asiatica", why: "Reduces redness and supports healing" },
+      { name: "Colloidal oatmeal", why: "Calms reactive, sensitive skin" },
+    ],
+    avoid: [
+      { name: "Retinoids", why: "Too harsh for low-oestrogen skin" },
+      { name: "AHA / BHA", why: "Exfoliants worsen compromised barrier" },
+      { name: "Vitamin C (high %)", why: "Can irritate sensitised skin" },
+    ],
+  },
+  follicular: {
+    use: [
+      { name: "Vitamin C (10\u201315%)", why: "Collagen boost when oestrogen is high" },
+      { name: "Retinol (0.025\u20130.05%)", why: "Best tolerated in this resilient window" },
+      { name: "AHA (glycolic/lactic)", why: "Exfoliate while barrier is at its strongest" },
+      { name: "Niacinamide", why: "Maintains even tone as skin brightens" },
+    ],
+    avoid: [
+      { name: "Heavy occlusives", why: "Unnecessary when skin is naturally balanced" },
+    ],
+  },
+  ovulatory: {
+    use: [
+      { name: "Niacinamide", why: "Controls the testosterone-driven sebum spike" },
+      { name: "BHA (salicylic acid 1\u20132%)", why: "Keeps pores clear during oily surge" },
+      { name: "Zinc-based SPF", why: "Oil-control and UV protection in one" },
+      { name: "Lightweight hyaluronic acid", why: "Hydration without congestion" },
+    ],
+    avoid: [
+      { name: "Rich face oils", why: "Amplify oiliness during testosterone peak" },
+      { name: "Heavy night creams", why: "Pore-clogging when sebum is already high" },
+    ],
+  },
+  luteal: {
+    use: [
+      { name: "Salicylic acid (0.5\u20132%)", why: "Unclogs pores as progesterone rises" },
+      { name: "Niacinamide", why: "Anti-inflammatory, reduces cystic swelling" },
+      { name: "Benzoyl peroxide (2.5%)", why: "Targeted spot treatment for cystic acne" },
+      { name: "Zinc", why: "Regulates sebum and calms inflammation" },
+    ],
+    avoid: [
+      { name: "Pore-clogging oils (coconut, algae)", why: "High comedogenic rating during sebum peak" },
+      { name: "Fragrance", why: "Skin is more reactive premenstrually" },
+    ],
+  },
+};
+
+const HAIR_INGREDIENTS = {
+  menstrual: {
+    use: [
+      { name: "Ceramides (hair)", why: "Repairs the cuticle when oestrogen is at its lowest" },
+      { name: "Argan oil", why: "Seals moisture into brittle, low-shine strands" },
+      { name: "Protein treatments (light)", why: "Rebuilds fragile bonds without overloading" },
+    ],
+    avoid: [
+      { name: "Sulphate shampoos", why: "Strip already-depleted scalp oils" },
+      { name: "Heat styling daily", why: "Brittle strands break more easily this week" },
+    ],
+  },
+  follicular: {
+    use: [
+      { name: "Keratin masks", why: "Maximise strength during your best growth window" },
+      { name: "Biotin-enriched treatments", why: "Supports anagen phase extension" },
+      { name: "Scalp serums with caffeine", why: "Stimulate follicles during the growth peak" },
+    ],
+    avoid: [
+      { name: "Over-conditioning fine hair", why: "Can weigh down strands when they\u2019re already strong" },
+    ],
+  },
+  ovulatory: {
+    use: [
+      { name: "Clarifying shampoo", why: "Removes testosterone-driven oil build-up" },
+      { name: "Apple cider vinegar rinse", why: "Balances scalp pH, reduces residue" },
+      { name: "Lightweight leave-in", why: "Moisture without weighing down oily roots" },
+    ],
+    avoid: [
+      { name: "Heavy root oils", why: "Amplify the sebum surge at the scalp" },
+      { name: "Dry shampoo overuse", why: "Clogs follicles if scalp is already congested" },
+    ],
+  },
+  luteal: {
+    use: [
+      { name: "Glycerin-based leave-in", why: "Draws moisture into frizzy, dry strands" },
+      { name: "Sealing oils (jojoba, avocado)", why: "Lock moisture in as oestrogen drops" },
+      { name: "Castor oil (scalp)", why: "Supports follicle health during pre-period shedding" },
+    ],
+    avoid: [
+      { name: "Protein overload", why: "Causes brittleness when hair is already stressed" },
+      { name: "Alcohol-based styling products", why: "Exacerbate dryness as moisture retention drops" },
+    ],
+  },
+};
+
+const SKIN_FORECAST_COPY = {
+  menstrual:  "Sensitive period \u2014 hydrate and protect your barrier.",
+  follicular: "Glow window \u2014 introduce actives and exfoliants.",
+  ovulatory:  "Testosterone surge \u2014 manage oiliness and watch for chin breakouts.",
+  luteal:     "Progesterone rise \u2014 prepare your spot treatments.",
+};
 
 // ── Design tokens ────────────────────────────────────────────────────────────
 const card = {
@@ -252,6 +357,161 @@ function PhaseBriefCard({ phase, briefs }) {
       <p style={{ fontSize: "13px", color: "var(--plum)", fontFamily: "'Inter', sans-serif", lineHeight: 1.65 }}>
         {brief.tip}
       </p>
+    </div>
+  );
+}
+
+// ── Ingredient guide ─────────────────────────────────────────────────────────
+function IngredientGuide({ phase, mode }) {
+  if (!phase) return null;
+  const data = mode === "skin" ? SKIN_INGREDIENTS[phase] : HAIR_INGREDIENTS[phase];
+  if (!data) return null;
+  return (
+    <div style={card}>
+      <p style={sLabel}>This week \u2014 what to use</p>
+      <p style={{ fontSize: "11px", fontWeight: 700, color: "var(--plum)", fontFamily: "'Inter', sans-serif", marginBottom: "8px", marginTop: "10px" }}>Use</p>
+      {data.use.map((ing) => (
+        <div key={ing.name} style={{ display: "flex", gap: "10px", marginBottom: "8px", alignItems: "flex-start" }}>
+          <div style={{ width: "6px", height: "6px", borderRadius: "50%", backgroundColor: "var(--sage)", flexShrink: 0, marginTop: "5px" }} />
+          <div style={{ display: "flex", flexDirection: "column" }}>
+            <span style={{ fontSize: "12px", fontWeight: 600, color: "var(--plum)", fontFamily: "'Inter', sans-serif" }}>{ing.name}</span>
+            <span style={{ fontSize: "11px", color: "var(--mauve)", fontFamily: "'Inter', sans-serif", lineHeight: 1.5 }}>{ing.why}</span>
+          </div>
+        </div>
+      ))}
+      <p style={{ fontSize: "11px", fontWeight: 700, color: "var(--rose-dust)", fontFamily: "'Inter', sans-serif", marginBottom: "8px", marginTop: "12px" }}>Avoid this week</p>
+      {data.avoid.map((ing) => (
+        <div key={ing.name} style={{ display: "flex", gap: "10px", marginBottom: "8px", alignItems: "flex-start" }}>
+          <div style={{ width: "6px", height: "6px", borderRadius: "50%", backgroundColor: "var(--rose-dust)", flexShrink: 0, marginTop: "5px" }} />
+          <div style={{ display: "flex", flexDirection: "column" }}>
+            <span style={{ fontSize: "12px", fontWeight: 600, color: "var(--plum)", fontFamily: "'Inter', sans-serif" }}>{ing.name}</span>
+            <span style={{ fontSize: "11px", color: "var(--mauve)", fontFamily: "'Inter', sans-serif", lineHeight: 1.5 }}>{ing.why}</span>
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+// ── Cycle skin forecast ───────────────────────────────────────────────────────
+const PHASE_ABBR = { menstrual: "Men", follicular: "Fol", ovulatory: "Ovu", luteal: "Lut" };
+
+function CycleSkinForecast({ profile }) {
+  if (!profile?.last_period_start_date) return null;
+  const cycleLen = profile.cycle_avg_length || 28;
+  const lastPeriod = parseISO(profile.last_period_start_date);
+  const today = new Date();
+  const todayDay = (differenceInDays(today, lastPeriod) % cycleLen) + 1;
+
+  const days = Array.from({ length: 28 }, (_, i) => {
+    const dayOfCycle = ((todayDay + i - 1) % cycleLen) + 1;
+    const date = addDays(today, i);
+    const phase = getPhaseFromDay(dayOfCycle, cycleLen);
+    return { date, dayOfCycle, phase, daysFromNow: i };
+  });
+
+  const segments = [];
+  let current = null;
+  for (const d of days) {
+    if (!current || d.phase !== current.phase) {
+      current = { phase: d.phase, start: d.date, startDaysFromNow: d.daysFromNow, days: [d] };
+      segments.push(current);
+    } else {
+      current.days.push(d);
+    }
+  }
+
+  const nextSegment = segments.find((s) => s.startDaysFromNow > 0);
+
+  return (
+    <div style={card}>
+      <style>{`.skin-forecast-scroll::-webkit-scrollbar{display:none;}`}</style>
+      <p style={sLabel} className="mb-3">28-day skin forecast</p>
+      <div
+        className="skin-forecast-scroll"
+        style={{ overflowX: "auto", display: "flex", gap: "8px", paddingBottom: "8px", scrollbarWidth: "none" }}
+      >
+        {segments.map((seg, i) => (
+          <div
+            key={i}
+            style={{
+              flexShrink: 0,
+              width: `${Math.max(64, seg.days.length * 20)}px`,
+              borderRadius: "14px",
+              padding: "10px 10px 12px",
+              backgroundColor: PHASE_COLORS[seg.phase] + "26",
+              border: "1px solid " + PHASE_COLORS[seg.phase] + "40",
+            }}
+          >
+            <p style={{ fontSize: "8px", fontWeight: 700, color: PHASE_COLORS[seg.phase], fontFamily: "'Inter', sans-serif", textTransform: "uppercase" }}>
+              {PHASE_ABBR[seg.phase]}
+            </p>
+            <p style={{ fontSize: "11px", fontWeight: 600, color: "var(--plum)", fontFamily: "'Inter', sans-serif", marginTop: "4px" }}>
+              {seg.days.length}d
+            </p>
+            {seg.startDaysFromNow === 0 && (
+              <p style={{ fontSize: "10px", fontWeight: 700, color: PHASE_COLORS[seg.phase], fontFamily: "'Inter', sans-serif", marginTop: "2px" }}>Today</p>
+            )}
+          </div>
+        ))}
+      </div>
+      {nextSegment && (
+        <p style={{ fontSize: "12px", color: "var(--mauve)", fontFamily: "'Inter', sans-serif", marginTop: "12px", lineHeight: 1.6 }}>
+          Your skin enters its {PHASE_LABELS[nextSegment.phase].toLowerCase()} phase in {nextSegment.startDaysFromNow} day{nextSegment.startDaysFromNow !== 1 ? "s" : ""} \u2014 {SKIN_FORECAST_COPY[nextSegment.phase]}
+        </p>
+      )}
+    </div>
+  );
+}
+
+// ── Routine phase alert ───────────────────────────────────────────────────────
+function RoutinePhaseAlert({ skinRoutines, checkins, profile }) {
+  if (!skinRoutines.length || checkins.length < 14 || !profile?.last_period_start_date) return null;
+
+  const cycleLen = profile.cycle_avg_length || 28;
+  const scored = checkins.filter((c) => c.skin_condition).map((c) => ({
+    phase: getCheckinPhase(c.date, profile.last_period_start_date, cycleLen),
+    score: skinConditionScore(c.skin_condition),
+  })).filter((c) => c.phase && c.score);
+
+  if (!scored.length) return null;
+
+  const phaseAvgs = {};
+  PHASES.forEach((p) => {
+    const vals = scored.filter((c) => c.phase === p).map((c) => c.score);
+    if (vals.length) phaseAvgs[p] = vals.reduce((a, b) => a + b, 0) / vals.length;
+  });
+
+  const worstPhase = Object.keys(phaseAvgs).length
+    ? Object.entries(phaseAvgs).sort((a, b) => a[1] - b[1])[0][0]
+    : null;
+
+  if (!worstPhase) return null;
+
+  const missingSpf = !skinRoutines.some((r) => !r.ended_date && r.product_type === "SPF");
+  const missingTreatment = !skinRoutines.some((r) => !r.ended_date && r.product_type === "treatment");
+
+  const alerts = [];
+  if (worstPhase === "luteal" && missingTreatment) {
+    alerts.push("Your skin is worst in the luteal phase but you have no treatment (salicylic acid, niacinamide, or spot treatment) logged in your routine. This phase is when targeted actives matter most.");
+  }
+  if (worstPhase === "ovulatory" && missingSpf) {
+    alerts.push("Your skin struggles most around ovulation \u2014 a testosterone-driven surge that is worsened by UV exposure. Logging SPF in your morning routine helps you track whether sun protection is making a difference.");
+  }
+  if (worstPhase === "menstrual" && missingTreatment) {
+    alerts.push("Your skin is most reactive during menstruation. Adding a gentle barrier repair product (ceramides or centella) to your routine could help \u2014 log it to start tracking the impact.");
+  }
+
+  if (!alerts.length) return null;
+
+  return (
+    <div style={{ backgroundColor: "var(--ivory)", border: "1px solid var(--border)", borderRadius: "20px", padding: "16px", marginBottom: "16px" }}>
+      <p style={{ ...sLabel, color: "var(--rose-dust)" }}>Routine gap detected</p>
+      {alerts.map((alert, i) => (
+        <p key={i} style={{ fontSize: "13px", color: "var(--plum)", fontFamily: "'Inter', sans-serif", lineHeight: 1.65, marginTop: "8px" }}>
+          {alert}
+        </p>
+      ))}
     </div>
   );
 }
@@ -589,6 +849,9 @@ export default function SkinHair() {
             {/* Phase brief */}
             <PhaseBriefCard phase={currentPhase} briefs={PHASE_BRIEF_SKIN} />
 
+            {/* Ingredient guide */}
+            <IngredientGuide phase={currentPhase} mode="skin" />
+
             {/* Phase correlation */}
             <div style={card}>
               <p style={sLabel} className="mb-3">Skin clarity by phase</p>
@@ -684,6 +947,9 @@ export default function SkinHair() {
               }}
             />
 
+            {/* Routine phase alert */}
+            <RoutinePhaseAlert skinRoutines={skinRoutines} checkins={filtered} profile={profile} />
+
             {/* Recent skin log */}
             {recentSkinLog.length > 0 && (
               <div style={card}>
@@ -731,6 +997,9 @@ export default function SkinHair() {
                 </div>
               </div>
             )}
+            {/* Cycle skin forecast */}
+            <CycleSkinForecast profile={profile} />
+
           </div>
         )}
 
@@ -740,6 +1009,9 @@ export default function SkinHair() {
 
             {/* Phase brief */}
             <PhaseBriefCard phase={currentPhase} briefs={PHASE_BRIEF_HAIR} />
+
+            {/* Ingredient guide */}
+            <IngredientGuide phase={currentPhase} mode="hair" />
 
             {/* Hair phase correlation */}
             <div style={card}>
@@ -806,7 +1078,7 @@ export default function SkinHair() {
             )}
 
             {/* Hair Shedding Trend Alert */}
-            <SheddingTrendAlert checkins={checkins} isPremium={isPremium} />
+            <SheddingTrendAlert checkins={checkins} isPremium={isPremium} currentPhase={currentPhase} />
 
             {/* Hair Routine Log */}
             <HairRoutineSection
@@ -1110,7 +1382,7 @@ function HairRoutineSection({ isPremium, routines, showAdd, setShowAdd, newWashD
 }
 
 // ── Shedding Trend Alert ──────────────────────────────────────────────────────
-function SheddingTrendAlert({ checkins, isPremium }) {
+function SheddingTrendAlert({ checkins, isPremium, currentPhase }) {
   if (!isPremium) return null;
   const sorted = [...checkins].sort((a, b) => b.date.localeCompare(a.date));
   let consecutive = 0;
@@ -1118,16 +1390,38 @@ function SheddingTrendAlert({ checkins, isPremium }) {
     if (c.hair_shedding === "A lot") consecutive++;
     else break;
   }
-  if (consecutive < 3) return null;
-  return (
-    <div
-      className="rounded-[20px] p-4"
-      style={{ backgroundColor: "var(--rose-dust-subtle)", border: "1px solid var(--rose-dust-light)" }}
-    >
-      <p style={{ fontSize: "0.6rem", fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.12em", color: "var(--rose-dust)", fontFamily: "'Inter', sans-serif", marginBottom: "6px" }}>Shedding alert</p>
-      <p style={{ fontSize: "13px", color: "var(--plum)", fontFamily: "'Inter', sans-serif", lineHeight: 1.65 }}>
-        You have logged significant shedding for {consecutive} consecutive days. High shedding can be linked to stress, iron deficiency, or hormonal shifts. Track your stress levels and consider speaking to a GP if it continues.
-      </p>
-    </div>
-  );
+
+  if (consecutive >= 3) {
+    return (
+      <div
+        className="rounded-[20px] p-4"
+        style={{ backgroundColor: "var(--rose-dust-subtle)", border: "1px solid var(--rose-dust-light)" }}
+      >
+        <p style={{ ...sLabel, color: "var(--rose-dust)", marginBottom: "6px" }}>Shedding alert</p>
+        <p style={{ fontSize: "13px", color: "var(--plum)", fontFamily: "'Inter', sans-serif", lineHeight: 1.65 }}>
+          You have logged significant shedding for {consecutive} consecutive days. High shedding can be linked to stress, iron deficiency, or hormonal shifts. Track your stress levels and consider speaking to a GP if it continues.
+        </p>
+      </div>
+    );
+  }
+
+  if (currentPhase === "follicular") {
+    const last7 = sorted.slice(0, 7);
+    const elevatedCount = last7.filter((c) => c.hair_shedding === "More than usual" || c.hair_shedding === "A lot").length;
+    if (elevatedCount >= 4) {
+      return (
+        <div
+          className="rounded-[20px] p-4"
+          style={{ backgroundColor: "var(--sage-subtle)", border: "1px solid var(--sage)" }}
+        >
+          <p style={{ ...sLabel, color: "var(--sage)", marginBottom: "6px" }}>Unusual shedding detected</p>
+          <p style={{ fontSize: "13px", color: "var(--plum)", fontFamily: "'Inter', sans-serif", lineHeight: 1.65 }}>
+            You are in the follicular phase \u2014 normally your lowest-shedding window \u2014 but you have logged elevated shedding recently. This can indicate stress, nutritional deficiency, or a delayed response to the previous cycle\u2019s hormonal drop. Tracking consistently this week will reveal whether it continues into the next phase.
+          </p>
+        </div>
+      );
+    }
+  }
+
+  return null;
 }
