@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { Lock, Plus, X, ChevronDown, ChevronUp } from "lucide-react";
 import { base44 } from "@/api/base44Client";
 import { differenceInDays, subDays, parseISO, format } from "date-fns";
 import { createPageUrl } from "@/utils";
@@ -308,18 +309,34 @@ export default function SkinHair() {
   const [timeRange, setTimeRange] = useState(30);
   const [activeTab, setActiveTab] = useState("skin");
   const [loading, setLoading] = useState(true);
+  const [isPremium, setIsPremium] = useState(false);
+  const [skinRoutines, setSkinRoutines] = useState([]);
+  const [hairRoutines, setHairRoutines] = useState([]);
+  const [showAddSkinProduct, setShowAddSkinProduct] = useState(false);
+  const [showAddWashDay, setShowAddWashDay] = useState(false);
+  const [newProduct, setNewProduct] = useState({ product_name: "", product_type: "cleanser", routine_slot: "morning", notes: "" });
+  const [newWashDay, setNewWashDay] = useState({ wash_date: new Date().toISOString().split("T")[0], shampoo: "", conditioner: "", treatment: "", heat_used: false, scalp_condition: "Normal", shedding_noted: false, notes: "" });
+  const [savingProduct, setSavingProduct] = useState(false);
+  const [savingWash, setSavingWash] = useState(false);
 
   useEffect(() => {
     (async () => {
       const u = await base44.auth.me();
       setUser(u);
-      const [profiles, allCheckins] = await Promise.all([
+      const [profiles, allCheckins, entitlements, skinR, hairR] = await Promise.all([
         base44.entities.UserProfile.filter({ user_id: u.id }),
         base44.entities.DailyCheckins.filter({ user_id: u.id }, "-date", 200),
+        base44.entities.Entitlements.filter({ user_id: u.id }),
+        base44.entities.SkinRoutine.filter({ user_id: u.id }),
+        base44.entities.HairRoutine.filter({ user_id: u.id }),
       ]);
       setProfile(profiles[0] || null);
       const cutoff = subDays(new Date(), 90).toISOString().split("T")[0];
       setCheckins(allCheckins.filter((c) => c.date >= cutoff).sort((a, b) => a.date.localeCompare(b.date)));
+      const plan = entitlements[0]?.plan || "free";
+      setIsPremium(plan === "plus" || plan === "pro" || plan === "premium");
+      setSkinRoutines(skinR.sort((a, b) => (b.started_date || "").localeCompare(a.started_date || "")));
+      setHairRoutines(hairR.sort((a, b) => (b.wash_date || "").localeCompare(a.wash_date || "")));
       setLoading(false);
     })();
   }, []);
@@ -644,6 +661,34 @@ export default function SkinHair() {
               </div>
             )}
 
+            {/* Skincare Routine Log */}
+            <SkincareRoutineSection
+              isPremium={isPremium}
+              routines={skinRoutines}
+              showAdd={showAddSkinProduct}
+              setShowAdd={setShowAddSkinProduct}
+              newProduct={newProduct}
+              setNewProduct={setNewProduct}
+              saving={savingProduct}
+              onSave={async () => {
+                if (!newProduct.product_name.trim()) return;
+                setSavingProduct(true);
+                const created = await base44.entities.SkinRoutine.create({
+                  user_id: user.id,
+                  ...newProduct,
+                  started_date: new Date().toISOString().split("T")[0],
+                });
+                setSkinRoutines((prev) => [created, ...prev]);
+                setNewProduct({ product_name: "", product_type: "cleanser", routine_slot: "morning", notes: "" });
+                setShowAddSkinProduct(false);
+                setSavingProduct(false);
+              }}
+              onRemove={async (id) => {
+                await base44.entities.SkinRoutine.delete(id);
+                setSkinRoutines((prev) => prev.filter((r) => r.id !== id));
+              }}
+            />
+
             {/* Recent skin log */}
             {recentSkinLog.length > 0 && (
               <div style={card}>
@@ -765,6 +810,35 @@ export default function SkinHair() {
               </div>
             )}
 
+            {/* Hair Shedding Trend Alert */}
+            <SheddingTrendAlert checkins={checkins} isPremium={isPremium} />
+
+            {/* Hair Routine Log */}
+            <HairRoutineSection
+              isPremium={isPremium}
+              routines={hairRoutines}
+              showAdd={showAddWashDay}
+              setShowAdd={setShowAddWashDay}
+              newWashDay={newWashDay}
+              setNewWashDay={setNewWashDay}
+              saving={savingWash}
+              onSave={async () => {
+                setSavingWash(true);
+                const created = await base44.entities.HairRoutine.create({
+                  user_id: user.id,
+                  ...newWashDay,
+                });
+                setHairRoutines((prev) => [created, ...prev]);
+                setNewWashDay({ wash_date: new Date().toISOString().split("T")[0], shampoo: "", conditioner: "", treatment: "", heat_used: false, scalp_condition: "Normal", shedding_noted: false, notes: "" });
+                setShowAddWashDay(false);
+                setSavingWash(false);
+              }}
+              onRemove={async (id) => {
+                await base44.entities.HairRoutine.delete(id);
+                setHairRoutines((prev) => prev.filter((r) => r.id !== id));
+              }}
+            />
+
             {/* Recent hair log */}
             {recentHairLog.length > 0 && (
               <div style={card}>
@@ -812,6 +886,253 @@ export default function SkinHair() {
           </div>
         )}
       </div>
+    </div>
+  );
+}
+
+// ── Premium gate wrapper ─────────────────────────────────────────────────────
+function PremiumGate({ children }) {
+  return (
+    <div style={{ position: "relative", borderRadius: "20px", overflow: "hidden" }}>
+      <div style={{ filter: "blur(3px)", pointerEvents: "none", userSelect: "none" }}>
+        {children}
+      </div>
+      <div
+        className="absolute inset-0 flex flex-col items-center justify-center gap-3"
+        style={{ backgroundColor: "rgba(250,248,245,0.85)", backdropFilter: "blur(2px)", borderRadius: "20px", border: "1px solid var(--border)" }}
+      >
+        <div
+          className="w-9 h-9 rounded-2xl flex items-center justify-center"
+          style={{ backgroundColor: "var(--plum)" }}
+        >
+          <Lock className="w-4 h-4" style={{ color: "white" }} />
+        </div>
+        <p style={{ fontSize: "13px", fontWeight: 600, color: "var(--plum)", fontFamily: "'Inter', sans-serif" }}>Premium feature</p>
+        <a
+          href={createPageUrl("Upgrade")}
+          className="text-xs font-semibold px-4 py-2 rounded-full"
+          style={{ backgroundColor: "var(--plum)", color: "white", fontFamily: "'Inter', sans-serif" }}
+        >
+          Unlock with Premium
+        </a>
+      </div>
+    </div>
+  );
+}
+
+// ── Skincare Routine Section ─────────────────────────────────────────────────
+const PRODUCT_TYPES = ["cleanser", "serum", "moisturiser", "SPF", "treatment", "eye_cream", "toner", "mask"];
+const ROUTINE_SLOTS = ["morning", "evening", "both"];
+
+function SkincareRoutineSection({ isPremium, routines, showAdd, setShowAdd, newProduct, setNewProduct, saving, onSave, onRemove }) {
+  const inner = (
+    <div style={{ backgroundColor: "var(--surface)", border: "1px solid var(--border)", borderRadius: "20px", boxShadow: "var(--shadow-sm)", padding: "1.25rem" }}>
+      <div className="flex items-center justify-between mb-3">
+        <p style={{ fontSize: "0.6rem", fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.12em", color: "var(--mauve)", fontFamily: "'Inter', sans-serif" }}>Skincare routine</p>
+        {isPremium && (
+          <button
+            onClick={() => setShowAdd((v) => !v)}
+            className="flex items-center gap-1.5 text-xs font-semibold px-3 py-1.5 rounded-full transition-all"
+            style={{ backgroundColor: "var(--plum)", color: "white", fontFamily: "'Inter', sans-serif" }}
+          >
+            <Plus className="w-3 h-3" /> Add product
+          </button>
+        )}
+      </div>
+
+      {isPremium && showAdd && (
+        <div className="mb-4 space-y-3 rounded-[16px] p-4" style={{ backgroundColor: "var(--ivory)", border: "1px solid var(--border)" }}>
+          <input
+            placeholder="Product name *"
+            value={newProduct.product_name}
+            onChange={(e) => setNewProduct({ ...newProduct, product_name: e.target.value })}
+            className="w-full px-3.5 py-2.5 rounded-xl text-sm focus:outline-none"
+            style={{ border: "1.5px solid var(--border)", fontFamily: "'Inter', sans-serif", color: "var(--plum)", backgroundColor: "var(--surface)" }}
+          />
+          <div className="grid grid-cols-2 gap-2">
+            <select
+              value={newProduct.product_type}
+              onChange={(e) => setNewProduct({ ...newProduct, product_type: e.target.value })}
+              className="px-3 py-2.5 rounded-xl text-xs font-medium focus:outline-none capitalize"
+              style={{ border: "1.5px solid var(--border)", fontFamily: "'Inter', sans-serif", color: "var(--plum)", backgroundColor: "var(--surface)" }}
+            >
+              {PRODUCT_TYPES.map((t) => <option key={t} value={t}>{t}</option>)}
+            </select>
+            <select
+              value={newProduct.routine_slot}
+              onChange={(e) => setNewProduct({ ...newProduct, routine_slot: e.target.value })}
+              className="px-3 py-2.5 rounded-xl text-xs font-medium focus:outline-none capitalize"
+              style={{ border: "1.5px solid var(--border)", fontFamily: "'Inter', sans-serif", color: "var(--plum)", backgroundColor: "var(--surface)" }}
+            >
+              {ROUTINE_SLOTS.map((s) => <option key={s} value={s}>{s}</option>)}
+            </select>
+          </div>
+          <input
+            placeholder="Notes (optional)"
+            value={newProduct.notes}
+            onChange={(e) => setNewProduct({ ...newProduct, notes: e.target.value })}
+            className="w-full px-3.5 py-2.5 rounded-xl text-sm focus:outline-none"
+            style={{ border: "1.5px solid var(--border)", fontFamily: "'Inter', sans-serif", color: "var(--plum)", backgroundColor: "var(--surface)" }}
+          />
+          <div className="flex gap-2">
+            <button onClick={() => setShowAdd(false)} className="flex-1 py-2 rounded-xl text-sm font-semibold" style={{ border: "1.5px solid var(--border)", color: "var(--mauve)", fontFamily: "'Inter', sans-serif" }}>Cancel</button>
+            <button onClick={onSave} disabled={!newProduct.product_name.trim() || saving} className="flex-1 py-2 rounded-xl text-sm font-semibold" style={{ backgroundColor: "var(--plum)", color: "white", fontFamily: "'Inter', sans-serif", opacity: (!newProduct.product_name.trim() || saving) ? 0.5 : 1 }}>
+              {saving ? "Saving..." : "Save"}
+            </button>
+          </div>
+        </div>
+      )}
+
+      {routines.length === 0 ? (
+        <p style={{ fontSize: "13px", color: "var(--mauve)", fontFamily: "'Inter', sans-serif" }}>No products logged yet. Add your current routine to track how products affect your skin.</p>
+      ) : (
+        <div className="space-y-2">
+          {["morning", "evening", "both"].map((slot) => {
+            const slotItems = routines.filter((r) => r.routine_slot === slot && !r.ended_date);
+            if (!slotItems.length) return null;
+            return (
+              <div key={slot}>
+                <p style={{ fontSize: "10px", fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.1em", color: "var(--mauve)", fontFamily: "'Inter', sans-serif", marginBottom: "6px", marginTop: "8px" }}>{slot}</p>
+                {slotItems.map((r) => (
+                  <div key={r.id} className="flex items-center justify-between gap-3 rounded-[12px] px-3.5 py-2.5 mb-1.5" style={{ backgroundColor: "var(--ivory)", border: "1px solid var(--border-subtle)" }}>
+                    <div className="flex-1 min-w-0">
+                      <p style={{ fontSize: "13px", fontWeight: 500, color: "var(--plum)", fontFamily: "'Inter', sans-serif" }}>{r.product_name}</p>
+                      <p style={{ fontSize: "11px", color: "var(--mauve)", fontFamily: "'Inter', sans-serif", textTransform: "capitalize" }}>{r.product_type}</p>
+                    </div>
+                    {isPremium && (
+                      <button onClick={() => onRemove(r.id)} style={{ color: "var(--mauve)", padding: "4px" }}><X className="w-3.5 h-3.5" /></button>
+                    )}
+                  </div>
+                ))}
+              </div>
+            );
+          })}
+        </div>
+      )}
+    </div>
+  );
+
+  if (!isPremium) return <PremiumGate>{inner}</PremiumGate>;
+  return inner;
+}
+
+// ── Hair Routine Section ──────────────────────────────────────────────────────
+function HairRoutineSection({ isPremium, routines, showAdd, setShowAdd, newWashDay, setNewWashDay, saving, onSave, onRemove }) {
+  const inner = (
+    <div style={{ backgroundColor: "var(--surface)", border: "1px solid var(--border)", borderRadius: "20px", boxShadow: "var(--shadow-sm)", padding: "1.25rem" }}>
+      <div className="flex items-center justify-between mb-3">
+        <p style={{ fontSize: "0.6rem", fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.12em", color: "var(--mauve)", fontFamily: "'Inter', sans-serif" }}>Wash day log</p>
+        {isPremium && (
+          <button
+            onClick={() => setShowAdd((v) => !v)}
+            className="flex items-center gap-1.5 text-xs font-semibold px-3 py-1.5 rounded-full"
+            style={{ backgroundColor: "var(--sage)", color: "white", fontFamily: "'Inter', sans-serif" }}
+          >
+            <Plus className="w-3 h-3" /> Log wash day
+          </button>
+        )}
+      </div>
+
+      {isPremium && showAdd && (
+        <div className="mb-4 space-y-3 rounded-[16px] p-4" style={{ backgroundColor: "var(--ivory)", border: "1px solid var(--border)" }}>
+          <div className="grid grid-cols-2 gap-2">
+            <div>
+              <p style={{ fontSize: "10px", color: "var(--mauve)", marginBottom: "4px", fontFamily: "'Inter', sans-serif" }}>Date</p>
+              <input
+                type="date"
+                value={newWashDay.wash_date}
+                onChange={(e) => setNewWashDay({ ...newWashDay, wash_date: e.target.value })}
+                className="w-full px-3 py-2.5 rounded-xl text-xs focus:outline-none"
+                style={{ border: "1.5px solid var(--border)", fontFamily: "'Inter', sans-serif", color: "var(--plum)", backgroundColor: "var(--surface)" }}
+              />
+            </div>
+            <div>
+              <p style={{ fontSize: "10px", color: "var(--mauve)", marginBottom: "4px", fontFamily: "'Inter', sans-serif" }}>Scalp</p>
+              <select
+                value={newWashDay.scalp_condition}
+                onChange={(e) => setNewWashDay({ ...newWashDay, scalp_condition: e.target.value })}
+                className="w-full px-3 py-2.5 rounded-xl text-xs focus:outline-none"
+                style={{ border: "1.5px solid var(--border)", fontFamily: "'Inter', sans-serif", color: "var(--plum)", backgroundColor: "var(--surface)" }}
+              >
+                {["Normal", "Oily", "Dry/flaky"].map((s) => <option key={s} value={s}>{s}</option>)}
+              </select>
+            </div>
+          </div>
+          <input placeholder="Shampoo used" value={newWashDay.shampoo} onChange={(e) => setNewWashDay({ ...newWashDay, shampoo: e.target.value })} className="w-full px-3.5 py-2.5 rounded-xl text-sm focus:outline-none" style={{ border: "1.5px solid var(--border)", fontFamily: "'Inter', sans-serif", color: "var(--plum)", backgroundColor: "var(--surface)" }} />
+          <input placeholder="Conditioner" value={newWashDay.conditioner} onChange={(e) => setNewWashDay({ ...newWashDay, conditioner: e.target.value })} className="w-full px-3.5 py-2.5 rounded-xl text-sm focus:outline-none" style={{ border: "1.5px solid var(--border)", fontFamily: "'Inter', sans-serif", color: "var(--plum)", backgroundColor: "var(--surface)" }} />
+          <input placeholder="Treatment (mask, oil, deep condition — optional)" value={newWashDay.treatment} onChange={(e) => setNewWashDay({ ...newWashDay, treatment: e.target.value })} className="w-full px-3.5 py-2.5 rounded-xl text-sm focus:outline-none" style={{ border: "1.5px solid var(--border)", fontFamily: "'Inter', sans-serif", color: "var(--plum)", backgroundColor: "var(--surface)" }} />
+          <div className="flex items-center gap-3">
+            <label className="flex items-center gap-2 cursor-pointer">
+              <input type="checkbox" checked={newWashDay.heat_used} onChange={(e) => setNewWashDay({ ...newWashDay, heat_used: e.target.checked })} />
+              <span style={{ fontSize: "12px", color: "var(--plum)", fontFamily: "'Inter', sans-serif" }}>Heat used</span>
+            </label>
+            <label className="flex items-center gap-2 cursor-pointer">
+              <input type="checkbox" checked={newWashDay.shedding_noted} onChange={(e) => setNewWashDay({ ...newWashDay, shedding_noted: e.target.checked })} />
+              <span style={{ fontSize: "12px", color: "var(--plum)", fontFamily: "'Inter', sans-serif" }}>Shedding noted</span>
+            </label>
+          </div>
+          <div className="flex gap-2">
+            <button onClick={() => setShowAdd(false)} className="flex-1 py-2 rounded-xl text-sm font-semibold" style={{ border: "1.5px solid var(--border)", color: "var(--mauve)", fontFamily: "'Inter', sans-serif" }}>Cancel</button>
+            <button onClick={onSave} disabled={saving} className="flex-1 py-2 rounded-xl text-sm font-semibold" style={{ backgroundColor: "var(--sage)", color: "white", fontFamily: "'Inter', sans-serif", opacity: saving ? 0.5 : 1 }}>
+              {saving ? "Saving..." : "Save"}
+            </button>
+          </div>
+        </div>
+      )}
+
+      {routines.length === 0 ? (
+        <p style={{ fontSize: "13px", color: "var(--mauve)", fontFamily: "'Inter', sans-serif" }}>No wash days logged yet. Track your wash routine to spot patterns between products and shedding.</p>
+      ) : (
+        <div className="space-y-2">
+          {routines.slice(0, 8).map((r) => (
+            <div key={r.id} className="flex items-center justify-between gap-3 rounded-[12px] px-3.5 py-2.5" style={{ backgroundColor: "var(--ivory)", border: "1px solid var(--border-subtle)" }}>
+              <div className="flex-1 min-w-0">
+                <div className="flex items-center gap-2">
+                  <p style={{ fontSize: "12px", fontWeight: 600, color: "var(--plum)", fontFamily: "'Inter', sans-serif" }}>
+                    {r.wash_date ? format(parseISO(r.wash_date), "d MMM") : "—"}
+                  </p>
+                  {r.scalp_condition && (
+                    <span className="text-xs px-2 py-0.5 rounded-full" style={{ backgroundColor: r.scalp_condition === "Oily" ? "var(--mauve-subtle)" : r.scalp_condition === "Dry/flaky" ? "var(--rose-dust-subtle)" : "var(--sage-subtle)", color: r.scalp_condition === "Oily" ? "var(--mauve)" : r.scalp_condition === "Dry/flaky" ? "var(--rose-dust)" : "var(--sage)", fontFamily: "'Inter', sans-serif" }}>{r.scalp_condition}</span>
+                  )}
+                  {r.shedding_noted && (
+                    <span className="text-xs px-2 py-0.5 rounded-full" style={{ backgroundColor: "var(--rose-dust-subtle)", color: "var(--rose-dust)", fontFamily: "'Inter', sans-serif" }}>Shedding</span>
+                  )}
+                </div>
+                {r.shampoo && <p style={{ fontSize: "11px", color: "var(--mauve)", fontFamily: "'Inter', sans-serif", marginTop: "2px" }}>{r.shampoo}{r.conditioner ? ` · ${r.conditioner}` : ""}</p>}
+              </div>
+              {isPremium && (
+                <button onClick={() => onRemove(r.id)} style={{ color: "var(--mauve)", padding: "4px" }}><X className="w-3.5 h-3.5" /></button>
+              )}
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+
+  if (!isPremium) return <PremiumGate>{inner}</PremiumGate>;
+  return inner;
+}
+
+// ── Shedding Trend Alert ──────────────────────────────────────────────────────
+function SheddingTrendAlert({ checkins, isPremium }) {
+  if (!isPremium) return null;
+  const sorted = [...checkins].sort((a, b) => b.date.localeCompare(a.date));
+  let consecutive = 0;
+  for (const c of sorted) {
+    if (c.hair_shedding === "A lot") consecutive++;
+    else break;
+  }
+  if (consecutive < 3) return null;
+  return (
+    <div
+      className="rounded-[20px] p-4"
+      style={{ backgroundColor: "var(--rose-dust-subtle)", border: "1px solid var(--rose-dust-light)" }}
+    >
+      <p style={{ fontSize: "0.6rem", fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.12em", color: "var(--rose-dust)", fontFamily: "'Inter', sans-serif", marginBottom: "6px" }}>Shedding alert</p>
+      <p style={{ fontSize: "13px", color: "var(--plum)", fontFamily: "'Inter', sans-serif", lineHeight: 1.65 }}>
+        You have logged significant shedding for {consecutive} consecutive days. High shedding can be linked to stress, iron deficiency, or hormonal shifts. Track your stress levels and consider speaking to a GP if it continues.
+      </p>
     </div>
   );
 }

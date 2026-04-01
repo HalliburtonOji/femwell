@@ -1,0 +1,42 @@
+{
+  "name": "HairRoutine",
+  "type": "object",
+  "properties": {
+    "user_id": {
+      "type": "string"
+    },
+    "wash_date": {
+      "type": "string"
+    },
+    "shampoo": {
+      "type": "string"
+    },
+    "conditioner": {
+      "type": "string"
+    },
+    "treatment": {
+      "type": "string"
+    },
+    "heat_used": {
+      "type": "boolean",
+      "default": false
+    },
+    "heat_tool": {
+      "type": "string"
+    },
+    "scalp_condition": {
+      "type": "string"
+    },
+    "shedding_noted": {
+      "type": "boolean",
+      "default": false
+    },
+    "notes": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "user_id",
+    "wash_date"
+  ]
+}

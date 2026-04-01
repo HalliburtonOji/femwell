@@ -1,0 +1,52 @@
+{
+  "name": "SkinRoutine",
+  "type": "object",
+  "properties": {
+    "user_id": {
+      "type": "string"
+    },
+    "product_name": {
+      "type": "string"
+    },
+    "product_type": {
+      "type": "string",
+      "enum": [
+        "cleanser",
+        "serum",
+        "moisturiser",
+        "SPF",
+        "treatment",
+        "eye_cream",
+        "toner",
+        "mask"
+      ]
+    },
+    "routine_slot": {
+      "type": "string",
+      "enum": [
+        "morning",
+        "evening",
+        "both"
+      ]
+    },
+    "started_date": {
+      "type": "string"
+    },
+    "ended_date": {
+      "type": "string"
+    },
+    "notes": {
+      "type": "string"
+    },
+    "would_repurchase": {
+      "type": "boolean"
+    }
+  },
+  "required": [
+    "user_id",
+    "product_name",
+    "product_type",
+    "routine_slot",
+    "started_date"
+  ]
+}
