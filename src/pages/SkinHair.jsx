@@ -589,7 +589,14 @@ export default function SkinHair() {
         base44.entities.SkinRoutine.filter({ user_id: u.id }),
         base44.entities.HairRoutine.filter({ user_id: u.id }),
       ]);
-      setIsPremium(false); // premium gating placeholder — wire to Subscription entity when ready
+      setProfile(profiles[0] || null);
+      const cutoff = subDays(new Date(), 90).toISOString().split("T")[0];
+      setCheckins(
+        allCheckins
+          .filter((c) => c.date >= cutoff)
+          .sort((a, b) => a.date.localeCompare(b.date))
+      );
+      setIsPremium(false);
       setSkinRoutines(skinR.sort((a, b) => (b.started_date || "").localeCompare(a.started_date || "")));
       setHairRoutines(hairR.sort((a, b) => (b.wash_date || "").localeCompare(a.wash_date || "")));
       setLoading(false);

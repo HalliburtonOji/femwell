@@ -144,7 +144,7 @@ export default function CheckinModal({ existing, onClose, onSave }) {
                   onChange={(e) => setExerciseType(e.target.value)}
                   className="w-full p-2.5 rounded-xl border border-rose-100 bg-rose-50/30 text-sm focus:outline-none focus:ring-2 focus:ring-rose-200"
                 />
-                <SliderRow label="Duration" value={exerciseMinutes} onChange={setExerciseMinutes} min={5} max={120} unit=" min" /> value={exerciseMinutes} onChange={setExerciseMinutes} min={5} max={120} unit=" min" />
+                <SliderRow label="Duration" value={exerciseMinutes} onChange={setExerciseMinutes} min={5} max={120} unit=" min" />
                 <PillSelect label="Intensity" options={INTENSITY_OPTIONS} value={exerciseIntensity} onChange={setExerciseIntensity} />
               </div>
             )}
