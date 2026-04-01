@@ -46,7 +46,15 @@ const BODY_GOALS = [
   { id: "menopause", label: "Menopause" },
 ];
 
-const STEPS = ["welcome", "goals", "interests", "preferences", "setup", "done"];
+const STEPS = ["welcome", "goals", "interests", "preferences", "setup", "skin_profile", "done"];
+
+const SKIN_TYPES = [
+  { value: "dry",         label: "Dry",         desc: "Feels tight, rough, or flaky" },
+  { value: "oily",        label: "Oily",         desc: "Shiny, large pores, prone to breakouts" },
+  { value: "combination", label: "Combination",  desc: "Oily T-zone, drier cheeks" },
+  { value: "normal",      label: "Normal",       desc: "Balanced, rarely reactive" },
+  { value: "sensitive",   label: "Sensitive",    desc: "Easily irritated or reactive" },
+];
 
 export default function Onboarding() {
   const [step, setStep] = useState(0);
@@ -57,6 +65,7 @@ export default function Onboarding() {
   const [hydrationTarget, setHydrationTarget] = useState(2000);
   const [bodyGoal, setBodyGoal] = useState("");
   const [cycleTrackingEnabled, setCycleTrackingEnabled] = useState(true);
+  const [skinType, setSkinType] = useState("");
   const [saving, setSaving] = useState(false);
 
   const toggleValue = (value, setter) => {
@@ -81,6 +90,7 @@ export default function Onboarding() {
       goals,
       tone_preference: tone,
       modules_enabled: cycleTrackingEnabled ? ["cycle"] : [],
+      skin_type: skinType,
     };
 
     if (profiles[0]) {
@@ -290,6 +300,27 @@ export default function Onboarding() {
           </div>
         )}
 
+        {current === "skin_profile" && (
+          <div className="w-full space-y-5">
+            <div>
+              <h2 className="text-2xl font-bold text-rose-900">What's your skin type?</h2>
+              <p className="mt-1 text-sm text-gray-500">This helps us tailor your skin &amp; hair guidance to your baseline.</p>
+            </div>
+            <div className="grid grid-cols-1 gap-3">
+              {SKIN_TYPES.map((item) => (
+                <button
+                  key={item.value}
+                  onClick={() => setSkinType(item.value)}
+                  className={`rounded-2xl border-2 p-4 text-left transition-all ${skinType === item.value ? "border-rose-400 bg-rose-50" : "border-transparent bg-white/70"}`}
+                >
+                  <div className="text-sm font-medium text-gray-700">{item.label}</div>
+                  <div className="mt-0.5 text-xs text-gray-500">{item.desc}</div>
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
+
         {current === "done" && (
           <div className="space-y-6 text-center">
             <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-rose-200 to-pink-300 flex items-center justify-center mx-auto shadow-md">
@@ -320,7 +351,7 @@ export default function Onboarding() {
           <button
             onClick={() => setStep((currentStep) => currentStep + 1)}
             className="btn-primary flex-1"
-            disabled={(current === "goals" && goals.length === 0) || (current === "interests" && interests.length === 0)}
+            disabled={(current === "goals" && goals.length === 0) || (current === "interests" && interests.length === 0) || false}
           >
             Continue <ChevronRight className="ml-1 inline h-4 w-4" />
           </button>

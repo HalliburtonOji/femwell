@@ -67,6 +67,29 @@ Deno.serve(async (req) => {
       const endDay = profile.last_period_start_date ? String(Math.max(1, Math.floor((new Date(weekEnd).getTime() - new Date(profile.last_period_start_date).getTime()) / (1000 * 60 * 60 * 24)) % (profile.cycle_avg_length || 28) + 1)) : 'not logged';
       const nextPhase = phase === 'menstrual' ? 'follicular' : phase === 'follicular' ? 'ovulatory' : phase === 'ovulatory' ? 'luteal' : 'menstrual';
 
+      // Skin condition mode this week
+      const skinConditions = currentWeek.map(item => item.skin_condition).filter(Boolean);
+      const skinModeEntry = skinConditions.length
+        ? Object.entries(skinConditions.reduce((acc, v) => { acc[v] = (acc[v] || 0) + 1; return acc; }, {})).sort((a, b) => b[1] - a[1])[0]
+        : null;
+      const skinMode = skinModeEntry ? skinModeEntry[0] : null;
+
+      // Breakout locations this week
+      const breakoutLocs = currentWeek.flatMap(item => Array.isArray(item.breakout_location) ? item.breakout_location : []);
+      const breakoutSummary = breakoutLocs.length ? [...new Set(breakoutLocs)].join(', ') : null;
+
+      // Hair shedding mode this week
+      const sheddingValues = currentWeek.map(item => item.hair_shedding).filter(Boolean);
+      const sheddingMode = sheddingValues.length
+        ? Object.entries(sheddingValues.reduce((acc, v) => { acc[v] = (acc[v] || 0) + 1; return acc; }, {})).sort((a, b) => b[1] - a[1])[0][0]
+        : null;
+
+      // Scalp condition mode this week
+      const scalpValues = currentWeek.map(item => item.scalp_condition).filter(Boolean);
+      const scalpMode = scalpValues.length
+        ? Object.entries(scalpValues.reduce((acc, v) => { acc[v] = (acc[v] || 0) + 1; return acc; }, {})).sort((a, b) => b[1] - a[1])[0][0]
+        : null;
+
       const ai = await base44.asServiceRole.integrations.Core.InvokeLLM({
         prompt: `You are FemWell's wellness intelligence engine. Generate a personal weekly insight for a woman based on the data below. Be warm, specific, and grounded in her actual numbers — never generic.
 
@@ -77,6 +100,10 @@ User data for this week:
 - Energy average this week: ${avgText(currentWeek, 'energy', '/5')} (previous week: ${avgText(previousWeek, 'energy', '/5')})
 - Sleep average this week: ${avgText(currentWeek, 'sleep_hours', ' hours')} (previous week: ${avgText(previousWeek, 'sleep_hours', ' hours')})
 - Top logged symptoms: ${topSymptoms}
+- Skin condition most logged this week: ${skinMode || 'not logged'}
+- Breakout locations logged: ${breakoutSummary || 'none'}
+- Hair shedding most logged this week: ${sheddingMode || 'not logged'}
+- Scalp condition most logged: ${scalpMode || 'not logged'}
 - Number of check-ins logged: ${currentWeek.length}
 - Goals: ${goals}
 - Tone preference: ${tonePreference}
@@ -91,7 +118,9 @@ Write a weekly summary with exactly these sections. Use markdown bold for sectio
 
 **For the week ahead** — 2 sentences. Name the phase they are moving into next (${nextPhase}). Give one specific, actionable suggestion tailored to that phase — not generic wellness advice.
 
-Keep the total response under 280 words. Do not use bullet points. Do not use the word "journey". Do not use exclamation marks.`,
+**Skin & hair note** — 1–2 sentences only. If skin or hair data was logged, reference it specifically by name (e.g. "Moderate breakout", "A lot" shedding) and explain the likely hormonal driver for this phase. If nothing was logged, omit this section entirely — do not write a placeholder.
+
+Keep the total response under 280 words. Do not include the "Skin & hair note" section if skin_condition and hair_shedding are both "not logged". Do not use bullet points. Do not use the word "journey". Do not use exclamation marks.`,
       });
 
       await base44.asServiceRole.entities.WeeklyInsights.create({

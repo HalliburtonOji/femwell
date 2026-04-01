@@ -153,6 +153,95 @@ Deno.serve(async (req) => {
           week_start: weekStart,
         });
       }
+
+      // Correlation D: skin condition by phase
+      const skinByPhase = { menstrual: [], follicular: [], ovulatory: [], luteal: [] };
+      for (const checkin of checkins) {
+        if (!checkin.skin_condition) continue;
+        const phase = getPhaseForDate(profile, checkin.date);
+        const score = checkin.skin_condition.toLowerCase().includes('clear') || checkin.skin_condition.toLowerCase().includes('glow') ? 5
+          : checkin.skin_condition === 'Normal' ? 4
+          : checkin.skin_condition.toLowerCase().includes('mild') || checkin.skin_condition === 'Very oily' ? 3
+          : checkin.skin_condition.toLowerCase().includes('moderate') || checkin.skin_condition === 'Very dry' ? 2
+          : null;
+        if (score) skinByPhase[phase].push(score);
+      }
+      const skinPhaseAvgs = Object.entries(skinByPhase)
+        .map(([phase, values]) => ({ phase, avg: avg(values), count: values.length }))
+        .filter(entry => entry.avg != null && entry.count >= 3);
+      if (skinPhaseAvgs.length >= 2) {
+        skinPhaseAvgs.sort((a, b) => b.avg - a.avg);
+        const bestSkin = skinPhaseAvgs[0];
+        const worstSkin = skinPhaseAvgs[skinPhaseAvgs.length - 1];
+        const skinText = `Your skin tends to be clearest in your ${bestSkin.phase} phase (avg score ${formatNum(bestSkin.avg)}/5) and most reactive in your ${worstSkin.phase} phase (avg ${formatNum(worstSkin.avg)}/5).`;
+        await base44.asServiceRole.entities.InsightCards.create({
+          user_id: profile.user_id,
+          user_email: profile.user_email,
+          source: 'correlation_engine',
+          cycle_phase: bestSkin.phase,
+          insight_date: insightDate,
+          title: 'Your skin phase pattern',
+          insight_text: skinText,
+          confidence: 0.75,
+          is_read: false,
+          recommended_action_route: null,
+        });
+        await base44.asServiceRole.entities.Correlations.create({
+          user_id: profile.user_id,
+          user_email: profile.user_email,
+          metric_a: 'phase',
+          metric_b: 'skin_condition',
+          correlation_type: 'D',
+          result_summary: skinText,
+          data_points_used: skinPhaseAvgs.reduce((sum, e) => sum + e.count, 0),
+          generated_at: new Date().toISOString(),
+          week_start: weekStart,
+        });
+      }
+
+      // Correlation E: hair shedding by phase
+      const hairByPhase = { menstrual: [], follicular: [], ovulatory: [], luteal: [] };
+      for (const checkin of checkins) {
+        if (!checkin.hair_shedding) continue;
+        const phase = getPhaseForDate(profile, checkin.date);
+        const score = checkin.hair_shedding === 'Normal' ? 1
+          : checkin.hair_shedding === 'More than usual' ? 2
+          : checkin.hair_shedding === 'A lot' ? 3
+          : null;
+        if (score) hairByPhase[phase].push(score);
+      }
+      const hairPhaseAvgs = Object.entries(hairByPhase)
+        .map(([phase, values]) => ({ phase, avg: avg(values), count: values.length }))
+        .filter(entry => entry.avg != null && entry.count >= 3);
+      if (hairPhaseAvgs.length >= 2) {
+        hairPhaseAvgs.sort((a, b) => b.avg - a.avg);
+        const worstHair = hairPhaseAvgs[0];
+        const bestHair = hairPhaseAvgs[hairPhaseAvgs.length - 1];
+        const hairText = `Your hair shedding is consistently highest in your ${worstHair.phase} phase and lowest in your ${bestHair.phase} phase — a pattern driven by oestrogen fluctuation across your cycle.`;
+        await base44.asServiceRole.entities.InsightCards.create({
+          user_id: profile.user_id,
+          user_email: profile.user_email,
+          source: 'correlation_engine',
+          cycle_phase: worstHair.phase,
+          insight_date: insightDate,
+          title: 'Your hair shedding pattern',
+          insight_text: hairText,
+          confidence: 0.75,
+          is_read: false,
+          recommended_action_route: null,
+        });
+        await base44.asServiceRole.entities.Correlations.create({
+          user_id: profile.user_id,
+          user_email: profile.user_email,
+          metric_a: 'phase',
+          metric_b: 'hair_shedding',
+          correlation_type: 'E',
+          result_summary: hairText,
+          data_points_used: hairPhaseAvgs.reduce((sum, e) => sum + e.count, 0),
+          generated_at: new Date().toISOString(),
+          week_start: weekStart,
+        });
+      }
     }
 
     return Response.json({ success: true });
