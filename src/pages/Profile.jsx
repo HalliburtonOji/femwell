@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { base44 } from "@/api/base44Client";
 import { createPageUrl } from "@/utils";
-import { LogOut, ChevronRight, Bell, Moon, Heart, Shield, Settings, TrendingUp, Bookmark, Ticket, CalendarDays } from "lucide-react";
+import { LogOut, ChevronRight, Bell, Moon, Heart, Shield, Settings, TrendingUp, Bookmark, Ticket, CalendarDays, Feather } from "lucide-react";
 
 export default function Profile() {
   const [user, setUser] = useState(null);
@@ -189,6 +189,21 @@ export default function Profile() {
           <div className="flex-1">
             <p className="text-sm font-medium text-gray-700">Symptom Trends</p>
             <p className="text-xs text-gray-400">See how symptoms correlate with your cycle</p>
+          </div>
+          <ChevronRight className="w-4 h-4 text-gray-300" />
+        </a>
+
+        <a
+          href={createPageUrl("SkinHair")}
+          className="card-glass rounded-2xl p-4 mb-4 flex items-center gap-3 hover:bg-rose-50/50 transition-colors block"
+        >
+          <div className="w-8 h-8 rounded-lg flex items-center justify-center"
+               style={{ backgroundColor: "var(--rose-dust-subtle)" }}>
+            <Feather className="w-4 h-4" style={{ color: "var(--rose-dust)" }} />
+          </div>
+          <div className="flex-1">
+            <p className="text-sm font-medium text-gray-700">Skin &amp; Hair</p>
+            <p className="text-xs text-gray-400">Phase patterns, breakouts &amp; shedding trends</p>
           </div>
           <ChevronRight className="w-4 h-4 text-gray-300" />
         </a>

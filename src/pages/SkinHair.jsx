@@ -323,18 +323,13 @@ export default function SkinHair() {
     (async () => {
       const u = await base44.auth.me();
       setUser(u);
-      const [profiles, allCheckins, entitlements, skinR, hairR] = await Promise.all([
+      const [profiles, allCheckins, skinR, hairR] = await Promise.all([
         base44.entities.UserProfile.filter({ user_id: u.id }),
         base44.entities.DailyCheckins.filter({ user_id: u.id }, "-date", 200),
-        base44.entities.Entitlements.filter({ user_id: u.id }),
         base44.entities.SkinRoutine.filter({ user_id: u.id }),
         base44.entities.HairRoutine.filter({ user_id: u.id }),
       ]);
-      setProfile(profiles[0] || null);
-      const cutoff = subDays(new Date(), 90).toISOString().split("T")[0];
-      setCheckins(allCheckins.filter((c) => c.date >= cutoff).sort((a, b) => a.date.localeCompare(b.date)));
-      const plan = entitlements[0]?.plan || "free";
-      setIsPremium(plan === "plus" || plan === "pro" || plan === "premium");
+      setIsPremium(false); // premium gating placeholder — wire to Subscription entity when ready
       setSkinRoutines(skinR.sort((a, b) => (b.started_date || "").localeCompare(a.started_date || "")));
       setHairRoutines(hairR.sort((a, b) => (b.wash_date || "").localeCompare(a.wash_date || "")));
       setLoading(false);

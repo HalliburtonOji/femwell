@@ -5,7 +5,7 @@ import { createPageUrl } from "@/utils";
 import {
   Sun, ChevronRight, Plus, Sparkles, Droplets, Activity, Heart,
   Pill, Play, Trash2, Utensils, Loader2, Bell, Flame,
-  BookOpen, Compass, Droplet, Zap, CheckCircle2
+  BookOpen, Compass, Droplet, Zap, CheckCircle2, Feather
 } from "lucide-react";
 import ManualCompleteButton from "../components/sessions/ManualCompleteButton";
 import DailyInsightBanner from "../components/today/DailyInsightBanner";
@@ -225,6 +225,7 @@ function DailyStoriesRow() {
     { id: "breathe", label: "Breathe", color: "#E6FFF6", route: createPageUrl("Explore") + "?type=Audio" },
     { id: "nutrition", label: "Nutrition", color: "#FFFBE6", route: createPageUrl("Nutrition") },
     { id: "explore", label: "Explore", color: "#F0EEFF", route: createPageUrl("Explore") },
+    { id: "skin", label: "Skin & Hair", color: "#F5ECF0", route: createPageUrl("SkinHair") },
   ];
 
   return (
@@ -734,6 +735,7 @@ export default function Today() {
                   { lab: "Log Cycle", Icon: Droplets, action: () => { setMainTab("track"); setTrackTab("Cycle"); } },
                   { lab: "Journal",   Icon: BookOpen,  href: createPageUrl("Journal") },
                   { lab: "Explore",   Icon: Compass,   href: createPageUrl("Explore") },
+                  { lab: "Skin & Hair", Icon: Feather, href: createPageUrl("SkinHair") },
                 ].map((a) => {
                   const inner = (
                     <>

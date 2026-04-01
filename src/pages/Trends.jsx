@@ -411,6 +411,41 @@ export default function Trends() {
           );
         })()}
 
+        <div
+          className="rounded-[22px] p-5 mb-4 flex items-center justify-between"
+          style={{
+            backgroundColor: "var(--surface)",
+            border: "1px solid var(--border)",
+            boxShadow: "var(--shadow-sm)",
+          }}
+        >
+          <div>
+            <p style={{ fontSize: "0.6rem", fontWeight: 600, textTransform: "uppercase",
+                        letterSpacing: "0.12em", color: "var(--mauve)",
+                        fontFamily: "'Inter', sans-serif" }}>
+              Dedicated tracker
+            </p>
+            <p style={{ fontSize: "14px", fontWeight: 700, color: "var(--plum)",
+                        fontFamily: "'Inter', sans-serif", marginTop: "2px" }}>
+              Skin &amp; Hair Trends
+            </p>
+            <p style={{ fontSize: "12px", color: "var(--mauve)",
+                        fontFamily: "'Inter', sans-serif", marginTop: "4px" }}>
+              Phase-by-phase breakout patterns, shedding data and more
+            </p>
+          </div>
+          <Link
+            to={createPageUrl("SkinHair")}
+            style={{ backgroundColor: "var(--plum)", color: "white",
+                     borderRadius: "9999px", padding: "8px 18px",
+                     fontSize: "12px", fontWeight: 600,
+                     fontFamily: "'Inter', sans-serif",
+                     textDecoration: "none", flexShrink: 0 }}
+          >
+            View
+          </Link>
+        </div>
+
       </div>
     </div>
   );

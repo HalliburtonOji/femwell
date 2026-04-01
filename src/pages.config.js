@@ -66,6 +66,7 @@ import Trends from './pages/Trends';
 import Upgrade from './pages/Upgrade';
 import VideoManager from './pages/VideoManager';
 import Assistant from './pages/Assistant';
+import SkinHair from './pages/SkinHair';
 import __Layout from './Layout.jsx';
 
 
@@ -88,6 +89,7 @@ export const PAGES = {
     "Upgrade": Upgrade,
     "VideoManager": VideoManager,
     "Assistant": Assistant,
+    "SkinHair": SkinHair,
 }
 
 export const pagesConfig = {
