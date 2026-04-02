@@ -21,31 +21,42 @@ export default function DailyInsightBanner({ user }) {
 
   if (!insight || dismissed) return null;
 
-  const phaseEmoji = {
-    menstrual: "🌑",
-    follicular: "🌱",
-    ovulation: "✨",
-    luteal: "🌕",
-  };
-
   return (
-    <div className="mx-4 mb-4 rounded-2xl bg-gradient-to-r from-rose-50 to-pink-50 border border-rose-100 p-4 relative">
+    <div style={{
+      margin: "0 16px 16px",
+      borderRadius: "20px",
+      backgroundColor: "var(--rose-dust-subtle)",
+      border: "1px solid var(--rose-dust-light)",
+      padding: "16px",
+      position: "relative"
+    }}>
       <button
         onClick={() => {
           setDismissed(true);
           base44.entities.InsightCards.update(insight.id, { is_read: true });
         }}
-        className="absolute top-3 right-3 text-gray-300 hover:text-gray-500"
+        style={{ position: "absolute", top: "12px", right: "12px",
+                 background: "none", border: "none", cursor: "pointer",
+                 color: "var(--mauve)", display: "flex" }}
       >
         <X className="w-4 h-4" />
       </button>
       <div className="flex items-start gap-3 pr-6">
-        <div className="w-8 h-8 rounded-full bg-rose-100 flex items-center justify-center flex-shrink-0 text-sm">
-          {phaseEmoji[insight.cycle_phase] || <Sparkles className="w-4 h-4 text-rose-400" />}
+        <div style={{
+          width: "32px", height: "32px", borderRadius: "10px",
+          backgroundColor: "var(--rose-dust-subtle)",
+          display: "flex", alignItems: "center",
+          justifyContent: "center", flexShrink: 0
+        }}>
+          <Sparkles className="w-4 h-4" style={{ color: "var(--rose-dust)" }} />
         </div>
         <div>
-          <p className="text-xs font-semibold text-rose-500 mb-1 uppercase tracking-wide">Daily Insight</p>
-          <p className="text-sm text-gray-700 leading-relaxed">{insight.insight_text}</p>
+          <p style={{ fontSize: "0.6rem", fontWeight: 700,
+                       textTransform: "uppercase", letterSpacing: "0.12em",
+                       color: "var(--rose-dust)", fontFamily: "'Inter', sans-serif",
+                       marginBottom: "4px" }}>Daily Insight</p>
+          <p style={{ fontSize: "13px", lineHeight: 1.6,
+                      color: "var(--plum)", fontFamily: "'Inter', sans-serif" }}>{insight.insight_text}</p>
         </div>
       </div>
     </div>

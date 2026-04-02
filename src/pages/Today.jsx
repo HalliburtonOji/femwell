@@ -5,7 +5,7 @@ import { createPageUrl } from "@/utils";
 import {
   Sun, ChevronRight, Plus, Sparkles, Droplets, Activity, Heart,
   Pill, Play, Trash2, Utensils, Loader2, Bell, Flame,
-  BookOpen, Compass, Droplet, Zap, CheckCircle2, Feather
+  BookOpen, Compass, Droplet, Zap, CheckCircle2, Feather, Map
 } from "lucide-react";
 import ManualCompleteButton from "../components/sessions/ManualCompleteButton";
 import DailyInsightBanner from "../components/today/DailyInsightBanner";
@@ -771,27 +771,52 @@ export default function Today() {
             )}
 
             {/* Quick actions */}
-            <div className="mb-4">
-              <p className="mb-3" style={label}>Quick Actions</p>
+            <div style={{ marginBottom: "16px" }}>
+              <p style={{
+                fontSize: "0.6rem", fontWeight: 600, textTransform: "uppercase",
+                letterSpacing: "0.1em", color: "var(--mauve)",
+                fontFamily: "'Inter', sans-serif", marginBottom: "12px"
+              }}>Quick access</p>
+
               <div className="grid grid-cols-3 gap-3">
                 {[
-                  { lab: "Log Cycle", Icon: Droplets, action: () => { setMainTab("track"); setTrackTab("Cycle"); } },
-                  { lab: "Journal",   Icon: BookOpen,  href: createPageUrl("Journal") },
-                  { lab: "Explore",   Icon: Compass,   href: createPageUrl("Explore") },
-                  { lab: "Skin & Hair", Icon: Feather, href: createPageUrl("SkinHair") },
+                  { lab: "Cycle",     Icon: Droplets, action: () => { setMainTab("track"); setTrackTab("Cycle"); }, bg: "var(--rose-dust-subtle)", fg: "var(--rose-dust)" },
+                  { lab: "Journal",   Icon: BookOpen,  href: createPageUrl("Journal"),     bg: "#E8F4FF",               fg: "#5B9BD5" },
+                  { lab: "Nutrition", Icon: Utensils,  href: createPageUrl("Nutrition"),   bg: "var(--sage-subtle)",    fg: "var(--sage)" },
+                  { lab: "Programs",  Icon: Map,       href: createPageUrl("ProgramsHub"), bg: "var(--ivory-dark)",     fg: "var(--mauve)" },
+                  { lab: "Explore",   Icon: Compass,   href: createPageUrl("Explore"),     bg: "var(--ivory-dark)",     fg: "var(--mauve)" },
+                  { lab: "Pulse",     Icon: Activity,  href: createPageUrl("Pulse"),       bg: "var(--rose-dust-subtle)", fg: "var(--rose-dust)" },
                 ].map((a) => {
                   const inner = (
                     <>
-                      <div className="w-9 h-9 rounded-xl flex items-center justify-center mx-auto mb-2" style={{ backgroundColor: "var(--rose-dust-subtle)", color: "var(--rose-dust)" }}>
-                        <a.Icon className="w-4 h-4" strokeWidth={1.5} />
+                      <div style={{
+                        width: "36px", height: "36px", borderRadius: "12px",
+                        backgroundColor: a.bg, display: "flex",
+                        alignItems: "center", justifyContent: "center",
+                        margin: "0 auto 8px"
+                      }}>
+                        <a.Icon className="w-4 h-4" style={{ color: a.fg }} strokeWidth={1.5} />
                       </div>
-                      <p className="text-xs font-semibold" style={{ color: "var(--plum)", fontFamily: "'Inter', sans-serif" }}>{a.lab}</p>
+                      <p style={{
+                        fontSize: "11px", fontWeight: 600, color: "var(--plum)",
+                        fontFamily: "'Inter', sans-serif", textAlign: "center"
+                      }}>{a.lab}</p>
                     </>
                   );
                   return a.href ? (
-                    <a key={a.lab} href={a.href} className="flex flex-col items-center rounded-[20px] p-4 text-center block" style={card}>{inner}</a>
+                    <a key={a.lab} href={a.href}
+                       className="flex flex-col items-center rounded-[20px] p-4 text-center block"
+                       style={{ backgroundColor: "var(--surface)", border: "1px solid var(--border)",
+                                boxShadow: "var(--shadow-sm)", textDecoration: "none" }}>
+                      {inner}
+                    </a>
                   ) : (
-                    <button key={a.lab} onClick={a.action} className="flex flex-col items-center rounded-[20px] p-4 text-center w-full" style={card}>{inner}</button>
+                    <button key={a.lab} onClick={a.action}
+                            className="flex flex-col items-center rounded-[20px] p-4 text-center w-full"
+                            style={{ backgroundColor: "var(--surface)", border: "1px solid var(--border)",
+                                     boxShadow: "var(--shadow-sm)" }}>
+                      {inner}
+                    </button>
                   );
                 })}
               </div>

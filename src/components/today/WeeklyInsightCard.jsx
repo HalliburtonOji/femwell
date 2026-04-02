@@ -1,8 +1,9 @@
 import { useState, useEffect } from "react";
 import { base44 } from "@/api/base44Client";
 import { Sparkles, RefreshCw, ChevronDown, ChevronUp } from "lucide-react";
-import ReactMarkdown from "react-markdown";
 import { subDays, format } from "date-fns";
+import { createPageUrl } from "@/utils";
+import { Link } from "react-router-dom";
 
 export default function WeeklyInsightCard({ user }) {
   const [insight, setInsight] = useState(null);
@@ -80,16 +81,32 @@ Write the insight in Markdown with clear sections. Keep it warm, personal, and a
   if (loading) return null;
 
   return (
-    <div className="card-glass rounded-2xl p-4 mb-4">
-      <div className="flex items-center justify-between mb-2">
-        <div className="flex items-center gap-2">
-          <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-violet-200 to-rose-200 flex items-center justify-center">
-            <Sparkles className="w-4 h-4 text-violet-600" />
+    <div style={{
+      backgroundColor: "var(--surface)",
+      border: "1px solid var(--border)",
+      borderRadius: "20px", padding: "16px",
+      marginBottom: "16px",
+      boxShadow: "var(--shadow-sm)"
+    }}>
+
+      {/* Header */}
+      <div className="flex items-center justify-between" style={{ marginBottom: "12px" }}>
+        <div className="flex items-center gap-3">
+          <div style={{
+            width: "32px", height: "32px", borderRadius: "12px",
+            backgroundColor: "var(--rose-dust-subtle)",
+            display: "flex", alignItems: "center", justifyContent: "center"
+          }}>
+            <Sparkles className="w-4 h-4" style={{ color: "var(--rose-dust)" }} />
           </div>
           <div>
-            <p className="text-sm font-bold text-gray-800">Weekly Wellness Insight</p>
-            <p className="text-xs text-gray-400">
-              {insight ? `Generated ${format(new Date(insight.generated_at), "MMM d")}` : "Get your weekly summary"}
+            <p style={{ fontSize: "14px", fontWeight: 700, color: "var(--plum)", fontFamily: "'Inter', sans-serif" }}>
+              Weekly Insight
+            </p>
+            <p style={{ fontSize: "11px", color: "var(--mauve)", fontFamily: "'Inter', sans-serif" }}>
+              {insight
+                ? `Generated ${format(new Date(insight.generated_at), "MMM d")}`
+                : "Get your weekly summary"}
             </p>
           </div>
         </div>
@@ -97,46 +114,100 @@ Write the insight in Markdown with clear sections. Keep it warm, personal, and a
           <button
             onClick={generate}
             disabled={generating}
-            className="w-8 h-8 rounded-full bg-rose-50 flex items-center justify-center hover:bg-rose-100 transition-colors"
-            title="Regenerate"
+            style={{
+              width: "34px", height: "34px", borderRadius: "9999px",
+              backgroundColor: "var(--ivory-dark)", border: "none",
+              cursor: "pointer", display: "flex", alignItems: "center",
+              justifyContent: "center"
+            }}
           >
-            <RefreshCw className={`w-3.5 h-3.5 text-rose-500 ${generating ? "animate-spin" : ""}`} />
+            <RefreshCw className={`w-3.5 h-3.5 ${generating ? "animate-spin" : ""}`}
+                       style={{ color: "var(--rose-dust)" }} />
           </button>
           {insight && (
-            <button onClick={() => setExpanded(v => !v)} className="w-8 h-8 rounded-full bg-gray-50 flex items-center justify-center">
-              {expanded ? <ChevronUp className="w-3.5 h-3.5 text-gray-500" /> : <ChevronDown className="w-3.5 h-3.5 text-gray-500" />}
+            <button
+              onClick={() => setExpanded(v => !v)}
+              style={{
+                width: "34px", height: "34px", borderRadius: "9999px",
+                backgroundColor: "var(--ivory-dark)", border: "none",
+                cursor: "pointer", display: "flex", alignItems: "center",
+                justifyContent: "center"
+              }}
+            >
+              {expanded
+                ? <ChevronUp className="w-3.5 h-3.5" style={{ color: "var(--mauve)" }} />
+                : <ChevronDown className="w-3.5 h-3.5" style={{ color: "var(--mauve)" }} />}
             </button>
           )}
         </div>
       </div>
 
       {generating && (
-        <div className="flex items-center gap-2 py-3 text-sm text-gray-400">
-          <div className="w-4 h-4 border-2 border-rose-300 border-t-rose-600 rounded-full animate-spin" />
-          Scanning your week…
+        <div className="flex items-center gap-2 py-3">
+          <div className="w-4 h-4 rounded-full border-2 border-t-transparent animate-spin"
+               style={{ borderColor: "var(--rose-dust-light)", borderTopColor: "var(--rose-dust)" }} />
+          <p style={{ fontSize: "13px", color: "var(--mauve)", fontFamily: "'Inter', sans-serif" }}>
+            Scanning your week…
+          </p>
         </div>
       )}
 
       {!generating && !insight && (
-        <button
-          onClick={generate}
-          className="w-full py-2.5 rounded-xl bg-gradient-to-r from-violet-100 to-rose-100 text-sm font-medium text-violet-700 hover:from-violet-200 hover:to-rose-200 transition-all"
-        >
-          ✨ Generate this week's insight
+        <button onClick={generate} style={{
+          width: "100%", padding: "10px",
+          borderRadius: "12px", border: "none",
+          backgroundColor: "var(--ivory-dark)", cursor: "pointer",
+          fontSize: "13px", fontWeight: 600,
+          color: "var(--plum)", fontFamily: "'Inter', sans-serif"
+        }}>
+          Generate this week's insight
         </button>
       )}
 
       {insight && expanded && (
-        <div className="mt-3 prose prose-sm max-w-none prose-p:my-1.5 prose-headings:text-gray-700 prose-strong:text-rose-700 text-gray-600 text-sm">
-          <ReactMarkdown>{insight.insight_text}</ReactMarkdown>
-        </div>
+        <>
+          <div style={{
+            maxHeight: "40vh", overflowY: "auto",
+            borderRadius: "14px", padding: "14px",
+            backgroundColor: "var(--ivory)",
+            border: "1px solid var(--border-subtle)",
+            marginTop: "12px"
+          }}>
+            {insight.insight_text
+              .split("\n\n")
+              .filter(Boolean)
+              .map((para, i) => (
+                <p key={i} style={{
+                  fontSize: "13px", lineHeight: 1.65,
+                  color: "var(--plum)", marginBottom: "10px",
+                  fontFamily: "'Inter', sans-serif"
+                }}>
+                  {para.replace(/^#+\s*/, "").replace(/\*\*/g, "")}
+                </p>
+              ))}
+          </div>
+          <Link to={createPageUrl("Pulse")} style={{
+            display: "inline-block", marginTop: "12px",
+            fontSize: "12px", fontWeight: 600,
+            color: "var(--rose-dust)", fontFamily: "'Inter', sans-serif",
+            textDecoration: "none"
+          }}>
+            View all insights in Pulse
+          </Link>
+        </>
       )}
 
       {insight && !expanded && (
-        <p className="text-xs text-gray-400 mt-1 line-clamp-2">
+        <p style={{
+          fontSize: "12px", lineHeight: 1.5, color: "var(--mauve)",
+          marginTop: "6px", fontFamily: "'Inter', sans-serif",
+          display: "-webkit-box", WebkitLineClamp: 2,
+          WebkitBoxOrient: "vertical", overflow: "hidden"
+        }}>
           {insight.insight_text?.replace(/[#*_]/g, "").slice(0, 120)}…
         </p>
       )}
+
     </div>
   );
 }
