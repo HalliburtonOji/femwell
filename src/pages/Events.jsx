@@ -6,6 +6,28 @@ import { toggleSavedItem } from "@/lib/savedItems";
 const FILTERS = ["all", "free", "paid"];
 const CATEGORIES = ["all", "women networking", "fitness/wellness", "talks & workshops", "relationship / therapy events", "general"];
 
+const card = {
+  backgroundColor: "var(--surface)", border: "1px solid var(--border)",
+  borderRadius: "20px", boxShadow: "var(--shadow-sm)",
+};
+const sLabel = {
+  fontSize: "0.6rem", fontWeight: 600, textTransform: "uppercase",
+  letterSpacing: "0.12em", color: "var(--mauve)", fontFamily: "'Inter', sans-serif",
+};
+
+const pillActive = {
+  borderRadius: "9999px", padding: "5px 12px", fontSize: "11px",
+  fontWeight: 600, cursor: "pointer", whiteSpace: "nowrap",
+  fontFamily: "'Inter', sans-serif", textTransform: "capitalize",
+  border: "none", backgroundColor: "var(--plum)", color: "white"
+};
+const pillInactive = {
+  borderRadius: "9999px", padding: "5px 12px", fontSize: "11px",
+  fontWeight: 600, cursor: "pointer", whiteSpace: "nowrap",
+  fontFamily: "'Inter', sans-serif", textTransform: "capitalize",
+  border: "none", backgroundColor: "var(--ivory-dark)", color: "var(--mauve)"
+};
+
 export default function Events() {
   const [items, setItems] = useState([]);
   const [priceFilter, setPriceFilter] = useState("all");
@@ -51,29 +73,41 @@ export default function Events() {
   };
 
   if (loading) {
-    return <div className="min-h-screen femwell-gradient flex items-center justify-center"><div className="h-10 w-10 animate-spin rounded-full border-4 border-rose-300 border-t-rose-600" /></div>;
+    return (
+      <div className="min-h-screen flex items-center justify-center" style={{ backgroundColor: "var(--ivory)" }}>
+        <div className="w-8 h-8 rounded-full border-2 border-t-transparent animate-spin"
+             style={{ borderColor: "var(--rose-dust-light)", borderTopColor: "var(--rose-dust)" }} />
+      </div>
+    );
   }
 
   return (
-    <div className="min-h-screen femwell-gradient pb-28">
+    <div className="min-h-screen pb-28" style={{ backgroundColor: "var(--ivory)" }}>
       <div className="mx-auto max-w-4xl px-4 pt-12 md:px-6">
-        <div className="mb-5 rounded-[28px] border border-rose-100 bg-white p-5 shadow-sm md:p-6">
-          <p className="text-xs font-semibold uppercase tracking-[0.2em] text-rose-500">Events</p>
-          <h1 className="mt-3 text-3xl font-bold text-gray-900">Free and paid events</h1>
-          <p className="mt-2 text-sm text-gray-500">Find women-focused talks, workshops, networking, and wellness sessions.</p>
+
+        <div style={{ ...card, padding: "20px", marginBottom: "16px" }}>
+          <p style={{ ...sLabel, marginBottom: "8px" }}>Community</p>
+          <h1 style={{ fontSize: "26px", fontWeight: 700, fontFamily: "'Playfair Display', serif", color: "var(--plum)", letterSpacing: "-0.02em" }}>
+            Events
+          </h1>
+          <p style={{ fontSize: "13px", color: "var(--mauve)", fontFamily: "'Inter', sans-serif", marginTop: "6px" }}>
+            Women-focused talks, workshops, networking, and wellness sessions.
+          </p>
         </div>
 
-        <div className="mb-4 rounded-[24px] border border-rose-100 bg-white p-4 shadow-sm">
+        <div style={{ ...card, padding: "16px", marginBottom: "16px" }}>
           <div className="flex gap-2 overflow-x-auto pb-2">
             {FILTERS.map((item) => (
-              <button key={item} onClick={() => setPriceFilter(item)} className={`rounded-full px-3 py-1.5 text-xs font-semibold capitalize ${priceFilter === item ? "bg-rose-500 text-white" : "bg-rose-50 text-rose-600"}`}>
+              <button key={item} onClick={() => setPriceFilter(item)}
+                style={priceFilter === item ? pillActive : pillInactive}>
                 {item}
               </button>
             ))}
           </div>
-          <div className="mt-3 flex gap-2 overflow-x-auto pb-1">
+          <div className="flex gap-2 overflow-x-auto" style={{ marginTop: "10px" }}>
             {CATEGORIES.map((item) => (
-              <button key={item} onClick={() => setCategory(item)} className={`rounded-full px-3 py-1.5 text-xs font-semibold capitalize ${category === item ? "bg-gray-900 text-white" : "bg-gray-100 text-gray-600"}`}>
+              <button key={item} onClick={() => setCategory(item)}
+                style={category === item ? pillActive : pillInactive}>
                 {item}
               </button>
             ))}
@@ -81,32 +115,50 @@ export default function Events() {
         </div>
 
         {visibleItems.length === 0 ? (
-          <div className="rounded-[28px] border border-rose-100 bg-white p-10 text-center shadow-sm">
-            <p className="text-4xl">📍</p>
-            <p className="mt-3 text-base font-semibold text-gray-900">No events yet</p>
-            <p className="mt-1 text-sm text-gray-500">Fresh listings will appear here after the daily refresh.</p>
+          <div style={{ ...card, padding: "40px 20px", textAlign: "center" }}>
+            <div style={{
+              width: "48px", height: "48px", borderRadius: "14px",
+              backgroundColor: "var(--rose-dust-subtle)",
+              display: "flex", alignItems: "center", justifyContent: "center",
+              margin: "0 auto 16px"
+            }}>
+              <CalendarDays className="w-5 h-5" style={{ color: "var(--rose-dust)" }} />
+            </div>
+            <p style={{ fontSize: "15px", fontWeight: 600, color: "var(--plum)", fontFamily: "'Inter', sans-serif" }}>No events yet</p>
+            <p style={{ fontSize: "13px", color: "var(--mauve)", fontFamily: "'Inter', sans-serif", marginTop: "4px" }}>
+              Fresh listings appear after the daily refresh.
+            </p>
           </div>
         ) : (
           <div className="grid gap-4">
             {visibleItems.map((item) => (
-              <div key={item.id} className="rounded-[24px] border border-rose-100 bg-white p-4 shadow-sm">
-                <div className="flex items-start justify-between gap-3">
-                  <div>
-                    <p className="text-xs font-semibold uppercase tracking-[0.16em] text-gray-400">{item.category}</p>
-                    <h3 className="mt-2 text-lg font-semibold text-gray-900">{item.title}</h3>
-                    <div className="mt-3 flex flex-wrap gap-3 text-sm text-gray-500">
-                      <span className="inline-flex items-center gap-1.5"><CalendarDays className="h-4 w-4" /> {item.date}</span>
-                      <span className="inline-flex items-center gap-1.5"><MapPin className="h-4 w-4" /> {item.location || item.city || "Online"}</span>
-                    </div>
-                    <p className="mt-2 text-sm font-medium text-rose-600">{item.price || (item.is_free ? "Free" : "Paid")}</p>
-                  </div>
-                  <button onClick={() => handleSave(item)} className={`rounded-full px-3 py-2 text-xs font-semibold ${savedIds.has(item.id) ? "bg-rose-100 text-rose-600" : "bg-gray-100 text-gray-600"}`}>
+              <div key={item.id} style={{ ...card, padding: "16px" }}>
+                <p style={{ ...sLabel, marginBottom: "6px" }}>{item.category}</p>
+                <h3 style={{ fontSize: "17px", fontWeight: 700, color: "var(--plum)", fontFamily: "'Inter', sans-serif", marginTop: "4px" }}>{item.title}</h3>
+                <div className="flex flex-wrap gap-3" style={{ marginTop: "10px", fontSize: "13px", color: "var(--mauve)", fontFamily: "'Inter', sans-serif" }}>
+                  <span className="inline-flex items-center gap-1.5"><CalendarDays className="h-3.5 w-3.5" /> {item.date}</span>
+                  <span className="inline-flex items-center gap-1.5"><MapPin className="h-3.5 w-3.5" /> {item.location || item.city || "Online"}</span>
+                </div>
+                <p style={{ fontSize: "13px", fontWeight: 600, color: "var(--rose-dust)", fontFamily: "'Inter', sans-serif", marginTop: "6px" }}>
+                  {item.price || (item.is_free ? "Free" : "Paid")}
+                </p>
+                <div className="flex items-center justify-between" style={{ marginTop: "12px" }}>
+                  <a href={item.link} target="_blank" rel="noreferrer"
+                    style={{ display: "inline-flex", borderRadius: "12px", padding: "10px 16px", fontSize: "13px", fontWeight: 600, textDecoration: "none", backgroundColor: "var(--plum)", color: "white", fontFamily: "'Inter', sans-serif" }}>
+                    Open event
+                  </a>
+                  <button onClick={() => handleSave(item)}
+                    style={{
+                      borderRadius: "9999px", padding: "8px 16px", fontSize: "12px",
+                      fontWeight: 600, fontFamily: "'Inter', sans-serif", cursor: "pointer",
+                      ...(savedIds.has(item.id)
+                        ? { backgroundColor: "var(--rose-dust-subtle)", color: "var(--rose-dust)", border: "1px solid var(--rose-dust-light)" }
+                        : { backgroundColor: "var(--ivory-dark)", color: "var(--mauve)", border: "1px solid var(--border)" }
+                      )
+                    }}>
                     {savedIds.has(item.id) ? "Saved" : "Save"}
                   </button>
                 </div>
-                <a href={item.link} target="_blank" rel="noreferrer" className="mt-4 inline-flex rounded-2xl bg-rose-500 px-4 py-2.5 text-sm font-semibold text-white">
-                  Open event
-                </a>
               </div>
             ))}
           </div>

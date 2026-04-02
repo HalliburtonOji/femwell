@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { base44 } from "@/api/base44Client";
 import { createPageUrl } from "@/utils";
-import { Bell, ChevronLeft, ChevronRight, Droplets, Flower2 } from "lucide-react";
+import { ChevronLeft, ChevronRight } from "lucide-react";
 
 const GOALS = [
   { id: "calm",             label: "Calm"             },
@@ -15,46 +15,47 @@ const GOALS = [
 ];
 
 const INTERESTS = [
-  "Womens Health",
-  "Relationships",
-  "Career & Money",
-  "Beauty",
-  "Fitness",
-  "Food",
-  "Mental Wellness",
-  "Culture",
-  "Parenting",
-  "Sex Education",
-  "Menopause",
-  "PCOS",
-  "PMS",
+  "Womens Health", "Relationships", "Career & Money", "Beauty",
+  "Fitness", "Food", "Mental Wellness", "Culture", "Parenting",
+  "Sex Education", "Menopause", "PCOS", "PMS",
 ];
 
 const TONES = [
-  { id: "gentle", label: "Gentle", description: "Soft, warm, and encouraging" },
-  { id: "straight", label: "Straight talk", description: "Clear, practical, and direct" },
-  { id: "minimal", label: "Minimal", description: "Short, calm, and to the point" },
+  { id: "gentle",   label: "Gentle",       description: "Soft, warm, and encouraging"    },
+  { id: "straight", label: "Straight talk", description: "Clear, practical, and direct"   },
+  { id: "minimal",  label: "Minimal",       description: "Short, calm, and to the point"  },
 ];
 
 const BODY_GOALS = [
-  { id: "", label: "Skip for now" },
-  { id: "fat_loss", label: "Fat loss" },
-  { id: "tone", label: "Tone" },
-  { id: "energy", label: "More energy" },
-  { id: "hormone_support", label: "Hormone support" },
-  { id: "postpartum", label: "Postpartum" },
-  { id: "menopause", label: "Menopause" },
+  { id: "",                label: "Skip for now"     },
+  { id: "fat_loss",        label: "Fat loss"         },
+  { id: "tone",            label: "Tone"             },
+  { id: "energy",          label: "More energy"      },
+  { id: "hormone_support", label: "Hormone support"  },
+  { id: "postpartum",      label: "Postpartum"       },
+  { id: "menopause",       label: "Menopause"        },
 ];
 
 const STEPS = ["welcome", "goals", "interests", "preferences", "setup", "skin_profile", "done"];
 
 const SKIN_TYPES = [
-  { value: "dry",         label: "Dry",         desc: "Feels tight, rough, or flaky" },
+  { value: "dry",         label: "Dry",         desc: "Feels tight, rough, or flaky"           },
   { value: "oily",        label: "Oily",         desc: "Shiny, large pores, prone to breakouts" },
-  { value: "combination", label: "Combination",  desc: "Oily T-zone, drier cheeks" },
-  { value: "normal",      label: "Normal",       desc: "Balanced, rarely reactive" },
-  { value: "sensitive",   label: "Sensitive",    desc: "Easily irritated or reactive" },
+  { value: "combination", label: "Combination",  desc: "Oily T-zone, drier cheeks"              },
+  { value: "normal",      label: "Normal",       desc: "Balanced, rarely reactive"              },
+  { value: "sensitive",   label: "Sensitive",    desc: "Easily irritated or reactive"           },
 ];
+
+const sLabel = {
+  fontSize: "0.6rem", fontWeight: 600, textTransform: "uppercase",
+  letterSpacing: "0.12em", color: "var(--mauve)",
+  fontFamily: "'Inter', sans-serif",
+};
+
+const card = {
+  backgroundColor: "var(--surface)", border: "1px solid var(--border)",
+  borderRadius: "20px", boxShadow: "var(--shadow-sm)",
+};
 
 export default function Onboarding() {
   const [step, setStep] = useState(0);
@@ -147,45 +148,64 @@ export default function Onboarding() {
   const progress = (step / (STEPS.length - 1)) * 100;
 
   return (
-    <div className="min-h-screen femwell-gradient flex flex-col">
+    <div className="min-h-screen flex flex-col" style={{ backgroundColor: "var(--ivory)" }}>
+
       {step > 0 && step < STEPS.length - 1 && (
-        <div className="px-6 pt-12 pb-2">
-          <div className="h-1 overflow-hidden rounded-full bg-rose-100">
-            <div className="h-full rounded-full bg-gradient-to-r from-rose-400 to-pink-400 transition-all duration-500" style={{ width: `${progress}%` }} />
+        <div style={{ padding: "48px 24px 8px" }}>
+          <div style={{ height: "3px", borderRadius: "9999px", backgroundColor: "var(--border)", overflow: "hidden" }}>
+            <div style={{ height: "100%", borderRadius: "9999px", backgroundColor: "var(--rose-dust)", width: `${progress}%`, transition: "width 0.4s ease" }} />
           </div>
         </div>
       )}
 
-      <div className="mx-auto flex w-full max-w-md flex-1 flex-col items-center justify-center px-6 py-8">
+      <div className="flex-1 flex flex-col items-center justify-center px-6 py-8 w-full mx-auto" style={{ maxWidth: "448px" }}>
+
         {current === "welcome" && (
-          <div className="space-y-6 text-center">
-            <div className="mx-auto flex h-20 w-20 items-center justify-center rounded-3xl bg-gradient-to-br from-rose-200 to-pink-300 shadow-xl">
-              <Flower2 className="h-10 w-10 text-white" />
+          <div className="space-y-8 text-center w-full">
+            <div style={{
+              width: "80px", height: "80px", borderRadius: "24px", margin: "0 auto",
+              display: "flex", alignItems: "center", justifyContent: "center",
+              backgroundColor: "var(--rose-dust-subtle)", border: "1px solid var(--rose-dust-light)"
+            }}>
+              <span style={{ fontSize: "36px", fontWeight: 700, fontFamily: "'Playfair Display', serif", color: "var(--rose-dust)" }}>F</span>
             </div>
             <div>
-              <h1 className="mb-2 text-3xl font-bold text-rose-900">Welcome to FemWell</h1>
-              <p className="leading-relaxed text-gray-500">Let’s shape your feed, guidance style, and daily rhythm in under a minute.</p>
+              <h1 style={{ fontSize: "28px", fontWeight: 700, lineHeight: 1.1, fontFamily: "'Playfair Display', serif", color: "var(--plum)", letterSpacing: "-0.02em" }}>
+                Welcome to FemWell
+              </h1>
+              <p style={{ fontSize: "15px", lineHeight: 1.6, color: "var(--mauve)", fontFamily: "'Inter', sans-serif", marginTop: "8px" }}>
+                Let's shape your feed, guidance style, and daily rhythm in under a minute.
+              </p>
             </div>
             <button className="btn-primary w-full" onClick={() => setStep(1)}>
-              Get Started <ChevronRight className="ml-1 inline h-4 w-4" />
+              Get started
             </button>
           </div>
         )}
 
         {current === "goals" && (
-          <div className="w-full space-y-5">
+          <div className="w-full space-y-6">
             <div>
-              <h2 className="text-2xl font-bold text-rose-900">What do you want more of?</h2>
-              <p className="mt-1 text-sm text-gray-500">Pick the goals that matter most right now.</p>
+              <p style={sLabel}>Step 1 of 5</p>
+              <h2 style={{ fontSize: "22px", fontWeight: 700, color: "var(--plum)", fontFamily: "'Playfair Display', serif", marginTop: "4px", lineHeight: 1.2 }}>
+                What do you want more of?
+              </h2>
+              <p style={{ fontSize: "13px", color: "var(--mauve)", fontFamily: "'Inter', sans-serif", marginTop: "6px" }}>
+                Pick everything that matters right now.
+              </p>
             </div>
             <div className="grid grid-cols-2 gap-3">
               {GOALS.map((goal) => (
-                <button
-                  key={goal.id}
-                  onClick={() => toggleValue(goal.id, setGoals)}
-                  className={`rounded-2xl border-2 p-4 text-left transition-all ${goals.includes(goal.id) ? "border-rose-400 bg-rose-50" : "border-transparent bg-white/70"}`}
-                >
-                  <div className="text-sm font-medium text-gray-700">{goal.label}</div>
+                <button key={goal.id} onClick={() => toggleValue(goal.id, setGoals)}
+                  style={{
+                    borderRadius: "16px", padding: "14px 16px", textAlign: "left",
+                    border: goals.includes(goal.id) ? "2px solid var(--rose-dust)" : "1.5px solid var(--border)",
+                    backgroundColor: goals.includes(goal.id) ? "var(--rose-dust-subtle)" : "var(--surface)",
+                    transition: "all 0.15s", cursor: "pointer"
+                  }}>
+                  <p style={{ fontSize: "13px", fontWeight: 600, color: goals.includes(goal.id) ? "var(--rose-dust)" : "var(--plum)", fontFamily: "'Inter', sans-serif" }}>
+                    {goal.label}
+                  </p>
                 </button>
               ))}
             </div>
@@ -193,18 +213,27 @@ export default function Onboarding() {
         )}
 
         {current === "interests" && (
-          <div className="w-full space-y-5">
+          <div className="w-full space-y-6">
             <div>
-              <h2 className="text-2xl font-bold text-rose-900">Choose your lifestyle interests</h2>
-              <p className="mt-1 text-sm text-gray-500">This powers your personalised feed from day one.</p>
+              <p style={sLabel}>Step 2 of 5</p>
+              <h2 style={{ fontSize: "22px", fontWeight: 700, color: "var(--plum)", fontFamily: "'Playfair Display', serif", marginTop: "4px", lineHeight: 1.2 }}>
+                Your lifestyle interests
+              </h2>
+              <p style={{ fontSize: "13px", color: "var(--mauve)", fontFamily: "'Inter', sans-serif", marginTop: "6px" }}>
+                Powers your personalised feed from day one.
+              </p>
             </div>
             <div className="flex flex-wrap gap-2">
               {INTERESTS.map((interest) => (
-                <button
-                  key={interest}
-                  onClick={() => toggleValue(interest, setInterests)}
-                  className={`rounded-full px-4 py-2 text-sm font-medium transition-all ${interests.includes(interest) ? "bg-rose-500 text-white" : "bg-white/80 text-gray-600"}`}
-                >
+                <button key={interest} onClick={() => toggleValue(interest, setInterests)}
+                  style={{
+                    borderRadius: "9999px", padding: "8px 16px",
+                    fontSize: "13px", fontWeight: 500, fontFamily: "'Inter', sans-serif",
+                    border: interests.includes(interest) ? "1.5px solid var(--rose-dust)" : "1.5px solid var(--border)",
+                    backgroundColor: interests.includes(interest) ? "var(--rose-dust-subtle)" : "var(--surface)",
+                    color: interests.includes(interest) ? "var(--rose-dust)" : "var(--plum)",
+                    transition: "all 0.15s", cursor: "pointer"
+                  }}>
                   {interest}
                 </button>
               ))}
@@ -215,35 +244,42 @@ export default function Onboarding() {
         {current === "preferences" && (
           <div className="w-full space-y-6">
             <div>
-              <h2 className="text-2xl font-bold text-rose-900">How should FemWell show up?</h2>
-              <p className="mt-1 text-sm text-gray-500">Choose your guidance style and your best reminder window.</p>
+              <p style={sLabel}>Step 3 of 5</p>
+              <h2 style={{ fontSize: "22px", fontWeight: 700, color: "var(--plum)", fontFamily: "'Playfair Display', serif", marginTop: "4px", lineHeight: 1.2 }}>
+                How should FemWell show up?
+              </h2>
+              <p style={{ fontSize: "13px", color: "var(--mauve)", fontFamily: "'Inter', sans-serif", marginTop: "6px" }}>
+                Choose your guidance style.
+              </p>
             </div>
-
             <div className="space-y-3">
               {TONES.map((item) => (
-                <button
-                  key={item.id}
-                  onClick={() => setTone(item.id)}
-                  className={`w-full rounded-2xl border-2 p-4 text-left transition-all ${tone === item.id ? "border-rose-400 bg-rose-50" : "border-transparent bg-white/70"}`}
-                >
-                  <div className="font-medium text-gray-800">{item.label}</div>
-                  <div className="mt-1 text-xs text-gray-500">{item.description}</div>
+                <button key={item.id} onClick={() => setTone(item.id)} className="w-full text-left"
+                  style={{
+                    borderRadius: "16px", padding: "14px 16px", cursor: "pointer",
+                    border: tone === item.id ? "2px solid var(--rose-dust)" : "1.5px solid var(--border)",
+                    backgroundColor: tone === item.id ? "var(--rose-dust-subtle)" : "var(--surface)",
+                    transition: "all 0.15s"
+                  }}>
+                  <p style={{ fontSize: "14px", fontWeight: 600, color: tone === item.id ? "var(--rose-dust)" : "var(--plum)", fontFamily: "'Inter', sans-serif" }}>{item.label}</p>
+                  <p style={{ fontSize: "12px", color: "var(--mauve)", fontFamily: "'Inter', sans-serif", marginTop: "3px" }}>{item.description}</p>
                 </button>
               ))}
             </div>
-
             <div>
-              <p className="mb-2 text-sm font-medium text-gray-600">Reminder time</p>
+              <p style={{ fontSize: "13px", fontWeight: 600, color: "var(--plum)", fontFamily: "'Inter', sans-serif", marginBottom: "8px" }}>Reminder time</p>
               <div className="grid grid-cols-2 gap-3">
                 {[{ id: "morning", label: "Morning" }, { id: "evening", label: "Evening" }].map((item) => (
-                  <button
-                    key={item.id}
-                    onClick={() => setNotificationTime(item.id)}
-                    className={`rounded-2xl border px-4 py-3 text-sm font-semibold transition-all ${notificationTime === item.id ? "border-rose-400 bg-rose-50 text-rose-600" : "border-rose-100 bg-white text-gray-600"}`}
-                  >
-                    <Bell className="mr-1 inline h-4 w-4" /> {item.label}
+                  <button key={item.id} onClick={() => setNotificationTime(item.id)} className="text-left"
+                    style={{
+                      borderRadius: "14px", padding: "12px 16px", cursor: "pointer",
+                      border: notificationTime === item.id ? "2px solid var(--rose-dust)" : "1.5px solid var(--border)",
+                      backgroundColor: notificationTime === item.id ? "var(--rose-dust-subtle)" : "var(--surface)",
+                      transition: "all 0.15s"
+                    }}>
+                    <p style={{ fontSize: "13px", fontWeight: 600, color: notificationTime === item.id ? "var(--rose-dust)" : "var(--plum)", fontFamily: "'Inter', sans-serif" }}>{item.label}</p>
                   </button>
-              ))}
+                ))}
               </div>
             </div>
           </div>
@@ -252,69 +288,91 @@ export default function Onboarding() {
         {current === "setup" && (
           <div className="w-full space-y-6">
             <div>
-              <h2 className="text-2xl font-bold text-rose-900">Quick setup</h2>
-              <p className="mt-1 text-sm text-gray-500">Set a hydration goal and any optional wellness focus.</p>
+              <p style={sLabel}>Step 4 of 5</p>
+              <h2 style={{ fontSize: "22px", fontWeight: 700, color: "var(--plum)", fontFamily: "'Playfair Display', serif", marginTop: "4px", lineHeight: 1.2 }}>
+                A few more details
+              </h2>
             </div>
 
-            <div className="rounded-[24px] bg-white/80 p-4">
-              <label className="mb-2 block text-sm font-medium text-gray-600">
-                <Droplets className="mr-1 inline h-4 w-4 text-rose-500" /> Hydration goal
-              </label>
-              <input
-                type="number"
-                min="500"
-                step="100"
-                value={hydrationTarget}
-                onChange={(event) => setHydrationTarget(Number(event.target.value) || 2000)}
-                className="w-full rounded-xl border border-rose-100 bg-white px-4 py-3 text-sm text-gray-700 outline-none focus:ring-2 focus:ring-rose-200"
-              />
+            <div style={{ ...card, padding: "16px" }}>
+              <p style={{ fontSize: "13px", fontWeight: 600, color: "var(--plum)", fontFamily: "'Inter', sans-serif", marginBottom: "4px" }}>Daily hydration target</p>
+              <p style={{ fontSize: "22px", fontWeight: 700, color: "var(--rose-dust)", fontFamily: "'Inter', sans-serif", marginBottom: "12px" }}>
+                {(hydrationTarget / 1000).toFixed(1)}L
+              </p>
+              <input type="range" min="1000" max="4000" step="250" value={hydrationTarget}
+                onChange={(e) => setHydrationTarget(Number(e.target.value))}
+                style={{ width: "100%", accentColor: "var(--rose-dust)" }} />
+              <div className="flex justify-between" style={{ marginTop: "4px" }}>
+                <span style={{ fontSize: "11px", color: "var(--mauve)", fontFamily: "'Inter', sans-serif" }}>1.0L</span>
+                <span style={{ fontSize: "11px", color: "var(--mauve)", fontFamily: "'Inter', sans-serif" }}>4.0L</span>
+              </div>
             </div>
 
-            <div>
-              <p className="mb-2 text-sm font-medium text-gray-600">Optional body goal</p>
-              <div className="flex flex-wrap gap-2">
+            <div style={{ ...card, padding: "16px" }}>
+              <p style={{ fontSize: "13px", fontWeight: 600, color: "var(--plum)", fontFamily: "'Inter', sans-serif", marginBottom: "10px" }}>Body goal (optional)</p>
+              <div className="grid grid-cols-2 gap-2">
                 {BODY_GOALS.map((item) => (
-                  <button
-                    key={item.label}
-                    onClick={() => setBodyGoal(item.id)}
-                    className={`rounded-full px-4 py-2 text-sm font-medium transition-all ${bodyGoal === item.id ? "bg-rose-500 text-white" : "bg-white/80 text-gray-600"}`}
-                  >
-                    {item.label}
+                  <button key={item.id} onClick={() => setBodyGoal(item.id)} className="text-left"
+                    style={{
+                      borderRadius: "12px", padding: "10px 12px", cursor: "pointer",
+                      border: bodyGoal === item.id ? "1.5px solid var(--rose-dust)" : "1.5px solid var(--border)",
+                      backgroundColor: bodyGoal === item.id ? "var(--rose-dust-subtle)" : "var(--surface)",
+                      transition: "all 0.15s"
+                    }}>
+                    <p style={{ fontSize: "12px", fontWeight: 600, color: bodyGoal === item.id ? "var(--rose-dust)" : "var(--plum)", fontFamily: "'Inter', sans-serif" }}>{item.label}</p>
                   </button>
                 ))}
               </div>
             </div>
 
-            <button
-              onClick={() => setCycleTrackingEnabled((value) => !value)}
-              className={`flex w-full items-center justify-between rounded-[24px] border p-4 text-left transition-all ${cycleTrackingEnabled ? "border-rose-300 bg-rose-50" : "border-rose-100 bg-white"}`}
-            >
+            <div style={{ ...card, padding: "16px", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
               <div>
-                <p className="font-medium text-gray-800">Cycle tracking</p>
-                <p className="mt-1 text-xs text-gray-500">Turn this on if you want phase-aware tips and trends.</p>
+                <p style={{ fontSize: "13px", fontWeight: 600, color: "var(--plum)", fontFamily: "'Inter', sans-serif" }}>Cycle tracking</p>
+                <p style={{ fontSize: "11px", color: "var(--mauve)", fontFamily: "'Inter', sans-serif", marginTop: "2px" }}>
+                  Turn on for phase-aware tips and trends.
+                </p>
               </div>
-              <div className={`rounded-full px-3 py-1 text-xs font-semibold ${cycleTrackingEnabled ? "bg-rose-500 text-white" : "bg-gray-100 text-gray-500"}`}>
-                {cycleTrackingEnabled ? "Enabled" : "Off"}
-              </div>
-            </button>
+              <button type="button" onClick={() => setCycleTrackingEnabled(!cycleTrackingEnabled)}
+                style={{
+                  width: "46px", height: "26px", borderRadius: "9999px",
+                  position: "relative", border: "none", cursor: "pointer",
+                  backgroundColor: cycleTrackingEnabled ? "var(--rose-dust)" : "var(--border)",
+                  transition: "background-color 0.2s", flexShrink: 0
+                }}>
+                <div style={{
+                  position: "absolute", top: "3px",
+                  left: cycleTrackingEnabled ? "23px" : "3px",
+                  width: "20px", height: "20px", borderRadius: "9999px",
+                  backgroundColor: "white", transition: "left 0.2s",
+                  boxShadow: "0 1px 3px rgba(0,0,0,0.2)"
+                }} />
+              </button>
+            </div>
           </div>
         )}
 
         {current === "skin_profile" && (
-          <div className="w-full space-y-5">
+          <div className="w-full space-y-6">
             <div>
-              <h2 className="text-2xl font-bold text-rose-900">What's your skin type?</h2>
-              <p className="mt-1 text-sm text-gray-500">This helps us tailor your skin &amp; hair guidance to your baseline.</p>
+              <p style={sLabel}>Step 5 of 5</p>
+              <h2 style={{ fontSize: "22px", fontWeight: 700, color: "var(--plum)", fontFamily: "'Playfair Display', serif", marginTop: "4px", lineHeight: 1.2 }}>
+                What's your skin type?
+              </h2>
+              <p style={{ fontSize: "13px", color: "var(--mauve)", fontFamily: "'Inter', sans-serif", marginTop: "6px" }}>
+                Helps us tailor your skin guidance from the start.
+              </p>
             </div>
             <div className="grid grid-cols-1 gap-3">
               {SKIN_TYPES.map((item) => (
-                <button
-                  key={item.value}
-                  onClick={() => setSkinType(item.value)}
-                  className={`rounded-2xl border-2 p-4 text-left transition-all ${skinType === item.value ? "border-rose-400 bg-rose-50" : "border-transparent bg-white/70"}`}
-                >
-                  <div className="text-sm font-medium text-gray-700">{item.label}</div>
-                  <div className="mt-0.5 text-xs text-gray-500">{item.desc}</div>
+                <button key={item.value} onClick={() => setSkinType(item.value)} className="text-left"
+                  style={{
+                    borderRadius: "16px", padding: "14px 16px", cursor: "pointer",
+                    border: skinType === item.value ? "2px solid var(--rose-dust)" : "1.5px solid var(--border)",
+                    backgroundColor: skinType === item.value ? "var(--rose-dust-subtle)" : "var(--surface)",
+                    transition: "all 0.15s"
+                  }}>
+                  <p style={{ fontSize: "14px", fontWeight: 600, color: skinType === item.value ? "var(--rose-dust)" : "var(--plum)", fontFamily: "'Inter', sans-serif" }}>{item.label}</p>
+                  <p style={{ fontSize: "12px", color: "var(--mauve)", fontFamily: "'Inter', sans-serif", marginTop: "2px" }}>{item.desc}</p>
                 </button>
               ))}
             </div>
@@ -322,37 +380,47 @@ export default function Onboarding() {
         )}
 
         {current === "done" && (
-          <div className="space-y-6 text-center">
-            <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-rose-200 to-pink-300 flex items-center justify-center mx-auto shadow-md">
-              <Flower2 className="h-7 w-7 text-white" />
+          <div className="space-y-6 text-center w-full">
+            <div style={{
+              width: "64px", height: "64px", borderRadius: "20px", margin: "0 auto",
+              display: "flex", alignItems: "center", justifyContent: "center",
+              backgroundColor: "var(--rose-dust-subtle)", border: "1px solid var(--rose-dust-light)"
+            }}>
+              <span style={{ fontSize: "28px", fontWeight: 700, fontFamily: "'Playfair Display', serif", color: "var(--rose-dust)" }}>F</span>
             </div>
             <div>
-              <h2 className="text-2xl font-bold text-rose-900">You’re all set</h2>
-              <p className="mt-2 leading-relaxed text-gray-500">Your assistant, feed, and recommendations are now tuned to you.</p>
+              <h2 style={{ fontSize: "24px", fontWeight: 700, fontFamily: "'Playfair Display', serif", color: "var(--plum)", lineHeight: 1.1 }}>
+                You're all set
+              </h2>
+              <p style={{ fontSize: "14px", color: "var(--mauve)", fontFamily: "'Inter', sans-serif", marginTop: "8px", lineHeight: 1.6 }}>
+                Your assistant, feed, and recommendations are now tuned to you.
+              </p>
             </div>
-            <div className="rounded-[24px] bg-white/80 p-4 text-left">
-              <div className="inline-flex items-center gap-2 rounded-full bg-rose-50 px-3 py-1 text-xs font-semibold text-rose-600">
-                Personalisation ready
-              </div>
-              <p className="mt-3 text-sm text-gray-600">You’ll see smarter lifestyle picks, a more human assistant, and faster recommendations from the moment you enter.</p>
+            <div style={{ ...card, padding: "16px", textAlign: "left" }}>
+              <p style={{ ...sLabel, marginBottom: "8px" }}>Personalisation ready</p>
+              <p style={{ fontSize: "13px", color: "var(--plum)", lineHeight: 1.6, fontFamily: "'Inter', sans-serif" }}>
+                You'll see smarter lifestyle picks, a more human assistant, and faster recommendations from the moment you enter.
+              </p>
             </div>
             <button className="btn-primary w-full" onClick={handleFinish} disabled={saving}>
-              {saving ? "Setting up..." : "Enter FemWell →"}
+              {saving ? "Setting up..." : "Enter FemWell"}
             </button>
           </div>
         )}
       </div>
 
       {step > 0 && step < STEPS.length - 1 && (
-        <div className="mx-auto flex w-full max-w-md gap-3 px-6 pb-10">
-          <button onClick={() => setStep((currentStep) => currentStep - 1)} className="btn-secondary flex items-center gap-1">
+        <div style={{ display: "flex", gap: "12px", padding: "0 24px 40px", maxWidth: "448px", width: "100%", margin: "0 auto" }}>
+          <button onClick={() => setStep(s => s - 1)} className="btn-secondary flex items-center gap-1">
             <ChevronLeft className="h-4 w-4" /> Back
           </button>
           <button
-            onClick={() => setStep((currentStep) => currentStep + 1)}
+            onClick={() => setStep(s => s + 1)}
             className="btn-primary flex-1"
-            disabled={(current === "goals" && goals.length === 0) || (current === "interests" && interests.length === 0) || false}
-          >
+            disabled={
+              (current === "goals" && goals.length === 0) ||
+              (current === "interests" && interests.length === 0)
+            }>
             Continue <ChevronRight className="ml-1 inline h-4 w-4" />
           </button>
         </div>

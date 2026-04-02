@@ -1,14 +1,24 @@
 import { useEffect, useMemo, useState } from "react";
 import { base44 } from "@/api/base44Client";
 import SavedItemCard from "@/components/saved/SavedItemCard";
+import { Bookmark } from "lucide-react";
 
 const BASE_TABS = [
-  { id: "ADVICE", label: "Advice" },
+  { id: "ADVICE",    label: "Advice"    },
   { id: "LIFESTYLE", label: "Lifestyle" },
-  { id: "CONTENT", label: "Sessions" },
-  { id: "PROGRAM", label: "Programs" },
-  { id: "JOURNAL", label: "Journal" },
+  { id: "CONTENT",   label: "Sessions"  },
+  { id: "PROGRAM",   label: "Programs"  },
+  { id: "JOURNAL",   label: "Journal"   },
 ];
+
+const card = {
+  backgroundColor: "var(--surface)", border: "1px solid var(--border)",
+  borderRadius: "20px", boxShadow: "var(--shadow-sm)",
+};
+const sLabel = {
+  fontSize: "0.6rem", fontWeight: 600, textTransform: "uppercase",
+  letterSpacing: "0.12em", color: "var(--mauve)", fontFamily: "'Inter', sans-serif",
+};
 
 export default function Saved() {
   const [user, setUser] = useState(null);
@@ -40,38 +50,57 @@ export default function Saved() {
 
   if (loading) {
     return (
-      <div className="min-h-screen femwell-gradient flex items-center justify-center">
-        <div className="h-10 w-10 animate-spin rounded-full border-4 border-rose-300 border-t-rose-600" />
+      <div className="min-h-screen flex items-center justify-center" style={{ backgroundColor: "var(--ivory)" }}>
+        <div className="w-8 h-8 rounded-full border-2 border-t-transparent animate-spin"
+             style={{ borderColor: "var(--rose-dust-light)", borderTopColor: "var(--rose-dust)" }} />
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen femwell-gradient pb-28">
+    <div className="min-h-screen pb-28" style={{ backgroundColor: "var(--ivory)" }}>
       <div className="mx-auto max-w-4xl px-4 pt-12 md:px-6">
-        <div className="mb-5 rounded-[28px] border border-rose-100 bg-white p-5 shadow-sm md:p-6">
-          <p className="text-xs font-semibold uppercase tracking-[0.2em] text-rose-500">Saved</p>
-          <h1 className="mt-3 text-3xl font-bold text-gray-900">Everything you wanted to keep</h1>
-          <p className="mt-2 text-sm text-gray-500">Advice, lifestyle finds, sessions, and programs live here in one place.</p>
+
+        <div style={{ ...card, padding: "20px", marginBottom: "16px" }}>
+          <p style={{ ...sLabel, marginBottom: "8px" }}>Your library</p>
+          <h1 style={{ fontSize: "26px", fontWeight: 700, fontFamily: "'Playfair Display', serif", color: "var(--plum)", letterSpacing: "-0.02em", lineHeight: 1.1 }}>
+            Saved
+          </h1>
+          <p style={{ fontSize: "13px", color: "var(--mauve)", fontFamily: "'Inter', sans-serif", marginTop: "6px" }}>
+            Advice, lifestyle finds, sessions, and programs.
+          </p>
         </div>
 
-        <div className="mb-5 flex gap-2 overflow-x-auto pb-1">
+        <div className="flex gap-2 overflow-x-auto pb-1" style={{ marginBottom: "16px" }}>
           {tabs.map((item) => (
-            <button
-              key={item.id}
-              onClick={() => setTab(item.id)}
-              className={`rounded-full px-4 py-2 text-sm font-semibold transition-all ${tab === item.id ? "bg-rose-500 text-white" : "bg-white text-gray-500"}`}
-            >
+            <button key={item.id} onClick={() => setTab(item.id)}
+              style={{
+                borderRadius: "9999px", padding: "7px 16px",
+                fontSize: "12px", fontWeight: 600, fontFamily: "'Inter', sans-serif",
+                whiteSpace: "nowrap", cursor: "pointer",
+                border: tab === item.id ? "none" : "1px solid var(--border)",
+                backgroundColor: tab === item.id ? "var(--plum)" : "var(--surface)",
+                color: tab === item.id ? "white" : "var(--mauve)"
+              }}>
               {item.label}
             </button>
           ))}
         </div>
 
         {visibleItems.length === 0 ? (
-          <div className="rounded-[28px] border border-rose-100 bg-white p-10 text-center shadow-sm">
-            <p className="text-4xl">🌸</p>
-            <p className="mt-3 text-base font-semibold text-gray-900">Nothing saved here yet</p>
-            <p className="mt-1 text-sm text-gray-500">When you save something around the app, it will show up here.</p>
+          <div style={{ ...card, padding: "40px 20px", textAlign: "center", marginTop: "8px" }}>
+            <div style={{
+              width: "48px", height: "48px", borderRadius: "14px",
+              backgroundColor: "var(--rose-dust-subtle)",
+              display: "flex", alignItems: "center", justifyContent: "center",
+              margin: "0 auto 16px"
+            }}>
+              <Bookmark className="w-5 h-5" style={{ color: "var(--rose-dust)" }} />
+            </div>
+            <p style={{ fontSize: "15px", fontWeight: 600, color: "var(--plum)", fontFamily: "'Inter', sans-serif" }}>Nothing saved here yet</p>
+            <p style={{ fontSize: "13px", color: "var(--mauve)", fontFamily: "'Inter', sans-serif", marginTop: "4px" }}>
+              When you save something around the app, it appears here.
+            </p>
           </div>
         ) : (
           <div className="grid gap-4">

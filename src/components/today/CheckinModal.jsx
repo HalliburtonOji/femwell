@@ -13,9 +13,9 @@ const SCALP_CONDITION_OPTIONS = ["Normal", "Oily", "Dry/flaky"];
 function SliderRow({ label, value, onChange, min = 1, max = 5, unit = "/5" }) {
   return (
     <div>
-      <label className="text-sm font-medium text-gray-600 flex justify-between mb-1">
+      <label style={{ fontSize: "13px", fontWeight: 600, color: "var(--plum)", fontFamily: "'Inter', sans-serif", display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "6px" }}>
         <span>{label}</span>
-        <span className="text-rose-600 font-bold">{value}{unit}</span>
+        <span style={{ fontWeight: 700, color: "var(--rose-dust)" }}>{value}{unit}</span>
       </label>
       <input type="range" min={min} max={max} value={value} onChange={(e) => onChange(Number(e.target.value))} />
     </div>
@@ -25,16 +25,16 @@ function SliderRow({ label, value, onChange, min = 1, max = 5, unit = "/5" }) {
 function PillSelect({ label, options, value, onChange, formatter }) {
   return (
     <div>
-      <p className="text-sm font-medium text-gray-600 mb-2">{label}</p>
+      <p style={{ fontSize: "13px", fontWeight: 600, color: "var(--plum)", fontFamily: "'Inter', sans-serif", marginBottom: "8px" }}>{label}</p>
       <div className="flex flex-wrap gap-2">
         {options.map((o) => (
           <button
             key={o}
             type="button"
             onClick={() => onChange(value === o ? null : o)}
-            className={`px-3 py-1.5 rounded-full text-xs font-medium transition-all capitalize ${
-              value === o ? "bg-rose-500 text-white" : "bg-rose-50 text-gray-600 border border-rose-100"
-            }`}
+            style={value === o
+              ? { backgroundColor: "var(--plum)", color: "white", border: "1.5px solid var(--plum)", borderRadius: "9999px", padding: "6px 12px", fontSize: "11px", fontWeight: 600, cursor: "pointer", textTransform: "capitalize", fontFamily: "'Inter', sans-serif" }
+              : { backgroundColor: "var(--ivory-dark)", color: "var(--plum)", border: "1.5px solid var(--border)", borderRadius: "9999px", padding: "6px 12px", fontSize: "11px", fontWeight: 600, cursor: "pointer", textTransform: "capitalize", fontFamily: "'Inter', sans-serif" }}
           >
             {formatter ? formatter(o) : o.replace(/_/g, " ")}
           </button>
@@ -103,25 +103,25 @@ export default function CheckinModal({ existing, onClose, onSave }) {
 
   return (
     <div className="fixed inset-0 bg-black/40 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-      <div className="bg-white rounded-3xl w-full max-w-md shadow-2xl flex flex-col" style={{ maxHeight: "85vh" }}>
+      <div style={{ backgroundColor: "var(--surface)", borderRadius: "24px", width: "100%", maxWidth: "448px", boxShadow: "0 20px 60px rgba(42,32,53,0.18)", display: "flex", flexDirection: "column", maxHeight: "85vh" }}>
         {/* Fixed header */}
-        <div className="flex items-center justify-between px-6 pt-5 pb-3 border-b border-rose-50 flex-shrink-0">
-          <h2 className="text-lg font-bold text-gray-800">Daily Check-in</h2>
-          <button onClick={onClose} className="text-gray-400 hover:text-gray-600 text-xl w-7 h-7 flex items-center justify-center">×</button>
+        <div className="flex items-center justify-between px-6 pt-5 pb-3 flex-shrink-0" style={{ borderBottom: "1px solid var(--border-subtle)" }}>
+          <h2 style={{ fontSize: "17px", fontWeight: 700, color: "var(--plum)", fontFamily: "'Inter', sans-serif" }}>Daily Check-in</h2>
+          <button onClick={onClose} style={{ color: "var(--mauve)", background: "none", border: "none", cursor: "pointer", fontSize: "20px", width: "28px", height: "28px", display: "flex", alignItems: "center", justifyContent: "center" }}>×</button>
         </div>
 
         {/* Scrollable body */}
         <div className="overflow-y-auto flex-1 px-6 py-4 space-y-5">
 
           {/* Core sliders */}
-          <SliderRow emoji="😊" label="Mood" value={mood} onChange={setMood} />
-          <SliderRow emoji="⚡" label="Energy" value={energy} onChange={setEnergy} />
-          <SliderRow emoji="🌊" label="Stress" value={stress} onChange={setStress} />
-          <SliderRow emoji="🎯" label="Focus" value={focus} onChange={setFocus} />
-          <SliderRow emoji="💤" label="Sleep hours" value={sleep} onChange={setSleep} min={3} max={12} unit="h" />
-          <SliderRow emoji="🌟" label="Sleep quality" value={sleepQuality} onChange={setSleepQuality} />
-          <SliderRow emoji="💧" label="Hydration" value={hydration} onChange={setHydration} min={0} max={12} unit=" glasses" />
-          <SliderRow emoji="🫀" label="Social connection" value={socialConnection} onChange={setSocialConnection} />
+          <SliderRow label="Mood" value={mood} onChange={setMood} />
+          <SliderRow label="Energy" value={energy} onChange={setEnergy} />
+          <SliderRow label="Stress" value={stress} onChange={setStress} />
+          <SliderRow label="Focus" value={focus} onChange={setFocus} />
+          <SliderRow label="Sleep hours" value={sleep} onChange={setSleep} min={3} max={12} unit="h" />
+          <SliderRow label="Sleep quality" value={sleepQuality} onChange={setSleepQuality} />
+          <SliderRow label="Hydration" value={hydration} onChange={setHydration} min={0} max={12} unit=" glasses" />
+          <SliderRow label="Social connection" value={socialConnection} onChange={setSocialConnection} />
 
           {/* Exercise */}
           <div>
@@ -130,7 +130,7 @@ export default function CheckinModal({ existing, onClose, onSave }) {
               <button
                 type="button"
                 onClick={() => setExerciseDone(!exerciseDone)}
-                className={`w-12 h-6 rounded-full transition-all relative ${exerciseDone ? "bg-rose-500" : "bg-gray-200"}`}
+                style={{ width: "46px", height: "26px", borderRadius: "9999px", position: "relative", border: "none", cursor: "pointer", backgroundColor: exerciseDone ? "var(--rose-dust)" : "var(--border)", transition: "background-color 0.2s" }}
               >
                 <div className={`absolute top-0.5 w-5 h-5 bg-white rounded-full shadow transition-all ${exerciseDone ? "left-6" : "left-0.5"}`} />
               </button>
@@ -142,7 +142,7 @@ export default function CheckinModal({ existing, onClose, onSave }) {
                   placeholder="Type (e.g. yoga, run, gym...)"
                   value={exerciseType}
                   onChange={(e) => setExerciseType(e.target.value)}
-                  className="w-full p-2.5 rounded-xl border border-rose-100 bg-rose-50/30 text-sm focus:outline-none focus:ring-2 focus:ring-rose-200"
+                  style={{ width: "100%", padding: "10px 12px", borderRadius: "12px", border: "1px solid var(--border)", backgroundColor: "var(--ivory)", fontSize: "13px", color: "var(--plum)", fontFamily: "'Inter', sans-serif", outline: "none" }}
                 />
                 <SliderRow label="Duration" value={exerciseMinutes} onChange={setExerciseMinutes} min={5} max={120} unit=" min" />
                 <PillSelect label="Intensity" options={INTENSITY_OPTIONS} value={exerciseIntensity} onChange={setExerciseIntensity} />
@@ -157,7 +157,8 @@ export default function CheckinModal({ existing, onClose, onSave }) {
             <button
               type="button"
               onClick={() => setShowPhysical(!showPhysical)}
-              className="w-full flex items-center justify-between text-sm font-medium text-gray-600 py-1"
+              className="w-full flex items-center justify-between py-2"
+              style={{ background: "none", border: "none", cursor: "pointer", fontSize: "13px", fontWeight: 600, color: "var(--plum)", fontFamily: "'Inter', sans-serif" }}
             >
               <span>Physical Symptoms (optional)</span>
               {showPhysical ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
@@ -179,7 +180,8 @@ export default function CheckinModal({ existing, onClose, onSave }) {
             <button
               type="button"
               onClick={() => setShowBody(!showBody)}
-              className="w-full flex items-center justify-between text-sm font-medium text-gray-600 py-1"
+              className="w-full flex items-center justify-between py-2"
+              style={{ background: "none", border: "none", cursor: "pointer", fontSize: "13px", fontWeight: 600, color: "var(--plum)", fontFamily: "'Inter', sans-serif" }}
             >
               <span>Body & Cycle Signals (optional)</span>
               {showBody ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
@@ -198,7 +200,8 @@ export default function CheckinModal({ existing, onClose, onSave }) {
             <button
               type="button"
               onClick={() => setShowSkinHair(!showSkinHair)}
-              className="w-full flex items-center justify-between text-sm font-medium text-gray-600 py-1"
+              className="w-full flex items-center justify-between py-2"
+              style={{ background: "none", border: "none", cursor: "pointer", fontSize: "13px", fontWeight: 600, color: "var(--plum)", fontFamily: "'Inter', sans-serif" }}
             >
               <span>Skin & Hair</span>
               {showSkinHair ? <Minus className="w-4 h-4" /> : <Plus className="w-4 h-4" />}
@@ -257,13 +260,13 @@ export default function CheckinModal({ existing, onClose, onSave }) {
             placeholder="Any notes? (optional)"
             value={notes}
             onChange={(e) => setNotes(e.target.value)}
-            className="w-full p-3 text-sm rounded-xl border border-rose-100 bg-rose-50/30 resize-none focus:outline-none focus:ring-2 focus:ring-rose-200"
+            style={{ width: "100%", padding: "12px", fontSize: "13px", borderRadius: "12px", border: "1px solid var(--border)", backgroundColor: "var(--ivory)", resize: "none", outline: "none", fontFamily: "'Inter', sans-serif", color: "var(--plum)" }}
             rows={2}
           />
         </div>
 
         {/* Fixed footer */}
-        <div className="px-6 pb-5 pt-3 border-t border-rose-50 flex-shrink-0">
+        <div className="px-6 pb-5 pt-3 flex-shrink-0" style={{ borderTop: "1px solid var(--border-subtle)" }}>
           <button onClick={handleSave} disabled={saving} className="btn-primary w-full">
             {saving ? "Saving…" : "Save Check-in"}
           </button>

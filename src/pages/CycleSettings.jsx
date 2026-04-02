@@ -2,6 +2,11 @@ import { useState, useEffect } from "react";
 import { base44 } from "@/api/base44Client";
 import { ArrowLeft } from "lucide-react";
 
+const card = {
+  backgroundColor: "var(--surface)", border: "1px solid var(--border)",
+  borderRadius: "20px", boxShadow: "var(--shadow-sm)",
+};
+
 export default function CycleSettings() {
   const [user, setUser] = useState(null);
   const [profile, setProfile] = useState(null);
@@ -42,60 +47,87 @@ export default function CycleSettings() {
   };
 
   if (loading) return (
-    <div className="min-h-screen femwell-gradient flex items-center justify-center">
-      <div className="w-10 h-10 border-4 border-rose-300 border-t-rose-600 rounded-full animate-spin" />
+    <div className="min-h-screen flex items-center justify-center"
+         style={{ backgroundColor: "var(--ivory)" }}>
+      <div className="w-8 h-8 rounded-full border-2 border-t-transparent animate-spin"
+           style={{ borderColor: "var(--rose-dust-light)", borderTopColor: "var(--rose-dust)" }} />
     </div>
   );
 
   return (
-    <div className="min-h-screen femwell-gradient pb-10">
+    <div className="min-h-screen pb-16" style={{ backgroundColor: "var(--ivory)" }}>
       <div className="max-w-md mx-auto px-4">
+
         <div className="pt-12 pb-6 flex items-center gap-3">
-          <button onClick={() => window.history.back()} className="w-9 h-9 rounded-full bg-white/80 flex items-center justify-center">
-            <ArrowLeft className="w-4 h-4 text-gray-700" />
+          <button
+            onClick={() => window.history.back()}
+            style={{
+              width: "36px", height: "36px", borderRadius: "9999px",
+              border: "1px solid var(--border)", backgroundColor: "var(--surface)",
+              cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center"
+            }}>
+            <ArrowLeft className="w-4 h-4" style={{ color: "var(--plum)" }} />
           </button>
-          <h1 className="text-xl font-bold text-rose-900">Cycle Settings</h1>
+          <h1 style={{ fontSize: "20px", fontWeight: 700, fontFamily: "'Playfair Display', serif", color: "var(--plum)", letterSpacing: "-0.01em" }}>
+            Cycle Settings
+          </h1>
         </div>
 
-        <div className="card-glass rounded-2xl p-6 space-y-6">
+        <div style={{ ...card, padding: "24px" }} className="space-y-6">
+
           <div>
-            <label className="text-sm font-medium text-gray-700 block mb-2">
-              Average cycle length: <span className="text-rose-600 font-bold">{cycleLength} days</span>
-            </label>
-            <input
-              type="range" min="21" max="40" value={cycleLength}
+            <p style={{ fontSize: "13px", fontWeight: 600, color: "var(--plum)", fontFamily: "'Inter', sans-serif", marginBottom: "4px" }}>
+              Average cycle length
+            </p>
+            <p style={{ fontSize: "28px", fontWeight: 700, color: "var(--rose-dust)", fontFamily: "'Inter', sans-serif", lineHeight: 1, marginBottom: "12px" }}>
+              {cycleLength} days
+            </p>
+            <input type="range" min="21" max="40" value={cycleLength}
               onChange={(e) => setCycleLength(Number(e.target.value))}
-            />
-            <div className="flex justify-between text-xs text-gray-400 mt-1">
-              <span>21 days</span><span>40 days</span>
+              style={{ width: "100%", accentColor: "var(--rose-dust)" }} />
+            <div className="flex justify-between" style={{ marginTop: "4px" }}>
+              <span style={{ fontSize: "11px", color: "var(--mauve)", fontFamily: "'Inter', sans-serif" }}>21</span>
+              <span style={{ fontSize: "11px", color: "var(--mauve)", fontFamily: "'Inter', sans-serif" }}>40</span>
             </div>
           </div>
 
+          <div style={{ height: "1px", backgroundColor: "var(--border-subtle)" }} />
+
           <div>
-            <label className="text-sm font-medium text-gray-700 block mb-2">
-              Period duration: <span className="text-rose-600 font-bold">{periodLength} days</span>
-            </label>
-            <input
-              type="range" min="2" max="10" value={periodLength}
+            <p style={{ fontSize: "13px", fontWeight: 600, color: "var(--plum)", fontFamily: "'Inter', sans-serif", marginBottom: "4px" }}>
+              Period duration
+            </p>
+            <p style={{ fontSize: "28px", fontWeight: 700, color: "var(--rose-dust)", fontFamily: "'Inter', sans-serif", lineHeight: 1, marginBottom: "12px" }}>
+              {periodLength} days
+            </p>
+            <input type="range" min="2" max="10" value={periodLength}
               onChange={(e) => setPeriodLength(Number(e.target.value))}
-            />
-            <div className="flex justify-between text-xs text-gray-400 mt-1">
-              <span>2 days</span><span>10 days</span>
+              style={{ width: "100%", accentColor: "var(--rose-dust)" }} />
+            <div className="flex justify-between" style={{ marginTop: "4px" }}>
+              <span style={{ fontSize: "11px", color: "var(--mauve)", fontFamily: "'Inter', sans-serif" }}>2</span>
+              <span style={{ fontSize: "11px", color: "var(--mauve)", fontFamily: "'Inter', sans-serif" }}>10</span>
             </div>
           </div>
 
+          <div style={{ height: "1px", backgroundColor: "var(--border-subtle)" }} />
+
           <div>
-            <label className="text-sm font-medium text-gray-700 block mb-2">Last period start date</label>
-            <input
-              type="date"
-              value={lastPeriod}
+            <p style={{ fontSize: "13px", fontWeight: 600, color: "var(--plum)", fontFamily: "'Inter', sans-serif", marginBottom: "8px" }}>
+              Last period start date
+            </p>
+            <input type="date" value={lastPeriod}
               onChange={(e) => setLastPeriod(e.target.value)}
-              className="w-full p-3 rounded-xl border border-rose-200 bg-white/80 text-gray-700 text-sm focus:outline-none focus:ring-2 focus:ring-rose-300"
-            />
+              style={{
+                width: "100%", padding: "12px 14px", borderRadius: "14px",
+                border: "1.5px solid var(--border)",
+                backgroundColor: "var(--surface)",
+                color: "var(--plum)", fontSize: "14px",
+                fontFamily: "'Inter', sans-serif", outline: "none"
+              }} />
           </div>
 
           <button onClick={handleSave} disabled={saving || saved} className="btn-primary w-full">
-            {saved ? "Saved ✓" : saving ? "Saving..." : "Save Changes"}
+            {saved ? "Saved" : saving ? "Saving..." : "Save changes"}
           </button>
         </div>
       </div>

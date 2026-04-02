@@ -158,7 +158,7 @@ export default function Lifestyle() {
   };
 
   return (
-    <div className="min-h-screen femwell-gradient pb-28">
+    <div className="min-h-screen pb-28" style={{ backgroundColor: "var(--ivory)" }}>
       <style>{`
         @keyframes fadeUp {
           from { opacity: 0; transform: translateY(16px); }
@@ -171,36 +171,39 @@ export default function Lifestyle() {
       <div className="max-w-3xl mx-auto px-4">
         <div className="pt-12 pb-4 flex items-center justify-between gap-3">
           <div>
-            <h1 className="text-2xl font-bold text-rose-900">Lifestyle</h1>
-            <p className="text-xs text-gray-400 mt-0.5">Your personalised wellness feed</p>
+            <p style={{ fontSize: "0.6rem", fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.12em", color: "var(--mauve)", fontFamily: "'Inter', sans-serif", marginBottom: "4px" }}>Your feed</p>
+            <h1 style={{ fontSize: "24px", fontWeight: 700, fontFamily: "'Playfair Display', serif", color: "var(--plum)", letterSpacing: "-0.02em" }}>Lifestyle</h1>
           </div>
-          <div className="flex items-center gap-2">
-            <button
-              onClick={() => loadFeed(mode, 0, true)}
-              disabled={refreshing}
-              className="w-9 h-9 rounded-xl bg-white/80 flex items-center justify-center shadow-sm hover:bg-rose-50 transition-colors"
-            >
-              <RefreshCw className={`w-4 h-4 text-rose-400 ${refreshing ? "animate-spin" : ""}`} />
-            </button>
-          </div>
+          <button
+            onClick={() => loadFeed(mode, 0, true)}
+            disabled={refreshing}
+            style={{ width: "36px", height: "36px", borderRadius: "12px", border: "1px solid var(--border)", backgroundColor: "var(--surface)", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center" }}
+          >
+            <RefreshCw className={`w-4 h-4 ${refreshing ? "animate-spin" : ""}`} style={{ color: "var(--rose-dust)" }} />
+          </button>
         </div>
 
-        <div className="flex gap-2 mb-4 overflow-x-auto pb-1">
+        <div className="flex gap-2 mb-4 overflow-x-auto pb-1 scrollbar-hide">
           {MODES.map((tab) => (
-            <button
-              key={tab.id}
-              onClick={() => { setMode(tab.id); setFilterCategory("All"); }}
-              className={`px-4 py-2 rounded-xl text-sm font-semibold transition-all ${mode === tab.id ? "bg-rose-500 text-white shadow-sm" : "bg-white/70 text-gray-500 hover:bg-white"}`}
-            >
+            <button key={tab.id} onClick={() => { setMode(tab.id); setFilterCategory("All"); }}
+              style={{
+                padding: "7px 16px", borderRadius: "9999px",
+                fontSize: "12px", fontWeight: 600, fontFamily: "'Inter', sans-serif",
+                border: mode === tab.id ? "none" : "1px solid var(--border)",
+                backgroundColor: mode === tab.id ? "var(--plum)" : "var(--surface)",
+                color: mode === tab.id ? "white" : "var(--mauve)",
+                whiteSpace: "nowrap", cursor: "pointer", transition: "all 0.15s"
+              }}>
               {tab.label}
             </button>
           ))}
         </div>
 
         {interests.length > 0 && (
-          <div className="mb-4 flex gap-2 overflow-x-auto pb-1">
+          <div className="mb-4 flex gap-2 overflow-x-auto pb-1 scrollbar-hide">
             {interests.map((interest) => (
-              <button key={interest} onClick={() => setFilterCategory(interest)} className="rounded-full bg-rose-50 px-3 py-1.5 text-xs font-semibold text-rose-600">
+              <button key={interest} onClick={() => setFilterCategory(interest)}
+                style={{ backgroundColor: "var(--rose-dust-subtle)", color: "var(--rose-dust)", border: "none", borderRadius: "9999px", padding: "6px 12px", fontSize: "11px", fontWeight: 600, fontFamily: "'Inter', sans-serif", cursor: "pointer", whiteSpace: "nowrap" }}>
                 {interest}
               </button>
             ))}
@@ -209,20 +212,24 @@ export default function Lifestyle() {
 
         <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-hide mb-4">
           {contentCategories.map((cat) => (
-            <button
-              key={cat}
-              onClick={() => handleCategorySelect(cat)}
-              className={`flex-shrink-0 px-3 py-1.5 rounded-full text-xs font-medium transition-all border ${filterCategory === cat ? "bg-rose-500 text-white border-rose-500" : "bg-white/60 text-gray-400 border-rose-100 hover:bg-white hover:text-gray-600"}`}
-            >
+            <button key={cat} onClick={() => handleCategorySelect(cat)}
+              style={{
+                flexShrink: 0, borderRadius: "9999px", padding: "6px 12px",
+                fontSize: "11px", fontWeight: 600, fontFamily: "'Inter', sans-serif",
+                cursor: "pointer", whiteSpace: "nowrap", transition: "all 0.15s",
+                border: filterCategory === cat ? "none" : "1px solid var(--border)",
+                backgroundColor: filterCategory === cat ? "var(--plum)" : "var(--surface)",
+                color: filterCategory === cat ? "white" : "var(--mauve)"
+              }}>
               {cat}
             </button>
           ))}
         </div>
 
-        <div className="card-glass rounded-2xl p-4 mb-4">
-          <p className="text-xs font-semibold uppercase tracking-[0.2em] text-gray-400">Automated feed</p>
-          <h2 className="mt-2 text-lg font-bold text-gray-900">Fresh stories, clips, and social finds</h2>
-          <p className="mt-1 text-sm leading-relaxed text-gray-500">New items roll in automatically from trusted sources, then the feed learns from your saves, likes, hides, interests, and activity.</p>
+        <div style={{ backgroundColor: "var(--surface)", border: "1px solid var(--border)", borderRadius: "20px", padding: "16px", marginBottom: "16px", boxShadow: "var(--shadow-sm)" }}>
+          <p style={{ fontSize: "0.6rem", fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.12em", color: "var(--mauve)", fontFamily: "'Inter', sans-serif", marginBottom: "8px" }}>Automated feed</p>
+          <p style={{ fontSize: "16px", fontWeight: 700, color: "var(--plum)", fontFamily: "'Inter', sans-serif", marginBottom: "6px" }}>Fresh stories, clips, and social finds</p>
+          <p style={{ fontSize: "13px", lineHeight: 1.6, color: "var(--mauve)", fontFamily: "'Inter', sans-serif" }}>New items roll in automatically from trusted sources, then the feed learns from your saves, likes, hides, and interests.</p>
         </div>
 
         {!loading && mode === "for_you" && items.length > 0 && <DailyPulseStrip items={items} />}
@@ -235,7 +242,7 @@ export default function Lifestyle() {
 
             {editorPick && mode === "for_you" && (
               <div className="mb-4">
-                <p className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2 px-1">✦ Editor's Pick Today</p>
+                <p style={{ fontSize: "0.6rem", fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.12em", color: "var(--mauve)", fontFamily: "'Inter', sans-serif", marginBottom: "8px", paddingLeft: "4px" }}>Editor's pick today</p>
                 <LifestyleCard
                   item={{ ...editorPick, is_editor_pick: true }}
                   onHide={handleHide}
@@ -281,10 +288,12 @@ export default function Lifestyle() {
             <div ref={loaderRef} className="py-6 text-center">
               {loadingMore && (
                 <div className="flex justify-center">
-                  <div className="w-6 h-6 border-2 border-rose-300 border-t-rose-500 rounded-full animate-spin" />
+                  <div style={{ width: "24px", height: "24px", borderRadius: "9999px", border: "2px solid var(--rose-dust-light)", borderTopColor: "var(--rose-dust)", animation: "spin 0.7s linear infinite" }} />
                 </div>
               )}
-              {!hasMore && items.length > 0 && <p className="text-xs text-gray-300">You're all caught up ✨</p>}
+              {!hasMore && items.length > 0 && (
+                <p style={{ fontSize: "11px", color: "var(--mauve)", fontFamily: "'Inter', sans-serif" }}>You're all caught up</p>
+              )}
             </div>
           </>
         )}
