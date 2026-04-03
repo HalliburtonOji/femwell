@@ -148,6 +148,53 @@
       "items": {
         "type": "string"
       }
+    },
+    "author_name": {
+      "type": "string"
+    },
+    "lede": {
+      "type": "string"
+    },
+    "channel_name": {
+      "type": "string"
+    },
+    "channel_id": {
+      "type": "string"
+    },
+    "video_id": {
+      "type": "string"
+    },
+    "duration_label": {
+      "type": "string"
+    },
+    "content_type": {
+      "type": "string",
+      "enum": [
+        "ARTICLE",
+        "VIDEO",
+        "STORY"
+      ],
+      "default": "ARTICLE"
+    },
+    "emotional_tag": {
+      "type": "string",
+      "enum": [
+        "Relationships",
+        "Body",
+        "Identity",
+        "Grief",
+        "Motherhood",
+        "Career",
+        "Mental Health",
+        "Self-Discovery",
+        ""
+      ]
+    },
+    "phase_tags": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
     }
   },
   "required": [

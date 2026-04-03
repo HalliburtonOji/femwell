@@ -1,0 +1,77 @@
+{
+  "name": "WeeklyBookPick",
+  "type": "object",
+  "properties": {
+    "week_start": {
+      "type": "string"
+    },
+    "books": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "title": {
+            "type": "string"
+          },
+          "author": {
+            "type": "string"
+          },
+          "tagline": {
+            "type": "string"
+          },
+          "summary": {
+            "type": "string"
+          },
+          "key_lessons": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "best_for": {
+            "type": "string"
+          },
+          "quote": {
+            "type": "string"
+          },
+          "cover_url": {
+            "type": "string"
+          },
+          "isbn": {
+            "type": "string"
+          },
+          "read_time_mins": {
+            "type": "number"
+          },
+          "category": {
+            "type": "string"
+          },
+          "femwell_connection": {
+            "type": "string"
+          },
+          "phase_tags": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "goodreads_url": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "GENERATING",
+        "PUBLISHED",
+        "ARCHIVED"
+      ],
+      "default": "GENERATING"
+    }
+  },
+  "required": [
+    "week_start"
+  ]
+}
