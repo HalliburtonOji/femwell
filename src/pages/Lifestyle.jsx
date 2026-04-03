@@ -6,12 +6,12 @@ import FeedSkeleton from "../components/lifestyle/FeedSkeleton";
 function stripHtml(str) {
   if (!str) return "";
   return str
+    .replace(/&amp;/g, '&').replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&nbsp;/g, ' ').replace(/&quot;/g, '"').replace(/&#\d+;/g, '')
     .replace(/<style[^>]*>[\s\S]*?<\/style>/gi, '')
     .replace(/<script[^>]*>[\s\S]*?<\/script>/gi, '')
     .replace(/<img[^>]*>/gi, '')
     .replace(/<a[^>]*>([\s\S]*?)<\/a>/gi, '$1')
     .replace(/<[^>]+>/g, ' ')
-    .replace(/&amp;/g, '&').replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&nbsp;/g, ' ').replace(/&#\d+;/g, '')
     .replace(/\s+/g, ' ')
     .trim();
 }
