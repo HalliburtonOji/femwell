@@ -72,7 +72,10 @@ async function parseRSS(url) {
         const cdata = block.match(new RegExp(`<${tag}[^>]*><!\\[CDATA\\[([\\s\\S]*?)\\]\\]><\\/${tag}>`, 'i'));
         if (cdata?.[1]) return cdata[1].trim();
         const plain = block.match(new RegExp(`<${tag}[^>]*>([\\s\\S]*?)<\\/${tag}>`, 'i'));
-        return plain?.[1]?.replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim() || '';
+        return plain?.[1]
+          ?.replace(/<[^>]+>/g, ' ')
+          .replace(/&amp;/g, '&').replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&nbsp;/g, ' ').replace(/&#\d+;/g, '')
+          .replace(/\s+/g, ' ').trim() || '';
       };
       const linkAttr = block.match(/<link[^>]+href="([^"]+)"/i);
       const imgTag = block.match(/<media:thumbnail[^>]+url="([^"]+)"/i)
@@ -152,7 +155,17 @@ Deno.serve(async (req) => {
           if (!item.title || !item.link) continue;
           const hash = hashUrl(item.link);
           if (existingHashes.has(hash)) { skipped++; continue; }
-          const lede = (item.description || '').replace(/\s+/g, ' ').trim().slice(0, 280);
+          const rawDesc = item.description || '';
+          const lede = rawDesc
+            .replace(/<style[^>]*>[\s\S]*?<\/style>/gi, '')
+            .replace(/<script[^>]*>[\s\S]*?<\/script>/gi, '')
+            .replace(/<img[^>]*>/gi, '')
+            .replace(/<a[^>]*>([\s\S]*?)<\/a>/gi, '$1')
+            .replace(/<[^>]+>/g, ' ')
+            .replace(/&amp;/g, '&').replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&nbsp;/g, ' ').replace(/&#\d+;/g, '')
+            .replace(/\s+/g, ' ')
+            .trim()
+            .slice(0, 260);
           await base44.asServiceRole.entities.LifestyleItems.create({
             source_name: source.name, title: item.title.slice(0, 220),
             content_url: item.link, source_url: item.link, content_url_hash: hash,
