@@ -38,7 +38,8 @@ const AuthenticatedApp = () => {
     if (authError.type === 'user_not_registered') {
       return <UserNotRegisteredError />;
     } else if (authError.type === 'auth_required') {
-      // Allow unauthenticated access — do not redirect to login
+      navigateToLogin();
+      return null;
     }
   }
 

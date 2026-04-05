@@ -11,6 +11,7 @@ import { createPageUrl } from "@/utils";
 import { Link } from "react-router-dom";
 import HealthOverviewSection from "../components/trends/HealthOverviewSection";
 import AIHealthSummaryCard from "../components/trends/AIHealthSummaryCard";
+import PredictiveAnalysisCard from "../components/trends/PredictiveAnalysisCard";
 
 const PHASES = [
   { key: "Menstrual",  label: "Menstrual",  color: "#f43f5e", days: "Days 1–5"  },
@@ -79,6 +80,7 @@ function MarkdownBlock({ text }) {
 export default function Pulse() {
   // shared
   const [user, setUser]                 = useState(null);
+  const [profile, setProfile]           = useState(null);
   const [loading, setLoading]           = useState(true);
 
   // weekly insight state
@@ -102,9 +104,9 @@ export default function Pulse() {
     (async () => {
       const u = await base44.auth.me();
       setUser(u);
-      const cutoff6m = subMonths(new Date(), 6).toISOString().split("T")[0];
+      const userProfiles = await base44.entities.UserProfile.filter({ user_id: u.id });
+      setProfile(userProfiles[0] || null);
 
-      let wiRecords = [];
       const [events, ckins, slogs, hlogs, journalEntries, mealLogs] = await Promise.all([
         base44.entities.CycleEvents.filter({ user_id: u.id }),
         base44.entities.DailyCheckins.filter({ user_id: u.id }),
@@ -276,6 +278,11 @@ export default function Pulse() {
           >
             Export PDF
           </button>
+        </div>
+
+        {/* ── PREDICTIVE ANALYSIS ── */}
+        <div style={{ marginTop: "32px" }}>
+          <PredictiveAnalysisCard profile={profile} checkins={checkins} />
         </div>
 
         {/* ── THIS WEEK ── */}
