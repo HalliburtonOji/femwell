@@ -107,13 +107,14 @@ export default function Pulse() {
       const userProfiles = await base44.entities.UserProfile.filter({ user_id: u.id });
       setProfile(userProfiles[0] || null);
 
-      const [events, ckins, slogs, hlogs, journalEntries, mealLogs] = await Promise.all([
+      const [events, ckins, slogs, hlogs, journalEntries, mealLogs, wiRecords] = await Promise.all([
         base44.entities.CycleEvents.filter({ user_id: u.id }),
         base44.entities.DailyCheckins.filter({ user_id: u.id }),
         base44.entities.SymptomLogs.filter({ user_id: u.id }),
         base44.entities.HabitLogs.filter({ user_id: u.id }, "-date", 250),
         base44.entities.JournalEntries.filter({ user_id: u.id }, "-created_date", 30),
         base44.entities.MealLog.filter({ user_id: u.id }, "-logged_at", 100),
+        base44.entities.WeeklyInsights.filter({ user_id: u.id }, "-week_start", 12),
       ]);
 
       const wCutoffDate = format(subDays(new Date(), 7), "yyyy-MM-dd");
@@ -125,6 +126,13 @@ export default function Pulse() {
       setWeeklyItems(wiRecords);
       const wCutoff = format(subDays(new Date(), 7), "yyyy-MM-dd");
       setWeekCheckins(ckins.filter(c => c.date >= wCutoff));
+
+      setCycleEvents(events);
+      setCheckins(ckins);
+      setSymptomLogs(slogs);
+      setSymptomTypes([...new Set(slogs.map(s => s.symptom_type).filter(Boolean))]);
+      setHabitLogs(hlogs);
+      setHabitNames([...new Set(hlogs.map(h => h.habit_type || h.habit_name).filter(Boolean))]);
 
       setLoading(false);
     })();
