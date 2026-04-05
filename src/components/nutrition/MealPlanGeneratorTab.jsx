@@ -130,6 +130,13 @@ function MealPlanCard({ mealPlan, onSaveToPlan, saving }) {
                 </div>
                 <p className="text-sm font-semibold" style={{ color: "var(--plum)", fontFamily: "'Inter', sans-serif" }}>{meal.name}</p>
                 {meal.description && <p className="text-xs mt-0.5" style={{ color: "var(--mauve)" }}>{meal.description}</p>}
+                <a
+                  href={`https://www.youtube.com/results?search_query=${encodeURIComponent((meal.name || '') + ' recipe how to make')}`}
+                  target="_blank" rel="noopener noreferrer"
+                  style={{ fontSize: 11, fontWeight: 500, color: "var(--rose-dust)", fontFamily: "'Inter', sans-serif", textDecoration: "none", display: "inline-block", marginTop: 4 }}
+                >
+                  Watch how to make it
+                </a>
               </div>
             ))}
             {mealPlan.days[expandedDay].daily_wellness_tip && (

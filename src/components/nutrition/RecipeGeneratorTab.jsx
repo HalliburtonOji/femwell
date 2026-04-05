@@ -105,6 +105,13 @@ function RecipeCard({ recipe, onSaveAsTemplate }) {
               {recipe.recipe_name}
             </p>
             {recipe.tagline && <p className="text-xs mt-0.5" style={{ color: "rgba(255,255,255,0.65)" }}>{recipe.tagline}</p>}
+            <a
+              href={`https://www.youtube.com/results?search_query=${encodeURIComponent((recipe.recipe_name || '') + ' recipe how to make')}`}
+              target="_blank" rel="noopener noreferrer"
+              style={{ fontSize: 12, fontWeight: 500, color: "rgba(255,255,255,0.75)", fontFamily: "'Inter', sans-serif", textDecoration: "none", display: "inline-block", marginTop: 4 }}
+            >
+              Watch how to make it
+            </a>
           </div>
           <span className="text-[10px] px-2.5 py-1 rounded-full font-semibold flex-shrink-0" style={difficultyStyle}>
             {recipe.difficulty}

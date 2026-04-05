@@ -4,9 +4,16 @@ import AICoachTab from "../components/journal/AICoachTab";
 
 export default function Assistant() {
   const [user, setUser] = useState(null);
+  const [assistantName, setAssistantName] = useState(null);
 
   useEffect(() => {
-    base44.auth.me().then(setUser);
+    base44.auth.me().then(async (u) => {
+      setUser(u);
+      try {
+        const profiles = await base44.entities.UserProfile.filter({ user_id: u.id });
+        if (profiles[0]?.ai_assistant_name) setAssistantName(profiles[0].ai_assistant_name);
+      } catch {}
+    });
   }, []);
 
   if (!user) {
@@ -18,5 +25,5 @@ export default function Assistant() {
     );
   }
 
-  return <AICoachTab user={user} />;
+  return <AICoachTab user={{ ...user, coach_name: assistantName || user.coach_name }} />;
 }

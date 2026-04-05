@@ -51,15 +51,9 @@ function getCyclePhase(lastPeriodDate, cycleLen = 28, periodLen = 5) {
 }
 
 Deno.serve(async (req) => {
-  try {
-    const base44 = createClientFromRequest(req);
-    const user = await base44.auth.me().catch(() => null);
-    if (user?.role !== 'admin') return Response.json({ error: 'Admin only' }, { status: 403 });
-  } catch (e) {
-    return Response.json({ error: e.message }, { status: 500 });
-  }
-
   const base44 = createClientFromRequest(req);
+  const user = await base44.auth.me().catch(() => null);
+  if (user?.role !== 'admin') return Response.json({ error: 'Admin only' }, { status: 403 });
   const today = new Date().toISOString().split('T')[0];
   const now = new Date();
 
@@ -70,6 +64,8 @@ Deno.serve(async (req) => {
     for_you: { users_updated: 0 },
     tips_created: 0,
     trends_ingested: 0,
+    deals_checked: 0,
+    deals_deactivated: 0,
   };
 
   // ── Step 1: Content QA ───────────────────────────────────────────────────
@@ -224,13 +220,27 @@ Deno.serve(async (req) => {
     console.error('Step 3 story error:', e.message);
   }
 
+  let currentInsights = '';
+  try {
+    const newsResult = await base44.asServiceRole.integrations.Core.InvokeLLM({
+      model: 'gemini_3_flash',
+      add_context_from_internet: true,
+      prompt: "Find 3 recent women's health or wellness news items from this week. Return JSON: { insights: [{title: string, key_insight: string}] }",
+      response_json_schema: { type: 'object', properties: { insights: { type: 'array', items: { type: 'object', properties: { title: { type: 'string' }, key_insight: { type: 'string' } } } } } },
+    });
+    if (newsResult?.insights?.length) {
+      currentInsights = newsResult.insights.map(i => i.key_insight).join('. ');
+    }
+  } catch { /* non-blocking */ }
+
   try {
     const articleTopics = ['sexual health', 'cycle nutrition', 'hormones and mood', 'career and identity', 'relationships and communication', 'body confidence'];
     const dayNum = Math.floor(now.getTime() / (24 * 3600 * 1000));
     const topic = articleTopics[dayNum % articleTopics.length];
+    const newsContext = currentInsights ? ` Reference these current insights from this week: ${currentInsights}. Make the article feel timely and grounded in current conversations.` : '';
 
     const articleResult = await base44.asServiceRole.integrations.Core.InvokeLLM({
-      prompt: `Write an expert women's health and lifestyle article of 450-600 words on the topic: "${topic}". Include a clear headline, 3-4 paragraphs, and a closing insight. Use an informed, warm tone — not clinical. Return JSON with: title (string), body (string), category (string — one of: Sexual Health, Hormones, Nutrition, Career, Relationships, Body), phase_tags (array), takeaways (array of 3 short strings).`,
+      prompt: `Write an expert women's health and lifestyle article of 450-600 words on the topic: "${topic}". Include a clear headline, 3-4 paragraphs, and a closing insight. Use an informed, warm tone — not clinical.${newsContext} Return JSON with: title (string), body (string), category (string — one of: Sexual Health, Hormones, Nutrition, Career, Relationships, Body), phase_tags (array), takeaways (array of 3 short strings).`,
       response_json_schema: {
         type: 'object',
         properties: {
@@ -422,6 +432,34 @@ Deno.serve(async (req) => {
     }
   } catch (e) {
     console.error('Step 6 error:', e.message);
+  }
+
+  // ── Step 7: Deals health check ──────────────────────────────────────────
+  try {
+    const allDeals = await base44.asServiceRole.entities.DealsItems.list('-created_date', 200);
+    for (const deal of allDeals) {
+      result.deals_checked++;
+      // Check expiry date
+      if (deal.expiry_date && deal.expiry_date < today) {
+        await base44.asServiceRole.entities.DealsItems.update(deal.id, { is_active: false });
+        result.deals_deactivated++;
+        await sleep(100);
+        continue;
+      }
+      // HEAD check link
+      if (deal.link && deal.is_active !== false) {
+        try {
+          const res = await fetch(deal.link, { method: 'HEAD', signal: AbortSignal.timeout(5000), redirect: 'follow' });
+          if (res.status >= 400) {
+            await base44.asServiceRole.entities.DealsItems.update(deal.id, { is_active: false });
+            result.deals_deactivated++;
+          }
+        } catch { /* network error — leave as is */ }
+        await sleep(100);
+      }
+    }
+  } catch (e) {
+    console.error('Step 7 error:', e.message);
   }
 
   return Response.json(result);

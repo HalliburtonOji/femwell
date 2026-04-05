@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { base44 } from "@/api/base44Client";
 
 // Mood data — numbers must stay compatible with existing entries
@@ -53,6 +53,33 @@ export default function JournalComposer({ user, onSaved }) {
   const [mode, setMode] = useState("free");
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
+  const [dailyPrompt, setDailyPrompt] = useState(null);
+  const [loadingPrompt, setLoadingPrompt] = useState(true);
+  const [savedEntryText, setSavedEntryText] = useState(null);
+  const [aiReflection, setAiReflection] = useState(null);
+  const [loadingReflection, setLoadingReflection] = useState(false);
+
+  useEffect(() => {
+    (async () => {
+      try {
+        let phase = '';
+        const profiles = await base44.entities.UserProfile.filter({ user_id: user.id });
+        const p = profiles[0];
+        if (p?.last_period_start_date) {
+          const cycleLen = p.cycle_avg_length || 28;
+          const diff = Math.floor((Date.now() - new Date(p.last_period_start_date).getTime()) / 86400000);
+          const day = (diff % cycleLen) + 1;
+          phase = day <= (p.period_length || 5) ? 'menstrual' : day <= 13 ? 'follicular' : day <= 16 ? 'ovulatory' : 'luteal';
+        }
+        const res = await base44.integrations.Core.InvokeLLM({
+          prompt: `Generate one thoughtful, open-ended journaling prompt for a woman. It should invite reflection on emotions, relationships, or personal growth. It should be specific and evocative, not generic.${phase ? ` Current cycle phase: ${phase}.` : ''} Return JSON: { prompt: string } — max 25 words.`,
+          response_json_schema: { type: 'object', properties: { prompt: { type: 'string' } } },
+        });
+        if (res?.prompt) setDailyPrompt(res.prompt);
+      } catch {}
+      setLoadingPrompt(false);
+    })();
+  }, []);
 
   const activeMode = MODES.find(m => m.id === mode);
   const toggleTag = (tag) => setTags((prev) => prev.includes(tag) ? prev.filter((t) => t !== tag) : [...prev, tag]);
@@ -61,16 +88,19 @@ export default function JournalComposer({ user, onSaved }) {
     if (!text.trim()) return;
     setSaving(true);
     const moodObj = MOODS.find(m => m.value === mood);
+    const entryText = text.trim();
     const entry = await base44.entities.JournalEntries.create({
       user_id: user.id,
       content_id: "free_entry",
-      text: text.trim(),
+      text: entryText,
       mood_rating: moodObj ? moodObj.rating : undefined,
       tags: tags.join(","),
       session_date: new Date().toISOString().split("T")[0],
     });
     setSaving(false);
     setSaved(true);
+    setSavedEntryText(entryText);
+    setAiReflection(null);
     setText("");
     setMood(null);
     setTags([]);
@@ -78,8 +108,48 @@ export default function JournalComposer({ user, onSaved }) {
     if (onSaved) onSaved(entry);
   };
 
+  const handleGetReflection = async () => {
+    if (!savedEntryText) return;
+    setLoadingReflection(true);
+    try {
+      const res = await base44.integrations.Core.InvokeLLM({
+        prompt: `A woman wrote this journal entry: "${savedEntryText.slice(0, 600)}". Give a warm, 2-sentence reflection that acknowledges what she wrote and offers one gentle, empowering insight. Do not be prescriptive. Tone: like a wise friend.`,
+      });
+      setAiReflection(res);
+    } catch {}
+    setLoadingReflection(false);
+  };
+
   return (
     <div className="space-y-4">
+
+      {/* Daily prompt */}
+      {!loadingPrompt && dailyPrompt && (
+        <div style={{ backgroundColor: "var(--rose-dust-subtle)", border: "1px solid var(--rose-dust-light)", borderRadius: 16, padding: "14px 16px" }}>
+          <p style={{ fontSize: 10, fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.12em", color: "var(--rose-dust)", fontFamily: "'Inter', sans-serif", marginBottom: 6 }}>Today's prompt</p>
+          <p style={{ fontSize: 14, fontFamily: "'Playfair Display', serif", color: "var(--plum)", fontStyle: "italic", lineHeight: 1.5, marginBottom: 8 }}>{dailyPrompt}</p>
+          <button
+            onClick={() => setText(t => t ? t : dailyPrompt + ' ')}
+            style={{ background: "transparent", border: "none", color: "var(--rose-dust)", fontSize: 12, fontWeight: 600, cursor: "pointer", fontFamily: "'Inter', sans-serif", padding: 0 }}>
+            Use this
+          </button>
+        </div>
+      )}
+
+      {/* AI reflection after save */}
+      {savedEntryText && (
+        <div style={{ backgroundColor: "var(--mauve-subtle)", border: "1px solid var(--border)", borderRadius: 16, padding: "14px 16px" }}>
+          <button
+            onClick={handleGetReflection}
+            disabled={loadingReflection}
+            style={{ backgroundColor: "var(--plum)", color: "white", borderRadius: 9999, padding: "8px 16px", fontSize: 13, fontWeight: 600, border: "none", cursor: "pointer", fontFamily: "'Inter', sans-serif", opacity: loadingReflection ? 0.6 : 1 }}>
+            {loadingReflection ? "Reflecting..." : "Get a reflection on this entry"}
+          </button>
+          {aiReflection && (
+            <p style={{ fontSize: 14, color: "var(--plum)", lineHeight: 1.6, fontFamily: "'Inter', sans-serif", fontStyle: "italic", marginTop: 12 }}>{aiReflection}</p>
+          )}
+        </div>
+      )}
 
       {/* Journaling modes */}
       <div>

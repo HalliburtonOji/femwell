@@ -85,6 +85,7 @@ export default function Pulse() {
   const [weeklyItems, setWeeklyItems]   = useState([]);
   const [weeklyIndex, setWeeklyIndex]   = useState(0);
   const [weekCheckins, setWeekCheckins] = useState([]);
+  const [weekStats, setWeekStats]       = useState({ journalCount: 0, habitCount: 0, mealCount: 0 });
 
   // trends state
   const [timeRange, setTimeRange]           = useState(3);
@@ -104,28 +105,20 @@ export default function Pulse() {
       const cutoff6m = subMonths(new Date(), 6).toISOString().split("T")[0];
 
       let wiRecords = [];
-      const [events, ckins, slogs, hlogs] = await Promise.all([
+      const [events, ckins, slogs, hlogs, journalEntries, mealLogs] = await Promise.all([
         base44.entities.CycleEvents.filter({ user_id: u.id }),
         base44.entities.DailyCheckins.filter({ user_id: u.id }),
         base44.entities.SymptomLogs.filter({ user_id: u.id }),
         base44.entities.HabitLogs.filter({ user_id: u.id }, "-date", 250),
+        base44.entities.JournalEntries.filter({ user_id: u.id }, "-created_date", 30),
+        base44.entities.MealLog.filter({ user_id: u.id }, "-logged_at", 100),
       ]);
-      try {
-        wiRecords = await WeeklyInsights.filter(
-          { created_by: u.email }, "-week_start", 24
-        );
-      } catch {}
 
-      setCycleEvents(events.filter((e) => e.date >= cutoff6m));
-      setCheckins(ckins.filter((c) => c.date >= cutoff6m));
-      const filtered = slogs.filter((s) => s.date >= cutoff6m);
-      setSymptomLogs(filtered);
-      const types = [...new Set(filtered.map((s) => s.symptom_type).filter(Boolean))];
-      setSymptomTypes(types);
-      const hFiltered = hlogs.filter((h) => h.date >= cutoff6m);
-      setHabitLogs(hFiltered);
-      const hNames = [...new Set(hlogs.map((h) => h.habit_type || h.habit_name).filter(Boolean))];
-      setHabitNames(hNames);
+      const wCutoffDate = format(subDays(new Date(), 7), "yyyy-MM-dd");
+      const weekJournalCount = journalEntries.filter(e => (e.session_date || e.created_date?.split('T')[0] || '') >= wCutoffDate).length;
+      const weekHabitCount = hlogs.filter(h => h.date >= wCutoffDate && h.completed === true).length;
+      const weekMealCount = mealLogs.filter(m => (m.logged_at || m.created_date || '') >= wCutoffDate + 'T00:00:00').length;
+      setWeekStats({ journalCount: weekJournalCount, habitCount: weekHabitCount, mealCount: weekMealCount });
 
       setWeeklyItems(wiRecords);
       const wCutoff = format(subDays(new Date(), 7), "yyyy-MM-dd");
@@ -371,8 +364,8 @@ export default function Pulse() {
               <MarkdownBlock text={currentWeeklyItem.insight_text} />
             </div>
 
-            {/* Skin & hair strip */}
-            {(skinMode || hairMode) && (
+            {/* This week at a glance */}
+            {(skinMode || hairMode || weekStats.journalCount > 0 || weekStats.habitCount > 0 || weekStats.mealCount > 0) && (
               <div style={{
                 borderTop: "1px solid var(--border)",
                 marginTop: "16px", paddingTop: "16px"
@@ -382,36 +375,48 @@ export default function Pulse() {
                   textTransform: "uppercase", letterSpacing: "0.14em",
                   color: "var(--mauve)", fontFamily: "'Inter', sans-serif",
                   marginBottom: "10px"
-                }}>
-                  This week — skin & hair
-                </p>
+                }}>This week at a glance</p>
                 <div className="flex gap-3 flex-wrap">
                   {skinMode && (
                     <div style={{ backgroundColor: "var(--rose-dust-subtle)", borderRadius: "12px", padding: "10px 14px" }}>
                       <p style={{ fontSize: "10px", color: "var(--rose-dust)", fontWeight: 700, letterSpacing: "0.1em", fontFamily: "'Inter', sans-serif" }}>SKIN</p>
                       <p style={{ fontSize: "14px", color: "var(--plum)", fontWeight: 700, fontFamily: "'Inter', sans-serif", marginTop: "2px" }}>{skinMode}</p>
-                      <p style={{ fontSize: "10px", color: "var(--mauve)", fontFamily: "'Inter', sans-serif" }}>most logged this week</p>
+                      <p style={{ fontSize: "10px", color: "var(--mauve)", fontFamily: "'Inter', sans-serif" }}>most logged</p>
                     </div>
                   )}
                   {hairMode && (
                     <div style={{ backgroundColor: "var(--sage-subtle)", borderRadius: "12px", padding: "10px 14px" }}>
                       <p style={{ fontSize: "10px", color: "var(--sage)", fontWeight: 700, letterSpacing: "0.1em", fontFamily: "'Inter', sans-serif" }}>HAIR SHEDDING</p>
                       <p style={{ fontSize: "14px", color: "var(--plum)", fontWeight: 700, fontFamily: "'Inter', sans-serif", marginTop: "2px" }}>{hairMode}</p>
-                      <p style={{ fontSize: "10px", color: "var(--mauve)", fontFamily: "'Inter', sans-serif" }}>most logged this week</p>
+                      <p style={{ fontSize: "10px", color: "var(--mauve)", fontFamily: "'Inter', sans-serif" }}>most logged</p>
+                    </div>
+                  )}
+                  {weekStats.journalCount > 0 && (
+                    <div style={{ backgroundColor: "var(--ivory-dark)", borderRadius: "12px", padding: "10px 14px" }}>
+                      <p style={{ fontSize: "10px", color: "var(--mauve)", fontWeight: 700, letterSpacing: "0.1em", fontFamily: "'Inter', sans-serif" }}>JOURNAL</p>
+                      <p style={{ fontSize: "20px", color: "var(--plum)", fontWeight: 700, fontFamily: "'Playfair Display', serif", marginTop: "2px" }}>{weekStats.journalCount}</p>
+                      <p style={{ fontSize: "10px", color: "var(--mauve)", fontFamily: "'Inter', sans-serif" }}>entries</p>
+                    </div>
+                  )}
+                  {weekStats.habitCount > 0 && (
+                    <div style={{ backgroundColor: "var(--ivory-dark)", borderRadius: "12px", padding: "10px 14px" }}>
+                      <p style={{ fontSize: "10px", color: "var(--mauve)", fontWeight: 700, letterSpacing: "0.1em", fontFamily: "'Inter', sans-serif" }}>HABITS</p>
+                      <p style={{ fontSize: "20px", color: "var(--plum)", fontWeight: 700, fontFamily: "'Playfair Display', serif", marginTop: "2px" }}>{weekStats.habitCount}</p>
+                      <p style={{ fontSize: "10px", color: "var(--mauve)", fontFamily: "'Inter', sans-serif" }}>completed</p>
+                    </div>
+                  )}
+                  {weekStats.mealCount > 0 && (
+                    <div style={{ backgroundColor: "var(--ivory-dark)", borderRadius: "12px", padding: "10px 14px" }}>
+                      <p style={{ fontSize: "10px", color: "var(--mauve)", fontWeight: 700, letterSpacing: "0.1em", fontFamily: "'Inter', sans-serif" }}>MEALS</p>
+                      <p style={{ fontSize: "20px", color: "var(--plum)", fontWeight: 700, fontFamily: "'Playfair Display', serif", marginTop: "2px" }}>{weekStats.mealCount}</p>
+                      <p style={{ fontSize: "10px", color: "var(--mauve)", fontFamily: "'Inter', sans-serif" }}>logged</p>
                     </div>
                   )}
                   <Link
                     to={createPageUrl("SkinHair")}
-                    style={{
-                      backgroundColor: "var(--ivory-dark)",
-                      borderRadius: "12px", padding: "10px 14px",
-                      display: "flex", alignItems: "center",
-                      textDecoration: "none"
-                    }}
+                    style={{ backgroundColor: "var(--ivory-dark)", borderRadius: "12px", padding: "10px 14px", display: "flex", alignItems: "center", textDecoration: "none" }}
                   >
-                    <p style={{ fontSize: "12px", fontWeight: 600, color: "var(--plum)", fontFamily: "'Inter', sans-serif" }}>
-                      Full skin & hair trends
-                    </p>
+                    <p style={{ fontSize: "12px", fontWeight: 600, color: "var(--plum)", fontFamily: "'Inter', sans-serif" }}>Full skin & hair trends</p>
                   </Link>
                 </div>
               </div>

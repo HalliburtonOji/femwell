@@ -280,9 +280,53 @@ export default function NutritionTodayTab({ user, profile, nutritionProfile, day
     return CYCLE_WELLNESS_TIPS.find(t => t.phase === phase) || null;
   })();
 
+  const calorieTarget = nutritionProfile?.calories_target || nutritionProfile?.calorie_target || 2000;
+  const mealsWithCalories = meals.filter(m => {
+    try { return m.ai_analysis && JSON.parse(m.ai_analysis)?.nutritional_summary?.calories > 0; } catch { return false; }
+  });
+  const totalCalories = mealsWithCalories.reduce((sum, m) => {
+    try { return sum + (JSON.parse(m.ai_analysis)?.nutritional_summary?.calories || 0); } catch { return sum; }
+  }, 0);
+  const totalProtein = mealsWithCalories.reduce((sum, m) => {
+    try { return sum + (JSON.parse(m.ai_analysis)?.nutritional_summary?.protein_g || 0); } catch { return sum; }
+  }, 0);
+  const totalCarbs = mealsWithCalories.reduce((sum, m) => {
+    try { return sum + (JSON.parse(m.ai_analysis)?.nutritional_summary?.carbs_g || 0); } catch { return sum; }
+  }, 0);
+  const totalFat = mealsWithCalories.reduce((sum, m) => {
+    try { return sum + (JSON.parse(m.ai_analysis)?.nutritional_summary?.fat_g || 0); } catch { return sum; }
+  }, 0);
+  const caloriePct = Math.min(100, Math.round((totalCalories / calorieTarget) * 100));
+
   return (
     <div className="lg:grid lg:grid-cols-[1fr_320px] lg:gap-6 lg:items-start">
       <div className="space-y-4">
+
+        {/* Calorie summary bar */}
+        {mealsWithCalories.length > 0 && (
+          <div style={{ backgroundColor: "var(--surface)", border: "1px solid var(--border)", borderRadius: 20, padding: 20, boxShadow: "var(--shadow-sm)" }}>
+            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 10 }}>
+              <p style={{ fontSize: 15, fontWeight: 600, color: "var(--plum)", fontFamily: "'Inter', sans-serif" }}>Today's nutrition</p>
+              <p style={{ fontSize: 13, color: "var(--mauve)", fontFamily: "'Inter', sans-serif" }}>{Math.max(0, calorieTarget - totalCalories)} remaining</p>
+            </div>
+            <div style={{ height: 8, borderRadius: 9999, backgroundColor: "var(--ivory-dark)", overflow: "hidden", marginBottom: 12 }}>
+              <div style={{ height: "100%", width: `${caloriePct}%`, backgroundColor: totalCalories > calorieTarget ? "var(--rose-dust)" : "var(--sage)", borderRadius: 9999, transition: "width 0.4s ease" }} />
+            </div>
+            <div style={{ display: "flex", gap: 8 }}>
+              {[
+                { label: "Calories", value: `${totalCalories}` },
+                { label: "Protein", value: `${Math.round(totalProtein)}g` },
+                { label: "Carbs", value: `${Math.round(totalCarbs)}g` },
+                { label: "Fat", value: `${Math.round(totalFat)}g` },
+              ].map(chip => (
+                <div key={chip.label} style={{ flex: 1, backgroundColor: "var(--ivory)", border: "1px solid var(--border)", borderRadius: 12, padding: "8px 4px", textAlign: "center" }}>
+                  <p style={{ fontSize: 10, color: "var(--mauve)", fontFamily: "'Inter', sans-serif", textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: 2 }}>{chip.label}</p>
+                  <p style={{ fontSize: 14, fontWeight: 600, color: "var(--plum)", fontFamily: "'Inter', sans-serif" }}>{chip.value}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
 
         {/* Cycle wellness context */}
         {cycleWellnessTip && (

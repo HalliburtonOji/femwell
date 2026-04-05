@@ -228,6 +228,36 @@ export default function Profile() {
           )}
         </div>
 
+        {/* This week activity */}
+        {(() => {
+          const last7 = Array.from({ length: 7 }, (_, i) => {
+            const d = new Date();
+            d.setDate(d.getDate() - (6 - i));
+            return d.toISOString().split('T')[0];
+          });
+          const checkinSet = new Set(checkins.map(c => c.date));
+          return (
+            <div style={{ ...card, padding: "16px 20px", marginBottom: "16px" }}>
+              <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 12 }}>
+                <p style={{ fontSize: 13, fontWeight: 600, color: "var(--plum)", fontFamily: "'Inter', sans-serif" }}>This week</p>
+                {checkinStreak > 0 && <p style={{ fontSize: 12, color: "var(--rose-dust)", fontFamily: "'Inter', sans-serif", fontWeight: 500 }}>{checkinStreak}-day streak</p>}
+              </div>
+              <div style={{ display: "flex", justifyContent: "space-between" }}>
+                {last7.map(dateStr => {
+                  const hasCheckin = checkinSet.has(dateStr);
+                  const dayLabel = new Date(dateStr + 'T12:00:00').toLocaleDateString('en-GB', { weekday: 'short' }).slice(0, 3);
+                  return (
+                    <div key={dateStr} style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 4 }}>
+                      <div style={{ width: 28, height: 28, borderRadius: 9999, backgroundColor: hasCheckin ? "var(--rose-dust)" : "var(--ivory-dark)", border: hasCheckin ? "none" : "1px solid var(--border)" }} />
+                      <span style={{ fontSize: 9, color: "var(--mauve)", fontFamily: "'Inter', sans-serif" }}>{dayLabel}</span>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          );
+        })()}
+
         {/* Goals card */}
         {profile?.goals?.length > 0 && (
           <div style={{ ...card, padding: "16px", marginBottom: "16px" }}>

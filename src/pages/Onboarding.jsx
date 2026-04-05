@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { base44 } from "@/api/base44Client";
 import { createPageUrl } from "@/utils";
 import { ChevronLeft, ChevronRight } from "lucide-react";
@@ -73,75 +73,47 @@ export default function Onboarding() {
     setter((current) => (current.includes(value) ? current.filter((item) => item !== value) : [...current, value]));
   };
 
+  const [saveError, setSaveError] = useState(false);
+
+  useEffect(() => {
+    if (!saving) return;
+    const timer = setTimeout(() => {
+      setSaving(false);
+      setSaveError(true);
+    }, 8000);
+    return () => clearTimeout(timer);
+  }, [saving]);
+
   const handleFinish = async () => {
     setSaving(true);
-    const user = await base44.auth.me();
-
-    const [profiles, preferences, nutritionProfiles, lifestyleProfiles] = await Promise.all([
-      base44.entities.UserProfile.filter({ user_id: user.id }),
-      base44.entities.UserPreferences.filter({ user_id: user.id }),
-      base44.entities.NutritionProfile.filter({ user_id: user.id }),
-      base44.entities.LifestyleProfile.filter({ user_id: user.id }),
-    ]);
-
-    const profilePayload = {
-      user_id: user.id,
-      user_email: user.email,
-      onboarding_complete: true,
-      goals,
-      tone_preference: tone,
-      modules_enabled: cycleTrackingEnabled ? ["cycle"] : [],
-      skin_type: skinType,
-    };
-
-    if (profiles[0]) {
-      await base44.entities.UserProfile.update(profiles[0].id, profilePayload);
-    } else {
-      await base44.entities.UserProfile.create(profilePayload);
+    setSaveError(false);
+    try {
+      const user = await base44.auth.me();
+      const profiles = await base44.entities.UserProfile.filter({ user_id: user.id });
+      const profilePayload = {
+        user_id: user.id,
+        user_email: user.email,
+        onboarding_complete: true,
+        goals,
+        tone_preference: tone,
+        modules_enabled: cycleTrackingEnabled ? ["cycle"] : [],
+        skin_type: skinType,
+        followed_categories: interests,
+        hydration_target_ml: hydrationTarget,
+        cycle_tracking_enabled: cycleTrackingEnabled,
+      };
+      if (profiles[0]) {
+        await base44.entities.UserProfile.update(profiles[0].id, profilePayload);
+      } else {
+        await base44.entities.UserProfile.create(profilePayload);
+      }
+      window.location.href = createPageUrl("Today");
+    } catch (e) {
+      console.error("Onboarding error:", e);
+      setSaveError(true);
+    } finally {
+      setSaving(false);
     }
-
-    const preferencePayload = {
-      user_id: user.id,
-      goals,
-      lifestyle_interests: interests,
-      coach_tone: tone,
-      notification_time: notificationTime,
-      hydration_target_ml: hydrationTarget,
-      body_goal: bodyGoal || undefined,
-      cycle_tracking_enabled: cycleTrackingEnabled,
-    };
-
-    if (preferences[0]) {
-      await base44.entities.UserPreferences.update(preferences[0].id, preferencePayload);
-    } else {
-      await base44.entities.UserPreferences.create(preferencePayload);
-    }
-
-    const nutritionPayload = {
-      user_id: user.id,
-      hydration_target_ml: hydrationTarget,
-      ...(bodyGoal ? { goal_mode: bodyGoal } : {}),
-    };
-
-    if (nutritionProfiles[0]) {
-      await base44.entities.NutritionProfile.update(nutritionProfiles[0].id, nutritionPayload);
-    } else {
-      await base44.entities.NutritionProfile.create(nutritionPayload);
-    }
-
-    const lifestylePayload = {
-      user_id: user.id,
-      followed_topics: interests.join(","),
-      category_weights_json: JSON.stringify(Object.fromEntries(interests.map((item) => [item, 5]))),
-    };
-
-    if (lifestyleProfiles[0]) {
-      await base44.entities.LifestyleProfile.update(lifestyleProfiles[0].id, lifestylePayload);
-    } else {
-      await base44.entities.LifestyleProfile.create(lifestylePayload);
-    }
-
-    window.location.href = createPageUrl("Today");
   };
 
   const current = STEPS[step];
@@ -405,6 +377,11 @@ export default function Onboarding() {
             <button className="btn-primary w-full" onClick={handleFinish} disabled={saving}>
               {saving ? "Setting up..." : "Enter FemWell"}
             </button>
+            {saveError && (
+              <p style={{ fontSize: 13, color: "var(--rose-dust)", fontFamily: "'Inter', sans-serif", textAlign: "center", marginTop: 8 }}>
+                Something went wrong. Please try again.
+              </p>
+            )}
           </div>
         )}
       </div>

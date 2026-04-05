@@ -209,14 +209,14 @@ function RecommendedForYouTodaySection({ loading, items, onTap }) {
   );
 }
 
-function DailyStoriesRow() {
+function DailyStoriesRow({ todayCheckin, todayCompletions }) {
   const stories = [
-    { id: "cycle", label: "Cycle", color: "#FFE4F0", route: createPageUrl("CycleSettings") },
-    { id: "journal", label: "Journal", color: "#E8F4FF", route: createPageUrl("Journal") },
-    { id: "breathe", label: "Breathe", color: "#E6FFF6", route: createPageUrl("Explore") + "?type=Audio" },
-    { id: "nutrition", label: "Nutrition", color: "#FFFBE6", route: createPageUrl("Nutrition") },
-    { id: "explore", label: "Explore", color: "#F0EEFF", route: createPageUrl("Explore") },
-    { id: "skin", label: "Skin & Hair", color: "#F5ECF0", route: createPageUrl("SkinHair") },
+    { id: "cycle", label: "Cycle", gradient: "linear-gradient(135deg, #FFE4F0, #F5C6D8)", route: createPageUrl("CycleSettings"), ring: !todayCheckin?.period_flow },
+    { id: "journal", label: "Journal", gradient: "linear-gradient(135deg, #E8F4FF, #C8DEFF)", route: createPageUrl("Journal"), ring: false },
+    { id: "breathe", label: "Breathe", gradient: "linear-gradient(135deg, #E6FFF6, #B8F0DC)", route: createPageUrl("Explore") + "?type=Audio", ring: !(todayCompletions?.length > 0) },
+    { id: "nutrition", label: "Nutrition", gradient: "linear-gradient(135deg, #FFFBE6, #FFE8A0)", route: createPageUrl("Nutrition"), ring: false },
+    { id: "explore", label: "Explore", gradient: "linear-gradient(135deg, #F0EEFF, #D8CCFF)", route: createPageUrl("Explore"), ring: false },
+    { id: "skin", label: "Skin & Hair", gradient: "linear-gradient(135deg, #F5ECF0, #E8C4D0)", route: createPageUrl("SkinHair"), ring: false },
   ];
 
   return (
@@ -230,10 +230,11 @@ function DailyStoriesRow() {
             className="flex flex-col items-center text-center flex-shrink-0"
           >
             <div
-              className="daily-story-circle flex h-14 w-14 items-center justify-center rounded-full transition-transform"
+              className="daily-story-circle flex items-center justify-center rounded-full transition-transform"
               style={{
-                backgroundColor: story.color,
-                border: `2px solid ${story.color}80`,
+                width: 58, height: 58,
+                background: story.gradient,
+                border: story.ring ? "2px solid var(--rose-dust)" : "2px solid transparent",
               }}
             >
               <span style={{ fontSize: "18px", fontWeight: 700, color: "rgba(42,32,53,0.7)", fontFamily: "'Inter', sans-serif" }}>
@@ -242,7 +243,7 @@ function DailyStoriesRow() {
             </div>
             <span
               className="mt-1.5 max-w-[64px] truncate"
-              style={{ fontSize: "11px", fontWeight: 600, color: "var(--mauve)", fontFamily: "'Inter', sans-serif", textAlign: "center" }}
+              style={{ fontSize: "11px", fontWeight: 500, color: "var(--plum)", fontFamily: "'Inter', sans-serif", textAlign: "center" }}
             >
               {story.label}
             </span>
@@ -606,7 +607,7 @@ export default function Today() {
           />
         </div>
 
-        <DailyStoriesRow />
+        <DailyStoriesRow todayCheckin={todayCheckin} todayCompletions={todayCompletions} />
 
         {/* ── TAB SWITCHER ─────────────────────────────────────────────────── */}
         <div className="flex gap-1 mb-6 p-1 rounded-2xl" style={{ ...card }}>

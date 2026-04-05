@@ -568,6 +568,13 @@ export default function SkinHair() {
   const [checkins, setCheckins] = useState([]);
   const [timeRange, setTimeRange] = useState(30);
   const [activeTab, setActiveTab] = useState("skin");
+  const [tryOnOpen, setTryOnOpen] = useState(false);
+  const [tryOnPhoto, setTryOnPhoto] = useState(null);
+  const [tryOnResult, setTryOnResult] = useState(null);
+  const [tryOnLoading, setTryOnLoading] = useState(false);
+  const [tryOnError, setTryOnError] = useState(null);
+  const [tryOnChangeType, setTryOnChangeType] = useState("colour");
+  const [tryOnChangeValue, setTryOnChangeValue] = useState("");
   const [loading, setLoading] = useState(true);
   const [isPremium, setIsPremium] = useState(false);
   const [dailyTip, setDailyTip] = useState(null);
@@ -782,6 +789,121 @@ export default function SkinHair() {
             </div>
           );
         })()}
+
+        {/* Hairstyle try-on entry card */}
+        <div style={{ backgroundColor: "var(--surface)", border: "1px solid var(--border)", borderRadius: 20, padding: 20, marginBottom: 16, display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+          <div>
+            <p style={{ fontSize: 15, fontWeight: 600, color: "var(--plum)", fontFamily: "'Inter', sans-serif", margin: 0 }}>Hairstyle try-on</p>
+            <p style={{ fontSize: 12, color: "var(--mauve)", fontFamily: "'Inter', sans-serif", marginTop: 3 }}>See yourself in a different colour, style or length.</p>
+          </div>
+          <button
+            onClick={() => setTryOnOpen(true)}
+            style={{ backgroundColor: "var(--plum)", color: "white", borderRadius: 9999, padding: "8px 18px", fontSize: 13, fontWeight: 600, border: "none", cursor: "pointer", fontFamily: "'Inter', sans-serif", flexShrink: 0 }}
+          >
+            Try it
+          </button>
+        </div>
+
+        {/* Try-on sheet */}
+        {tryOnOpen && (
+          <div style={{ position: "fixed", inset: 0, zIndex: 51 }}>
+            <style>{`@keyframes sheet-up-tryon { from { transform: translateY(100%); } to { transform: translateY(0); } }`}</style>
+            <div
+              onClick={() => { setTryOnOpen(false); setTryOnPhoto(null); setTryOnResult(null); setTryOnError(null); }}
+              style={{ position: "absolute", inset: 0, backgroundColor: "rgba(42,32,53,0.4)", backdropFilter: "blur(4px)" }}
+            />
+            <div style={{ position: "absolute", bottom: 0, left: 0, right: 0, backgroundColor: "var(--surface)", borderRadius: "28px 28px 0 0", maxHeight: "88vh", overflowY: "auto", animation: "sheet-up-tryon 0.3s ease" }}>
+              <div style={{ display: "flex", justifyContent: "center", paddingTop: 16, marginBottom: 16 }}>
+                <div style={{ width: 32, height: 4, borderRadius: 9999, backgroundColor: "var(--border)" }} />
+              </div>
+              <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", paddingLeft: 20, paddingRight: 20, marginBottom: 20 }}>
+                <h2 style={{ fontFamily: "'Playfair Display', serif", fontSize: 18, fontWeight: 600, color: "var(--plum)", margin: 0 }}>Try a new look</h2>
+                <button
+                  onClick={() => { setTryOnOpen(false); setTryOnPhoto(null); setTryOnResult(null); setTryOnError(null); }}
+                  style={{ width: 28, height: 28, borderRadius: 9999, backgroundColor: "var(--ivory-dark)", color: "var(--mauve)", border: "none", cursor: "pointer", fontSize: 16, display: "flex", alignItems: "center", justifyContent: "center" }}
+                >x</button>
+              </div>
+              <div style={{ padding: "0 20px 32px" }}>
+                {/* Photo upload */}
+                <p style={{ fontSize: 11, fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.12em", color: "var(--mauve)", fontFamily: "'Inter', sans-serif", marginBottom: 8 }}>Your photo</p>
+                <label style={{ display: "block", border: "2px dashed var(--border)", borderRadius: 16, padding: 28, textAlign: "center", background: "var(--ivory)", cursor: "pointer", marginBottom: 20 }}>
+                  {tryOnPhoto
+                    ? <img src={tryOnPhoto} alt="Your photo" style={{ width: "100%", maxHeight: 200, objectFit: "cover", borderRadius: 12, display: "block" }} />
+                    : <p style={{ fontSize: 14, color: "var(--mauve)", fontFamily: "'Inter', sans-serif" }}>Tap to add a photo</p>
+                  }
+                  <input
+                    type="file" accept="image/*" capture="user" style={{ display: "none" }}
+                    onChange={e => {
+                      const file = e.target.files?.[0];
+                      if (!file) return;
+                      const reader = new FileReader();
+                      reader.onload = ev => setTryOnPhoto(ev.target.result);
+                      reader.readAsDataURL(file);
+                    }}
+                  />
+                </label>
+
+                {/* What to change */}
+                <p style={{ fontSize: 11, fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.12em", color: "var(--mauve)", fontFamily: "'Inter', sans-serif", marginBottom: 8 }}>What to change</p>
+                <div style={{ display: "flex", gap: 8, marginBottom: 20 }}>
+                  {["colour", "style", "length"].map(t => (
+                    <button key={t} onClick={() => setTryOnChangeType(t)}
+                      style={{ flex: 1, borderRadius: 9999, padding: "7px 14px", fontSize: 13, fontWeight: 500, border: "none", cursor: "pointer", fontFamily: "'Inter', sans-serif", textTransform: "capitalize",
+                        backgroundColor: tryOnChangeType === t ? "var(--plum)" : "var(--ivory-dark)",
+                        color: tryOnChangeType === t ? "white" : "var(--plum)"
+                      }}>{t}</button>
+                  ))}
+                </div>
+
+                {/* Description */}
+                <p style={{ fontSize: 11, fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.12em", color: "var(--mauve)", fontFamily: "'Inter', sans-serif", marginBottom: 8 }}>Describe the change</p>
+                <input
+                  value={tryOnChangeValue}
+                  onChange={e => setTryOnChangeValue(e.target.value)}
+                  placeholder={tryOnChangeType === "colour" ? "e.g. dark auburn, platinum blonde, jet black" : tryOnChangeType === "style" ? "e.g. soft beach waves, sleek straight, tight curls" : "e.g. short bob, shoulder length, waist length"}
+                  style={{ border: "1px solid var(--border)", borderRadius: 12, padding: "10px 12px", fontSize: 14, fontFamily: "'Inter', sans-serif", color: "var(--plum)", background: "var(--ivory)", width: "100%", boxSizing: "border-box", marginBottom: 16, outline: "none" }}
+                />
+
+                {/* Generate button */}
+                <button
+                  disabled={tryOnLoading || !tryOnPhoto || !tryOnChangeValue.trim()}
+                  onClick={async () => {
+                    setTryOnLoading(true);
+                    setTryOnError(null);
+                    setTryOnResult(null);
+                    try {
+                      const promptStr = `Portrait photo of this exact person with ${tryOnChangeValue} hair ${tryOnChangeType === 'colour' ? 'colour' : tryOnChangeType === 'style' ? 'style' : 'length'}. Photorealistic. Same face, same skin tone, same expression. High quality fashion photography lighting. Natural looking result.`;
+                      const result = await base44.integrations.Core.GenerateImage({ prompt: promptStr, existing_image_urls: [tryOnPhoto] });
+                      setTryOnResult(result.url);
+                    } catch {
+                      setTryOnError("Generation failed. Please try again.");
+                    } finally {
+                      setTryOnLoading(false);
+                    }
+                  }}
+                  style={{ width: "100%", height: 52, borderRadius: 9999, background: "var(--rose-dust)", color: "white", fontSize: 15, fontWeight: 600, border: "none", cursor: "pointer", fontFamily: "'Inter', sans-serif", opacity: (tryOnLoading || !tryOnPhoto || !tryOnChangeValue.trim()) ? 0.5 : 1 }}
+                >
+                  {tryOnLoading ? "Generating..." : "Generate"}
+                </button>
+
+                {tryOnError && (
+                  <p style={{ fontSize: 13, color: "var(--rose-dust)", fontFamily: "'Inter', sans-serif", textAlign: "center", marginTop: 8 }}>{tryOnError}</p>
+                )}
+
+                {/* Result */}
+                {tryOnResult && (
+                  <div>
+                    <img src={tryOnResult} alt="Your new look" style={{ width: "100%", borderRadius: 16, marginTop: 16, maxHeight: 360, objectFit: "cover", display: "block" }} />
+                    <div style={{ display: "flex", gap: 8, marginTop: 12 }}>
+                      <button onClick={() => window.open(tryOnResult, "_blank")} style={{ flex: 1, borderRadius: 9999, padding: "10px", fontSize: 13, fontWeight: 600, backgroundColor: "var(--plum)", color: "white", border: "none", cursor: "pointer", fontFamily: "'Inter', sans-serif" }}>Save image</button>
+                      <button onClick={() => { setTryOnResult(null); setTryOnChangeValue(""); }} style={{ flex: 1, borderRadius: 9999, padding: "10px", fontSize: 13, fontWeight: 600, backgroundColor: "var(--ivory-dark)", color: "var(--plum)", border: "1px solid var(--border)", cursor: "pointer", fontFamily: "'Inter', sans-serif" }}>Try again</button>
+                    </div>
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+        )}
 
         {/* Trending row */}
         {trendItems.length > 0 && (
