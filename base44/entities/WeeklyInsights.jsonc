@@ -1,0 +1,31 @@
+{
+  "name": "WeeklyInsights",
+  "type": "object",
+  "properties": {
+    "user_id": {
+      "type": "string"
+    },
+    "week_start": {
+      "type": "string"
+    },
+    "week_end": {
+      "type": "string"
+    },
+    "insight_text": {
+      "type": "string"
+    },
+    "generated_at": {
+      "type": "string"
+    },
+    "summary_type": {
+      "type": "string"
+    },
+    "ai_suggestion": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "user_id",
+    "week_start"
+  ]
+}

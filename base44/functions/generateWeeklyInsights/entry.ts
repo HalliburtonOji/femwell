@@ -32,6 +32,7 @@ Deno.serve(async (req) => {
 
     const profiles = await base44.asServiceRole.entities.UserProfile.list();
     let processed = 0;
+    const isFirstOfMonth = now.getDate() === 1;
 
     for (const profile of profiles) {
       const userId = profile.user_id;
@@ -130,6 +131,39 @@ Keep the total response under 280 words. Do not include the "Skin & hair note" s
         insight_text: ai,
         generated_at: new Date().toISOString(),
       });
+
+      // Monthly summary on first of month
+      if (isFirstOfMonth) {
+        try {
+          const monthStart = new Date(now.getFullYear(), now.getMonth() - 1, 1).toISOString().split('T')[0];
+          const existingMonthly = await base44.asServiceRole.entities.WeeklyInsights.filter({ user_id: userId, week_start: monthStart });
+          if (!existingMonthly.some(r => r.summary_type === 'monthly')) {
+            const monthCheckins = checkins.filter(item => item.date >= monthStart && item.date < weekStart);
+            const avgMood = avgText(monthCheckins, 'mood', '/5');
+            const avgEnergy = avgText(monthCheckins, 'energy', '/5');
+            const avgSleep = avgText(monthCheckins, 'sleep_hours', ' hours');
+            const daysLogged = monthCheckins.length;
+            const allMonthSymptoms = symptoms.filter(s => s.date >= monthStart && s.date < weekStart);
+            const symCounts = allMonthSymptoms.reduce((acc, s) => { acc[s.symptom_type || 'unknown'] = (acc[s.symptom_type || 'unknown'] || 0) + 1; return acc; }, {});
+            const topSyms = Object.entries(symCounts).sort((a,b) => b[1]-a[1]).slice(0,3).map(([k]) => k).join(', ') || 'none';
+
+            const monthlyAi = await base44.asServiceRole.integrations.Core.InvokeLLM({
+              prompt: `You are a women's wellness analyst. Generate a warm, insightful monthly health summary. Data: average mood ${avgMood}, average energy ${avgEnergy}, average sleep ${avgSleep}, days logged ${daysLogged}, top symptoms: ${topSyms}, goals: ${goals}. Write 3 paragraphs: one on patterns you notice, one on what went well, one on a gentle suggestion for next month. Tone: warm, personal, not clinical. Max 350 words. Do not use bullet points. Do not use the word journey.`,
+            });
+
+            await base44.asServiceRole.entities.WeeklyInsights.create({
+              user_id: userId,
+              week_start: monthStart,
+              insight_text: monthlyAi,
+              summary_type: 'monthly',
+              generated_at: new Date().toISOString(),
+            });
+          }
+        } catch (e) {
+          console.error('Monthly summary error:', e.message);
+        }
+      }
+
       processed += 1;
     }
 

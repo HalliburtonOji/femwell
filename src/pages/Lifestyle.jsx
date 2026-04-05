@@ -266,7 +266,10 @@ function BooksTab() {
 }
 
 export default function Lifestyle() {
-  const [tab, setTab] = useState("for_you");
+  const [tab, setTab] = useState(() => {
+    const p = new URLSearchParams(window.location.search).get("tab");
+    return p && ["for_you","articles","trends","watch","stories","femwell","books"].includes(p) ? p : "for_you";
+  });
   const [items, setItems] = useState([]);
   const [loading, setLoading] = useState(true);
   const [loadingMore, setLoadingMore] = useState(false);

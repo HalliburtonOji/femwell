@@ -45,8 +45,9 @@ export default function Layout({ children, currentPageName }) {
 
   return (
     <div className="min-h-screen" style={{ backgroundColor: "var(--ivory)" }}>
-      {showNav && <FloatingSidebar currentPageName={currentPageName} mode={navMode} />}
-      {showQuickSwitch && <QuickSwitchOverlay currentPageName={currentPageName} />}
+      <style>{`@media print { .no-print { display: none !important; } .print-only { display: block !important; } }`}</style>
+      {showNav && <div className="no-print"><FloatingSidebar currentPageName={currentPageName} mode={navMode} /></div>}
+      {showQuickSwitch && <div className="no-print"><QuickSwitchOverlay currentPageName={currentPageName} /></div>}
       <div className={`${navMode === "full" ? "lg:pl-64" : ""} ${showNav ? "pb-8" : ""}`}>
         {children}
       </div>

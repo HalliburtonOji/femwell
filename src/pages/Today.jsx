@@ -97,6 +97,20 @@ const fallbackTodayRecommendations = [
     reason: "A gentle, structured programme to support you through hormonal shifts.",
     action_route: "/ProgramDetail?key=prog_pms_relief_path",
   },
+  {
+    id: "fallback-lifestyle",
+    type: "LIFESTYLE",
+    title: "Written for you",
+    reason: "Stories and insights tailored to your cycle.",
+    action_route: "/Lifestyle?tab=femwell",
+  },
+  {
+    id: "fallback-book",
+    type: "BOOK",
+    title: "This week's book",
+    reason: "Curated wellness reading for your phase.",
+    action_route: "/Lifestyle?tab=books",
+  },
 ];
 
 const recommendationTypeStyles = {
@@ -104,6 +118,9 @@ const recommendationTypeStyles = {
   MEDITATION: { backgroundColor: "#FFE6F2", color: "#C96B9E", abbr: "MD" },
   PROGRAMME: { backgroundColor: "#E6FFF8", color: "#4ABFA3", abbr: "PG" },
   NUTRITION: { backgroundColor: "#FFF8E6", color: "#E8B84B", abbr: "NT" },
+  BOOK:      { backgroundColor: "#FFF0E8", color: "#C4804A", abbr: "BK" },
+  LIFESTYLE: { backgroundColor: "#F5ECF0", color: "#C4849A", abbr: "LF" },
+  EVENT:     { backgroundColor: "#E8F0FF", color: "#6B8AC4", abbr: "EV" },
   default: { backgroundColor: "#F0F0F8", color: "#8888A8", abbr: "RC" },
 };
 
@@ -130,64 +147,38 @@ function RecommendationSkeletonCard() {
 
 function TodayRecommendationCard({ item, onTap }) {
   const typeMeta = getRecommendationTypeMeta(item.type);
-
   return (
     <a
       href="#"
-      onClick={(e) => {
-        e.preventDefault();
-        onTap(item);
-      }}
-      className="flex"
+      onClick={(e) => { e.preventDefault(); onTap(item); }}
       style={{
-        ...card,
-        minWidth: "220px",
-        maxWidth: "220px",
-        flexShrink: 0,
+        backgroundColor: "var(--surface)",
+        border: "1px solid var(--border)",
+        borderRadius: 20, padding: 16,
+        minWidth: 220, maxWidth: 220, flexShrink: 0,
         scrollSnapAlign: "start",
-        borderRadius: "16px",
-        padding: "16px",
-        flexDirection: "column",
-        gap: "10px",
+        display: "flex", flexDirection: "column",
+        boxShadow: "var(--shadow-sm)", textDecoration: "none", cursor: "pointer",
       }}
     >
       <div
-        className="w-9 h-9 rounded-[10px] flex items-center justify-center flex-shrink-0"
-        style={{ backgroundColor: typeMeta.backgroundColor, color: typeMeta.color }}
+        style={{ width: 32, height: 32, borderRadius: 10, display: "flex", alignItems: "center", justifyContent: "center",
+                 backgroundColor: typeMeta.backgroundColor, color: typeMeta.color, flexShrink: 0 }}
       >
-        <span
-          className="font-bold"
-          style={{ fontSize: "13px", lineHeight: 1, fontFamily: "'Inter', sans-serif" }}
-        >
-          {typeMeta.abbr}
-        </span>
+        <span style={{ fontSize: 11, fontWeight: 700, lineHeight: 1, fontFamily: "'Inter', sans-serif" }}>{typeMeta.abbr}</span>
       </div>
-      <p
-        style={{
-          color: "var(--plum)",
-          fontSize: "13px",
-          fontWeight: 700,
-          fontFamily: "'Inter', sans-serif",
-          display: "-webkit-box",
-          WebkitLineClamp: 2,
-          WebkitBoxOrient: "vertical",
-          overflow: "hidden",
-        }}
-      >
+      <p style={{ color: "var(--plum)", fontSize: 14, fontWeight: 600, fontFamily: "'Inter', sans-serif",
+                  display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical", overflow: "hidden",
+                  marginTop: 10 }}>
         {item.title}
       </p>
-      <p
-        style={{
-          color: "var(--mauve)",
-          fontSize: "11px",
-          fontFamily: "'Inter', sans-serif",
-          display: "-webkit-box",
-          WebkitLineClamp: 2,
-          WebkitBoxOrient: "vertical",
-          overflow: "hidden",
-        }}
-      >
+      <p style={{ color: "var(--mauve)", fontSize: 12, lineHeight: 1.4, fontFamily: "'Inter', sans-serif",
+                  display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical", overflow: "hidden",
+                  marginTop: 4, flex: 1 }}>
         {item.reason}
+      </p>
+      <p style={{ color: "var(--rose-dust)", fontSize: 11, fontWeight: 600, fontFamily: "'Inter', sans-serif", marginTop: 10 }}>
+        View
       </p>
     </a>
   );
@@ -199,11 +190,11 @@ function RecommendedForYouTodaySection({ loading, items, onTap }) {
       <style>{`.recommended-scroll::-webkit-scrollbar{display:none;}`}</style>
       <div className="flex items-center justify-between mb-3">
         <p style={{ color: "var(--plum)", fontSize: "16px", fontWeight: 700, fontFamily: "'Inter', sans-serif" }}>
-          Recommended for you
+          For you today
         </p>
-        <p style={{ color: "var(--mauve)", fontSize: "12px", fontFamily: "'Inter', sans-serif" }}>
-          Today
-        </p>
+        <a href={createPageUrl("Lifestyle")} style={{ color: "var(--rose-dust)", fontSize: "12px", fontFamily: "'Inter', sans-serif", fontWeight: 600, textDecoration: "none" }}>
+          See all
+        </a>
       </div>
 
       <div
@@ -363,6 +354,14 @@ export default function Today() {
       await loadTrackData(u.id, todayStr);
       setLoading(false);
     })();
+  }, []);
+
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    if (params.get("open_log") === "1") {
+      setShowCheckin(true);
+      window.history.replaceState({}, "", window.location.pathname);
+    }
   }, []);
 
   const loadTrackData = async (userId, date) => {
@@ -830,6 +829,7 @@ export default function Today() {
             {user && (
               <TrackCalendar
                 user={user}
+                profile={profile}
                 selectedDate={selectedDate}
                 onSelectDate={async (date) => {
                   setSelectedDate(date);

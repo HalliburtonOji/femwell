@@ -73,6 +73,49 @@ Deno.serve(async (req) => {
         });
       }
 
+      // Book recommendation
+      try {
+        const bookPicks = await base44.asServiceRole.entities.WeeklyBookPick.filter({ status: 'PUBLISHED' }, '-created_date', 1);
+        const bookPick = bookPicks[0];
+        const book = bookPick?.books?.[0];
+        if (book) {
+          await base44.asServiceRole.entities.TodayRecommendations.create({
+            user_id: userId, date: today, type: 'BOOK',
+            title: book.title,
+            reason: ('This week\'s book pick \u2014 ' + (book.tagline || '')).slice(0, 80),
+            action_route: '/Lifestyle?tab=books',
+          });
+        }
+      } catch {}
+
+      // Lifestyle recommendation
+      try {
+        const lifestyleItems = await base44.asServiceRole.entities.LifestyleItems.list('-pub_date', 5);
+        const lifestyleItem = lifestyleItems.find(i => i.provider === 'FEMWELL_AI' && i.status === 'PUBLISHED');
+        if (lifestyleItem) {
+          await base44.asServiceRole.entities.TodayRecommendations.create({
+            user_id: userId, date: today, type: 'LIFESTYLE',
+            title: lifestyleItem.title,
+            reason: 'Written for you by FemWell',
+            action_route: '/Lifestyle?tab=femwell',
+          });
+        }
+      } catch {}
+
+      // Event recommendation
+      try {
+        const events = await base44.asServiceRole.entities.EventsItems.list('date', 20);
+        const upcomingVerified = events.find(e => e.verified === true && e.date >= today);
+        if (upcomingVerified) {
+          await base44.asServiceRole.entities.TodayRecommendations.create({
+            user_id: userId, date: today, type: 'EVENT',
+            title: upcomingVerified.title,
+            reason: upcomingVerified.location || 'Upcoming event near you',
+            action_route: '/Events',
+          });
+        }
+      } catch {}
+
       processed += 1;
     }
 

@@ -206,11 +206,13 @@ export default function Pulse() {
 
   const weeklyPeriodLabel = useMemo(() => {
     if (!currentWeeklyItem?.week_start) return "";
+    if (currentWeeklyItem.summary_type === 'monthly') {
+      return format(parseISO(currentWeeklyItem.week_start), 'MMMM yyyy');
+    }
     const start = parseISO(currentWeeklyItem.week_start);
-    const end = currentWeeklyItem.week_end
-      ? parseISO(currentWeeklyItem.week_end) : null;
+    const end = currentWeeklyItem.week_end ? parseISO(currentWeeklyItem.week_end) : null;
     return end
-      ? `Week of ${format(start, "MMM dd")} – ${format(end, "MMM dd")}`
+      ? `Week of ${format(start, "MMM dd")} \u2013 ${format(end, "MMM dd")}`
       : `Week of ${format(start, "MMM dd")}`;
   }, [currentWeeklyItem]);
 
@@ -331,10 +333,19 @@ export default function Pulse() {
               >
                 <ChevronLeft className="w-4 h-4" />
               </button>
-              <p style={{
-                fontSize: "13px", fontWeight: 600, color: "var(--plum)",
-                fontFamily: "'Inter', sans-serif", textAlign: "center"
-              }}>{weeklyPeriodLabel}</p>
+              <div style={{ textAlign: "center" }}>
+                {currentWeeklyItem?.summary_type === 'monthly' && (
+                  <div style={{ marginBottom: 4 }}>
+                    <span style={{ backgroundColor: "var(--sage-subtle)", color: "var(--sage)", borderRadius: 9999, padding: "3px 10px", fontSize: 10, fontWeight: 600, fontFamily: "'Inter', sans-serif" }}>Monthly summary</span>
+                  </div>
+                )}
+                <p style={{
+                  fontSize: currentWeeklyItem?.summary_type === 'monthly' ? "18px" : "13px",
+                  fontWeight: 600,
+                  color: "var(--plum)",
+                  fontFamily: currentWeeklyItem?.summary_type === 'monthly' ? "'Playfair Display', serif" : "'Inter', sans-serif",
+                }}>{weeklyPeriodLabel}</p>
+              </div>
               <button
                 onClick={() => setWeeklyIndex(i => Math.min(weeklyItems.length - 1, i + 1))}
                 disabled={weeklyIndex >= weeklyItems.length - 1}

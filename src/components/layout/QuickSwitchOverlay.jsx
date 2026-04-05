@@ -137,7 +137,7 @@ export default function QuickSwitchOverlay({ currentPageName }) {
 
                 {/* Log today */}
                 <a
-                  href={createPageUrl("Today")}
+                  href={createPageUrl("Today") + "?open_log=1"}
                   onClick={() => setOpen(false)}
                   style={{
                     display: "flex",
