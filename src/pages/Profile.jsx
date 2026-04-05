@@ -3,8 +3,23 @@ import { base44 } from "@/api/base44Client";
 import { createPageUrl } from "@/utils";
 import {
   LogOut, ChevronRight, Bell, Moon, Heart, Shield, Settings,
-  Activity, Bookmark, Ticket, CalendarDays, Feather
+  Activity, Bookmark, Ticket, CalendarDays, Feather, Calendar, MapPin, Sparkles
 } from "lucide-react";
+
+function getCyclePhase(lastPeriodDate, cycleLen = 28, periodLen = 5) {
+  if (!lastPeriodDate) return null;
+  const today = new Date();
+  const last = new Date(lastPeriodDate);
+  const diff = Math.floor((today - last) / (1000 * 60 * 60 * 24));
+  const cycleDay = (diff % cycleLen) + 1;
+  let phase;
+  if (cycleDay <= periodLen) phase = 'menstrual';
+  else if (cycleDay <= 13) phase = 'follicular';
+  else if (cycleDay <= 16) phase = 'ovulatory';
+  else phase = 'luteal';
+  return { phase, day: cycleDay };
+}
+const PHASE_LABELS_P = { menstrual: 'Menstrual', follicular: 'Follicular', ovulatory: 'Ovulatory', luteal: 'Luteal' };
 
 export default function Profile() {
   const [user, setUser] = useState(null);
@@ -14,6 +29,22 @@ export default function Profile() {
   const [saving, setSaving] = useState(false);
   const [checkins, setCheckins] = useState([]);
   const [editTone, setEditTone] = useState(false);
+  const [editAssistantName, setEditAssistantName] = useState(false);
+  const [editBirthday, setEditBirthday] = useState(false);
+  const [editCity, setEditCity] = useState(false);
+  const [newAssistantName, setNewAssistantName] = useState('');
+  const [newBirthday, setNewBirthday] = useState('');
+  const [newCity, setNewCity] = useState('');
+  const [savedField, setSavedField] = useState(null);
+
+  const saveProfileField = async (field, value, setEdit) => {
+    if (!profile) return;
+    await base44.entities.UserProfile.update(profile.id, { [field]: value });
+    setProfile(p => ({ ...p, [field]: value }));
+    setSavedField(field);
+    setEdit(false);
+    setTimeout(() => setSavedField(null), 2000);
+  };
 
   useEffect(() => {
     (async () => {
@@ -54,6 +85,23 @@ export default function Profile() {
   ];
 
   const currentTone = tones.find((t) => t.id === (preferences?.coach_tone || profile?.tone_preference)) || tones[0];
+
+  const cycleInfo = profile?.last_period_start_date
+    ? getCyclePhase(profile.last_period_start_date, profile.cycle_avg_length || 28, profile.period_length || 5)
+    : null;
+
+  const checkinStreak = (() => {
+    if (!checkins.length) return 0;
+    let count = 0;
+    const dates = new Set(checkins.map(c => c.date));
+    const d = new Date();
+    while (count <= 365) {
+      if (!dates.has(d.toISOString().split('T')[0])) break;
+      count++;
+      d.setDate(d.getDate() - 1);
+    }
+    return count;
+  })();
 
   const skinCheckins = checkins.filter(c => c.skin_condition);
   const daysLoggedSkin = skinCheckins.length;
@@ -124,41 +172,60 @@ export default function Profile() {
           }}>Profile</h1>
         </div>
 
-        {/* Avatar card */}
-        <div style={{ ...card, padding: "20px", marginBottom: "16px" }}
-             className="flex items-center gap-4">
-          <div style={{
-            width: "56px", height: "56px", borderRadius: "16px",
-            backgroundColor: "var(--rose-dust-subtle)",
-            border: "1px solid var(--rose-dust-light)",
-            display: "flex", alignItems: "center", justifyContent: "center",
-            flexShrink: 0,
-          }}>
-            <span style={{
-              fontSize: "22px", fontWeight: 700,
-              fontFamily: "'Playfair Display', serif",
-              color: "var(--rose-dust)"
+        {/* Hero card */}
+        <div style={{
+          background: "linear-gradient(135deg, var(--plum) 0%, var(--plum-light) 100%)",
+          borderRadius: 24, padding: 24, marginBottom: 16,
+          boxShadow: "var(--shadow-md)",
+        }}>
+          {/* Top row */}
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 12 }}>
+            <div style={{
+              width: 64, height: 64, borderRadius: 20,
+              background: "rgba(255,255,255,0.15)",
+              border: "1.5px solid rgba(255,255,255,0.25)",
+              display: "flex", alignItems: "center", justifyContent: "center",
             }}>
-              {user?.full_name?.[0]?.toUpperCase() || "?"}
+              <span style={{ fontFamily: "'Playfair Display', serif", fontSize: 26, fontWeight: 700, color: "white" }}>
+                {user?.full_name?.[0]?.toUpperCase() || "?"}
+              </span>
+            </div>
+            <span style={{
+              background: "rgba(255,255,255,0.15)",
+              border: "1px solid rgba(255,255,255,0.25)",
+              borderRadius: 9999, padding: "4px 12px",
+              fontSize: 11, fontWeight: 600, color: "white",
+              fontFamily: "'Inter', sans-serif",
+            }}>
+              {profile?.plan ? `${profile.plan} Plan` : "Free Plan"}
             </span>
           </div>
-          <div>
-            <p style={{ fontSize: "16px", fontWeight: 700, color: "var(--plum)", fontFamily: "'Inter', sans-serif" }}>
-              {user?.full_name}
-            </p>
-            <p style={mutedText}>{user?.email}</p>
-            <span style={{
-              display: "inline-block", marginTop: "6px",
-              fontSize: "10px", fontWeight: 700, letterSpacing: "0.08em",
-              textTransform: "uppercase", borderRadius: "9999px",
-              padding: "3px 10px",
-              backgroundColor: "var(--rose-dust-subtle)",
-              color: "var(--rose-dust)",
-              fontFamily: "'Inter', sans-serif"
-            }}>
-              {profile?.plan || "Free"} Plan
-            </span>
-          </div>
+          {/* Name row */}
+          <p style={{ fontSize: 18, fontWeight: 700, color: "white", fontFamily: "'Inter', sans-serif", marginBottom: 2 }}>
+            {user?.full_name}
+          </p>
+          <p style={{ fontSize: 12, color: "rgba(255,255,255,0.6)", fontFamily: "'Inter', sans-serif", marginBottom: 0 }}>
+            {user?.email}
+          </p>
+          {/* Phase chips */}
+          {cycleInfo && (
+            <div style={{ borderTop: "1px solid rgba(255,255,255,0.12)", paddingTop: 16, marginTop: 16, display: "flex", gap: 8 }}>
+              {[
+                { label: "Phase", value: PHASE_LABELS_P[cycleInfo.phase] || cycleInfo.phase },
+                { label: "Cycle day", value: `Day ${cycleInfo.day}` },
+                { label: "Streak", value: `${checkinStreak}d` },
+              ].map(chip => (
+                <div key={chip.label} style={{
+                  flex: 1, background: "rgba(255,255,255,0.1)",
+                  border: "1px solid rgba(255,255,255,0.15)",
+                  borderRadius: 12, padding: "10px 14px", textAlign: "center",
+                }}>
+                  <p style={{ fontSize: 10, fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.08em", color: "var(--rose-dust-light)", fontFamily: "'Inter', sans-serif", marginBottom: 3 }}>{chip.label}</p>
+                  <p style={{ fontSize: 14, fontWeight: 600, color: "white", fontFamily: "'Playfair Display', serif" }}>{chip.value}</p>
+                </div>
+              ))}
+            </div>
+          )}
         </div>
 
         {/* Goals card */}
@@ -226,6 +293,99 @@ export default function Profile() {
                   {t.label}
                 </button>
               ))}
+            </div>
+          )}
+
+          {/* Assistant name */}
+          <button onClick={() => { setEditAssistantName(!editAssistantName); setNewAssistantName(profile?.ai_assistant_name || ''); }} style={rowItem}>
+            <div style={iconBox("var(--rose-dust-subtle)")}>
+              <Sparkles className="w-4 h-4" style={{ color: "var(--rose-dust)" }} />
+            </div>
+            <div className="flex-1">
+              <p style={{ ...bodyText, fontWeight: 600 }}>Assistant name</p>
+              <p style={mutedText}>How you want to call your AI guide</p>
+            </div>
+            {savedField === 'ai_assistant_name'
+              ? <span style={{ fontSize: 11, color: "var(--sage)", fontFamily: "'Inter', sans-serif" }}>Saved</span>
+              : <p style={{ ...mutedText, flexShrink: 0 }}>{profile?.ai_assistant_name || 'Guide'}</p>
+            }
+          </button>
+          {editAssistantName && (
+            <div style={{ padding: "8px 16px 12px", backgroundColor: "var(--ivory)", borderBottom: "1px solid var(--border-subtle)", display: "flex", gap: 8 }}>
+              <input
+                value={newAssistantName}
+                onChange={e => setNewAssistantName(e.target.value)}
+                placeholder="e.g. Luna, Sage, Guide..."
+                style={{ flex: 1, border: "1px solid var(--border)", borderRadius: 12, padding: "10px 12px", fontSize: 14, fontFamily: "'Inter', sans-serif", color: "var(--plum)", background: "var(--surface)", outline: "none" }}
+              />
+              <button onClick={() => saveProfileField('ai_assistant_name', newAssistantName, setEditAssistantName)}
+                style={{ background: "var(--plum)", color: "white", borderRadius: 9999, padding: "6px 14px", fontSize: 12, fontFamily: "'Inter', sans-serif", border: "none", cursor: "pointer" }}>
+                Save
+              </button>
+            </div>
+          )}
+
+          <div style={divider} />
+
+          {/* Birthday */}
+          <button onClick={() => { setEditBirthday(!editBirthday); setNewBirthday(profile?.birthday || ''); }} style={rowItem}>
+            <div style={iconBox("var(--sage-subtle)")}>
+              <Calendar className="w-4 h-4" style={{ color: "var(--sage)" }} />
+            </div>
+            <div className="flex-1">
+              <p style={{ ...bodyText, fontWeight: 600 }}>Birthday</p>
+              <p style={mutedText}>Used for cycle insights and personalisation</p>
+            </div>
+            {savedField === 'birthday'
+              ? <span style={{ fontSize: 11, color: "var(--sage)", fontFamily: "'Inter', sans-serif" }}>Saved</span>
+              : <p style={{ ...mutedText, flexShrink: 0 }}>
+                  {profile?.birthday ? new Date(profile.birthday + 'T12:00:00').toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' }) : 'Not set'}
+                </p>
+            }
+          </button>
+          {editBirthday && (
+            <div style={{ padding: "8px 16px 12px", backgroundColor: "var(--ivory)", borderBottom: "1px solid var(--border-subtle)", display: "flex", gap: 8 }}>
+              <input
+                type="date"
+                value={newBirthday}
+                onChange={e => setNewBirthday(e.target.value)}
+                style={{ flex: 1, border: "1px solid var(--border)", borderRadius: 12, padding: "10px 12px", fontSize: 14, fontFamily: "'Inter', sans-serif", color: "var(--plum)", background: "var(--surface)", outline: "none" }}
+              />
+              <button onClick={() => saveProfileField('birthday', newBirthday, setEditBirthday)}
+                style={{ background: "var(--plum)", color: "white", borderRadius: 9999, padding: "6px 14px", fontSize: 12, fontFamily: "'Inter', sans-serif", border: "none", cursor: "pointer" }}>
+                Save
+              </button>
+            </div>
+          )}
+
+          <div style={divider} />
+
+          {/* City */}
+          <button onClick={() => { setEditCity(!editCity); setNewCity(profile?.location_city || ''); }} style={rowItem}>
+            <div style={iconBox("var(--ivory-dark)")}>
+              <MapPin className="w-4 h-4" style={{ color: "var(--mauve)" }} />
+            </div>
+            <div className="flex-1">
+              <p style={{ ...bodyText, fontWeight: 600 }}>Your city</p>
+              <p style={mutedText}>For personalised events and recommendations</p>
+            </div>
+            {savedField === 'location_city'
+              ? <span style={{ fontSize: 11, color: "var(--sage)", fontFamily: "'Inter', sans-serif" }}>Saved</span>
+              : <p style={{ ...mutedText, flexShrink: 0 }}>{profile?.location_city || 'Not set'}</p>
+            }
+          </button>
+          {editCity && (
+            <div style={{ padding: "8px 16px 12px", backgroundColor: "var(--ivory)", borderBottom: "1px solid var(--border-subtle)", display: "flex", gap: 8 }}>
+              <input
+                value={newCity}
+                onChange={e => setNewCity(e.target.value)}
+                placeholder="e.g. London, Manchester..."
+                style={{ flex: 1, border: "1px solid var(--border)", borderRadius: 12, padding: "10px 12px", fontSize: 14, fontFamily: "'Inter', sans-serif", color: "var(--plum)", background: "var(--surface)", outline: "none" }}
+              />
+              <button onClick={() => saveProfileField('location_city', newCity, setEditCity)}
+                style={{ background: "var(--plum)", color: "white", borderRadius: 9999, padding: "6px 14px", fontSize: 12, fontFamily: "'Inter', sans-serif", border: "none", cursor: "pointer" }}>
+                Save
+              </button>
             </div>
           )}
 

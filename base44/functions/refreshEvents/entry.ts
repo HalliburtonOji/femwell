@@ -6,7 +6,7 @@ Deno.serve(async (req) => {
     const result = await base44.asServiceRole.integrations.Core.InvokeLLM({
       model: 'gemini_3_flash',
       add_context_from_internet: true,
-      prompt: 'Find upcoming women-focused events in the UK over the next 60 days. Include networking, fitness/wellness, talks/workshops, and relationship or therapy related events. Prefer London and major UK cities. Return a balanced mix of free and paid listings with direct links.',
+      prompt: 'Find upcoming events over the next 60 days in major UK cities (London, Manchester, Birmingham, Leeds, Bristol) covering ALL of the following: women networking and professional meetups, fitness and wellness classes (yoga, pilates, running clubs, HIIT), social parties and club nights, gallery openings and culture events, food and coffee socials, talks panels and workshops, dating and relationship events, online and virtual events accessible from anywhere. Source from Eventbrite, Dice, Meetup.com, Fatsoma, Time Out, RA (Resident Advisor), and Facebook Events. Return a balanced mix of free and paid events. Return up to 80 items.',
       response_json_schema: {
         type: 'object',
         properties: {
@@ -23,7 +23,9 @@ Deno.serve(async (req) => {
                 category: { type: 'string' },
                 is_free: { type: 'boolean' },
                 city: { type: 'string' },
-                source_name: { type: 'string' }
+                source_name: { type: 'string' },
+                tags: { type: 'array', items: { type: 'string' } },
+                is_online: { type: 'boolean' }
               }
             }
           }
@@ -46,6 +48,8 @@ Deno.serve(async (req) => {
         is_free: Boolean(item.is_free),
         city: item.city || '',
         source_name: item.source_name || 'Web search',
+        tags: Array.isArray(item.tags) ? item.tags : [],
+        is_online: Boolean(item.is_online),
       });
     }
 

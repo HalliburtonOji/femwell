@@ -570,6 +570,8 @@ export default function SkinHair() {
   const [activeTab, setActiveTab] = useState("skin");
   const [loading, setLoading] = useState(true);
   const [isPremium, setIsPremium] = useState(false);
+  const [dailyTip, setDailyTip] = useState(null);
+  const [trendItems, setTrendItems] = useState([]);
   const [skinRoutines, setSkinRoutines] = useState([]);
   const [hairRoutines, setHairRoutines] = useState([]);
   const [showAddSkinProduct, setShowAddSkinProduct] = useState(false);
@@ -583,12 +585,17 @@ export default function SkinHair() {
     (async () => {
       const u = await base44.auth.me();
       setUser(u);
-      const [profiles, allCheckins, skinR, hairR] = await Promise.all([
+      const [profiles, allCheckins, skinR, hairR, tipCards, trends] = await Promise.all([
         base44.entities.UserProfile.filter({ user_id: u.id }),
         base44.entities.DailyCheckins.filter({ user_id: u.id }, "-date", 200),
         base44.entities.SkinRoutine.filter({ user_id: u.id }),
         base44.entities.HairRoutine.filter({ user_id: u.id }),
+        base44.entities.InsightCards.filter({ type: "SKIN_TIP" }),
+        base44.entities.LifestyleItems.filter({ content_type: "TREND" }, "-pub_date", 30),
       ]);
+      const sortedTips = tipCards.sort((a, b) => (b.created_date || '').localeCompare(a.created_date || ''));
+      setDailyTip(sortedTips[0] || null);
+      setTrendItems(trends.filter(t => ["Skincare", "Fashion", "Haircare"].includes(t.category)).slice(0, 10));
       setProfile(profiles[0] || null);
       const cutoff = subDays(new Date(), 90).toISOString().split("T")[0];
       setCheckins(
@@ -749,6 +756,57 @@ export default function SkinHair() {
       </div>
 
       <div className="max-w-2xl mx-auto px-4 pt-6 space-y-5">
+
+        {/* Daily tip card */}
+        {(() => {
+          const parsed = dailyTip?.content ? (() => { try { return JSON.parse(dailyTip.content); } catch { return null; } })() : null;
+          const fallbackTip = currentPhase ? PHASE_BRIEF_SKIN[currentPhase]?.tip : null;
+          return (
+            <div style={{ background: "var(--rose-dust-subtle)", border: "1px solid var(--rose-dust-light)", borderRadius: 20, padding: 20 }}>
+              <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 10 }}>
+                <span style={{ fontSize: 10, fontWeight: 600, color: "var(--rose-dust)", textTransform: "uppercase", letterSpacing: "0.1em", fontFamily: "'Inter', sans-serif" }}>Today's advice</span>
+                {currentPhase && <span style={{ fontSize: 10, fontWeight: 600, color: "var(--rose-dust)", background: "rgba(196,132,154,0.15)", borderRadius: 9999, padding: "2px 9px", fontFamily: "'Inter', sans-serif" }}>{PHASE_LABELS[currentPhase]}</span>}
+              </div>
+              {parsed ? (
+                <>
+                  <p style={{ fontSize: 14, color: "var(--plum)", lineHeight: 1.6, fontFamily: "'Inter', sans-serif", margin: 0 }}>{parsed.skin_tip}</p>
+                  <div style={{ borderTop: "1px solid var(--border-subtle)", margin: "10px 0" }} />
+                  <p style={{ fontSize: 10, fontWeight: 600, color: "var(--mauve)", textTransform: "uppercase", letterSpacing: "0.08em", fontFamily: "'Inter', sans-serif", marginBottom: 4 }}>Hair</p>
+                  <p style={{ fontSize: 14, color: "var(--plum)", lineHeight: 1.6, fontFamily: "'Inter', sans-serif", margin: 0 }}>{parsed.hair_tip}</p>
+                </>
+              ) : fallbackTip ? (
+                <p style={{ fontSize: 14, color: "var(--plum)", lineHeight: 1.6, fontFamily: "'Inter', sans-serif", margin: 0 }}>{fallbackTip}</p>
+              ) : (
+                <p style={{ fontSize: 13, color: "var(--mauve)", fontFamily: "'Inter', sans-serif", margin: 0 }}>Log your check-in daily to unlock personalised skin and hair tips.</p>
+              )}
+            </div>
+          );
+        })()}
+
+        {/* Trending row */}
+        {trendItems.length > 0 && (
+          <div>
+            <p style={{ fontSize: 13, fontWeight: 600, color: "var(--plum)", fontFamily: "'Inter', sans-serif", marginBottom: 10 }}>Trending</p>
+            <style>{`.sh-trend-scroll::-webkit-scrollbar{display:none}`}</style>
+            <div className="sh-trend-scroll" style={{ display: "flex", gap: 12, overflowX: "auto", paddingBottom: 8, msOverflowStyle: "none", scrollbarWidth: "none" }}>
+              {trendItems.map(item => (
+                <div
+                  key={item.id}
+                  onClick={() => item.content_url && window.open(item.content_url, '_blank')}
+                  style={{ flexShrink: 0, width: 200, background: "var(--surface)", border: "1px solid var(--border)", borderRadius: 16, overflow: "hidden", cursor: "pointer" }}
+                >
+                  <div style={{ height: 100, background: "var(--ivory-dark)", overflow: "hidden" }}>
+                    {item.image_url && <img src={item.image_url} alt="" style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }} onError={e => { e.target.style.display = "none"; }} />}
+                  </div>
+                  <div style={{ padding: "10px 12px" }}>
+                    <p style={{ fontSize: 12, fontWeight: 600, color: "var(--plum)", fontFamily: "'Inter', sans-serif", lineHeight: 1.4, overflow: "hidden", display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical", margin: "0 0 4px" }}>{item.title}</p>
+                    <p style={{ fontSize: 10, color: "var(--mauve)", fontFamily: "'Inter', sans-serif", margin: 0 }}>{item.source_name}</p>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
 
         {/* Summary stats */}
         <div className="grid grid-cols-2 gap-3">

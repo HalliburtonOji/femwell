@@ -459,6 +459,11 @@ export default function NutritionTodayTab({ user, profile, nutritionProfile, day
                           <p className="text-[10px] mt-1.5" style={{ color: "var(--mauve)" }}>
                             {meal.logged_at ? format(new Date(meal.logged_at), "HH:mm") : ""}
                           </p>
+                          {(analysis?.nutritional_summary?.calories) && (
+                            <span style={{ backgroundColor: "var(--ivory-dark)", borderRadius: "9999px", padding: "2px 8px", fontSize: "11px", fontWeight: 600, color: "var(--mauve)", marginTop: "4px", display: "inline-block", fontFamily: "'Inter', sans-serif" }}>
+                              ~{analysis.nutritional_summary.calories} kcal
+                            </span>
+                          )}
                         </div>
                         <button onClick={() => deleteMeal(meal.id)} className="flex-shrink-0" style={{ color: "var(--border)" }}
                           onMouseEnter={e => e.currentTarget.style.color = "var(--rose-dust)"}

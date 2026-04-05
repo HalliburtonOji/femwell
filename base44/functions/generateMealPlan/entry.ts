@@ -126,7 +126,9 @@ Return ONLY valid JSON:
   "weekly_tip": "string"
 }
 
-Only include the meal types specified (${mealTypesStr}) in each day's meals object.`;
+Only include the meal types specified (${mealTypesStr}) in each day's meals object.
+
+Important generation rules: (1) No protein source (chicken, beef, fish, eggs, tofu, lentils, etc.) should appear more than once in the full plan. (2) No two meals should share the same primary cooking method (stir-fry, baked, roasted, grilled, raw, steamed, soup). (3) Include at least one meal from a non-Western cuisine tradition (e.g. Japanese, West African, Middle Eastern, South American, Southeast Asian). (4) Every meal must include an estimated calorie count and a macro breakdown (protein_g, carbs_g, fat_g) in the nutritional_summary field of each day. (5) The shopping list must be deduplicated — if an ingredient appears in multiple meals, list it once with the combined quantity. (6) The shopping list maximum is 25 items total. Prioritise staples that appear in multiple meals.`;
     }
 
     const response = await openai.chat.completions.create({

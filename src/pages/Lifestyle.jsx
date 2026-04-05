@@ -38,8 +38,10 @@ function getMonday() {
 const TABS = [
   { id: "for_you",  label: "For You"  },
   { id: "articles", label: "Read"     },
+  { id: "trends",   label: "Trends"   },
   { id: "watch",    label: "Watch"    },
   { id: "stories",  label: "Stories"  },
+  { id: "femwell",  label: "FemWell"  },
   { id: "books",    label: "Books"    },
 ];
 
@@ -280,8 +282,26 @@ export default function Lifestyle() {
     else setLoadingMore(true);
     try {
       const PAGE_SIZE = 15;
-      let allItems = await base44.entities.LifestyleItems.list("-pub_date", 300);
-      if (activeTab === "watch") {
+      let allItems = await base44.entities.LifestyleItems.list("-pub_date", 500);
+      if (activeTab === "for_you") {
+        try {
+          const u = await base44.auth.me();
+          const profiles = await base44.entities.UserProfile.filter({ user_id: u.id });
+          const forYouIds = profiles[0]?.for_you_item_ids;
+          if (forYouIds?.length > 0) {
+            const forYouSet = new Set(forYouIds.slice(0, 10));
+            allItems = allItems.filter(it => forYouSet.has(it.id));
+          } else {
+            allItems = allItems.filter(it => it.status === "PUBLISHED").slice(0, 10);
+          }
+        } catch {
+          allItems = allItems.filter(it => it.status === "PUBLISHED").slice(0, 10);
+        }
+      } else if (activeTab === "trends") {
+        allItems = allItems.filter(it => it.content_type === "TREND" && it.status === "PUBLISHED");
+      } else if (activeTab === "femwell") {
+        allItems = allItems.filter(it => it.provider === "FEMWELL_AI" && it.status === "PUBLISHED");
+      } else if (activeTab === "watch") {
         allItems = allItems.filter(it => it.media_type === "VIDEO" || it.content_type === "VIDEO");
       } else if (activeTab === "stories") {
         allItems = allItems.filter(it => it.content_type === "STORY");
@@ -352,6 +372,15 @@ export default function Lifestyle() {
                 <p style={{ fontSize: 13, color: "var(--mauve)", margin: 0 }}>First-person stories about bodies, identity, relationships, and life — from Narratively, Longreads, Granta, and more.</p>
               </div>
             )}
+            {tab === "trends" && (
+              <p style={{ fontSize: 11, color: "var(--mauve)", fontFamily: "'Inter', sans-serif", marginBottom: 14 }}>Trending conversations from across the web, refreshed daily.</p>
+            )}
+            {tab === "femwell" && (
+              <div style={{ background: "var(--rose-dust-subtle)", border: "1px solid var(--rose-dust-light)", borderRadius: 16, padding: "14px 16px", marginBottom: 16 }}>
+                <h3 style={{ fontFamily: "'Playfair Display', serif", fontSize: 15, fontWeight: 700, color: "var(--plum)", margin: "0 0 4px" }}>Written for you</h3>
+                <p style={{ fontSize: 12, color: "var(--mauve)", fontFamily: "'Inter', sans-serif", margin: 0 }}>Stories and insights created by FemWell, tailored to your cycle and life.</p>
+              </div>
+            )}
             {loading ? <FeedSkeleton /> : items.length === 0 ? (
               <div style={{ textAlign: "center", padding: "48px 24px" }}>
                 <p style={{ color: "var(--mauve)", fontSize: 14, margin: 0 }}>
@@ -362,7 +391,7 @@ export default function Lifestyle() {
               <div className="lf-fade">
                 {tab === "watch"
                   ? items.map(item => <VideoCard key={item.id} item={item} saved={savedIds.has(item.id)} onSave={handleSave} />)
-                  : items.map(item => <ContentCard key={item.id} item={item} saved={savedIds.has(item.id)} onSave={handleSave} isStory={tab === "stories"} />)
+                  : items.map(item => <ContentCard key={item.id} item={item} saved={savedIds.has(item.id)} onSave={handleSave} isStory={tab === "stories" || (tab === "femwell" && item.content_type === "STORY")} />)
                 }
               </div>
             )}

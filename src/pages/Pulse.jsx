@@ -249,22 +249,38 @@ export default function Pulse() {
     <div className="min-h-screen pb-28" style={{ backgroundColor: "var(--ivory)" }}>
       <div className="max-w-3xl mx-auto px-4">
 
+        <style>{`@media print { .no-print { display: none !important; } body { background: white; } }`}</style>
+
         {/* Page header */}
-        <div style={{ paddingTop: "32px", paddingBottom: "8px" }}>
-          <p style={{
-            fontSize: "0.6rem", fontWeight: 700, textTransform: "uppercase",
-            letterSpacing: "0.14em", color: "var(--mauve)",
-            fontFamily: "'Inter', sans-serif"
-          }}>
-            Your health intelligence
-          </p>
-          <h1 style={{
-            fontSize: "28px", fontWeight: 700, lineHeight: 1.1,
-            fontFamily: "'Playfair Display', serif",
-            color: "var(--plum)", letterSpacing: "-0.02em", marginTop: "4px"
-          }}>
-            Pulse
-          </h1>
+        <div style={{ paddingTop: "32px", paddingBottom: "8px", display: "flex", alignItems: "flex-end", justifyContent: "space-between" }}>
+          <div>
+            <p style={{
+              fontSize: "0.6rem", fontWeight: 700, textTransform: "uppercase",
+              letterSpacing: "0.14em", color: "var(--mauve)",
+              fontFamily: "'Inter', sans-serif"
+            }}>
+              Your health intelligence
+            </p>
+            <h1 style={{
+              fontSize: "28px", fontWeight: 700, lineHeight: 1.1,
+              fontFamily: "'Playfair Display', serif",
+              color: "var(--plum)", letterSpacing: "-0.02em", marginTop: "4px"
+            }}>
+              Pulse
+            </h1>
+          </div>
+          <button
+            onClick={() => window.print()}
+            className="no-print"
+            style={{
+              border: "1px solid var(--border)", background: "var(--surface)",
+              color: "var(--plum)", borderRadius: "9999px", padding: "7px 14px",
+              fontSize: "12px", fontWeight: 500, fontFamily: "'Inter', sans-serif",
+              cursor: "pointer", flexShrink: 0,
+            }}
+          >
+            Export PDF
+          </button>
         </div>
 
         {/* ── THIS WEEK ── */}
@@ -393,6 +409,31 @@ export default function Pulse() {
             <p style={{ fontSize: "11px", color: "var(--mauve)", marginTop: "14px", fontFamily: "'Inter', sans-serif" }}>
               Generated automatically every Sunday
             </p>
+          </div>
+        )}
+
+        {/* Smart suggestions */}
+        {currentWeeklyItem?.ai_suggestion && (
+          <div style={{
+            backgroundColor: "var(--surface)", border: "1px solid var(--border)",
+            borderRadius: "20px", padding: "20px", marginBottom: "20px",
+            boxShadow: "var(--shadow-sm)"
+          }}>
+            <p style={{ fontFamily: "'Playfair Display', serif", fontSize: "16px", fontWeight: 600, color: "var(--plum)", marginBottom: "10px" }}>This week, try</p>
+            <p style={{ fontSize: "14px", color: "var(--plum)", lineHeight: 1.6, fontFamily: "'Inter', sans-serif", marginBottom: "14px" }}>{currentWeeklyItem.ai_suggestion}</p>
+            <div className="flex flex-wrap gap-2">
+              {[
+                { label: "Find a book",      href: createPageUrl("Lifestyle") + "?tab=books" },
+                { label: "Browse lifestyle", href: createPageUrl("Lifestyle") },
+                { label: "Log today",        href: createPageUrl("Today") },
+              ].map(chip => (
+                <a key={chip.label} href={chip.href} style={{
+                  backgroundColor: "var(--rose-dust-subtle)", color: "var(--rose-dust)",
+                  borderRadius: "9999px", padding: "6px 14px", fontSize: "11px", fontWeight: 600,
+                  fontFamily: "'Inter', sans-serif", textDecoration: "none",
+                }}>{chip.label}</a>
+              ))}
+            </div>
           </div>
         )}
 

@@ -1,0 +1,40 @@
+{
+  "name": "InsightCards",
+  "type": "object",
+  "properties": {
+    "user_id": {
+      "type": "string"
+    },
+    "type": {
+      "type": "string"
+    },
+    "content": {
+      "type": "string"
+    },
+    "phase": {
+      "type": "string"
+    },
+    "expires_at": {
+      "type": "string"
+    },
+    "source": {
+      "type": "string"
+    },
+    "insight_date": {
+      "type": "string"
+    },
+    "title": {
+      "type": "string"
+    },
+    "insight_text": {
+      "type": "string"
+    },
+    "recommended_action_route": {
+      "type": "string"
+    },
+    "cycle_phase": {
+      "type": "string"
+    }
+  },
+  "required": []
+}

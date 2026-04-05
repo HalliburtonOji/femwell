@@ -2,6 +2,42 @@ import { createClientFromRequest } from 'npm:@base44/sdk@0.8.23';
 
 const sleep = (ms) => new Promise(r => setTimeout(r, ms));
 
+function hashUrl(url) {
+  let h = 0;
+  for (let i = 0; i < url.length; i++) {
+    h = (Math.imul(31, h) + url.charCodeAt(i)) | 0;
+  }
+  return String(Math.abs(h));
+}
+
+async function parseRSSFeed(url) {
+  try {
+    const res = await fetch(url, { headers: { 'User-Agent': 'FemWell/1.0 RSS Reader' }, signal: AbortSignal.timeout(10000) });
+    if (!res.ok) return [];
+    const text = await res.text();
+    const items = [];
+    const itemRegex = /<item[^>]*>([\s\S]*?)<\/item>|<entry[^>]*>([\s\S]*?)<\/entry>/gi;
+    let match;
+    while ((match = itemRegex.exec(text)) !== null) {
+      const block = match[1] || match[2] || '';
+      const get = (tag) => {
+        const cdata = block.match(new RegExp(`<${tag}[^>]*><!\\[CDATA\\[([\\s\\S]*?)\\]\\]><\\/${tag}>`, 'i'));
+        if (cdata?.[1]) return cdata[1].trim();
+        const plain = block.match(new RegExp(`<${tag}[^>]*>([\\s\\S]*?)<\\/${tag}>`, 'i'));
+        return plain?.[1]?.replace(/<[^>]+>/g, ' ').replace(/&amp;/g, '&').replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&nbsp;/g, ' ').replace(/&#\d+;/g, '').replace(/\s+/g, ' ').trim() || '';
+      };
+      const linkAttr = block.match(/<link[^>]+href="([^"]+)"/i);
+      items.push({
+        title: get('title'),
+        link: linkAttr?.[1] || get('link') || get('guid'),
+        pubDate: get('pubDate') || get('published') || new Date().toISOString(),
+        description: get('description') || get('summary') || '',
+      });
+    }
+    return items;
+  } catch { return []; }
+}
+
 function getCyclePhase(lastPeriodDate, cycleLen = 28, periodLen = 5) {
   if (!lastPeriodDate) return null;
   const today = new Date();
@@ -33,6 +69,7 @@ Deno.serve(async (req) => {
     ai_content: { stories_created: 0, articles_created: 0 },
     for_you: { users_updated: 0 },
     tips_created: 0,
+    trends_ingested: 0,
   };
 
   // ── Step 1: Content QA ───────────────────────────────────────────────────
@@ -324,6 +361,67 @@ Deno.serve(async (req) => {
     result.tips_created = 1;
   } catch (e) {
     console.error('Step 5 error:', e.message);
+  }
+
+  // ── Step 6: Ingest trending social content ──────────────────────────────────
+  try {
+    const TREND_FEEDS = [
+      { url: 'https://www.reddit.com/r/TwoXChromosomes/top/.rss?t=week', name: 'Reddit TwoX', category: 'Lifestyle' },
+      { url: 'https://www.reddit.com/r/femalefashionadvice/top/.rss?t=week', name: 'Reddit Fashion Advice', category: 'Fashion' },
+      { url: 'https://www.reddit.com/r/SkincareAddiction/top/.rss?t=week', name: 'Reddit Skincare', category: 'Skincare' },
+      { url: 'https://www.reddit.com/r/xxfitness/top/.rss?t=week', name: 'Reddit xxFitness', category: 'Fitness' },
+      { url: 'https://www.refinery29.com/rss.xml', name: 'Refinery29', category: 'Lifestyle' },
+      { url: 'https://www.whowhatwear.co.uk/rss', name: 'Who What Wear', category: 'Fashion' },
+      { url: 'https://cupofjo.com/feed/', name: 'Cup of Jo', category: 'Lifestyle' },
+    ];
+
+    // Delete trend items older than 14 days
+    const allTrends = await base44.asServiceRole.entities.LifestyleItems.list('-created_date', 500);
+    const trend14d = new Date(now.getTime() - 14 * 24 * 60 * 60 * 1000);
+    for (const item of allTrends.filter(i => i.content_type === 'TREND')) {
+      if (new Date(item.created_date) < trend14d) {
+        await base44.asServiceRole.entities.LifestyleItems.delete(item.id);
+        await sleep(80);
+      }
+    }
+
+    // Re-fetch existing hashes (after potential deletions)
+    const existingAfterCleanup = await base44.asServiceRole.entities.LifestyleItems.list('-created_date', 2000);
+    const trendHashes = new Set(existingAfterCleanup.map(i => i.content_url_hash).filter(Boolean));
+
+    for (const feed of TREND_FEEDS) {
+      const items = await parseRSSFeed(feed.url);
+      await sleep(200);
+      for (const item of items.slice(0, 15)) {
+        if (!item.title || !item.link) continue;
+        const hash = hashUrl(item.link);
+        if (trendHashes.has(hash)) continue;
+        const rawDesc = item.description || '';
+        const summary = rawDesc.replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim().slice(0, 200);
+        await base44.asServiceRole.entities.LifestyleItems.create({
+          title: item.title.slice(0, 220),
+          summary,
+          content_url: item.link,
+          source_url: item.link,
+          content_url_hash: hash,
+          image_url: '',
+          source_name: feed.name,
+          category: feed.category,
+          content_type: 'TREND',
+          media_type: 'ARTICLE',
+          provider: 'RSS_SOCIAL',
+          status: 'PUBLISHED',
+          pub_date: item.pubDate || now.toISOString(),
+          ingested_at: now.toISOString(),
+          engagement_score: 5,
+        });
+        trendHashes.add(hash);
+        result.trends_ingested++;
+        await sleep(100);
+      }
+    }
+  } catch (e) {
+    console.error('Step 6 error:', e.message);
   }
 
   return Response.json(result);
