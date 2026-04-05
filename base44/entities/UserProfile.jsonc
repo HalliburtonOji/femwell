@@ -97,6 +97,26 @@
     },
     "last_used_category": {
       "type": "string"
+    },
+    "birthday": {
+      "type": "string"
+    },
+    "location_city": {
+      "type": "string"
+    },
+    "ai_assistant_name": {
+      "type": "string",
+      "default": "Guide"
+    },
+    "hairstyle_tries_this_month": {
+      "type": "number",
+      "default": 0
+    },
+    "for_you_item_ids": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
     }
   },
   "required": [

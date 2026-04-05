@@ -1,5 +1,7 @@
 import { format } from "date-fns";
 import { Sun, Moon, Sunset, Circle, ChevronRight, Plus } from "lucide-react";
+import { Link } from "react-router-dom";
+import { createPageUrl } from "@/utils";
 
 // Phase config — no emojis, clean
 const PHASE_META = {
@@ -130,18 +132,28 @@ export default function TodayHeroSection({
           </div>
 
           {/* Avatar */}
-          <div
-            className="flex-shrink-0 w-11 h-11 rounded-2xl flex items-center justify-center text-base font-semibold"
-            style={{
-              backgroundColor: phaseMeta?.subtle || "var(--rose-dust-subtle)",
-              color: phaseMeta?.accent || "var(--rose-dust)",
-              border: `1.5px solid ${phaseMeta?.accent || "var(--rose-dust-light)"}40`,
-              fontFamily: "'Playfair Display', serif",
-              fontSize: "1.1rem",
-            }}
+          <Link
+            to={createPageUrl("Profile")}
+            title="View profile"
+            style={{ textDecoration: "none" }}
           >
-            {user?.full_name?.[0]?.toUpperCase() || "·"}
-          </div>
+            <div
+              className="flex-shrink-0 w-11 h-11 rounded-2xl flex items-center justify-center text-base font-semibold"
+              style={{
+                backgroundColor: phaseMeta?.subtle || "var(--rose-dust-subtle)",
+                color: phaseMeta?.accent || "var(--rose-dust)",
+                border: `1.5px solid ${phaseMeta?.accent || "var(--rose-dust-light)"}40`,
+                fontFamily: "'Playfair Display', serif",
+                fontSize: "1.1rem",
+                cursor: "pointer",
+                transition: "opacity 0.15s",
+              }}
+              onMouseEnter={e => { e.currentTarget.style.opacity = "0.85"; }}
+              onMouseLeave={e => { e.currentTarget.style.opacity = "1"; }}
+            >
+              {user?.full_name?.[0]?.toUpperCase() || "·"}
+            </div>
+          </Link>
         </div>
 
         {/* Divider */}

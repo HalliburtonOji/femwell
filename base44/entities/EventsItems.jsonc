@@ -1,0 +1,53 @@
+{
+  "name": "EventsItems",
+  "type": "object",
+  "properties": {
+    "title": {
+      "type": "string"
+    },
+    "date": {
+      "type": "string"
+    },
+    "location": {
+      "type": "string"
+    },
+    "price": {
+      "type": "string"
+    },
+    "link": {
+      "type": "string"
+    },
+    "category": {
+      "type": "string",
+      "enum": [
+        "women networking",
+        "fitness/wellness",
+        "talks & workshops",
+        "relationship / therapy events",
+        "general"
+      ],
+      "default": "general"
+    },
+    "is_free": {
+      "type": "boolean",
+      "default": false
+    },
+    "city": {
+      "type": "string"
+    },
+    "source_name": {
+      "type": "string"
+    },
+    "verified": {
+      "type": "boolean"
+    },
+    "verified_at": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "title",
+    "date",
+    "link"
+  ]
+}

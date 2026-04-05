@@ -1,277 +1,393 @@
 import { useState } from "react";
-import { ChevronDown, ChevronUp, Plus, Minus } from "lucide-react";
+import { ChevronDown, ChevronUp } from "lucide-react";
 
-const APPETITE_OPTIONS = ["low", "normal", "high", "cravings"];
-const BODY_TEMP_OPTIONS = ["cold", "normal", "warm", "hot_flashes"];
-const MUCUS_OPTIONS = ["dry", "sticky", "creamy", "watery", "egg_white"];
-const INTENSITY_OPTIONS = ["light", "moderate", "intense"];
-const SKIN_CONDITION_OPTIONS = ["Clear", "Mild breakout", "Moderate breakout", "Very oily", "Very dry"];
-const BREAKOUT_LOCATION_OPTIONS = ["Chin", "Jaw", "Cheeks", "Forehead", "Nose"];
-const HAIR_SHEDDING_OPTIONS = ["Normal", "More than usual", "A lot"];
-const SCALP_CONDITION_OPTIONS = ["Normal", "Oily", "Dry/flaky"];
-
+// ── Slider row ───────────────────────────────────────────────────────────────
 function SliderRow({ label, value, onChange, min = 1, max = 5, unit = "/5" }) {
   return (
     <div>
-      <label style={{ fontSize: "13px", fontWeight: 600, color: "var(--plum)", fontFamily: "'Inter', sans-serif", display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "6px" }}>
+      <label style={{ fontSize: "13px", fontWeight: 600, color: "var(--plum)", fontFamily: "'Inter', sans-serif", display: "flex", justifyContent: "space-between", marginBottom: "6px" }}>
         <span>{label}</span>
-        <span style={{ fontWeight: 700, color: "var(--rose-dust)" }}>{value}{unit}</span>
+        <span style={{ color: "var(--rose-dust)", fontWeight: 700 }}>{value}{unit}</span>
       </label>
-      <input type="range" min={min} max={max} value={value} onChange={(e) => onChange(Number(e.target.value))} />
+      <input type="range" min={min} max={max} value={value} onChange={e => onChange(Number(e.target.value))} />
     </div>
   );
 }
 
-function PillSelect({ label, options, value, onChange, formatter }) {
+// ── Chip component ───────────────────────────────────────────────────────────
+function Chip({ label, selected, onToggle }) {
   return (
-    <div>
-      <p style={{ fontSize: "13px", fontWeight: 600, color: "var(--plum)", fontFamily: "'Inter', sans-serif", marginBottom: "8px" }}>{label}</p>
-      <div className="flex flex-wrap gap-2">
-        {options.map((o) => (
-          <button
-            key={o}
-            type="button"
-            onClick={() => onChange(value === o ? null : o)}
-            style={value === o
-              ? { backgroundColor: "var(--plum)", color: "white", border: "1.5px solid var(--plum)", borderRadius: "9999px", padding: "6px 12px", fontSize: "11px", fontWeight: 600, cursor: "pointer", textTransform: "capitalize", fontFamily: "'Inter', sans-serif" }
-              : { backgroundColor: "var(--ivory-dark)", color: "var(--plum)", border: "1.5px solid var(--border)", borderRadius: "9999px", padding: "6px 12px", fontSize: "11px", fontWeight: 600, cursor: "pointer", textTransform: "capitalize", fontFamily: "'Inter', sans-serif" }}
-          >
-            {formatter ? formatter(o) : o.replace(/_/g, " ")}
-          </button>
-        ))}
+    <button
+      type="button"
+      onClick={onToggle}
+      style={{
+        borderRadius: "9999px",
+        padding: "8px 14px",
+        fontSize: "13px",
+        fontFamily: "'Inter', sans-serif",
+        fontWeight: 500,
+        cursor: "pointer",
+        transition: "all 0.15s",
+        border: selected ? "1.5px solid var(--plum)" : "1.5px solid var(--border)",
+        backgroundColor: selected ? "var(--plum)" : "var(--ivory-dark)",
+        color: selected ? "white" : "var(--plum)",
+      }}
+    >
+      {label}
+    </button>
+  );
+}
+
+// ── Chip section ─────────────────────────────────────────────────────────────
+function ChipSection({ title, children }) {
+  return (
+    <div style={{ marginBottom: "24px" }}>
+      <p style={{ fontSize: "11px", fontWeight: 600, color: "var(--mauve)", fontFamily: "'Inter', sans-serif", textTransform: "uppercase", letterSpacing: "0.12em", marginBottom: "10px" }}>
+        {title}
+      </p>
+      <div style={{ display: "flex", flexWrap: "wrap", gap: "8px" }}>
+        {children}
       </div>
     </div>
   );
 }
 
+// ── Single-select helper ─────────────────────────────────────────────────────
+function useSingle(initial) {
+  const [val, setVal] = useState(initial ?? null);
+  const toggle = (v) => setVal(prev => prev === v ? null : v);
+  return [val, toggle];
+}
+
+// ── Multi-select helper ──────────────────────────────────────────────────────
+function useMulti(initial) {
+  const [vals, setVals] = useState(Array.isArray(initial) ? initial : []);
+  const toggle = (v) => setVals(prev => prev.includes(v) ? prev.filter(x => x !== v) : [...prev, v]);
+  return [vals, toggle];
+}
+
+// ── Main component ───────────────────────────────────────────────────────────
 export default function CheckinModal({ existing, onClose, onSave }) {
   const init = existing || {};
+
+  // Chip state
+  const [periodFlow, togglePeriodFlow] = useSingle(init.period_flow);
+  const [periodEvents, togglePeriodEvents] = useMulti(init.period_events);
+  const [moodTags, toggleMoodTags] = useMulti(init.mood_tags);
+  const [symptoms, toggleSymptoms] = useMulti(init.symptoms);
+  const [discharge, toggleDischarge] = useSingle(init.discharge);
+  const [sexTags, toggleSexTags] = useMulti(init.sex_tags);
+  const [activityTags, toggleActivityTags] = useMulti(init.activity_tags);
+  const [sleepQualityTag, toggleSleepQualityTag] = useSingle(init.sleep_quality_tag);
+  const [digestionTags, toggleDigestionTags] = useMulti(init.digestion_tags);
+  const [skinCondition, toggleSkinCondition] = useSingle(init.skin_condition);
+  const [hairShedding, toggleHairShedding] = useSingle(init.hair_shedding);
+  const [medsTags, toggleMedsTags] = useMulti(init.meds_tags);
+  const [otherTags, toggleOtherTags] = useMulti(init.other_tags);
+
+  // Slider state (legacy fields preserved)
   const [mood, setMood] = useState(init.mood ?? 3);
   const [energy, setEnergy] = useState(init.energy ?? 3);
   const [stress, setStress] = useState(init.stress ?? 2);
-  const [sleep, setSleep] = useState(init.sleep_hours ?? 7);
-  const [sleepQuality, setSleepQuality] = useState(init.sleep_quality ?? 3);
   const [focus, setFocus] = useState(init.focus ?? 3);
+  const [sleep, setSleep] = useState(init.sleep_hours ?? 7);
   const [pain, setPain] = useState(init.pain ?? 1);
   const [cramps, setCramps] = useState(init.cramps ?? 1);
-  const [bloating, setBloating] = useState(init.bloating ?? 1);
-  const [headache, setHeadache] = useState(init.headache ?? 1);
-  const [breastTenderness, setBreastTenderness] = useState(init.breast_tenderness ?? 1);
-  const [digestion, setDigestion] = useState(init.digestion ?? 3);
-  const [skin, setSkin] = useState(init.skin ?? 3);
-  const [libido, setLibido] = useState(init.libido ?? 3);
-  const [socialConnection, setSocialConnection] = useState(init.social_connection ?? 3);
-  const [hydration, setHydration] = useState(init.hydration_glasses ?? 6);
-  const [exerciseDone, setExerciseDone] = useState(init.exercise_done ?? false);
-  const [exerciseType, setExerciseType] = useState(init.exercise_type ?? "");
-  const [exerciseMinutes, setExerciseMinutes] = useState(init.exercise_minutes ?? 30);
-  const [exerciseIntensity, setExerciseIntensity] = useState(init.exercise_intensity ?? null);
-  const [appetite, setAppetite] = useState(init.appetite ?? null);
-  const [bodyTemp, setBodyTemp] = useState(init.body_temp_feel ?? null);
-  const [mucus, setMucus] = useState(init.cervical_mucus ?? null);
+
+  // Other legacy fields preserved
   const [notes, setNotes] = useState(init.notes ?? "");
+  const [showDetail, setShowDetail] = useState(false);
   const [saving, setSaving] = useState(false);
-  const [showPhysical, setShowPhysical] = useState(false);
-  const [showBody, setShowBody] = useState(false);
-  const [showSkinHair, setShowSkinHair] = useState(false);
-  const [skinCondition, setSkinCondition] = useState(init.skin_condition ?? null);
-  const [breakoutLocation, setBreakoutLocation] = useState(init.breakout_location ?? []);
-  const [hairShedding, setHairShedding] = useState(init.hair_shedding ?? null);
-  const [scalpCondition, setScalpCondition] = useState(init.scalp_condition ?? null);
 
   const handleSave = async () => {
     setSaving(true);
+
+    // Derive legacy fields from chip selections for backwards compatibility
+    const exerciseDone = activityTags.length > 0 && !activityTags.includes("Didn't exercise");
+    const exerciseType = activityTags.filter(t => t !== "Didn't exercise").join(", ");
+    const skinConditionVal = skinCondition;
+    const hairSheddingMap = { "Normal shedding": "Normal", "More than usual": "More than usual", "A lot of shedding": "A lot" };
+    const hairSheddingVal = hairShedding ? (hairSheddingMap[hairShedding] || hairShedding) : init.hair_shedding;
+    const bloating = symptoms.includes("Bloating") ? 3 : init.bloating ?? 1;
+    const headache = symptoms.includes("Headache") ? 3 : init.headache ?? 1;
+    const breastTenderness = symptoms.includes("Tender breasts") ? 3 : init.breast_tenderness ?? 1;
+
     await onSave({
-      mood, energy, stress, sleep_hours: sleep, sleep_quality: sleepQuality,
-      focus, pain, cramps, bloating, headache, breast_tenderness: breastTenderness,
-      digestion, skin, libido, social_connection: socialConnection,
-      hydration_glasses: hydration,
+      // Legacy slider fields
+      mood,
+      energy,
+      stress,
+      sleep_hours: sleep,
+      sleep_quality: init.sleep_quality ?? 3,
+      focus,
+      pain,
+      cramps,
+      bloating,
+      headache,
+      breast_tenderness: breastTenderness,
+      digestion: init.digestion ?? 3,
+      skin: init.skin ?? 3,
+      libido: sexTags.includes("High sex drive") ? 5 : sexTags.includes("Low sex drive") ? 1 : init.libido ?? 3,
+      social_connection: init.social_connection ?? 3,
+      hydration_glasses: init.hydration_glasses ?? 6,
       exercise_done: exerciseDone,
       exercise_type: exerciseDone ? exerciseType : undefined,
-      exercise_minutes: exerciseDone ? exerciseMinutes : undefined,
-      exercise_intensity: exerciseDone ? exerciseIntensity : undefined,
-      appetite, body_temp_feel: bodyTemp, cervical_mucus: mucus,
-      skin_condition: skinCondition,
-      breakout_location: breakoutLocation,
-      hair_shedding: hairShedding,
-      scalp_condition: scalpCondition,
+      exercise_minutes: init.exercise_minutes ?? undefined,
+      exercise_intensity: init.exercise_intensity ?? undefined,
+      appetite: init.appetite ?? null,
+      body_temp_feel: init.body_temp_feel ?? null,
+      cervical_mucus: discharge || init.cervical_mucus || null,
+      skin_condition: skinConditionVal,
+      breakout_location: init.breakout_location ?? [],
+      hair_shedding: hairSheddingVal,
+      scalp_condition: init.scalp_condition ?? null,
       notes,
+      // New chip fields
+      period_flow: periodFlow,
+      period_events: periodEvents,
+      mood_tags: moodTags,
+      symptoms,
+      discharge,
+      sex_tags: sexTags,
+      activity_tags: activityTags,
+      sleep_quality_tag: sleepQualityTag,
+      digestion_tags: digestionTags,
+      meds_tags: medsTags,
+      other_tags: otherTags,
     });
+
     setSaving(false);
     onClose();
   };
 
   return (
-    <div className="fixed inset-0 bg-black/40 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-      <div style={{ backgroundColor: "var(--surface)", borderRadius: "24px", width: "100%", maxWidth: "448px", boxShadow: "0 20px 60px rgba(42,32,53,0.18)", display: "flex", flexDirection: "column", maxHeight: "85vh" }}>
+    <>
+      <style>{`
+        .checkin-sheet { animation: sheet-up 0.3s cubic-bezier(0.32,0.72,0,1) forwards; }
+        @keyframes sheet-up { from { transform: translateY(100%); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+        .checkin-body::-webkit-scrollbar { display: none; }
+        .checkin-body { -ms-overflow-style: none; scrollbar-width: none; }
+      `}</style>
+
+      {/* Overlay */}
+      <div
+        onClick={onClose}
+        style={{ position: "fixed", inset: 0, zIndex: 50, backgroundColor: "rgba(42,32,53,0.4)", backdropFilter: "blur(4px)" }}
+      />
+
+      {/* Sheet */}
+      <div
+        className="checkin-sheet"
+        style={{
+          position: "fixed",
+          bottom: 0,
+          left: 0,
+          right: 0,
+          zIndex: 51,
+          backgroundColor: "var(--surface)",
+          borderRadius: "28px 28px 0 0",
+          boxShadow: "var(--shadow-lg)",
+          maxHeight: "90vh",
+          display: "flex",
+          flexDirection: "column",
+        }}
+      >
         {/* Fixed header */}
-        <div className="flex items-center justify-between px-6 pt-5 pb-3 flex-shrink-0" style={{ borderBottom: "1px solid var(--border-subtle)" }}>
-          <h2 style={{ fontSize: "17px", fontWeight: 700, color: "var(--plum)", fontFamily: "'Inter', sans-serif" }}>Daily Check-in</h2>
-          <button onClick={onClose} style={{ color: "var(--mauve)", background: "none", border: "none", cursor: "pointer", fontSize: "20px", width: "28px", height: "28px", display: "flex", alignItems: "center", justifyContent: "center" }}>×</button>
+        <div style={{ flexShrink: 0, padding: "12px 20px 0" }}>
+          {/* Drag handle */}
+          <div style={{ width: 32, height: 4, borderRadius: 9999, backgroundColor: "var(--border)", margin: "0 auto 16px" }} />
+
+          <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", marginBottom: "14px" }}>
+            <div>
+              <h2 style={{ fontFamily: "'Playfair Display', serif", fontSize: "18px", color: "var(--plum)", fontWeight: 600, margin: 0 }}>
+                How are you today?
+              </h2>
+              <p style={{ fontFamily: "'Inter', sans-serif", fontSize: "12px", color: "var(--mauve)", marginTop: 4 }}>
+                Tap everything that applies — or just what matters today.
+              </p>
+            </div>
+            <button
+              onClick={onClose}
+              style={{
+                width: 28, height: 28, borderRadius: 9999, border: "none",
+                backgroundColor: "var(--ivory-dark)", color: "var(--mauve)",
+                fontSize: "18px", cursor: "pointer", display: "flex",
+                alignItems: "center", justifyContent: "center", flexShrink: 0,
+              }}
+            >
+              ×
+            </button>
+          </div>
+          <div style={{ height: 1, backgroundColor: "var(--border-subtle)", marginBottom: 0 }} />
         </div>
 
         {/* Scrollable body */}
-        <div className="overflow-y-auto flex-1 px-6 py-4 space-y-5">
+        <div className="checkin-body" style={{ flex: 1, overflowY: "auto", padding: "20px 20px 8px" }}>
 
-          {/* Core sliders */}
-          <SliderRow label="Mood" value={mood} onChange={setMood} />
-          <SliderRow label="Energy" value={energy} onChange={setEnergy} />
-          <SliderRow label="Stress" value={stress} onChange={setStress} />
-          <SliderRow label="Focus" value={focus} onChange={setFocus} />
-          <SliderRow label="Sleep hours" value={sleep} onChange={setSleep} min={3} max={12} unit="h" />
-          <SliderRow label="Sleep quality" value={sleepQuality} onChange={setSleepQuality} />
-          <SliderRow label="Hydration" value={hydration} onChange={setHydration} min={0} max={12} unit=" glasses" />
-          <SliderRow label="Social connection" value={socialConnection} onChange={setSocialConnection} />
+          <ChipSection title="Period flow">
+            {["No period", "Spotting", "Light", "Medium", "Heavy", "Very heavy"].map(v => (
+              <Chip key={v} label={v} selected={periodFlow === v} onToggle={() => togglePeriodFlow(v)} />
+            ))}
+          </ChipSection>
 
-          {/* Exercise */}
-          <div>
-            <div className="flex items-center justify-between mb-2">
-              <p className="text-sm font-medium text-gray-600">Exercise today?</p>
-              <button
-                type="button"
-                onClick={() => setExerciseDone(!exerciseDone)}
-                style={{ width: "46px", height: "26px", borderRadius: "9999px", position: "relative", border: "none", cursor: "pointer", backgroundColor: exerciseDone ? "var(--rose-dust)" : "var(--border)", transition: "background-color 0.2s" }}
-              >
-                <div className={`absolute top-0.5 w-5 h-5 bg-white rounded-full shadow transition-all ${exerciseDone ? "left-6" : "left-0.5"}`} />
-              </button>
-            </div>
-            {exerciseDone && (
-              <div className="space-y-3 mt-3">
-                <input
-                  type="text"
-                  placeholder="Type (e.g. yoga, run, gym...)"
-                  value={exerciseType}
-                  onChange={(e) => setExerciseType(e.target.value)}
-                  style={{ width: "100%", padding: "10px 12px", borderRadius: "12px", border: "1px solid var(--border)", backgroundColor: "var(--ivory)", fontSize: "13px", color: "var(--plum)", fontFamily: "'Inter', sans-serif", outline: "none" }}
-                />
-                <SliderRow label="Duration" value={exerciseMinutes} onChange={setExerciseMinutes} min={5} max={120} unit=" min" />
-                <PillSelect label="Intensity" options={INTENSITY_OPTIONS} value={exerciseIntensity} onChange={setExerciseIntensity} />
-              </div>
-            )}
-          </div>
+          <ChipSection title="Period start / end">
+            {["Period started today", "Period ended today"].map(v => (
+              <Chip key={v} label={v} selected={periodEvents.includes(v)} onToggle={() => togglePeriodEvents(v)} />
+            ))}
+          </ChipSection>
 
-          <PillSelect label="Appetite" options={APPETITE_OPTIONS} value={appetite} onChange={setAppetite} />
+          <ChipSection title="Mood">
+            {["Calm", "Happy", "Energetic", "Frisky", "Mood swings", "Irritated", "Sad", "Anxious", "Depressed", "Feeling guilty", "Obsessive thoughts", "Low energy", "Apathetic", "Confused", "Very self-critical"].map(v => (
+              <Chip key={v} label={v} selected={moodTags.includes(v)} onToggle={() => toggleMoodTags(v)} />
+            ))}
+          </ChipSection>
 
-          {/* Physical symptoms — collapsible */}
-          <div>
+          <ChipSection title="Symptoms">
+            {["Everything is fine", "Cramps", "Tender breasts", "Headache", "Acne", "Backache", "Fatigue", "Cravings", "Insomnia", "Abdominal pain", "Bloating", "Nausea", "Vaginal dryness", "Constipation", "Diarrhea"].map(v => (
+              <Chip key={v} label={v} selected={symptoms.includes(v)} onToggle={() => toggleSymptoms(v)} />
+            ))}
+          </ChipSection>
+
+          <ChipSection title="Vaginal discharge">
+            {["No discharge", "Creamy", "Watery", "Sticky", "Egg white", "Spotting", "Unusual", "Clumpy white", "Gray"].map(v => (
+              <Chip key={v} label={v} selected={discharge === v} onToggle={() => toggleDischarge(v)} />
+            ))}
+          </ChipSection>
+
+          <ChipSection title="Sex and sex drive">
+            {["Didn't have sex", "Protected sex", "Unprotected sex", "Oral sex", "High sex drive", "Neutral sex drive", "Low sex drive", "Sensual touch"].map(v => (
+              <Chip key={v} label={v} selected={sexTags.includes(v)} onToggle={() => toggleSexTags(v)} />
+            ))}
+          </ChipSection>
+
+          <ChipSection title="Physical activity">
+            {["Didn't exercise", "Yoga", "Gym", "Pilates", "Running", "Swimming", "Cycling", "Walking", "Aerobics", "Team sports"].map(v => (
+              <Chip key={v} label={v} selected={activityTags.includes(v)} onToggle={() => toggleActivityTags(v)} />
+            ))}
+          </ChipSection>
+
+          <ChipSection title="Sleep">
+            {["Great sleep", "Good sleep", "Restless sleep", "Couldn't sleep"].map(v => (
+              <Chip key={v} label={v} selected={sleepQualityTag === v} onToggle={() => toggleSleepQualityTag(v)} />
+            ))}
+          </ChipSection>
+
+          <ChipSection title="Digestion">
+            {["Normal digestion", "Bloated", "Nausea", "Constipation", "Diarrhea"].map(v => (
+              <Chip key={v} label={v} selected={digestionTags.includes(v)} onToggle={() => toggleDigestionTags(v)} />
+            ))}
+          </ChipSection>
+
+          <ChipSection title="Skin">
+            {["Clear", "Mild breakout", "Moderate breakout", "Very oily", "Very dry"].map(v => (
+              <Chip key={v} label={v} selected={skinCondition === v} onToggle={() => toggleSkinCondition(v)} />
+            ))}
+          </ChipSection>
+
+          <ChipSection title="Hair">
+            {["Normal shedding", "More than usual", "A lot of shedding"].map(v => (
+              <Chip key={v} label={v} selected={hairShedding === v} onToggle={() => toggleHairShedding(v)} />
+            ))}
+          </ChipSection>
+
+          <ChipSection title="Medication and supplements">
+            {["Oral contraceptive — taken on time", "Oral contraceptive — missed", "Iron supplement", "Vitamin D", "Magnesium", "Other supplement"].map(v => (
+              <Chip key={v} label={v} selected={medsTags.includes(v)} onToggle={() => toggleMedsTags(v)} />
+            ))}
+          </ChipSection>
+
+          <ChipSection title="Other">
+            {["Stress", "Meditation", "Journaling", "Breathing exercises", "Kegel exercises", "Travel", "Alcohol", "Disease or injury"].map(v => (
+              <Chip key={v} label={v} selected={otherTags.includes(v)} onToggle={() => toggleOtherTags(v)} />
+            ))}
+          </ChipSection>
+
+          {/* More detail — collapsible sliders */}
+          <div style={{ marginBottom: "24px", borderTop: "1px solid var(--border-subtle)", paddingTop: "16px" }}>
             <button
               type="button"
-              onClick={() => setShowPhysical(!showPhysical)}
-              className="w-full flex items-center justify-between py-2"
-              style={{ background: "none", border: "none", cursor: "pointer", fontSize: "13px", fontWeight: 600, color: "var(--plum)", fontFamily: "'Inter', sans-serif" }}
+              onClick={() => setShowDetail(v => !v)}
+              style={{ width: "100%", display: "flex", alignItems: "center", justifyContent: "space-between", background: "none", border: "none", cursor: "pointer", padding: 0 }}
             >
-              <span>Physical Symptoms (optional)</span>
-              {showPhysical ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
+              <span style={{ fontSize: "13px", fontWeight: 600, color: "var(--plum)", fontFamily: "'Inter', sans-serif" }}>
+                More detail
+              </span>
+              {showDetail
+                ? <ChevronUp style={{ width: 16, height: 16, color: "var(--mauve)" }} />
+                : <ChevronDown style={{ width: 16, height: 16, color: "var(--mauve)" }} />
+              }
             </button>
-            {showPhysical && (
-              <div className="space-y-4 mt-3">
+            {showDetail && (
+              <div style={{ marginTop: 16, display: "flex", flexDirection: "column", gap: 16 }}>
+                <SliderRow label="Mood" value={mood} onChange={setMood} />
+                <SliderRow label="Energy" value={energy} onChange={setEnergy} />
+                <SliderRow label="Stress" value={stress} onChange={setStress} />
+                <SliderRow label="Focus" value={focus} onChange={setFocus} />
+                <SliderRow label="Sleep hours" value={sleep} onChange={setSleep} min={4} max={12} unit="h" />
                 <SliderRow label="Pain level" value={pain} onChange={setPain} />
                 <SliderRow label="Cramps" value={cramps} onChange={setCramps} />
-                <SliderRow label="Bloating" value={bloating} onChange={setBloating} />
-                <SliderRow label="Headache" value={headache} onChange={setHeadache} />
-                <SliderRow label="Breast tenderness" value={breastTenderness} onChange={setBreastTenderness} />
-                <SliderRow label="Digestion" value={digestion} onChange={setDigestion} />
               </div>
             )}
           </div>
 
-          {/* Body & Cycle signals — collapsible */}
-          <div>
-            <button
-              type="button"
-              onClick={() => setShowBody(!showBody)}
-              className="w-full flex items-center justify-between py-2"
-              style={{ background: "none", border: "none", cursor: "pointer", fontSize: "13px", fontWeight: 600, color: "var(--plum)", fontFamily: "'Inter', sans-serif" }}
-            >
-              <span>Body & Cycle Signals (optional)</span>
-              {showBody ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
-            </button>
-            {showBody && (
-              <div className="space-y-4 mt-3">
-                <SliderRow label="Skin" value={skin} onChange={setSkin} />
-                <SliderRow label="Libido" value={libido} onChange={setLibido} />
-                <PillSelect label="Body temperature feel" options={BODY_TEMP_OPTIONS} value={bodyTemp} onChange={setBodyTemp} formatter={(o) => o.replace(/_/g, " ")} />
-                <PillSelect label="Cervical mucus" options={MUCUS_OPTIONS} value={mucus} onChange={setMucus} formatter={(o) => o.replace(/_/g, " ")} />
-              </div>
-            )}
+          {/* Notes */}
+          <div style={{ marginBottom: "24px" }}>
+            <p style={{ fontSize: "11px", fontWeight: 600, color: "var(--mauve)", fontFamily: "'Inter', sans-serif", textTransform: "uppercase", letterSpacing: "0.12em", marginBottom: "10px" }}>
+              Notes (optional)
+            </p>
+            <textarea
+              value={notes}
+              onChange={e => setNotes(e.target.value)}
+              placeholder="Anything else on your mind today?"
+              style={{
+                width: "100%",
+                border: "1px solid var(--border)",
+                borderRadius: "16px",
+                padding: "12px",
+                fontSize: "14px",
+                fontFamily: "'Inter', sans-serif",
+                color: "var(--plum)",
+                background: "var(--ivory)",
+                minHeight: "80px",
+                resize: "none",
+                outline: "none",
+                boxSizing: "border-box",
+              }}
+            />
           </div>
 
-          <div>
-            <button
-              type="button"
-              onClick={() => setShowSkinHair(!showSkinHair)}
-              className="w-full flex items-center justify-between py-2"
-              style={{ background: "none", border: "none", cursor: "pointer", fontSize: "13px", fontWeight: 600, color: "var(--plum)", fontFamily: "'Inter', sans-serif" }}
-            >
-              <span>Skin & Hair</span>
-              {showSkinHair ? <Minus className="w-4 h-4" /> : <Plus className="w-4 h-4" />}
-            </button>
-            {showSkinHair && (
-              <div className="space-y-4 mt-3">
-                <div>
-                  <p className="text-sm font-medium text-gray-600 mb-2">How's your skin today?</p>
-                  <div className="flex flex-wrap gap-2">
-                    {SKIN_CONDITION_OPTIONS.map((option) => {
-                      const selected = skinCondition === option;
-                      return (
-                        <button
-                          key={option}
-                          type="button"
-                          onClick={() => setSkinCondition(selected ? null : option)}
-                          className="px-3 py-1.5 rounded-full text-xs font-medium transition-all"
-                          style={selected ? { backgroundColor: '#9B7FCC26', border: '1px solid #9B7FCC', color: '#9B7FCC' } : { backgroundColor: '#FFF1F2', border: '1px solid #FFE4E6', color: '#4B5563' }}
-                        >
-                          {option}
-                        </button>
-                      );
-                    })}
-                  </div>
-                </div>
-
-                {(skinCondition === 'Mild breakout' || skinCondition === 'Moderate breakout') && (
-                  <div>
-                    <p className="text-sm font-medium text-gray-600 mb-2">Where?</p>
-                    <div className="flex flex-wrap gap-2">
-                      {BREAKOUT_LOCATION_OPTIONS.map((option) => {
-                        const selected = breakoutLocation.includes(option);
-                        return (
-                          <button
-                            key={option}
-                            type="button"
-                            onClick={() => setBreakoutLocation((prev) => selected ? prev.filter((item) => item !== option) : [...prev, option])}
-                            className="px-3 py-1.5 rounded-full text-xs font-medium transition-all"
-                            style={selected ? { backgroundColor: '#9B7FCC26', border: '1px solid #9B7FCC', color: '#9B7FCC' } : { backgroundColor: '#FFF1F2', border: '1px solid #FFE4E6', color: '#4B5563' }}
-                          >
-                            {option}
-                          </button>
-                        );
-                      })}
-                    </div>
-                  </div>
-                )}
-
-                <PillSelect label="Hair shedding today?" options={HAIR_SHEDDING_OPTIONS} value={hairShedding} onChange={setHairShedding} />
-                <PillSelect label="Scalp?" options={SCALP_CONDITION_OPTIONS} value={scalpCondition} onChange={setScalpCondition} />
-              </div>
-            )}
-          </div>
-
-          <textarea
-            placeholder="Any notes? (optional)"
-            value={notes}
-            onChange={(e) => setNotes(e.target.value)}
-            style={{ width: "100%", padding: "12px", fontSize: "13px", borderRadius: "12px", border: "1px solid var(--border)", backgroundColor: "var(--ivory)", resize: "none", outline: "none", fontFamily: "'Inter', sans-serif", color: "var(--plum)" }}
-            rows={2}
-          />
         </div>
 
         {/* Fixed footer */}
-        <div className="px-6 pb-5 pt-3 flex-shrink-0" style={{ borderTop: "1px solid var(--border-subtle)" }}>
-          <button onClick={handleSave} disabled={saving} className="btn-primary w-full">
-            {saving ? "Saving…" : "Save Check-in"}
+        <div style={{ flexShrink: 0, padding: "12px 20px 28px", borderTop: "1px solid var(--border-subtle)" }}>
+          <button
+            onClick={handleSave}
+            disabled={saving}
+            style={{
+              width: "100%",
+              height: 52,
+              borderRadius: "9999px",
+              backgroundColor: "var(--plum)",
+              color: "white",
+              border: "none",
+              fontSize: "15px",
+              fontWeight: 600,
+              fontFamily: "'Inter', sans-serif",
+              cursor: saving ? "default" : "pointer",
+              opacity: saving ? 0.75 : 1,
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              gap: 8,
+            }}
+          >
+            {saving && (
+              <div style={{ width: 16, height: 16, border: "2px solid rgba(255,255,255,0.4)", borderTopColor: "white", borderRadius: "50%", animation: "spin 0.7s linear infinite" }} />
+            )}
+            {saving ? "Saving..." : "Save check-in"}
           </button>
         </div>
       </div>
-    </div>
+    </>
   );
 }

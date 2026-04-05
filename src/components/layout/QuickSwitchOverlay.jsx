@@ -21,6 +21,7 @@ export default function QuickSwitchOverlay({ currentPageName }) {
   const [continueHref, setContinueHref] = useState(createPageUrl("ProgramsHub"));
   const [continueLabel, setContinueLabel] = useState("Continue Program");
   const [resetHref, setResetHref] = useState(createPageUrl("Explore"));
+  const [assistantName, setAssistantName] = useState("Guide");
 
   useEffect(() => {
     const storageKey = "quick_switch_recent_pages";
@@ -34,11 +35,14 @@ export default function QuickSwitchOverlay({ currentPageName }) {
     (async () => {
       const user = await base44.auth.me().catch(() => null);
       if (!user) return;
-      const [programs, userPrograms, contentItems] = await Promise.all([
+      const [programs, userPrograms, contentItems, profiles] = await Promise.all([
         base44.entities.Programs.list("-created_date", 50),
         base44.entities.UserPrograms.filter({ user_id: user.id }),
         base44.entities.ContentItems.list("-created_date", 40),
+        base44.entities.UserProfile.filter({ user_id: user.id }),
       ]);
+      const profile = profiles[0];
+      if (profile?.ai_assistant_name) setAssistantName(profile.ai_assistant_name);
       const nextProgram = userPrograms
         .filter((e) => e.status === "active" || e.is_saved)
         .sort((a, b) => (b.last_activity_date || "").localeCompare(a.last_activity_date || ""))[0];
@@ -62,26 +66,28 @@ export default function QuickSwitchOverlay({ currentPageName }) {
     { label: "Log meal",     href: createPageUrl("Nutrition"), icon: <Utensils className="h-3.5 w-3.5" /> },
     { label: "Write journal",href: createPageUrl("Journal"),   icon: <BookOpen className="h-3.5 w-3.5" /> },
     { label: "Lifestyle",    href: createPageUrl("Lifestyle"), icon: <Compass className="h-3.5 w-3.5" /> },
-    { label: "Ask assistant",href: createPageUrl("Assistant"), icon: <MessageCircle className="h-3.5 w-3.5" /> },
-  ], [continueHref, continueLabel, resetHref]);
+    { label: assistantName,  href: createPageUrl("Assistant"), icon: <MessageCircle className="h-3.5 w-3.5" /> },
+  ], [continueHref, continueLabel, resetHref, assistantName]);
 
   return (
     <>
-      {/* Trigger — small pill, bottom-left, above nav */}
+      {/* Trigger — plum circle, bottom-right */}
       <button
         onClick={() => setOpen(true)}
-        className="fixed bottom-6 left-5 z-50 flex items-center gap-1.5 h-9 px-3.5 rounded-full transition-all duration-200 active:scale-95"
+        className="fixed z-50 flex items-center justify-center active:scale-95 transition-all duration-200"
         style={{
-          backgroundColor: "var(--surface)",
-          border: "1px solid var(--border)",
-          boxShadow: "var(--shadow-sm)",
-          color: "var(--mauve)",
+          bottom: 24,
+          right: 20,
+          width: 44,
+          height: 44,
+          borderRadius: "9999px",
+          backgroundColor: "var(--plum)",
+          border: "none",
+          boxShadow: "var(--shadow-md)",
+          cursor: "pointer",
         }}
       >
-        <Sparkles className="h-3 w-3" style={{ color: "var(--rose-dust)" }} />
-        <span className="text-xs font-medium" style={{ fontFamily: "'Inter', sans-serif", color: "var(--plum)" }}>
-          Quick Switch
-        </span>
+        <Sparkles className="h-4 w-4" style={{ color: "white" }} />
       </button>
 
       <AnimatePresence>
@@ -129,6 +135,28 @@ export default function QuickSwitchOverlay({ currentPageName }) {
                   </button>
                 </div>
 
+                {/* Log today */}
+                <a
+                  href={createPageUrl("Today")}
+                  onClick={() => setOpen(false)}
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    height: 56,
+                    borderRadius: "9999px",
+                    backgroundColor: "var(--rose-dust)",
+                    color: "white",
+                    fontSize: "15px",
+                    fontWeight: 600,
+                    fontFamily: "'Inter', sans-serif",
+                    textDecoration: "none",
+                    marginBottom: "16px",
+                  }}
+                >
+                  Log today
+                </a>
+
                 {/* Shortcuts grid */}
                 <div className="grid grid-cols-3 gap-2.5 md:grid-cols-6">
                   {shortcuts.map((s) => (
@@ -140,6 +168,7 @@ export default function QuickSwitchOverlay({ currentPageName }) {
                         backgroundColor: "var(--ivory)",
                         border: "1px solid var(--border-subtle)",
                         color: "var(--plum)",
+                        textDecoration: "none",
                       }}
                       onMouseEnter={e => { e.currentTarget.style.backgroundColor = "var(--ivory-dark)"; }}
                       onMouseLeave={e => { e.currentTarget.style.backgroundColor = "var(--ivory)"; }}
