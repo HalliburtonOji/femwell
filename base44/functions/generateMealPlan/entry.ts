@@ -46,39 +46,41 @@ Deno.serve(async (req) => {
 
     if (mode === "recipe") {
       const surpriseContext = surprise_me
-        ? "Be creative and surprise the user with something delicious and unexpected."
+        ? "Be creative and surprise the user with something delicious and unexpected — avoid common 'health food' clichés."
         : `Available ingredients: ${ingredientList}\nUser's usual meals: ${usualMealsList}`;
 
       prompt = `You are a professional nutritionist and chef creating a recipe for a women's wellness app.
 
-Wellness goal: ${wellness_goal ? `${wellness_goal} — ${goalContext}` : "general wellness"}
-Dietary preferences: ${dietaryStr}
-Cuisine preference: ${cuisineStr}
-${surpriseContext}
+    Wellness goal: ${wellness_goal ? `${wellness_goal} — ${goalContext}` : "general wellness"}
+    Dietary preferences: ${dietaryStr}
+    Cuisine preference: ${cuisineStr}
+    ${surpriseContext}
 
-Create ONE complete, delicious recipe that:
-- Respects all dietary preferences strictly
-- Matches the cuisine preference if specified
-- Supports the wellness goal
-- Is practical and achievable for a home cook
-- ${surprise_me ? "Is creative and exciting — something they might not usually cook" : "Uses as many of the available ingredients as possible"}
-- Includes up to 2 "add-on suggestions" to boost the wellness benefit further
+    IMPORTANT DIVERSITY RULES — follow ALL of these:
+    1. Do NOT use quinoa unless the user explicitly requested it.
+    2. Do NOT default to clichés like buddha bowls, acai bowls, overnight oats, or chia pudding unless cuisine preference calls for it.
+    3. If cuisine is "Any" or unspecified, choose a non-Western cuisine at least 60% of the time — e.g. Japanese, West African, Persian, Vietnamese, Peruvian, Ethiopian, Turkish, Korean, Moroccan, Indian.
+    4. Vary the cooking method — choose from: braised, steamed, roasted, raw, poached, wok-fried, baked, grilled, slow-cooked, one-pot, pan-seared.
+    5. The recipe must feel genuinely different from a standard "wellness recipe" — surprise the user.
+    6. Pick an unexpected PRIMARY ingredient that is still delicious and achievable.
 
-Return ONLY valid JSON:
-{
-  "recipe_name": "string",
-  "tagline": "short enticing description (max 15 words)",
-  "cuisine_type": "string",
-  "difficulty": "Easy|Medium|Advanced",
-  "prep_time_minutes": number,
-  "cook_time_minutes": number,
-  "servings": number,
-  "ingredients": [{"name": "string", "quantity": "string", "unit": "string", "optional": false}],
-  "instructions": ["string"],
-  "nutritional_summary": {"calories": number, "protein_g": number, "carbs_g": number, "fat_g": number, "fiber_g": number},
-  "wellness_benefits": ["string (max 3)"],
-  "addon_suggestions": [{"name": "string", "reason": "string"}],
-  "tip": "one practical cooking tip"
+    Create ONE complete, delicious recipe that respects all dietary preferences, supports the wellness goal, and is achievable for a home cook. Include up to 2 add-on suggestions.
+
+    Return ONLY valid JSON:
+    {
+    "recipe_name": "string",
+    "tagline": "short enticing description (max 15 words)",
+    "cuisine_type": "string",
+    "difficulty": "Easy|Medium|Advanced",
+    "prep_time_minutes": number,
+    "cook_time_minutes": number,
+    "servings": number,
+    "ingredients": [{"name": "string", "quantity": "string", "unit": "string", "optional": false}],
+    "instructions": ["string — each step must be a FULL SENTENCE with real detail"],
+    "nutritional_summary": {"calories": number, "protein_g": number, "carbs_g": number, "fat_g": number, "fiber_g": number},
+    "wellness_benefits": ["string (max 3)"],
+    "addon_suggestions": [{"name": "string", "reason": "string"}],
+    "tip": "one practical cooking tip"
 }`;
 
     } else {
@@ -113,10 +115,10 @@ Return ONLY valid JSON:
       "day_number": number,
       "day_label": "Monday|Tuesday|Wednesday|Thursday|Friday|Saturday|Sunday",
       "meals": {
-        "breakfast": {"name": "string", "description": "string", "prep_minutes": number},
-        "lunch": {"name": "string", "description": "string", "prep_minutes": number},
-        "dinner": {"name": "string", "description": "string", "prep_minutes": number},
-        "snack": {"name": "string", "description": "string", "prep_minutes": number}
+        "breakfast": {"name": "string", "description": "string", "prep_minutes": number, "cook_steps": ["string"]},
+        "lunch": {"name": "string", "description": "string", "prep_minutes": number, "cook_steps": ["string"]},
+        "dinner": {"name": "string", "description": "string", "prep_minutes": number, "cook_steps": ["string"]},
+        "snack": {"name": "string", "description": "string", "prep_minutes": number, "cook_steps": ["string"]}
       },
       "daily_wellness_tip": "string"
     }
@@ -128,7 +130,7 @@ Return ONLY valid JSON:
 
 Only include the meal types specified (${mealTypesStr}) in each day's meals object.
 
-Important generation rules: (1) No protein source (chicken, beef, fish, eggs, tofu, lentils, etc.) should appear more than once in the full plan. (2) No two meals should share the same primary cooking method (stir-fry, baked, roasted, grilled, raw, steamed, soup). (3) Include at least one meal from a non-Western cuisine tradition (e.g. Japanese, West African, Middle Eastern, South American, Southeast Asian). (4) Every meal must include an estimated calorie count and a macro breakdown (protein_g, carbs_g, fat_g) in the nutritional_summary field of each day. (5) The shopping list must be deduplicated — if an ingredient appears in multiple meals, list it once with the combined quantity. (6) The shopping list maximum is 25 items total. Prioritise staples that appear in multiple meals.`;
+Important generation rules: (1) No protein source (chicken, beef, fish, eggs, tofu, lentils, etc.) should appear more than once in the full plan. (2) No two meals should share the same primary cooking method (stir-fry, baked, roasted, grilled, raw, steamed, soup). (3) Include at least one meal from a non-Western cuisine tradition (e.g. Japanese, West African, Middle Eastern, South American, Southeast Asian). (4) Every meal must include an estimated calorie count and a macro breakdown (protein_g, carbs_g, fat_g) in the nutritional_summary field of each day. (5) The shopping list must be deduplicated — if an ingredient appears in multiple meals, list it once with the combined quantity. (6) The shopping list maximum is 25 items total. Prioritise staples that appear in multiple meals. (7) Each meal must include cook_steps: an array of 3–5 actionable cooking steps, each a full sentence.`;
     }
 
     const response = await openai.chat.completions.create({

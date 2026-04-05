@@ -20,6 +20,9 @@ const WELLNESS_GOALS = [
 
 const MEAL_LABELS = { breakfast: "Morning", lunch: "Midday", dinner: "Evening", snack: "Snack" };
 
+const PORTION_MULTIPLIERS = { small: 0.7, medium: 1.0, large: 1.4 };
+const PORTION_LABELS = [{ id: "small", label: "Small" }, { id: "medium", label: "Medium" }, { id: "large", label: "Large" }];
+
 // Gentle cycle-aware nutrient tips — no medical claims
 const CYCLE_WELLNESS_TIPS = [
   { phase: "menstrual",  tip: "Iron-rich foods like lentils, leafy greens, and dark chocolate may help support energy this week." },
@@ -149,6 +152,7 @@ export default function NutritionTodayTab({ user, profile, nutritionProfile, day
   const [showTemplates, setShowTemplates]   = useState(false);
   const [showGoalPicker, setShowGoalPicker] = useState(false);
   const [savingTemplate, setSavingTemplate] = useState(false);
+  const [portionSize, setPortionSize] = useState("medium");
 
   const hydrationTargetMl = nutritionProfile?.hydration_target_ml || 2000;
   const totalHydration    = hydrationLogs.reduce((sum, l) => sum + (l.amount_ml || 0), 0);
@@ -179,6 +183,7 @@ export default function NutritionTodayTab({ user, profile, nutritionProfile, day
       logged_at: new Date().toISOString(),
       meal_type: type, method, raw_text: text.trim(),
       wellness_goal: selectedGoal || undefined,
+      portion_size: portionSize,
     });
     setMeals((prev) => [...prev, log]);
     setMealText("");
@@ -284,8 +289,12 @@ export default function NutritionTodayTab({ user, profile, nutritionProfile, day
   const mealsWithCalories = meals.filter(m => {
     try { return m.ai_analysis && JSON.parse(m.ai_analysis)?.nutritional_summary?.calories > 0; } catch { return false; }
   });
-  const totalCalories = mealsWithCalories.reduce((sum, m) => {
-    try { return sum + (JSON.parse(m.ai_analysis)?.nutritional_summary?.calories || 0); } catch { return sum; }
+  const totalCalories = meals.reduce((sum, m) => {
+    try {
+      const cal = JSON.parse(m.ai_analysis)?.nutritional_summary?.calories || 0;
+      const multiplier = PORTION_MULTIPLIERS[m.portion_size] || 1.0;
+      return sum + Math.round(cal * multiplier);
+    } catch { return sum; }
   }, 0);
   const totalProtein = mealsWithCalories.reduce((sum, m) => {
     try { return sum + (JSON.parse(m.ai_analysis)?.nutritional_summary?.protein_g || 0); } catch { return sum; }
@@ -394,6 +403,21 @@ export default function NutritionTodayTab({ user, profile, nutritionProfile, day
             ))}
           </div>
 
+          {/* Portion size */}
+          <div style={{ display: "flex", gap: 8, marginBottom: 12 }}>
+            {PORTION_LABELS.map((p) => (
+              <button key={p.id} onClick={() => setPortionSize(p.id)} style={{
+                flex: 1, padding: "7px 0", borderRadius: 12, fontSize: 12, fontWeight: 600,
+                fontFamily: "'Inter', sans-serif", cursor: "pointer", transition: "all 0.15s",
+                border: portionSize === p.id ? "1.5px solid var(--plum)" : "1.5px solid var(--border)",
+                backgroundColor: portionSize === p.id ? "var(--plum)" : "var(--ivory)",
+                color: portionSize === p.id ? "white" : "var(--mauve)",
+              }}>
+                {p.label}
+              </button>
+            ))}
+          </div>
+
           {/* Wellness goal */}
           <button onClick={() => setShowGoalPicker(!showGoalPicker)}
             className="flex items-center gap-1.5 text-xs font-medium mb-3 transition-colors"
@@ -487,6 +511,12 @@ export default function NutritionTodayTab({ user, profile, nutritionProfile, day
                       <div className="flex items-start justify-between gap-2">
                         <div className="flex-1 min-w-0">
                           <p className="text-sm font-medium leading-snug" style={{ color: "var(--plum)", fontFamily: "'Inter', sans-serif" }}>{meal.raw_text}</p>
+                          {meal.portion_size && meal.portion_size !== "medium" && (
+                            <span style={{ fontSize: 10, fontWeight: 600, color: "var(--mauve)", backgroundColor: "var(--ivory-dark)",
+                              borderRadius: 20, padding: "2px 8px", marginLeft: 4, fontFamily: "'Inter', sans-serif" }}>
+                              {meal.portion_size.charAt(0).toUpperCase() + meal.portion_size.slice(1)}
+                            </span>
+                          )}
                           {meal.wellness_goal && (
                             <span className="inline-block text-[10px] px-2 py-0.5 rounded-full mt-1.5 mr-1 font-semibold"
                               style={{ backgroundColor: "var(--rose-dust-subtle)", color: "var(--rose-dust)" }}>

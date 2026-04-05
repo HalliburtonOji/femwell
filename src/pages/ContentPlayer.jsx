@@ -44,14 +44,17 @@ function VideoPlayer({ embedUrl }) {
 
   if (!clicked) {
     return (
-      <div className="relative w-full aspect-video bg-gray-900 rounded-2xl overflow-hidden cursor-pointer group" onClick={() => setClicked(true)}>
+      <div className="relative w-full aspect-video rounded-2xl overflow-hidden cursor-pointer group"
+        style={{ backgroundColor: "#111" }} onClick={() => setClicked(true)}>
         {thumbUrl
           ? <img src={thumbUrl} alt="Video thumbnail" className="w-full h-full object-cover" />
-          : <div className="w-full h-full bg-gradient-to-br from-rose-900 to-pink-900" />
+          : <div className="w-full h-full" style={{ backgroundColor: "#1a0a1a" }} />
         }
-        <div className="absolute inset-0 bg-black/30 group-hover:bg-black/20 transition-colors flex items-center justify-center">
-          <div className="w-16 h-16 bg-white/90 rounded-full flex items-center justify-center shadow-xl group-hover:scale-110 transition-transform">
-            <Play className="w-7 h-7 text-rose-600 ml-1" />
+        <div className="absolute inset-0 flex items-center justify-center"
+          style={{ backgroundColor: "rgba(0,0,0,0.25)" }}>
+          <div className="w-16 h-16 rounded-full flex items-center justify-center"
+            style={{ backgroundColor: "rgba(255,255,255,0.92)", boxShadow: "0 4px 20px rgba(0,0,0,0.3)" }}>
+            <Play className="w-7 h-7 ml-1" style={{ color: "var(--rose-dust)" }} />
           </div>
         </div>
       </div>
@@ -133,14 +136,15 @@ export default function ContentPlayer() {
   };
 
   if (loading) return (
-    <div className="min-h-screen femwell-gradient flex items-center justify-center">
-      <div className="w-10 h-10 border-4 border-rose-300 border-t-rose-600 rounded-full animate-spin" />
+    <div className="min-h-screen flex items-center justify-center" style={{ backgroundColor: "var(--ivory)" }}>
+      <div className="w-10 h-10 rounded-full border-4 border-t-transparent animate-spin"
+        style={{ borderColor: "var(--rose-dust-light)", borderTopColor: "var(--rose-dust)" }} />
     </div>
   );
 
   if (!item) return (
-    <div className="min-h-screen femwell-gradient flex items-center justify-center">
-      <p className="text-gray-400">Content not found.</p>
+    <div className="min-h-screen flex items-center justify-center" style={{ backgroundColor: "var(--ivory)" }}>
+      <p style={{ color: "var(--mauve)" }}>Content not found.</p>
     </div>
   );
 
@@ -168,16 +172,18 @@ export default function ContentPlayer() {
   })();
 
   return (
-    <div className="min-h-screen femwell-gradient pb-10">
+    <div className="min-h-screen pb-10" style={{ backgroundColor: "var(--ivory)" }}>
       <div className="max-w-md mx-auto px-4">
         <div className="pt-12 pb-4 flex items-center justify-between">
-          <button onClick={() => window.history.back()} className="w-9 h-9 rounded-full bg-white/80 flex items-center justify-center">
-            <ArrowLeft className="w-4 h-4 text-gray-700" />
+          <button onClick={() => window.history.back()} className="w-9 h-9 rounded-full flex items-center justify-center"
+            style={{ backgroundColor: "var(--surface)", border: "1px solid var(--border)" }}>
+            <ArrowLeft className="w-4 h-4" style={{ color: "var(--plum)" }} />
           </button>
-          <button onClick={toggleBookmark} className="w-9 h-9 rounded-full bg-white/80 flex items-center justify-center">
+          <button onClick={toggleBookmark} className="w-9 h-9 rounded-full flex items-center justify-center"
+            style={{ backgroundColor: "var(--surface)", border: "1px solid var(--border)" }}>
             {bookmarked
-              ? <BookmarkCheck className="w-4 h-4 text-rose-500" />
-              : <Bookmark className="w-4 h-4 text-gray-500" />
+              ? <BookmarkCheck className="w-4 h-4" style={{ color: "var(--rose-dust)" }} />
+              : <Bookmark className="w-4 h-4" style={{ color: "var(--mauve)" }} />
             }
           </button>
         </div>
@@ -203,10 +209,11 @@ export default function ContentPlayer() {
 
         {/* Manual complete card — shown for video/audio content */}
         {!locked && !isBreathwork && (
-          <div className="mt-3 card-glass rounded-2xl p-4 flex items-center justify-between">
+          <div className="mt-3 rounded-2xl p-4 flex items-center justify-between"
+            style={{ backgroundColor: "var(--surface)", border: "1px solid var(--border)", boxShadow: "var(--shadow-sm)" }}>
             <div>
-              <p className="text-sm font-semibold text-gray-700">Mark as complete</p>
-              <p className="text-xs text-gray-400">Log this session manually</p>
+              <p className="text-sm font-semibold" style={{ color: "var(--plum)" }}>Mark as complete</p>
+              <p className="text-xs" style={{ color: "var(--mauve)" }}>Log this session manually</p>
             </div>
             {user && item && (
               <ManualCompleteButton item={item} user={user} source="CONTENT_PLAYER" />
@@ -215,9 +222,10 @@ export default function ContentPlayer() {
         )}
 
         {locked ? (
-          <div className="aspect-video rounded-2xl bg-gradient-to-br from-rose-100 to-pink-100 flex flex-col items-center justify-center gap-3">
-            <Lock className="w-10 h-10 text-rose-300" />
-            <p className="font-semibold text-gray-600 text-sm">Requires {item.access_tier} plan</p>
+          <div className="aspect-video rounded-2xl flex flex-col items-center justify-center gap-3"
+            style={{ backgroundColor: "var(--rose-dust-subtle)", border: "1px solid var(--rose-dust-light)" }}>
+            <Lock className="w-10 h-10" style={{ color: "var(--rose-dust-light)" }} />
+            <p className="font-semibold text-sm" style={{ color: "var(--mauve)" }}>Requires {item.access_tier} plan</p>
             <a href={createPageUrl("Upgrade")} className="btn-primary text-sm px-5 py-2">Upgrade to unlock</a>
           </div>
         ) : isBreathwork ? (
@@ -229,7 +237,8 @@ export default function ContentPlayer() {
         ) : embedUrl ? (
           <VideoPlayer embedUrl={embedUrl} />
         ) : (
-          <div className="aspect-video rounded-2xl bg-gradient-to-br from-rose-100 to-pink-100 flex items-center justify-center text-5xl">
+          <div className="aspect-video rounded-2xl flex items-center justify-center text-5xl"
+            style={{ backgroundColor: "var(--rose-dust-subtle)" }}>
             {item.content_type === "MEDITATION" ? "🧘" : "✨"}
           </div>
         )}
@@ -237,38 +246,40 @@ export default function ContentPlayer() {
         <div className="mt-5 space-y-3">
           <div>
             <div className="flex items-start justify-between gap-2">
-              <h1 className="text-xl font-bold text-gray-800 leading-tight">{item.title}</h1>
+              <h1 className="text-xl font-bold leading-tight" style={{ color: "var(--plum)" }}>{item.title}</h1>
               {item.access_tier && item.access_tier !== "free" && (
-                <span className="flex-shrink-0 bg-rose-100 text-rose-500 text-xs font-bold px-2 py-1 rounded-full uppercase">{item.access_tier}</span>
+                <span className="flex-shrink-0 text-xs font-bold px-2 py-1 rounded-full uppercase"
+                  style={{ backgroundColor: "var(--rose-dust-subtle)", color: "var(--rose-dust)" }}>{item.access_tier}</span>
               )}
             </div>
-            <div className="flex gap-3 mt-1 text-xs text-gray-400">
+            <div className="flex gap-3 mt-1 text-xs" style={{ color: "var(--mauve)" }}>
               {item.duration_minutes && <span>{item.duration_minutes} min</span>}
               {item.content_type && <span className="capitalize">{item.content_type.toLowerCase()}</span>}
               {item.level && <span>{item.level}</span>}
             </div>
           </div>
 
-          {item.summary && <p className="text-sm text-gray-500 leading-relaxed">{item.summary}</p>}
+          {item.summary && <p className="text-sm leading-relaxed" style={{ color: "var(--mauve)" }}>{item.summary}</p>}
 
           {item.safety_notes && (
-            <div className="bg-amber-50 border border-amber-200 rounded-xl p-3">
-              <p className="text-xs font-semibold text-amber-700 mb-1">Safety notes</p>
-              <p className="text-xs text-amber-600">{item.safety_notes}</p>
+            <div className="rounded-xl p-3" style={{ backgroundColor: "#FFF8EE", border: "1px solid #F5DFA8" }}>
+              <p className="text-xs font-semibold mb-1" style={{ color: "#7A5A20" }}>Safety notes</p>
+              <p className="text-xs" style={{ color: "#7A5A20" }}>{item.safety_notes}</p>
             </div>
           )}
 
           {item.modifications && (
-            <div className="bg-blue-50 border border-blue-100 rounded-xl p-3">
-              <p className="text-xs font-semibold text-blue-600 mb-1">Modifications</p>
-              <p className="text-xs text-blue-500">{item.modifications}</p>
+            <div className="rounded-xl p-3" style={{ backgroundColor: "#EEF4FF", border: "1px solid #C7D9F5" }}>
+              <p className="text-xs font-semibold mb-1" style={{ color: "#3D5A8A" }}>Modifications</p>
+              <p className="text-xs" style={{ color: "#3D5A8A" }}>{item.modifications}</p>
             </div>
           )}
 
           {item.tags && (
             <div className="flex flex-wrap gap-1.5">
               {(Array.isArray(item.tags) ? item.tags : item.tags.split(",")).map((tag) => (
-                <span key={tag} className="text-xs bg-rose-50 text-rose-400 px-2 py-1 rounded-full capitalize">{String(tag).trim()}</span>
+                <span key={tag} className="text-xs px-2 py-1 rounded-full capitalize"
+                  style={{ backgroundColor: "var(--rose-dust-subtle)", color: "var(--rose-dust)" }}>{String(tag).trim()}</span>
               ))}
             </div>
           )}

@@ -163,22 +163,24 @@ export default function Trends() {
   })();
 
   if (loading) return (
-    <div className="min-h-screen femwell-gradient flex items-center justify-center">
-      <div className="w-10 h-10 border-4 border-rose-300 border-t-rose-600 rounded-full animate-spin" />
+    <div className="min-h-screen flex items-center justify-center" style={{ backgroundColor: "var(--ivory)" }}>
+      <div className="w-10 h-10 rounded-full border-4 border-t-transparent animate-spin"
+        style={{ borderColor: "var(--rose-dust-light)", borderTopColor: "var(--rose-dust)" }} />
     </div>
   );
 
   return (
-    <div className="min-h-screen femwell-gradient pb-28">
+    <div className="min-h-screen pb-28" style={{ backgroundColor: "var(--ivory)" }}>
       <div className="max-w-3xl mx-auto px-4">
 
         {/* Header */}
         <div className="pt-12 pb-4 flex items-center gap-3">
-          <Link to={createPageUrl("Profile")} className="w-8 h-8 rounded-full bg-white/70 flex items-center justify-center">
-            <ArrowLeft className="w-4 h-4 text-gray-500" />
+          <Link to={createPageUrl("Profile")} className="w-8 h-8 rounded-full flex items-center justify-center"
+            style={{ backgroundColor: "var(--surface)", border: "1px solid var(--border)" }}>
+            <ArrowLeft className="w-4 h-4" style={{ color: "var(--mauve)" }} />
           </Link>
-          <TrendingUp className="w-5 h-5 text-rose-500" />
-          <h1 className="text-2xl font-bold text-rose-900">Trends</h1>
+          <TrendingUp className="w-5 h-5" style={{ color: "var(--rose-dust)" }} />
+          <h1 className="text-2xl font-bold" style={{ color: "var(--plum)" }}>Trends</h1>
         </div>
 
         {/* Time range */}
@@ -187,9 +189,10 @@ export default function Trends() {
             <button
               key={m}
               onClick={() => setTimeRange(m)}
-              className={`px-4 py-2 rounded-full text-xs font-semibold transition-all ${
-                timeRange === m ? "bg-rose-500 text-white shadow-sm" : "bg-white/70 text-gray-500 border border-rose-100"
-              }`}
+              className="px-4 py-2 rounded-full text-xs font-semibold transition-all"
+              style={timeRange === m
+                ? { backgroundColor: "var(--plum)", color: "white" }
+                : { backgroundColor: "var(--surface)", color: "var(--mauve)", border: "1px solid var(--border)" }}
             >
               {m} months
             </button>
@@ -213,16 +216,18 @@ export default function Trends() {
         />
 
         {/* Data source toggle */}
-        <div className="flex gap-1 mb-4 bg-white/60 rounded-2xl p-1">
+        <div className="flex gap-1 mb-4 rounded-2xl p-1" style={{ backgroundColor: "var(--ivory-dark)", border: "1px solid var(--border)" }}>
           <button
             onClick={() => { setDataSource("checkins"); setSelectedMetric("cramps"); }}
-            className={`flex-1 py-2 rounded-xl text-xs font-semibold transition-all ${dataSource === "checkins" ? "bg-rose-500 text-white shadow-sm" : "text-gray-500"}`}
+            className="flex-1 py-2 rounded-xl text-xs font-semibold transition-all"
+            style={dataSource === "checkins" ? { backgroundColor: "var(--plum)", color: "white" } : { color: "var(--mauve)" }}
           >
             Daily Check-ins
           </button>
           <button
             onClick={() => { setDataSource("symptoms"); setSelectedMetric(symptomTypes[0] || ""); }}
-            className={`flex-1 py-2 rounded-xl text-xs font-semibold transition-all ${dataSource === "symptoms" ? "bg-rose-500 text-white shadow-sm" : "text-gray-500"}`}
+            className="flex-1 py-2 rounded-xl text-xs font-semibold transition-all"
+            style={dataSource === "symptoms" ? { backgroundColor: "var(--plum)", color: "white" } : { color: "var(--mauve)" }}
             disabled={symptomTypes.length === 0}
           >
             Symptom Logs
@@ -231,16 +236,16 @@ export default function Trends() {
 
         {/* Metric chips */}
         <div className="mb-5">
-          <p className="text-xs text-gray-400 mb-2 font-medium">Select metric</p>
+          <p className="text-xs mb-2 font-medium" style={{ color: "var(--mauve)" }}>Select metric</p>
           <div className="flex gap-2 overflow-x-auto pb-1">
             {(dataSource === "checkins" ? CHECKIN_METRICS : symptomTypes.map((t) => ({ id: t, label: t.replace(/_/g, " "), color: "#f472b6" }))).map((m) => (
               <button
                 key={m.id}
                 onClick={() => setSelectedMetric(m.id)}
-                className={`flex-shrink-0 px-3 py-1.5 rounded-full text-xs font-medium whitespace-nowrap transition-all capitalize ${
-                  selectedMetric === m.id ? "text-white shadow-sm" : "bg-white/70 text-gray-600 border border-rose-100"
-                }`}
-                style={selectedMetric === m.id ? { backgroundColor: m.color } : {}}
+                className="flex-shrink-0 px-3 py-1.5 rounded-full text-xs font-medium whitespace-nowrap transition-all capitalize"
+                style={selectedMetric === m.id
+                  ? { backgroundColor: m.color, color: "white" }
+                  : { backgroundColor: "var(--ivory-dark)", color: "var(--mauve)", border: "1px solid var(--border)" }}
               >
                 {m.label}
               </button>
@@ -250,20 +255,22 @@ export default function Trends() {
 
         {/* No cycle data */}
         {!hasCycleData && (
-          <div className="card-glass rounded-2xl p-5 mb-4 text-center">
+          <div className="rounded-2xl p-5 mb-4 text-center"
+            style={{ backgroundColor: "var(--surface)", border: "1px solid var(--border)", boxShadow: "var(--shadow-sm)" }}>
             <div className="w-10 h-10 rounded-2xl mx-auto mb-3 flex items-center justify-center" style={{ backgroundColor: "var(--rose-dust-subtle)" }}>
               <TrendingUp className="w-4 h-4" style={{ color: "var(--rose-dust)" }} />
             </div>
-            <p className="text-sm font-medium text-gray-700 mb-1">No cycle data yet</p>
-            <p className="text-xs text-gray-400">Log your period in Today — Track to see phase correlations.</p>
+            <p className="text-sm font-medium mb-1" style={{ color: "var(--plum)" }}>No cycle data yet</p>
+            <p className="text-xs" style={{ color: "var(--mauve)" }}>Log your period in Today — Track to see phase correlations.</p>
           </div>
         )}
 
         {/* Phase correlation bar chart */}
         {hasCycleData && (
-          <div className="card-glass rounded-2xl p-4 mb-4">
-            <h3 className="text-sm font-bold text-gray-700 mb-0.5 capitalize">{currentLabel} by Cycle Phase</h3>
-            <p className="text-xs text-gray-400 mb-4">Average score — last {timeRange} months</p>
+          <div className="rounded-2xl p-4 mb-4"
+            style={{ backgroundColor: "var(--surface)", border: "1px solid var(--border)", boxShadow: "var(--shadow-sm)" }}>
+            <h3 className="text-sm font-bold mb-0.5 capitalize" style={{ color: "var(--plum)" }}>{currentLabel} by Cycle Phase</h3>
+            <p className="text-xs mb-4" style={{ color: "var(--mauve)" }}>Average score — last {timeRange} months</p>
             {hasPhaseData ? (
               <ResponsiveContainer width="100%" height={200}>
                 <BarChart data={phaseData} margin={{ top: 5, right: 5, left: -20, bottom: 5 }}>
@@ -282,7 +289,7 @@ export default function Trends() {
                 </BarChart>
               </ResponsiveContainer>
             ) : (
-              <div className="flex items-center justify-center h-40 text-gray-300">
+              <div className="flex items-center justify-center h-40" style={{ color: "var(--mauve)" }}>
                 <p className="text-sm text-center">Not enough data yet —<br />keep logging daily!</p>
               </div>
             )}
@@ -290,7 +297,7 @@ export default function Trends() {
               {PHASES.map((p) => (
                 <div key={p.key} className="flex items-center gap-1.5">
                   <div className="w-2.5 h-2.5 rounded-full flex-shrink-0" style={{ backgroundColor: p.color }} />
-                  <span className="text-[10px] text-gray-500">{p.label} <span className="text-gray-300">({p.days})</span></span>
+                  <span className="text-[10px]" style={{ color: "var(--mauve)" }}>{p.label} <span style={{ color: "var(--border)" }}>({p.days})</span></span>
                 </div>
               ))}
             </div>
@@ -299,9 +306,11 @@ export default function Trends() {
 
         {/* Pattern insight */}
         {patternInsight && (
-          <div className="card-glass rounded-2xl p-4 mb-4 border-l-4" style={{ borderLeftColor: PHASES.find((p) => p.key === patternInsight.highest.phase)?.color }}>
+          <div className="rounded-2xl p-4 mb-4"
+            style={{ backgroundColor: "var(--surface)", border: "1px solid var(--border)", boxShadow: "var(--shadow-sm)",
+              borderLeft: `4px solid ${PHASES.find((p) => p.key === patternInsight.highest.phase)?.color}` }}>
             <p className="text-xs font-semibold uppercase tracking-wide mb-1.5" style={{ color: "var(--mauve)", letterSpacing: "0.1em" }}>Pattern Insight</p>
-            <p className="text-sm text-gray-700 leading-relaxed">
+            <p className="text-sm leading-relaxed" style={{ color: "var(--plum)" }}>
               Your <strong className="capitalize">{currentLabel}</strong> tends to peak during the{" "}
               <strong style={{ color: PHASES.find((p) => p.key === patternInsight.highest.phase)?.color }}>
                 {patternInsight.highest.phase}
@@ -317,9 +326,10 @@ export default function Trends() {
 
         {/* Time series line chart */}
         {timeSeriesData.length > 1 && (
-          <div className="card-glass rounded-2xl p-4 mb-4">
-            <h3 className="text-sm font-bold text-gray-700 mb-0.5 capitalize">{currentLabel} over time</h3>
-            <p className="text-xs text-gray-400 mb-4">Daily readings — {timeRange} months</p>
+          <div className="rounded-2xl p-4 mb-4"
+            style={{ backgroundColor: "var(--surface)", border: "1px solid var(--border)", boxShadow: "var(--shadow-sm)" }}>
+            <h3 className="text-sm font-bold mb-0.5 capitalize" style={{ color: "var(--plum)" }}>{currentLabel} over time</h3>
+            <p className="text-xs mb-4" style={{ color: "var(--mauve)" }}>Daily readings — {timeRange} months</p>
             <ResponsiveContainer width="100%" height={180}>
               <LineChart data={timeSeriesData} margin={{ top: 5, right: 5, left: -20, bottom: 5 }}>
                 <CartesianGrid strokeDasharray="3 3" stroke="#f0e4e8" />
@@ -343,9 +353,10 @@ export default function Trends() {
         )}
 
         {timeSeriesData.length === 0 && (
-          <div className="card-glass rounded-2xl p-5 text-center">
-            <p className="text-sm font-medium text-gray-700 mb-1">No data for this metric yet</p>
-            <p className="text-xs text-gray-400">Keep logging daily check-ins to see trends here.</p>
+          <div className="rounded-2xl p-5 text-center"
+            style={{ backgroundColor: "var(--surface)", border: "1px solid var(--border)", boxShadow: "var(--shadow-sm)" }}>
+            <p className="text-sm font-medium mb-1" style={{ color: "var(--plum)" }}>No data for this metric yet</p>
+            <p className="text-xs" style={{ color: "var(--mauve)" }}>Keep logging daily check-ins to see trends here.</p>
           </div>
         )}
 
@@ -360,19 +371,20 @@ export default function Trends() {
             return { name: name.length > 16 ? name.slice(0, 16) + "…" : name, pct, full: name };
           });
           return (
-            <div className="card-glass rounded-2xl p-4 mb-4">
-              <h3 className="text-sm font-bold text-gray-700 mb-0.5">Habit Completion Rates</h3>
-              <p className="text-xs text-gray-400 mb-4">Last {timeRange} months</p>
+            <div className="rounded-2xl p-4 mb-4"
+              style={{ backgroundColor: "var(--surface)", border: "1px solid var(--border)", boxShadow: "var(--shadow-sm)" }}>
+              <h3 className="text-sm font-bold mb-0.5" style={{ color: "var(--plum)" }}>Habit Completion Rates</h3>
+              <p className="text-xs mb-4" style={{ color: "var(--mauve)" }}>Last {timeRange} months</p>
               <div className="space-y-3">
                 {habitData.map((h) => (
                   <div key={h.full}>
                     <div className="flex justify-between items-center mb-1">
-                      <span className="text-xs text-gray-700 font-medium capitalize">{h.name}</span>
-                      <span className="text-xs font-bold text-rose-500">{h.pct}%</span>
+                      <span className="text-xs font-medium capitalize" style={{ color: "var(--plum)" }}>{h.name}</span>
+                      <span className="text-xs font-bold" style={{ color: "var(--rose-dust)" }}>{h.pct}%</span>
                     </div>
-                    <div className="w-full h-2 bg-rose-50 rounded-full overflow-hidden">
-                      <div className="h-full bg-gradient-to-r from-rose-300 to-pink-400 rounded-full transition-all duration-500"
-                        style={{ width: `${h.pct}%` }} />
+                    <div className="w-full h-2 rounded-full overflow-hidden" style={{ backgroundColor: "var(--rose-dust-subtle)" }}>
+                      <div className="h-full rounded-full transition-all duration-500"
+                        style={{ width: `${h.pct}%`, backgroundColor: "var(--rose-dust)" }} />
                     </div>
                   </div>
                 ))}
@@ -388,9 +400,10 @@ export default function Trends() {
             .map(c => ({ label: format(parseISO(c.date), "MMM d"), sleep: c.sleep_quality, mood: c.mood, energy: c.energy }))
             .slice(-30);
           return (
-            <div className="card-glass rounded-2xl p-4 mb-4">
-              <h3 className="text-sm font-bold text-gray-700 mb-0.5">Sleep Quality vs Mood & Energy</h3>
-              <p className="text-xs text-gray-400 mb-4">Last 30 data points</p>
+            <div className="rounded-2xl p-4 mb-4"
+              style={{ backgroundColor: "var(--surface)", border: "1px solid var(--border)", boxShadow: "var(--shadow-sm)" }}>
+              <h3 className="text-sm font-bold mb-0.5" style={{ color: "var(--plum)" }}>Sleep Quality vs Mood & Energy</h3>
+              <p className="text-xs mb-4" style={{ color: "var(--mauve)" }}>Last 30 data points</p>
               <ResponsiveContainer width="100%" height={180}>
                 <LineChart data={data} margin={{ top: 5, right: 5, left: -20, bottom: 5 }}>
                   <CartesianGrid strokeDasharray="3 3" stroke="#f0e4e8" />
@@ -404,7 +417,7 @@ export default function Trends() {
               </ResponsiveContainer>
               <div className="flex gap-4 mt-2 justify-center">
                 {[{c:"#34d399",l:"Sleep"},{c:"#f472b6",l:"Mood"},{c:"#fb923c",l:"Energy"}].map(x => (
-                  <div key={x.l} className="flex items-center gap-1"><div className="w-2.5 h-2.5 rounded-full" style={{backgroundColor:x.c}}/><span className="text-[10px] text-gray-500">{x.l}</span></div>
+                  <div key={x.l} className="flex items-center gap-1"><div className="w-2.5 h-2.5 rounded-full" style={{backgroundColor:x.c}}/><span className="text-[10px]" style={{ color: "var(--mauve)" }}>{x.l}</span></div>
                 ))}
               </div>
             </div>

@@ -75,44 +75,35 @@ export default function Onboarding() {
 
   const [saveError, setSaveError] = useState(false);
 
-  useEffect(() => {
-    if (!saving) return;
-    const timer = setTimeout(() => {
-      setSaving(false);
-      setSaveError(true);
-    }, 8000);
-    return () => clearTimeout(timer);
-  }, [saving]);
+
 
   const handleFinish = async () => {
     setSaving(true);
     setSaveError(false);
+    let timeoutId;
     try {
+      timeoutId = setTimeout(() => { setSaving(false); setSaveError(true); }, 10000);
       const user = await base44.auth.me();
       const profiles = await base44.entities.UserProfile.filter({ user_id: user.id });
       const profilePayload = {
-        user_id: user.id,
-        user_email: user.email,
-        onboarding_complete: true,
-        goals,
-        tone_preference: tone,
+        user_id: user.id, user_email: user.email, onboarding_complete: true,
+        goals, tone_preference: tone,
         modules_enabled: cycleTrackingEnabled ? ["cycle"] : [],
-        skin_type: skinType,
-        followed_categories: interests,
-        hydration_target_ml: hydrationTarget,
-        cycle_tracking_enabled: cycleTrackingEnabled,
+        skin_type: skinType, followed_categories: interests,
+        hydration_target_ml: hydrationTarget, cycle_tracking_enabled: cycleTrackingEnabled,
       };
       if (profiles[0]) {
         await base44.entities.UserProfile.update(profiles[0].id, profilePayload);
       } else {
         await base44.entities.UserProfile.create(profilePayload);
       }
+      clearTimeout(timeoutId);
       window.location.href = createPageUrl("Today");
     } catch (e) {
+      clearTimeout(timeoutId);
       console.error("Onboarding error:", e);
-      setSaveError(true);
-    } finally {
       setSaving(false);
+      setSaveError(true);
     }
   };
 

@@ -587,7 +587,7 @@ export default function Profile() {
 
         {/* Sign out */}
         <button
-          onClick={() => base44.auth.logout()}
+          onClick={async () => { await base44.auth.logout(); window.location.href = "/"; }}
           style={{ ...card, cursor: "pointer", border: "none", backgroundColor: "var(--surface)", padding: "16px", marginBottom: "16px", display: "flex", alignItems: "center", gap: "12px", width: "100%" }}
         >
           <div style={iconBox("#FFF0F0")}>

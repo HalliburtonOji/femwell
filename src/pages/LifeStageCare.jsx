@@ -36,43 +36,48 @@ export default function LifeStageCare() {
 
   if (loading) {
     return (
-      <div className="min-h-screen femwell-gradient flex items-center justify-center">
-        <div className="w-10 h-10 border-4 border-rose-300 border-t-rose-600 rounded-full animate-spin" />
+      <div className="min-h-screen flex items-center justify-center" style={{ backgroundColor: "var(--ivory)" }}>
+        <div className="w-10 h-10 rounded-full border-4 border-t-transparent animate-spin"
+          style={{ borderColor: "var(--rose-dust-light)", borderTopColor: "var(--rose-dust)" }} />
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen femwell-gradient pb-28">
+    <div className="min-h-screen pb-28" style={{ backgroundColor: "var(--ivory)" }}>
       <div className="max-w-4xl mx-auto px-4">
         <div className="pt-12 pb-5 flex items-center gap-3">
-          <a href={createPageUrl("Profile")} className="w-9 h-9 rounded-full bg-white/70 flex items-center justify-center">
-            <ChevronLeft className="w-4 h-4 text-gray-500" />
+          <a href={createPageUrl("Profile")}
+            className="w-9 h-9 rounded-full flex items-center justify-center"
+            style={{ backgroundColor: "var(--surface)", border: "1px solid var(--border)" }}>
+            <ChevronLeft className="w-4 h-4" style={{ color: "var(--mauve)" }} />
           </a>
           <div>
-            <p className="text-sm text-gray-400">Personalized care</p>
-            <h1 className="text-2xl font-bold text-rose-900">Pregnancy & Menopause Support</h1>
+            <p className="text-sm" style={{ color: "var(--mauve)" }}>Personalized care</p>
+            <h1 className="text-2xl font-bold" style={{ color: "var(--plum)" }}>Pregnancy & Menopause Support</h1>
           </div>
         </div>
 
-        <div className="card-glass rounded-3xl p-5 mb-4 bg-gradient-to-r from-rose-50/90 to-violet-50/80 border border-rose-100">
-          <p className="text-sm text-gray-700 leading-relaxed">
+        <div style={{ backgroundColor: "var(--surface)", border: "1px solid var(--border)", borderRadius: 24, padding: 20, marginBottom: 16, boxShadow: "var(--shadow-sm)" }}>
+          <p className="text-sm leading-relaxed" style={{ color: "var(--plum)" }}>
             A dedicated space for life-stage support with daily tracking, tailored setup, and gentle AI guidance for pregnancy and menopause.
           </p>
         </div>
 
-        <div className="flex gap-1 mb-5 bg-white/60 rounded-2xl p-1">
+        <div className="flex gap-1 mb-5 rounded-2xl p-1" style={{ backgroundColor: "var(--ivory-dark)", border: "1px solid var(--border)" }}>
           <button
             onClick={() => setActiveTab("pregnancy")}
-            className={`flex-1 py-2.5 rounded-xl text-sm font-semibold transition-all ${activeTab === "pregnancy" ? "bg-rose-500 text-white shadow-sm" : "text-gray-500"}`}
+            className="flex-1 py-2.5 rounded-xl text-sm font-semibold transition-all"
+            style={activeTab === "pregnancy" ? { backgroundColor: "var(--rose-dust)", color: "white" } : { color: "var(--mauve)" }}
           >
-            🤰 Pregnancy
+            Pregnancy
           </button>
           <button
             onClick={() => setActiveTab("menopause")}
-            className={`flex-1 py-2.5 rounded-xl text-sm font-semibold transition-all ${activeTab === "menopause" ? "bg-rose-500 text-white shadow-sm" : "text-gray-500"}`}
+            className="flex-1 py-2.5 rounded-xl text-sm font-semibold transition-all"
+            style={activeTab === "menopause" ? { backgroundColor: "var(--rose-dust)", color: "white" } : { color: "var(--mauve)" }}
           >
-            🌤️ Menopause
+            Menopause
           </button>
         </div>
 
