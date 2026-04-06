@@ -38,7 +38,6 @@ function getMonday() {
 const TABS = [
   { id: "for_you",  label: "For You"  },
   { id: "articles", label: "Read"     },
-  { id: "trends",   label: "Trends"   },
   { id: "watch",    label: "Watch"    },
   { id: "stories",  label: "Stories"  },
   { id: "femwell",  label: "FemWell"  },
@@ -54,41 +53,49 @@ function VideoCard({ item, onSave, saved }) {
     onSave?.(item.id, next);
     await base44.functions.invoke("recordLifestyleAction", { item_id: item.id, action: next ? "save" : "unsave", category: item.category }).catch(() => {});
   };
-  const videoId = item.video_id || (item.content_url?.match(/[?&]v=([^&]+)/)?.[1]);
+  const videoId = item.video_id || (item.content_url?.match(/[?&]v=([^&]+)/)?.[1]) || (item.embed_url?.match(/embed\/([A-Za-z0-9_-]{11})/)?.[1]);
   const thumb = item.image_url || (videoId ? `https://i.ytimg.com/vi/${videoId}/hqdefault.jpg` : "");
-  const embedSrc = `https://www.youtube-nocookie.com/embed/${videoId}?rel=0&modestbranding=1&playsinline=1&autoplay=1`;
+  const embedSrc = videoId ? `https://www.youtube-nocookie.com/embed/${videoId}?rel=0&modestbranding=1&playsinline=1&autoplay=1` : "";
   return (
-    <div className="card-glass" style={{ borderRadius: 16, overflow: "hidden", marginBottom: 14 }}>
-      <div style={{ position: "relative", aspectRatio: "16/9", background: "var(--ivory-dark)" }}>
-        {playing ? (
-          <iframe src={embedSrc} title={item.title} style={{ width: "100%", height: "100%", border: "none" }} allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowFullScreen />
+    <div style={{ backgroundColor: "var(--surface)", border: "1px solid var(--border)", boxShadow: "var(--shadow-sm)", borderRadius: 16, overflow: "hidden", marginBottom: 14 }}>
+      <div style={{ position: "relative", paddingBottom: "56.25%", backgroundColor: "#111" }}>
+        {playing && embedSrc ? (
+          <iframe src={embedSrc} title={item.title}
+            style={{ position: "absolute", inset: 0, width: "100%", height: "100%", border: "none" }}
+            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowFullScreen />
         ) : (
-          <button onClick={() => setPlaying(true)} style={{ width: "100%", height: "100%", border: "none", padding: 0, cursor: "pointer", position: "relative", display: "block", background: "none" }}>
+          <button onClick={() => setPlaying(true)}
+            style={{ position: "absolute", inset: 0, width: "100%", height: "100%", border: "none", padding: 0, cursor: "pointer", background: "none" }}>
             {thumb && <img src={thumb} alt={item.title} style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }} />}
-            <div style={{ position: "absolute", inset: 0, background: "rgba(42,32,53,0.15)" }} />
+            <div style={{ position: "absolute", inset: 0, backgroundColor: "rgba(0,0,0,0.18)" }} />
             <div style={{ position: "absolute", inset: 0, display: "flex", alignItems: "center", justifyContent: "center" }}>
-              <div style={{ width: 52, height: 52, borderRadius: "50%", background: "rgba(255,255,255,0.93)", display: "flex", alignItems: "center", justifyContent: "center", boxShadow: "0 4px 16px rgba(42,32,53,0.18)" }}>
-                <Play style={{ width: 22, height: 22, color: "var(--rose-dust)", marginLeft: 3 }} fill="currentColor" />
+              <div style={{ width: 52, height: 52, borderRadius: 9999, backgroundColor: "rgba(255,255,255,0.93)", display: "flex", alignItems: "center", justifyContent: "center", boxShadow: "0 4px 16px rgba(0,0,0,0.22)" }}>
+                <Play style={{ width: 20, height: 20, color: "var(--plum)", marginLeft: 3 }} fill="currentColor" />
               </div>
             </div>
           </button>
         )}
       </div>
       <div style={{ padding: "12px 14px 14px" }}>
-        <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 10 }}>
-          <p style={{ fontSize: 14, fontWeight: 600, color: "var(--plum)", lineHeight: 1.4, margin: 0, flex: 1, display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical", overflow: "hidden" }}>{item.title}</p>
-          <button onClick={handleSave} style={{ border: "none", background: "none", cursor: "pointer", padding: 2, flexShrink: 0 }}>
+        {item.category && (
+          <span style={{ fontSize: 10, fontWeight: 600, color: "var(--rose-dust)", backgroundColor: "var(--rose-dust-subtle)", borderRadius: 9999, padding: "2px 8px", marginBottom: 6, display: "inline-block", fontFamily: "'Inter', sans-serif" }}>
+            {item.category}
+          </span>
+        )}
+        {(item.channel_name || item.source_name) && (
+          <p style={{ fontSize: 11, color: "var(--mauve)", fontFamily: "'Inter', sans-serif", marginBottom: 4 }}>{item.channel_name || item.source_name}</p>
+        )}
+        <p style={{ fontSize: 14, fontWeight: 700, color: "var(--plum)", fontFamily: "'Inter', sans-serif", lineHeight: 1.4, marginBottom: 8, display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical", overflow: "hidden" }}>
+          {item.title}
+        </p>
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+          <a href={item.content_url} target="_blank" rel="noopener noreferrer"
+            style={{ fontSize: 12, fontWeight: 600, color: "var(--rose-dust)", fontFamily: "'Inter', sans-serif", textDecoration: "none" }}>
+            Watch on YouTube
+          </a>
+          <button onClick={handleSave} style={{ border: "none", background: "none", cursor: "pointer", padding: 2 }}>
             {localSaved ? <BookmarkCheck style={{ width: 17, height: 17, color: "var(--rose-dust)" }} /> : <Bookmark style={{ width: 17, height: 17, color: "var(--mauve)" }} />}
           </button>
-        </div>
-        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginTop: 8 }}>
-          <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
-            <span style={{ fontSize: 12, color: "var(--mauve)", fontWeight: 500 }}>{item.channel_name || item.source_name}</span>
-            {item.pub_date && <span style={{ fontSize: 11, color: "var(--mauve)", opacity: 0.5 }}>· {timeAgo(item.pub_date)}</span>}
-          </div>
-          <a href={item.content_url} target="_blank" rel="noreferrer" style={{ fontSize: 12, color: "var(--rose-dust)", fontWeight: 500, textDecoration: "none", display: "flex", alignItems: "center", gap: 3 }}>
-            YouTube <ExternalLink style={{ width: 11, height: 11 }} />
-          </a>
         </div>
       </div>
     </div>
@@ -104,14 +111,14 @@ function ContentCard({ item, onSave, saved, isStory }) {
     onSave?.(item.id, next);
     await base44.functions.invoke("recordLifestyleAction", { item_id: item.id, action: next ? "save" : "unsave", category: item.category }).catch(() => {});
   };
-  const handleOpen = async () => {
-    await base44.functions.invoke("recordLifestyleAction", { item_id: item.id, action: "open", category: item.category }).catch(() => {});
-    window.open(item.content_url, "_blank");
+  const handleOpen = () => {
+    window.open(item.content_url, "_blank", "noopener,noreferrer");
+    base44.functions.invoke("recordLifestyleAction", { item_id: item.id, action: "open", category: item.category }).catch(() => {});
   };
   const takeaways = [item.takeaway_1, item.takeaway_2, item.takeaway_3].filter(Boolean);
   const displayText = stripHtml(item.summary || item.lede || "");
   return (
-    <div className="card-glass" style={{ borderRadius: 16, overflow: "hidden", marginBottom: 14 }}>
+    <div style={{ backgroundColor: "var(--surface)", border: "1px solid var(--border)", boxShadow: "var(--shadow-sm)", borderRadius: 16, overflow: "hidden", marginBottom: 14 }}>
       {item.image_url && (
         <div style={{ width: "100%", height: 180, overflow: "hidden" }}>
           <img src={item.image_url} alt="" style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }} onError={(e) => { e.target.style.display = "none"; }} />
@@ -168,7 +175,7 @@ function BookCard({ book }) {
   const [saved, setSaved] = useState(false);
   const cover = book.cover_url || (book.isbn ? `https://covers.openlibrary.org/b/isbn/${book.isbn}-M.jpg` : null);
   return (
-    <div className="card-glass" style={{ borderRadius: 18, overflow: "hidden", marginBottom: 14 }}>
+    <div style={{ backgroundColor: "var(--surface)", border: "1px solid var(--border)", boxShadow: "var(--shadow-sm)", borderRadius: 18, overflow: "hidden", marginBottom: 14 }}>
       <div style={{ display: "flex", gap: 14, padding: "16px 16px 0" }}>
         {cover && (
           <div style={{ flexShrink: 0, width: 72, height: 108, borderRadius: 8, overflow: "hidden", boxShadow: "0 4px 12px rgba(42,32,53,0.15)" }}>
@@ -252,7 +259,7 @@ function BooksTab() {
   const weekLabel = new Date(weekPick.week_start + "T12:00:00").toLocaleDateString("en-GB", { day: "numeric", month: "long" });
   return (
     <div>
-      <div className="card-glass" style={{ borderRadius: 16, padding: "16px 18px", marginBottom: 20 }}>
+      <div style={{ backgroundColor: "var(--surface)", border: "1px solid var(--border)", boxShadow: "var(--shadow-sm)", borderRadius: 16, padding: "16px 18px", marginBottom: 20 }}>
         <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 4 }}>
           <BookMarked style={{ width: 15, height: 15, color: "var(--rose-dust)" }} />
           <span style={{ fontSize: 10, fontWeight: 700, color: "var(--rose-dust)", letterSpacing: "0.1em", textTransform: "uppercase" }}>Week of {weekLabel}</span>
@@ -268,7 +275,7 @@ function BooksTab() {
 export default function Lifestyle() {
   const [tab, setTab] = useState(() => {
     const p = new URLSearchParams(window.location.search).get("tab");
-    return p && ["for_you","articles","trends","watch","stories","femwell","books"].includes(p) ? p : "for_you";
+    return p && ["for_you","articles","watch","stories","femwell","books"].includes(p) ? p : "for_you";
   });
   const [items, setItems] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -367,7 +374,7 @@ export default function Lifestyle() {
               </div>
             )}
             {tab === "stories" && (
-              <div className="card-glass" style={{ borderRadius: 16, padding: "14px 16px", marginBottom: 16 }}>
+              <div style={{ backgroundColor: "var(--surface)", border: "1px solid var(--border)", borderRadius: 16, padding: "14px 16px", marginBottom: 16 }}>
                 <div style={{ display: "flex", alignItems: "center", gap: 7, marginBottom: 4 }}>
                   <FileText style={{ width: 14, height: 14, color: "var(--mauve)" }} />
                   <span style={{ fontSize: 10, fontWeight: 700, color: "var(--mauve)", letterSpacing: "0.1em", textTransform: "uppercase" }}>Personal Essays and Narrative</span>
@@ -375,9 +382,7 @@ export default function Lifestyle() {
                 <p style={{ fontSize: 13, color: "var(--mauve)", margin: 0 }}>First-person stories about bodies, identity, relationships, and life — from Narratively, Longreads, Granta, and more.</p>
               </div>
             )}
-            {tab === "trends" && (
-              <p style={{ fontSize: 11, color: "var(--mauve)", fontFamily: "'Inter', sans-serif", marginBottom: 14 }}>Trending conversations from across the web, refreshed daily.</p>
-            )}
+
             {tab === "femwell" && (
               <div style={{ background: "var(--rose-dust-subtle)", border: "1px solid var(--rose-dust-light)", borderRadius: 16, padding: "14px 16px", marginBottom: 16 }}>
                 <h3 style={{ fontFamily: "'Playfair Display', serif", fontSize: 15, fontWeight: 700, color: "var(--plum)", margin: "0 0 4px" }}>Written for you</h3>
@@ -392,10 +397,16 @@ export default function Lifestyle() {
               </div>
             ) : (
               <div className="lf-fade">
-                {tab === "watch"
-                  ? items.map(item => <VideoCard key={item.id} item={item} saved={savedIds.has(item.id)} onSave={handleSave} />)
-                  : items.map(item => <ContentCard key={item.id} item={item} saved={savedIds.has(item.id)} onSave={handleSave} isStory={tab === "stories" || (tab === "femwell" && item.content_type === "STORY")} />)
-                }
+                {items.map(item => {
+                  const isVideo = item.media_type === "VIDEO" || item.content_type === "VIDEO" || !!item.video_id;
+                  if (tab === "watch" || isVideo) {
+                    return <VideoCard key={item.id} item={item} saved={savedIds.has(item.id)} onSave={handleSave} />;
+                  }
+                  return (
+                    <ContentCard key={item.id} item={item} saved={savedIds.has(item.id)} onSave={handleSave}
+                      isStory={tab === "stories" || (tab === "femwell" && item.content_type === "STORY")} />
+                  );
+                })}
               </div>
             )}
             {loadingMore && (

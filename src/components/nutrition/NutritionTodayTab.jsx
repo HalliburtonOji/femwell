@@ -23,6 +23,21 @@ const MEAL_LABELS = { breakfast: "Morning", lunch: "Midday", dinner: "Evening", 
 const PORTION_MULTIPLIERS = { small: 0.7, medium: 1.0, large: 1.4 };
 const PORTION_LABELS = [{ id: "small", label: "Small" }, { id: "medium", label: "Medium" }, { id: "large", label: "Large" }];
 
+const DRINK_TYPES = [
+  { id: "water",      label: "Water",      ml: 250 },
+  { id: "coffee",     label: "Coffee",     ml: 240 },
+  { id: "tea",        label: "Tea",        ml: 240 },
+  { id: "soft_drink", label: "Soft drink", ml: 330 },
+  { id: "juice",      label: "Juice",      ml: 250 },
+  { id: "alcohol",    label: "Alcohol",    ml: 250 },
+  { id: "smoothie",   label: "Smoothie",   ml: 300 },
+  { id: "milk",       label: "Milk",       ml: 200 },
+];
+const DRINK_CALS = {
+  water: 0, coffee: 5, tea: 2, soft_drink: 140,
+  juice: 110, alcohol: 180, smoothie: 200, milk: 120,
+};
+
 // Gentle cycle-aware nutrient tips — no medical claims
 const CYCLE_WELLNESS_TIPS = [
   { phase: "menstrual",  tip: "Iron-rich foods like lentils, leafy greens, and dark chocolate may help support energy this week." },
@@ -153,6 +168,9 @@ export default function NutritionTodayTab({ user, profile, nutritionProfile, day
   const [showGoalPicker, setShowGoalPicker] = useState(false);
   const [savingTemplate, setSavingTemplate] = useState(false);
   const [portionSize, setPortionSize] = useState("medium");
+  const [showDrinks, setShowDrinks] = useState(false);
+  const [drinkLogs, setDrinkLogs] = useState([]);
+  const [loggingDrink, setLoggingDrink] = useState(false);
 
   const hydrationTargetMl = nutritionProfile?.hydration_target_ml || 2000;
   const totalHydration    = hydrationLogs.reduce((sum, l) => sum + (l.amount_ml || 0), 0);
@@ -172,7 +190,28 @@ export default function NutritionTodayTab({ user, profile, nutritionProfile, day
     setHydrationLogs(hydration);
     setTemplates(tmpl);
     setInsights(ins);
+    const drinkData = await base44.entities.DrinkLog.filter({ user_id: user.id, day_key: dayKey }).catch(() => []);
+    setDrinkLogs(drinkData);
     setLoading(false);
+  };
+
+  const logDrink = async (drinkType) => {
+    setLoggingDrink(true);
+    try {
+      const drinkInfo = DRINK_TYPES.find((d) => d.id === drinkType);
+      const newLog = await base44.entities.DrinkLog.create({
+        user_id: user.id, day_key: dayKey,
+        drink_type: drinkType, amount_ml: drinkInfo?.ml || 250,
+        calories: DRINK_CALS[drinkType] || 0,
+        logged_at: new Date().toISOString(),
+      });
+      setDrinkLogs((prev) => [...prev, newLog]);
+      if (["water", "tea", "coffee", "juice", "smoothie", "milk"].includes(drinkType)) {
+        const newMl = drinkLogs.reduce((s, l) => s + (l.amount_ml || 0), 0) + (drinkInfo?.ml || 250);
+        if (checkin?.id) base44.entities.DailyCheckins.update(checkin.id, { hydration_glasses: Math.round(newMl / 250) }).catch(() => {});
+      }
+    } catch (e) { console.error(e); }
+    setLoggingDrink(false);
   };
 
   const logMeal = async (text, type, method = "text") => {
@@ -305,37 +344,39 @@ export default function NutritionTodayTab({ user, profile, nutritionProfile, day
   const totalFat = mealsWithCalories.reduce((sum, m) => {
     try { return sum + (JSON.parse(m.ai_analysis)?.nutritional_summary?.fat_g || 0); } catch { return sum; }
   }, 0);
-  const caloriePct = Math.min(100, Math.round((totalCalories / calorieTarget) * 100));
+  const totalDrinkCalories = drinkLogs.reduce((sum, d) => sum + (d.calories || 0), 0);
+  const grandTotalCalories = totalCalories + totalDrinkCalories;
+  const caloriePct = Math.min(100, Math.round((grandTotalCalories / calorieTarget) * 100));
 
   return (
     <div className="lg:grid lg:grid-cols-[1fr_320px] lg:gap-6 lg:items-start">
       <div className="space-y-4">
 
         {/* Calorie summary bar */}
-        {mealsWithCalories.length > 0 && (
-          <div style={{ backgroundColor: "var(--surface)", border: "1px solid var(--border)", borderRadius: 20, padding: 20, boxShadow: "var(--shadow-sm)" }}>
-            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 10 }}>
-              <p style={{ fontSize: 15, fontWeight: 600, color: "var(--plum)", fontFamily: "'Inter', sans-serif" }}>Today's nutrition</p>
-              <p style={{ fontSize: 13, color: "var(--mauve)", fontFamily: "'Inter', sans-serif" }}>{Math.max(0, calorieTarget - totalCalories)} remaining</p>
-            </div>
-            <div style={{ height: 8, borderRadius: 9999, backgroundColor: "var(--ivory-dark)", overflow: "hidden", marginBottom: 12 }}>
-              <div style={{ height: "100%", width: `${caloriePct}%`, backgroundColor: totalCalories > calorieTarget ? "var(--rose-dust)" : "var(--sage)", borderRadius: 9999, transition: "width 0.4s ease" }} />
-            </div>
-            <div style={{ display: "flex", gap: 8 }}>
-              {[
-                { label: "Calories", value: `${totalCalories}` },
-                { label: "Protein", value: `${Math.round(totalProtein)}g` },
-                { label: "Carbs", value: `${Math.round(totalCarbs)}g` },
-                { label: "Fat", value: `${Math.round(totalFat)}g` },
-              ].map(chip => (
-                <div key={chip.label} style={{ flex: 1, backgroundColor: "var(--ivory)", border: "1px solid var(--border)", borderRadius: 12, padding: "8px 4px", textAlign: "center" }}>
-                  <p style={{ fontSize: 10, color: "var(--mauve)", fontFamily: "'Inter', sans-serif", textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: 2 }}>{chip.label}</p>
-                  <p style={{ fontSize: 14, fontWeight: 600, color: "var(--plum)", fontFamily: "'Inter', sans-serif" }}>{chip.value}</p>
-                </div>
-              ))}
-            </div>
+        <div style={{ backgroundColor: "var(--surface)", border: "1px solid var(--border)", borderRadius: 20, padding: 20, boxShadow: "var(--shadow-sm)" }}>
+          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 10 }}>
+            <p style={{ fontSize: 15, fontWeight: 600, color: "var(--plum)", fontFamily: "'Inter', sans-serif" }}>Today's nutrition</p>
+            <p style={{ fontSize: 13, color: "var(--mauve)", fontFamily: "'Inter', sans-serif" }}>
+              {grandTotalCalories > 0 ? `${Math.max(0, calorieTarget - grandTotalCalories)} remaining of ${calorieTarget}` : `Target: ${calorieTarget} kcal`}
+            </p>
           </div>
-        )}
+          <div style={{ height: 8, borderRadius: 9999, backgroundColor: "var(--ivory-dark)", overflow: "hidden", marginBottom: 12 }}>
+            <div style={{ height: "100%", width: `${caloriePct}%`, backgroundColor: grandTotalCalories > calorieTarget ? "var(--rose-dust)" : "var(--sage)", borderRadius: 9999, transition: "width 0.4s ease" }} />
+          </div>
+          <div style={{ display: "flex", gap: 8 }}>
+            {[
+              { label: "Calories", value: `${grandTotalCalories}` },
+              { label: "Protein", value: `${Math.round(totalProtein)}g` },
+              { label: "Carbs", value: `${Math.round(totalCarbs)}g` },
+              { label: "Fat", value: `${Math.round(totalFat)}g` },
+            ].map(chip => (
+              <div key={chip.label} style={{ flex: 1, backgroundColor: "var(--ivory)", border: "1px solid var(--border)", borderRadius: 12, padding: "8px 4px", textAlign: "center" }}>
+                <p style={{ fontSize: 10, color: "var(--mauve)", fontFamily: "'Inter', sans-serif", textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: 2 }}>{chip.label}</p>
+                <p style={{ fontSize: 14, fontWeight: 600, color: "var(--plum)", fontFamily: "'Inter', sans-serif" }}>{chip.value}</p>
+              </div>
+            ))}
+          </div>
+        </div>
 
         {/* Cycle wellness context */}
         {cycleWellnessTip && (
@@ -487,6 +528,55 @@ export default function NutritionTodayTab({ user, profile, nutritionProfile, day
                 </button>
               ))}
             </div>
+          )}
+        </div>
+
+        {/* Drinks logger */}
+        <div className="rounded-[24px] p-5" style={{ backgroundColor: "var(--surface)", border: "1px solid var(--border)", boxShadow: "var(--shadow-sm)" }}>
+          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: showDrinks ? 14 : 0 }}>
+            <p style={{ fontSize: "0.6rem", fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.12em", color: "var(--mauve)", fontFamily: "'Inter', sans-serif" }}>Drinks</p>
+            <button
+              onClick={() => setShowDrinks(!showDrinks)}
+              style={{ fontSize: 12, fontWeight: 600, color: "var(--rose-dust)", fontFamily: "'Inter', sans-serif", background: "none", border: "none", cursor: "pointer" }}
+            >
+              {showDrinks ? "Close" : "Log drink"}
+            </button>
+          </div>
+          {showDrinks && (
+            <div style={{ display: "flex", flexWrap: "wrap", gap: 8, marginBottom: 14 }}>
+              {DRINK_TYPES.map((d) => {
+                const cals = DRINK_CALS[d.id];
+                const bg = d.id === "soft_drink" ? "#FFF8F0" : d.id === "alcohol" ? "#FFF0F0" : "var(--ivory)";
+                return (
+                  <button
+                    key={d.id}
+                    onClick={() => logDrink(d.id)}
+                    disabled={loggingDrink}
+                    style={{ display: "flex", flexDirection: "column", alignItems: "center", padding: "8px 14px", borderRadius: 9999, border: "1px solid var(--border)", backgroundColor: bg, cursor: "pointer", opacity: loggingDrink ? 0.5 : 1 }}
+                  >
+                    <span style={{ fontSize: 12, fontWeight: 600, color: "var(--plum)", fontFamily: "'Inter', sans-serif" }}>{d.label}</span>
+                    {cals > 0 && <span style={{ fontSize: 10, color: "var(--mauve)", fontFamily: "'Inter', sans-serif" }}>~{cals} kcal</span>}
+                  </button>
+                );
+              })}
+            </div>
+          )}
+          {drinkLogs.length === 0 ? (
+            <p style={{ fontSize: 12, color: "var(--mauve)", fontFamily: "'Inter', sans-serif", marginTop: showDrinks ? 0 : 10 }}>No drinks logged today.</p>
+          ) : (
+            <div style={{ display: "flex", flexWrap: "wrap", gap: 6, marginTop: showDrinks ? 0 : 10 }}>
+              {drinkLogs.map((log, i) => {
+                const info = DRINK_TYPES.find((d) => d.id === log.drink_type);
+                return (
+                  <span key={i} style={{ fontSize: 11, fontWeight: 600, color: "var(--plum)", backgroundColor: "var(--ivory-dark)", borderRadius: 9999, padding: "4px 10px", fontFamily: "'Inter', sans-serif" }}>
+                    {info?.label || log.drink_type}{log.calories > 0 ? ` · ${log.calories} kcal` : ""}
+                  </span>
+                );
+              })}
+            </div>
+          )}
+          {totalDrinkCalories > 0 && (
+            <p style={{ fontSize: 11, color: "var(--mauve)", fontFamily: "'Inter', sans-serif", marginTop: 8 }}>{totalDrinkCalories} kcal from drinks today</p>
           )}
         </div>
 

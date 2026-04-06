@@ -35,6 +35,15 @@ export default function NutritionProgressTab({ user, nutritionProfile, onProfile
   const [savingGoal, setSavingGoal]   = useState(false);
   const [selectedGoal, setSelectedGoal] = useState(nutritionProfile?.goal_mode || "");
   const [showGoalPicker, setShowGoalPicker] = useState(!nutritionProfile?.goal_mode);
+  const [editingTargets, setEditingTargets] = useState(false);
+  const [targetForm, setTargetForm] = useState({
+    calories_target: nutritionProfile?.calories_target || 2000,
+    protein_target_g: nutritionProfile?.protein_target_g || 120,
+    carbs_target_g: nutritionProfile?.carbs_target_g || 200,
+    fat_target_g: nutritionProfile?.fat_target_g || 65,
+    hydration_target_ml: nutritionProfile?.hydration_target_ml || 2000,
+  });
+  const [savingTargets, setSavingTargets] = useState(false);
 
   useEffect(() => { loadData(); }, []);
 
@@ -63,6 +72,25 @@ export default function NutritionProgressTab({ user, nutritionProfile, onProfile
     onProfileUpdated?.();
     setShowGoalPicker(false);
     setSavingGoal(false);
+  };
+
+  const saveTargets = async () => {
+    setSavingTargets(true);
+    const payload = {
+      calories_target: parseInt(targetForm.calories_target) || 2000,
+      protein_target_g: parseInt(targetForm.protein_target_g) || 120,
+      carbs_target_g: parseInt(targetForm.carbs_target_g) || 200,
+      fat_target_g: parseInt(targetForm.fat_target_g) || 65,
+      hydration_target_ml: parseInt(targetForm.hydration_target_ml) || 2000,
+    };
+    if (nutritionProfile?.id) {
+      await base44.entities.NutritionProfile.update(nutritionProfile.id, payload);
+    } else {
+      await base44.entities.NutritionProfile.create({ user_id: user.id, ...payload });
+    }
+    onProfileUpdated?.();
+    setEditingTargets(false);
+    setSavingTargets(false);
   };
 
   const saveMetric = async () => {
@@ -160,6 +188,66 @@ export default function NutritionProgressTab({ user, nutritionProfile, onProfile
           </button>
         </div>
       )}
+
+      {/* Daily targets */}
+      <div className="rounded-[20px] p-5" style={{ backgroundColor: "var(--surface)", border: "1px solid var(--border)", boxShadow: "var(--shadow-sm)" }}>
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 14 }}>
+          <p style={sLabel}>Daily targets</p>
+          <button
+            onClick={() => setEditingTargets(!editingTargets)}
+            style={{ fontSize: 12, fontWeight: 600, color: "var(--rose-dust)", fontFamily: "'Inter', sans-serif", background: "none", border: "none", cursor: "pointer" }}
+          >
+            {editingTargets ? "Cancel" : "Edit"}
+          </button>
+        </div>
+        {editingTargets ? (
+          <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+            {[
+              { key: "calories_target",     label: "Calories",   unit: "kcal" },
+              { key: "protein_target_g",    label: "Protein",    unit: "g" },
+              { key: "carbs_target_g",      label: "Carbs",      unit: "g" },
+              { key: "fat_target_g",        label: "Fat",        unit: "g" },
+              { key: "hydration_target_ml", label: "Hydration",  unit: "ml" },
+            ].map(({ key, label, unit }) => (
+              <div key={key} style={{ display: "flex", alignItems: "center", gap: 10 }}>
+                <label style={{ fontSize: 12, fontWeight: 600, color: "var(--mauve)", fontFamily: "'Inter', sans-serif", width: 80, flexShrink: 0 }}>{label}</label>
+                <input
+                  type="number"
+                  value={targetForm[key]}
+                  onChange={(e) => setTargetForm((f) => ({ ...f, [key]: e.target.value }))}
+                  style={{ flex: 1, padding: "8px 12px", borderRadius: 12, border: "1.5px solid var(--border)", backgroundColor: "var(--ivory)", color: "var(--plum)", fontSize: 13, fontFamily: "'Inter', sans-serif", outline: "none" }}
+                  onFocus={e => e.target.style.borderColor = "var(--rose-dust-light)"}
+                  onBlur={e => e.target.style.borderColor = "var(--border)"}
+                />
+                <span style={{ fontSize: 11, color: "var(--mauve)", fontFamily: "'Inter', sans-serif", width: 28, flexShrink: 0 }}>{unit}</span>
+              </div>
+            ))}
+            <button
+              onClick={saveTargets}
+              disabled={savingTargets}
+              style={{ marginTop: 4, padding: "10px", borderRadius: 12, backgroundColor: "var(--plum)", color: "white", fontSize: 13, fontWeight: 600, fontFamily: "'Inter', sans-serif", border: "none", cursor: "pointer", opacity: savingTargets ? 0.6 : 1 }}
+            >
+              {savingTargets ? "Saving..." : "Save targets"}
+            </button>
+          </div>
+        ) : (
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(5, 1fr)", gap: 8 }}>
+            {[
+              { label: "Cal",  value: nutritionProfile?.calories_target || 2000,     unit: "kcal" },
+              { label: "Prot", value: nutritionProfile?.protein_target_g || 120,      unit: "g" },
+              { label: "Carbs",value: nutritionProfile?.carbs_target_g || 200,        unit: "g" },
+              { label: "Fat",  value: nutritionProfile?.fat_target_g || 65,           unit: "g" },
+              { label: "H\u2082O",  value: nutritionProfile?.hydration_target_ml || 2000, unit: "ml" },
+            ].map(({ label, value, unit }) => (
+              <div key={label} style={{ textAlign: "center", backgroundColor: "var(--ivory)", borderRadius: 12, padding: "10px 4px" }}>
+                <p style={{ fontSize: 13, fontWeight: 700, color: "var(--plum)", fontFamily: "'Playfair Display', serif" }}>{value}</p>
+                <p style={{ fontSize: 9, color: "var(--mauve)", fontFamily: "'Inter', sans-serif", marginTop: 1, textTransform: "uppercase", letterSpacing: "0.06em" }}>{label}</p>
+                <p style={{ fontSize: 9, color: "var(--mauve)", fontFamily: "'Inter', sans-serif", opacity: 0.7 }}>{unit}</p>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
 
       {/* Habit streaks */}
       <div className="grid grid-cols-2 gap-3">

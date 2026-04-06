@@ -15,6 +15,11 @@ const YOUTUBE_CHANNELS = [
   { id: 'UC6gdCj56YK5KxiFf3WSOLtA', name: 'The Gut Health MD',    category: 'Gut Health',       tags: ['gut health', 'microbiome', 'nutrition'] },
   { id: 'UCxAB39SRMVabVZEOKTo6iVA', name: 'mindbodygreen',        category: 'Mental Wellness',  tags: ['holistic', 'wellness', 'mindset'] },
   { id: 'UCuM9fe_QPFMTJT3uQmoNMFg', name: 'fitbymik',             category: 'Fitness',          tags: ['strength', 'workout', 'women'] },
+  { id: 'UCogp-TMOSftFMx0cq1ZLSIQ', name: 'Lavendaire',           category: 'Mental Wellness',  tags: ['mindset', 'journaling', 'self growth'] },
+  { id: 'UCJjSDX7GzpB6pBFbhqUxEYw', name: 'Pick Up Limes',        category: 'Nutrition',        tags: ['plant based', 'recipes', 'wellbeing'] },
+  { id: 'UCImpROGHSCt2bEPbqf6YNOQ', name: 'Rachel Aust',          category: 'Lifestyle',        tags: ['minimalism', 'productivity', 'wellness'] },
+  { id: 'UCBcRF18a7Qf58cCRy5xuWwQ', name: 'Maddie Lymburner',     category: 'Fitness',          tags: ['yoga', 'pilates', 'hiit', 'women'] },
+  { id: 'UCUOdekVwzRQoFN-L3XCKvbw', name: 'Yoga with Kassandra',  category: 'Mindfulness',      tags: ['yin yoga', 'flexibility', 'calm'] },
 ];
 
 const RSS_SOURCES = [
@@ -121,8 +126,15 @@ Deno.serve(async (req) => {
       for (const channel of YOUTUBE_CHANNELS) {
         const videos = await parseYouTubeRSS(channel.id);
         await sleep(200);
-        for (const v of videos.slice(0, 15)) {
+        for (const v of videos.slice(0, 20)) {
           if (!v.videoId || !v.title) continue;
+          try {
+            const oembedRes = await fetch(
+              `https://www.youtube.com/oembed?url=https://www.youtube.com/watch?v=${v.videoId}&format=json`,
+              { signal: AbortSignal.timeout(5000) }
+            );
+            if (!oembedRes.ok) { skipped++; continue; }
+          } catch { skipped++; continue; }
           const contentUrl = `https://www.youtube.com/watch?v=${v.videoId}`;
           const hash = hashUrl(contentUrl);
           if (existingHashes.has(hash)) { skipped++; continue; }
