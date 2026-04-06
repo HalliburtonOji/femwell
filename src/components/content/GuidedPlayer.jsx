@@ -29,7 +29,8 @@ function DemoVideo({ demoEmbedUrl }) {
     <div className="mt-4">
       <button
         onClick={() => setShow(!show)}
-        className="flex items-center gap-2 text-xs text-gray-400 hover:text-gray-600 transition-colors"
+        className="flex items-center gap-2 text-xs transition-colors"
+        style={{ color: "var(--mauve)" }}
       >
         <ChevronDown className={`w-3 h-3 transition-transform ${show ? "rotate-180" : ""}`} />
         {show ? "Hide demo video" : "Watch demo video"}

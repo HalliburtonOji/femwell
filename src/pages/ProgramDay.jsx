@@ -193,8 +193,8 @@ export default function ProgramDay() {
 
   if (loading) {
     return (
-      <div className="min-h-screen femwell-gradient flex items-center justify-center">
-        <div className="h-10 w-10 animate-spin rounded-full border-4 border-rose-300 border-t-rose-600" />
+      <div className="min-h-screen flex items-center justify-center" style={{ backgroundColor: "var(--ivory)" }}>
+        <div className="h-10 w-10 animate-spin rounded-full" style={{ border: "4px solid var(--rose-dust-light)", borderTopColor: "var(--rose-dust)" }} />
       </div>
     );
   }
@@ -220,21 +220,21 @@ export default function ProgramDay() {
     .slice(0, 3);
 
   return (
-    <div className="min-h-screen femwell-gradient pb-10">
+    <div className="min-h-screen pb-10" style={{ backgroundColor: "var(--ivory)" }}>
       <ProgramPageToolbar title={dayTitle} subtitle={program?.title} showToday />
       <div className="mx-auto max-w-4xl px-4 md:px-6">
         <div className="pb-5 pt-8">
-          <p className="text-xs font-medium text-rose-500">{program?.title} · Day {dayNumber}</p>
-          <h1 className="text-2xl font-bold text-gray-900">{dayTitle}</h1>
+          <p className="text-xs font-medium" style={{ color: "var(--rose-dust)" }}>{program?.title} · Day {dayNumber}</p>
+          <h1 className="text-2xl font-bold" style={{ color: "var(--plum)" }}>{dayTitle}</h1>
         </div>
 
         <ProgramDayStickyNav programKey={programKey} currentDay={dayNumber} days={allDays} />
 
         <div className="mt-4 flex flex-wrap gap-2">
-          <a href={createPageUrl(`ProgramsHub?program_key=${programKey}`)} className="inline-flex items-center justify-center rounded-full border border-rose-200 bg-white px-4 py-2 text-sm font-semibold text-rose-600">
+          <a href={createPageUrl(`ProgramsHub?program_key=${programKey}`)} className="inline-flex items-center justify-center rounded-full px-4 py-2 text-sm font-semibold" style={{ border: "1px solid var(--rose-dust-light)", backgroundColor: "var(--surface)", color: "var(--rose-dust)" }}>
             Back to Program
           </a>
-          <a href={createPageUrl("Today")} className="inline-flex items-center justify-center rounded-full border border-gray-200 bg-white px-4 py-2 text-sm font-semibold text-gray-600">
+          <a href={createPageUrl("Today")} className="inline-flex items-center justify-center rounded-full px-4 py-2 text-sm font-semibold" style={{ border: "1px solid var(--border)", backgroundColor: "var(--surface)", color: "var(--plum)" }}>
             Back to Today
           </a>
         </div>
@@ -281,15 +281,15 @@ export default function ProgramDay() {
         </div>
 
         {locked ? (
-          <div className="mt-6 rounded-[28px] border border-rose-100 bg-white p-6 shadow-sm">
-            <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-2xl bg-rose-50">
-              <Lock className="h-5 w-5 text-rose-500" />
+          <div className="mt-6 rounded-[28px] p-6 shadow-sm" style={{ border: "1px solid var(--border)", backgroundColor: "var(--surface)" }}>
+            <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-2xl" style={{ backgroundColor: "var(--rose-dust-subtle)" }}>
+              <Lock className="h-5 w-5" style={{ color: "var(--rose-dust)" }} />
             </div>
-            <p className="mt-4 text-center text-lg font-semibold text-gray-900">This day is included in the {program?.access_tier} plan</p>
-            <p className="mt-1 text-center text-sm text-gray-500">You can preview the day here, then unlock the full guided flow to complete tasks and save progress.</p>
+            <p className="mt-4 text-center text-lg font-semibold" style={{ color: "var(--plum)" }}>This day is included in the {program?.access_tier} plan</p>
+            <p className="mt-1 text-center text-sm" style={{ color: "var(--mauve)" }}>You can preview the day here, then unlock the full guided flow to complete tasks and save progress.</p>
             <div className="mt-5 space-y-3">
               {tasks.map((task, index) => (
-                <div key={task.id} className="rounded-2xl bg-rose-50 px-4 py-3 text-sm text-gray-700">
+                <div key={task.id} className="rounded-2xl px-4 py-3 text-sm" style={{ backgroundColor: "var(--rose-dust-subtle)", color: "var(--plum)" }}>
                   {index + 1}. {task.label || task.title || `Task ${index + 1}`}
                 </div>
               ))}
@@ -329,10 +329,10 @@ export default function ProgramDay() {
         )}
 
         {allDone && !locked && (
-          <div className="mt-6 rounded-[28px] border border-rose-100 bg-white p-6 text-center shadow-sm">
-            <p className="text-3xl">🎉</p>
-            <p className="mt-2 text-lg font-semibold text-gray-900">Day {dayNumber} complete</p>
-            <p className="mt-1 text-sm text-gray-500">Nice work. Keep the momentum going with the next guided step.</p>
+          <div className="mt-6 rounded-[28px] p-6 text-center shadow-sm" style={{ border: "1px solid var(--border)", backgroundColor: "var(--surface)" }}>
+            <div className="w-12 h-12 rounded-2xl flex items-center justify-center mx-auto mb-2" style={{ backgroundColor: "var(--sage-subtle)", color: "var(--sage)", fontSize: 24 }}>&#10003;</div>
+            <p className="mt-2 text-lg font-semibold" style={{ color: "var(--plum)" }}>Day {dayNumber} complete</p>
+            <p className="mt-1 text-sm" style={{ color: "var(--mauve)" }}>Nice work. Keep the momentum going with the next guided step.</p>
             <div className="mt-4 flex flex-wrap justify-center gap-2">
               <a
                 href={hasNextDay ? createPageUrl(`ProgramDay?key=${programKey}&day=${dayNumber + 1}`) : createPageUrl("ProgramsHub")}
@@ -344,12 +344,12 @@ export default function ProgramDay() {
 
             {suggestedContent.length > 0 && (
               <div className="mt-6 text-left">
-                <p className="text-sm font-semibold uppercase tracking-[0.2em] text-gray-500">Try this now</p>
+                <p className="text-sm font-semibold uppercase tracking-[0.2em]" style={{ color: "var(--mauve)" }}>Try this now</p>
                 <div className="mt-3 grid gap-3 md:grid-cols-3">
                   {suggestedContent.map((item) => (
-                    <a key={item.id} href={createPageUrl(`ContentPlayer?key=${item.content_key}`)} className="rounded-3xl border border-rose-100 bg-rose-50 p-4 transition-colors hover:bg-rose-100/60">
-                      <p className="text-sm font-semibold text-gray-900">{item.title}</p>
-                      <p className="mt-1 text-xs text-gray-500">{item.content_type} · {item.duration_minutes || 5} min</p>
+                    <a key={item.id} href={createPageUrl(`ContentPlayer?key=${item.content_key}`)} className="rounded-3xl p-4" style={{ border: "1px solid var(--rose-dust-light)", backgroundColor: "var(--rose-dust-subtle)" }}>
+                      <p className="text-sm font-semibold" style={{ color: "var(--plum)" }}>{item.title}</p>
+                      <p className="mt-1 text-xs" style={{ color: "var(--mauve)" }}>{item.content_type} · {item.duration_minutes || 5} min</p>
                     </a>
                   ))}
                 </div>

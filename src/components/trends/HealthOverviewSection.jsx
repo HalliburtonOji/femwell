@@ -60,14 +60,14 @@ export default function HealthOverviewSection({ checkins, symptomLogs, habitLogs
     ? `${strongestHabit.name} is your strongest habit right now with ${strongestHabit.rate}% consistency.`
     : recoveryDays > 0
       ? `You logged ${recoveryDays} stronger recovery days in the last ${timeRange} months.`
-      : "You’re building a clearer picture of your health patterns with each check-in.";
+      : "You're building a clearer picture of your health patterns with each check-in.";
 
   return (
     <section className="mb-4 space-y-4">
       <div className="flex items-end justify-between gap-3">
         <div>
-          <h2 className="text-base font-bold text-gray-800">Health Insights Hub</h2>
-          <p className="text-xs text-gray-400">Your core patterns and best next focus for the last {timeRange} months.</p>
+          <h2 className="text-base font-bold" style={{ color: "var(--plum)" }}>Health Insights Hub</h2>
+          <p className="text-xs" style={{ color: "var(--mauve)" }}>Your core patterns and best next focus for the last {timeRange} months.</p>
         </div>
       </div>
 
@@ -79,22 +79,23 @@ export default function HealthOverviewSection({ checkins, symptomLogs, habitLogs
       </div>
 
       <div className="grid gap-3 md:grid-cols-2">
-        <div className="card-glass rounded-2xl p-4 border border-rose-100/70">
-          <p className="text-xs font-semibold uppercase tracking-wide text-rose-500 mb-2">What’s going well</p>
-          <p className="text-sm text-gray-700 leading-relaxed">{winText}</p>
+        <div className="rounded-2xl p-4" style={{ backgroundColor: "var(--surface)", border: "1px solid var(--rose-dust-light)" }}>
+          <p className="text-xs font-semibold uppercase tracking-wide mb-2" style={{ color: "var(--rose-dust)" }}>What's going well</p>
+          <p className="text-sm leading-relaxed" style={{ color: "var(--plum)" }}>{winText}</p>
         </div>
-        <div className="card-glass rounded-2xl p-4 border border-violet-100/70">
-          <p className="text-xs font-semibold uppercase tracking-wide text-violet-500 mb-2">Best next focus</p>
-          <p className="text-sm text-gray-700 leading-relaxed">{focusArea}</p>
+        <div className="rounded-2xl p-4" style={{ backgroundColor: "var(--surface)", border: "1px solid var(--border)" }}>
+          <p className="text-xs font-semibold uppercase tracking-wide mb-2" style={{ color: "#7C4AC4" }}>Best next focus</p>
+          <p className="text-sm leading-relaxed" style={{ color: "var(--plum)" }}>{focusArea}</p>
         </div>
       </div>
 
       {topSymptoms.length > 0 && (
-        <div className="card-glass rounded-2xl p-4">
-          <p className="text-xs font-semibold uppercase tracking-wide text-gray-500 mb-2">Most frequent symptoms</p>
+        <div className="rounded-2xl p-4" style={{ backgroundColor: "var(--surface)", border: "1px solid var(--border)" }}>
+          <p className="text-xs font-semibold uppercase tracking-wide mb-2" style={{ color: "var(--mauve)" }}>Most frequent symptoms</p>
           <div className="flex flex-wrap gap-2">
             {topSymptoms.map((symptom) => (
-              <span key={symptom} className="px-3 py-1.5 rounded-full bg-rose-50 text-rose-700 text-xs font-medium capitalize border border-rose-100">
+              <span key={symptom} className="px-3 py-1.5 rounded-full text-xs font-medium capitalize"
+                style={{ backgroundColor: "var(--rose-dust-subtle)", color: "var(--rose-dust)", border: "1px solid var(--rose-dust-light)" }}>
                 {symptom}
               </span>
             ))}

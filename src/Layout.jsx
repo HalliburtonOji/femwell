@@ -19,18 +19,28 @@ export default function Layout({ children, currentPageName }) {
       setChecking(false);
       return;
     }
+    let cancelled = false;
     (async () => {
       try {
         const u = await base44.auth.me();
+        if (!u?.id) { setChecking(false); return; }
         const profiles = await base44.entities.UserProfile.filter({ user_id: u.id });
+        if (cancelled) return;
         if (profiles.length === 0) {
-          navigate(createPageUrl("Onboarding"), { replace: true });
+          // Retry once after 800ms to guard against race conditions
+          await new Promise(r => setTimeout(r, 800));
+          if (cancelled) return;
+          const retry = await base44.entities.UserProfile.filter({ user_id: u.id });
+          if (!cancelled && retry.length === 0) {
+            navigate(createPageUrl("Onboarding"), { replace: true });
+          }
         }
       } catch {
         // not logged in — platform handles redirect
       }
-      setChecking(false);
+      if (!cancelled) setChecking(false);
     })();
+    return () => { cancelled = true; };
   }, [currentPageName]);
 
   if (checking && !NO_GUARD.includes(currentPageName)) {

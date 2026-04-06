@@ -46,6 +46,7 @@ const TABS = [
 
 function VideoCard({ item, onSave, saved }) {
   const [playing, setPlaying] = useState(false);
+  const [embedError, setEmbedError] = useState(false);
   const [localSaved, setLocalSaved] = useState(saved);
   const handleSave = async () => {
     const next = !localSaved;
@@ -55,14 +56,24 @@ function VideoCard({ item, onSave, saved }) {
   };
   const videoId = item.video_id || (item.content_url?.match(/[?&]v=([^&]+)/)?.[1]) || (item.embed_url?.match(/embed\/([A-Za-z0-9_-]{11})/)?.[1]);
   const thumb = item.image_url || (videoId ? `https://i.ytimg.com/vi/${videoId}/hqdefault.jpg` : "");
-  const embedSrc = videoId ? `https://www.youtube-nocookie.com/embed/${videoId}?rel=0&modestbranding=1&playsinline=1&autoplay=1` : "";
+  const embedSrc = videoId ? `https://www.youtube.com/embed/${videoId}?rel=0&modestbranding=1&playsinline=1&autoplay=1` : null;
+  const showFallback = playing && (!embedSrc || embedError);
   return (
     <div style={{ backgroundColor: "var(--surface)", border: "1px solid var(--border)", boxShadow: "var(--shadow-sm)", borderRadius: 16, overflow: "hidden", marginBottom: 14 }}>
       <div style={{ position: "relative", paddingBottom: "56.25%", backgroundColor: "#111" }}>
-        {playing && embedSrc ? (
+        {playing && !showFallback ? (
           <iframe src={embedSrc} title={item.title}
             style={{ position: "absolute", inset: 0, width: "100%", height: "100%", border: "none" }}
-            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowFullScreen />
+            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowFullScreen
+            onError={() => setEmbedError(true)} />
+        ) : showFallback ? (
+          <div style={{ position: "absolute", inset: 0, display: "flex", alignItems: "center", justifyContent: "center", backgroundColor: "#111" }}>
+            {thumb && <img src={thumb} alt="" style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover", opacity: 0.2 }} />}
+            <a href={item.content_url} target="_blank" rel="noopener noreferrer"
+              style={{ position: "relative", zIndex: 1, backgroundColor: "rgba(255,255,255,0.93)", color: "var(--plum)", borderRadius: 9999, padding: "10px 20px", fontSize: 13, fontWeight: 600, fontFamily: "'Inter', sans-serif", textDecoration: "none" }}>
+              Watch on YouTube
+            </a>
+          </div>
         ) : (
           <button onClick={() => setPlaying(true)}
             style={{ position: "absolute", inset: 0, width: "100%", height: "100%", border: "none", padding: 0, cursor: "pointer", background: "none" }}>
@@ -104,7 +115,10 @@ function VideoCard({ item, onSave, saved }) {
 
 function ContentCard({ item, onSave, saved, isStory }) {
   const [expanded, setExpanded] = useState(false);
+  const [readerOpen, setReaderOpen] = useState(false);
   const [localSaved, setLocalSaved] = useState(saved);
+  const hasExternalUrl = !!(item.content_url && item.content_url.startsWith("http"));
+  const isInternal = isStory || !hasExternalUrl;
   const handleSave = async () => {
     const next = !localSaved;
     setLocalSaved(next);
@@ -118,6 +132,7 @@ function ContentCard({ item, onSave, saved, isStory }) {
   const takeaways = [item.takeaway_1, item.takeaway_2, item.takeaway_3].filter(Boolean);
   const displayText = stripHtml(item.summary || item.lede || "");
   return (
+    <>
     <div style={{ backgroundColor: "var(--surface)", border: "1px solid var(--border)", boxShadow: "var(--shadow-sm)", borderRadius: 16, overflow: "hidden", marginBottom: 14 }}>
       {item.image_url && (
         <div style={{ width: "100%", height: 180, overflow: "hidden" }}>
@@ -162,11 +177,66 @@ function ContentCard({ item, onSave, saved, isStory }) {
             <button onClick={handleSave} style={{ border: "none", background: "none", cursor: "pointer", padding: 2 }}>
               {localSaved ? <BookmarkCheck style={{ width: 16, height: 16, color: "var(--rose-dust)" }} /> : <Bookmark style={{ width: 16, height: 16, color: "var(--mauve)" }} />}
             </button>
-            <button onClick={handleOpen} className="btn-primary" style={{ fontSize: 12, padding: "5px 14px" }}>Read</button>
+            <button onClick={isInternal ? () => setReaderOpen(true) : handleOpen} className="btn-primary" style={{ fontSize: 12, padding: "5px 14px" }}>Read</button>
           </div>
         </div>
       </div>
     </div>
+    {readerOpen && (
+      <>
+        <div onClick={() => setReaderOpen(false)} style={{ position: "fixed", inset: 0, zIndex: 60, backgroundColor: "rgba(42,32,53,0.5)", backdropFilter: "blur(6px)" }} />
+        <div style={{ position: "fixed", inset: 0, zIndex: 61, backgroundColor: "var(--surface)", display: "flex", flexDirection: "column" }}>
+          <div style={{ padding: "16px 16px 0", flexShrink: 0, display: "flex", alignItems: "center", justifyContent: "space-between", gap: 10 }}>
+            <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
+              {item.category && <span style={{ fontSize: 11, fontWeight: 600, color: "var(--rose-dust)", backgroundColor: "var(--rose-dust-subtle)", borderRadius: 9999, padding: "3px 10px" }}>{item.category}</span>}
+              {item.emotional_tag && <span style={{ fontSize: 11, fontWeight: 600, color: "#7c3aed", backgroundColor: "#ede9fe", borderRadius: 9999, padding: "3px 10px" }}>{item.emotional_tag}</span>}
+            </div>
+            <button onClick={() => setReaderOpen(false)} style={{ width: 32, height: 32, borderRadius: 9999, backgroundColor: "var(--ivory-dark)", color: "var(--mauve)", border: "none", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+              <X style={{ width: 16, height: 16 }} />
+            </button>
+          </div>
+          <div style={{ flex: 1, overflowY: "auto", padding: "24px 20px 60px", maxWidth: 680, margin: "0 auto", width: "100%" }}>
+            {item.image_url && (
+              <div style={{ height: 200, borderRadius: 16, overflow: "hidden", marginBottom: 20 }}>
+                <img src={item.image_url} alt="" style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }} onError={e => e.target.parentElement.style.display = "none"} />
+              </div>
+            )}
+            <h1 style={{ fontFamily: "'Playfair Display', serif", fontSize: 22, fontWeight: 700, color: "var(--plum)", lineHeight: 1.3, marginBottom: 10 }}>{item.title}</h1>
+            {(item.author_name || item.source_name) && (
+              <p style={{ fontSize: 12, color: "var(--mauve)", fontFamily: "'Inter', sans-serif", marginBottom: 16 }}>
+                {item.author_name}{item.source_name ? (item.author_name ? ` \u00b7 ${item.source_name}` : item.source_name) : ""}
+              </p>
+            )}
+            {(item.summary || item.lede) && (
+              <p style={{ fontSize: 15, color: "var(--plum)", lineHeight: 1.75, fontFamily: "'Inter', sans-serif", marginBottom: 20 }}>{stripHtml(item.summary || item.lede)}</p>
+            )}
+            {(()=>{ const tks = item.takeaways?.length ? item.takeaways : [item.takeaway_1, item.takeaway_2, item.takeaway_3].filter(Boolean); return tks.length > 0 && (
+              <div style={{ backgroundColor: "var(--ivory)", borderRadius: 16, padding: "14px 16px", marginBottom: 16 }}>
+                <p style={{ fontSize: 11, fontWeight: 600, color: "var(--mauve)", textTransform: "uppercase", letterSpacing: "0.1em", marginBottom: 10, fontFamily: "'Inter', sans-serif" }}>Key takeaways</p>
+                <ul style={{ paddingLeft: 16, margin: 0 }}>{tks.map((t,i)=><li key={i} style={{ fontSize: 13, color: "var(--plum)", lineHeight: 1.6, marginBottom: 6, fontFamily: "'Inter', sans-serif" }}>{t}</li>)}</ul>
+              </div>
+            ); })()}
+            {item.why_it_matters && (
+              <p style={{ fontSize: 14, color: "var(--mauve)", lineHeight: 1.65, fontStyle: "italic", borderLeft: "3px solid var(--rose-dust-light)", paddingLeft: 12, marginBottom: 16, fontFamily: "'Inter', sans-serif" }}>{item.why_it_matters}</p>
+            )}
+            {item.phase_tags?.length > 0 && (
+              <div style={{ display: "flex", flexWrap: "wrap", gap: 6, marginBottom: 20 }}>
+                {item.phase_tags.map(pt => <span key={pt} style={{ fontSize: 10, fontWeight: 500, color: "var(--mauve)", backgroundColor: "var(--ivory-dark)", borderRadius: 9999, padding: "2px 8px" }}>{pt}</span>)}
+              </div>
+            )}
+            {hasExternalUrl && (
+              <a href={item.content_url} target="_blank" rel="noopener noreferrer"
+                style={{ display: "inline-flex", alignItems: "center", gap: 6, fontSize: 13, fontWeight: 600, color: "var(--rose-dust)", fontFamily: "'Inter', sans-serif", textDecoration: "none" }}>
+                Read full article
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+              </a>
+            )}
+          </div>
+        </div>
+      </>
+    )}
+  </>
+  </>
   );
 }
 
@@ -307,8 +377,6 @@ export default function Lifestyle() {
         } catch {
           allItems = allItems.filter(it => it.status === "PUBLISHED").slice(0, 10);
         }
-      } else if (activeTab === "trends") {
-        allItems = allItems.filter(it => it.content_type === "TREND" && it.status === "PUBLISHED");
       } else if (activeTab === "femwell") {
         allItems = allItems.filter(it => it.provider === "FEMWELL_AI" && it.status === "PUBLISHED");
       } else if (activeTab === "watch") {

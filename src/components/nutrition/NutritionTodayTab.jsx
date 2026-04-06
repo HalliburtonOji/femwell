@@ -38,6 +38,19 @@ const DRINK_CALS = {
   juice: 110, alcohol: 180, smoothie: 200, milk: 120,
 };
 
+const DRINK_SIZES = [
+  { id: "small",  label: "Small",  ml: 150 },
+  { id: "medium", label: "Medium", ml: 250 },
+  { id: "large",  label: "Large",  ml: 400 },
+];
+
+const CUSTOM_NAME_META = {
+  soft_drink: { label: "Which soft drink?",    placeholder: "e.g. Coke, Sprite..." },
+  alcohol:    { label: "What are you drinking?", placeholder: "e.g. wine, beer..." },
+  juice:      { label: "What juice?",            placeholder: "e.g. orange, apple..." },
+  smoothie:   { label: "What's in it?",          placeholder: "e.g. banana..." },
+};
+
 // Gentle cycle-aware nutrient tips — no medical claims
 const CYCLE_WELLNESS_TIPS = [
   { phase: "menstrual",  tip: "Iron-rich foods like lentils, leafy greens, and dark chocolate may help support energy this week." },
@@ -171,6 +184,7 @@ export default function NutritionTodayTab({ user, profile, nutritionProfile, day
   const [showDrinks, setShowDrinks] = useState(true);
   const [drinkLogs, setDrinkLogs] = useState([]);
   const [loggingDrink, setLoggingDrink] = useState(false);
+  const [drinkModal, setDrinkModal] = useState(null);
 
   const hydrationTargetMl = nutritionProfile?.hydration_target_ml || 2000;
   const totalHydration    = hydrationLogs.reduce((sum, l) => sum + (l.amount_ml || 0), 0);
@@ -195,21 +209,32 @@ export default function NutritionTodayTab({ user, profile, nutritionProfile, day
     setLoading(false);
   };
 
-  const logDrink = async (drinkType) => {
+  const openDrinkModal = (typeId) => {
+    const info = DRINK_TYPES.find(d => d.id === typeId);
+    setDrinkModal({ typeId, label: info?.label || typeId, customName: "", size: "medium" });
+  };
+
+  const confirmDrink = async () => {
+    if (!drinkModal) return;
     setLoggingDrink(true);
     try {
-      const drinkInfo = DRINK_TYPES.find((d) => d.id === drinkType);
+      const sizeInfo = DRINK_SIZES.find(s => s.id === drinkModal.size) || DRINK_SIZES[1];
+      const multiplier = drinkModal.size === "small" ? 0.6 : drinkModal.size === "large" ? 1.6 : 1.0;
+      const scaledCals = Math.round((DRINK_CALS[drinkModal.typeId] || 0) * multiplier);
       const newLog = await base44.entities.DrinkLog.create({
         user_id: user.id, day_key: dayKey,
-        drink_type: drinkType, amount_ml: drinkInfo?.ml || 250,
-        calories: DRINK_CALS[drinkType] || 0,
+        drink_type: drinkModal.typeId,
+        drink_name: drinkModal.customName.trim() || undefined,
+        amount_ml: sizeInfo.ml,
+        calories: scaledCals,
         logged_at: new Date().toISOString(),
       });
-      setDrinkLogs((prev) => [...prev, newLog]);
-      if (["water", "tea", "coffee", "juice", "smoothie", "milk"].includes(drinkType)) {
+      setDrinkLogs(prev => [...prev, newLog]);
+      if (["water","tea","coffee","juice","smoothie","milk"].includes(drinkModal.typeId)) {
         const newMl = [...drinkLogs, newLog].reduce((s, l) => s + (l.amount_ml || 0), 0);
         if (checkin?.id) base44.entities.DailyCheckins.update(checkin.id, { hydration_glasses: Math.round(newMl / 250) }).catch(() => {});
       }
+      setDrinkModal(null);
     } catch (e) { console.error(e); }
     setLoggingDrink(false);
   };
@@ -247,19 +272,19 @@ export default function NutritionTodayTab({ user, profile, nutritionProfile, day
         wellness_goal: selectedGoal || "general wellness",
         prompt_append: phasePromptAppend,
       });
-      if (res.data) {
-        setLastAnalysis(res.data);
+      if (res) {
+        setLastAnalysis(res);
         setShowQuickCheck(true);
-        if (res.data.items?.length > 0 || res.data.nutritional_summary) {
-          await base44.entities.MealLog.update(log.id, { ai_analysis: JSON.stringify(res.data) });
-          setMeals((prev) => prev.map((m) => m.id === log.id ? { ...m, ai_analysis: JSON.stringify(res.data) } : m));
+        if (res.items?.length > 0 || res.nutritional_summary) {
+          await base44.entities.MealLog.update(log.id, { ai_analysis: JSON.stringify(res) });
+          setMeals((prev) => prev.map((m) => m.id === log.id ? { ...m, ai_analysis: JSON.stringify(res) } : m));
           const nutritionProfiles = await base44.entities.NutritionProfile.filter({ user_id: user.id });
           if (nutritionProfiles[0]?.goal_mode) {
             await base44.entities.MealLog.update(log.id, { wellness_goal: nutritionProfiles[0].goal_mode });
           }
         }
-        if (res.data.insight) {
-          const { headline, wellness_impact, action_items, smart_swap, confidence, tone_safety_note } = res.data.insight;
+        if (res.insight) {
+          const { headline, wellness_impact, action_items, smart_swap, confidence, tone_safety_note } = res.insight;
           const saved = await base44.entities.NutritionInsight.create({
             user_id: user.id, meal_log_id: log.id, day_key: dayKey,
             meal_description: text.trim(), wellness_goal: selectedGoal || "general wellness",
@@ -350,6 +375,47 @@ export default function NutritionTodayTab({ user, profile, nutritionProfile, day
   const caloriePct = Math.min(100, Math.round((grandTotalCalories / calorieTarget) * 100));
 
   return (
+    <div>
+    {/* Drink modal */}
+    {drinkModal && (
+      <>
+        <div onClick={() => setDrinkModal(null)} style={{ position: "fixed", inset: 0, zIndex: 60, backgroundColor: "rgba(42,32,53,0.45)", backdropFilter: "blur(6px)" }} />
+        <div style={{ position: "fixed", bottom: 0, left: 0, right: 0, zIndex: 61, backgroundColor: "var(--surface)", borderRadius: "24px 24px 0 0", padding: "20px 20px 40px", maxWidth: 520, margin: "0 auto" }}>
+          <div style={{ display: "flex", justifyContent: "center", marginBottom: 16 }}>
+            <div style={{ width: 32, height: 4, borderRadius: 9999, backgroundColor: "var(--border)" }} />
+          </div>
+          <p style={{ fontFamily: "'Playfair Display', serif", fontSize: 17, fontWeight: 600, color: "var(--plum)", marginBottom: 20 }}>Log {drinkModal.label}</p>
+          {CUSTOM_NAME_META[drinkModal.typeId] && (
+            <div style={{ marginBottom: 16 }}>
+              <p style={{ fontSize: 11, fontWeight: 600, color: "var(--mauve)", fontFamily: "'Inter', sans-serif", marginBottom: 6 }}>{CUSTOM_NAME_META[drinkModal.typeId].label}</p>
+              <input
+                type="text"
+                value={drinkModal.customName}
+                onChange={e => setDrinkModal(prev => ({ ...prev, customName: e.target.value }))}
+                placeholder={CUSTOM_NAME_META[drinkModal.typeId].placeholder}
+                style={{ width: "100%", padding: "12px 14px", borderRadius: 14, border: "1px solid var(--border)", backgroundColor: "var(--ivory)", color: "var(--plum)", fontFamily: "'Inter', sans-serif", fontSize: 14, outline: "none", boxSizing: "border-box" }}
+                onFocus={e => e.target.style.borderColor = "var(--rose-dust-light)"}
+                onBlur={e => e.target.style.borderColor = "var(--border)"}
+              />
+            </div>
+          )}
+          <p style={{ fontSize: 11, fontWeight: 600, color: "var(--mauve)", textTransform: "uppercase", letterSpacing: "0.1em", fontFamily: "'Inter', sans-serif", marginBottom: 10 }}>Size</p>
+          <div style={{ display: "flex", gap: 8, marginBottom: 24 }}>
+            {DRINK_SIZES.map(sz => (
+              <button key={sz.id} onClick={() => setDrinkModal(prev => ({ ...prev, size: sz.id }))}
+                style={{ flex: 1, padding: "10px 0", borderRadius: 14, cursor: "pointer", border: `1.5px solid ${drinkModal.size === sz.id ? "var(--plum)" : "var(--border)"}`, backgroundColor: drinkModal.size === sz.id ? "var(--plum)" : "var(--ivory)", color: drinkModal.size === sz.id ? "white" : "var(--mauve)", fontFamily: "'Inter', sans-serif" }}>
+                <p style={{ fontSize: 13, fontWeight: 600, margin: 0 }}>{sz.label}</p>
+                <p style={{ fontSize: 10, margin: 0, opacity: 0.7 }}>{sz.ml}ml</p>
+              </button>
+            ))}
+          </div>
+          <button onClick={confirmDrink} disabled={loggingDrink}
+            style={{ width: "100%", height: 52, borderRadius: 9999, backgroundColor: "var(--plum)", color: "white", border: "none", cursor: "pointer", fontSize: 15, fontWeight: 600, fontFamily: "'Inter', sans-serif", opacity: loggingDrink ? 0.6 : 1 }}>
+            {loggingDrink ? "Logging..." : "Log drink"}
+          </button>
+        </div>
+      </>
+    )}
     <div className="lg:grid lg:grid-cols-[1fr_320px] lg:gap-6 lg:items-start">
       <div className="space-y-4">
 
@@ -551,7 +617,7 @@ export default function NutritionTodayTab({ user, profile, nutritionProfile, day
                 return (
                   <button
                     key={d.id}
-                    onClick={() => logDrink(d.id)}
+                    onClick={() => openDrinkModal(d.id)}
                     disabled={loggingDrink}
                     style={{ display: "flex", flexDirection: "column", alignItems: "center", padding: "8px 14px", borderRadius: 9999, border: "1px solid var(--border)", backgroundColor: bg, cursor: "pointer", opacity: loggingDrink ? 0.5 : 1 }}
                   >
@@ -710,8 +776,9 @@ export default function NutritionTodayTab({ user, profile, nutritionProfile, day
 
       {/* Right column */}
       <div className="mt-4 lg:mt-0 lg:sticky lg:top-6">
-        <MacroDashboard meals={meals} hydrationLogs={hydrationLogs} nutritionProfile={nutritionProfile} />
+        <MacroDashboard meals={meals} hydrationLogs={hydrationLogs} nutritionProfile={nutritionProfile} drinkLogs={drinkLogs} />
       </div>
+    </div>
     </div>
   );
 }

@@ -98,6 +98,15 @@ export default function CheckinModal({ existing, onClose, onSave }) {
   const [notes, setNotes] = useState(init.notes ?? "");
   const [showDetail, setShowDetail] = useState(false);
   const [saving, setSaving] = useState(false);
+  const [activeTab, setActiveTab] = useState("cycle");
+
+  const TABS = [
+    { id: "cycle",     label: "Cycle"       },
+    { id: "body",      label: "Body"        },
+    { id: "skin",      label: "Skin & Hair" },
+    { id: "lifestyle", label: "Lifestyle"   },
+    { id: "vitals",    label: "Vitals"      },
+  ];
 
   const handleSave = async () => {
     setSaving(true);
@@ -221,140 +230,135 @@ export default function CheckinModal({ existing, onClose, onSave }) {
           <div style={{ height: 1, backgroundColor: "var(--border-subtle)", marginBottom: 0 }} />
         </div>
 
+        {/* Tab pills */}
+        <div style={{ flexShrink: 0, padding: "10px 16px 0" }}>
+          <div style={{ display: "flex", gap: 6, overflowX: "auto", scrollbarWidth: "none", paddingBottom: 10 }}>
+            {TABS.map(t => (
+              <button key={t.id} type="button" onClick={() => setActiveTab(t.id)}
+                style={{ flexShrink: 0, padding: "7px 14px", borderRadius: 9999, fontSize: 13, fontWeight: 600, cursor: "pointer", border: "none", backgroundColor: activeTab === t.id ? "var(--plum)" : "var(--ivory-dark)", color: activeTab === t.id ? "white" : "var(--mauve)", fontFamily: "'Inter', sans-serif" }}>
+                {t.label}
+              </button>
+            ))}
+          </div>
+          <button type="button" onClick={handleSave} disabled={saving}
+            style={{ background: "none", border: "none", cursor: "pointer", fontSize: 11, color: "var(--mauve)", fontFamily: "'Inter', sans-serif", paddingBottom: 10, paddingLeft: 4 }}>
+            Save what I've logged
+          </button>
+        </div>
+
         {/* Scrollable body */}
-        <div className="checkin-body" style={{ flex: 1, overflowY: "auto", padding: "20px 20px 8px" }}>
+        <div className="checkin-body" style={{ flex: 1, overflowY: "auto", padding: "16px 20px 8px" }}>
 
-          <ChipSection title="Period flow">
-            {["No period", "Spotting", "Light", "Medium", "Heavy", "Very heavy"].map(v => (
-              <Chip key={v} label={v} selected={periodFlow === v} onToggle={() => togglePeriodFlow(v)} />
-            ))}
-          </ChipSection>
+          {/* CYCLE TAB */}
+          {activeTab === "cycle" && (
+            <>
+              <ChipSection title="Period flow">
+                {["No period","Spotting","Light","Medium","Heavy","Very heavy"].map(v => (
+                  <Chip key={v} label={v} selected={periodFlow === v} onToggle={() => togglePeriodFlow(v)} />
+                ))}
+              </ChipSection>
+              <ChipSection title="Period start / end">
+                {["Period started today","Period ended today"].map(v => (
+                  <Chip key={v} label={v} selected={periodEvents.includes(v)} onToggle={() => togglePeriodEvents(v)} />
+                ))}
+              </ChipSection>
+              <ChipSection title="Mood">
+                {["Calm","Happy","Energetic","Frisky","Mood swings","Irritated","Sad","Anxious","Depressed","Feeling guilty","Obsessive thoughts","Low energy","Apathetic","Confused","Very self-critical"].map(v => (
+                  <Chip key={v} label={v} selected={moodTags.includes(v)} onToggle={() => toggleMoodTags(v)} />
+                ))}
+              </ChipSection>
+              <ChipSection title="Symptoms">
+                {["Everything is fine","Cramps","Tender breasts","Headache","Acne","Backache","Fatigue","Cravings","Insomnia","Abdominal pain","Bloating","Nausea","Vaginal dryness","Constipation","Diarrhea"].map(v => (
+                  <Chip key={v} label={v} selected={symptoms.includes(v)} onToggle={() => toggleSymptoms(v)} />
+                ))}
+              </ChipSection>
+              <ChipSection title="Vaginal discharge">
+                {["No discharge","Creamy","Watery","Sticky","Egg white","Spotting","Unusual","Clumpy white","Gray"].map(v => (
+                  <Chip key={v} label={v} selected={discharge === v} onToggle={() => toggleDischarge(v)} />
+                ))}
+              </ChipSection>
+              <ChipSection title="Sex and sex drive">
+                {["Didn't have sex","Protected sex","Unprotected sex","Oral sex","High sex drive","Neutral sex drive","Low sex drive","Sensual touch"].map(v => (
+                  <Chip key={v} label={v} selected={sexTags.includes(v)} onToggle={() => toggleSexTags(v)} />
+                ))}
+              </ChipSection>
+            </>
+          )}
 
-          <ChipSection title="Period start / end">
-            {["Period started today", "Period ended today"].map(v => (
-              <Chip key={v} label={v} selected={periodEvents.includes(v)} onToggle={() => togglePeriodEvents(v)} />
-            ))}
-          </ChipSection>
+          {/* BODY TAB */}
+          {activeTab === "body" && (
+            <>
+              <ChipSection title="Physical activity">
+                {["Didn't exercise","Yoga","Gym","Pilates","Running","Swimming","Cycling","Walking","Aerobics","Team sports"].map(v => (
+                  <Chip key={v} label={v} selected={activityTags.includes(v)} onToggle={() => toggleActivityTags(v)} />
+                ))}
+              </ChipSection>
+              <ChipSection title="Sleep">
+                {["Great sleep","Good sleep","Restless sleep","Couldn't sleep"].map(v => (
+                  <Chip key={v} label={v} selected={sleepQualityTag === v} onToggle={() => toggleSleepQualityTag(v)} />
+                ))}
+              </ChipSection>
+              <ChipSection title="Digestion">
+                {["Normal digestion","Bloated","Nausea","Constipation","Diarrhea"].map(v => (
+                  <Chip key={v} label={v} selected={digestionTags.includes(v)} onToggle={() => toggleDigestionTags(v)} />
+                ))}
+              </ChipSection>
+              <div style={{ marginBottom: 24, display: "flex", flexDirection: "column", gap: 16 }}>
+                <SliderRow label="Cramps" value={cramps} onChange={setCramps} />
+                <SliderRow label="Pain level" value={pain} onChange={setPain} />
+              </div>
+            </>
+          )}
 
-          <ChipSection title="Mood">
-            {["Calm", "Happy", "Energetic", "Frisky", "Mood swings", "Irritated", "Sad", "Anxious", "Depressed", "Feeling guilty", "Obsessive thoughts", "Low energy", "Apathetic", "Confused", "Very self-critical"].map(v => (
-              <Chip key={v} label={v} selected={moodTags.includes(v)} onToggle={() => toggleMoodTags(v)} />
-            ))}
-          </ChipSection>
+          {/* SKIN & HAIR TAB */}
+          {activeTab === "skin" && (
+            <>
+              <ChipSection title="Skin">
+                {["Clear","Mild breakout","Moderate breakout","Very oily","Very dry"].map(v => (
+                  <Chip key={v} label={v} selected={skinCondition === v} onToggle={() => toggleSkinCondition(v)} />
+                ))}
+              </ChipSection>
+              <ChipSection title="Hair">
+                {["Normal shedding","More than usual","A lot of shedding"].map(v => (
+                  <Chip key={v} label={v} selected={hairShedding === v} onToggle={() => toggleHairShedding(v)} />
+                ))}
+              </ChipSection>
+              <ChipSection title="Medication and supplements">
+                {["Oral contraceptive — taken on time","Oral contraceptive — missed","Iron supplement","Vitamin D","Magnesium","Other supplement"].map(v => (
+                  <Chip key={v} label={v} selected={medsTags.includes(v)} onToggle={() => toggleMedsTags(v)} />
+                ))}
+              </ChipSection>
+            </>
+          )}
 
-          <ChipSection title="Symptoms">
-            {["Everything is fine", "Cramps", "Tender breasts", "Headache", "Acne", "Backache", "Fatigue", "Cravings", "Insomnia", "Abdominal pain", "Bloating", "Nausea", "Vaginal dryness", "Constipation", "Diarrhea"].map(v => (
-              <Chip key={v} label={v} selected={symptoms.includes(v)} onToggle={() => toggleSymptoms(v)} />
-            ))}
-          </ChipSection>
-
-          <ChipSection title="Vaginal discharge">
-            {["No discharge", "Creamy", "Watery", "Sticky", "Egg white", "Spotting", "Unusual", "Clumpy white", "Gray"].map(v => (
-              <Chip key={v} label={v} selected={discharge === v} onToggle={() => toggleDischarge(v)} />
-            ))}
-          </ChipSection>
-
-          <ChipSection title="Sex and sex drive">
-            {["Didn't have sex", "Protected sex", "Unprotected sex", "Oral sex", "High sex drive", "Neutral sex drive", "Low sex drive", "Sensual touch"].map(v => (
-              <Chip key={v} label={v} selected={sexTags.includes(v)} onToggle={() => toggleSexTags(v)} />
-            ))}
-          </ChipSection>
-
-          <ChipSection title="Physical activity">
-            {["Didn't exercise", "Yoga", "Gym", "Pilates", "Running", "Swimming", "Cycling", "Walking", "Aerobics", "Team sports"].map(v => (
-              <Chip key={v} label={v} selected={activityTags.includes(v)} onToggle={() => toggleActivityTags(v)} />
-            ))}
-          </ChipSection>
-
-          <ChipSection title="Sleep">
-            {["Great sleep", "Good sleep", "Restless sleep", "Couldn't sleep"].map(v => (
-              <Chip key={v} label={v} selected={sleepQualityTag === v} onToggle={() => toggleSleepQualityTag(v)} />
-            ))}
-          </ChipSection>
-
-          <ChipSection title="Digestion">
-            {["Normal digestion", "Bloated", "Nausea", "Constipation", "Diarrhea"].map(v => (
-              <Chip key={v} label={v} selected={digestionTags.includes(v)} onToggle={() => toggleDigestionTags(v)} />
-            ))}
-          </ChipSection>
-
-          <ChipSection title="Skin">
-            {["Clear", "Mild breakout", "Moderate breakout", "Very oily", "Very dry"].map(v => (
-              <Chip key={v} label={v} selected={skinCondition === v} onToggle={() => toggleSkinCondition(v)} />
-            ))}
-          </ChipSection>
-
-          <ChipSection title="Hair">
-            {["Normal shedding", "More than usual", "A lot of shedding"].map(v => (
-              <Chip key={v} label={v} selected={hairShedding === v} onToggle={() => toggleHairShedding(v)} />
-            ))}
-          </ChipSection>
-
-          <ChipSection title="Medication and supplements">
-            {["Oral contraceptive — taken on time", "Oral contraceptive — missed", "Iron supplement", "Vitamin D", "Magnesium", "Other supplement"].map(v => (
-              <Chip key={v} label={v} selected={medsTags.includes(v)} onToggle={() => toggleMedsTags(v)} />
-            ))}
-          </ChipSection>
-
-          <ChipSection title="Other">
-            {["Stress", "Meditation", "Journaling", "Breathing exercises", "Kegel exercises", "Travel", "Alcohol", "Disease or injury"].map(v => (
-              <Chip key={v} label={v} selected={otherTags.includes(v)} onToggle={() => toggleOtherTags(v)} />
-            ))}
-          </ChipSection>
-
-          {/* More detail — collapsible sliders */}
-          <div style={{ marginBottom: "24px", borderTop: "1px solid var(--border-subtle)", paddingTop: "16px" }}>
-            <button
-              type="button"
-              onClick={() => setShowDetail(v => !v)}
-              style={{ width: "100%", display: "flex", alignItems: "center", justifyContent: "space-between", background: "none", border: "none", cursor: "pointer", padding: 0 }}
-            >
-              <span style={{ fontSize: "13px", fontWeight: 600, color: "var(--plum)", fontFamily: "'Inter', sans-serif" }}>
-                More detail
-              </span>
-              {showDetail
-                ? <ChevronUp style={{ width: 16, height: 16, color: "var(--mauve)" }} />
-                : <ChevronDown style={{ width: 16, height: 16, color: "var(--mauve)" }} />
-              }
-            </button>
-            {showDetail && (
-              <div style={{ marginTop: 16, display: "flex", flexDirection: "column", gap: 16 }}>
-                <SliderRow label="Mood" value={mood} onChange={setMood} />
+          {/* LIFESTYLE TAB */}
+          {activeTab === "lifestyle" && (
+            <>
+              <ChipSection title="Other">
+                {["Stress","Meditation","Journaling","Breathing exercises","Kegel exercises","Travel","Alcohol","Disease or injury"].map(v => (
+                  <Chip key={v} label={v} selected={otherTags.includes(v)} onToggle={() => toggleOtherTags(v)} />
+                ))}
+              </ChipSection>
+              <div style={{ marginBottom: 24 }}>
+                <p style={{ fontSize: "11px", fontWeight: 600, color: "var(--mauve)", fontFamily: "'Inter', sans-serif", textTransform: "uppercase", letterSpacing: "0.12em", marginBottom: "10px" }}>Notes (optional)</p>
+                <textarea value={notes} onChange={e => setNotes(e.target.value)} placeholder="Anything else on your mind today?"
+                  style={{ width: "100%", border: "1px solid var(--border)", borderRadius: "16px", padding: "12px", fontSize: "14px", fontFamily: "'Inter', sans-serif", color: "var(--plum)", background: "var(--ivory)", minHeight: "80px", resize: "none", outline: "none", boxSizing: "border-box" }} />
+              </div>
+              <div style={{ display: "flex", flexDirection: "column", gap: 16, marginBottom: 24 }}>
                 <SliderRow label="Energy" value={energy} onChange={setEnergy} />
                 <SliderRow label="Stress" value={stress} onChange={setStress} />
                 <SliderRow label="Focus" value={focus} onChange={setFocus} />
-                <SliderRow label="Sleep hours" value={sleep} onChange={setSleep} min={4} max={12} unit="h" />
-                <SliderRow label="Pain level" value={pain} onChange={setPain} />
-                <SliderRow label="Cramps" value={cramps} onChange={setCramps} />
               </div>
-            )}
-          </div>
+            </>
+          )}
 
-          {/* Notes */}
-          <div style={{ marginBottom: "24px" }}>
-            <p style={{ fontSize: "11px", fontWeight: 600, color: "var(--mauve)", fontFamily: "'Inter', sans-serif", textTransform: "uppercase", letterSpacing: "0.12em", marginBottom: "10px" }}>
-              Notes (optional)
-            </p>
-            <textarea
-              value={notes}
-              onChange={e => setNotes(e.target.value)}
-              placeholder="Anything else on your mind today?"
-              style={{
-                width: "100%",
-                border: "1px solid var(--border)",
-                borderRadius: "16px",
-                padding: "12px",
-                fontSize: "14px",
-                fontFamily: "'Inter', sans-serif",
-                color: "var(--plum)",
-                background: "var(--ivory)",
-                minHeight: "80px",
-                resize: "none",
-                outline: "none",
-                boxSizing: "border-box",
-              }}
-            />
-          </div>
+          {/* VITALS TAB */}
+          {activeTab === "vitals" && (
+            <div style={{ display: "flex", flexDirection: "column", gap: 16, marginBottom: 24 }}>
+              <SliderRow label="Mood" value={mood} onChange={setMood} />
+              <SliderRow label="Sleep hours" value={sleep} onChange={setSleep} min={4} max={12} unit="h" />
+            </div>
+          )}
 
         </div>
 

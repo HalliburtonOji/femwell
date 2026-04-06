@@ -396,7 +396,7 @@ export default function BreathworkLoopPlayer({ item, user }) {
 
         {/* Progress ring / bar */}
         <div className="w-full">
-          <div className="w-full h-1.5 rounded-full bg-white/10 overflow-hidden">
+          <div className="w-full h-1.5 rounded-full overflow-hidden" style={{ backgroundColor: "rgba(255,255,255,0.1)" }}>
             <div
               className="h-full rounded-full transition-all duration-1000"
               style={{ width: `${progress * 100}%`, background: accent }}
@@ -413,7 +413,9 @@ export default function BreathworkLoopPlayer({ item, user }) {
           <div className="flex flex-col items-center gap-3">
             <p className="text-white font-semibold text-lg">Session Complete 🌸</p>
             <div className="flex gap-3">
-              <button onClick={handleRestart} className="flex items-center gap-2 px-4 py-2 rounded-full bg-white/10 text-white text-sm hover:bg-white/20 transition-colors">
+              <button onClick={handleRestart} className="flex items-center gap-2 px-4 py-2 rounded-full text-sm transition-colors" style={{ backgroundColor: "rgba(255,255,255,0.1)", color: "white" }}
+                onMouseEnter={e => e.currentTarget.style.backgroundColor = "rgba(255,255,255,0.2)"}
+                onMouseLeave={e => e.currentTarget.style.backgroundColor = "rgba(255,255,255,0.1)"}>
                 <RotateCcw className="w-4 h-4" /> Restart
               </button>
               <button onClick={handleExtend} className="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium hover:opacity-90 transition-opacity" style={{ background: accent, color: "#1a0a2e" }}>
@@ -423,8 +425,10 @@ export default function BreathworkLoopPlayer({ item, user }) {
           </div>
         ) : (
           <div className="flex items-center gap-4">
-            <button onClick={handleRestart} className="w-10 h-10 rounded-full bg-white/10 flex items-center justify-center hover:bg-white/20 transition-colors">
-              <RotateCcw className="w-4 h-4 text-white/60" />
+            <button onClick={handleRestart} className="w-10 h-10 rounded-full flex items-center justify-center transition-colors" style={{ backgroundColor: "rgba(255,255,255,0.1)" }}
+              onMouseEnter={e => e.currentTarget.style.backgroundColor = "rgba(255,255,255,0.2)"}
+              onMouseLeave={e => e.currentTarget.style.backgroundColor = "rgba(255,255,255,0.1)"}>
+              <RotateCcw className="w-4 h-4" style={{ color: "rgba(255,255,255,0.6)" }} />
             </button>
 
             {!playing ? (
@@ -447,7 +451,10 @@ export default function BreathworkLoopPlayer({ item, user }) {
 
             <button
               onClick={handleExtend}
-              className="flex items-center gap-1 px-3 py-2 rounded-full bg-white/10 text-white/70 text-xs hover:bg-white/20 transition-colors"
+              className="flex items-center gap-1 px-3 py-2 rounded-full text-xs transition-colors"
+              style={{ backgroundColor: "rgba(255,255,255,0.1)", color: "rgba(255,255,255,0.7)" }}
+              onMouseEnter={e => e.currentTarget.style.backgroundColor = "rgba(255,255,255,0.2)"}
+              onMouseLeave={e => e.currentTarget.style.backgroundColor = "rgba(255,255,255,0.1)"}
             >
               <Plus className="w-3 h-3" /> 2 min
             </button>
