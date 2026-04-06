@@ -236,7 +236,6 @@ function ContentCard({ item, onSave, saved, isStory }) {
       </>
     )}
   </>
-  </>
   );
 }
 
