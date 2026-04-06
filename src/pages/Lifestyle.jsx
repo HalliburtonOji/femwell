@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback, useRef } from "react";
 import { base44 } from "@/api/base44Client";
-import { RefreshCw, BookOpen, Play, BookMarked, FileText, Bookmark, BookmarkCheck, ExternalLink, ChevronDown, ChevronUp } from "lucide-react";
+import { RefreshCw, BookOpen, Play, BookMarked, FileText, Bookmark, BookmarkCheck, ExternalLink, ChevronDown, ChevronUp, X } from "lucide-react";
 import FeedSkeleton from "../components/lifestyle/FeedSkeleton";
 
 function stripHtml(str) {
