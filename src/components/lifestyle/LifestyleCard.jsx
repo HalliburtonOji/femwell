@@ -17,7 +17,6 @@ function timeAgo(dateStr) {
 }
 
 export default function LifestyleCard({ item, onHide, onSave, onLike, onDislike, onMuteSource, saved, liked }) {
-  const [expanded, setExpanded] = useState(false);
   const [localSaved, setLocalSaved] = useState(saved);
   const [localLiked, setLocalLiked] = useState(liked);
   const [hidden, setHidden] = useState(false);
@@ -26,10 +25,7 @@ export default function LifestyleCard({ item, onHide, onSave, onLike, onDislike,
 
   const handleAction = async (action) => {
     await base44.functions.invoke('recordLifestyleAction', {
-      item_id: item.id,
-      action,
-      category: item.category,
-      source_id: item.source_id,
+      item_id: item.id, action, category: item.category, source_id: item.source_id,
     });
   };
 
@@ -40,23 +36,11 @@ export default function LifestyleCard({ item, onHide, onSave, onLike, onDislike,
     onLike?.(item.id, nextLiked);
   };
 
-  const handleDislike = () => {
-    handleAction('dislike');
-    onDislike?.(item.id);
-  };
-
   const handleSave = async () => {
     const result = await toggleSavedItem({
-      itemType: 'LIFESTYLE',
-      itemId: item.id,
-      title: item.title,
+      itemType: 'LIFESTYLE', itemId: item.id, title: item.title,
       previewText: item.summary || '',
-      meta: {
-        url: item.content_url,
-        content_url: item.content_url,
-        provider: item.provider,
-        category: item.category,
-      },
+      meta: { url: item.content_url, content_url: item.content_url, provider: item.provider, category: item.category },
     });
     setLocalSaved(result.saved);
     handleAction('save');
@@ -89,29 +73,21 @@ export default function LifestyleCard({ item, onHide, onSave, onLike, onDislike,
   const isVideo = item.media_type === 'TIKTOK' || item.media_type === 'VIDEO' || item.media_type === 'INSTAGRAM' || item.media_type === 'CLIP';
 
   return (
-    <div className="card-glass rounded-2xl overflow-hidden" style={{ animation: "fadeUp 0.3s ease-out" }}>
+    <div className="rounded-2xl overflow-hidden" style={{ backgroundColor: "var(--surface)", border: "1px solid var(--border)", boxShadow: "var(--shadow-sm)", animation: "fadeUp 0.3s ease-out" }}>
       {/* Media */}
       {item.image_url && (
-        <div className="relative h-44 overflow-hidden bg-gray-100">
-          <img
-            src={item.image_url}
-            alt={item.title}
-            className="w-full h-full object-cover"
-            onError={(e) => { e.target.style.display = 'none'; }}
-          />
+        <div className="relative h-44 overflow-hidden" style={{ backgroundColor: "var(--ivory-dark)" }}>
+          <img src={item.image_url} alt={item.title} className="w-full h-full object-cover" onError={(e) => { e.target.style.display = 'none'; }} />
           {isVideo && (
-            <div className="absolute inset-0 flex items-center justify-center bg-black/30">
-              <button
-                onClick={handleOpen}
-                className="w-14 h-14 rounded-full bg-white/90 flex items-center justify-center shadow-lg hover:scale-105 transition-transform"
-              >
-                <span className="text-rose-500 text-xl ml-1">▶</span>
+            <div className="absolute inset-0 flex items-center justify-center" style={{ backgroundColor: "rgba(0,0,0,0.3)" }}>
+              <button onClick={handleOpen} className="w-14 h-14 rounded-full flex items-center justify-center shadow-lg" style={{ backgroundColor: "rgba(255,255,255,0.9)" }}>
+                <span style={{ color: "var(--rose-dust)", fontSize: 20, marginLeft: 3 }}>&#9654;</span>
               </button>
             </div>
           )}
           {item.is_editor_pick && (
-            <div className="absolute top-3 left-3 px-2.5 py-1 bg-rose-500 text-white text-[10px] font-bold rounded-full tracking-wide">
-              ✦ EDITOR'S PICK
+            <div className="absolute top-3 left-3 px-2.5 py-1 text-[10px] font-bold rounded-full tracking-wide" style={{ backgroundColor: "var(--rose-dust)", color: "white" }}>
+              EDITOR'S PICK
             </div>
           )}
         </div>
@@ -123,20 +99,20 @@ export default function LifestyleCard({ item, onHide, onSave, onLike, onDislike,
           {item.source_logo_url ? (
             <img src={item.source_logo_url} alt={item.source_name} className="w-5 h-5 rounded-full object-cover" />
           ) : (
-            <div className="w-5 h-5 rounded-full bg-rose-200 flex items-center justify-center text-[8px] font-bold text-rose-600">
+            <div className="w-5 h-5 rounded-full flex items-center justify-center text-[8px] font-bold" style={{ backgroundColor: "var(--rose-dust-light)", color: "var(--rose-dust)" }}>
               {(item.source_name || 'S')[0]}
             </div>
           )}
-          <span className="text-xs text-gray-400 font-medium">{item.source_name}</span>
-          <span className="text-gray-200">·</span>
-          <span className="text-xs text-gray-400">{timeAgo(item.pub_date)}</span>
+          <span className="text-xs font-medium" style={{ color: "var(--mauve)" }}>{item.source_name}</span>
+          <span style={{ color: "var(--border)" }}>·</span>
+          <span className="text-xs" style={{ color: "var(--mauve)" }}>{timeAgo(item.pub_date)}</span>
           <div className="ml-auto flex items-center gap-2">
             <CategoryPill category={item.category} />
             <div className="flex items-center gap-2">
-              <button onClick={() => onMuteSource?.(item.source_id, item.source_name)} className="text-gray-300 hover:text-gray-500 transition-colors">
+              <button onClick={() => onMuteSource?.(item.source_id, item.source_name)} style={{ color: "var(--border)", background: "none", border: "none", cursor: "pointer" }}>
                 <MoreHorizontal className="w-3.5 h-3.5" />
               </button>
-              <button onClick={handleHide} className="text-gray-300 hover:text-gray-500 transition-colors">
+              <button onClick={handleHide} style={{ color: "var(--border)", background: "none", border: "none", cursor: "pointer" }}>
                 <X className="w-3.5 h-3.5" />
               </button>
             </div>
@@ -144,19 +120,19 @@ export default function LifestyleCard({ item, onHide, onSave, onLike, onDislike,
         </div>
 
         {/* Title */}
-        <h3 className="font-bold text-gray-800 text-sm leading-snug mb-2">{item.title}</h3>
+        <h3 className="font-bold text-sm leading-snug mb-2" style={{ color: "var(--plum)" }}>{item.title}</h3>
 
         {/* Summary */}
         {item.summary && (
-          <p className="text-sm text-gray-500 leading-relaxed mb-3">{item.summary}</p>
+          <p className="text-sm leading-relaxed mb-3" style={{ color: "var(--mauve)" }}>{item.summary}</p>
         )}
 
         {/* Takeaways */}
         {takeaways.length > 0 && (
-          <div className="bg-rose-50/60 rounded-xl p-3 mb-3 space-y-1.5">
+          <div className="rounded-xl p-3 mb-3 space-y-1.5" style={{ backgroundColor: "var(--rose-dust-subtle)" }}>
             {takeaways.map((t, i) => (
-              <p key={i} className="text-xs text-gray-700 flex gap-2">
-                <span className="text-rose-400 font-bold flex-shrink-0">•</span>
+              <p key={i} className="text-xs flex gap-2" style={{ color: "var(--plum)" }}>
+                <span className="font-bold flex-shrink-0" style={{ color: "var(--rose-dust)" }}>•</span>
                 {t}
               </p>
             ))}
@@ -165,47 +141,41 @@ export default function LifestyleCard({ item, onHide, onSave, onLike, onDislike,
 
         {/* Why it matters */}
         {item.why_it_matters && (
-          <p className="text-[11px] text-teal-600 font-medium mb-3 flex gap-1.5 items-center">
-            <span>💡</span> {item.why_it_matters}
+          <p className="text-[11px] font-medium mb-3 flex gap-1.5 items-center" style={{ color: "var(--sage)" }}>
+            {item.why_it_matters}
           </p>
         )}
 
         {/* Try this */}
         {item.try_this_content_key && (
-          <a
-            href={createPageUrl(`ContentPlayer?key=${item.try_this_content_key}`)}
-            onClick={() => handleAction('try_this')}
-            className="w-full flex items-center justify-between px-4 py-2.5 rounded-xl bg-gradient-to-r from-rose-500 to-pink-500 text-white text-sm font-semibold mb-3 hover:opacity-90 transition-opacity"
-          >
-            <span>✨ {item.try_this_label || "Try a session"}</span>
+          <a href={createPageUrl(`ContentPlayer?key=${item.try_this_content_key}`)} onClick={() => handleAction('try_this')}
+            className="w-full flex items-center justify-between px-4 py-2.5 rounded-xl text-sm font-semibold mb-3"
+            style={{ backgroundColor: "var(--plum)", color: "white" }}>
+            <span>{item.try_this_label || "Try a session"}</span>
             <ChevronRight className="w-4 h-4" />
           </a>
         )}
 
         {/* Action bar */}
-        <div className="flex items-center gap-1 pt-1 border-t border-rose-50">
-          <button
-            onClick={handleLike}
-            className={`flex items-center gap-1 px-2.5 py-1.5 rounded-xl text-xs font-medium transition-all ${localLiked ? "bg-rose-100 text-rose-600" : "text-gray-400 hover:bg-rose-50 hover:text-rose-400"}`}
-          >
-            <Heart className={`w-3.5 h-3.5 ${localLiked ? "fill-rose-500" : ""}`} />
+        <div className="flex items-center gap-1 pt-1" style={{ borderTop: "1px solid var(--border-subtle)" }}>
+          <button onClick={handleLike}
+            className="flex items-center gap-1 px-2.5 py-1.5 rounded-xl text-xs font-medium transition-all"
+            style={{ backgroundColor: localLiked ? "var(--rose-dust-subtle)" : "transparent", color: localLiked ? "var(--rose-dust)" : "var(--mauve)", border: "none", cursor: "pointer" }}>
+            <Heart className="w-3.5 h-3.5" style={{ fill: localLiked ? "var(--rose-dust)" : "none" }} />
           </button>
-          <button
-            onClick={handleSave}
-            className={`flex items-center gap-1 px-2.5 py-1.5 rounded-xl text-xs font-medium transition-all ${localSaved ? "bg-amber-100 text-amber-600" : "text-gray-400 hover:bg-amber-50 hover:text-amber-400"}`}
-          >
+          <button onClick={handleSave}
+            className="flex items-center gap-1 px-2.5 py-1.5 rounded-xl text-xs font-medium transition-all"
+            style={{ backgroundColor: localSaved ? "#FFF8EE" : "transparent", color: localSaved ? "#A07830" : "var(--mauve)", border: "none", cursor: "pointer" }}>
             {localSaved ? <BookmarkCheck className="w-3.5 h-3.5" /> : <Bookmark className="w-3.5 h-3.5" />}
           </button>
-          <button
-            onClick={handleListen}
-            className="flex items-center gap-1 px-2.5 py-1.5 rounded-xl text-xs text-gray-400 hover:bg-teal-50 hover:text-teal-500 transition-colors"
-          >
+          <button onClick={handleListen}
+            className="flex items-center gap-1 px-2.5 py-1.5 rounded-xl text-xs transition-colors"
+            style={{ color: "var(--mauve)", background: "none", border: "none", cursor: "pointer" }}>
             <Volume2 className="w-3.5 h-3.5" />
           </button>
-          <button
-            onClick={handleOpen}
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs text-gray-400 hover:bg-gray-100 hover:text-gray-600 transition-colors ml-auto"
-          >
+          <button onClick={handleOpen}
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs ml-auto"
+            style={{ color: "var(--mauve)", background: "none", border: "none", cursor: "pointer" }}>
             <ExternalLink className="w-3.5 h-3.5" />
             <span>{isVideo ? "Watch" : "Read"}</span>
           </button>

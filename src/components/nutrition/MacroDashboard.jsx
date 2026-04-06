@@ -37,7 +37,7 @@ function MacroBar({ label, actual, target, color, unit = "g" }) {
   );
 }
 
-export default function MacroDashboard({ meals, hydrationLogs, nutritionProfile }) {
+export default function MacroDashboard({ meals, hydrationLogs, drinkLogs = [], nutritionProfile }) {
   const totals = useMemo(() => {
     return meals.reduce((acc, meal) => {
       if (!meal.ai_analysis) return acc;
@@ -62,6 +62,12 @@ export default function MacroDashboard({ meals, hydrationLogs, nutritionProfile 
     }, { calories: 0, protein: 0, carbs: 0, fat: 0 });
   }, [meals]);
 
+  const totalDrinkCalories = drinkLogs.reduce((sum, d) => sum + (d.calories || 0), 0);
+  const displayCalories = Math.round(totals.calories) + totalDrinkCalories;
+  const drinkHydrationMl = drinkLogs
+    .filter(d => ["water", "tea", "coffee", "juice", "smoothie", "milk"].includes(d.drink_type))
+    .reduce((s, d) => s + (d.amount_ml || 0), 0);
+
   const targets = {
     calories: nutritionProfile?.calories_target   || 2000,
     protein:  nutritionProfile?.protein_target_g  || 120,
@@ -70,9 +76,9 @@ export default function MacroDashboard({ meals, hydrationLogs, nutritionProfile 
   };
 
   const hydrationTarget = nutritionProfile?.hydration_target_ml || 2000;
-  const totalHydration  = hydrationLogs.reduce((s, l) => s + (l.amount_ml || 0), 0);
-  const caloriePct      = targets.calories > 0 ? Math.min(100, Math.round((totals.calories / targets.calories) * 100)) : 0;
-  const caloriesLeft    = Math.max(0, targets.calories - Math.round(totals.calories));
+  const totalHydration  = hydrationLogs.reduce((s, l) => s + (l.amount_ml || 0), 0) + drinkHydrationMl;
+  const caloriePct      = targets.calories > 0 ? Math.min(100, Math.round((displayCalories / targets.calories) * 100)) : 0;
+  const caloriesLeft    = Math.max(0, targets.calories - displayCalories);
   const ringColor       = caloriePct >= 100 ? "var(--rose-dust)" : caloriePct >= 75 ? "#C4954A" : "var(--sage)";
   const circumference   = 2 * Math.PI * 38;
 
@@ -100,7 +106,7 @@ export default function MacroDashboard({ meals, hydrationLogs, nutritionProfile 
         </div>
         <div className="flex-1 min-w-0">
           <p className="text-2xl font-bold" style={{ color: "var(--plum)", fontFamily: "'Playfair Display', serif" }}>
-            {Math.round(totals.calories)}
+            {displayCalories}
             <span className="text-sm font-normal ml-1" style={{ color: "var(--mauve)" }}>kcal</span>
           </p>
           <p className="text-xs mt-0.5" style={{ color: "var(--mauve)" }}>of {targets.calories} kcal goal</p>
@@ -121,7 +127,7 @@ export default function MacroDashboard({ meals, hydrationLogs, nutritionProfile 
         <MacroBar label="Hydration" actual={totalHydration} target={hydrationTarget} color="var(--sage)" unit="ml" />
       </div>
 
-      {totals.calories === 0 && (
+      {displayCalories === 0 && (
         <p className="text-[11px] text-center italic" style={{ color: "var(--mauve)" }}>
           Log meals to see macro tracking
         </p>

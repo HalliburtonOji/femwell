@@ -522,15 +522,16 @@ export default function Today() {
   const quickLogMeal = async () => {
     if (!quickMealText.trim()) return;
     setQuickLogging(true);
-    await base44.entities.MealLog.create({
-      user_id: user.id,
-      day_key: todayStr,
+    const log = await base44.entities.MealLog.create({
+      user_id: user.id, day_key: todayStr,
       logged_at: new Date().toISOString(),
-      meal_type: quickMealType,
-      method: "text",
-      raw_text: quickMealText.trim(),
+      meal_type: quickMealType, method: "text",
+      raw_text: quickMealText.trim(), portion_size: "medium",
     });
     setQuickMealText("");
+    base44.functions.invoke("analyzeMeal", { raw_text: log.raw_text, wellness_goal: "general wellness" })
+      .then(res => { if (res?.data) base44.entities.MealLog.update(log.id, { ai_analysis: JSON.stringify(res.data) }).catch(() => {}); })
+      .catch(() => {});
     setQuickLogging(false);
   };
 

@@ -271,8 +271,8 @@ export default function AudioPlayer({ item }) {
         <p className="text-xs font-semibold uppercase tracking-widest mb-1" style={{ color: colors.text }}>
           {item?.content_type}
         </p>
-        <h3 className="text-base font-semibold text-gray-800">{item?.title}</h3>
-        <p className="text-xs text-gray-400 mt-0.5">{item?.duration_minutes}m · {item?.level}</p>
+        <h3 className="text-base font-semibold" style={{ color: "var(--plum)" }}>{item?.title}</h3>
+        <p className="text-xs mt-0.5" style={{ color: "var(--mauve)" }}>{item?.duration_minutes}m · {item?.level}</p>
       </div>
 
       {/* Animation */}
@@ -306,7 +306,7 @@ export default function AudioPlayer({ item }) {
             }}
           />
         </div>
-        <div className="flex justify-between text-[10px] text-gray-400 mt-1">
+        <div className="flex justify-between text-[10px] mt-1" style={{ color: "var(--mauve)" }}>
           <span>{formatTime(currentTime)}</span>
           <span>{formatTime(duration)}</span>
         </div>
@@ -333,7 +333,7 @@ export default function AudioPlayer({ item }) {
       </button>
 
       {!item?.audio_file_url && (
-        <p className="text-xs text-gray-400 z-10">Audio not yet generated</p>
+        <p className="text-xs z-10" style={{ color: "var(--mauve)" }}>Audio not yet generated</p>
       )}
     </div>
   );

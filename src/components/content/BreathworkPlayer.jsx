@@ -79,8 +79,8 @@ export default function BreathworkPlayer({ item }) {
   };
 
   return (
-    <div className="rounded-2xl bg-gradient-to-br from-rose-50 to-pink-50 p-6 flex flex-col items-center space-y-5">
-      <p className="text-sm font-medium text-gray-500">{pattern.label}</p>
+    <div className="rounded-2xl p-6 flex flex-col items-center space-y-5" style={{ backgroundColor: "var(--rose-dust-subtle)" }}>
+      <p className="text-sm font-medium" style={{ color: "var(--mauve)" }}>{pattern.label}</p>
 
       {/* Animated circle */}
       <div className="relative" style={{ width: circleSize, height: circleSize }}>
@@ -98,25 +98,22 @@ export default function BreathworkPlayer({ item }) {
           />
         </svg>
         <div className="absolute inset-0 flex flex-col items-center justify-center">
-          <p className="text-base font-semibold text-gray-700">{running ? PHASE_TEXT[currentPhase.name] : "Ready"}</p>
-          {running && <p className="text-3xl font-bold text-rose-600 mt-1">{secondsLeft}</p>}
+          <p className="text-base font-semibold" style={{ color: "var(--plum)" }}>{running ? PHASE_TEXT[currentPhase.name] : "Ready"}</p>
+          {running && <p className="text-3xl font-bold mt-1" style={{ color: "var(--rose-dust)" }}>{secondsLeft}</p>}
         </div>
       </div>
 
-      {cycles > 0 && <p className="text-xs text-gray-400">{cycles} cycle{cycles !== 1 ? "s" : ""} completed</p>}
+      {cycles > 0 && <p className="text-xs" style={{ color: "var(--mauve)" }}>{cycles} cycle{cycles !== 1 ? "s" : ""} completed</p>}
 
       <button
         onClick={handleToggle}
-        className={`px-8 py-3 rounded-full font-semibold text-sm transition-all shadow-md ${
-          running
-            ? "bg-gray-200 text-gray-600 hover:bg-gray-300"
-            : "bg-gradient-to-r from-rose-400 to-pink-500 text-white hover:shadow-lg"
-        }`}
+        className="px-8 py-3 rounded-full font-semibold text-sm transition-all shadow-md"
+        style={running ? { backgroundColor: "var(--ivory-dark)", color: "var(--plum)" } : { background: "linear-gradient(135deg, var(--rose-dust), #c97b8a)", color: "white" }}
       >
         {running ? "Stop" : "Begin Breathwork"}
       </button>
 
-      <p className="text-xs text-gray-400 text-center max-w-xs">
+      <p className="text-xs text-center max-w-xs" style={{ color: "var(--mauve)" }}>
         Your device will guide you with voice cues. Find a comfortable position and close your eyes when ready.
       </p>
     </div>

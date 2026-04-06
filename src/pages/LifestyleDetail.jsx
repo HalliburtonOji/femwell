@@ -62,29 +62,29 @@ export default function LifestyleDetail() {
   }
 
   return (
-    <div className="min-h-screen femwell-gradient pb-10">
+    <div className="min-h-screen pb-10" style={{ backgroundColor: "var(--ivory)" }}>
       <div className="max-w-3xl mx-auto px-4 pt-12">
         <div className="flex items-center justify-between mb-6">
-          <button onClick={() => window.history.back()} className="w-10 h-10 rounded-xl bg-white/80 flex items-center justify-center shadow-sm">
-            <ArrowLeft className="w-4 h-4 text-gray-700" />
+          <button onClick={() => window.history.back()} className="w-10 h-10 rounded-xl flex items-center justify-center shadow-sm" style={{ backgroundColor: "rgba(255,255,255,0.85)" }}>
+            <ArrowLeft className="w-4 h-4" style={{ color: "var(--plum)" }} />
           </button>
           <div className="flex items-center gap-2">
-            <button onClick={toggleLiked} className="w-10 h-10 rounded-xl bg-white/80 flex items-center justify-center shadow-sm">
-              {liked ? <Heart className="w-4 h-4 text-rose-500 fill-rose-500" /> : <HeartOff className="w-4 h-4 text-gray-500" />}
+            <button onClick={toggleLiked} className="w-10 h-10 rounded-xl flex items-center justify-center shadow-sm" style={{ backgroundColor: "rgba(255,255,255,0.85)" }}>
+              {liked ? <Heart className="w-4 h-4" style={{ color: "var(--rose-dust)", fill: "var(--rose-dust)" }} /> : <HeartOff className="w-4 h-4" style={{ color: "var(--mauve)" }} />}
             </button>
-            <button onClick={toggleSaved} className="w-10 h-10 rounded-xl bg-white/80 flex items-center justify-center shadow-sm">
-              {saved ? <BookmarkCheck className="w-4 h-4 text-amber-600" /> : <Bookmark className="w-4 h-4 text-gray-500" />}
+            <button onClick={toggleSaved} className="w-10 h-10 rounded-xl flex items-center justify-center shadow-sm" style={{ backgroundColor: "rgba(255,255,255,0.85)" }}>
+              {saved ? <BookmarkCheck className="w-4 h-4" style={{ color: "#A07830" }} /> : <Bookmark className="w-4 h-4" style={{ color: "var(--mauve)" }} />}
             </button>
           </div>
         </div>
 
-        <div className="card-glass rounded-3xl p-6 md:p-8">
-          <h1 className="text-3xl md:text-4xl font-bold text-gray-900 leading-tight">{item.title}</h1>
-          <p className="mt-3 text-sm text-gray-400">
+        <div className="rounded-3xl p-6 md:p-8" style={{ backgroundColor: "var(--surface)", border: "1px solid var(--border)", boxShadow: "var(--shadow-md)" }}>
+        <h1 className="text-3xl md:text-4xl font-bold leading-tight" style={{ color: "var(--plum)" }}>{item.title}</h1>
+        <p className="mt-3 text-sm" style={{ color: "var(--mauve)" }}>
             {item.source_name} {item.pub_date ? `· ${format(new Date(item.pub_date), "dd MMM yyyy")}` : ""}
           </p>
-          {item.summary && <p className="mt-6 text-base leading-8 text-gray-600">{item.summary}</p>}
-          <button onClick={handleReadFull} className="mt-8 inline-flex items-center justify-center rounded-xl bg-rose-500 px-5 py-3 text-sm font-semibold text-white shadow-sm hover:bg-rose-600 transition-colors">
+          {item.summary && <p className="mt-6 text-base leading-8" style={{ color: "var(--mauve)" }}>{item.summary}</p>}
+          <button onClick={handleReadFull} className="mt-8 inline-flex items-center justify-center rounded-xl px-5 py-3 text-sm font-semibold shadow-sm transition-colors" style={{ backgroundColor: "var(--rose-dust)", color: "white", border: "none", cursor: "pointer" }}>
             Read full article
           </button>
         </div>

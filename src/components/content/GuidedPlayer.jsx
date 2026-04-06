@@ -260,7 +260,7 @@ export default function GuidedPlayer({ item }) {
   const strokeColor = PHASE_COLOR[currentPhase.name] || "#e8a4b0";
 
   return (
-    <div className="rounded-2xl bg-gradient-to-br from-rose-50 to-pink-50 p-6 flex flex-col items-center space-y-5 overflow-hidden relative">
+    <div className="rounded-2xl p-6 flex flex-col items-center space-y-5 overflow-hidden relative" style={{ backgroundColor: "var(--rose-dust-subtle)" }}>
       {/* Ambient background pulse */}
       {running && (
         <div
@@ -321,7 +321,7 @@ export default function GuidedPlayer({ item }) {
         {/* Center text */}
         <div className="absolute inset-0 flex flex-col items-center justify-center gap-1 z-10">
           {done ? (
-            <p className="text-base font-semibold text-rose-500">Complete ✓</p>
+            <p className="text-base font-semibold" style={{ color: "var(--rose-dust)" }}>Complete</p>
           ) : running ? (
             <div
               key={currentPhase.name}
@@ -335,10 +335,10 @@ export default function GuidedPlayer({ item }) {
               <p className="text-sm font-semibold tracking-widest uppercase" style={{ color: strokeColor }}>
                 {PHASE_TEXT[currentPhase.name]}
               </p>
-              <p className="text-4xl font-bold text-gray-700">{secondsLeft}</p>
+              <p className="text-4xl font-bold" style={{ color: "var(--plum)" }}>{secondsLeft}</p>
             </div>
           ) : (
-            <p className="text-sm text-gray-400 text-center px-6 leading-relaxed">Tap below to begin</p>
+            <p className="text-sm text-center px-6 leading-relaxed" style={{ color: "var(--mauve)" }}>Tap below to begin</p>
           )}
         </div>
       </div>
@@ -360,17 +360,14 @@ export default function GuidedPlayer({ item }) {
         </div>
       )}
 
-      {audioError && <p className="text-xs text-amber-500">{audioError}</p>}
+      {audioError && <p className="text-xs" style={{ color: "#A07830" }}>{audioError}</p>}
 
       <div className="flex gap-3 items-center">
         <button
           onClick={handleStart}
           disabled={audioLoading}
-          className={`flex items-center gap-2 px-8 py-3 rounded-full font-semibold text-sm transition-all shadow-md ${
-            running
-              ? "bg-gray-100 text-gray-600 hover:bg-gray-200"
-              : "bg-gradient-to-r from-rose-400 to-pink-500 text-white hover:shadow-lg hover:scale-105"
-          } disabled:opacity-60`}
+          className="flex items-center gap-2 px-8 py-3 rounded-full font-semibold text-sm transition-all shadow-md disabled:opacity-60"
+          style={running ? { backgroundColor: "var(--ivory-dark)", color: "var(--plum)" } : { background: "linear-gradient(135deg, var(--rose-dust), #c97b8a)", color: "white" }}
         >
           {audioLoading || scriptGenerating ? (
             <><Loader2 className="w-4 h-4 animate-spin" /> {scriptGenerating ? "Generating script..." : "Preparing..."}</>
@@ -384,7 +381,7 @@ export default function GuidedPlayer({ item }) {
         </button>
       </div>
 
-      <p className="text-xs text-gray-400 text-center max-w-xs leading-relaxed">
+      <p className="text-xs text-center max-w-xs leading-relaxed" style={{ color: "var(--mauve)" }}>
         {userName
           ? `${userName}, find a comfortable position and close your eyes.`
           : "Find a comfortable position and close your eyes."}

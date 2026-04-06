@@ -576,7 +576,7 @@ export default function SkinHair() {
   const [tryOnChangeType, setTryOnChangeType] = useState("colour");
   const [tryOnChangeValue, setTryOnChangeValue] = useState("");
   const [loading, setLoading] = useState(true);
-  const [isPremium, setIsPremium] = useState(false);
+  const [isPremium, setIsPremium] = useState(true);
   const [dailyTip, setDailyTip] = useState(null);
   const [trendItems, setTrendItems] = useState([]);
   const [skinRoutines, setSkinRoutines] = useState([]);
@@ -610,7 +610,7 @@ export default function SkinHair() {
           .filter((c) => c.date >= cutoff)
           .sort((a, b) => a.date.localeCompare(b.date))
       );
-      setIsPremium(false);
+      // premium always enabled
       setSkinRoutines(skinR.sort((a, b) => (b.started_date || "").localeCompare(a.started_date || "")));
       setHairRoutines(hairR.sort((a, b) => (b.wash_date || "").localeCompare(a.wash_date || "")));
       setLoading(false);
@@ -1344,36 +1344,6 @@ export default function SkinHair() {
   );
 }
 
-// ── Premium gate wrapper ─────────────────────────────────────────────────────
-function PremiumGate({ children }) {
-  return (
-    <div style={{ position: "relative", borderRadius: "20px", overflow: "hidden" }}>
-      <div style={{ filter: "blur(3px)", pointerEvents: "none", userSelect: "none" }}>
-        {children}
-      </div>
-      <div
-        className="absolute inset-0 flex flex-col items-center justify-center gap-3"
-        style={{ backgroundColor: "rgba(250,248,245,0.85)", backdropFilter: "blur(2px)", borderRadius: "20px", border: "1px solid var(--border)" }}
-      >
-        <div
-          className="w-9 h-9 rounded-2xl flex items-center justify-center"
-          style={{ backgroundColor: "var(--plum)" }}
-        >
-          <Lock className="w-4 h-4" style={{ color: "white" }} />
-        </div>
-        <p style={{ fontSize: "13px", fontWeight: 600, color: "var(--plum)", fontFamily: "'Inter', sans-serif" }}>Premium feature</p>
-        <a
-          href={createPageUrl("Upgrade")}
-          className="text-xs font-semibold px-4 py-2 rounded-full"
-          style={{ backgroundColor: "var(--plum)", color: "white", fontFamily: "'Inter', sans-serif" }}
-        >
-          Unlock with Premium
-        </a>
-      </div>
-    </div>
-  );
-}
-
 // ── Skincare Routine Section ─────────────────────────────────────────────────
 const PRODUCT_TYPES = ["cleanser", "serum", "moisturiser", "SPF", "treatment", "eye_cream", "toner", "mask"];
 const ROUTINE_SLOTS = ["morning", "evening", "both"];
@@ -1466,7 +1436,6 @@ function SkincareRoutineSection({ isPremium, routines, showAdd, setShowAdd, newP
     </div>
   );
 
-  if (!isPremium) return <PremiumGate>{inner}</PremiumGate>;
   return inner;
 }
 
@@ -1564,13 +1533,11 @@ function HairRoutineSection({ isPremium, routines, showAdd, setShowAdd, newWashD
     </div>
   );
 
-  if (!isPremium) return <PremiumGate>{inner}</PremiumGate>;
   return inner;
 }
 
 // ── Shedding Trend Alert ──────────────────────────────────────────────────────
-function SheddingTrendAlert({ checkins, isPremium, currentPhase }) {
-  if (!isPremium) return null;
+function SheddingTrendAlert({ checkins, currentPhase }) {
   const sorted = [...checkins].sort((a, b) => b.date.localeCompare(a.date));
   let consecutive = 0;
   for (const c of sorted) {

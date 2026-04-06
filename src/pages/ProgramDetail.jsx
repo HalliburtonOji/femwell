@@ -9,9 +9,9 @@ import ProgramPageToolbar from "../components/programs/ProgramPageToolbar";
 
 const TIER_ORDER = { free: 0, plus: 1, pro: 2 };
 const TIER_STYLES = {
-  free: "bg-emerald-50 text-emerald-700",
-  plus: "bg-rose-50 text-rose-700",
-  pro: "bg-purple-50 text-purple-700",
+  free: { backgroundColor: "var(--sage-subtle)", color: "var(--sage)" },
+  plus: { backgroundColor: "var(--rose-dust-subtle)", color: "var(--rose-dust)" },
+  pro:  { backgroundColor: "#F5F0FF", color: "#7C4AC4" },
 };
 
 function isReminderDue(reminderTime) {
@@ -203,16 +203,16 @@ export default function ProgramDetail() {
 
   if (loading) {
     return (
-      <div className="min-h-screen femwell-gradient flex items-center justify-center">
-        <div className="h-10 w-10 animate-spin rounded-full border-4 border-rose-300 border-t-rose-600" />
+      <div className="min-h-screen flex items-center justify-center" style={{ backgroundColor: "var(--ivory)" }}>
+        <div className="h-10 w-10 animate-spin rounded-full" style={{ border: "4px solid var(--rose-dust-light)", borderTopColor: "var(--rose-dust)" }} />
       </div>
     );
   }
 
   if (!program) {
     return (
-      <div className="min-h-screen femwell-gradient flex items-center justify-center">
-        <p className="text-gray-400">Program not found.</p>
+      <div className="min-h-screen flex items-center justify-center" style={{ backgroundColor: "var(--ivory)" }}>
+        <p style={{ color: "var(--mauve)" }}>Program not found.</p>
       </div>
     );
   }
@@ -239,10 +239,10 @@ export default function ProgramDetail() {
   };
 
   return (
-    <div className="min-h-screen femwell-gradient pb-10">
+    <div className="min-h-screen pb-10" style={{ backgroundColor: "var(--ivory)" }}>
       <ProgramPageToolbar title={program.title} subtitle="Program detail" showToday />
       <div className="mx-auto max-w-6xl">
-        <div className="relative overflow-hidden bg-gradient-to-br from-rose-200 to-pink-300">
+        <div className="relative overflow-hidden" style={{ backgroundColor: "var(--rose-dust)" }}>
           <div className="absolute inset-0">
             {thumb && <img src={thumb} alt={program.title} className="h-full w-full object-cover" />}
             <div className="absolute inset-0 bg-black/45" />
@@ -251,13 +251,13 @@ export default function ProgramDetail() {
           <div className="relative z-10 px-4 pb-8 pt-12 md:px-6 md:pb-10">
             <div className="max-w-3xl space-y-4 text-white">
               <div className="flex flex-wrap gap-2 text-xs">
-                <span className={`rounded-full px-3 py-1 font-semibold capitalize ${TIER_STYLES[program.access_tier] || "bg-white/90 text-gray-700"}`}>
+                <span className="rounded-full px-3 py-1 font-semibold capitalize" style={TIER_STYLES[program.access_tier] || { backgroundColor: "rgba(255,255,255,0.9)", color: "var(--plum)" }}>
                   {program.access_tier || "free"}
                 </span>
-                <span className="rounded-full bg-white/20 px-3 py-1 font-medium backdrop-blur-sm">{totalDays} days</span>
-                {program.level && <span className="rounded-full bg-white/20 px-3 py-1 font-medium capitalize backdrop-blur-sm">{program.level}</span>}
+                <span className="rounded-full px-3 py-1 font-medium backdrop-blur-sm" style={{ backgroundColor: "rgba(255,255,255,0.2)" }}>{totalDays} days</span>
+                {program.level && <span className="rounded-full px-3 py-1 font-medium capitalize backdrop-blur-sm" style={{ backgroundColor: "rgba(255,255,255,0.2)" }}>{program.level}</span>}
                 {userProgram?.streak_count > 0 && (
-                  <span className="inline-flex items-center gap-1 rounded-full bg-white/20 px-3 py-1 font-medium backdrop-blur-sm">
+                  <span className="inline-flex items-center gap-1 rounded-full px-3 py-1 font-medium backdrop-blur-sm" style={{ backgroundColor: "rgba(255,255,255,0.2)" }}>
                     <Flame className="h-3.5 w-3.5" /> {userProgram.streak_count} day streak
                   </span>
                 )}
@@ -267,7 +267,7 @@ export default function ProgramDetail() {
                 <h1 className="mt-2 text-3xl font-bold leading-tight md:text-4xl">{program.title}</h1>
                 <p className="mt-3 max-w-2xl text-sm leading-relaxed text-white/85 md:text-base">{program.summary || program.description}</p>
               </div>
-              <div className="max-w-md rounded-3xl bg-white/12 p-4 backdrop-blur-sm">
+              <div className="max-w-md rounded-3xl p-4 backdrop-blur-sm" style={{ backgroundColor: "rgba(255,255,255,0.15)" }}>
                 <div className="mb-2 flex items-center justify-between text-xs font-medium text-white/85">
                   <span>Program progress</span>
                   <span>{completedDays.size}/{totalDays} days</span>
@@ -280,10 +280,10 @@ export default function ProgramDetail() {
 
         <div className="space-y-6 px-4 py-6 md:px-6">
           <div className="grid gap-3 md:grid-cols-4">
-            <MetricCard icon={<Clock className="h-4 w-4 text-rose-500" />} value={totalDays} label="Days" />
-            <MetricCard icon={<Play className="h-4 w-4 text-red-500" />} value={totalVideos} label="Videos" />
-            <MetricCard icon={<Headphones className="h-4 w-4 text-purple-500" />} value={totalSessions} label="Audio sessions" />
-            <MetricCard icon={<BookOpen className="h-4 w-4 text-amber-600" />} value={totalReadUps} label="Read-ups" />
+            <MetricCard icon={<Clock className="h-4 w-4" style={{ color: "var(--rose-dust)" }} />} value={totalDays} label="Days" />
+            <MetricCard icon={<Play className="h-4 w-4" style={{ color: "#DC4C4C" }} />} value={totalVideos} label="Videos" />
+            <MetricCard icon={<Headphones className="h-4 w-4" style={{ color: "#7C4AC4" }} />} value={totalSessions} label="Audio sessions" />
+            <MetricCard icon={<BookOpen className="h-4 w-4" style={{ color: "#A07830" }} />} value={totalReadUps} label="Read-ups" />
           </div>
 
           <div className="rounded-[28px] border border-rose-100 bg-white p-4 shadow-sm">
@@ -292,9 +292,8 @@ export default function ProgramDetail() {
                 <a
                   key={day.id}
                   href={createPageUrl(`ProgramDay?key=${programKey}&day=${day.day_number}`)}
-                  className={`flex-shrink-0 rounded-full px-3 py-2 text-xs font-semibold ${
-                    day.day_number === currentDay ? "bg-rose-500 text-white" : "bg-rose-50 text-rose-600"
-                  }`}
+                  className="flex-shrink-0 rounded-full px-3 py-2 text-xs font-semibold"
+                  style={{ backgroundColor: day.day_number === currentDay ? "var(--plum)" : "var(--rose-dust-subtle)", color: day.day_number === currentDay ? "white" : "var(--rose-dust)" }}
                 >
                   Day {day.day_number}
                 </a>
@@ -310,15 +309,15 @@ export default function ProgramDetail() {
               <OverviewCard title="Who it’s best for" body={program.best_for_tags?.length ? `${program.best_for_tags.join(", ")}. ${program.expected_results || ""}`.trim() : (program.expected_results || "Ideal if you want a calmer, more guided structure you can actually stick with.")} />
             </div>
 
-            <div className="rounded-[28px] border border-rose-100 bg-white p-5 shadow-sm md:p-6">
-              {locked ? (
-                <div className="space-y-4 text-center">
-                  <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-2xl bg-rose-50">
-                    <Lock className="h-5 w-5 text-rose-500" />
+            <div className="rounded-[28px] p-5 shadow-sm md:p-6" style={{ border: "1px solid var(--border)", backgroundColor: "var(--surface)" }}>
+            {locked ? (
+              <div className="space-y-4 text-center">
+                <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-2xl" style={{ backgroundColor: "var(--rose-dust-subtle)" }}>
+                  <Lock className="h-5 w-5" style={{ color: "var(--rose-dust)" }} />
                   </div>
                   <div>
-                    <p className="text-base font-semibold text-gray-900">Requires {program.access_tier} plan</p>
-                    <p className="mt-1 text-sm text-gray-500">You can open any day and preview the roadmap here, then unlock the guided flow when you’re ready.</p>
+                    <p className="text-base font-semibold" style={{ color: "var(--plum)" }}>Requires {program.access_tier} plan</p>
+                    <p className="mt-1 text-sm" style={{ color: "var(--mauve)" }}>You can open any day and preview the roadmap here, then unlock the guided flow when you’re ready.</p>
                   </div>
                   <a href={createPageUrl("Upgrade")} className="btn-primary inline-block">Upgrade</a>
                 </div>
@@ -326,10 +325,10 @@ export default function ProgramDetail() {
                 <div className="space-y-4">
                   <div className="flex items-start justify-between gap-3">
                     <div>
-                      <p className="text-base font-semibold text-gray-900">Your program actions</p>
-                      <p className="mt-1 text-sm text-gray-500">Start, resume, save, restart, and set a daily reminder from one place.</p>
+                      <p className="text-base font-semibold" style={{ color: "var(--plum)" }}>Your program actions</p>
+                      <p className="mt-1 text-sm" style={{ color: "var(--mauve)" }}>Start, resume, save, restart, and set a daily reminder from one place.</p>
                     </div>
-                    <button onClick={toggleSaved} disabled={savingProgram} className="inline-flex h-11 w-11 items-center justify-center rounded-2xl bg-rose-50 text-rose-600">
+                    <button onClick={toggleSaved} disabled={savingProgram} className="inline-flex h-11 w-11 items-center justify-center rounded-2xl" style={{ backgroundColor: "var(--rose-dust-subtle)", color: "var(--rose-dust)", border: "none", cursor: "pointer" }}>
                       {userProgram?.is_saved ? <BookmarkCheck className="h-4 w-4" /> : <Bookmark className="h-4 w-4" />}
                     </button>
                   </div>
@@ -344,7 +343,7 @@ export default function ProgramDetail() {
                   )}
 
                   {reminderIsDue && userProgram?.reminder_time && (
-                    <div className="inline-flex items-center gap-2 rounded-full bg-amber-50 px-3 py-1.5 text-xs font-semibold text-amber-700">
+                    <div className="inline-flex items-center gap-2 rounded-full px-3 py-1.5 text-xs font-semibold" style={{ backgroundColor: "#FFF8EE", color: "#A07830" }}>
                       <Bell className="h-3.5 w-3.5" /> Day {currentDay} is ready
                     </div>
                   )}
@@ -356,27 +355,28 @@ export default function ProgramDetail() {
                     <a href={createPageUrl(`ProgramDay?key=${programKey}&day=${currentDay}`)} className="btn-secondary block w-full text-center sm:w-auto">
                       Open current day
                     </a>
-                    <a href={createPageUrl("ProgramsHub")} className="inline-flex w-full items-center justify-center rounded-full border border-rose-200 bg-white px-5 py-3 text-sm font-semibold text-rose-600 sm:w-auto">
+                    <a href={createPageUrl("ProgramsHub")} className="inline-flex w-full items-center justify-center rounded-full px-5 py-3 text-sm font-semibold sm:w-auto" style={{ border: "1px solid var(--rose-dust-light)", backgroundColor: "var(--surface)", color: "var(--rose-dust)" }}>
                       Back to Programs
                     </a>
                   </div>
 
                   {userProgram && (
-                    <button onClick={restartProgram} disabled={restarting} className="inline-flex items-center gap-2 rounded-2xl border border-rose-200 px-4 py-2.5 text-sm font-semibold text-rose-600">
+                    <button onClick={restartProgram} disabled={restarting} className="inline-flex items-center gap-2 rounded-2xl px-4 py-2.5 text-sm font-semibold" style={{ border: "1px solid var(--rose-dust-light)", color: "var(--rose-dust)", backgroundColor: "transparent", cursor: "pointer" }}>
                       <RotateCcw className="h-4 w-4" /> {restarting ? "Restarting…" : "Restart program"}
                     </button>
                   )}
 
-                  <div className="rounded-3xl border border-rose-100 p-4">
-                    <label className="mb-2 block text-xs font-semibold uppercase tracking-[0.2em] text-gray-500">Reminder time</label>
+                  <div className="rounded-3xl p-4" style={{ border: "1px solid var(--border)" }}>
+                    <label className="mb-2 block text-xs font-semibold uppercase tracking-[0.2em]" style={{ color: "var(--mauve)" }}>Reminder time</label>
                     <div className="flex flex-col gap-2 sm:flex-row">
                       <input
                         type="time"
                         value={reminderTime}
                         onChange={(event) => setReminderTime(event.target.value)}
-                        className="w-full rounded-2xl border border-rose-100 bg-white px-4 py-2.5 text-sm text-gray-700 outline-none focus:border-rose-200"
+                        className="w-full rounded-2xl px-4 py-2.5 text-sm outline-none"
+                        style={{ border: "1px solid var(--border)", backgroundColor: "var(--surface)", color: "var(--plum)" }}
                       />
-                      <button onClick={saveReminder} disabled={!reminderTime || savingReminder} className="rounded-2xl bg-gray-100 px-4 py-2.5 text-sm font-semibold text-gray-700">
+                      <button onClick={saveReminder} disabled={!reminderTime || savingReminder} className="rounded-2xl px-4 py-2.5 text-sm font-semibold" style={{ backgroundColor: "var(--ivory-dark)", color: "var(--plum)", border: "none", cursor: "pointer" }}>
                         {savingReminder ? "Saving…" : "Save"}
                       </button>
                     </div>
@@ -387,7 +387,7 @@ export default function ProgramDetail() {
           </div>
 
           <section className="space-y-3">
-            <h2 className="text-sm font-bold uppercase tracking-[0.2em] text-gray-500">Day by day roadmap</h2>
+            <h2 className="text-sm font-bold uppercase tracking-[0.2em]" style={{ color: "var(--mauve)" }}>Day by day roadmap</h2>
             <div className="space-y-3">
               {days.map((day) => (
                 <ProgramDayPreviewCard
@@ -410,19 +410,19 @@ export default function ProgramDetail() {
 
 function MetricCard({ icon, value, label }) {
   return (
-    <div className="rounded-3xl border border-rose-100 bg-white p-4 shadow-sm">
-      <div className="mb-2 flex h-10 w-10 items-center justify-center rounded-2xl bg-rose-50">{icon}</div>
-      <p className="text-xl font-bold text-gray-900">{value}</p>
-      <p className="text-xs text-gray-500">{label}</p>
+    <div className="rounded-3xl p-4 shadow-sm" style={{ border: "1px solid var(--border)", backgroundColor: "var(--surface)" }}>
+      <div className="mb-2 flex h-10 w-10 items-center justify-center rounded-2xl" style={{ backgroundColor: "var(--rose-dust-subtle)" }}>{icon}</div>
+      <p className="text-xl font-bold" style={{ color: "var(--plum)" }}>{value}</p>
+      <p className="text-xs" style={{ color: "var(--mauve)" }}>{label}</p>
     </div>
   );
 }
 
 function OverviewCard({ title, body }) {
   return (
-    <div className="rounded-[28px] border border-rose-100 bg-white p-5 shadow-sm md:p-6">
-      <h2 className="text-lg font-semibold text-gray-900">{title}</h2>
-      <p className="mt-3 text-sm leading-relaxed text-gray-600">{body}</p>
+    <div className="rounded-[28px] p-5 shadow-sm md:p-6" style={{ border: "1px solid var(--border)", backgroundColor: "var(--surface)" }}>
+      <h2 className="text-lg font-semibold" style={{ color: "var(--plum)" }}>{title}</h2>
+      <p className="mt-3 text-sm leading-relaxed" style={{ color: "var(--mauve)" }}>{body}</p>
     </div>
   );
 }

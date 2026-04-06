@@ -91,6 +91,21 @@ Deno.serve(async (req) => {
         ? Object.entries(scalpValues.reduce((acc, v) => { acc[v] = (acc[v] || 0) + 1; return acc; }, {})).sort((a, b) => b[1] - a[1])[0][0]
         : null;
 
+      const weekMealLogs = await base44.asServiceRole.entities.MealLog.filter({ user_id: userId });
+      const weekMealsFiltered = weekMealLogs.filter(m => { const d = m.logged_at || m.created_date || ''; return d >= weekStart + 'T00:00:00' && d <= weekEnd + 'T23:59:59'; });
+      let totalWkCals = 0, totalWkProt = 0, macroN = 0;
+      weekMealsFiltered.forEach(m => {
+        try {
+          if (!m.ai_analysis) return;
+          const a = JSON.parse(m.ai_analysis);
+          const mult = m.portion_size === 'small' ? 0.7 : m.portion_size === 'large' ? 1.4 : 1.0;
+          if (a.nutritional_summary?.calories) { totalWkCals += Math.round(a.nutritional_summary.calories * mult); totalWkProt += Math.round((a.nutritional_summary.protein_g || 0) * mult); macroN++; }
+        } catch (_) {}
+      });
+      const mealCountSummary = weekMealsFiltered.length > 0 ? `${weekMealsFiltered.length} meals logged` : 'not logged';
+      const calorieSummary = macroN > 0 ? `avg ${Math.round(totalWkCals / 7)} kcal/day (${macroN} meals analysed)` : 'not logged';
+      const proteinSummary = macroN > 0 ? `avg ${Math.round(totalWkProt / macroN)}g protein per meal` : 'not logged';
+
       const ai = await base44.asServiceRole.integrations.Core.InvokeLLM({
         prompt: `You are FemWell's wellness intelligence engine. Generate a personal weekly insight for a woman based on the data below. Be warm, specific, and grounded in her actual numbers — never generic.
 
@@ -105,6 +120,9 @@ User data for this week:
 - Breakout locations logged: ${breakoutSummary || 'none'}
 - Hair shedding most logged this week: ${sheddingMode || 'not logged'}
 - Scalp condition most logged: ${scalpMode || 'not logged'}
+- Meals logged this week: ${mealCountSummary}
+- Average daily calories: ${calorieSummary}
+- Average protein per meal: ${proteinSummary}
 - Number of check-ins logged: ${currentWeek.length}
 - Goals: ${goals}
 - Tone preference: ${tonePreference}

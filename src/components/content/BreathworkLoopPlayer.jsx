@@ -308,12 +308,12 @@ export default function BreathworkLoopPlayer({ item, user }) {
 
   if (loading) return (
     <div className="flex items-center justify-center h-64">
-      <div className="w-8 h-8 border-4 border-purple-300 border-t-purple-600 rounded-full animate-spin" />
+      <div className="w-8 h-8 rounded-full animate-spin" style={{ border: "4px solid var(--mauve-light)", borderTopColor: "var(--mauve)" }} />
     </div>
   );
 
   if (segments.length === 0) return (
-    <div className="text-center py-12 text-gray-400 text-sm">No audio segments configured for this session.</div>
+    <div className="text-center py-12 text-sm" style={{ color: "var(--mauve)" }}>No audio segments configured for this session.</div>
   );
 
   return (
