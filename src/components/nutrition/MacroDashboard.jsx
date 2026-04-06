@@ -43,12 +43,20 @@ export default function MacroDashboard({ meals, hydrationLogs, nutritionProfile 
       if (!meal.ai_analysis) return acc;
       try {
         const analysis = JSON.parse(meal.ai_analysis);
-        (analysis.items || []).forEach((item) => {
-          acc.calories += item.calories   || 0;
-          acc.protein  += item.protein_g  || 0;
-          acc.carbs    += item.carbs_g    || 0;
-          acc.fat      += item.fat_g      || 0;
-        });
+        const m = meal.portion_size === "small" ? 0.7 : meal.portion_size === "large" ? 1.4 : 1.0;
+        if (analysis.nutritional_summary?.calories) {
+          acc.calories += Math.round((analysis.nutritional_summary.calories || 0) * m);
+          acc.protein  += Math.round((analysis.nutritional_summary.protein_g  || 0) * m);
+          acc.carbs    += Math.round((analysis.nutritional_summary.carbs_g    || 0) * m);
+          acc.fat      += Math.round((analysis.nutritional_summary.fat_g      || 0) * m);
+        } else {
+          (analysis.items || []).forEach((item) => {
+            acc.calories += Math.round((item.calories || item.estimated_calories || 0) * m);
+            acc.protein  += Math.round((item.protein_g || 0) * m);
+            acc.carbs    += Math.round((item.carbs_g   || 0) * m);
+            acc.fat      += Math.round((item.fat_g     || 0) * m);
+          });
+        }
       } catch (_) {}
       return acc;
     }, { calories: 0, protein: 0, carbs: 0, fat: 0 });

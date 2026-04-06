@@ -43,35 +43,38 @@ export default function MedReminderSection({ user }) {
     setReminders(prev => prev.filter(r => r.id !== id));
   };
 
+  const inputStyle = { width: "100%", padding: "8px 10px", borderRadius: 10, border: "1px solid var(--border)", backgroundColor: "var(--ivory)", color: "var(--plum)", fontSize: 12, fontFamily: "'Inter', sans-serif", outline: "none" };
+
   return (
-    <div className="mt-5 pt-4 border-t border-rose-50">
+    <div className="mt-5 pt-4" style={{ borderTop: "1px solid var(--border-subtle)" }}>
       <div className="flex items-center gap-2 mb-3">
-        <Bell className="w-4 h-4 text-purple-400" />
-        <p className="text-sm font-semibold text-gray-700">Email Reminders</p>
+        <Bell style={{ width: 16, height: 16, color: "var(--mauve)" }} />
+        <p className="text-sm font-semibold" style={{ color: "var(--plum)" }}>Email Reminders</p>
       </div>
 
       {reminders.length === 0 && !adding && (
-        <p className="text-xs text-gray-400 mb-3">No reminders set. Add one to receive email alerts!</p>
+        <p className="text-xs mb-3" style={{ color: "var(--mauve)" }}>No reminders set. Add one to receive email alerts.</p>
       )}
 
       <div className="space-y-2 mb-3">
         {reminders.map((rem) => (
-          <div key={rem.id} className="bg-white/60 rounded-xl px-3 py-2.5 flex items-center justify-between">
+          <div key={rem.id} className="rounded-xl px-3 py-2.5 flex items-center justify-between"
+            style={{ backgroundColor: "var(--ivory)", border: "1px solid var(--border-subtle)" }}>
             <div className="flex items-center gap-2">
-              <Clock className="w-3.5 h-3.5 text-purple-300 flex-shrink-0" />
+              <Clock style={{ width: 14, height: 14, color: "var(--mauve)", flexShrink: 0 }} />
               <div>
-                <p className="text-xs font-semibold text-gray-700">{rem.medication_name}</p>
-                <p className="text-[10px] text-gray-400">{rem.reminder_time}{rem.dose ? ` · ${rem.dose}` : ""}</p>
+                <p className="text-xs font-semibold" style={{ color: "var(--plum)" }}>{rem.medication_name}</p>
+                <p style={{ fontSize: 10, color: "var(--mauve)" }}>{rem.reminder_time}{rem.dose ? ` · ${rem.dose}` : ""}</p>
               </div>
             </div>
             <div className="flex items-center gap-2.5">
               <button onClick={() => toggleReminder(rem)} title={rem.is_active ? "Disable" : "Enable"}>
                 {rem.is_active
-                  ? <Bell className="w-4 h-4 text-purple-400" />
-                  : <BellOff className="w-4 h-4 text-gray-300" />}
+                  ? <Bell style={{ width: 16, height: 16, color: "var(--mauve)" }} />
+                  : <BellOff style={{ width: 16, height: 16, color: "var(--border)" }} />}
               </button>
               <button onClick={() => deleteReminder(rem.id)}>
-                <Trash2 className="w-3.5 h-3.5 text-red-300 hover:text-red-400" />
+                <Trash2 style={{ width: 14, height: 14, color: "var(--rose-dust)" }} />
               </button>
             </div>
           </div>
@@ -79,27 +82,37 @@ export default function MedReminderSection({ user }) {
       </div>
 
       {adding ? (
-        <div className="bg-white/60 rounded-xl p-3 space-y-2">
+        <div className="rounded-xl p-3 space-y-2" style={{ backgroundColor: "var(--ivory)", border: "1px solid var(--border)" }}>
           <input type="text" placeholder="Medication name *" value={name} onChange={e => setName(e.target.value)}
-            className="w-full p-2 rounded-lg border border-purple-100 bg-white/80 text-xs focus:outline-none focus:ring-2 focus:ring-purple-200" autoFocus />
+            style={inputStyle} autoFocus
+            onFocus={e => e.target.style.borderColor = "var(--rose-dust-light)"}
+            onBlur={e => e.target.style.borderColor = "var(--border)"} />
           <input type="text" placeholder="Dose (e.g. 500mg, optional)" value={dose} onChange={e => setDose(e.target.value)}
-            className="w-full p-2 rounded-lg border border-purple-100 bg-white/80 text-xs focus:outline-none focus:ring-2 focus:ring-purple-200" />
+            style={inputStyle}
+            onFocus={e => e.target.style.borderColor = "var(--rose-dust-light)"}
+            onBlur={e => e.target.style.borderColor = "var(--border)"} />
           <div className="flex items-center gap-2">
-            <label className="text-xs text-gray-500 flex-shrink-0">Reminder time (UTC):</label>
+            <label style={{ fontSize: 12, color: "var(--mauve)", flexShrink: 0 }}>Reminder time (UTC):</label>
             <input type="time" value={time} onChange={e => setTime(e.target.value)}
-              className="flex-1 p-2 rounded-lg border border-purple-100 bg-white/80 text-xs focus:outline-none focus:ring-2 focus:ring-purple-200" />
+              style={{ ...inputStyle, width: "auto", flex: 1 }}
+              onFocus={e => e.target.style.borderColor = "var(--rose-dust-light)"}
+              onBlur={e => e.target.style.borderColor = "var(--border)"} />
           </div>
           <div className="flex gap-2">
-            <button onClick={() => { setAdding(false); setName(""); setDose(""); }} className="btn-secondary flex-1 py-1.5 text-xs">Cancel</button>
+            <button onClick={() => { setAdding(false); setName(""); setDose(""); }}
+              className="flex-1 py-1.5 text-xs rounded-xl"
+              style={{ border: "1px solid var(--border)", color: "var(--mauve)", backgroundColor: "transparent", cursor: "pointer" }}>Cancel</button>
             <button onClick={addReminder} disabled={!name.trim() || saving}
-              className="btn-primary flex-1 py-1.5 text-xs flex items-center justify-center gap-1">
+              className="flex-1 py-1.5 text-xs rounded-xl flex items-center justify-center gap-1"
+              style={{ backgroundColor: "var(--plum)", color: "white", border: "none", cursor: "pointer", opacity: (!name.trim() || saving) ? 0.5 : 1 }}>
               {saving ? <Loader2 className="w-3 h-3 animate-spin" /> : null}
-              {saving ? "Saving…" : "Set Reminder"}
+              {saving ? "Saving..." : "Set Reminder"}
             </button>
           </div>
         </div>
       ) : (
-        <button onClick={() => setAdding(true)} className="flex items-center gap-1.5 text-xs text-purple-500 hover:text-purple-700 font-medium transition-colors">
+        <button onClick={() => setAdding(true)} className="flex items-center gap-1.5 text-xs font-medium"
+          style={{ color: "var(--mauve)", background: "none", border: "none", cursor: "pointer" }}>
           <Plus className="w-3.5 h-3.5" />
           Add reminder
         </button>

@@ -54,45 +54,50 @@ export default function AIHealthSummaryCard({ timeRange, checkins, symptomLogs, 
   };
 
   return (
-    <div className="card-glass rounded-2xl p-4 mb-4">
+    <div className="rounded-2xl p-4 mb-4"
+      style={{ backgroundColor: "var(--surface)", border: "1px solid var(--border)", boxShadow: "var(--shadow-sm)" }}>
       <div className="flex items-start justify-between gap-3 mb-3">
         <div className="flex items-center gap-2">
-          <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-violet-200 to-rose-200 flex items-center justify-center">
-            <Sparkles className="w-4 h-4 text-violet-600" />
+          <div className="w-8 h-8 rounded-xl flex items-center justify-center"
+            style={{ backgroundColor: "var(--rose-dust-subtle)" }}>
+            <Sparkles style={{ width: 16, height: 16, color: "var(--rose-dust)" }} />
           </div>
           <div>
-            <p className="text-sm font-bold text-gray-800">Smart Insights</p>
-            <p className="text-xs text-gray-400">A guided readout of your recent patterns.</p>
+            <p className="text-sm font-bold" style={{ color: "var(--plum)" }}>Smart Insights</p>
+            <p className="text-xs" style={{ color: "var(--mauve)" }}>A guided readout of your recent patterns.</p>
           </div>
         </div>
         <button
           onClick={generateSummary}
           disabled={loading}
-          className="w-9 h-9 rounded-full bg-rose-50 flex items-center justify-center hover:bg-rose-100 transition-colors"
+          className="w-9 h-9 rounded-full flex items-center justify-center transition-colors"
+          style={{ backgroundColor: "var(--rose-dust-subtle)" }}
           title="Generate summary"
         >
-          <RefreshCw className={`w-4 h-4 text-rose-500 ${loading ? "animate-spin" : ""}`} />
+          <RefreshCw className={`w-4 h-4 ${loading ? "animate-spin" : ""}`} style={{ color: "var(--rose-dust)" }} />
         </button>
       </div>
 
       {!summary && !loading && (
         <button
           onClick={generateSummary}
-          className="w-full py-2.5 rounded-xl bg-gradient-to-r from-violet-100 to-rose-100 text-sm font-medium text-violet-700 hover:from-violet-200 hover:to-rose-200 transition-all"
+          className="w-full py-2.5 rounded-xl text-sm font-medium transition-all"
+          style={{ backgroundColor: "var(--ivory-dark)", color: "var(--mauve)", border: "none", cursor: "pointer" }}
         >
-          ✨ Generate smart insight
+          Generate smart insight
         </button>
       )}
 
       {loading && (
-        <div className="flex items-center gap-2 py-3 text-sm text-gray-400">
-          <div className="w-4 h-4 border-2 border-rose-300 border-t-rose-600 rounded-full animate-spin" />
-          Reading your patterns…
+        <div className="flex items-center gap-2 py-3 text-sm" style={{ color: "var(--mauve)" }}>
+          <div className="w-4 h-4 rounded-full animate-spin"
+            style={{ border: "2px solid var(--rose-dust-light)", borderTopColor: "var(--rose-dust)" }} />
+          Reading your patterns...
         </div>
       )}
 
       {!!summary && !loading && (
-        <div className="prose prose-sm max-w-none prose-p:my-1.5 prose-headings:text-gray-700 prose-strong:text-rose-700 text-gray-600 text-sm">
+        <div className="prose prose-sm max-w-none prose-p:my-1.5 text-sm" style={{ color: "var(--mauve)" }}>
           <ReactMarkdown>{summary}</ReactMarkdown>
         </div>
       )}

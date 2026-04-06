@@ -168,7 +168,7 @@ export default function NutritionTodayTab({ user, profile, nutritionProfile, day
   const [showGoalPicker, setShowGoalPicker] = useState(false);
   const [savingTemplate, setSavingTemplate] = useState(false);
   const [portionSize, setPortionSize] = useState("medium");
-  const [showDrinks, setShowDrinks] = useState(false);
+  const [showDrinks, setShowDrinks] = useState(true);
   const [drinkLogs, setDrinkLogs] = useState([]);
   const [loggingDrink, setLoggingDrink] = useState(false);
 
@@ -207,7 +207,7 @@ export default function NutritionTodayTab({ user, profile, nutritionProfile, day
       });
       setDrinkLogs((prev) => [...prev, newLog]);
       if (["water", "tea", "coffee", "juice", "smoothie", "milk"].includes(drinkType)) {
-        const newMl = drinkLogs.reduce((s, l) => s + (l.amount_ml || 0), 0) + (drinkInfo?.ml || 250);
+        const newMl = [...drinkLogs, newLog].reduce((s, l) => s + (l.amount_ml || 0), 0);
         if (checkin?.id) base44.entities.DailyCheckins.update(checkin.id, { hydration_glasses: Math.round(newMl / 250) }).catch(() => {});
       }
     } catch (e) { console.error(e); }
@@ -250,8 +250,9 @@ export default function NutritionTodayTab({ user, profile, nutritionProfile, day
       if (res.data) {
         setLastAnalysis(res.data);
         setShowQuickCheck(true);
-        if (res.data.items?.length > 0) {
+        if (res.data.items?.length > 0 || res.data.nutritional_summary) {
           await base44.entities.MealLog.update(log.id, { ai_analysis: JSON.stringify(res.data) });
+          setMeals((prev) => prev.map((m) => m.id === log.id ? { ...m, ai_analysis: JSON.stringify(res.data) } : m));
           const nutritionProfiles = await base44.entities.NutritionProfile.filter({ user_id: user.id });
           if (nutritionProfiles[0]?.goal_mode) {
             await base44.entities.MealLog.update(log.id, { wellness_goal: nutritionProfiles[0].goal_mode });

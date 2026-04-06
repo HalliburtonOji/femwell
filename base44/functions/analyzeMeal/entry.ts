@@ -31,7 +31,23 @@ User context: cycle phase: ${cycle_phase || 'unknown'}, energy: ${energy_level |
 
 Return this exact JSON structure:
 {
-  "items": [{"name": "string", "quantity_text": "string", "estimated_protein": "low|medium|high", "estimated_fiber": "low|medium|high", "estimated_calories": 0}],
+  "nutritional_summary": {
+    "calories": 0,
+    "protein_g": 0,
+    "carbs_g": 0,
+    "fat_g": 0,
+    "fiber_g": 0
+  },
+  "items": [
+    {
+      "name": "string",
+      "quantity_text": "string",
+      "calories": 0,
+      "protein_g": 0,
+      "carbs_g": 0,
+      "fat_g": 0
+    }
+  ],
   "quick_check": {
     "supports": ["energy"],
     "bullets": ["string", "string", "string"],
@@ -40,14 +56,16 @@ Return this exact JSON structure:
   },
   "meal_score": {"protein": 5, "veg_fiber": 5, "balance": 5},
   "insight": {
-    "headline": "catchy 5-8 word headline e.g. 'Great fuel for your afternoon!'",
-    "wellness_impact": "2-3 warm sentences on how this meal may support general wellbeing",
-    "action_items": "1-2 practical next steps as a short string",
-    "smart_swap": "one simple ingredient swap suggestion",
+    "headline": "catchy 5-8 word headline",
+    "wellness_impact": "2-3 warm sentences",
+    "action_items": "1-2 practical next steps",
+    "smart_swap": "one ingredient swap suggestion",
     "confidence": "low|medium|high",
-    "tone_safety_note": "brief reminder this is general info not medical advice"
+    "tone_safety_note": "brief disclaimer"
   }
-}`
+}
+
+nutritional_summary.calories = integer sum of all items. All macro fields = integers.`
         }
       ],
       response_format: { type: "json_object" }

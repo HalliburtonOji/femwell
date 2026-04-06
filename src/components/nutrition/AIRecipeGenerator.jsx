@@ -4,12 +4,12 @@ import { motion, AnimatePresence } from "framer-motion";
 import { Sparkles, Loader2, X, ChefHat, CalendarDays, Plus, CheckCircle, Copy, BookmarkPlus, ChevronDown, ChevronUp } from "lucide-react";
 
 const WELLNESS_GOALS = [
-  { id: "energy", label: "Boost Energy", emoji: "⚡" },
-  { id: "digestion", label: "Digestion", emoji: "🌿" },
-  { id: "sleep", label: "Better Sleep", emoji: "💤" },
-  { id: "mood", label: "Mood Support", emoji: "😊" },
-  { id: "hydration", label: "Hydration", emoji: "💧" },
-  { id: "hormone", label: "Hormone Balance", emoji: "🌸" },
+  { id: "energy",     label: "Boost Energy"     },
+  { id: "digestion",  label: "Digestion"         },
+  { id: "sleep",      label: "Better Sleep"      },
+  { id: "mood",       label: "Mood Support"      },
+  { id: "hydration",  label: "Hydration"         },
+  { id: "hormone",    label: "Hormone Balance"   },
 ];
 
 const DURATION_OPTIONS = [
@@ -18,13 +18,13 @@ const DURATION_OPTIONS = [
   { value: 7, label: "Full week" },
 ];
 
-const DIFFICULTY_COLORS = {
-  Easy: "bg-green-50 text-green-600",
-  Medium: "bg-amber-50 text-amber-600",
-  Advanced: "bg-rose-50 text-rose-600",
+const DIFFICULTY_STYLES = {
+  Easy:     { backgroundColor: "#EDFAF1", color: "#3D9A5E" },
+  Medium:   { backgroundColor: "#FFF8EE", color: "#A07830" },
+  Advanced: { backgroundColor: "var(--rose-dust-subtle)", color: "var(--rose-dust)" },
 };
 
-const MEAL_EMOJIS = { breakfast: "🌅", lunch: "☀️", dinner: "🌙", snack: "🍎" };
+const MEAL_LABELS_PLAN = { breakfast: "Breakfast", lunch: "Lunch", dinner: "Dinner", snack: "Snack" };
 
 function TagInput({ tags, setTags, placeholder }) {
   const [input, setInput] = useState("");
@@ -37,17 +37,21 @@ function TagInput({ tags, setTags, placeholder }) {
     <div className="w-full">
       <div className="flex gap-1.5 flex-wrap mb-2">
         {tags.map((t) => (
-          <span key={t} className="flex items-center gap-1 px-2.5 py-1 rounded-full bg-rose-50 text-rose-600 text-xs font-medium">
+          <span key={t} style={{ display: "inline-flex", alignItems: "center", gap: 4, padding: "4px 10px", borderRadius: 9999, backgroundColor: "var(--rose-dust-subtle)", color: "var(--rose-dust)", fontSize: 12, fontWeight: 500 }}>
             {t}
-            <button onClick={() => setTags(tags.filter((x) => x !== t))}><X className="w-3 h-3" /></button>
+            <button onClick={() => setTags(tags.filter((x) => x !== t))} style={{ background: "none", border: "none", cursor: "pointer", padding: 0 }}><X className="w-3 h-3" /></button>
           </span>
         ))}
       </div>
       <div className="flex gap-2">
         <input value={input} onChange={(e) => setInput(e.target.value)}
           onKeyDown={(e) => { if (e.key === "Enter" || e.key === ",") { e.preventDefault(); add(); } }}
-          placeholder={placeholder} className="flex-1 p-2.5 rounded-xl border border-rose-100 bg-white/80 text-sm focus:outline-none focus:ring-2 focus:ring-rose-200" />
-        <button onClick={add} disabled={!input.trim()} className="px-3 py-2 rounded-xl bg-rose-50 text-rose-500 hover:bg-rose-100 transition-colors">
+          placeholder={placeholder}
+          style={{ flex: 1, padding: "10px 12px", borderRadius: 12, border: "1px solid var(--border)", backgroundColor: "var(--ivory)", color: "var(--plum)", fontSize: 13, fontFamily: "'Inter', sans-serif", outline: "none" }}
+          onFocus={e => e.target.style.borderColor = "var(--rose-dust-light)"}
+          onBlur={e => e.target.style.borderColor = "var(--border)"}
+        />
+        <button onClick={add} disabled={!input.trim()} style={{ padding: "8px 12px", borderRadius: 12, backgroundColor: "var(--rose-dust-subtle)", color: "var(--rose-dust)", border: "none", cursor: "pointer" }}>
           <Plus className="w-4 h-4" />
         </button>
       </div>
@@ -62,10 +66,10 @@ function RecipeCard({ recipe, onSaveAsTemplate }) {
 
   const copyRecipe = () => {
     const text = [
-      `🍳 ${recipe.recipe_name}`,
-      `\n📋 Ingredients:\n${recipe.ingredients?.map(i => `• ${i.quantity} ${i.unit} ${i.name}${i.optional ? " (optional)" : ""}`).join("\n")}`,
-      `\n👩‍🍳 Instructions:\n${recipe.instructions?.map((s, i) => `${i + 1}. ${s}`).join("\n")}`,
-      `\n📊 Nutrition: ${recipe.nutritional_summary?.calories}kcal | P: ${recipe.nutritional_summary?.protein_g}g | C: ${recipe.nutritional_summary?.carbs_g}g | F: ${recipe.nutritional_summary?.fat_g}g`,
+      recipe.recipe_name,
+      `\nIngredients:\n${recipe.ingredients?.map(i => `- ${i.quantity} ${i.unit} ${i.name}${i.optional ? " (optional)" : ""}`).join("\n")}`,
+      `\nInstructions:\n${recipe.instructions?.map((s, i) => `${i + 1}. ${s}`).join("\n")}`,
+      `\nNutrition: ${recipe.nutritional_summary?.calories}kcal | P: ${recipe.nutritional_summary?.protein_g}g | C: ${recipe.nutritional_summary?.carbs_g}g | F: ${recipe.nutritional_summary?.fat_g}g`,
     ].join("");
     navigator.clipboard.writeText(text);
     setCopied(true);
@@ -79,40 +83,41 @@ function RecipeCard({ recipe, onSaveAsTemplate }) {
   };
 
   return (
-    <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} className="card-glass rounded-2xl overflow-hidden">
+    <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }}
+      style={{ backgroundColor: "var(--surface)", border: "1px solid var(--border)", borderRadius: 16, overflow: "hidden", marginBottom: 12 }}>
       {/* Header */}
-      <div className="bg-gradient-to-r from-rose-400 to-pink-500 p-4 text-white">
-        <div className="flex items-start justify-between gap-2">
+      <div style={{ backgroundColor: "var(--plum)", padding: 16, color: "white" }}>
+        <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 8 }}>
           <div>
-            <p className="font-black text-base">{recipe.recipe_name}</p>
-            {recipe.tagline && <p className="text-white/80 text-xs mt-0.5">{recipe.tagline}</p>}
+            <p style={{ fontWeight: 800, fontSize: 15, color: "white", margin: 0 }}>{recipe.recipe_name}</p>
+            {recipe.tagline && <p style={{ color: "rgba(255,255,255,0.75)", fontSize: 12, marginTop: 2 }}>{recipe.tagline}</p>}
           </div>
-          <span className={`text-[10px] px-2 py-1 rounded-full font-semibold flex-shrink-0 ${DIFFICULTY_COLORS[recipe.difficulty] || "bg-white/20 text-white"}`}>
+          <span style={{ ...(DIFFICULTY_STYLES[recipe.difficulty] || { backgroundColor: "rgba(255,255,255,0.2)", color: "white" }), fontSize: 10, padding: "3px 8px", borderRadius: 9999, fontWeight: 600, flexShrink: 0 }}>
             {recipe.difficulty}
           </span>
         </div>
-        <div className="flex gap-3 mt-3 text-xs text-white/90">
-          {recipe.prep_time_minutes > 0 && <span>⏱ Prep: {recipe.prep_time_minutes}m</span>}
-          {recipe.cook_time_minutes > 0 && <span>🔥 Cook: {recipe.cook_time_minutes}m</span>}
-          {recipe.servings && <span>🍽 Serves {recipe.servings}</span>}
-          {recipe.cuisine_type && <span>🌍 {recipe.cuisine_type}</span>}
+        <div style={{ display: "flex", gap: 12, marginTop: 10, fontSize: 12, color: "rgba(255,255,255,0.85)" }}>
+          {recipe.prep_time_minutes > 0 && <span>Prep {recipe.prep_time_minutes}m</span>}
+          {recipe.cook_time_minutes > 0 && <span>Cook {recipe.cook_time_minutes}m</span>}
+          {recipe.servings && <span>Serves {recipe.servings}</span>}
+          {recipe.cuisine_type && <span>{recipe.cuisine_type}</span>}
         </div>
       </div>
 
-      <div className="p-4 space-y-4">
+      <div style={{ padding: 16 }} className="space-y-4">
         {/* Nutrition summary */}
         {recipe.nutritional_summary && (
           <div className="grid grid-cols-5 gap-1.5">
             {[
-              { label: "Kcal", val: recipe.nutritional_summary.calories, color: "bg-amber-50 text-amber-700" },
-              { label: "Protein", val: `${recipe.nutritional_summary.protein_g}g`, color: "bg-blue-50 text-blue-700" },
-              { label: "Carbs", val: `${recipe.nutritional_summary.carbs_g}g`, color: "bg-orange-50 text-orange-700" },
-              { label: "Fat", val: `${recipe.nutritional_summary.fat_g}g`, color: "bg-purple-50 text-purple-700" },
-              { label: "Fibre", val: `${recipe.nutritional_summary.fiber_g}g`, color: "bg-green-50 text-green-700" },
+              { label: "Kcal",   val: recipe.nutritional_summary.calories,  bg: "#FFF8EE", fg: "#A07830" },
+              { label: "Protein",val: `${recipe.nutritional_summary.protein_g}g`, bg: "#EEF4FF", fg: "#3B5FC4" },
+              { label: "Carbs",  val: `${recipe.nutritional_summary.carbs_g}g`,   bg: "#FFF3EE", fg: "#A05A2C" },
+              { label: "Fat",    val: `${recipe.nutritional_summary.fat_g}g`,     bg: "#F5F0FF", fg: "#7C3AED" },
+              { label: "Fibre",  val: `${recipe.nutritional_summary.fiber_g}g`,   bg: "#EDFAF1", fg: "#2D7A4F" },
             ].map((n) => (
-              <div key={n.label} className={`${n.color} rounded-xl p-2 text-center`}>
-                <p className="font-bold text-xs">{n.val}</p>
-                <p className="text-[9px] opacity-70">{n.label}</p>
+              <div key={n.label} style={{ backgroundColor: n.bg, borderRadius: 12, padding: "8px 4px", textAlign: "center" }}>
+                <p style={{ fontWeight: 700, fontSize: 12, color: n.fg, margin: 0 }}>{n.val}</p>
+                <p style={{ fontSize: 9, color: n.fg, opacity: 0.7, margin: 0 }}>{n.label}</p>
               </div>
             ))}
           </div>
@@ -121,11 +126,11 @@ function RecipeCard({ recipe, onSaveAsTemplate }) {
         {/* Wellness benefits */}
         {recipe.wellness_benefits?.length > 0 && (
           <div>
-            <p className="text-xs font-bold text-gray-600 mb-1.5">✨ Wellness Benefits</p>
+            <p style={{ fontSize: 12, fontWeight: 700, color: "var(--mauve)", marginBottom: 6 }}>Wellness Benefits</p>
             <div className="space-y-1">
               {recipe.wellness_benefits.map((b, i) => (
-                <div key={i} className="flex gap-2 text-xs text-gray-600">
-                  <CheckCircle className="w-3.5 h-3.5 text-emerald-400 flex-shrink-0 mt-0.5" />
+                <div key={i} style={{ display: "flex", gap: 8, fontSize: 12, color: "var(--mauve)" }}>
+                  <CheckCircle style={{ width: 14, height: 14, color: "var(--sage)", flexShrink: 0, marginTop: 1 }} />
                   {b}
                 </div>
               ))}
@@ -134,7 +139,7 @@ function RecipeCard({ recipe, onSaveAsTemplate }) {
         )}
 
         {/* Expandable details */}
-        <button onClick={() => setExpanded(!expanded)} className="flex items-center gap-1.5 text-xs text-rose-500 font-semibold w-full">
+        <button onClick={() => setExpanded(!expanded)} style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 12, color: "var(--rose-dust)", fontWeight: 600, background: "none", border: "none", cursor: "pointer", width: "100%" }}>
           {expanded ? <ChevronUp className="w-3.5 h-3.5" /> : <ChevronDown className="w-3.5 h-3.5" />}
           {expanded ? "Hide" : "Show"} full recipe
         </button>
@@ -146,14 +151,14 @@ function RecipeCard({ recipe, onSaveAsTemplate }) {
               {/* Ingredients */}
               {recipe.ingredients?.length > 0 && (
                 <div>
-                  <p className="text-xs font-bold text-gray-700 mb-2">📋 Ingredients</p>
+                  <p style={{ fontSize: 12, fontWeight: 700, color: "var(--plum)", marginBottom: 8 }}>Ingredients</p>
                   <div className="space-y-1">
                     {recipe.ingredients.map((ing, i) => (
-                      <div key={i} className="flex items-center gap-2 text-xs text-gray-600">
-                        <div className="w-1.5 h-1.5 rounded-full bg-rose-300 flex-shrink-0" />
-                        <span className="font-medium">{ing.quantity} {ing.unit}</span>
+                      <div key={i} style={{ display: "flex", alignItems: "center", gap: 8, fontSize: 12, color: "var(--mauve)" }}>
+                        <div style={{ width: 6, height: 6, borderRadius: 9999, backgroundColor: "var(--rose-dust-light)", flexShrink: 0 }} />
+                        <span style={{ fontWeight: 600 }}>{ing.quantity} {ing.unit}</span>
                         <span>{ing.name}</span>
-                        {ing.optional && <span className="text-gray-400">(optional)</span>}
+                        {ing.optional && <span style={{ color: "var(--border)" }}>(optional)</span>}
                       </div>
                     ))}
                   </div>
@@ -163,12 +168,12 @@ function RecipeCard({ recipe, onSaveAsTemplate }) {
               {/* Instructions */}
               {recipe.instructions?.length > 0 && (
                 <div>
-                  <p className="text-xs font-bold text-gray-700 mb-2">👩‍🍳 Instructions</p>
+                  <p style={{ fontSize: 12, fontWeight: 700, color: "var(--plum)", marginBottom: 8 }}>Instructions</p>
                   <div className="space-y-2">
                     {recipe.instructions.map((step, i) => (
-                      <div key={i} className="flex gap-2.5 text-xs text-gray-600">
-                        <span className="w-5 h-5 rounded-full bg-rose-100 text-rose-600 font-bold flex items-center justify-center flex-shrink-0 text-[10px]">{i + 1}</span>
-                        <p className="leading-relaxed pt-0.5">{step}</p>
+                      <div key={i} style={{ display: "flex", gap: 10, fontSize: 12, color: "var(--mauve)" }}>
+                        <span style={{ width: 20, height: 20, borderRadius: 9999, backgroundColor: "var(--rose-dust-subtle)", color: "var(--rose-dust)", fontWeight: 700, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, fontSize: 10 }}>{i + 1}</span>
+                        <p style={{ lineHeight: 1.5, paddingTop: 2, margin: 0 }}>{step}</p>
                       </div>
                     ))}
                   </div>
@@ -177,8 +182,8 @@ function RecipeCard({ recipe, onSaveAsTemplate }) {
 
               {/* Tip */}
               {recipe.tip && (
-                <div className="bg-amber-50 rounded-xl p-3">
-                  <p className="text-xs text-amber-700"><span className="font-bold">💡 Chef tip:</span> {recipe.tip}</p>
+                <div style={{ backgroundColor: "#FFF8EE", borderRadius: 12, padding: 12 }}>
+                  <p style={{ fontSize: 12, color: "#A07830", margin: 0 }}><span style={{ fontWeight: 700 }}>Chef tip:</span> {recipe.tip}</p>
                 </div>
               )}
             </motion.div>
@@ -188,14 +193,13 @@ function RecipeCard({ recipe, onSaveAsTemplate }) {
         {/* Add-on suggestions */}
         {recipe.addon_suggestions?.length > 0 && (
           <div>
-            <p className="text-xs font-bold text-gray-600 mb-1.5">🌟 Add-On Suggestions</p>
+            <p style={{ fontSize: 12, fontWeight: 700, color: "var(--mauve)", marginBottom: 6 }}>Add-On Suggestions</p>
             <div className="space-y-1.5">
               {recipe.addon_suggestions.map((s, i) => (
-                <div key={i} className="flex gap-2 bg-emerald-50/60 rounded-xl p-2.5">
-                  <span className="text-sm flex-shrink-0">➕</span>
+                <div key={i} style={{ display: "flex", gap: 8, backgroundColor: "var(--sage-subtle)", borderRadius: 12, padding: 10 }}>
                   <div>
-                    <p className="text-xs font-semibold text-emerald-700">{s.name}</p>
-                    <p className="text-[11px] text-gray-500">{s.reason}</p>
+                    <p style={{ fontSize: 12, fontWeight: 600, color: "var(--sage)", margin: 0 }}>{s.name}</p>
+                    <p style={{ fontSize: 11, color: "var(--mauve)", margin: 0 }}>{s.reason}</p>
                   </div>
                 </div>
               ))}
@@ -206,13 +210,13 @@ function RecipeCard({ recipe, onSaveAsTemplate }) {
         {/* Action buttons */}
         <div className="flex gap-2 pt-1">
           <button onClick={copyRecipe}
-            className="flex-1 flex items-center justify-center gap-1.5 py-2 rounded-xl bg-white/70 text-gray-600 text-xs font-medium border border-gray-100 hover:bg-gray-50">
-            {copied ? <CheckCircle className="w-3.5 h-3.5 text-green-500" /> : <Copy className="w-3.5 h-3.5" />}
-            {copied ? "Copied!" : "Copy recipe"}
+            style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center", gap: 6, padding: "8px 0", borderRadius: 12, backgroundColor: "var(--ivory)", color: "var(--mauve)", fontSize: 12, fontWeight: 500, border: "1px solid var(--border)", cursor: "pointer" }}>
+            {copied ? <CheckCircle style={{ width: 14, height: 14, color: "var(--sage)" }} /> : <Copy style={{ width: 14, height: 14 }} />}
+            {copied ? "Copied" : "Copy recipe"}
           </button>
           <button onClick={handleSaveTemplate} disabled={saving}
-            className="flex-1 flex items-center justify-center gap-1.5 py-2 rounded-xl bg-rose-50 text-rose-500 text-xs font-medium border border-rose-100 hover:bg-rose-100">
-            {saving ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <BookmarkPlus className="w-3.5 h-3.5" />}
+            style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center", gap: 6, padding: "8px 0", borderRadius: 12, backgroundColor: "var(--rose-dust-subtle)", color: "var(--rose-dust)", fontSize: 12, fontWeight: 500, border: "1px solid var(--rose-dust-light)", cursor: "pointer", opacity: saving ? 0.6 : 1 }}>
+            {saving ? <Loader2 style={{ width: 14, height: 14 }} className="animate-spin" /> : <BookmarkPlus style={{ width: 14, height: 14 }} />}
             Save as favourite
           </button>
         </div>
@@ -242,23 +246,26 @@ function MealPlanCard({ mealPlan, onSaveToPlan }) {
   };
 
   return (
-    <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} className="card-glass rounded-2xl overflow-hidden">
-      <div className="bg-gradient-to-r from-emerald-400 to-teal-500 p-4 text-white">
-        <p className="font-black text-base">{mealPlan.plan_name}</p>
-        {mealPlan.wellness_focus && <p className="text-white/80 text-xs mt-0.5">🎯 {mealPlan.wellness_focus}</p>}
+    <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }}
+      style={{ backgroundColor: "var(--surface)", border: "1px solid var(--border)", borderRadius: 16, overflow: "hidden", marginBottom: 12 }}>
+      <div style={{ backgroundColor: "var(--sage)", padding: 16, color: "white" }}>
+        <p style={{ fontWeight: 800, fontSize: 15, color: "white", margin: 0 }}>{mealPlan.plan_name}</p>
+        {mealPlan.wellness_focus && <p style={{ color: "rgba(255,255,255,0.8)", fontSize: 12, marginTop: 2 }}>{mealPlan.wellness_focus}</p>}
         {mealPlan.weekly_tip && (
-          <div className="mt-2 bg-white/20 rounded-xl p-2.5">
-            <p className="text-xs text-white/90">💡 {mealPlan.weekly_tip}</p>
+          <div style={{ marginTop: 8, backgroundColor: "rgba(255,255,255,0.2)", borderRadius: 12, padding: 10 }}>
+            <p style={{ fontSize: 12, color: "rgba(255,255,255,0.9)", margin: 0 }}>{mealPlan.weekly_tip}</p>
           </div>
         )}
       </div>
 
-      <div className="p-4 space-y-3">
+      <div style={{ padding: 16 }} className="space-y-3">
         {/* Day tabs */}
         <div className="flex gap-1 overflow-x-auto pb-1">
           {mealPlan.days?.map((d, i) => (
             <button key={i} onClick={() => setExpandedDay(i)}
-              className={`px-3 py-1.5 rounded-xl text-xs font-semibold flex-shrink-0 transition-all ${expandedDay === i ? "bg-emerald-500 text-white" : "bg-white/70 text-gray-500 border border-gray-100"}`}>
+              style={{ padding: "6px 12px", borderRadius: 12, fontSize: 12, fontWeight: 600, flexShrink: 0, cursor: "pointer", border: "none",
+                backgroundColor: expandedDay === i ? "var(--sage)" : "var(--ivory)",
+                color: expandedDay === i ? "white" : "var(--mauve)" }}>
               {d.day_label?.slice(0, 3) || `Day ${d.day_number}`}
             </button>
           ))}
@@ -268,19 +275,18 @@ function MealPlanCard({ mealPlan, onSaveToPlan }) {
         {mealPlan.days?.[expandedDay] && (
           <div className="space-y-2">
             {Object.entries(mealPlan.days[expandedDay].meals || {}).map(([type, meal]) => (
-              <div key={type} className="bg-white/60 rounded-xl p-3">
-                <div className="flex items-center gap-2 mb-1">
-                  <span>{MEAL_EMOJIS[type]}</span>
-                  <p className="text-xs font-bold text-gray-700 capitalize">{type}</p>
-                  {meal.prep_minutes > 0 && <span className="ml-auto text-[10px] text-gray-400">⏱ {meal.prep_minutes}m</span>}
+              <div key={type} style={{ backgroundColor: "var(--ivory)", borderRadius: 12, padding: 12 }}>
+                <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 4 }}>
+                  <p style={{ fontSize: 11, fontWeight: 700, color: "var(--mauve)", textTransform: "capitalize", margin: 0 }}>{MEAL_LABELS_PLAN[type] || type}</p>
+                  {meal.prep_minutes > 0 && <span style={{ marginLeft: "auto", fontSize: 10, color: "var(--mauve)" }}>{meal.prep_minutes}m</span>}
                 </div>
-                <p className="text-sm font-semibold text-gray-800">{meal.name}</p>
-                {meal.description && <p className="text-xs text-gray-500 mt-0.5">{meal.description}</p>}
+                <p style={{ fontSize: 13, fontWeight: 600, color: "var(--plum)", margin: 0 }}>{meal.name}</p>
+                {meal.description && <p style={{ fontSize: 12, color: "var(--mauve)", marginTop: 2 }}>{meal.description}</p>}
               </div>
             ))}
             {mealPlan.days[expandedDay].daily_wellness_tip && (
-              <div className="bg-teal-50 rounded-xl p-2.5">
-                <p className="text-xs text-teal-700">🌿 {mealPlan.days[expandedDay].daily_wellness_tip}</p>
+              <div style={{ backgroundColor: "var(--sage-subtle)", borderRadius: 12, padding: 10 }}>
+                <p style={{ fontSize: 12, color: "var(--sage)", margin: 0 }}>{mealPlan.days[expandedDay].daily_wellness_tip}</p>
               </div>
             )}
           </div>
@@ -289,14 +295,13 @@ function MealPlanCard({ mealPlan, onSaveToPlan }) {
         {/* Add-on suggestions */}
         {mealPlan.addon_suggestions?.length > 0 && (
           <div>
-            <p className="text-xs font-bold text-gray-600 mb-1.5">🌟 Add-On Suggestions</p>
+            <p style={{ fontSize: 12, fontWeight: 700, color: "var(--mauve)", marginBottom: 6 }}>Add-On Suggestions</p>
             <div className="space-y-1.5">
               {mealPlan.addon_suggestions.map((s, i) => (
-                <div key={i} className="flex gap-2 bg-emerald-50/60 rounded-xl p-2.5">
-                  <span className="text-sm flex-shrink-0">➕</span>
+                <div key={i} style={{ display: "flex", gap: 8, backgroundColor: "var(--sage-subtle)", borderRadius: 12, padding: 10 }}>
                   <div>
-                    <p className="text-xs font-semibold text-emerald-700">{s.name}</p>
-                    <p className="text-[11px] text-gray-500">{s.reason} {s.applies_to !== "all" ? `(best for ${s.applies_to})` : ""}</p>
+                    <p style={{ fontSize: 12, fontWeight: 600, color: "var(--sage)", margin: 0 }}>{s.name}</p>
+                    <p style={{ fontSize: 11, color: "var(--mauve)", margin: 0 }}>{s.reason} {s.applies_to !== "all" ? `(best for ${s.applies_to})` : ""}</p>
                   </div>
                 </div>
               ))}
@@ -307,10 +312,10 @@ function MealPlanCard({ mealPlan, onSaveToPlan }) {
         {/* Shopping list */}
         {mealPlan.shopping_list?.length > 0 && (
           <div>
-            <p className="text-xs font-bold text-gray-600 mb-1.5">🛒 Shopping List</p>
+            <p style={{ fontSize: 12, fontWeight: 700, color: "var(--mauve)", marginBottom: 6 }}>Shopping List</p>
             <div className="flex flex-wrap gap-1.5">
               {mealPlan.shopping_list.map((item, i) => (
-                <span key={i} className="text-xs px-2 py-1 rounded-full bg-white/70 text-gray-600 border border-gray-100">{item}</span>
+                <span key={i} style={{ fontSize: 12, padding: "4px 10px", borderRadius: 9999, backgroundColor: "var(--ivory)", color: "var(--mauve)", border: "1px solid var(--border)" }}>{item}</span>
               ))}
             </div>
           </div>
@@ -319,13 +324,13 @@ function MealPlanCard({ mealPlan, onSaveToPlan }) {
         {/* Actions */}
         <div className="flex gap-2 pt-1">
           <button onClick={copyPlan}
-            className="flex-1 flex items-center justify-center gap-1.5 py-2 rounded-xl bg-white/70 text-gray-600 text-xs font-medium border border-gray-100 hover:bg-gray-50">
-            {copied ? <CheckCircle className="w-3.5 h-3.5 text-green-500" /> : <Copy className="w-3.5 h-3.5" />}
-            {copied ? "Copied!" : "Copy plan"}
+            style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center", gap: 6, padding: "8px 0", borderRadius: 12, backgroundColor: "var(--ivory)", color: "var(--mauve)", fontSize: 12, fontWeight: 500, border: "1px solid var(--border)", cursor: "pointer" }}>
+            {copied ? <CheckCircle style={{ width: 14, height: 14, color: "var(--sage)" }} /> : <Copy style={{ width: 14, height: 14 }} />}
+            {copied ? "Copied" : "Copy plan"}
           </button>
           <button onClick={handleSave} disabled={saving}
-            className="flex-1 flex items-center justify-center gap-1.5 py-2 rounded-xl bg-emerald-50 text-emerald-600 text-xs font-medium border border-emerald-100 hover:bg-emerald-100">
-            {saving ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <BookmarkPlus className="w-3.5 h-3.5" />}
+            style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center", gap: 6, padding: "8px 0", borderRadius: 12, backgroundColor: "var(--sage-subtle)", color: "var(--sage)", fontSize: 12, fontWeight: 500, border: "1px solid var(--sage-light)", cursor: "pointer", opacity: saving ? 0.6 : 1 }}>
+            {saving ? <Loader2 style={{ width: 14, height: 14 }} className="animate-spin" /> : <BookmarkPlus style={{ width: 14, height: 14 }} />}
             Save to my plan
           </button>
         </div>
@@ -388,25 +393,25 @@ export default function AIRecipeGenerator({ user, planGoal, plan, setPlan, onSav
   const QUICK_INGREDIENTS = ["chicken", "eggs", "oats", "spinach", "sweet potato", "salmon", "lentils", "chickpeas", "avocado", "banana", "Greek yoghurt", "brown rice", "broccoli", "tofu"];
 
   return (
-    <div className="card-glass rounded-2xl overflow-hidden">
+    <div style={{ backgroundColor: "var(--surface)", border: "1px solid var(--border)", borderRadius: 16, overflow: "hidden" }}>
       {/* Toggle header */}
       <button onClick={() => setOpen(!open)}
         className="w-full flex items-center gap-3 p-4 text-left">
-        <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-rose-400 to-pink-500 flex items-center justify-center flex-shrink-0">
-          <Sparkles className="w-4 h-4 text-white" />
+        <div style={{ width: 32, height: 32, borderRadius: 12, backgroundColor: "var(--rose-dust-subtle)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+          <Sparkles style={{ width: 16, height: 16, color: "var(--rose-dust)" }} />
         </div>
         <div className="flex-1">
-          <p className="text-sm font-bold text-gray-800">AI Recipe & Meal Plan Generator</p>
-          <p className="text-xs text-gray-400">Tell the AI what you have, get a personalised plan</p>
+          <p style={{ fontSize: 14, fontWeight: 700, color: "var(--plum)", fontFamily: "'Inter', sans-serif", margin: 0 }}>AI Recipe and Meal Plan Generator</p>
+          <p style={{ fontSize: 12, color: "var(--mauve)", fontFamily: "'Inter', sans-serif", margin: 0 }}>Tell the AI what you have, get a personalised plan</p>
         </div>
-        {open ? <ChevronUp className="w-4 h-4 text-gray-400" /> : <ChevronDown className="w-4 h-4 text-gray-400" />}
+        {open ? <ChevronUp style={{ width: 16, height: 16, color: "var(--mauve)" }} /> : <ChevronDown style={{ width: 16, height: 16, color: "var(--mauve)" }} />}
       </button>
 
       <AnimatePresence>
         {open && (
           <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: "auto", opacity: 1 }}
             exit={{ height: 0, opacity: 0 }} className="overflow-hidden">
-            <div className="px-4 pb-4 space-y-4 border-t border-rose-50">
+            <div style={{ padding: "0 16px 16px" }} className="space-y-4" style={{ borderTop: "1px solid var(--border-subtle)", padding: "0 16px 16px" }}>
               {/* Mode toggle */}
               <div className="flex gap-1.5 mt-4">
                 {[
@@ -414,8 +419,10 @@ export default function AIRecipeGenerator({ user, planGoal, plan, setPlan, onSav
                   { id: "meal_plan", label: "Meal Plan", icon: CalendarDays },
                 ].map(({ id, label, icon: Icon }) => (
                   <button key={id} onClick={() => setMode(id)}
-                    className={`flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-xl text-xs font-semibold transition-all ${mode === id ? "bg-rose-500 text-white shadow-sm" : "bg-white/70 text-gray-500 border border-rose-100"}`}>
-                    <Icon className="w-3.5 h-3.5" /> {label}
+                    style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center", gap: 6, padding: "10px 0", borderRadius: 12, fontSize: 12, fontWeight: 600, cursor: "pointer", border: "none",
+                      backgroundColor: mode === id ? "var(--rose-dust)" : "var(--ivory)",
+                      color: mode === id ? "white" : "var(--mauve)" }}>
+                    <Icon style={{ width: 14, height: 14 }} /> {label}
                   </button>
                 ))}
               </div>
@@ -423,11 +430,13 @@ export default function AIRecipeGenerator({ user, planGoal, plan, setPlan, onSav
               {/* Duration (meal plan only) */}
               {mode === "meal_plan" && (
                 <div>
-                  <p className="text-xs font-bold text-gray-600 mb-2">📅 Duration</p>
+                  <p style={{ fontSize: 12, fontWeight: 700, color: "var(--mauve)", marginBottom: 8 }}>Duration</p>
                   <div className="flex gap-1.5">
                     {DURATION_OPTIONS.map((d) => (
                       <button key={d.value} onClick={() => setDuration(d.value)}
-                        className={`flex-1 py-2 rounded-xl text-xs font-semibold transition-all ${duration === d.value ? "bg-rose-500 text-white" : "bg-white/70 text-gray-500 border border-rose-100"}`}>
+                        style={{ flex: 1, padding: "8px 0", borderRadius: 12, fontSize: 12, fontWeight: 600, cursor: "pointer", border: "none",
+                          backgroundColor: duration === d.value ? "var(--rose-dust)" : "var(--ivory)",
+                          color: duration === d.value ? "white" : "var(--mauve)" }}>
                         {d.label}
                       </button>
                     ))}
@@ -437,12 +446,14 @@ export default function AIRecipeGenerator({ user, planGoal, plan, setPlan, onSav
 
               {/* Wellness goal */}
               <div>
-                <p className="text-xs font-bold text-gray-600 mb-2">🎯 Wellness Goal</p>
+                <p style={{ fontSize: 12, fontWeight: 700, color: "var(--mauve)", marginBottom: 8 }}>Wellness Goal</p>
                 <div className="flex flex-wrap gap-1.5">
                   {WELLNESS_GOALS.map((g) => (
                     <button key={g.id} onClick={() => setGoal(goal === g.id ? "" : g.id)}
-                      className={`px-2.5 py-1.5 rounded-full text-xs font-medium transition-all ${goal === g.id ? "bg-rose-500 text-white" : "bg-white/70 text-gray-600 border border-rose-100 hover:bg-rose-50"}`}>
-                      {g.emoji} {g.label}
+                      style={{ padding: "6px 12px", borderRadius: 9999, fontSize: 12, fontWeight: 500, cursor: "pointer", border: "none",
+                        backgroundColor: goal === g.id ? "var(--rose-dust)" : "var(--ivory)",
+                        color: goal === g.id ? "white" : "var(--mauve)" }}>
+                      {g.label}
                     </button>
                   ))}
                 </div>
@@ -450,13 +461,13 @@ export default function AIRecipeGenerator({ user, planGoal, plan, setPlan, onSav
 
               {/* Ingredients */}
               <div>
-                <p className="text-xs font-bold text-gray-600 mb-1">🥦 Ingredients I have</p>
-                <p className="text-[10px] text-gray-400 mb-2">Type & press Enter, or tap a suggestion</p>
+                <p style={{ fontSize: 12, fontWeight: 700, color: "var(--mauve)", marginBottom: 4 }}>Ingredients I have</p>
+                <p style={{ fontSize: 10, color: "var(--mauve)", opacity: 0.7, marginBottom: 8 }}>Type and press Enter, or tap a suggestion</p>
                 <TagInput tags={ingredients} setTags={setIngredients} placeholder="e.g. chicken, spinach..." />
                 <div className="flex flex-wrap gap-1 mt-2">
                   {QUICK_INGREDIENTS.filter(q => !ingredients.includes(q)).slice(0, 8).map((q) => (
                     <button key={q} onClick={() => setIngredients([...ingredients, q])}
-                      className="text-[10px] px-2 py-1 rounded-full bg-gray-50 text-gray-500 border border-gray-100 hover:bg-rose-50 hover:text-rose-500">
+                      style={{ fontSize: 10, padding: "4px 8px", borderRadius: 9999, backgroundColor: "var(--ivory)", color: "var(--mauve)", border: "1px solid var(--border)", cursor: "pointer" }}>
                       + {q}
                     </button>
                   ))}
@@ -465,8 +476,8 @@ export default function AIRecipeGenerator({ user, planGoal, plan, setPlan, onSav
 
               {/* Usual meals */}
               <div>
-                <p className="text-xs font-bold text-gray-600 mb-1">🍽️ Meals I usually eat</p>
-                <p className="text-[10px] text-gray-400 mb-2">The AI will incorporate these into your plan</p>
+                <p style={{ fontSize: 12, fontWeight: 700, color: "var(--mauve)", marginBottom: 4 }}>Meals I usually eat</p>
+                <p style={{ fontSize: 10, color: "var(--mauve)", opacity: 0.7, marginBottom: 8 }}>The AI will incorporate these into your plan</p>
                 <TagInput tags={usualMeals} setTags={setUsualMeals} placeholder="e.g. jollof rice, pasta, stir fry..." />
               </div>
 
@@ -480,7 +491,7 @@ export default function AIRecipeGenerator({ user, planGoal, plan, setPlan, onSav
                 )}
               </button>
 
-              {error && <p className="text-xs text-red-400 text-center">{error}</p>}
+              {error && <p style={{ fontSize: 12, color: "var(--rose-dust)", textAlign: "center" }}>{error}</p>}
             </div>
           </motion.div>
         )}

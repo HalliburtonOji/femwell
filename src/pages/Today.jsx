@@ -20,10 +20,10 @@ import { format, differenceInDays, parseISO } from "date-fns";
 
 // ── Cycle phase helper ──────────────────────────────────────────────────────
 const PHASE_INFO = {
-  menstrual:  { label: "Menstrual Phase",  color: "from-rose-300 to-pink-400",    tip: "Rest and restore. Your body is working hard." },
-  follicular: { label: "Follicular Phase", color: "from-emerald-300 to-teal-400", tip: "Energy rising — great time to start new things." },
-  ovulatory:  { label: "Ovulatory Phase",  color: "from-amber-300 to-yellow-400", tip: "Peak energy and confidence. Shine today!" },
-  luteal:     { label: "Luteal Phase",     color: "from-purple-300 to-indigo-400", tip: "Wind down, reflect, and nourish yourself." },
+  menstrual:  { label: "Menstrual Phase",  color: "var(--rose-dust)",  tip: "Rest and restore. Your body is working hard." },
+  follicular: { label: "Follicular Phase", color: "var(--sage)",       tip: "Energy rising — great time to start new things." },
+  ovulatory:  { label: "Ovulatory Phase",  color: "#C4954A",           tip: "Peak energy and confidence. Shine today!" },
+  luteal:     { label: "Luteal Phase",     color: "var(--mauve)",      tip: "Wind down, reflect, and nourish yourself." },
 };
 
 function getCyclePhase(lastPeriodDate, cycleLength, periodLength) {

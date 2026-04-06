@@ -1,18 +1,21 @@
+const TONE_STYLES = {
+  rose:    { backgroundColor: "var(--rose-dust-subtle)",  color: "var(--rose-dust)" },
+  violet:  { backgroundColor: "var(--mauve-subtle)",       color: "var(--mauve)" },
+  amber:   { backgroundColor: "#FFF8EE",                   color: "#A07830" },
+  emerald: { backgroundColor: "var(--sage-subtle)",        color: "var(--sage)" },
+};
+
 export default function InsightStatCard({ label, value, subtext, tone = "rose" }) {
-  const tones = {
-    rose: "from-rose-100 to-pink-100 text-rose-700",
-    violet: "from-violet-100 to-fuchsia-100 text-violet-700",
-    amber: "from-amber-100 to-orange-100 text-amber-700",
-    emerald: "from-emerald-100 to-teal-100 text-emerald-700",
-  };
+  const toneStyle = TONE_STYLES[tone] || TONE_STYLES.rose;
 
   return (
-    <div className="card-glass rounded-2xl p-4">
-      <div className={`inline-flex rounded-full bg-gradient-to-r px-2.5 py-1 text-[10px] font-semibold uppercase tracking-wide ${tones[tone] || tones.rose}`}>
+    <div className="rounded-2xl p-4"
+      style={{ backgroundColor: "var(--surface)", border: "1px solid var(--border)", boxShadow: "var(--shadow-sm)" }}>
+      <div className="inline-flex rounded-full px-2.5 py-1 text-[10px] font-semibold uppercase tracking-wide" style={toneStyle}>
         {label}
       </div>
-      <p className="mt-3 text-2xl font-black text-gray-800">{value}</p>
-      <p className="mt-1 text-xs text-gray-400 leading-relaxed">{subtext}</p>
+      <p className="mt-3 text-2xl font-black" style={{ color: "var(--plum)" }}>{value}</p>
+      <p className="mt-1 text-xs leading-relaxed" style={{ color: "var(--mauve)" }}>{subtext}</p>
     </div>
   );
 }

@@ -41,14 +41,16 @@ export default function ManualCompleteButton({ item, user, source = "CONTENT_PLA
   if (state === "done") {
     return (
       <div className="flex items-center gap-2">
-        <div className="flex items-center gap-2 px-4 py-2 rounded-full bg-emerald-100 text-emerald-700 text-sm font-medium">
+        <div className="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium"
+          style={{ backgroundColor: "var(--sage-subtle)", color: "var(--sage)" }}>
           <CheckCircle className="w-4 h-4" />
-          Logged ✓
+          Logged
         </div>
         {undoTimer && (
           <button
             onClick={handleUndo}
-            className="flex items-center gap-1 px-3 py-2 rounded-full bg-gray-100 text-gray-500 text-xs hover:bg-gray-200 transition-colors"
+            className="flex items-center gap-1 px-3 py-2 rounded-full text-xs transition-colors"
+            style={{ backgroundColor: "var(--ivory-dark)", color: "var(--mauve)" }}
           >
             <Undo2 className="w-3 h-3" /> Undo
           </button>
@@ -61,7 +63,8 @@ export default function ManualCompleteButton({ item, user, source = "CONTENT_PLA
     <button
       onClick={handleComplete}
       disabled={state === "saving"}
-      className="flex items-center gap-2 px-4 py-2.5 rounded-full bg-rose-100 text-rose-600 text-sm font-medium hover:bg-rose-200 transition-colors disabled:opacity-60"
+      className="flex items-center gap-2 px-4 py-2.5 rounded-full text-sm font-medium transition-colors disabled:opacity-60"
+      style={{ backgroundColor: "var(--rose-dust-subtle)", color: "var(--rose-dust)" }}
     >
       <CheckCircle className="w-4 h-4" />
       {state === "saving" ? "Saving..." : "Mark as Complete"}

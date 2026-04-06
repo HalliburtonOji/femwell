@@ -7,14 +7,17 @@ export default function ProgramDayStickyNav({ programKey, currentDay, days }) {
   const nextHref = currentDay < totalDays ? createPageUrl(`ProgramDay?key=${programKey}&day=${currentDay + 1}`) : null;
 
   return (
-    <div className="sticky top-0 z-20 mb-4 rounded-[24px] border border-rose-100 bg-white/90 p-3 shadow-sm backdrop-blur-xl">
+    <div className="sticky top-0 z-20 mb-4 rounded-[24px] p-3"
+      style={{ border: "1px solid var(--border)", backgroundColor: "var(--surface)", boxShadow: "var(--shadow-sm)" }}>
       <div className="flex items-center gap-2">
         {prevHref ? (
-          <a href={prevHref} className="inline-flex h-10 w-10 items-center justify-center rounded-2xl bg-rose-50 text-rose-600">
+          <a href={prevHref} className="inline-flex h-10 w-10 items-center justify-center rounded-2xl"
+            style={{ backgroundColor: "var(--rose-dust-subtle)", color: "var(--rose-dust)" }}>
             <ArrowLeft className="h-4 w-4" />
           </a>
         ) : (
-          <div className="inline-flex h-10 w-10 items-center justify-center rounded-2xl bg-gray-100 text-gray-300">
+          <div className="inline-flex h-10 w-10 items-center justify-center rounded-2xl"
+            style={{ backgroundColor: "var(--ivory-dark)", color: "var(--border)" }}>
             <ArrowLeft className="h-4 w-4" />
           </div>
         )}
@@ -27,9 +30,11 @@ export default function ProgramDayStickyNav({ programKey, currentDay, days }) {
                 <a
                   key={day.id || day.day_number}
                   href={createPageUrl(`ProgramDay?key=${programKey}&day=${day.day_number}`)}
-                  className={`flex-shrink-0 rounded-full px-3 py-2 text-xs font-semibold transition-all ${
-                    isActive ? "bg-rose-500 text-white" : "bg-rose-50 text-rose-600"
-                  }`}
+                  className="flex-shrink-0 rounded-full px-3 py-2 text-xs font-semibold transition-all"
+                  style={{
+                    backgroundColor: isActive ? "var(--plum)" : "var(--rose-dust-subtle)",
+                    color: isActive ? "white" : "var(--rose-dust)",
+                  }}
                 >
                   Day {day.day_number}
                 </a>
@@ -39,11 +44,13 @@ export default function ProgramDayStickyNav({ programKey, currentDay, days }) {
         </div>
 
         {nextHref ? (
-          <a href={nextHref} className="inline-flex h-10 w-10 items-center justify-center rounded-2xl bg-rose-50 text-rose-600">
+          <a href={nextHref} className="inline-flex h-10 w-10 items-center justify-center rounded-2xl"
+            style={{ backgroundColor: "var(--rose-dust-subtle)", color: "var(--rose-dust)" }}>
             <ArrowRight className="h-4 w-4" />
           </a>
         ) : (
-          <div className="inline-flex h-10 w-10 items-center justify-center rounded-2xl bg-gray-100 text-gray-300">
+          <div className="inline-flex h-10 w-10 items-center justify-center rounded-2xl"
+            style={{ backgroundColor: "var(--ivory-dark)", color: "var(--border)" }}>
             <ArrowRight className="h-4 w-4" />
           </div>
         )}
