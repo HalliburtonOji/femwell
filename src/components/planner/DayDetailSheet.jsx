@@ -147,7 +147,14 @@ function CheckinTab({ dayData, dateStr, userId, onRefresh }) {
 
   const handleSave = async () => {
     setSaving(true);
-    const payload = { user_id: userId, date: dateStr, ...values, sleep_hours: values.sleep_hours !== "" ? Number(values.sleep_hours) : undefined, updated_at: new Date().toISOString() };
+    const payload = {
+      user_id: userId, date: dateStr, ...values,
+      mood: values.mood !== "" ? Number(values.mood) : undefined,
+      energy: values.energy !== "" ? Number(values.energy) : undefined,
+      stress: values.stress !== "" ? Number(values.stress) : undefined,
+      sleep_hours: values.sleep_hours !== "" ? Number(values.sleep_hours) : undefined,
+      updated_at: new Date().toISOString()
+    };
     if (existing) await base44.entities.DailyCheckins.update(existing.id, payload);
     else await base44.entities.DailyCheckins.create(payload);
     onRefresh();
