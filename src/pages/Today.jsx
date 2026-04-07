@@ -522,9 +522,6 @@ export default function Today() {
   const cycleInfo = profile?.last_period_start_date
     ? getCyclePhase(profile.last_period_start_date, profile.cycle_avg_length || 28, profile.period_length || 5)
     : null;
-  const allHabitNames = [...new Set(allHabitLogs.map((l) => l.habit_type || l.habit_name).filter(Boolean))];
-  const isToday = selectedDate === todayStr;
-  const displayDate = isToday ? "Today" : format(parseISO(selectedDate), "EEE, MMM d");
   const hasSkinLog = !!(todayCheckin?.skin_condition || todayCheckin?.hair_shedding);
 
   const activeProgramEntry = [...activePrograms].sort((a, b) => {
@@ -766,7 +763,7 @@ export default function Today() {
 
               <div className="grid grid-cols-3 gap-3">
                 {[
-                  { lab: "Cycle",     Icon: Droplets, action: () => { setMainTab("track"); setTrackTab("Cycle"); }, bg: "var(--rose-dust-subtle)", fg: "var(--rose-dust)" },
+                  { lab: "Cycle",     Icon: Droplets, action: () => setMainTab("track"), bg: "var(--rose-dust-subtle)", fg: "var(--rose-dust)" },
                   { lab: "Journal",   Icon: BookOpen,  href: createPageUrl("Journal"),     bg: "#E8F4FF",               fg: "#5B9BD5" },
                   { lab: "Nutrition", Icon: Utensils,  href: createPageUrl("Nutrition"),   bg: "var(--sage-subtle)",    fg: "var(--sage)" },
                   { lab: "Programs",  Icon: Map,       href: createPageUrl("ProgramsHub"), bg: "var(--ivory-dark)",     fg: "var(--mauve)" },
