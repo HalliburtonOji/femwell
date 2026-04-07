@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { useLocation } from "react-router-dom";
 import { base44 } from "@/api/base44Client";
 import { PageLoader } from "../components/common/LoadingSpinner";
 import { createPageUrl } from "@/utils";
@@ -272,6 +273,7 @@ export default function Today() {
   const [showCheckin, setShowCheckin] = useState(false);
   const [todayCompletions, setTodayCompletions] = useState([]);
 
+  const location = useLocation();
   const [calendarSelectedDay, setCalendarSelectedDay] = useState(null);
   const [calendarRefreshKey, setCalendarRefreshKey] = useState(0);
   const [activePrograms, setActivePrograms] = useState([]);
@@ -335,12 +337,12 @@ export default function Today() {
   }, []);
 
   useEffect(() => {
-    const params = new URLSearchParams(window.location.search);
+    const params = new URLSearchParams(location.search);
     if (params.get("open_log") === "1") {
       setShowCheckin(true);
-      window.history.replaceState({}, "", window.location.pathname);
+      window.history.replaceState({}, "", location.pathname);
     }
-  }, []);
+  }, [location.search, location.pathname]);
 
 
 
@@ -461,7 +463,7 @@ export default function Today() {
   return (
     <div className="min-h-screen pb-28" style={{ backgroundColor: "var(--ivory)" }}>
       {showCheckin && (
-        <CheckinModal existing={todayCheckin} onClose={() => setShowCheckin(false)} onSave={handleSaveCheckin} />
+        <CheckinModal existing={todayCheckin} onClose={() => setShowCheckin(false)} onSave={handleSaveCheckin} userId={user?.id} dateStr={todayStr} />
       )}
 
       <div className="max-w-3xl mx-auto px-4">

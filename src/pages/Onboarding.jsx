@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { base44 } from "@/api/base44Client";
 import { createPageUrl } from "@/utils";
 import { ChevronLeft, ChevronRight } from "lucide-react";
@@ -71,6 +71,24 @@ export default function Onboarding() {
   const [locationCity, setLocationCity] = useState("");
   const [geoLoading, setGeoLoading] = useState(false);
   const [geoFound, setGeoFound] = useState("");
+  const isPopState = useRef(false);
+
+  // Push history state on step changes so browser back = one step back
+  useEffect(() => {
+    if (isPopState.current) { isPopState.current = false; return; }
+    window.history.pushState({ onboardingStep: step }, "");
+  }, [step]);
+
+  useEffect(() => {
+    const handler = (e) => {
+      if (e.state && typeof e.state.onboardingStep === "number") {
+        isPopState.current = true;
+        setStep(e.state.onboardingStep);
+      }
+    };
+    window.addEventListener("popstate", handler);
+    return () => window.removeEventListener("popstate", handler);
+  }, []);
 
   const handleUseMyLocation = () => {
     if (!navigator.geolocation) return;
@@ -128,17 +146,58 @@ export default function Onboarding() {
   const current = STEPS[step];
   const progress = (step / (STEPS.length - 1)) * 100;
 
+  const petals = Array.from({ length: 14 }, (_, i) => i);
+
   return (
     <div className="min-h-screen flex flex-col" style={{ backgroundColor: "var(--ivory)", position: "relative" }}>
-      {/* HD background */}
+      <style>{`
+        @keyframes kenburns {
+          0%   { transform: scale(1.0) translate(0%, 0%); }
+          50%  { transform: scale(1.10) translate(-2%, -1%); }
+          100% { transform: scale(1.0) translate(0%, 0%); }
+        }
+        @keyframes petal-fall {
+          0%   { transform: translateY(-10vh) translateX(0px) rotate(0deg); opacity: 0; }
+          10%  { opacity: 0.7; }
+          90%  { opacity: 0.4; }
+          100% { transform: translateY(110vh) translateX(60px) rotate(540deg); opacity: 0; }
+        }
+        .ob-bg-img {
+          position: fixed; inset: 0; width: 100%; height: 100%;
+          object-fit: cover; opacity: 0.14; z-index: 0; pointer-events: none;
+          animation: kenburns 22s ease-in-out infinite;
+          transform-origin: center center;
+        }
+        .ob-petal {
+          position: fixed; z-index: 0; pointer-events: none;
+          width: 8px; height: 12px; border-radius: 50% 50% 50% 50% / 60% 60% 40% 40%;
+          background: rgba(196,132,154,0.35);
+          animation: petal-fall linear infinite;
+        }
+      `}</style>
+
+      {/* Ken Burns background */}
       <img
         src="https://images.unsplash.com/photo-1490750967868-88df5691cc2b?w=900&q=80"
         alt=""
         loading="lazy"
-        style={{ position: "fixed", inset: 0, width: "100%", height: "100%", objectFit: "cover", opacity: 0.12, zIndex: 0, pointerEvents: "none" }}
+        className="ob-bg-img"
         onError={e => { e.target.style.display = "none"; }}
       />
-      <div style={{ position: "fixed", inset: 0, background: "linear-gradient(to top, rgba(250,247,244,0.85) 0%, transparent 60%)", zIndex: 0, pointerEvents: "none" }} />
+
+      {/* Falling petals */}
+      {petals.map(i => (
+        <div key={i} className="ob-petal" style={{
+          left: `${5 + (i * 7) % 90}%`,
+          animationDuration: `${8 + (i * 1.3) % 10}s`,
+          animationDelay: `${(i * 0.9) % 9}s`,
+          width: `${6 + (i % 4)}px`,
+          height: `${9 + (i % 5)}px`,
+          opacity: 0.3 + (i % 4) * 0.1,
+        }} />
+      ))}
+
+      <div style={{ position: "fixed", inset: 0, background: "linear-gradient(to top, rgba(250,247,244,0.88) 0%, transparent 60%)", zIndex: 0, pointerEvents: "none" }} />
 
       {step > 0 && step < STEPS.length - 1 && (
         <div style={{ padding: "48px 24px 8px", position: "relative", zIndex: 1 }}>
