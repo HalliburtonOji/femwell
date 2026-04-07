@@ -1,26 +1,45 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.23';
 
 const BOOK_SEED_LIST = [
-  { title: 'Untamed', author: 'Glennon Doyle', isbn: '9781984801258', category: 'Self Care', phase_tags: ['follicular', 'ovulatory'] },
-  { title: 'In the FLO', author: 'Alisa Vitti', isbn: '9780062876959', category: 'Hormones & Cycle', phase_tags: ['menstrual', 'follicular', 'ovulatory', 'luteal'] },
-  { title: 'Period Power', author: 'Maisie Hill', isbn: '9781472967886', category: 'Hormones & Cycle', phase_tags: ['menstrual', 'follicular', 'ovulatory', 'luteal'] },
-  { title: 'Burnout', author: 'Emily Nagoski & Amelia Nagoski', isbn: '9781984818324', category: 'Stress', phase_tags: ['luteal', 'menstrual'] },
-  { title: 'The Body Keeps the Score', author: 'Bessel van der Kolk', isbn: '9780143127741', category: 'Mental Health', phase_tags: ['menstrual', 'luteal'] },
-  { title: 'Come As You Are', author: 'Emily Nagoski', isbn: '9781476762098', category: 'Body Image', phase_tags: ['ovulatory', 'follicular'] },
-  { title: 'Atomic Habits', author: 'James Clear', isbn: '9780735211292', category: 'Lifestyle', phase_tags: ['follicular', 'ovulatory'] },
-  { title: 'The Gifts of Imperfection', author: 'Brene Brown', isbn: '9781592858491', category: 'Mental Health', phase_tags: ['menstrual', 'luteal'] },
-  { title: 'Woman Code', author: 'Alisa Vitti', isbn: '9780062130792', category: 'Hormones & Cycle', phase_tags: ['menstrual', 'follicular', 'ovulatory', 'luteal'] },
-  { title: 'Why We Sleep', author: 'Matthew Walker', isbn: '9781501144325', category: 'Sleep', phase_tags: ['luteal', 'menstrual'] },
-  { title: 'Outlive', author: 'Peter Attia', isbn: '9780593236598', category: 'Womens Health', phase_tags: ['follicular', 'ovulatory'] },
-  { title: 'The Body Is Not an Apology', author: 'Sonya Renee Taylor', isbn: '9781626569775', category: 'Body Image', phase_tags: ['menstrual', 'luteal'] },
-  { title: 'Maybe You Should Talk to Someone', author: 'Lori Gottlieb', isbn: '9781328662057', category: 'Mental Health', phase_tags: ['menstrual', 'luteal'] },
-  { title: 'The Mountain Is You', author: 'Brianna Wiest', isbn: '9781949759228', category: 'Self Care', phase_tags: ['follicular', 'ovulatory'] },
-  { title: 'Quit Like a Woman', author: 'Holly Whitaker', isbn: '9780525561828', category: 'Lifestyle', phase_tags: ['menstrual', 'follicular'] },
-  { title: 'Roar', author: 'Stacy Sims', isbn: '9781623366179', category: 'Fitness', phase_tags: ['follicular', 'ovulatory'] },
-  { title: 'Attached', author: 'Amir Levine & Rachel Heller', isbn: '9781250310897', category: 'Relationships', phase_tags: ['ovulatory', 'follicular'] },
-  { title: 'The Hormone Cure', author: 'Sara Gottfried', isbn: '9781451666946', category: 'Hormones & Cycle', phase_tags: ['menstrual', 'luteal'] },
-  { title: 'How Not to Die', author: 'Michael Greger', isbn: '9781250066114', category: 'Nutrition', phase_tags: ['follicular', 'ovulatory'] },
-  { title: 'Eat to Beat Disease', author: 'William Li', isbn: '9781538714621', category: 'Nutrition', phase_tags: ['follicular', 'ovulatory'] },
+  // Wellness (existing)
+  { title: 'Untamed', author: 'Glennon Doyle', isbn: '9781984801258', genre: 'Memoir', category: 'Self Care', phase_tags: ['follicular', 'ovulatory'] },
+  { title: 'In the FLO', author: 'Alisa Vitti', isbn: '9780062876959', genre: 'Wellness', category: 'Hormones & Cycle', phase_tags: ['menstrual', 'follicular', 'ovulatory', 'luteal'] },
+  { title: 'Period Power', author: 'Maisie Hill', isbn: '9781472967886', genre: 'Wellness', category: 'Hormones & Cycle', phase_tags: ['menstrual', 'follicular', 'ovulatory', 'luteal'] },
+  { title: 'Burnout', author: 'Emily Nagoski & Amelia Nagoski', isbn: '9781984818324', genre: 'Wellness', category: 'Stress', phase_tags: ['luteal', 'menstrual'] },
+  { title: 'The Body Keeps the Score', author: 'Bessel van der Kolk', isbn: '9780143127741', genre: 'Psychology', category: 'Mental Health', phase_tags: ['menstrual', 'luteal'] },
+  { title: 'Come As You Are', author: 'Emily Nagoski', isbn: '9781476762098', genre: 'Wellness', category: 'Body Image', phase_tags: ['ovulatory', 'follicular'] },
+  { title: 'Why We Sleep', author: 'Matthew Walker', isbn: '9781501144325', genre: 'Science', category: 'Sleep', phase_tags: ['luteal', 'menstrual'] },
+  { title: 'Roar', author: 'Stacy Sims', isbn: '9781623366179', genre: 'Wellness', category: 'Fitness', phase_tags: ['follicular', 'ovulatory'] },
+  // Fiction / Literary
+  { title: 'Normal People', author: 'Sally Rooney', isbn: '9780571334650', genre: 'Fiction', category: 'Relationships', phase_tags: ['ovulatory', 'follicular'], free_link: null },
+  { title: 'The Bell Jar', author: 'Sylvia Plath', isbn: '9780061543951', genre: 'Fiction', category: 'Mental Health', phase_tags: ['menstrual', 'luteal'], free_link: null },
+  { title: 'Americanah', author: 'Chimamanda Ngozi Adichie', isbn: '9780307455925', genre: 'Fiction', category: 'Identity', phase_tags: ['follicular', 'ovulatory'], free_link: null },
+  { title: 'Little Women', author: 'Louisa May Alcott', isbn: '9780147514011', genre: 'Fiction', category: 'Lifestyle', phase_tags: ['follicular', 'luteal'], free_link: 'https://www.gutenberg.org/ebooks/514' },
+  // Self-Development
+  { title: 'Atomic Habits', author: 'James Clear', isbn: '9780735211292', genre: 'Self-Development', category: 'Lifestyle', phase_tags: ['follicular', 'ovulatory'] },
+  { title: 'The Gifts of Imperfection', author: 'Brene Brown', isbn: '9781592858491', genre: 'Self-Development', category: 'Mental Health', phase_tags: ['menstrual', 'luteal'] },
+  { title: 'The Mountain Is You', author: 'Brianna Wiest', isbn: '9781949759228', genre: 'Self-Development', category: 'Self Care', phase_tags: ['follicular', 'ovulatory'] },
+  { title: 'You Are a Badass', author: 'Jen Sincero', isbn: '9780762447695', genre: 'Self-Development', category: 'Lifestyle', phase_tags: ['follicular', 'ovulatory'] },
+  // Relationships & Psychology
+  { title: 'Attached', author: 'Amir Levine & Rachel Heller', isbn: '9781250310897', genre: 'Psychology', category: 'Relationships', phase_tags: ['ovulatory', 'follicular'] },
+  { title: 'Maybe You Should Talk to Someone', author: 'Lori Gottlieb', isbn: '9781328662057', genre: 'Psychology', category: 'Mental Health', phase_tags: ['menstrual', 'luteal'] },
+  { title: 'Set Boundaries Find Peace', author: 'Nedra Glennon Tawwab', isbn: '9780593192399', genre: 'Psychology', category: 'Relationships', phase_tags: ['luteal', 'menstrual'] },
+  // Feminism & Social Theory
+  { title: 'Invisible Women', author: 'Caroline Criado Perez', isbn: '9781419735219', genre: 'Feminism', category: 'Womens Health', phase_tags: ['follicular', 'ovulatory'] },
+  { title: 'We Should All Be Feminists', author: 'Chimamanda Ngozi Adichie', isbn: '9781101911761', genre: 'Feminism', category: 'Identity', phase_tags: ['follicular', 'ovulatory'], free_link: null },
+  { title: 'Hood Feminism', author: 'Mikki Kendall', isbn: '9780525560562', genre: 'Feminism', category: 'Identity', phase_tags: ['follicular', 'ovulatory'] },
+  // Memoir / Personal Essay
+  { title: 'Hunger', author: 'Roxane Gay', isbn: '9780062362599', genre: 'Memoir', category: 'Body Image', phase_tags: ['menstrual', 'luteal'] },
+  { title: 'I Know Why the Caged Bird Sings', author: 'Maya Angelou', isbn: '9780345514400', genre: 'Memoir', category: 'Identity', phase_tags: ['follicular', 'ovulatory'], free_link: null },
+  { title: 'When Breath Becomes Air', author: 'Paul Kalanithi', isbn: '9780812988406', genre: 'Memoir', category: 'Mental Health', phase_tags: ['menstrual', 'luteal'] },
+  // Science & Nature
+  { title: 'Outlive', author: 'Peter Attia', isbn: '9780593236598', genre: 'Science', category: 'Womens Health', phase_tags: ['follicular', 'ovulatory'] },
+  { title: 'How Not to Die', author: 'Michael Greger', isbn: '9781250066114', genre: 'Science', category: 'Nutrition', phase_tags: ['follicular', 'ovulatory'] },
+  { title: 'The Genome Factor', author: 'Dalton Conley & Jason Fletcher', isbn: '9780691169378', genre: 'Science', category: 'Womens Health', phase_tags: ['follicular'] },
+  // Finance & Business
+  { title: 'Rich Dad Poor Dad', author: 'Robert Kiyosaki', isbn: '9781612681122', genre: 'Finance', category: 'Career & Money', phase_tags: ['follicular', 'ovulatory'] },
+  { title: 'Get Good with Money', author: 'Tiffany Aliche', isbn: '9780593187562', genre: 'Finance', category: 'Career & Money', phase_tags: ['follicular', 'ovulatory'] },
+  { title: 'Quit Like a Woman', author: 'Holly Whitaker', isbn: '9780525561828', genre: 'Finance', category: 'Lifestyle', phase_tags: ['menstrual', 'follicular'] },
 ];
 
 function getWeekStart() {
@@ -56,7 +75,7 @@ Deno.serve(async (req) => {
     for (const book of picks) {
       try {
         const result = await base44.asServiceRole.integrations.Core.InvokeLLM({
-          prompt: `You are a women's wellness book editor for the FemWell app. Write a summary card for "${book.title}" by ${book.author}.
+          prompt: `You are a women's wellness book editor for the FemWell app. Write a summary card for "${book.title}" by ${book.author} (genre: ${book.genre || book.category}).
 
 Return JSON with these exact fields:
 - tagline: one sentence that sells this book (max 80 chars, no quotes)
@@ -66,7 +85,8 @@ Return JSON with these exact fields:
 - quote: one memorable real quote from the book
 - read_time_mins: estimated reading time in minutes (typical non-fiction is 300 to 360)
 - femwell_connection: which FemWell feature connects to this book, one of: Journal, Cycle Tracking, Programs, Nutrition, Skin and Hair, Check-in, Pulse
-- goodreads_url: https://www.goodreads.com/search?q=${encodeURIComponent(book.title + ' ' + book.author)}`,
+- goodreads_url: https://www.goodreads.com/search?q=${encodeURIComponent(book.title + ' ' + book.author)}
+- free_link: if this is a public domain book available on Project Gutenberg (gutenberg.org) or Standard Ebooks (standardebooks.org), return the direct URL. Otherwise return null.`,
           response_json_schema: {
             type: 'object',
             properties: {
@@ -83,13 +103,8 @@ Return JSON with these exact fields:
         });
         generatedBooks.push({
           title: book.title, author: book.author, isbn: book.isbn,
-          category: book.category, phase_tags: book.phase_tags,
-          cover_url: `https://covers.openlibrary.org/b/isbn/${book.isbn}-L.jpg`,
-          tagline: result.tagline || '', summary: result.summary || '',
-          key_lessons: result.key_lessons || [], best_for: result.best_for || '',
-          quote: result.quote || '', read_time_mins: result.read_time_mins || 300,
-          femwell_connection: result.femwell_connection || '',
-          goodreads_url: result.goodreads_url || `https://www.goodreads.com/search?q=${encodeURIComponent(book.title)}`,
+          category: book.category, genre: book.genre || book.category, phase_tags: book.phase_tags,
+          free_link: result.free_link || book.free_link || null,
         });
       } catch (e) { console.error(`Failed ${book.title}:`, e.message); }
     }

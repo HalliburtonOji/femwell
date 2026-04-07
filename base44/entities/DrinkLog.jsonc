@@ -1,0 +1,30 @@
+{
+  "name": "DrinkLog",
+  "type": "object",
+  "properties": {
+    "user_id": {
+      "type": "string"
+    },
+    "day_key": {
+      "type": "string"
+    },
+    "drink_type": {
+      "type": "string"
+    },
+    "amount_ml": {
+      "type": "number"
+    },
+    "calories": {
+      "type": "number",
+      "default": 0
+    },
+    "logged_at": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "user_id",
+    "day_key",
+    "drink_type"
+  ]
+}

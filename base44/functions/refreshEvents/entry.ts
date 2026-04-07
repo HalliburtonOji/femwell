@@ -6,7 +6,7 @@ Deno.serve(async (req) => {
     const result = await base44.asServiceRole.integrations.Core.InvokeLLM({
       model: 'gemini_3_flash',
       add_context_from_internet: true,
-      prompt: 'Find upcoming events over the next 60 days in major UK cities (London, Manchester, Birmingham, Leeds, Bristol) covering ALL of the following: women networking and professional meetups, fitness and wellness classes (yoga, pilates, running clubs, HIIT), social parties and club nights, gallery openings and culture events, food and coffee socials, talks panels and workshops, dating and relationship events, online and virtual events accessible from anywhere. Source from Eventbrite, Dice, Meetup.com, Fatsoma, Time Out, RA (Resident Advisor), and Facebook Events. Return a balanced mix of free and paid events. Return up to 80 items.',
+      prompt: 'Find upcoming events over the next 60 days in major UK cities (London, Manchester, Birmingham, Leeds, Bristol) covering ALL of the following: women networking and professional meetups, fitness and wellness classes (yoga, pilates, running clubs, HIIT), social parties and club nights, gallery openings and culture events, food and coffee socials, talks panels and workshops, dating and relationship events, online and virtual events accessible from anywhere. PRIMARY SOURCES (prioritise these): Dice.fm (gigs and club nights), Fatsoma (UK parties and nightlife), Fever (experiences and pop-ups), Meetup.com (social and professional groups, especially women groups), RA / Resident Advisor (electronic music and clubs), Time Out (culture, food, city guides), Sofar Sounds (intimate music), Facebook Events (local social events). DEPRIORITISE Eventbrite — only include as last resort when no alternative link exists. Return ONLY direct ticket or booking URLs, not homepages. Return a balanced mix of free and paid events. Return up to 80 items.',
       response_json_schema: {
         type: 'object',
         properties: {
@@ -24,6 +24,7 @@ Deno.serve(async (req) => {
                 is_free: { type: 'boolean' },
                 city: { type: 'string' },
                 source_name: { type: 'string' },
+                ticket_platform: { type: 'string' },
                 tags: { type: 'array', items: { type: 'string' } },
                 is_online: { type: 'boolean' }
               }
@@ -48,6 +49,7 @@ Deno.serve(async (req) => {
         is_free: Boolean(item.is_free),
         city: item.city || '',
         source_name: item.source_name || 'Web search',
+        ticket_platform: item.ticket_platform || item.source_name || '',
         tags: Array.isArray(item.tags) ? item.tags : [],
         is_online: Boolean(item.is_online),
       });

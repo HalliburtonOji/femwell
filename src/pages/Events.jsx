@@ -5,6 +5,7 @@ import { toggleSavedItem } from "@/lib/savedItems";
 
 const TAG_FILTERS = ["all", "social", "fitness", "networking", "culture", "food", "online", "wellness", "nightlife", "dating"];
 const PRICE_FILTERS = ["all", "free", "paid"];
+const PLATFORM_FILTERS = ["All", "Dice", "Fatsoma", "Meetup", "Time Out", "RA", "Fever"];
 
 const TAG_COLORS = {
   social: "var(--rose-dust)",
@@ -131,14 +132,22 @@ function EventCard({ item, saved, onSave }) {
       </div>
 
       {/* Footer */}
-      <div style={{ borderTop: "1px solid var(--border-subtle)", padding: "10px 16px", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-        <span style={{ fontSize: 11, color: "var(--mauve)", fontFamily: "'Inter', sans-serif" }}>{item.source_name || ""}</span>
-        <button
-          onClick={() => item.link && window.open(item.link, "_blank")}
-          style={{ backgroundColor: "var(--plum)", color: "white", borderRadius: 9999, padding: "6px 14px", fontSize: 12, fontWeight: 600, border: "none", cursor: "pointer", fontFamily: "'Inter', sans-serif" }}
-        >
-          View event
-        </button>
+      <div style={{ borderTop: "1px solid var(--border-subtle)", padding: "10px 16px", display: "flex", justifyContent: "space-between", alignItems: "center", gap: 8 }}>
+        <span style={{ fontSize: 11, color: "var(--mauve)", fontFamily: "'Inter', sans-serif" }}>{item.ticket_platform || item.source_name || ""}</span>
+        <div style={{ display: "flex", gap: 8 }}>
+          <button
+            onClick={() => window.open(`https://wa.me/?text=${encodeURIComponent((item.title || "") + " " + (item.link || ""))}`, "_blank")}
+            style={{ backgroundColor: "#25D366", color: "white", borderRadius: 9999, padding: "6px 12px", fontSize: 12, fontWeight: 600, border: "none", cursor: "pointer", fontFamily: "'Inter', sans-serif" }}
+          >
+            Share
+          </button>
+          <button
+            onClick={() => item.link && window.open(item.link, "_blank")}
+            style={{ backgroundColor: "var(--plum)", color: "white", borderRadius: 9999, padding: "6px 14px", fontSize: 12, fontWeight: 600, border: "none", cursor: "pointer", fontFamily: "'Inter', sans-serif" }}
+          >
+            View event
+          </button>
+        </div>
       </div>
     </div>
   );
@@ -148,6 +157,7 @@ export default function Events() {
   const [items, setItems] = useState([]);
   const [priceFilter, setPriceFilter] = useState("all");
   const [tagFilter, setTagFilter] = useState("all");
+  const [platformFilter, setPlatformFilter] = useState("All");
   const [onlineOnly, setOnlineOnly] = useState(false);
   const [savedIds, setSavedIds] = useState(new Set());
   const [loading, setLoading] = useState(true);
@@ -172,7 +182,9 @@ export default function Events() {
       const priceMatch = priceFilter === "all" || (priceFilter === "free" ? item.is_free : !item.is_free);
       const tagMatch = tagFilter === "all" || (Array.isArray(item.tags) && item.tags.includes(tagFilter));
       const onlineMatch = !onlineOnly || item.is_online === true;
-      return priceMatch && tagMatch && onlineMatch;
+      const platformStr = (item.ticket_platform || item.source_name || "").toLowerCase();
+      const platformMatch = platformFilter === "All" || platformStr.includes(platformFilter.toLowerCase());
+      return priceMatch && tagMatch && onlineMatch && platformMatch;
     });
   }, [items, priceFilter, tagFilter, onlineOnly]);
 
@@ -233,6 +245,13 @@ export default function Events() {
           <div className="ev-scroll" style={{ display: "flex", gap: 8, overflowX: "auto", paddingBottom: 8, scrollbarWidth: "none" }}>
             {PRICE_FILTERS.map((f) => (
               <button key={f} onClick={() => setPriceFilter(f)} style={priceFilter === f ? pillActive : pillInactive}>{f}</button>
+            ))}
+          </div>
+
+          {/* Platform filters */}
+          <div className="ev-scroll" style={{ display: "flex", gap: 8, overflowX: "auto", marginTop: 10, paddingBottom: 4, scrollbarWidth: "none" }}>
+            {PLATFORM_FILTERS.map((p) => (
+              <button key={p} onClick={() => setPlatformFilter(p)} style={platformFilter === p ? pillActive : pillInactive}>{p}</button>
             ))}
           </div>
 
