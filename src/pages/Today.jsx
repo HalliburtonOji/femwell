@@ -275,6 +275,9 @@ export default function Today() {
   const [calendarRefreshKey, setCalendarRefreshKey] = useState(0);
   const [activePrograms, setActivePrograms] = useState([]);
   const [programLibrary, setProgramLibrary] = useState([]);
+  const [quickMealText, setQuickMealText] = useState("");
+  const [quickMealType, setQuickMealType] = useState("lunch");
+  const [quickLogging, setQuickLogging] = useState(false);
 
   useEffect(() => {
     (async () => {
@@ -326,19 +329,6 @@ export default function Today() {
       }
       setLoadingHomeRecommendations(false);
 
-      const all = await base44.entities.HabitLogs.filter({ user_id: u.id });
-      setAllHabitLogs(all);
-
-      // Load personal tasks
-      const tasks = await base44.entities.PersonalTasks.filter({ user_id: u.id }, "-date", 200);
-      const taskMap = {};
-      tasks.forEach(t => {
-        if (!taskMap[t.date]) taskMap[t.date] = [];
-        taskMap[t.date].push(t);
-      });
-      setPersonalTasks(taskMap);
-
-      await loadTrackData(u.id, todayStr);
       setLoading(false);
     })();
   }, []);
@@ -372,14 +362,6 @@ export default function Today() {
       items.forEach((it) => { map[it.id] = it; });
       setSessionContent(map);
     }
-  };
-
-  const changeDate = async (offset) => {
-    const d = new Date(selectedDate);
-    d.setDate(d.getDate() + offset);
-    const newDate = d.toISOString().split("T")[0];
-    setSelectedDate(newDate);
-    if (user) await loadTrackData(user.id, newDate);
   };
 
   const handleSaveCheckin = async (data) => {
@@ -428,32 +410,6 @@ export default function Today() {
         recommended_action_route: null,
       });
     }
-  };
-
-  const saveCycleEvent = async () => {
-    await base44.entities.CycleEvents.create({
-      user_id: user.id, date: selectedDate, type: cycleEventType,
-      flow_level: cycleEventType !== "PeriodEnd" ? flowLevel : undefined,
-    });
-    setAddingCycleEvent(false);
-    await loadTrackData(user.id, selectedDate);
-  };
-
-  const saveSymptom = async () => {
-    const type = customSymptom.trim() || symptomType;
-    if (!type) return;
-    await base44.entities.SymptomLogs.create({ user_id: user.id, date: selectedDate, symptom_type: type, severity, notes: symptomNotes || undefined });
-    setAddingSymptom(false); setSymptomType(""); setCustomSymptom(""); setSeverity(3); setSymptomNotes("");
-    await loadTrackData(user.id, selectedDate);
-  };
-
-  const saveMed = async () => {
-    if (!medName.trim()) return;
-    setSavingMed(true);
-    await base44.entities.MedicationLogs.create({ user_id: user.id, date: selectedDate, item_name: medName.trim(), dose: medDose || undefined, notes: medNotes || undefined, taken: true });
-    setAddingMed(false); setMedName(""); setMedDose(""); setMedNotes("");
-    setSavingMed(false);
-    await loadTrackData(user.id, selectedDate);
   };
 
   const MEAL_TYPES = ["breakfast", "lunch", "dinner", "snack"];
