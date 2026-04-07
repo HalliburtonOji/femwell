@@ -1,4 +1,4 @@
-import { createClientFromRequest } from 'npm:@base44/sdk@0.8.20';
+import { createClientFromRequest } from 'npm:@base44/sdk@0.8.23';
 import OpenAI from 'npm:openai';
 
 const openai = new OpenAI({ apiKey: Deno.env.get("OPENAI_API_KEY") });
@@ -10,7 +10,7 @@ Deno.serve(async (req) => {
     if (!user) return Response.json({ error: 'Unauthorized' }, { status: 401 });
 
     const body = await req.json();
-    const { raw_text, cycle_phase, energy_level, digestion_score, wellness_goal } = body;
+    const { raw_text, cycle_phase, energy_level, digestion_score, wellness_goal, prompt_append } = body;
 
     if (!raw_text) return Response.json({ error: 'raw_text required' }, { status: 400 });
 
@@ -27,7 +27,7 @@ Return valid JSON only.`
         {
           role: "user",
           content: `Meal: "${raw_text}"
-User context: cycle phase: ${cycle_phase || 'unknown'}, energy: ${energy_level || 'unknown'}/10, digestion: ${digestion_score || 'unknown'}/10, wellness goal: ${wellness_goal || 'general wellness'}
+User context: cycle phase: ${cycle_phase || 'unknown'}, energy: ${energy_level || 'unknown'}/10, digestion: ${digestion_score || 'unknown'}/10, wellness goal: ${wellness_goal || 'general wellness'}${prompt_append ? '\n' + prompt_append : ''}
 
 Return this exact JSON structure:
 {

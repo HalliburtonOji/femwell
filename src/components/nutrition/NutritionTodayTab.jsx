@@ -268,19 +268,18 @@ export default function NutritionTodayTab({ user, profile, nutritionProfile, day
           : 'luteal';
         phasePromptAppend = ` The user is currently in their ${phase} phase.`;
       }
-      const res = await base44.functions.invoke("analyzeMeal", {
+      const response = await base44.functions.invoke("analyzeMeal", {
         raw_text: text.trim(), energy_level: checkin?.energy,
         digestion_score: checkin?.digestion,
         wellness_goal: selectedGoal || "general wellness",
         prompt_append: phasePromptAppend,
       });
-      if (res) {
+      const res = response?.data || response;
+      if (res && (res.nutritional_summary || res.items)) {
         setLastAnalysis(res);
         setShowQuickCheck(true);
-        if (res.items?.length > 0 || res.nutritional_summary) {
-          await base44.entities.MealLog.update(log.id, { ai_analysis: JSON.stringify(res) });
-          setMeals((prev) => prev.map((m) => m.id === log.id ? { ...m, ai_analysis: JSON.stringify(res) } : m));
-        }
+        await base44.entities.MealLog.update(log.id, { ai_analysis: JSON.stringify(res) });
+        setMeals((prev) => prev.map((m) => m.id === log.id ? { ...m, ai_analysis: JSON.stringify(res) } : m));
         if (res.insight) {
           const { headline, wellness_impact, action_items, smart_swap, confidence, tone_safety_note } = res.insight;
           const saved = await base44.entities.NutritionInsight.create({

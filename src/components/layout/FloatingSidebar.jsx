@@ -3,7 +3,7 @@ import { Link } from "react-router-dom";
 import { createPageUrl } from "@/utils";
 import { motion, AnimatePresence } from "framer-motion";
 import {
-  Sun, Compass, User, BookOpen, Newspaper, Utensils, X, Map, Activity, Feather, Sparkles, Heart, CalendarDays
+  Sun, Compass, User, BookOpen, Newspaper, Utensils, X, Map, Activity, Feather, Sparkles, Heart
 } from "lucide-react";
 
 const NAV = [
@@ -14,10 +14,9 @@ const NAV = [
   { label: "Lifestyle", icon: BookOpen,  page: "Lifestyle" },
   { label: "Journal",   icon: Newspaper, page: "Journal" },
   { label: "Pulse",     icon: Activity,  page: "Pulse" },
-  { label: "Skin & Hair", icon: Feather,  page: "SkinHair"      },
+  { label: "Skin & Hair", icon: Feather,  page: "SkinHair" },
   { label: "Life Stage", icon: Heart,    page: "LifeStageCare" },
-  { label: "Planner",   icon: CalendarDays, page: "Planner" },
-  { label: "Profile",   icon: User,      page: "Profile"       },
+  { label: "Profile",   icon: User,      page: "Profile" },
 ];
 
 /* ── Desktop sidebar ───────────────────────────────────────────────────────── */
