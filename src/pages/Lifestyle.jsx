@@ -47,6 +47,7 @@ const TABS = [
 function VideoCard({ item, onSave, saved }) {
   const [playing, setPlaying] = useState(false);
   const [embedError, setEmbedError] = useState(false);
+  const [checkingEmbed, setCheckingEmbed] = useState(false);
   const [localSaved, setLocalSaved] = useState(saved);
   const handleSave = async () => {
     const next = !localSaved;
@@ -56,8 +57,20 @@ function VideoCard({ item, onSave, saved }) {
   };
   const videoId = item.video_id || (item.content_url?.match(/[?&]v=([^&]+)/)?.[1]) || (item.embed_url?.match(/embed\/([A-Za-z0-9_-]{11})/)?.[1]);
   const thumb = item.image_url || (videoId ? `https://i.ytimg.com/vi/${videoId}/hqdefault.jpg` : "");
-  const embedSrc = videoId ? `https://www.youtube.com/embed/${videoId}?rel=0&modestbranding=1&playsinline=1&autoplay=1` : null;
+  const embedSrc = videoId ? `https://www.youtube-nocookie.com/embed/${videoId}?rel=0&modestbranding=1&playsinline=1&autoplay=1` : null;
   const showFallback = playing && (!embedSrc || embedError);
+
+  const handlePlay = async () => {
+    if (!videoId) { setEmbedError(true); setPlaying(true); return; }
+    setCheckingEmbed(true);
+    try {
+      const res = await fetch(`https://www.youtube.com/oembed?url=https://www.youtube.com/watch?v=${videoId}&format=json`);
+      if (!res.ok) setEmbedError(true);
+    } catch { /* network error — try iframe anyway */ }
+    setCheckingEmbed(false);
+    setPlaying(true);
+  };
+
   return (
     <div style={{ backgroundColor: "var(--surface)", border: "1px solid var(--border)", boxShadow: "var(--shadow-sm)", borderRadius: 16, overflow: "hidden", marginBottom: 14 }}>
       <div style={{ position: "relative", paddingBottom: "56.25%", backgroundColor: "#111" }}>
@@ -75,13 +88,16 @@ function VideoCard({ item, onSave, saved }) {
             </a>
           </div>
         ) : (
-          <button onClick={() => setPlaying(true)}
+          <button onClick={handlePlay}
             style={{ position: "absolute", inset: 0, width: "100%", height: "100%", border: "none", padding: 0, cursor: "pointer", background: "none" }}>
             {thumb && <img src={thumb} alt={item.title} style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }} />}
             <div style={{ position: "absolute", inset: 0, backgroundColor: "rgba(0,0,0,0.18)" }} />
             <div style={{ position: "absolute", inset: 0, display: "flex", alignItems: "center", justifyContent: "center" }}>
               <div style={{ width: 52, height: 52, borderRadius: 9999, backgroundColor: "rgba(255,255,255,0.93)", display: "flex", alignItems: "center", justifyContent: "center", boxShadow: "0 4px 16px rgba(0,0,0,0.22)" }}>
-                <Play style={{ width: 20, height: 20, color: "var(--plum)", marginLeft: 3 }} fill="currentColor" />
+                {checkingEmbed
+                  ? <div style={{ width: 18, height: 18, border: "2.5px solid var(--rose-dust-light)", borderTopColor: "var(--rose-dust)", borderRadius: "50%", animation: "spin 0.7s linear infinite" }} />
+                  : <Play style={{ width: 20, height: 20, color: "var(--plum)", marginLeft: 3 }} fill="currentColor" />
+                }
               </div>
             </div>
           </button>

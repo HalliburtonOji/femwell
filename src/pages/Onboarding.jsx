@@ -36,7 +36,7 @@ const BODY_GOALS = [
   { id: "menopause",       label: "Menopause"        },
 ];
 
-const STEPS = ["welcome", "goals", "interests", "preferences", "setup", "skin_profile", "done"];
+const STEPS = ["welcome", "goals", "location", "interests", "preferences", "setup", "skin_profile", "done"];
 
 const SKIN_TYPES = [
   { value: "dry",         label: "Dry",         desc: "Feels tight, rough, or flaky"           },
@@ -68,6 +68,23 @@ export default function Onboarding() {
   const [cycleTrackingEnabled, setCycleTrackingEnabled] = useState(true);
   const [skinType, setSkinType] = useState("");
   const [saving, setSaving] = useState(false);
+  const [locationCity, setLocationCity] = useState("");
+  const [geoLoading, setGeoLoading] = useState(false);
+  const [geoFound, setGeoFound] = useState("");
+
+  const handleUseMyLocation = () => {
+    if (!navigator.geolocation) return;
+    setGeoLoading(true);
+    navigator.geolocation.getCurrentPosition(async (pos) => {
+      try {
+        const res = await fetch(`https://nominatim.openstreetmap.org/reverse?lat=${pos.coords.latitude}&lon=${pos.coords.longitude}&format=json`);
+        const data = await res.json();
+        const city = data.address?.city || data.address?.town || data.address?.village || data.address?.county || "";
+        if (city) { setGeoFound(city); setLocationCity(city); }
+      } catch {}
+      setGeoLoading(false);
+    }, () => setGeoLoading(false));
+  };
 
   const toggleValue = (value, setter) => {
     setter((current) => (current.includes(value) ? current.filter((item) => item !== value) : [...current, value]));
@@ -85,17 +102,18 @@ export default function Onboarding() {
       timeoutId = setTimeout(() => { setSaving(false); setSaveError(true); }, 10000);
       const user = await base44.auth.me();
       const profiles = await base44.entities.UserProfile.filter({ user_id: user.id });
-      const profilePayload = {
+      const pData = {
         user_id: user.id, user_email: user.email, onboarding_complete: true,
         goals, tone_preference: tone,
         modules_enabled: cycleTrackingEnabled ? ["cycle"] : [],
         skin_type: skinType, followed_categories: interests,
         hydration_target_ml: hydrationTarget, cycle_tracking_enabled: cycleTrackingEnabled,
+        ...(locationCity ? { location_city: locationCity } : {}),
       };
       if (profiles[0]) {
-        await base44.entities.UserProfile.update(profiles[0].id, profilePayload);
+        await base44.entities.UserProfile.update(profiles[0].id, pData);
       } else {
-        await base44.entities.UserProfile.create(profilePayload);
+        await base44.entities.UserProfile.create(pData);
       }
       clearTimeout(timeoutId);
       window.location.href = createPageUrl("Today");
@@ -149,7 +167,7 @@ export default function Onboarding() {
         {current === "goals" && (
           <div className="w-full space-y-6">
             <div>
-              <p style={sLabel}>Step 1 of 5</p>
+              <p style={sLabel}>Step 1 of 6</p>
               <h2 style={{ fontSize: "22px", fontWeight: 700, color: "var(--plum)", fontFamily: "'Playfair Display', serif", marginTop: "4px", lineHeight: 1.2 }}>
                 What do you want more of?
               </h2>
@@ -172,6 +190,53 @@ export default function Onboarding() {
                 </button>
               ))}
             </div>
+          </div>
+        )}
+
+        {current === "location" && (
+          <div className="w-full space-y-6">
+            <div>
+              <p style={sLabel}>Step 2 of 6</p>
+              <h2 style={{ fontSize: "22px", fontWeight: 700, color: "var(--plum)", fontFamily: "'Playfair Display', serif", marginTop: "4px", lineHeight: 1.2 }}>
+                Where are you based?
+              </h2>
+              <p style={{ fontSize: "13px", color: "var(--mauve)", fontFamily: "'Inter', sans-serif", marginTop: "6px" }}>
+                Used to show local events and personalise your feed.
+              </p>
+            </div>
+            <button
+              onClick={handleUseMyLocation}
+              disabled={geoLoading}
+              style={{
+                width: "100%", padding: "14px 16px", borderRadius: 16,
+                border: "1.5px solid var(--rose-dust-light)",
+                backgroundColor: geoFound ? "var(--sage-subtle)" : "var(--rose-dust-subtle)",
+                cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: 10,
+                fontSize: 14, fontWeight: 600, fontFamily: "'Inter', sans-serif",
+                color: geoFound ? "var(--sage)" : "var(--rose-dust)",
+              }}
+            >
+              {geoLoading ? "Finding location..." : geoFound ? `Found: ${geoFound}` : "Use my location"}
+            </button>
+            <div>
+              <p style={{ fontSize: "13px", fontWeight: 600, color: "var(--plum)", fontFamily: "'Inter', sans-serif", marginBottom: "8px" }}>Or type your city</p>
+              <input
+                type="text"
+                value={locationCity}
+                onChange={e => setLocationCity(e.target.value)}
+                placeholder="e.g. London, Manchester, Bristol..."
+                style={{
+                  width: "100%", padding: "14px 16px", borderRadius: 16,
+                  border: "1.5px solid var(--border)",
+                  backgroundColor: "var(--surface)",
+                  fontSize: 14, color: "var(--plum)",
+                  fontFamily: "'Inter', sans-serif", outline: "none", boxSizing: "border-box",
+                }}
+                onFocus={e => e.target.style.borderColor = "var(--rose-dust-light)"}
+                onBlur={e => e.target.style.borderColor = "var(--border)"}
+              />
+            </div>
+            <p style={{ fontSize: 11, color: "var(--mauve)", fontFamily: "'Inter', sans-serif" }}>You can skip this and set it later in your profile.</p>
           </div>
         )}
 

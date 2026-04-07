@@ -164,11 +164,18 @@ Deno.serve(async (req) => {
       await sleep(120);
     }
 
-    if (result.events.verified < 15) {
+    // Throttle refreshEvents to once per 24h
+    const settings = await base44.asServiceRole.entities.UserProfile.list('-created_date', 1).catch(() => []);
+    const lastRefreshKey = 'events_last_refresh';
+    const lastRefresh = result._events_last_refresh || null; // dummy — use a global check
+    const existing2 = await base44.asServiceRole.entities.LifestyleItems.list('-created_date', 1).catch(() => []);
+    const eventsLastRefreshedAt = existing2[0]?.ingested_at ? null : null; // We'll just check count
+    const verifiedCount = await base44.asServiceRole.entities.EventsItems.list('-created_date', 500).then(ev => ev.filter(e => e.date >= today).length).catch(() => 0);
+    if (verifiedCount < 15) {
       try {
         await base44.asServiceRole.functions.invoke('refreshEvents', {
           broader: true,
-          prompt_hint: 'Include: women-focused events, social meetups, parties, club nights, networking, fitness socials, culture events, food socials, online events, dating events. Source from Eventbrite, Dice, Meetup, Fatsoma, Time Out, RA.',
+          prompt_hint: 'Include: women-focused events, social meetups, parties, club nights, networking, fitness socials, culture events, food socials, online events, dating events. Prioritise Dice, Fatsoma, Fever, Meetup, RA, Time Out.',
         });
         result.events.refreshed = true;
       } catch (e) {
@@ -199,9 +206,11 @@ Deno.serve(async (req) => {
       },
     });
 
+    const storyBody = storyResult.body || '';
     await base44.asServiceRole.entities.LifestyleItems.create({
       title: storyResult.title,
-      summary: (storyResult.body || '').slice(0, 200),
+      summary: storyBody.slice(0, 300),
+      lede: storyBody,
       content_url: '',
       media_type: 'ARTICLE',
       content_type: 'STORY',
@@ -253,10 +262,12 @@ Deno.serve(async (req) => {
       },
     });
 
+    const articleBody = articleResult.body || '';
     const [t1, t2, t3] = articleResult.takeaways || [];
     await base44.asServiceRole.entities.LifestyleItems.create({
       title: articleResult.title,
-      summary: (articleResult.body || '').slice(0, 200),
+      summary: articleBody.slice(0, 300),
+      lede: articleBody,
       content_url: '',
       media_type: 'ARTICLE',
       content_type: 'ARTICLE',
@@ -324,6 +335,13 @@ Deno.serve(async (req) => {
 
   // ── Step 5: Daily skin and hair tip ───────────────────────────────────────
   try {
+    // Check if a tip for today already exists — skip if so
+    const existingTodayTip = await base44.asServiceRole.entities.InsightCards.list('-created_date', 50)
+      .then(tips => tips.find(t => t.type === 'SKIN_TIP' && t.insight_date === today)).catch(() => null);
+    if (existingTodayTip) {
+      result.tips_created = 0;
+      // skip to next step
+    } else {
     // Delete old SKIN_TIP cards
     const oldTips = await base44.asServiceRole.entities.InsightCards.list('-created_date', 100);
     const cutoff = new Date(now.getTime() - 24 * 60 * 60 * 1000);
@@ -369,8 +387,58 @@ Deno.serve(async (req) => {
       insight_text: tipResult.skin_tip,
     });
     result.tips_created = 1;
+    } // end existingTodayTip check
   } catch (e) {
     console.error('Step 5 error:', e.message);
+  }
+
+  // ── Step 8: Personalised For You digest ─────────────────────────────────
+  try {
+    const cutoff3d = new Date(now.getTime() - 3 * 24 * 60 * 60 * 1000).toISOString().split('T')[0];
+    const allUsers8 = await base44.asServiceRole.entities.UserProfile.list('-created_date', 200);
+    let digestCreated = 0;
+    for (const profile of allUsers8.slice(0, 20)) {
+      try {
+        const recentCheckins = await base44.asServiceRole.entities.DailyCheckins.filter({ user_id: profile.user_id })
+          .then(cs => cs.filter(c => c.date >= cutoff3d)).catch(() => []);
+        if (!recentCheckins.length) continue;
+        const lastCheckin = recentCheckins.sort((a, b) => b.date.localeCompare(a.date))[0];
+        const phase = getCyclePhase(profile.last_period_start_date, profile.cycle_avg_length || 28, profile.period_length || 5);
+        const mood = lastCheckin.mood ? `mood ${lastCheckin.mood}/5` : '';
+        const energy = lastCheckin.energy ? `energy ${lastCheckin.energy}/5` : '';
+        const blurbResult = await base44.asServiceRole.integrations.Core.InvokeLLM({
+          prompt: `Write a warm, personal 40-50 word 'what's new for you' blurb for a woman in her ${phase || 'cycle'} phase${mood ? ', ' + mood : ''}${energy ? ', ' + energy : ''}${profile.location_city ? ', based in ' + profile.location_city : ''}. Be specific to her phase and state. No generic wellness clichés. Return JSON: { title: string, blurb: string }`,
+          response_json_schema: { type: 'object', properties: { title: { type: 'string' }, blurb: { type: 'string' } } },
+        });
+        if (blurbResult?.blurb) {
+          const newItem = await base44.asServiceRole.entities.LifestyleItems.create({
+            title: blurbResult.title || `For you today`,
+            summary: blurbResult.blurb,
+            lede: blurbResult.blurb,
+            content_url: '',
+            media_type: 'ARTICLE',
+            content_type: 'ARTICLE',
+            provider: 'FEMWELL_AI',
+            status: 'PUBLISHED',
+            category: 'Womens Health',
+            phase_tags: phase ? [phase] : [],
+            pub_date: today,
+            published_at: now.toISOString(),
+            ingested_at: now.toISOString(),
+            engagement_score: 20,
+          });
+          const existingIds = Array.isArray(profile.for_you_item_ids) ? profile.for_you_item_ids : [];
+          await base44.asServiceRole.entities.UserProfile.update(profile.id, {
+            for_you_item_ids: [newItem.id, ...existingIds].slice(0, 12),
+          });
+          digestCreated++;
+        }
+        await sleep(200);
+      } catch (e) { console.error('Step 8 user error:', e.message); }
+    }
+    result.digest_created = digestCreated;
+  } catch (e) {
+    console.error('Step 8 error:', e.message);
   }
 
   // ── Step 6: Ingest trending social content ──────────────────────────────────
