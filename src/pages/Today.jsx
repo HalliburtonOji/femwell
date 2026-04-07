@@ -456,53 +456,6 @@ export default function Today() {
     await loadTrackData(user.id, selectedDate);
   };
 
-  const calcStreak = (habitName) => {
-    let count = 0;
-    const check = new Date();
-    const todayDone = allHabitLogs.some((l) => (l.habit_type === habitName || l.habit_name === habitName) && l.completed && l.date === todayStr);
-    if (!todayDone) check.setDate(check.getDate() - 1);
-    while (true) {
-      const ds = check.toISOString().split("T")[0];
-      const found = allHabitLogs.find((l) => (l.habit_type === habitName || l.habit_name === habitName) && l.completed && l.date === ds);
-      if (!found) break;
-      count++;
-      check.setDate(check.getDate() - 1);
-    }
-    return count;
-  };
-
-  const handleHabitComplete = async (habitName) => {
-    const existing = habitLogs.find((l) => (l.habit_type === habitName || l.habit_name === habitName) && l.date === selectedDate);
-    if (existing) {
-      await base44.entities.HabitLogs.update(existing.id, { completed: true });
-    } else {
-      await base44.entities.HabitLogs.create({ user_id: user.id, date: selectedDate, habit_type: habitName, habit_name: habitName, completed: true });
-    }
-    const all = await base44.entities.HabitLogs.filter({ user_id: user.id });
-    setAllHabitLogs(all);
-    await loadTrackData(user.id, selectedDate);
-    const newStreak = calcStreak(habitName) + 1;
-    if ([7, 14, 30, 60, 100].includes(newStreak)) setMilestone({ streak: newStreak, habitName });
-  };
-
-  const handleAddHabit = async () => {
-    if (!newHabitName.trim()) return;
-    setSavingHabit(true);
-    await base44.entities.HabitLogs.create({ user_id: user.id, date: selectedDate, habit_type: newHabitName.trim(), habit_name: newHabitName.trim(), completed: false });
-    const all = await base44.entities.HabitLogs.filter({ user_id: user.id });
-    setAllHabitLogs(all);
-    await loadTrackData(user.id, selectedDate);
-    setNewHabitName(""); setAddingHabit(false); setSavingHabit(false);
-  };
-
-  const handleDeleteHabit = async (habitName) => {
-    const toDelete = allHabitLogs.filter((l) => l.habit_type === habitName || l.habit_name === habitName);
-    await Promise.all(toDelete.map((l) => base44.entities.HabitLogs.delete(l.id)));
-    const all = await base44.entities.HabitLogs.filter({ user_id: user.id });
-    setAllHabitLogs(all);
-    await loadTrackData(user.id, selectedDate);
-  };
-
   const MEAL_TYPES = ["breakfast", "lunch", "dinner", "snack"];
 
   const quickLogMeal = async () => {
