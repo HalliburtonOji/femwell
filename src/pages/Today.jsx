@@ -8,6 +8,8 @@ import {
   BookOpen, Compass, Droplet, Zap, CheckCircle2, Feather, Map
 } from "lucide-react";
 import ManualCompleteButton from "../components/sessions/ManualCompleteButton";
+import MonthlyCalendarCard from "../components/planner/MonthlyCalendarCard";
+import DayDetailSheet from "../components/planner/DayDetailSheet";
 import DailyInsightBanner from "../components/today/DailyInsightBanner";
 import HabitCard from "../components/habits/HabitCard";
 import StreakMilestoneToast from "../components/habits/StreakMilestoneToast";
@@ -45,7 +47,7 @@ function isReminderDue(reminderTime) {
 }
 
 // ── Track constants ─────────────────────────────────────────────────────────
-const TRACK_TABS = ["Cycle", "Symptoms", "Habits", "Meds", "Sessions"];
+const TRACK_TABS = ["Planner", "Cycle", "Symptoms", "Habits", "Meds", "Sessions"];
 
 const FLOW_OPTIONS = [
   { value: "light",  label: "Light" },
@@ -267,7 +269,9 @@ export default function Today() {
   const [showCheckin, setShowCheckin] = useState(false);
   const [todayCompletions, setTodayCompletions] = useState([]);
 
-  const [trackTab, setTrackTab] = useState("Cycle");
+  const [trackTab, setTrackTab] = useState("Planner");
+  const [plannerSelectedDate, setPlannerSelectedDate] = useState(null);
+  const [personalTasks, setPersonalTasks] = useState({});
   const todayStr = new Date().toISOString().split("T")[0];
   const [selectedDate, setSelectedDate] = useState(todayStr);
   const [cycleEvents, setCycleEvents] = useState([]);
@@ -352,6 +356,16 @@ export default function Today() {
 
       const all = await base44.entities.HabitLogs.filter({ user_id: u.id });
       setAllHabitLogs(all);
+
+      // Load personal tasks
+      const tasks = await base44.entities.PersonalTasks.filter({ user_id: u.id }, "-date", 200);
+      const taskMap = {};
+      tasks.forEach(t => {
+        if (!taskMap[t.date]) taskMap[t.date] = [];
+        taskMap[t.date].push(t);
+      });
+      setPersonalTasks(taskMap);
+
       await loadTrackData(u.id, todayStr);
       setLoading(false);
     })();
@@ -829,7 +843,7 @@ export default function Today() {
         {/* ── MY TRACK ─────────────────────────────────────────────────────── */}
         {mainTab === "track" && (
           <div>
-            {user && (
+            {trackTab !== "Planner" && user && (
               <TrackCalendar
                 user={user}
                 profile={profile}
@@ -841,10 +855,12 @@ export default function Today() {
               />
             )}
 
+            {trackTab !== "Planner" && (
             <div className="text-center mb-5">
               <p className="font-semibold" style={{ color: "var(--plum)", fontFamily: "'Playfair Display', serif", fontSize: "1.1rem" }}>{displayDate}</p>
               {!isToday && <p className="text-xs mt-0.5" style={{ color: "var(--mauve)" }}>{selectedDate}</p>}
             </div>
+            )}
 
             <div className="flex gap-1 mb-5 p-1 overflow-x-auto rounded-2xl" style={{ ...card, scrollbarWidth: "none" }}>
               {TRACK_TABS.map((tab) => (
@@ -860,6 +876,32 @@ export default function Today() {
                 </button>
               ))}
             </div>
+
+            {/* PLANNER */}
+            {trackTab === "Planner" && (
+              <div>
+                <MonthlyCalendarCard
+                  userId={user?.id}
+                  profile={profile}
+                  onDayPress={(day, dayData) => {
+                    setPlannerSelectedDate({ day, dayData });
+                  }}
+                />
+                {plannerSelectedDate && (
+                  <DayDetailSheet
+                    date={plannerSelectedDate.day}
+                    checkin={plannerSelectedDate.dayData.checkin}
+                    symptoms={plannerSelectedDate.dayData.symptoms}
+                    habits={plannerSelectedDate.dayData.habits}
+                    tasks={plannerSelectedDate.dayData.tasks}
+                    userId={user?.id}
+                    onClose={() => setPlannerSelectedDate(null)}
+                    onTaskAdded={() => setPlannerSelectedDate(null)}
+                    onTaskToggled={() => {}}
+                  />
+                )}
+              </div>
+            )}
 
             {/* CYCLE */}
             {trackTab === "Cycle" && (
