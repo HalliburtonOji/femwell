@@ -605,6 +605,7 @@ export default function Today() {
             cycleInfo={cycleInfo}
             todayCheckin={todayCheckin}
             onOpenCheckin={() => setShowCheckin(true)}
+            onOpenCalendar={() => setMainTab("track")}
           />
         </div>
 

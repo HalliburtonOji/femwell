@@ -3,7 +3,7 @@ import { base44 } from "@/api/base44Client";
 import { createPageUrl } from "@/utils";
 import {
   LogOut, ChevronRight, Bell, Moon, Heart, Shield, Settings,
-  Activity, Bookmark, Ticket, CalendarDays, Feather, Calendar, MapPin, Sparkles
+  Activity, Bookmark, Ticket, CalendarDays, Feather, Calendar, MapPin, Sparkles, Camera
 } from "lucide-react";
 
 function getCyclePhase(lastPeriodDate, cycleLen = 28, periodLen = 5) {
@@ -36,6 +36,19 @@ export default function Profile() {
   const [newBirthday, setNewBirthday] = useState('');
   const [newCity, setNewCity] = useState('');
   const [savedField, setSavedField] = useState(null);
+  const [uploadingPhoto, setUploadingPhoto] = useState(false);
+
+  const handlePhotoUpload = async (e) => {
+    const file = e.target.files?.[0];
+    if (!file || !profile) return;
+    setUploadingPhoto(true);
+    try {
+      const { file_url } = await base44.integrations.Core.UploadFile({ file });
+      await base44.entities.UserProfile.update(profile.id, { avatar_url: file_url });
+      setProfile(p => ({ ...p, avatar_url: file_url }));
+    } catch (_) {}
+    setUploadingPhoto(false);
+  };
 
   const saveProfileField = async (field, value, setEdit) => {
     if (!profile) return;
@@ -101,6 +114,20 @@ export default function Profile() {
       d.setDate(d.getDate() - 1);
     }
     return count;
+  })();
+
+  const avgMood = (() => {
+    const moodLogs = checkins.filter(c => c.mood);
+    if (!moodLogs.length) return null;
+    return Math.round(moodLogs.reduce((s, c) => s + c.mood, 0) / moodLogs.length * 10) / 10;
+  })();
+
+  const daysToNextPeriod = (() => {
+    if (!profile?.last_period_start_date || !profile?.cycle_avg_length) return null;
+    const lastPeriod = new Date(profile.last_period_start_date);
+    const today = new Date();
+    const daysSince = Math.floor((today - lastPeriod) / (1000 * 60 * 60 * 24));
+    return profile.cycle_avg_length - (daysSince % profile.cycle_avg_length);
   })();
 
   const skinCheckins = checkins.filter(c => c.skin_condition);
@@ -180,16 +207,31 @@ export default function Profile() {
         }}>
           {/* Top row */}
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 12 }}>
-            <div style={{
-              width: 64, height: 64, borderRadius: 20,
-              background: "rgba(255,255,255,0.15)",
-              border: "1.5px solid rgba(255,255,255,0.25)",
-              display: "flex", alignItems: "center", justifyContent: "center",
-            }}>
-              <span style={{ fontFamily: "'Playfair Display', serif", fontSize: 26, fontWeight: 700, color: "white" }}>
-                {user?.full_name?.[0]?.toUpperCase() || "?"}
-              </span>
-            </div>
+            <label style={{ cursor: uploadingPhoto ? "wait" : "pointer", position: "relative", display: "inline-block" }}>
+              <div style={{
+                width: 72, height: 72, borderRadius: "50%", overflow: "hidden",
+                border: "2px solid rgba(255,255,255,0.35)",
+                backgroundColor: "rgba(255,255,255,0.15)",
+                display: "flex", alignItems: "center", justifyContent: "center",
+              }}>
+                {profile?.avatar_url ? (
+                  <img src={profile.avatar_url} alt="" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+                ) : (
+                  <span style={{ fontFamily: "'Playfair Display', serif", fontSize: 26, fontWeight: 700, color: "white" }}>
+                    {user?.full_name?.[0]?.toUpperCase() || "?"}
+                  </span>
+                )}
+              </div>
+              <div style={{
+                position: "absolute", bottom: 0, right: 0, width: 22, height: 22,
+                borderRadius: "50%", backgroundColor: "var(--rose-dust)",
+                border: "2px solid #2A2035",
+                display: "flex", alignItems: "center", justifyContent: "center",
+              }}>
+                <Camera style={{ width: 10, height: 10, color: "white" }} />
+              </div>
+              <input type="file" accept="image/*" style={{ display: "none" }} onChange={handlePhotoUpload} disabled={uploadingPhoto} />
+            </label>
             <span style={{
               background: "rgba(255,255,255,0.15)",
               border: "1px solid rgba(255,255,255,0.25)",
@@ -213,7 +255,7 @@ export default function Profile() {
               {[
                 { label: "Phase", value: PHASE_LABELS_P[cycleInfo.phase] || cycleInfo.phase },
                 { label: "Cycle day", value: `Day ${cycleInfo.day}` },
-                { label: "Streak", value: `${checkinStreak}d` },
+                ...(daysToNextPeriod != null ? [{ label: "Next period", value: `${daysToNextPeriod}d` }] : [{ label: "Streak", value: `${checkinStreak}d` }]),
               ].map(chip => (
                 <div key={chip.label} style={{
                   flex: 1, background: "rgba(255,255,255,0.1)",
@@ -226,6 +268,20 @@ export default function Profile() {
               ))}
             </div>
           )}
+        </div>
+
+        {/* Stat strip */}
+        <div style={{ display: "flex", gap: 10, marginBottom: "16px" }}>
+          {[
+            { label: "Check-ins", value: checkins.length },
+            { label: "Avg mood", value: avgMood ? `${avgMood}/5` : "—" },
+            { label: "Streak", value: `${checkinStreak}d` },
+          ].map(s => (
+            <div key={s.label} style={{ flex: 1, ...card, padding: "12px 8px", textAlign: "center" }}>
+              <p style={{ fontSize: 20, fontWeight: 700, color: "var(--plum)", fontFamily: "'Playfair Display', serif" }}>{s.value}</p>
+              <p style={{ ...sLabel, marginTop: 2 }}>{s.label}</p>
+            </div>
+          ))}
         </div>
 
         {/* This week activity */}

@@ -1,5 +1,5 @@
 import { format } from "date-fns";
-import { Sun, Moon, Sunset, Circle, ChevronRight, Plus } from "lucide-react";
+import { Sun, Moon, Sunset, Circle, ChevronRight, Plus, CalendarDays } from "lucide-react";
 import { Link } from "react-router-dom";
 import { createPageUrl } from "@/utils";
 
@@ -88,6 +88,7 @@ export default function TodayHeroSection({
   cycleInfo,
   todayCheckin,
   onOpenCheckin,
+  onOpenCalendar,
 }) {
   const { word: greetWord, Icon: GreetIcon } = getGreeting();
   const firstName = user?.full_name?.split(" ")[0] || "";
@@ -105,12 +106,27 @@ export default function TodayHeroSection({
         <div className="flex items-start justify-between gap-4 mb-6">
           <div>
             {/* Date line */}
-            <p
-              className="text-xs font-medium tracking-widest uppercase mb-2"
-              style={{ color: "var(--mauve)", fontFamily: "'Inter', sans-serif", letterSpacing: "0.12em" }}
-            >
-              {format(today, "EEEE, MMMM d")}
-            </p>
+            <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 8 }}>
+              <button
+                onClick={onOpenCalendar}
+                title="Open tracker"
+                style={{
+                  width: 34, height: 34, borderRadius: 10,
+                  border: "1px solid rgba(255,255,255,0.8)",
+                  backgroundColor: "rgba(255,255,255,0.55)",
+                  cursor: "pointer", display: "flex", alignItems: "center",
+                  justifyContent: "center", flexShrink: 0,
+                }}
+              >
+                <CalendarDays style={{ width: 16, height: 16, color: "var(--mauve)" }} />
+              </button>
+              <p
+                className="text-xs font-medium tracking-widest uppercase"
+                style={{ color: "var(--mauve)", fontFamily: "'Inter', sans-serif", letterSpacing: "0.12em" }}
+              >
+                {format(today, "EEEE, MMMM d")}
+              </p>
+            </div>
 
             {/* Greeting */}
             <h1

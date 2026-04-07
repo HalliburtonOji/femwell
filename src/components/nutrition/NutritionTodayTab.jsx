@@ -224,7 +224,6 @@ export default function NutritionTodayTab({ user, profile, nutritionProfile, day
       const newLog = await base44.entities.DrinkLog.create({
         user_id: user.id, day_key: dayKey,
         drink_type: drinkModal.typeId,
-        drink_name: drinkModal.customName.trim() || undefined,
         amount_ml: sizeInfo.ml,
         calories: scaledCals,
         logged_at: new Date().toISOString(),
