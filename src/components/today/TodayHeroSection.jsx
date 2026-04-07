@@ -18,26 +18,39 @@ function getGreeting() {
   return { word: "Good evening", Icon: Moon };
 }
 
-// Ambient hero background — pure CSS, no images needed
+const PHASE_IMAGES = {
+  menstrual:  "https://images.unsplash.com/photo-1519823551278-64ac92734fb1?w=900&q=80",
+  follicular: "https://images.unsplash.com/photo-1490750967868-88df5691cc2b?w=900&q=80",
+  ovulatory:  "https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=900&q=80",
+  luteal:     "https://images.unsplash.com/photo-1473496169904-658ba7574b0d?w=900&q=80",
+  default:    "https://images.unsplash.com/photo-1490750967868-88df5691cc2b?w=900&q=80",
+};
+
 function HeroAmbient({ phase }) {
   const meta = phase ? PHASE_META[phase] : null;
   const baseColor = meta?.accent || "#C4849A";
-  // Two slow-drifting soft orbs
+  const imgSrc = PHASE_IMAGES[phase] || PHASE_IMAGES.default;
   return (
     <div
       className="absolute inset-0 overflow-hidden rounded-[28px]"
       aria-hidden="true"
       style={{ background: `linear-gradient(145deg, var(--ivory) 0%, ${meta?.subtle || "#F5ECF0"} 100%)` }}
     >
+      {/* HD phase photo */}
+      <img
+        src={imgSrc}
+        alt=""
+        loading="lazy"
+        style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover", opacity: 0.18, transition: "opacity 1.5s ease" }}
+        onError={e => { e.target.style.display = "none"; }}
+      />
+      {/* Frosted gradient overlay */}
+      <div style={{ position: "absolute", inset: 0, background: "linear-gradient(to bottom, transparent 0%, rgba(250,248,245,0.6) 100%)" }} />
       {/* Orb 1 */}
       <div
         style={{
-          position: "absolute",
-          top: "-30%",
-          right: "-10%",
-          width: "55%",
-          paddingBottom: "55%",
-          borderRadius: "50%",
+          position: "absolute", top: "-30%", right: "-10%",
+          width: "55%", paddingBottom: "55%", borderRadius: "50%",
           background: `radial-gradient(circle, ${baseColor}26 0%, transparent 70%)`,
           animation: "fw-drift-a 18s ease-in-out infinite alternate",
         }}
@@ -45,39 +58,21 @@ function HeroAmbient({ phase }) {
       {/* Orb 2 */}
       <div
         style={{
-          position: "absolute",
-          bottom: "-20%",
-          left: "-8%",
-          width: "45%",
-          paddingBottom: "45%",
-          borderRadius: "50%",
+          position: "absolute", bottom: "-20%", left: "-8%",
+          width: "45%", paddingBottom: "45%", borderRadius: "50%",
           background: `radial-gradient(circle, ${baseColor}18 0%, transparent 70%)`,
           animation: "fw-drift-b 22s ease-in-out infinite alternate",
         }}
       />
-      {/* Subtle noise-texture line */}
       <div
         style={{
-          position: "absolute",
-          inset: 0,
-          backgroundImage: `repeating-linear-gradient(
-            135deg,
-            transparent,
-            transparent 60px,
-            ${baseColor}07 60px,
-            ${baseColor}07 61px
-          )`,
+          position: "absolute", inset: 0,
+          backgroundImage: `repeating-linear-gradient(135deg, transparent, transparent 60px, ${baseColor}07 60px, ${baseColor}07 61px)`,
         }}
       />
       <style>{`
-        @keyframes fw-drift-a {
-          from { transform: translate(0,0) scale(1); }
-          to   { transform: translate(3%,5%) scale(1.08); }
-        }
-        @keyframes fw-drift-b {
-          from { transform: translate(0,0) scale(1); }
-          to   { transform: translate(-3%,-4%) scale(1.06); }
-        }
+        @keyframes fw-drift-a { from { transform: translate(0,0) scale(1); } to { transform: translate(3%,5%) scale(1.08); } }
+        @keyframes fw-drift-b { from { transform: translate(0,0) scale(1); } to { transform: translate(-3%,-4%) scale(1.06); } }
       `}</style>
     </div>
   );

@@ -12,6 +12,7 @@ import Events from './pages/Events';
 import WeeklyInsights from './pages/WeeklyInsights';
 import LifestyleDetail from './pages/LifestyleDetail';
 import SkinHair from './pages/SkinHair';
+import Planner from './pages/Planner';
 
 const { Pages, Layout, mainPage } = pagesConfig;
 const mainPageKey = mainPage ?? Object.keys(Pages)[0];
@@ -69,6 +70,7 @@ const AuthenticatedApp = () => {
       <Route path="/WeeklyInsights" element={<LayoutWrapper currentPageName="WeeklyInsights"><WeeklyInsights /></LayoutWrapper>} />
       <Route path="/LifestyleDetail" element={<LayoutWrapper currentPageName="LifestyleDetail"><LifestyleDetail /></LayoutWrapper>} />
       <Route path="/SkinHair" element={<LayoutWrapper currentPageName="SkinHair"><SkinHair /></LayoutWrapper>} />
+      <Route path="/Planner" element={<LayoutWrapper currentPageName="Planner"><Planner /></LayoutWrapper>} />
       <Route path="*" element={<PageNotFound />} />
     </Routes>
   );

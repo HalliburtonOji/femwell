@@ -133,6 +133,8 @@ function ContentCard({ item, onSave, saved, isStory }) {
   const [expanded, setExpanded] = useState(false);
   const [readerOpen, setReaderOpen] = useState(false);
   const [localSaved, setLocalSaved] = useState(saved);
+  const [fullBody, setFullBody] = useState(null);
+  const [generatingBody, setGeneratingBody] = useState(false);
   const hasExternalUrl = !!(item.content_url && item.content_url.startsWith("http"));
   const isInternal = isStory || !hasExternalUrl;
   const handleSave = async () => {
@@ -144,6 +146,26 @@ function ContentCard({ item, onSave, saved, isStory }) {
   const handleOpen = () => {
     window.open(item.content_url, "_blank", "noopener,noreferrer");
     base44.functions.invoke("recordLifestyleAction", { item_id: item.id, action: "open", category: item.category }).catch(() => {});
+  };
+
+  const handleReaderOpen = async () => {
+    setReaderOpen(true);
+    const stored = item.lede || '';
+    if (stored.length >= 400) { setFullBody(stored); return; }
+    if (item.provider === 'FEMWELL_AI') {
+      setGeneratingBody(true);
+      try {
+        const res = await base44.functions.invoke('expandContent', {
+          item_id: item.id, title: item.title,
+          summary: item.summary || stored || '',
+          content_type: item.content_type,
+        });
+        setFullBody(res?.data?.body || item.summary || stored);
+      } catch { setFullBody(item.summary || stored); }
+      setGeneratingBody(false);
+    } else {
+      setFullBody(item.summary || stored);
+    }
   };
   const takeaways = [item.takeaway_1, item.takeaway_2, item.takeaway_3].filter(Boolean);
   const displayText = stripHtml(item.summary || item.lede || "");
@@ -193,7 +215,7 @@ function ContentCard({ item, onSave, saved, isStory }) {
             <button onClick={handleSave} style={{ border: "none", background: "none", cursor: "pointer", padding: 2 }}>
               {localSaved ? <BookmarkCheck style={{ width: 16, height: 16, color: "var(--rose-dust)" }} /> : <Bookmark style={{ width: 16, height: 16, color: "var(--mauve)" }} />}
             </button>
-            <button onClick={isInternal ? () => setReaderOpen(true) : handleOpen} className="btn-primary" style={{ fontSize: 12, padding: "5px 14px" }}>Read</button>
+            <button onClick={isInternal ? handleReaderOpen : handleOpen} className="btn-primary" style={{ fontSize: 12, padding: "5px 14px" }}>{item.provider === 'FEMWELL_AI' ? 'Read full' : 'Read'}</button>
           </div>
         </div>
       </div>
@@ -223,9 +245,14 @@ function ContentCard({ item, onSave, saved, isStory }) {
                 {item.author_name}{item.source_name ? (item.author_name ? ` \u00b7 ${item.source_name}` : item.source_name) : ""}
               </p>
             )}
-            {(item.summary || item.lede) && (
-              <p style={{ fontSize: 15, color: "var(--plum)", lineHeight: 1.75, fontFamily: "'Inter', sans-serif", marginBottom: 20 }}>{stripHtml(item.summary || item.lede)}</p>
-            )}
+            {generatingBody ? (
+              <div style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '20px 0' }}>
+                <div style={{ width: 18, height: 18, border: '2px solid var(--rose-dust-light)', borderTopColor: 'var(--rose-dust)', borderRadius: '50%', animation: 'spin 0.7s linear infinite', flexShrink: 0 }} />
+                <span style={{ fontSize: 13, color: 'var(--mauve)', fontFamily: "'Inter', sans-serif" }}>Generating full content...</span>
+              </div>
+            ) : (fullBody || item.summary || item.lede) ? (
+              <p style={{ fontSize: 15, color: "var(--plum)", lineHeight: 1.75, fontFamily: "'Inter', sans-serif", marginBottom: 20, whiteSpace: 'pre-line' }}>{stripHtml(fullBody || item.summary || item.lede)}</p>
+            ) : null}
             {(()=>{ const tks = item.takeaways?.length ? item.takeaways : [item.takeaway_1, item.takeaway_2, item.takeaway_3].filter(Boolean); return tks.length > 0 && (
               <div style={{ backgroundColor: "var(--ivory)", borderRadius: 16, padding: "14px 16px", marginBottom: 16 }}>
                 <p style={{ fontSize: 11, fontWeight: 600, color: "var(--mauve)", textTransform: "uppercase", letterSpacing: "0.1em", marginBottom: 10, fontFamily: "'Inter', sans-serif" }}>Key takeaways</p>

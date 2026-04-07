@@ -129,17 +129,26 @@ export default function Onboarding() {
   const progress = (step / (STEPS.length - 1)) * 100;
 
   return (
-    <div className="min-h-screen flex flex-col" style={{ backgroundColor: "var(--ivory)" }}>
+    <div className="min-h-screen flex flex-col" style={{ backgroundColor: "var(--ivory)", position: "relative" }}>
+      {/* HD background */}
+      <img
+        src="https://images.unsplash.com/photo-1490750967868-88df5691cc2b?w=900&q=80"
+        alt=""
+        loading="lazy"
+        style={{ position: "fixed", inset: 0, width: "100%", height: "100%", objectFit: "cover", opacity: 0.12, zIndex: 0, pointerEvents: "none" }}
+        onError={e => { e.target.style.display = "none"; }}
+      />
+      <div style={{ position: "fixed", inset: 0, background: "linear-gradient(to top, rgba(250,247,244,0.85) 0%, transparent 60%)", zIndex: 0, pointerEvents: "none" }} />
 
       {step > 0 && step < STEPS.length - 1 && (
-        <div style={{ padding: "48px 24px 8px" }}>
+        <div style={{ padding: "48px 24px 8px", position: "relative", zIndex: 1 }}>
           <div style={{ height: "3px", borderRadius: "9999px", backgroundColor: "var(--border)", overflow: "hidden" }}>
             <div style={{ height: "100%", borderRadius: "9999px", backgroundColor: "var(--rose-dust)", width: `${progress}%`, transition: "width 0.4s ease" }} />
           </div>
         </div>
       )}
 
-      <div className="flex-1 flex flex-col items-center justify-center px-6 py-8 w-full mx-auto" style={{ maxWidth: "448px" }}>
+      <div className="flex-1 flex flex-col items-center justify-center px-6 py-8 w-full mx-auto" style={{ maxWidth: "448px", position: "relative", zIndex: 1 }}>
 
         {current === "welcome" && (
           <div className="space-y-8 text-center w-full">
