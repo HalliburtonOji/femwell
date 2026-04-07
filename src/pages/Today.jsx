@@ -256,6 +256,8 @@ function DailyStoriesRow({ todayCheckin, todayCompletions }) {
   );
 }
 
+const todayStr = new Date().toISOString().split("T")[0];
+
 // ── Main component ──────────────────────────────────────────────────────────
 export default function Today() {
   const [mainTab, setMainTab] = useState("today");
