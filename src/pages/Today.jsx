@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { base44 } from "@/api/base44Client";
-import { TodayRecommendations } from '@/api/entities';
+import { PageLoader } from "../components/common/LoadingSpinner";
 import { createPageUrl } from "@/utils";
 import {
   Sun, ChevronRight, Plus, Sparkles, Droplets, Activity, Heart,
@@ -341,28 +341,7 @@ export default function Today() {
     }
   }, []);
 
-  const loadTrackData = async (userId, date) => {
-    const [events, symptoms, habits, meds, sessions] = await Promise.all([
-      base44.entities.CycleEvents.filter({ user_id: userId, date }),
-      base44.entities.SymptomLogs.filter({ user_id: userId, date }),
-      base44.entities.HabitLogs.filter({ user_id: userId, date }),
-      base44.entities.MedicationLogs.filter({ user_id: userId, date }),
-      base44.entities.ContentHistory.filter({ user_id: userId, session_date: date }),
-    ]);
-    setCycleEvents(events);
-    setSymptomLogs(symptoms);
-    setHabitLogs(habits);
-    setMedLogs(meds);
-    const activeSessions = sessions.filter((s) => !s.is_deleted);
-    setSessionHistory(activeSessions);
-    const ids = [...new Set(activeSessions.map((s) => s.content_id).filter(Boolean))];
-    if (ids.length > 0) {
-      const items = await base44.entities.ContentItems.list("-created_date", 100);
-      const map = {};
-      items.forEach((it) => { map[it.id] = it; });
-      setSessionContent(map);
-    }
-  };
+
 
   const handleSaveCheckin = async (data) => {
     const payload = { user_id: user.id, date: todayStr, ...data, updated_at: new Date().toISOString() };
@@ -476,11 +455,7 @@ export default function Today() {
     }
   };
 
-  if (loading) return (
-    <div className="min-h-screen flex items-center justify-center" style={{ backgroundColor: "var(--ivory)" }}>
-      <div className="w-8 h-8 rounded-full border-2 border-t-transparent animate-spin" style={{ borderColor: "var(--rose-dust-light)", borderTopColor: "var(--rose-dust)" }} />
-    </div>
-  );
+  if (loading) return <PageLoader />;
 
   return (
     <div className="min-h-screen pb-28" style={{ backgroundColor: "var(--ivory)" }}>

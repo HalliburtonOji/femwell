@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { toast } from "sonner";
 import { X, Plus, Check, Clock, Droplets, Activity, Heart, Pill, ClipboardList } from "lucide-react";
 import { format } from "date-fns";
 import { base44 } from "@/api/base44Client";
@@ -157,6 +158,7 @@ function CheckinTab({ dayData, dateStr, userId, onRefresh }) {
     };
     if (existing) await base44.entities.DailyCheckins.update(existing.id, payload);
     else await base44.entities.DailyCheckins.create(payload);
+    toast.success("Check-in saved");
     onRefresh();
     setSaving(false);
   };
@@ -209,6 +211,7 @@ function CycleTab({ dayData, dateStr, userId, onRefresh }) {
       user_id: userId, date: dateStr, type,
       flow_level: type !== "PeriodEnd" ? flow : undefined,
     });
+    toast.success("Cycle event logged");
     setAdding(false);
     onRefresh();
     setSaving(false);
@@ -291,6 +294,7 @@ function SymptomsTab({ dayData, dateStr, userId, onRefresh }) {
     if (!t) return;
     setSaving(true);
     await base44.entities.SymptomLogs.create({ user_id: userId, date: dateStr, symptom_type: t, severity, notes: notes || undefined });
+    toast.success("Symptom logged");
     setAdding(false); setType(""); setCustom(""); setSeverity(3); setNotes("");
     onRefresh();
     setSaving(false);
@@ -366,6 +370,7 @@ function TasksTab({ dayData, dateStr, userId, onRefresh }) {
     if (!title.trim()) return;
     setSaving(true);
     await base44.entities.PersonalTasks.create({ user_id: userId, date: dateStr, title: title.trim(), time: time || undefined, category, completed: false });
+    toast.success("Task added");
     setTitle(""); setTime(""); setCategory("personal"); setAdding(false);
     onRefresh();
     setSaving(false);
@@ -455,6 +460,7 @@ function MedsTab({ dayData, dateStr, userId, onRefresh }) {
     if (!name.trim()) return;
     setSaving(true);
     await base44.entities.MedicationLogs.create({ user_id: userId, date: dateStr, item_name: name.trim(), dose: dose || undefined, notes: notes || undefined, taken: true });
+    toast.success("Medication logged");
     setName(""); setDose(""); setNotes(""); setAdding(false);
     onRefresh();
     setSaving(false);

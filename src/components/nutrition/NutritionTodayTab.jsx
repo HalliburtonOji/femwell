@@ -1,7 +1,8 @@
 import { useState, useEffect } from "react";
 import { base44 } from "@/api/base44Client";
 import { motion, AnimatePresence } from "framer-motion";
-import { Plus, Droplets, Star, RefreshCw, Loader2, X, BookmarkPlus, Target, ChevronRight, BookOpen } from "lucide-react";
+import { Plus, Star, RefreshCw, Loader2, X, BookmarkPlus, Target, ChevronRight, BookOpen } from "lucide-react";
+import { toast } from "sonner";
 import FoodLookup from "./FoodLookup";
 import { format } from "date-fns";
 import { createPageUrl } from "@/utils";
@@ -252,6 +253,7 @@ export default function NutritionTodayTab({ user, profile, nutritionProfile, day
     });
     setMeals((prev) => [...prev, log]);
     setMealText("");
+    toast.success("Meal logged");
     try {
       let phasePromptAppend = "";
       if (profile?.last_period_start_date) {
@@ -264,9 +266,8 @@ export default function NutritionTodayTab({ user, profile, nutritionProfile, day
           : cycleDay <= 13 ? 'follicular'
           : cycleDay <= 17 ? 'ovulatory'
           : 'luteal';
-        phasePromptAppend = ` The user is currently in their ${phase} phase. Context for your analysis: menstrual = rest and restoration, iron and anti-inflammatory foods are beneficial; follicular = oestrogen rising, cruciferous vegetables and fermented foods support this phase; ovulatory = peak energy, antioxidants and zinc-rich foods are ideal; luteal = progesterone rising then dropping, magnesium and complex carbohydrates reduce PMS symptoms and support serotonin. In one sentence only at the end of your response, note how the logged meal relates to this phase. Do not make it the main focus.`;
+        phasePromptAppend = ` The user is currently in their ${phase} phase.`;
       }
-
       const res = await base44.functions.invoke("analyzeMeal", {
         raw_text: text.trim(), energy_level: checkin?.energy,
         digestion_score: checkin?.digestion,
@@ -279,10 +280,6 @@ export default function NutritionTodayTab({ user, profile, nutritionProfile, day
         if (res.items?.length > 0 || res.nutritional_summary) {
           await base44.entities.MealLog.update(log.id, { ai_analysis: JSON.stringify(res) });
           setMeals((prev) => prev.map((m) => m.id === log.id ? { ...m, ai_analysis: JSON.stringify(res) } : m));
-          const nutritionProfiles = await base44.entities.NutritionProfile.filter({ user_id: user.id });
-          if (nutritionProfiles[0]?.goal_mode) {
-            await base44.entities.MealLog.update(log.id, { wellness_goal: nutritionProfiles[0].goal_mode });
-          }
         }
         if (res.insight) {
           const { headline, wellness_impact, action_items, smart_swap, confidence, tone_safety_note } = res.insight;
@@ -327,6 +324,7 @@ export default function NutritionTodayTab({ user, profile, nutritionProfile, day
   const deleteMeal = async (id) => {
     await base44.entities.MealLog.delete(id);
     setMeals((prev) => prev.filter((m) => m.id !== id));
+    toast.success("Meal removed");
   };
 
   const mealsByType = MEAL_TYPES.reduce((acc, t) => {

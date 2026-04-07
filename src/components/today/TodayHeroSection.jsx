@@ -41,6 +41,7 @@ function HeroAmbient({ phase }) {
         src={imgSrc}
         alt=""
         loading="lazy"
+        aria-hidden="true"
         style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover", opacity: 0.18, transition: "opacity 1.5s ease" }}
         onError={e => { e.target.style.display = "none"; }}
       />

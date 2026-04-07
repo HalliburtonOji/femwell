@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { PageLoader } from "../components/common/LoadingSpinner";
 import { Lock, Plus, X, ChevronDown, ChevronUp } from "lucide-react";
 import { base44 } from "@/api/base44Client";
 import { differenceInDays, subDays, parseISO, format, addDays } from "date-fns";
@@ -710,16 +711,7 @@ export default function SkinHair() {
   const recentSkinLog = [...filtered].filter((c) => c.skin_condition).reverse().slice(0, 14);
   const recentHairLog = [...filtered].filter((c) => c.hair_shedding).reverse().slice(0, 14);
 
-  if (loading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center" style={{ backgroundColor: "var(--ivory)" }}>
-        <div
-          className="w-8 h-8 rounded-full border-2 border-t-transparent animate-spin"
-          style={{ borderColor: "var(--rose-dust-light)", borderTopColor: "var(--rose-dust)" }}
-        />
-      </div>
-    );
-  }
+  if (loading) return <PageLoader />;
 
   return (
     <div className="min-h-screen pb-28" style={{ backgroundColor: "var(--ivory)" }}>
@@ -918,7 +910,7 @@ export default function SkinHair() {
                   style={{ flexShrink: 0, width: 200, background: "var(--surface)", border: "1px solid var(--border)", borderRadius: 16, overflow: "hidden", cursor: "pointer" }}
                 >
                   <div style={{ height: 100, background: "var(--ivory-dark)", overflow: "hidden" }}>
-                    {item.image_url && <img src={item.image_url} alt="" style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }} onError={e => { e.target.style.display = "none"; }} />}
+                    {item.image_url && <img src={item.image_url} alt="" loading="lazy" style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }} onError={e => { e.target.style.display = "none"; }} />}
                   </div>
                   <div style={{ padding: "10px 12px" }}>
                     <p style={{ fontSize: 12, fontWeight: 600, color: "var(--plum)", fontFamily: "'Inter', sans-serif", lineHeight: 1.4, overflow: "hidden", display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical", margin: "0 0 4px" }}>{item.title}</p>

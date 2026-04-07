@@ -174,7 +174,7 @@ function ContentCard({ item, onSave, saved, isStory }) {
     <div style={{ backgroundColor: "var(--surface)", border: "1px solid var(--border)", boxShadow: "var(--shadow-sm)", borderRadius: 16, overflow: "hidden", marginBottom: 14 }}>
       {item.image_url && (
         <div style={{ width: "100%", height: 180, overflow: "hidden" }}>
-          <img src={item.image_url} alt="" style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }} onError={(e) => { e.target.style.display = "none"; }} />
+          <img src={item.image_url} alt="" loading="lazy" style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }} onError={(e) => { e.target.style.display = "none"; }} />
         </div>
       )}
       <div style={{ padding: "14px 16px 16px" }}>
@@ -291,7 +291,7 @@ function BookCard({ book }) {
       <div style={{ display: "flex", gap: 14, padding: "16px 16px 0" }}>
         {cover && (
           <div style={{ flexShrink: 0, width: 72, height: 108, borderRadius: 8, overflow: "hidden", boxShadow: "0 4px 12px rgba(42,32,53,0.15)" }}>
-            <img src={cover} alt={book.title} style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }} onError={(e) => { e.target.style.display = "none"; }} />
+            <img src={cover} alt={book.title} loading="lazy" style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }} onError={(e) => { e.target.style.display = "none"; }} />
           </div>
         )}
         <div style={{ flex: 1, minWidth: 0 }}>

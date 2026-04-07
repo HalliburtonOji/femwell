@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { base44 } from "@/api/base44Client";
 import { Search, SlidersHorizontal, X, Lock } from "lucide-react";
+import { PageLoader } from "../components/common/LoadingSpinner";
 import { differenceInDays, parseISO } from "date-fns";
 import { createPageUrl } from "@/utils";
 import FilterDrawer from "../components/explore/FilterDrawer";

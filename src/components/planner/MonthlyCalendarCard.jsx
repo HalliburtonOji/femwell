@@ -85,6 +85,7 @@ function MonthCard({ month, today, data, profile, onDayPress, isCurrentMonth, mo
       <img
         src={photo}
         alt=""
+        loading="lazy"
         style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover", zIndex: 0 }}
         onError={e => { e.target.style.display = "none"; }}
       />
