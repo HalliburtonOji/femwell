@@ -105,6 +105,15 @@ Return JSON with these exact fields:
           title: book.title, author: book.author, isbn: book.isbn,
           category: book.category, genre: book.genre || book.category, phase_tags: book.phase_tags,
           free_link: result.free_link || book.free_link || null,
+          cover_url: book.isbn ? `https://covers.openlibrary.org/b/isbn/${book.isbn}-M.jpg` : null,
+          tagline: result.tagline || '',
+          summary: result.summary || '',
+          key_lessons: result.key_lessons || [],
+          best_for: result.best_for || '',
+          quote: result.quote || '',
+          read_time_mins: result.read_time_mins || 360,
+          femwell_connection: result.femwell_connection || '',
+          goodreads_url: result.goodreads_url || '',
         });
       } catch (e) { console.error(`Failed ${book.title}:`, e.message); }
     }

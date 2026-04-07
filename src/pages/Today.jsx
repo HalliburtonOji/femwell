@@ -9,6 +9,7 @@ import {
 } from "lucide-react";
 import ManualCompleteButton from "../components/sessions/ManualCompleteButton";
 import MonthlyCalendarCard from "../components/planner/MonthlyCalendarCard";
+import SmartContextBanner from "../components/common/SmartContextBanner";
 import DayDetailSheet from "../components/planner/DayDetailSheet";
 import DailyInsightBanner from "../components/today/DailyInsightBanner";
 import HabitCard from "../components/habits/HabitCard";
@@ -499,6 +500,7 @@ export default function Today() {
         {/* ── MY DAY ───────────────────────────────────────────────────────── */}
         {mainTab === "today" && (
           <>
+            {profile && <SmartContextBanner profile={profile} todayCheckin={todayCheckin} currentPage="Today" />}
             {user && <DailyInsightBanner user={user} />}
             {user && <WeeklyInsightCard user={user} />}
 

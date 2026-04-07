@@ -2,6 +2,8 @@ import { useState, useEffect, useCallback, useRef } from "react";
 import { base44 } from "@/api/base44Client";
 import { RefreshCw, BookOpen, Play, BookMarked, FileText, Bookmark, BookmarkCheck, ExternalLink, ChevronDown, ChevronUp, X } from "lucide-react";
 import FeedSkeleton from "../components/lifestyle/FeedSkeleton";
+import SmartFemwellTab from "../components/lifestyle/SmartFemwellTab";
+import ArticleReader from "../components/lifestyle/ArticleReader";
 
 function stripHtml(str) {
   if (!str) return "";
@@ -385,6 +387,7 @@ function BooksTab() {
 }
 
 export default function Lifestyle() {
+  const [readerItem, setReaderItem] = useState(null);
   const [tab, setTab] = useState(() => {
     const p = new URLSearchParams(window.location.search).get("tab");
     return p && ["for_you","articles","watch","stories","femwell","books"].includes(p) ? p : "for_you";
@@ -452,6 +455,7 @@ export default function Lifestyle() {
   const handleSave = (id, isSaved) => setSavedIds(prev => { const next = new Set(prev); isSaved ? next.add(id) : next.delete(id); return next; });
 
   return (
+    <>
     <div className="min-h-screen pb-28" style={{ backgroundColor: "var(--ivory)" }}>
       <style>{`.lf-scroll::-webkit-scrollbar{display:none}.lf-scroll{-ms-overflow-style:none;scrollbar-width:none}@keyframes fadeUp{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}.lf-fade{animation:fadeUp 0.3s ease forwards}`}</style>
       <div className="max-w-3xl mx-auto px-4">
@@ -472,7 +476,8 @@ export default function Lifestyle() {
           ))}
         </div>
         {tab === "books" && <BooksTab />}
-        {tab !== "books" && (
+        {tab === "femwell" && <SmartFemwellTab onRead={setReaderItem} />}
+        {tab !== "books" && tab !== "femwell" && (
           <>
             {tab === "watch" && (
               <div style={{ marginBottom: 16 }}>
@@ -493,12 +498,7 @@ export default function Lifestyle() {
               </div>
             )}
 
-            {tab === "femwell" && (
-              <div style={{ background: "var(--rose-dust-subtle)", border: "1px solid var(--rose-dust-light)", borderRadius: 16, padding: "14px 16px", marginBottom: 16 }}>
-                <h3 style={{ fontFamily: "'Playfair Display', serif", fontSize: 15, fontWeight: 700, color: "var(--plum)", margin: "0 0 4px" }}>Written for you</h3>
-                <p style={{ fontSize: 12, color: "var(--mauve)", fontFamily: "'Inter', sans-serif", margin: 0 }}>Stories and insights created by FemWell, tailored to your cycle and life.</p>
-              </div>
-            )}
+
             {loading ? <FeedSkeleton /> : items.length === 0 ? (
               <div style={{ textAlign: "center", padding: "48px 24px" }}>
                 <p style={{ color: "var(--mauve)", fontSize: 14, margin: 0 }}>
@@ -529,5 +529,7 @@ export default function Lifestyle() {
         )}
       </div>
     </div>
+    {readerItem && <ArticleReader item={readerItem} onClose={() => setReaderItem(null)} />}
+    </>
   );
 }
