@@ -18,12 +18,19 @@ function timeAgo(d) {
   return `${Math.floor(days / 7)}w ago`;
 }
 
+const CONTENT_TYPE_OPTIONS = [
+  { value: "article", label: "📄 Article", desc: "Evidence-based wellness article" },
+  { value: "story", label: "✍️ Personal Essay", desc: "First-person narrative story" },
+  { value: "book", label: "📚 Book Summary", desc: "Deep summary of a book" },
+];
+
 export default function SmartFemwellTab({ onRead }) {
   const [items, setItems] = useState([]);
   const [loading, setLoading] = useState(true);
   const [generating, setGenerating] = useState(false);
   const [requestTopic, setRequestTopic] = useState("");
   const [requestCategory, setRequestCategory] = useState("Women's Health");
+  const [requestContentType, setRequestContentType] = useState("article");
   const [showRequestForm, setShowRequestForm] = useState(false);
   const [weeklyRequestCount, setWeeklyRequestCount] = useState(0);
   const [activeCategory, setActiveCategory] = useState("All");
@@ -76,6 +83,7 @@ export default function SmartFemwellTab({ onRead }) {
       const res = await base44.functions.invoke("generateFemwellContent", {
         custom_topic: requestTopic.trim(),
         custom_category: requestCategory,
+        content_type: requestContentType,
       });
       if (res?.data?.error) {
         setSubmitMsg(res.data.error);
@@ -89,6 +97,12 @@ export default function SmartFemwellTab({ onRead }) {
       setSubmitMsg("Something went wrong — please try again.");
     }
     setSubmitting(false);
+  };
+
+  const contentTypeLabel = (item) => {
+    if (item.content_type === 'STORY') return { label: 'Essay', bg: 'var(--mauve-subtle)', color: 'var(--mauve)' };
+    if (item.content_type === 'GUIDE') return { label: 'Book', bg: '#FFF0E8', color: '#C4804A' };
+    return { label: 'Article', bg: 'var(--rose-dust-subtle)', color: 'var(--rose-dust)' };
   };
 
   const filtered = activeCategory === "All" ? items : items.filter(i => i.category === activeCategory);
@@ -127,8 +141,16 @@ export default function SmartFemwellTab({ onRead }) {
           ) : (
             <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
               <p style={{ fontSize: 12, fontWeight: 600, color: "var(--plum)", margin: 0 }}>What would you like us to write about?</p>
+              <div style={{ display: "flex", gap: 6, marginBottom: 8 }}>
+                {CONTENT_TYPE_OPTIONS.map(opt => (
+                  <button key={opt.value} onClick={() => setRequestContentType(opt.value)}
+                    style={{ flex: 1, padding: "7px 6px", borderRadius: 10, border: requestContentType === opt.value ? "1.5px solid var(--plum)" : "1px solid var(--border)", backgroundColor: requestContentType === opt.value ? "var(--plum)" : "white", color: requestContentType === opt.value ? "white" : "var(--plum)", fontSize: 11, fontWeight: 600, cursor: "pointer", fontFamily: "'Inter', sans-serif", textAlign: "center" }}>
+                    {opt.label}
+                  </button>
+                ))}
+              </div>
               <input value={requestTopic} onChange={e => setRequestTopic(e.target.value)}
-                placeholder="e.g. How iron deficiency affects my cycle and energy"
+                placeholder={requestContentType === "book" ? "e.g. Why We Sleep by Matthew Walker" : requestContentType === "story" ? "e.g. My experience with PCOS and finding balance" : "e.g. How iron deficiency affects my cycle and energy"}
                 style={{ width: "100%", padding: "10px 12px", borderRadius: 12, border: "1px solid var(--border)", fontSize: 13, fontFamily: "'Inter', sans-serif", color: "var(--plum)", backgroundColor: "white", outline: "none", boxSizing: "border-box" }} />
               <select value={requestCategory} onChange={e => setRequestCategory(e.target.value)}
                 style={{ width: "100%", padding: "9px 12px", borderRadius: 12, border: "1px solid var(--border)", fontSize: 12, fontFamily: "'Inter', sans-serif", color: "var(--plum)", backgroundColor: "white", outline: "none" }}>
@@ -141,7 +163,7 @@ export default function SmartFemwellTab({ onRead }) {
                 <button onClick={submitRequest} disabled={!requestTopic.trim() || submitting}
                   style={{ flex: 2, padding: "9px", borderRadius: 10, border: "none", backgroundColor: "var(--plum)", color: "white", fontSize: 12, fontWeight: 600, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: 6, opacity: (!requestTopic.trim() || submitting) ? 0.5 : 1 }}>
                   {submitting && <Loader2 style={{ width: 12, height: 12, animation: "spin 0.7s linear infinite" }} />}
-                  {submitting ? "Generating…" : "Generate article"}
+                  {submitting ? "Generating…" : `Generate ${requestContentType === "story" ? "essay" : requestContentType === "book" ? "book summary" : "article"}`}
                 </button>
               </div>
             </div>
@@ -176,8 +198,9 @@ export default function SmartFemwellTab({ onRead }) {
           {filtered.map(item => (
             <div key={item.id} style={{ backgroundColor: "var(--surface)", border: "1px solid var(--border)", borderRadius: 16, padding: "16px", marginBottom: 12, boxShadow: "var(--shadow-sm)" }}>
               <div style={{ display: "flex", gap: 6, flexWrap: "wrap", marginBottom: 8 }}>
+                {(() => { const t = contentTypeLabel(item); return <span style={{ fontSize: 10, fontWeight: 600, color: t.color, backgroundColor: t.bg, borderRadius: 9999, padding: "2px 9px" }}>{t.label}</span>; })()}
                 {item.category && (
-                  <span style={{ fontSize: 10, fontWeight: 600, color: "var(--rose-dust)", backgroundColor: "var(--rose-dust-subtle)", borderRadius: 9999, padding: "2px 9px" }}>{item.category}</span>
+                  <span style={{ fontSize: 10, fontWeight: 500, color: "var(--mauve)", backgroundColor: "var(--ivory-dark)", borderRadius: 9999, padding: "2px 9px" }}>{item.category}</span>
                 )}
                 {item.phase_tags?.map(pt => (
                   <span key={pt} style={{ fontSize: 10, fontWeight: 500, color: "var(--mauve)", backgroundColor: "var(--ivory-dark)", borderRadius: 9999, padding: "2px 8px", textTransform: "capitalize" }}>{pt}</span>
