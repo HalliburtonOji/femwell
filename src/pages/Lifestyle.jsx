@@ -284,104 +284,136 @@ function ContentCard({ item, onSave, saved, isStory }) {
   );
 }
 
-function BookCard({ book }) {
-  const [expanded, setExpanded] = useState(false);
+const FULL_BOOKS = [
+  {
+    title: "Pride and Prejudice",
+    author: "Jane Austen",
+    category: "Relationships",
+    year: "1813",
+    description: "The beloved story of Elizabeth Bennet and Mr Darcy — a masterpiece of wit, class, and the politics of women's choices.",
+    read_url: "https://www.gutenberg.org/files/1342/1342-h/1342-h.htm",
+    pages: "432",
+  },
+  {
+    title: "Jane Eyre",
+    author: "Charlotte Brontë",
+    category: "Identity",
+    year: "1847",
+    description: "A fiercely independent woman navigates love, morality and self-determination in Victorian England.",
+    read_url: "https://www.gutenberg.org/files/1260/1260-h/1260-h.htm",
+    pages: "507",
+  },
+  {
+    title: "Little Women",
+    author: "Louisa May Alcott",
+    category: "Self Care",
+    year: "1868",
+    description: "Four sisters come of age during the Civil War — ambition, love, loss and the cost of being a woman who wants more.",
+    read_url: "https://www.gutenberg.org/files/514/514-h/514-h.htm",
+    pages: "449",
+  },
+  {
+    title: "The Awakening",
+    author: "Kate Chopin",
+    category: "Body Image",
+    year: "1899",
+    description: "A landmark of feminist literature — a woman's radical awakening to desire, independence and selfhood.",
+    read_url: "https://www.gutenberg.org/files/160/160-h/160-h.htm",
+    pages: "195",
+  },
+  {
+    title: "A Room with a View",
+    author: "E.M. Forster",
+    category: "Relationships",
+    year: "1908",
+    description: "Lucy Honeychurch is torn between convention and passion. A warm, witty novel about breaking free from expectation.",
+    read_url: "https://www.gutenberg.org/files/2641/2641-h/2641-h.htm",
+    pages: "224",
+  },
+  {
+    title: "Middlemarch",
+    author: "George Eliot",
+    category: "Career & Money",
+    year: "1871",
+    description: "Often called the greatest novel in English — a study of idealism, marriage, ambition and the limits placed on women.",
+    read_url: "https://www.gutenberg.org/files/145/145-h/145-h.htm",
+    pages: "800",
+  },
+  {
+    title: "Cranford",
+    author: "Elizabeth Gaskell",
+    category: "Lifestyle",
+    year: "1853",
+    description: "A quiet, funny and moving portrait of a community of women navigating life, loss and friendship on their own terms.",
+    read_url: "https://www.gutenberg.org/files/394/394-h/394-h.htm",
+    pages: "210",
+  },
+  {
+    title: "The Yellow Wallpaper",
+    author: "Charlotte Perkins Gilman",
+    category: "Mental Health",
+    year: "1892",
+    description: "A short story about a woman's descent into madness — a devastating critique of how medicine treated women's minds.",
+    read_url: "https://www.gutenberg.org/files/1952/1952-h/1952-h.htm",
+    pages: "30",
+  },
+];
+
+function FullBookCard({ book }) {
   const [saved, setSaved] = useState(false);
-  const cover = book.cover_url || (book.isbn ? `https://covers.openlibrary.org/b/isbn/${book.isbn}-M.jpg` : null);
+  const categoryColors = {
+    "Relationships": { bg: "var(--rose-dust-subtle)", color: "var(--rose-dust)" },
+    "Identity": { bg: "var(--mauve-subtle)", color: "var(--mauve)" },
+    "Mental Health": { bg: "#E8F4FF", color: "#5B9BD5" },
+    "Self Care": { bg: "var(--sage-subtle)", color: "var(--sage)" },
+    "Body Image": { bg: "var(--rose-dust-subtle)", color: "var(--rose-dust)" },
+    "Career & Money": { bg: "#FFF8E6", color: "#C4954A" },
+    "Lifestyle": { bg: "var(--ivory-dark)", color: "var(--mauve)" },
+  };
+  const catStyle = categoryColors[book.category] || { bg: "var(--ivory-dark)", color: "var(--mauve)" };
   return (
-    <div style={{ backgroundColor: "var(--surface)", border: "1px solid var(--border)", boxShadow: "var(--shadow-sm)", borderRadius: 18, overflow: "hidden", marginBottom: 14 }}>
-      <div style={{ display: "flex", gap: 14, padding: "16px 16px 0" }}>
-        {cover && (
-          <div style={{ flexShrink: 0, width: 72, height: 108, borderRadius: 8, overflow: "hidden", boxShadow: "0 4px 12px rgba(42,32,53,0.15)" }}>
-            <img src={cover} alt={book.title} loading="lazy" style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }} onError={(e) => { e.target.style.display = "none"; }} />
+    <div style={{ backgroundColor: "var(--surface)", border: "1px solid var(--border)", boxShadow: "var(--shadow-sm)", borderRadius: 18, padding: "18px 18px 16px", marginBottom: 14 }}>
+      <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 10, marginBottom: 10 }}>
+        <div style={{ flex: 1 }}>
+          <div style={{ display: "flex", gap: 6, marginBottom: 8, flexWrap: "wrap" }}>
+            <span style={{ fontSize: 10, fontWeight: 600, color: catStyle.color, backgroundColor: catStyle.bg, borderRadius: 9999, padding: "2px 9px" }}>{book.category}</span>
+            <span style={{ fontSize: 10, fontWeight: 500, color: "var(--mauve)", backgroundColor: "var(--ivory-dark)", borderRadius: 9999, padding: "2px 9px" }}>{book.year}</span>
+            {book.pages && <span style={{ fontSize: 10, color: "var(--mauve)", backgroundColor: "var(--ivory-dark)", borderRadius: 9999, padding: "2px 9px" }}>{book.pages} pages</span>}
           </div>
-        )}
-        <div style={{ flex: 1, minWidth: 0 }}>
-          <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 8 }}>
-            <div style={{ flex: 1, minWidth: 0 }}>
-              <h3 style={{ fontSize: 15, fontWeight: 700, color: "var(--plum)", margin: "0 0 2px", lineHeight: 1.3 }}>{book.title}</h3>
-              <p style={{ fontSize: 12, color: "var(--mauve)", margin: "0 0 8px", fontStyle: "italic" }}>{book.author}</p>
-              {book.category && <span style={{ fontSize: 11, fontWeight: 600, color: "var(--rose-dust)", background: "var(--rose-dust-subtle)", borderRadius: 20, padding: "2px 9px" }}>{book.category}</span>}
-            </div>
-            <button onClick={() => setSaved(v => !v)} style={{ border: "none", background: "none", cursor: "pointer", padding: 2, flexShrink: 0 }}>
-              {saved ? <BookmarkCheck style={{ width: 17, height: 17, color: "var(--rose-dust)" }} /> : <Bookmark style={{ width: 17, height: 17, color: "var(--mauve)" }} />}
-            </button>
-          </div>
-          {book.tagline && <p style={{ fontSize: 13, color: "var(--plum)", lineHeight: 1.45, margin: "8px 0 0", fontWeight: 500 }}>{book.tagline}</p>}
+          <h3 style={{ fontSize: 16, fontWeight: 700, color: "var(--plum)", fontFamily: "'Playfair Display', serif", margin: "0 0 2px", lineHeight: 1.3 }}>{book.title}</h3>
+          <p style={{ fontSize: 12, color: "var(--mauve)", margin: "0 0 8px", fontStyle: "italic" }}>{book.author}</p>
+          <p style={{ fontSize: 13, color: "var(--plum)", lineHeight: 1.6, margin: 0 }}>{book.description}</p>
         </div>
-      </div>
-      <div style={{ padding: "12px 16px 0" }}>
-        {book.summary && <p style={{ fontSize: 13, color: "var(--mauve)", lineHeight: 1.6, margin: "0 0 10px" }}>{book.summary}</p>}
-        {book.best_for && (
-          <div style={{ background: "var(--ivory-dark)", borderRadius: 10, padding: "8px 12px", marginBottom: 12 }}>
-            <p style={{ fontSize: 12, color: "var(--plum)", fontWeight: 600, margin: 0 }}>{book.best_for}</p>
-          </div>
-        )}
-        <button onClick={() => setExpanded(v => !v)} style={{ fontSize: 12, color: "var(--rose-dust)", fontWeight: 600, background: "none", border: "none", cursor: "pointer", padding: 0, display: "flex", alignItems: "center", gap: 3, marginBottom: expanded ? 10 : 16 }}>
-          {expanded ? "Less" : "5 key lessons"} {expanded ? <ChevronUp style={{ width: 13, height: 13 }} /> : <ChevronDown style={{ width: 13, height: 13 }} />}
+        <button onClick={() => setSaved(v => !v)} style={{ border: "none", background: "none", cursor: "pointer", padding: 2, flexShrink: 0 }}>
+          {saved ? <BookmarkCheck style={{ width: 17, height: 17, color: "var(--rose-dust)" }} /> : <Bookmark style={{ width: 17, height: 17, color: "var(--mauve)" }} />}
         </button>
-        {expanded && (
-          <div style={{ marginBottom: 14 }}>
-            {book.key_lessons?.map((lesson, i) => (
-              <div key={i} style={{ display: "flex", gap: 10, marginBottom: 8 }}>
-                <span style={{ flexShrink: 0, width: 20, height: 20, borderRadius: "50%", background: "var(--rose-dust-subtle)", color: "var(--rose-dust)", fontSize: 11, fontWeight: 700, display: "flex", alignItems: "center", justifyContent: "center" }}>{i + 1}</span>
-                <p style={{ fontSize: 13, color: "var(--plum)", lineHeight: 1.5, margin: 0 }}>{lesson}</p>
-              </div>
-            ))}
-            {book.quote && (
-              <blockquote style={{ borderLeft: "3px solid var(--rose-dust-light)", paddingLeft: 12, margin: "12px 0 0", fontStyle: "italic", color: "var(--mauve)", fontSize: 13, lineHeight: 1.55 }}>"{book.quote}"</blockquote>
-            )}
-            <div style={{ display: "flex", alignItems: "center", gap: 10, marginTop: 14, paddingTop: 12, borderTop: "1px solid var(--border)" }}>
-              {book.read_time_mins && <span style={{ fontSize: 12, color: "var(--mauve)" }}>{Math.round(book.read_time_mins / 60)}h read</span>}
-              {book.femwell_connection && <span style={{ fontSize: 12, color: "var(--mauve)" }}>· Try in {book.femwell_connection}</span>}
-              {book.goodreads_url && <a href={book.goodreads_url} target="_blank" rel="noreferrer" style={{ marginLeft: "auto", fontSize: 12, color: "var(--rose-dust)", fontWeight: 600, textDecoration: "none" }}>Goodreads</a>}
-            </div>
-          </div>
-        )}
+      </div>
+      <div style={{ display: "flex", gap: 8, paddingTop: 12, borderTop: "1px solid var(--border-subtle)" }}>
+        <a href={book.read_url} target="_blank" rel="noopener noreferrer"
+          style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center", gap: 6, backgroundColor: "var(--plum)", color: "white", borderRadius: 12, padding: "10px", fontSize: 12, fontWeight: 700, textDecoration: "none", fontFamily: "'Inter', sans-serif" }}>
+          <BookOpen style={{ width: 13, height: 13 }} /> Read full book
+        </a>
+        <a href={book.read_url} target="_blank" rel="noopener noreferrer"
+          style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 5, border: "1.5px solid var(--border)", color: "var(--mauve)", borderRadius: 12, padding: "10px 14px", fontSize: 11, fontWeight: 600, textDecoration: "none", fontFamily: "'Inter', sans-serif", backgroundColor: "transparent" }}>
+          Free <ExternalLink style={{ width: 10, height: 10 }} />
+        </a>
       </div>
     </div>
   );
 }
 
 function BooksTab() {
-  const [weekPick, setWeekPick] = useState(null);
-  const [loading, setLoading] = useState(true);
-  useEffect(() => {
-    (async () => {
-      try {
-        const weekStart = getMonday();
-        const picks = await base44.entities.WeeklyBookPick.filter({ week_start: weekStart, status: "PUBLISHED" });
-        if (picks.length > 0) { setWeekPick(picks[0]); }
-        else {
-          const allPicks = await base44.entities.WeeklyBookPick.list("-created_date", 1);
-          if (allPicks.length > 0) setWeekPick(allPicks[0]);
-        }
-      } catch (e) { console.error(e); }
-      setLoading(false);
-    })();
-  }, []);
-  if (loading) return <FeedSkeleton />;
-  if (!weekPick || !weekPick.books?.length) {
-    return (
-      <div style={{ textAlign: "center", padding: "48px 24px" }}>
-        <BookOpen style={{ width: 36, height: 36, color: "var(--rose-dust-light)", margin: "0 auto 12px" }} />
-        <p style={{ color: "var(--mauve)", fontSize: 14, margin: 0 }}>This week's picks are being curated.</p>
-        <p style={{ color: "var(--mauve)", fontSize: 12, marginTop: 4, opacity: 0.6 }}>Check back Monday morning.</p>
-      </div>
-    );
-  }
-  const weekLabel = new Date(weekPick.week_start + "T12:00:00").toLocaleDateString("en-GB", { day: "numeric", month: "long" });
   return (
     <div>
       <div style={{ backgroundColor: "var(--surface)", border: "1px solid var(--border)", boxShadow: "var(--shadow-sm)", borderRadius: 16, padding: "16px 18px", marginBottom: 20 }}>
         <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 4 }}>
           <BookMarked style={{ width: 15, height: 15, color: "var(--rose-dust)" }} />
-          <span style={{ fontSize: 10, fontWeight: 700, color: "var(--rose-dust)", letterSpacing: "0.1em", textTransform: "uppercase" }}>Week of {weekLabel}</span>
+          <span style={{ fontSize: 10, fontWeight: 700, color: "var(--rose-dust)", letterSpacing: "0.1em", textTransform: "uppercase" }}>Full Books</span>
         </div>
-        <h2 style={{ fontSize: 17, fontWeight: 700, color: "var(--plum)", margin: "0 0 4px", fontFamily: "'Playfair Display', serif" }}>5 Books This Week</h2>
-        <p style={{ fontSize: 13, color: "var(--mauve)", margin: 0 }}>Each one summarised with key lessons — read more in minutes.</p>
+        <h2 style={{ fontSize: 17, fontWeight: 700, color: "var(--plum)", margin: "0 0 4px", fontFamily: "'Playfair Display', serif" }}>Read in full, free</h2>
+        <p style={{ fontSize: 13, color: "var(--mauve)", margin: 0 }}>Classic literature by and about women — available to read in full via Project Gutenberg.</p>
       </div>
-      {weekPick.books.map((book, i) => <BookCard key={i} book={book} />)}
+      {FULL_BOOKS.map((book, i) => <FullBookCard key={i} book={book} />)}
     </div>
   );
 }

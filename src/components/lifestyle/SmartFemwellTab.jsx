@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { base44 } from "@/api/base44Client";
-import { Loader2, Sparkles, RefreshCw } from "lucide-react";
+import { Loader2, RefreshCw, PenLine, BookOpen, FileText } from "lucide-react";
 import FeedSkeleton from "./FeedSkeleton";
 
 const CATEGORIES = [
@@ -19,9 +19,9 @@ function timeAgo(d) {
 }
 
 const CONTENT_TYPE_OPTIONS = [
-  { value: "article", label: "📄 Article", desc: "Evidence-based wellness article" },
-  { value: "story", label: "✍️ Personal Essay", desc: "First-person narrative story" },
-  { value: "book", label: "📚 Book Summary", desc: "Deep summary of a book" },
+  { value: "article", label: "Article", desc: "Evidence-based wellness" },
+  { value: "story", label: "Essay", desc: "First-person narrative" },
+  { value: "book", label: "Book", desc: "Long-form book content" },
 ];
 
 export default function SmartFemwellTab({ onRead }) {
@@ -37,9 +37,9 @@ export default function SmartFemwellTab({ onRead }) {
   const [submitting, setSubmitting] = useState(false);
   const [submitMsg, setSubmitMsg] = useState("");
 
-  const loadContent = async () => {
+  const loadContent = async (autoGenerate = false) => {
     setLoading(true);
-    const allItems = await base44.entities.LifestyleItems.list("-pub_date", 200);
+    const allItems = await base44.entities.LifestyleItems.list("-pub_date", 500);
     const femwellItems = allItems.filter(
       i => (i.provider === "FEMWELL_AI" || i.provider === "FEMWELL_AI_USER_REQUEST") && i.status === "PUBLISHED"
     );
@@ -58,9 +58,18 @@ export default function SmartFemwellTab({ onRead }) {
     } catch {}
 
     setLoading(false);
+    if (autoGenerate && femwellItems.length === 0) {
+      setGenerating(true);
+      try {
+        await base44.functions.invoke("generateFemwellContent", { force_run: false });
+        const fresh = await base44.entities.LifestyleItems.list("-pub_date", 500);
+        setItems(fresh.filter(i => (i.provider === "FEMWELL_AI" || i.provider === "FEMWELL_AI_USER_REQUEST") && i.status === "PUBLISHED"));
+      } catch {}
+      setGenerating(false);
+    }
   };
 
-  useEffect(() => { loadContent(); }, []);
+  useEffect(() => { loadContent(true); }, []);
 
   const triggerBackgroundGeneration = async () => {
     setGenerating(true);
@@ -114,7 +123,7 @@ export default function SmartFemwellTab({ onRead }) {
         <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 12 }}>
           <div style={{ flex: 1 }}>
             <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 4 }}>
-              <Sparkles style={{ width: 13, height: 13, color: "var(--rose-dust)" }} />
+              <PenLine style={{ width: 13, height: 13, color: "var(--rose-dust)" }} />
               <span style={{ fontSize: 10, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.12em", color: "var(--rose-dust)", fontFamily: "'Inter', sans-serif" }}>FemWell Originals</span>
             </div>
             <p style={{ fontSize: 16, fontWeight: 700, color: "var(--plum)", fontFamily: "'Playfair Display', serif", margin: "0 0 4px" }}>Written for women, by FemWell</p>
@@ -183,14 +192,14 @@ export default function SmartFemwellTab({ onRead }) {
         ))}
       </div>
 
-      {loading ? <FeedSkeleton /> : filtered.length === 0 ? (
+      {loading || generating ? <FeedSkeleton /> : filtered.length === 0 ? (
         <div style={{ textAlign: "center", padding: "48px 24px" }}>
-          <Sparkles style={{ width: 28, height: 28, color: "var(--rose-dust-light)", margin: "0 auto 12px", display: "block" }} />
+          <PenLine style={{ width: 28, height: 28, color: "var(--rose-dust-light)", margin: "0 auto 12px", display: "block" }} />
           <p style={{ fontSize: 14, color: "var(--plum)", fontWeight: 600, marginBottom: 6 }}>No articles yet</p>
-          <p style={{ fontSize: 12, color: "var(--mauve)", marginBottom: 16 }}>Tap the refresh button to generate your first batch of FemWell originals.</p>
-          <button onClick={triggerBackgroundGeneration} disabled={generating}
+          <p style={{ fontSize: 12, color: "var(--mauve)", marginBottom: 16 }}>Tap below to generate your first batch of FemWell originals.</p>
+          <button onClick={triggerBackgroundGeneration}
             style={{ padding: "10px 22px", borderRadius: 9999, backgroundColor: "var(--plum)", color: "white", border: "none", cursor: "pointer", fontSize: 13, fontWeight: 600 }}>
-            {generating ? "Generating…" : "Generate content"}
+            Generate content
           </button>
         </div>
       ) : (
