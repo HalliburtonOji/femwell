@@ -135,7 +135,11 @@
         "NEWS",
         "YOUTUBE",
         "TIKTOK",
-        "INSTAGRAM"
+        "INSTAGRAM",
+        "FEMWELL_AI",
+        "FEMWELL_AI_USER_REQUEST",
+        "FEMWELL_FICTION_WEEKLY",
+        "FEMWELL_FICTION_PERSONAL"
       ],
       "default": "RSS"
     },
@@ -172,7 +176,9 @@
       "enum": [
         "ARTICLE",
         "VIDEO",
-        "STORY"
+        "STORY",
+        "GUIDE",
+        "FICTION"
       ],
       "default": "ARTICLE"
     },

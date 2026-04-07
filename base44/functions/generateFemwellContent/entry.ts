@@ -197,11 +197,47 @@ Return JSON:
   return { id: saved.id, title: book.title, type: 'book_summary' };
 }
 
+async function generateFictionRequest(base44, topic, genre, isLong, category, mature) {
+  const wordCount = isLong ? '2800-3500' : '1400-1800';
+  const structure = isLong
+    ? 'Structure with 4 chapters using plain text headings "Chapter 1", "Chapter 2", etc. No markdown.'
+    : 'Structure with 3 scenes using plain text headings "Scene 1", "Scene 2", "Scene 3". No markdown.';
+  const matureNote = mature
+    ? 'Adult fiction (18+). Romance and intimacy depicted tastefully with fade-to-black for sex acts. All characters are adults.'
+    : 'General adult audience. Romance may include emotional closeness but nothing sexually explicit.';
+
+  const result = await base44.asServiceRole.integrations.Core.InvokeLLM({
+    model: 'claude_sonnet_4_6',
+    prompt: `Write original ${genre} fiction for women readers. ${wordCount} words. Theme or topic: "${topic}". ${matureNote} ${structure}
+Return JSON: title (max 70 chars), summary (2-3 sentences), body (full story, plain text), duration_label (e.g. "18 min read"), emotional_tag (one of: Body, Identity, Relationships, Mental Health, Self-Discovery, Motherhood, Career, Grief)`,
+    response_json_schema: {
+      type: 'object',
+      properties: {
+        title: { type: 'string' }, summary: { type: 'string' }, body: { type: 'string' },
+        duration_label: { type: 'string' }, emotional_tag: { type: 'string' },
+      },
+    },
+  });
+
+  const tags = ['femwell_fiction', `genre:${genre}`, isLong ? 'length:long' : 'length:short'];
+  if (mature) tags.push('18+');
+
+  const now = new Date().toISOString();
+  const saved = await base44.asServiceRole.entities.LifestyleItems.create({
+    title: result.title, summary: result.summary, lede: result.body,
+    duration_label: result.duration_label, emotional_tag: result.emotional_tag || '',
+    author_name: 'FemWell Fiction', content_type: 'FICTION', media_type: 'ARTICLE',
+    provider: 'FEMWELL_AI', status: 'PUBLISHED', category: category || 'Lifestyle',
+    pub_date: now, published_at: now, ingested_at: now, content_url: '', tags, phase_tags: [],
+  });
+  return { id: saved.id, title: result.title, type: 'fiction' };
+}
+
 Deno.serve(async (req) => {
   try {
     const base44 = createClientFromRequest(req);
     const body = await req.json().catch(() => ({}));
-    const { custom_topic, custom_category, content_type: customType, force_run } = body;
+    const { custom_topic, custom_category, content_type: customType, force_run, genre, mature } = body;
 
     // Handle user custom requests (2/week limit)
     if (custom_topic) {
@@ -230,6 +266,8 @@ Deno.serve(async (req) => {
         generated = await generateStory(base44, { category: custom_category || "Women's Health", hint: custom_topic });
       } else if (type === 'book') {
         generated = await generateBookSummary(base44, { title: custom_topic, author: 'Various', category: custom_category || "Women's Health" });
+      } else if (type === 'fiction_short' || type === 'fiction_long') {
+        generated = await generateFictionRequest(base44, custom_topic, genre || 'Contemporary', type === 'fiction_long', custom_category || 'Lifestyle', mature);
       } else {
         generated = await generateArticle(base44, { category: custom_category || "Women's Health", phase_tags: [], hint: custom_topic });
       }

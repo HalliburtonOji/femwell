@@ -117,6 +117,13 @@
       "items": {
         "type": "string"
       }
+    },
+    "allow_mature_content": {
+      "type": "boolean",
+      "default": false
+    },
+    "mature_confirmed_at": {
+      "type": "string"
     }
   },
   "required": [

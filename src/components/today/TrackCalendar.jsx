@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { base44 } from "@/api/base44Client";
 import { format, startOfMonth, endOfMonth, eachDayOfInterval, isToday } from "date-fns";
 import { ChevronLeft, ChevronRight } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
 
 const DOT_TYPE_COLORS = {
   cycle:   "var(--rose-dust)",
@@ -30,6 +31,7 @@ export default function TrackCalendar({ user, profile, onSelectDate, selectedDat
   const now = new Date();
   const [viewYear, setViewYear] = useState(now.getFullYear());
   const [viewMonth, setViewMonth] = useState(now.getMonth());
+  const [direction, setDirection] = useState(1);
   const [dotMap, setDotMap] = useState({});
   const [checkinDates, setCheckinDates] = useState(new Set());
 
@@ -77,12 +79,14 @@ export default function TrackCalendar({ user, profile, onSelectDate, selectedDat
   };
 
   const prevMonth = () => {
+    setDirection(-1);
     if (viewMonth === 0) { setViewMonth(11); setViewYear(y => y - 1); }
     else setViewMonth(m => m - 1);
   };
   const nextMonth = () => {
     const nowM = now.getMonth(); const nowY = now.getFullYear();
     if (viewYear > nowY || (viewYear === nowY && viewMonth >= nowM)) return;
+    setDirection(1);
     if (viewMonth === 11) { setViewMonth(0); setViewYear(y => y + 1); }
     else setViewMonth(m => m + 1);
   };
@@ -122,7 +126,21 @@ export default function TrackCalendar({ user, profile, onSelectDate, selectedDat
       </div>
 
       {/* Days grid */}
-      <div style={{ display: "grid", gridTemplateColumns: "repeat(7, 1fr)", gap: "2px 0" }}>
+      <AnimatePresence mode="wait" custom={direction}>
+      <motion.div
+        key={`${viewYear}-${viewMonth}`}
+        custom={direction}
+        variants={{
+          enter: d => ({ x: d > 0 ? 28 : -28, opacity: 0 }),
+          center: { x: 0, opacity: 1 },
+          exit: d => ({ x: d > 0 ? -28 : 28, opacity: 0 }),
+        }}
+        initial="enter"
+        animate="center"
+        exit="exit"
+        transition={{ duration: 0.22, ease: [0.4, 0, 0.2, 1] }}
+        style={{ display: "grid", gridTemplateColumns: "repeat(7, 1fr)", gap: "2px 0" }}
+      >
         {Array.from({ length: startPad }).map((_, i) => <div key={`pad-${i}`} style={{ minHeight: 44 }} />)}
         {days.map(day => {
           const dateStr = format(day, "yyyy-MM-dd");
@@ -140,7 +158,7 @@ export default function TrackCalendar({ user, profile, onSelectDate, selectedDat
           let fontWeight = 400;
 
           if (isSelected) {
-            bgColor = "var(--plum)";
+            bgColor = "transparent";
             textColor = "white";
             fontWeight = 700;
           } else if (isTodayDay) {
@@ -160,36 +178,48 @@ export default function TrackCalendar({ user, profile, onSelectDate, selectedDat
           if (isFuture) textColor = "var(--mauve)";
 
           return (
-            <button
+            <motion.button
               key={dateStr}
               onClick={() => !isFuture && onSelectDate(dateStr)}
               disabled={isFuture}
+              whileTap={!isFuture ? { scale: 0.93 } : {}}
               style={{
+                position: "relative",
                 minHeight: 44, display: "flex", flexDirection: "column",
                 alignItems: "center", justifyContent: "center",
-                borderRadius: 10, border: borderStyle,
-                backgroundColor: bgColor, cursor: isFuture ? "not-allowed" : "pointer",
-                opacity: isFuture ? 0.35 : 1, transition: "background 0.15s",
+                borderRadius: 10, border: isSelected ? "none" : borderStyle,
+                backgroundColor: isSelected ? "transparent" : bgColor,
+                cursor: isFuture ? "not-allowed" : "pointer",
+                opacity: isFuture ? 0.35 : 1,
                 padding: "4px 2px",
+                background: "none",
               }}
             >
-              <span style={{ fontSize: 12, fontWeight, color: textColor, fontFamily: "'Inter', sans-serif", lineHeight: 1 }}>
+              {isSelected && (
+                <motion.div
+                  layoutId="selected-track-day"
+                  style={{ position: "absolute", inset: 0, borderRadius: 10, backgroundColor: "var(--plum)", zIndex: 0 }}
+                  transition={{ type: "spring", stiffness: 380, damping: 35 }}
+                />
+              )}
+              <span style={{ position: "relative", zIndex: 1, fontSize: 12, fontWeight, color: textColor, fontFamily: "'Inter', sans-serif", lineHeight: 1 }}>
                 {format(day, "d")}
               </span>
               {(hasCheckin || dots.length > 0) && (
-                <div style={{ display: "flex", gap: 2, marginTop: 3, justifyContent: "center" }}>
+                <div style={{ position: "relative", zIndex: 1, display: "flex", gap: 2, marginTop: 3, justifyContent: "center" }}>
                   {hasCheckin && (
-                    <div style={{ width: 4, height: 4, borderRadius: 9999, backgroundColor: isSelected ? "rgba(255,255,255,0.7)" : "var(--rose-dust)" }} />
+                    <div style={{ width: 4, height: 4, borderRadius: 9999, backgroundColor: isSelected ? "rgba(255,255,255,0.8)" : "var(--rose-dust)" }} />
                   )}
                   {dots.filter(t => t !== "cycle").slice(0, 2).map(type => (
-                    <div key={type} style={{ width: 4, height: 4, borderRadius: 9999, backgroundColor: isSelected ? "rgba(255,255,255,0.5)" : DOT_TYPE_COLORS[type] }} />
+                    <div key={type} style={{ width: 4, height: 4, borderRadius: 9999, backgroundColor: isSelected ? "rgba(255,255,255,0.6)" : DOT_TYPE_COLORS[type] }} />
                   ))}
                 </div>
               )}
-            </button>
+            </motion.button>
           );
         })}
-      </div>
+      </motion.div>
+      </AnimatePresence>
 
       {/* Legend */}
       <div style={{ display: "flex", gap: 16, marginTop: 12, paddingTop: 12, borderTop: "1px solid var(--border-subtle)", flexWrap: "wrap" }}>

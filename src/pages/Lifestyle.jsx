@@ -4,6 +4,7 @@ import { RefreshCw, BookOpen, Play, BookMarked, FileText, Bookmark, BookmarkChec
 import FeedSkeleton from "../components/lifestyle/FeedSkeleton";
 import SmartFemwellTab from "../components/lifestyle/SmartFemwellTab";
 import ArticleReader from "../components/lifestyle/ArticleReader";
+import FictionFeedSection from "../components/lifestyle/FictionFeedSection";
 
 function stripHtml(str) {
   if (!str) return "";
@@ -402,9 +403,12 @@ function FullBookCard({ book }) {
   );
 }
 
-function BooksTab() {
+function BooksTab({ onRead }) {
   return (
     <div>
+      <FictionFeedSection onRead={onRead} />
+
+      {/* Full Books — Project Gutenberg classics */}
       <div style={{ backgroundColor: "var(--surface)", border: "1px solid var(--border)", boxShadow: "var(--shadow-sm)", borderRadius: 16, padding: "16px 18px", marginBottom: 20 }}>
         <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 4 }}>
           <BookMarked style={{ width: 15, height: 15, color: "var(--rose-dust)" }} />
@@ -507,7 +511,7 @@ export default function Lifestyle() {
             </button>
           ))}
         </div>
-        {tab === "books" && <BooksTab />}
+        {tab === "books" && <BooksTab onRead={setReaderItem} />}
         {tab === "femwell" && <SmartFemwellTab onRead={setReaderItem} />}
         {tab !== "books" && tab !== "femwell" && (
           <>
