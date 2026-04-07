@@ -1,7 +1,8 @@
 import { useState, useEffect } from "react";
 import { base44 } from "@/api/base44Client";
 import { motion, AnimatePresence } from "framer-motion";
-import { Plus, Droplets, Star, RefreshCw, Loader2, X, BookmarkPlus, Target, ChevronRight, Zap, Leaf, Moon, Smile, Wind } from "lucide-react";
+import { Plus, Droplets, Star, RefreshCw, Loader2, X, BookmarkPlus, Target, ChevronRight, BookOpen } from "lucide-react";
+import FoodLookup from "./FoodLookup";
 import { format } from "date-fns";
 import { createPageUrl } from "@/utils";
 import MacroDashboard from "./MacroDashboard";
@@ -185,6 +186,7 @@ export default function NutritionTodayTab({ user, profile, nutritionProfile, day
   const [drinkLogs, setDrinkLogs] = useState([]);
   const [loggingDrink, setLoggingDrink] = useState(false);
   const [drinkModal, setDrinkModal] = useState(null);
+  const [showFoodLookup, setShowFoodLookup] = useState(false);
 
   const hydrationTargetMl = nutritionProfile?.hydration_target_ml || 2000;
   const totalHydration    = hydrationLogs.reduce((sum, l) => sum + (l.amount_ml || 0), 0);
@@ -482,7 +484,22 @@ export default function NutritionTodayTab({ user, profile, nutritionProfile, day
 
         {/* Meal Logger */}
         <div className="rounded-[24px] p-5" style={card}>
-          <p style={sLabel} className="mb-3">Log a Meal</p>
+          {showFoodLookup && (
+            <FoodLookup
+              onClose={() => setShowFoodLookup(false)}
+              onSelect={({ text, description }) => {
+                setMealText(prev => prev ? `${prev}, ${text}` : text);
+                setShowFoodLookup(false);
+              }}
+            />
+          )}
+          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 8 }}>
+            <p style={sLabel}>Log a Meal</p>
+            <button onClick={() => setShowFoodLookup(true)}
+              style={{ display: "flex", alignItems: "center", gap: 5, fontSize: 11, fontWeight: 600, color: "var(--rose-dust)", backgroundColor: "var(--rose-dust-subtle)", border: "1px solid var(--rose-dust-light)", borderRadius: 9999, padding: "4px 10px", cursor: "pointer", fontFamily: "'Inter', sans-serif" }}>
+              <BookOpen style={{ width: 11, height: 11 }} /> Food library
+            </button>
+          </div>
           <textarea
             value={mealText}
             onChange={(e) => setMealText(e.target.value)}
