@@ -333,7 +333,7 @@ export default function CheckinModal({ existing, onClose, onSave, userId, dateSt
 
       <div onClick={onClose} style={{ position: "fixed", inset: 0, zIndex: 50, backgroundColor: "rgba(42,32,53,0.4)", backdropFilter: "blur(4px)" }} />
 
-      <div className="checkin-sheet" style={{ position: "fixed", bottom: 0, left: 0, right: 0, zIndex: 51, backgroundColor: "var(--surface)", borderRadius: "28px 28px 0 0", boxShadow: "var(--shadow-lg)", maxHeight: "90vh", display: "flex", flexDirection: "column" }}>
+      <div className="checkin-sheet" style={{ position: "fixed", bottom: 0, left: 0, right: 0, zIndex: 51, backgroundColor: "var(--surface)", borderRadius: "28px 28px 0 0", boxShadow: "var(--shadow-lg)", maxHeight: "calc(90svh - env(safe-area-inset-bottom, 0px))", display: "flex", flexDirection: "column" }}>
 
         {/* Header */}
         <div style={{ flexShrink: 0, padding: "12px 20px 0" }}>

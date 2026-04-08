@@ -46,7 +46,7 @@ const AuthenticatedApp = () => {
 
   // Render the main app
   return (
-    <AnimatePresence mode="wait" initial={false}>
+    <AnimatePresence mode="popLayout" initial={false}>
       <motion.div
         key={location.pathname}
         initial={{ x: 12, opacity: 0 }}

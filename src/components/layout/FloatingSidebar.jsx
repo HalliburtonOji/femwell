@@ -3,7 +3,7 @@ import { Link } from "react-router-dom";
 import { createPageUrl } from "@/utils";
 import { motion, AnimatePresence } from "framer-motion";
 import {
-  Sun, Compass, User, BookOpen, Newspaper, Utensils, X, Map, Activity, Feather, Sparkles, Heart
+  Sun, Compass, User, BookOpen, Newspaper, Utensils, X, Map, Activity, Feather, Menu, Heart
 } from "lucide-react";
 
 const NAV = [
@@ -132,7 +132,7 @@ export default function FloatingSidebar({ currentPageName, mode = "full", openQu
             </motion.div>
           ) : (
             <motion.div key="open" initial={{ rotate: 90, opacity: 0 }} animate={{ rotate: 0, opacity: 1 }} exit={{ rotate: -90, opacity: 0 }} transition={{ duration: 0.15 }}>
-              <Sparkles className="w-5 h-5" />
+              <Menu className="w-5 h-5" />
             </motion.div>
           )}
         </AnimatePresence>

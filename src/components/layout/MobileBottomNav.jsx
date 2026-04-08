@@ -1,10 +1,10 @@
 import { Link } from "react-router-dom";
-import { Sun, Compass, Newspaper, Utensils, User } from "lucide-react";
+import { Sun, BookOpen, Newspaper, Utensils, User } from "lucide-react";
 import { createPageUrl } from "@/utils";
 
 const TABS = [
   { label: "Today",     icon: Sun,       page: "Today"     },
-  { label: "Explore",   icon: Compass,   page: "Explore"   },
+  { label: "Lifestyle", icon: BookOpen,  page: "Lifestyle" },
   { label: "Journal",   icon: Newspaper, page: "Journal"   },
   { label: "Nutrition", icon: Utensils,  page: "Nutrition" },
   { label: "Profile",   icon: User,      page: "Profile"   },

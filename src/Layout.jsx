@@ -70,7 +70,7 @@ export default function Layout({ children, currentPageName }) {
     <div className="min-h-screen" style={{ backgroundColor: "var(--ivory)" }}>
       <style>{`@media print { .no-print { display: none !important; } .print-only { display: block !important; } }`}</style>
       {showNav && <div className="no-print"><FloatingSidebar currentPageName={currentPageName} mode={navMode} openQuickLog={openQuickLog} /></div>}
-      <div className={`${navMode === "full" ? "lg:pl-64" : ""} ${showNav ? "pb-8" : ""}`}>
+      <div className={`${navMode === "full" ? "lg:pl-64" : ""} ${showNav ? "pb-24 lg:pb-8" : ""}`}>
         {children}
       </div>
       {showNav && <MobileBottomNav currentPageName={currentPageName} />}
