@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from "react";
+import { useNavigate } from "react-router-dom";
 import { base44 } from "@/api/base44Client";
 import { createPageUrl } from "@/utils";
 import { ChevronLeft, ChevronRight } from "lucide-react";
@@ -36,7 +37,10 @@ const BODY_GOALS = [
   { id: "menopause",       label: "Menopause"        },
 ];
 
-const STEPS = ["welcome", "goals", "location", "interests", "preferences", "setup", "skin_profile", "done"];
+const STEPS = ["welcome", "goals", "location", "interests", "preferences", "setup", "skin_profile", "life_stage", "done"];
+
+const PREG_FOCUSES = ["Sleep", "Nausea", "Movement", "Nutrition", "Birth prep", "Calm", "Pelvic health"];
+const MENO_FOCUSES = ["Sleep", "Hot flashes", "Mood", "Energy", "Brain fog", "Joint comfort", "Weight balance"];
 
 const SKIN_TYPES = [
   { value: "dry",         label: "Dry",         desc: "Feels tight, rough, or flaky"           },
@@ -58,6 +62,7 @@ const card = {
 };
 
 export default function Onboarding() {
+  const navigate = useNavigate();
   const [step, setStep] = useState(0);
   const [goals, setGoals] = useState([]);
   const [interests, setInterests] = useState([]);
@@ -71,6 +76,14 @@ export default function Onboarding() {
   const [locationCity, setLocationCity] = useState("");
   const [geoLoading, setGeoLoading] = useState(false);
   const [geoFound, setGeoFound] = useState("");
+  // Life stage
+  const [lifeStage, setLifeStage] = useState("none");
+  const [lifeStageFocus, setLifeStageFocus] = useState([]);
+  const [pregDueDate, setPregDueDate] = useState("");
+  const [pregWeek, setPregWeek] = useState("");
+  const [pregTrimester, setPregTrimester] = useState("first");
+  const [menoStage, setMenoStage] = useState("perimenopause");
+  const toggleLifeStageFocus = (v) => setLifeStageFocus(c => c.includes(v) ? c.filter(i => i !== v) : [...c, v]);
   const isPopState = useRef(false);
 
   // Push history state on step changes so browser back = one step back
@@ -117,15 +130,21 @@ export default function Onboarding() {
     setSaveError(false);
     let timeoutId;
     try {
-      timeoutId = setTimeout(() => { setSaving(false); setSaveError(true); }, 10000);
+      timeoutId = setTimeout(() => { setSaving(false); setSaveError(true); }, 15000);
       const user = await base44.auth.me();
       const profiles = await base44.entities.UserProfile.filter({ user_id: user.id });
+      const conditionFlags = [];
+      if (lifeStage === "pregnancy") conditionFlags.push("pregnancy");
+      if (lifeStage === "menopause") conditionFlags.push("menopause");
       const pData = {
         user_id: user.id, user_email: user.email, onboarding_complete: true,
         goals, tone_preference: tone,
         modules_enabled: cycleTrackingEnabled ? ["cycle"] : [],
         skin_type: skinType, followed_categories: interests,
-        hydration_target_ml: hydrationTarget, cycle_tracking_enabled: cycleTrackingEnabled,
+        hydration_target_ml: hydrationTarget,
+        life_stage: lifeStage,
+        life_stage_focus: lifeStageFocus,
+        condition_flags: conditionFlags,
         ...(locationCity ? { location_city: locationCity } : {}),
       };
       if (profiles[0]) {
@@ -133,8 +152,21 @@ export default function Onboarding() {
       } else {
         await base44.entities.UserProfile.create(pData);
       }
+      // Upsert life stage profiles
+      if (lifeStage === "pregnancy") {
+        const existing = await base44.entities.PregnancyProfile.filter({ user_id: user.id });
+        const payload = { user_id: user.id, trimester: pregTrimester, care_focus: lifeStageFocus, ...(pregDueDate ? { due_date: pregDueDate } : {}), ...(pregWeek ? { pregnancy_week: Number(pregWeek) } : {}) };
+        if (existing[0]) await base44.entities.PregnancyProfile.update(existing[0].id, payload);
+        else await base44.entities.PregnancyProfile.create(payload);
+      }
+      if (lifeStage === "menopause") {
+        const existing = await base44.entities.MenopauseProfile.filter({ user_id: user.id });
+        const payload = { user_id: user.id, stage: menoStage, care_focus: lifeStageFocus };
+        if (existing[0]) await base44.entities.MenopauseProfile.update(existing[0].id, payload);
+        else await base44.entities.MenopauseProfile.create(payload);
+      }
       clearTimeout(timeoutId);
-      window.location.href = createPageUrl("Today");
+      navigate("/Today", { replace: true });
     } catch (e) {
       clearTimeout(timeoutId);
       console.error("Onboarding error:", e);
@@ -475,39 +507,6 @@ export default function Onboarding() {
           </div>
         )}
 
-        {current === "done" && (
-          <div className="space-y-6 text-center w-full">
-            <div style={{
-              width: "64px", height: "64px", borderRadius: "20px", margin: "0 auto",
-              display: "flex", alignItems: "center", justifyContent: "center",
-              backgroundColor: "var(--rose-dust-subtle)", border: "1px solid var(--rose-dust-light)"
-            }}>
-              <span style={{ fontSize: "28px", fontWeight: 700, fontFamily: "'Playfair Display', serif", color: "var(--rose-dust)" }}>F</span>
-            </div>
-            <div>
-              <h2 style={{ fontSize: "24px", fontWeight: 700, fontFamily: "'Playfair Display', serif", color: "var(--plum)", lineHeight: 1.1 }}>
-                You're all set
-              </h2>
-              <p style={{ fontSize: "14px", color: "var(--mauve)", fontFamily: "'Inter', sans-serif", marginTop: "8px", lineHeight: 1.6 }}>
-                Your assistant, feed, and recommendations are now tuned to you.
-              </p>
-            </div>
-            <div style={{ ...card, padding: "16px", textAlign: "left" }}>
-              <p style={{ ...sLabel, marginBottom: "8px" }}>Personalisation ready</p>
-              <p style={{ fontSize: "13px", color: "var(--plum)", lineHeight: 1.6, fontFamily: "'Inter', sans-serif" }}>
-                You'll see smarter lifestyle picks, a more human assistant, and faster recommendations from the moment you enter.
-              </p>
-            </div>
-            <button className="btn-primary w-full" onClick={handleFinish} disabled={saving}>
-              {saving ? "Setting up..." : "Enter FemWell"}
-            </button>
-            {saveError && (
-              <p style={{ fontSize: 13, color: "var(--rose-dust)", fontFamily: "'Inter', sans-serif", textAlign: "center", marginTop: 8 }}>
-                Something went wrong. Please try again.
-              </p>
-            )}
-          </div>
-        )}
       </div>
 
       {step > 0 && step < STEPS.length - 1 && (

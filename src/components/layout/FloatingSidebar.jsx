@@ -97,7 +97,7 @@ const QUICK_ACTIONS = [
 ];
 
 /* ── Mobile ─────────────────────────────────────────────────────────────────── */
-export default function FloatingSidebar({ currentPageName, mode = "full" }) {
+export default function FloatingSidebar({ currentPageName, mode = "full", openQuickLog }) {
   const [open, setOpen] = useState(false);
 
   useEffect(() => {
@@ -169,10 +169,9 @@ export default function FloatingSidebar({ currentPageName, mode = "full" }) {
                 <p style={{ fontSize: "0.55rem", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.14em", color: "var(--mauve)", fontFamily: "'Inter', sans-serif", marginBottom: 10 }}>Quick actions</p>
 
                 {/* Log today — full width */}
-                <Link
-                  to={createPageUrl("Today") + "?open_log=1"}
-                  onClick={() => setOpen(false)}
-                  style={{ display: "flex", alignItems: "center", gap: 14, borderRadius: 18, padding: "16px 18px", backgroundColor: "var(--plum)", textDecoration: "none", marginBottom: 10 }}
+                <button
+                  onClick={() => { setOpen(false); openQuickLog && openQuickLog(); }}
+                  style={{ display: "flex", alignItems: "center", gap: 14, borderRadius: 18, padding: "16px 18px", backgroundColor: "var(--plum)", marginBottom: 10, width: "100%", border: "none", cursor: "pointer" }}
                 >
                   <div style={{ width: 36, height: 36, borderRadius: 12, backgroundColor: "rgba(255,255,255,0.15)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
                     <Sun className="w-5 h-5" style={{ color: "white" }} />
@@ -181,7 +180,7 @@ export default function FloatingSidebar({ currentPageName, mode = "full" }) {
                     <p style={{ fontSize: 14, fontWeight: 700, color: "white", fontFamily: "'Inter', sans-serif", marginBottom: 2 }}>Log today</p>
                     <p style={{ fontSize: 11, color: "rgba(255,255,255,0.65)", fontFamily: "'Inter', sans-serif" }}>Check in, meals, symptoms</p>
                   </div>
-                </Link>
+                </button>
 
                 {/* 2-col grid of 4 quick links */}
                 <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8, marginBottom: 16 }}>

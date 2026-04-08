@@ -15,7 +15,7 @@ const PAGE_META = {
   Assistant:   { label: "Assistant" },
 };
 
-export default function QuickSwitchOverlay({ currentPageName }) {
+export default function QuickSwitchOverlay({ currentPageName, openQuickLog }) {
   const [open, setOpen] = useState(false);
   const [recentPages, setRecentPages] = useState([]);
   const [continueHref, setContinueHref] = useState(createPageUrl("ProgramsHub"));
@@ -136,9 +136,8 @@ export default function QuickSwitchOverlay({ currentPageName }) {
                 </div>
 
                 {/* Log today */}
-                <a
-                  href={createPageUrl("Today") + "?open_log=1"}
-                  onClick={() => setOpen(false)}
+                <button
+                  onClick={() => { setOpen(false); openQuickLog && openQuickLog(); }}
                   style={{
                     display: "flex",
                     alignItems: "center",
@@ -150,12 +149,14 @@ export default function QuickSwitchOverlay({ currentPageName }) {
                     fontSize: "15px",
                     fontWeight: 600,
                     fontFamily: "'Inter', sans-serif",
-                    textDecoration: "none",
+                    border: "none",
+                    cursor: "pointer",
                     marginBottom: "16px",
+                    width: "100%",
                   }}
                 >
                   Log today
-                </a>
+                </button>
 
                 {/* Shortcuts grid */}
                 <div className="grid grid-cols-3 gap-2.5 md:grid-cols-6">

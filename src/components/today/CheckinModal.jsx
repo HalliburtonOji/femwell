@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { base44 } from "@/api/base44Client";
 import SupportMetricSlider from "../lifestages/SupportMetricSlider";
 
-// ── Slider row ───────────────────────────────────────────────────────────────
+// ── Slider row ────────────────────────────────────────────────────────────────
 function SliderRow({ label, value, onChange, min = 1, max = 5, unit = "/5" }) {
   return (
     <div>
@@ -15,29 +15,19 @@ function SliderRow({ label, value, onChange, min = 1, max = 5, unit = "/5" }) {
   );
 }
 
-// ── Chip component ───────────────────────────────────────────────────────────
 function Chip({ label, selected, onToggle }) {
   return (
     <button type="button" onClick={onToggle}
-      style={{
-        borderRadius: "9999px", padding: "8px 14px", fontSize: "13px",
-        fontFamily: "'Inter', sans-serif", fontWeight: 500, cursor: "pointer", transition: "all 0.15s",
-        border: selected ? "1.5px solid var(--plum)" : "1.5px solid var(--border)",
-        backgroundColor: selected ? "var(--plum)" : "var(--ivory-dark)",
-        color: selected ? "white" : "var(--plum)",
-      }}>
+      style={{ borderRadius: "9999px", padding: "8px 14px", fontSize: "13px", fontFamily: "'Inter', sans-serif", fontWeight: 500, cursor: "pointer", transition: "all 0.15s", border: selected ? "1.5px solid var(--plum)" : "1.5px solid var(--border)", backgroundColor: selected ? "var(--plum)" : "var(--ivory-dark)", color: selected ? "white" : "var(--plum)" }}>
       {label}
     </button>
   );
 }
 
-// ── Chip section ─────────────────────────────────────────────────────────────
 function ChipSection({ title, children }) {
   return (
     <div style={{ marginBottom: "24px" }}>
-      <p style={{ fontSize: "11px", fontWeight: 600, color: "var(--mauve)", fontFamily: "'Inter', sans-serif", textTransform: "uppercase", letterSpacing: "0.12em", marginBottom: "10px" }}>
-        {title}
-      </p>
+      <p style={{ fontSize: "11px", fontWeight: 600, color: "var(--mauve)", fontFamily: "'Inter', sans-serif", textTransform: "uppercase", letterSpacing: "0.12em", marginBottom: "10px" }}>{title}</p>
       <div style={{ display: "flex", flexWrap: "wrap", gap: "8px" }}>{children}</div>
     </div>
   );
@@ -55,35 +45,52 @@ function useMulti(initial) {
   return [vals, toggle];
 }
 
+// ── Drink data (mirrors NutritionTodayTab) ────────────────────────────────────
+const DRINK_TYPES = [
+  { id: "water",      label: "Water",      ml: 250 },
+  { id: "coffee",     label: "Coffee",     ml: 240 },
+  { id: "tea",        label: "Tea",        ml: 240 },
+  { id: "soft_drink", label: "Soft drink", ml: 330 },
+  { id: "juice",      label: "Juice",      ml: 250 },
+  { id: "alcohol",    label: "Alcohol",    ml: 250 },
+  { id: "smoothie",   label: "Smoothie",   ml: 300 },
+  { id: "milk",       label: "Milk",       ml: 200 },
+];
+const DRINK_CALS = { water: 0, coffee: 5, tea: 2, soft_drink: 140, juice: 110, alcohol: 180, smoothie: 200, milk: 120 };
+
 const TABS = [
-  { id: "cycle",      label: "Cycle"      },
-  { id: "body",       label: "Body"       },
-  { id: "skin",       label: "Skin & Hair"},
-  { id: "lifestyle",  label: "Lifestyle"  },
-  { id: "vitals",     label: "Vitals"     },
-  { id: "nutrition",  label: "Nutrition"  },
-  { id: "lifestage",  label: "Life Stage" },
+  { id: "cycle",      label: "Cycle"       },
+  { id: "body",       label: "Body"        },
+  { id: "skin",       label: "Skin & Hair" },
+  { id: "lifestyle",  label: "Lifestyle"   },
+  { id: "vitals",     label: "Vitals"      },
+  { id: "nutrition",  label: "Nutrition"   },
+  { id: "pregnancy",  label: "Pregnancy"   },
+  { id: "menopause",  label: "Menopause"   },
 ];
 
 const CHECKIN_TABS = new Set(["cycle", "body", "skin", "lifestyle", "vitals"]);
 
-export default function CheckinModal({ existing, onClose, onSave, userId, dateStr }) {
-  const init = existing || {};
+const inp = { border: "1.5px solid var(--border)", borderRadius: 12, padding: "10px 12px", fontSize: 13, fontFamily: "'Inter', sans-serif", color: "var(--plum)", backgroundColor: "var(--ivory)", outline: "none", width: "100%", boxSizing: "border-box" };
 
-  // ── Checkin chip / slider state (unchanged) ───────────────────────────────
-  const [periodFlow, togglePeriodFlow]         = useSingle(init.period_flow);
-  const [periodEvents, togglePeriodEvents]     = useMulti(init.period_events);
-  const [moodTags, toggleMoodTags]             = useMulti(init.mood_tags);
-  const [symptoms, toggleSymptoms]             = useMulti(init.symptoms);
-  const [discharge, toggleDischarge]           = useSingle(init.discharge);
-  const [sexTags, toggleSexTags]               = useMulti(init.sex_tags);
-  const [activityTags, toggleActivityTags]     = useMulti(init.activity_tags);
+export default function CheckinModal({ existing, onClose, onSave, userId, dateStr, initialTab }) {
+  const init = existing || {};
+  const todayDs = dateStr || new Date().toISOString().split("T")[0];
+
+  // ── Checkin state ──────────────────────────────────────────────────────────
+  const [periodFlow, togglePeriodFlow]           = useSingle(init.period_flow);
+  const [periodEvents, togglePeriodEvents]       = useMulti(init.period_events);
+  const [moodTags, toggleMoodTags]               = useMulti(init.mood_tags);
+  const [symptoms, toggleSymptoms]               = useMulti(init.symptoms);
+  const [discharge, toggleDischarge]             = useSingle(init.discharge);
+  const [sexTags, toggleSexTags]                 = useMulti(init.sex_tags);
+  const [activityTags, toggleActivityTags]       = useMulti(init.activity_tags);
   const [sleepQualityTag, toggleSleepQualityTag] = useSingle(init.sleep_quality_tag);
-  const [digestionTags, toggleDigestionTags]   = useMulti(init.digestion_tags);
-  const [skinCondition, toggleSkinCondition]   = useSingle(init.skin_condition);
-  const [hairShedding, toggleHairShedding]     = useSingle(init.hair_shedding);
-  const [medsTags, toggleMedsTags]             = useMulti(init.meds_tags);
-  const [otherTags, toggleOtherTags]           = useMulti(init.other_tags);
+  const [digestionTags, toggleDigestionTags]     = useMulti(init.digestion_tags);
+  const [skinCondition, toggleSkinCondition]     = useSingle(init.skin_condition);
+  const [hairShedding, toggleHairShedding]       = useSingle(init.hair_shedding);
+  const [medsTags, toggleMedsTags]               = useMulti(init.meds_tags);
+  const [otherTags, toggleOtherTags]             = useMulti(init.other_tags);
   const [mood, setMood]     = useState(init.mood ?? 3);
   const [energy, setEnergy] = useState(init.energy ?? 3);
   const [stress, setStress] = useState(init.stress ?? 2);
@@ -93,42 +100,53 @@ export default function CheckinModal({ existing, onClose, onSave, userId, dateSt
   const [cramps, setCramps] = useState(init.cramps ?? 1);
   const [notes, setNotes]   = useState(init.notes ?? "");
   const [saving, setSaving] = useState(false);
-  const [activeTab, setActiveTab] = useState("cycle");
+  const [activeTab, setActiveTab] = useState(initialTab || "cycle");
 
-  // ── Nutrition tab state ───────────────────────────────────────────────────
-  const [mealType, setMealType] = useState("lunch");
+  // ── Nutrition tab state ────────────────────────────────────────────────────
+  const [mealType, setMealType]   = useState("lunch");
   const [mealText, setMealText]   = useState("");
   const [mealSaved, setMealSaved] = useState(false);
   const [waterSaved, setWaterSaved] = useState(null);
+  // Drinks
+  const [drinkLogs, setDrinkLogs]       = useState([]);
+  const [drinkLoaded, setDrinkLoaded]   = useState(false);
+  const [showCustomDrink, setShowCustomDrink] = useState(false);
+  const [customDrinkName, setCustomDrinkName] = useState("");
+  const [customDrinkMl, setCustomDrinkMl]     = useState(250);
+  const [customDrinkCals, setCustomDrinkCals] = useState(0);
+  const [loggingDrink, setLoggingDrink]       = useState(false);
+  const [drinkSaved, setDrinkSaved]           = useState(false);
 
-  // ── Life Stage tab state ──────────────────────────────────────────────────
-  const [lsLoaded, setLsLoaded]   = useState(false);
-  const [lsLoading, setLsLoading] = useState(false);
+  // ── Life stage tab state ───────────────────────────────────────────────────
+  const [lsLoaded, setLsLoaded]       = useState(false);
+  const [lsLoading, setLsLoading]     = useState(false);
   const [pregProfile, setPregProfile] = useState(null);
   const [menoProfile, setMenoProfile] = useState(null);
   const [existingPregLogId, setExistingPregLogId] = useState(null);
   const [existingMenoLogId, setExistingMenoLogId] = useState(null);
-  const [pregEnergy, setPregEnergy]           = useState(3);
-  const [pregMood, setPregMood]               = useState(3);
+  // Pregnancy form
+  const [pregEnergy, setPregEnergy]             = useState(3);
+  const [pregMood, setPregMood]                 = useState(3);
   const [pregSleepQuality, setPregSleepQuality] = useState(3);
-  const [pregNausea, setPregNausea]           = useState(1);
-  const [pregPelvicPain, setPregPelvicPain]   = useState(1);
-  const [pregSwelling, setPregSwelling]       = useState(1);
-  const [pregNotes, setPregNotes]             = useState("");
-  const [pregSaving, setPregSaving]           = useState(false);
-  const [pregSaved, setPregSaved]             = useState(false);
-  const [menoHotFlashes, setMenoHotFlashes]   = useState(1);
-  const [menoNightSweats, setMenoNightSweats] = useState(1);
+  const [pregNausea, setPregNausea]             = useState(1);
+  const [pregPelvicPain, setPregPelvicPain]     = useState(1);
+  const [pregSwelling, setPregSwelling]         = useState(1);
+  const [pregNotes, setPregNotes]               = useState("");
+  const [pregSaving, setPregSaving]             = useState(false);
+  const [pregSaved, setPregSaved]               = useState(false);
+  // Menopause form
+  const [menoHotFlashes, setMenoHotFlashes]     = useState(1);
+  const [menoNightSweats, setMenoNightSweats]   = useState(1);
   const [menoSleepQuality, setMenoSleepQuality] = useState(3);
-  const [menoMood, setMenoMood]               = useState(3);
-  const [menoEnergy, setMenoEnergy]           = useState(3);
-  const [menoNotes, setMenoNotes]             = useState("");
-  const [menoSaving, setMenoSaving]           = useState(false);
-  const [menoSaved, setMenoSaved]             = useState(false);
+  const [menoMood, setMenoMood]                 = useState(3);
+  const [menoEnergy, setMenoEnergy]             = useState(3);
+  const [menoNotes, setMenoNotes]               = useState("");
+  const [menoSaving, setMenoSaving]             = useState(false);
+  const [menoSaved, setMenoSaved]               = useState(false);
 
-  // Load life stage profiles + today's logs when tab opens
+  // Load life stage data when pregnancy or menopause tab opens
   useEffect(() => {
-    if (activeTab !== "lifestage" || lsLoaded || !userId) return;
+    if (!["pregnancy", "menopause"].includes(activeTab) || lsLoaded || !userId) return;
     setLsLoading(true);
     (async () => {
       try {
@@ -140,7 +158,6 @@ export default function CheckinModal({ existing, onClose, onSave, userId, dateSt
         ]);
         setPregProfile(pregProfiles[0] || null);
         setMenoProfile(menoProfiles[0] || null);
-        const todayDs = dateStr || new Date().toISOString().split("T")[0];
         const todayPregLog = pregLogs.find(l => l.date === todayDs);
         if (todayPregLog) {
           setExistingPregLogId(todayPregLog.id);
@@ -166,9 +183,17 @@ export default function CheckinModal({ existing, onClose, onSave, userId, dateSt
       setLsLoading(false);
       setLsLoaded(true);
     })();
-  }, [activeTab, userId, lsLoaded, dateStr]);
+  }, [activeTab, userId, lsLoaded, todayDs]);
 
-  // ── Save checkin (unchanged logic) ───────────────────────────────────────
+  // Load today's drinks when nutrition tab opens
+  useEffect(() => {
+    if (activeTab !== "nutrition" || drinkLoaded || !userId) return;
+    base44.entities.DrinkLog.filter({ user_id: userId, day_key: todayDs })
+      .then(data => { setDrinkLogs(data); setDrinkLoaded(true); })
+      .catch(() => setDrinkLoaded(true));
+  }, [activeTab, userId, drinkLoaded, todayDs]);
+
+  // ── Save checkin ───────────────────────────────────────────────────────────
   const handleSave = async () => {
     setSaving(true);
     const exerciseDone = activityTags.length > 0 && !activityTags.includes("Didn't exercise");
@@ -200,10 +225,9 @@ export default function CheckinModal({ existing, onClose, onSave, userId, dateSt
     onClose();
   };
 
-  // ── Nutrition helpers ─────────────────────────────────────────────────────
+  // ── Nutrition helpers ──────────────────────────────────────────────────────
   const logMeal = async () => {
     if (!mealText.trim() || !userId) return;
-    const todayDs = dateStr || new Date().toISOString().split("T")[0];
     const log = await base44.entities.MealLog.create({
       user_id: userId, day_key: todayDs, logged_at: new Date().toISOString(),
       meal_type: mealType, method: "text", raw_text: mealText.trim(), portion_size: "medium",
@@ -216,17 +240,58 @@ export default function CheckinModal({ existing, onClose, onSave, userId, dateSt
 
   const logWater = async (ml) => {
     if (!userId) return;
-    const todayDs = dateStr || new Date().toISOString().split("T")[0];
     await base44.entities.HydrationLog.create({ user_id: userId, day_key: todayDs, amount_ml: ml, logged_at: new Date().toISOString() });
     setWaterSaved(ml);
     setTimeout(() => setWaterSaved(null), 2000);
   };
 
-  // ── Life stage save helpers ───────────────────────────────────────────────
+  const logSuggestedDrink = async (typeId) => {
+    if (!userId || loggingDrink) return;
+    setLoggingDrink(true);
+    try {
+      const info = DRINK_TYPES.find(d => d.id === typeId);
+      const newLog = await base44.entities.DrinkLog.create({
+        user_id: userId, day_key: todayDs,
+        drink_type: typeId, amount_ml: info?.ml || 250,
+        calories: DRINK_CALS[typeId] || 0,
+        logged_at: new Date().toISOString(),
+      });
+      setDrinkLogs(prev => [...prev, newLog]);
+      setDrinkSaved(true);
+      setTimeout(() => setDrinkSaved(false), 2000);
+    } catch {}
+    setLoggingDrink(false);
+  };
+
+  const logCustomDrink = async () => {
+    if (!customDrinkName.trim() || !userId) return;
+    setLoggingDrink(true);
+    try {
+      const newLog = await base44.entities.DrinkLog.create({
+        user_id: userId, day_key: todayDs,
+        drink_type: customDrinkName.trim(),
+        amount_ml: Number(customDrinkMl) || 250,
+        calories: Number(customDrinkCals) || 0,
+        logged_at: new Date().toISOString(),
+      });
+      setDrinkLogs(prev => [...prev, newLog]);
+      setCustomDrinkName(""); setCustomDrinkMl(250); setCustomDrinkCals(0);
+      setShowCustomDrink(false);
+      setDrinkSaved(true);
+      setTimeout(() => setDrinkSaved(false), 2000);
+    } catch {}
+    setLoggingDrink(false);
+  };
+
+  const deleteDrink = async (id) => {
+    await base44.entities.DrinkLog.delete(id).catch(() => {});
+    setDrinkLogs(prev => prev.filter(d => d.id !== id));
+  };
+
+  // ── Life stage save helpers ────────────────────────────────────────────────
   const savePregLog = async () => {
     if (!userId) return;
     setPregSaving(true);
-    const todayDs = dateStr || new Date().toISOString().split("T")[0];
     const data = { user_id: userId, date: todayDs, energy: pregEnergy, mood: pregMood, sleep_quality: pregSleepQuality, nausea: pregNausea, pelvic_pain: pregPelvicPain, swelling: pregSwelling, notes: pregNotes };
     if (existingPregLogId) {
       await base44.entities.PregnancyDailyLog.update(existingPregLogId, data);
@@ -234,15 +299,13 @@ export default function CheckinModal({ existing, onClose, onSave, userId, dateSt
       const created = await base44.entities.PregnancyDailyLog.create(data);
       setExistingPregLogId(created.id);
     }
-    setPregSaving(false);
-    setPregSaved(true);
+    setPregSaving(false); setPregSaved(true);
     setTimeout(() => setPregSaved(false), 2500);
   };
 
   const saveMenoLog = async () => {
     if (!userId) return;
     setMenoSaving(true);
-    const todayDs = dateStr || new Date().toISOString().split("T")[0];
     const data = { user_id: userId, date: todayDs, hot_flashes: menoHotFlashes, night_sweats: menoNightSweats, sleep_quality: menoSleepQuality, mood: menoMood, energy: menoEnergy, notes: menoNotes };
     if (existingMenoLogId) {
       await base44.entities.MenopauseDailyLog.update(existingMenoLogId, data);
@@ -250,14 +313,11 @@ export default function CheckinModal({ existing, onClose, onSave, userId, dateSt
       const created = await base44.entities.MenopauseDailyLog.create(data);
       setExistingMenoLogId(created.id);
     }
-    setMenoSaving(false);
-    setMenoSaved(true);
+    setMenoSaving(false); setMenoSaved(true);
     setTimeout(() => setMenoSaved(false), 2500);
   };
 
   const isCheckinTab = CHECKIN_TABS.has(activeTab);
-
-  const inp = { border: "1.5px solid var(--border)", borderRadius: 12, padding: "10px 12px", fontSize: 13, fontFamily: "'Inter', sans-serif", color: "var(--plum)", backgroundColor: "var(--ivory)", outline: "none", width: "100%", boxSizing: "border-box" };
 
   return (
     <>
@@ -268,53 +328,40 @@ export default function CheckinModal({ existing, onClose, onSave, userId, dateSt
         .checkin-content { -ms-overflow-style: none; scrollbar-width: none; }
         .checkin-rail::-webkit-scrollbar { display: none; }
         .checkin-rail { -ms-overflow-style: none; scrollbar-width: none; }
+        @keyframes spin { to { transform: rotate(360deg); } }
       `}</style>
 
-      {/* Overlay */}
       <div onClick={onClose} style={{ position: "fixed", inset: 0, zIndex: 50, backgroundColor: "rgba(42,32,53,0.4)", backdropFilter: "blur(4px)" }} />
 
-      {/* Sheet */}
-      <div className="checkin-sheet" style={{
-        position: "fixed", bottom: 0, left: 0, right: 0, zIndex: 51,
-        backgroundColor: "var(--surface)", borderRadius: "28px 28px 0 0",
-        boxShadow: "var(--shadow-lg)", maxHeight: "90vh",
-        display: "flex", flexDirection: "column",
-      }}>
+      <div className="checkin-sheet" style={{ position: "fixed", bottom: 0, left: 0, right: 0, zIndex: 51, backgroundColor: "var(--surface)", borderRadius: "28px 28px 0 0", boxShadow: "var(--shadow-lg)", maxHeight: "90vh", display: "flex", flexDirection: "column" }}>
 
         {/* Header */}
         <div style={{ flexShrink: 0, padding: "12px 20px 0" }}>
           <div style={{ width: 32, height: 4, borderRadius: 9999, backgroundColor: "var(--border)", margin: "0 auto 16px" }} />
           <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", marginBottom: "14px" }}>
             <div>
-              <h2 style={{ fontFamily: "'Playfair Display', serif", fontSize: "18px", color: "var(--plum)", fontWeight: 600, margin: 0 }}>How are you today?</h2>
-              <p style={{ fontFamily: "'Inter', sans-serif", fontSize: "12px", color: "var(--mauve)", marginTop: 4 }}>Log your day from here.</p>
+              <h2 style={{ fontFamily: "'Playfair Display', serif", fontSize: "18px", color: "var(--plum)", fontWeight: 600, margin: 0 }}>Log your day</h2>
+              <p style={{ fontFamily: "'Inter', sans-serif", fontSize: "12px", color: "var(--mauve)", marginTop: 4 }}>Tap a section to log.</p>
             </div>
-            <button onClick={onClose} style={{ width: 28, height: 28, borderRadius: 9999, border: "none", backgroundColor: "var(--ivory-dark)", color: "var(--mauve)", fontSize: "18px", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>×</button>
+            <button onClick={onClose} style={{ width: 28, height: 28, borderRadius: 9999, border: "none", backgroundColor: "var(--ivory-dark)", color: "var(--mauve)", fontSize: "18px", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>x</button>
           </div>
           <div style={{ height: 1, backgroundColor: "var(--border-subtle)" }} />
         </div>
 
         {/* Body: left rail + right content */}
-        <div style={{ flex: 1, overflow: "hidden", display: "flex", flexDirection: "row" }}>
+        <div style={{ flex: 1, overflow: "hidden", display: "flex" }}>
 
-          {/* Left vertical tab rail */}
-          <div className="checkin-rail" style={{ flexShrink: 0, width: 76, overflowY: "auto", padding: "10px 6px", display: "flex", flexDirection: "column", gap: 2, borderRight: "1px solid var(--border-subtle)" }}>
+          {/* Vertical tab rail */}
+          <div className="checkin-rail" style={{ flexShrink: 0, width: 72, overflowY: "auto", padding: "10px 5px", display: "flex", flexDirection: "column", gap: 2, borderRight: "1px solid var(--border-subtle)" }}>
             {TABS.map(t => (
               <button key={t.id} type="button" onClick={() => setActiveTab(t.id)}
-                style={{
-                  width: "100%", padding: "9px 4px", borderRadius: 10, border: "none",
-                  backgroundColor: activeTab === t.id ? "var(--plum)" : "transparent",
-                  color: activeTab === t.id ? "white" : "var(--mauve)",
-                  fontSize: 10, fontWeight: 600, fontFamily: "'Inter', sans-serif",
-                  textAlign: "center", cursor: "pointer", lineHeight: 1.3, wordBreak: "break-word",
-                  transition: "all 0.15s",
-                }}>
+                style={{ width: "100%", padding: "9px 3px", borderRadius: 10, border: "none", backgroundColor: activeTab === t.id ? "var(--plum)" : "transparent", color: activeTab === t.id ? "white" : "var(--mauve)", fontSize: 10, fontWeight: 600, fontFamily: "'Inter', sans-serif", textAlign: "center", cursor: "pointer", lineHeight: 1.3, wordBreak: "break-word", transition: "all 0.15s" }}>
                 {t.label}
               </button>
             ))}
           </div>
 
-          {/* Right scrollable content */}
+          {/* Scrollable content */}
           <div className="checkin-content" style={{ flex: 1, overflowY: "auto", padding: "16px 16px 8px" }}>
 
             {/* CYCLE */}
@@ -356,7 +403,7 @@ export default function CheckinModal({ existing, onClose, onSave, userId, dateSt
               </div>
             </>)}
 
-            {/* SKIN & HAIR */}
+            {/* SKIN */}
             {activeTab === "skin" && (<>
               <ChipSection title="Skin">
                 {["Clear","Mild breakout","Moderate breakout","Very oily","Very dry"].map(v => <Chip key={v} label={v} selected={skinCondition === v} onToggle={() => toggleSkinCondition(v)} />)}
@@ -365,7 +412,7 @@ export default function CheckinModal({ existing, onClose, onSave, userId, dateSt
                 {["Normal shedding","More than usual","A lot of shedding"].map(v => <Chip key={v} label={v} selected={hairShedding === v} onToggle={() => toggleHairShedding(v)} />)}
               </ChipSection>
               <ChipSection title="Medication and supplements">
-                {["Oral contraceptive — taken on time","Oral contraceptive — missed","Iron supplement","Vitamin D","Magnesium","Other supplement"].map(v => <Chip key={v} label={v} selected={medsTags.includes(v)} onToggle={() => toggleMedsTags(v)} />)}
+                {["Oral contraceptive taken on time","Oral contraceptive missed","Iron supplement","Vitamin D","Magnesium","Other supplement"].map(v => <Chip key={v} label={v} selected={medsTags.includes(v)} onToggle={() => toggleMedsTags(v)} />)}
               </ChipSection>
             </>)}
 
@@ -397,9 +444,9 @@ export default function CheckinModal({ existing, onClose, onSave, userId, dateSt
             {/* NUTRITION */}
             {activeTab === "nutrition" && (
               <div>
-                {/* Meal log */}
-                <div style={{ marginBottom: 24 }}>
-                  <p style={{ fontSize: 11, fontWeight: 600, color: "var(--mauve)", fontFamily: "'Inter', sans-serif", textTransform: "uppercase", letterSpacing: "0.12em", marginBottom: 10 }}>Quick meal log</p>
+                {/* Meal */}
+                <div style={{ marginBottom: 22 }}>
+                  <p style={{ fontSize: 11, fontWeight: 600, color: "var(--mauve)", fontFamily: "'Inter', sans-serif", textTransform: "uppercase", letterSpacing: "0.12em", marginBottom: 10 }}>Meal</p>
                   <div style={{ display: "flex", gap: 6, marginBottom: 8, flexWrap: "wrap" }}>
                     {["breakfast","lunch","dinner","snack"].map(mt => (
                       <button key={mt} onClick={() => setMealType(mt)}
@@ -410,90 +457,164 @@ export default function CheckinModal({ existing, onClose, onSave, userId, dateSt
                   </div>
                   <textarea value={mealText} onChange={e => setMealText(e.target.value)}
                     placeholder="e.g. oats with banana and almond milk..."
-                    rows={2}
-                    style={{ ...inp, resize: "none", marginBottom: 8 }} />
+                    rows={2} style={{ ...inp, resize: "none", marginBottom: 8 }} />
                   <button onClick={logMeal} disabled={!mealText.trim()}
                     style={{ padding: "9px 18px", borderRadius: 9999, backgroundColor: "var(--plum)", color: "white", border: "none", fontSize: 12, fontWeight: 600, cursor: !mealText.trim() ? "default" : "pointer", opacity: !mealText.trim() ? 0.5 : 1, fontFamily: "'Inter', sans-serif" }}>
-                    {mealSaved ? "✓ Logged" : "Log meal"}
+                    {mealSaved ? "Logged" : "Log meal"}
                   </button>
                 </div>
 
                 {/* Water */}
-                <div style={{ marginBottom: 24 }}>
-                  <p style={{ fontSize: 11, fontWeight: 600, color: "var(--mauve)", fontFamily: "'Inter', sans-serif", textTransform: "uppercase", letterSpacing: "0.12em", marginBottom: 10 }}>Add water</p>
-                  <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+                <div style={{ marginBottom: 22 }}>
+                  <p style={{ fontSize: 11, fontWeight: 600, color: "var(--mauve)", fontFamily: "'Inter', sans-serif", textTransform: "uppercase", letterSpacing: "0.12em", marginBottom: 10 }}>Water</p>
+                  <div style={{ display: "flex", gap: 8 }}>
                     {[250, 500, 750].map(ml => (
                       <button key={ml} onClick={() => logWater(ml)}
-                        style={{ flex: 1, padding: "10px 8px", borderRadius: 12, backgroundColor: waterSaved === ml ? "var(--sage-subtle)" : "var(--ivory-dark)", color: waterSaved === ml ? "var(--sage)" : "var(--plum)", border: `1px solid ${waterSaved === ml ? "var(--sage-light)" : "var(--border)"}`, fontSize: 13, fontWeight: 600, cursor: "pointer", fontFamily: "'Inter', sans-serif", minWidth: 60 }}>
-                        {waterSaved === ml ? "✓" : `+${ml}ml`}
+                        style={{ flex: 1, padding: "10px 8px", borderRadius: 12, backgroundColor: waterSaved === ml ? "var(--sage-subtle)" : "var(--ivory-dark)", color: waterSaved === ml ? "var(--sage)" : "var(--plum)", border: `1px solid ${waterSaved === ml ? "var(--sage-light)" : "var(--border)"}`, fontSize: 13, fontWeight: 600, cursor: "pointer", fontFamily: "'Inter', sans-serif" }}>
+                        {waterSaved === ml ? "Added" : `+${ml}ml`}
                       </button>
                     ))}
                   </div>
                 </div>
 
-                {/* Link to full nutrition */}
+                {/* Drinks */}
+                <div style={{ marginBottom: 16 }}>
+                  <p style={{ fontSize: 11, fontWeight: 600, color: "var(--mauve)", fontFamily: "'Inter', sans-serif", textTransform: "uppercase", letterSpacing: "0.12em", marginBottom: 10 }}>Drinks</p>
+                  <div style={{ display: "flex", flexWrap: "wrap", gap: 6, marginBottom: 12 }}>
+                    {DRINK_TYPES.map(d => (
+                      <button key={d.id} onClick={() => logSuggestedDrink(d.id)} disabled={loggingDrink}
+                        style={{ padding: "6px 12px", borderRadius: 9999, border: "1px solid var(--border)", backgroundColor: "var(--ivory-dark)", cursor: loggingDrink ? "default" : "pointer", opacity: loggingDrink ? 0.5 : 1 }}>
+                        <span style={{ fontSize: 12, fontWeight: 600, color: "var(--plum)", fontFamily: "'Inter', sans-serif" }}>{d.label}</span>
+                        {DRINK_CALS[d.id] > 0 && <span style={{ fontSize: 10, color: "var(--mauve)", marginLeft: 4 }}>~{DRINK_CALS[d.id]} kcal</span>}
+                      </button>
+                    ))}
+                  </div>
+
+                  {/* Custom drink toggle */}
+                  <button onClick={() => setShowCustomDrink(v => !v)}
+                    style={{ fontSize: 12, fontWeight: 600, color: "var(--rose-dust)", background: "none", border: "none", cursor: "pointer", fontFamily: "'Inter', sans-serif", marginBottom: showCustomDrink ? 10 : 0 }}>
+                    {showCustomDrink ? "Hide custom drink" : "+ Custom drink"}
+                  </button>
+                  {showCustomDrink && (
+                    <div style={{ backgroundColor: "var(--ivory)", borderRadius: 14, padding: 12, border: "1px solid var(--border)", marginBottom: 8 }}>
+                      <input value={customDrinkName} onChange={e => setCustomDrinkName(e.target.value)} placeholder="Drink name (e.g. matcha latte)" style={{ ...inp, marginBottom: 8 }} />
+                      <div style={{ display: "flex", gap: 8, marginBottom: 8 }}>
+                        <div style={{ flex: 1 }}>
+                          <p style={{ fontSize: 10, color: "var(--mauve)", marginBottom: 4 }}>Size (ml)</p>
+                          <input type="number" value={customDrinkMl} onChange={e => setCustomDrinkMl(e.target.value)} style={{ ...inp }} />
+                        </div>
+                        <div style={{ flex: 1 }}>
+                          <p style={{ fontSize: 10, color: "var(--mauve)", marginBottom: 4 }}>Calories</p>
+                          <input type="number" value={customDrinkCals} onChange={e => setCustomDrinkCals(e.target.value)} style={{ ...inp }} />
+                        </div>
+                      </div>
+                      <button onClick={logCustomDrink} disabled={!customDrinkName.trim() || loggingDrink}
+                        style={{ width: "100%", padding: "9px", borderRadius: 9999, backgroundColor: "var(--plum)", color: "white", border: "none", fontSize: 12, fontWeight: 600, cursor: "pointer", fontFamily: "'Inter', sans-serif", opacity: !customDrinkName.trim() ? 0.5 : 1 }}>
+                        {loggingDrink ? "Logging..." : "Log drink"}
+                      </button>
+                    </div>
+                  )}
+
+                  {drinkSaved && <p style={{ fontSize: 11, color: "var(--sage)", fontFamily: "'Inter', sans-serif", marginTop: 4 }}>Drink logged</p>}
+
+                  {/* Today's drinks list */}
+                  {drinkLogs.length > 0 && (
+                    <div style={{ marginTop: 10 }}>
+                      <p style={{ fontSize: 10, color: "var(--mauve)", fontFamily: "'Inter', sans-serif", marginBottom: 6 }}>Today</p>
+                      <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
+                        {drinkLogs.map(log => (
+                          <div key={log.id} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", backgroundColor: "var(--ivory)", borderRadius: 10, padding: "6px 10px" }}>
+                            <div>
+                              <span style={{ fontSize: 12, fontWeight: 600, color: "var(--plum)", fontFamily: "'Inter', sans-serif", textTransform: "capitalize" }}>{log.drink_type.replace(/_/g, " ")}</span>
+                              {log.calories > 0 && <span style={{ fontSize: 10, color: "var(--mauve)", marginLeft: 6 }}>{log.calories} kcal</span>}
+                              {log.amount_ml && <span style={{ fontSize: 10, color: "var(--mauve)", marginLeft: 6 }}>{log.amount_ml}ml</span>}
+                            </div>
+                            <button onClick={() => deleteDrink(log.id)} style={{ border: "none", background: "none", cursor: "pointer", color: "var(--mauve)", fontSize: 14, lineHeight: 1 }}>x</button>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                </div>
+
                 <a href="/Nutrition" onClick={onClose}
                   style={{ display: "inline-flex", alignItems: "center", gap: 6, fontSize: 13, fontWeight: 600, color: "var(--rose-dust)", fontFamily: "'Inter', sans-serif", textDecoration: "none" }}>
-                  Open full Nutrition →
+                  Open full Nutrition
                 </a>
               </div>
             )}
 
-            {/* LIFE STAGE */}
-            {activeTab === "lifestage" && (
+            {/* PREGNANCY */}
+            {activeTab === "pregnancy" && (
               <div>
                 {lsLoading && (
                   <div style={{ textAlign: "center", padding: "32px 0" }}>
                     <div style={{ width: 20, height: 20, border: "2px solid var(--rose-dust-light)", borderTopColor: "var(--rose-dust)", borderRadius: "50%", animation: "spin 0.7s linear infinite", margin: "0 auto" }} />
-                    <style>{`@keyframes spin{to{transform:rotate(360deg)}}`}</style>
                   </div>
                 )}
-
-                {!lsLoading && !pregProfile && !menoProfile && (
+                {!lsLoading && !pregProfile && (
                   <div style={{ textAlign: "center", padding: "24px 0" }}>
-                    <p style={{ fontSize: 13, color: "var(--mauve)", fontFamily: "'Inter', sans-serif", marginBottom: 16 }}>Set up pregnancy or menopause support to log here.</p>
+                    <p style={{ fontSize: 13, color: "var(--mauve)", fontFamily: "'Inter', sans-serif", marginBottom: 16 }}>Set up pregnancy support to log here.</p>
                     <a href="/LifeStageCare" onClick={onClose}
                       style={{ display: "inline-block", padding: "10px 20px", borderRadius: 9999, backgroundColor: "var(--plum)", color: "white", fontSize: 13, fontWeight: 600, fontFamily: "'Inter', sans-serif", textDecoration: "none" }}>
-                      Set up life stage support
+                      Set up pregnancy support
                     </a>
                   </div>
                 )}
-
                 {!lsLoading && pregProfile && (
-                  <div style={{ marginBottom: 28 }}>
-                    <p style={{ fontSize: 11, fontWeight: 600, color: "var(--rose-dust)", fontFamily: "'Inter', sans-serif", textTransform: "uppercase", letterSpacing: "0.12em", marginBottom: 14 }}>Pregnancy</p>
+                  <div>
+                    <p style={{ fontSize: 11, fontWeight: 600, color: "var(--rose-dust)", fontFamily: "'Inter', sans-serif", textTransform: "uppercase", letterSpacing: "0.12em", marginBottom: 14 }}>Pregnancy daily log</p>
                     <div style={{ display: "flex", flexDirection: "column", gap: 14, marginBottom: 14 }}>
                       <SupportMetricSlider label="Energy" value={pregEnergy} onChange={setPregEnergy} />
                       <SupportMetricSlider label="Mood" value={pregMood} onChange={setPregMood} />
                       <SupportMetricSlider label="Sleep quality" value={pregSleepQuality} onChange={setPregSleepQuality} />
-                      <SupportMetricSlider label="Nausea" value={pregNausea} onChange={setPregNausea} />
-                      <SupportMetricSlider label="Pelvic pain" value={pregPelvicPain} onChange={setPregPelvicPain} />
+                      <SupportMetricSlider label="Nausea (1=none, 5=severe)" value={pregNausea} onChange={setPregNausea} />
+                      <SupportMetricSlider label="Pelvic discomfort" value={pregPelvicPain} onChange={setPregPelvicPain} />
                       <SupportMetricSlider label="Swelling" value={pregSwelling} onChange={setPregSwelling} />
                     </div>
                     <textarea value={pregNotes} onChange={e => setPregNotes(e.target.value)} placeholder="Notes (optional)"
-                      rows={2} style={{ ...inp, resize: "none", marginBottom: 10 }} />
+                      rows={2} style={{ ...inp, resize: "none", marginBottom: 12 }} />
                     <button onClick={savePregLog} disabled={pregSaving}
-                      style={{ width: "100%", padding: "10px", borderRadius: 9999, backgroundColor: "var(--rose-dust)", color: "white", border: "none", fontSize: 13, fontWeight: 600, cursor: "pointer", fontFamily: "'Inter', sans-serif", opacity: pregSaving ? 0.6 : 1 }}>
-                      {pregSaved ? "✓ Saved" : pregSaving ? "Saving..." : "Save pregnancy log"}
+                      style={{ width: "100%", padding: "11px", borderRadius: 9999, backgroundColor: "var(--rose-dust)", color: "white", border: "none", fontSize: 13, fontWeight: 600, cursor: "pointer", fontFamily: "'Inter', sans-serif", opacity: pregSaving ? 0.6 : 1 }}>
+                      {pregSaved ? "Saved" : pregSaving ? "Saving..." : "Save pregnancy log"}
                     </button>
                   </div>
                 )}
+              </div>
+            )}
 
+            {/* MENOPAUSE */}
+            {activeTab === "menopause" && (
+              <div>
+                {lsLoading && (
+                  <div style={{ textAlign: "center", padding: "32px 0" }}>
+                    <div style={{ width: 20, height: 20, border: "2px solid var(--rose-dust-light)", borderTopColor: "var(--rose-dust)", borderRadius: "50%", animation: "spin 0.7s linear infinite", margin: "0 auto" }} />
+                  </div>
+                )}
+                {!lsLoading && !menoProfile && (
+                  <div style={{ textAlign: "center", padding: "24px 0" }}>
+                    <p style={{ fontSize: 13, color: "var(--mauve)", fontFamily: "'Inter', sans-serif", marginBottom: 16 }}>Set up menopause support to log here.</p>
+                    <a href="/LifeStageCare" onClick={onClose}
+                      style={{ display: "inline-block", padding: "10px 20px", borderRadius: 9999, backgroundColor: "var(--plum)", color: "white", fontSize: 13, fontWeight: 600, fontFamily: "'Inter', sans-serif", textDecoration: "none" }}>
+                      Set up menopause support
+                    </a>
+                  </div>
+                )}
                 {!lsLoading && menoProfile && (
                   <div>
-                    <p style={{ fontSize: 11, fontWeight: 600, color: "var(--mauve)", fontFamily: "'Inter', sans-serif", textTransform: "uppercase", letterSpacing: "0.12em", marginBottom: 14 }}>Menopause</p>
+                    <p style={{ fontSize: 11, fontWeight: 600, color: "var(--mauve)", fontFamily: "'Inter', sans-serif", textTransform: "uppercase", letterSpacing: "0.12em", marginBottom: 14 }}>Menopause daily log</p>
                     <div style={{ display: "flex", flexDirection: "column", gap: 14, marginBottom: 14 }}>
-                      <SupportMetricSlider label="Hot flashes" value={menoHotFlashes} onChange={setMenoHotFlashes} />
+                      <SupportMetricSlider label="Hot flashes (1=none, 5=severe)" value={menoHotFlashes} onChange={setMenoHotFlashes} />
                       <SupportMetricSlider label="Night sweats" value={menoNightSweats} onChange={setMenoNightSweats} />
                       <SupportMetricSlider label="Sleep quality" value={menoSleepQuality} onChange={setMenoSleepQuality} />
                       <SupportMetricSlider label="Mood" value={menoMood} onChange={setMenoMood} />
                       <SupportMetricSlider label="Energy" value={menoEnergy} onChange={setMenoEnergy} />
                     </div>
                     <textarea value={menoNotes} onChange={e => setMenoNotes(e.target.value)} placeholder="Notes (optional)"
-                      rows={2} style={{ ...inp, resize: "none", marginBottom: 10 }} />
+                      rows={2} style={{ ...inp, resize: "none", marginBottom: 12 }} />
                     <button onClick={saveMenoLog} disabled={menoSaving}
-                      style={{ width: "100%", padding: "10px", borderRadius: 9999, backgroundColor: "var(--plum)", color: "white", border: "none", fontSize: 13, fontWeight: 600, cursor: "pointer", fontFamily: "'Inter', sans-serif", opacity: menoSaving ? 0.6 : 1 }}>
-                      {menoSaved ? "✓ Saved" : menoSaving ? "Saving..." : "Save menopause log"}
+                      style={{ width: "100%", padding: "11px", borderRadius: 9999, backgroundColor: "var(--plum)", color: "white", border: "none", fontSize: 13, fontWeight: 600, cursor: "pointer", fontFamily: "'Inter', sans-serif", opacity: menoSaving ? 0.6 : 1 }}>
+                      {menoSaved ? "Saved" : menoSaving ? "Saving..." : "Save menopause log"}
                     </button>
                   </div>
                 )}

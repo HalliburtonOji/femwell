@@ -58,7 +58,10 @@
       "enum": [
         "warm",
         "clinical",
-        "motivational"
+        "motivational",
+        "gentle",
+        "straight",
+        "minimal"
       ],
       "default": "warm"
     },
@@ -124,6 +127,21 @@
     },
     "mature_confirmed_at": {
       "type": "string"
+    },
+    "life_stage": {
+      "type": "string",
+      "enum": [
+        "none",
+        "pregnancy",
+        "menopause"
+      ],
+      "default": "none"
+    },
+    "life_stage_focus": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
     }
   },
   "required": [
