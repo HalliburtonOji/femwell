@@ -142,6 +142,10 @@
       "items": {
         "type": "string"
       }
+    },
+    "hydration_target_ml": {
+      "type": "number",
+      "default": 2000
     }
   },
   "required": [

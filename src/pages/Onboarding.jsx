@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { base44 } from "@/api/base44Client";
+import GuideVoiceMode from "../components/guide/GuideVoiceMode";
 import { createPageUrl } from "@/utils";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 
@@ -37,7 +38,8 @@ const BODY_GOALS = [
   { id: "menopause",       label: "Menopause"        },
 ];
 
-const STEPS = ["welcome", "goals", "location", "interests", "preferences", "setup", "skin_profile", "life_stage", "done"];
+const STEPS = ["welcome", "goals", "location", "interests", "preferences", "life_stage", "setup", "skin_profile", "assistant_intro", "done"];
+const PROGRESS_STEPS = ["goals", "location", "interests", "preferences", "life_stage", "setup", "skin_profile"];
 
 const PREG_FOCUSES = ["Sleep", "Nausea", "Movement", "Nutrition", "Birth prep", "Calm", "Pelvic health"];
 const MENO_FOCUSES = ["Sleep", "Hot flashes", "Mood", "Energy", "Brain fog", "Joint comfort", "Weight balance"];
@@ -84,6 +86,10 @@ export default function Onboarding() {
   const [pregTrimester, setPregTrimester] = useState("first");
   const [menoStage, setMenoStage] = useState("perimenopause");
   const toggleLifeStageFocus = (v) => setLifeStageFocus(c => c.includes(v) ? c.filter(i => i !== v) : [...c, v]);
+  const [assistantName, setAssistantName] = useState("Guide");
+  const [showVoice, setShowVoice] = useState(false);
+  const [micDenied, setMicDenied] = useState(false);
+  const voiceTimerRef = useRef(null);
   const isPopState = useRef(false);
 
   // Push history state on step changes so browser back = one step back
@@ -145,6 +151,7 @@ export default function Onboarding() {
         life_stage: lifeStage,
         life_stage_focus: lifeStageFocus,
         condition_flags: conditionFlags,
+        ai_assistant_name: assistantName || "Guide",
         ...(locationCity ? { location_city: locationCity } : {}),
       };
       if (profiles[0]) {
@@ -395,6 +402,25 @@ export default function Onboarding() {
               ))}
             </div>
             <div>
+              <p style={{ fontSize: "13px", fontWeight: 600, color: "var(--plum)", fontFamily: "'Inter', sans-serif", marginBottom: "6px" }}>Name your assistant</p>
+              <input
+                type="text"
+                value={assistantName}
+                onChange={e => setAssistantName(e.target.value)}
+                placeholder="e.g. Guide, Sage, Luna"
+                style={{
+                  width: "100%", padding: "12px 16px", borderRadius: 14,
+                  border: "1.5px solid var(--border)",
+                  backgroundColor: "var(--surface)",
+                  fontSize: 14, color: "var(--plum)",
+                  fontFamily: "'Inter', sans-serif", outline: "none", boxSizing: "border-box",
+                }}
+                onFocus={e => e.target.style.borderColor = "var(--rose-dust-light)"}
+                onBlur={e => e.target.style.borderColor = "var(--border)"}
+              />
+              <p style={{ fontSize: 11, color: "var(--mauve)", fontFamily: "'Inter', sans-serif", marginTop: 5, marginBottom: 14 }}>You can change it later.</p>
+            </div>
+            <div>
               <p style={{ fontSize: "13px", fontWeight: 600, color: "var(--plum)", fontFamily: "'Inter', sans-serif", marginBottom: "8px" }}>Reminder time</p>
               <div className="grid grid-cols-2 gap-3">
                 {[{ id: "morning", label: "Morning" }, { id: "evening", label: "Evening" }].map((item) => (
@@ -482,9 +508,9 @@ export default function Onboarding() {
         {current === "skin_profile" && (
           <div className="w-full space-y-6">
             <div>
-              <p style={sLabel}>Step 5 of 5</p>
+              {(() => { const n = PROGRESS_STEPS.indexOf(current) + 1; return n > 0 && <p style={sLabel}>Step {n} of {PROGRESS_STEPS.length}</p>; })()}
               <h2 style={{ fontSize: "22px", fontWeight: 700, color: "var(--plum)", fontFamily: "'Playfair Display', serif", marginTop: "4px", lineHeight: 1.2 }}>
-                What's your skin type?
+                What is your skin type?
               </h2>
               <p style={{ fontSize: "13px", color: "var(--mauve)", fontFamily: "'Inter', sans-serif", marginTop: "6px" }}>
                 Helps us tailor your skin guidance from the start.
@@ -507,9 +533,153 @@ export default function Onboarding() {
           </div>
         )}
 
+        {current === "life_stage" && (
+          <div className="w-full space-y-6">
+            <div>
+              {(() => { const n = PROGRESS_STEPS.indexOf(current) + 1; return n > 0 && <p style={sLabel}>Step {n} of {PROGRESS_STEPS.length}</p>; })()}
+              <h2 style={{ fontSize: "22px", fontWeight: 700, color: "var(--plum)", fontFamily: "'Playfair Display', serif", marginTop: "4px", lineHeight: 1.2 }}>
+                Are you in a life stage we should know about?
+              </h2>
+              <p style={{ fontSize: "13px", color: "var(--mauve)", fontFamily: "'Inter', sans-serif", marginTop: "6px" }}>Helps personalise care, logging, and recommendations.</p>
+            </div>
+            <div className="space-y-3">
+              {[{ id: "none", label: "Not now", desc: "Skip this for now - you can set it later" }, { id: "pregnancy", label: "Pregnancy", desc: "Pregnancy tracking, nutrition, and kick counter" }, { id: "menopause", label: "Menopause", desc: "Menopause symptom tracking and tailored support" }].map(item => (
+                <button key={item.id} onClick={() => { setLifeStage(item.id); setLifeStageFocus([]); }} className="w-full text-left"
+                  style={{ borderRadius: "16px", padding: "14px 16px", cursor: "pointer", border: lifeStage === item.id ? "2px solid var(--rose-dust)" : "1.5px solid var(--border)", backgroundColor: lifeStage === item.id ? "var(--rose-dust-subtle)" : "var(--surface)", transition: "all 0.15s" }}>
+                  <p style={{ fontSize: "14px", fontWeight: 600, color: lifeStage === item.id ? "var(--rose-dust)" : "var(--plum)", fontFamily: "'Inter', sans-serif" }}>{item.label}</p>
+                  <p style={{ fontSize: "12px", color: "var(--mauve)", fontFamily: "'Inter', sans-serif", marginTop: "3px" }}>{item.desc}</p>
+                </button>
+              ))}
+            </div>
+            {lifeStage === "pregnancy" && (
+              <div style={{ ...card, padding: "16px" }} className="space-y-3">
+                <p style={{ fontSize: "13px", fontWeight: 600, color: "var(--plum)", fontFamily: "'Inter', sans-serif" }}>Pregnancy details (optional)</p>
+                <div>
+                  <p style={{ fontSize: "11px", color: "var(--mauve)", marginBottom: 4 }}>Due date</p>
+                  <input type="date" value={pregDueDate} onChange={e => setPregDueDate(e.target.value)} style={{ width: "100%", padding: "12px", borderRadius: 12, border: "1px solid var(--border)", backgroundColor: "var(--surface)", color: "var(--plum)", fontSize: 13, fontFamily: "'Inter', sans-serif", outline: "none", boxSizing: "border-box" }} />
+                </div>
+                <div>
+                  <p style={{ fontSize: "11px", color: "var(--mauve)", marginBottom: 4 }}>Current week</p>
+                  <input type="number" min="1" max="42" placeholder="e.g. 20" value={pregWeek} onChange={e => setPregWeek(e.target.value)} style={{ width: "100%", padding: "12px", borderRadius: 12, border: "1px solid var(--border)", backgroundColor: "var(--surface)", color: "var(--plum)", fontSize: 13, fontFamily: "'Inter', sans-serif", outline: "none", boxSizing: "border-box" }} />
+                </div>
+                <select value={pregTrimester} onChange={e => setPregTrimester(e.target.value)} style={{ width: "100%", padding: "12px", borderRadius: 12, border: "1px solid var(--border)", backgroundColor: "var(--surface)", color: "var(--plum)", fontSize: 13, fontFamily: "'Inter', sans-serif", outline: "none", boxSizing: "border-box" }}>
+                  <option value="first">First trimester (Weeks 1-12)</option>
+                  <option value="second">Second trimester (Weeks 13-26)</option>
+                  <option value="third">Third trimester (Weeks 27-40)</option>
+                  <option value="postpartum">Postpartum</option>
+                </select>
+                <div>
+                  <p style={{ fontSize: "11px", color: "var(--mauve)", marginBottom: 8 }}>Care focus areas</p>
+                  <div className="flex flex-wrap gap-2">
+                    {PREG_FOCUSES.map(f => (
+                      <button key={f} onClick={() => toggleLifeStageFocus(f)} style={{ padding: "6px 14px", borderRadius: 9999, fontSize: 12, fontWeight: 600, cursor: "pointer", border: "none", backgroundColor: lifeStageFocus.includes(f) ? "var(--rose-dust)" : "var(--ivory-dark)", color: lifeStageFocus.includes(f) ? "white" : "var(--mauve)" }}>{f}</button>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            )}
+            {lifeStage === "menopause" && (
+              <div style={{ ...card, padding: "16px" }} className="space-y-3">
+                <p style={{ fontSize: "13px", fontWeight: 600, color: "var(--plum)", fontFamily: "'Inter', sans-serif" }}>Menopause stage</p>
+                <select value={menoStage} onChange={e => setMenoStage(e.target.value)} style={{ width: "100%", padding: "12px", borderRadius: 12, border: "1px solid var(--border)", backgroundColor: "var(--surface)", color: "var(--plum)", fontSize: 13, fontFamily: "'Inter', sans-serif", outline: "none", boxSizing: "border-box" }}>
+                  <option value="perimenopause">Perimenopause</option>
+                  <option value="menopause">Menopause</option>
+                  <option value="postmenopause">Postmenopause</option>
+                </select>
+                <div>
+                  <p style={{ fontSize: "11px", color: "var(--mauve)", marginBottom: 8 }}>Care focus areas</p>
+                  <div className="flex flex-wrap gap-2">
+                    {MENO_FOCUSES.map(f => (
+                      <button key={f} onClick={() => toggleLifeStageFocus(f)} style={{ padding: "6px 14px", borderRadius: 9999, fontSize: 12, fontWeight: 600, cursor: "pointer", border: "none", backgroundColor: lifeStageFocus.includes(f) ? "var(--rose-dust)" : "var(--ivory-dark)", color: lifeStageFocus.includes(f) ? "white" : "var(--mauve)" }}>{f}</button>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            )}
+          </div>
+        )}
+
+        {current === "assistant_intro" && (
+          <div className="w-full space-y-6 text-center">
+            {showVoice && (
+              <GuideVoiceMode
+                guideName={assistantName || "Guide"}
+                voiceId="shimmer"
+                instructions={`You are ${assistantName || "Guide"}, a warm wellness assistant for FemWell. The user has just completed onboarding. Greet them warmly, then ask ONE question only: what they want to focus on first. Give a short answer of no more than two sentences, then say you will start them on their Today page with a plan. Keep the entire conversation under 60 seconds. Do not ask follow-up questions.`}
+                onClose={() => {
+                  clearTimeout(voiceTimerRef.current);
+                  setShowVoice(false);
+                  setStep(s => s + 1);
+                }}
+              />
+            )}
+            {!showVoice && (
+              <>
+                <div style={{ width: 72, height: 72, borderRadius: 9999, margin: "0 auto", backgroundColor: "var(--rose-dust-subtle)", border: "1px solid var(--rose-dust-light)", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                  <span style={{ fontSize: 28, fontWeight: 700, fontFamily: "'Playfair Display', serif", color: "var(--rose-dust)" }}>{(assistantName || "G")[0].toUpperCase()}</span>
+                </div>
+                <div>
+                  <h2 style={{ fontSize: "22px", fontWeight: 700, color: "var(--plum)", fontFamily: "'Playfair Display', serif", lineHeight: 1.2 }}>Meet {assistantName || "your assistant"}</h2>
+                  <p style={{ fontSize: "14px", color: "var(--mauve)", fontFamily: "'Inter', sans-serif", marginTop: 8, lineHeight: 1.6 }}>Turn your volume up. We will do a short one minute check-in.</p>
+                </div>
+                {micDenied && (
+                  <div style={{ ...card, padding: "14px 16px" }}>
+                    <p style={{ fontSize: 13, color: "var(--plum)", fontFamily: "'Inter', sans-serif" }}>Microphone permission is needed for voice. You can continue without it.</p>
+                  </div>
+                )}
+                <button
+                  className="btn-primary w-full"
+                  onClick={async () => {
+                    setMicDenied(false);
+                    try {
+                      const s = await navigator.mediaDevices.getUserMedia({ audio: true });
+                      s.getTracks().forEach(t => t.stop());
+                    } catch {
+                      setMicDenied(true);
+                      return;
+                    }
+                    setShowVoice(true);
+                    voiceTimerRef.current = setTimeout(() => {
+                      setShowVoice(false);
+                      setStep(prev => prev + 1);
+                    }, 60000);
+                  }}
+                >
+                  Start
+                </button>
+                <p style={{ fontSize: 11, color: "var(--mauve)", fontFamily: "'Inter', sans-serif" }}>Microphone permission is required for voice.</p>
+                <button
+                  onClick={() => setStep(s => s + 1)}
+                  style={{ background: "none", border: "none", cursor: "pointer", fontSize: 13, color: "var(--mauve)", fontFamily: "'Inter', sans-serif", textDecoration: "underline" }}
+                >
+                  Skip
+                </button>
+              </>
+            )}
+          </div>
+        )}
+
+        {current === "done" && (
+          <div className="space-y-6 text-center w-full">
+            <div style={{ width: 64, height: 64, borderRadius: "20px", margin: "0 auto", display: "flex", alignItems: "center", justifyContent: "center", backgroundColor: "var(--rose-dust-subtle)", border: "1px solid var(--rose-dust-light)" }}>
+              <span style={{ fontSize: 28, fontWeight: 700, fontFamily: "'Playfair Display', serif", color: "var(--rose-dust)" }}>F</span>
+            </div>
+            <div>
+              <h2 style={{ fontSize: "24px", fontWeight: 700, fontFamily: "'Playfair Display', serif", color: "var(--plum)", lineHeight: 1.1 }}>You are all set</h2>
+              <p style={{ fontSize: "14px", color: "var(--mauve)", fontFamily: "'Inter', sans-serif", marginTop: 8, lineHeight: 1.6 }}>Your assistant, feed, and recommendations are now tuned to you.</p>
+            </div>
+            <div style={{ ...card, padding: "16px", textAlign: "left" }}>
+              <p style={{ ...sLabel, marginBottom: 8 }}>Personalisation ready</p>
+              <p style={{ fontSize: 13, color: "var(--plum)", lineHeight: 1.6, fontFamily: "'Inter', sans-serif" }}>You will see smarter lifestyle picks, a more human assistant, and faster recommendations from the moment you enter.</p>
+            </div>
+            <button className="btn-primary w-full" onClick={handleFinish} disabled={saving}>{saving ? "Setting up..." : "Enter FemWell"}</button>
+            {saveError && <p style={{ fontSize: 13, color: "var(--rose-dust)", fontFamily: "'Inter', sans-serif", marginTop: 8 }}>Something went wrong. Please try again.</p>}
+          </div>
+        )}
+
       </div>
 
-      {step > 0 && step < STEPS.length - 1 && (
+      {step > 0 && !(["assistant_intro", "done", "welcome"].includes(current)) && (
         <div style={{ display: "flex", gap: "12px", padding: "0 24px 40px", maxWidth: "448px", width: "100%", margin: "0 auto" }}>
           <button onClick={() => setStep(s => s - 1)} className="btn-secondary flex items-center gap-1">
             <ChevronLeft className="h-4 w-4" /> Back

@@ -39,14 +39,17 @@ export default function Layout({ children, currentPageName }) {
       try {
         const u = await base44.auth.me();
         if (!u?.id) { setChecking(false); return; }
-        const profiles = await base44.entities.UserProfile.filter({ user_id: u.id });
+        let profiles = await base44.entities.UserProfile.filter({ user_id: u.id });
         if (cancelled) return;
-        if (profiles.length === 0) {
-          // Retry once after 800ms to guard against race conditions
-          await new Promise(r => setTimeout(r, 800));
-          if (cancelled) return;
-          const retry = await base44.entities.UserProfile.filter({ user_id: u.id });
-          if (!cancelled && retry.length === 0) {
+        const needsOnboarding = (p) => p.length === 0 || p[0]?.onboarding_complete !== true;
+        if (needsOnboarding(profiles)) {
+          // Retry up to 3 times with 600ms delay to avoid post-signup race conditions
+          for (let attempt = 0; attempt < 3 && !cancelled && needsOnboarding(profiles); attempt++) {
+            await new Promise(r => setTimeout(r, 600));
+            if (cancelled) return;
+            profiles = await base44.entities.UserProfile.filter({ user_id: u.id });
+          }
+          if (!cancelled && needsOnboarding(profiles)) {
             navigate(createPageUrl("Onboarding"), { replace: true });
           }
         }
