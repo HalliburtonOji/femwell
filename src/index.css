@@ -97,8 +97,17 @@
     -moz-osx-font-smoothing: grayscale;
   }
 
+  html, body {
+    overscroll-behavior: none;
+  }
+
+  button, a, [role="tab"], [role="button"], label {
+    user-select: none;
+    -webkit-user-select: none;
+    -webkit-tap-highlight-color: transparent;
+  }
+
   body {
-    @apply bg-background text-foreground;
     font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
     background-color: var(--ivory);
     color: var(--plum);

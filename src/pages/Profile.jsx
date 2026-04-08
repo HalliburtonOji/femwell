@@ -3,7 +3,7 @@ import { base44 } from "@/api/base44Client";
 import { createPageUrl } from "@/utils";
 import {
   LogOut, ChevronRight, Bell, Moon, Heart, Shield, Settings,
-  Activity, Bookmark, Ticket, CalendarDays, Feather, Calendar, MapPin, Sparkles, Camera
+  Activity, Bookmark, Ticket, CalendarDays, Feather, Calendar, MapPin, Sparkles, Camera, Trash2
 } from "lucide-react";
 
 function getCyclePhase(lastPeriodDate, cycleLen = 28, periodLen = 5) {
@@ -37,6 +37,8 @@ export default function Profile() {
   const [newCity, setNewCity] = useState('');
   const [savedField, setSavedField] = useState(null);
   const [uploadingPhoto, setUploadingPhoto] = useState(false);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [deleting, setDeleting] = useState(false);
 
   const handlePhotoUpload = async (e) => {
     const file = e.target.files?.[0];
@@ -653,6 +655,50 @@ export default function Profile() {
             Sign out
           </p>
         </button>
+
+        {/* Delete Account */}
+        {!showDeleteConfirm ? (
+          <button
+            onClick={() => setShowDeleteConfirm(true)}
+            style={{ ...card, cursor: "pointer", border: "1px solid #FCDCDC", backgroundColor: "#FFF8F8", padding: "16px", marginBottom: "32px", display: "flex", alignItems: "center", gap: "12px", width: "100%" }}
+          >
+            <div style={iconBox("#FFF0F0")}>
+              <Trash2 className="w-4 h-4" style={{ color: "#D94F4F" }} />
+            </div>
+            <p style={{ fontSize: "14px", fontWeight: 600, color: "#D94F4F", fontFamily: "'Inter', sans-serif" }}>
+              Delete account
+            </p>
+          </button>
+        ) : (
+          <div style={{ ...card, border: "1px solid #FCDCDC", backgroundColor: "#FFF8F8", padding: "20px", marginBottom: "32px" }}>
+            <p style={{ fontSize: "14px", fontWeight: 700, color: "#D94F4F", fontFamily: "'Inter', sans-serif", marginBottom: "8px" }}>Are you sure?</p>
+            <p style={{ fontSize: "13px", color: "var(--mauve)", fontFamily: "'Inter', sans-serif", lineHeight: 1.6, marginBottom: "16px" }}>
+              This will permanently delete your profile, cycle data, check-ins, and all personalisation. This cannot be undone.
+            </p>
+            <div style={{ display: "flex", gap: 10 }}>
+              <button
+                onClick={() => setShowDeleteConfirm(false)}
+                style={{ flex: 1, padding: "11px", borderRadius: 9999, border: "1.5px solid var(--border)", backgroundColor: "var(--surface)", fontSize: 13, fontWeight: 600, color: "var(--plum)", fontFamily: "'Inter', sans-serif", cursor: "pointer" }}
+              >
+                Cancel
+              </button>
+              <button
+                disabled={deleting}
+                onClick={async () => {
+                  setDeleting(true);
+                  try {
+                    if (profile) await base44.entities.UserProfile.delete(profile.id);
+                    await base44.auth.logout();
+                    window.location.href = "/";
+                  } catch { setDeleting(false); }
+                }}
+                style={{ flex: 1, padding: "11px", borderRadius: 9999, border: "none", backgroundColor: "#D94F4F", fontSize: 13, fontWeight: 600, color: "white", fontFamily: "'Inter', sans-serif", cursor: deleting ? "default" : "pointer", opacity: deleting ? 0.6 : 1 }}
+              >
+                {deleting ? "Deleting..." : "Yes, delete"}
+              </button>
+            </div>
+          </div>
+        )}
 
       </div>
     </div>

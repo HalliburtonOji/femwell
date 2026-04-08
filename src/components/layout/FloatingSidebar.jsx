@@ -28,6 +28,7 @@ function DesktopSidebar({ currentPageName }) {
         backgroundColor: "var(--surface)",
         borderRight: "1px solid var(--border)",
         boxShadow: "var(--shadow-sm)",
+        paddingTop: "env(safe-area-inset-top)",
       }}
     >
       {/* Brand */}
@@ -115,7 +116,7 @@ export default function FloatingSidebar({ currentPageName, mode = "full", openQu
         onClick={() => setOpen(!open)}
         className="lg:hidden fixed z-50 flex items-center justify-center"
         style={{
-          bottom: 24, right: 20,
+          bottom: 76, right: 20,
           width: 52, height: 52, borderRadius: 9999,
           backgroundColor: open ? "var(--plum)" : "var(--surface)",
           border: open ? "none" : "1px solid var(--border)",

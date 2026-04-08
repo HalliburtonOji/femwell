@@ -4,6 +4,7 @@ import { useNavigate } from "react-router-dom";
 import { createPageUrl } from "@/utils";
 import { base44 } from "@/api/base44Client";
 import FloatingSidebar from "./components/layout/FloatingSidebar";
+import MobileBottomNav from "./components/layout/MobileBottomNav";
 import CheckinModal from "./components/today/CheckinModal";
 
 const HIDE_NAV = ["Onboarding", "ContentPlayer", "CycleSettings"];
@@ -72,6 +73,7 @@ export default function Layout({ children, currentPageName }) {
       <div className={`${navMode === "full" ? "lg:pl-64" : ""} ${showNav ? "pb-8" : ""}`}>
         {children}
       </div>
+      {showNav && <MobileBottomNav currentPageName={currentPageName} />}
       {showQuickLog && (
         <CheckinModal
           existing={null}

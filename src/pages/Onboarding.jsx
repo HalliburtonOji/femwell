@@ -4,6 +4,7 @@ import { base44 } from "@/api/base44Client";
 import GuideVoiceMode from "../components/guide/GuideVoiceMode";
 import { createPageUrl } from "@/utils";
 import { ChevronLeft, ChevronRight } from "lucide-react";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 const GOALS = [
   { id: "calm",             label: "Calm"             },
@@ -562,12 +563,17 @@ export default function Onboarding() {
                   <p style={{ fontSize: "11px", color: "var(--mauve)", marginBottom: 4 }}>Current week</p>
                   <input type="number" min="1" max="42" placeholder="e.g. 20" value={pregWeek} onChange={e => setPregWeek(e.target.value)} style={{ width: "100%", padding: "12px", borderRadius: 12, border: "1px solid var(--border)", backgroundColor: "var(--surface)", color: "var(--plum)", fontSize: 13, fontFamily: "'Inter', sans-serif", outline: "none", boxSizing: "border-box" }} />
                 </div>
-                <select value={pregTrimester} onChange={e => setPregTrimester(e.target.value)} style={{ width: "100%", padding: "12px", borderRadius: 12, border: "1px solid var(--border)", backgroundColor: "var(--surface)", color: "var(--plum)", fontSize: 13, fontFamily: "'Inter', sans-serif", outline: "none", boxSizing: "border-box" }}>
-                  <option value="first">First trimester (Weeks 1-12)</option>
-                  <option value="second">Second trimester (Weeks 13-26)</option>
-                  <option value="third">Third trimester (Weeks 27-40)</option>
-                  <option value="postpartum">Postpartum</option>
-                </select>
+                <Select value={pregTrimester} onValueChange={setPregTrimester}>
+                  <SelectTrigger style={{ borderRadius: 12, border: "1px solid var(--border)", height: 44 }}>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="first">First trimester (Weeks 1–12)</SelectItem>
+                    <SelectItem value="second">Second trimester (Weeks 13–26)</SelectItem>
+                    <SelectItem value="third">Third trimester (Weeks 27–40)</SelectItem>
+                    <SelectItem value="postpartum">Postpartum</SelectItem>
+                  </SelectContent>
+                </Select>
                 <div>
                   <p style={{ fontSize: "11px", color: "var(--mauve)", marginBottom: 8 }}>Care focus areas</p>
                   <div className="flex flex-wrap gap-2">
@@ -581,11 +587,16 @@ export default function Onboarding() {
             {lifeStage === "menopause" && (
               <div style={{ ...card, padding: "16px" }} className="space-y-3">
                 <p style={{ fontSize: "13px", fontWeight: 600, color: "var(--plum)", fontFamily: "'Inter', sans-serif" }}>Menopause stage</p>
-                <select value={menoStage} onChange={e => setMenoStage(e.target.value)} style={{ width: "100%", padding: "12px", borderRadius: 12, border: "1px solid var(--border)", backgroundColor: "var(--surface)", color: "var(--plum)", fontSize: 13, fontFamily: "'Inter', sans-serif", outline: "none", boxSizing: "border-box" }}>
-                  <option value="perimenopause">Perimenopause</option>
-                  <option value="menopause">Menopause</option>
-                  <option value="postmenopause">Postmenopause</option>
-                </select>
+                <Select value={menoStage} onValueChange={setMenoStage}>
+                  <SelectTrigger style={{ borderRadius: 12, border: "1px solid var(--border)", height: 44 }}>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="perimenopause">Perimenopause</SelectItem>
+                    <SelectItem value="menopause">Menopause</SelectItem>
+                    <SelectItem value="postmenopause">Postmenopause</SelectItem>
+                  </SelectContent>
+                </Select>
                 <div>
                   <p style={{ fontSize: "11px", color: "var(--mauve)", marginBottom: 8 }}>Care focus areas</p>
                   <div className="flex flex-wrap gap-2">
