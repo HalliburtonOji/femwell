@@ -94,7 +94,7 @@ const QUICK_ACTIONS = [
   { label: "Nutrition",  sub: "Log a meal",       icon: Utensils,  page: "Nutrition" },
   { label: "Journal",   sub: "Write a note",      icon: Newspaper, page: "Journal" },
   { label: "Lifestyle", sub: "Your feed",          icon: BookOpen,  page: "Lifestyle" },
-  { label: "Assistant", sub: "Ask your guide",     icon: Sparkles,  page: "Assistant" },
+  { label: "Assistant", sub: "Ask your guide",     icon: Compass,   page: "Assistant" },
 ];
 
 /* ── Mobile ─────────────────────────────────────────────────────────────────── */
