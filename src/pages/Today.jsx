@@ -215,12 +215,17 @@ function RecommendedForYouTodaySection({ loading, items, onTap }) {
 
 function DailyStoriesRow({ todayCheckin, todayCompletions }) {
   const stories = [
-    { id: "cycle", label: "Cycle", gradient: "linear-gradient(135deg, #FFE4F0, #F5C6D8)", route: createPageUrl("CycleSettings"), ring: !todayCheckin?.period_flow },
-    { id: "journal", label: "Journal", gradient: "linear-gradient(135deg, #E8F4FF, #C8DEFF)", route: createPageUrl("Journal"), ring: false },
-    { id: "breathe", label: "Breathe", gradient: "linear-gradient(135deg, #E6FFF6, #B8F0DC)", route: createPageUrl("Explore") + "?type=Audio", ring: !(todayCompletions?.length > 0) },
-    { id: "nutrition", label: "Nutrition", gradient: "linear-gradient(135deg, #FFFBE6, #FFE8A0)", route: createPageUrl("Nutrition"), ring: false },
-    { id: "explore", label: "Explore", gradient: "linear-gradient(135deg, #F0EEFF, #D8CCFF)", route: createPageUrl("Explore"), ring: false },
-    { id: "skin", label: "Skin & Hair", gradient: "linear-gradient(135deg, #F5ECF0, #E8C4D0)", route: createPageUrl("SkinHair"), ring: false },
+    { id: "cycle",      label: "Cycle",       gradient: "linear-gradient(135deg, #FFE4F0, #F5C6D8)", route: createPageUrl("CycleSettings"), ring: !todayCheckin?.period_flow },
+    { id: "journal",   label: "Journal",     gradient: "linear-gradient(135deg, #E8F4FF, #C8DEFF)", route: createPageUrl("Journal"),       ring: false },
+    { id: "breathe",   label: "Breathe",     gradient: "linear-gradient(135deg, #E6FFF6, #B8F0DC)", route: createPageUrl("Explore") + "?type=Audio", ring: !(todayCompletions?.length > 0) },
+    { id: "nutrition", label: "Nutrition",   gradient: "linear-gradient(135deg, #FFFBE6, #FFE8A0)", route: createPageUrl("Nutrition"),     ring: false },
+    { id: "explore",   label: "Explore",     gradient: "linear-gradient(135deg, #F0EEFF, #D8CCFF)", route: createPageUrl("Explore"),       ring: false },
+    { id: "skin",      label: "Skin & Hair", gradient: "linear-gradient(135deg, #F5ECF0, #E8C4D0)", route: createPageUrl("SkinHair"),      ring: false },
+    { id: "programs",  label: "Programs",    gradient: "linear-gradient(135deg, #E8F0FF, #C8D8FF)", route: createPageUrl("ProgramsHub"),   ring: false },
+    { id: "pulse",     label: "Pulse",       gradient: "linear-gradient(135deg, #FFF0F5, #FFD6E7)", route: createPageUrl("Pulse"),         ring: false },
+    { id: "lifestyle", label: "Lifestyle",   gradient: "linear-gradient(135deg, #F0FFF4, #C8F0D8)", route: createPageUrl("Lifestyle"),     ring: false },
+    { id: "lifestage", label: "Life Stage",  gradient: "linear-gradient(135deg, #FFF8E6, #FFDFA0)", route: createPageUrl("LifeStageCare"), ring: false },
+    { id: "profile",   label: "Profile",     gradient: "linear-gradient(135deg, #F5F0FF, #DDD0FF)", route: createPageUrl("Profile"),       ring: false },
   ];
 
   return (

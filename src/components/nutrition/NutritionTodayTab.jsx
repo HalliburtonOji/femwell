@@ -188,6 +188,26 @@ export default function NutritionTodayTab({ user, profile, nutritionProfile, day
   const [loggingDrink, setLoggingDrink] = useState(false);
   const [drinkModal, setDrinkModal] = useState(null);
   const [showFoodLookup, setShowFoodLookup] = useState(false);
+  const [showCustomDrink, setShowCustomDrink] = useState(false);
+  const [customDrinkName, setCustomDrinkName] = useState("");
+  const [customDrinkMl, setCustomDrinkMl] = useState(250);
+  const [customDrinkCals, setCustomDrinkCals] = useState(0);
+
+  const logCustomDrink = async () => {
+    if (!customDrinkName.trim()) return;
+    setLoggingDrink(true);
+    const newLog = await base44.entities.DrinkLog.create({
+      user_id: user.id, day_key: dayKey,
+      drink_type: customDrinkName.trim(),
+      amount_ml: Number(customDrinkMl) || 250,
+      calories: Number(customDrinkCals) || 0,
+      logged_at: new Date().toISOString(),
+    });
+    setDrinkLogs(prev => [...prev, newLog]);
+    setCustomDrinkName(""); setCustomDrinkMl(250); setCustomDrinkCals(0);
+    setShowCustomDrink(false);
+    setLoggingDrink(false);
+  };
 
   const hydrationTargetMl = nutritionProfile?.hydration_target_ml || 2000;
   const totalHydration    = hydrationLogs.reduce((sum, l) => sum + (l.amount_ml || 0), 0);
@@ -639,6 +659,36 @@ export default function NutritionTodayTab({ user, profile, nutritionProfile, day
                   </button>
                 );
               })}
+              <button
+                onClick={() => setShowCustomDrink(v => !v)}
+                style={{ display: "flex", flexDirection: "column", alignItems: "center", padding: "8px 14px", borderRadius: 9999, border: "1px solid var(--rose-dust-light)", backgroundColor: "var(--rose-dust-subtle)", cursor: "pointer" }}
+              >
+                <span style={{ fontSize: 12, fontWeight: 600, color: "var(--rose-dust)", fontFamily: "'Inter', sans-serif" }}>+ Custom</span>
+              </button>
+            </div>
+          )}
+          {showDrinks && showCustomDrink && (
+            <div style={{ backgroundColor: "var(--ivory)", borderRadius: 14, padding: 12, border: "1px solid var(--border)", marginBottom: 14 }}>
+              <p style={{ fontSize: 11, fontWeight: 600, color: "var(--mauve)", fontFamily: "'Inter', sans-serif", marginBottom: 8 }}>Custom drink</p>
+              <input value={customDrinkName} onChange={e => setCustomDrinkName(e.target.value)} placeholder="e.g. matcha latte"
+                style={{ width: "100%", padding: "10px 12px", borderRadius: 12, border: "1px solid var(--border)", backgroundColor: "var(--surface)", color: "var(--plum)", fontSize: 13, fontFamily: "'Inter', sans-serif", outline: "none", boxSizing: "border-box", marginBottom: 8 }}
+                onFocus={e => e.target.style.borderColor = "var(--rose-dust-light)"} onBlur={e => e.target.style.borderColor = "var(--border)"} />
+              <div style={{ display: "flex", gap: 8, marginBottom: 10 }}>
+                <div style={{ flex: 1 }}>
+                  <p style={{ fontSize: 10, color: "var(--mauve)", fontFamily: "'Inter', sans-serif", marginBottom: 4 }}>Size (ml)</p>
+                  <input type="number" value={customDrinkMl} onChange={e => setCustomDrinkMl(e.target.value)}
+                    style={{ width: "100%", padding: "8px 10px", borderRadius: 10, border: "1px solid var(--border)", backgroundColor: "var(--surface)", color: "var(--plum)", fontSize: 13, fontFamily: "'Inter', sans-serif", outline: "none", boxSizing: "border-box" }} />
+                </div>
+                <div style={{ flex: 1 }}>
+                  <p style={{ fontSize: 10, color: "var(--mauve)", fontFamily: "'Inter', sans-serif", marginBottom: 4 }}>Calories</p>
+                  <input type="number" value={customDrinkCals} onChange={e => setCustomDrinkCals(e.target.value)}
+                    style={{ width: "100%", padding: "8px 10px", borderRadius: 10, border: "1px solid var(--border)", backgroundColor: "var(--surface)", color: "var(--plum)", fontSize: 13, fontFamily: "'Inter', sans-serif", outline: "none", boxSizing: "border-box" }} />
+                </div>
+              </div>
+              <button onClick={logCustomDrink} disabled={!customDrinkName.trim() || loggingDrink}
+                style={{ width: "100%", padding: "9px", borderRadius: 9999, backgroundColor: "var(--plum)", color: "white", border: "none", fontSize: 12, fontWeight: 600, cursor: "pointer", fontFamily: "'Inter', sans-serif", opacity: !customDrinkName.trim() ? 0.5 : 1 }}>
+                {loggingDrink ? "Logging..." : "Log drink"}
+              </button>
             </div>
           )}
           {drinkLogs.length === 0 ? (

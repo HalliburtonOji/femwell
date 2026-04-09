@@ -2,6 +2,20 @@ import { useState, useRef, useEffect, useCallback } from "react";
 import { base44 } from "@/api/base44Client";
 import { ArrowLeft, Mic, MicOff, X, Loader2, Volume2, VolumeX, AlignLeft, WifiOff, RefreshCw } from "lucide-react";
 
+// ── Pre-generated greetings (10) — no voice tokens spent on generation ──────
+const GREETINGS = [
+  "Hi, it's lovely to see you. How are you feeling today?",
+  "Hello! I'm here whenever you're ready. What's on your mind?",
+  "Hey there — so glad you dropped in. How can I support you today?",
+  "Hi! Take a breath. I'm here. What would you like to talk about?",
+  "Hello! It's good to connect with you. How's your day going so far?",
+  "Hey, welcome back. What's on your heart today?",
+  "Hi there. I'm here and listening — how are you doing?",
+  "Hello! I've been looking forward to our chat. What's coming up for you?",
+  "Hey! No rush at all — take your time. How are you feeling right now?",
+  "Hi, I'm here for you. What would you like to explore together today?",
+];
+
 // ── Voice state machine ─────────────────────────────────────────────────────
 const VS = {
   connecting:    { label: "Connecting…",           pulse: false, ring: false, color: "rgba(255,255,255,0.35)" },
@@ -131,11 +145,21 @@ export default function GuideVoiceMode({
 
       dc.onopen = () => {
         setVoiceState("idle");
-        // Send session update with any extra config
         sendEvent({
           type: "session.update",
           session: { input_audio_transcription: { model: "whisper-1" } },
         });
+        // Greet with a pre-generated greeting to save tokens
+        const greeting = GREETINGS[Math.floor(Math.random() * GREETINGS.length)];
+        sendEvent({
+          type: "conversation.item.create",
+          item: {
+            type: "message",
+            role: "assistant",
+            content: [{ type: "text", text: greeting }],
+          },
+        });
+        sendEvent({ type: "response.create" });
       };
 
       dc.onmessage = handleEvent;

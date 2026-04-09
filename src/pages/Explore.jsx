@@ -366,7 +366,7 @@ export default function Explore() {
     <div className="min-h-screen pb-28" style={{ backgroundColor: "var(--ivory)" }}>
 
       {/* ── Sticky header ───────────────────────────────────────────── */}
-      <div className="sticky top-0 z-40 backdrop-blur-xl px-4 pb-3 space-y-3"
+      <div className="sticky top-0 z-10 backdrop-blur-xl px-4 pb-3 space-y-3"
         style={{ backgroundColor: "rgba(250,248,245,0.97)", borderBottom: "1px solid var(--border)", paddingTop: "calc(env(safe-area-inset-top) + 2.5rem)" }}>
 
         <div className="flex items-center justify-between">
