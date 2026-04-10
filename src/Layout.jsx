@@ -3,6 +3,7 @@ import { base44 } from "@/api/base44Client";
 import FloatingSidebar from "./components/layout/FloatingSidebar";
 import MobileBottomNav from "./components/layout/MobileBottomNav";
 import CheckinModal from "./components/today/CheckinModal";
+import AssistantOrb from "./components/assistant/AssistantOrb";
 
 const HIDE_NAV = ["Onboarding", "ContentPlayer", "CycleSettings"];
 const LITE_NAV = ["ProgramDay", "ProgramDetail"];
@@ -33,6 +34,7 @@ export default function Layout({ children, currentPageName }) {
         {children}
       </div>
       {showNav && <MobileBottomNav currentPageName={currentPageName} />}
+      {showNav && <AssistantOrb currentPageName={currentPageName} />}
       {showQuickLog && (
         <CheckinModal
           existing={null}

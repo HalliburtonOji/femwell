@@ -1,29 +1,18 @@
-import { useEffect, useState } from "react";
-import { base44 } from "@/api/base44Client";
-import AICoachTab from "../components/journal/AICoachTab";
+import AssistantPanel from "../components/assistant/AssistantPanel";
 
 export default function Assistant() {
-  const [user, setUser] = useState(null);
-  const [assistantName, setAssistantName] = useState(null);
-
-  useEffect(() => {
-    base44.auth.me().then(async (u) => {
-      setUser(u);
-      try {
-        const profiles = await base44.entities.UserProfile.filter({ user_id: u.id });
-        if (profiles[0]?.ai_assistant_name) setAssistantName(profiles[0].ai_assistant_name);
-      } catch {}
-    });
-  }, []);
-
-  if (!user) {
-    return (
-      <div className="fixed inset-0 flex items-center justify-center" style={{ backgroundColor: "var(--ivory)" }}>
-        <div className="w-8 h-8 rounded-full border-2 border-t-transparent animate-spin"
-          style={{ borderColor: "var(--rose-dust-light)", borderTopColor: "var(--rose-dust)" }} />
+  return (
+    <div className="min-h-screen" style={{ backgroundColor: "var(--ivory)", padding: "24px 16px 120px" }}>
+      <div style={{ maxWidth: 860, margin: "0 auto" }}>
+        <div style={{ marginBottom: 18 }}>
+          <p style={{ fontSize: "0.65rem", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.12em", color: "var(--mauve)", fontFamily: "'Inter', sans-serif", marginBottom: 6 }}>Assistant</p>
+          <h1 style={{ fontSize: 30, color: "var(--plum)", fontFamily: "'Playfair Display', serif", fontWeight: 700, lineHeight: 1.1 }}>Talk things through</h1>
+          <p style={{ fontSize: 14, color: "var(--mauve)", fontFamily: "'Inter', sans-serif", marginTop: 8 }}>Voice and chat now open inside the app instead of sending you away.</p>
+        </div>
+        <div style={{ backgroundColor: "var(--surface)", border: "1px solid var(--border)", borderRadius: 28, boxShadow: "var(--shadow-sm)", overflow: "hidden", minHeight: "70vh" }}>
+          <AssistantPanel />
+        </div>
       </div>
-    );
-  }
-
-  return <AICoachTab user={{ ...user, coach_name: assistantName || user.coach_name }} />;
+    </div>
+  );
 }

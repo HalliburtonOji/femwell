@@ -41,14 +41,9 @@ const AuthenticatedApp = () => {
       try {
         const user = await base44.auth.me();
         if (!user?.id) return;
-        // Fast path — already confirmed onboarded for this user
-        if (localStorage.getItem('fw_ob_' + user.id) === '1') return;
-        // DB check
         const profiles = await base44.entities.UserProfile.filter({ user_id: user.id });
         const isComplete = profiles.some(p => p?.onboarding_complete === true);
-        if (isComplete) {
-          localStorage.setItem('fw_ob_' + user.id, '1');
-        } else if (location.pathname !== '/Onboarding') {
+        if (!isComplete && location.pathname !== '/Onboarding') {
           navigate('/Onboarding', { replace: true });
         }
       } catch {}
