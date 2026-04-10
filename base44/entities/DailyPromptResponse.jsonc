@@ -1,0 +1,27 @@
+{
+  "name": "DailyPromptResponse",
+  "type": "object",
+  "properties": {
+    "user_id": {
+      "type": "string"
+    },
+    "day_key": {
+      "type": "string"
+    },
+    "main_focus": {
+      "type": "string"
+    },
+    "mood": {
+      "type": "number",
+      "default": 3
+    },
+    "energy": {
+      "type": "number",
+      "default": 3
+    }
+  },
+  "required": [
+    "user_id",
+    "day_key"
+  ]
+}

@@ -1,7 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { base44 } from "@/api/base44Client";
 import { Sparkles, X } from "lucide-react";
-import AssistantOverlay from "./AssistantOverlay";
 
 // ── Cooldown helpers ────────────────────────────────────────────────────────
 const COOLDOWN_ANY_MS = 10 * 60 * 1000;   // 10 min between any suggestion
@@ -41,8 +40,6 @@ export default function AssistantOrb({ currentPageName }) {
   const [position, setPosition] = useState(() => getStoredPosition() || defaultPos());
   const [dragging, setDragging] = useState(false);
   const [suggestion, setSuggestion] = useState(null);
-  const [overlayOpen, setOverlayOpen] = useState(false);
-  const [overlayPrompt, setOverlayPrompt] = useState(null);
   const dragRef = useRef({ offsetX: 0, offsetY: 0, moved: false });
   const timerRef = useRef(null);
   const authedRef = useRef(false);
@@ -69,14 +66,9 @@ export default function AssistantOrb({ currentPageName }) {
 
   const tap = () => {
     if (dragRef.current.moved) return;
-    if (suggestion?.type === "question") {
-      setOverlayPrompt(suggestion.prompt);
-      setOverlayOpen(true);
-      dismiss();
-    } else {
-      setOverlayPrompt(null);
-      setOverlayOpen(true);
-    }
+    const prompt = suggestion?.type === "question" ? suggestion.prompt : null;
+    if (suggestion) dismiss();
+    window.dispatchEvent(new CustomEvent("fw_open_assistant", { detail: { prompt } }));
   };
 
   const startDrag = (clientX, clientY) => {
@@ -106,7 +98,7 @@ export default function AssistantOrb({ currentPageName }) {
     <>
       <style>{`@keyframes orb-pulse{0%,100%{transform:scale(1);opacity:.5}50%{transform:scale(1.4);opacity:.1}}`}</style>
 
-      {suggestion && !overlayOpen && (
+      {suggestion && (
         <div style={{ position: "fixed", zIndex: 78, left: bubbleLeft, top: Math.max(8, position.y - 4), maxWidth: 218, pointerEvents: "auto" }}>
           <div style={{ backgroundColor: "var(--surface)", border: "1px solid var(--border)", boxShadow: "var(--shadow-md)", borderRadius: 16, padding: "10px 12px" }}>
             <div style={{ display: "flex", alignItems: "flex-start", gap: 7 }}>
@@ -115,14 +107,14 @@ export default function AssistantOrb({ currentPageName }) {
                   {suggestion.type === "question" ? "Guide" : "Suggestion"}
                 </p>
                 <button onClick={() => {
-                  if (suggestion.type === "question") {
-                    setOverlayPrompt(suggestion.prompt);
-                    setOverlayOpen(true);
-                    dismiss();
-                  } else if (suggestion.action_route) {
+                  if (suggestion.action_route && suggestion.type !== "question") {
                     dismiss();
                     if (suggestion.action_route.startsWith("http")) window.open(suggestion.action_route, "_blank");
                     else window.location.href = suggestion.action_route;
+                  } else {
+                    const p = suggestion.prompt;
+                    dismiss();
+                    window.dispatchEvent(new CustomEvent("fw_open_assistant", { detail: { prompt: p } }));
                   }
                 }} style={{ border: "none", background: "none", padding: 0, textAlign: "left", cursor: "pointer" }}>
                   <p style={{ fontSize: 12, color: "var(--plum)", lineHeight: 1.4, fontFamily: "'Inter', sans-serif", fontWeight: 500, margin: 0 }}>
@@ -162,11 +154,7 @@ export default function AssistantOrb({ currentPageName }) {
         </div>
       </button>
 
-      <AssistantOverlay
-        open={overlayOpen}
-        onClose={() => setOverlayOpen(false)}
-        initialPrompt={overlayPrompt}
-      />
+
     </>
   );
 }

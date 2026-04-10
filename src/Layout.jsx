@@ -1,6 +1,7 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { base44 } from "@/api/base44Client";
 import FloatingSidebar from "./components/layout/FloatingSidebar";
+import AssistantOverlay from "./components/assistant/AssistantOverlay";
 import MobileBottomNav from "./components/layout/MobileBottomNav";
 import CheckinModal from "./components/today/CheckinModal";
 import AssistantOrb from "./components/assistant/AssistantOrb";
@@ -16,6 +17,22 @@ export default function Layout({ children, currentPageName }) {
 
   const [showQuickLog, setShowQuickLog] = useState(false);
   const [quickLogTab, setQuickLogTab] = useState("cycle");
+  const [assistantOpen, setAssistantOpen] = useState(false);
+  const [assistantPrompt, setAssistantPrompt] = useState(null);
+
+  useEffect(() => {
+    const openHandler = (e) => {
+      setAssistantPrompt(e.detail?.prompt || null);
+      setAssistantOpen(true);
+    };
+    const closeHandler = () => setAssistantOpen(false);
+    window.addEventListener("fw_open_assistant", openHandler);
+    window.addEventListener("fw_close_assistant", closeHandler);
+    return () => {
+      window.removeEventListener("fw_open_assistant", openHandler);
+      window.removeEventListener("fw_close_assistant", closeHandler);
+    };
+  }, []);
   const [quickLogUserId, setQuickLogUserId] = useState(null);
 
   const openQuickLog = (tabId = "cycle") => {
@@ -35,6 +52,11 @@ export default function Layout({ children, currentPageName }) {
       </div>
       {showNav && <MobileBottomNav currentPageName={currentPageName} />}
       {showNav && <AssistantOrb currentPageName={currentPageName} />}
+      <AssistantOverlay
+        open={assistantOpen}
+        onClose={() => setAssistantOpen(false)}
+        initialPrompt={assistantPrompt}
+      />
       {showQuickLog && (
         <CheckinModal
           existing={null}

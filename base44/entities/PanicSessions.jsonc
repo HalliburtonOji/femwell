@@ -1,0 +1,37 @@
+{
+  "name": "PanicSessions",
+  "type": "object",
+  "properties": {
+    "user_id": {
+      "type": "string"
+    },
+    "day_key": {
+      "type": "string"
+    },
+    "logged_at": {
+      "type": "string"
+    },
+    "intensity": {
+      "type": "number",
+      "default": 3
+    },
+    "feeling_type": {
+      "type": "string",
+      "enum": [
+        "panic",
+        "anxiety",
+        "overwhelm",
+        "anger",
+        "sadness"
+      ],
+      "default": "anxiety"
+    },
+    "notes": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "user_id",
+    "day_key"
+  ]
+}

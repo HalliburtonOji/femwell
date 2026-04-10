@@ -1,7 +1,15 @@
+import { useEffect } from "react";
 import { X, Sparkles } from "lucide-react";
 import AssistantPanel from "./AssistantPanel";
 
 export default function AssistantOverlay({ open, onClose, initialPrompt }) {
+  useEffect(() => {
+    if (!open) return;
+    const handler = (e) => { if (e.key === "Escape") onClose(); };
+    window.addEventListener("keydown", handler);
+    return () => window.removeEventListener("keydown", handler);
+  }, [open, onClose]);
+
   if (!open) return null;
 
   return (
@@ -36,7 +44,7 @@ export default function AssistantOverlay({ open, onClose, initialPrompt }) {
           </button>
         </div>
         <div style={{ flex: 1, minHeight: 0 }}>
-          <AssistantPanel initialPrompt={initialPrompt} embedded={true} />
+          <AssistantPanel initialPrompt={initialPrompt} embedded={false} uiMode="overlay" />
         </div>
       </div>
     </>

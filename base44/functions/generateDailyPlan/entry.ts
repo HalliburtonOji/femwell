@@ -1,7 +1,4 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.23';
-import OpenAI from 'npm:openai';
-
-const openai = new OpenAI({ apiKey: Deno.env.get('OPENAI_API_KEY') });
 
 Deno.serve(async (req) => {
   try {
@@ -9,54 +6,61 @@ Deno.serve(async (req) => {
     const user = await base44.auth.me();
     if (!user) return Response.json({ error: 'Unauthorized' }, { status: 401 });
 
-    const body = await req.json().catch(() => ({}));
-    const day_key = body.day_key || new Date().toISOString().split('T')[0];
-    const force = body.force || false;
+    const { day_key } = await req.json().catch(() => ({}));
+    const dayKey = day_key || new Date().toISOString().split('T')[0];
 
-    if (!force) {
-      const existing = await base44.asServiceRole.entities.DailyPlan.filter({ user_id: user.id, day_key }).catch(() => []);
-      if (existing[0]) return Response.json({ success: true, plan: existing[0] });
-    }
+    // Check cache
+    const existing = await base44.asServiceRole.entities.DailyPlan.filter({ user_id: user.id, day_key: dayKey });
+    if (existing[0]) return Response.json(existing[0]);
 
-    const [profiles, checkins, programs] = await Promise.all([
+    // Gather context
+    const [profiles, checkins, promptResponses, userPrograms, allPrograms] = await Promise.all([
       base44.asServiceRole.entities.UserProfile.filter({ user_id: user.id }),
-      base44.asServiceRole.entities.DailyCheckins.filter({ user_id: user.id, date: day_key }),
-      base44.asServiceRole.entities.UserPrograms.filter({ user_id: user.id }),
+      base44.asServiceRole.entities.DailyCheckins.filter({ user_id: user.id }).catch(() => []),
+      base44.asServiceRole.entities.DailyPromptResponse.filter({ user_id: user.id, day_key: dayKey }).catch(() => []),
+      base44.asServiceRole.entities.UserPrograms.filter({ user_id: user.id }).catch(() => []),
+      base44.asServiceRole.entities.Programs.list('-created_date', 50).catch(() => []),
     ]);
 
-    const profile = profiles[0];
-    const checkin = checkins[0];
-    const activeProgram = programs.find(p => p.status === 'active' || p.is_saved);
+    const profile = profiles[0] || {};
+    const recentCheckin = checkins.sort((a, b) => b.date?.localeCompare(a.date || '') || 0)[0];
+    const promptResp = promptResponses[0];
+    const activeProgram = userPrograms.find(p => p.status === 'active' || p.is_saved);
+    const activeProgramTitle = activeProgram
+      ? allPrograms.find(p => p.id === activeProgram.program_id)?.title
+      : null;
 
     const context = [
-      profile?.goals?.length ? `Goals: ${profile.goals.join(', ')}` : '',
-      profile?.life_stage && profile.life_stage !== 'none' ? `Life stage: ${profile.life_stage}` : '',
-      checkin ? `Mood: ${checkin.mood}/5, Energy: ${checkin.energy}/5, Stress: ${checkin.stress}/5` : '',
-      activeProgram ? `Active program day ${activeProgram.current_day || 1}` : '',
-    ].filter(Boolean).join('. ');
+      `Goals: ${(profile.goals || []).join(', ') || 'general wellness'}`,
+      `Life stage: ${profile.life_stage || 'none'}`,
+      `Tone preference: ${profile.tone_preference || 'warm'}`,
+      recentCheckin ? `Last check-in mood: ${recentCheckin.mood || 3}/5, energy: ${recentCheckin.energy || 3}/5` : '',
+      promptResp ? `Today's focus stated by user: "${promptResp.main_focus}", mood ${promptResp.mood}/5, energy ${promptResp.energy}/5` : '',
+      activeProgramTitle ? `Active program: ${activeProgramTitle}, Day ${activeProgram.current_day || 1}` : '',
+    ].filter(Boolean).join('\n');
 
-    const response = await openai.chat.completions.create({
-      model: 'gpt-4o-mini',
-      messages: [
-        { role: 'system', content: 'You are a warm, evidence-based wellness planner for women. Generate a concise personalised daily plan. Be specific, not generic. Return JSON only.' },
-        { role: 'user', content: `Context: ${context || 'General wellness-focused woman'}\n\nReturn JSON with exactly these keys:\n- focus_for_today: one compelling sentence theme for today (max 60 chars)\n- session_recommendation: one specific session suggestion (e.g. "10-min breathwork for stress relief")\n- nutrition_nudge: one specific nutrition tip for today\n- mental_tool: one short self-care or mindset step\n- lifestyle_suggestion: one specific reading or content topic suggestion` },
-      ],
-      response_format: { type: 'json_object' },
-      max_tokens: 300,
+    const planJson = await base44.asServiceRole.integrations.Core.InvokeLLM({
+      prompt: `You are a wellness planner for a women's wellness app. Create a concise daily plan for today based on this user context:\n\n${context}\n\nReturn ONLY valid JSON with these fields:\n{\n  "focus_for_today": "1-2 sentence theme for the day",\n  "one_session": "name of one breathwork/meditation/movement session to do",\n  "one_nutrition_nudge": "one specific food/nutrition tip for today",\n  "one_mental_tool_prompt": "one short journaling or mindfulness prompt",\n  "one_lifestyle_card": "one lifestyle area to focus on today"\n}`,
+      response_json_schema: {
+        type: 'object',
+        properties: {
+          focus_for_today: { type: 'string' },
+          one_session: { type: 'string' },
+          one_nutrition_nudge: { type: 'string' },
+          one_mental_tool_prompt: { type: 'string' },
+          one_lifestyle_card: { type: 'string' },
+        },
+      },
     });
 
-    const plan_json = JSON.parse(response.choices[0].message.content);
-
-    const existing = await base44.asServiceRole.entities.DailyPlan.filter({ user_id: user.id, day_key }).catch(() => []);
-    for (const e of existing) await base44.asServiceRole.entities.DailyPlan.delete(e.id).catch(() => {});
-
     const saved = await base44.asServiceRole.entities.DailyPlan.create({
-      user_id: user.id, day_key,
-      plan_json: JSON.stringify(plan_json),
+      user_id: user.id,
+      day_key: dayKey,
+      plan_json: JSON.stringify(planJson),
       created_at: new Date().toISOString(),
     });
 
-    return Response.json({ success: true, plan: saved });
+    return Response.json(saved);
   } catch (error) {
     return Response.json({ error: error.message }, { status: 500 });
   }

@@ -30,7 +30,7 @@ function OptionsBar({ options, onSelect }) {
   );
 }
 
-export default function AssistantPanel({ initialPrompt, embedded = false }) {
+export default function AssistantPanel({ initialPrompt, embedded = false, uiMode = "page" }) {  // uiMode: "page" | "overlay"
   const [conversationId, setConversationId] = useState(null);
   const [messages, setMessages] = useState([]);
   const [input, setInput] = useState("");

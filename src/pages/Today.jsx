@@ -6,8 +6,10 @@ import { createPageUrl } from "@/utils";
 import {
   Sun, ChevronRight, Plus, Sparkles, Droplets, Activity, Heart,
   Pill, Play, Trash2, Utensils, Loader2, Bell, Flame,
-  BookOpen, Compass, Droplet, Zap, CheckCircle2, Feather, Map
+  BookOpen, Compass, Droplet, Zap, CheckCircle2, Feather, Map, AlertCircle, X
 } from "lucide-react";
+import PanicModeModal from "../components/today/PanicModeModal";
+import DailyPromptCard from "../components/today/DailyPromptCard";
 import ManualCompleteButton from "../components/sessions/ManualCompleteButton";
 import MonthlyCalendarCard from "../components/planner/MonthlyCalendarCard";
 import SmartContextBanner from "../components/common/SmartContextBanner";
@@ -287,6 +289,7 @@ export default function Today() {
   const [quickMealText, setQuickMealText] = useState("");
   const [quickMealType, setQuickMealType] = useState("lunch");
   const [quickLogging, setQuickLogging] = useState(false);
+  const [panicOpen, setPanicOpen] = useState(false);
 
   useEffect(() => {
     (async () => {
@@ -468,6 +471,7 @@ export default function Today() {
 
   return (
     <div className="min-h-screen pb-28" style={{ backgroundColor: "var(--ivory)" }}>
+      {panicOpen && <PanicModeModal userId={user?.id} onClose={() => setPanicOpen(false)} />}
       {showCheckin && (
         <CheckinModal existing={todayCheckin} onClose={() => setShowCheckin(false)} onSave={handleSaveCheckin} userId={user?.id} dateStr={todayStr} />
       )}
@@ -483,6 +487,18 @@ export default function Today() {
             onOpenCheckin={() => setShowCheckin(true)}
             onOpenCalendar={() => setMainTab("track")}
           />
+        </div>
+
+        {/* Panic mode pill */}
+        <div className="flex items-center justify-between pt-2 pb-1">
+          <div />
+          <button
+            onClick={() => setPanicOpen(true)}
+            style={{ display: "flex", alignItems: "center", gap: 6, padding: "5px 14px", borderRadius: 9999, border: "1px solid var(--rose-dust-light)", backgroundColor: "var(--rose-dust-subtle)", color: "var(--rose-dust)", fontSize: 12, fontWeight: 600, fontFamily: "'Inter', sans-serif", cursor: "pointer" }}
+          >
+            <AlertCircle className="w-3.5 h-3.5" />
+            Panic mode
+          </button>
         </div>
 
         <DailyStoriesRow todayCheckin={todayCheckin} todayCompletions={todayCompletions} />
@@ -509,6 +525,7 @@ export default function Today() {
         {mainTab === "today" && (
           <>
             {profile && <SmartContextBanner profile={profile} todayCheckin={todayCheckin} currentPage="Today" />}
+            {user && <DailyPromptCard user={user} />}
             {user && <DailyInsightBanner user={user} />}
             {user && <DailyPlanCard user={user} />}
             {user && <WeeklyInsightCard user={user} />}

@@ -66,7 +66,7 @@ export default function QuickSwitchOverlay({ currentPageName, openQuickLog }) {
     { label: "Log meal",     href: createPageUrl("Nutrition"), icon: <Utensils className="h-3.5 w-3.5" /> },
     { label: "Write journal",href: createPageUrl("Journal"),   icon: <BookOpen className="h-3.5 w-3.5" /> },
     { label: "Lifestyle",    href: createPageUrl("Lifestyle"), icon: <Compass className="h-3.5 w-3.5" /> },
-    { label: assistantName,  href: createPageUrl("Assistant"), icon: <MessageCircle className="h-3.5 w-3.5" /> },
+    { label: assistantName,  href: null, isAssistant: true, icon: <MessageCircle className="h-3.5 w-3.5" /> },
   ], [continueHref, continueLabel, resetHref, assistantName]);
 
   return (
@@ -160,31 +160,34 @@ export default function QuickSwitchOverlay({ currentPageName, openQuickLog }) {
 
                 {/* Shortcuts grid */}
                 <div className="grid grid-cols-3 gap-2.5 md:grid-cols-6">
-                  {shortcuts.map((s) => (
-                    <a
-                      key={s.label}
-                      href={s.href}
-                      className="flex flex-col items-center gap-2 p-3.5 rounded-2xl transition-all duration-150 text-center"
-                      style={{
-                        backgroundColor: "var(--ivory)",
-                        border: "1px solid var(--border-subtle)",
-                        color: "var(--plum)",
-                        textDecoration: "none",
-                      }}
-                      onMouseEnter={e => { e.currentTarget.style.backgroundColor = "var(--ivory-dark)"; }}
-                      onMouseLeave={e => { e.currentTarget.style.backgroundColor = "var(--ivory)"; }}
-                    >
-                      <div
-                        className="w-8 h-8 flex items-center justify-center rounded-xl"
-                        style={{ backgroundColor: "var(--rose-dust-subtle)", color: "var(--rose-dust)" }}
-                      >
-                        {s.icon}
-                      </div>
-                      <p className="text-xs font-medium leading-tight" style={{ fontFamily: "'Inter', sans-serif", color: "var(--plum)" }}>
-                        {s.label}
-                      </p>
-                    </a>
-                  ))}
+                  {shortcuts.map((s) => {
+                    const sharedStyle = { backgroundColor: "var(--ivory)", border: "1px solid var(--border-subtle)", color: "var(--plum)", textDecoration: "none" };
+                    const inner = (
+                      <>
+                        <div className="w-8 h-8 flex items-center justify-center rounded-xl" style={{ backgroundColor: "var(--rose-dust-subtle)", color: "var(--rose-dust)" }}>{s.icon}</div>
+                        <p className="text-xs font-medium leading-tight" style={{ fontFamily: "'Inter', sans-serif", color: "var(--plum)" }}>{s.label}</p>
+                      </>
+                    );
+                    if (s.isAssistant) {
+                      return (
+                        <button key={s.label}
+                          onClick={() => { window.dispatchEvent(new CustomEvent("fw_open_assistant", { detail: {} })); requestAnimationFrame(() => setOpen(false)); }}
+                          className="flex flex-col items-center gap-2 p-3.5 rounded-2xl transition-all duration-150 text-center"
+                          style={sharedStyle}>
+                          {inner}
+                        </button>
+                      );
+                    }
+                    return (
+                      <a key={s.label} href={s.href}
+                        className="flex flex-col items-center gap-2 p-3.5 rounded-2xl transition-all duration-150 text-center"
+                        style={sharedStyle}
+                        onMouseEnter={e => { e.currentTarget.style.backgroundColor = "var(--ivory-dark)"; }}
+                        onMouseLeave={e => { e.currentTarget.style.backgroundColor = "var(--ivory)"; }}>
+                        {inner}
+                      </a>
+                    );
+                  })}
                 </div>
 
                 {/* Recent pages */}

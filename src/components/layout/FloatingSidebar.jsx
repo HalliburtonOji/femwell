@@ -94,7 +94,7 @@ const QUICK_ACTIONS = [
   { label: "Nutrition",  sub: "Log a meal",       icon: Utensils,  page: "Nutrition" },
   { label: "Journal",   sub: "Write a note",      icon: Newspaper, page: "Journal" },
   { label: "Lifestyle", sub: "Your feed",          icon: BookOpen,  page: "Lifestyle" },
-  { label: "Assistant", sub: "Ask your guide",     icon: Compass,   page: "Assistant" },
+  { label: "Assistant", sub: "Ask your guide",     icon: Compass,   page: null, isAssistant: true },
 ];
 
 /* ── Mobile ─────────────────────────────────────────────────────────────────── */
@@ -156,22 +156,34 @@ export default function FloatingSidebar({ currentPageName, mode = "full", openQu
 
                 {/* 2-col grid of 4 quick links */}
                 <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8, marginBottom: 16 }}>
-                  {QUICK_ACTIONS.map(({ label, sub, icon: Icon, page }) => (
-                    <Link
-                      key={page}
-                      to={createPageUrl(page)}
-                      onClick={() => setOpen(false)}
-                      style={{ display: "flex", alignItems: "center", gap: 10, borderRadius: 16, padding: "12px 14px", backgroundColor: "var(--ivory)", border: "1px solid var(--border)", textDecoration: "none" }}
-                    >
-                      <div style={{ width: 30, height: 30, borderRadius: 10, backgroundColor: "var(--rose-dust-subtle)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
-                        <Icon className="w-4 h-4" style={{ color: "var(--rose-dust)" }} />
-                      </div>
-                      <div style={{ minWidth: 0 }}>
-                        <p style={{ fontSize: 12, fontWeight: 700, color: "var(--plum)", fontFamily: "'Inter', sans-serif" }}>{label}</p>
-                        <p style={{ fontSize: 10, color: "var(--mauve)", fontFamily: "'Inter', sans-serif", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{sub}</p>
-                      </div>
-                    </Link>
-                  ))}
+                  {QUICK_ACTIONS.map(({ label, sub, icon: Icon, page, isAssistant }) => {
+                    const sharedStyle = { display: "flex", alignItems: "center", gap: 10, borderRadius: 16, padding: "12px 14px", backgroundColor: "var(--ivory)", border: "1px solid var(--border)", textDecoration: "none" };
+                    const inner = (
+                      <>
+                        <div style={{ width: 30, height: 30, borderRadius: 10, backgroundColor: "var(--rose-dust-subtle)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+                          <Icon className="w-4 h-4" style={{ color: "var(--rose-dust)" }} />
+                        </div>
+                        <div style={{ minWidth: 0 }}>
+                          <p style={{ fontSize: 12, fontWeight: 700, color: "var(--plum)", fontFamily: "'Inter', sans-serif" }}>{label}</p>
+                          <p style={{ fontSize: 10, color: "var(--mauve)", fontFamily: "'Inter', sans-serif", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{sub}</p>
+                        </div>
+                      </>
+                    );
+                    if (isAssistant) {
+                      return (
+                        <button key="assistant"
+                          onClick={() => { setOpen(false); requestAnimationFrame(() => window.dispatchEvent(new CustomEvent("fw_open_assistant", { detail: {} }))); }}
+                          style={{ ...sharedStyle, cursor: "pointer" }}>
+                          {inner}
+                        </button>
+                      );
+                    }
+                    return (
+                      <Link key={page} to={createPageUrl(page)} onClick={() => setOpen(false)} style={sharedStyle}>
+                        {inner}
+                      </Link>
+                    );
+                  })}
                 </div>
 
                 {/* Divider */}
