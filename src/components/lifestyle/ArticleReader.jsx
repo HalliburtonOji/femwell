@@ -7,7 +7,7 @@ function stripHtml(str) {
   return str.replace(/<[^>]+>/g, " ").replace(/\s+/g, " ").trim();
 }
 
-export default function ArticleReader({ item, onClose }) {
+export default function ArticleReader({ item, onClose, onSelectItem }) {
   const [fullBody, setFullBody] = useState(null);
   const [loading, setLoading] = useState(false);
   const [saved, setSaved] = useState(false);
@@ -132,10 +132,17 @@ export default function ArticleReader({ item, onClose }) {
             <div>
               <p style={{ fontSize: 10, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.12em", color: "var(--mauve)", marginBottom: 12 }}>More from {item.category}</p>
               {relatedItems.map(r => (
-                <div key={r.id} style={{ backgroundColor: "var(--ivory)", borderRadius: 12, padding: "12px 14px", marginBottom: 8 }}>
+                <button
+                  key={r.id}
+                  onClick={() => {
+                    if (onSelectItem) { onSelectItem(r); }
+                    else if (r.content_url) { window.open(r.content_url, '_blank', 'noopener,noreferrer'); }
+                  }}
+                  style={{ backgroundColor: "var(--ivory)", borderRadius: 12, padding: "12px 14px", marginBottom: 8, display: "block", width: "100%", textAlign: "left", cursor: "pointer", border: "none" }}
+                >
                   <p style={{ fontSize: 13, fontWeight: 600, color: "var(--plum)", lineHeight: 1.4, margin: "0 0 4px" }}>{r.title}</p>
-                  <p style={{ fontSize: 11, color: "var(--mauve)", margin: 0 }}>{r.author_name}</p>
-                </div>
+                  <p style={{ fontSize: 11, color: "var(--rose-dust)", margin: 0 }}>Read →</p>
+                </button>
               ))}
             </div>
           )}

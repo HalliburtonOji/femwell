@@ -1,8 +1,13 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.23';
 
+// Chunked generation: each automation call generates ONE chapter (~550 words).
+// Automation runs Mon–Thu so a 4-chapter story builds across the week.
+// Draft tracking via tags: in_progress / complete, chapters_done:N
+
 const FICTION_GENRES = ['Romance', 'Romantic Suspense', 'Thriller', 'Mystery', 'Fantasy', 'Contemporary', 'Historical', 'Literary', 'Drama'];
 const PERSONAL_GENRES = ['Contemporary', 'Romance', 'Drama', 'Literary', 'Thriller', 'Fantasy', 'Romantic Suspense', 'Mystery', 'Historical'];
 const MATURE_GENRES = ['Romance', 'Romantic Suspense'];
+const TOTAL_CHAPTERS = 4;
 
 function getMondayWeekStart() {
   const now = new Date();
@@ -13,87 +18,14 @@ function getMondayWeekStart() {
   return monday.toISOString().split('T')[0];
 }
 
-async function generateFiction(base44, { genre, weekStart, isLong, userContext, mature, userId }) {
-  // Keep word counts short enough to complete within the 90s function timeout.
-  const wordCount = isLong ? '900-1200' : '500-700';
-  const structure = isLong
-    ? 'Divide the story into 4 chapters with plain text headings "Chapter 1", "Chapter 2", "Chapter 3", "Chapter 4". No markdown, no asterisks, no bold, no bullet points.'
-    : 'Divide the story into 3 scenes with plain text headings "Scene 1", "Scene 2", "Scene 3". No markdown, no asterisks, no bullet points.';
+function getChaptersDone(tags) {
+  const tag = (tags || []).find(t => t.startsWith('chapters_done:'));
+  return tag ? parseInt(tag.split(':')[1], 10) : 0;
+}
 
-  const matureNote = mature
-    ? 'This is adult fiction (18+). Romance and intimacy may be depicted with tasteful, emotionally rich detail. Sex acts should use a fade-to-black approach. No explicit anatomical language. All characters are adults aged 18 or older.'
-    : 'Keep content for a general adult audience. Romance may include kissing and emotional closeness but nothing sexually explicit.';
-
-  const contextNote = userContext
-    ? `Tailor themes lightly to this reader context: ${userContext}`
-    : 'Write for a modern woman reader interested in connection, ambition, healing and self-discovery.';
-
-  // Use fastest model to stay within function timeout. Word count is kept short.
-  const model = 'gpt_5_mini';
-
-  const result = await base44.asServiceRole.integrations.Core.InvokeLLM({
-    model,
-    prompt: `You are a fiction editor for FemWell, a women's wellness and lifestyle platform. Write original ${genre} fiction for women readers.
-
-Genre: ${genre}
-Length: ${wordCount} words
-${structure}
-${matureNote}
-${contextNote}
-
-The story must feature a female protagonist. Themes should connect to women's lived experience: relationships, identity, ambition, healing, connection, or growth. Write compelling, publishable fiction with a strong voice, real emotional stakes, and a satisfying arc. The writing should feel like quality literary fiction, not generic romance.
-
-Return JSON with these exact keys:
-- title: compelling story title (max 70 characters, no trailing punctuation)
-- summary: 2 to 3 sentence synopsis of the story (max 280 characters)
-- body: the complete story text (${wordCount} words). Plain text only. Chapter or scene headings as plain text lines. Absolutely no markdown formatting.
-- duration_label: estimated reading time as a string, for example "18 min read" or "55 min read"
-- emotional_tag: one of exactly these values: Body, Identity, Relationships, Mental Health, Self-Discovery, Motherhood, Career, Grief`,
-    response_json_schema: {
-      type: 'object',
-      properties: {
-        title: { type: 'string' },
-        summary: { type: 'string' },
-        body: { type: 'string' },
-        duration_label: { type: 'string' },
-        emotional_tag: { type: 'string' },
-      },
-    },
-  });
-
-  const tags = [
-    'femwell_fiction',
-    `genre:${genre}`,
-    isLong ? 'length:long' : 'length:short',
-    `week:${weekStart}`,
-  ];
-  if (mature) tags.push('18+');
-  if (userId) {
-    tags.push('personal');
-    tags.push(`user:${userId}`);
-  }
-
-  const now = new Date().toISOString();
-  const saved = await base44.asServiceRole.entities.LifestyleItems.create({
-    title: result.title,
-    summary: result.summary,
-    lede: result.body,
-    duration_label: result.duration_label,
-    emotional_tag: result.emotional_tag || '',
-    author_name: 'FemWell Fiction',
-    content_type: 'FICTION',
-    media_type: 'ARTICLE',
-    provider: userId ? 'FEMWELL_FICTION_PERSONAL' : 'FEMWELL_FICTION_WEEKLY',
-    status: 'PUBLISHED',
-    category: 'Lifestyle',
-    pub_date: now,
-    published_at: now,
-    ingested_at: now,
-    content_url: '',
-    tags,
-    phase_tags: [],
-  });
-  return { id: saved.id, title: result.title, genre };
+function replaceTag(tags, prefix, newValue) {
+  const filtered = (tags || []).filter(t => t !== prefix && !t.startsWith(prefix + ':') && t !== prefix.replace(':', ''));
+  return newValue ? [...filtered, newValue] : filtered;
 }
 
 Deno.serve(async (req) => {
@@ -101,38 +33,134 @@ Deno.serve(async (req) => {
     const base44 = createClientFromRequest(req);
     const body = await req.json().catch(() => ({}));
     const { mode, mature } = body;
-
     const weekStart = getMondayWeekStart();
 
+    // ── WEEKLY GLOBAL (chunked) ─────────────────────────────────────────────
     if (mode === 'weekly_global') {
-      const existing = await base44.asServiceRole.entities.LifestyleItems.filter(
-        { provider: 'FEMWELL_FICTION_WEEKLY', status: 'PUBLISHED' }, '-pub_date', 50
-      );
-      const thisWeek = existing.filter(i =>
-        Array.isArray(i.tags) && i.tags.includes(`week:${weekStart}`) && i.tags.includes('length:long')
+      const allThisWeek = await base44.asServiceRole.entities.LifestyleItems.filter(
+        { provider: 'FEMWELL_FICTION_WEEKLY' }, '-pub_date', 60
       );
 
-      if (thisWeek.length >= 5) {
-        return Response.json({ success: true, message: 'Already generated', week_start: weekStart, generated: 0 });
+      const inProgress = allThisWeek.find(i =>
+        Array.isArray(i.tags) && i.tags.includes(`week:${weekStart}`) && i.tags.includes('in_progress')
+      );
+      const completed = allThisWeek.filter(i =>
+        Array.isArray(i.tags) && i.tags.includes(`week:${weekStart}`) && i.tags.includes('complete')
+      );
+
+      if (completed.length >= 1 && !inProgress) {
+        return Response.json({ success: true, message: 'Weekly story already complete', week_start: weekStart });
       }
 
-      // Generate ONE story per invocation to avoid timeout — automation runs daily Mon-Fri
-      const usedGenres = thisWeek.map(i => (i.tags || []).find(t => t.startsWith('genre:'))?.replace('genre:', '') || '').filter(Boolean);
+      if (inProgress) {
+        const chaptersDone = getChaptersDone(inProgress.tags);
+        const nextChapter = chaptersDone + 1;
+
+        if (chaptersDone >= TOTAL_CHAPTERS) {
+          // Edge case: already done, just publish
+          let tags = replaceTag(inProgress.tags, 'in_progress', 'complete');
+          await base44.asServiceRole.entities.LifestyleItems.update(inProgress.id, {
+            status: 'PUBLISHED', tags, duration_label: '22 min read',
+          });
+          return Response.json({ success: true, message: `Published: ${inProgress.title}` });
+        }
+
+        const genre = (inProgress.tags || []).find(t => t.startsWith('genre:'))?.replace('genre:', '') || 'Contemporary';
+
+        // Generate next chapter (~550 words) — single fast call with gpt_5
+        const result = await base44.asServiceRole.integrations.Core.InvokeLLM({
+          model: 'gpt_5',
+          prompt: `You are continuing a ${genre} fiction story titled "${inProgress.title}" for FemWell, a women's wellness platform.
+
+Here is the story so far (last portion):
+${(inProgress.lede || '').slice(-2000)}
+
+Write Chapter ${nextChapter} of ${TOTAL_CHAPTERS}. Approximately 500-600 words. Continue the narrative naturally. ${nextChapter === TOTAL_CHAPTERS ? 'This is the final chapter — bring the story to a satisfying, emotionally resonant conclusion.' : 'Develop the central conflict or relationship further and end with a compelling moment that makes the reader want to continue.'}
+
+Plain text only. No markdown. No asterisks. Start with "Chapter ${nextChapter}" as a plain text heading on its own line.
+
+Return JSON: { "chapter_text": "the full chapter text starting with Chapter ${nextChapter}" }`,
+          response_json_schema: {
+            type: 'object',
+            properties: { chapter_text: { type: 'string' } },
+          },
+        });
+
+        const newBody = (inProgress.lede || '') + '\n\n' + result.chapter_text;
+        let tags = replaceTag(inProgress.tags, 'chapters_done:', `chapters_done:${nextChapter}`);
+
+        if (nextChapter >= TOTAL_CHAPTERS) {
+          tags = replaceTag(tags, 'in_progress', 'complete');
+          await base44.asServiceRole.entities.LifestyleItems.update(inProgress.id, {
+            lede: newBody, tags, status: 'PUBLISHED', duration_label: '22 min read',
+          });
+          console.log(`Story complete & published: ${inProgress.title}`);
+        } else {
+          await base44.asServiceRole.entities.LifestyleItems.update(inProgress.id, { lede: newBody, tags });
+          console.log(`Chapter ${nextChapter} added to: ${inProgress.title}`);
+        }
+
+        return Response.json({ success: true, chapter: nextChapter, total: TOTAL_CHAPTERS, title: inProgress.title });
+      }
+
+      // Start a brand new story (Chapter 1)
+      const usedGenres = allThisWeek
+        .filter(i => Array.isArray(i.tags) && i.tags.includes(`week:${weekStart}`))
+        .map(i => (i.tags || []).find(t => t.startsWith('genre:'))?.replace('genre:', '') || '');
       const available = FICTION_GENRES.filter(g => !usedGenres.includes(g));
-      const genre = available[0] || FICTION_GENRES[thisWeek.length % FICTION_GENRES.length];
+      const genre = available[0] || FICTION_GENRES[0];
 
-      const generated = [];
-      try {
-        const r = await generateFiction(base44, { genre, weekStart, isLong: true, mature: false });
-        generated.push(r);
-        console.log(`Generated weekly fiction: ${r.title} (${genre})`);
-      } catch (e) {
-        console.error(`Failed to generate ${genre}:`, e.message);
-      }
+      const result = await base44.asServiceRole.integrations.Core.InvokeLLM({
+        model: 'gpt_5',
+        prompt: `You are a fiction editor for FemWell, a women's wellness and lifestyle platform. Begin a new ${genre} story for women readers.
 
-      return Response.json({ success: true, week_start: weekStart, generated: generated.length, items: generated });
+The story must feature a female protagonist. Themes: relationships, identity, ambition, healing, connection, or growth. Write quality literary fiction with a strong voice, real emotional stakes, and vivid detail.
+
+This is Chapter 1 of 4, approximately 550-650 words. Establish the protagonist, the world, and the central desire or conflict. End on a moment that hooks the reader.
+
+Plain text only. No markdown. No asterisks. Start with "Chapter 1" as a plain text heading on its own line.
+
+Return JSON:
+- title: compelling story title (max 70 chars, no trailing punctuation)
+- summary: 2-3 sentence synopsis (max 280 chars)
+- emotional_tag: one of: Body, Identity, Relationships, Mental Health, Self-Discovery, Motherhood, Career, Grief
+- chapter_text: the full Chapter 1 text starting with "Chapter 1"`,
+        response_json_schema: {
+          type: 'object',
+          properties: {
+            title: { type: 'string' },
+            summary: { type: 'string' },
+            emotional_tag: { type: 'string' },
+            chapter_text: { type: 'string' },
+          },
+        },
+      });
+
+      const tags = [
+        'femwell_fiction', `genre:${genre}`, `week:${weekStart}`,
+        'length:long', 'in_progress', 'chapters_done:1',
+      ];
+      const now = new Date().toISOString();
+      const saved = await base44.asServiceRole.entities.LifestyleItems.create({
+        title: result.title,
+        summary: result.summary,
+        lede: result.chapter_text,
+        emotional_tag: result.emotional_tag || '',
+        author_name: 'FemWell Fiction',
+        content_type: 'FICTION',
+        media_type: 'ARTICLE',
+        provider: 'FEMWELL_FICTION_WEEKLY',
+        status: 'NEEDS_REVIEW', // draft — becomes PUBLISHED when chapter 4 is written
+        category: 'Lifestyle',
+        pub_date: now, published_at: now, ingested_at: now,
+        content_url: '', tags, phase_tags: [],
+      });
+
+      console.log(`Started new story: ${result.title} (${genre}), Chapter 1/${TOTAL_CHAPTERS}`);
+      return Response.json({ success: true, started: result.title, genre, chapter: 1, total: TOTAL_CHAPTERS });
     }
 
+    // ── PERSONAL USER (short stories — still single invocation, gpt_5) ─────
     if (mode === 'personal_user') {
       const user = await base44.auth.me();
       if (!user) return Response.json({ error: 'Unauthorized' }, { status: 401 });
@@ -143,7 +171,6 @@ Deno.serve(async (req) => {
       const thisWeek = existing.filter(i =>
         Array.isArray(i.tags) &&
         i.tags.includes(`week:${weekStart}`) &&
-        i.tags.includes('length:short') &&
         i.tags.includes(`user:${user.id}`)
       );
 
@@ -152,7 +179,6 @@ Deno.serve(async (req) => {
       }
 
       const needed = 3 - thisWeek.length;
-
       let userContext = '';
       let allowMature = false;
       try {
@@ -170,20 +196,48 @@ Deno.serve(async (req) => {
 
       const usedGenres = thisWeek.map(i => (i.tags || []).find(t => t.startsWith('genre:'))?.replace('genre:', '') || '').filter(Boolean);
       const available = PERSONAL_GENRES.filter(g => !usedGenres.includes(g));
-      const genresToUse = available.slice(0, Math.max(needed, 2));
-
       const useMature = mature && allowMature;
+
       const generated = [];
-      for (let i = 0; i < needed; i++) {
-        const genre = genresToUse[i] || PERSONAL_GENRES[i % PERSONAL_GENRES.length];
-        const isMature = useMature && MATURE_GENRES.includes(genre);
-        try {
-          const r = await generateFiction(base44, { genre, weekStart, isLong: false, userContext, mature: isMature, userId: user.id });
-          generated.push(r);
-          console.log(`Generated personal fiction for ${user.id}: ${r.title} (${genre})`);
-        } catch (e) {
-          console.error(`Failed to generate personal ${genre}:`, e.message);
-        }
+      // Generate only 1 per invocation to avoid timeout
+      const genre = available[0] || PERSONAL_GENRES[generated.length % PERSONAL_GENRES.length];
+      const isMature = useMature && MATURE_GENRES.includes(genre);
+      const matureNote = isMature
+        ? 'Adult fiction (18+). Romance and intimacy depicted with tasteful detail. Fade-to-black for sex acts. All characters are adults 18+.'
+        : 'General adult audience. Romance may include emotional closeness but nothing sexually explicit.';
+      const contextNote = userContext
+        ? `Tailor themes lightly to this reader context: ${userContext}`
+        : 'Write for a modern woman reader interested in connection, ambition, healing and self-discovery.';
+
+      try {
+        const result = await base44.asServiceRole.integrations.Core.InvokeLLM({
+          model: 'gpt_5',
+          prompt: `Write original ${genre} short fiction for women readers. 700-900 words. Female protagonist. ${matureNote} ${contextNote}
+Divide into 3 scenes with plain text headings "Scene 1", "Scene 2", "Scene 3". No markdown. No asterisks.
+Return JSON: title (max 70 chars), summary (2-3 sentences, max 280 chars), body (full story), duration_label (e.g. "8 min read"), emotional_tag (one of: Body, Identity, Relationships, Mental Health, Self-Discovery, Motherhood, Career, Grief)`,
+          response_json_schema: {
+            type: 'object',
+            properties: {
+              title: { type: 'string' }, summary: { type: 'string' }, body: { type: 'string' },
+              duration_label: { type: 'string' }, emotional_tag: { type: 'string' },
+            },
+          },
+        });
+
+        const tags = ['femwell_fiction', `genre:${genre}`, `week:${weekStart}`, 'length:short', 'personal', `user:${user.id}`, 'complete'];
+        if (isMature) tags.push('18+');
+        const now = new Date().toISOString();
+        const saved = await base44.asServiceRole.entities.LifestyleItems.create({
+          title: result.title, summary: result.summary, lede: result.body,
+          duration_label: result.duration_label, emotional_tag: result.emotional_tag || '',
+          author_name: 'FemWell Fiction', content_type: 'FICTION', media_type: 'ARTICLE',
+          provider: 'FEMWELL_FICTION_PERSONAL', status: 'PUBLISHED', category: 'Lifestyle',
+          pub_date: now, published_at: now, ingested_at: now, content_url: '', tags, phase_tags: [],
+        });
+        generated.push({ id: saved.id, title: result.title, genre });
+        console.log(`Generated personal fiction for ${user.id}: ${result.title} (${genre})`);
+      } catch (e) {
+        console.error(`Failed personal fiction (${genre}):`, e.message);
       }
 
       return Response.json({ success: true, week_start: weekStart, generated: generated.length, items: generated });

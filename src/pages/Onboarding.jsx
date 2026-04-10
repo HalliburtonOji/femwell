@@ -179,6 +179,7 @@ export default function Onboarding() {
         else await base44.entities.MenopauseProfile.create(payload);
       }
       clearTimeout(timeoutId);
+      localStorage.setItem('fw_onboarded', user.id);
       navigate("/Today", { replace: true });
     } catch (e) {
       clearTimeout(timeoutId);

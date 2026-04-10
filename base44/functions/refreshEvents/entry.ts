@@ -3,36 +3,44 @@ import { createClientFromRequest } from 'npm:@base44/sdk@0.8.20';
 Deno.serve(async (req) => {
   try {
     const base44 = createClientFromRequest(req);
-    const result = await base44.asServiceRole.integrations.Core.InvokeLLM({
-      model: 'gemini_3_flash',
-      add_context_from_internet: true,
-      prompt: 'Find upcoming events over the next 60 days in major UK cities (London, Manchester, Birmingham, Leeds, Bristol) covering ALL of the following: women networking and professional meetups, fitness and wellness classes (yoga, pilates, running clubs, HIIT), social parties and club nights, gallery openings and culture events, food and coffee socials, talks panels and workshops, dating and relationship events, online and virtual events accessible from anywhere. PRIMARY SOURCES (prioritise these): Dice.fm (gigs and club nights), Fatsoma (UK parties and nightlife), Fever (experiences and pop-ups), Meetup.com (social and professional groups, especially women groups), RA / Resident Advisor (electronic music and clubs), Time Out (culture, food, city guides), Sofar Sounds (intimate music), Facebook Events (local social events). DEPRIORITISE Eventbrite — only include as last resort when no alternative link exists. Return ONLY direct ticket or booking URLs, not homepages. Return a balanced mix of free and paid events. Return up to 80 items.',
-      response_json_schema: {
-        type: 'object',
-        properties: {
-          items: {
-            type: 'array',
+    // Fetch in two smaller batches to avoid JSON truncation issues
+    const fetchBatch = async (categories, limit) => {
+      const res = await base44.asServiceRole.integrations.Core.InvokeLLM({
+        model: 'gemini_3_flash',
+        add_context_from_internet: true,
+        prompt: `Find upcoming real events over the next 60 days in major UK cities (London, Manchester, Birmingham, Leeds, Bristol) for: ${categories}. Include both free and paid events. Sources: Meetup.com, Dice.fm, Fever, Time Out, Fatsoma. Return ONLY direct booking URLs (not homepages). Return up to ${limit} items as JSON.`,
+        response_json_schema: {
+          type: 'object',
+          properties: {
             items: {
-              type: 'object',
-              properties: {
-                title: { type: 'string' },
-                date: { type: 'string' },
-                location: { type: 'string' },
-                price: { type: 'string' },
-                link: { type: 'string' },
-                category: { type: 'string' },
-                is_free: { type: 'boolean' },
-                city: { type: 'string' },
-                source_name: { type: 'string' },
-                ticket_platform: { type: 'string' },
-                tags: { type: 'array', items: { type: 'string' } },
-                is_online: { type: 'boolean' }
+              type: 'array',
+              items: {
+                type: 'object',
+                properties: {
+                  title: { type: 'string' },
+                  date: { type: 'string' },
+                  location: { type: 'string' },
+                  price: { type: 'string' },
+                  link: { type: 'string' },
+                  category: { type: 'string' },
+                  is_free: { type: 'boolean' },
+                  city: { type: 'string' },
+                  source_name: { type: 'string' },
+                  is_online: { type: 'boolean' },
+                }
               }
             }
           }
         }
-      }
-    });
+      });
+      return Array.isArray(res.items) ? res.items : [];
+    };
+
+    const [batch1, batch2] = await Promise.all([
+      fetchBatch('women networking, fitness and wellness, talks and workshops, dating events', 20),
+      fetchBatch('social parties, gallery and culture events, food and coffee socials, virtual and online events', 20),
+    ]);
+    const result = { items: [...batch1, ...batch2] };
 
     const existing = await base44.asServiceRole.entities.EventsItems.list('-created_date', 300);
     await Promise.all(existing.map((item) => base44.asServiceRole.entities.EventsItems.delete(item.id)));

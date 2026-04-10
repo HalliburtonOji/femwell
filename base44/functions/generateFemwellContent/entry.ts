@@ -78,6 +78,7 @@ async function generateArticle(base44, topic) {
     : 'Relevant across all cycle phases.';
 
   const result = await base44.asServiceRole.integrations.Core.InvokeLLM({
+    model: 'gpt_5_mini',
     prompt: `You are FemWell's editorial team — a women's wellness publication that is evidence-based, warm and empowering.
 
 Write a full magazine-quality wellness article on: "${topic.hint}"
@@ -120,17 +121,8 @@ Return JSON:
 
 async function generateStory(base44, prompt) {
   const result = await base44.asServiceRole.integrations.Core.InvokeLLM({
-    prompt: `You are a personal essay editor for FemWell — a women's wellness platform. Write a vivid, honest first-person personal essay on: "${prompt.hint}"
-
-The essay should feel real, intimate and relatable — like something from The Cut or Longreads. 700-900 words. No subheadings. Flowing paragraphs. Honest and specific. Use "I" voice throughout.
-
-Return JSON:
-- title: evocative essay title (max 80 chars)
-- lede: opening hook sentence (max 180 chars)
-- summary: what this essay is about, 2-3 sentences (max 300 chars)
-- body: the full personal essay, 700-900 words, first person, no headers, flowing paragraphs
-- emotional_tag: one of: Body, Identity, Relationships, Mental Health, Self-Discovery, Motherhood, Career, Grief
-- author_name: "FemWell Stories"`,
+    model: 'gpt_5_mini',
+    prompt: `You are a personal essay editor for FemWell. Write a vivid, honest first-person personal essay on: "${prompt.hint}". 700-900 words. No subheadings. Use "I" voice. Return JSON: title (max 80 chars), lede (hook sentence), summary (2-3 sentences), body (full essay), emotional_tag (Body/Identity/Relationships/Mental Health/Self-Discovery/Motherhood/Career/Grief), author_name "FemWell Stories"`,
     response_json_schema: {
       type: 'object',
       properties: {
@@ -154,6 +146,7 @@ Return JSON:
 
 async function generateBookSummary(base44, book) {
   const result = await base44.asServiceRole.integrations.Core.InvokeLLM({
+    model: 'gpt_5_mini',
     prompt: `You are a women's wellness book editor for FemWell. Write a rich, engaging book summary card for "${book.title}" by ${book.author}.
 
 Return JSON:

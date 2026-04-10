@@ -3,7 +3,9 @@ import { PageLoader } from './components/common/LoadingSpinner';
 import { QueryClientProvider } from '@tanstack/react-query'
 import { queryClientInstance } from '@/lib/query-client'
 import { pagesConfig } from './pages.config'
-import { BrowserRouter as Router, Route, Routes, Navigate, useLocation } from 'react-router-dom';
+import { BrowserRouter as Router, Route, Routes, Navigate, useLocation, useNavigate } from 'react-router-dom';
+import { useEffect, useRef } from 'react';
+import { base44 } from '@/api/base44Client';
 import { ThemeProvider } from 'next-themes';
 import { motion, AnimatePresence } from 'framer-motion';
 import PageNotFound from './lib/PageNotFound';
@@ -28,6 +30,28 @@ const LayoutWrapper = ({ children, currentPageName }) => Layout ?
 const AuthenticatedApp = () => {
   const { isLoadingAuth, isLoadingPublicSettings, authError, navigateToLogin } = useAuth();
   const location = useLocation();
+  const navigate = useNavigate();
+  const onboardingChecked = useRef(false);
+
+  // One-time onboarding check after auth resolves
+  useEffect(() => {
+    if (isLoadingAuth || authError || onboardingChecked.current) return;
+    if (location.pathname === '/Onboarding') { onboardingChecked.current = true; return; }
+    onboardingChecked.current = true;
+    (async () => {
+      try {
+        const user = await base44.auth.me();
+        if (!user?.id) return;
+        if (localStorage.getItem('fw_onboarded') === user.id) return;
+        const profiles = await base44.entities.UserProfile.filter({ user_id: user.id });
+        if (!profiles.some(p => p?.onboarding_complete === true)) {
+          navigate('/Onboarding', { replace: true });
+        } else {
+          localStorage.setItem('fw_onboarded', user.id);
+        }
+      } catch {}
+    })();
+  }, [isLoadingAuth]);
 
   // Show loading spinner while checking app public settings or auth
   if (isLoadingPublicSettings || isLoadingAuth) {

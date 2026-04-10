@@ -585,7 +585,7 @@ export default function Lifestyle() {
         )}
       </div>
     </div>
-    {readerItem && <ArticleReader item={readerItem} onClose={() => setReaderItem(null)} />}
+    {readerItem && <ArticleReader item={readerItem} onClose={() => setReaderItem(null)} onSelectItem={setReaderItem} />}
     </>
   );
 }
