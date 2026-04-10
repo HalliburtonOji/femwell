@@ -36,18 +36,20 @@ const AuthenticatedApp = () => {
   // One-time onboarding check after auth resolves
   useEffect(() => {
     if (isLoadingAuth || authError || onboardingChecked.current) return;
-    if (location.pathname === '/Onboarding') { onboardingChecked.current = true; return; }
     onboardingChecked.current = true;
     (async () => {
       try {
         const user = await base44.auth.me();
         if (!user?.id) return;
-        if (localStorage.getItem('fw_onboarded') === user.id) return;
+        // Fast path — already confirmed onboarded for this user
+        if (localStorage.getItem('fw_ob_' + user.id) === '1') return;
+        // DB check
         const profiles = await base44.entities.UserProfile.filter({ user_id: user.id });
-        if (!profiles.some(p => p?.onboarding_complete === true)) {
+        const isComplete = profiles.some(p => p?.onboarding_complete === true);
+        if (isComplete) {
+          localStorage.setItem('fw_ob_' + user.id, '1');
+        } else if (location.pathname !== '/Onboarding') {
           navigate('/Onboarding', { replace: true });
-        } else {
-          localStorage.setItem('fw_onboarded', user.id);
         }
       } catch {}
     })();

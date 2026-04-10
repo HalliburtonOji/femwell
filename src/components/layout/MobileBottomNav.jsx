@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
-import { Sun, BookOpen, Newspaper, Utensils, User } from "lucide-react";
+import { Sun, BookOpen, Utensils, User, Menu } from "lucide-react";
 import { createPageUrl } from "@/utils";
 import { base44 } from "@/api/base44Client";
 
@@ -38,11 +38,11 @@ export default function MobileBottomNav({ currentPageName }) {
   }, []);
 
   const TABS = [
-    { label: "Today",     icon: null,     page: "Today",     isOrb: false, IconComp: Sun },
-    { label: "Lifestyle", icon: null,     page: "Lifestyle", isOrb: false, IconComp: BookOpen },
-    { label: assistantName, icon: null,   page: "Assistant", isOrb: true,  IconComp: null },
-    { label: "Nutrition", icon: null,     page: "Nutrition", isOrb: false, IconComp: Utensils },
-    { label: "Profile",   icon: null,     page: "Profile",   isOrb: false, IconComp: User },
+    { label: "Today",     page: "Today",     IconComp: Sun      },
+    { label: "Lifestyle", page: "Lifestyle", IconComp: BookOpen },
+    { label: "menu",      page: null,        IconComp: Menu,    isMenu: true },
+    { label: "Nutrition", page: "Nutrition", IconComp: Utensils },
+    { label: "Profile",   page: "Profile",   IconComp: User     },
   ];
 
   return (
@@ -57,7 +57,23 @@ export default function MobileBottomNav({ currentPageName }) {
       }}
     >
       <div style={{ display: "flex", justifyContent: "space-around", padding: "8px 0 6px" }}>
-        {TABS.map(({ label, page, isOrb, IconComp }) => {
+        {TABS.map(({ label, page, IconComp, isMenu }) => {
+          if (isMenu) {
+            return (
+              <button
+                key="menu"
+                onClick={() => window.dispatchEvent(new Event('open-nav-drawer'))}
+                style={{
+                  display: "flex", flexDirection: "column", alignItems: "center",
+                  gap: 3, padding: "4px 10px", background: "none", border: "none",
+                  cursor: "pointer", WebkitTapHighlightColor: "transparent", userSelect: "none",
+                }}
+              >
+                <IconComp style={{ width: 22, height: 22, color: "var(--mauve)" }} strokeWidth={1.5} />
+                <span style={{ fontSize: 10, fontWeight: 500, color: "var(--mauve)", fontFamily: "'Inter', sans-serif" }}>Menu</span>
+              </button>
+            );
+          }
           const active = currentPageName === page;
           return (
             <Link
@@ -66,18 +82,13 @@ export default function MobileBottomNav({ currentPageName }) {
               style={{
                 display: "flex", flexDirection: "column", alignItems: "center",
                 gap: 3, padding: "4px 10px", textDecoration: "none",
-                WebkitTapHighlightColor: "transparent",
-                userSelect: "none",
+                WebkitTapHighlightColor: "transparent", userSelect: "none",
               }}
             >
-              {isOrb ? (
-                <AssistantOrbIcon active={active} />
-              ) : (
-                <IconComp
-                  style={{ width: 22, height: 22, color: active ? "var(--rose-dust)" : "var(--mauve)" }}
-                  strokeWidth={active ? 2.5 : 1.5}
-                />
-              )}
+              <IconComp
+                style={{ width: 22, height: 22, color: active ? "var(--rose-dust)" : "var(--mauve)" }}
+                strokeWidth={active ? 2.5 : 1.5}
+              />
               <span style={{
                 fontSize: 10, fontWeight: active ? 700 : 500,
                 color: active ? "var(--rose-dust)" : "var(--mauve)",
