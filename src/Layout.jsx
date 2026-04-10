@@ -11,6 +11,18 @@ const HIDE_NAV = ["Onboarding", "ContentPlayer", "CycleSettings"];
 const LITE_NAV = ["ProgramDay", "ProgramDetail"];
 const NO_GUARD = ["Onboarding", "CycleSettings"];
 
+// Returns the best profile deterministically — prefers onboarding_complete, then most recently updated.
+function pickActiveProfile(profiles) {
+  if (!profiles?.length) return null;
+  const complete = profiles.filter(p => p?.onboarding_complete === true);
+  const pool = complete.length > 0 ? complete : profiles;
+  return pool.reduce((best, p) => {
+    const bestDate = best?.updated_date || best?.created_date || "";
+    const pDate = p?.updated_date || p?.created_date || "";
+    return pDate >= bestDate ? p : best;
+  });
+}
+
 const todayStr = new Date().toISOString().split("T")[0];
 
 export default function Layout({ children, currentPageName }) {
@@ -42,7 +54,7 @@ export default function Layout({ children, currentPageName }) {
         if (!u?.id) { setChecking(false); return; }
         let profiles = await base44.entities.UserProfile.filter({ user_id: u.id });
         if (cancelled) return;
-        const needsOnboarding = (p) => p.length === 0 || p[0]?.onboarding_complete !== true;
+        const needsOnboarding = (profiles) => !profiles.some(p => p?.onboarding_complete === true);
         if (needsOnboarding(profiles)) {
           // Retry up to 3 times with 600ms delay to avoid post-signup race conditions
           for (let attempt = 0; attempt < 3 && !cancelled && needsOnboarding(profiles); attempt++) {

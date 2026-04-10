@@ -104,10 +104,21 @@ export default function FictionFeedSection({ onRead }) {
         await loadItems(u.id);
         setLoading(false);
 
+        // Only auto-generate if no stories exist yet for this week — avoids indefinite spinner on re-visits.
         if (!ensured.current) {
           ensured.current = true;
-          try { await base44.functions.invoke("generateFemwellFiction", { mode: "weekly_global" }); } catch {}
-          try { await base44.functions.invoke("generateFemwellFiction", { mode: "personal_user" }); } catch {}
+          const [gItems, pItems] = await Promise.all([
+            base44.entities.LifestyleItems.filter({ provider: "FEMWELL_FICTION_WEEKLY" }).catch(() => []),
+            base44.entities.LifestyleItems.filter({ provider: "FEMWELL_FICTION_PERSONAL" }).catch(() => []),
+          ]);
+          const weekGlobal = gItems.filter(i => Array.isArray(i.tags) && i.tags.includes(`week:${weekStart}`));
+          const weekPersonal = pItems.filter(i => Array.isArray(i.tags) && i.tags.includes(`week:${weekStart}`) && i.tags.includes(`user:${u.id}`));
+          if (weekGlobal.length === 0) {
+            try { await base44.functions.invoke("generateFemwellFiction", { mode: "weekly_global" }); } catch {}
+          }
+          if (weekPersonal.length === 0) {
+            try { await base44.functions.invoke("generateFemwellFiction", { mode: "personal_user" }); } catch {}
+          }
           await loadItems(u.id);
         }
       } catch {

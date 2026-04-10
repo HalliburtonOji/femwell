@@ -157,6 +157,11 @@ export default function Onboarding() {
       };
       if (profiles[0]) {
         await base44.entities.UserProfile.update(profiles[0].id, pData);
+        // If duplicate rows exist, mark them all complete too so the guard never loops.
+        const alignFields = { onboarding_complete: true, goals, tone_preference: tone, ai_assistant_name: assistantName || "Guide", life_stage: lifeStage, life_stage_focus: lifeStageFocus, hydration_target_ml: hydrationTarget };
+        for (let i = 1; i < profiles.length; i++) {
+          await base44.entities.UserProfile.update(profiles[i].id, alignFields).catch(() => {});
+        }
       } else {
         await base44.entities.UserProfile.create(pData);
       }

@@ -404,20 +404,37 @@ function FullBookCard({ book }) {
 }
 
 function BooksTab({ onRead }) {
+  const [booksSubTab, setBooksSubTab] = useState("femwell");
   return (
     <div>
-      <FictionFeedSection onRead={onRead} />
-
-      {/* Full Books — Project Gutenberg classics */}
-      <div style={{ backgroundColor: "var(--surface)", border: "1px solid var(--border)", boxShadow: "var(--shadow-sm)", borderRadius: 16, padding: "16px 18px", marginBottom: 20 }}>
-        <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 4 }}>
-          <BookMarked style={{ width: 15, height: 15, color: "var(--rose-dust)" }} />
-          <span style={{ fontSize: 10, fontWeight: 700, color: "var(--rose-dust)", letterSpacing: "0.1em", textTransform: "uppercase" }}>Full Books</span>
-        </div>
-        <h2 style={{ fontSize: 17, fontWeight: 700, color: "var(--plum)", margin: "0 0 4px", fontFamily: "'Playfair Display', serif" }}>Read in full, free</h2>
-        <p style={{ fontSize: 13, color: "var(--mauve)", margin: 0 }}>Classic literature by and about women — available to read in full via Project Gutenberg.</p>
+      {/* Sub-tab switcher */}
+      <div style={{ display: "flex", gap: 6, marginBottom: 18 }}>
+        {[{ id: "femwell", label: "FemWell Stories" }, { id: "classics", label: "Classics" }].map(t => (
+          <button key={t.id} onClick={() => setBooksSubTab(t.id)}
+            style={{ padding: "7px 18px", borderRadius: 9999, fontSize: 12, fontWeight: 600, cursor: "pointer", transition: "all 0.15s", fontFamily: "'Inter', sans-serif",
+              background: booksSubTab === t.id ? "var(--plum)" : "var(--surface)",
+              color: booksSubTab === t.id ? "#fff" : "var(--mauve)",
+              border: booksSubTab === t.id ? "none" : "1px solid var(--border)" }}>
+            {t.label}
+          </button>
+        ))}
       </div>
-      {FULL_BOOKS.map((book, i) => <FullBookCard key={i} book={book} />)}
+
+      {booksSubTab === "femwell" && <FictionFeedSection onRead={onRead} />}
+
+      {booksSubTab === "classics" && (
+        <>
+          <div style={{ backgroundColor: "var(--surface)", border: "1px solid var(--border)", boxShadow: "var(--shadow-sm)", borderRadius: 16, padding: "16px 18px", marginBottom: 20 }}>
+            <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 4 }}>
+              <BookMarked style={{ width: 15, height: 15, color: "var(--rose-dust)" }} />
+              <span style={{ fontSize: 10, fontWeight: 700, color: "var(--rose-dust)", letterSpacing: "0.1em", textTransform: "uppercase" }}>Full Books</span>
+            </div>
+            <h2 style={{ fontSize: 17, fontWeight: 700, color: "var(--plum)", margin: "0 0 4px", fontFamily: "'Playfair Display', serif" }}>Read in full, free</h2>
+            <p style={{ fontSize: 13, color: "var(--mauve)", margin: 0 }}>Classic literature by and about women — available to read in full via Project Gutenberg.</p>
+          </div>
+          {FULL_BOOKS.map((book, i) => <FullBookCard key={i} book={book} />)}
+        </>
+      )}
     </div>
   );
 }
@@ -461,7 +478,7 @@ export default function Lifestyle() {
       } else if (activeTab === "femwell") {
         allItems = allItems.filter(it => it.provider === "FEMWELL_AI" && it.status === "PUBLISHED");
       } else if (activeTab === "watch") {
-        allItems = allItems.filter(it => it.media_type === "VIDEO" || it.content_type === "VIDEO");
+        allItems = allItems.filter(it => it.media_type === "VIDEO" || it.content_type === "VIDEO" || !!it.video_id);
       } else if (activeTab === "stories") {
         allItems = allItems.filter(it => it.content_type === "STORY");
       } else if (activeTab === "articles") {
