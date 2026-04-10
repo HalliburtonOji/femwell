@@ -478,7 +478,10 @@ export default function Lifestyle() {
       } else if (activeTab === "femwell") {
         allItems = allItems.filter(it => it.provider === "FEMWELL_AI" && it.status === "PUBLISHED");
       } else if (activeTab === "watch") {
-        allItems = allItems.filter(it => it.media_type === "VIDEO" || it.content_type === "VIDEO" || !!it.video_id);
+        allItems = allItems.filter(it =>
+          it.media_type === "VIDEO" || it.content_type === "VIDEO" || !!it.video_id ||
+          it.provider === "YOUTUBE"
+        ).filter(it => it.status === "PUBLISHED");
       } else if (activeTab === "stories") {
         allItems = allItems.filter(it => it.content_type === "STORY");
       } else if (activeTab === "articles") {

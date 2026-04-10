@@ -1,0 +1,33 @@
+{
+  "name": "PregnancyKickSession",
+  "type": "object",
+  "properties": {
+    "user_id": {
+      "type": "string"
+    },
+    "day_key": {
+      "type": "string"
+    },
+    "started_at": {
+      "type": "string"
+    },
+    "ended_at": {
+      "type": "string"
+    },
+    "kicks": {
+      "type": "number",
+      "default": 0
+    },
+    "duration_seconds": {
+      "type": "number",
+      "default": 0
+    },
+    "notes": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "user_id",
+    "day_key"
+  ]
+}

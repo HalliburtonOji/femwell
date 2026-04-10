@@ -5,6 +5,8 @@ import SupportMetricSlider from "./SupportMetricSlider";
 import SupportInsightCard from "./SupportInsightCard";
 import { Loader2 } from "lucide-react";
 import { toast } from "sonner";
+import SymptomDiarySection from "./SymptomDiarySection";
+import MenopauseReportCard from "./MenopauseReportCard";
 
 const FOCUSES = ["Sleep", "Hot flashes", "Mood", "Energy", "Brain fog", "Joint comfort", "Weight balance", "Libido", "Vaginal health", "Bone health"];
 const todayStr = new Date().toISOString().split("T")[0];
@@ -197,6 +199,8 @@ export default function MenopauseSupportTab({ user, profile, setProfile, logs, s
   const SECTIONS = [
     { id: "overview", label: "Overview" },
     { id: "checkin", label: "Daily log" },
+    { id: "diary", label: "Symptom diary" },
+    { id: "report", label: "Weekly report" },
     { id: "patterns", label: "Patterns" },
     { id: "nutrition", label: "Nutrition" },
     { id: "lifestyle", label: "Lifestyle" },
@@ -292,6 +296,12 @@ export default function MenopauseSupportTab({ user, profile, setProfile, logs, s
           <button onClick={saveTodayLog} className="btn-primary w-full py-3 text-sm">{savingLog ? "Saving..." : "Save today's log"}</button>
         </div>
       )}
+
+      {/* Symptom diary */}
+      {activeSection === "diary" && <SymptomDiarySection user={user} />}
+
+      {/* Weekly report */}
+      {activeSection === "report" && <MenopauseReportCard user={user} />}
 
       {/* Patterns chart */}
       {activeSection === "patterns" && (

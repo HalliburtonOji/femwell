@@ -280,43 +280,32 @@ Deno.serve(async (req) => {
       return Response.json({ success: true, generated: 1, articles: [generated] });
     }
 
-    // Scheduled run: generate exactly 3 items per invocation to stay well within timeout.
-    // Rotate content type by day-of-week: Tuesday = 2 articles + 1 story, Friday = 1 article + 1 story + 1 book.
-    // force_run bypasses and always does Tuesday mix.
+    // Scheduled run: generate exactly ONE item per invocation to stay well within timeout.
+    // Automation runs daily so content accumulates across the week.
     const weekIdx = getWeekIndex();
-    const dayOfWeek = new Date().getDay(); // 0=Sun, 2=Tue, 5=Fri
-    const isFriday = dayOfWeek === 5;
+    // Spread types: rotate article -> story -> article -> story -> book across days of week
+    const dayOfWeek = new Date().getDay();
+    const sequence = ['article', 'story', 'article', 'story', 'article', 'book', 'story'];
+    const contentType = force_run ? 'article' : sequence[dayOfWeek];
 
     const generated = [];
     const errors = [];
 
-    if (isFriday && !force_run) {
-      // Friday: 1 article + 1 story + 1 book summary
-      const [articleTopic] = pickForWeek(ARTICLE_TOPICS, weekIdx + 100, 1);
-      const [storyPrompt] = pickForWeek(STORY_PROMPTS, weekIdx + 100, 1);
-      const [bookTopic] = pickForWeek(BOOK_TOPICS, weekIdx, 1);
-      const batch = [
-        () => generateArticle(base44, articleTopic),
-        () => generateStory(base44, storyPrompt),
-        () => generateBookSummary(base44, bookTopic),
-      ];
-      for (const fn of batch) {
-        try { const r = await fn(); generated.push(r); console.log(`Generated: ${r.title}`); }
-        catch (e) { errors.push(e.message); console.error('Fail:', e.message); }
+    try {
+      let r;
+      if (contentType === 'story') {
+        const [storyPrompt] = pickForWeek(STORY_PROMPTS, weekIdx + dayOfWeek, 1);
+        r = await generateStory(base44, storyPrompt);
+      } else if (contentType === 'book') {
+        const [bookTopic] = pickForWeek(BOOK_TOPICS, weekIdx, 1);
+        r = await generateBookSummary(base44, bookTopic);
+      } else {
+        const [articleTopic] = pickForWeek(ARTICLE_TOPICS, weekIdx + dayOfWeek, 1);
+        r = await generateArticle(base44, articleTopic);
       }
-    } else {
-      // Tuesday (or force_run): 2 articles + 1 story
-      const articleTopics = pickForWeek(ARTICLE_TOPICS, weekIdx, 2);
-      const [storyPrompt] = pickForWeek(STORY_PROMPTS, weekIdx, 1);
-      const batch = [
-        ...articleTopics.map(t => () => generateArticle(base44, t)),
-        () => generateStory(base44, storyPrompt),
-      ];
-      for (const fn of batch) {
-        try { const r = await fn(); generated.push(r); console.log(`Generated: ${r.title}`); }
-        catch (e) { errors.push(e.message); console.error('Fail:', e.message); }
-      }
-    }
+      generated.push(r);
+      console.log(`Generated (${contentType}): ${r.title}`);
+    } catch (e) { errors.push(e.message); console.error('Fail:', e.message); }
 
     return Response.json({ success: true, generated: generated.length, articles: generated, errors });
   } catch (error) {

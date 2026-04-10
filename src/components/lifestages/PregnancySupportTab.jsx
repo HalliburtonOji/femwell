@@ -4,6 +4,8 @@ import { base44 } from "@/api/base44Client";
 import SupportMetricSlider from "./SupportMetricSlider";
 import SupportInsightCard from "./SupportInsightCard";
 import { Baby, Heart, Zap, Moon, AlertCircle, Plus, Check, X, ChevronDown, ChevronUp, Loader2 } from "lucide-react";
+import KickTrackerSection from "./KickTrackerSection";
+import ContractionTimerSection from "./ContractionTimerSection";
 import { toast } from "sonner";
 
 const FOCUSES = ["Sleep", "Nausea", "Movement", "Nutrition", "Birth prep", "Calm", "Pelvic health", "Breastfeeding prep"];
@@ -197,6 +199,7 @@ export default function PregnancySupportTab({ user, profile, setProfile, logs, s
     { id: "checkin", label: "Daily log" },
     { id: "nutrition", label: "Nutrition" },
     { id: "kicks", label: "Kicks" },
+    { id: "contractions", label: "Contractions" },
     { id: "bag", label: "Bag" },
     { id: "setup", label: "Setup" },
   ];
@@ -324,7 +327,10 @@ export default function PregnancySupportTab({ user, profile, setProfile, logs, s
       )}
 
       {/* Kick counter */}
-      {activeSection === "kicks" && <KickCounter />}
+      {activeSection === "kicks" && <KickTrackerSection user={user} />}
+
+      {/* Contraction timer */}
+      {activeSection === "contractions" && <ContractionTimerSection user={user} />}
 
       {/* Hospital bag */}
       {activeSection === "bag" && <HospitalBagChecklist />}

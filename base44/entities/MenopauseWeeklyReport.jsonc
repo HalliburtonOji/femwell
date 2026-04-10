@@ -1,0 +1,22 @@
+{
+  "name": "MenopauseWeeklyReport",
+  "type": "object",
+  "properties": {
+    "user_id": {
+      "type": "string"
+    },
+    "week_start": {
+      "type": "string"
+    },
+    "report_json": {
+      "type": "string"
+    },
+    "created_at": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "user_id",
+    "week_start"
+  ]
+}

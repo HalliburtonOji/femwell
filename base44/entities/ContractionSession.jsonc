@@ -1,0 +1,28 @@
+{
+  "name": "ContractionSession",
+  "type": "object",
+  "properties": {
+    "user_id": {
+      "type": "string"
+    },
+    "day_key": {
+      "type": "string"
+    },
+    "started_at": {
+      "type": "string"
+    },
+    "ended_at": {
+      "type": "string"
+    },
+    "contractions_json": {
+      "type": "string"
+    },
+    "notes": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "user_id",
+    "day_key"
+  ]
+}

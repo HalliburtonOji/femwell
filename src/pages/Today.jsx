@@ -20,6 +20,7 @@ import WeeklyInsightCard from "../components/today/WeeklyInsightCard";
 import TrackCalendar from "../components/today/TrackCalendar";
 import MedReminderSection from "../components/today/MedReminderSection";
 import TodayHeroSection from "../components/today/TodayHeroSection";
+import DailyPlanCard from "../components/today/DailyPlanCard";
 import { format, differenceInDays, parseISO } from "date-fns";
 
 // ── Cycle phase helper ──────────────────────────────────────────────────────
@@ -509,6 +510,7 @@ export default function Today() {
           <>
             {profile && <SmartContextBanner profile={profile} todayCheckin={todayCheckin} currentPage="Today" />}
             {user && <DailyInsightBanner user={user} />}
+            {user && <DailyPlanCard user={user} />}
             {user && <WeeklyInsightCard user={user} />}
 
             {/* Program momentum */}

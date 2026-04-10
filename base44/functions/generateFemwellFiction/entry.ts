@@ -112,20 +112,18 @@ Deno.serve(async (req) => {
         return Response.json({ success: true, message: 'Already generated', week_start: weekStart, generated: 0 });
       }
 
-      const needed = 5 - thisWeek.length;
+      // Generate ONE story per invocation to avoid timeout — automation runs daily Mon-Fri
       const usedGenres = thisWeek.map(i => (i.tags || []).find(t => t.startsWith('genre:'))?.replace('genre:', '') || '').filter(Boolean);
       const available = FICTION_GENRES.filter(g => !usedGenres.includes(g));
-      const genresToUse = available.slice(0, needed);
+      const genre = available[0] || FICTION_GENRES[thisWeek.length % FICTION_GENRES.length];
 
       const generated = [];
-      for (const genre of genresToUse) {
-        try {
-          const r = await generateFiction(base44, { genre, weekStart, isLong: true, mature: false });
-          generated.push(r);
-          console.log(`Generated weekly fiction: ${r.title} (${genre})`);
-        } catch (e) {
-          console.error(`Failed to generate ${genre}:`, e.message);
-        }
+      try {
+        const r = await generateFiction(base44, { genre, weekStart, isLong: true, mature: false });
+        generated.push(r);
+        console.log(`Generated weekly fiction: ${r.title} (${genre})`);
+      } catch (e) {
+        console.error(`Failed to generate ${genre}:`, e.message);
       }
 
       return Response.json({ success: true, week_start: weekStart, generated: generated.length, items: generated });
