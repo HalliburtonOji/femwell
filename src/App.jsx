@@ -4,7 +4,7 @@ import { QueryClientProvider } from '@tanstack/react-query'
 import { queryClientInstance } from '@/lib/query-client'
 import { pagesConfig } from './pages.config'
 import { BrowserRouter as Router, Route, Routes, Navigate, useLocation, useNavigate } from 'react-router-dom';
-import { useEffect, useRef } from 'react';
+import { useEffect } from 'react';
 import { base44 } from '@/api/base44Client';
 import { ThemeProvider } from 'next-themes';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -31,19 +31,20 @@ const AuthenticatedApp = () => {
   const { isLoadingAuth, isLoadingPublicSettings, authError, navigateToLogin } = useAuth();
   const location = useLocation();
   const navigate = useNavigate();
-  const onboardingChecked = useRef(false);
-
-  // One-time onboarding check after auth resolves
+  // One-time onboarding check after auth resolves (sessionStorage survives refreshes within session)
   useEffect(() => {
-    if (isLoadingAuth || authError || onboardingChecked.current) return;
-    onboardingChecked.current = true;
+    if (isLoadingAuth || authError) return;
+    if (sessionStorage.getItem('fw_ob_ok') === '1') return;
+    if (location.pathname === '/Onboarding') return;
     (async () => {
       try {
         const user = await base44.auth.me();
         if (!user?.id) return;
         const profiles = await base44.entities.UserProfile.filter({ user_id: user.id });
         const isComplete = profiles.some(p => p?.onboarding_complete === true);
-        if (!isComplete && location.pathname !== '/Onboarding') {
+        if (isComplete) {
+          sessionStorage.setItem('fw_ob_ok', '1');
+        } else {
           navigate('/Onboarding', { replace: true });
         }
       } catch {}

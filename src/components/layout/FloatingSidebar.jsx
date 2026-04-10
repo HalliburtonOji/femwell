@@ -109,33 +109,6 @@ export default function FloatingSidebar({ currentPageName, mode = "full", openQu
 
   return (
     <>
-      {/* FAB — visible on all screen sizes */}
-      <motion.button
-        onClick={() => setOpen(!open)}
-        className="fixed z-50 flex items-center justify-center"
-        style={{
-          bottom: 76, right: 20,
-          width: 52, height: 52, borderRadius: 9999,
-          backgroundColor: open ? "var(--plum)" : "var(--surface)",
-          border: open ? "none" : "1px solid var(--border)",
-          boxShadow: open ? "0 8px 28px rgba(42,32,53,0.28)" : "var(--shadow-md)",
-          color: open ? "white" : "var(--plum)",
-        }}
-        whileTap={{ scale: 0.92 }}
-      >
-        <AnimatePresence mode="wait">
-          {open ? (
-            <motion.div key="close" initial={{ rotate: -90, opacity: 0 }} animate={{ rotate: 0, opacity: 1 }} exit={{ rotate: 90, opacity: 0 }} transition={{ duration: 0.15 }}>
-              <X className="w-5 h-5" />
-            </motion.div>
-          ) : (
-            <motion.div key="open" initial={{ rotate: 90, opacity: 0 }} animate={{ rotate: 0, opacity: 1 }} exit={{ rotate: -90, opacity: 0 }} transition={{ duration: 0.15 }}>
-              <Menu className="w-5 h-5" />
-            </motion.div>
-          )}
-        </AnimatePresence>
-      </motion.button>
-
       {/* Mobile bottom sheet */}
       <AnimatePresence>
         {open && (

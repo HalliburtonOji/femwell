@@ -1,7 +1,7 @@
-import { X, MessageCircle, Sparkles } from "lucide-react";
+import { X, Sparkles } from "lucide-react";
 import AssistantPanel from "./AssistantPanel";
 
-export default function AssistantOverlay({ open, onClose, initialPrompt, suggestion, onNavigate }) {
+export default function AssistantOverlay({ open, onClose, initialPrompt }) {
   if (!open) return null;
 
   return (
@@ -24,24 +24,19 @@ export default function AssistantOverlay({ open, onClose, initialPrompt, suggest
           overflow: "hidden",
         }}
       >
-        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "16px 18px", borderBottom: "1px solid var(--border-subtle)" }}>
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "14px 18px", borderBottom: "1px solid var(--border-subtle)", flexShrink: 0 }}>
           <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-            <div style={{ width: 38, height: 38, borderRadius: 14, backgroundColor: "var(--rose-dust-subtle)", border: "1px solid var(--rose-dust-light)", display: "flex", alignItems: "center", justifyContent: "center" }}>
+            <div style={{ width: 34, height: 34, borderRadius: 12, backgroundColor: "var(--rose-dust-subtle)", border: "1px solid var(--rose-dust-light)", display: "flex", alignItems: "center", justifyContent: "center" }}>
               <Sparkles className="w-4 h-4" style={{ color: "var(--rose-dust)" }} />
             </div>
-            <div>
-              <p style={{ fontSize: 14, fontWeight: 700, color: "var(--plum)", fontFamily: "'Inter', sans-serif" }}>Personal Assistant</p>
-              <p style={{ fontSize: 11, color: "var(--mauve)", fontFamily: "'Inter', sans-serif" }}>
-                {suggestion?.type === "question" ? "Continue the conversation" : "Quick help for this moment"}
-              </p>
-            </div>
+            <p style={{ fontSize: 14, fontWeight: 700, color: "var(--plum)", fontFamily: "'Inter', sans-serif" }}>Your Guide</p>
           </div>
-          <button onClick={onClose} style={{ width: 36, height: 36, borderRadius: 9999, border: "none", backgroundColor: "var(--ivory-dark)", color: "var(--mauve)", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center" }}>
+          <button onClick={onClose} style={{ width: 34, height: 34, borderRadius: 9999, border: "none", backgroundColor: "var(--ivory-dark)", color: "var(--mauve)", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center" }}>
             <X className="w-4 h-4" />
           </button>
         </div>
         <div style={{ flex: 1, minHeight: 0 }}>
-          <AssistantPanel initialPrompt={initialPrompt} suggestion={suggestion} onNavigate={onNavigate} />
+          <AssistantPanel initialPrompt={initialPrompt} embedded={true} />
         </div>
       </div>
     </>

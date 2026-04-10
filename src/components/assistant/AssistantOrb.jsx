@@ -1,134 +1,171 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { base44 } from "@/api/base44Client";
 import { Sparkles, X } from "lucide-react";
-import { createPageUrl } from "@/utils";
 import AssistantOverlay from "./AssistantOverlay";
+
+// ── Cooldown helpers ────────────────────────────────────────────────────────
+const COOLDOWN_ANY_MS = 10 * 60 * 1000;   // 10 min between any suggestion
+const COOLDOWN_LOG_MS = 60 * 60 * 1000;    // 1 hr if user closed a "log" suggestion
+const POLL_INTERVAL_MS = 12 * 60 * 1000;   // poll every 12 min
+
+function getCooldowns() {
+  try { return JSON.parse(localStorage.getItem("fw_sugg_cd") || "{}"); } catch { return {}; }
+}
+
+function recordDismiss(category) {
+  const cd = getCooldowns();
+  const now = Date.now();
+  cd._any = now + COOLDOWN_ANY_MS;
+  if (category === "log") cd.log = now + COOLDOWN_LOG_MS;
+  else if (category) cd[category] = now + COOLDOWN_ANY_MS;
+  localStorage.setItem("fw_sugg_cd", JSON.stringify(cd));
+}
+
+function isOnCooldown(category) {
+  const cd = getCooldowns();
+  const now = Date.now();
+  if (cd._any && now < cd._any) return true;
+  if (category && cd[category] && now < cd[category]) return true;
+  return false;
+}
 
 function getStoredPosition() {
   try {
-    const raw = localStorage.getItem("fw_assistant_orb_pos");
-    return raw ? JSON.parse(raw) : { x: window.innerWidth - 92, y: window.innerHeight - 180 };
-  } catch {
-    return { x: window.innerWidth - 92, y: window.innerHeight - 180 };
-  }
+    const raw = localStorage.getItem("fw_orb_pos");
+    return raw ? JSON.parse(raw) : null;
+  } catch { return null; }
 }
 
 export default function AssistantOrb({ currentPageName }) {
-  const [position, setPosition] = useState({ x: 0, y: 0 });
+  const defaultPos = () => ({ x: window.innerWidth - 84, y: window.innerHeight - 180 });
+  const [position, setPosition] = useState(() => getStoredPosition() || defaultPos());
   const [dragging, setDragging] = useState(false);
-  const [profile, setProfile] = useState(null);
-  const [user, setUser] = useState(null);
   const [suggestion, setSuggestion] = useState(null);
   const [overlayOpen, setOverlayOpen] = useState(false);
+  const [overlayPrompt, setOverlayPrompt] = useState(null);
   const dragRef = useRef({ offsetX: 0, offsetY: 0, moved: false });
   const timerRef = useRef(null);
+  const authedRef = useRef(false);
 
   useEffect(() => {
-    setPosition(getStoredPosition());
-    base44.auth.me().then(async (u) => {
-      setUser(u);
-      const profiles = await base44.entities.UserProfile.filter({ user_id: u.id }).catch(() => []);
-      setProfile(profiles[0] || null);
-    }).catch(() => {});
-  }, []);
-
-  useEffect(() => {
-    if (!user?.id) return;
-    const loadSuggestion = async () => {
-      const response = await base44.functions.invoke("generateAssistantSuggestion", { currentPage: currentPageName }).catch(() => null);
-      if (response?.data) setSuggestion(response.data);
-    };
-    loadSuggestion();
-    timerRef.current = setInterval(loadSuggestion, 30000);
+    base44.auth.me().then(() => { authedRef.current = true; fetchSuggestion(); }).catch(() => {});
+    timerRef.current = setInterval(() => { if (authedRef.current) fetchSuggestion(); }, POLL_INTERVAL_MS);
     return () => clearInterval(timerRef.current);
-  }, [user?.id, currentPageName]);
+  }, [currentPageName]);
 
-  const bubbleStyle = useMemo(() => ({ left: Math.max(14, position.x - 250), top: Math.max(14, position.y - 12) }), [position]);
-
-  const openSuggestion = () => {
-    if (!suggestion) {
-      setOverlayOpen(true);
-      return;
-    }
-    if (suggestion.type === "suggestion") {
-      handleNavigate(suggestion);
-      return;
-    }
-    setOverlayOpen(true);
+  const fetchSuggestion = async () => {
+    if (isOnCooldown(null)) return;
+    const res = await base44.functions.invoke("generateAssistantSuggestion", { currentPage: currentPageName }).catch(() => null);
+    if (!res?.data) return;
+    const cat = res.data.category || "general";
+    if (isOnCooldown(cat)) return;
+    setSuggestion({ ...res.data, category: cat });
   };
 
-  const handleNavigate = (item) => {
-    setOverlayOpen(false);
-    if (!item?.action_route) return;
-    if (item.action_route.startsWith("http")) {
-      window.open(item.action_route, "_blank", "noopener,noreferrer");
-      return;
+  const dismiss = () => {
+    if (suggestion) recordDismiss(suggestion.category || "general");
+    setSuggestion(null);
+  };
+
+  const tap = () => {
+    if (dragRef.current.moved) return;
+    if (suggestion?.type === "question") {
+      setOverlayPrompt(suggestion.prompt);
+      setOverlayOpen(true);
+      dismiss();
+    } else {
+      setOverlayPrompt(null);
+      setOverlayOpen(true);
     }
-    window.location.href = item.action_route.startsWith("/") ? item.action_route : createPageUrl(item.action_route);
   };
 
   const startDrag = (clientX, clientY) => {
     dragRef.current = { offsetX: clientX - position.x, offsetY: clientY - position.y, moved: false };
     setDragging(true);
   };
-
   const moveDrag = (clientX, clientY) => {
     if (!dragging) return;
     dragRef.current.moved = true;
-    const next = {
-      x: Math.min(window.innerWidth - 70, Math.max(10, clientX - dragRef.current.offsetX)),
-      y: Math.min(window.innerHeight - 90, Math.max(10, clientY - dragRef.current.offsetY)),
-    };
-    setPosition(next);
+    setPosition({
+      x: Math.min(window.innerWidth - 64, Math.max(8, clientX - dragRef.current.offsetX)),
+      y: Math.min(window.innerHeight - 80, Math.max(8, clientY - dragRef.current.offsetY)),
+    });
   };
-
   const endDrag = () => {
     if (!dragging) return;
     setDragging(false);
-    localStorage.setItem("fw_assistant_orb_pos", JSON.stringify(position));
+    localStorage.setItem("fw_orb_pos", JSON.stringify(position));
+    if (!dragRef.current.moved) tap();
   };
+
+  const bubbleLeft = position.x > window.innerWidth / 2
+    ? Math.max(8, position.x - 226)
+    : position.x + 68;
 
   return (
     <>
-      <style>{`@keyframes orb-pulse{0%,100%{transform:scale(1);opacity:.55}50%{transform:scale(1.35);opacity:.12}} @keyframes orb-core{0%,100%{transform:scale(1)}50%{transform:scale(1.07)}}`}</style>
+      <style>{`@keyframes orb-pulse{0%,100%{transform:scale(1);opacity:.5}50%{transform:scale(1.4);opacity:.1}}`}</style>
+
       {suggestion && !overlayOpen && (
-        <div style={{ position: "fixed", zIndex: 78, ...bubbleStyle, maxWidth: 230 }}>
-          <div style={{ backgroundColor: "var(--surface)", border: "1px solid var(--border)", boxShadow: "var(--shadow-md)", borderRadius: 20, padding: "12px 14px" }}>
-            <div style={{ display: "flex", alignItems: "start", gap: 8 }}>
+        <div style={{ position: "fixed", zIndex: 78, left: bubbleLeft, top: Math.max(8, position.y - 4), maxWidth: 218, pointerEvents: "auto" }}>
+          <div style={{ backgroundColor: "var(--surface)", border: "1px solid var(--border)", boxShadow: "var(--shadow-md)", borderRadius: 16, padding: "10px 12px" }}>
+            <div style={{ display: "flex", alignItems: "flex-start", gap: 7 }}>
               <div style={{ flex: 1 }}>
-                <p style={{ fontSize: 11, fontWeight: 700, color: "var(--rose-dust)", textTransform: "uppercase", letterSpacing: ".08em", fontFamily: "'Inter', sans-serif", marginBottom: 4 }}>{suggestion.type === "question" ? "Question" : "Suggestion"}</p>
-                <button onClick={openSuggestion} style={{ border: "none", background: "none", padding: 0, textAlign: "left", cursor: "pointer" }}>
-                  <p style={{ fontSize: 13, color: "var(--plum)", lineHeight: 1.45, fontFamily: "'Inter', sans-serif", fontWeight: 600 }}>{suggestion.prompt}</p>
+                <p style={{ fontSize: 9, fontWeight: 700, color: "var(--rose-dust)", textTransform: "uppercase", letterSpacing: ".08em", fontFamily: "'Inter', sans-serif", marginBottom: 3 }}>
+                  {suggestion.type === "question" ? "Guide" : "Suggestion"}
+                </p>
+                <button onClick={() => {
+                  if (suggestion.type === "question") {
+                    setOverlayPrompt(suggestion.prompt);
+                    setOverlayOpen(true);
+                    dismiss();
+                  } else if (suggestion.action_route) {
+                    dismiss();
+                    if (suggestion.action_route.startsWith("http")) window.open(suggestion.action_route, "_blank");
+                    else window.location.href = suggestion.action_route;
+                  }
+                }} style={{ border: "none", background: "none", padding: 0, textAlign: "left", cursor: "pointer" }}>
+                  <p style={{ fontSize: 12, color: "var(--plum)", lineHeight: 1.4, fontFamily: "'Inter', sans-serif", fontWeight: 500, margin: 0 }}>
+                    {suggestion.prompt}
+                  </p>
                 </button>
               </div>
-              <button onClick={() => setSuggestion(null)} style={{ border: "none", background: "none", cursor: "pointer", color: "var(--mauve)", padding: 0 }}>
-                <X className="w-4 h-4" />
+              <button onClick={dismiss} style={{ border: "none", background: "none", cursor: "pointer", color: "var(--mauve)", padding: 0, flexShrink: 0, marginTop: 1 }}>
+                <X className="w-3.5 h-3.5" />
               </button>
             </div>
           </div>
         </div>
       )}
+
       <button
         onMouseDown={(e) => startDrag(e.clientX, e.clientY)}
-        onMouseMove={(e) => moveDrag(e.clientX, e.clientY)}
+        onMouseMove={(e) => { if (dragging) moveDrag(e.clientX, e.clientY); }}
         onMouseUp={endDrag}
         onTouchStart={(e) => startDrag(e.touches[0].clientX, e.touches[0].clientY)}
-        onTouchMove={(e) => moveDrag(e.touches[0].clientX, e.touches[0].clientY)}
+        onTouchMove={(e) => { if (dragging) { e.preventDefault(); moveDrag(e.touches[0].clientX, e.touches[0].clientY); } }}
         onTouchEnd={endDrag}
-        onClick={() => { if (!dragRef.current.moved) setOverlayOpen(true); }}
-        style={{ position: "fixed", zIndex: 79, left: position.x, top: position.y, width: 58, height: 58, borderRadius: 9999, border: "1px solid var(--rose-dust-light)", backgroundColor: "var(--surface)", boxShadow: dragging ? "var(--shadow-lg)" : "var(--shadow-md)", display: "flex", alignItems: "center", justifyContent: "center", cursor: dragging ? "grabbing" : "grab" }}
+        style={{
+          position: "fixed", zIndex: 79, left: position.x, top: position.y,
+          width: 54, height: 54, borderRadius: 9999,
+          border: "1px solid var(--rose-dust-light)",
+          backgroundColor: "var(--surface)",
+          boxShadow: dragging ? "var(--shadow-lg)" : "var(--shadow-md)",
+          display: "flex", alignItems: "center", justifyContent: "center",
+          cursor: dragging ? "grabbing" : "pointer",
+          touchAction: "none",
+        }}
       >
-        <div style={{ position: "absolute", inset: 8, borderRadius: "50%", backgroundColor: "var(--rose-dust)", animation: "orb-pulse 2.2s ease-in-out infinite", pointerEvents: "none" }} />
-        <div style={{ position: "relative", width: 30, height: 30, borderRadius: "50%", background: "radial-gradient(circle at 38% 32%, rgba(232,196,208,0.95) 0%, var(--rose-dust) 58%, #8A3858 100%)", animation: "orb-core 2.2s ease-in-out infinite", boxShadow: "0 0 14px rgba(196,132,154,0.45)", display: "flex", alignItems: "center", justifyContent: "center" }}>
-          <Sparkles className="w-4 h-4" style={{ color: "white" }} />
+        <div style={{ position: "absolute", inset: 8, borderRadius: "50%", backgroundColor: "var(--rose-dust)", animation: "orb-pulse 2.4s ease-in-out infinite", pointerEvents: "none" }} />
+        <div style={{ position: "relative", width: 28, height: 28, borderRadius: "50%", background: "radial-gradient(circle at 38% 32%, rgba(232,196,208,0.95) 0%, var(--rose-dust) 58%, #8A3858 100%)", boxShadow: "0 0 12px rgba(196,132,154,0.45)", display: "flex", alignItems: "center", justifyContent: "center" }}>
+          <Sparkles className="w-3.5 h-3.5" style={{ color: "white" }} />
         </div>
       </button>
+
       <AssistantOverlay
         open={overlayOpen}
         onClose={() => setOverlayOpen(false)}
-        initialPrompt={suggestion?.type === "question" ? suggestion.prompt : `Hi ${profile?.ai_assistant_name || "Guide"}, I need help.`}
-        suggestion={suggestion}
-        onNavigate={handleNavigate}
+        initialPrompt={overlayPrompt}
       />
     </>
   );
