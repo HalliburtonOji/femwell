@@ -14,7 +14,8 @@ function getMondayWeekStart() {
 }
 
 async function generateFiction(base44, { genre, weekStart, isLong, userContext, mature, userId }) {
-  const wordCount = isLong ? '2800-3500' : '1400-1800';
+  // Keep word counts short enough to complete within the 90s function timeout.
+  const wordCount = isLong ? '900-1200' : '500-700';
   const structure = isLong
     ? 'Divide the story into 4 chapters with plain text headings "Chapter 1", "Chapter 2", "Chapter 3", "Chapter 4". No markdown, no asterisks, no bold, no bullet points.'
     : 'Divide the story into 3 scenes with plain text headings "Scene 1", "Scene 2", "Scene 3". No markdown, no asterisks, no bullet points.';
@@ -27,8 +28,11 @@ async function generateFiction(base44, { genre, weekStart, isLong, userContext, 
     ? `Tailor themes lightly to this reader context: ${userContext}`
     : 'Write for a modern woman reader interested in connection, ambition, healing and self-discovery.';
 
+  // Use fastest model to stay within function timeout. Word count is kept short.
+  const model = 'gpt_5_mini';
+
   const result = await base44.asServiceRole.integrations.Core.InvokeLLM({
-    model: 'claude_sonnet_4_6',
+    model,
     prompt: `You are a fiction editor for FemWell, a women's wellness and lifestyle platform. Write original ${genre} fiction for women readers.
 
 Genre: ${genre}
