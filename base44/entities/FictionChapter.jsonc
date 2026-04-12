@@ -1,0 +1,33 @@
+{
+  "name": "FictionChapter",
+  "type": "object",
+  "properties": {
+    "work_id": {
+      "type": "string"
+    },
+    "chapter_index": {
+      "type": "number"
+    },
+    "title": {
+      "type": "string"
+    },
+    "text": {
+      "type": "string"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "PENDING",
+        "DONE"
+      ],
+      "default": "PENDING"
+    },
+    "created_at": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "work_id",
+    "chapter_index"
+  ]
+}

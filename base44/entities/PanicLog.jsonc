@@ -1,0 +1,34 @@
+{
+  "name": "PanicLog",
+  "type": "object",
+  "properties": {
+    "user_id": {
+      "type": "string"
+    },
+    "timestamp": {
+      "type": "string"
+    },
+    "trigger": {
+      "type": "string"
+    },
+    "feeling_type": {
+      "type": "string"
+    },
+    "intensity": {
+      "type": "number"
+    },
+    "actions_taken": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "resolved_rating": {
+      "type": "number"
+    }
+  },
+  "required": [
+    "user_id",
+    "timestamp"
+  ]
+}

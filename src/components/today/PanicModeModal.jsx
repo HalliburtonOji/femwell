@@ -23,13 +23,23 @@ export default function PanicModeModal({ userId, onClose }) {
 
   const handleLog = async () => {
     setSaving(true);
-    await base44.entities.PanicSessions.create({
-      user_id: userId,
-      day_key: todayStr,
-      logged_at: new Date().toISOString(),
-      intensity,
-      feeling_type: feeling,
-    }).catch(() => {});
+    await Promise.all([
+      base44.entities.PanicSessions.create({
+        user_id: userId,
+        day_key: todayStr,
+        logged_at: new Date().toISOString(),
+        intensity,
+        feeling_type: feeling,
+      }).catch(() => {}),
+      base44.entities.PanicLog.create({
+        user_id: userId,
+        timestamp: new Date().toISOString(),
+        feeling_type: feeling,
+        intensity,
+        trigger: feeling,
+        actions_taken: ["grounding"],
+      }).catch(() => {}),
+    ]);
     setSaving(false);
     toast.success("Logged. You are doing the right thing by noticing this.");
     setStep("grounding");

@@ -1,0 +1,26 @@
+{
+  "name": "StoryVisualPool",
+  "type": "object",
+  "properties": {
+    "theme": {
+      "type": "string"
+    },
+    "image_url": {
+      "type": "string"
+    },
+    "image_prompt": {
+      "type": "string"
+    },
+    "created_at": {
+      "type": "string"
+    },
+    "is_active": {
+      "type": "boolean",
+      "default": true
+    }
+  },
+  "required": [
+    "theme",
+    "image_url"
+  ]
+}

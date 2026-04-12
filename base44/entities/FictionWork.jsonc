@@ -1,0 +1,67 @@
+{
+  "name": "FictionWork",
+  "type": "object",
+  "properties": {
+    "work_id": {
+      "type": "string"
+    },
+    "scope": {
+      "type": "string",
+      "enum": [
+        "WEEKLY_GLOBAL",
+        "PERSONAL_USER"
+      ],
+      "default": "WEEKLY_GLOBAL"
+    },
+    "user_id": {
+      "type": "string"
+    },
+    "week_start": {
+      "type": "string"
+    },
+    "genre": {
+      "type": "string"
+    },
+    "mature_allowed": {
+      "type": "boolean",
+      "default": false
+    },
+    "target_chapters": {
+      "type": "number",
+      "default": 6
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "OUTLINE_PENDING",
+        "CHAPTERS_PENDING",
+        "ASSEMBLING",
+        "PUBLISHED",
+        "FAILED"
+      ],
+      "default": "OUTLINE_PENDING"
+    },
+    "outline_json": {
+      "type": "string"
+    },
+    "title": {
+      "type": "string"
+    },
+    "synopsis": {
+      "type": "string"
+    },
+    "lifestyle_item_id": {
+      "type": "string"
+    },
+    "created_at": {
+      "type": "string"
+    },
+    "updated_at": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "scope",
+    "week_start"
+  ]
+}

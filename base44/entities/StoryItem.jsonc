@@ -1,0 +1,64 @@
+{
+  "name": "StoryItem",
+  "type": "object",
+  "properties": {
+    "pack_id": {
+      "type": "string"
+    },
+    "slot_index": {
+      "type": "number"
+    },
+    "title": {
+      "type": "string"
+    },
+    "body_line_1": {
+      "type": "string"
+    },
+    "body_line_2": {
+      "type": "string"
+    },
+    "cta_label": {
+      "type": "string"
+    },
+    "route_key": {
+      "type": "string"
+    },
+    "route_params_json": {
+      "type": "string"
+    },
+    "theme": {
+      "type": "string",
+      "enum": [
+        "calm",
+        "energy",
+        "relationships",
+        "nutrition",
+        "cycle",
+        "skin",
+        "growth",
+        "sleep"
+      ]
+    },
+    "image_url": {
+      "type": "string"
+    },
+    "image_prompt": {
+      "type": "string"
+    },
+    "item_status": {
+      "type": "string",
+      "enum": [
+        "PENDING",
+        "DONE"
+      ],
+      "default": "PENDING"
+    },
+    "generated_at": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "pack_id",
+    "slot_index"
+  ]
+}

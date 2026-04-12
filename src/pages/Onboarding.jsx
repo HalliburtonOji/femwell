@@ -66,6 +66,15 @@ const card = {
 
 export default function Onboarding() {
   const navigate = useNavigate();
+
+  // Guard: only allow if mode=signup or mode=redo in query string
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const mode = params.get("mode");
+    if (!mode || (mode !== "signup" && mode !== "redo")) {
+      navigate("/Today", { replace: true });
+    }
+  }, []);
   const [step, setStep] = useState(0);
   const [goals, setGoals] = useState([]);
   const [interests, setInterests] = useState([]);

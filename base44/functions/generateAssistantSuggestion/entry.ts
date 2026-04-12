@@ -73,8 +73,10 @@ RULES:
 - Type must be "question" (opens assistant chat) or "suggestion" (deep-links to app section)
 - "prompt" must be max 55 characters, warm, natural, NOT robotic
 - category must be one of: log, habit, journal, program, nutrition, hydration, content, cycle, pregnancy, lifestyle, mood, skin
-- action_route is an in-app path e.g. /Today, /Nutrition, /Journal, /Programs, /SkinHair, /LifeStageCare, /Explore, /Lifestyle
-- For questions, action_route should be /Assistant
+- action_route must be one of these exact keys ONLY: Today, Nutrition, Journal, Programs, Explore, SkinHair, Pulse, LifeStageCare, Lifestyle, Saved, Assistant, NutritionHydration, LifestyleFiction, LifestyleBooks
+- For hydration suggestions use action_route: NutritionHydration
+- For questions, action_route should be: Assistant
+- Do NOT invent routes like /Hydration — only use keys from the list above
 - Be VARIED — don't always suggest logging. Mix: journal prompts, program nudges, content discovery, hydration, mood checks, etc.
 - Morning (5-11am): daily log, habits, program start
 - Afternoon (12-17pm): meal check, hydration, program content  
@@ -97,7 +99,6 @@ Return JSON only:
           title: { type: 'string' },
           prompt: { type: 'string' },
           action_route: { type: 'string' },
-          category: { type: 'string' },
         },
         required: ['type', 'title', 'prompt', 'action_route', 'category']
       }

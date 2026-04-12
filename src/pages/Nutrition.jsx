@@ -36,6 +36,14 @@ export default function Nutrition() {
   const [checkin, setCheckin]                 = useState(null);
   const [loading, setLoading]                 = useState(true);
   const [activeTab, setActiveTab]             = useState("today");
+
+  // Deep-link: ?tab=hydration or ?tab=xxx maps to our tab IDs
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const tabParam = params.get("tab");
+    const tabMap = { hydration: "today", today: "today", plan: "plan", recipes: "recipes", mealgen: "mealgen", shopping: "shopping", progress: "progress", insights: "insights" };
+    if (tabParam && tabMap[tabParam]) setActiveTab(tabMap[tabParam]);
+  }, []);
   const [selectedDate, setSelectedDate]       = useState(new Date());
 
   const dayKey  = format(selectedDate, "yyyy-MM-dd");

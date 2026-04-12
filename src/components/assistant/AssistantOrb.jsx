@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { base44 } from "@/api/base44Client";
 import { Sparkles, X } from "lucide-react";
+import { safeNavigate, ROUTES } from "@/lib/routeRegistry";
 
 // ── Cooldown helpers ────────────────────────────────────────────────────────
 const COOLDOWN_ANY_MS = 10 * 60 * 1000;   // 10 min between any suggestion
@@ -109,8 +110,10 @@ export default function AssistantOrb({ currentPageName }) {
                 <button onClick={() => {
                   if (suggestion.action_route && suggestion.type !== "question") {
                     dismiss();
-                    if (suggestion.action_route.startsWith("http")) window.open(suggestion.action_route, "_blank");
-                    else window.location.href = suggestion.action_route;
+                    const key = suggestion.action_route;
+                    if (ROUTES.hasOwnProperty(key)) { safeNavigate(key); }
+                    else if (key.startsWith("http")) window.open(key, "_blank");
+                    else window.location.href = key;
                   } else {
                     const p = suggestion.prompt;
                     dismiss();

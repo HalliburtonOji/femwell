@@ -631,7 +631,7 @@ export default function Profile() {
         </div>
 
         {/* Redo Onboarding */}
-        <a href={createPageUrl("Onboarding")}
+        <a href="/Onboarding?mode=redo"
            style={{ ...card, padding: "16px", marginBottom: "16px", marginTop: "16px", display: "flex", alignItems: "center", gap: "12px", textDecoration: "none" }}>
           <div style={iconBox("var(--ivory-dark)")}>
             <Settings className="w-4 h-4" style={{ color: "var(--mauve)" }} />

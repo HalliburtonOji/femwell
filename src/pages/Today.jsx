@@ -23,6 +23,7 @@ import TrackCalendar from "../components/today/TrackCalendar";
 import MedReminderSection from "../components/today/MedReminderSection";
 import TodayHeroSection from "../components/today/TodayHeroSection";
 import DailyPlanCard from "../components/today/DailyPlanCard";
+import DailyStoriesStrip from "../components/today/DailyStoriesStrip";
 import { format, differenceInDays, parseISO } from "date-fns";
 
 // ── Cycle phase helper ──────────────────────────────────────────────────────
@@ -501,6 +502,7 @@ export default function Today() {
           </button>
         </div>
 
+        <DailyStoriesStrip user={user} />
         <DailyStoriesRow todayCheckin={todayCheckin} todayCompletions={todayCompletions} />
 
         {/* ── TAB SWITCHER ─────────────────────────────────────────────────── */}
