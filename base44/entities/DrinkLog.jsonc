@@ -9,7 +9,19 @@
       "type": "string"
     },
     "drink_type": {
-      "type": "string"
+      "type": "string",
+      "enum": [
+        "coffee",
+        "tea",
+        "soft_drink",
+        "juice",
+        "alcohol",
+        "milk",
+        "smoothie",
+        "sports_drink",
+        "energy_drink",
+        "other"
+      ]
     },
     "amount_ml": {
       "type": "number"

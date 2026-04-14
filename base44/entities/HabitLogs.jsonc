@@ -11,6 +11,17 @@
     "habit_type": {
       "type": "string"
     },
+    "habit_category": {
+      "type": "string",
+      "enum": [
+        "hydration",
+        "movement",
+        "nutrition",
+        "mindfulness",
+        "sleep",
+        "other"
+      ]
+    },
     "completed": {
       "type": "boolean",
       "default": false

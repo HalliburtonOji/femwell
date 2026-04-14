@@ -30,10 +30,6 @@
     "allergens_avoid": {
       "type": "string"
     },
-    "hydration_target_ml": {
-      "type": "number",
-      "default": 2000
-    },
     "calories_target": {
       "type": "number"
     },

@@ -14,6 +14,18 @@
     "logged_at": {
       "type": "string"
     },
+    "source": {
+      "type": "string",
+      "enum": [
+        "manual",
+        "checkin",
+        "habit"
+      ],
+      "default": "manual"
+    },
+    "drink_type": {
+      "type": "string"
+    },
     "created_at": {
       "type": "string"
     },
