@@ -1,0 +1,64 @@
+{
+  "name": "MealPlans",
+  "type": "object",
+  "properties": {
+    "user_id": {
+      "type": "string"
+    },
+    "week_start": {
+      "type": "string"
+    },
+    "plan_days": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "day": {
+            "type": "number"
+          },
+          "breakfast": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "lunch": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "dinner": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "snack": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        }
+      }
+    },
+    "wellness_goal": {
+      "type": "string"
+    },
+    "is_active": {
+      "type": "boolean",
+      "default": true
+    },
+    "created_at": {
+      "type": "string"
+    },
+    "updated_at": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "user_id",
+    "week_start"
+  ]
+}

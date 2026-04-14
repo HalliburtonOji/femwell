@@ -16,9 +16,9 @@ Deno.serve(async (req) => {
     ]);
 
     const profile = profiles[0] || {};
-    const followedTopics = profile.followed_topics ? profile.followed_topics.split(',').map(s => s.trim()).filter(Boolean) : [];
-    const followedSources = profile.followed_sources ? profile.followed_sources.split(',').map(s => s.trim()).filter(Boolean) : [];
-    const hiddenIds = profile.hidden_item_ids ? profile.hidden_item_ids.split(',').map(s => s.trim()).filter(Boolean) : [];
+    const followedTopics = Array.isArray(profile.followed_topics) ? profile.followed_topics : [];
+    const followedSources = Array.isArray(profile.followed_sources) ? profile.followed_sources : [];
+    const hiddenIds = Array.isArray(profile.hidden_item_ids) ? profile.hidden_item_ids : [];
 
     // Build category weights from interactions
     const catWeights = {};

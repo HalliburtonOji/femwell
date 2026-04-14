@@ -1,0 +1,63 @@
+{
+  "name": "LifestyleProfile",
+  "type": "object",
+  "properties": {
+    "user_id": {
+      "type": "string"
+    },
+    "followed_topics": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "followed_sources": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "category_weights": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "number"
+      }
+    },
+    "hidden_item_ids": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "saved_item_ids": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "last_seen_item_ids": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "blocked_categories": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "blocked_sources": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "updated_at": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "user_id"
+  ]
+}

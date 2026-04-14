@@ -10,15 +10,7 @@ const CATEGORY_BOOSTS = {
 function asList(value) {
   if (!value) return [];
   if (Array.isArray(value)) return value;
-  return String(value).split(',').map((item) => item.trim()).filter(Boolean);
-}
-
-function safeJson(value, fallback) {
-  try {
-    return value ? JSON.parse(value) : fallback;
-  } catch {
-    return fallback;
-  }
+  return [];
 }
 
 function getRecencyScore(item) {
@@ -76,7 +68,7 @@ Deno.serve(async (req) => {
     const hiddenIds = new Set(asList(profile?.hidden_item_ids));
     const followedTopics = new Set(asList(profile?.followed_topics));
     const followedSources = new Set(asList(profile?.followed_sources));
-    const categoryWeights = safeJson(profile?.category_weights_json || profile?.category_weights, {});
+    const categoryWeights = (profile?.category_weights && typeof profile.category_weights === 'object') ? profile.category_weights : {};
     const interests = new Set(preferences?.lifestyle_interests || []);
 
     const highStress = recentCheckins.filter((item) => Number(item.stress) >= 4).length >= 2;

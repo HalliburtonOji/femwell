@@ -55,8 +55,10 @@ export default function ShoppingListTab({ user }) {
     const plans = await base44.entities.MealPlans.filter({ user_id: user.id, week_start: weekStart, is_active: true });
     const plan = plans[0];
     if (!plan) { setSyncing(false); return; }
-    let shoppingItems = [];
-    try { shoppingItems = JSON.parse(plan.shopping_list_json || "[]"); } catch {}
+    // shopping items come from the ShoppingList entity (synced when plan was saved)
+    // Re-extract ingredient names from existing meal_plan-sourced ShoppingList rows
+    const existingItems = await base44.entities.ShoppingList.filter({ user_id: user.id, week_start: weekStart, source: "meal_plan" });
+    const shoppingItems = existingItems.map(i => i.ingredient_name).filter(Boolean);
     if (shoppingItems.length > 0) {
       let categorized = shoppingItems.map(i => ({ ingredient: i, category: "Other", quantity: "" }));
       try {

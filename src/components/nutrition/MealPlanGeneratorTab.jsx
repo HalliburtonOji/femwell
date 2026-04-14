@@ -259,28 +259,31 @@ export default function MealPlanGeneratorTab({ user, nutritionProfile }) {
   const handleSaveMealPlan = async (mealPlan) => {
     setSaving(true);
     const weekStart = format(startOfWeek(new Date(), { weekStartsOn: 1 }), "yyyy-MM-dd");
-    const planData  = {};
-    mealPlan.days?.forEach((d) => {
+    const plan_days = (mealPlan.days || []).map((d) => {
       const dayIdx = (d.day_number - 1) % 7;
-      Object.entries(d.meals || {}).forEach(([type, meal]) => {
-        planData[`${dayIdx}_${type}`] = [meal.name];
-      });
+      return {
+        day: dayIdx,
+        breakfast: d.meals?.breakfast?.name ? [d.meals.breakfast.name] : [],
+        lunch: d.meals?.lunch?.name ? [d.meals.lunch.name] : [],
+        dinner: d.meals?.dinner?.name ? [d.meals.dinner.name] : [],
+        snack: d.meals?.snack?.name ? [d.meals.snack.name] : [],
+      };
     });
     const existing = await base44.entities.MealPlans.filter({ user_id: user.id, week_start: weekStart });
     let planId;
     if (existing[0]) {
       const updated = await base44.entities.MealPlans.update(existing[0].id, {
-        plan_json: JSON.stringify(planData),
-        shopping_list_json: JSON.stringify(mealPlan.shopping_list || []),
+        plan_days,
         wellness_goal: goal || undefined, is_active: true,
+        updated_at: new Date().toISOString(),
       });
       planId = updated.id;
     } else {
       const created = await base44.entities.MealPlans.create({
         user_id: user.id, week_start: weekStart,
-        plan_json: JSON.stringify(planData),
-        shopping_list_json: JSON.stringify(mealPlan.shopping_list || []),
+        plan_days,
         wellness_goal: goal || undefined, is_active: true,
+        created_at: new Date().toISOString(),
       });
       planId = created.id;
     }

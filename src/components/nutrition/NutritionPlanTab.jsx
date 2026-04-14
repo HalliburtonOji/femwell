@@ -62,14 +62,40 @@ export default function NutritionPlanTab({ user, nutritionProfile }) {
     } else {
       const newPlan = await base44.entities.MealPlans.create({
         user_id: user.id, week_start: weekKey,
-        plan_json: JSON.stringify({}), shopping_list_json: JSON.stringify([]), is_active: true,
+        plan_days: [], is_active: true,
+        created_at: new Date().toISOString(),
       });
       setPlan(newPlan);
     }
     setLoading(false);
   };
 
-  const getPlanData = () => { try { return JSON.parse(plan?.plan_json || "{}"); } catch { return {}; } };
+  // plan_days is an array of { day, breakfast, lunch, dinner, snack }
+  // Convert to a flat map { "0_breakfast": [...], ... } for easy lookup in the UI
+  const getPlanData = () => {
+    const days = plan?.plan_days || [];
+    const map = {};
+    for (const d of days) {
+      for (const mt of ["breakfast", "lunch", "dinner", "snack"]) {
+        map[`${d.day}_${mt}`] = d[mt] || [];
+      }
+    }
+    return map;
+  };
+
+  const updatePlanDays = (data) => {
+    // Rebuild plan_days from the flat map
+    const dayMap = {};
+    for (const [key, meals] of Object.entries(data)) {
+      const match = key.match(/^(\d+)_(.+)$/);
+      if (!match) continue;
+      const dayIdx = parseInt(match[1], 10);
+      const mealType = match[2];
+      if (!dayMap[dayIdx]) dayMap[dayIdx] = { day: dayIdx, breakfast: [], lunch: [], dinner: [], snack: [] };
+      dayMap[dayIdx][mealType] = meals;
+    }
+    return Object.values(dayMap).sort((a, b) => a.day - b.day);
+  };
 
   const addMealToSlot = async (dayIndex, mealType, text) => {
     if (!text.trim() || !plan) return;
@@ -77,7 +103,10 @@ export default function NutritionPlanTab({ user, nutritionProfile }) {
     const key = `${dayIndex}_${mealType}`;
     if (!data[key]) data[key] = [];
     data[key].push(text.trim());
-    const updated = await base44.entities.MealPlans.update(plan.id, { plan_json: JSON.stringify(data) });
+    const updated = await base44.entities.MealPlans.update(plan.id, {
+      plan_days: updatePlanDays(data),
+      updated_at: new Date().toISOString(),
+    });
     setPlan(updated); setMealInput(""); setAddingSlot(null);
   };
 
@@ -87,7 +116,10 @@ export default function NutritionPlanTab({ user, nutritionProfile }) {
     const key = `${dayIndex}_${mealType}`;
     if (!data[key]) return;
     data[key].splice(idx, 1);
-    const updated = await base44.entities.MealPlans.update(plan.id, { plan_json: JSON.stringify(data) });
+    const updated = await base44.entities.MealPlans.update(plan.id, {
+      plan_days: updatePlanDays(data),
+      updated_at: new Date().toISOString(),
+    });
     setPlan(updated);
   };
 

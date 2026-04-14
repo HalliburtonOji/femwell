@@ -1,15 +1,8 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.20';
 
-function safeList(value) {
-  return value ? String(value).split(',').map((item) => item.trim()).filter(Boolean) : [];
-}
-
-function safeJson(value, fallback = {}) {
-  try {
-    return value ? JSON.parse(value) : fallback;
-  } catch {
-    return fallback;
-  }
+function asList(value) {
+  if (Array.isArray(value)) return value;
+  return [];
 }
 
 Deno.serve(async (req) => {
@@ -34,11 +27,11 @@ Deno.serve(async (req) => {
     const profiles = await base44.entities.LifestyleProfile.filter({ user_id: user.id });
     const profile = profiles[0] || await base44.entities.LifestyleProfile.create({ user_id: user.id });
 
-    const hiddenIds = safeList(profile.hidden_item_ids);
-    const savedIds = safeList(profile.saved_item_ids);
-    const blockedCategories = Array.isArray(profile.blocked_categories) ? profile.blocked_categories : [];
-    const blockedSources = Array.isArray(profile.blocked_sources) ? profile.blocked_sources : [];
-    const categoryWeights = safeJson(profile.category_weights_json || profile.category_weights, {});
+    const hiddenIds = asList(profile.hidden_item_ids);
+    const savedIds = asList(profile.saved_item_ids);
+    const blockedCategories = asList(profile.blocked_categories);
+    const blockedSources = asList(profile.blocked_sources);
+    const categoryWeights = (profile.category_weights && typeof profile.category_weights === 'object') ? { ...profile.category_weights } : {};
 
     if (action === 'like' || action === 'save' || action === 'try_this' || action === 'open') {
       categoryWeights[category] = Number(categoryWeights[category] || 0) + 1;
@@ -54,11 +47,12 @@ Deno.serve(async (req) => {
     if (action === 'hide' && source_id && !blockedSources.includes(source_id)) blockedSources.push(source_id);
 
     await base44.entities.LifestyleProfile.update(profile.id, {
-      hidden_item_ids: hiddenIds.slice(-500).join(','),
-      saved_item_ids: savedIds.slice(-500).join(','),
-      category_weights_json: JSON.stringify(categoryWeights),
+      hidden_item_ids: hiddenIds.slice(-500),
+      saved_item_ids: savedIds.slice(-500),
+      category_weights: categoryWeights,
       blocked_categories: blockedCategories.slice(-30),
       blocked_sources: blockedSources.slice(-50),
+      updated_at: new Date().toISOString(),
     });
 
     const items = await base44.asServiceRole.entities.LifestyleItems.filter({ id: item_id });
