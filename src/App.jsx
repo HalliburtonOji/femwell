@@ -17,6 +17,7 @@ import Events from './pages/Events';
 import WeeklyInsights from './pages/WeeklyInsights';
 import LifestyleDetail from './pages/LifestyleDetail';
 import SkinHair from './pages/SkinHair';
+import AdminMigrations from './pages/AdminMigrations';
 
 
 const { Pages, Layout, mainPage } = pagesConfig;
@@ -101,6 +102,7 @@ const AuthenticatedApp = () => {
           <Route path="/WeeklyInsights" element={<LayoutWrapper currentPageName="WeeklyInsights"><WeeklyInsights /></LayoutWrapper>} />
           <Route path="/LifestyleDetail" element={<LayoutWrapper currentPageName="LifestyleDetail"><LifestyleDetail /></LayoutWrapper>} />
           <Route path="/SkinHair" element={<LayoutWrapper currentPageName="SkinHair"><SkinHair /></LayoutWrapper>} />
+          <Route path="/admin/migrations" element={<AdminMigrations />} />
           <Route path="*" element={<PageNotFound />} />
         </Routes>
       </motion.div>
