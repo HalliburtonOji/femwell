@@ -47,7 +47,7 @@ Deno.serve(async (req) => {
         const rssItems = await parseRSS(source.rss_url);
         for (const item of rssItems.slice(0, 20)) {
           if (!item.title || !item.link) continue;
-          const existing = await base44.asServiceRole.entities.LifestyleItems.filter({ source_url: item.link });
+          const existing = await base44.asServiceRole.entities.LifestyleItems.filter({ content_url: item.link });
           if (existing.length > 0) {
             skipped += 1;
             continue;
@@ -58,9 +58,8 @@ Deno.serve(async (req) => {
             source_name: source.name,
             title: item.title.slice(0, 220),
             content_url: item.link,
-            source_url: item.link,
             summary: stripHtml(item.description),
-            pub_date: item.pubDate || new Date().toISOString(),
+            published_at: (() => { try { return new Date(item.pubDate).toISOString(); } catch { return new Date().toISOString(); } })(),
             category: source.category,
             media_type: 'ARTICLE',
             status: 'PUBLISHED',

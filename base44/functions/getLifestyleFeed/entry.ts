@@ -38,19 +38,19 @@ Deno.serve(async (req) => {
     // Fetch items
     let items;
     if (mode === 'trending') {
-      items = await base44.asServiceRole.entities.LifestyleItems.filter({ status: 'PUBLISHED', is_trending: true }, '-pub_date', 50);
+      items = await base44.asServiceRole.entities.LifestyleItems.filter({ status: 'PUBLISHED', is_trending: true }, '-published_at', 50);
       if (items.length < 10) {
         const extra = await base44.asServiceRole.entities.LifestyleItems.filter({ status: 'PUBLISHED' }, '-engagement_score', 30);
         items = [...items, ...extra.filter(e => !items.find(i => i.id === e.id))].slice(0, 50);
       }
     } else if (mode === 'following') {
-      items = await base44.asServiceRole.entities.LifestyleItems.filter({ status: 'PUBLISHED' }, '-pub_date', 100);
+      items = await base44.asServiceRole.entities.LifestyleItems.filter({ status: 'PUBLISHED' }, '-published_at', 100);
       items = items.filter(item =>
         followedTopics.includes(item.category) || followedSources.includes(item.source_id)
       );
     } else {
       // For You - fetch recent published items
-      items = await base44.asServiceRole.entities.LifestyleItems.filter({ status: 'PUBLISHED' }, '-pub_date', 100);
+      items = await base44.asServiceRole.entities.LifestyleItems.filter({ status: 'PUBLISHED' }, '-published_at', 100);
     }
 
     // Filter hidden
@@ -62,7 +62,7 @@ Deno.serve(async (req) => {
       let score = 50;
 
       // Freshness (last 48h = +30, last week = +15)
-      const age = now - new Date(item.pub_date || item.ingested_at || 0).getTime();
+      const age = now - new Date(item.published_at || item.ingested_at || 0).getTime();
       const ageHours = age / 3600000;
       if (ageHours < 48) score += 30;
       else if (ageHours < 168) score += 15;

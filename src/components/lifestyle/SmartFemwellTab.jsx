@@ -61,7 +61,7 @@ export default function SmartFemwellTab({ onRead }) {
 
   const loadContent = async (autoGenerate = false) => {
     setLoading(true);
-    const allItems = await base44.entities.LifestyleItems.list("-pub_date", 500);
+    const allItems = await base44.entities.LifestyleItems.list("-published_at", 500);
     const femwellItems = allItems.filter(
       i => (i.provider === "FEMWELL_AI" || i.provider === "FEMWELL_AI_USER_REQUEST") && i.status === "PUBLISHED"
     );
@@ -88,7 +88,7 @@ export default function SmartFemwellTab({ onRead }) {
       setGenerating(true);
       try {
         await base44.functions.invoke("generateFemwellContent", { force_run: false });
-        const fresh = await base44.entities.LifestyleItems.list("-pub_date", 500);
+        const fresh = await base44.entities.LifestyleItems.list("-published_at", 500);
         setItems(fresh.filter(i => (i.provider === "FEMWELL_AI" || i.provider === "FEMWELL_AI_USER_REQUEST") && i.status === "PUBLISHED"));
       } catch {}
       setGenerating(false);
@@ -323,7 +323,7 @@ export default function SmartFemwellTab({ onRead }) {
                 <h3 style={{ fontSize: 15, fontWeight: 700, color: "var(--plum)", fontFamily: "'Playfair Display', serif", lineHeight: 1.35, margin: "0 0 6px" }}>{item.title}</h3>
                 {item.summary && <p style={{ fontSize: 13, color: "var(--mauve)", lineHeight: 1.55, margin: "0 0 10px", display: "-webkit-box", WebkitLineClamp: 3, WebkitBoxOrient: "vertical", overflow: "hidden" }}>{item.summary}</p>}
                 <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-                  <span style={{ fontSize: 11, color: "var(--mauve)", opacity: 0.6, fontFamily: "'Inter', sans-serif" }}>{item.author_name} · {timeAgo(item.pub_date)}</span>
+                  <span style={{ fontSize: 11, color: "var(--mauve)", opacity: 0.6, fontFamily: "'Inter', sans-serif" }}>{item.author_name} · {timeAgo(item.published_at || item.ingested_at)}</span>
                   <button onClick={() => onRead?.(item)}
                     style={{ fontSize: 12, fontWeight: 700, color: "white", backgroundColor: "var(--rose-dust)", border: "none", borderRadius: 9999, padding: "6px 16px", cursor: "pointer", fontFamily: "'Inter', sans-serif" }}>
                     Read

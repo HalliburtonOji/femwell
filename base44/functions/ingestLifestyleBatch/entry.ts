@@ -84,7 +84,7 @@ Deno.serve(async (req) => {
             image_url: item.image_url,
             category: source.category || 'Lifestyle',
             summary: item.summary.slice(0, 320),
-            pub_date: item.pub_date,
+            published_at: (() => { try { return new Date(item.pub_date).toISOString(); } catch { return new Date().toISOString(); } })(),
             ingested_at: new Date().toISOString(),
             status: 'NEEDS_REVIEW',
             media_type: media.media_type,

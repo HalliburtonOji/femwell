@@ -60,16 +60,14 @@ export default function LifestyleCard({ item, onHide, onSave, onLike, onDislike,
 
   const handleListen = () => {
     handleAction('listen');
-    const spokenTakeaways = (Array.isArray(item.takeaways) && item.takeaways.length > 0 ? item.takeaways : [item.takeaway_1, item.takeaway_2, item.takeaway_3].filter(Boolean)).join('. ');
+    const spokenTakeaways = (Array.isArray(item.takeaways) ? item.takeaways : []).join('. ');
     const text = `${item.title}. ${item.summary || ''}. Key takeaways: ${spokenTakeaways}`;
     const utterance = new SpeechSynthesisUtterance(text);
     utterance.rate = 0.95;
     speechSynthesis.speak(utterance);
   };
 
-  const takeaways = Array.isArray(item.takeaways) && item.takeaways.length > 0
-    ? item.takeaways
-    : [item.takeaway_1, item.takeaway_2, item.takeaway_3].filter(Boolean);
+  const takeaways = Array.isArray(item.takeaways) ? item.takeaways : [];
   const isVideo = item.media_type === 'TIKTOK' || item.media_type === 'VIDEO' || item.media_type === 'INSTAGRAM' || item.media_type === 'CLIP';
 
   return (
@@ -105,7 +103,7 @@ export default function LifestyleCard({ item, onHide, onSave, onLike, onDislike,
           )}
           <span className="text-xs font-medium" style={{ color: "var(--mauve)" }}>{item.source_name}</span>
           <span style={{ color: "var(--border)" }}>·</span>
-          <span className="text-xs" style={{ color: "var(--mauve)" }}>{timeAgo(item.pub_date)}</span>
+          <span className="text-xs" style={{ color: "var(--mauve)" }}>{timeAgo(item.published_at || item.ingested_at)}</span>
           <div className="ml-auto flex items-center gap-2">
             <CategoryPill category={item.category} />
             <div className="flex items-center gap-2">

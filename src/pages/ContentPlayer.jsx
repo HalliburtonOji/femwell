@@ -148,7 +148,7 @@ export default function ContentPlayer() {
     </div>
   );
 
-  const locked = (TIER_ORDER[item.access_tier] || 0) > (TIER_ORDER[userPlan] || 0);
+  const locked = (TIER_ORDER[item.access_tier || 'free'] || 0) > (TIER_ORDER[userPlan] || 0);
   const isBreathwork = item.content_type === "BREATHWORK" || item.content_type === "MEDITATION";
   const isGuided = item.play_mode === "GUIDED";
   const embedUrl = item.embed_url || null;
@@ -277,7 +277,7 @@ export default function ContentPlayer() {
 
           {item.tags && (
             <div className="flex flex-wrap gap-1.5">
-              {(Array.isArray(item.tags) ? item.tags : item.tags.split(",")).map((tag) => (
+              {(Array.isArray(item.tags) ? item.tags : []).map((tag) => (
                 <span key={tag} className="text-xs px-2 py-1 rounded-full capitalize"
                   style={{ backgroundColor: "var(--rose-dust-subtle)", color: "var(--rose-dust)" }}>{String(tag).trim()}</span>
               ))}

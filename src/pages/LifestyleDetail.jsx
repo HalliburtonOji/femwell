@@ -50,8 +50,8 @@ export default function LifestyleDetail() {
 
   const handleReadFull = () => {
     try {
-      if (!item?.source_url) return;
-      window.open(item.source_url, "_blank");
+      if (!item?.content_url) return;
+      window.open(item.content_url, "_blank");
     } catch {
       // do nothing
     }
@@ -81,7 +81,7 @@ export default function LifestyleDetail() {
         <div className="rounded-3xl p-6 md:p-8" style={{ backgroundColor: "var(--surface)", border: "1px solid var(--border)", boxShadow: "var(--shadow-md)" }}>
         <h1 className="text-3xl md:text-4xl font-bold leading-tight" style={{ color: "var(--plum)" }}>{item.title}</h1>
         <p className="mt-3 text-sm" style={{ color: "var(--mauve)" }}>
-            {item.source_name} {item.pub_date ? `· ${format(new Date(item.pub_date), "dd MMM yyyy")}` : ""}
+            {item.source_name} {item.published_at ? `· ${format(new Date(item.published_at), "dd MMM yyyy")}` : ""}
           </p>
           {item.summary && <p className="mt-6 text-base leading-8" style={{ color: "var(--mauve)" }}>{item.summary}</p>}
           <button onClick={handleReadFull} className="mt-8 inline-flex items-center justify-center rounded-xl px-5 py-3 text-sm font-semibold shadow-sm transition-colors" style={{ backgroundColor: "var(--rose-dust)", color: "white", border: "none", cursor: "pointer" }}>

@@ -40,7 +40,10 @@
       "type": "string"
     },
     "tags": {
-      "type": "string"
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
     },
     "cycle_phases": {
       "type": "array",
@@ -97,19 +100,6 @@
       "type": "boolean",
       "default": false
     },
-    "is_premium": {
-      "type": "boolean",
-      "default": false
-    },
-    "premium_tier": {
-      "type": "string",
-      "enum": [
-        "FREE",
-        "PLUS",
-        "PRO"
-      ],
-      "default": "FREE"
-    },
     "access_tier": {
       "type": "string",
       "enum": [
@@ -140,6 +130,9 @@
       "type": "string"
     },
     "breath_safety_note": {
+      "type": "string"
+    },
+    "updated_at": {
       "type": "string"
     }
   },

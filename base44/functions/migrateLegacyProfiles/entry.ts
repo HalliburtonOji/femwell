@@ -34,7 +34,6 @@ Deno.serve(async (req) => {
 
       if (!needsMigration) continue;
 
-      // Merge old category_weights_json and category_weights into one object
       const weights = {
         ...safeJson(p.category_weights_json, {}),
         ...(typeof p.category_weights === 'object' && !Array.isArray(p.category_weights) ? p.category_weights : {}),
@@ -57,11 +56,8 @@ Deno.serve(async (req) => {
     let mpMigrated = 0;
     for (const plan of plans) {
       if (!plan.plan_json) continue;
-
       let planJson = {};
       try { planJson = JSON.parse(plan.plan_json); } catch { continue; }
-
-      // Group keys like "0_breakfast" → { day: 0, breakfast: [...] }
       const dayMap = {};
       for (const [key, meals] of Object.entries(planJson)) {
         const match = key.match(/^(\d+)_(.+)$/);
@@ -73,7 +69,6 @@ Deno.serve(async (req) => {
           dayMap[dayIdx][mealType] = Array.isArray(meals) ? meals : [String(meals)];
         }
       }
-
       const plan_days = Object.values(dayMap).sort((a, b) => a.day - b.day);
       await base44.asServiceRole.entities.MealPlans.update(plan.id, {
         plan_days,
@@ -82,7 +77,66 @@ Deno.serve(async (req) => {
       mpMigrated++;
     }
 
-    return Response.json({ ok: true, lpMigrated, mpMigrated });
+    // ── Migrate ContentItems ──────────────────────────────────────────────────
+    const contentItems = await base44.asServiceRole.entities.ContentItems.list();
+    let ciMigrated = 0;
+    for (const ci of contentItems) {
+      const updates = {};
+
+      // Fix tags: string → array
+      if (typeof ci.tags === 'string') {
+        updates.tags = ci.tags ? ci.tags.split(',').map(t => t.trim()).filter(Boolean) : [];
+      }
+
+      // Fix access_tier from is_premium / premium_tier
+      if (!ci.access_tier || ci.access_tier === 'free') {
+        if (ci.is_premium === true) {
+          if (ci.premium_tier === 'PRO') updates.access_tier = 'pro';
+          else updates.access_tier = 'plus';
+        }
+      }
+
+      if (Object.keys(updates).length === 0) continue;
+      updates.updated_at = new Date().toISOString();
+      await base44.asServiceRole.entities.ContentItems.update(ci.id, updates);
+      ciMigrated++;
+    }
+
+    // ── Migrate LifestyleItems ────────────────────────────────────────────────
+    const lifestyleItems = await base44.asServiceRole.entities.LifestyleItems.list('-ingested_at', 2000);
+    let liMigrated = 0;
+    for (const li of lifestyleItems) {
+      const updates = {};
+
+      // Fix tags: string → array
+      if (typeof li.tags === 'string') {
+        updates.tags = li.tags ? li.tags.split(',').map(t => t.trim()).filter(Boolean) : [];
+      }
+
+      // Fix takeaways: populate from takeaway_1/2/3 if takeaways is empty
+      if ((!Array.isArray(li.takeaways) || li.takeaways.length === 0) && (li.takeaway_1 || li.takeaway_2 || li.takeaway_3)) {
+        updates.takeaways = [li.takeaway_1, li.takeaway_2, li.takeaway_3].filter(Boolean);
+      }
+
+      // Fix published_at: parse pub_date if published_at is missing
+      if (!li.published_at && li.pub_date) {
+        try {
+          updates.published_at = new Date(li.pub_date).toISOString();
+        } catch {}
+      }
+
+      // Fix category: "Womens Health" → "Women's Health"
+      if (li.category === "Womens Health") {
+        updates.category = "Women's Health";
+      }
+
+      if (Object.keys(updates).length === 0) continue;
+      updates.updated_at = new Date().toISOString();
+      await base44.asServiceRole.entities.LifestyleItems.update(li.id, updates);
+      liMigrated++;
+    }
+
+    return Response.json({ ok: true, lpMigrated, mpMigrated, ciMigrated, liMigrated });
   } catch (error) {
     return Response.json({ error: error.message }, { status: 500 });
   }

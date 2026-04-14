@@ -46,17 +46,16 @@ Deno.serve(async (req) => {
         });
 
         const takeaways = Array.isArray(result.takeaways) ? result.takeaways.slice(0, 3) : [];
+        const normalizedCategory = result.category === 'Womens Health' ? "Women's Health" : (result.category || item.category);
         await base44.asServiceRole.entities.LifestyleItems.update(item.id, {
           summary: result.summary || item.summary,
           takeaways,
-          takeaway_1: takeaways[0] || '',
-          takeaway_2: takeaways[1] || '',
-          takeaway_3: takeaways[2] || '',
           why_it_matters: result.why_it_matters || '',
-          category: result.category || item.category,
-          tags: Array.isArray(result.tags) ? result.tags.slice(0, 5) : item.tags,
+          category: normalizedCategory,
+          tags: Array.isArray(result.tags) ? result.tags.slice(0, 5) : (Array.isArray(item.tags) ? item.tags : []),
           status: 'PUBLISHED',
           published_at: new Date().toISOString(),
+          updated_at: new Date().toISOString(),
         });
         summarized += 1;
       } catch (error) {

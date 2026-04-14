@@ -109,12 +109,12 @@ Return JSON:
   const now = new Date().toISOString();
   const saved = await base44.asServiceRole.entities.LifestyleItems.create({
     title: result.title, lede: result.body || result.lede, summary: result.summary,
-    takeaway_1: result.takeaway_1, takeaway_2: result.takeaway_2, takeaway_3: result.takeaway_3,
+    takeaways: [result.takeaway_1, result.takeaway_2, result.takeaway_3].filter(Boolean),
     why_it_matters: result.why_it_matters, author_name: result.author_name || 'FemWell Editorial',
     emotional_tag: result.emotional_tag || '', category: topic.category,
     phase_tags: topic.phase_tags || [], content_type: 'ARTICLE', media_type: 'ARTICLE',
     provider: 'FEMWELL_AI', status: 'PUBLISHED',
-    pub_date: now, published_at: now, ingested_at: now, content_url: '',
+    published_at: now, ingested_at: now, content_url: '',
   });
   return { id: saved.id, title: result.title, type: 'article' };
 }
@@ -139,7 +139,7 @@ async function generateStory(base44, prompt) {
     emotional_tag: result.emotional_tag || '', category: prompt.category,
     phase_tags: [], content_type: 'STORY', media_type: 'ARTICLE',
     provider: 'FEMWELL_AI', status: 'PUBLISHED',
-    pub_date: now, published_at: now, ingested_at: now, content_url: '',
+    published_at: now, ingested_at: now, content_url: '',
   });
   return { id: saved.id, title: result.title, type: 'story' };
 }
@@ -175,17 +175,15 @@ Return JSON:
     title: result.title || book.title,
     lede: result.body || result.summary,
     summary: result.summary || result.tagline,
-    takeaway_1: result.key_lessons?.[0] || '',
-    takeaway_2: result.key_lessons?.[1] || '',
-    takeaway_3: result.key_lessons?.[2] || '',
+    takeaways: (result.key_lessons || []).slice(0, 3),
     why_it_matters: result.best_for || '',
     author_name: result.author_name || book.author,
     emotional_tag: result.emotional_tag || '',
     category: book.category, phase_tags: [],
     content_type: 'GUIDE', media_type: 'ARTICLE',
     provider: 'FEMWELL_AI', status: 'PUBLISHED',
-    pub_date: now, published_at: now, ingested_at: now, content_url: '',
-    tags: ['book summary', result.tagline || ''],
+    published_at: now, ingested_at: now, content_url: '',
+    tags: ['book summary', result.tagline || ''].filter(Boolean),
   });
   return { id: saved.id, title: book.title, type: 'book_summary' };
 }
@@ -221,7 +219,7 @@ Return JSON: title (max 70 chars), summary (2-3 sentences), body (full story, pl
     duration_label: result.duration_label, emotional_tag: result.emotional_tag || '',
     author_name: 'FemWell Fiction', content_type: 'FICTION', media_type: 'ARTICLE',
     provider: 'FEMWELL_AI', status: 'PUBLISHED', category: category || 'Lifestyle',
-    pub_date: now, published_at: now, ingested_at: now, content_url: '', tags, phase_tags: [],
+    published_at: now, ingested_at: now, content_url: '', tags, phase_tags: [],
   });
   return { id: saved.id, title: result.title, type: 'fiction' };
 }

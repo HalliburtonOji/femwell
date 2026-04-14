@@ -74,15 +74,18 @@ Return JSON with:
           },
         });
 
+        const tagsArr = result.tags
+          ? result.tags.split(',').map(t => t.trim()).filter(Boolean)
+          : (Array.isArray(item.tags) ? item.tags : []);
         await base44.asServiceRole.entities.LifestyleItems.update(item.id, {
           summary: result.summary || item.summary,
-          takeaway_1: result.takeaway_1 || '',
-          takeaway_2: result.takeaway_2 || '',
-          takeaway_3: result.takeaway_3 || '',
+          takeaways: [result.takeaway_1, result.takeaway_2, result.takeaway_3].filter(Boolean),
           why_it_matters: result.why_it_matters || '',
-          category: result.category || item.category,
-          tags: result.tags || '',
+          category: result.category === 'Womens Health' ? "Women's Health" : (result.category || item.category),
+          tags: tagsArr,
           status: 'PUBLISHED',
+          published_at: new Date().toISOString(),
+          updated_at: new Date().toISOString(),
         });
         summarized++;
       } catch (e) {

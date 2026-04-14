@@ -4,7 +4,7 @@ const CATEGORY_BOOSTS = {
   stress: ['Mental Wellness', 'Lifestyle'],
   sleep: ['Mental Wellness', 'Lifestyle'],
   energy: ['Fitness', 'Food'],
-  hormones: ['Womens Health', 'PMS', 'Menopause', 'PCOS'],
+  hormones: ["Women's Health", 'PMS', 'Menopause', 'PCOS'],
 };
 
 function asList(value) {
@@ -14,7 +14,7 @@ function asList(value) {
 }
 
 function getRecencyScore(item) {
-  const baseDate = item.published_at || item.pub_date || item.ingested_at;
+  const baseDate = item.published_at || item.ingested_at;
   const hours = (Date.now() - new Date(baseDate || 0).getTime()) / 3600000;
   if (hours < 24) return 22;
   if (hours < 72) return 14;

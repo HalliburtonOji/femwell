@@ -57,7 +57,7 @@ export default function ArticleReader({ item, onClose, onSelectItem }) {
   };
 
   if (!item) return null;
-  const takeaways = [item.takeaway_1, item.takeaway_2, item.takeaway_3].filter(Boolean);
+  const takeaways = Array.isArray(item.takeaways) ? item.takeaways : [];
 
   return (
     <>
