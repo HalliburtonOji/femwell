@@ -18,6 +18,7 @@ Deno.serve(async (req) => {
     const existing = await base44.entities.ContentHistory.filter({
       user_id: user.id,
       session_date: todayStr,
+      is_deleted: false,
       ...(content_id ? { content_id } : { content_key }),
     });
 

@@ -300,7 +300,7 @@ export default function Today() {
         base44.entities.UserProfile.filter({ user_id: u.id }),
         base44.entities.DailyCheckins.filter({ user_id: u.id, date: todayStr }),
         base44.entities.TodayRecommendations.filter({ user_id: u.id, date: todayStr }),
-        base44.entities.ContentHistory.filter({ user_id: u.id, session_date: todayStr }),
+        base44.entities.ContentHistory.filter({ user_id: u.id, session_date: todayStr, is_deleted: false }),
         base44.entities.UserPrograms.filter({ user_id: u.id }),
         base44.entities.Programs.list("-created_date", 50),
       ]);
