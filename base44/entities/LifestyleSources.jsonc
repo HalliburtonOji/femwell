@@ -23,7 +23,7 @@
     "category": {
       "type": "string",
       "enum": [
-        "Womens Health",
+        "Women's Health",
         "Relationships",
         "Career & Money",
         "Beauty",
@@ -36,7 +36,8 @@
         "Sex Education",
         "Menopause",
         "PCOS",
-        "PMS"
+        "PMS",
+        "Fashion"
       ],
       "default": "Lifestyle"
     },
