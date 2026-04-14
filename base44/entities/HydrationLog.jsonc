@@ -1,0 +1,29 @@
+{
+  "name": "HydrationLog",
+  "type": "object",
+  "properties": {
+    "user_id": {
+      "type": "string"
+    },
+    "day_key": {
+      "type": "string"
+    },
+    "amount_ml": {
+      "type": "number"
+    },
+    "logged_at": {
+      "type": "string"
+    },
+    "created_at": {
+      "type": "string"
+    },
+    "updated_at": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "user_id",
+    "day_key",
+    "amount_ml"
+  ]
+}

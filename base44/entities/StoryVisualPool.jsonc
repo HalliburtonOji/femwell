@@ -17,6 +17,9 @@
     "is_active": {
       "type": "boolean",
       "default": true
+    },
+    "updated_at": {
+      "type": "string"
     }
   },
   "required": [

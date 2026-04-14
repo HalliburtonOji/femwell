@@ -1,0 +1,35 @@
+{
+  "name": "SymptomLogs",
+  "type": "object",
+  "properties": {
+    "user_id": {
+      "type": "string"
+    },
+    "date": {
+      "type": "string"
+    },
+    "symptom_type": {
+      "type": "string"
+    },
+    "severity": {
+      "type": "number"
+    },
+    "duration_minutes": {
+      "type": "number"
+    },
+    "notes": {
+      "type": "string"
+    },
+    "created_at": {
+      "type": "string"
+    },
+    "updated_at": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "user_id",
+    "date",
+    "symptom_type"
+  ]
+}

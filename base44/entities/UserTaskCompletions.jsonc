@@ -1,0 +1,35 @@
+{
+  "name": "UserTaskCompletions",
+  "type": "object",
+  "properties": {
+    "user_id": {
+      "type": "string"
+    },
+    "program_id": {
+      "type": "string"
+    },
+    "task_id": {
+      "type": "string"
+    },
+    "day_number": {
+      "type": "number"
+    },
+    "completed_at": {
+      "type": "string"
+    },
+    "skipped": {
+      "type": "boolean",
+      "default": false
+    },
+    "created_at": {
+      "type": "string"
+    },
+    "updated_at": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "user_id",
+    "task_id"
+  ]
+}

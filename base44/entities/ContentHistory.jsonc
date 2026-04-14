@@ -1,0 +1,70 @@
+{
+  "name": "ContentHistory",
+  "type": "object",
+  "properties": {
+    "user_id": {
+      "type": "string"
+    },
+    "content_id": {
+      "type": "string"
+    },
+    "content_key": {
+      "type": "string"
+    },
+    "completed_at": {
+      "type": "string"
+    },
+    "duration_seconds": {
+      "type": "number"
+    },
+    "target_seconds": {
+      "type": "number"
+    },
+    "completion_method": {
+      "type": "string",
+      "enum": [
+        "AUTO",
+        "MANUAL"
+      ],
+      "default": "AUTO"
+    },
+    "completion_source": {
+      "type": "string",
+      "enum": [
+        "CONTENT_PLAYER",
+        "TODAY",
+        "TRACK"
+      ],
+      "default": "CONTENT_PLAYER"
+    },
+    "notes": {
+      "type": "string"
+    },
+    "mood_after": {
+      "type": "number"
+    },
+    "helped": {
+      "type": "boolean"
+    },
+    "duration_done": {
+      "type": "number"
+    },
+    "session_date": {
+      "type": "string"
+    },
+    "is_deleted": {
+      "type": "boolean",
+      "default": false
+    },
+    "created_at": {
+      "type": "string"
+    },
+    "updated_at": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "user_id",
+    "content_id"
+  ]
+}

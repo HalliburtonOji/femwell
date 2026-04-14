@@ -1,0 +1,32 @@
+{
+  "name": "VoiceScripts",
+  "type": "object",
+  "properties": {
+    "voice_script_key": {
+      "type": "string"
+    },
+    "title": {
+      "type": "string"
+    },
+    "voice_profile_key": {
+      "type": "string"
+    },
+    "text": {
+      "type": "string"
+    },
+    "audio_data": {
+      "type": "string"
+    },
+    "created_at": {
+      "type": "string"
+    },
+    "updated_at": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "voice_script_key",
+    "title",
+    "text"
+  ]
+}

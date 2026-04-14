@@ -1,0 +1,46 @@
+{
+  "name": "MenopauseDailyLog",
+  "type": "object",
+  "properties": {
+    "user_id": {
+      "type": "string"
+    },
+    "date": {
+      "type": "string"
+    },
+    "hot_flashes": {
+      "type": "number"
+    },
+    "night_sweats": {
+      "type": "number"
+    },
+    "sleep_quality": {
+      "type": "number"
+    },
+    "mood": {
+      "type": "number"
+    },
+    "energy": {
+      "type": "number"
+    },
+    "brain_fog": {
+      "type": "number"
+    },
+    "joint_pain": {
+      "type": "number"
+    },
+    "notes": {
+      "type": "string"
+    },
+    "created_at": {
+      "type": "string"
+    },
+    "updated_at": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "user_id",
+    "date"
+  ]
+}

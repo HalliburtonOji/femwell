@@ -1,0 +1,48 @@
+{
+  "name": "MealItems",
+  "type": "object",
+  "properties": {
+    "meal_log_id": {
+      "type": "string"
+    },
+    "name": {
+      "type": "string"
+    },
+    "quantity_text": {
+      "type": "string"
+    },
+    "calories": {
+      "type": "number"
+    },
+    "protein_g": {
+      "type": "number"
+    },
+    "carbs_g": {
+      "type": "number"
+    },
+    "fat_g": {
+      "type": "number"
+    },
+    "fiber_g": {
+      "type": "number"
+    },
+    "source": {
+      "type": "string",
+      "enum": [
+        "manual",
+        "ai"
+      ],
+      "default": "manual"
+    },
+    "created_at": {
+      "type": "string"
+    },
+    "updated_at": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "meal_log_id",
+    "name"
+  ]
+}

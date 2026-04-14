@@ -1,0 +1,28 @@
+{
+  "name": "VoiceCache",
+  "type": "object",
+  "properties": {
+    "cache_key": {
+      "type": "string"
+    },
+    "content_key": {
+      "type": "string"
+    },
+    "voice_script_key": {
+      "type": "string"
+    },
+    "audio_file_url": {
+      "type": "string"
+    },
+    "created_at": {
+      "type": "string"
+    },
+    "updated_at": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "cache_key",
+    "audio_file_url"
+  ]
+}

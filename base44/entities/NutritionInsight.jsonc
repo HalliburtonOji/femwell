@@ -1,0 +1,64 @@
+{
+  "name": "NutritionInsight",
+  "type": "object",
+  "properties": {
+    "user_id": {
+      "type": "string"
+    },
+    "meal_log_id": {
+      "type": "string"
+    },
+    "meal_description": {
+      "type": "string"
+    },
+    "wellness_goal": {
+      "type": "string"
+    },
+    "headline": {
+      "type": "string"
+    },
+    "wellness_impact": {
+      "type": "string"
+    },
+    "action_items": {
+      "type": "string"
+    },
+    "smart_swap": {
+      "type": "string"
+    },
+    "confidence": {
+      "type": "string",
+      "enum": [
+        "low",
+        "medium",
+        "high"
+      ],
+      "default": "medium"
+    },
+    "tone_safety_note": {
+      "type": "string"
+    },
+    "user_feedback": {
+      "type": "string",
+      "enum": [
+        "positive",
+        "negative",
+        "none"
+      ],
+      "default": "none"
+    },
+    "day_key": {
+      "type": "string"
+    },
+    "created_at": {
+      "type": "string"
+    },
+    "updated_at": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "user_id",
+    "meal_log_id"
+  ]
+}

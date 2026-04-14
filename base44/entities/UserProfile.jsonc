@@ -146,6 +146,12 @@
     "hydration_target_ml": {
       "type": "number",
       "default": 2000
+    },
+    "created_at": {
+      "type": "string"
+    },
+    "updated_at": {
+      "type": "string"
     }
   },
   "required": [

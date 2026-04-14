@@ -1,0 +1,55 @@
+{
+  "name": "DailyAggregates",
+  "type": "object",
+  "properties": {
+    "user_id": {
+      "type": "string"
+    },
+    "date": {
+      "type": "string"
+    },
+    "avg_mood": {
+      "type": "number"
+    },
+    "avg_energy": {
+      "type": "number"
+    },
+    "avg_stress": {
+      "type": "number"
+    },
+    "avg_pain": {
+      "type": "number"
+    },
+    "sleep_hours": {
+      "type": "number"
+    },
+    "symptom_count": {
+      "type": "number"
+    },
+    "top_symptoms": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "cycle_phase": {
+      "type": "string"
+    },
+    "habits_completed": {
+      "type": "number"
+    },
+    "meds_taken": {
+      "type": "number"
+    },
+    "created_at": {
+      "type": "string"
+    },
+    "updated_at": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "user_id",
+    "date"
+  ]
+}

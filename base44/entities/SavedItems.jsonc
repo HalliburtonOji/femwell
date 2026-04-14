@@ -1,0 +1,45 @@
+{
+  "name": "SavedItems",
+  "type": "object",
+  "properties": {
+    "user_id": {
+      "type": "string"
+    },
+    "item_type": {
+      "type": "string",
+      "enum": [
+        "ADVICE",
+        "LIFESTYLE",
+        "CONTENT",
+        "PROGRAM",
+        "JOURNAL",
+        "EVENT"
+      ],
+      "default": "LIFESTYLE"
+    },
+    "item_id": {
+      "type": "string"
+    },
+    "title": {
+      "type": "string"
+    },
+    "preview_text": {
+      "type": "string"
+    },
+    "created_at": {
+      "type": "string"
+    },
+    "meta_json": {
+      "type": "string"
+    },
+    "updated_at": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "user_id",
+    "item_type",
+    "item_id",
+    "title"
+  ]
+}

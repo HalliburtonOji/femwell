@@ -1,0 +1,35 @@
+{
+  "name": "Reports",
+  "type": "object",
+  "properties": {
+    "reporter_user_id": {
+      "type": "string"
+    },
+    "post_id": {
+      "type": "string"
+    },
+    "reason": {
+      "type": "string"
+    },
+    "created_at": {
+      "type": "string"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "pending",
+        "reviewed",
+        "dismissed"
+      ],
+      "default": "pending"
+    },
+    "updated_at": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "reporter_user_id",
+    "post_id",
+    "reason"
+  ]
+}

@@ -1,0 +1,46 @@
+{
+  "name": "PregnancyDailyLog",
+  "type": "object",
+  "properties": {
+    "user_id": {
+      "type": "string"
+    },
+    "date": {
+      "type": "string"
+    },
+    "energy": {
+      "type": "number"
+    },
+    "mood": {
+      "type": "number"
+    },
+    "sleep_quality": {
+      "type": "number"
+    },
+    "nausea": {
+      "type": "number"
+    },
+    "pelvic_pain": {
+      "type": "number"
+    },
+    "swelling": {
+      "type": "number"
+    },
+    "movement_notes": {
+      "type": "string"
+    },
+    "notes": {
+      "type": "string"
+    },
+    "created_at": {
+      "type": "string"
+    },
+    "updated_at": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "user_id",
+    "date"
+  ]
+}

@@ -1,0 +1,31 @@
+{
+  "name": "EvidenceRefs",
+  "type": "object",
+  "properties": {
+    "content_id": {
+      "type": "string"
+    },
+    "title": {
+      "type": "string"
+    },
+    "source": {
+      "type": "string"
+    },
+    "url": {
+      "type": "string"
+    },
+    "year": {
+      "type": "number"
+    },
+    "created_at": {
+      "type": "string"
+    },
+    "updated_at": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "content_id",
+    "title"
+  ]
+}

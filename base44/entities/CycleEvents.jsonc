@@ -1,0 +1,39 @@
+{
+  "name": "CycleEvents",
+  "type": "object",
+  "properties": {
+    "user_id": {
+      "type": "string"
+    },
+    "date": {
+      "type": "string"
+    },
+    "type": {
+      "type": "string",
+      "enum": [
+        "PeriodStart",
+        "PeriodEnd",
+        "Spotting"
+      ]
+    },
+    "flow_level": {
+      "type": "string",
+      "enum": [
+        "light",
+        "medium",
+        "heavy"
+      ]
+    },
+    "created_at": {
+      "type": "string"
+    },
+    "updated_at": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "user_id",
+    "date",
+    "type"
+  ]
+}

@@ -1,0 +1,31 @@
+{
+  "name": "SexualHealthLogs",
+  "type": "object",
+  "properties": {
+    "user_id": {
+      "type": "string"
+    },
+    "date": {
+      "type": "string"
+    },
+    "protection_used": {
+      "type": "boolean"
+    },
+    "discomfort": {
+      "type": "boolean"
+    },
+    "notes": {
+      "type": "string"
+    },
+    "created_at": {
+      "type": "string"
+    },
+    "updated_at": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "user_id",
+    "date"
+  ]
+}

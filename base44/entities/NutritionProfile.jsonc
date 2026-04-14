@@ -1,0 +1,59 @@
+{
+  "name": "NutritionProfile",
+  "type": "object",
+  "properties": {
+    "user_id": {
+      "type": "string"
+    },
+    "goal_mode": {
+      "type": "string",
+      "enum": [
+        "fat_loss",
+        "tone",
+        "energy",
+        "hormone_support",
+        "postpartum",
+        "menopause"
+      ]
+    },
+    "tracking_mode": {
+      "type": "string",
+      "enum": [
+        "simple",
+        "macros"
+      ],
+      "default": "simple"
+    },
+    "diet_preferences": {
+      "type": "string"
+    },
+    "allergens_avoid": {
+      "type": "string"
+    },
+    "hydration_target_ml": {
+      "type": "number",
+      "default": 2000
+    },
+    "calories_target": {
+      "type": "number"
+    },
+    "protein_target_g": {
+      "type": "number"
+    },
+    "carbs_target_g": {
+      "type": "number"
+    },
+    "fat_target_g": {
+      "type": "number"
+    },
+    "created_at": {
+      "type": "string"
+    },
+    "updated_at": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "user_id"
+  ]
+}

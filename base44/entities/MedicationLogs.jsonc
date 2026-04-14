@@ -1,0 +1,36 @@
+{
+  "name": "MedicationLogs",
+  "type": "object",
+  "properties": {
+    "user_id": {
+      "type": "string"
+    },
+    "date": {
+      "type": "string"
+    },
+    "item_name": {
+      "type": "string"
+    },
+    "dose": {
+      "type": "string"
+    },
+    "taken": {
+      "type": "boolean",
+      "default": false
+    },
+    "notes": {
+      "type": "string"
+    },
+    "created_at": {
+      "type": "string"
+    },
+    "updated_at": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "user_id",
+    "date",
+    "item_name"
+  ]
+}

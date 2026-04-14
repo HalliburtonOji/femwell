@@ -1,0 +1,46 @@
+{
+  "name": "LifestyleInteractions",
+  "type": "object",
+  "properties": {
+    "user_id": {
+      "type": "string"
+    },
+    "item_id": {
+      "type": "string"
+    },
+    "action": {
+      "type": "string",
+      "enum": [
+        "like",
+        "dislike",
+        "save",
+        "hide",
+        "share",
+        "open",
+        "listen",
+        "try_this"
+      ],
+      "default": "like"
+    },
+    "category": {
+      "type": "string"
+    },
+    "source_id": {
+      "type": "string"
+    },
+    "acted_at": {
+      "type": "string"
+    },
+    "created_at": {
+      "type": "string"
+    },
+    "updated_at": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "user_id",
+    "item_id",
+    "action"
+  ]
+}

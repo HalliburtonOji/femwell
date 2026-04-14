@@ -1,0 +1,39 @@
+{
+  "name": "VoiceProfiles",
+  "type": "object",
+  "properties": {
+    "profile_key": {
+      "type": "string"
+    },
+    "name": {
+      "type": "string"
+    },
+    "speed": {
+      "type": "number"
+    },
+    "stability": {
+      "type": "number"
+    },
+    "similarity_boost": {
+      "type": "number"
+    },
+    "style": {
+      "type": "number"
+    },
+    "use_speaker_boost": {
+      "type": "boolean"
+    },
+    "notes": {
+      "type": "string"
+    },
+    "created_at": {
+      "type": "string"
+    },
+    "updated_at": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "profile_key"
+  ]
+}

@@ -1,0 +1,53 @@
+{
+  "name": "InsightSnapshots",
+  "type": "object",
+  "properties": {
+    "user_id": {
+      "type": "string"
+    },
+    "range_type": {
+      "type": "string"
+    },
+    "start_date": {
+      "type": "string"
+    },
+    "end_date": {
+      "type": "string"
+    },
+    "avg_sleep": {
+      "type": "number"
+    },
+    "avg_stress": {
+      "type": "number"
+    },
+    "avg_pain": {
+      "type": "number"
+    },
+    "avg_mood": {
+      "type": "number"
+    },
+    "pain_days_count": {
+      "type": "number"
+    },
+    "top_symptoms": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "generated_at": {
+      "type": "string"
+    },
+    "created_at": {
+      "type": "string"
+    },
+    "updated_at": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "user_id",
+    "start_date",
+    "end_date"
+  ]
+}

@@ -1,0 +1,28 @@
+{
+  "name": "ProgramRecommendations",
+  "type": "object",
+  "properties": {
+    "user_id": {
+      "type": "string"
+    },
+    "program_id": {
+      "type": "string"
+    },
+    "reason": {
+      "type": "string"
+    },
+    "priority": {
+      "type": "number"
+    },
+    "created_at": {
+      "type": "string"
+    },
+    "updated_at": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "user_id",
+    "program_id"
+  ]
+}

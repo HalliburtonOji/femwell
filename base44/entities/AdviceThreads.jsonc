@@ -1,0 +1,25 @@
+{
+  "name": "AdviceThreads",
+  "type": "object",
+  "properties": {
+    "user_id": {
+      "type": "string"
+    },
+    "topic": {
+      "type": "string"
+    },
+    "title": {
+      "type": "string"
+    },
+    "created_at": {
+      "type": "string"
+    },
+    "updated_at": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "user_id",
+    "topic"
+  ]
+}

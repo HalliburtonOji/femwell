@@ -1,0 +1,34 @@
+{
+  "name": "MedicationReminders",
+  "type": "object",
+  "properties": {
+    "user_id": {
+      "type": "string"
+    },
+    "medication_name": {
+      "type": "string"
+    },
+    "dose": {
+      "type": "string"
+    },
+    "reminder_time": {
+      "type": "string",
+      "description": "HH:MM format in user's local time (stored as UTC)"
+    },
+    "is_active": {
+      "type": "boolean",
+      "default": true
+    },
+    "created_at": {
+      "type": "string"
+    },
+    "updated_at": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "user_id",
+    "medication_name",
+    "reminder_time"
+  ]
+}

@@ -1,0 +1,66 @@
+{
+  "name": "UserPreferences",
+  "type": "object",
+  "properties": {
+    "user_id": {
+      "type": "string"
+    },
+    "goals": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "lifestyle_interests": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "coach_tone": {
+      "type": "string",
+      "enum": [
+        "gentle",
+        "straight",
+        "minimal"
+      ],
+      "default": "gentle"
+    },
+    "notification_time": {
+      "type": "string",
+      "enum": [
+        "morning",
+        "evening"
+      ],
+      "default": "morning"
+    },
+    "hydration_target_ml": {
+      "type": "number",
+      "default": 2000
+    },
+    "body_goal": {
+      "type": "string",
+      "enum": [
+        "fat_loss",
+        "tone",
+        "energy",
+        "hormone_support",
+        "postpartum",
+        "menopause"
+      ]
+    },
+    "cycle_tracking_enabled": {
+      "type": "boolean",
+      "default": true
+    },
+    "created_at": {
+      "type": "string"
+    },
+    "updated_at": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "user_id"
+  ]
+}

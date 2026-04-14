@@ -1,0 +1,50 @@
+{
+  "name": "DealsItems",
+  "type": "object",
+  "properties": {
+    "store_name": {
+      "type": "string"
+    },
+    "code": {
+      "type": "string"
+    },
+    "expiry": {
+      "type": "string"
+    },
+    "terms": {
+      "type": "string"
+    },
+    "link": {
+      "type": "string"
+    },
+    "category": {
+      "type": "string",
+      "enum": [
+        "wellness",
+        "skincare",
+        "fitness",
+        "food",
+        "supplements",
+        "general"
+      ],
+      "default": "general"
+    },
+    "source_name": {
+      "type": "string"
+    },
+    "is_active": {
+      "type": "boolean",
+      "default": true
+    },
+    "created_at": {
+      "type": "string"
+    },
+    "updated_at": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "store_name",
+    "code"
+  ]
+}

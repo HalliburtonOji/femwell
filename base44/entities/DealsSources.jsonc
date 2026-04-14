@@ -1,0 +1,41 @@
+{
+  "name": "DealsSources",
+  "type": "object",
+  "properties": {
+    "name": {
+      "type": "string"
+    },
+    "url": {
+      "type": "string"
+    },
+    "category": {
+      "type": "string",
+      "enum": [
+        "wellness",
+        "skincare",
+        "fitness",
+        "food",
+        "supplements",
+        "general"
+      ],
+      "default": "general"
+    },
+    "enabled": {
+      "type": "boolean",
+      "default": true
+    },
+    "notes": {
+      "type": "string"
+    },
+    "created_at": {
+      "type": "string"
+    },
+    "updated_at": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "name",
+    "url"
+  ]
+}

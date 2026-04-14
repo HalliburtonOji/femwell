@@ -1,0 +1,32 @@
+{
+  "name": "ContentRatings",
+  "type": "object",
+  "properties": {
+    "user_id": {
+      "type": "string"
+    },
+    "content_id": {
+      "type": "string"
+    },
+    "content_key": {
+      "type": "string"
+    },
+    "stars": {
+      "type": "number"
+    },
+    "review": {
+      "type": "string"
+    },
+    "created_at": {
+      "type": "string"
+    },
+    "updated_at": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "user_id",
+    "content_id",
+    "stars"
+  ]
+}

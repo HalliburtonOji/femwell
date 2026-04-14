@@ -1,0 +1,42 @@
+{
+  "name": "ProgramDays",
+  "type": "object",
+  "properties": {
+    "program_key": {
+      "type": "string"
+    },
+    "program_id": {
+      "type": "string"
+    },
+    "day_number": {
+      "type": "number"
+    },
+    "title": {
+      "type": "string"
+    },
+    "theme_title": {
+      "type": "string"
+    },
+    "focus": {
+      "type": "string"
+    },
+    "theme_description": {
+      "type": "string"
+    },
+    "estimated_minutes": {
+      "type": "number"
+    },
+    "reflection_prompt": {
+      "type": "string"
+    },
+    "created_at": {
+      "type": "string"
+    },
+    "updated_at": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "day_number"
+  ]
+}

@@ -1,0 +1,41 @@
+{
+  "name": "AdviceHistory",
+  "type": "object",
+  "properties": {
+    "user_id": {
+      "type": "string"
+    },
+    "topic": {
+      "type": "string"
+    },
+    "question": {
+      "type": "string"
+    },
+    "advice_summary": {
+      "type": "string"
+    },
+    "what_to_do": {
+      "type": "string"
+    },
+    "suggested_session_key": {
+      "type": "string"
+    },
+    "when_to_seek_help": {
+      "type": "string"
+    },
+    "saved_at": {
+      "type": "string"
+    },
+    "created_at": {
+      "type": "string"
+    },
+    "updated_at": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "user_id",
+    "topic",
+    "question"
+  ]
+}

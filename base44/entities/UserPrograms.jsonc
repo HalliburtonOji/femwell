@@ -1,0 +1,55 @@
+{
+  "name": "UserPrograms",
+  "type": "object",
+  "properties": {
+    "user_id": {
+      "type": "string"
+    },
+    "program_id": {
+      "type": "string"
+    },
+    "started_at": {
+      "type": "string"
+    },
+    "current_day": {
+      "type": "number",
+      "default": 1
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "active",
+        "paused",
+        "completed"
+      ],
+      "default": "active"
+    },
+    "completed_at": {
+      "type": "string"
+    },
+    "is_saved": {
+      "type": "boolean",
+      "default": false
+    },
+    "reminder_time": {
+      "type": "string"
+    },
+    "last_activity_date": {
+      "type": "string"
+    },
+    "streak_count": {
+      "type": "number",
+      "default": 0
+    },
+    "created_at": {
+      "type": "string"
+    },
+    "updated_at": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "user_id",
+    "program_id"
+  ]
+}

@@ -1,0 +1,37 @@
+{
+  "name": "Entitlements",
+  "type": "object",
+  "properties": {
+    "user_id": {
+      "type": "string"
+    },
+    "user_email": {
+      "type": "string"
+    },
+    "plan": {
+      "type": "string",
+      "enum": [
+        "free",
+        "plus",
+        "pro",
+        "premium"
+      ],
+      "default": "free"
+    },
+    "trial_end": {
+      "type": "string"
+    },
+    "features": {
+      "type": "object"
+    },
+    "created_at": {
+      "type": "string"
+    },
+    "updated_at": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "user_id"
+  ]
+}

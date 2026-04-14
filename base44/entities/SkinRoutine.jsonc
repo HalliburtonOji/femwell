@@ -40,6 +40,12 @@
     },
     "would_repurchase": {
       "type": "boolean"
+    },
+    "created_at": {
+      "type": "string"
+    },
+    "updated_at": {
+      "type": "string"
     }
   },
   "required": [

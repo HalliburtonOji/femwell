@@ -56,6 +56,12 @@
       "items": {
         "type": "string"
       }
+    },
+    "created_at": {
+      "type": "string"
+    },
+    "updated_at": {
+      "type": "string"
     }
   },
   "required": [

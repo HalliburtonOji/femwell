@@ -1,0 +1,68 @@
+{
+  "name": "MealLog",
+  "type": "object",
+  "properties": {
+    "user_id": {
+      "type": "string"
+    },
+    "logged_at": {
+      "type": "string"
+    },
+    "meal_type": {
+      "type": "string",
+      "enum": [
+        "breakfast",
+        "lunch",
+        "dinner",
+        "snack"
+      ],
+      "default": "lunch"
+    },
+    "method": {
+      "type": "string",
+      "enum": [
+        "text",
+        "voice",
+        "photo",
+        "template",
+        "repeat"
+      ],
+      "default": "text"
+    },
+    "raw_text": {
+      "type": "string"
+    },
+    "notes": {
+      "type": "string"
+    },
+    "day_key": {
+      "type": "string"
+    },
+    "confidence": {
+      "type": "string",
+      "enum": [
+        "low",
+        "med",
+        "high"
+      ],
+      "default": "high"
+    },
+    "ai_analysis": {
+      "type": "string"
+    },
+    "wellness_goal": {
+      "type": "string"
+    },
+    "created_at": {
+      "type": "string"
+    },
+    "updated_at": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "user_id",
+    "day_key",
+    "meal_type"
+  ]
+}

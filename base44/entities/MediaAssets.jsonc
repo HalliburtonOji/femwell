@@ -1,0 +1,44 @@
+{
+  "name": "MediaAssets",
+  "type": "object",
+  "properties": {
+    "asset_id": {
+      "type": "string"
+    },
+    "provider": {
+      "type": "string",
+      "enum": [
+        "YOUTUBE",
+        "VIMEO"
+      ]
+    },
+    "embed_url": {
+      "type": "string"
+    },
+    "thumbnail_url": {
+      "type": "string"
+    },
+    "duration_seconds": {
+      "type": "number"
+    },
+    "start_seconds": {
+      "type": "number"
+    },
+    "end_seconds": {
+      "type": "number"
+    },
+    "is_stream": {
+      "type": "boolean",
+      "default": false
+    },
+    "created_at": {
+      "type": "string"
+    },
+    "updated_at": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "embed_url"
+  ]
+}

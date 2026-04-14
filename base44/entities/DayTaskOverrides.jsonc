@@ -1,0 +1,32 @@
+{
+  "name": "DayTaskOverrides",
+  "type": "object",
+  "properties": {
+    "user_id": {
+      "type": "string"
+    },
+    "user_program_id": {
+      "type": "string"
+    },
+    "original_task_id": {
+      "type": "string"
+    },
+    "replacement_task_id": {
+      "type": "string"
+    },
+    "day_number": {
+      "type": "number"
+    },
+    "created_at": {
+      "type": "string"
+    },
+    "updated_at": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "user_id",
+    "original_task_id",
+    "replacement_task_id"
+  ]
+}

@@ -1,0 +1,46 @@
+{
+  "name": "JournalEntries",
+  "type": "object",
+  "properties": {
+    "user_id": {
+      "type": "string"
+    },
+    "content_id": {
+      "type": "string"
+    },
+    "content_key": {
+      "type": "string"
+    },
+    "session_date": {
+      "type": "string"
+    },
+    "text": {
+      "type": "string"
+    },
+    "mood_rating": {
+      "type": "number"
+    },
+    "tags": {
+      "type": "string"
+    },
+    "program_key": {
+      "type": "string"
+    },
+    "day_number": {
+      "type": "number"
+    },
+    "prompt": {
+      "type": "string"
+    },
+    "created_at": {
+      "type": "string"
+    },
+    "updated_at": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "user_id",
+    "content_id"
+  ]
+}

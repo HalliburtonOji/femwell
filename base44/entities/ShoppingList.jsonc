@@ -1,0 +1,59 @@
+{
+  "name": "ShoppingList",
+  "type": "object",
+  "properties": {
+    "user_id": {
+      "type": "string"
+    },
+    "week_start": {
+      "type": "string"
+    },
+    "ingredient_name": {
+      "type": "string"
+    },
+    "quantity_text": {
+      "type": "string"
+    },
+    "category": {
+      "type": "string",
+      "enum": [
+        "Produce",
+        "Dairy & Eggs",
+        "Meat & Seafood",
+        "Pantry",
+        "Frozen",
+        "Bakery",
+        "Beverages",
+        "Snacks",
+        "Other"
+      ],
+      "default": "Other"
+    },
+    "is_checked": {
+      "type": "boolean",
+      "default": false
+    },
+    "source": {
+      "type": "string",
+      "enum": [
+        "meal_plan",
+        "manual"
+      ],
+      "default": "meal_plan"
+    },
+    "meal_plan_id": {
+      "type": "string"
+    },
+    "created_at": {
+      "type": "string"
+    },
+    "updated_at": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "user_id",
+    "ingredient_name",
+    "week_start"
+  ]
+}

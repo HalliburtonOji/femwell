@@ -1,0 +1,43 @@
+{
+  "name": "AudioSegments",
+  "type": "object",
+  "properties": {
+    "content_key": {
+      "type": "string"
+    },
+    "segment_role": {
+      "type": "string",
+      "enum": [
+        "MAIN",
+        "LOOP1",
+        "LOOP2",
+        "LOOP3"
+      ]
+    },
+    "audio_url": {
+      "type": "string"
+    },
+    "duration_seconds": {
+      "type": "number"
+    },
+    "sort_order": {
+      "type": "number"
+    },
+    "is_active": {
+      "type": "boolean",
+      "default": true
+    },
+    "created_at": {
+      "type": "string"
+    },
+    "updated_at": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "content_key",
+    "segment_role",
+    "audio_url",
+    "sort_order"
+  ]
+}

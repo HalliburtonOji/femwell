@@ -1,0 +1,68 @@
+{
+  "name": "ProgramTasks",
+  "type": "object",
+  "properties": {
+    "program_key": {
+      "type": "string"
+    },
+    "program_id": {
+      "type": "string"
+    },
+    "day_number": {
+      "type": "number"
+    },
+    "order_index": {
+      "type": "number"
+    },
+    "task_order": {
+      "type": "number"
+    },
+    "task_type": {
+      "type": "string"
+    },
+    "label": {
+      "type": "string"
+    },
+    "title": {
+      "type": "string"
+    },
+    "content_key": {
+      "type": "string"
+    },
+    "content_ref_id": {
+      "type": "string"
+    },
+    "external_url": {
+      "type": "string"
+    },
+    "instructions": {
+      "type": "string"
+    },
+    "education_body": {
+      "type": "string"
+    },
+    "resource_links_json": {
+      "type": "string"
+    },
+    "duration_minutes": {
+      "type": "number"
+    },
+    "is_optional": {
+      "type": "boolean",
+      "default": false
+    },
+    "swap_group": {
+      "type": "string"
+    },
+    "created_at": {
+      "type": "string"
+    },
+    "updated_at": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "day_number",
+    "task_type"
+  ]
+}

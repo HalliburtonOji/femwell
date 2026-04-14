@@ -1,0 +1,46 @@
+{
+  "name": "PregnancyProfile",
+  "type": "object",
+  "properties": {
+    "user_id": {
+      "type": "string"
+    },
+    "due_date": {
+      "type": "string"
+    },
+    "pregnancy_week": {
+      "type": "number"
+    },
+    "trimester": {
+      "type": "string",
+      "enum": [
+        "first",
+        "second",
+        "third",
+        "postpartum"
+      ],
+      "default": "first"
+    },
+    "care_focus": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "birth_preferences": {
+      "type": "string"
+    },
+    "notes": {
+      "type": "string"
+    },
+    "created_at": {
+      "type": "string"
+    },
+    "updated_at": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "user_id"
+  ]
+}

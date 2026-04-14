@@ -1,0 +1,119 @@
+{
+  "name": "DailyCheckins",
+  "type": "object",
+  "properties": {
+    "user_id": {
+      "type": "string"
+    },
+    "date": {
+      "type": "string"
+    },
+    "mood": {
+      "type": "number"
+    },
+    "energy": {
+      "type": "number"
+    },
+    "stress": {
+      "type": "number"
+    },
+    "pain": {
+      "type": "number"
+    },
+    "sleep_hours": {
+      "type": "number"
+    },
+    "sleep_quality": {
+      "type": "number"
+    },
+    "hydration_glasses": {
+      "type": "number"
+    },
+    "exercise_done": {
+      "type": "boolean",
+      "default": false
+    },
+    "exercise_type": {
+      "type": "string"
+    },
+    "exercise_minutes": {
+      "type": "number"
+    },
+    "exercise_intensity": {
+      "type": "string",
+      "enum": [
+        "light",
+        "moderate",
+        "intense"
+      ]
+    },
+    "focus": {
+      "type": "number"
+    },
+    "digestion": {
+      "type": "number"
+    },
+    "skin": {
+      "type": "number"
+    },
+    "libido": {
+      "type": "number"
+    },
+    "social_connection": {
+      "type": "number"
+    },
+    "appetite": {
+      "type": "string",
+      "enum": [
+        "low",
+        "normal",
+        "high",
+        "cravings"
+      ]
+    },
+    "body_temp_feel": {
+      "type": "string",
+      "enum": [
+        "cold",
+        "normal",
+        "warm",
+        "hot_flashes"
+      ]
+    },
+    "cervical_mucus": {
+      "type": "string",
+      "enum": [
+        "dry",
+        "sticky",
+        "creamy",
+        "watery",
+        "egg_white"
+      ]
+    },
+    "bloating": {
+      "type": "number"
+    },
+    "cramps": {
+      "type": "number"
+    },
+    "headache": {
+      "type": "number"
+    },
+    "breast_tenderness": {
+      "type": "number"
+    },
+    "notes": {
+      "type": "string"
+    },
+    "created_at": {
+      "type": "string"
+    },
+    "updated_at": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "user_id",
+    "date"
+  ]
+}

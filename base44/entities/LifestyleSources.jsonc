@@ -1,0 +1,92 @@
+{
+  "name": "LifestyleSources",
+  "type": "object",
+  "properties": {
+    "name": {
+      "type": "string"
+    },
+    "type": {
+      "type": "string",
+      "enum": [
+        "RSS",
+        "BLOG",
+        "NEWS",
+        "YOUTUBE_CHANNEL",
+        "TIKTOK",
+        "INSTAGRAM"
+      ],
+      "default": "RSS"
+    },
+    "url": {
+      "type": "string"
+    },
+    "category": {
+      "type": "string",
+      "enum": [
+        "Womens Health",
+        "Relationships",
+        "Career & Money",
+        "Beauty",
+        "Lifestyle",
+        "Mental Wellness",
+        "Food",
+        "Fitness",
+        "Culture",
+        "Parenting",
+        "Sex Education",
+        "Menopause",
+        "PCOS",
+        "PMS"
+      ],
+      "default": "Lifestyle"
+    },
+    "language": {
+      "type": "string",
+      "default": "en"
+    },
+    "enabled": {
+      "type": "boolean",
+      "default": true
+    },
+    "trust_score": {
+      "type": "number",
+      "default": 5
+    },
+    "logo_url": {
+      "type": "string"
+    },
+    "source_type": {
+      "type": "string",
+      "enum": [
+        "RSS",
+        "BLOG",
+        "NEWS",
+        "YOUTUBE_CHANNEL",
+        "TIKTOK",
+        "INSTAGRAM",
+        "MANUAL"
+      ],
+      "default": "RSS"
+    },
+    "feed_url": {
+      "type": "string"
+    },
+    "is_active": {
+      "type": "boolean",
+      "default": true
+    },
+    "priority": {
+      "type": "number",
+      "default": 5
+    },
+    "created_at": {
+      "type": "string"
+    },
+    "updated_at": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "name"
+  ]
+}
