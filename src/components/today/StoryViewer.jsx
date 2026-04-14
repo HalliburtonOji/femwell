@@ -14,8 +14,10 @@ const THEME_GRADIENTS = {
   sleep:         "linear-gradient(160deg, #1A1838 0%, #2A2035 100%)",
 };
 
-export default function StoryViewer({ items, initialIndex, onClose }) {
-  const [idx, setIdx] = useState(initialIndex);
+export default function StoryViewer({ items: rawItems, initialIndex, onClose }) {
+  // Filter out FAILED items — only show DONE items
+  const items = rawItems.filter(i => i.item_status !== 'FAILED');
+  const [idx, setIdx] = useState(Math.min(initialIndex || 0, items.length - 1));
   const timerRef = useRef(null);
 
   const item = items[idx];

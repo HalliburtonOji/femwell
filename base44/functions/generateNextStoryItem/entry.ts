@@ -125,6 +125,16 @@ Rules: No emoji. Max 50 chars per text field. route_key must be one of: ${VALID_
       generated_at: new Date().toISOString(),
     });
 
+    // Check if pack is now complete
+    const allItems = await base44.entities.StoryItem.filter({ pack_id: pendingItem.pack_id });
+    const allDone = allItems.every(i => i.item_status === 'DONE');
+    if (allDone) {
+      await base44.entities.StoryPack.update(pendingItem.pack_id, {
+        status: 'READY',
+        updated_at: new Date().toISOString(),
+      });
+    }
+
     return Response.json({ ok: true, slot: pendingItem.slot_index });
   } catch (error) {
     return Response.json({ error: error.message }, { status: 500 });
