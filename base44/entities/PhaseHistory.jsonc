@@ -20,6 +20,24 @@
     "cycle_number": {
       "type": "number"
     },
+    "cycle_length_used": {
+      "type": "number"
+    },
+    "period_length_used": {
+      "type": "number"
+    },
+    "last_period_date_used": {
+      "type": "string"
+    },
+    "calculation_method": {
+      "type": "string",
+      "enum": [
+        "profile",
+        "cycle_event",
+        "default"
+      ],
+      "default": "profile"
+    },
     "created_at": {
       "type": "string"
     },
