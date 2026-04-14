@@ -18,8 +18,8 @@ Deno.serve(async (req) => {
 
     const results = [];
     for (const pack of pendingPacks) {
-      const itemRes = await sb.functions.invoke('generateNextStoryItem', { pack_id: pack.id }).catch(e => ({ error: e.message }));
-      const finalRes = await sb.functions.invoke('finalizeStoryPack', { pack_id: pack.id }).catch(e => ({ error: e.message }));
+      const itemRes = await sb.functions.invoke('generateNextStoryItem', { pack_id: pack.id }).catch(e => ({ error: String(e?.message || 'Unknown error') }));
+      const finalRes = await sb.functions.invoke('finalizeStoryPack', { pack_id: pack.id }).catch(e => ({ error: String(e?.message || 'Unknown error') }));
       results.push({ pack_id: pack.id, itemRes, finalRes });
     }
 
