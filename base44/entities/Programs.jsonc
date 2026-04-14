@@ -97,6 +97,7 @@
     }
   },
   "required": [
-    "title"
+    "title",
+    "program_key"
   ]
 }

@@ -5,9 +5,6 @@
     "program_key": {
       "type": "string"
     },
-    "program_id": {
-      "type": "string"
-    },
     "day_number": {
       "type": "number"
     },
@@ -37,6 +34,7 @@
     }
   },
   "required": [
+    "program_key",
     "day_number"
   ]
 }
