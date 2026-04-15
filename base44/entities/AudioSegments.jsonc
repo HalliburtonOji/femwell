@@ -33,6 +33,15 @@
     "text_hash": {
       "type": "string"
     },
+    "generated_by": {
+      "type": "string",
+      "enum": [
+        "openai_tts",
+        "elevenlabs",
+        "manual"
+      ],
+      "default": "openai_tts"
+    },
     "created_at": {
       "type": "string"
     },

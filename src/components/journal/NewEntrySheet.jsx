@@ -70,6 +70,7 @@ export default function NewEntrySheet({ user, phase, onClose, onSaved, editEntry
     const tagArr = tags.split(",").map(t => t.trim()).filter(Boolean);
     const payload = {
       user_id: user.id,
+      content_id: `${cardType}_entry`,
       text: finalText,
       card_type: cardType,
       card_color: color,

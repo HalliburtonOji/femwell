@@ -157,6 +157,12 @@
       "type": "number",
       "default": 2000
     },
+    "pregnancy_start_date": {
+      "type": "string"
+    },
+    "pregnancy_due_date": {
+      "type": "string"
+    },
     "created_at": {
       "type": "string"
     },

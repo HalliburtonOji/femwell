@@ -5,15 +5,31 @@
     "user_id": {
       "type": "string"
     },
-    "user_email": {
+    "content": {
       "type": "string"
     },
-    "display_name": {
+    "topic": {
       "type": "string"
     },
     "anonymous": {
       "type": "boolean",
       "default": false
+    },
+    "moderation_status": {
+      "type": "string",
+      "enum": [
+        "pending",
+        "approved",
+        "flagged",
+        "hidden"
+      ],
+      "default": "pending"
+    },
+    "moderation_flag": {
+      "type": "string"
+    },
+    "moderated_at": {
+      "type": "string"
     },
     "phase_tag": {
       "type": "string"
@@ -28,18 +44,6 @@
         "milestone"
       ],
       "default": "general"
-    },
-    "content": {
-      "type": "string"
-    },
-    "moderation_status": {
-      "type": "string",
-      "enum": [
-        "pending",
-        "approved",
-        "rejected"
-      ],
-      "default": "pending"
     },
     "reactions": {
       "type": "object",
@@ -62,7 +66,14 @@
       "type": "number",
       "default": 0
     },
+    "likes_count": {
+      "type": "number",
+      "default": 0
+    },
     "created_at": {
+      "type": "string"
+    },
+    "updated_at": {
       "type": "string"
     }
   },

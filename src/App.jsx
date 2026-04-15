@@ -44,22 +44,20 @@ const AuthenticatedApp = () => {
       try {
         const user = await base44.auth.me();
         if (!user?.id) return;
-        const profiles = await base44.entities.UserProfile.filter({ user_id: user.id });
+        const [profiles, checkins] = await Promise.all([
+          base44.entities.UserProfile.filter({ user_id: user.id }),
+          base44.entities.DailyCheckins.filter({ user_id: user.id }, "-date", 1).catch(() => []),
+        ]);
         const isComplete = profiles.some(p => p?.onboarding_complete === true);
-        if (isComplete) {
+        const hasData = checkins.length > 0;
+        if (isComplete || hasData) {
+          // Mark complete if they have data but flag wasn't set
+          if (hasData && !isComplete && profiles[0]) {
+            base44.entities.UserProfile.update(profiles[0].id, { onboarding_complete: true }).catch(() => {});
+          }
           sessionStorage.setItem('fw_ob_ok', '1');
         } else {
-          // 6G: existing users with data skip onboarding
-          const checkins = await base44.entities.DailyCheckins.filter({ user_id: user.id }, "-date", 1).catch(() => []);
-          if (checkins.length > 0) {
-            // Mark complete so we don't check again
-            if (profiles[0]) {
-              await base44.entities.UserProfile.update(profiles[0].id, { onboarding_complete: true }).catch(() => {});
-            }
-            sessionStorage.setItem('fw_ob_ok', '1');
-          } else {
-            navigate('/Onboarding?mode=signup', { replace: true });
-          }
+          navigate('/Onboarding?mode=signup', { replace: true });
         }
       } catch {}
     })();

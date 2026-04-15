@@ -92,9 +92,11 @@ export default function JournalComposer({ user, onSaved }) {
     const entry = await base44.entities.JournalEntries.create({
       user_id: user.id,
       content_id: "free_entry",
+      card_type: "free",
+      card_color: "lavender",
       text: entryText,
       mood_rating: moodObj ? moodObj.rating : undefined,
-      tags: tags.join(","),
+      tags: tags,
       session_date: new Date().toISOString().split("T")[0],
     });
     setSaving(false);

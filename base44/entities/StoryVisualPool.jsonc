@@ -14,12 +14,15 @@
     "prompt_hash": {
       "type": "string"
     },
-    "created_at": {
+    "phase": {
       "type": "string"
     },
     "is_active": {
       "type": "boolean",
       "default": true
+    },
+    "created_at": {
+      "type": "string"
     },
     "updated_at": {
       "type": "string"
