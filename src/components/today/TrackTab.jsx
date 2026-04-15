@@ -2,658 +2,573 @@ import { useState, useEffect } from "react";
 import { base44 } from "@/api/base44Client";
 import { format, parseISO } from "date-fns";
 import {
-  Plus, ChevronLeft, ChevronRight, Droplets, Activity, Heart,
-  Pill, Play, Trash2
+  Droplets, AlertCircle, CheckCircle2, Plus, Pill, Activity,
+  CalendarDays, Trash2, ChevronRight, Check, Loader2
 } from "lucide-react";
-import HabitCard from "../habits/HabitCard";
-import StreakMilestoneToast from "../habits/StreakMilestoneToast";
-import TrackCalendar from "./TrackCalendar";
+import MonthlyCalendarCard from "../planner/MonthlyCalendarCard";
+import DayDetailSheet from "../planner/DayDetailSheet";
+import MedReminderSection from "./MedReminderSection";
 
-const TABS = ["Cycle", "Symptoms", "Habits", "Meds", "Sessions"];
+const todayStr = new Date().toISOString().split("T")[0];
 
-const FLOW_OPTIONS = [
-  { value: "light",  label: "Light",  desc: "minimal" },
-  { value: "medium", label: "Medium", desc: "moderate" },
-  { value: "heavy",  label: "Heavy",  desc: "significant" },
+const SUBTABS = [
+  { key: "calendar",  label: "Calendar",  Icon: CalendarDays },
+  { key: "cycle",     label: "Cycle",     Icon: Droplets },
+  { key: "symptoms",  label: "Symptoms",  Icon: AlertCircle },
+  { key: "habits",    label: "Habits",    Icon: CheckCircle2 },
+  { key: "meds",      label: "Meds",      Icon: Pill },
 ];
 
-const PERIOD_TYPES = [
+const FLOW_OPTIONS = ["light", "medium", "heavy"];
+const PERIOD_EVENT_TYPES = [
   { value: "PeriodStart", label: "Period Start" },
-  { value: "PeriodEnd",   label: "Period End"   },
-  { value: "Spotting",    label: "Spotting"     },
+  { value: "PeriodEnd",   label: "Period End" },
+  { value: "Spotting",    label: "Spotting" },
 ];
-
-const CYCLE_TYPE_ACCENTS = {
-  PeriodStart: "var(--rose-dust)",
-  PeriodEnd:   "var(--sage)",
-  Spotting:    "var(--mauve)",
-};
-
 const COMMON_SYMPTOMS = [
   "cramps", "bloating", "headache", "fatigue", "mood swings",
   "breast tenderness", "back pain", "acne", "nausea", "insomnia",
   "anxiety", "brain fog", "hot flashes", "night sweats", "joint pain",
 ];
-
 const SEVERITY_LABELS = ["", "Mild", "Moderate", "Significant", "Severe", "Extreme"];
 
-const SESSION_TYPE_LABEL = {
-  MEDITATION: "Meditation",
-  BREATHWORK: "Breathwork",
-  WORKOUT:    "Workout",
-  MOBILITY:   "Mobility",
-  GUIDE:      "Guide",
-};
-
-const card = {
-  backgroundColor: "var(--surface)",
-  border: "1px solid var(--border)",
-  boxShadow: "var(--shadow-sm)",
-};
 const sLabel = {
-  fontSize: "0.6rem",
-  fontWeight: 600,
-  textTransform: "uppercase",
-  letterSpacing: "0.12em",
-  color: "var(--mauve)",
-  fontFamily: "'Inter', sans-serif",
+  fontSize: "0.6rem", fontWeight: 600, textTransform: "uppercase",
+  letterSpacing: "0.12em", color: "var(--mauve)", fontFamily: "'Inter', sans-serif",
+};
+const card = {
+  backgroundColor: "var(--surface)", border: "1px solid var(--border)",
+  borderRadius: 20, boxShadow: "var(--shadow-sm)",
 };
 
-function EmptyState({ icon: Icon, heading, sub }) {
+// ── Calendar sub-tab ─────────────────────────────────────────────────────────
+function CalendarSubTab({ user, profile }) {
+  const [selectedDay, setSelectedDay] = useState(null);
+  const [refreshKey, setRefreshKey] = useState(0);
   return (
-    <div className="rounded-[20px] p-10 text-center" style={card}>
-      <div className="w-10 h-10 rounded-2xl flex items-center justify-center mx-auto mb-3"
-        style={{ backgroundColor: "var(--ivory-dark)", color: "var(--mauve)" }}>
-        <Icon className="w-5 h-5" strokeWidth={1.5} />
-      </div>
-      <p className="text-sm font-medium mb-1" style={{ color: "var(--plum)", fontFamily: "'Inter', sans-serif" }}>{heading}</p>
-      {sub && <p className="text-xs" style={{ color: "var(--mauve)", fontFamily: "'Inter', sans-serif" }}>{sub}</p>}
+    <div className="pt-4">
+      <p style={{ ...sLabel, marginBottom: 12 }}>Tap any day to log or view</p>
+      <MonthlyCalendarCard
+        userId={user?.id}
+        profile={profile}
+        refreshKey={refreshKey}
+        onDayPress={(day, dayData) => setSelectedDay({ day, dayData })}
+      />
+      {selectedDay && (
+        <DayDetailSheet
+          date={selectedDay.day}
+          dayData={selectedDay.dayData}
+          userId={user?.id}
+          onClose={() => setSelectedDay(null)}
+          onDataChanged={() => setRefreshKey(k => k + 1)}
+        />
+      )}
     </div>
   );
 }
 
-function AddButton({ label, onClick, icon: Icon = Plus }) {
+// ── Cycle sub-tab ─────────────────────────────────────────────────────────────
+function CycleSubTab({ user, profile }) {
+  const [events, setEvents] = useState([]);
+  const [eventType, setEventType] = useState("PeriodStart");
+  const [flow, setFlow] = useState("medium");
+  const [notes, setNotes] = useState("");
+  const [saving, setSaving] = useState(false);
+  const [saved, setSaved] = useState(false);
+
+  useEffect(() => {
+    base44.entities.CycleEvents.filter({ user_id: user.id }, "-date", 30)
+      .then(setEvents).catch(() => {});
+  }, [user]);
+
+  const logEvent = async () => {
+    setSaving(true);
+    const created = await base44.entities.CycleEvents.create({
+      user_id: user.id,
+      date: todayStr,
+      event_type: eventType,
+      ...(eventType === "PeriodStart" ? { flow_level: flow } : {}),
+      notes: notes.trim() || undefined,
+    });
+    setEvents(prev => [created, ...prev]);
+    setNotes("");
+    setSaving(false);
+    setSaved(true);
+    setTimeout(() => setSaved(false), 2000);
+  };
+
+  const deleteEvent = async (id) => {
+    await base44.entities.CycleEvents.delete(id);
+    setEvents(prev => prev.filter(e => e.id !== id));
+  };
+
+  const cycleInfo = (() => {
+    if (!profile?.last_period_start_date) return null;
+    const cycleLen = profile.cycle_avg_length || 28;
+    const periodLen = profile.period_length || 5;
+    const today = new Date();
+    const last = new Date(profile.last_period_start_date);
+    const diff = Math.floor((today - last) / (1000 * 60 * 60 * 24));
+    const cycleDay = (diff % cycleLen) + 1;
+    const phase = cycleDay <= periodLen ? "Menstrual"
+      : cycleDay <= 13 ? "Follicular"
+      : cycleDay <= 16 ? "Ovulatory"
+      : "Luteal";
+    const phaseColor = { Menstrual: "var(--rose-dust)", Follicular: "var(--sage)", Ovulatory: "#B89E6A", Luteal: "var(--mauve)" }[phase];
+    const nextPeriod = cycleLen - cycleDay;
+    return { cycleDay, phase, phaseColor, nextPeriod };
+  })();
+
   return (
-    <button onClick={onClick}
-      className="w-full flex items-center gap-3 rounded-[20px] p-4 transition-all"
-      style={card}
-      onMouseEnter={e => e.currentTarget.style.backgroundColor = "var(--ivory-dark)"}
-      onMouseLeave={e => e.currentTarget.style.backgroundColor = "var(--surface)"}
-    >
-      <div className="w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0"
-        style={{ backgroundColor: "var(--rose-dust-subtle)", color: "var(--rose-dust)" }}>
-        <Icon className="w-4 h-4" />
+    <div className="pt-4 space-y-4">
+      {/* Cycle status card */}
+      {cycleInfo ? (
+        <div style={{ ...card, padding: 20, background: "linear-gradient(135deg, var(--rose-dust-subtle) 0%, var(--mauve-subtle) 100%)" }}>
+          <p style={sLabel}>Current cycle status</p>
+          <div className="flex items-center gap-3 mt-3">
+            <div style={{ flex: 1 }}>
+              <p style={{ fontSize: 22, fontWeight: 700, color: "var(--plum)", fontFamily: "'Playfair Display', serif" }}>
+                Day {cycleInfo.cycleDay}
+              </p>
+              <p style={{ fontSize: 13, fontWeight: 600, color: cycleInfo.phaseColor, fontFamily: "'Inter', sans-serif", marginTop: 2 }}>
+                {cycleInfo.phase} Phase
+              </p>
+            </div>
+            <div style={{ textAlign: "right" }}>
+              <p style={{ fontSize: 12, color: "var(--mauve)", fontFamily: "'Inter', sans-serif" }}>Next period in</p>
+              <p style={{ fontSize: 20, fontWeight: 700, color: "var(--plum)", fontFamily: "'Playfair Display', serif" }}>
+                {cycleInfo.nextPeriod}d
+              </p>
+            </div>
+          </div>
+        </div>
+      ) : (
+        <div style={{ ...card, padding: 16 }}>
+          <p style={{ fontSize: 13, color: "var(--mauve)", fontFamily: "'Inter', sans-serif" }}>
+            Set your last period date in Cycle Settings to see your phase.
+          </p>
+          <a href="/CycleSettings" style={{ fontSize: 12, color: "var(--rose-dust)", fontWeight: 600, fontFamily: "'Inter', sans-serif" }}>
+            Go to settings →
+          </a>
+        </div>
+      )}
+
+      {/* Log today */}
+      <div style={{ ...card, padding: 20 }}>
+        <p style={{ ...sLabel, marginBottom: 14 }}>Log today</p>
+        <div className="flex gap-2 flex-wrap mb-3">
+          {PERIOD_EVENT_TYPES.map(opt => (
+            <button key={opt.value} onClick={() => setEventType(opt.value)}
+              style={{
+                padding: "6px 14px", borderRadius: 9999, fontSize: 12, fontWeight: 600,
+                border: "none", cursor: "pointer", fontFamily: "'Inter', sans-serif",
+                backgroundColor: eventType === opt.value ? "var(--plum)" : "var(--ivory-dark)",
+                color: eventType === opt.value ? "white" : "var(--mauve)",
+              }}>
+              {opt.label}
+            </button>
+          ))}
+        </div>
+        {eventType === "PeriodStart" && (
+          <div className="flex gap-2 mb-3">
+            {FLOW_OPTIONS.map(f => (
+              <button key={f} onClick={() => setFlow(f)}
+                style={{
+                  flex: 1, padding: "6px 8px", borderRadius: 9999, fontSize: 11, fontWeight: 600,
+                  border: "none", cursor: "pointer", fontFamily: "'Inter', sans-serif", textTransform: "capitalize",
+                  backgroundColor: flow === f ? "var(--rose-dust)" : "var(--ivory-dark)",
+                  color: flow === f ? "white" : "var(--mauve)",
+                }}>
+                {f}
+              </button>
+            ))}
+          </div>
+        )}
+        <input
+          value={notes}
+          onChange={e => setNotes(e.target.value)}
+          placeholder="Notes (optional)"
+          style={{ width: "100%", padding: "8px 12px", borderRadius: 12, border: "1px solid var(--border)", backgroundColor: "var(--ivory)", fontSize: 13, fontFamily: "'Inter', sans-serif", color: "var(--plum)", outline: "none", marginBottom: 12, boxSizing: "border-box" }}
+        />
+        <button onClick={logEvent} disabled={saving}
+          style={{
+            width: "100%", padding: "11px", borderRadius: 12, fontWeight: 600, fontSize: 13,
+            border: "none", cursor: saving ? "default" : "pointer", fontFamily: "'Inter', sans-serif",
+            backgroundColor: saved ? "var(--sage)" : "var(--plum)", color: "white",
+            display: "flex", alignItems: "center", justifyContent: "center", gap: 6,
+          }}>
+          {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : saved ? <Check className="w-4 h-4" /> : <Plus className="w-4 h-4" />}
+          {saving ? "Saving…" : saved ? "Logged!" : "Log Event"}
+        </button>
       </div>
-      <p className="text-sm font-medium" style={{ color: "var(--plum)", fontFamily: "'Inter', sans-serif" }}>{label}</p>
-    </button>
+
+      {/* Recent events */}
+      {events.length > 0 && (
+        <div style={{ ...card, padding: 20 }}>
+          <p style={{ ...sLabel, marginBottom: 12 }}>Recent events</p>
+          <div className="space-y-2">
+            {events.slice(0, 10).map(e => (
+              <div key={e.id} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "10px 12px", borderRadius: 12, backgroundColor: "var(--ivory)", border: "1px solid var(--border-subtle)" }}>
+                <div>
+                  <p style={{ fontSize: 12, fontWeight: 600, color: "var(--plum)", fontFamily: "'Inter', sans-serif" }}>{e.event_type?.replace(/([A-Z])/g, " $1").trim()}</p>
+                  <p style={{ fontSize: 11, color: "var(--mauve)", fontFamily: "'Inter', sans-serif" }}>
+                    {e.date}{e.flow_level ? ` · ${e.flow_level}` : ""}
+                  </p>
+                </div>
+                <button onClick={() => deleteEvent(e.id)} style={{ background: "none", border: "none", cursor: "pointer", padding: 4 }}>
+                  <Trash2 style={{ width: 14, height: 14, color: "var(--mauve)" }} />
+                </button>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+    </div>
   );
 }
 
-const ACTIVE_SUBTAB_KEY = "fw_track_subtab";
-
-export default function TrackTab({ user, profile }) {
-  const todayStr = new Date().toISOString().split("T")[0];
-
-  const [activeTab, setActiveTab] = useState(() => sessionStorage.getItem(ACTIVE_SUBTAB_KEY) || "Cycle");
-  const [selectedDate, setSelectedDate] = useState(todayStr);
-
-  const [cycleEvents, setCycleEvents] = useState([]);
-  const [addingCycleEvent, setAddingCycleEvent] = useState(false);
-  const [cycleEventType, setCycleEventType] = useState("PeriodStart");
-  const [flowLevel, setFlowLevel] = useState("medium");
-
-  const [symptomLogs, setSymptomLogs] = useState([]);
-  const [addingSymptom, setAddingSymptom] = useState(false);
-  const [symptomType, setSymptomType] = useState("");
-  const [customSymptom, setCustomSymptom] = useState("");
+// ── Symptoms sub-tab ─────────────────────────────────────────────────────────
+function SymptomsSubTab({ user }) {
+  const [todaySymptoms, setTodaySymptoms] = useState([]);
+  const [selected, setSelected] = useState(null);
   const [severity, setSeverity] = useState(3);
-  const [symptomNotes, setSymptomNotes] = useState("");
-
-  const [habitLogs, setHabitLogs] = useState([]);
-  const [allHabitLogs, setAllHabitLogs] = useState([]);
-  const [addingHabit, setAddingHabit] = useState(false);
-  const [newHabitName, setNewHabitName] = useState("");
-  const [savingHabit, setSavingHabit] = useState(false);
-  const [milestone, setMilestone] = useState(null);
-
-  const [medLogs, setMedLogs] = useState([]);
-  const [sessionHistory, setSessionHistory] = useState([]);
-  const [sessionContent, setSessionContent] = useState({});
-  const [dataLoading, setDataLoading] = useState(false);
+  const [notes, setNotes] = useState("");
+  const [saving, setSaving] = useState(false);
 
   useEffect(() => {
-    if (user) {
-      loadData(user.id, selectedDate);
-      base44.entities.HabitLogs.filter({ user_id: user.id })
-        .then(setAllHabitLogs).catch(() => {});
-    }
+    base44.entities.SymptomLogs.filter({ user_id: user.id, date: todayStr })
+      .then(setTodaySymptoms).catch(() => {});
   }, [user]);
 
-  const loadData = async (userId, date) => {
-    setDataLoading(true);
-    const [events, symptoms, habits, meds, sessions] = await Promise.all([
-      base44.entities.CycleEvents.filter({ user_id: userId, date }),
-      base44.entities.SymptomLogs.filter({ user_id: userId, date }),
-      base44.entities.HabitLogs.filter({ user_id: userId, date }),
-      base44.entities.MedicationLogs.filter({ user_id: userId, date }),
-      base44.entities.ContentHistory.filter({ user_id: userId, session_date: date }),
-    ]);
-    setCycleEvents(events);
-    setSymptomLogs(symptoms);
-    setHabitLogs(habits);
-    setMedLogs(meds);
-    const activeSessions = sessions.filter((s) => !s.is_deleted);
-    setSessionHistory(activeSessions);
-    const ids = [...new Set(activeSessions.map((s) => s.content_id).filter(Boolean))];
-    if (ids.length > 0) {
-      const items = await base44.entities.ContentItems.list("-created_date", 120);
-      const map = {};
-      items.forEach((it) => { map[it.id] = it; });
-      setSessionContent(map);
-    }
-    setDataLoading(false);
-  };
-
-  const handleSelectDate = (dateStr) => {
-    setSelectedDate(dateStr);
-    if (user) loadData(user.id, dateStr);
-  };
-
-  const changeDate = (offset) => {
-    const d = new Date(selectedDate);
-    d.setDate(d.getDate() + offset);
-    const newDate = d.toISOString().split("T")[0];
-    if (newDate <= todayStr) handleSelectDate(newDate);
-  };
-
-  const switchTab = (tab) => {
-    setActiveTab(tab);
-    sessionStorage.setItem(ACTIVE_SUBTAB_KEY, tab);
-  };
-
-  const saveCycleEvent = async () => {
-    await base44.entities.CycleEvents.create({
+  const log = async () => {
+    if (!selected) return;
+    setSaving(true);
+    const created = await base44.entities.SymptomLogs.create({
       user_id: user.id,
-      date: selectedDate,
-      type: cycleEventType,
-      flow_level: cycleEventType === "PeriodStart" || cycleEventType === "Spotting" ? flowLevel : undefined,
+      date: todayStr,
+      symptom_type: selected,
+      severity,
+      notes: notes.trim() || undefined,
     });
-    setAddingCycleEvent(false);
-    await loadData(user.id, selectedDate);
+    setTodaySymptoms(prev => [...prev, created]);
+    setSelected(null);
+    setNotes("");
+    setSeverity(3);
+    setSaving(false);
   };
 
-  const deleteCycleEvent = async (id) => {
-    await base44.entities.CycleEvents.delete(id);
-    await loadData(user.id, selectedDate);
+  const remove = async (id) => {
+    await base44.entities.SymptomLogs.delete(id);
+    setTodaySymptoms(prev => prev.filter(s => s.id !== id));
   };
-
-  const saveSymptom = async () => {
-    const type = customSymptom.trim() || symptomType;
-    if (!type) return;
-    await base44.entities.SymptomLogs.create({ user_id: user.id, date: selectedDate, symptom_type: type, severity, notes: symptomNotes || undefined });
-    setAddingSymptom(false); setSymptomType(""); setCustomSymptom(""); setSeverity(3); setSymptomNotes("");
-    await loadData(user.id, selectedDate);
-  };
-
-  const allHabitNames = [...new Set(allHabitLogs.map((l) => l.habit_type || l.habit_name).filter(Boolean))];
-
-  const calcStreak = (habitName) => {
-    const ts = new Date().toISOString().split("T")[0];
-    let count = 0;
-    const check = new Date();
-    const todayDone = allHabitLogs.some((l) => (l.habit_type === habitName || l.habit_name === habitName) && l.completed && l.date === ts);
-    if (!todayDone) check.setDate(check.getDate() - 1);
-    while (true) {
-      const ds = check.toISOString().split("T")[0];
-      const found = allHabitLogs.find((l) => (l.habit_type === habitName || l.habit_name === habitName) && l.completed && l.date === ds);
-      if (!found) break;
-      count++;
-      check.setDate(check.getDate() - 1);
-    }
-    return count;
-  };
-
-  const handleHabitComplete = async (habitName) => {
-    const existing = habitLogs.find((l) => (l.habit_type === habitName || l.habit_name === habitName) && l.date === selectedDate);
-    if (existing) {
-      await base44.entities.HabitLogs.update(existing.id, { completed: true });
-    } else {
-      await base44.entities.HabitLogs.create({ user_id: user.id, date: selectedDate, habit_type: habitName, habit_name: habitName, completed: true });
-    }
-    const all = await base44.entities.HabitLogs.filter({ user_id: user.id });
-    setAllHabitLogs(all);
-    await loadData(user.id, selectedDate);
-    const newStreak = calcStreak(habitName) + 1;
-    if ([7, 14, 30, 60, 100].includes(newStreak)) setMilestone({ streak: newStreak, habitName });
-  };
-
-  const handleAddHabit = async () => {
-    if (!newHabitName.trim()) return;
-    setSavingHabit(true);
-    await base44.entities.HabitLogs.create({ user_id: user.id, date: selectedDate, habit_type: newHabitName.trim(), habit_name: newHabitName.trim(), completed: false });
-    const all = await base44.entities.HabitLogs.filter({ user_id: user.id });
-    setAllHabitLogs(all);
-    await loadData(user.id, selectedDate);
-    setNewHabitName(""); setAddingHabit(false); setSavingHabit(false);
-  };
-
-  const handleDeleteHabit = async (habitName) => {
-    const toDelete = allHabitLogs.filter((l) => l.habit_type === habitName || l.habit_name === habitName);
-    await Promise.all(toDelete.map((l) => base44.entities.HabitLogs.delete(l.id)));
-    const all = await base44.entities.HabitLogs.filter({ user_id: user.id });
-    setAllHabitLogs(all);
-    await loadData(user.id, selectedDate);
-  };
-
-  const isToday = selectedDate === todayStr;
-  const displayDate = isToday ? "Today" : format(parseISO(selectedDate), "EEE, d MMM");
-
-  const dailySummary = [
-    cycleEvents.length > 0 && `${cycleEvents.length} cycle ${cycleEvents.length === 1 ? "event" : "events"}`,
-    symptomLogs.length > 0 && `${symptomLogs.length} ${symptomLogs.length === 1 ? "symptom" : "symptoms"}`,
-    habitLogs.filter(h => h.completed).length > 0 && `${habitLogs.filter(h => h.completed).length} habit${habitLogs.filter(h => h.completed).length === 1 ? "" : "s"} done`,
-    sessionHistory.length > 0 && `${sessionHistory.length} ${sessionHistory.length === 1 ? "session" : "sessions"}`,
-  ].filter(Boolean);
 
   return (
-    <div className="pt-4">
-      {/* ── Calendar ──────────────────────────────────────────────────── */}
-      <TrackCalendar
-        user={user}
-        profile={profile}
-        selectedDate={selectedDate}
-        onSelectDate={handleSelectDate}
-      />
-
-      {/* ── Date navigator ────────────────────────────────────────────── */}
-      <div className="flex items-center justify-between rounded-[20px] px-4 py-3.5 mb-3" style={card}>
-        <button onClick={() => changeDate(-1)}
-          className="w-8 h-8 rounded-xl flex items-center justify-center"
-          style={{ color: "var(--mauve)" }}
-          onMouseEnter={e => e.currentTarget.style.backgroundColor = "var(--ivory-dark)"}
-          onMouseLeave={e => e.currentTarget.style.backgroundColor = "transparent"}>
-          <ChevronLeft className="w-4 h-4" />
-        </button>
-        <div className="text-center">
-          <p className="font-semibold text-sm" style={{ color: "var(--plum)", fontFamily: "'Inter', sans-serif" }}>{displayDate}</p>
-          {!isToday && (
-            <p className="text-xs mt-0.5" style={{ color: "var(--mauve)", fontFamily: "'Inter', sans-serif" }}>
-              {format(parseISO(selectedDate), "MMMM d, yyyy")}
-            </p>
-          )}
+    <div className="pt-4 space-y-4">
+      {/* Today's logged */}
+      {todaySymptoms.length > 0 && (
+        <div style={{ ...card, padding: 20 }}>
+          <p style={{ ...sLabel, marginBottom: 12 }}>Logged today</p>
+          <div className="flex flex-wrap gap-2">
+            {todaySymptoms.map(s => (
+              <div key={s.id} style={{ display: "flex", alignItems: "center", gap: 6, padding: "5px 10px 5px 12px", borderRadius: 9999, backgroundColor: "var(--rose-dust-subtle)", border: "1px solid var(--rose-dust-light)" }}>
+                <span style={{ fontSize: 12, fontWeight: 600, color: "var(--plum)", fontFamily: "'Inter', sans-serif", textTransform: "capitalize" }}>{s.symptom_type}</span>
+                {s.severity && <span style={{ fontSize: 11, color: "var(--mauve)", fontFamily: "'Inter', sans-serif" }}>·{" "}{SEVERITY_LABELS[s.severity] || s.severity}</span>}
+                <button onClick={() => remove(s.id)} style={{ background: "none", border: "none", cursor: "pointer", padding: 0, lineHeight: 1 }}>
+                  <Trash2 style={{ width: 12, height: 12, color: "var(--mauve)" }} />
+                </button>
+              </div>
+            ))}
+          </div>
         </div>
-        <button onClick={() => changeDate(1)} disabled={isToday}
-          className="w-8 h-8 rounded-xl flex items-center justify-center disabled:opacity-30"
-          style={{ color: "var(--mauve)" }}
-          onMouseEnter={e => !isToday && (e.currentTarget.style.backgroundColor = "var(--ivory-dark)")}
-          onMouseLeave={e => e.currentTarget.style.backgroundColor = "transparent"}>
-          <ChevronRight className="w-4 h-4" />
-        </button>
-      </div>
+      )}
 
-      {/* Daily summary strip */}
-      {dailySummary.length > 0 && (
-        <div className="flex flex-wrap gap-1.5 mb-4">
-          {dailySummary.map((item) => (
-            <span key={item} className="text-xs px-2.5 py-1 rounded-full font-medium"
-              style={{ backgroundColor: "var(--sage-subtle)", color: "var(--sage)", fontFamily: "'Inter', sans-serif" }}>
-              {item}
-            </span>
+      {/* Symptom picker */}
+      <div style={{ ...card, padding: 20 }}>
+        <p style={{ ...sLabel, marginBottom: 12 }}>Log a symptom</p>
+        <div className="flex flex-wrap gap-2 mb-4">
+          {COMMON_SYMPTOMS.map(s => (
+            <button key={s} onClick={() => setSelected(selected === s ? null : s)}
+              style={{
+                padding: "6px 12px", borderRadius: 9999, fontSize: 12, fontWeight: 500,
+                border: "none", cursor: "pointer", fontFamily: "'Inter', sans-serif", textTransform: "capitalize",
+                backgroundColor: selected === s ? "var(--plum)" : "var(--ivory-dark)",
+                color: selected === s ? "white" : "var(--mauve)",
+              }}>
+              {s}
+            </button>
           ))}
         </div>
-      )}
-
-      {/* ── Sub-tab bar ───────────────────────────────────────────────── */}
-      <div className="flex gap-1 mb-5 p-1 rounded-2xl" style={card}>
-        {TABS.map((tab) => (
-          <button key={tab} onClick={() => switchTab(tab)}
-            className="flex-1 py-2 rounded-xl text-xs font-semibold transition-all"
-            style={{
-              backgroundColor: activeTab === tab ? "var(--plum)" : "transparent",
-              color: activeTab === tab ? "white" : "var(--mauve)",
-              fontFamily: "'Inter', sans-serif",
-            }}>
-            {tab}
-          </button>
-        ))}
+        {selected && (
+          <div className="space-y-3">
+            <div>
+              <p style={{ fontSize: 11, color: "var(--mauve)", fontFamily: "'Inter', sans-serif", marginBottom: 6 }}>
+                Severity: <strong style={{ color: "var(--plum)" }}>{SEVERITY_LABELS[severity]}</strong>
+              </p>
+              <input type="range" min={1} max={5} value={severity} onChange={e => setSeverity(+e.target.value)} style={{ width: "100%" }} />
+              <div style={{ display: "flex", justifyContent: "space-between", marginTop: 2 }}>
+                {SEVERITY_LABELS.slice(1).map(l => (
+                  <span key={l} style={{ fontSize: 9, color: "var(--mauve)", fontFamily: "'Inter', sans-serif" }}>{l}</span>
+                ))}
+              </div>
+            </div>
+            <input value={notes} onChange={e => setNotes(e.target.value)} placeholder="Notes (optional)"
+              style={{ width: "100%", padding: "8px 12px", borderRadius: 12, border: "1px solid var(--border)", backgroundColor: "var(--ivory)", fontSize: 13, fontFamily: "'Inter', sans-serif", color: "var(--plum)", outline: "none", boxSizing: "border-box" }}
+            />
+            <button onClick={log} disabled={saving}
+              style={{ width: "100%", padding: "11px", borderRadius: 12, fontWeight: 600, fontSize: 13, border: "none", cursor: "pointer", fontFamily: "'Inter', sans-serif", backgroundColor: "var(--plum)", color: "white", display: "flex", alignItems: "center", justifyContent: "center", gap: 6 }}>
+              {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Plus className="w-4 h-4" />}
+              {saving ? "Saving…" : `Log ${selected}`}
+            </button>
+          </div>
+        )}
       </div>
+    </div>
+  );
+}
 
-      {dataLoading && (
-        <div className="flex justify-center py-6">
-          <div className="w-6 h-6 rounded-full border-2 border-t-transparent animate-spin"
-            style={{ borderColor: "var(--rose-dust-light)", borderTopColor: "var(--rose-dust)" }} />
+// ── Habits sub-tab ────────────────────────────────────────────────────────────
+function HabitsSubTab({ user }) {
+  const [habits, setHabits] = useState([]);
+  const [showAdd, setShowAdd] = useState(false);
+  const [newName, setNewName] = useState("");
+  const [newCategory, setNewCategory] = useState("other");
+  const [saving, setSaving] = useState(false);
+
+  const CATEGORIES = ["hydration", "movement", "nutrition", "mindfulness", "sleep", "other"];
+
+  useEffect(() => {
+    base44.entities.HabitLogs.filter({ user_id: user.id, date: todayStr })
+      .then(setHabits).catch(() => {});
+  }, [user]);
+
+  const toggle = async (habit) => {
+    const updated = await base44.entities.HabitLogs.update(habit.id, { completed: !habit.completed });
+    setHabits(prev => prev.map(h => h.id === habit.id ? { ...h, completed: !h.completed } : h));
+  };
+
+  const addHabit = async () => {
+    if (!newName.trim()) return;
+    setSaving(true);
+    const created = await base44.entities.HabitLogs.create({
+      user_id: user.id,
+      date: todayStr,
+      habit_type: newName.trim(),
+      habit_category: newCategory,
+      completed: false,
+    });
+    setHabits(prev => [...prev, created]);
+    setNewName("");
+    setShowAdd(false);
+    setSaving(false);
+  };
+
+  const remove = async (id) => {
+    await base44.entities.HabitLogs.delete(id);
+    setHabits(prev => prev.filter(h => h.id !== id));
+  };
+
+  const done = habits.filter(h => h.completed).length;
+  const total = habits.length;
+
+  return (
+    <div className="pt-4 space-y-4">
+      {/* Progress */}
+      {total > 0 && (
+        <div style={{ ...card, padding: "14px 20px" }}>
+          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 8 }}>
+            <p style={{ fontSize: 13, fontWeight: 600, color: "var(--plum)", fontFamily: "'Inter', sans-serif" }}>
+              {done}/{total} habits done today
+            </p>
+            <p style={{ fontSize: 12, color: "var(--sage)", fontWeight: 600, fontFamily: "'Inter', sans-serif" }}>
+              {total > 0 ? Math.round((done / total) * 100) : 0}%
+            </p>
+          </div>
+          <div style={{ height: 6, backgroundColor: "var(--ivory-dark)", borderRadius: 3, overflow: "hidden" }}>
+            <div style={{ height: "100%", width: `${total > 0 ? (done / total) * 100 : 0}%`, backgroundColor: done === total && total > 0 ? "var(--sage)" : "var(--rose-dust)", borderRadius: 3, transition: "width 0.4s" }} />
+          </div>
         </div>
       )}
 
-      {!dataLoading && (
-        <>
-          {/* ── CYCLE TAB ───────────────────────────────────────────────── */}
-          {activeTab === "Cycle" && (
-            <div className="space-y-2.5">
-              {cycleEvents.length > 0 ? cycleEvents.map((e) => (
-                <div key={e.id} className="flex items-center justify-between rounded-[20px] overflow-hidden" style={card}>
-                  <div className="flex items-center gap-3.5 flex-1 p-4">
-                    <div className="w-1.5 self-stretch rounded-full flex-shrink-0"
-                      style={{ backgroundColor: CYCLE_TYPE_ACCENTS[e.type] || "var(--rose-dust)", minHeight: "40px" }} />
-                    <div>
-                      <p className="font-semibold text-sm" style={{ color: "var(--plum)", fontFamily: "'Inter', sans-serif" }}>
-                        {e.type === "PeriodStart" ? "Period Start" : e.type === "PeriodEnd" ? "Period End" : "Spotting"}
-                      </p>
-                      {e.flow_level && (
-                        <p className="text-xs mt-0.5 capitalize" style={{ color: "var(--mauve)", fontFamily: "'Inter', sans-serif" }}>
-                          {e.flow_level} flow
-                        </p>
-                      )}
-                    </div>
-                  </div>
-                  <button onClick={() => deleteCycleEvent(e.id)}
-                    className="px-4 text-xs font-medium h-full py-4 flex-shrink-0"
-                    style={{ color: "var(--mauve)", fontFamily: "'Inter', sans-serif" }}>
-                    Remove
-                  </button>
-                </div>
-              )) : (
-                <EmptyState icon={Droplets} heading="Nothing logged yet" sub="Tap below to record a cycle event for this day." />
-              )}
+      {/* Habit list */}
+      <div style={{ ...card, padding: 20 }}>
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 14 }}>
+          <p style={sLabel}>Today's habits</p>
+          <button onClick={() => setShowAdd(v => !v)}
+            style={{ display: "flex", alignItems: "center", gap: 4, fontSize: 12, fontWeight: 600, color: "var(--rose-dust)", background: "none", border: "none", cursor: "pointer", fontFamily: "'Inter', sans-serif" }}>
+            <Plus className="w-3.5 h-3.5" /> Add
+          </button>
+        </div>
 
-              {addingCycleEvent ? (
-                <div className="rounded-[24px] p-5 space-y-4" style={card}>
-                  <p className="font-semibold text-sm" style={{ color: "var(--plum)", fontFamily: "'Playfair Display', serif" }}>Log Cycle Event</p>
-                  <div>
-                    <p style={sLabel} className="mb-2">Event type</p>
-                    <div className="grid grid-cols-3 gap-2">
-                      {PERIOD_TYPES.map((t) => (
-                        <button key={t.value} onClick={() => setCycleEventType(t.value)}
-                          className="py-2.5 rounded-xl text-xs font-semibold transition-all"
-                          style={{
-                            backgroundColor: cycleEventType === t.value ? "var(--plum)" : "var(--ivory)",
-                            color: cycleEventType === t.value ? "white" : "var(--mauve)",
-                            border: `1px solid ${cycleEventType === t.value ? "var(--plum)" : "var(--border)"}`,
-                            fontFamily: "'Inter', sans-serif",
-                          }}>
-                          {t.label}
-                        </button>
-                      ))}
-                    </div>
-                  </div>
-
-                  {(cycleEventType === "PeriodStart" || cycleEventType === "Spotting") && (
-                    <div>
-                      <p style={sLabel} className="mb-2">Flow</p>
-                      <div className="flex gap-2">
-                        {FLOW_OPTIONS.map((f) => (
-                          <button key={f.value} onClick={() => setFlowLevel(f.value)}
-                            className="flex-1 py-3 rounded-xl text-xs transition-all"
-                            style={{
-                              backgroundColor: flowLevel === f.value ? "var(--rose-dust-subtle)" : "var(--ivory)",
-                              border: `1.5px solid ${flowLevel === f.value ? "var(--rose-dust)" : "var(--border)"}`,
-                              color: flowLevel === f.value ? "var(--rose-dust)" : "var(--mauve)",
-                              fontFamily: "'Inter', sans-serif",
-                            }}>
-                            <span className="block font-semibold">{f.label}</span>
-                            <span className="block text-[10px] mt-0.5 opacity-70">{f.desc}</span>
-                          </button>
-                        ))}
-                      </div>
-                    </div>
-                  )}
-
-                  <div className="flex gap-2 pt-1">
-                    <button onClick={() => setAddingCycleEvent(false)}
-                      className="flex-1 py-2.5 rounded-xl text-sm font-semibold"
-                      style={{ border: "1.5px solid var(--border)", color: "var(--plum)", fontFamily: "'Inter', sans-serif" }}>
-                      Cancel
-                    </button>
-                    <button onClick={saveCycleEvent}
-                      className="flex-1 py-2.5 rounded-xl text-sm font-semibold"
-                      style={{ backgroundColor: "var(--plum)", color: "white", fontFamily: "'Inter', sans-serif" }}>
-                      Save
-                    </button>
-                  </div>
-                </div>
-              ) : (
-                <AddButton label="Log cycle event" onClick={() => setAddingCycleEvent(true)} />
-              )}
+        {showAdd && (
+          <div className="rounded-2xl p-3 mb-4 space-y-2" style={{ backgroundColor: "var(--ivory)", border: "1px solid var(--border)" }}>
+            <input value={newName} onChange={e => setNewName(e.target.value)} placeholder="Habit name (e.g. 8 glasses water)"
+              style={{ width: "100%", padding: "8px 12px", borderRadius: 10, border: "1px solid var(--border)", backgroundColor: "var(--surface)", fontSize: 13, fontFamily: "'Inter', sans-serif", color: "var(--plum)", outline: "none", boxSizing: "border-box" }}
+            />
+            <div className="flex gap-1.5 flex-wrap">
+              {CATEGORIES.map(c => (
+                <button key={c} onClick={() => setNewCategory(c)}
+                  style={{ padding: "4px 10px", borderRadius: 9999, fontSize: 11, fontWeight: 500, textTransform: "capitalize", border: "none", cursor: "pointer", fontFamily: "'Inter', sans-serif", backgroundColor: newCategory === c ? "var(--plum)" : "var(--ivory-dark)", color: newCategory === c ? "white" : "var(--mauve)" }}>
+                  {c}
+                </button>
+              ))}
             </div>
-          )}
-
-          {/* ── SYMPTOMS TAB ────────────────────────────────────────────── */}
-          {activeTab === "Symptoms" && (
-            <div className="space-y-2.5">
-              {symptomLogs.length > 0 ? symptomLogs.map((s) => (
-                <div key={s.id} className="flex items-start justify-between rounded-[20px] p-4" style={card}>
-                  <div className="flex-1 min-w-0">
-                    <p className="font-semibold text-sm capitalize" style={{ color: "var(--plum)", fontFamily: "'Inter', sans-serif" }}>{s.symptom_type}</p>
-                    <p className="text-xs mt-0.5" style={{ color: "var(--mauve)", fontFamily: "'Inter', sans-serif" }}>
-                      {SEVERITY_LABELS[s.severity] || `Severity ${s.severity}`}
-                    </p>
-                    {s.notes && (
-                      <p className="text-xs mt-1 leading-relaxed" style={{ color: "var(--mauve)", fontStyle: "italic", fontFamily: "'Inter', sans-serif" }}>
-                        {s.notes}
-                      </p>
-                    )}
-                  </div>
-                  <button onClick={async () => { await base44.entities.SymptomLogs.delete(s.id); await loadData(user.id, selectedDate); }}
-                    className="text-xs font-medium ml-3 flex-shrink-0"
-                    style={{ color: "var(--mauve)", fontFamily: "'Inter', sans-serif" }}>
-                    Remove
-                  </button>
-                </div>
-              )) : (
-                <EmptyState icon={Activity} heading="Nothing logged yet" sub="Note anything your body has been telling you today." />
-              )}
-
-              {addingSymptom ? (
-                <div className="rounded-[24px] p-5 space-y-4" style={card}>
-                  <p className="font-semibold text-sm" style={{ color: "var(--plum)", fontFamily: "'Playfair Display', serif" }}>Log a Symptom</p>
-                  <div>
-                    <p style={sLabel} className="mb-2.5">Common symptoms</p>
-                    <div className="flex flex-wrap gap-1.5">
-                      {COMMON_SYMPTOMS.map((s) => (
-                        <button key={s} onClick={() => { setSymptomType(s); setCustomSymptom(""); }}
-                          className="px-3 py-1.5 rounded-full text-xs font-medium capitalize transition-all"
-                          style={{
-                            backgroundColor: symptomType === s ? "var(--plum)" : "var(--ivory)",
-                            color: symptomType === s ? "white" : "var(--plum)",
-                            border: `1px solid ${symptomType === s ? "var(--plum)" : "var(--border)"}`,
-                            fontFamily: "'Inter', sans-serif",
-                          }}>
-                          {s}
-                        </button>
-                      ))}
-                    </div>
-                  </div>
-
-                  <input type="text" placeholder="Or describe your own…" value={customSymptom}
-                    onChange={(e) => { setCustomSymptom(e.target.value); setSymptomType(""); }}
-                    className="w-full p-3.5 rounded-2xl text-sm focus:outline-none"
-                    style={{ backgroundColor: "var(--ivory)", border: "1.5px solid var(--border)", color: "var(--plum)", fontFamily: "'Inter', sans-serif" }}
-                    onFocus={e => e.target.style.borderColor = "var(--rose-dust-light)"}
-                    onBlur={e => e.target.style.borderColor = "var(--border)"} />
-
-                  <div>
-                    <div className="flex items-center justify-between mb-2">
-                      <p style={sLabel}>Intensity</p>
-                      <span className="text-xs font-semibold" style={{ color: "var(--rose-dust)", fontFamily: "'Inter', sans-serif" }}>
-                        {SEVERITY_LABELS[severity]}
-                      </span>
-                    </div>
-                    <input type="range" min="1" max="5" value={severity} onChange={(e) => setSeverity(Number(e.target.value))} />
-                  </div>
-
-                  <textarea placeholder="Notes (optional — how it felt, what you noticed)" value={symptomNotes}
-                    onChange={(e) => setSymptomNotes(e.target.value)} rows={2}
-                    className="w-full p-3.5 rounded-2xl text-sm resize-none focus:outline-none"
-                    style={{ backgroundColor: "var(--ivory)", border: "1.5px solid var(--border)", color: "var(--plum)", fontFamily: "'Inter', sans-serif" }}
-                    onFocus={e => e.target.style.borderColor = "var(--rose-dust-light)"}
-                    onBlur={e => e.target.style.borderColor = "var(--border)"} />
-
-                  <div className="flex gap-2">
-                    <button onClick={() => setAddingSymptom(false)}
-                      className="flex-1 py-2.5 rounded-xl text-sm font-semibold"
-                      style={{ border: "1.5px solid var(--border)", color: "var(--plum)", fontFamily: "'Inter', sans-serif" }}>
-                      Cancel
-                    </button>
-                    <button onClick={saveSymptom} disabled={!symptomType && !customSymptom.trim()}
-                      className="flex-1 py-2.5 rounded-xl text-sm font-semibold"
-                      style={{ backgroundColor: "var(--plum)", color: "white", fontFamily: "'Inter', sans-serif", opacity: (!symptomType && !customSymptom.trim()) ? 0.45 : 1 }}>
-                      Save
-                    </button>
-                  </div>
-                </div>
-              ) : (
-                <AddButton label="Log a symptom" onClick={() => setAddingSymptom(true)} />
-              )}
+            <div className="flex gap-2">
+              <button onClick={() => setShowAdd(false)} style={{ flex: 1, padding: "7px", borderRadius: 10, border: "1px solid var(--border)", backgroundColor: "transparent", fontSize: 12, color: "var(--mauve)", cursor: "pointer" }}>Cancel</button>
+              <button onClick={addHabit} disabled={!newName.trim() || saving} style={{ flex: 1, padding: "7px", borderRadius: 10, border: "none", backgroundColor: "var(--plum)", color: "white", fontSize: 12, fontWeight: 600, cursor: "pointer", opacity: !newName.trim() ? 0.5 : 1 }}>
+                {saving ? "Adding…" : "Add"}
+              </button>
             </div>
-          )}
+          </div>
+        )}
 
-          {/* ── HABITS TAB ──────────────────────────────────────────────── */}
-          {activeTab === "Habits" && (
-            <div className="space-y-2.5">
-              {milestone && (
-                <StreakMilestoneToast streak={milestone.streak} habitName={milestone.habitName} onDismiss={() => setMilestone(null)} />
-              )}
+        {habits.length === 0 && !showAdd && (
+          <p style={{ fontSize: 13, color: "var(--mauve)", fontFamily: "'Inter', sans-serif" }}>
+            No habits logged today yet. Tap Add to start tracking.
+          </p>
+        )}
 
-              {allHabitNames.length > 0 ? allHabitNames.map((habitName) => (
-                <HabitCard key={habitName} habit={habitName}
-                  habitLogs={habitLogs} allHabitLogs={allHabitLogs}
-                  selectedDate={selectedDate} todayStr={todayStr}
-                  onComplete={handleHabitComplete} onDelete={handleDeleteHabit} />
-              )) : (
-                <EmptyState icon={Heart} heading="No habits yet" sub="Build gentle daily routines and track your consistency over time." />
+        <div className="space-y-2">
+          {habits.map(h => (
+            <div key={h.id} style={{ display: "flex", alignItems: "center", gap: 10, padding: "10px 12px", borderRadius: 12, backgroundColor: h.completed ? "var(--sage-subtle)" : "var(--ivory)", border: `1px solid ${h.completed ? "var(--sage-light)" : "var(--border-subtle)"}` }}>
+              <button onClick={() => toggle(h)}
+                style={{ width: 22, height: 22, borderRadius: 6, border: `2px solid ${h.completed ? "var(--sage)" : "var(--border)"}`, backgroundColor: h.completed ? "var(--sage)" : "transparent", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+                {h.completed && <Check style={{ width: 12, height: 12, color: "white" }} />}
+              </button>
+              <p style={{ flex: 1, fontSize: 13, fontWeight: 500, color: h.completed ? "var(--sage)" : "var(--plum)", fontFamily: "'Inter', sans-serif", textDecoration: h.completed ? "line-through" : "none", textDecorationColor: "var(--sage)" }}>
+                {h.habit_type}
+              </p>
+              {h.habit_category && (
+                <span style={{ fontSize: 10, color: "var(--mauve)", fontFamily: "'Inter', sans-serif", textTransform: "capitalize" }}>{h.habit_category}</span>
               )}
-
-              {addingHabit ? (
-                <div className="rounded-[24px] p-5 space-y-3.5" style={card}>
-                  <p className="font-semibold text-sm" style={{ color: "var(--plum)", fontFamily: "'Playfair Display', serif" }}>New Habit</p>
-                  <input type="text" placeholder="Name your habit…" value={newHabitName}
-                    onChange={(e) => setNewHabitName(e.target.value)}
-                    onKeyDown={(e) => e.key === "Enter" && handleAddHabit()}
-                    className="w-full p-3.5 rounded-2xl text-sm focus:outline-none"
-                    style={{ backgroundColor: "var(--ivory)", border: "1.5px solid var(--border)", color: "var(--plum)", fontFamily: "'Inter', sans-serif" }}
-                    autoFocus
-                    onFocus={e => e.target.style.borderColor = "var(--rose-dust-light)"}
-                    onBlur={e => e.target.style.borderColor = "var(--border)"} />
-                  <div className="flex flex-wrap gap-1.5">
-                    {["Drink water", "Morning walk", "Meditate", "Stretch", "Read", "Journal", "No screen before bed"].map((s) => (
-                      <button key={s} onClick={() => setNewHabitName(s)}
-                        className="text-xs px-3 py-1.5 rounded-full transition-all"
-                        style={{ backgroundColor: "var(--ivory)", color: "var(--plum)", border: "1px solid var(--border)", fontFamily: "'Inter', sans-serif" }}
-                        onMouseEnter={e => { e.currentTarget.style.backgroundColor = "var(--rose-dust-subtle)"; e.currentTarget.style.borderColor = "var(--rose-dust-light)"; }}
-                        onMouseLeave={e => { e.currentTarget.style.backgroundColor = "var(--ivory)"; e.currentTarget.style.borderColor = "var(--border)"; }}>
-                        {s}
-                      </button>
-                    ))}
-                  </div>
-                  <div className="flex gap-2">
-                    <button onClick={() => { setAddingHabit(false); setNewHabitName(""); }}
-                      className="flex-1 py-2.5 rounded-xl text-sm font-semibold"
-                      style={{ border: "1.5px solid var(--border)", color: "var(--plum)", fontFamily: "'Inter', sans-serif" }}>
-                      Cancel
-                    </button>
-                    <button onClick={handleAddHabit} disabled={!newHabitName.trim() || savingHabit}
-                      className="flex-1 py-2.5 rounded-xl text-sm font-semibold"
-                      style={{ backgroundColor: "var(--plum)", color: "white", fontFamily: "'Inter', sans-serif", opacity: (!newHabitName.trim() || savingHabit) ? 0.45 : 1 }}>
-                      {savingHabit ? "Adding…" : "Add Habit"}
-                    </button>
-                  </div>
-                </div>
-              ) : (
-                <AddButton label="Add a habit" onClick={() => setAddingHabit(true)} />
-              )}
+              <button onClick={() => remove(h.id)} style={{ background: "none", border: "none", cursor: "pointer", padding: 2, flexShrink: 0 }}>
+                <Trash2 style={{ width: 13, height: 13, color: "var(--mauve)" }} />
+              </button>
             </div>
-          )}
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}
 
-          {/* ── MEDS TAB ────────────────────────────────────────────────── */}
-          {activeTab === "Meds" && (
-            <div className="space-y-2.5">
-              {medLogs.length > 0 ? medLogs.map((m) => (
-                <div key={m.id} className="flex items-center gap-3.5 rounded-[20px] p-4" style={card}>
-                  <div className="w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0"
-                    style={{ backgroundColor: "var(--mauve-subtle)", color: "var(--mauve)" }}>
-                    <Pill className="w-4 h-4" strokeWidth={1.5} />
-                  </div>
-                  <div>
-                    <p className="font-semibold text-sm" style={{ color: "var(--plum)", fontFamily: "'Inter', sans-serif" }}>
-                      {m.item_name || m.medication_name || "Medication"}
-                    </p>
-                    {(m.dose || m.dosage) && (
-                      <p className="text-xs mt-0.5" style={{ color: "var(--mauve)", fontFamily: "'Inter', sans-serif" }}>{m.dose || m.dosage}</p>
-                    )}
-                  </div>
-                </div>
-              )) : (
-                <div className="rounded-[24px] p-8 text-center" style={card}>
-                  <div className="w-10 h-10 rounded-2xl flex items-center justify-center mx-auto mb-3"
-                    style={{ backgroundColor: "var(--mauve-subtle)", color: "var(--mauve)" }}>
-                    <Pill className="w-5 h-5" strokeWidth={1.5} />
-                  </div>
-                  <p className="text-sm font-medium mb-1" style={{ color: "var(--plum)", fontFamily: "'Inter', sans-serif" }}>
-                    Medication log
-                  </p>
-                  <p className="text-xs leading-relaxed" style={{ color: "var(--mauve)", fontFamily: "'Inter', sans-serif" }}>
-                    Log medications and supplements from the Today page using the Meds section there, or view your reminders in your daily check-in.
-                  </p>
-                </div>
-              )}
-            </div>
-          )}
+// ── Meds sub-tab ──────────────────────────────────────────────────────────────
+function MedsSubTab({ user }) {
+  const [todayLogs, setTodayLogs] = useState([]);
+  const [medName, setMedName] = useState("");
+  const [dose, setDose] = useState("");
+  const [saving, setSaving] = useState(false);
 
-          {/* ── SESSIONS TAB ────────────────────────────────────────────── */}
-          {activeTab === "Sessions" && (
-            <div className="space-y-2.5">
-              {sessionHistory.length > 0 ? sessionHistory.map((s) => {
-                const content = sessionContent[s.content_id];
-                const durationMin = s.duration_seconds ? Math.round(s.duration_seconds / 60) : s.duration_done;
-                const typeLabel = content?.content_type ? (SESSION_TYPE_LABEL[content.content_type] || content.content_type) : null;
-                const isManual = s.completion_method === "MANUAL";
-                return (
-                  <div key={s.id} className="flex items-center gap-3.5 rounded-[20px] p-4" style={card}>
-                    <div className="w-10 h-10 rounded-2xl flex items-center justify-center flex-shrink-0"
-                      style={{ backgroundColor: "var(--rose-dust-subtle)", color: "var(--rose-dust)" }}>
-                      <Play className="w-4 h-4" strokeWidth={1.5} />
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <p className="font-semibold text-sm truncate" style={{ color: "var(--plum)", fontFamily: "'Inter', sans-serif" }}>
-                        {content?.title || s.content_key || "Session"}
-                      </p>
-                      <div className="flex items-center gap-2 mt-1">
-                        {typeLabel && (
-                          <span className="text-[10px] font-medium" style={{ color: "var(--mauve)", fontFamily: "'Inter', sans-serif" }}>{typeLabel}</span>
-                        )}
-                        {durationMin > 0 && (
-                          <span className="text-[10px]" style={{ color: "var(--mauve)", fontFamily: "'Inter', sans-serif" }}>{durationMin} min</span>
-                        )}
-                        <span className="text-[10px] px-2 py-0.5 rounded-full font-medium"
-                          style={{
-                            backgroundColor: isManual ? "#FFF8EE" : "var(--sage-subtle)",
-                            color: isManual ? "#A07830" : "var(--sage)",
-                            fontFamily: "'Inter', sans-serif",
-                          }}>
-                          {isManual ? "Logged" : "Completed"}
-                        </span>
-                      </div>
-                    </div>
-                    <button
-                      onClick={async () => {
-                        await base44.entities.ContentHistory.update(s.id, { is_deleted: true });
-                        setSessionHistory((prev) => prev.filter((x) => x.id !== s.id));
-                      }}
-                      className="w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0"
-                      style={{ backgroundColor: "var(--ivory-dark)", color: "var(--mauve)" }}
-                      onMouseEnter={e => e.currentTarget.style.backgroundColor = "var(--rose-dust-subtle)"}
-                      onMouseLeave={e => e.currentTarget.style.backgroundColor = "var(--ivory-dark)"}>
-                      <Trash2 className="w-3.5 h-3.5" />
-                    </button>
-                  </div>
-                );
-              }) : (
-                <EmptyState icon={Play} heading="No sessions today" sub="Complete a session in Explore or mark one from Today to see it here." />
-              )}
-            </div>
-          )}
-        </>
-      )}
+  useEffect(() => {
+    base44.entities.MedicationLogs.filter({ user_id: user.id, date: todayStr })
+      .then(setTodayLogs).catch(() => {});
+  }, [user]);
+
+  const logMed = async () => {
+    if (!medName.trim()) return;
+    setSaving(true);
+    const created = await base44.entities.MedicationLogs.create({
+      user_id: user.id,
+      date: todayStr,
+      medication_name: medName.trim(),
+      dose: dose.trim() || undefined,
+      taken_at: new Date().toISOString(),
+      taken: true,
+    });
+    setTodayLogs(prev => [...prev, created]);
+    setMedName("");
+    setDose("");
+    setSaving(false);
+  };
+
+  const remove = async (id) => {
+    await base44.entities.MedicationLogs.delete(id);
+    setTodayLogs(prev => prev.filter(l => l.id !== id));
+  };
+
+  return (
+    <div className="pt-4 space-y-4">
+      {/* Log today */}
+      <div style={{ ...card, padding: 20 }}>
+        <p style={{ ...sLabel, marginBottom: 14 }}>Log medication taken today</p>
+        <div className="space-y-2 mb-3">
+          <input value={medName} onChange={e => setMedName(e.target.value)} placeholder="Medication name *"
+            style={{ width: "100%", padding: "8px 12px", borderRadius: 12, border: "1px solid var(--border)", backgroundColor: "var(--ivory)", fontSize: 13, fontFamily: "'Inter', sans-serif", color: "var(--plum)", outline: "none", boxSizing: "border-box" }}
+          />
+          <input value={dose} onChange={e => setDose(e.target.value)} placeholder="Dose (e.g. 500mg)"
+            style={{ width: "100%", padding: "8px 12px", borderRadius: 12, border: "1px solid var(--border)", backgroundColor: "var(--ivory)", fontSize: 13, fontFamily: "'Inter', sans-serif", color: "var(--plum)", outline: "none", boxSizing: "border-box" }}
+          />
+        </div>
+        <button onClick={logMed} disabled={!medName.trim() || saving}
+          style={{ width: "100%", padding: "11px", borderRadius: 12, fontWeight: 600, fontSize: 13, border: "none", cursor: medName.trim() ? "pointer" : "not-allowed", fontFamily: "'Inter', sans-serif", backgroundColor: "var(--plum)", color: "white", display: "flex", alignItems: "center", justifyContent: "center", gap: 6, opacity: !medName.trim() ? 0.5 : 1 }}>
+          {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Pill className="w-4 h-4" />}
+          {saving ? "Saving…" : "Log Medication"}
+        </button>
+
+        {/* Today's logs */}
+        {todayLogs.length > 0 && (
+          <div className="mt-4 space-y-2">
+            <p style={{ fontSize: 11, fontWeight: 600, color: "var(--mauve)", fontFamily: "'Inter', sans-serif", textTransform: "uppercase", letterSpacing: "0.1em" }}>Taken today</p>
+            {todayLogs.map(l => (
+              <div key={l.id} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "8px 12px", borderRadius: 12, backgroundColor: "var(--sage-subtle)", border: "1px solid var(--sage-light)" }}>
+                <div>
+                  <p style={{ fontSize: 12, fontWeight: 600, color: "var(--plum)", fontFamily: "'Inter', sans-serif" }}>{l.medication_name}</p>
+                  {l.dose && <p style={{ fontSize: 11, color: "var(--mauve)", fontFamily: "'Inter', sans-serif" }}>{l.dose}</p>}
+                </div>
+                <button onClick={() => remove(l.id)} style={{ background: "none", border: "none", cursor: "pointer", padding: 4 }}>
+                  <Trash2 style={{ width: 13, height: 13, color: "var(--mauve)" }} />
+                </button>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+
+      {/* Reminders */}
+      <div style={{ ...card, padding: 20 }}>
+        <p style={{ ...sLabel, marginBottom: 4 }}>Reminders</p>
+        <MedReminderSection user={user} />
+      </div>
+    </div>
+  );
+}
+
+// ── Main TrackTab ─────────────────────────────────────────────────────────────
+export default function TrackTab({ user, profile }) {
+  const [subTab, setSubTab] = useState("calendar");
+
+  return (
+    <div>
+      {/* Sub-tab pills */}
+      <div className="mt-4 mb-1">
+        <style>{`.track-subtabs::-webkit-scrollbar{display:none}`}</style>
+        <div className="track-subtabs flex gap-1.5 overflow-x-auto pb-1" style={{ scrollbarWidth: "none" }}>
+          {SUBTABS.map(({ key, label, Icon }) => (
+            <button
+              key={key}
+              onClick={() => setSubTab(key)}
+              style={{
+                flexShrink: 0, display: "flex", alignItems: "center", gap: 5,
+                padding: "7px 14px", borderRadius: 9999, fontSize: 12, fontWeight: 600,
+                border: "none", cursor: "pointer", fontFamily: "'Inter', sans-serif",
+                backgroundColor: subTab === key ? "var(--plum)" : "var(--surface)",
+                color: subTab === key ? "white" : "var(--mauve)",
+                boxShadow: subTab === key ? "none" : "var(--shadow-sm)",
+                borderWidth: 1, borderStyle: "solid",
+                borderColor: subTab === key ? "transparent" : "var(--border)",
+              }}
+            >
+              <Icon style={{ width: 13, height: 13 }} />
+              {label}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {subTab === "calendar" && <CalendarSubTab user={user} profile={profile} />}
+      {subTab === "cycle"    && <CycleSubTab user={user} profile={profile} />}
+      {subTab === "symptoms" && <SymptomsSubTab user={user} />}
+      {subTab === "habits"   && <HabitsSubTab user={user} />}
+      {subTab === "meds"     && <MedsSubTab user={user} />}
     </div>
   );
 }

@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useLocation, useSearchParams } from "react-router-dom";
+import { useLocation } from "react-router-dom";
 import { base44 } from "@/api/base44Client";
 import { PageLoader } from "../components/common/LoadingSpinner";
 import { createPageUrl } from "@/utils";
@@ -272,8 +272,7 @@ const todayStr = new Date().toISOString().split("T")[0];
 
 // ── Main component ──────────────────────────────────────────────────────────
 export default function Today() {
-  const [searchParams] = useSearchParams();
-  const [mainTab, setMainTab] = useState(() => searchParams.get("tab") === "track" ? "track" : "today");
+  const [mainTab, setMainTab] = useState("today");
   const [user, setUser] = useState(null);
   const [profile, setProfile] = useState(null);
   const [loading, setLoading] = useState(true);

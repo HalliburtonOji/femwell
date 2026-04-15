@@ -8,7 +8,6 @@ import {
 
 const NAV = [
   { label: "Today",     icon: Sun,       page: "Today" },
-  { label: "Track",     icon: Activity,  page: "Today", trackLink: true },
   { label: "Nutrition", icon: Utensils,  page: "Nutrition" },
   { label: "Programs",  icon: Map,       page: "ProgramsHub" },
   { label: "Explore",   icon: Compass,   page: "Explore" },
@@ -53,13 +52,12 @@ function DesktopSidebar({ currentPageName }) {
 
       {/* Nav */}
       <nav className="flex-1 px-4 py-5 space-y-0.5 overflow-y-auto">
-        {NAV.map(({ label, icon: Icon, page, trackLink }) => {
-          const active = currentPageName === page && (!trackLink);
-          const href = trackLink ? "/Today?tab=track" : createPageUrl(page);
+        {NAV.map(({ label, icon: Icon, page }) => {
+          const active = currentPageName === page;
           return (
             <Link
-              key={label}
-              to={href}
+              key={page}
+              to={createPageUrl(page)}
               className="flex items-center gap-3.5 px-4 py-3 rounded-2xl transition-all duration-150 group"
               style={{
                 backgroundColor: active ? "var(--plum)" : "transparent",
@@ -194,13 +192,12 @@ export default function FloatingSidebar({ currentPageName, mode = "full", openQu
                 {/* Section: Navigate */}
                 <p style={{ fontSize: "0.55rem", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.14em", color: "var(--mauve)", fontFamily: "'Inter', sans-serif", marginBottom: 10 }}>Navigate</p>
                 <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 8 }}>
-                  {NAV.map(({ label, icon: Icon, page, trackLink }) => {
-                    const active = currentPageName === page && !trackLink;
-                    const href = trackLink ? "/Today?tab=track" : createPageUrl(page);
+                  {NAV.map(({ label, icon: Icon, page }) => {
+                    const active = currentPageName === page;
                     return (
                       <Link
-                        key={label}
-                        to={href}
+                        key={page}
+                        to={createPageUrl(page)}
                         onClick={() => setOpen(false)}
                         style={{
                           display: "flex", flexDirection: "column", alignItems: "center", gap: 6,
