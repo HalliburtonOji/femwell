@@ -20,7 +20,19 @@ Deno.serve(async (req) => {
     for (const pack of pendingPacks) {
       const itemRes = await sb.functions.invoke('generateNextStoryItem', { pack_id: pack.id }).catch(e => ({ error: String(e?.message || 'Unknown error') }));
       const finalRes = await sb.functions.invoke('finalizeStoryPack', { pack_id: pack.id }).catch(e => ({ error: String(e?.message || 'Unknown error') }));
-      results.push({ pack_id: pack.id, itemRes, finalRes });
+
+      // Generate DALL-E image if pack has no image yet (cost-managed, cached)
+      if (!pack.image_url) {
+        const imgRes = await sb.functions.invoke('generateStoryImage', {
+          pack_id: pack.id,
+          cycle_phase: pack.cycle_phase || null,
+          day_key: pack.day_key || today,
+          user_id: pack.user_id,
+        }).catch(() => ({ skipped: true }));
+        results.push({ pack_id: pack.id, itemRes, finalRes, imgRes });
+      } else {
+        results.push({ pack_id: pack.id, itemRes, finalRes });
+      }
     }
 
     return Response.json({ processed: results.length, results });

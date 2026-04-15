@@ -7,6 +7,7 @@ import FoodLookup from "./FoodLookup";
 import { format } from "date-fns";
 import { createPageUrl } from "@/utils";
 import MacroDashboard from "./MacroDashboard";
+import WeeklyCaloriesChart from "./WeeklyCaloriesChart";
 
 const MEAL_TYPES = ["breakfast", "lunch", "dinner", "snack"];
 

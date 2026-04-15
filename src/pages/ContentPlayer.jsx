@@ -186,13 +186,6 @@ export default function ContentPlayer() {
   const isGuided = item.play_mode === "GUIDED";
   const embedUrl = item.embed_url || null;
 
-  // Auto-generate audio for meditation on first load
-  useEffect(() => {
-    if (isMeditation && item && !item.audio_file_url && !generatingAudio) {
-      getOrGenerateMeditationAudio(item);
-    }
-  }, [isMeditation, item?.id]);
-
   const shouldShowPhaseTag = Array.isArray(item.cycle_phases)
     && item.cycle_phases.length > 0
     && !(item.cycle_phases.length === 1 && String(item.cycle_phases[0]).toLowerCase() === "all")
