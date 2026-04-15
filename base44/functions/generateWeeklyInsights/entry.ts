@@ -107,41 +107,48 @@ Deno.serve(async (req) => {
       const calorieSummary = macroN > 0 ? `avg ${Math.round(totalWkCals / 7)} kcal/day (${macroN} meals analysed)` : 'not logged';
       const proteinSummary = macroN > 0 ? `avg ${Math.round(totalWkProt / macroN)}g protein per meal` : 'not logged';
 
-      const ai = await base44.asServiceRole.integrations.Core.InvokeLLM({
-        prompt: `You are FemWell's wellness intelligence engine. Generate a personal weekly insight for a woman based on the data below. Be warm, specific, and grounded in her actual numbers — never generic.
+      const userCorrelations = await base44.asServiceRole.entities.Correlations.filter({ user_id: userId });
+      const topCorrelationTexts = userCorrelations.slice(0, 2).map(c => `- ${c.explanation_text}`).join('\n') || '- Not enough historical data yet';
 
-User data for this week:
-- Cycle phase this week: ${phase}
-- Cycle day range: ${startDay} to ${endDay}
-- Mood average this week: ${avgText(currentWeek, 'mood', '/5')} (previous week: ${avgText(previousWeek, 'mood', '/5')})
-- Energy average this week: ${avgText(currentWeek, 'energy', '/5')} (previous week: ${avgText(previousWeek, 'energy', '/5')})
-- Sleep average this week: ${avgText(currentWeek, 'sleep_hours', ' hours')} (previous week: ${avgText(previousWeek, 'sleep_hours', ' hours')})
-- Top logged symptoms: ${topSymptoms}
-- Skin condition most logged this week: ${skinMode || 'not logged'}
-- Breakout locations logged: ${breakoutSummary || 'none'}
-- Hair shedding most logged this week: ${sheddingMode || 'not logged'}
-- Scalp condition most logged: ${scalpMode || 'not logged'}
-- Meals logged this week: ${mealCountSummary}
-- Average daily calories: ${calorieSummary}
-- Average protein per meal: ${proteinSummary}
-- Number of check-ins logged: ${currentWeek.length}
-- Goals: ${goals}
-- Tone preference: ${tonePreference}
+      const aiResult = await base44.asServiceRole.integrations.Core.InvokeLLM({
+        prompt: `You are FemWell's wellness intelligence engine. Generate a personal weekly insight for a woman. Use ONLY the data below — do not invent or assume numbers.
 
-Write a weekly summary with exactly these sections. Use markdown bold for section titles.
+WEEK: ${weekStart} to ${weekEnd}
+CHECK-INS LOGGED: ${currentWeek.length}/7 days
+CYCLE PHASE: ${phase} (day range ${startDay}–${endDay})
 
-**How your week looked** — 3–4 sentences. Reference the actual mood, energy, and sleep numbers. Compare to last week with specific deltas where available. Acknowledge if data is sparse without making the user feel bad about it.
+REAL AVERAGES THIS WEEK:
+- Mood: ${avgText(currentWeek, 'mood', '/5')} (previous week: ${avgText(previousWeek, 'mood', '/5')})
+- Energy: ${avgText(currentWeek, 'energy', '/5')} (previous week: ${avgText(previousWeek, 'energy', '/5')})
+- Sleep: ${avgText(currentWeek, 'sleep_hours', ' hours')} (previous week: ${avgText(previousWeek, 'sleep_hours', ' hours')})
+- Top symptoms: ${topSymptoms}
+- Skin: ${skinMode || 'not logged'} | Breakouts: ${breakoutSummary || 'none'} | Hair shedding: ${sheddingMode || 'not logged'} | Scalp: ${scalpMode || 'not logged'}
+- Meals: ${mealCountSummary} | Avg calories: ${calorieSummary} | Avg protein: ${proteinSummary}
+- Goals: ${goals} | Tone: ${tonePreference}
 
-**What your body was telling you** — 2–3 sentences. Reference logged symptoms by name. Explain WHY they happen in this specific phase using hormone science — not generic advice. If no symptoms were logged, note what is typical for this phase and what to watch for.
+PERSONAL PATTERNS (from historical data):
+${topCorrelationTexts}
 
-**Your pattern this week** — 1–2 sentences. Identify one specific personal pattern from the data. This must reference actual numbers, not generalities.
+Write 4 sections (2–3 sentences each). Reference ACTUAL numbers. Do not use bullet points. Do not use the word "journey". Do not use exclamation marks. Next phase entering: ${nextPhase}.
 
-**For the week ahead** — 2 sentences. Name the phase they are moving into next (${nextPhase}). Give one specific, actionable suggestion tailored to that phase — not generic wellness advice.
-
-**Skin & hair note** — 1–2 sentences only. If skin or hair data was logged, reference it specifically by name (e.g. "Moderate breakout", "A lot" shedding) and explain the likely hormonal driver for this phase. If nothing was logged, omit this section entirely — do not write a placeholder.
-
-Keep the total response under 280 words. Do not include the "Skin & hair note" section if skin_condition and hair_shedding are both "not logged". Do not use bullet points. Do not use the word "journey". Do not use exclamation marks.`,
+Return JSON with exactly these keys: how_your_week_looked, body_signals, your_pattern, week_ahead.
+- how_your_week_looked: reference actual mood/energy/sleep numbers and compare to last week
+- body_signals: connect symptoms to this specific phase's hormone science
+- your_pattern: reference personal correlation patterns if available, otherwise note a pattern from this week's numbers
+- week_ahead: actionable phase-appropriate suggestion for ${nextPhase} phase`,
+        response_json_schema: {
+          type: 'object',
+          properties: {
+            how_your_week_looked: { type: 'string' },
+            body_signals: { type: 'string' },
+            your_pattern: { type: 'string' },
+            week_ahead: { type: 'string' },
+          },
+          required: ['how_your_week_looked', 'body_signals', 'your_pattern', 'week_ahead'],
+        },
       });
+      const structured = typeof aiResult === 'string' ? JSON.parse(aiResult) : aiResult;
+      const ai = [structured.how_your_week_looked, structured.body_signals, structured.your_pattern, structured.week_ahead].join('\n\n');
 
       const avgMoodNum = avgValue(currentWeek, 'mood');
       const avgEnergyNum = avgValue(currentWeek, 'energy');
@@ -162,6 +169,7 @@ Keep the total response under 280 words. Do not include the "Skin & hair note" s
         top_symptoms: topSymptomsArr,
         cycle_phase_this_week: phase,
         check_in_count: currentWeek.length,
+        structured_summary: structured,
       });
 
       // Monthly summary on first of month

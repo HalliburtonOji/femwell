@@ -1,4 +1,5 @@
-import { createClientFromRequest } from 'npm:@base44/sdk@0.8.23';
+/* global Deno */
+import { createClientFromRequest } from 'npm:@base44/sdk@0.8.25';
 
 const MEDICATION_FAMILIES = {
   paracetamol: ["paracetamol", "acetaminophen", "tylenol", "panadol", "calpol"],
@@ -116,6 +117,76 @@ Deno.serve(async (req) => {
           data: { reminder_time, user_program_id: activeProgram.id },
         });
       }
+    }
+
+    // ── GET COACH CONTEXT (personalised system prompt context) ────────────
+    if (action === 'get_coach_context') {
+      const [profiles, recentCheckins, phaseHistory, correlations] = await Promise.all([
+        base44.entities.UserProfile.filter({ user_id: user.id }),
+        base44.entities.DailyCheckins.filter({ user_id: user.id }, '-date', 7),
+        base44.entities.PhaseHistory.filter({ user_id: user.id }, '-date', 1),
+        base44.entities.Correlations.filter({ user_id: user.id }),
+      ]);
+      const profile = profiles[0] || {};
+      const lastCheckin = recentCheckins[0] || null;
+      const phaseToday = phaseHistory[0] || null;
+      const avgOf = (arr, field) => {
+        const vals = arr.map(c => c[field]).filter(v => v != null);
+        return vals.length ? parseFloat((vals.reduce((a, b) => a + b, 0) / vals.length).toFixed(1)) : null;
+      };
+      const context = {
+        cycle_phase: phaseToday?.phase ?? profile?.current_phase ?? 'unknown',
+        cycle_day: phaseToday?.cycle_day ?? null,
+        life_stage: profile?.life_stage ?? 'none',
+        condition_flags: profile?.condition_flags ?? [],
+        tone_preference: profile?.tone_preference ?? 'warm',
+        goals: profile?.goals ?? [],
+        recent_mood_avg: avgOf(recentCheckins, 'mood'),
+        recent_sleep_avg: avgOf(recentCheckins, 'sleep_hours'),
+        recent_stress_avg: avgOf(recentCheckins, 'stress'),
+        last_checkin_date: lastCheckin?.date ?? null,
+        top_correlations: correlations.slice(0, 3).map(c => c.explanation_text).filter(Boolean),
+        hydration_target_ml: profile?.hydration_target_ml ?? 2000,
+      };
+      const toneRules = {
+        warm: 'Use warm, validating language. Never prescriptive.',
+        clinical: 'Be direct, evidence-based, minimal emotional language.',
+        motivational: 'Use energising, forward-looking, action-oriented language.',
+        straight: 'Be concise, no filler, no affirmations.',
+        minimal: 'Answer only what was asked, no elaboration.',
+      };
+      const systemPrompt = `You are a personal wellness guide for ${user.full_name || user.email}.
+
+CURRENT USER CONTEXT:
+- Cycle phase: ${context.cycle_phase}${context.cycle_day ? ` (day ${context.cycle_day})` : ''}
+- Life stage: ${context.life_stage}
+- Health conditions: ${context.condition_flags.join(', ') || 'none reported'}
+- Goals: ${context.goals.join(', ') || 'general wellness'}
+- Tone preference: ${context.tone_preference}
+
+RECENT WELLBEING (last 7 days):
+- Average mood: ${context.recent_mood_avg != null ? `${context.recent_mood_avg}/5` : 'not logged'}
+- Average sleep: ${context.recent_sleep_avg != null ? `${context.recent_sleep_avg}h` : 'not logged'}
+- Average stress: ${context.recent_stress_avg != null ? `${context.recent_stress_avg}/5` : 'not logged'}
+- Last check-in: ${context.last_checkin_date ?? 'none recorded'}
+
+PERSONAL PATTERNS DETECTED:
+${context.top_correlations.length ? context.top_correlations.map(c => `- ${c}`).join('\n') : '- Not enough data yet to detect personal patterns'}
+
+TONE RULES:
+- ${toneRules[context.tone_preference] ?? toneRules.warm}
+
+SAFETY RULES:
+- Never diagnose.
+- For symptoms lasting 3+ days or severity 4+/5, suggest speaking to a GP.
+- Never recommend stopping medication.
+- Always acknowledge that individual experience varies.
+- Do not use filler phrases like "Oh honey", "bestie", or "sweetie" unless the user has explicitly used casual language first.
+
+${context.cycle_phase === 'luteal' ? 'Note: User is in their luteal phase — acknowledge potential PMS context where relevant.' : ''}
+${context.life_stage === 'pregnancy' ? 'Note: User is pregnant — adjust all advice for pregnancy safety.' : ''}
+${context.life_stage === 'menopause' ? 'Note: User is in menopause — tailor advice for menopause-specific needs.' : ''}`;
+      return Response.json({ success: true, data: { context, system_prompt: systemPrompt } });
     }
 
     // ── GET RICH CONTEXT (used to prime Guide system prompt) ───────────────
