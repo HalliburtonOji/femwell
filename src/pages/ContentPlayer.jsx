@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { base44 } from "@/api/base44Client";
 import { ArrowLeft, Play, Lock, BookmarkCheck, Bookmark } from "lucide-react";
 
@@ -82,6 +82,7 @@ export default function ContentPlayer() {
   const [bookmarkId, setBookmarkId] = useState(null);
   const [userProfile, setUserProfile] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [generatingAudio, setGeneratingAudio] = useState(false);
 
   useEffect(() => {
     (async () => {
@@ -115,6 +116,33 @@ export default function ContentPlayer() {
       setLoading(false);
     })();
   }, [contentKey, contentId]);
+
+  const MEDITATION_SCRIPTS = {
+    "anxiety-reset": "Close your eyes and take a deep breath in... and out. You are safe. Whatever is weighing on you right now doesn't need to be solved in this moment. Breathe in for four counts... hold... and release. Let your shoulders drop. Let your jaw soften. You are here, and that is enough. Take another breath...",
+    "grounding-calm": "Begin by feeling your feet on the floor. Press down gently and notice the ground beneath you. This earth supports you completely. Take a breath in... and let it go. Look around and name five things you can see. Four things you can touch. Three things you can hear. Two things you can smell. One thing you can taste. You are here. You are present. You are grounded.",
+    "self-compassion": "Place one hand on your heart. Feel it beating — steady, constant, working for you every single moment. Breathe in kindness toward yourself. Whatever you're going through right now, you are not alone. Millions of people feel this too. May you be kind to yourself. May you give yourself the grace you would give a dear friend.",
+    "pms-kindness": "Your body is working so hard right now. The changes you feel are your hormones doing what they're meant to do. Breathe in and acknowledge how much your body does for you. Breathe out any frustration or impatience with yourself. You are allowed to feel tender this week. You are allowed to rest. Be gentle with yourself.",
+    "sleep-wind-down": "It's time to let the day go. You've done enough. You've been enough. As you breathe out, release any thoughts about tomorrow. They can wait. Right now, there is only this moment, this breath, this softening. Let your body feel heavy and warm. You are safe to rest now.",
+  };
+
+  const getOrGenerateMeditationAudio = useCallback(async (contentItem) => {
+    if (contentItem.audio_file_url) return;
+    setGeneratingAudio(true);
+    const script = MEDITATION_SCRIPTS[contentItem.content_key] ||
+      `Take a comfortable seat and close your eyes. Welcome to ${contentItem.title}. Take a deep breath in... and slowly release. Allow yourself to arrive fully in this moment. ${contentItem.summary || "Breathe gently, noticing the rise and fall of your chest."} Take your time here. There is nowhere else to be.`;
+    const response = await base44.functions.invoke("generateAudio", {
+      text: script,
+      voice: "nova",
+      speed: 0.9,
+      cacheKey: `meditation_${contentItem.content_key}`,
+    });
+    const audioUrl = response.data?.audio_url;
+    if (audioUrl) {
+      await base44.entities.ContentItems.update(contentItem.id, { audio_file_url: audioUrl });
+      setItem(prev => ({ ...prev, audio_file_url: audioUrl }));
+    }
+    setGeneratingAudio(false);
+  }, []);
 
   const toggleBookmark = async () => {
     if (!user || !item) return;
@@ -152,10 +180,18 @@ export default function ContentPlayer() {
 
   const locked = (TIER_ORDER[item.access_tier || 'free'] || 0) > (TIER_ORDER[userPlan] || 0);
   const isBreathwork = item.content_type === "BREATHWORK";
+  const isMeditation = item.content_type === "MEDITATION";
   const isWorkout = item.content_type === "WORKOUT" || item.content_type === "MOBILITY";
   const isGuideType = item.content_type === "GUIDE";
   const isGuided = item.play_mode === "GUIDED";
   const embedUrl = item.embed_url || null;
+
+  // Auto-generate audio for meditation on first load
+  useEffect(() => {
+    if (isMeditation && item && !item.audio_file_url && !generatingAudio) {
+      getOrGenerateMeditationAudio(item);
+    }
+  }, [isMeditation, item?.id]);
 
   const shouldShowPhaseTag = Array.isArray(item.cycle_phases)
     && item.cycle_phases.length > 0
@@ -234,6 +270,19 @@ export default function ContentPlayer() {
           </div>
         ) : isBreathwork ? (
           <BreathworkLoopPlayer item={item} user={user} />
+        ) : isMeditation && !item.audio_file_url ? (
+          <div className="aspect-video rounded-2xl flex flex-col items-center justify-center gap-3"
+            style={{ backgroundColor: "var(--rose-dust-subtle)", border: "1px solid var(--rose-dust-light)" }}>
+            {generatingAudio ? (
+              <>
+                <div className="w-8 h-8 rounded-full animate-spin" style={{ border: "3px solid var(--rose-dust-light)", borderTopColor: "var(--rose-dust)" }} />
+                <p className="text-sm font-medium" style={{ color: "var(--mauve)" }}>Preparing your guided audio…</p>
+                <p className="text-xs" style={{ color: "var(--mauve)", opacity: 0.7 }}>This only happens once</p>
+              </>
+            ) : (
+              <span style={{ fontSize: 48 }}>🧘</span>
+            )}
+          </div>
         ) : isWorkout ? (
           <WorkoutPlayer item={item} user={user} />
         ) : isGuideType ? (

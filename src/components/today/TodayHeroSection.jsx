@@ -1,7 +1,47 @@
 import { format } from "date-fns";
-import { Sun, Moon, Sunset, Circle, ChevronRight, Plus, CalendarDays } from "lucide-react";
+import { Sun, Moon, Sunset, Plus, CalendarDays } from "lucide-react";
 import { Link } from "react-router-dom";
 import { createPageUrl } from "@/utils";
+
+const MORNING_MESSAGES = {
+  menstrual: [
+    "Rest is productive today. 🌙",
+    "Your body is doing deep work. Be soft with yourself.",
+    "Slow mornings are allowed. You don't have to do it all.",
+  ],
+  follicular: [
+    "Fresh energy incoming. ✨ What will you create?",
+    "Your mind is sharp and ready. Great day to start something.",
+    "Rising energy — lean into it.",
+  ],
+  ovulatory: [
+    "You're glowing today. Go connect with someone. 🌸",
+    "Peak week. Your charisma is high — use it.",
+    "Great day for big conversations and bold moves.",
+  ],
+  luteal: [
+    "Honour what you need today. 🍂",
+    "Your intuition is sharp this week. Trust it.",
+    "It's okay to slow down. Deep rest is part of the cycle.",
+  ],
+};
+
+function getDayOfYear() {
+  const now = new Date();
+  const start = new Date(now.getFullYear(), 0, 0);
+  return Math.floor((now - start) / 86400000);
+}
+
+function computeNextPeriod(profile) {
+  if (!profile?.last_period_start_date || !profile?.cycle_avg_length) return null;
+  const last = new Date(profile.last_period_start_date);
+  const cycle = profile.cycle_avg_length || 28;
+  const today = new Date();
+  let next = new Date(last);
+  while (next <= today) next = new Date(next.getTime() + cycle * 86400000);
+  const daysUntil = Math.round((next - today) / 86400000);
+  return daysUntil <= 7 ? daysUntil : null;
+}
 
 // Phase config — no emojis, clean
 const PHASE_META = {
@@ -81,6 +121,7 @@ function HeroAmbient({ phase }) {
 
 export default function TodayHeroSection({
   user,
+  profile,
   cycleInfo,
   todayCheckin,
   onOpenCheckin,
@@ -90,6 +131,17 @@ export default function TodayHeroSection({
   const firstName = user?.full_name?.split(" ")[0] || "";
   const phaseMeta = cycleInfo ? PHASE_META[cycleInfo.phase] : null;
   const today = new Date();
+
+  // Smart morning message — deterministic pick by day-of-year
+  const morningMsg = (() => {
+    const phase = cycleInfo?.phase;
+    const msgs = phase ? MORNING_MESSAGES[phase] : null;
+    if (!msgs) return null;
+    return msgs[getDayOfYear() % msgs.length];
+  })();
+
+  // Period countdown
+  const daysUntilPeriod = computeNextPeriod(profile);
 
   return (
     <div className="relative rounded-[28px] overflow-hidden mb-6" style={{ boxShadow: "var(--shadow-md)" }}>
@@ -175,21 +227,44 @@ export default function TodayHeroSection({
 
         {/* Cycle context — premium, text-led */}
         {cycleInfo && phaseMeta && (
-          <div className="mb-5 flex items-start gap-4">
+          <div className="mb-4 flex items-start gap-4">
             <div
               className="flex-shrink-0 w-2.5 h-2.5 rounded-full mt-1"
               style={{ backgroundColor: phaseMeta.accent, boxShadow: `0 0 8px ${phaseMeta.accent}60` }}
             />
-            <div>
+            <div className="flex-1 min-w-0">
+              <div className="flex items-center gap-2 flex-wrap mb-1">
+                <p
+                  className="text-xs font-semibold uppercase tracking-widest"
+                  style={{ color: phaseMeta.accent, fontFamily: "'Inter', sans-serif", letterSpacing: "0.1em" }}
+                >
+                  {phaseMeta.label} · Day {cycleInfo.day}
+                </p>
+                {daysUntilPeriod !== null && (
+                  <span style={{
+                    display: "inline-flex", alignItems: "center",
+                    backgroundColor: daysUntilPeriod <= 3 ? "var(--rose-dust-subtle)" : "rgba(255,255,255,0.65)",
+                    color: daysUntilPeriod <= 3 ? "var(--rose-dust)" : "var(--mauve)",
+                    border: `1px solid ${daysUntilPeriod <= 3 ? "var(--rose-dust-light)" : "var(--border)"}`,
+                    borderRadius: 9999, padding: "2px 9px",
+                    fontSize: 10, fontWeight: 700,
+                    fontFamily: "'Inter', sans-serif",
+                  }}>
+                    🌹 Period in {daysUntilPeriod}d
+                  </span>
+                )}
+              </div>
+              {morningMsg && (
+                <p
+                  className="text-sm leading-relaxed mb-1"
+                  style={{ color: "var(--plum)", fontFamily: "'Inter', sans-serif", fontWeight: 500 }}
+                >
+                  {morningMsg}
+                </p>
+              )}
               <p
-                className="text-xs font-semibold uppercase tracking-widest mb-0.5"
-                style={{ color: phaseMeta.accent, fontFamily: "'Inter', sans-serif", letterSpacing: "0.1em" }}
-              >
-                {phaseMeta.label} · Day {cycleInfo.day}
-              </p>
-              <p
-                className="text-sm leading-relaxed"
-                style={{ color: "var(--plum)", opacity: 0.7, fontFamily: "'Inter', sans-serif" }}
+                className="text-xs leading-relaxed"
+                style={{ color: "var(--plum)", opacity: 0.6, fontFamily: "'Inter', sans-serif" }}
               >
                 {phaseMeta.tip}
               </p>

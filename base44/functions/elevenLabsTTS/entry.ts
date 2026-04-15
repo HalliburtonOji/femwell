@@ -1,20 +1,30 @@
-import { createClientFromRequest } from 'npm:@base44/sdk@0.8.20';
+import { createClientFromRequest } from 'npm:@base44/sdk@0.8.25';
 
+// Replaced ElevenLabs with OpenAI TTS — same interface preserved
 Deno.serve(async (req) => {
   const base44 = createClientFromRequest(req);
   const user = await base44.auth.me();
   if (!user) return Response.json({ error: 'Unauthorized' }, { status: 401 });
 
-  const { text, voice_id = 'Rachel' } = await req.json();
+  const { text, voice_id = 'nova' } = await req.json();
   if (!text) return Response.json({ error: 'text required' }, { status: 400 });
 
-  const apiKey = Deno.env.get('ELEVENLABS_API_KEY');
-  const url = `https://api.elevenlabs.io/v1/text-to-speech/${voice_id}`;
+  const OPENAI_API_KEY = Deno.env.get('OPENAI_API_KEY');
 
-  const res = await fetch(url, {
+  // Map common ElevenLabs voice names to OpenAI equivalents
+  const voiceMap = {
+    'Rachel': 'nova',
+    'Bella': 'nova',
+    'EXAVITQu4vr4xnSDxMaL': 'nova',
+    'alloy': 'alloy', 'echo': 'echo', 'fable': 'fable',
+    'onyx': 'onyx', 'nova': 'nova', 'shimmer': 'shimmer',
+  };
+  const openaiVoice = voiceMap[voice_id] || 'nova';
+
+  const res = await fetch('https://api.openai.com/v1/audio/speech', {
     method: 'POST',
-    headers: { 'xi-api-key': apiKey, 'Content-Type': 'application/json' },
-    body: JSON.stringify({ text, model_id: 'eleven_monolingual_v1', voice_settings: { stability: 0.5, similarity_boost: 0.75 } }),
+    headers: { 'Authorization': `Bearer ${OPENAI_API_KEY}`, 'Content-Type': 'application/json' },
+    body: JSON.stringify({ model: 'tts-1', input: text, voice: openaiVoice, speed: 1.0 }),
   });
 
   if (!res.ok) {

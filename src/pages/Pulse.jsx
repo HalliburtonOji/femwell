@@ -12,6 +12,8 @@ import { Link } from "react-router-dom";
 import HealthOverviewSection from "../components/trends/HealthOverviewSection";
 import AIHealthSummaryCard from "../components/trends/AIHealthSummaryCard";
 import PredictiveAnalysisCard from "../components/trends/PredictiveAnalysisCard";
+import PeriodCountdownCard from "../components/pulse/PeriodCountdownCard";
+import PatternInsightCards from "../components/pulse/PatternInsightCards";
 
 const PHASES = [
   { key: "Menstrual",  label: "Menstrual",  color: "#f43f5e", days: "Days 1–5"  },
@@ -300,10 +302,24 @@ export default function Pulse() {
           </div>
         )}
 
+        {/* ── PERIOD COUNTDOWN ── */}
+        {profile && (
+          <div style={{ marginTop: "24px" }}>
+            <PeriodCountdownCard profile={profile} />
+          </div>
+        )}
+
         {/* ── PREDICTIVE ANALYSIS ── */}
-        <div style={{ marginTop: "32px" }}>
+        <div style={{ marginTop: "16px" }}>
           <PredictiveAnalysisCard profile={profile} checkins={checkins} />
         </div>
+
+        {/* ── AI PATTERN CARDS ── */}
+        {user && (
+          <div style={{ marginTop: "24px" }}>
+            <PatternInsightCards userId={user.id} />
+          </div>
+        )}
 
         {/* ── THIS WEEK ── */}
         <div style={{ marginTop: "32px", marginBottom: "14px" }}>

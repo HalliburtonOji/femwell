@@ -21,7 +21,10 @@
       "type": "number"
     },
     "tags": {
-      "type": "string"
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
     },
     "program_key": {
       "type": "string"
@@ -32,6 +35,51 @@
     "prompt": {
       "type": "string"
     },
+    "card_color": {
+      "type": "string",
+      "enum": [
+        "rose",
+        "peach",
+        "yellow",
+        "mint",
+        "sky",
+        "lavender",
+        "lilac",
+        "sage"
+      ],
+      "default": "lavender"
+    },
+    "card_type": {
+      "type": "string",
+      "enum": [
+        "free",
+        "gratitude",
+        "mood",
+        "todo",
+        "reflection",
+        "affirmation",
+        "dream"
+      ],
+      "default": "free"
+    },
+    "is_pinned": {
+      "type": "boolean",
+      "default": false
+    },
+    "todo_items": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "text": {
+            "type": "string"
+          },
+          "done": {
+            "type": "boolean"
+          }
+        }
+      }
+    },
     "created_at": {
       "type": "string"
     },
@@ -40,7 +88,6 @@
     }
   },
   "required": [
-    "user_id",
-    "content_id"
+    "user_id"
   ]
 }

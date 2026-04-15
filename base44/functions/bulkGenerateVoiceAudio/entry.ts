@@ -1,9 +1,7 @@
-import { createClientFromRequest } from 'npm:@base44/sdk@0.8.20';
+import { createClientFromRequest } from 'npm:@base44/sdk@0.8.25';
 import OpenAI from 'npm:openai';
 
 const openai = new OpenAI({ apiKey: Deno.env.get('OPENAI_API_KEY') });
-const ELEVENLABS_API_KEY = Deno.env.get('ELEVENLABS_API_KEY');
-const VOICE_ID = 'EXAVITQu4vr4xnSDxMaL'; // Bella — calm, warm female voice
 
 const TYPE_PROMPTS = {
   BREATHWORK: `You are a warm, soothing breathwork guide for women's wellness. Write an engaging guided breathwork script (90-120 seconds when read slowly).
@@ -75,32 +73,27 @@ Output ONLY the spoken script text — no titles, labels, or stage directions.`;
   return completion.choices[0].message.content.trim();
 }
 
-async function generateAudio(scriptText) {
-  const ttsRes = await fetch(`https://api.elevenlabs.io/v1/text-to-speech/${VOICE_ID}`, {
+async function generateAudioOpenAI(scriptText) {
+  const res = await fetch('https://api.openai.com/v1/audio/speech', {
     method: 'POST',
     headers: {
-      'xi-api-key': ELEVENLABS_API_KEY,
+      'Authorization': `Bearer ${Deno.env.get('OPENAI_API_KEY')}`,
       'Content-Type': 'application/json',
     },
     body: JSON.stringify({
-      text: scriptText,
-      model_id: 'eleven_turbo_v2',
-      voice_settings: {
-        stability: 0.85,
-        similarity_boost: 0.85,
-        style: 0.1,
-        use_speaker_boost: true,
-        speed: 0.82,
-      },
+      model: 'tts-1',
+      input: scriptText,
+      voice: 'nova',
+      speed: 0.9,
     }),
   });
 
-  if (!ttsRes.ok) {
-    const err = await ttsRes.text();
-    throw new Error(`ElevenLabs error: ${err}`);
+  if (!res.ok) {
+    const err = await res.text();
+    throw new Error(`OpenAI TTS error: ${err}`);
   }
 
-  return await ttsRes.arrayBuffer();
+  return await res.arrayBuffer();
 }
 
 Deno.serve(async (req) => {
@@ -114,40 +107,35 @@ Deno.serve(async (req) => {
     const body = await req.json().catch(() => ({}));
     const { dry_run = false, content_types = ['BREATHWORK', 'MEDITATION', 'GUIDE', 'WORKOUT', 'MOBILITY'], limit = 3 } = body;
 
-    // Fetch all content items that are GUIDED (not VIDEO) or have no embed_url
     const allItems = await base44.asServiceRole.entities.ContentItems.list('-created_date', 200);
-    
-    // Filter to only non-video guided content items that don't yet have audio
+
     const targets = allItems.filter(item => {
       if (item.play_mode === 'VIDEO') return false;
-      if (item.embed_url && !item.guided_config) return false; // pure video, skip
+      if (item.embed_url && !item.guided_config) return false;
       if (!content_types.includes(item.content_type)) return false;
-      if (item.audio_file_url) return false; // already has audio, skip
+      if (item.audio_file_url) return false;
       return true;
     });
 
     if (dry_run) {
-      return Response.json({ 
-        dry_run: true, 
-        total: targets.length, 
+      return Response.json({
+        dry_run: true,
+        total: targets.length,
         items: targets.map(i => ({ id: i.id, title: i.title, type: i.content_type, has_audio: !!i.audio_file_url }))
       });
     }
 
-    // Process a limited batch at a time to avoid timeouts
     const batch = targets.slice(0, limit);
     const results = [];
     const errors = [];
 
     for (const item of batch) {
       try {
-        // 1. Clear old voice script key (but keep video embed_url intact)
         await base44.asServiceRole.entities.ContentItems.update(item.id, {
           voice_script_key: null,
           audio_file_url: null,
         });
 
-        // 2. Delete old VoiceScript if it existed
         if (item.voice_script_key) {
           const oldScripts = await base44.asServiceRole.entities.VoiceScripts.filter({ voice_script_key: item.voice_script_key });
           for (const s of oldScripts) {
@@ -155,11 +143,9 @@ Deno.serve(async (req) => {
           }
         }
 
-        // 3. Generate new GPT script
         const scriptText = await generateScript(item);
-
-        // 4. Save new VoiceScript record
         const scriptKey = `gen_${item.content_key || item.id}_${Date.now()}`;
+
         await base44.asServiceRole.entities.VoiceScripts.create({
           voice_script_key: scriptKey,
           title: `Audio: ${item.title}`,
@@ -167,24 +153,18 @@ Deno.serve(async (req) => {
           text: scriptText,
         });
 
-        // 5. Generate ElevenLabs audio
-        const audioBuffer = await generateAudio(scriptText);
+        const audioBuffer = await generateAudioOpenAI(scriptText);
 
-        // 6. Upload audio file via Base44 integrations UploadFile
         const uploadRes = await base44.asServiceRole.integrations.Core.UploadFile({
           file: new File([audioBuffer], `${scriptKey}.mp3`, { type: 'audio/mpeg' }),
         });
         const audioUrl = uploadRes.file_url;
 
-        // 7. Store the file URL on the VoiceScript record
         const newScripts = await base44.asServiceRole.entities.VoiceScripts.filter({ voice_script_key: scriptKey });
         if (newScripts.length) {
-          await base44.asServiceRole.entities.VoiceScripts.update(newScripts[0].id, {
-            audio_data: audioUrl,
-          });
+          await base44.asServiceRole.entities.VoiceScripts.update(newScripts[0].id, { audio_data: audioUrl });
         }
 
-        // 8. Update ContentItem with audio URL and script key
         await base44.asServiceRole.entities.ContentItems.update(item.id, {
           voice_script_key: scriptKey,
           audio_file_url: audioUrl,

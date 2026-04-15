@@ -5,6 +5,7 @@ import AssistantOverlay from "./components/assistant/AssistantOverlay";
 import MobileBottomNav from "./components/layout/MobileBottomNav";
 import CheckinModal from "./components/today/CheckinModal";
 import AssistantOrb from "./components/assistant/AssistantOrb";
+import { MilestoneEventListener } from "./components/programs/MilestoneCelebrationModal";
 
 const HIDE_NAV = ["Onboarding", "ContentPlayer", "CycleSettings"];
 const LITE_NAV = ["ProgramDay", "ProgramDetail"];
@@ -57,6 +58,7 @@ export default function Layout({ children, currentPageName }) {
         onClose={() => setAssistantOpen(false)}
         initialPrompt={assistantPrompt}
       />
+      <MilestoneEventListener />
       {showQuickLog && (
         <CheckinModal
           existing={null}

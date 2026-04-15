@@ -1,4 +1,4 @@
-import { createClientFromRequest } from 'npm:@base44/sdk@0.8.20';
+import { createClientFromRequest } from 'npm:@base44/sdk@0.8.25';
 
 Deno.serve(async (req) => {
   try {
@@ -9,21 +9,19 @@ Deno.serve(async (req) => {
     const { content_key, voice_script_key, voice_id, dynamic_text, voice_profile_key: dynamic_profile_key } = await req.json();
     if (!voice_script_key && !dynamic_text) return Response.json({ error: 'voice_script_key or dynamic_text required' }, { status: 400 });
 
-    const ELEVENLABS_API_KEY = Deno.env.get('ELEVENLABS_API_KEY');
-    const DEFAULT_VOICE_ID = voice_id || 'EXAVITQu4vr4xnSDxMaL';
+    // Map ElevenLabs voice IDs to OpenAI voices (fallback)
+    const OPENAI_API_KEY = Deno.env.get('OPENAI_API_KEY');
+    const openaiVoice = 'nova'; // calm, warm female voice — closest to ElevenLabs Bella
 
     let scriptText = dynamic_text || null;
     let scriptProfileKey = dynamic_profile_key || null;
 
-    // Fetch voice script if key provided
     if (voice_script_key && !scriptText) {
       const scripts = await base44.asServiceRole.entities.VoiceScripts.filter({ voice_script_key });
       if (!scripts.length) return Response.json({ error: 'Script not found' }, { status: 404 });
       const script = scripts[0];
 
-      // Return pre-generated audio URL if available — avoids re-generating TTS
       if (script.audio_data) {
-        // audio_data may be a plain https:// URL (uploaded file) or a data URL
         return Response.json({ audio_data_url: script.audio_data, cached: true });
       }
 
@@ -31,39 +29,31 @@ Deno.serve(async (req) => {
       scriptProfileKey = script.voice_profile_key || scriptProfileKey;
     }
 
-    // Fetch voice profile
-    let profile = { speed: 0.85, stability: 0.85, similarity_boost: 0.85, style: 0, use_speaker_boost: true };
+    let speed = 0.9;
     if (scriptProfileKey) {
       const profiles = await base44.asServiceRole.entities.VoiceProfiles.filter({ profile_key: scriptProfileKey });
-      if (profiles.length) profile = { ...profile, ...profiles[0] };
+      if (profiles.length && profiles[0].speed) speed = Math.min(Math.max(profiles[0].speed, 0.25), 4.0);
     }
 
-    // Call ElevenLabs TTS
-    const ttsRes = await fetch(`https://api.elevenlabs.io/v1/text-to-speech/${DEFAULT_VOICE_ID}`, {
+    const ttsRes = await fetch('https://api.openai.com/v1/audio/speech', {
       method: 'POST',
       headers: {
-        'xi-api-key': ELEVENLABS_API_KEY,
+        'Authorization': `Bearer ${OPENAI_API_KEY}`,
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        text: scriptText,
-        model_id: 'eleven_turbo_v2',
-        voice_settings: {
-          stability: profile.stability || 0.85,
-          similarity_boost: profile.similarity_boost || 0.85,
-          style: profile.style || 0,
-          use_speaker_boost: profile.use_speaker_boost !== false,
-          speed: profile.speed || 0.85,
-        },
+        model: 'tts-1',
+        input: scriptText,
+        voice: openaiVoice,
+        speed,
       }),
     });
 
     if (!ttsRes.ok) {
       const err = await ttsRes.text();
-      return Response.json({ error: `ElevenLabs error: ${err}` }, { status: 500 });
+      return Response.json({ error: `OpenAI TTS error: ${err}` }, { status: 500 });
     }
 
-    // Stream audio back directly to the client — no caching in DB to avoid size limits
     const audioBuffer = await ttsRes.arrayBuffer();
     const base64 = btoa(String.fromCharCode(...new Uint8Array(audioBuffer)));
     const audio_data_url = `data:audio/mpeg;base64,${base64}`;

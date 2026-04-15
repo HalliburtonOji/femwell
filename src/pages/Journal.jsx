@@ -1,113 +1,115 @@
 import { useState, useEffect } from "react";
 import { base44 } from "@/api/base44Client";
-import { format, parseISO, startOfWeek, endOfWeek, isWithinInterval, subDays } from "date-fns";
-import { Lock } from "lucide-react";
-import JournalComposer from "../components/journal/JournalComposer";
-import JournalEntryCard from "../components/journal/JournalEntryCard";
-import JournalEntrySheet from "../components/journal/JournalEntrySheet";
+import { format, parseISO, differenceInDays } from "date-fns";
+import { PenLine, Sparkles } from "lucide-react";
+import JotterCard from "../components/journal/JotterCard";
+import NewEntrySheet from "../components/journal/NewEntrySheet";
 import JournalInsightsTab from "../components/journal/JournalInsightsTab";
 
-const MOOD_MAP = {
-  1: { label: "Calm",      accent: "var(--sage)" },
-  2: { label: "Stressed",  accent: "#C4884A" },
-  3: { label: "Low",       accent: "#8A96B8" },
-  4: { label: "Energized", accent: "#B8A040" },
-  5: { label: "Angry",     accent: "#B85050" },
-  6: { label: "Anxious",   accent: "#9A7AB8" },
-};
+const FILTER_TYPES = [
+  { id: "all",         label: "All" },
+  { id: "free",        label: "✍️ Free" },
+  { id: "gratitude",   label: "🙏 Gratitude" },
+  { id: "todo",        label: "✅ Todo" },
+  { id: "mood",        label: "💭 Mood" },
+  { id: "reflection",  label: "🪞 Reflection" },
+  { id: "dream",       label: "🌙 Dream" },
+];
 
-function groupByDate(entries) {
-  const groups = {};
-  entries.forEach((e) => {
-    const key = e.session_date || e.created_date?.split("T")[0] || "unknown";
-    if (!groups[key]) groups[key] = [];
-    groups[key].push(e);
-  });
-  return Object.entries(groups).sort(([a], [b]) => b.localeCompare(a));
-}
-
-function formatGroupLabel(dateStr) {
+function calcStreak(entries) {
+  if (!entries.length) return 0;
+  const dates = [...new Set(entries.map(e => e.session_date || e.created_date?.split("T")[0]).filter(Boolean))].sort((a,b) => b.localeCompare(a));
   const today = new Date().toISOString().split("T")[0];
-  const yesterday = subDays(new Date(), 1).toISOString().split("T")[0];
-  if (dateStr === today) return "Today";
-  if (dateStr === yesterday) return "Yesterday";
-  try { return format(parseISO(dateStr), "EEEE, MMMM d"); } catch { return dateStr; }
+  if (dates[0] !== today) return 0;
+  let streak = 1;
+  for (let i = 1; i < dates.length; i++) {
+    const prev = parseISO(dates[i - 1]);
+    const curr = parseISO(dates[i]);
+    if (differenceInDays(prev, curr) === 1) streak++;
+    else break;
+  }
+  return streak;
 }
 
-const card = {
-  backgroundColor: "var(--surface)",
-  border: "1px solid var(--border)",
-  boxShadow: "var(--shadow-sm)",
-};
-
-const sLabel = {
-  fontSize: "0.6rem",
-  fontWeight: 600,
-  textTransform: "uppercase",
-  letterSpacing: "0.12em",
-  color: "var(--mauve)",
-  fontFamily: "'Inter', sans-serif",
-};
+function getCurrentPhase(profile) {
+  if (!profile?.last_period_start_date) return null;
+  const cycleLen = profile.cycle_avg_length || 28;
+  const periodLen = profile.period_length || 5;
+  const diff = differenceInDays(new Date(), parseISO(profile.last_period_start_date));
+  if (diff < 0) return null;
+  const day = (diff % cycleLen) + 1;
+  if (day <= periodLen) return "menstrual";
+  if (day <= 13) return "follicular";
+  if (day <= 16) return "ovulatory";
+  return "luteal";
+}
 
 export default function Journal() {
   const [user, setUser] = useState(null);
+  const [profile, setProfile] = useState(null);
   const [entries, setEntries] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [activeTab, setActiveTab] = useState("write");
-  const [selectedEntry, setSelectedEntry] = useState(null);
-
-  // Library state
-  const [search, setSearch] = useState("");
-  const [filterMood, setFilterMood] = useState(null);
-  const [filterTag, setFilterTag] = useState(null);
+  const [activeTab, setActiveTab] = useState("journal");
+  const [filterType, setFilterType] = useState("all");
+  const [showNewEntry, setShowNewEntry] = useState(false);
+  const [editEntry, setEditEntry] = useState(null);
 
   useEffect(() => {
     (async () => {
       const u = await base44.auth.me();
       setUser(u);
-      const data = await base44.entities.JournalEntries.filter({ user_id: u.id }, "-created_date", 100);
+      const [data, profiles] = await Promise.all([
+        base44.entities.JournalEntries.filter({ user_id: u.id }, "-created_date", 200),
+        base44.entities.UserProfile.filter({ user_id: u.id }),
+      ]);
       setEntries(data);
+      setProfile(profiles[0] || null);
       setLoading(false);
     })();
   }, []);
 
+  const phase = getCurrentPhase(profile);
+  const streak = calcStreak(entries);
+
+  const pinnedEntries = entries.filter(e => e.is_pinned);
+  const unpinnedEntries = entries.filter(e => !e.is_pinned);
+
+  const filtered = (filterType === "all" ? unpinnedEntries : unpinnedEntries.filter(e => e.card_type === filterType));
+
+  // Split into 2 masonry columns
+  const col1 = filtered.filter((_, i) => i % 2 === 0);
+  const col2 = filtered.filter((_, i) => i % 2 === 1);
+
   const handleSaved = (entry) => {
-    setEntries((prev) => [entry, ...prev]);
+    setEntries(prev => {
+      const idx = prev.findIndex(e => e.id === entry.id);
+      if (idx >= 0) {
+        const next = [...prev];
+        next[idx] = entry;
+        return next;
+      }
+      return [entry, ...prev];
+    });
   };
 
-  // Derived
-  const weekStart = startOfWeek(new Date(), { weekStartsOn: 1 });
-  const weekEnd = endOfWeek(new Date(), { weekStartsOn: 1 });
-  const entriesThisWeek = entries.filter((e) => {
-    try {
-      const d = e.session_date ? parseISO(e.session_date) : new Date(e.created_date);
-      return isWithinInterval(d, { start: weekStart, end: weekEnd });
-    } catch { return false; }
-  });
+  const handleDelete = async (entry) => {
+    await base44.entities.JournalEntries.delete(entry.id);
+    setEntries(prev => prev.filter(e => e.id !== entry.id));
+  };
 
-  const filteredEntries = entries.filter((e) => {
-    const text = (e.text || "").toLowerCase();
-    const tags = e.tags ? e.tags.split(",").map(t => t.trim()).filter(Boolean) : [];
-    if (search && !text.includes(search.toLowerCase()) && !tags.some(t => t.includes(search.toLowerCase()))) return false;
-    if (filterMood && e.mood_rating !== filterMood) return false;
-    if (filterTag && !tags.includes(filterTag)) return false;
-    return true;
-  });
+  const handlePin = async (entry) => {
+    const updated = await base44.entities.JournalEntries.update(entry.id, { is_pinned: !entry.is_pinned });
+    setEntries(prev => prev.map(e => e.id === entry.id ? { ...e, is_pinned: !e.is_pinned } : e));
+  };
 
-  const grouped = groupByDate(filteredEntries);
+  const handleColorChange = async (entry, color) => {
+    await base44.entities.JournalEntries.update(entry.id, { card_color: color });
+    setEntries(prev => prev.map(e => e.id === entry.id ? { ...e, card_color: color } : e));
+  };
 
-  // On This Day
-  const today = new Date();
-  const onThisDayLastMonth = entries.find((e) => {
-    try {
-      const d = e.session_date ? parseISO(e.session_date) : new Date(e.created_date);
-      const lastMonth = new Date(today); lastMonth.setMonth(lastMonth.getMonth() - 1);
-      return d.getDate() === lastMonth.getDate() && d.getMonth() === lastMonth.getMonth();
-    } catch { return false; }
-  });
-
-  // All unique tags
-  const allTags = [...new Set(entries.flatMap(e => e.tags ? e.tags.split(",").map(t => t.trim()).filter(Boolean) : []))];
+  const handleTodoToggle = (id, todo_items) => {
+    setEntries(prev => prev.map(e => e.id === id ? { ...e, todo_items } : e));
+  };
 
   if (loading) return (
     <div className="min-h-screen flex items-center justify-center" style={{ backgroundColor: "var(--ivory)" }}>
@@ -118,199 +120,198 @@ export default function Journal() {
 
   return (
     <div className="min-h-screen pb-28" style={{ backgroundColor: "var(--ivory)" }}>
-      {selectedEntry && (
-        <JournalEntrySheet entry={selectedEntry} onClose={() => setSelectedEntry(null)} />
+
+      {/* New / Edit entry sheet */}
+      {(showNewEntry || editEntry) && user && (
+        <NewEntrySheet
+          user={user}
+          phase={phase}
+          editEntry={editEntry}
+          onClose={() => { setShowNewEntry(false); setEditEntry(null); }}
+          onSaved={handleSaved}
+        />
       )}
 
       <div className="max-w-2xl mx-auto px-4">
 
-        {/* ── Header ──────────────────────────────────────────────────── */}
-        <div className="pt-10 pb-6">
+        {/* ── Header ── */}
+        <div className="pt-10 pb-5">
           <div className="flex items-start justify-between">
             <div>
-              <p style={sLabel} className="mb-1.5">Private Studio</p>
-              <h1 className="text-2xl font-bold leading-tight"
-                style={{ fontFamily: "'Playfair Display', serif", color: "var(--plum)", letterSpacing: "-0.02em" }}>
-                Journal
-              </h1>
-              <p className="text-sm mt-1" style={{ color: "var(--mauve)", fontFamily: "'Inter', sans-serif" }}>
-                {format(new Date(), "EEEE, MMMM d")}
-              </p>
-            </div>
-            <div className="flex items-center gap-1.5 rounded-full px-3 py-1.5 mt-1"
-              style={{ backgroundColor: "var(--ivory-dark)", border: "1px solid var(--border)" }}>
-              <Lock className="w-3 h-3" style={{ color: "var(--mauve)" }} />
-              <span className="text-xs font-medium" style={{ color: "var(--mauve)", fontFamily: "'Inter', sans-serif" }}>Private</span>
-            </div>
-          </div>
-
-          {/* Stats strip */}
-          <div className="flex gap-4 mt-5">
-            {[
-              { label: "this week", value: entriesThisWeek.length },
-              { label: "total entries", value: entries.length },
-            ].map(({ label, value }) => (
-              <div key={label}>
-                <p className="text-xl font-bold" style={{ color: "var(--plum)", fontFamily: "'Playfair Display', serif" }}>{value}</p>
-                <p style={sLabel}>{label}</p>
+              <div className="flex items-center gap-2 mb-1">
+                <h1 style={{ fontFamily: "'Playfair Display', serif", color: "var(--plum)", fontSize: 26, fontWeight: 700, letterSpacing: "-0.02em", margin: 0 }}>
+                  Journal
+                </h1>
+                <Sparkles style={{ width: 18, height: 18, color: "var(--rose-dust)" }} />
               </div>
-            ))}
+              {streak > 0 ? (
+                <p style={{ fontSize: 13, color: "var(--mauve)", fontFamily: "'Inter', sans-serif" }}>
+                  {streak} day journaling streak 🔥
+                </p>
+              ) : (
+                <p style={{ fontSize: 13, color: "var(--mauve)", fontFamily: "'Inter', sans-serif" }}>
+                  {format(new Date(), "EEEE, MMMM d")}
+                </p>
+              )}
+            </div>
+            <button
+              onClick={() => setShowNewEntry(true)}
+              style={{
+                display: "flex", alignItems: "center", gap: 7,
+                backgroundColor: "var(--plum)", color: "white",
+                borderRadius: 9999, padding: "10px 18px",
+                border: "none", cursor: "pointer",
+                fontSize: 14, fontWeight: 600, fontFamily: "'Inter', sans-serif",
+                boxShadow: "0 4px 14px rgba(42,32,53,0.22)",
+              }}
+            >
+              <PenLine style={{ width: 14, height: 14 }} />
+              New entry
+            </button>
           </div>
         </div>
 
-        {/* ── Tab Nav ─────────────────────────────────────────────────── */}
-        <div className="flex gap-1 mb-6 p-1 rounded-2xl" style={card}>
-          {[
-            { id: "write",    label: "Write"    },
-            { id: "library",  label: "Library"  },
-            { id: "insights", label: "Insights" },
-          ].map((tab) => (
-            <button key={tab.id} onClick={() => setActiveTab(tab.id)}
-              className="flex-1 py-2.5 rounded-xl text-xs font-semibold transition-all"
+        {/* ── Top-level tabs: Journal / Insights ── */}
+        <div className="flex gap-1 mb-5 p-1 rounded-2xl" style={{ backgroundColor: "var(--ivory-dark)", border: "1px solid var(--border)" }}>
+          {[{ id: "journal", label: "Journal" }, { id: "insights", label: "Insights" }].map(tab => (
+            <button
+              key={tab.id}
+              onClick={() => setActiveTab(tab.id)}
+              className="flex-1 py-2.5 rounded-xl text-sm font-semibold transition-all"
               style={{
                 backgroundColor: activeTab === tab.id ? "var(--plum)" : "transparent",
                 color: activeTab === tab.id ? "white" : "var(--mauve)",
                 fontFamily: "'Inter', sans-serif",
-              }}>
+              }}
+            >
               {tab.label}
             </button>
           ))}
         </div>
 
-        {/* ── WRITE TAB ───────────────────────────────────────────────── */}
-        {activeTab === "write" && user && (
-          <div className="space-y-4">
-            {entries.length > 0 && entries[0].session_date === new Date().toISOString().split("T")[0] && (
-              <div className="rounded-[16px] p-3.5 flex items-center justify-between"
-                style={{ backgroundColor: "var(--ivory-dark)", border: "1px solid var(--border)" }}>
-                <div className="flex-1 min-w-0">
-                  <p className="text-xs font-semibold" style={{ color: "var(--plum)", fontFamily: "'Inter', sans-serif" }}>You wrote today</p>
-                  <p className="text-xs mt-0.5 truncate" style={{ color: "var(--mauve)", fontFamily: "'Inter', sans-serif" }}>
-                    {entries[0].text?.slice(0, 60)}{entries[0].text?.length > 60 ? "…" : ""}
-                  </p>
-                </div>
-                <button onClick={() => setSelectedEntry(entries[0])}
-                  className="text-xs font-semibold ml-4 flex-shrink-0"
-                  style={{ color: "var(--rose-dust)", fontFamily: "'Inter', sans-serif" }}>
-                  Read
-                </button>
-              </div>
-            )}
-            <JournalComposer user={user} onSaved={handleSaved} />
-          </div>
+        {/* ── INSIGHTS TAB ── */}
+        {activeTab === "insights" && user && (
+          <JournalInsightsTab user={user} entries={entries} />
         )}
 
-        {/* ── LIBRARY TAB ─────────────────────────────────────────────── */}
-        {activeTab === "library" && (
-          <div className="space-y-5">
+        {/* ── JOURNAL TAB ── */}
+        {activeTab === "journal" && (
+          <>
+            {/* Filter pills */}
+            <style>{`.jfilter-scroll::-webkit-scrollbar{display:none}`}</style>
+            <div className="jfilter-scroll" style={{ display: "flex", gap: 6, overflowX: "auto", paddingBottom: 4, marginBottom: 16, scrollbarWidth: "none" }}>
+              {FILTER_TYPES.map(f => (
+                <button
+                  key={f.id}
+                  onClick={() => setFilterType(f.id)}
+                  style={{
+                    flexShrink: 0, borderRadius: 9999, padding: "6px 14px",
+                    fontSize: 12, fontWeight: 600, fontFamily: "'Inter', sans-serif",
+                    border: "none", cursor: "pointer",
+                    backgroundColor: filterType === f.id ? "var(--plum)" : "var(--surface)",
+                    color: filterType === f.id ? "white" : "var(--mauve)",
+                    boxShadow: filterType === f.id ? "0 2px 8px rgba(42,32,53,0.15)" : "0 1px 3px rgba(42,32,53,0.06)",
+                    transition: "all 0.15s",
+                  }}
+                >
+                  {f.label}
+                </button>
+              ))}
+            </div>
 
-            {/* On This Day */}
-            {onThisDayLastMonth && (
-              <div className="rounded-[20px] p-4" style={{ ...card, backgroundColor: "var(--rose-dust-subtle)", border: "1px solid var(--rose-dust-light)" }}>
-                <p style={{ ...sLabel, color: "var(--rose-dust)" }} className="mb-1">On This Day Last Month</p>
-                <p className="text-sm leading-relaxed line-clamp-2" style={{ color: "var(--plum)", fontFamily: "'Inter', sans-serif" }}>
-                  {onThisDayLastMonth.text?.slice(0, 120)}{onThisDayLastMonth.text?.length > 120 ? "…" : ""}
+            {/* Empty state */}
+            {entries.length === 0 && (
+              <div style={{ textAlign: "center", paddingTop: 60, paddingBottom: 40 }}>
+                <div style={{ fontSize: 64, marginBottom: 16 }}>📓✨</div>
+                <h2 style={{ fontFamily: "'Playfair Display', serif", fontSize: 22, color: "var(--plum)", marginBottom: 8 }}>
+                  Your journal is waiting
+                </h2>
+                <p style={{ fontSize: 14, color: "var(--mauve)", fontFamily: "'Inter', sans-serif", marginBottom: 28 }}>
+                  Tap + to write your first entry
                 </p>
-                <button onClick={() => setSelectedEntry(onThisDayLastMonth)}
-                  className="text-xs font-semibold mt-2 underline-offset-2"
-                  style={{ color: "var(--rose-dust)", fontFamily: "'Inter', sans-serif" }}>
-                  Read entry
-                </button>
-              </div>
-            )}
-
-            {/* Search */}
-            <div className="flex gap-2">
-              <input
-                value={search}
-                onChange={(e) => setSearch(e.target.value)}
-                placeholder="Search entries…"
-                className="flex-1 px-4 py-2.5 rounded-2xl text-sm focus:outline-none"
-                style={{ backgroundColor: "var(--surface)", border: "1.5px solid var(--border)", color: "var(--plum)", fontFamily: "'Inter', sans-serif" }}
-                onFocus={e => e.target.style.borderColor = "var(--rose-dust-light)"}
-                onBlur={e => e.target.style.borderColor = "var(--border)"}
-              />
-              {search && (
-                <button onClick={() => setSearch("")}
-                  className="px-3 rounded-2xl text-xs font-medium"
-                  style={{ backgroundColor: "var(--ivory-dark)", color: "var(--mauve)", border: "1px solid var(--border)" }}>
-                  Clear
-                </button>
-              )}
-            </div>
-
-            {/* Mood filter */}
-            <div>
-              <p style={sLabel} className="mb-2">Filter by mood</p>
-              <div className="flex gap-1.5 flex-wrap">
-                {Object.entries(MOOD_MAP).map(([key, m]) => (
-                  <button key={key} onClick={() => setFilterMood(filterMood === Number(key) ? null : Number(key))}
-                    className="px-3 py-1.5 rounded-full text-xs font-semibold transition-all"
-                    style={{
-                      backgroundColor: filterMood === Number(key) ? m.accent : "var(--surface)",
-                      color: filterMood === Number(key) ? "white" : "var(--mauve)",
-                      border: `1px solid ${filterMood === Number(key) ? m.accent : "var(--border)"}`,
-                      fontFamily: "'Inter', sans-serif",
-                    }}>
-                    {m.label}
-                  </button>
-                ))}
-              </div>
-            </div>
-
-            {/* Tag filter */}
-            {allTags.length > 0 && (
-              <div>
-                <p style={sLabel} className="mb-2">Filter by tag</p>
-                <div className="flex gap-1.5 flex-wrap">
-                  {allTags.map((tag) => (
-                    <button key={tag} onClick={() => setFilterTag(filterTag === tag ? null : tag)}
-                      className="px-3 py-1.5 rounded-full text-xs font-semibold capitalize transition-all"
+                <div style={{ display: "flex", gap: 10, justifyContent: "center", flexWrap: "wrap" }}>
+                  {[{ icon: "✍️", label: "Free write" }, { icon: "🙏", label: "Gratitude" }, { icon: "🌙", label: "Dream log" }].map(t => (
+                    <button
+                      key={t.label}
+                      onClick={() => setShowNewEntry(true)}
                       style={{
-                        backgroundColor: filterTag === tag ? "var(--plum)" : "var(--surface)",
-                        color: filterTag === tag ? "white" : "var(--mauve)",
-                        border: `1px solid ${filterTag === tag ? "var(--plum)" : "var(--border)"}`,
-                        fontFamily: "'Inter', sans-serif",
-                      }}>
-                      {tag}
+                        borderRadius: 14, padding: "12px 18px",
+                        backgroundColor: "var(--surface)", border: "1px solid var(--border)",
+                        cursor: "pointer", fontSize: 13, fontWeight: 600,
+                        color: "var(--plum)", fontFamily: "'Inter', sans-serif",
+                      }}
+                    >
+                      {t.icon} {t.label}
                     </button>
                   ))}
                 </div>
               </div>
             )}
 
-            {/* Entries */}
-            {grouped.length === 0 ? (
-              <div className="rounded-[20px] p-10 text-center" style={card}>
-                <p className="text-sm font-medium mb-1" style={{ color: "var(--plum)", fontFamily: "'Inter', sans-serif" }}>
-                  {entries.length === 0 ? "No entries yet" : "Nothing matches your filters"}
+            {/* Pinned strip */}
+            {pinnedEntries.length > 0 && filterType === "all" && (
+              <div style={{ marginBottom: 20 }}>
+                <p style={{ fontSize: 11, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.1em", color: "var(--mauve)", fontFamily: "'Inter', sans-serif", marginBottom: 10 }}>
+                  ⭐ Pinned
                 </p>
-                <p className="text-xs" style={{ color: "var(--mauve)" }}>
-                  {entries.length === 0 ? "Your first entry is waiting in Write." : "Try clearing a filter."}
-                </p>
-              </div>
-            ) : (
-              <div className="space-y-5">
-                {grouped.map(([date, dayEntries]) => (
-                  <div key={date}>
-                    <p className="text-xs font-semibold mb-2.5" style={{ color: "var(--mauve)", fontFamily: "'Inter', sans-serif", letterSpacing: "0.04em" }}>
-                      {formatGroupLabel(date)}
-                    </p>
-                    <div className="space-y-2">
-                      {dayEntries.map((entry) => (
-                        <JournalEntryCard key={entry.id} entry={entry} onClick={setSelectedEntry} />
-                      ))}
+                <style>{`.pinned-scroll::-webkit-scrollbar{display:none}`}</style>
+                <div className="pinned-scroll" style={{ display: "flex", gap: 12, overflowX: "auto", paddingBottom: 8, scrollbarWidth: "none" }}>
+                  {pinnedEntries.map(entry => (
+                    <div key={entry.id} style={{ flexShrink: 0, width: 200 }}>
+                      <JotterCard
+                        entry={entry}
+                        onEdit={e => setEditEntry(e)}
+                        onDelete={handleDelete}
+                        onPin={handlePin}
+                        onColorChange={handleColorChange}
+                        onTodoToggle={handleTodoToggle}
+                      />
                     </div>
-                  </div>
-                ))}
+                  ))}
+                </div>
               </div>
             )}
-          </div>
-        )}
 
-        {/* ── INSIGHTS TAB ────────────────────────────────────────────── */}
-        {activeTab === "insights" && user && (
-          <JournalInsightsTab user={user} entries={entries} />
+            {/* Masonry grid */}
+            {filtered.length > 0 && (
+              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12, alignItems: "start" }}>
+                <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+                  {col1.map(entry => (
+                    <JotterCard
+                      key={entry.id}
+                      entry={entry}
+                      onEdit={e => setEditEntry(e)}
+                      onDelete={handleDelete}
+                      onPin={handlePin}
+                      onColorChange={handleColorChange}
+                      onTodoToggle={handleTodoToggle}
+                    />
+                  ))}
+                </div>
+                <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+                  {col2.map(entry => (
+                    <JotterCard
+                      key={entry.id}
+                      entry={entry}
+                      onEdit={e => setEditEntry(e)}
+                      onDelete={handleDelete}
+                      onPin={handlePin}
+                      onColorChange={handleColorChange}
+                      onTodoToggle={handleTodoToggle}
+                    />
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {filtered.length === 0 && entries.length > 0 && (
+              <div style={{ textAlign: "center", padding: "40px 20px" }}>
+                <p style={{ fontSize: 14, color: "var(--mauve)", fontFamily: "'Inter', sans-serif" }}>
+                  No {filterType} entries yet.
+                </p>
+              </div>
+            )}
+          </>
         )}
       </div>
     </div>

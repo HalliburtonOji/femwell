@@ -1,13 +1,15 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { base44 } from "@/api/base44Client";
 
 const MILESTONES = {
-  "3_days":  { emoji: "🌿", headline: "3 days strong", sub: "You're building a habit. Keep it going!" },
-  "7_days":  { emoji: "🌟", headline: "One week done", sub: "Your consistency is paying off." },
-  "14_days": { emoji: "💪", headline: "Two weeks!", sub: "You're in the top 10% of FemWell users." },
-  "30_days": { emoji: "🏆", headline: "30 days", sub: "You've completed a full month. You're incredible." },
-  "complete":{ emoji: "🎉", headline: "Program complete!", sub: null }, // sub is dynamic (program title)
+  "3_days":   { emoji: "🌿", headline: "3 days strong", sub: "You're building something real." },
+  "7_days":   { emoji: "🌟", headline: "One week!", sub: "Your consistency is paying off." },
+  "14_days":  { emoji: "💪", headline: "Two weeks!", sub: "You're in a real rhythm now." },
+  "30_days":  { emoji: "🏆", headline: "30 days", sub: "A full month. You're incredible." },
+  "complete": { emoji: "🎉", headline: "Program complete!", sub: null }, // dynamic
 };
+
+const CONFETTI_COLORS = ["#C4849A", "#7A9E8E", "#8A7E88", "#E8C4D0", "#B5CEC5", "#fff", "#f0abfc", "#c4b5fd"];
 
 export function getMilestoneKey(userProgram) {
   if (!userProgram) return null;
@@ -18,18 +20,51 @@ export function getMilestoneKey(userProgram) {
   if (userProgram.status === "completed" && !reached.includes("complete") && shown !== "complete") return "complete";
   if (streak >= 30 && !reached.includes("30_days") && shown !== "30_days") return "30_days";
   if (streak >= 14 && !reached.includes("14_days") && shown !== "14_days") return "14_days";
-  if (streak >= 7 && !reached.includes("7_days") && shown !== "7_days") return "7_days";
-  if (streak >= 3 && !reached.includes("3_days") && shown !== "3_days") return "3_days";
+  if (streak >= 7  && !reached.includes("7_days")  && shown !== "7_days")  return "7_days";
+  if (streak >= 3  && !reached.includes("3_days")  && shown !== "3_days")  return "3_days";
   return null;
+}
+
+function ConfettiRain({ accent }) {
+  const pieces = Array.from({ length: 30 }, (_, i) => i);
+  return (
+    <div className="fixed inset-0 pointer-events-none overflow-hidden" style={{ zIndex: 201 }}>
+      <style>{`
+        @keyframes confetti-fall {
+          0%   { transform: translateY(-20px) rotate(0deg) translateX(0px); opacity: 1; }
+          80%  { opacity: 1; }
+          100% { transform: translateY(110vh) rotate(540deg) translateX(40px); opacity: 0; }
+        }
+      `}</style>
+      {pieces.map(i => (
+        <div
+          key={i}
+          className="absolute rounded-sm"
+          style={{
+            left: `${(i * 3.3) % 100}%`,
+            top: -10,
+            width: i % 3 === 0 ? 8 : 6,
+            height: i % 3 === 0 ? 8 : 10,
+            borderRadius: i % 4 === 0 ? "50%" : "2px",
+            backgroundColor: CONFETTI_COLORS[i % CONFETTI_COLORS.length],
+            animation: `confetti-fall ${2 + (i % 5) * 0.4}s ease-in ${(i * 0.12) % 2}s both`,
+          }}
+        />
+      ))}
+    </div>
+  );
 }
 
 export default function MilestoneCelebrationModal({ userProgram, programTitle, onClose }) {
   const [dismissing, setDismissing] = useState(false);
+  const [copied, setCopied] = useState(false);
   const key = getMilestoneKey(userProgram);
   if (!key) return null;
 
   const m = MILESTONES[key];
-  const sub = key === "complete" ? `${programTitle || "Your program"} is done. How do you feel?` : m.sub;
+  const sub = key === "complete"
+    ? `${programTitle || "Your program"} is done. How do you feel?`
+    : m.sub;
 
   const handleClose = async () => {
     setDismissing(true);
@@ -42,8 +77,18 @@ export default function MilestoneCelebrationModal({ userProgram, programTitle, o
     onClose();
   };
 
+  const handleShare = () => {
+    const label = key === "complete" ? `completed` : `completed ${key.replace("_", " ")} of`;
+    const text = `I just ${label} ${programTitle || "my program"} on FemWell 🌿`;
+    navigator.clipboard.writeText(text).then(() => {
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    }).catch(() => {});
+  };
+
   return (
     <>
+      <ConfettiRain />
       <style>{`
         @keyframes ms-pop { 0%{transform:scale(0.7);opacity:0} 70%{transform:scale(1.05)} 100%{transform:scale(1);opacity:1} }
         .ms-card { animation: ms-pop 0.35s cubic-bezier(0.34,1.56,0.64,1) forwards; }
@@ -55,12 +100,47 @@ export default function MilestoneCelebrationModal({ userProgram, programTitle, o
           <p style={{ fontSize: 15, color: "var(--mauve)", fontFamily: "'Inter', sans-serif", lineHeight: 1.6, marginBottom: 24 }}>{sub}</p>
           <div style={{ display: "flex", gap: 10 }}>
             <button onClick={handleClose} disabled={dismissing}
-              style={{ flex: 1, padding: "13px", borderRadius: 9999, backgroundColor: "var(--plum)", color: "white", border: "none", fontSize: 14, fontWeight: 600, fontFamily: "'Inter', sans-serif", cursor: "pointer", opacity: dismissing ? 0.6 : 1 }}>
-              Keep going
+              style={{ flex: 2, padding: "13px", borderRadius: 9999, backgroundColor: "var(--plum)", color: "white", border: "none", fontSize: 14, fontWeight: 600, fontFamily: "'Inter', sans-serif", cursor: "pointer", opacity: dismissing ? 0.6 : 1 }}>
+              Keep going →
+            </button>
+            <button onClick={handleShare}
+              style={{ flex: 1, padding: "13px", borderRadius: 9999, backgroundColor: "var(--ivory-dark)", color: "var(--plum)", border: "1px solid var(--border)", fontSize: 14, fontWeight: 600, fontFamily: "'Inter', sans-serif", cursor: "pointer" }}>
+              {copied ? "Copied!" : "Share 🔗"}
             </button>
           </div>
         </div>
       </div>
     </>
+  );
+}
+
+// Global event listener component — mount once in Layout or App
+export function MilestoneEventListener() {
+  const [milestoneData, setMilestoneData] = useState(null);
+  const [userProgram, setUserProgram] = useState(null);
+  const [programTitle, setProgramTitle] = useState("");
+
+  useEffect(() => {
+    const handler = async (e) => {
+      const { key, streak, isComplete, programId } = e.detail || {};
+      setMilestoneData({ key, streak, isComplete });
+      // Fetch userProgram for modal if we have programId
+      if (programId) {
+        const ups = await base44.entities.UserPrograms.filter({ id: programId }).catch(() => []);
+        if (ups[0]) setUserProgram(ups[0]);
+      }
+    };
+    window.addEventListener("fw_milestone", handler);
+    return () => window.removeEventListener("fw_milestone", handler);
+  }, []);
+
+  if (!milestoneData || !userProgram) return null;
+
+  return (
+    <MilestoneCelebrationModal
+      userProgram={userProgram}
+      programTitle={programTitle}
+      onClose={() => { setMilestoneData(null); setUserProgram(null); }}
+    />
   );
 }

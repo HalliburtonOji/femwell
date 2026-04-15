@@ -27,6 +27,12 @@
       "type": "boolean",
       "default": true
     },
+    "cache_key": {
+      "type": "string"
+    },
+    "text_hash": {
+      "type": "string"
+    },
     "created_at": {
       "type": "string"
     },

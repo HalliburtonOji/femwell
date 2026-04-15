@@ -10,32 +10,46 @@ const COACH_PROMPTS = [
   "Breathe slowly.", "Stay present.", "Eyes soft.",
 ];
 
-function BreathRing({ accent, playing }) {
+function BreathRing({ accent, playing, phase, secondsLeft }) {
+  // Scale: inhale = expand (1→1.4), hold = stay, exhale = contract (1.4→1)
+  const getScale = () => {
+    if (!playing) return 1;
+    if (phase === 'Inhale') return 1.4;
+    if (phase === 'Exhale') return 1;
+    return 1.2; // Hold phases maintain mid-size
+  };
+
+  const scale = getScale();
+  const transitionDuration = phase === 'Inhale' || phase === 'Exhale' ? `${secondsLeft || 4}s` : '0.3s';
+
   return (
     <div className="relative flex items-center justify-center w-64 h-64">
       {/* Outer halo */}
       <div
-        className="absolute inset-0 rounded-full"
+        className="absolute inset-0 rounded-full transition-transform"
         style={{
           background: `radial-gradient(circle, ${accent}22 0%, transparent 70%)`,
-          animation: playing ? "breathHalo 6s ease-in-out infinite" : "none",
+          transform: `scale(${scale * 1.1})`,
+          transition: `transform ${transitionDuration} ease-in-out`,
         }}
       />
       {/* Main ring */}
       <div
-        className="w-52 h-52 rounded-full border-2 flex items-center justify-center"
+        className="w-52 h-52 rounded-full border-2 flex items-center justify-center transition-transform"
         style={{
           borderColor: `${accent}88`,
           boxShadow: `0 0 40px ${accent}44, inset 0 0 30px ${accent}22`,
-          animation: playing ? "breathPulse 6s ease-in-out infinite" : "none",
+          transform: `scale(${scale})`,
+          transition: `transform ${transitionDuration} ease-in-out`,
         }}
       >
         {/* Inner glow */}
         <div
-          className="w-36 h-36 rounded-full"
+          className="w-36 h-36 rounded-full transition-transform"
           style={{
             background: `radial-gradient(circle, ${accent}33 0%, transparent 70%)`,
-            animation: playing ? "breathPulse 6s ease-in-out infinite" : "none",
+            transform: `scale(${scale * 0.85})`,
+            transition: `transform ${transitionDuration} ease-in-out`,
           }}
         />
       </div>
@@ -43,7 +57,7 @@ function BreathRing({ accent, playing }) {
   );
 }
 
-function BreathWaves({ accent, playing }) {
+function BreathWaves({ accent, playing, phase, secondsLeft }) {
   return (
     <div className="w-64 h-64 flex items-center justify-center overflow-hidden">
       <svg viewBox="0 0 200 100" className="w-full" style={{ animation: playing ? "none" : "none" }}>
@@ -67,7 +81,7 @@ function BreathWaves({ accent, playing }) {
   );
 }
 
-function BreathGlow({ accent, playing }) {
+function BreathGlow({ accent, playing, phase, secondsLeft }) {
   return (
     <div className="relative flex items-center justify-center w-64 h-64">
       <div
@@ -140,8 +154,13 @@ export default function BreathworkLoopPlayer({ item, user }) {
   ];
   const [breathPhaseIdx, setBreathPhaseIdx] = useState(0);
   const [breathSecondsLeft, setBreathSecondsLeft] = useState(breathPhases[0].duration);
+  const [breathRound, setBreathRound] = useState(1);
   const breathPhaseIdxRef = useRef(0);
   const breathTimerRef = useRef(null);
+  const breathRoundRef = useRef(1);
+
+  const cycleDuration = breathPhases.reduce((sum, p) => sum + p.duration, 0);
+  const totalRounds = Math.max(1, Math.ceil(targetSeconds / cycleDuration));
 
   useEffect(() => {
     base44.entities.AudioSegments.filter({ content_key: item.content_key, is_active: true })
@@ -246,6 +265,11 @@ export default function BreathworkLoopPlayer({ item, user }) {
           const nextIdx = (breathPhaseIdxRef.current + 1) % breathPhases.length;
           breathPhaseIdxRef.current = nextIdx;
           setBreathPhaseIdx(nextIdx);
+          // Advance round counter when wrapping
+          if (nextIdx === 0) {
+            breathRoundRef.current += 1;
+            setBreathRound(breathRoundRef.current);
+          }
           return breathPhases[nextIdx].duration;
         }
         return s - 1;
@@ -427,7 +451,7 @@ export default function BreathworkLoopPlayer({ item, user }) {
         )}
 
         {/* Animation */}
-        <AnimComp accent={accent} playing={playing} />
+        <AnimComp accent={accent} playing={playing} phase={breathPhases[breathPhaseIdx]?.name} secondsLeft={breathSecondsLeft} />
 
         {/* Breath phase label — shown when playing */}
         {playing && !done && (
@@ -448,6 +472,9 @@ export default function BreathworkLoopPlayer({ item, user }) {
                 }} />
               ))}
             </div>
+            <p className="text-xs mt-1" style={{ color: `${accent}88`, fontFamily: "'Inter', sans-serif" }}>
+              Round {breathRound} of {totalRounds}
+            </p>
           </div>
         )}
 

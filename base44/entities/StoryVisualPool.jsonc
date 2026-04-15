@@ -11,6 +11,9 @@
     "image_prompt": {
       "type": "string"
     },
+    "prompt_hash": {
+      "type": "string"
+    },
     "created_at": {
       "type": "string"
     },

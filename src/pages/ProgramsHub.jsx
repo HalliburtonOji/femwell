@@ -1,6 +1,5 @@
 import { useEffect, useState } from "react";
 import { base44 } from "@/api/base44Client";
-import { Programs } from '@/api/entities';
 import { createPageUrl } from "@/utils";
 import { ArrowRight, Bell, BookOpen, Clock, Flame, Headphones, Lock, Play, Search, ChevronRight } from "lucide-react";
 import ProgramProgressBar from "../components/programs/ProgramProgressBar";
@@ -111,7 +110,7 @@ export default function ProgramsHub() {
             : cycleDay <= 17 ? 'ovulatory'
             : 'luteal';
 
-          const phasePrograms = await Programs.list("-is_featured", 50);
+          const phasePrograms = await base44.entities.Programs.list("-is_featured", 50);
           setCurrentPhase(phase);
           setPhaseRecommendations(
             phasePrograms
@@ -565,12 +564,23 @@ function FeaturedCard({ program, userProgram, locked, thumb, meta, progress }) {
 
 function ProgramCard({ program, userProgram, locked, thumb, meta, progress }) {
   const totalDays = meta.dayCount || program.duration_days;
+  const isCompleted = userProgram?.status === "completed";
+  const streak = userProgram?.streak_count || 0;
+
+  const handleRestart = async () => {
+    if (!userProgram) return;
+    await base44.entities.UserPrograms.update(userProgram.id, {
+      current_day: 1, status: "active", completed_at: null, streak_count: 0,
+    });
+    window.location.href = createPageUrl(`ProgramDay?key=${program.program_key}&day=1`);
+  };
+
   return (
     <div className="overflow-hidden rounded-[24px] transition-all hover:-translate-y-0.5" style={card}>
       <div className="relative h-44" style={{ backgroundColor: "var(--plum)" }}>
         {thumb && <img src={thumb} alt={program.title} className="w-full h-full object-cover" />}
         <div className="absolute inset-0" style={{ background: "linear-gradient(to top, rgba(42,32,53,0.65) 0%, transparent 55%)" }} />
-        <div className="absolute left-3.5 top-3.5 flex gap-1.5">
+        <div className="absolute left-3.5 top-3.5 flex gap-1.5 flex-wrap">
           <TierBadge tier={program.access_tier} />
           {locked && (
             <span className="inline-flex items-center gap-1 text-[10px] font-semibold px-2 py-0.5 rounded-full"
@@ -578,7 +588,25 @@ function ProgramCard({ program, userProgram, locked, thumb, meta, progress }) {
               <Lock className="w-2.5 h-2.5" /> Locked
             </span>
           )}
+          {isCompleted && (
+            <span className="inline-flex items-center gap-1 text-[10px] font-semibold px-2 py-0.5 rounded-full"
+              style={{ backgroundColor: "rgba(122,158,142,0.92)", color: "white" }}>
+              ✓ Complete
+            </span>
+          )}
+          {streak > 0 && !isCompleted && (
+            <span className="inline-flex items-center gap-1 text-[10px] font-semibold px-2 py-0.5 rounded-full"
+              style={{ backgroundColor: "rgba(255,255,255,0.9)", color: "var(--rose-dust)" }}>
+              🔥 {streak}d streak
+            </span>
+          )}
         </div>
+        {/* Progress bar along bottom of image */}
+        {userProgram && (
+          <div className="absolute bottom-0 left-0 right-0 h-1" style={{ backgroundColor: "rgba(255,255,255,0.2)" }}>
+            <div className="h-full" style={{ width: `${progress}%`, backgroundColor: isCompleted ? "#7A9E8E" : "var(--rose-dust)", transition: "width 0.4s ease" }} />
+          </div>
+        )}
       </div>
 
       <div className="p-4 space-y-3.5">
@@ -593,7 +621,7 @@ function ProgramCard({ program, userProgram, locked, thumb, meta, progress }) {
           <p className="mt-1.5 text-xs leading-relaxed line-clamp-2" style={{ color: "var(--mauve)", fontFamily: "'Inter', sans-serif" }}>{program.summary || program.description}</p>
         </div>
 
-        {userProgram && (
+        {userProgram && !isCompleted && (
           <div>
             <div className="flex justify-between text-[10px] mb-1.5" style={{ color: "var(--mauve)", fontFamily: "'Inter', sans-serif" }}>
               <span>Day {userProgram.current_day} / {totalDays}</span>
@@ -604,16 +632,33 @@ function ProgramCard({ program, userProgram, locked, thumb, meta, progress }) {
         )}
 
         <div className="flex gap-2">
-          <a href={createPageUrl(`ProgramsHub?program_key=${program.program_key}`)}
-            className="flex-1 py-2 rounded-xl text-xs font-semibold text-center"
-            style={{ border: "1.5px solid var(--border)", color: "var(--plum)", fontFamily: "'Inter', sans-serif" }}>
-            {locked ? "Preview" : "Details"}
-          </a>
-          <a href={userProgram ? createPageUrl(`ProgramDay?key=${program.program_key}&day=${userProgram.current_day}`) : locked ? createPageUrl("Upgrade") : createPageUrl(`ProgramDetail?key=${program.program_key}`)}
-            className="flex-1 py-2 rounded-xl text-xs font-semibold text-center"
-            style={{ backgroundColor: "var(--plum)", color: "white", fontFamily: "'Inter', sans-serif" }}>
-            {userProgram ? "Continue" : locked ? "Unlock" : "Start"}
-          </a>
+          {isCompleted ? (
+            <>
+              <a href={createPageUrl(`ProgramsHub?program_key=${program.program_key}`)}
+                className="flex-1 py-2 rounded-xl text-xs font-semibold text-center"
+                style={{ border: "1.5px solid var(--border)", color: "var(--plum)", fontFamily: "'Inter', sans-serif" }}>
+                Details
+              </a>
+              <button onClick={handleRestart}
+                className="flex-1 py-2 rounded-xl text-xs font-semibold text-center"
+                style={{ backgroundColor: "var(--sage)", color: "white", fontFamily: "'Inter', sans-serif", border: "none", cursor: "pointer" }}>
+                Restart
+              </button>
+            </>
+          ) : (
+            <>
+              <a href={createPageUrl(`ProgramsHub?program_key=${program.program_key}`)}
+                className="flex-1 py-2 rounded-xl text-xs font-semibold text-center"
+                style={{ border: "1.5px solid var(--border)", color: "var(--plum)", fontFamily: "'Inter', sans-serif" }}>
+                {locked ? "Preview" : "Details"}
+              </a>
+              <a href={userProgram ? createPageUrl(`ProgramDay?key=${program.program_key}&day=${userProgram.current_day}`) : locked ? createPageUrl("Upgrade") : createPageUrl(`ProgramDetail?key=${program.program_key}`)}
+                className="flex-1 py-2 rounded-xl text-xs font-semibold text-center"
+                style={{ backgroundColor: "var(--plum)", color: "white", fontFamily: "'Inter', sans-serif" }}>
+                {userProgram ? "Continue →" : locked ? "Unlock" : "Start"}
+              </a>
+            </>
+          )}
         </div>
       </div>
     </div>
