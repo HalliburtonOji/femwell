@@ -219,15 +219,16 @@ export default function NutritionTodayTab({ user, profile, nutritionProfile, day
 
   const loadData = async () => {
     setLoading(true);
-    const [mealLogs, hydration, tmpl, ins] = await Promise.all([
+    const [mealLogs, hydration, userTmpl, systemTmpl, ins] = await Promise.all([
       base44.entities.MealLog.filter({ user_id: user.id, day_key: dayKey }),
       base44.entities.HydrationLog.filter({ user_id: user.id, day_key: dayKey }),
       base44.entities.MealTemplates.filter({ user_id: user.id }),
+      base44.entities.MealTemplates.filter({ user_id: "system" }).catch(() => []),
       base44.entities.NutritionInsight.filter({ user_id: user.id, day_key: dayKey }),
     ]);
     setMeals(mealLogs);
     setHydrationLogs(hydration);
-    setTemplates(tmpl);
+    setTemplates([...userTmpl, ...systemTmpl]);
     setInsights(ins);
     const drinkData = await base44.entities.DrinkLog.filter({ user_id: user.id, day_key: dayKey }).catch(() => []);
     setDrinkLogs(drinkData);
@@ -281,6 +282,11 @@ export default function NutritionTodayTab({ user, profile, nutritionProfile, day
     setMeals((prev) => [...prev, log]);
     setMealText("");
     toast.success("Meal logged");
+    // Cost deduplication: only call AI if not already analysed
+    if (log.ai_analysis) {
+      setLogging(false);
+      return;
+    }
     try {
       let phasePromptAppend = "";
       if (profile?.last_period_start_date) {
@@ -811,6 +817,17 @@ export default function NutritionTodayTab({ user, profile, nutritionProfile, day
             </div>
           );
         })}
+
+        {/* Log another meal FAB */}
+        {!loading && meals.length > 0 && (
+          <button
+            onClick={() => { document.querySelector('textarea')?.scrollIntoView({ behavior: 'smooth' }); document.querySelector('textarea')?.focus(); }}
+            style={{ display: "flex", alignItems: "center", gap: 8, width: "100%", padding: "12px 18px", borderRadius: 16, backgroundColor: "var(--rose-dust-subtle)", border: "1px solid var(--rose-dust-light)", cursor: "pointer", fontFamily: "'Inter', sans-serif" }}
+          >
+            <Plus style={{ width: 16, height: 16, color: "var(--rose-dust)", flexShrink: 0 }} />
+            <span style={{ fontSize: 13, fontWeight: 600, color: "var(--rose-dust)" }}>Log another meal</span>
+          </button>
+        )}
 
         {/* Empty state */}
         {!loading && meals.length === 0 && (

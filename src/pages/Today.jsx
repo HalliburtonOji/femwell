@@ -231,6 +231,7 @@ function DailyStoriesRow({ todayCheckin, todayCompletions }) {
     { id: "lifestyle", label: "Lifestyle",   gradient: "linear-gradient(135deg, #F0FFF4, #C8F0D8)", route: createPageUrl("Lifestyle"),     ring: false },
     { id: "lifestage", label: "Life Stage",  gradient: "linear-gradient(135deg, #FFF8E6, #FFDFA0)", route: createPageUrl("LifeStageCare"), ring: false },
     { id: "profile",   label: "Profile",     gradient: "linear-gradient(135deg, #F5F0FF, #DDD0FF)", route: createPageUrl("Profile"),       ring: false },
+    { id: "community", label: "Community",   gradient: "linear-gradient(135deg, #FFE6F2, #E8C4D0)", route: createPageUrl("Community"),     ring: false },
   ];
 
   return (
@@ -521,7 +522,6 @@ export default function Today() {
           <div className="pt-6">
             <TodayHeroSection
               user={user}
-              profile={profile}
               cycleInfo={cycleInfo}
               todayCheckin={todayCheckin}
               onOpenCheckin={() => setShowCheckin(true)}

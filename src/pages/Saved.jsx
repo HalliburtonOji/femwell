@@ -99,7 +99,9 @@ export default function Saved() {
             </div>
             <p style={{ fontSize: "15px", fontWeight: 600, color: "var(--plum)", fontFamily: "'Inter', sans-serif" }}>Nothing saved here yet</p>
             <p style={{ fontSize: "13px", color: "var(--mauve)", fontFamily: "'Inter', sans-serif", marginTop: "4px" }}>
-              When you save something around the app, it appears here.
+              {tab === "LIFESTYLE"
+                ? "📚 Nothing saved yet — tap the bookmark icon on any article to save it here."
+                : "When you save something around the app, it appears here."}
             </p>
           </div>
         ) : (

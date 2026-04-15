@@ -7,6 +7,7 @@ import { Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import SymptomDiarySection from "./SymptomDiarySection";
 import MenopauseReportCard from "./MenopauseReportCard";
+import HotFlashTracker from "./HotFlashTracker";
 
 const FOCUSES = ["Sleep", "Hot flashes", "Mood", "Energy", "Brain fog", "Joint comfort", "Weight balance", "Libido", "Vaginal health", "Bone health"];
 const todayStr = new Date().toISOString().split("T")[0];
@@ -198,6 +199,7 @@ export default function MenopauseSupportTab({ user, profile, setProfile, logs, s
 
   const SECTIONS = [
     { id: "overview", label: "Overview" },
+    { id: "hotflash", label: "Hot flashes" },
     { id: "checkin", label: "Daily log" },
     { id: "diary", label: "Symptom diary" },
     { id: "report", label: "Weekly report" },
@@ -279,6 +281,9 @@ export default function MenopauseSupportTab({ user, profile, setProfile, logs, s
         </div>
       )}
 
+      {/* Hot flash tracker */}
+      {activeSection === "hotflash" && <HotFlashTracker user={user} />}
+
       {/* Daily log */}
       {activeSection === "checkin" && (
         <div style={{ ...card, display: "flex", flexDirection: "column", gap: 14 }}>
@@ -352,7 +357,28 @@ export default function MenopauseSupportTab({ user, profile, setProfile, logs, s
       )}
 
       {/* Symptom guide */}
-      {activeSection === "symptoms" && <SymptomInfo />}
+      {activeSection === "symptoms" && (
+        <div className="space-y-4">
+          <SymptomInfo />
+          <div style={card}>
+            <p style={{ fontSize: 14, fontWeight: 700, color: "var(--plum)", marginBottom: 10 }}>Trusted resources</p>
+            {[
+              { label: "NICE Menopause Guidelines", url: "https://www.nice.org.uk/guidance/ng23" },
+              { label: "British Menopause Society", url: "https://thebms.org.uk/" },
+              { label: "NHS Menopause Overview", url: "https://www.nhs.uk/conditions/menopause/" },
+            ].map(r => (
+              <a key={r.label} href={r.url} target="_blank" rel="noopener noreferrer"
+                style={{ display: "block", padding: "10px 14px", borderRadius: 12, backgroundColor: "var(--ivory)", border: "1px solid var(--border-subtle)", marginBottom: 6, textDecoration: "none" }}>
+                <p style={{ fontSize: 13, fontWeight: 600, color: "var(--plum)", fontFamily: "'Inter', sans-serif" }}>{r.label}</p>
+                <p style={{ fontSize: 11, color: "var(--mauve)", fontFamily: "'Inter', sans-serif", marginTop: 2 }}>Opens in new tab →</p>
+              </a>
+            ))}
+            <p style={{ fontSize: 11, color: "var(--mauve)", fontFamily: "'Inter', sans-serif", marginTop: 8, lineHeight: 1.6 }}>
+              Please discuss HRT and treatment options with your GP. These resources offer evidence-based information to support your conversation.
+            </p>
+          </div>
+        </div>
+      )}
 
       {/* Setup */}
       {activeSection === "setup" && (

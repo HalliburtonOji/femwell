@@ -5,36 +5,64 @@
     "user_id": {
       "type": "string"
     },
-    "content": {
+    "user_email": {
       "type": "string"
     },
-    "topic": {
+    "display_name": {
       "type": "string"
     },
     "anonymous": {
       "type": "boolean",
       "default": false
     },
+    "phase_tag": {
+      "type": "string"
+    },
+    "category": {
+      "type": "string",
+      "enum": [
+        "general",
+        "gratitude",
+        "real_talk",
+        "question",
+        "milestone"
+      ],
+      "default": "general"
+    },
+    "content": {
+      "type": "string"
+    },
     "moderation_status": {
       "type": "string",
       "enum": [
         "pending",
         "approved",
-        "flagged",
-        "hidden"
+        "rejected"
       ],
       "default": "pending"
     },
-    "moderation_flag": {
-      "type": "string"
+    "reactions": {
+      "type": "object",
+      "properties": {
+        "feel_this": {
+          "type": "number",
+          "default": 0
+        },
+        "same": {
+          "type": "number",
+          "default": 0
+        },
+        "sending_love": {
+          "type": "number",
+          "default": 0
+        }
+      }
     },
-    "moderated_at": {
-      "type": "string"
+    "reply_count": {
+      "type": "number",
+      "default": 0
     },
     "created_at": {
-      "type": "string"
-    },
-    "updated_at": {
       "type": "string"
     }
   },

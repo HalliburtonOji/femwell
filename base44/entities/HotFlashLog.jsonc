@@ -1,0 +1,39 @@
+{
+  "name": "HotFlashLog",
+  "type": "object",
+  "properties": {
+    "user_id": {
+      "type": "string"
+    },
+    "logged_at": {
+      "type": "string"
+    },
+    "severity": {
+      "type": "string",
+      "enum": [
+        "mild",
+        "moderate",
+        "severe"
+      ]
+    },
+    "trigger": {
+      "type": "string",
+      "enum": [
+        "stress",
+        "caffeine",
+        "hot_room",
+        "spicy_food",
+        "alcohol",
+        "exercise",
+        "other"
+      ]
+    },
+    "notes": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "user_id",
+    "logged_at"
+  ]
+}

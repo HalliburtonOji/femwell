@@ -275,21 +275,28 @@ export default function Explore() {
   const [showFilters, setShowFilters] = useState(false);
   const [filters, setFilters] = useState({ showFreeOnly: false, level: "all", durationBucket: "all" });
   const [userProfile, setUserProfile] = useState(null);
+  const [newThisWeek, setNewThisWeek] = useState([]);
+  const [recommendations, setRecommendations] = useState([]);
 
   useEffect(() => {
     (async () => {
       const u = await base44.auth.me();
       setUser(u);
-      const [ents, bookmarks, items, profileResult] = await Promise.all([
+      const [ents, bookmarks, items, profileResult, recs] = await Promise.all([
         base44.entities.Entitlements.filter({ user_id: u.id }),
         base44.entities.ContentBookmarks.filter({ user_id: u.id }),
         base44.entities.ContentItems.list("-created_date", 60),
         base44.entities.UserProfile.filter({ user_id: u.id }),
+        base44.entities.ProgramRecommendations.filter({ user_id: u.id }, "-created_date", 4).catch(() => []),
       ]);
       if (ents[0]) setUserPlan(ents[0].plan || "free");
       setBookmarkIds(new Set(bookmarks.map((b) => b.content_id)));
       setContent(items);
       if (profileResult?.[0]) setUserProfile(profileResult[0]);
+      // New this week: items created in last 7 days
+      const oneWeekAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString();
+      setNewThisWeek(items.filter(i => (i.created_date || i.created_at || "") >= oneWeekAgo).slice(0, 6));
+      setRecommendations(recs);
       setLoading(false);
     })();
   }, []);
@@ -519,6 +526,52 @@ export default function Explore() {
             </div>
           </section>
         )}
+        {/* New this week */}
+        {!loading && !search && !activeCollection && activeType === "All" && newThisWeek.length > 0 && (
+          <section>
+            <div className="flex items-center justify-between mb-3">
+              <p style={{ fontSize: "16px", fontWeight: 700, color: "var(--plum)", fontFamily: "'Inter', sans-serif" }}>New this week</p>
+              <span style={{ fontSize: "11px", color: "var(--mauve)", fontFamily: "'Inter', sans-serif" }}>{newThisWeek.length} new</span>
+            </div>
+            <div className="flex gap-3 overflow-x-auto pb-2" style={{ scrollbarWidth: "none", scrollSnapType: "x mandatory" }}>
+              {newThisWeek.map(item => {
+                const locked = isLocked(item);
+                return (
+                  <div key={item.id} onClick={() => { if (!locked) window.location.href = createPageUrl("ContentPlayer") + "?id=" + item.id; }}
+                    style={{ minWidth: 150, maxWidth: 150, flexShrink: 0, scrollSnapAlign: "start", borderRadius: 16, backgroundColor: "var(--surface)", border: "1px solid var(--border)", padding: 14, cursor: locked ? "default" : "pointer", boxShadow: "var(--shadow-sm)" }}>
+                    <p style={{ fontSize: 10, fontWeight: 700, color: "var(--sage)", textTransform: "uppercase", letterSpacing: "0.1em", fontFamily: "'Inter', sans-serif", marginBottom: 6 }}>{item.content_type}</p>
+                    <p style={{ fontSize: 13, fontWeight: 700, color: "var(--plum)", fontFamily: "'Inter', sans-serif", lineHeight: 1.35, display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical", overflow: "hidden", marginBottom: 4 }}>{item.title}</p>
+                    {item.duration_minutes && <p style={{ fontSize: 11, color: "var(--mauve)", fontFamily: "'Inter', sans-serif" }}>{item.duration_minutes} min</p>}
+                  </div>
+                );
+              })}
+            </div>
+          </section>
+        )}
+
+        {/* Quick sessions (≤5 min) */}
+        {!loading && !search && !activeCollection && activeType === "All" && (() => {
+          const quickItems = content.filter(i => (i.duration_minutes || 99) <= 5).slice(0, 8);
+          if (!quickItems.length) return null;
+          return (
+            <section>
+              <p style={{ fontSize: "16px", fontWeight: 700, color: "var(--plum)", fontFamily: "'Inter', sans-serif", marginBottom: 10 }}>Quick sessions ≤ 5 min</p>
+              <div className="flex gap-3 overflow-x-auto pb-2" style={{ scrollbarWidth: "none", scrollSnapType: "x mandatory" }}>
+                {quickItems.map(item => {
+                  const locked = isLocked(item);
+                  return (
+                    <div key={item.id} onClick={() => { if (!locked) window.location.href = createPageUrl("ContentPlayer") + "?id=" + item.id; }}
+                      style={{ minWidth: 140, maxWidth: 140, flexShrink: 0, scrollSnapAlign: "start", borderRadius: 16, backgroundColor: "var(--sage-subtle)", border: "1px solid var(--sage-light)", padding: 14, cursor: locked ? "default" : "pointer" }}>
+                      <p style={{ fontSize: 10, fontWeight: 700, color: "var(--sage)", textTransform: "uppercase", letterSpacing: "0.1em", fontFamily: "'Inter', sans-serif", marginBottom: 6 }}>{item.duration_minutes}m</p>
+                      <p style={{ fontSize: 13, fontWeight: 700, color: "var(--plum)", fontFamily: "'Inter', sans-serif", lineHeight: 1.35, display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical", overflow: "hidden" }}>{item.title}</p>
+                    </div>
+                  );
+                })}
+              </div>
+            </section>
+          );
+        })()}
+
         {loading ? (
           <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
             {Array.from({ length: 6 }).map((_, i) => (

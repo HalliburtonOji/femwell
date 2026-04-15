@@ -95,10 +95,49 @@ export default function Profile() {
   };
 
   const tones = [
-    { id: "gentle",   label: "Gentle"       },
-    { id: "straight", label: "Straight talk" },
-    { id: "minimal",  label: "Minimal"      },
+    { id: "warm",         label: "Warm",         desc: "Nurturing and encouraging" },
+    { id: "clinical",     label: "Clinical",      desc: "Factual and precise" },
+    { id: "motivational", label: "Motivational",  desc: "Energising and positive" },
+    { id: "gentle",       label: "Gentle",        desc: "Soft and reassuring" },
+    { id: "straight",     label: "Straight talk", desc: "Direct and no-nonsense" },
+    { id: "minimal",      label: "Minimal",       desc: "Short, calm, to the point" },
   ];
+
+  const ALL_GOALS = ["calm", "sleep", "energy", "fitness", "nutrition", "hormone_support", "relationships", "confidence", "mindfulness", "cycle_awareness", "stress_reduction", "better_sleep"];
+  const ALL_CONDITIONS = ["PCOS", "Endometriosis", "PMDD", "Fibroids", "Thyroid", "None"];
+
+  const [editGoals, setEditGoals] = useState(false);
+  const [editConditions, setEditConditions] = useState(false);
+  const [editLifeStage, setEditLifeStage] = useState(false);
+
+  const toggleGoal = async (g) => {
+    if (!profile) return;
+    const current = profile.goals || [];
+    const next = current.includes(g) ? current.filter(x => x !== g) : [...current, g];
+    await base44.entities.UserProfile.update(profile.id, { goals: next });
+    setProfile(p => ({ ...p, goals: next }));
+  };
+
+  const toggleCondition = async (c) => {
+    if (!profile) return;
+    const current = profile.condition_flags || [];
+    let next;
+    if (c === "None") {
+      next = current.includes("None") ? [] : ["None"];
+    } else {
+      const withoutNone = current.filter(x => x !== "None");
+      next = withoutNone.includes(c) ? withoutNone.filter(x => x !== c) : [...withoutNone, c];
+    }
+    await base44.entities.UserProfile.update(profile.id, { condition_flags: next });
+    setProfile(p => ({ ...p, condition_flags: next }));
+  };
+
+  const updateLifeStage = async (stage) => {
+    if (!profile) return;
+    await base44.entities.UserProfile.update(profile.id, { life_stage: stage });
+    setProfile(p => ({ ...p, life_stage: stage }));
+    setEditLifeStage(false);
+  };
 
   const currentTone = tones.find((t) => t.id === (preferences?.coach_tone || profile?.tone_preference)) || tones[0];
 
@@ -318,29 +357,72 @@ export default function Profile() {
         })()}
 
         {/* Goals card */}
-        {profile?.goals?.length > 0 && (
-          <div style={{ ...card, padding: "16px", marginBottom: "16px" }}>
-            <p style={{ ...sLabel, marginBottom: "12px" }}>Goals</p>
+        <div style={{ ...card, padding: "16px", marginBottom: "16px" }}>
+          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 10 }}>
+            <p style={sLabel}>Goals</p>
+            <button onClick={() => setEditGoals(v => !v)} style={{ fontSize: 11, fontWeight: 600, color: "var(--rose-dust)", background: "none", border: "none", cursor: "pointer", fontFamily: "'Inter', sans-serif" }}>
+              {editGoals ? "Done" : "Edit"}
+            </button>
+          </div>
+          {editGoals ? (
             <div className="flex flex-wrap gap-2">
-              {profile.goals.map((g) => (
-                <span key={g} style={{
-                  backgroundColor: "var(--ivory-dark)", color: "var(--plum)",
-                  borderRadius: "9999px", padding: "4px 12px",
-                  fontSize: "12px", fontWeight: 500,
-                  fontFamily: "'Inter', sans-serif", textTransform: "capitalize"
-                }}>
+              {ALL_GOALS.map(g => {
+                const active = (profile?.goals || []).includes(g);
+                return (
+                  <button key={g} onClick={() => toggleGoal(g)}
+                    style={{ borderRadius: 9999, padding: "5px 13px", fontSize: 12, fontWeight: 500, cursor: "pointer", fontFamily: "'Inter', sans-serif", border: "1.5px solid", textTransform: "capitalize",
+                      backgroundColor: active ? "var(--plum)" : "transparent",
+                      borderColor: active ? "var(--plum)" : "var(--border)",
+                      color: active ? "white" : "var(--mauve)" }}>
+                    {g.replace(/_/g, " ")}
+                  </button>
+                );
+              })}
+            </div>
+          ) : (
+            <div className="flex flex-wrap gap-2">
+              {(profile?.goals || []).length === 0 && <p style={{ ...mutedText }}>No goals set. Tap Edit to add some.</p>}
+              {(profile?.goals || []).map(g => (
+                <span key={g} style={{ backgroundColor: "var(--ivory-dark)", color: "var(--plum)", borderRadius: 9999, padding: "4px 12px", fontSize: 12, fontWeight: 500, fontFamily: "'Inter', sans-serif", textTransform: "capitalize" }}>
                   {g.replace(/_/g, " ")}
                 </span>
               ))}
             </div>
-            {profile?.skin_type && (
-              <p style={{ ...mutedText, marginTop: "10px" }}>
-                Skin type:{" "}
-                <strong style={{ color: "var(--plum)" }}>{profile.skin_type}</strong>
-              </p>
-            )}
+          )}
+        </div>
+
+        {/* Health Conditions */}
+        <div style={{ ...card, padding: "16px", marginBottom: "16px" }}>
+          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 10 }}>
+            <p style={sLabel}>Health conditions</p>
+            <button onClick={() => setEditConditions(v => !v)} style={{ fontSize: 11, fontWeight: 600, color: "var(--rose-dust)", background: "none", border: "none", cursor: "pointer", fontFamily: "'Inter', sans-serif" }}>
+              {editConditions ? "Done" : "Edit"}
+            </button>
           </div>
-        )}
+          {editConditions ? (
+            <div className="flex flex-wrap gap-2">
+              {ALL_CONDITIONS.map(c => {
+                const active = (profile?.condition_flags || []).includes(c);
+                return (
+                  <button key={c} onClick={() => toggleCondition(c)}
+                    style={{ borderRadius: 9999, padding: "5px 13px", fontSize: 12, fontWeight: 500, cursor: "pointer", fontFamily: "'Inter', sans-serif", border: "1.5px solid",
+                      backgroundColor: active ? "var(--plum)" : "transparent",
+                      borderColor: active ? "var(--plum)" : "var(--border)",
+                      color: active ? "white" : "var(--mauve)" }}>
+                    {c}
+                  </button>
+                );
+              })}
+            </div>
+          ) : (
+            <div className="flex flex-wrap gap-2">
+              {(profile?.condition_flags || []).length === 0 && <p style={{ ...mutedText }}>None set</p>}
+              {(profile?.condition_flags || []).map(c => (
+                <span key={c} style={{ backgroundColor: "var(--rose-dust-subtle)", color: "var(--rose-dust)", borderRadius: 9999, padding: "4px 12px", fontSize: 12, fontWeight: 500, fontFamily: "'Inter', sans-serif" }}>{c}</span>
+              ))}
+            </div>
+          )}
+        </div>
 
         {/* Settings card */}
         <div style={{ ...card, overflow: "hidden", marginBottom: "16px" }}>
@@ -358,30 +440,22 @@ export default function Profile() {
           </button>
 
           {editTone && (
-            <div style={{
-              padding: "12px 16px",
-              backgroundColor: "var(--ivory)",
-              borderBottom: "1px solid var(--border-subtle)"
-            }}>
-              {tones.map((t) => (
-                <button
-                  key={t.id}
-                  onClick={() => updateTone(t.id)}
-                  style={{
-                    width: "100%", textAlign: "left",
-                    borderRadius: "12px", padding: "10px 14px",
-                    fontSize: "13px", border: "none", cursor: "pointer",
-                    fontFamily: "'Inter', sans-serif",
-                    ...(
-                      (preferences?.coach_tone || profile?.tone_preference) === t.id
-                        ? { backgroundColor: "var(--plum)", color: "white", fontWeight: 600 }
-                        : { backgroundColor: "transparent", color: "var(--mauve)", fontWeight: 500 }
-                    )
-                  }}
-                >
-                  {t.label}
-                </button>
-              ))}
+            <div style={{ padding: "12px 16px", backgroundColor: "var(--ivory)", borderBottom: "1px solid var(--border-subtle)" }}>
+              <div className="grid grid-cols-2 gap-2">
+                {tones.map((t) => {
+                  const active = (preferences?.coach_tone || profile?.tone_preference) === t.id;
+                  return (
+                    <button key={t.id} onClick={() => updateTone(t.id)}
+                      style={{ textAlign: "left", borderRadius: 12, padding: "10px 12px", fontSize: 13, border: "1.5px solid", cursor: "pointer", fontFamily: "'Inter', sans-serif",
+                        backgroundColor: active ? "var(--plum)" : "var(--surface)",
+                        borderColor: active ? "var(--plum)" : "var(--border)",
+                        color: active ? "white" : "var(--plum)", fontWeight: active ? 700 : 500 }}>
+                      <p>{t.label}</p>
+                      <p style={{ fontSize: 10, color: active ? "rgba(255,255,255,0.7)" : "var(--mauve)", marginTop: 2 }}>{t.desc}</p>
+                    </button>
+                  );
+                })}
+              </div>
             </div>
           )}
 

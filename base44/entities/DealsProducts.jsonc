@@ -1,0 +1,53 @@
+{
+  "name": "DealsProducts",
+  "type": "object",
+  "properties": {
+    "title": {
+      "type": "string"
+    },
+    "brand": {
+      "type": "string"
+    },
+    "description": {
+      "type": "string"
+    },
+    "discount_text": {
+      "type": "string"
+    },
+    "category": {
+      "type": "string",
+      "enum": [
+        "Supplements",
+        "Period care",
+        "Skincare",
+        "Fitness",
+        "Books"
+      ],
+      "default": "Supplements"
+    },
+    "external_url": {
+      "type": "string"
+    },
+    "image_url": {
+      "type": "string"
+    },
+    "is_active": {
+      "type": "boolean",
+      "default": true
+    },
+    "is_verified": {
+      "type": "boolean",
+      "default": false
+    },
+    "created_at": {
+      "type": "string"
+    },
+    "updated_at": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "title",
+    "brand"
+  ]
+}

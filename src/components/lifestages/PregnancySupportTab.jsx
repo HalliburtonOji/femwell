@@ -4,6 +4,7 @@ import { base44 } from "@/api/base44Client";
 import SupportMetricSlider from "./SupportMetricSlider";
 import SupportInsightCard from "./SupportInsightCard";
 import { Baby, Heart, Zap, Moon, AlertCircle, Plus, Check, X, ChevronDown, ChevronUp, Loader2 } from "lucide-react";
+import PregnancyWeekCard from "./PregnancyWeekCard";
 import KickTrackerSection from "./KickTrackerSection";
 import ContractionTimerSection from "./ContractionTimerSection";
 import { toast } from "sonner";
@@ -248,6 +249,7 @@ export default function PregnancySupportTab({ user, profile, setProfile, logs, s
       {/* Overview */}
       {activeSection === "overview" && (
         <div className="space-y-4">
+          <PregnancyWeekCard profile={profile} />
           <SupportInsightCard mode="pregnancy" profile={profile} logs={logs} />
 
           {/* Weekly AI update */}

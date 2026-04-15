@@ -17,6 +17,14 @@ Deno.serve(async (req) => {
     return Response.json({ message: 'Not enough data', insights: [] });
   }
 
+  // Cost deduplication: skip if insight generated today already
+  const today = new Date().toISOString().split('T')[0];
+  const recentInsights = await base44.entities.InsightCards.filter({ user_id }).catch(() => []);
+  const hasToday = recentInsights.some(ic => ic.created_date && ic.created_date.startsWith(today));
+  if (hasToday) {
+    return Response.json({ message: 'Insights already generated today', insights: recentInsights.filter(ic => ic.created_date?.startsWith(today)) });
+  }
+
   const summary = checkins.slice(0, 14).map(c =>
     `Date: ${c.date}, Mood: ${c.mood}/5, Energy: ${c.energy}/5, Stress: ${c.stress}/5, Sleep: ${c.sleep_hours}h`
   ).join('\n');

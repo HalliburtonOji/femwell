@@ -4,6 +4,7 @@ import { Mic, Send, Loader2, PanelLeft } from "lucide-react";
 import GuideVoiceMode from "../guide/GuideVoiceMode";
 import GuideThreadSidebar from "../guide/GuideThreadSidebar";
 import ReactMarkdown from "react-markdown";
+import AssistantGreetingCard from "./AssistantGreetingCard";
 
 function parseOptions(content) {
   const match = content?.match(/```options\n(\[[\s\S]*?\])\n```/);
@@ -38,15 +39,34 @@ export default function AssistantPanel({ initialPrompt, embedded = false, uiMode
   const [assistantTyping, setAssistantTyping] = useState(false);
   const [showVoice, setShowVoice] = useState(false);
   const [assistantName, setAssistantName] = useState("Guide");
+  const [userProfile, setUserProfile] = useState(null);
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
+  const [listeningVoice, setListeningVoice] = useState(false);
   const bottomRef = useRef(null);
   const unsubRef = useRef(null);
+
+  const startVoiceInput = () => {
+    if (!('SpeechRecognition' in window) && !('webkitSpeechRecognition' in window)) return;
+    const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+    const recognition = new SR();
+    recognition.lang = "en-GB";
+    recognition.continuous = false;
+    recognition.interimResults = false;
+    recognition.onresult = (e) => { setInput(e.results[0][0].transcript); setListeningVoice(false); };
+    recognition.onerror = () => setListeningVoice(false);
+    recognition.onend = () => setListeningVoice(false);
+    setListeningVoice(true);
+    recognition.start();
+  };
 
   useEffect(() => {
     base44.auth.me().then(async (u) => {
       const profiles = await base44.entities.UserProfile.filter({ user_id: u.id }).catch(() => []);
-      if (profiles[0]?.ai_assistant_name) setAssistantName(profiles[0].ai_assistant_name);
+      if (profiles[0]) {
+        setUserProfile(profiles[0]);
+        if (profiles[0].ai_assistant_name) setAssistantName(profiles[0].ai_assistant_name);
+      }
     }).catch(() => {});
   }, []);
 
@@ -178,11 +198,11 @@ export default function AssistantPanel({ initialPrompt, embedded = false, uiMode
           ) : (
             <>
               {messages.length === 0 && !assistantTyping && (
-                <div style={{ textAlign: "center", padding: "40px 20px" }}>
-                  <p style={{ fontSize: 14, color: "var(--mauve)", fontFamily: "'Inter', sans-serif", lineHeight: 1.65 }}>
-                    Hi, I'm {assistantName}. Ask me anything — your cycle, programs, nutrition, habits, or whatever's on your mind.
-                  </p>
-                </div>
+                <AssistantGreetingCard
+                  assistantName={assistantName}
+                  profile={userProfile}
+                  onSendPrompt={sendMessage}
+                />
               )}
               {messages.map((msg, i) => {
                 const isUser = msg.role === "user";
@@ -212,11 +232,19 @@ export default function AssistantPanel({ initialPrompt, embedded = false, uiMode
 
         {/* Input */}
         <div style={{ padding: "10px 14px", borderTop: "1px solid var(--border-subtle)", display: "flex", gap: 8, flexShrink: 0 }}>
+          <button
+            onClick={startVoiceInput}
+            disabled={assistantTyping || loading || listeningVoice}
+            style={{ border: "none", borderRadius: 14, backgroundColor: listeningVoice ? "var(--rose-dust)" : "var(--ivory)", padding: "0 12px", cursor: "pointer", display: "flex", alignItems: "center", flexShrink: 0 }}
+            title="Voice input"
+          >
+            <Mic className="w-4 h-4" style={{ color: listeningVoice ? "white" : "var(--mauve)" }} />
+          </button>
           <input
             value={input}
             onChange={e => setInput(e.target.value)}
             onKeyDown={e => e.key === "Enter" && !e.shiftKey && sendMessage()}
-            placeholder={`Message ${assistantName}…`}
+            placeholder={listeningVoice ? "Listening…" : `Message ${assistantName}…`}
             disabled={assistantTyping || loading}
             style={{ flex: 1, borderRadius: 14, border: "1px solid var(--border)", backgroundColor: "var(--ivory)", padding: "11px 14px", fontSize: 13, color: "var(--plum)", fontFamily: "'Inter', sans-serif", outline: "none", opacity: assistantTyping ? 0.6 : 1 }}
           />

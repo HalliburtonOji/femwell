@@ -5,6 +5,7 @@ import FeedSkeleton from "../components/lifestyle/FeedSkeleton";
 import SmartFemwellTab from "../components/lifestyle/SmartFemwellTab";
 import ArticleReader from "../components/lifestyle/ArticleReader";
 import FictionFeedSection from "../components/lifestyle/FictionFeedSection";
+import WeeklyBookPick from "../components/lifestyle/WeeklyBookPick";
 
 function stripHtml(str) {
   if (!str) return "";
@@ -439,6 +440,40 @@ function BooksTab({ onRead }) {
   );
 }
 
+const PHASE_CATEGORIES = {
+  menstrual: ["Hormones", "Cycle", "Mental Wellness", "Body Image", "Self Care"],
+  follicular: ["Fitness", "Nutrition", "Career & Money", "Energy"],
+  ovulatory: ["Relationships", "Sex Education", "Confidence", "Beauty"],
+  luteal: ["Mental Wellness", "Body Image", "Hormones", "PMS", "Self Care"],
+};
+
+const CATEGORY_COLORS = {
+  "Hormones": { bg: "var(--rose-dust-subtle)", color: "var(--rose-dust)" },
+  "Cycle": { bg: "var(--rose-dust-subtle)", color: "var(--rose-dust)" },
+  "Mental Wellness": { bg: "var(--mauve-subtle)", color: "var(--mauve)" },
+  "Body Image": { bg: "var(--mauve-subtle)", color: "var(--mauve)" },
+  "Self Care": { bg: "var(--sage-subtle)", color: "var(--sage)" },
+  "Fitness": { bg: "var(--sage-subtle)", color: "var(--sage)" },
+  "Nutrition": { bg: "#FFF8E6", color: "#C4954A" },
+  "Beauty": { bg: "var(--rose-dust-subtle)", color: "var(--rose-dust)" },
+  "Relationships": { bg: "#FFF0F8", color: "#C472A0" },
+  "Sex Education": { bg: "#FFF0F8", color: "#C472A0" },
+  "Career & Money": { bg: "#FFF8E6", color: "#C4954A" },
+  "PMS": { bg: "var(--rose-dust-subtle)", color: "var(--rose-dust)" },
+};
+
+function getCurrentPhase(profile) {
+  if (!profile?.last_period_start_date) return null;
+  const cycleLen = profile.cycle_avg_length || 28;
+  const periodLen = profile.period_length || 5;
+  const daysSince = Math.floor((Date.now() - new Date(profile.last_period_start_date).getTime()) / 86400000);
+  const dayOfCycle = (daysSince % cycleLen) + 1;
+  if (dayOfCycle <= periodLen) return "menstrual";
+  if (dayOfCycle <= Math.round(cycleLen * 0.4)) return "follicular";
+  if (dayOfCycle <= Math.round(cycleLen * 0.55)) return "ovulatory";
+  return "luteal";
+}
+
 export default function Lifestyle() {
   const [readerItem, setReaderItem] = useState(null);
   const [tab, setTab] = useState(() => {
@@ -452,6 +487,7 @@ export default function Lifestyle() {
   const [hasMore, setHasMore] = useState(true);
   const [savedIds, setSavedIds] = useState(new Set());
   const [refreshing, setRefreshing] = useState(false);
+  const [userProfile, setUserProfile] = useState(null);
   const loaderRef = useRef(null);
 
   const loadItems = useCallback(async (activeTab, pageNum = 0, isRefresh = false) => {
@@ -465,12 +501,26 @@ export default function Lifestyle() {
         try {
           const u = await base44.auth.me();
           const profiles = await base44.entities.UserProfile.filter({ user_id: u.id });
-          const forYouIds = profiles[0]?.for_you_item_ids;
+          const profile = profiles[0] || null;
+          if (!userProfile && profile) setUserProfile(profile);
+          const phase = getCurrentPhase(profile);
+          const phaseCategories = phase ? PHASE_CATEGORIES[phase] : [];
+          const forYouIds = profile?.for_you_item_ids;
           if (forYouIds?.length > 0) {
-            const forYouSet = new Set(forYouIds.slice(0, 10));
+            const forYouSet = new Set(forYouIds.slice(0, 30));
             allItems = allItems.filter(it => forYouSet.has(it.id));
           } else {
-            allItems = allItems.filter(it => it.status === "PUBLISHED").slice(0, 10);
+            allItems = allItems.filter(it => it.status === "PUBLISHED").slice(0, 30);
+          }
+          // Sort: phase-matching items first
+          if (phaseCategories.length > 0) {
+            allItems.sort((a, b) => {
+              const aMatch = phaseCategories.some(c => (a.category || "").includes(c) || (a.phase_tags || []).includes(c));
+              const bMatch = phaseCategories.some(c => (b.category || "").includes(c) || (b.phase_tags || []).includes(c));
+              if (aMatch && !bMatch) return -1;
+              if (!aMatch && bMatch) return 1;
+              return 0;
+            });
           }
         } catch {
           allItems = allItems.filter(it => it.status === "PUBLISHED").slice(0, 10);
@@ -533,6 +583,43 @@ export default function Lifestyle() {
         </div>
         {tab === "books" && <BooksTab onRead={setReaderItem} />}
         {tab === "femwell" && <SmartFemwellTab onRead={setReaderItem} />}
+        {tab !== "books" && tab !== "femwell" && (
+          <>
+            {/* Weekly Book Pick */}
+            {tab === "for_you" && <WeeklyBookPick profile={userProfile} />}
+
+            {/* For Your Phase strip */}
+            {tab === "for_you" && userProfile && !loading && items.length > 0 && (() => {
+              const phase = getCurrentPhase(userProfile);
+              const phaseCategories = phase ? PHASE_CATEGORIES[phase] : [];
+              const phaseItems = items.filter(it => phaseCategories.some(c => (it.category || "").includes(c) || (it.phase_tags || []).includes(c))).slice(0, 4);
+              if (phaseItems.length === 0) return null;
+              return (
+                <div style={{ marginBottom: 20 }}>
+                  <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 10 }}>
+                    <span style={{ fontSize: "0.6rem", fontWeight: 700, color: "var(--rose-dust)", textTransform: "uppercase", letterSpacing: "0.12em" }}>For your {phase} phase</span>
+                  </div>
+                  <div className="lf-scroll" style={{ display: "flex", gap: 10, overflowX: "auto", paddingBottom: 6 }}>
+                    {phaseItems.map(item => {
+                      const catStyle = CATEGORY_COLORS[item.category] || { bg: "var(--ivory-dark)", color: "var(--mauve)" };
+                      return (
+                        <div key={item.id} onClick={() => setReaderItem(item)} style={{ flexShrink: 0, width: 200, backgroundColor: "var(--surface)", border: "1px solid var(--border)", borderRadius: 14, overflow: "hidden", cursor: "pointer" }}>
+                          <div style={{ height: 100, background: item.image_url ? "none" : `linear-gradient(135deg, ${catStyle.bg}, var(--ivory))`, overflow: "hidden" }}>
+                            {item.image_url && <img src={item.image_url} alt="" loading="lazy" style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }} onError={e => { e.target.parentElement.style.background = `linear-gradient(135deg, ${catStyle.bg}, var(--ivory))`; e.target.style.display = "none"; }} />}
+                          </div>
+                          <div style={{ padding: 10 }}>
+                            {item.category && <span style={{ fontSize: 10, fontWeight: 600, color: catStyle.color, backgroundColor: catStyle.bg, borderRadius: 9999, padding: "2px 8px", marginBottom: 4, display: "inline-block" }}>{item.category}</span>}
+                            <p style={{ fontSize: 12, fontWeight: 600, color: "var(--plum)", lineHeight: 1.35, margin: "4px 0 0", display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical", overflow: "hidden" }}>{item.title}</p>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+              );
+            })()}
+          </>
+        )}
         {tab !== "books" && tab !== "femwell" && (
           <>
             {tab === "watch" && (

@@ -49,7 +49,17 @@ const AuthenticatedApp = () => {
         if (isComplete) {
           sessionStorage.setItem('fw_ob_ok', '1');
         } else {
-          navigate('/Onboarding?mode=signup', { replace: true });
+          // 6G: existing users with data skip onboarding
+          const checkins = await base44.entities.DailyCheckins.filter({ user_id: user.id }, "-date", 1).catch(() => []);
+          if (checkins.length > 0) {
+            // Mark complete so we don't check again
+            if (profiles[0]) {
+              await base44.entities.UserProfile.update(profiles[0].id, { onboarding_complete: true }).catch(() => {});
+            }
+            sessionStorage.setItem('fw_ob_ok', '1');
+          } else {
+            navigate('/Onboarding?mode=signup', { replace: true });
+          }
         }
       } catch {}
     })();

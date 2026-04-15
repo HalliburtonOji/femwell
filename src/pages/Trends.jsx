@@ -11,6 +11,17 @@ import { Link } from "react-router-dom";
 import HealthOverviewSection from "../components/trends/HealthOverviewSection";
 import AIHealthSummaryCard from "../components/trends/AIHealthSummaryCard";
 
+// Stress heatmap helpers
+const STRESS_COLORS = ["#EBF2EF","#B5CEC5","#E8C4D0","#F5ECF0","#C4849A","#2A2035"];
+function stressColor(val) {
+  if (!val || val === 0) return STRESS_COLORS[0];
+  if (val <= 2) return STRESS_COLORS[1];
+  if (val <= 4) return STRESS_COLORS[2];
+  if (val <= 6) return STRESS_COLORS[3];
+  if (val <= 8) return STRESS_COLORS[4];
+  return STRESS_COLORS[5];
+}
+
 const PHASES = [
   { key: "Menstrual",  label: "Menstrual",  color: "#f43f5e", days: "Days 1–5"  },
   { key: "Follicular", label: "Follicular", color: "#fb923c", days: "Days 6–13" },
@@ -61,6 +72,7 @@ export default function Trends() {
   const [symptomTypes, setSymptomTypes] = useState([]);
   const [habitLogs, setHabitLogs]       = useState([]);
   const [habitNames, setHabitNames]     = useState([]);
+  const [correlations, setCorrelations] = useState([]);
 
   useEffect(() => {
     (async () => {
@@ -68,12 +80,14 @@ export default function Trends() {
       setUser(u);
       const cutoff = subMonths(new Date(), 6).toISOString().split("T")[0];
 
-      const [events, ckins, slogs, hlogs] = await Promise.all([
+      const [events, ckins, slogs, hlogs, corrs] = await Promise.all([
         base44.entities.CycleEvents.filter({ user_id: u.id }),
         base44.entities.DailyCheckins.filter({ user_id: u.id }),
         base44.entities.SymptomLogs.filter({ user_id: u.id }),
         base44.entities.HabitLogs.filter({ user_id: u.id }, "-date", 250),
+        base44.entities.Correlations.filter({ user_id: u.id }, "-created_date", 5).catch(() => []),
       ]);
+      setCorrelations(corrs);
 
       setCycleEvents(events.filter((e) => e.date >= cutoff));
       setCheckins(ckins.filter((c) => c.date >= cutoff));
@@ -423,6 +437,51 @@ export default function Trends() {
             </div>
           );
         })()}
+
+        {/* Stress heatmap (last 3 months) */}
+        {checkins.filter(c => c.date >= cutoffDate && c.stress != null).length > 7 && (() => {
+          const stressData = checkins
+            .filter(c => c.date >= cutoffDate && c.stress != null)
+            .sort((a, b) => a.date.localeCompare(b.date));
+          return (
+            <div className="rounded-2xl p-4 mb-4"
+              style={{ backgroundColor: "var(--surface)", border: "1px solid var(--border)", boxShadow: "var(--shadow-sm)" }}>
+              <h3 className="text-sm font-bold mb-0.5" style={{ color: "var(--plum)" }}>Stress heatmap</h3>
+              <p className="text-xs mb-4" style={{ color: "var(--mauve)" }}>Last {timeRange} months — darker = higher stress</p>
+              <div style={{ display: "flex", flexWrap: "wrap", gap: 4 }}>
+                {stressData.map(c => (
+                  <div key={c.date} title={`${c.date}: ${c.stress}/10`}
+                    style={{ width: 20, height: 20, borderRadius: 4, backgroundColor: stressColor(c.stress), cursor: "default" }} />
+                ))}
+              </div>
+              <div className="flex gap-3 mt-3 flex-wrap">
+                {[{c:STRESS_COLORS[1],l:"Low"},{c:STRESS_COLORS[3],l:"Medium"},{c:STRESS_COLORS[5],l:"High"}].map(x=>(
+                  <div key={x.l} className="flex items-center gap-1.5">
+                    <div className="w-3 h-3 rounded" style={{backgroundColor:x.c}}/>
+                    <span style={{fontSize:10,color:"var(--mauve)"}}>{x.l}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          );
+        })()}
+
+        {/* Phase correlation badges */}
+        {correlations.length > 0 && (
+          <div className="rounded-2xl p-4 mb-4"
+            style={{ backgroundColor: "var(--surface)", border: "1px solid var(--border)", boxShadow: "var(--shadow-sm)" }}>
+            <h3 className="text-sm font-bold mb-0.5" style={{ color: "var(--plum)" }}>Your patterns</h3>
+            <p className="text-xs mb-3" style={{ color: "var(--mauve)" }}>Correlations found in your data</p>
+            <div className="space-y-2">
+              {correlations.slice(0, 3).map((c, i) => (
+                <div key={i} className="rounded-xl px-4 py-3 text-sm"
+                  style={{ backgroundColor: "var(--rose-dust-subtle)", border: "1px solid var(--rose-dust-light)", color: "var(--plum)", fontFamily: "'Inter', sans-serif", lineHeight: 1.5 }}>
+                  {c.explanation_text || `${c.metric_a?.replace(/_/g," ")} correlates with ${c.metric_b?.replace(/_/g," ")}`}
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
 
         <div
           className="rounded-[22px] p-5 mb-4 flex items-center justify-between"
