@@ -302,16 +302,15 @@ export default function Today() {
         base44.entities.ContentHistory.filter({ user_id: u.id, session_date: todayStr, is_deleted: false }),
         base44.entities.UserPrograms.filter({ user_id: u.id }),
       ]);
-      const [recs, allPrograms] = await Promise.all([
-        base44.entities.TodayRecommendations.filter({ user_id: u.id, date: todayStr }),
-        base44.entities.Programs.list("-created_date", 50),
-      ]);
+      const recs = await base44.entities.TodayRecommendations.filter({ user_id: u.id, date: todayStr });
+      const allPrograms = await base44.entities.Programs.list("-created_date", 50);
       if (profiles[0]) setProfile(profiles[0]);
       if (checkins[0]) setTodayCheckin(checkins[0]);
       setTodayCompletions(completions.filter((c) => !c.is_deleted));
       setActivePrograms(userPrograms.filter((e) => e.is_saved || e.status === "active"));
       setProgramLibrary(allPrograms);
 
+      await new Promise(r => setTimeout(r, 300));
       try {
         const lifestyleItems = await base44.entities.LifestyleItems.list("-pub_date", 20);
         const latestRead = lifestyleItems
