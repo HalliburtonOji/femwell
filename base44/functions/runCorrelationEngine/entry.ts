@@ -1,4 +1,5 @@
 /* eslint-disable no-undef */
+/* global Deno */
 /* eslint-disable no-undef */
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.25';
 
