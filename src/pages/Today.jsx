@@ -24,6 +24,7 @@ import MedReminderSection from "../components/today/MedReminderSection";
 import TodayHeroSection from "../components/today/TodayHeroSection";
 import DailyPlanCard from "../components/today/DailyPlanCard";
 import DailyStoriesStrip from "../components/today/DailyStoriesStrip";
+import TrackTab from "../components/today/TrackTab";
 import { format, differenceInDays, parseISO } from "date-fns";
 
 // ── Cycle phase helper ──────────────────────────────────────────────────────
@@ -488,51 +489,64 @@ export default function Today() {
         <CheckinModal existing={todayCheckin} onClose={() => setShowCheckin(false)} onSave={handleSaveCheckin} userId={user?.id} dateStr={todayStr} />
       )}
 
+      {/* ── STICKY TAB HEADER ──────────────────────────────────────────────── */}
+      <div
+        className="sticky top-0 z-30 px-4 pt-10 pb-3"
+        style={{ backgroundColor: "rgba(250,248,245,0.97)", backdropFilter: "blur(20px)", borderBottom: "1px solid var(--border)" }}
+      >
+        <div className="max-w-3xl mx-auto">
+          <div className="flex gap-1 p-1 rounded-2xl" style={{ backgroundColor: "var(--ivory-dark)" }}>
+            {[["today", "Today"], ["track", "Track"]].map(([key, display]) => (
+              <button
+                key={key}
+                onClick={() => setMainTab(key)}
+                className="flex-1 py-2.5 rounded-xl text-sm font-semibold transition-all"
+                style={{
+                  backgroundColor: mainTab === key ? "var(--plum)" : "transparent",
+                  color: mainTab === key ? "white" : "var(--mauve)",
+                  fontFamily: "'Inter', sans-serif",
+                }}
+              >
+                {display}
+              </button>
+            ))}
+          </div>
+        </div>
+      </div>
+
       <div className="max-w-3xl mx-auto px-4">
 
         {/* ── HERO ─────────────────────────────────────────────────────────── */}
-        <div className="pt-8">
-          <TodayHeroSection
-            user={user}
-            cycleInfo={cycleInfo}
-            todayCheckin={todayCheckin}
-            onOpenCheckin={() => setShowCheckin(true)}
-            onOpenCalendar={() => setMainTab("track")}
-          />
-        </div>
+        {mainTab === "today" && (
+          <div className="pt-6">
+            <TodayHeroSection
+              user={user}
+              cycleInfo={cycleInfo}
+              todayCheckin={todayCheckin}
+              onOpenCheckin={() => setShowCheckin(true)}
+              onOpenCalendar={() => setMainTab("track")}
+            />
+          </div>
+        )}
 
-        {/* Panic mode pill */}
-        <div className="flex items-center justify-between pt-2 pb-1">
-          <div />
-          <button
-            onClick={() => setPanicOpen(true)}
-            style={{ display: "flex", alignItems: "center", gap: 6, padding: "5px 14px", borderRadius: 9999, border: "1px solid var(--rose-dust-light)", backgroundColor: "var(--rose-dust-subtle)", color: "var(--rose-dust)", fontSize: 12, fontWeight: 600, fontFamily: "'Inter', sans-serif", cursor: "pointer" }}
-          >
-            <AlertCircle className="w-3.5 h-3.5" />
-            Panic mode
-          </button>
-        </div>
+        {mainTab === "today" && (
+          <>
+            {/* Panic mode pill */}
+            <div className="flex items-center justify-end pt-2 pb-1">
+              <button
+                onClick={() => setPanicOpen(true)}
+                style={{ display: "flex", alignItems: "center", gap: 6, padding: "5px 14px", borderRadius: 9999, border: "1px solid var(--rose-dust-light)", backgroundColor: "var(--rose-dust-subtle)", color: "var(--rose-dust)", fontSize: 12, fontWeight: 600, fontFamily: "'Inter', sans-serif", cursor: "pointer" }}
+              >
+                <AlertCircle className="w-3.5 h-3.5" />
+                Panic mode
+              </button>
+            </div>
+            <DailyStoriesStrip user={user} />
+            <DailyStoriesRow todayCheckin={todayCheckin} todayCompletions={todayCompletions} />
+          </>
+        )}
 
-        <DailyStoriesStrip user={user} />
-        <DailyStoriesRow todayCheckin={todayCheckin} todayCompletions={todayCompletions} />
-
-        {/* ── TAB SWITCHER ─────────────────────────────────────────────────── */}
-        <div className="flex gap-1 mb-6 p-1 rounded-2xl" style={{ ...card }}>
-          {["today", "track"].map((tab) => (
-            <button
-              key={tab}
-              onClick={() => setMainTab(tab)}
-              className="flex-1 py-2.5 rounded-xl text-sm font-semibold transition-all capitalize"
-              style={{
-                backgroundColor: mainTab === tab ? "var(--plum)" : "transparent",
-                color: mainTab === tab ? "white" : "var(--mauve)",
-                fontFamily: "'Inter', sans-serif",
-              }}
-            >
-              {tab === "today" ? "My Day" : "My Track"}
-            </button>
-          ))}
-        </div>
+        {mainTab === "track" && <div className="pt-6" />}
 
         {/* ── MY DAY ───────────────────────────────────────────────────────── */}
         {mainTab === "today" && (
@@ -734,28 +748,9 @@ export default function Today() {
           </>
         )}
 
-        {/* ── MY TRACK ─────────────────────────────────────────────────────────── */}
+        {/* ── TRACK TAB ─────────────────────────────────────────────────────────── */}
         {mainTab === "track" && (
-          <div>
-            <p style={{ fontSize: "0.6rem", fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.12em", color: "var(--mauve)", fontFamily: "'Inter', sans-serif", marginBottom: 16 }}>Tap any day to log or view</p>
-            <MonthlyCalendarCard
-              userId={user?.id}
-              profile={profile}
-              refreshKey={calendarRefreshKey}
-              onDayPress={(day, dayDataFromCard) => {
-                setCalendarSelectedDay({ day, dayData: dayDataFromCard });
-              }}
-            />
-            {calendarSelectedDay && (
-              <DayDetailSheet
-                date={calendarSelectedDay.day}
-                dayData={calendarSelectedDay.dayData}
-                userId={user?.id}
-                onClose={() => setCalendarSelectedDay(null)}
-                onDataChanged={() => setCalendarRefreshKey(k => k + 1)}
-              />
-            )}
-          </div>
+          <TrackTab user={user} profile={profile} />
         )}
       </div>
     </div>
