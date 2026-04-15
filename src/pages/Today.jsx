@@ -296,12 +296,14 @@ export default function Today() {
     (async () => {
       const u = await base44.auth.me();
       setUser(u);
-      const [profiles, checkins, recs, completions, userPrograms, allPrograms] = await Promise.all([
+      const [profiles, checkins, completions, userPrograms] = await Promise.all([
         base44.entities.UserProfile.filter({ user_id: u.id }),
         base44.entities.DailyCheckins.filter({ user_id: u.id, date: todayStr }),
-        base44.entities.TodayRecommendations.filter({ user_id: u.id, date: todayStr }),
         base44.entities.ContentHistory.filter({ user_id: u.id, session_date: todayStr, is_deleted: false }),
         base44.entities.UserPrograms.filter({ user_id: u.id }),
+      ]);
+      const [recs, allPrograms] = await Promise.all([
+        base44.entities.TodayRecommendations.filter({ user_id: u.id, date: todayStr }),
         base44.entities.Programs.list("-created_date", 50),
       ]);
       if (profiles[0]) setProfile(profiles[0]);
