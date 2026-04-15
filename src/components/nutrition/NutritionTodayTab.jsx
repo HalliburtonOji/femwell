@@ -755,10 +755,28 @@ export default function NutritionTodayTab({ user, profile, nutritionProfile, day
                           )}
                           {analysis?.meal_score && (
                             <div className="flex gap-1.5 mt-2 flex-wrap">
-                              <span className="text-[10px] px-2 py-0.5 rounded-full font-medium" style={{ backgroundColor: "#FFF8EE", color: "#A07830" }}>Protein {analysis.meal_score.protein}/10</span>
-                              <span className="text-[10px] px-2 py-0.5 rounded-full font-medium" style={{ backgroundColor: "var(--sage-subtle)", color: "var(--sage)" }}>Fibre {analysis.meal_score.veg_fiber}/10</span>
-                              <span className="text-[10px] px-2 py-0.5 rounded-full font-medium" style={{ backgroundColor: "var(--mauve-subtle)", color: "var(--mauve)" }}>Balance {analysis.meal_score.balance}/10</span>
+                              <span className="text-[10px] px-2 py-0.5 rounded-full font-medium" style={{ backgroundColor: "#FFF8EE", color: "#A07830" }}>
+                                {"⭐".repeat(Math.min(5, Math.ceil((analysis.meal_score.protein || 0) / 2)))} Protein
+                              </span>
+                              <span className="text-[10px] px-2 py-0.5 rounded-full font-medium" style={{ backgroundColor: "var(--sage-subtle)", color: "var(--sage)" }}>
+                                {"⭐".repeat(Math.min(5, Math.ceil((analysis.meal_score.veg_fiber || 0) / 2)))} Fibre
+                              </span>
+                              <span className="text-[10px] px-2 py-0.5 rounded-full font-medium" style={{ backgroundColor: "var(--mauve-subtle)", color: "var(--mauve)" }}>
+                                {"⭐".repeat(Math.min(5, Math.ceil((analysis.meal_score.balance || 0) / 2)))} Balance
+                              </span>
                             </div>
+                          )}
+                          {/* Items list */}
+                          {analysis?.items?.length > 0 && (
+                            <p className="text-[11px] mt-1.5" style={{ color: "var(--mauve)", fontFamily: "'Inter', sans-serif" }}>
+                              {analysis.items.slice(0, 5).map(it => `${it.name}${it.calories ? ` ${it.calories}kcal` : ""}`).join(" · ")}
+                            </p>
+                          )}
+                          {/* Insight headline */}
+                          {analysis?.insight?.headline && (
+                            <p className="text-[11px] mt-1.5 italic" style={{ color: "var(--sage)", fontFamily: "'Inter', sans-serif" }}>
+                              {analysis.insight.headline}
+                            </p>
                           )}
                           <p className="text-[10px] mt-1.5" style={{ color: "var(--mauve)" }}>
                             {meal.logged_at ? format(new Date(meal.logged_at), "HH:mm") : ""}
