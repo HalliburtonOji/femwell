@@ -12,6 +12,7 @@ export default function ProgramTaskCard({ task, content, done, index, opened, on
   const isJournal  = task.task_type === "JOURNAL";
   const isExternal = Boolean(task.external_url);
   const isInternal = Boolean(content);
+  const isNullContent = task.task_type === "CONTENT" && !content && !task.external_url;
   const usesAudio  = content && ["BREATHWORK", "MEDITATION"].includes(content.content_type);
   const needsOpen  = isInternal || isExternal;
   const taskLabel  = task.label || task.title || `Step ${index + 1}`;
@@ -115,12 +116,31 @@ export default function ProgramTaskCard({ task, content, done, index, opened, on
                 </a>
               ) : null}
 
-              {(!needsOpen || opened) && (
+              {/* READ tasks always show mark-read button */}
+              {(isRead || isJournal) && (
                 <button onClick={onComplete}
                   className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-semibold"
                   style={{ backgroundColor: "var(--sage-subtle)", color: "var(--sage)", border: "1px solid var(--sage-light)", fontFamily: "'Inter', sans-serif" }}>
-                  {isRead || isJournal ? <BookOpen className="w-3.5 h-3.5" /> : <CheckCircle2 className="w-3.5 h-3.5" />}
+                  <BookOpen className="w-3.5 h-3.5" />
                   {isRead ? "Mark read" : "Mark complete"}
+                </button>
+              )}
+
+              {/* Null content_key CONTENT tasks — simple mark done */}
+              {isNullContent && (
+                <button onClick={onComplete}
+                  className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-semibold"
+                  style={{ backgroundColor: "var(--sage-subtle)", color: "var(--sage)", border: "1px solid var(--sage-light)", fontFamily: "'Inter', sans-serif" }}>
+                  <CheckCircle2 className="w-3.5 h-3.5" /> Mark done
+                </button>
+              )}
+
+              {/* CONTENT/EXTERNAL tasks: mark complete after opening */}
+              {!isRead && !isJournal && !isNullContent && (!needsOpen || opened) && (
+                <button onClick={onComplete}
+                  className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-semibold"
+                  style={{ backgroundColor: "var(--sage-subtle)", color: "var(--sage)", border: "1px solid var(--sage-light)", fontFamily: "'Inter', sans-serif" }}>
+                  <CheckCircle2 className="w-3.5 h-3.5" /> Mark complete
                 </button>
               )}
 

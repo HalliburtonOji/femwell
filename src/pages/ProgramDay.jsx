@@ -115,33 +115,37 @@ export default function ProgramDay() {
     if (completions.includes(taskId)) return;
 
     const activeUserProgram = await ensureUserProgram();
+
     await base44.entities.UserTaskCompletions.create({
       user_id: user.id,
       program_id: program.id,
       task_id: taskId,
       day_number: dayNumber,
       completed_at: new Date().toISOString(),
+      skipped: false,
     });
 
     const updatedCompletions = [...completions, taskId];
     setCompletions(updatedCompletions);
 
-    const requiredTasks = tasks.filter((task) => !task.is_optional);
-    const requiredDone = requiredTasks.length > 0 && requiredTasks.every((task) => updatedCompletions.includes(task.id));
-    if (requiredDone) {
+    const requiredTasks = tasks.filter((t) => !t.is_optional);
+    const allRequiredDone = requiredTasks.length > 0 && requiredTasks.every((t) => updatedCompletions.includes(t.id));
+    if (allRequiredDone) {
       const todayKey = new Date().toISOString().split("T")[0];
       const yesterdayKey = getYesterdayKey();
       const currentStreak = activeUserProgram.streak_count || 0;
-      const nextStreak = activeUserProgram.last_activity_date === todayKey
+      const lastDate = activeUserProgram.last_activity_date;
+      const nextStreak = lastDate === todayKey
         ? currentStreak || 1
-        : activeUserProgram.last_activity_date === yesterdayKey
+        : lastDate === yesterdayKey
           ? currentStreak + 1
           : 1;
-      const isLastDay = dayNumber >= (allDays.length || program.duration_days || dayNumber);
+      const totalDays = allDays.length || program.duration_days || dayNumber;
+      const isLastDay = dayNumber >= totalDays;
       const updatedProgram = await base44.entities.UserPrograms.update(activeUserProgram.id, {
         current_day: isLastDay ? dayNumber : Math.max(activeUserProgram.current_day || 1, dayNumber + 1),
         status: isLastDay ? "completed" : "active",
-        completed_at: isLastDay ? new Date().toISOString() : "",
+        completed_at: isLastDay ? new Date().toISOString() : null,
         last_activity_date: todayKey,
         streak_count: nextStreak,
         is_saved: true,
@@ -279,6 +283,21 @@ export default function ProgramDay() {
             )}
           </div>
         </div>
+
+        {/* FIX 2E: Task progress indicator */}
+        {!locked && tasks.length > 0 && (
+          <div className="mt-4 rounded-[20px] p-4" style={{ backgroundColor: "var(--surface)", border: "1px solid var(--border)", boxShadow: "var(--shadow-sm)" }}>
+            <div className="flex items-center justify-between mb-2">
+              <p className="text-xs font-semibold" style={{ color: "var(--plum)", fontFamily: "'Inter', sans-serif" }}>
+                {completedTaskCount === tasks.length ? "Day complete! 🎉" : `${completedTaskCount} of ${tasks.length} tasks done`}
+              </p>
+              <p className="text-xs" style={{ color: "var(--mauve)", fontFamily: "'Inter', sans-serif" }}>{Math.round(dayProgress)}%</p>
+            </div>
+            <div className="w-full rounded-full overflow-hidden" style={{ height: 6, backgroundColor: "var(--ivory-dark)" }}>
+              <div className="h-full rounded-full transition-all duration-500" style={{ width: `${dayProgress}%`, backgroundColor: dayProgress === 100 ? "var(--sage)" : "var(--rose-dust)" }} />
+            </div>
+          </div>
+        )}
 
         {locked ? (
           <div className="mt-6 rounded-[28px] p-6 shadow-sm" style={{ border: "1px solid var(--border)", backgroundColor: "var(--surface)" }}>

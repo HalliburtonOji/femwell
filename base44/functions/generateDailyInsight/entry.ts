@@ -1,4 +1,5 @@
-import { createClientFromRequest } from 'npm:@base44/sdk@0.8.23';
+/* global Deno */
+import { createClientFromRequest } from 'npm:@base44/sdk@0.8.25';
 
 const PHASE_LABELS = {
   menstrual: 'menstrual',
@@ -62,11 +63,12 @@ Deno.serve(async (req) => {
         user_id: userId,
         title: ai.title,
         insight_text: ai.insight_text,
-        cycle_phase: phaseLabel,
+        cycle_phase: phaseLabel || 'any',
         recommended_action_route: PHASE_ROUTES[cycle.phase] || PHASE_ROUTES.any,
         confidence: 0.85,
         insight_date: today,
         source: 'daily_phase_generator',
+        type: 'PHASE_INSIGHT',
         is_read: false,
       });
 

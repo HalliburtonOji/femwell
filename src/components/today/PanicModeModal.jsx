@@ -4,6 +4,14 @@ import { base44 } from "@/api/base44Client";
 import { createPageUrl } from "@/utils";
 import { toast } from "sonner";
 
+const PANIC_CONTENT_MAP = {
+  panic:     ["box-breathing", "4-7-8-breathing", "grounding-calm"],
+  anxiety:   ["coherent-breathing", "anxiety-reset", "3-minute-breathing-space"],
+  overwhelm: ["downshift-breathing", "grounding-calm", "body-scan-reset"],
+  anger:     ["4-7-8-breathing", "coherent-breathing", "alternate-nostril-breathing"],
+  sadness:   ["self-compassion", "pms-kindness", "body-scan-deep"],
+};
+
 const FEELINGS = ["panic", "anxiety", "overwhelm", "anger", "sadness"];
 
 const GROUNDING_STEPS = [
@@ -17,13 +25,25 @@ const GROUNDING_STEPS = [
 export default function PanicModeModal({ userId, onClose }) {
   const [intensity, setIntensity] = useState(3);
   const [feeling, setFeeling] = useState("anxiety");
-  const [step, setStep] = useState("form"); // form | grounding
+  const [step, setStep] = useState("form"); // form | grounding | followup
   const [saving, setSaving] = useState(false);
+  const [suggestedContent, setSuggestedContent] = useState([]);
+  const [panicLogId, setPanicLogId] = useState(null);
+  const [followupRating, setFollowupRating] = useState(null);
   const todayStr = new Date().toISOString().split("T")[0];
 
   const handleLog = async () => {
     setSaving(true);
-    await Promise.all([
+
+    // Fetch suggested content based on feeling_type
+    const contentKeys = PANIC_CONTENT_MAP[feeling] || PANIC_CONTENT_MAP.anxiety;
+    const allContent = await base44.entities.ContentItems.list('-created_date', 50).catch(() => []);
+    const matched = allContent
+      .filter(c => contentKeys.some(k => (c.content_key || '').includes(k) || (c.title || '').toLowerCase().includes(k.replace(/-/g, ' '))))
+      .slice(0, 2);
+    setSuggestedContent(matched);
+
+    const [, log] = await Promise.all([
       base44.entities.PanicSessions.create({
         user_id: userId,
         day_key: todayStr,
@@ -37,12 +57,22 @@ export default function PanicModeModal({ userId, onClose }) {
         feeling_type: feeling,
         intensity,
         trigger: feeling,
-        actions_taken: ["grounding"],
-      }).catch(() => {}),
+        actions_taken: contentKeys,
+      }).catch(() => null),
     ]);
+
+    if (log?.id) setPanicLogId(log.id);
     setSaving(false);
     toast.success("Logged. You are doing the right thing by noticing this.");
     setStep("grounding");
+  };
+
+  const handleFollowupRating = async (rating) => {
+    setFollowupRating(rating);
+    if (panicLogId) {
+      await base44.entities.PanicLog.update(panicLogId, { resolved_rating: rating }).catch(() => {});
+    }
+    onClose();
   };
 
   return (
@@ -128,9 +158,58 @@ export default function PanicModeModal({ userId, onClose }) {
                 </div>
               ))}
 
-              <button onClick={onClose}
+              {/* Suggested content for this feeling */}
+              {suggestedContent.length > 0 && (
+                <div style={{ marginTop: 20, padding: "14px 16px", borderRadius: 16, backgroundColor: "var(--rose-dust-subtle)", border: "1px solid var(--rose-dust-light)" }}>
+                  <p style={{ fontSize: 12, fontWeight: 700, color: "var(--rose-dust)", fontFamily: "'Inter', sans-serif", marginBottom: 10, textTransform: "uppercase", letterSpacing: "0.08em" }}>
+                    Might help right now
+                  </p>
+                  {suggestedContent.map(item => (
+                    <a key={item.id} href={createPageUrl(`ContentPlayer?key=${item.content_key}`)} onClick={onClose}
+                      style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "10px 12px", marginBottom: 6, borderRadius: 12, backgroundColor: "var(--surface)", border: "1px solid var(--border)", textDecoration: "none" }}>
+                      <div>
+                        <p style={{ fontSize: 13, fontWeight: 600, color: "var(--plum)", fontFamily: "'Inter', sans-serif" }}>{item.title}</p>
+                        <p style={{ fontSize: 11, color: "var(--mauve)", fontFamily: "'Inter', sans-serif" }}>{item.content_type?.toLowerCase()} · {item.duration_minutes || 5} min</p>
+                      </div>
+                    </a>
+                  ))}
+                </div>
+              )}
+
+              {intensity >= 4 && (
+                <div style={{ marginTop: 14, padding: "12px 14px", borderRadius: 14, backgroundColor: "#FFF8EE", border: "1px solid #F5DFA8" }}>
+                  <p style={{ fontSize: 12, color: "#7A5A20", fontFamily: "'Inter', sans-serif", lineHeight: 1.6 }}>
+                    {intensity === 5
+                      ? "If you need immediate support, consider talking to a professional. You don't have to go through this alone."
+                      : "If you're feeling overwhelmed, it's okay to reach out to someone you trust."}
+                  </p>
+                </div>
+              )}
+
+              <button onClick={() => setStep("followup")}
                 style={{ width: "100%", height: 52, marginTop: 16, borderRadius: 9999, backgroundColor: "var(--plum)", color: "white", fontSize: 14, fontWeight: 600, border: "none", cursor: "pointer", fontFamily: "'Inter', sans-serif" }}>
                 Done — I feel calmer
+              </button>
+            </>
+          )}
+
+          {step === "followup" && (
+            <>
+              <p style={{ fontSize: 16, fontWeight: 700, color: "var(--plum)", fontFamily: "'Playfair Display', serif", marginBottom: 8 }}>How are you feeling now?</p>
+              <p style={{ fontSize: 13, color: "var(--mauve)", fontFamily: "'Inter', sans-serif", marginBottom: 20 }}>Take a moment to check in with yourself.</p>
+              <div style={{ display: "flex", gap: 8, marginBottom: 20 }}>
+                {[1, 2, 3, 4, 5].map(n => (
+                  <button key={n} onClick={() => handleFollowupRating(n)}
+                    style={{ flex: 1, height: 48, borderRadius: 12, border: "none", cursor: "pointer", fontSize: 14, fontWeight: 700, fontFamily: "'Inter', sans-serif",
+                      backgroundColor: followupRating === n ? "var(--rose-dust)" : "var(--ivory-dark)",
+                      color: followupRating === n ? "white" : "var(--mauve)" }}>
+                    {n}
+                  </button>
+                ))}
+              </div>
+              <button onClick={onClose}
+                style={{ width: "100%", height: 48, borderRadius: 9999, backgroundColor: "transparent", color: "var(--mauve)", fontSize: 13, fontWeight: 600, border: "1px solid var(--border)", cursor: "pointer", fontFamily: "'Inter', sans-serif" }}>
+                Skip
               </button>
             </>
           )}

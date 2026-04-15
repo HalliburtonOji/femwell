@@ -6,7 +6,18 @@
       "type": "string"
     },
     "type": {
-      "type": "string"
+      "type": "string",
+      "enum": [
+        "PHASE_INSIGHT",
+        "SKIN_TIP",
+        "NUTRITION_TIP",
+        "SLEEP_TIP",
+        "MOOD_TIP",
+        "CYCLE_INSIGHT",
+        "HABIT_TIP",
+        "WEEKLY_SUMMARY",
+        "CORRELATION"
+      ]
     },
     "content": {
       "type": "string"
@@ -35,6 +46,13 @@
     "cycle_phase": {
       "type": "string"
     },
+    "is_read": {
+      "type": "boolean",
+      "default": false
+    },
+    "confidence": {
+      "type": "number"
+    },
     "created_at": {
       "type": "string"
     },
@@ -42,5 +60,9 @@
       "type": "string"
     }
   },
-  "required": []
+  "required": [
+    "user_id",
+    "insight_text",
+    "title"
+  ]
 }
