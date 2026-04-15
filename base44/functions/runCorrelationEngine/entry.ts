@@ -1,4 +1,5 @@
-import { createClientFromRequest } from 'npm:@base44/sdk@0.8.23';
+/* eslint-disable no-undef */
+import { createClientFromRequest } from 'npm:@base44/sdk@0.8.25';
 
 function getMonday(date = new Date()) {
   const d = new Date(date);
