@@ -15,6 +15,27 @@ Deno.serve(async (req) => {
 
     if (!raw_text) return Response.json({ error: 'raw_text required' }, { status: 400 });
 
+    // Fetch user's cycle phase from PhaseHistory if not provided
+    let resolvedPhase = cycle_phase;
+    if (!resolvedPhase) {
+      try {
+        const phases = await base44.asServiceRole.entities.PhaseHistory.filter({ user_id: user.id });
+        const latest = phases.sort((a, b) => (b.date || '').localeCompare(a.date || ''))[0];
+        resolvedPhase = latest?.phase || null;
+      } catch {}
+    }
+
+    const phaseContext = {
+      menstrual: 'Iron-rich foods are helpful. Avoid inflammatory foods (alcohol, processed sugar). Energy is lower — warming, nourishing meals support the body.',
+      follicular: 'Rising estrogen supports more carbs for energy. Great time for variety and lighter, vibrant foods. Fermented foods support gut-hormone balance.',
+      ovulatory: 'Peak energy. Lighter meals work well. Zinc (pumpkin seeds, legumes) and antioxidants (berries, leafy greens) are especially beneficial.',
+      luteal: 'Higher calorie needs (100-300 extra kcal). Magnesium, B6, and complex carbs help with PMS. Reduce caffeine and sodium. Dark chocolate in moderation is a great magnesium source.',
+    };
+
+    const phaseInstruction = resolvedPhase && phaseContext[resolvedPhase]
+      ? `\n\nIMPORTANT — Cycle phase context: This user is in their ${resolvedPhase} phase. ${phaseContext[resolvedPhase]} Evaluate how this meal supports or conflicts with her phase needs, and include one phase-specific suggestion in the insight. Never be prescriptive or alarmist.`
+      : '';
+
     const response = await openai.chat.completions.create({
       model: "gpt-4o-mini",
       messages: [
@@ -27,8 +48,10 @@ Return valid JSON only.`
         },
         {
           role: "user",
-          content: `Meal: "${raw_text}"
-User context: cycle phase: ${cycle_phase || 'unknown'}, energy: ${energy_level || 'unknown'}/10, digestion: ${digestion_score || 'unknown'}/10, wellness goal: ${wellness_goal || 'general wellness'}${prompt_append ? '\n' + prompt_append : ''}
+          content: `Analyse this meal for a woman currently in the ${resolvedPhase || 'unknown'} phase of her cycle.
+
+Meal: "${raw_text}"
+User context: cycle phase: ${resolvedPhase || 'unknown'}, energy: ${energy_level || 'unknown'}/10, digestion: ${digestion_score || 'unknown'}/10, wellness goal: ${wellness_goal || 'general wellness'}${prompt_append ? '\n' + prompt_append : ''}${phaseInstruction}
 
 Return this exact JSON structure:
 {

@@ -557,9 +557,20 @@ export default function Lifestyle() {
 
             {loading ? <FeedSkeleton /> : items.length === 0 ? (
               <div style={{ textAlign: "center", padding: "48px 24px" }}>
-                <p style={{ color: "var(--mauve)", fontSize: 14, margin: 0 }}>
-                  {tab === "watch" ? "No videos yet — run the ingestYouTubeChannels function to populate." : tab === "stories" ? "Stories are being curated. Check back soon." : "No content yet. Refresh to check for new items."}
-                </p>
+                {tab === "for_you" ? (
+                  <div style={{ backgroundColor: "var(--surface)", border: "1px solid var(--border)", borderRadius: 24, padding: "36px 20px", boxShadow: "var(--shadow-sm)" }}>
+                    <div style={{ fontSize: 48, marginBottom: 14 }}>📖</div>
+                    <h3 style={{ fontFamily: "'Playfair Display', serif", fontSize: 20, fontWeight: 700, color: "var(--plum)", marginBottom: 8 }}>Your personalised feed is warming up</h3>
+                    <p style={{ fontSize: 14, color: "var(--mauve)", fontFamily: "'Inter', sans-serif", lineHeight: 1.6, marginBottom: 20 }}>Articles, videos and stories matched to your cycle phase and interests</p>
+                    <button onClick={() => setTab("articles")} style={{ backgroundColor: "var(--plum)", color: "white", borderRadius: 9999, padding: "12px 28px", fontSize: 14, fontWeight: 600, fontFamily: "'Inter', sans-serif", border: "none", cursor: "pointer" }}>
+                      Browse all content
+                    </button>
+                  </div>
+                ) : (
+                  <p style={{ color: "var(--mauve)", fontSize: 14, margin: 0 }}>
+                    {tab === "watch" ? "No videos yet — run the ingestYouTubeChannels function to populate." : tab === "stories" ? "Stories are being curated. Check back soon." : "No content yet. Refresh to check for new items."}
+                  </p>
+                )}
               </div>
             ) : (
               <div className="lf-fade">

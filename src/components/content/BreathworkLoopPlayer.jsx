@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef, useCallback } from "react";
+// eslint-disable-next-line no-unused-vars
 import { base44 } from "@/api/base44Client";
 import { Play, Pause, RotateCcw, Plus, ChevronDown, ChevronUp } from "lucide-react";
 import SessionReviewModal from "./SessionReviewModal";
@@ -120,6 +121,28 @@ export default function BreathworkLoopPlayer({ item, user }) {
   const accent = item.accent_color || "#EAD7FF";
   const playerStyle = item.player_style || "BREATH_RING";
 
+  // Parse breath pattern from content_key
+  const BREATH_PATTERNS = {
+    '4-7-8-breathing':           { inhale: 4, hold: 7, exhale: 8 },
+    'box-breathing':             { inhale: 4, hold: 4, exhale: 4, hold2: 4 },
+    'coherent-breathing':        { inhale: 5, exhale: 5 },
+    'downshift-breathing':       { inhale: 4, hold: 2, exhale: 6 },
+    'alternate-nostril-breathing': { inhale: 4, exhale: 4 },
+    '3-minute-breathing-space':  { inhale: 3, exhale: 3 },
+    'energising-breath':         { inhale: 2, exhale: 2 },
+  };
+  const patternCfg = BREATH_PATTERNS[item.content_key] || { inhale: 4, hold: 4, exhale: 4 };
+  const breathPhases = [
+    { name: 'Inhale', duration: patternCfg.inhale },
+    ...(patternCfg.hold ? [{ name: 'Hold', duration: patternCfg.hold }] : []),
+    { name: 'Exhale', duration: patternCfg.exhale },
+    ...(patternCfg.hold2 ? [{ name: 'Hold', duration: patternCfg.hold2 }] : []),
+  ];
+  const [breathPhaseIdx, setBreathPhaseIdx] = useState(0);
+  const [breathSecondsLeft, setBreathSecondsLeft] = useState(breathPhases[0].duration);
+  const breathPhaseIdxRef = useRef(0);
+  const breathTimerRef = useRef(null);
+
   useEffect(() => {
     base44.entities.AudioSegments.filter({ content_key: item.content_key, is_active: true })
       .then((segs) => {
@@ -211,6 +234,26 @@ export default function BreathworkLoopPlayer({ item, user }) {
     audio.play().catch(() => {});
   }, []);
 
+  // Breath phase timer — runs in sync with the audio player
+  useEffect(() => {
+    if (!playing) {
+      if (breathTimerRef.current) clearInterval(breathTimerRef.current);
+      return;
+    }
+    breathTimerRef.current = setInterval(() => {
+      setBreathSecondsLeft(s => {
+        if (s <= 1) {
+          const nextIdx = (breathPhaseIdxRef.current + 1) % breathPhases.length;
+          breathPhaseIdxRef.current = nextIdx;
+          setBreathPhaseIdx(nextIdx);
+          return breathPhases[nextIdx].duration;
+        }
+        return s - 1;
+      });
+    }, 1000);
+    return () => clearInterval(breathTimerRef.current);
+  }, [playing]);
+
   const handleStart = () => {
     if (done) return;
     playingRef.current = true;
@@ -219,6 +262,10 @@ export default function BreathworkLoopPlayer({ item, user }) {
     playNextSegment();
     startElapsedTimer();
     startCoachTimer();
+    // Reset breath phases
+    breathPhaseIdxRef.current = 0;
+    setBreathPhaseIdx(0);
+    setBreathSecondsLeft(breathPhases[0].duration);
   };
 
   const handlePause = () => {

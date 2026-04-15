@@ -18,6 +18,7 @@ import DailyInsightBanner from "../components/today/DailyInsightBanner";
 import HabitCard from "../components/habits/HabitCard";
 import StreakMilestoneToast from "../components/habits/StreakMilestoneToast";
 import CheckinModal from "../components/today/CheckinModal";
+import QuickCheckinModal from "../components/today/QuickCheckinModal";
 import WeeklyInsightCard from "../components/today/WeeklyInsightCard";
 import TrackCalendar from "../components/today/TrackCalendar";
 import MedReminderSection from "../components/today/MedReminderSection";
@@ -192,7 +193,8 @@ function TodayRecommendationCard({ item, onTap }) {
   );
 }
 
-function RecommendedForYouTodaySection({ loading, items, onTap }) {
+function RecommendedForYouTodaySection({ loading, items, onTap, todayCheckin, onOpenCheckin }) {
+  const noCheckin = !todayCheckin;
   return (
     <div className="mt-6 mb-4">
       <style>{`.recommended-scroll::-webkit-scrollbar{display:none;}`}</style>
@@ -205,14 +207,23 @@ function RecommendedForYouTodaySection({ loading, items, onTap }) {
         </a>
       </div>
 
-      <div
-        className="recommended-scroll flex gap-3 overflow-x-auto pb-1"
-        style={{ scrollbarWidth: "none", WebkitOverflowScrolling: "touch", scrollSnapType: "x mandatory" }}
-      >
-        {loading
-          ? [0, 1, 2].map((index) => <RecommendationSkeletonCard key={index} />)
-          : items.map((item) => <TodayRecommendationCard key={item.id} item={item} onTap={onTap} />)}
-      </div>
+      {!loading && noCheckin && items.length === 0 ? (
+        <div style={{ backgroundColor: "var(--surface)", border: "1px solid var(--border)", borderRadius: 20, padding: "28px 20px", textAlign: "center", boxShadow: "var(--shadow-sm)" }}>
+          <div style={{ fontSize: 36, marginBottom: 10 }}>☀️</div>
+          <p style={{ fontSize: 15, fontWeight: 700, color: "var(--plum)", fontFamily: "'Playfair Display', serif", marginBottom: 6 }}>Your day is being personalised</p>
+          <p style={{ fontSize: 13, color: "var(--mauve)", fontFamily: "'Inter', sans-serif", lineHeight: 1.6, marginBottom: 16 }}>Check in to get recommendations matched to your phase and how you're feeling</p>
+          <button onClick={onOpenCheckin} style={{ backgroundColor: "var(--plum)", color: "white", borderRadius: 9999, padding: "10px 22px", fontSize: 13, fontWeight: 600, fontFamily: "'Inter', sans-serif", border: "none", cursor: "pointer" }}>Start check-in</button>
+        </div>
+      ) : (
+        <div
+          className="recommended-scroll flex gap-3 overflow-x-auto pb-1"
+          style={{ scrollbarWidth: "none", WebkitOverflowScrolling: "touch", scrollSnapType: "x mandatory" }}
+        >
+          {loading
+            ? [0, 1, 2].map((index) => <RecommendationSkeletonCard key={index} />)
+            : items.map((item) => <TodayRecommendationCard key={item.id} item={item} onTap={onTap} />)}
+        </div>
+      )}
     </div>
   );
 }
@@ -474,7 +485,7 @@ export default function Today() {
     <div className="min-h-screen pb-28" style={{ backgroundColor: "var(--ivory)" }}>
       {panicOpen && <PanicModeModal userId={user?.id} onClose={() => setPanicOpen(false)} />}
       {showCheckin && (
-        <CheckinModal existing={todayCheckin} onClose={() => setShowCheckin(false)} onSave={handleSaveCheckin} userId={user?.id} dateStr={todayStr} />
+        <QuickCheckinModal existing={todayCheckin} onClose={() => setShowCheckin(false)} onSave={handleSaveCheckin} userId={user?.id} dateStr={todayStr} />
       )}
 
       <div className="max-w-3xl mx-auto px-4">
@@ -572,6 +583,8 @@ export default function Today() {
               loading={loadingHomeRecommendations}
               items={homeRecommendations}
               onTap={handleRecommendationTap}
+              todayCheckin={todayCheckin}
+              onOpenCheckin={() => setShowCheckin(true)}
             />
 
 

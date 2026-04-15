@@ -44,6 +44,15 @@
       "type": "number",
       "default": 0
     },
+    "last_milestone_shown": {
+      "type": "string"
+    },
+    "milestones_reached": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
     "created_at": {
       "type": "string"
     },

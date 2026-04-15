@@ -53,6 +53,9 @@
     "wellness_goal": {
       "type": "string"
     },
+    "cycle_phase_at_log": {
+      "type": "string"
+    },
     "created_at": {
       "type": "string"
     },

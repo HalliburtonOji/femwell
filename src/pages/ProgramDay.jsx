@@ -7,6 +7,7 @@ import ProgramProgressBar from "../components/programs/ProgramProgressBar";
 import ProgramDayStickyNav from "../components/programs/ProgramDayStickyNav";
 import ProgramReflectionCard from "../components/programs/ProgramReflectionCard";
 import ProgramPageToolbar from "../components/programs/ProgramPageToolbar";
+import MilestoneCelebrationModal, { getMilestoneKey } from "../components/programs/MilestoneCelebrationModal";
 
 const TIER_ORDER = { free: 0, plus: 1, pro: 2 };
 
@@ -43,6 +44,7 @@ export default function ProgramDay() {
   const [reflectionText, setReflectionText] = useState("");
   const [savingReflection, setSavingReflection] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [showMilestone, setShowMilestone] = useState(false);
 
   useEffect(() => {
     if (!programKey) return;
@@ -90,7 +92,10 @@ export default function ProgramDay() {
       setCompletions(allCompletions.filter((entry) => entry.day_number === dayNumber).map((entry) => entry.task_id));
       setContentMap(nextContentMap);
       setContentItems(allContent);
-      setUserProgram(userPrograms[0] || null);
+      const up = userPrograms[0] || null;
+      setUserProgram(up);
+      // Show milestone modal if there's an unshown milestone
+      if (up && getMilestoneKey(up)) setTimeout(() => setShowMilestone(true), 500);
       setReflectionEntry(reflections[0] || null);
       setReflectionText(reflections[0]?.text || "");
       setLoading(false);
@@ -225,6 +230,13 @@ export default function ProgramDay() {
 
   return (
     <div className="min-h-screen pb-10" style={{ backgroundColor: "var(--ivory)" }}>
+      {showMilestone && userProgram && (
+        <MilestoneCelebrationModal
+          userProgram={userProgram}
+          programTitle={program?.title}
+          onClose={() => setShowMilestone(false)}
+        />
+      )}
       <ProgramPageToolbar title={dayTitle} subtitle={program?.title} showToday />
       <div className="mx-auto max-w-4xl px-4 md:px-6">
         <div className="pb-5 pt-8">

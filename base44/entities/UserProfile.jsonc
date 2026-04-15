@@ -12,6 +12,16 @@
       "type": "boolean",
       "default": false
     },
+    "onboarding_step": {
+      "type": "number",
+      "default": 0
+    },
+    "onboarding_steps_completed": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
     "modules_enabled": {
       "type": "array",
       "items": {
