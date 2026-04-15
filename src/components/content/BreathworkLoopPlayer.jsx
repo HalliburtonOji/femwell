@@ -315,6 +315,11 @@ export default function BreathworkLoopPlayer({ item, user }) {
     elapsedRef.current = 0;
     setElapsed(0);
     loopIndexRef.current = 0;
+    breathRoundRef.current = 1;
+    setBreathRound(1);
+    breathPhaseIdxRef.current = 0;
+    setBreathPhaseIdx(0);
+    setBreathSecondsLeft(breathPhases[0].duration);
     setTargetSeconds(item.target_seconds || 300);
     stopElapsedTimer();
     stopCoachTimer();

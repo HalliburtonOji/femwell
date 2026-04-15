@@ -521,6 +521,7 @@ export default function Today() {
           <div className="pt-6">
             <TodayHeroSection
               user={user}
+              profile={profile}
               cycleInfo={cycleInfo}
               todayCheckin={todayCheckin}
               onOpenCheckin={() => setShowCheckin(true)}
