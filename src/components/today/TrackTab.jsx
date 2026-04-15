@@ -2,8 +2,8 @@ import { useState, useEffect } from "react";
 import { base44 } from "@/api/base44Client";
 import { format, parseISO } from "date-fns";
 import {
-  Droplets, AlertCircle, CheckCircle2, Plus, Pill, Activity,
-  CalendarDays, Trash2, ChevronRight, Check, Loader2
+  Droplets, AlertCircle, CheckCircle2, Plus, Pill,
+  CalendarDays, Trash2, Check, Loader2, PlayCircle, ThumbsUp, ThumbsDown
 } from "lucide-react";
 import MonthlyCalendarCard from "../planner/MonthlyCalendarCard";
 import DayDetailSheet from "../planner/DayDetailSheet";
@@ -11,26 +11,52 @@ import MedReminderSection from "./MedReminderSection";
 
 const todayStr = new Date().toISOString().split("T")[0];
 
+// Title Case normaliser for symptom_type
+const toTitleCase = (str) =>
+  str.trim().replace(/\w\S*/g, w => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase());
+
+// Auto-assign category from habit name
+const habitCategory = (name) => {
+  const n = name.toLowerCase();
+  if (n.includes("water") || n.includes("hydrat")) return "hydration";
+  if (n.includes("walk") || n.includes("stretch") || n.includes("exercise") || n.includes("workout")) return "movement";
+  if (n.includes("meditat") || n.includes("journal")) return "mindfulness";
+  if (n.includes("sleep")) return "sleep";
+  if (n.includes("read")) return "other";
+  return "other";
+};
+
+const PRESET_HABITS = [
+  { name: "Drink water",     category: "hydration" },
+  { name: "Morning walk",    category: "movement" },
+  { name: "5 min reading",   category: "other" },
+  { name: "Stretching",      category: "movement" },
+  { name: "Meditation",      category: "mindfulness" },
+  { name: "Sleep 8hrs",      category: "sleep" },
+  { name: "No caffeine",     category: "other" },
+  { name: "Journaling",      category: "mindfulness" },
+];
+
 const SUBTABS = [
   { key: "calendar",  label: "Calendar",  Icon: CalendarDays },
   { key: "cycle",     label: "Cycle",     Icon: Droplets },
   { key: "symptoms",  label: "Symptoms",  Icon: AlertCircle },
   { key: "habits",    label: "Habits",    Icon: CheckCircle2 },
   { key: "meds",      label: "Meds",      Icon: Pill },
+  { key: "sessions",  label: "Sessions",  Icon: PlayCircle },
 ];
 
 const FLOW_OPTIONS = ["light", "medium", "heavy"];
-const PERIOD_EVENT_TYPES = [
+const CYCLE_EVENT_TYPES = [
   { value: "PeriodStart", label: "Period Start" },
   { value: "PeriodEnd",   label: "Period End" },
   { value: "Spotting",    label: "Spotting" },
 ];
 const COMMON_SYMPTOMS = [
-  "cramps", "bloating", "headache", "fatigue", "mood swings",
-  "breast tenderness", "back pain", "acne", "nausea", "insomnia",
-  "anxiety", "brain fog", "hot flashes", "night sweats", "joint pain",
+  "Cramps", "Bloating", "Headache", "Fatigue", "Mood Swings",
+  "Breast Tenderness", "Back Pain", "Acne", "Nausea", "Insomnia",
+  "Anxiety", "Brain Fog", "Hot Flashes", "Night Sweats", "Joint Pain",
 ];
-const SEVERITY_LABELS = ["", "Mild", "Moderate", "Significant", "Severe", "Extreme"];
 
 const sLabel = {
   fontSize: "0.6rem", fontWeight: 600, textTransform: "uppercase",
@@ -41,7 +67,7 @@ const card = {
   borderRadius: 20, boxShadow: "var(--shadow-sm)",
 };
 
-// ── Calendar sub-tab ─────────────────────────────────────────────────────────
+// ── Calendar sub-tab ──────────────────────────────────────────────────────────
 function CalendarSubTab({ user, profile }) {
   const [selectedDay, setSelectedDay] = useState(null);
   const [refreshKey, setRefreshKey] = useState(0);
@@ -68,30 +94,27 @@ function CalendarSubTab({ user, profile }) {
 }
 
 // ── Cycle sub-tab ─────────────────────────────────────────────────────────────
-function CycleSubTab({ user, profile }) {
+function CycleSubTab({ user, profile, selectedDate }) {
   const [events, setEvents] = useState([]);
   const [eventType, setEventType] = useState("PeriodStart");
   const [flow, setFlow] = useState("medium");
-  const [notes, setNotes] = useState("");
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
 
   useEffect(() => {
-    base44.entities.CycleEvents.filter({ user_id: user.id }, "-date", 30)
+    base44.entities.CycleEvents.filter({ user_id: user.id, date: selectedDate })
       .then(setEvents).catch(() => {});
-  }, [user]);
+  }, [user, selectedDate]);
 
   const logEvent = async () => {
     setSaving(true);
     const created = await base44.entities.CycleEvents.create({
       user_id: user.id,
-      date: todayStr,
-      event_type: eventType,
-      ...(eventType === "PeriodStart" ? { flow_level: flow } : {}),
-      notes: notes.trim() || undefined,
+      date: selectedDate,
+      type: eventType,
+      flow_level: eventType === "PeriodStart" ? flow : undefined,
     });
     setEvents(prev => [created, ...prev]);
-    setNotes("");
     setSaving(false);
     setSaved(true);
     setTimeout(() => setSaved(false), 2000);
@@ -121,50 +144,36 @@ function CycleSubTab({ user, profile }) {
 
   return (
     <div className="pt-4 space-y-4">
-      {/* Cycle status card */}
       {cycleInfo ? (
         <div style={{ ...card, padding: 20, background: "linear-gradient(135deg, var(--rose-dust-subtle) 0%, var(--mauve-subtle) 100%)" }}>
           <p style={sLabel}>Current cycle status</p>
           <div className="flex items-center gap-3 mt-3">
             <div style={{ flex: 1 }}>
-              <p style={{ fontSize: 22, fontWeight: 700, color: "var(--plum)", fontFamily: "'Playfair Display', serif" }}>
-                Day {cycleInfo.cycleDay}
-              </p>
-              <p style={{ fontSize: 13, fontWeight: 600, color: cycleInfo.phaseColor, fontFamily: "'Inter', sans-serif", marginTop: 2 }}>
-                {cycleInfo.phase} Phase
-              </p>
+              <p style={{ fontSize: 22, fontWeight: 700, color: "var(--plum)", fontFamily: "'Playfair Display', serif" }}>Day {cycleInfo.cycleDay}</p>
+              <p style={{ fontSize: 13, fontWeight: 600, color: cycleInfo.phaseColor, fontFamily: "'Inter', sans-serif", marginTop: 2 }}>{cycleInfo.phase} Phase</p>
             </div>
             <div style={{ textAlign: "right" }}>
               <p style={{ fontSize: 12, color: "var(--mauve)", fontFamily: "'Inter', sans-serif" }}>Next period in</p>
-              <p style={{ fontSize: 20, fontWeight: 700, color: "var(--plum)", fontFamily: "'Playfair Display', serif" }}>
-                {cycleInfo.nextPeriod}d
-              </p>
+              <p style={{ fontSize: 20, fontWeight: 700, color: "var(--plum)", fontFamily: "'Playfair Display', serif" }}>{cycleInfo.nextPeriod}d</p>
             </div>
           </div>
         </div>
       ) : (
         <div style={{ ...card, padding: 16 }}>
-          <p style={{ fontSize: 13, color: "var(--mauve)", fontFamily: "'Inter', sans-serif" }}>
-            Set your last period date in Cycle Settings to see your phase.
-          </p>
-          <a href="/CycleSettings" style={{ fontSize: 12, color: "var(--rose-dust)", fontWeight: 600, fontFamily: "'Inter', sans-serif" }}>
-            Go to settings →
-          </a>
+          <p style={{ fontSize: 13, color: "var(--mauve)", fontFamily: "'Inter', sans-serif" }}>Set your last period date in Cycle Settings to see your phase.</p>
+          <a href="/CycleSettings" style={{ fontSize: 12, color: "var(--rose-dust)", fontWeight: 600, fontFamily: "'Inter', sans-serif" }}>Go to settings →</a>
         </div>
       )}
 
-      {/* Log today */}
       <div style={{ ...card, padding: 20 }}>
-        <p style={{ ...sLabel, marginBottom: 14 }}>Log today</p>
+        <p style={{ ...sLabel, marginBottom: 4 }}>Logging for {selectedDate}</p>
+        <p style={{ fontSize: 11, color: "var(--mauve)", fontFamily: "'Inter', sans-serif", marginBottom: 14 }}>
+          {selectedDate === todayStr ? "Today" : selectedDate}
+        </p>
         <div className="flex gap-2 flex-wrap mb-3">
-          {PERIOD_EVENT_TYPES.map(opt => (
+          {CYCLE_EVENT_TYPES.map(opt => (
             <button key={opt.value} onClick={() => setEventType(opt.value)}
-              style={{
-                padding: "6px 14px", borderRadius: 9999, fontSize: 12, fontWeight: 600,
-                border: "none", cursor: "pointer", fontFamily: "'Inter', sans-serif",
-                backgroundColor: eventType === opt.value ? "var(--plum)" : "var(--ivory-dark)",
-                color: eventType === opt.value ? "white" : "var(--mauve)",
-              }}>
+              style={{ padding: "6px 14px", borderRadius: 9999, fontSize: 12, fontWeight: 600, border: "none", cursor: "pointer", fontFamily: "'Inter', sans-serif", backgroundColor: eventType === opt.value ? "var(--plum)" : "var(--ivory-dark)", color: eventType === opt.value ? "white" : "var(--mauve)" }}>
               {opt.label}
             </button>
           ))}
@@ -173,47 +182,28 @@ function CycleSubTab({ user, profile }) {
           <div className="flex gap-2 mb-3">
             {FLOW_OPTIONS.map(f => (
               <button key={f} onClick={() => setFlow(f)}
-                style={{
-                  flex: 1, padding: "6px 8px", borderRadius: 9999, fontSize: 11, fontWeight: 600,
-                  border: "none", cursor: "pointer", fontFamily: "'Inter', sans-serif", textTransform: "capitalize",
-                  backgroundColor: flow === f ? "var(--rose-dust)" : "var(--ivory-dark)",
-                  color: flow === f ? "white" : "var(--mauve)",
-                }}>
+                style={{ flex: 1, padding: "6px 8px", borderRadius: 9999, fontSize: 11, fontWeight: 600, border: "none", cursor: "pointer", fontFamily: "'Inter', sans-serif", textTransform: "capitalize", backgroundColor: flow === f ? "var(--rose-dust)" : "var(--ivory-dark)", color: flow === f ? "white" : "var(--mauve)" }}>
                 {f}
               </button>
             ))}
           </div>
         )}
-        <input
-          value={notes}
-          onChange={e => setNotes(e.target.value)}
-          placeholder="Notes (optional)"
-          style={{ width: "100%", padding: "8px 12px", borderRadius: 12, border: "1px solid var(--border)", backgroundColor: "var(--ivory)", fontSize: 13, fontFamily: "'Inter', sans-serif", color: "var(--plum)", outline: "none", marginBottom: 12, boxSizing: "border-box" }}
-        />
         <button onClick={logEvent} disabled={saving}
-          style={{
-            width: "100%", padding: "11px", borderRadius: 12, fontWeight: 600, fontSize: 13,
-            border: "none", cursor: saving ? "default" : "pointer", fontFamily: "'Inter', sans-serif",
-            backgroundColor: saved ? "var(--sage)" : "var(--plum)", color: "white",
-            display: "flex", alignItems: "center", justifyContent: "center", gap: 6,
-          }}>
+          style={{ width: "100%", padding: "11px", borderRadius: 12, fontWeight: 600, fontSize: 13, border: "none", cursor: saving ? "default" : "pointer", fontFamily: "'Inter', sans-serif", backgroundColor: saved ? "var(--sage)" : "var(--plum)", color: "white", display: "flex", alignItems: "center", justifyContent: "center", gap: 6 }}>
           {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : saved ? <Check className="w-4 h-4" /> : <Plus className="w-4 h-4" />}
           {saving ? "Saving…" : saved ? "Logged!" : "Log Event"}
         </button>
       </div>
 
-      {/* Recent events */}
       {events.length > 0 && (
         <div style={{ ...card, padding: 20 }}>
-          <p style={{ ...sLabel, marginBottom: 12 }}>Recent events</p>
+          <p style={{ ...sLabel, marginBottom: 12 }}>Events on {selectedDate}</p>
           <div className="space-y-2">
-            {events.slice(0, 10).map(e => (
+            {events.map(e => (
               <div key={e.id} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "10px 12px", borderRadius: 12, backgroundColor: "var(--ivory)", border: "1px solid var(--border-subtle)" }}>
                 <div>
-                  <p style={{ fontSize: 12, fontWeight: 600, color: "var(--plum)", fontFamily: "'Inter', sans-serif" }}>{e.event_type?.replace(/([A-Z])/g, " $1").trim()}</p>
-                  <p style={{ fontSize: 11, color: "var(--mauve)", fontFamily: "'Inter', sans-serif" }}>
-                    {e.date}{e.flow_level ? ` · ${e.flow_level}` : ""}
-                  </p>
+                  <p style={{ fontSize: 12, fontWeight: 600, color: "var(--plum)", fontFamily: "'Inter', sans-serif" }}>{e.type?.replace(/([A-Z])/g, " $1").trim()}</p>
+                  {e.flow_level && <p style={{ fontSize: 11, color: "var(--mauve)", fontFamily: "'Inter', sans-serif", textTransform: "capitalize" }}>{e.flow_level} flow</p>}
                 </div>
                 <button onClick={() => deleteEvent(e.id)} style={{ background: "none", border: "none", cursor: "pointer", padding: 4 }}>
                   <Trash2 style={{ width: 14, height: 14, color: "var(--mauve)" }} />
@@ -227,52 +217,60 @@ function CycleSubTab({ user, profile }) {
   );
 }
 
-// ── Symptoms sub-tab ─────────────────────────────────────────────────────────
-function SymptomsSubTab({ user }) {
-  const [todaySymptoms, setTodaySymptoms] = useState([]);
+// ── Symptoms sub-tab ──────────────────────────────────────────────────────────
+function SymptomsSubTab({ user, selectedDate }) {
+  const [symptoms, setSymptoms] = useState([]);
   const [selected, setSelected] = useState(null);
-  const [severity, setSeverity] = useState(3);
+  const [severity, setSeverity] = useState(5);
   const [notes, setNotes] = useState("");
   const [saving, setSaving] = useState(false);
 
-  useEffect(() => {
-    base44.entities.SymptomLogs.filter({ user_id: user.id, date: todayStr })
-      .then(setTodaySymptoms).catch(() => {});
-  }, [user]);
+  const load = () =>
+    base44.entities.SymptomLogs.filter({ user_id: user.id, date: selectedDate })
+      .then(setSymptoms).catch(() => {});
+
+  useEffect(() => { load(); }, [user, selectedDate]);
 
   const log = async () => {
     if (!selected) return;
     setSaving(true);
-    const created = await base44.entities.SymptomLogs.create({
+    await base44.entities.SymptomLogs.create({
       user_id: user.id,
-      date: todayStr,
-      symptom_type: selected,
-      severity,
+      date: selectedDate,
+      symptom_type: toTitleCase(selected),
+      severity,            // 1-10
       notes: notes.trim() || undefined,
     });
-    setTodaySymptoms(prev => [...prev, created]);
+    await load();          // refresh from DB
     setSelected(null);
     setNotes("");
-    setSeverity(3);
+    setSeverity(5);
     setSaving(false);
   };
 
   const remove = async (id) => {
     await base44.entities.SymptomLogs.delete(id);
-    setTodaySymptoms(prev => prev.filter(s => s.id !== id));
+    setSymptoms(prev => prev.filter(s => s.id !== id));
+  };
+
+  const severityLabel = (v) => {
+    if (v <= 2) return "Mild";
+    if (v <= 4) return "Moderate";
+    if (v <= 6) return "Significant";
+    if (v <= 8) return "Severe";
+    return "Extreme";
   };
 
   return (
     <div className="pt-4 space-y-4">
-      {/* Today's logged */}
-      {todaySymptoms.length > 0 && (
+      {symptoms.length > 0 && (
         <div style={{ ...card, padding: 20 }}>
-          <p style={{ ...sLabel, marginBottom: 12 }}>Logged today</p>
+          <p style={{ ...sLabel, marginBottom: 12 }}>Logged on {selectedDate}</p>
           <div className="flex flex-wrap gap-2">
-            {todaySymptoms.map(s => (
+            {symptoms.map(s => (
               <div key={s.id} style={{ display: "flex", alignItems: "center", gap: 6, padding: "5px 10px 5px 12px", borderRadius: 9999, backgroundColor: "var(--rose-dust-subtle)", border: "1px solid var(--rose-dust-light)" }}>
-                <span style={{ fontSize: 12, fontWeight: 600, color: "var(--plum)", fontFamily: "'Inter', sans-serif", textTransform: "capitalize" }}>{s.symptom_type}</span>
-                {s.severity && <span style={{ fontSize: 11, color: "var(--mauve)", fontFamily: "'Inter', sans-serif" }}>·{" "}{SEVERITY_LABELS[s.severity] || s.severity}</span>}
+                <span style={{ fontSize: 12, fontWeight: 600, color: "var(--plum)", fontFamily: "'Inter', sans-serif" }}>{s.symptom_type}</span>
+                {s.severity && <span style={{ fontSize: 11, color: "var(--mauve)", fontFamily: "'Inter', sans-serif" }}>· {severityLabel(s.severity)}</span>}
                 <button onClick={() => remove(s.id)} style={{ background: "none", border: "none", cursor: "pointer", padding: 0, lineHeight: 1 }}>
                   <Trash2 style={{ width: 12, height: 12, color: "var(--mauve)" }} />
                 </button>
@@ -282,18 +280,12 @@ function SymptomsSubTab({ user }) {
         </div>
       )}
 
-      {/* Symptom picker */}
       <div style={{ ...card, padding: 20 }}>
         <p style={{ ...sLabel, marginBottom: 12 }}>Log a symptom</p>
         <div className="flex flex-wrap gap-2 mb-4">
           {COMMON_SYMPTOMS.map(s => (
             <button key={s} onClick={() => setSelected(selected === s ? null : s)}
-              style={{
-                padding: "6px 12px", borderRadius: 9999, fontSize: 12, fontWeight: 500,
-                border: "none", cursor: "pointer", fontFamily: "'Inter', sans-serif", textTransform: "capitalize",
-                backgroundColor: selected === s ? "var(--plum)" : "var(--ivory-dark)",
-                color: selected === s ? "white" : "var(--mauve)",
-              }}>
+              style={{ padding: "6px 12px", borderRadius: 9999, fontSize: 12, fontWeight: 500, border: "none", cursor: "pointer", fontFamily: "'Inter', sans-serif", backgroundColor: selected === s ? "var(--plum)" : "var(--ivory-dark)", color: selected === s ? "white" : "var(--mauve)" }}>
               {s}
             </button>
           ))}
@@ -301,15 +293,11 @@ function SymptomsSubTab({ user }) {
         {selected && (
           <div className="space-y-3">
             <div>
-              <p style={{ fontSize: 11, color: "var(--mauve)", fontFamily: "'Inter', sans-serif", marginBottom: 6 }}>
-                Severity: <strong style={{ color: "var(--plum)" }}>{SEVERITY_LABELS[severity]}</strong>
-              </p>
-              <input type="range" min={1} max={5} value={severity} onChange={e => setSeverity(+e.target.value)} style={{ width: "100%" }} />
-              <div style={{ display: "flex", justifyContent: "space-between", marginTop: 2 }}>
-                {SEVERITY_LABELS.slice(1).map(l => (
-                  <span key={l} style={{ fontSize: 9, color: "var(--mauve)", fontFamily: "'Inter', sans-serif" }}>{l}</span>
-                ))}
+              <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 6 }}>
+                <p style={{ fontSize: 11, color: "var(--mauve)", fontFamily: "'Inter', sans-serif" }}>Severity</p>
+                <strong style={{ fontSize: 11, color: "var(--plum)", fontFamily: "'Inter', sans-serif" }}>{severityLabel(severity)} ({severity}/10)</strong>
               </div>
+              <input type="range" min={1} max={10} value={severity} onChange={e => setSeverity(+e.target.value)} style={{ width: "100%" }} />
             </div>
             <input value={notes} onChange={e => setNotes(e.target.value)} placeholder="Notes (optional)"
               style={{ width: "100%", padding: "8px 12px", borderRadius: 12, border: "1px solid var(--border)", backgroundColor: "var(--ivory)", fontSize: 13, fontFamily: "'Inter', sans-serif", color: "var(--plum)", outline: "none", boxSizing: "border-box" }}
@@ -327,39 +315,62 @@ function SymptomsSubTab({ user }) {
 }
 
 // ── Habits sub-tab ────────────────────────────────────────────────────────────
-function HabitsSubTab({ user }) {
+function HabitsSubTab({ user, profile, selectedDate }) {
   const [habits, setHabits] = useState([]);
-  const [showAdd, setShowAdd] = useState(false);
-  const [newName, setNewName] = useState("");
-  const [newCategory, setNewCategory] = useState("other");
-  const [saving, setSaving] = useState(false);
+  const [showCustom, setShowCustom] = useState(false);
+  const [customName, setCustomName] = useState("");
+  const [saving, setSaving] = useState(null); // habit name or null
 
-  const CATEGORIES = ["hydration", "movement", "nutrition", "mindfulness", "sleep", "other"];
+  // Hydration
+  const hydrationTarget = profile?.hydration_target_ml || 2000;
+  const [hydrationTotal, setHydrationTotal] = useState(null);
 
-  useEffect(() => {
-    base44.entities.HabitLogs.filter({ user_id: user.id, date: todayStr })
-      .then(setHabits).catch(() => {});
-  }, [user]);
-
-  const toggle = async (habit) => {
-    const updated = await base44.entities.HabitLogs.update(habit.id, { completed: !habit.completed });
-    setHabits(prev => prev.map(h => h.id === habit.id ? { ...h, completed: !h.completed } : h));
+  const load = async () => {
+    const [logs, hydLogs] = await Promise.all([
+      base44.entities.HabitLogs.filter({ user_id: user.id, date: selectedDate }),
+      base44.entities.HydrationLog.filter({ user_id: user.id, day_key: selectedDate }).catch(() => []),
+    ]);
+    setHabits(logs);
+    const total = hydLogs.reduce((sum, l) => sum + (l.amount_ml || 0), 0);
+    setHydrationTotal(total);
   };
 
-  const addHabit = async () => {
-    if (!newName.trim()) return;
-    setSaving(true);
+  useEffect(() => { load(); }, [user, selectedDate]);
+
+  const togglePreset = async (preset) => {
+    const existing = habits.find(h => h.habit_type === preset.name);
+    if (existing) {
+      await base44.entities.HabitLogs.update(existing.id, { completed: !existing.completed });
+      setHabits(prev => prev.map(h => h.id === existing.id ? { ...h, completed: !h.completed } : h));
+    } else {
+      setSaving(preset.name);
+      const created = await base44.entities.HabitLogs.create({
+        user_id: user.id,
+        date: selectedDate,
+        habit_type: preset.name,
+        habit_category: preset.category,
+        completed: true,
+      });
+      setHabits(prev => [...prev, created]);
+      setSaving(null);
+    }
+  };
+
+  const addCustom = async () => {
+    if (!customName.trim()) return;
+    setSaving("custom");
+    const name = customName.trim();
     const created = await base44.entities.HabitLogs.create({
       user_id: user.id,
-      date: todayStr,
-      habit_type: newName.trim(),
-      habit_category: newCategory,
+      date: selectedDate,
+      habit_type: name,
+      habit_category: habitCategory(name),
       completed: false,
     });
     setHabits(prev => [...prev, created]);
-    setNewName("");
-    setShowAdd(false);
-    setSaving(false);
+    setCustomName("");
+    setShowCustom(false);
+    setSaving(null);
   };
 
   const remove = async (id) => {
@@ -372,79 +383,90 @@ function HabitsSubTab({ user }) {
 
   return (
     <div className="pt-4 space-y-4">
-      {/* Progress */}
-      {total > 0 && (
+      {/* Hydration display */}
+      {hydrationTotal !== null && (
         <div style={{ ...card, padding: "14px 20px" }}>
-          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 8 }}>
-            <p style={{ fontSize: 13, fontWeight: 600, color: "var(--plum)", fontFamily: "'Inter', sans-serif" }}>
-              {done}/{total} habits done today
-            </p>
-            <p style={{ fontSize: 12, color: "var(--sage)", fontWeight: 600, fontFamily: "'Inter', sans-serif" }}>
-              {total > 0 ? Math.round((done / total) * 100) : 0}%
-            </p>
+          <p style={sLabel}>Hydration</p>
+          <div style={{ display: "flex", alignItems: "flex-end", gap: 6, marginTop: 6 }}>
+            <p style={{ fontSize: 20, fontWeight: 700, color: "var(--sage)", fontFamily: "'Playfair Display', serif" }}>{hydrationTotal} ml</p>
+            <p style={{ fontSize: 13, color: "var(--mauve)", fontFamily: "'Inter', sans-serif", marginBottom: 2 }}>/ {hydrationTarget} ml goal</p>
           </div>
-          <div style={{ height: 6, backgroundColor: "var(--ivory-dark)", borderRadius: 3, overflow: "hidden" }}>
-            <div style={{ height: "100%", width: `${total > 0 ? (done / total) * 100 : 0}%`, backgroundColor: done === total && total > 0 ? "var(--sage)" : "var(--rose-dust)", borderRadius: 3, transition: "width 0.4s" }} />
+          <div style={{ height: 6, backgroundColor: "var(--ivory-dark)", borderRadius: 3, overflow: "hidden", marginTop: 8 }}>
+            <div style={{ height: "100%", width: `${Math.min(100, (hydrationTotal / hydrationTarget) * 100)}%`, backgroundColor: "var(--sage)", borderRadius: 3, transition: "width 0.4s" }} />
           </div>
         </div>
       )}
 
-      {/* Habit list */}
-      <div style={{ ...card, padding: 20 }}>
-        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 14 }}>
-          <p style={sLabel}>Today's habits</p>
-          <button onClick={() => setShowAdd(v => !v)}
-            style={{ display: "flex", alignItems: "center", gap: 4, fontSize: 12, fontWeight: 600, color: "var(--rose-dust)", background: "none", border: "none", cursor: "pointer", fontFamily: "'Inter', sans-serif" }}>
-            <Plus className="w-3.5 h-3.5" /> Add
-          </button>
-        </div>
-
-        {showAdd && (
-          <div className="rounded-2xl p-3 mb-4 space-y-2" style={{ backgroundColor: "var(--ivory)", border: "1px solid var(--border)" }}>
-            <input value={newName} onChange={e => setNewName(e.target.value)} placeholder="Habit name (e.g. 8 glasses water)"
-              style={{ width: "100%", padding: "8px 12px", borderRadius: 10, border: "1px solid var(--border)", backgroundColor: "var(--surface)", fontSize: 13, fontFamily: "'Inter', sans-serif", color: "var(--plum)", outline: "none", boxSizing: "border-box" }}
-            />
-            <div className="flex gap-1.5 flex-wrap">
-              {CATEGORIES.map(c => (
-                <button key={c} onClick={() => setNewCategory(c)}
-                  style={{ padding: "4px 10px", borderRadius: 9999, fontSize: 11, fontWeight: 500, textTransform: "capitalize", border: "none", cursor: "pointer", fontFamily: "'Inter', sans-serif", backgroundColor: newCategory === c ? "var(--plum)" : "var(--ivory-dark)", color: newCategory === c ? "white" : "var(--mauve)" }}>
-                  {c}
-                </button>
-              ))}
-            </div>
-            <div className="flex gap-2">
-              <button onClick={() => setShowAdd(false)} style={{ flex: 1, padding: "7px", borderRadius: 10, border: "1px solid var(--border)", backgroundColor: "transparent", fontSize: 12, color: "var(--mauve)", cursor: "pointer" }}>Cancel</button>
-              <button onClick={addHabit} disabled={!newName.trim() || saving} style={{ flex: 1, padding: "7px", borderRadius: 10, border: "none", backgroundColor: "var(--plum)", color: "white", fontSize: 12, fontWeight: 600, cursor: "pointer", opacity: !newName.trim() ? 0.5 : 1 }}>
-                {saving ? "Adding…" : "Add"}
-              </button>
-            </div>
+      {/* Progress */}
+      {total > 0 && (
+        <div style={{ ...card, padding: "14px 20px" }}>
+          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 8 }}>
+            <p style={{ fontSize: 13, fontWeight: 600, color: "var(--plum)", fontFamily: "'Inter', sans-serif" }}>{done}/{total} habits done</p>
+            <p style={{ fontSize: 12, color: "var(--sage)", fontWeight: 600, fontFamily: "'Inter', sans-serif" }}>{Math.round((done / total) * 100)}%</p>
           </div>
-        )}
+          <div style={{ height: 6, backgroundColor: "var(--ivory-dark)", borderRadius: 3, overflow: "hidden" }}>
+            <div style={{ height: "100%", width: `${(done / total) * 100}%`, backgroundColor: done === total ? "var(--sage)" : "var(--rose-dust)", borderRadius: 3, transition: "width 0.4s" }} />
+          </div>
+        </div>
+      )}
 
-        {habits.length === 0 && !showAdd && (
-          <p style={{ fontSize: 13, color: "var(--mauve)", fontFamily: "'Inter', sans-serif" }}>
-            No habits logged today yet. Tap Add to start tracking.
-          </p>
-        )}
-
+      {/* Preset habits */}
+      <div style={{ ...card, padding: 20 }}>
+        <p style={{ ...sLabel, marginBottom: 14 }}>Habits</p>
         <div className="space-y-2">
-          {habits.map(h => (
+          {PRESET_HABITS.map(preset => {
+            const logged = habits.find(h => h.habit_type === preset.name);
+            const isCompleted = logged?.completed;
+            return (
+              <div key={preset.name} style={{ display: "flex", alignItems: "center", gap: 10, padding: "10px 12px", borderRadius: 12, backgroundColor: isCompleted ? "var(--sage-subtle)" : "var(--ivory)", border: `1px solid ${isCompleted ? "var(--sage-light)" : "var(--border-subtle)"}` }}>
+                <button onClick={() => togglePreset(preset)}
+                  style={{ width: 22, height: 22, borderRadius: 6, border: `2px solid ${isCompleted ? "var(--sage)" : "var(--border)"}`, backgroundColor: isCompleted ? "var(--sage)" : "transparent", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+                  {saving === preset.name ? <Loader2 style={{ width: 10, height: 10, color: "var(--mauve)" }} className="animate-spin" /> : isCompleted && <Check style={{ width: 12, height: 12, color: "white" }} />}
+                </button>
+                <p style={{ flex: 1, fontSize: 13, fontWeight: 500, color: isCompleted ? "var(--sage)" : "var(--plum)", fontFamily: "'Inter', sans-serif", textDecoration: isCompleted ? "line-through" : "none" }}>
+                  {preset.name}
+                </p>
+                <span style={{ fontSize: 10, color: "var(--mauve)", fontFamily: "'Inter', sans-serif", textTransform: "capitalize" }}>{preset.category}</span>
+                {logged && (
+                  <button onClick={() => remove(logged.id)} style={{ background: "none", border: "none", cursor: "pointer", padding: 2, flexShrink: 0 }}>
+                    <Trash2 style={{ width: 13, height: 13, color: "var(--mauve)" }} />
+                  </button>
+                )}
+              </div>
+            );
+          })}
+
+          {/* Custom habits */}
+          {habits.filter(h => !PRESET_HABITS.find(p => p.name === h.habit_type)).map(h => (
             <div key={h.id} style={{ display: "flex", alignItems: "center", gap: 10, padding: "10px 12px", borderRadius: 12, backgroundColor: h.completed ? "var(--sage-subtle)" : "var(--ivory)", border: `1px solid ${h.completed ? "var(--sage-light)" : "var(--border-subtle)"}` }}>
-              <button onClick={() => toggle(h)}
+              <button onClick={() => base44.entities.HabitLogs.update(h.id, { completed: !h.completed }).then(() => setHabits(prev => prev.map(x => x.id === h.id ? { ...x, completed: !x.completed } : x)))}
                 style={{ width: 22, height: 22, borderRadius: 6, border: `2px solid ${h.completed ? "var(--sage)" : "var(--border)"}`, backgroundColor: h.completed ? "var(--sage)" : "transparent", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
                 {h.completed && <Check style={{ width: 12, height: 12, color: "white" }} />}
               </button>
-              <p style={{ flex: 1, fontSize: 13, fontWeight: 500, color: h.completed ? "var(--sage)" : "var(--plum)", fontFamily: "'Inter', sans-serif", textDecoration: h.completed ? "line-through" : "none", textDecorationColor: "var(--sage)" }}>
-                {h.habit_type}
-              </p>
-              {h.habit_category && (
-                <span style={{ fontSize: 10, color: "var(--mauve)", fontFamily: "'Inter', sans-serif", textTransform: "capitalize" }}>{h.habit_category}</span>
-              )}
-              <button onClick={() => remove(h.id)} style={{ background: "none", border: "none", cursor: "pointer", padding: 2, flexShrink: 0 }}>
+              <p style={{ flex: 1, fontSize: 13, fontWeight: 500, color: h.completed ? "var(--sage)" : "var(--plum)", fontFamily: "'Inter', sans-serif", textDecoration: h.completed ? "line-through" : "none" }}>{h.habit_type}</p>
+              <button onClick={() => remove(h.id)} style={{ background: "none", border: "none", cursor: "pointer", padding: 2 }}>
                 <Trash2 style={{ width: 13, height: 13, color: "var(--mauve)" }} />
               </button>
             </div>
           ))}
+        </div>
+
+        {/* Add custom */}
+        <div className="mt-4">
+          {showCustom ? (
+            <div className="flex gap-2">
+              <input value={customName} onChange={e => setCustomName(e.target.value)} placeholder="Custom habit name"
+                style={{ flex: 1, padding: "7px 12px", borderRadius: 10, border: "1px solid var(--border)", backgroundColor: "var(--ivory)", fontSize: 13, fontFamily: "'Inter', sans-serif", color: "var(--plum)", outline: "none" }}
+                onKeyDown={e => e.key === "Enter" && addCustom()}
+              />
+              <button onClick={addCustom} disabled={!customName.trim()} style={{ padding: "7px 14px", borderRadius: 10, border: "none", backgroundColor: "var(--plum)", color: "white", fontSize: 12, fontWeight: 600, cursor: "pointer" }}>Add</button>
+              <button onClick={() => setShowCustom(false)} style={{ padding: "7px 10px", borderRadius: 10, border: "1px solid var(--border)", backgroundColor: "transparent", fontSize: 12, color: "var(--mauve)", cursor: "pointer" }}>×</button>
+            </div>
+          ) : (
+            <button onClick={() => setShowCustom(true)} style={{ display: "flex", alignItems: "center", gap: 4, fontSize: 12, fontWeight: 600, color: "var(--mauve)", background: "none", border: "none", cursor: "pointer", fontFamily: "'Inter', sans-serif" }}>
+              <Plus className="w-3.5 h-3.5" /> Add custom habit
+            </button>
+          )}
         </div>
       </div>
     </div>
@@ -452,32 +474,53 @@ function HabitsSubTab({ user }) {
 }
 
 // ── Meds sub-tab ──────────────────────────────────────────────────────────────
-function MedsSubTab({ user }) {
+function MedsSubTab({ user, selectedDate }) {
   const [todayLogs, setTodayLogs] = useState([]);
-  const [medName, setMedName] = useState("");
+  const [reminders, setReminders] = useState([]);
+  const [itemName, setItemName] = useState("");
   const [dose, setDose] = useState("");
   const [saving, setSaving] = useState(false);
+  const [nameError, setNameError] = useState(false);
 
-  useEffect(() => {
-    base44.entities.MedicationLogs.filter({ user_id: user.id, date: todayStr })
-      .then(setTodayLogs).catch(() => {});
-  }, [user]);
+  const load = async () => {
+    const [logs, rems] = await Promise.all([
+      base44.entities.MedicationLogs.filter({ user_id: user.id, date: selectedDate }),
+      base44.entities.MedicationReminders.filter({ user_id: user.id, is_active: true }).catch(() => []),
+    ]);
+    setTodayLogs(logs);
+    setReminders(rems);
+  };
+
+  useEffect(() => { load(); }, [user, selectedDate]);
 
   const logMed = async () => {
-    if (!medName.trim()) return;
+    if (!itemName.trim()) { setNameError(true); return; }
+    setNameError(false);
     setSaving(true);
     const created = await base44.entities.MedicationLogs.create({
       user_id: user.id,
-      date: todayStr,
-      medication_name: medName.trim(),
+      date: selectedDate,
+      item_name: itemName.trim(),
       dose: dose.trim() || undefined,
-      taken_at: new Date().toISOString(),
       taken: true,
     });
     setTodayLogs(prev => [...prev, created]);
-    setMedName("");
+    setItemName("");
     setDose("");
     setSaving(false);
+  };
+
+  const markReminderTaken = async (rem) => {
+    const already = todayLogs.find(l => l.item_name === rem.medication_name);
+    if (already) return;
+    const created = await base44.entities.MedicationLogs.create({
+      user_id: user.id,
+      date: selectedDate,
+      item_name: rem.medication_name,
+      dose: rem.dose || undefined,
+      taken: true,
+    });
+    setTodayLogs(prev => [...prev, created]);
   };
 
   const remove = async (id) => {
@@ -487,32 +530,34 @@ function MedsSubTab({ user }) {
 
   return (
     <div className="pt-4 space-y-4">
-      {/* Log today */}
       <div style={{ ...card, padding: 20 }}>
-        <p style={{ ...sLabel, marginBottom: 14 }}>Log medication taken today</p>
+        <p style={{ ...sLabel, marginBottom: 14 }}>Log medication taken</p>
         <div className="space-y-2 mb-3">
-          <input value={medName} onChange={e => setMedName(e.target.value)} placeholder="Medication name *"
-            style={{ width: "100%", padding: "8px 12px", borderRadius: 12, border: "1px solid var(--border)", backgroundColor: "var(--ivory)", fontSize: 13, fontFamily: "'Inter', sans-serif", color: "var(--plum)", outline: "none", boxSizing: "border-box" }}
+          <input value={itemName} onChange={e => { setItemName(e.target.value); setNameError(false); }} placeholder="Medication name *"
+            style={{ width: "100%", padding: "8px 12px", borderRadius: 12, border: `1px solid ${nameError ? "var(--rose-dust)" : "var(--border)"}`, backgroundColor: "var(--ivory)", fontSize: 13, fontFamily: "'Inter', sans-serif", color: "var(--plum)", outline: "none", boxSizing: "border-box" }}
           />
-          <input value={dose} onChange={e => setDose(e.target.value)} placeholder="Dose (e.g. 500mg)"
+          {nameError && <p style={{ fontSize: 11, color: "var(--rose-dust)", fontFamily: "'Inter', sans-serif" }}>Name is required.</p>}
+          <input value={dose} onChange={e => setDose(e.target.value)} placeholder="Dose (e.g. 500mg, optional)"
             style={{ width: "100%", padding: "8px 12px", borderRadius: 12, border: "1px solid var(--border)", backgroundColor: "var(--ivory)", fontSize: 13, fontFamily: "'Inter', sans-serif", color: "var(--plum)", outline: "none", boxSizing: "border-box" }}
           />
         </div>
-        <button onClick={logMed} disabled={!medName.trim() || saving}
-          style={{ width: "100%", padding: "11px", borderRadius: 12, fontWeight: 600, fontSize: 13, border: "none", cursor: medName.trim() ? "pointer" : "not-allowed", fontFamily: "'Inter', sans-serif", backgroundColor: "var(--plum)", color: "white", display: "flex", alignItems: "center", justifyContent: "center", gap: 6, opacity: !medName.trim() ? 0.5 : 1 }}>
+        <button onClick={logMed} disabled={saving}
+          style={{ width: "100%", padding: "11px", borderRadius: 12, fontWeight: 600, fontSize: 13, border: "none", cursor: "pointer", fontFamily: "'Inter', sans-serif", backgroundColor: "var(--plum)", color: "white", display: "flex", alignItems: "center", justifyContent: "center", gap: 6 }}>
           {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Pill className="w-4 h-4" />}
           {saving ? "Saving…" : "Log Medication"}
         </button>
 
-        {/* Today's logs */}
         {todayLogs.length > 0 && (
           <div className="mt-4 space-y-2">
-            <p style={{ fontSize: 11, fontWeight: 600, color: "var(--mauve)", fontFamily: "'Inter', sans-serif", textTransform: "uppercase", letterSpacing: "0.1em" }}>Taken today</p>
+            <p style={{ fontSize: 11, fontWeight: 600, color: "var(--mauve)", fontFamily: "'Inter', sans-serif", textTransform: "uppercase", letterSpacing: "0.1em" }}>Taken on {selectedDate}</p>
             {todayLogs.map(l => (
               <div key={l.id} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "8px 12px", borderRadius: 12, backgroundColor: "var(--sage-subtle)", border: "1px solid var(--sage-light)" }}>
-                <div>
-                  <p style={{ fontSize: 12, fontWeight: 600, color: "var(--plum)", fontFamily: "'Inter', sans-serif" }}>{l.medication_name}</p>
-                  {l.dose && <p style={{ fontSize: 11, color: "var(--mauve)", fontFamily: "'Inter', sans-serif" }}>{l.dose}</p>}
+                <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                  <Pill style={{ width: 13, height: 13, color: "var(--sage)" }} />
+                  <div>
+                    <p style={{ fontSize: 12, fontWeight: 600, color: "var(--plum)", fontFamily: "'Inter', sans-serif" }}>{l.item_name}</p>
+                    {l.dose && <p style={{ fontSize: 11, color: "var(--mauve)", fontFamily: "'Inter', sans-serif" }}>{l.dose}</p>}
+                  </div>
                 </div>
                 <button onClick={() => remove(l.id)} style={{ background: "none", border: "none", cursor: "pointer", padding: 4 }}>
                   <Trash2 style={{ width: 13, height: 13, color: "var(--mauve)" }} />
@@ -523,11 +568,81 @@ function MedsSubTab({ user }) {
         )}
       </div>
 
-      {/* Reminders */}
+      {/* Active reminders */}
+      {reminders.length > 0 && (
+        <div style={{ ...card, padding: 20 }}>
+          <p style={{ ...sLabel, marginBottom: 12 }}>Active reminders</p>
+          <div className="space-y-2">
+            {reminders.map(rem => {
+              const taken = todayLogs.some(l => l.item_name === rem.medication_name);
+              return (
+                <div key={rem.id} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "10px 12px", borderRadius: 12, backgroundColor: taken ? "var(--sage-subtle)" : "var(--ivory)", border: `1px solid ${taken ? "var(--sage-light)" : "var(--border-subtle)"}` }}>
+                  <div>
+                    <p style={{ fontSize: 12, fontWeight: 600, color: "var(--plum)", fontFamily: "'Inter', sans-serif" }}>{rem.medication_name}</p>
+                    <p style={{ fontSize: 11, color: "var(--mauve)", fontFamily: "'Inter', sans-serif" }}>{rem.reminder_time}{rem.dose ? ` · ${rem.dose}` : ""}</p>
+                  </div>
+                  {taken ? (
+                    <span style={{ fontSize: 11, fontWeight: 600, color: "var(--sage)", fontFamily: "'Inter', sans-serif" }}>✓ Taken</span>
+                  ) : (
+                    <button onClick={() => markReminderTaken(rem)}
+                      style={{ fontSize: 11, fontWeight: 600, color: "var(--plum)", backgroundColor: "var(--ivory-dark)", border: "1px solid var(--border)", borderRadius: 9999, padding: "4px 10px", cursor: "pointer", fontFamily: "'Inter', sans-serif" }}>
+                      Mark taken
+                    </button>
+                  )}
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      )}
+
       <div style={{ ...card, padding: 20 }}>
-        <p style={{ ...sLabel, marginBottom: 4 }}>Reminders</p>
+        <p style={{ ...sLabel, marginBottom: 4 }}>Email reminders</p>
         <MedReminderSection user={user} />
       </div>
+    </div>
+  );
+}
+
+// ── Sessions sub-tab ──────────────────────────────────────────────────────────
+function SessionsSubTab({ user, selectedDate }) {
+  const [sessions, setSessions] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    base44.entities.ContentHistory.filter({ user_id: user.id, session_date: selectedDate, is_deleted: false })
+      .then(s => { setSessions(s); setLoading(false); })
+      .catch(() => setLoading(false));
+  }, [user, selectedDate]);
+
+  if (loading) return <div className="pt-8 flex justify-center"><Loader2 className="w-5 h-5 animate-spin" style={{ color: "var(--mauve)" }} /></div>;
+
+  return (
+    <div className="pt-4 space-y-3">
+      <p style={{ ...sLabel }}>Sessions on {selectedDate}</p>
+      {sessions.length === 0 ? (
+        <div style={{ ...card, padding: 32, textAlign: "center" }}>
+          <PlayCircle style={{ width: 28, height: 28, color: "var(--mauve)", margin: "0 auto 10px" }} />
+          <p style={{ fontSize: 13, color: "var(--mauve)", fontFamily: "'Inter', sans-serif" }}>No sessions completed on this day.</p>
+        </div>
+      ) : (
+        sessions.map(s => (
+          <div key={s.id} style={{ ...card, padding: "14px 18px", display: "flex", alignItems: "center", gap: 12 }}>
+            <PlayCircle style={{ width: 20, height: 20, color: "var(--rose-dust)", flexShrink: 0 }} />
+            <div style={{ flex: 1 }}>
+              <p style={{ fontSize: 13, fontWeight: 600, color: "var(--plum)", fontFamily: "'Inter', sans-serif" }}>{s.content_key || s.content_id || "Session"}</p>
+              {s.completed_at && (
+                <p style={{ fontSize: 11, color: "var(--mauve)", fontFamily: "'Inter', sans-serif" }}>
+                  {format(parseISO(s.completed_at), "HH:mm")}
+                  {s.duration_seconds ? ` · ${Math.round(s.duration_seconds / 60)} min` : ""}
+                </p>
+              )}
+            </div>
+            {s.helped === true && <ThumbsUp style={{ width: 14, height: 14, color: "var(--sage)" }} />}
+            {s.helped === false && <ThumbsDown style={{ width: 14, height: 14, color: "var(--rose-dust)" }} />}
+          </div>
+        ))
+      )}
     </div>
   );
 }
@@ -535,6 +650,7 @@ function MedsSubTab({ user }) {
 // ── Main TrackTab ─────────────────────────────────────────────────────────────
 export default function TrackTab({ user, profile }) {
   const [subTab, setSubTab] = useState("calendar");
+  const [selectedDate, setSelectedDate] = useState(todayStr);
 
   return (
     <div>
@@ -543,20 +659,8 @@ export default function TrackTab({ user, profile }) {
         <style>{`.track-subtabs::-webkit-scrollbar{display:none}`}</style>
         <div className="track-subtabs flex gap-1.5 overflow-x-auto pb-1" style={{ scrollbarWidth: "none" }}>
           {SUBTABS.map(({ key, label, Icon }) => (
-            <button
-              key={key}
-              onClick={() => setSubTab(key)}
-              style={{
-                flexShrink: 0, display: "flex", alignItems: "center", gap: 5,
-                padding: "7px 14px", borderRadius: 9999, fontSize: 12, fontWeight: 600,
-                border: "none", cursor: "pointer", fontFamily: "'Inter', sans-serif",
-                backgroundColor: subTab === key ? "var(--plum)" : "var(--surface)",
-                color: subTab === key ? "white" : "var(--mauve)",
-                boxShadow: subTab === key ? "none" : "var(--shadow-sm)",
-                borderWidth: 1, borderStyle: "solid",
-                borderColor: subTab === key ? "transparent" : "var(--border)",
-              }}
-            >
+            <button key={key} onClick={() => setSubTab(key)}
+              style={{ flexShrink: 0, display: "flex", alignItems: "center", gap: 5, padding: "7px 14px", borderRadius: 9999, fontSize: 12, fontWeight: 600, cursor: "pointer", fontFamily: "'Inter', sans-serif", backgroundColor: subTab === key ? "var(--plum)" : "var(--surface)", color: subTab === key ? "white" : "var(--mauve)", boxShadow: subTab === key ? "none" : "var(--shadow-sm)", border: `1px solid ${subTab === key ? "transparent" : "var(--border)"}` }}>
               <Icon style={{ width: 13, height: 13 }} />
               {label}
             </button>
@@ -564,11 +668,22 @@ export default function TrackTab({ user, profile }) {
         </div>
       </div>
 
-      {subTab === "calendar" && <CalendarSubTab user={user} profile={profile} />}
-      {subTab === "cycle"    && <CycleSubTab user={user} profile={profile} />}
-      {subTab === "symptoms" && <SymptomsSubTab user={user} />}
-      {subTab === "habits"   && <HabitsSubTab user={user} />}
-      {subTab === "meds"     && <MedsSubTab user={user} />}
+      {/* Date selector (shown on all non-calendar tabs) */}
+      {subTab !== "calendar" && (
+        <div style={{ marginTop: 12, marginBottom: 2, display: "flex", alignItems: "center", gap: 8 }}>
+          <p style={{ fontSize: 11, color: "var(--mauve)", fontFamily: "'Inter', sans-serif" }}>Date:</p>
+          <input type="date" value={selectedDate} max={todayStr} onChange={e => setSelectedDate(e.target.value)}
+            style={{ fontSize: 12, fontWeight: 600, color: "var(--plum)", fontFamily: "'Inter', sans-serif", border: "1px solid var(--border)", borderRadius: 10, padding: "4px 10px", backgroundColor: "var(--surface)", outline: "none" }}
+          />
+        </div>
+      )}
+
+      {subTab === "calendar"  && <CalendarSubTab user={user} profile={profile} />}
+      {subTab === "cycle"     && <CycleSubTab user={user} profile={profile} selectedDate={selectedDate} />}
+      {subTab === "symptoms"  && <SymptomsSubTab user={user} selectedDate={selectedDate} />}
+      {subTab === "habits"    && <HabitsSubTab user={user} profile={profile} selectedDate={selectedDate} />}
+      {subTab === "meds"      && <MedsSubTab user={user} selectedDate={selectedDate} />}
+      {subTab === "sessions"  && <SessionsSubTab user={user} selectedDate={selectedDate} />}
     </div>
   );
 }
