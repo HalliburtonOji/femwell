@@ -49,7 +49,7 @@ const AuthenticatedApp = () => {
         if (isComplete) {
           sessionStorage.setItem('fw_ob_ok', '1');
         } else {
-          navigate('/Onboarding', { replace: true });
+          navigate('/Onboarding?mode=signup', { replace: true });
         }
       } catch {}
     })();
