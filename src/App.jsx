@@ -54,6 +54,9 @@ const AuthenticatedApp = () => {
           // Mark complete if they have data but flag wasn't set
           if (hasData && !isComplete && profiles[0]) {
             base44.entities.UserProfile.update(profiles[0].id, { onboarding_complete: true }).catch(() => {});
+          } else if (hasData && !profiles[0]) {
+            // Has checkins but no profile — create one marked complete
+            base44.entities.UserProfile.create({ user_id: user.id, onboarding_complete: true }).catch(() => {});
           }
           sessionStorage.setItem('fw_ob_ok', '1');
         } else {

@@ -28,7 +28,8 @@ export default function Deals() {
 
   useEffect(() => {
     (async () => {
-      const deals = await base44.entities.DealsProducts.filter({ is_active: true }, "-created_date", 60);
+      const deals = await base44.entities.Deals.filter({ is_active: true }, "-created_date", 60);
+
       setItems(deals);
       setLoading(false);
     })();

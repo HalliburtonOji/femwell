@@ -114,7 +114,13 @@ export default function ProgramsHub() {
           setCurrentPhase(phase);
           setPhaseRecommendations(
             phasePrograms
-              .filter((program) => program.trigger_phase === "any" || program.trigger_phase?.includes(phase))
+              .filter((program) => {
+              const tp = program.trigger_phase;
+              if (!tp || tp === "any") return true;
+              // treat "luteal/menstrual" as matching both
+              const phases = tp.split("/").map(s => s.trim());
+              return phases.includes(phase);
+            })
               .slice(0, 2)
           );
         }
