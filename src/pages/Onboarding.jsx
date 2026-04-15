@@ -686,18 +686,26 @@ export default function Onboarding() {
 
         {current === "done" && (
           <div className="space-y-6 text-center w-full">
-            <div style={{ width: 64, height: 64, borderRadius: "20px", margin: "0 auto", display: "flex", alignItems: "center", justifyContent: "center", backgroundColor: "var(--rose-dust-subtle)", border: "1px solid var(--rose-dust-light)" }}>
-              <span style={{ fontSize: 28, fontWeight: 700, fontFamily: "'Playfair Display', serif", color: "var(--rose-dust)" }}>F</span>
+            <div style={{ width: 72, height: 72, borderRadius: 9999, margin: "0 auto", backgroundColor: "var(--rose-dust-subtle)", border: "1px solid var(--rose-dust-light)", display: "flex", alignItems: "center", justifyContent: "center" }}>
+              <span style={{ fontSize: 32 }}>🌸</span>
             </div>
             <div>
-              <h2 style={{ fontSize: "24px", fontWeight: 700, fontFamily: "'Playfair Display', serif", color: "var(--plum)", lineHeight: 1.1 }}>You are all set</h2>
-              <p style={{ fontSize: "14px", color: "var(--mauve)", fontFamily: "'Inter', sans-serif", marginTop: 8, lineHeight: 1.6 }}>Your assistant, feed, and recommendations are now tuned to you.</p>
+              <h2 style={{ fontSize: "26px", fontWeight: 700, fontFamily: "'Playfair Display', serif", color: "var(--plum)", lineHeight: 1.1 }}>You're all set</h2>
+              <p style={{ fontSize: "14px", color: "var(--mauve)", fontFamily: "'Inter', sans-serif", marginTop: 8, lineHeight: 1.6 }}>
+                {assistantName || "Guide"} is ready to support you. Your feed, guidance, and daily rhythm are now tuned to you.
+              </p>
             </div>
-            <div style={{ ...card, padding: "16px", textAlign: "left" }}>
-              <p style={{ ...sLabel, marginBottom: 8 }}>Personalisation ready</p>
-              <p style={{ fontSize: 13, color: "var(--plum)", lineHeight: 1.6, fontFamily: "'Inter', sans-serif" }}>You will see smarter lifestyle picks, a more human assistant, and faster recommendations from the moment you enter.</p>
+            <div style={{ ...card, padding: "16px", textAlign: "left", background: "var(--rose-dust-subtle)", borderColor: "var(--rose-dust-light)" }}>
+              <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 8 }}>
+                <span style={{ fontSize: 20 }}>✨</span>
+                <p style={{ fontSize: 13, fontWeight: 700, color: "var(--plum)", fontFamily: "'Inter', sans-serif" }}>Meet {assistantName || "Guide"}</p>
+              </div>
+              <p style={{ fontSize: 13, color: "var(--plum)", lineHeight: 1.6, fontFamily: "'Inter', sans-serif" }}>Your personal wellness guide is waiting on the Today page. Tap the orb any time to ask for help, get phase insights, or just talk.</p>
             </div>
-            <button className="btn-primary w-full" onClick={handleFinish} disabled={saving}>{saving ? "Setting up..." : "Enter FemWell"}</button>
+            <button className="btn-primary w-full" onClick={handleFinish} disabled={saving}
+              style={{ fontSize: 16, padding: "16px" }}>
+              {saving ? "Setting up..." : "Start your journey →"}
+            </button>
             {saveError && <p style={{ fontSize: 13, color: "var(--rose-dust)", fontFamily: "'Inter', sans-serif", marginTop: 8 }}>Something went wrong. Please try again.</p>}
           </div>
         )}
