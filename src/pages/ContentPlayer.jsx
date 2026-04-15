@@ -83,6 +83,7 @@ export default function ContentPlayer() {
   const [userProfile, setUserProfile] = useState(null);
   const [loading, setLoading] = useState(true);
   const [generatingAudio, setGeneratingAudio] = useState(false);
+  const [itemId, setItemId] = useState(null);
 
   useEffect(() => {
     (async () => {
@@ -107,6 +108,7 @@ export default function ContentPlayer() {
       }
 
       setItem(ci);
+      if (ci) setItemId(ci.id);
       if (ci) {
         const bm = bookmarks.find((b) => b.content_id === ci.id);
         const savedItem = saved.find((entry) => entry.item_id === ci.id);
@@ -143,6 +145,13 @@ export default function ContentPlayer() {
     }
     setGeneratingAudio(false);
   }, []);
+
+  // Auto-generate audio for meditation on first load (must be before early returns)
+  useEffect(() => {
+    if (item && item.content_type === "MEDITATION" && !item.audio_file_url && !generatingAudio) {
+      getOrGenerateMeditationAudio(item);
+    }
+  }, [itemId, item?.audio_file_url]);
 
   const toggleBookmark = async () => {
     if (!user || !item) return;

@@ -190,6 +190,7 @@ export default function NutritionTodayTab({ user, profile, nutritionProfile, day
   const [drinkModal, setDrinkModal] = useState(null);
   const [showFoodLookup, setShowFoodLookup] = useState(false);
   const [showCustomDrink, setShowCustomDrink] = useState(false);
+  const [weeklyMealLogs, setWeeklyMealLogs] = useState([]);
   const [customDrinkName, setCustomDrinkName] = useState("");
   const [customDrinkMl, setCustomDrinkMl] = useState(250);
   const [customDrinkCals, setCustomDrinkCals] = useState(0);
@@ -230,6 +231,11 @@ export default function NutritionTodayTab({ user, profile, nutritionProfile, day
     setInsights(ins);
     const drinkData = await base44.entities.DrinkLog.filter({ user_id: user.id, day_key: dayKey }).catch(() => []);
     setDrinkLogs(drinkData);
+    // Load weekly meals for chart (last 7 days)
+    base44.entities.MealLog.filter({ user_id: user.id }, "-day_key", 200).then(all => {
+      const cutoff = format(new Date(Date.now() - 7 * 86400000), "yyyy-MM-dd");
+      setWeeklyMealLogs(all.filter(m => m.day_key >= cutoff));
+    }).catch(() => {});
     setLoading(false);
   };
 
@@ -463,6 +469,9 @@ export default function NutritionTodayTab({ user, profile, nutritionProfile, day
             ))}
           </div>
         </div>
+
+        {/* Weekly calories chart with phase tip */}
+        <WeeklyCaloriesChart allMealLogs={weeklyMealLogs} profile={profile} />
 
         {/* Cycle wellness context */}
         {cycleWellnessTip && (
