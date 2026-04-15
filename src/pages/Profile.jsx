@@ -554,6 +554,36 @@ export default function Profile() {
 
           <div style={divider} />
 
+          {/* Life Stage */}
+          <button onClick={() => setEditLifeStage(v => !v)} style={rowItem}>
+            <div style={iconBox("var(--rose-dust-subtle)")}>
+              <Heart className="w-4 h-4" style={{ color: "var(--rose-dust)" }} />
+            </div>
+            <div className="flex-1">
+              <p style={{ ...bodyText, fontWeight: 600 }}>Life stage</p>
+              <p style={mutedText}>{profile?.life_stage && profile.life_stage !== "none" ? profile.life_stage.charAt(0).toUpperCase() + profile.life_stage.slice(1) : "None"}</p>
+            </div>
+            <ChevronRight className="w-4 h-4" style={{ color: "var(--border)" }} />
+          </button>
+          {editLifeStage && (
+            <div style={{ padding: "10px 16px 14px", backgroundColor: "var(--ivory)", borderBottom: "1px solid var(--border-subtle)", display: "flex", gap: 8 }}>
+              {["none", "pregnancy", "menopause"].map(s => {
+                const active = (profile?.life_stage || "none") === s;
+                return (
+                  <button key={s} onClick={() => updateLifeStage(s)}
+                    style={{ flex: 1, borderRadius: 12, padding: "9px 10px", fontSize: 12, fontWeight: 600, border: "1.5px solid", cursor: "pointer", fontFamily: "'Inter', sans-serif", textTransform: "capitalize",
+                      backgroundColor: active ? "var(--plum)" : "transparent",
+                      borderColor: active ? "var(--plum)" : "var(--border)",
+                      color: active ? "white" : "var(--mauve)" }}>
+                    {s === "none" ? "None" : s.charAt(0).toUpperCase() + s.slice(1)}
+                  </button>
+                );
+              })}
+            </div>
+          )}
+
+          <div style={divider} />
+
           {/* Cycle Settings */}
           <a href={createPageUrl("CycleSettings")} style={rowItem}>
             <div style={iconBox("var(--sage-subtle)")}>

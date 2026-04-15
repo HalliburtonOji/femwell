@@ -558,6 +558,17 @@ export default function Lifestyle() {
     return () => observer.disconnect();
   }, [hasMore, loadingMore, page, tab, loadItems]);
 
+  // Load user profile once for phase-based features
+  useEffect(() => {
+    (async () => {
+      try {
+        const u = await base44.auth.me();
+        const profiles = await base44.entities.UserProfile.filter({ user_id: u.id });
+        if (profiles[0]) setUserProfile(profiles[0]);
+      } catch {}
+    })();
+  }, []);
+
   const handleSave = (id, isSaved) => setSavedIds(prev => { const next = new Set(prev); isSaved ? next.add(id) : next.delete(id); return next; });
 
   return (

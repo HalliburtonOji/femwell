@@ -30,12 +30,22 @@ export default function NotificationBell({ userId }) {
   const [notifications, setNotifications] = useState([]);
   const unreadCount = notifications.filter(n => !n.is_read).length;
 
-  useEffect(() => {
+  const fetchNotifications = () => {
     if (!userId) return;
     base44.entities.NotificationLog.filter({ user_id: userId })
       .then(items => setNotifications(items.sort((a, b) => (b.sent_at || '').localeCompare(a.sent_at || '')).slice(0, 30)))
       .catch(() => {});
-  }, [userId, open]);
+  };
+
+  useEffect(() => {
+    fetchNotifications();
+    const interval = setInterval(fetchNotifications, 30000);
+    return () => clearInterval(interval);
+  }, [userId]);
+
+  useEffect(() => {
+    if (open) fetchNotifications();
+  }, [open]);
 
   const markRead = async (notif) => {
     if (notif.is_read) return;

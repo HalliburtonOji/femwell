@@ -5,7 +5,7 @@ import AssistantOverlay from "./components/assistant/AssistantOverlay";
 import MobileBottomNav from "./components/layout/MobileBottomNav";
 import CheckinModal from "./components/today/CheckinModal";
 import AssistantOrb from "./components/assistant/AssistantOrb";
-import NotificationBellButton from "./components/notifications/NotificationBellButton";
+
 import { MilestoneEventListener } from "./components/programs/MilestoneCelebrationModal";
 
 const HIDE_NAV = ["Onboarding", "ContentPlayer", "CycleSettings"];
@@ -36,11 +36,6 @@ export default function Layout({ children, currentPageName }) {
     };
   }, []);
   const [quickLogUserId, setQuickLogUserId] = useState(null);
-  const [layoutUserId, setLayoutUserId] = useState(null);
-
-  useEffect(() => {
-    base44.auth.me().then(u => { if (u?.id) setLayoutUserId(u.id); }).catch(() => {});
-  }, []);
 
   const openQuickLog = (tabId = "cycle") => {
     setQuickLogTab(tabId);
@@ -53,12 +48,6 @@ export default function Layout({ children, currentPageName }) {
   return (
     <div className="min-h-screen" style={{ backgroundColor: "var(--ivory)" }}>
       <style>{`@media print { .no-print { display: none !important; } .print-only { display: block !important; } }`}</style>
-      {/* Notification bell — top right floating */}
-      {showNav && layoutUserId && (
-        <div className="fixed z-40 no-print" style={{ top: "max(env(safe-area-inset-top), 12px)", right: 16 }}>
-          <NotificationBellButton userId={layoutUserId} />
-        </div>
-      )}
       {showNav && <FloatingSidebar currentPageName={currentPageName} mode={navMode} openQuickLog={openQuickLog} />}
       <div className={showNav ? "pb-24" : ""}>
         {children}
