@@ -429,6 +429,28 @@ export default function BreathworkLoopPlayer({ item, user }) {
         {/* Animation */}
         <AnimComp accent={accent} playing={playing} />
 
+        {/* Breath phase label — shown when playing */}
+        {playing && !done && (
+          <div className="flex flex-col items-center gap-1 -mt-2">
+            <p className="text-sm font-semibold tracking-widest uppercase" style={{ color: `${accent}dd`, transition: "color 0.5s" }}>
+              {breathPhases[breathPhaseIdx].name}
+            </p>
+            <p className="text-3xl font-bold tabular-nums" style={{ color: "white" }}>
+              {breathSecondsLeft}
+            </p>
+            <div className="flex gap-1.5 mt-1">
+              {breathPhases.map((ph, i) => (
+                <div key={i} className="rounded-full transition-all" style={{
+                  width: i === breathPhaseIdx ? 20 : 6,
+                  height: 6,
+                  backgroundColor: i === breathPhaseIdx ? accent : `${accent}44`,
+                  transition: "all 0.3s ease",
+                }} />
+              ))}
+            </div>
+          </div>
+        )}
+
         {/* Coach prompt */}
         <div className="h-5 flex items-center">
           {coachVisible && (

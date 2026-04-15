@@ -8,15 +8,31 @@
     "content": {
       "type": "string"
     },
-    "created_at": {
-      "type": "string"
-    },
     "topic": {
       "type": "string"
     },
     "anonymous": {
       "type": "boolean",
       "default": false
+    },
+    "moderation_status": {
+      "type": "string",
+      "enum": [
+        "pending",
+        "approved",
+        "flagged",
+        "hidden"
+      ],
+      "default": "pending"
+    },
+    "moderation_flag": {
+      "type": "string"
+    },
+    "moderated_at": {
+      "type": "string"
+    },
+    "created_at": {
+      "type": "string"
     },
     "updated_at": {
       "type": "string"

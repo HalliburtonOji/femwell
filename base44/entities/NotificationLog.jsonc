@@ -1,0 +1,55 @@
+{
+  "name": "NotificationLog",
+  "type": "object",
+  "properties": {
+    "user_id": {
+      "type": "string"
+    },
+    "notification_type": {
+      "type": "string",
+      "enum": [
+        "daily_checkin_reminder",
+        "medication_reminder",
+        "program_reminder",
+        "streak_alert",
+        "phase_change",
+        "insight_ready",
+        "panic_followup",
+        "symptom_alert",
+        "hydration_nudge"
+      ]
+    },
+    "title": {
+      "type": "string"
+    },
+    "body": {
+      "type": "string"
+    },
+    "sent_at": {
+      "type": "string"
+    },
+    "opened_at": {
+      "type": "string"
+    },
+    "action_route": {
+      "type": "string"
+    },
+    "is_read": {
+      "type": "boolean",
+      "default": false
+    },
+    "metadata_json": {
+      "type": "string"
+    },
+    "created_at": {
+      "type": "string"
+    },
+    "updated_at": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "user_id",
+    "notification_type"
+  ]
+}
