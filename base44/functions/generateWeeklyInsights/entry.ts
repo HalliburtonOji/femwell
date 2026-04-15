@@ -1,4 +1,5 @@
-import { createClientFromRequest } from 'npm:@base44/sdk@0.8.23';
+/* global Deno */
+import { createClientFromRequest } from 'npm:@base44/sdk@0.8.25';
 
 function getCycleInfo(profile, referenceDate) {
   const cycleLength = profile.cycle_avg_length || 28;
@@ -142,12 +143,25 @@ Write a weekly summary with exactly these sections. Use markdown bold for sectio
 Keep the total response under 280 words. Do not include the "Skin & hair note" section if skin_condition and hair_shedding are both "not logged". Do not use bullet points. Do not use the word "journey". Do not use exclamation marks.`,
       });
 
+      const avgMoodNum = avgValue(currentWeek, 'mood');
+      const avgEnergyNum = avgValue(currentWeek, 'energy');
+      const avgSleepNum = avgValue(currentWeek, 'sleep_hours');
+      const avgStressNum = avgValue(currentWeek, 'stress');
+      const topSymptomsArr = Object.entries(symptomCounts).sort((a, b) => b[1] - a[1]).slice(0, 5).map(([k]) => k);
+
       await base44.asServiceRole.entities.WeeklyInsights.create({
         user_id: userId,
         week_start: weekStart,
         week_end: weekEnd,
         insight_text: ai,
         generated_at: new Date().toISOString(),
+        avg_mood: avgMoodNum != null ? Number(avgMoodNum) : null,
+        avg_energy: avgEnergyNum != null ? Number(avgEnergyNum) : null,
+        avg_sleep: avgSleepNum != null ? Number(avgSleepNum) : null,
+        avg_stress: avgStressNum != null ? Number(avgStressNum) : null,
+        top_symptoms: topSymptomsArr,
+        cycle_phase_this_week: phase,
+        check_in_count: currentWeek.length,
       });
 
       // Monthly summary on first of month

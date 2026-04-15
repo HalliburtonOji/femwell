@@ -8,8 +8,70 @@
     "week_start": {
       "type": "string"
     },
-    "report_json": {
+    "report_data": {
+      "type": "object",
+      "properties": {
+        "avg_hot_flashes": {
+          "type": "number"
+        },
+        "avg_night_sweats": {
+          "type": "number"
+        },
+        "avg_sleep_quality": {
+          "type": "number"
+        },
+        "avg_mood": {
+          "type": "number"
+        },
+        "avg_energy": {
+          "type": "number"
+        },
+        "avg_brain_fog": {
+          "type": "number"
+        },
+        "avg_joint_pain": {
+          "type": "number"
+        },
+        "top_triggers": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "ai_summary": {
+          "type": "string"
+        },
+        "ai_suggestions": {
+          "type": "string"
+        }
+      }
+    },
+    "top_symptoms": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "severity_trend": {
       "type": "string"
+    },
+    "suspected_triggers": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "questions_for_clinician": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "self_care_plan": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
     },
     "created_at": {
       "type": "string"

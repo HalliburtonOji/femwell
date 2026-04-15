@@ -8,7 +8,46 @@
     "day_key": {
       "type": "string"
     },
-    "plan_json": {
+    "plan_items": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "time": {
+            "type": "string"
+          },
+          "activity": {
+            "type": "string"
+          },
+          "type": {
+            "type": "string"
+          },
+          "content_key": {
+            "type": "string"
+          },
+          "duration_minutes": {
+            "type": "number"
+          },
+          "completed": {
+            "type": "boolean",
+            "default": false
+          }
+        }
+      }
+    },
+    "focus_for_today": {
+      "type": "string"
+    },
+    "session_recommendation": {
+      "type": "string"
+    },
+    "nutrition_nudge": {
+      "type": "string"
+    },
+    "mental_tool": {
+      "type": "string"
+    },
+    "lifestyle_suggestion": {
       "type": "string"
     },
     "created_at": {

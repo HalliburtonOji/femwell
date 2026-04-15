@@ -1,4 +1,5 @@
-import { createClientFromRequest } from 'npm:@base44/sdk@0.8.23';
+/* global Deno */
+import { createClientFromRequest } from 'npm:@base44/sdk@0.8.25';
 
 Deno.serve(async (req) => {
   try {
@@ -56,7 +57,11 @@ Deno.serve(async (req) => {
     const saved = await base44.asServiceRole.entities.DailyPlan.create({
       user_id: user.id,
       day_key: dayKey,
-      plan_json: JSON.stringify(planJson),
+      focus_for_today: planJson.focus_for_today || '',
+      session_recommendation: planJson.one_session || '',
+      nutrition_nudge: planJson.one_nutrition_nudge || '',
+      mental_tool: planJson.one_mental_tool_prompt || '',
+      lifestyle_suggestion: planJson.one_lifestyle_card || '',
       created_at: new Date().toISOString(),
     });
 

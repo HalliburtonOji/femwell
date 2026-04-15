@@ -14,8 +14,25 @@
     "ended_at": {
       "type": "string"
     },
-    "contractions_json": {
-      "type": "string"
+    "contractions": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "started_at": {
+            "type": "string"
+          },
+          "ended_at": {
+            "type": "string"
+          },
+          "duration_seconds": {
+            "type": "number"
+          },
+          "intensity": {
+            "type": "number"
+          }
+        }
+      }
     },
     "notes": {
       "type": "string"

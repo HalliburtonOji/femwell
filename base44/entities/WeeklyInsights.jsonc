@@ -23,6 +23,47 @@
     "ai_suggestion": {
       "type": "string"
     },
+    "avg_mood": {
+      "type": "number"
+    },
+    "avg_energy": {
+      "type": "number"
+    },
+    "avg_sleep": {
+      "type": "number"
+    },
+    "avg_stress": {
+      "type": "number"
+    },
+    "top_symptoms": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "cycle_phase_this_week": {
+      "type": "string"
+    },
+    "check_in_count": {
+      "type": "number"
+    },
+    "structured_summary": {
+      "type": "object",
+      "properties": {
+        "how_your_week_looked": {
+          "type": "string"
+        },
+        "body_signals": {
+          "type": "string"
+        },
+        "your_pattern": {
+          "type": "string"
+        },
+        "week_ahead": {
+          "type": "string"
+        }
+      }
+    },
     "created_at": {
       "type": "string"
     },

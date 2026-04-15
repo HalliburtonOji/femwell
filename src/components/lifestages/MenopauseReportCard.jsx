@@ -49,7 +49,10 @@ export default function MenopauseReportCard({ user }) {
     setTimeout(() => setCopied(false), 2000);
   };
 
-  const parsedReport = report?.report_json
+  // Support new report_data field and legacy report_json
+  const parsedReport = report?.report_data
+    ? report.report_data
+    : report?.report_json
     ? (typeof report.report_json === "string" ? JSON.parse(report.report_json) : report.report_json)
     : null;
 

@@ -43,7 +43,12 @@ export default function ContractionTimerSection({ user }) {
       user_id: user.id, day_key: todayStr,
       started_at: contractions[0].start,
       ended_at: contractions[contractions.length - 1].end,
-      contractions_json: JSON.stringify(contractions),
+      contractions: contractions.map(c => ({
+        started_at: c.start,
+        ended_at: c.end,
+        duration_seconds: c.duration_seconds,
+        intensity: 0,
+      })),
     }).catch(() => {});
     toast.success("Contraction session saved");
     setContractions([]);

@@ -27,6 +27,20 @@
     "explanation_text": {
       "type": "string"
     },
+    "computed_at": {
+      "type": "string"
+    },
+    "confidence": {
+      "type": "string",
+      "enum": [
+        "low",
+        "medium",
+        "high"
+      ]
+    },
+    "sample_size": {
+      "type": "number"
+    },
     "created_at": {
       "type": "string"
     },

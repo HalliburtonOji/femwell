@@ -1,4 +1,5 @@
-import { createClientFromRequest } from 'npm:@base44/sdk@0.8.23';
+/* global Deno */
+import { createClientFromRequest } from 'npm:@base44/sdk@0.8.25';
 import OpenAI from 'npm:openai';
 
 const openai = new OpenAI({ apiKey: Deno.env.get('OPENAI_API_KEY') });
@@ -54,14 +55,19 @@ Deno.serve(async (req) => {
       max_tokens: 500,
     });
 
-    const report_json = JSON.parse(response.choices[0].message.content);
+    const parsed = JSON.parse(response.choices[0].message.content);
 
     const existing = await base44.asServiceRole.entities.MenopauseWeeklyReport.filter({ user_id: user.id, week_start }).catch(() => []);
     for (const e of existing) await base44.asServiceRole.entities.MenopauseWeeklyReport.delete(e.id).catch(() => {});
 
     const saved = await base44.asServiceRole.entities.MenopauseWeeklyReport.create({
       user_id: user.id, week_start,
-      report_json: JSON.stringify(report_json),
+      top_symptoms: parsed.top_symptoms || [],
+      severity_trend: parsed.severity_trend || '',
+      suspected_triggers: parsed.suspected_triggers || [],
+      questions_for_clinician: parsed.questions_for_clinician || [],
+      self_care_plan: parsed.self_care_plan || [],
+      report_data: parsed,
       created_at: new Date().toISOString(),
     });
 

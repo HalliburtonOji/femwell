@@ -8,8 +8,34 @@
     "title": {
       "type": "string"
     },
-    "items_json": {
-      "type": "string"
+    "items": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "quantity_text": {
+            "type": "string"
+          },
+          "calories": {
+            "type": "number"
+          },
+          "protein_g": {
+            "type": "number"
+          },
+          "carbs_g": {
+            "type": "number"
+          },
+          "fat_g": {
+            "type": "number"
+          },
+          "meal_type": {
+            "type": "string"
+          }
+        }
+      }
     },
     "default_meal_type": {
       "type": "string",

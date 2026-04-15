@@ -29,7 +29,16 @@ export default function DailyPlanCard({ user }) {
 
   if (loading) return null;
 
-  const p = plan?.plan_json
+  // Support both new flat fields and legacy plan_json
+  const p = plan?.focus_for_today
+    ? {
+        focus_for_today: plan.focus_for_today,
+        session_recommendation: plan.session_recommendation,
+        nutrition_nudge: plan.nutrition_nudge,
+        mental_tool: plan.mental_tool,
+        lifestyle_suggestion: plan.lifestyle_suggestion,
+      }
+    : plan?.plan_json
     ? (typeof plan.plan_json === "string" ? JSON.parse(plan.plan_json) : plan.plan_json)
     : null;
 
