@@ -3,7 +3,8 @@ import { base44 } from "@/api/base44Client";
 import { createPageUrl } from "@/utils";
 import {
   LogOut, ChevronRight, Bell, Moon, Heart, Shield, Settings,
-  Activity, Bookmark, Ticket, CalendarDays, Feather, Calendar, MapPin, Sparkles, Camera, Trash2
+  Activity, Bookmark, Ticket, CalendarDays, Feather, Calendar, MapPin, Sparkles, Camera, Trash2,
+  Stethoscope, Users
 } from "lucide-react";
 
 function getCyclePhase(lastPeriodDate, cycleLen = 28, periodLen = 5) {
@@ -629,6 +630,32 @@ export default function Profile() {
             </div>
           </a>
         </div>
+
+        {/* Doctor Export */}
+        <a href={createPageUrl("DoctorExport")}
+           style={{ ...card, padding: "16px", marginBottom: "16px", display: "flex", alignItems: "center", gap: "12px", textDecoration: "none" }}>
+          <div style={iconBox("var(--sage-subtle)")}>
+            <Stethoscope className="w-4 h-4" style={{ color: "var(--sage)" }} />
+          </div>
+          <div className="flex-1">
+            <p style={{ ...bodyText, fontWeight: 600 }}>Share with doctor</p>
+            <p style={mutedText}>90-day health summary to screenshot or copy</p>
+          </div>
+          <ChevronRight className="w-4 h-4" style={{ color: "var(--border)" }} />
+        </a>
+
+        {/* Partner Mode */}
+        <a href={createPageUrl("PartnerSettings")}
+           style={{ ...card, padding: "16px", marginBottom: "16px", display: "flex", alignItems: "center", gap: "12px", textDecoration: "none" }}>
+          <div style={iconBox("var(--rose-dust-subtle)")}>
+            <Users className="w-4 h-4" style={{ color: "var(--rose-dust)" }} />
+          </div>
+          <div className="flex-1">
+            <p style={{ ...bodyText, fontWeight: 600 }}>Partner access</p>
+            <p style={mutedText}>Share a gentle read-only view with someone you trust</p>
+          </div>
+          <ChevronRight className="w-4 h-4" style={{ color: "var(--border)" }} />
+        </a>
 
         {/* Redo Onboarding */}
         <a href="/Onboarding?mode=redo"

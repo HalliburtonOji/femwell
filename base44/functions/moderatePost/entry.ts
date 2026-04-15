@@ -6,7 +6,11 @@ Deno.serve(async (req) => {
     const base44 = createClientFromRequest(req);
     // This function is called by entity automation — use service role
     const body = await req.json();
-    const { post_id, content } = body;
+
+    // Support entity automation payload (event.entity_id + data.content)
+    // and also direct invocation (post_id + content)
+    const post_id = body.post_id || body.event?.entity_id || body.data?.id;
+    const content = body.content || body.data?.content;
 
     if (!post_id || !content) {
       return Response.json({ error: 'post_id and content required' }, { status: 400 });

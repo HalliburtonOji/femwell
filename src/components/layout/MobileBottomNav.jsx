@@ -1,8 +1,15 @@
+import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { Sun, BookOpen, Utensils, User, Menu } from "lucide-react";
 import { createPageUrl } from "@/utils";
+import { base44 } from "@/api/base44Client";
+import NotificationBell from "@/components/notifications/NotificationBell";
 
 export default function MobileBottomNav({ currentPageName }) {
+  const [userId, setUserId] = useState(null);
+  useEffect(() => {
+    base44.auth.me().then(u => { if (u?.id) setUserId(u.id); }).catch(() => {});
+  }, []);
   const TABS = [
     { label: "Today",     page: "Today",     IconComp: Sun      },
     { label: "Lifestyle", page: "Lifestyle", IconComp: BookOpen },
@@ -22,7 +29,8 @@ export default function MobileBottomNav({ currentPageName }) {
         paddingBottom: "env(safe-area-inset-bottom)",
       }}
     >
-      <div style={{ display: "flex", justifyContent: "space-around", padding: "8px 0 6px" }}>
+      <div style={{ display: "flex", justifyContent: "space-around", alignItems: "center", padding: "8px 0 6px" }}>
+        {userId && <div style={{ paddingBottom: 2 }}><NotificationBell userId={userId} /></div>}
         {TABS.map(({ label, page, IconComp, isMenu }) => {
           if (isMenu) {
             return (
