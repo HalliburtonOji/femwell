@@ -13,6 +13,8 @@ import { saveItem, removeSavedItem } from "@/lib/savedItems";
 import GuidedPlayer from "../components/content/GuidedPlayer";
 import AudioPlayer from "../components/content/AudioPlayer";
 import BreathworkLoopPlayer from "../components/content/BreathworkLoopPlayer";
+import WorkoutPlayer from "../components/content/WorkoutPlayer";
+import GuideReadingPlayer from "../components/content/GuideReadingPlayer";
 import ManualCompleteButton from "../components/sessions/ManualCompleteButton";
 
 const TIER_ORDER = { free: 0, plus: 1, pro: 2 };
@@ -149,7 +151,9 @@ export default function ContentPlayer() {
   );
 
   const locked = (TIER_ORDER[item.access_tier || 'free'] || 0) > (TIER_ORDER[userPlan] || 0);
-  const isBreathwork = item.content_type === "BREATHWORK" || item.content_type === "MEDITATION";
+  const isBreathwork = item.content_type === "BREATHWORK";
+  const isWorkout = item.content_type === "WORKOUT" || item.content_type === "MOBILITY";
+  const isGuideType = item.content_type === "GUIDE";
   const isGuided = item.play_mode === "GUIDED";
   const embedUrl = item.embed_url || null;
 
@@ -230,6 +234,10 @@ export default function ContentPlayer() {
           </div>
         ) : isBreathwork ? (
           <BreathworkLoopPlayer item={item} user={user} />
+        ) : isWorkout ? (
+          <WorkoutPlayer item={item} user={user} />
+        ) : isGuideType ? (
+          <GuideReadingPlayer item={item} user={user} />
         ) : isGuided ? (
           <GuidedPlayer item={item} />
         ) : item.audio_file_url ? (

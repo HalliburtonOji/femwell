@@ -126,6 +126,8 @@ export default function ProgramsHub() {
       setTasks(programTasks);
       if (ents[0]) setUserPlan(ents[0].plan || "free");
       setLoading(false);
+      // Generate fresh program recommendations in background
+      base44.functions.invoke("generateProgramRecommendations", {}).catch(() => {});
     })();
   }, []);
 
@@ -237,21 +239,6 @@ export default function ProgramsHub() {
 
       <div className="mx-auto max-w-6xl space-y-10 px-4 pt-8 md:px-6">
 
-        {/* ── Empty state for new users ────────────────────────────────────── */}
-        {activeProgramItems.length === 0 && !loading && (
-          <section>
-            <div style={{ backgroundColor: "var(--surface)", border: "1px solid var(--border)", borderRadius: 24, padding: "36px 24px", textAlign: "center", boxShadow: "var(--shadow-sm)" }}>
-              <div style={{ fontSize: 48, marginBottom: 14 }}>🌱</div>
-              <h3 style={{ fontFamily: "'Playfair Display', serif", fontSize: 20, fontWeight: 700, color: "var(--plum)", marginBottom: 8 }}>Start your first program</h3>
-              <p style={{ fontSize: 14, color: "var(--mauve)", fontFamily: "'Inter', sans-serif", lineHeight: 1.6, marginBottom: 20 }}>5-day guided programs for sleep, stress, cycle support and more</p>
-              <button onClick={() => document.getElementById('fw-browse-section')?.scrollIntoView({ behavior: 'smooth' })}
-                style={{ backgroundColor: "var(--plum)", color: "white", borderRadius: 9999, padding: "12px 28px", fontSize: 14, fontWeight: 600, fontFamily: "'Inter', sans-serif", border: "none", cursor: "pointer" }}>
-                Browse programs
-              </button>
-            </div>
-          </section>
-        )}
-
         {/* ── Continue ──────────────────────────────────────────────────────── */}
         {continueItem && (
           <section>
@@ -349,7 +336,7 @@ export default function ProgramsHub() {
         )}
 
         {/* ── Browse all ────────────────────────────────────────────────────── */}
-        <section id="fw-browse-section">
+        <section>
           <SectionLabel>Browse all journeys</SectionLabel>
           {visiblePrograms.length === 0 ? (
             <div className="rounded-[24px] p-12 text-center" style={card}>
@@ -610,14 +597,7 @@ function ProgramCard({ program, userProgram, locked, thumb, meta, progress }) {
           <div>
             <div className="flex justify-between text-[10px] mb-1.5" style={{ color: "var(--mauve)", fontFamily: "'Inter', sans-serif" }}>
               <span>Day {userProgram.current_day} / {totalDays}</span>
-              <div className="flex items-center gap-1.5">
-                {(userProgram.streak_count || 0) > 0 && (
-                  <span style={{ fontSize: 10, fontWeight: 600, color: "var(--rose-dust)", display: "inline-flex", alignItems: "center", gap: 2 }}>
-                    🔥 {userProgram.streak_count}d
-                  </span>
-                )}
-                <span>{Math.round(progress)}%</span>
-              </div>
+              <span>{Math.round(progress)}%</span>
             </div>
             <ProgramProgressBar value={progress} />
           </div>
