@@ -3,7 +3,7 @@ import { useLocation } from "react-router-dom";
 import { base44 } from "@/api/base44Client";
 import { PageLoader } from "../components/common/LoadingSpinner";
 import { createPageUrl } from "@/utils";
-import { AlertCircle, ChevronRight, Utensils, Feather } from "lucide-react";
+import { AlertCircle, ChevronRight, Utensils, Feather, Brain, Salad, Zap } from "lucide-react";
 import PanicModeModal from "../components/today/PanicModeModal";
 import DailyPromptCard from "../components/today/DailyPromptCard";
 import SmartContextBanner from "../components/common/SmartContextBanner";
@@ -20,7 +20,7 @@ import RecommendedForYouSection from "../components/today/RecommendedForYouSecti
 import QuickMealLog from "../components/today/QuickMealLog";
 import ActiveProgramCard from "../components/today/ActiveProgramCard";
 import QuickAccessGrid from "../components/today/QuickAccessGrid";
-import { format, differenceInDays, parseISO } from "date-fns";
+import { differenceInDays, parseISO } from "date-fns";
 
 // ── Cycle phase helper ──────────────────────────────────────────────────────
 const PHASE_INFO = {
@@ -28,6 +28,13 @@ const PHASE_INFO = {
   follicular: { label: "Follicular Phase", color: "var(--sage)",       tip: "Energy rising — great time to start new things." },
   ovulatory:  { label: "Ovulatory Phase",  color: "#C4954A",           tip: "Peak energy and confidence. Shine today!" },
   luteal:     { label: "Luteal Phase",     color: "var(--mauve)",      tip: "Wind down, reflect, and nourish yourself." },
+};
+
+const PHASE_GRADIENTS = {
+  menstrual:  "linear-gradient(135deg, #FFF0F0 0%, #FFE4E4 100%)",
+  follicular: "linear-gradient(135deg, #FFFBEB 0%, #FEF3C7 100%)",
+  ovulatory:  "linear-gradient(135deg, #ECFDF5 0%, #D1FAE5 100%)",
+  luteal:     "linear-gradient(135deg, #F5F3FF 0%, #EDE9FE 100%)",
 };
 
 function getCyclePhase(lastPeriodDate, cycleLength, periodLength) {
@@ -48,32 +55,21 @@ function isReminderDue(reminderTime) {
   return current >= reminderTime;
 }
 
-
-
-// ── Shared card style ───────────────────────────────────────────────────────
 const card = {
   backgroundColor: "var(--surface)",
   border: "1px solid var(--border)",
   boxShadow: "var(--shadow-sm)",
-};
-const label = {
-  fontSize: "0.65rem",
-  fontWeight: 600,
-  textTransform: "uppercase",
-  letterSpacing: "0.1em",
-  color: "var(--mauve)",
-  fontFamily: "'Inter', sans-serif",
 };
 
 const fallbackTodayRecommendations = [
   { id: "fallback-breathwork", type: "BREATHWORK", title: "3-Minute Breathing Space", reason: "A short, effective breathwork session to reset your nervous system.", action_route: "/ContentPlayer?id=69ac3d2217940aebdf578c19" },
   { id: "fallback-programme",  type: "PROGRAMME",  title: "PMS Relief Path",           reason: "A gentle, structured programme to support you through hormonal shifts.", action_route: "/ProgramDetail?key=prog_pms_relief_path" },
   { id: "fallback-lifestyle",  type: "LIFESTYLE",  title: "Written for you",            reason: "Stories and insights tailored to your cycle.", action_route: "/Lifestyle?tab=femwell" },
-  { id: "fallback-book",       type: "BOOK",        title: "This week's book",           reason: "Curated wellness reading for your phase.", action_route: "/Lifestyle?tab=books" },
 ];
 
 function extractDisplayName(profile, user) {
   if (profile?.display_name) return profile.display_name;
+  if (user?.full_name) return user.full_name.split(" ")[0];
   if (user?.email) {
     const prefix = user.email.split("@")[0];
     const words = prefix.split(/[0-9_.\-]+/).filter(Boolean);
@@ -82,7 +78,49 @@ function extractDisplayName(profile, user) {
   return null;
 }
 
+const MOOD_EMOJIS = ["😔", "😕", "😐", "🙂", "😄"];
+const ENERGY_EMOJIS = ["🪫", "😴", "⚡", "🔥", "✨"];
+
 const todayStr = new Date().toISOString().split("T")[0];
+
+// ── Hydration ring ──────────────────────────────────────────────────────────
+function HydrationRing({ glasses, target, onAdd, onRemove }) {
+  const pct = Math.min(glasses / target, 1);
+  const r = 36;
+  const circumference = 2 * Math.PI * r;
+  const offset = circumference * (1 - pct);
+  return (
+    <div style={{ backgroundColor: "var(--surface)", border: "1px solid var(--border)", borderRadius: 20, padding: 20, boxShadow: "var(--shadow-sm)" }}>
+      <p style={{ fontSize: "0.6rem", fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.12em", color: "var(--mauve)", fontFamily: "'Inter', sans-serif", marginBottom: 12 }}>Hydration</p>
+      <div style={{ display: "flex", alignItems: "center", gap: 20 }}>
+        <div style={{ position: "relative", width: 88, height: 88, flexShrink: 0 }}>
+          <svg width="88" height="88" style={{ transform: "rotate(-90deg)" }}>
+            <circle cx="44" cy="44" r={r} fill="none" stroke="var(--border)" strokeWidth="7" />
+            <circle cx="44" cy="44" r={r} fill="none" stroke="#60B4FA" strokeWidth="7" strokeDasharray={circumference} strokeDashoffset={offset} strokeLinecap="round" style={{ transition: "stroke-dashoffset 0.4s ease" }} />
+          </svg>
+          <div style={{ position: "absolute", inset: 0, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center" }}>
+            <span style={{ fontSize: 18, fontWeight: 700, color: "var(--plum)", fontFamily: "'Inter', sans-serif", lineHeight: 1 }}>{glasses}</span>
+            <span style={{ fontSize: 10, color: "var(--mauve)", fontFamily: "'Inter', sans-serif" }}>/ {target}</span>
+          </div>
+        </div>
+        <div style={{ flex: 1 }}>
+          <p style={{ fontSize: 13, color: "var(--mauve)", fontFamily: "'Inter', sans-serif", marginBottom: 12 }}>{glasses >= target ? "Daily goal reached! 🎉" : `${target - glasses} more glasses to go`}</p>
+          <div style={{ display: "flex", gap: 8 }}>
+            <button onClick={onRemove} disabled={glasses <= 0} style={{ flex: 1, height: 38, borderRadius: 9999, border: "1.5px solid var(--border)", backgroundColor: "var(--ivory)", color: "var(--plum)", fontSize: 18, cursor: "pointer", fontWeight: 700, opacity: glasses <= 0 ? 0.3 : 1 }}>−</button>
+            <button onClick={onAdd} style={{ flex: 1, height: 38, borderRadius: 9999, border: "none", backgroundColor: "#60B4FA", color: "white", fontSize: 18, cursor: "pointer", fontWeight: 700 }}>+</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ── Recommendation card icons ────────────────────────────────────────────────
+const REC_ICONS = {
+  session_recommendation: { icon: Zap, bg: "var(--sage-subtle)", color: "var(--sage)" },
+  nutrition_nudge:        { icon: Salad, bg: "#FEF3C7", color: "#D97706" },
+  mental_tool:            { icon: Brain, bg: "var(--mauve-subtle)", color: "var(--mauve)" },
+};
 
 // ── Main component ──────────────────────────────────────────────────────────
 export default function Today() {
@@ -90,82 +128,70 @@ export default function Today() {
   const [user, setUser] = useState(null);
   const [profile, setProfile] = useState(null);
   const [loading, setLoading] = useState(true);
-
   const [todayCheckin, setTodayCheckin] = useState(null);
   const [homeRecommendations, setHomeRecommendations] = useState([]);
   const [loadingHomeRecommendations, setLoadingHomeRecommendations] = useState(true);
   const [showCheckin, setShowCheckin] = useState(false);
   const [todayCompletions, setTodayCompletions] = useState([]);
-
-  const location = useLocation();
-  const [calendarSelectedDay, setCalendarSelectedDay] = useState(null);
-  const [calendarRefreshKey, setCalendarRefreshKey] = useState(0);
   const [activePrograms, setActivePrograms] = useState([]);
   const [programLibrary, setProgramLibrary] = useState([]);
-  const [quickMealText, setQuickMealText] = useState("");
-  const [quickMealType, setQuickMealType] = useState("lunch");
-  const [quickLogging, setQuickLogging] = useState(false);
   const [panicOpen, setPanicOpen] = useState(false);
+
+  // Hydration
+  const [hydrationLog, setHydrationLog] = useState(null);
+  const [glasses, setGlasses] = useState(0);
+
+  // Quick mood/energy
+  const [mood, setMood] = useState(null);
+  const [energy, setEnergy] = useState(null);
+  const [checkinSaved, setCheckinSaved] = useState(false);
+
+  // Daily plan recs
+  const [dailyPlan, setDailyPlan] = useState(null);
+
+  const location = useLocation();
 
   useEffect(() => {
     (async () => {
-      // ── Batch 1: Critical (max 3 parallel) ──────────────────────────────────
       let u;
       try { u = await base44.auth.me(); setUser(u); } catch { setLoading(false); return; }
 
-      let profiles = [], checkins = [], completions = [];
-      try {
-        [profiles, checkins, completions] = await Promise.all([
-          base44.entities.UserProfile.filter({ user_id: u.id }).catch(() => []),
-          base44.entities.DailyCheckins.filter({ user_id: u.id, date: todayStr }).catch(() => []),
-          base44.entities.ContentHistory.filter({ user_id: u.id, session_date: todayStr, is_deleted: false }).catch(() => []),
-        ]);
-      } catch {}
+      const [profiles, checkins, completions, hydrationLogs, dailyPlans] = await Promise.all([
+        base44.entities.UserProfile.filter({ user_id: u.id }).catch(() => []),
+        base44.entities.DailyCheckins.filter({ user_id: u.id, date: todayStr }).catch(() => []),
+        base44.entities.ContentHistory.filter({ user_id: u.id, session_date: todayStr, is_deleted: false }).catch(() => []),
+        base44.entities.HydrationLog.filter({ user_id: u.id, day_key: todayStr }).catch(() => []),
+        base44.entities.DailyPlan.filter({ user_id: u.id, day_key: todayStr }).catch(() => []),
+      ]);
 
       if (profiles[0]) setProfile(profiles[0]);
-      if (checkins[0]) setTodayCheckin(checkins[0]);
-      setTodayCompletions(completions.filter((c) => !c.is_deleted));
+      const ci = checkins[0] || null;
+      if (ci) {
+        setTodayCheckin(ci);
+        if (ci.mood) setMood(ci.mood - 1);
+        if (ci.energy) setEnergy(ci.energy - 1);
+      }
+      setTodayCompletions(completions.filter(c => !c.is_deleted));
+      const hl = hydrationLogs[0] || null;
+      setHydrationLog(hl);
+      setGlasses(hl?.glasses_count || 0);
+      if (dailyPlans[0]) setDailyPlan(dailyPlans[0]);
+
       setLoading(false);
 
-      // ── Batch 2: Secondary (max 3 parallel, after batch 1) ──────────────────
-      await new Promise(r => setTimeout(r, 400));
-      let userPrograms = [], allPrograms = [];
-      try {
-        [userPrograms, allPrograms] = await Promise.all([
-          base44.entities.UserPrograms.filter({ user_id: u.id }).catch(() => []),
-          base44.entities.Programs.list("-created_date", 50).catch(() => []),
-        ]);
-      } catch {}
-      setActivePrograms(userPrograms.filter((e) => e.is_saved || e.status === "active"));
+      // Secondary: programs
+      const [userPrograms, allPrograms] = await Promise.all([
+        base44.entities.UserPrograms.filter({ user_id: u.id }).catch(() => []),
+        base44.entities.Programs.list("-created_date", 50).catch(() => []),
+      ]);
+      setActivePrograms(userPrograms.filter(e => e.is_saved || e.status === "active"));
       setProgramLibrary(allPrograms);
 
-      // ── Lazy batch: Non-critical, loaded 1.5s after first render ────────────
+      // Lazy: recommendations
       setTimeout(async () => {
-        // Chunk 1: TodayRecommendations + LifestyleItems
         try {
-          const [recs, lifestyleItems] = await Promise.all([
-            base44.entities.TodayRecommendations.filter({ user_id: u.id, date: todayStr }).catch(() => []),
-            base44.entities.LifestyleItems.list("-pub_date", 20).catch(() => []),
-          ]);
-          const latestRead = lifestyleItems
-            .filter((item) => item.status === "PUBLISHED" || item.status === "NEEDS_REVIEW")
-            .sort((a, b) => new Date(b.pub_date || 0) - new Date(a.pub_date || 0))[0];
-          const todayItems = recs.slice(0, 3);
-          const fallbackItems = latestRead
-            ? [{
-                id: latestRead.id, type: "READ", title: latestRead.title,
-                reason: latestRead.summary || "Open the latest read.",
-                action_route: `/LifestyleDetail?id=${latestRead.id}`,
-                source_name: latestRead.source_name,
-              }, { ...fallbackTodayRecommendations[0] }, {
-                ...fallbackTodayRecommendations[1],
-                action_route: "/ProgramsHub?program_key=prog_pms_relief_path",
-              }].slice(0, 3)
-            : [{ ...fallbackTodayRecommendations[0] }, {
-                ...fallbackTodayRecommendations[1],
-                action_route: "/ProgramsHub?program_key=prog_pms_relief_path",
-              }];
-          setHomeRecommendations(todayItems.length > 0 ? todayItems.slice(0, 3) : fallbackItems);
+          const recs = await base44.entities.TodayRecommendations.filter({ user_id: u.id, date: todayStr }).catch(() => []);
+          setHomeRecommendations(recs.length > 0 ? recs.slice(0, 3) : fallbackTodayRecommendations);
         } catch {
           setHomeRecommendations(fallbackTodayRecommendations);
         }
@@ -182,129 +208,87 @@ export default function Today() {
     }
   }, [location.search, location.pathname]);
 
-
-
-  const handleSaveCheckin = async (data) => {
-    const payload = { user_id: user.id, date: todayStr, ...data, updated_at: new Date().toISOString() };
-    let savedCheckin;
+  const saveMoodEnergy = async (newMood, newEnergy) => {
+    if (!user) return;
+    const payload = { user_id: user.id, date: todayStr, mood: (newMood ?? mood ?? 0) + 1, energy: (newEnergy ?? energy ?? 0) + 1 };
     if (todayCheckin) {
       await base44.entities.DailyCheckins.update(todayCheckin.id, payload);
-      savedCheckin = { ...todayCheckin, ...payload };
-      setTodayCheckin(savedCheckin);
+      setTodayCheckin(prev => ({ ...prev, ...payload }));
     } else {
-      savedCheckin = await base44.entities.DailyCheckins.create(payload);
-      setTodayCheckin(savedCheckin);
+      const created = await base44.entities.DailyCheckins.create(payload);
+      setTodayCheckin(created);
     }
+    setCheckinSaved(true);
+    setTimeout(() => setCheckinSaved(false), 2000);
+  };
 
-    // Trigger fresh program recommendations after check-in
-    base44.functions.invoke("generateProgramRecommendations", {}).catch(() => {});
+  const handleMoodSelect = (i) => {
+    setMood(i);
+    if (energy !== null) saveMoodEnergy(i, energy);
+  };
 
-    if (profile?.last_period_start_date && (data.skin_condition || data.hair_shedding || data.scalp_condition || (data.breakout_location || []).length > 0)) {
-      const today = new Date();
-      const lastPeriod = new Date(profile.last_period_start_date);
-      const daysSince = Math.floor((today - lastPeriod) / (1000 * 60 * 60 * 24));
-      const cycleDay = (daysSince % profile.cycle_avg_length) + 1;
-      const periodLength = profile.period_length || 5;
-      const phase = cycleDay <= periodLength ? 'menstrual'
-        : cycleDay <= 13 ? 'follicular'
-        : cycleDay <= 17 ? 'ovulatory'
-        : 'luteal';
+  const handleEnergySelect = (i) => {
+    setEnergy(i);
+    if (mood !== null) saveMoodEnergy(mood, i);
+  };
 
-      const hasBreakout = data.skin_condition === 'Mild breakout' || data.skin_condition === 'Moderate breakout';
-      const hasDry = data.skin_condition === 'Very dry';
-      const skinTipMap = {
-        'menstrual_breakout': 'Hormonal drops trigger inflammation — keep your routine minimal and gentle. Avoid harsh exfoliants this week.',
-        'menstrual_dry': 'Low oestrogen reduces skin moisture. Layer a hydrating serum before your moisturiser.',
-        'follicular_oily': 'Rising oestrogen can increase oil production. A light gel cleanser twice daily helps.',
-        'ovulatory_breakout': 'The testosterone spike around ovulation drives chin and jaw breakouts. Salicylic acid spot treatment works well here.',
-        'luteal_breakout': 'Progesterone increases sebum — hormonal breakouts peak in the luteal phase. Double-cleanse in the evenings.',
-        'luteal_dry': 'Progesterone can cause dehydration. Drink more water and use a heavier moisturiser at night.',
-        'default': 'Tracking your skin across your cycle reveals hormonal patterns. Keep logging to build your personal picture.',
-      };
-
-      const key = hasBreakout ? `${phase}_breakout` : hasDry ? `${phase}_dry` : data.skin_condition === 'Very oily' && phase === 'follicular' ? 'follicular_oily' : 'default';
-      await base44.entities.InsightCards.create({
-        user_id: user.id,
-        source: 'skin_tracker',
-        cycle_phase: phase,
-        insight_date: todayStr,
-        title: `Your skin this ${phase} phase`,
-        insight_text: skinTipMap[key] || skinTipMap.default,
-        recommended_action_route: null,
-      });
+  const handleHydrationAdd = async () => {
+    const next = glasses + 1;
+    setGlasses(next);
+    if (hydrationLog) {
+      await base44.entities.HydrationLog.update(hydrationLog.id, { glasses_count: next });
+      setHydrationLog(prev => ({ ...prev, glasses_count: next }));
+    } else {
+      const created = await base44.entities.HydrationLog.create({ user_id: user.id, day_key: todayStr, glasses_count: next });
+      setHydrationLog(created);
     }
   };
 
-  const MEAL_TYPES = ["breakfast", "lunch", "dinner", "snack"];
-
-  const quickLogMeal = async () => {
-    if (!quickMealText.trim()) return;
-    setQuickLogging(true);
-    // Resolve current cycle phase for meal log context
-    let cyclePhaseAtLog = null;
-    if (profile?.last_period_start_date) {
-      const cycleInfo = getCyclePhase(profile.last_period_start_date, profile.cycle_avg_length || 28, profile.period_length || 5);
-      cyclePhaseAtLog = cycleInfo?.phase || null;
+  const handleHydrationRemove = async () => {
+    if (glasses <= 0) return;
+    const next = glasses - 1;
+    setGlasses(next);
+    if (hydrationLog) {
+      await base44.entities.HydrationLog.update(hydrationLog.id, { glasses_count: next });
+      setHydrationLog(prev => ({ ...prev, glasses_count: next }));
     }
-    const log = await base44.entities.MealLog.create({
-      user_id: user.id, day_key: todayStr,
-      logged_at: new Date().toISOString(),
-      meal_type: quickMealType, method: "text",
-      raw_text: quickMealText.trim(), portion_size: "medium",
-      ...(cyclePhaseAtLog ? { cycle_phase_at_log: cyclePhaseAtLog } : {}),
-    });
-    setQuickMealText("");
-    base44.functions.invoke("analyzeMeal", { raw_text: log.raw_text, wellness_goal: "general wellness", cycle_phase: cyclePhaseAtLog })
-      .then(res => { if (res?.data) base44.entities.MealLog.update(log.id, { ai_analysis: JSON.stringify(res.data) }).catch(() => {}); })
-      .catch(() => {});
-    setQuickLogging(false);
+  };
+
+  const handleSaveCheckin = async (data) => {
+    const payload = { user_id: user.id, date: todayStr, ...data, updated_at: new Date().toISOString() };
+    if (todayCheckin) {
+      await base44.entities.DailyCheckins.update(todayCheckin.id, payload);
+      setTodayCheckin(prev => ({ ...prev, ...payload }));
+    } else {
+      const saved = await base44.entities.DailyCheckins.create(payload);
+      setTodayCheckin(saved);
+    }
+    base44.functions.invoke("generateProgramRecommendations", {}).catch(() => {});
+  };
+
+  const handleRecommendationTap = (item) => {
+    if (!item?.action_route) return;
+    if (item.action_route.includes("ProgramsHub") || item.action_route.includes("ProgramDetail")) {
+      const key = item.action_route.split("program_key=")[1] || item.action_route.split("key=")[1];
+      if (key) { window.location.href = createPageUrl(`ProgramsHub?program_key=${key}`); return; }
+    }
+    if (item.action_route.startsWith("/ContentPlayer?id=")) {
+      window.location.href = createPageUrl(`ContentPlayer?id=${item.action_route.split("?id=")[1]}`);
+      return;
+    }
+    window.location.href = item.action_route.startsWith("/") ? item.action_route : createPageUrl(item.action_route);
   };
 
   const cycleInfo = profile?.last_period_start_date
     ? getCyclePhase(profile.last_period_start_date, profile.cycle_avg_length || 28, profile.period_length || 5)
     : null;
+
   const hasSkinLog = !!(todayCheckin?.skin_condition || todayCheckin?.hair_shedding);
 
-  const activeProgramEntry = [...activePrograms].sort((a, b) => {
-    if ((b.last_activity_date || "") !== (a.last_activity_date || "")) {
-      return (b.last_activity_date || "").localeCompare(a.last_activity_date || "");
-    }
-    return (b.current_day || 1) - (a.current_day || 1);
-  })[0];
-  const activeProgram = activeProgramEntry ? programLibrary.find((p) => p.id === activeProgramEntry.program_id) : null;
-  const showProgramReminder = activeProgramEntry?.reminder_time && isReminderDue(activeProgramEntry.reminder_time);
+  const activeProgramEntry = [...activePrograms].sort((a, b) => (b.last_activity_date || "").localeCompare(a.last_activity_date || ""))[0];
+  const activeProgram = activeProgramEntry ? programLibrary.find(p => p.id === activeProgramEntry.program_id) : null;
 
-  const handleRecommendationTap = (item) => {
-    try {
-      if (!item?.action_route && item?.type === "READ" && item?.id) {
-        window.location.href = createPageUrl("Lifestyle");
-        return;
-      }
-      if (!item?.action_route) return;
-      if (item.action_route.includes('ProgramsHub') && item.action_route.includes('program_key=')) {
-        const programKey = item.action_route.split('program_key=')[1];
-        window.location.href = createPageUrl(`ProgramsHub?program_key=${programKey}`);
-        return;
-      }
-      if (item.action_route.includes('ProgramDetail') && item.action_route.includes('key=')) {
-        const programKey = item.action_route.split('key=')[1];
-        window.location.href = createPageUrl(`ProgramsHub?program_key=${programKey}`);
-        return;
-      }
-      if (item.action_route.startsWith('/ContentPlayer?id=')) {
-        const id = item.action_route.split('/ContentPlayer?id=')[1];
-        window.location.href = createPageUrl(`ContentPlayer?id=${id}`);
-        return;
-      }
-      if (item.type === "READ" || item.action_route.startsWith('/LifestyleDetail?id=')) {
-        window.location.href = createPageUrl("Lifestyle");
-        return;
-      }
-      window.location.href = item.action_route.startsWith('/') ? item.action_route : createPageUrl(item.action_route);
-    } catch {
-      // do nothing
-    }
-  };
+  const hydrationTarget = profile?.hydration_target_ml ? Math.round(profile.hydration_target_ml / 250) : 8;
 
   if (loading) return <PageLoader />;
 
@@ -315,24 +299,13 @@ export default function Today() {
         <CheckinModal existing={todayCheckin} onClose={() => setShowCheckin(false)} onSave={handleSaveCheckin} userId={user?.id} dateStr={todayStr} />
       )}
 
-      {/* ── STICKY TAB HEADER ──────────────────────────────────────────────── */}
-      <div
-        className="sticky top-0 z-30 px-4 pt-10 pb-3"
-        style={{ backgroundColor: "rgba(250,248,245,0.97)", backdropFilter: "blur(20px)", borderBottom: "1px solid var(--border)" }}
-      >
+      {/* ── STICKY TAB HEADER */}
+      <div className="sticky top-0 z-30 px-4 pt-10 pb-3" style={{ backgroundColor: "rgba(250,248,245,0.97)", backdropFilter: "blur(20px)", borderBottom: "1px solid var(--border)" }}>
         <div className="max-w-3xl mx-auto">
           <div className="flex gap-1 p-1 rounded-2xl" style={{ backgroundColor: "var(--ivory-dark)" }}>
             {[["today", "Today"], ["track", "Track"]].map(([key, display]) => (
-              <button
-                key={key}
-                onClick={() => setMainTab(key)}
-                className="flex-1 py-2.5 rounded-xl text-sm font-semibold transition-all"
-                style={{
-                  backgroundColor: mainTab === key ? "var(--plum)" : "transparent",
-                  color: mainTab === key ? "white" : "var(--mauve)",
-                  fontFamily: "'Inter', sans-serif",
-                }}
-              >
+              <button key={key} onClick={() => setMainTab(key)} className="flex-1 py-2.5 rounded-xl text-sm font-semibold transition-all"
+                style={{ backgroundColor: mainTab === key ? "var(--plum)" : "transparent", color: mainTab === key ? "white" : "var(--mauve)", fontFamily: "'Inter', sans-serif" }}>
                 {display}
               </button>
             ))}
@@ -342,47 +315,90 @@ export default function Today() {
 
       <div className="max-w-3xl mx-auto px-4">
 
-        {/* ── HERO ─────────────────────────────────────────────────────────── */}
+        {/* ── TODAY TAB */}
         {mainTab === "today" && (
-          <div className="pt-6">
+          <div className="pt-6 space-y-4">
+            {/* Hero */}
             {profile?.life_stage === "ttc" ? (
               <TodayFertilityBanner user={user} profile={profile} />
             ) : (
-              <TodayHeroSection
-                user={user}
-                profile={profile}
-                cycleInfo={cycleInfo}
-                todayCheckin={todayCheckin}
-                onOpenCheckin={() => setShowCheckin(true)}
-                onOpenCalendar={() => setMainTab("track")}
-                extractDisplayName={extractDisplayName}
-              />
+              <TodayHeroSection user={user} profile={profile} cycleInfo={cycleInfo} todayCheckin={todayCheckin}
+                onOpenCheckin={() => setShowCheckin(true)} onOpenCalendar={() => setMainTab("track")} extractDisplayName={extractDisplayName} />
             )}
             {profile && <DailyPhaseBrief profile={profile} />}
-          </div>
-        )}
 
-        {mainTab === "today" && (
-          <>
-            {/* Panic mode pill */}
-            <div className="flex items-center justify-end pt-2 pb-1">
-              <button
-                onClick={() => setPanicOpen(true)}
-                style={{ display: "flex", alignItems: "center", gap: 6, padding: "5px 14px", borderRadius: 9999, border: "1px solid var(--rose-dust-light)", backgroundColor: "var(--rose-dust-subtle)", color: "var(--rose-dust)", fontSize: 12, fontWeight: 600, fontFamily: "'Inter', sans-serif", cursor: "pointer" }}
-              >
-                <AlertCircle className="w-3.5 h-3.5" />
-                Panic mode
+            {/* Phase banner */}
+            {cycleInfo && (
+              <div style={{ background: PHASE_GRADIENTS[cycleInfo.phase], border: "1px solid var(--border)", borderRadius: 20, padding: "16px 20px" }}>
+                <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 4 }}>
+                  <div style={{ width: 8, height: 8, borderRadius: 9999, backgroundColor: PHASE_INFO[cycleInfo.phase].color }} />
+                  <span style={{ fontSize: 10, fontWeight: 700, color: PHASE_INFO[cycleInfo.phase].color, textTransform: "uppercase", letterSpacing: "0.1em", fontFamily: "'Inter', sans-serif" }}>
+                    {PHASE_INFO[cycleInfo.phase].label} · Day {cycleInfo.day}
+                  </span>
+                </div>
+                <p style={{ fontSize: 13, color: "var(--plum)", fontFamily: "'Inter', sans-serif", lineHeight: 1.55 }}>{PHASE_INFO[cycleInfo.phase].tip}</p>
+              </div>
+            )}
+
+            {/* Panic pill */}
+            <div className="flex items-center justify-end">
+              <button onClick={() => setPanicOpen(true)}
+                style={{ display: "flex", alignItems: "center", gap: 6, padding: "5px 14px", borderRadius: 9999, border: "1px solid var(--rose-dust-light)", backgroundColor: "var(--rose-dust-subtle)", color: "var(--rose-dust)", fontSize: 12, fontWeight: 600, fontFamily: "'Inter', sans-serif", cursor: "pointer" }}>
+                <AlertCircle className="w-3.5 h-3.5" />Panic mode
               </button>
             </div>
+
             <DailyStoriesStrip user={user} />
-          </>
-        )}
 
-        {mainTab === "track" && <div className="pt-6" />}
+            {/* Quick mood + energy check-in */}
+            <div style={{ backgroundColor: "var(--surface)", border: "1px solid var(--border)", borderRadius: 20, padding: "16px 18px", boxShadow: "var(--shadow-sm)" }}>
+              <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 12 }}>
+                <p style={{ fontSize: "0.6rem", fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.12em", color: "var(--mauve)", fontFamily: "'Inter', sans-serif" }}>How are you feeling?</p>
+                {checkinSaved && <span style={{ fontSize: 11, color: "var(--sage)", fontFamily: "'Inter', sans-serif" }}>Saved ✓</span>}
+              </div>
+              <div style={{ marginBottom: 12 }}>
+                <p style={{ fontSize: 11, color: "var(--mauve)", fontFamily: "'Inter', sans-serif", marginBottom: 6 }}>Mood</p>
+                <div style={{ display: "flex", gap: 8 }}>
+                  {MOOD_EMOJIS.map((e, i) => (
+                    <button key={i} onClick={() => handleMoodSelect(i)}
+                      style={{ flex: 1, height: 40, borderRadius: 12, border: `2px solid ${mood === i ? "var(--plum)" : "var(--border)"}`, backgroundColor: mood === i ? "var(--plum)" : "transparent", fontSize: 18, cursor: "pointer", transition: "all 0.15s" }}>
+                      {e}
+                    </button>
+                  ))}
+                </div>
+              </div>
+              <div>
+                <p style={{ fontSize: 11, color: "var(--mauve)", fontFamily: "'Inter', sans-serif", marginBottom: 6 }}>Energy</p>
+                <div style={{ display: "flex", gap: 8 }}>
+                  {ENERGY_EMOJIS.map((e, i) => (
+                    <button key={i} onClick={() => handleEnergySelect(i)}
+                      style={{ flex: 1, height: 40, borderRadius: 12, border: `2px solid ${energy === i ? "var(--plum)" : "var(--border)"}`, backgroundColor: energy === i ? "var(--plum)" : "transparent", fontSize: 18, cursor: "pointer", transition: "all 0.15s" }}>
+                      {e}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            </div>
 
-        {/* ── MY DAY ───────────────────────────────────────────────────────── */}
-        {mainTab === "today" && (
-          <>
+            {/* Daily plan recommendation cards */}
+            {dailyPlan && (
+              <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+                {["session_recommendation", "nutrition_nudge", "mental_tool"].filter(k => dailyPlan[k]).map(key => {
+                  const meta = REC_ICONS[key];
+                  const Icon = meta.icon;
+                  return (
+                    <div key={key} style={{ backgroundColor: "var(--surface)", border: "1px solid var(--border)", borderRadius: 16, padding: "14px 16px", display: "flex", alignItems: "center", gap: 12, cursor: "pointer", boxShadow: "var(--shadow-sm)" }}
+                      onClick={() => key === "session_recommendation" && dailyPlan.session_route && (window.location.href = dailyPlan.session_route)}>
+                      <div style={{ width: 38, height: 38, borderRadius: 12, backgroundColor: meta.bg, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+                        <Icon className="w-4 h-4" style={{ color: meta.color }} />
+                      </div>
+                      <p style={{ fontSize: 13, color: "var(--plum)", fontFamily: "'Inter', sans-serif", lineHeight: 1.5 }}>{dailyPlan[key]}</p>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+
             {profile && <SmartContextBanner profile={profile} todayCheckin={todayCheckin} currentPage="Today" />}
             {user && <DailyPromptCard user={user} />}
             {user && <DailyInsightBanner user={user} />}
@@ -391,12 +407,10 @@ export default function Today() {
 
             <ActiveProgramCard activeProgramEntry={activeProgramEntry} activeProgram={activeProgram} />
 
+            <RecommendedForYouSection loading={loadingHomeRecommendations} items={homeRecommendations} onTap={handleRecommendationTap} />
 
-            <RecommendedForYouSection
-              loading={loadingHomeRecommendations}
-              items={homeRecommendations}
-              onTap={handleRecommendationTap}
-            />
+            {/* Hydration ring */}
+            <HydrationRing glasses={glasses} target={hydrationTarget} onAdd={handleHydrationAdd} onRemove={handleHydrationRemove} />
 
             <QuickMealLog user={user} profile={profile} getCyclePhase={getCyclePhase} />
 
@@ -413,53 +427,37 @@ export default function Today() {
             </a>
 
             {todayCheckin && !hasSkinLog && (
-              <button
-                onClick={() => setShowCheckin(true)}
-                style={{
-                  display: "flex", alignItems: "center", gap: "12px",
-                  width: "100%", textAlign: "left", cursor: "pointer",
-                  backgroundColor: "var(--rose-dust-subtle)",
-                  border: "1px solid var(--rose-dust-light)",
-                  borderRadius: "20px", padding: "14px 16px",
-                  marginBottom: "16px",
-                }}
-              >
-                <div style={{
-                  width: "36px", height: "36px", borderRadius: "12px",
-                  backgroundColor: "var(--rose-dust)",
-                  display: "flex", alignItems: "center",
-                  justifyContent: "center", flexShrink: 0,
-                }}>
+              <button onClick={() => setShowCheckin(true)} style={{ display: "flex", alignItems: "center", gap: "12px", width: "100%", textAlign: "left", cursor: "pointer", backgroundColor: "var(--rose-dust-subtle)", border: "1px solid var(--rose-dust-light)", borderRadius: "20px", padding: "14px 16px", marginBottom: "16px" }}>
+                <div style={{ width: "36px", height: "36px", borderRadius: "12px", backgroundColor: "var(--rose-dust)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
                   <Feather style={{ width: "16px", height: "16px", color: "white" }} />
                 </div>
                 <div style={{ flex: 1 }}>
-                  <p style={{
-                    fontSize: "13px", fontWeight: 600, color: "var(--plum)",
-                    fontFamily: "'Inter', sans-serif", marginBottom: "2px",
-                  }}>
-                    How's your skin today?
-                  </p>
-                  <p style={{
-                    fontSize: "12px", color: "var(--rose-dust)",
-                    fontFamily: "'Inter', sans-serif",
-                  }}>
-                    Tap to add skin & hair to today's check-in
-                  </p>
+                  <p style={{ fontSize: "13px", fontWeight: 600, color: "var(--plum)", fontFamily: "'Inter', sans-serif", marginBottom: "2px" }}>How's your skin today?</p>
+                  <p style={{ fontSize: "12px", color: "var(--rose-dust)", fontFamily: "'Inter', sans-serif" }}>Tap to add skin & hair to today's check-in</p>
                 </div>
-                <ChevronRight style={{
-                  width: "16px", height: "16px",
-                  color: "var(--rose-dust)", flexShrink: 0,
-                }} />
+                <ChevronRight style={{ width: "16px", height: "16px", color: "var(--rose-dust)", flexShrink: 0 }} />
               </button>
             )}
 
+            {/* Lifestyle nudge */}
+            <a href={createPageUrl("Lifestyle")} style={{ display: "flex", alignItems: "center", gap: "12px", textDecoration: "none", backgroundColor: "var(--rose-dust-subtle)", border: "1px solid var(--rose-dust-light)", borderRadius: "20px", padding: "16px", marginBottom: "16px" }}>
+              <div style={{ flex: 1 }}>
+                <p style={{ fontSize: "0.6rem", fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.12em", color: "var(--rose-dust)", fontFamily: "'Inter', sans-serif", marginBottom: 4 }}>Lifestyle</p>
+                <p style={{ fontSize: 14, fontWeight: 600, color: "var(--plum)", fontFamily: "'Inter', sans-serif" }}>Stories, videos & reads for you</p>
+                <p style={{ fontSize: 12, color: "var(--mauve)", fontFamily: "'Inter', sans-serif", marginTop: 2 }}>Curated for your cycle phase today</p>
+              </div>
+              <ChevronRight className="w-4 h-4" style={{ color: "var(--rose-dust)", flexShrink: 0 }} />
+            </a>
+
             <QuickAccessGrid onCycleClick={() => setMainTab("track")} />
-          </>
+          </div>
         )}
 
-        {/* ── TRACK TAB ─────────────────────────────────────────────────────────── */}
+        {/* ── TRACK TAB */}
         {mainTab === "track" && (
-          <TrackTab user={user} profile={profile} />
+          <div className="pt-6">
+            <TrackTab user={user} profile={profile} />
+          </div>
         )}
       </div>
     </div>
