@@ -40,13 +40,194 @@ function getMonday() {
 }
 
 const TABS = [
-  { id: "for_you",  label: "For You"  },
-  { id: "articles", label: "Read"     },
-  { id: "watch",    label: "Watch"    },
-  { id: "stories",  label: "Stories"  },
-  { id: "femwell",  label: "FemWell"  },
-  { id: "books",    label: "Books"    },
+  { id: "for_you",   label: "For You"   },
+  { id: "articles",  label: "Read"      },
+  { id: "watch",     label: "Watch"     },
+  { id: "stories",   label: "Stories"   },
+  { id: "romance",   label: "Romance"   },
+  { id: "news",      label: "News"      },
+  { id: "horoscope", label: "Horoscope" },
+  { id: "femwell",   label: "FemWell"   },
+  { id: "books",     label: "Books"     },
 ];
+
+const ZODIAC_SIGNS = ["Aries","Taurus","Gemini","Cancer","Leo","Virgo","Libra","Scorpio","Sagittarius","Capricorn","Aquarius","Pisces"];
+
+function RomanceTab() {
+  const [episodes, setEpisodes] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [openEpisode, setOpenEpisode] = useState(null);
+
+  useEffect(() => {
+    (async () => {
+      try {
+        const items = await base44.entities.ContentItems.filter({ category: "romance" }, "created_date", 50);
+        setEpisodes(items);
+      } catch {}
+      setLoading(false);
+    })();
+  }, []);
+
+  if (loading) return <FeedSkeleton />;
+
+  return (
+    <div>
+      {episodes.length === 0 && (
+        <p style={{ color: "var(--mauve)", fontSize: 14, textAlign: "center", padding: "40px 0" }}>Romance stories coming soon.</p>
+      )}
+      {episodes.map((ep, i) => (
+        <div key={ep.id} style={{ background: "linear-gradient(135deg, #FFE4F0 0%, #F5C6D8 100%)", border: "1px solid #F0B8CE", borderRadius: 18, padding: "20px", marginBottom: 14 }}>
+          <p style={{ fontSize: 10, fontWeight: 700, color: "#C4849A", textTransform: "uppercase", letterSpacing: "0.12em", marginBottom: 6, fontFamily: "'Inter', sans-serif" }}>
+            Episode {i + 1}
+          </p>
+          <h3 style={{ fontSize: 16, fontWeight: 700, color: "var(--plum)", fontFamily: "'Playfair Display', serif", margin: "0 0 8px", lineHeight: 1.3 }}>{ep.title}</h3>
+          <p style={{ fontSize: 13, color: "#6B3A4E", lineHeight: 1.55, margin: "0 0 14px", display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical", overflow: "hidden", fontFamily: "'Inter', sans-serif" }}>
+            {stripHtml(ep.body || ep.summary || "")}
+          </p>
+          <button onClick={() => setOpenEpisode(ep)} style={{ backgroundColor: "var(--plum)", color: "white", borderRadius: 9999, padding: "8px 18px", fontSize: 12, fontWeight: 600, border: "none", cursor: "pointer", fontFamily: "'Inter', sans-serif" }}>
+            Read episode
+          </button>
+        </div>
+      ))}
+      {openEpisode && (
+        <>
+          <div onClick={() => setOpenEpisode(null)} style={{ position: "fixed", inset: 0, zIndex: 60, backgroundColor: "rgba(42,32,53,0.5)", backdropFilter: "blur(6px)" }} />
+          <div style={{ position: "fixed", bottom: 0, left: 0, right: 0, zIndex: 61, backgroundColor: "var(--surface)", borderRadius: "24px 24px 0 0", maxHeight: "85vh", display: "flex", flexDirection: "column" }}>
+            <div style={{ padding: "16px 20px", flexShrink: 0, display: "flex", alignItems: "center", justifyContent: "space-between", borderBottom: "1px solid var(--border)" }}>
+              <h2 style={{ fontFamily: "'Playfair Display', serif", fontSize: 17, fontWeight: 700, color: "var(--plum)", margin: 0 }}>{openEpisode.title}</h2>
+              <button onClick={() => setOpenEpisode(null)} style={{ width: 32, height: 32, borderRadius: 9999, backgroundColor: "var(--ivory-dark)", border: "none", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                <X style={{ width: 16, height: 16, color: "var(--mauve)" }} />
+              </button>
+            </div>
+            <div style={{ flex: 1, overflowY: "auto", padding: "20px 20px 40px" }}>
+              <p style={{ fontSize: 15, color: "var(--plum)", lineHeight: 1.75, fontFamily: "'Inter', sans-serif", whiteSpace: "pre-line" }}>
+                {stripHtml(openEpisode.body || openEpisode.summary || "")}
+              </p>
+            </div>
+          </div>
+        </>
+      )}
+    </div>
+  );
+}
+
+function NewsTab() {
+  const [newsItems, setNewsItems] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [openItem, setOpenItem] = useState(null);
+
+  useEffect(() => {
+    (async () => {
+      try {
+        const items = await base44.entities.ContentItems.filter({ category: "news" }, "-created_date", 50);
+        setNewsItems(items);
+      } catch {}
+      setLoading(false);
+    })();
+  }, []);
+
+  if (loading) return <FeedSkeleton />;
+
+  return (
+    <div>
+      {newsItems.length === 0 && (
+        <p style={{ color: "var(--mauve)", fontSize: 14, textAlign: "center", padding: "40px 0" }}>News content coming soon.</p>
+      )}
+      {newsItems.map(item => (
+        <div key={item.id} style={{ backgroundColor: "var(--surface)", border: "1px solid var(--border)", boxShadow: "var(--shadow-sm)", borderRadius: 16, padding: "16px", marginBottom: 14 }}>
+          <h3 style={{ fontSize: 15, fontWeight: 700, color: "var(--plum)", fontFamily: "'Inter', sans-serif", margin: "0 0 6px", lineHeight: 1.4 }}>{item.title}</h3>
+          <p style={{ fontSize: 13, color: "var(--mauve)", lineHeight: 1.5, margin: "0 0 10px", fontFamily: "'Inter', sans-serif" }}>
+            {stripHtml(item.body || item.summary || "").slice(0, 100)}{(item.body || item.summary || "").length > 100 ? "…" : ""}
+          </p>
+          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+            {item.read_time_minutes ? (
+              <span style={{ fontSize: 11, color: "var(--mauve)", fontFamily: "'Inter', sans-serif" }}>{item.read_time_minutes} min read</span>
+            ) : <span />}
+            <button onClick={() => setOpenItem(item)} style={{ backgroundColor: "var(--plum)", color: "white", borderRadius: 9999, padding: "7px 16px", fontSize: 12, fontWeight: 600, border: "none", cursor: "pointer", fontFamily: "'Inter', sans-serif" }}>
+              Read
+            </button>
+          </div>
+        </div>
+      ))}
+      {openItem && (
+        <>
+          <div onClick={() => setOpenItem(null)} style={{ position: "fixed", inset: 0, zIndex: 60, backgroundColor: "rgba(42,32,53,0.5)", backdropFilter: "blur(6px)" }} />
+          <div style={{ position: "fixed", bottom: 0, left: 0, right: 0, zIndex: 61, backgroundColor: "var(--surface)", borderRadius: "24px 24px 0 0", maxHeight: "85vh", display: "flex", flexDirection: "column" }}>
+            <div style={{ padding: "16px 20px", flexShrink: 0, display: "flex", alignItems: "center", justifyContent: "space-between", borderBottom: "1px solid var(--border)" }}>
+              <h2 style={{ fontFamily: "'Playfair Display', serif", fontSize: 17, fontWeight: 700, color: "var(--plum)", margin: 0, flex: 1, marginRight: 12 }}>{openItem.title}</h2>
+              <button onClick={() => setOpenItem(null)} style={{ width: 32, height: 32, borderRadius: 9999, backgroundColor: "var(--ivory-dark)", border: "none", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+                <X style={{ width: 16, height: 16, color: "var(--mauve)" }} />
+              </button>
+            </div>
+            <div style={{ flex: 1, overflowY: "auto", padding: "20px 20px 40px" }}>
+              <p style={{ fontSize: 15, color: "var(--plum)", lineHeight: 1.75, fontFamily: "'Inter', sans-serif", whiteSpace: "pre-line", marginBottom: 20 }}>
+                {stripHtml(openItem.body || openItem.summary || "")}
+              </p>
+              {openItem.source_name && (
+                <p style={{ fontSize: 12, color: "var(--mauve)", fontFamily: "'Inter', sans-serif", borderTop: "1px solid var(--border)", paddingTop: 12 }}>
+                  Source: {openItem.source_name}
+                </p>
+              )}
+            </div>
+          </div>
+        </>
+      )}
+    </div>
+  );
+}
+
+function HoroscopeTab() {
+  const [selectedSign, setSelectedSign] = useState(() => localStorage.getItem("femwell_zodiac") || "Aries");
+  const [content, setContent] = useState(null);
+  const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    (async () => {
+      setLoading(true);
+      setContent(null);
+      try {
+        const items = await base44.entities.ContentItems.filter({ category: "horoscope" }, "-created_date", 50);
+        const match = items.find(it => (it.title || "").toLowerCase() === selectedSign.toLowerCase());
+        setContent(match || null);
+      } catch {}
+      setLoading(false);
+    })();
+  }, [selectedSign]);
+
+  const handleSignSelect = (sign) => {
+    localStorage.setItem("femwell_zodiac", sign);
+    setSelectedSign(sign);
+  };
+
+  return (
+    <div>
+      <div className="lf-scroll" style={{ display: "flex", gap: 8, overflowX: "auto", paddingBottom: 8, marginBottom: 20 }}>
+        {ZODIAC_SIGNS.map(sign => (
+          <button key={sign} onClick={() => handleSignSelect(sign)}
+            style={{ flexShrink: 0, padding: "7px 16px", borderRadius: 9999, fontSize: 12, fontWeight: 600, border: selectedSign === sign ? "none" : "1px solid var(--border)", cursor: "pointer", transition: "all 0.15s", background: selectedSign === sign ? "var(--plum)" : "var(--surface)", color: selectedSign === sign ? "#fff" : "var(--mauve)", whiteSpace: "nowrap", fontFamily: "'Inter', sans-serif" }}>
+            {sign}
+          </button>
+        ))}
+      </div>
+      {loading ? (
+        <FeedSkeleton />
+      ) : content ? (
+        <div style={{ backgroundColor: "var(--surface)", border: "1px solid var(--border)", boxShadow: "var(--shadow-sm)", borderRadius: 18, padding: "22px 20px" }}>
+          <p style={{ fontSize: 10, fontWeight: 700, color: "var(--rose-dust)", textTransform: "uppercase", letterSpacing: "0.12em", marginBottom: 6, fontFamily: "'Inter', sans-serif" }}>Horoscope</p>
+          <h2 style={{ fontFamily: "'Playfair Display', serif", fontSize: 20, fontWeight: 700, color: "var(--plum)", margin: "0 0 14px" }}>{selectedSign}</h2>
+          <p style={{ fontSize: 15, color: "var(--plum)", lineHeight: 1.75, fontFamily: "'Inter', sans-serif", whiteSpace: "pre-line" }}>
+            {stripHtml(content.body || content.summary || "")}
+          </p>
+        </div>
+      ) : (
+        <div style={{ backgroundColor: "var(--surface)", border: "1px solid var(--border)", borderRadius: 18, padding: "32px 20px", textAlign: "center" }}>
+          <p style={{ fontSize: 15, fontWeight: 600, color: "var(--plum)", fontFamily: "'Playfair Display', serif", marginBottom: 6 }}>{selectedSign}</p>
+          <p style={{ fontSize: 13, color: "var(--mauve)", fontFamily: "'Inter', sans-serif" }}>Coming soon.</p>
+        </div>
+      )}
+    </div>
+  );
+}
 
 function VideoCard({ item, onSave, saved }) {
   const [playing, setPlaying] = useState(false);
@@ -478,7 +659,7 @@ export default function Lifestyle() {
   const [readerItem, setReaderItem] = useState(null);
   const [tab, setTab] = useState(() => {
     const p = new URLSearchParams(window.location.search).get("tab");
-    return p && ["for_you","articles","watch","stories","femwell","books"].includes(p) ? p : "for_you";
+    return p && ["for_you","articles","watch","stories","romance","news","horoscope","femwell","books"].includes(p) ? p : "for_you";
   });
   const [items, setItems] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -491,7 +672,7 @@ export default function Lifestyle() {
   const loaderRef = useRef(null);
 
   const loadItems = useCallback(async (activeTab, pageNum = 0, isRefresh = false) => {
-    if (activeTab === "books") return;
+    if (activeTab === "books" || activeTab === "romance" || activeTab === "news" || activeTab === "horoscope") return;
     if (pageNum === 0) { isRefresh ? setRefreshing(true) : setLoading(true); setItems([]); }
     else setLoadingMore(true);
     try {
@@ -550,7 +731,7 @@ export default function Lifestyle() {
   useEffect(() => { loadItems(tab, 0); }, [tab]);
 
   useEffect(() => {
-    if (!loaderRef.current || tab === "books") return;
+    if (!loaderRef.current || tab === "books" || tab === "romance" || tab === "news" || tab === "horoscope") return;
     const observer = new IntersectionObserver(entries => {
       if (entries[0].isIntersecting && hasMore && !loadingMore) loadItems(tab, page + 1);
     }, { threshold: 0.1 });
@@ -594,7 +775,10 @@ export default function Lifestyle() {
         </div>
         {tab === "books" && <BooksTab onRead={setReaderItem} />}
         {tab === "femwell" && <SmartFemwellTab onRead={setReaderItem} />}
-        {tab !== "books" && tab !== "femwell" && (
+        {tab === "romance" && <RomanceTab />}
+        {tab === "news" && <NewsTab />}
+        {tab === "horoscope" && <HoroscopeTab />}
+        {tab !== "books" && tab !== "femwell" && tab !== "romance" && tab !== "news" && tab !== "horoscope" && (
           <>
             {/* Weekly Book Pick */}
             {tab === "for_you" && <WeeklyBookPick profile={userProfile} />}
@@ -631,7 +815,7 @@ export default function Lifestyle() {
             })()}
           </>
         )}
-        {tab !== "books" && tab !== "femwell" && (
+        {tab !== "books" && tab !== "femwell" && tab !== "romance" && tab !== "news" && tab !== "horoscope" && (
           <>
             {tab === "watch" && (
               <div style={{ marginBottom: 16 }}>
