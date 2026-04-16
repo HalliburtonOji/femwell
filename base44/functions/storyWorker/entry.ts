@@ -1,3 +1,4 @@
+/* global Deno */
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.25';
 
 // Scheduled worker: runs every 10 minutes.
@@ -5,11 +6,6 @@ import { createClientFromRequest } from 'npm:@base44/sdk@0.8.25';
 Deno.serve(async (req) => {
   try {
     const base44 = createClientFromRequest(req);
-    const user = await base44.auth.me();
-    if (!user || user.role !== 'admin') {
-      return Response.json({ error: 'Admin only' }, { status: 403 });
-    }
-
     const sb = base44.asServiceRole;
     const today = new Date().toISOString().split('T')[0];
 
