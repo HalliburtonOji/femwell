@@ -14,7 +14,7 @@ export default function DailyInsightBanner({ user }) {
         user_id: user.id,
         source: "daily_worker",
         insight_date: today,
-      });
+      }).catch(() => []);
       if (cards.length > 0) setInsight(cards[0]);
     })();
   }, [user]);

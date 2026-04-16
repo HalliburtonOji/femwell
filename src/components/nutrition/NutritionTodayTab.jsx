@@ -226,12 +226,12 @@ export default function NutritionTodayTab({ user, profile, nutritionProfile, day
       base44.entities.MealTemplates.filter({ user_id: "system" }).catch(() => []),
       base44.entities.NutritionInsight.filter({ user_id: user.id, day_key: dayKey }),
     ]);
-    setMeals(mealLogs);
-    setHydrationLogs(hydration);
-    setTemplates([...userTmpl, ...systemTmpl]);
-    setInsights(ins);
+    setMeals(mealLogs.filter(Boolean));
+    setHydrationLogs(hydration.filter(Boolean));
+    setTemplates([...userTmpl, ...systemTmpl].filter(Boolean));
+    setInsights(ins.filter(Boolean));
     const drinkData = await base44.entities.DrinkLog.filter({ user_id: user.id, day_key: dayKey }).catch(() => []);
-    setDrinkLogs(drinkData);
+    setDrinkLogs(drinkData.filter(Boolean));
     // Load weekly meals for chart (last 7 days)
     base44.entities.MealLog.filter({ user_id: user.id }, "-day_key", 200).then(all => {
       const cutoff = format(new Date(Date.now() - 7 * 86400000), "yyyy-MM-dd");
