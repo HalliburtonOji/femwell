@@ -1,117 +1,23 @@
-import { useState, useEffect } from "react";
-import { base44 } from "@/api/base44Client";
-import { createPageUrl } from "@/utils";
-import { ArrowLeft, Check, Sparkles, ChevronDown, ChevronUp } from "lucide-react";
-
-const TIERS = {
-  free: {
-    name: "Free",
-    price: "£0",
-    priceYearly: null,
-    period: "/month",
-    features: ["Cycle tracking", "Daily check-in", "3 programs", "Basic insights", "Lifestyle feed"],
-    highlight: false,
-    cta: null,
-  },
-  plus: {
-    name: "Plus",
-    price: "£4.99",
-    priceYearly: "£39.99",
-    period: "/month",
-    features: [
-      "Everything in Free",
-      "Unlimited programs",
-      "AI coach (unlimited)",
-      "Advanced insights & correlations",
-      "Partner mode",
-      "Period predictions",
-      "Community access",
-    ],
-    highlight: true,
-    badge: "Most popular",
-    cta: "Start 7-day free trial",
-  },
-  pro: {
-    name: "Pro",
-    price: "£9.99",
-    priceYearly: "£79.99",
-    period: "/month",
-    features: [
-      "Everything in Plus",
-      "Pregnancy & menopause modules",
-      "Doctor export (PDF)",
-      "Priority support",
-      "Audio meditations",
-      "Story images (AI)",
-    ],
-    highlight: false,
-    cta: "Start 7-day free trial",
-  },
-};
-
-const COMPARISON = [
-  { feature: "Cycle tracking", free: true, plus: true, pro: true },
-  { feature: "Daily check-in", free: true, plus: true, pro: true },
-  { feature: "Programs (max)", free: "3", plus: "Unlimited", pro: "Unlimited" },
-  { feature: "AI coach", free: "5 msg/day", plus: "Unlimited", pro: "Unlimited" },
-  { feature: "Insights", free: "Basic", plus: "Advanced", pro: "Advanced" },
-  { feature: "Period predictions", free: false, plus: true, pro: true },
-  { feature: "Partner mode", free: false, plus: true, pro: true },
-  { feature: "Pregnancy module", free: false, plus: false, pro: true },
-  { feature: "Menopause module", free: false, plus: false, pro: true },
-  { feature: "Doctor export PDF", free: false, plus: false, pro: true },
-  { feature: "Audio meditations", free: false, plus: false, pro: true },
-];
-
-const TESTIMONIALS = [
-  { quote: "FemWell Plus genuinely changed how I understand my cycle. Worth every penny.", name: "Sarah M.", location: "London" },
-  { quote: "The AI coach helped me identify my luteal phase anxiety — I feel so much more in control.", name: "Priya K.", location: "Manchester" },
-  { quote: "I switched from a £15/month app. FemWell Plus is better and half the price.", name: "Chloe T.", location: "Bristol" },
-];
-
-const FAQS = [
-  { q: "Can I cancel anytime?", a: "Yes — cancel with one tap from your profile. You'll keep access until the end of your billing period. No questions asked." },
-  { q: "What happens to my data if I downgrade?", a: "Your data is always yours. Downgrading to Free keeps all your historical logs intact — you just lose access to premium features." },
-  { q: "Is my health data private?", a: "Absolutely. FemWell never sells or shares your personal health data. Data is encrypted at rest and in transit. You can export or delete your data at any time." },
-  { q: "Is there a free trial?", a: "Yes — Plus and Pro both include a 7-day free trial. Cancel anytime during the trial and you won't be charged." },
-];
+import { useState } from "react";
+import { ArrowLeft, Check, X, Sparkles, Shield, Lock } from "lucide-react";
 
 const sLabel = { fontSize: "0.6rem", fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.12em", color: "var(--mauve)", fontFamily: "'Inter', sans-serif" };
 
+const FEATURES = [
+  { label: "Cycle tracking",       free: true,  plus: true  },
+  { label: "All programs",         free: false, plus: true  },
+  { label: "Condition tracks",     free: false, plus: true  },
+  { label: "Unlimited AI coach",   free: false, plus: true  },
+  { label: "Wearable data",        free: false, plus: true  },
+  { label: "Lab tracker",          free: false, plus: true  },
+  { label: "Doctor Export",        free: false, plus: true  },
+  { label: "Partner mode",         free: false, plus: true  },
+];
+
+const TRUST = ["No ads", "Cancel anytime", "Your data never sold", "GDPR compliant"];
+
 export default function Upgrade() {
-  const [user, setUser] = useState(null);
-  const [currentPlan, setCurrentPlan] = useState("free");
-  const [loading, setLoading] = useState(false);
-  const [annual, setAnnual] = useState(false);
-  const [openFaq, setOpenFaq] = useState(null);
-
-  useEffect(() => {
-    (async () => {
-      const u = await base44.auth.me();
-      setUser(u);
-      const ents = await base44.entities.Entitlements.filter({ user_id: u.id });
-      if (ents[0]) setCurrentPlan(ents[0].plan || "free");
-    })();
-  }, []);
-
-  const handleUpgrade = async (planId) => {
-    if (planId === "free" || planId === currentPlan) return;
-    setLoading(true);
-    try {
-      const res = await base44.functions.invoke("stripeCheckout", {
-        plan: planId,
-        billing: annual ? "annual" : "monthly",
-        success_url: window.location.origin + createPageUrl("Today"),
-        cancel_url: window.location.href,
-      });
-      if (res.data?.url) window.location.href = res.data.url;
-    } catch {
-      alert("Unable to start checkout. Please try again.");
-    }
-    setLoading(false);
-  };
-
-  const tierList = Object.entries(TIERS);
+  const [showModal, setShowModal] = useState(false);
 
   return (
     <div className="min-h-screen pb-16" style={{ backgroundColor: "var(--ivory)" }}>
@@ -122,162 +28,137 @@ export default function Upgrade() {
           <button onClick={() => window.history.back()} className="w-9 h-9 rounded-full flex items-center justify-center" style={{ backgroundColor: "var(--surface)", border: "1px solid var(--border)", cursor: "pointer" }}>
             <ArrowLeft style={{ width: 16, height: 16, color: "var(--plum)" }} />
           </button>
-          <div>
-            <p style={sLabel}>Subscription</p>
-          </div>
         </div>
 
         {/* Hero */}
-        <div className="text-center mb-8">
-          <div className="w-14 h-14 rounded-2xl mx-auto mb-4 flex items-center justify-center" style={{ backgroundColor: "var(--rose-dust-subtle)", border: "1px solid var(--rose-dust-light)" }}>
+        <div className="text-center mb-10">
+          <div className="w-14 h-14 rounded-2xl mx-auto mb-5 flex items-center justify-center" style={{ backgroundColor: "var(--rose-dust-subtle)", border: "1px solid var(--rose-dust-light)" }}>
             <Sparkles className="w-6 h-6" style={{ color: "var(--rose-dust)" }} />
           </div>
-          <h1 style={{ fontFamily: "'Playfair Display', serif", fontSize: 30, fontWeight: 700, color: "var(--plum)", letterSpacing: "-0.02em", lineHeight: 1.1 }}>Invest in yourself 🌿</h1>
-          <p style={{ fontSize: 13, color: "var(--mauve)", fontFamily: "'Inter', sans-serif", marginTop: 8 }}>Trusted by thousands of women tracking their health</p>
+          <h1 style={{ fontFamily: "'Playfair Display', serif", fontSize: 32, fontWeight: 700, color: "var(--plum)", letterSpacing: "-0.02em", lineHeight: 1.1 }}>FemWell Plus</h1>
+          <p style={{ fontSize: 15, color: "var(--mauve)", fontFamily: "'Inter', sans-serif", marginTop: 8 }}>Unlock the full picture of your health.</p>
         </div>
 
-        {/* Annual / Monthly toggle */}
-        <div className="flex justify-center mb-8">
-          <div className="flex items-center gap-1 p-1 rounded-2xl" style={{ backgroundColor: "var(--ivory-dark)", border: "1px solid var(--border)" }}>
-            <button onClick={() => setAnnual(false)}
-              style={{ borderRadius: 12, padding: "8px 20px", fontSize: 13, fontWeight: 600, border: "none", cursor: "pointer", fontFamily: "'Inter', sans-serif",
-                backgroundColor: !annual ? "var(--plum)" : "transparent",
-                color: !annual ? "white" : "var(--mauve)" }}>Monthly</button>
-            <button onClick={() => setAnnual(true)}
-              style={{ borderRadius: 12, padding: "8px 20px", fontSize: 13, fontWeight: 600, border: "none", cursor: "pointer", fontFamily: "'Inter', sans-serif", display: "flex", alignItems: "center", gap: 6,
-                backgroundColor: annual ? "var(--plum)" : "transparent",
-                color: annual ? "white" : "var(--mauve)" }}>
-              Annual
-              <span style={{ fontSize: 10, fontWeight: 700, backgroundColor: "var(--rose-dust)", color: "white", borderRadius: 9999, padding: "2px 7px" }}>Save 33%</span>
+        {/* Plan cards */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-10">
+
+          {/* Free */}
+          <div style={{ backgroundColor: "var(--surface)", border: "1px solid var(--border)", borderRadius: 20, padding: 20 }}>
+            <p style={{ fontSize: 16, fontWeight: 700, color: "var(--plum)", fontFamily: "'Playfair Display', serif", marginBottom: 4 }}>Free</p>
+            <p style={{ fontSize: 12, color: "var(--mauve)", fontFamily: "'Inter', sans-serif", marginBottom: 16 }}>Always free</p>
+            <ul className="space-y-2">
+              {["Cycle tracking", "Basic check-in", "2 programs", "5 AI messages/month"].map(f => (
+                <li key={f} className="flex items-center gap-2">
+                  <Check style={{ width: 14, height: 14, color: "var(--sage)", flexShrink: 0 }} />
+                  <span style={{ fontSize: 12, color: "var(--mauve)", fontFamily: "'Inter', sans-serif" }}>{f}</span>
+                </li>
+              ))}
+            </ul>
+          </div>
+
+          {/* Plus — highlighted */}
+          <div style={{ backgroundColor: "var(--plum)", border: "2px solid var(--rose-dust)", borderRadius: 20, padding: 20, position: "relative" }}>
+            <div style={{ position: "absolute", top: -10, left: "50%", transform: "translateX(-50%)", backgroundColor: "var(--rose-dust)", color: "white", borderRadius: 9999, padding: "2px 12px", fontSize: 10, fontWeight: 700, fontFamily: "'Inter', sans-serif", whiteSpace: "nowrap" }}>
+              Most popular
+            </div>
+            <p style={{ fontSize: 16, fontWeight: 700, color: "white", fontFamily: "'Playfair Display', serif", marginBottom: 2 }}>Plus</p>
+            <p style={{ fontSize: 13, fontWeight: 700, color: "var(--rose-dust-light)", fontFamily: "'Inter', sans-serif", marginBottom: 2 }}>£6.99/month</p>
+            <p style={{ fontSize: 11, color: "rgba(255,255,255,0.5)", fontFamily: "'Inter', sans-serif", marginBottom: 16 }}>or £49.99/year</p>
+            <ul className="space-y-2">
+              {["Everything free", "All programs + condition tracks", "Unlimited AI coach", "Correlation insights", "Wearable data", "Lab tracker", "Doctor Export", "Partner mode"].map(f => (
+                <li key={f} className="flex items-center gap-2">
+                  <Check style={{ width: 14, height: 14, color: "var(--rose-dust-light)", flexShrink: 0 }} />
+                  <span style={{ fontSize: 12, color: "rgba(255,255,255,0.85)", fontFamily: "'Inter', sans-serif" }}>{f}</span>
+                </li>
+              ))}
+            </ul>
+          </div>
+
+          {/* Pro — coming soon */}
+          <div style={{ backgroundColor: "var(--surface)", border: "1px solid var(--border)", borderRadius: 20, padding: 20, opacity: 0.6 }}>
+            <div className="flex items-center gap-2 mb-1">
+              <p style={{ fontSize: 16, fontWeight: 700, color: "var(--plum)", fontFamily: "'Playfair Display', serif" }}>Pro</p>
+              <span style={{ fontSize: 9, fontWeight: 700, color: "var(--mauve)", backgroundColor: "var(--ivory-dark)", borderRadius: 9999, padding: "2px 8px", fontFamily: "'Inter', sans-serif" }}>COMING SOON</span>
+            </div>
+            <p style={{ fontSize: 12, color: "var(--mauve)", fontFamily: "'Inter', sans-serif", marginBottom: 16 }}>£12.99/month</p>
+            <ul className="space-y-2">
+              {["Everything Plus", "Priority support", "Early access features"].map(f => (
+                <li key={f} className="flex items-center gap-2">
+                  <Lock style={{ width: 13, height: 13, color: "var(--mauve)", flexShrink: 0 }} />
+                  <span style={{ fontSize: 12, color: "var(--mauve)", fontFamily: "'Inter', sans-serif" }}>{f}</span>
+                </li>
+              ))}
+            </ul>
+          </div>
+        </div>
+
+        {/* Main CTA */}
+        <button
+          onClick={() => setShowModal(true)}
+          style={{ width: "100%", padding: "16px", borderRadius: 16, backgroundColor: "var(--plum)", color: "white", fontSize: 15, fontWeight: 700, border: "none", cursor: "pointer", fontFamily: "'Inter', sans-serif", marginBottom: 32, boxShadow: "var(--shadow-md)" }}
+        >
+          Start 7-day free trial
+        </button>
+
+        {/* Feature comparison */}
+        <div style={{ backgroundColor: "var(--surface)", border: "1px solid var(--border)", borderRadius: 20, overflow: "hidden", marginBottom: 32 }}>
+          <div style={{ padding: "14px 18px 10px", borderBottom: "1px solid var(--border-subtle)" }}>
+            <p style={sLabel}>What's included in Plus</p>
+          </div>
+          {FEATURES.map((row, i) => (
+            <div key={row.label} style={{ display: "flex", alignItems: "center", padding: "11px 18px", borderBottom: i < FEATURES.length - 1 ? "1px solid var(--border-subtle)" : "none", backgroundColor: i % 2 === 0 ? "transparent" : "var(--ivory)" }}>
+              <span style={{ flex: 1, fontSize: 13, color: "var(--plum)", fontFamily: "'Inter', sans-serif" }}>{row.label}</span>
+              <div style={{ display: "flex", gap: 40 }}>
+                <span style={{ width: 40, textAlign: "center" }}>
+                  {row.free ? <Check style={{ width: 15, height: 15, color: "var(--sage)", display: "inline" }} /> : <X style={{ width: 14, height: 14, color: "var(--border)", display: "inline" }} />}
+                </span>
+                <span style={{ width: 40, textAlign: "center" }}>
+                  {row.plus ? <Check style={{ width: 15, height: 15, color: "var(--rose-dust)", display: "inline" }} /> : <X style={{ width: 14, height: 14, color: "var(--border)", display: "inline" }} />}
+                </span>
+              </div>
+            </div>
+          ))}
+          <div style={{ display: "flex", padding: "8px 18px 10px", justifyContent: "flex-end" }}>
+            <div style={{ display: "flex", gap: 40 }}>
+              <span style={{ width: 40, textAlign: "center", fontSize: 10, fontWeight: 600, color: "var(--mauve)", fontFamily: "'Inter', sans-serif" }}>Free</span>
+              <span style={{ width: 40, textAlign: "center", fontSize: 10, fontWeight: 600, color: "var(--rose-dust)", fontFamily: "'Inter', sans-serif" }}>Plus</span>
+            </div>
+          </div>
+        </div>
+
+        {/* Trust signals */}
+        <div className="flex flex-wrap justify-center gap-3 mb-10">
+          {TRUST.map(t => (
+            <div key={t} className="flex items-center gap-1.5" style={{ backgroundColor: "var(--surface)", border: "1px solid var(--border)", borderRadius: 9999, padding: "6px 14px" }}>
+              <Shield style={{ width: 12, height: 12, color: "var(--sage)" }} />
+              <span style={{ fontSize: 11, fontWeight: 600, color: "var(--plum)", fontFamily: "'Inter', sans-serif" }}>{t}</span>
+            </div>
+          ))}
+        </div>
+
+      </div>
+
+      {/* Coming soon modal */}
+      {showModal && (
+        <div style={{ position: "fixed", inset: 0, zIndex: 60 }}>
+          <div onClick={() => setShowModal(false)} style={{ position: "absolute", inset: 0, backgroundColor: "rgba(42,32,53,0.5)", backdropFilter: "blur(6px)" }} />
+          <div style={{ position: "absolute", bottom: 0, left: 0, right: 0, backgroundColor: "var(--surface)", borderRadius: "28px 28px 0 0", padding: 28, maxWidth: 560, margin: "0 auto" }}>
+            <div style={{ display: "flex", justifyContent: "center", marginBottom: 20 }}>
+              <div style={{ width: 36, height: 4, borderRadius: 9999, backgroundColor: "var(--border)" }} />
+            </div>
+            <div style={{ width: 52, height: 52, borderRadius: 16, backgroundColor: "var(--rose-dust-subtle)", display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 16px" }}>
+              <Sparkles style={{ width: 22, height: 22, color: "var(--rose-dust)" }} />
+            </div>
+            <h3 style={{ fontFamily: "'Playfair Display', serif", fontSize: 20, fontWeight: 700, color: "var(--plum)", textAlign: "center", marginBottom: 8 }}>Coming soon</h3>
+            <p style={{ fontSize: 14, color: "var(--mauve)", fontFamily: "'Inter', sans-serif", textAlign: "center", lineHeight: 1.65, marginBottom: 24 }}>
+              Payment processing is coming soon. We'll notify you when Plus launches — and early sign-ups will get a discount.
+            </p>
+            <button onClick={() => setShowModal(false)} style={{ width: "100%", padding: "13px", borderRadius: 12, backgroundColor: "var(--plum)", color: "white", fontSize: 14, fontWeight: 600, border: "none", cursor: "pointer", fontFamily: "'Inter', sans-serif" }}>
+              Got it
             </button>
           </div>
         </div>
-
-        {/* Tier cards */}
-        <div className="space-y-4 mb-10">
-          {tierList.map(([id, tier]) => {
-            const isActive = currentPlan === id;
-            const displayPrice = annual && tier.priceYearly ? tier.priceYearly : tier.price;
-            const displayPeriod = annual && tier.priceYearly ? "/year" : tier.period;
-            return (
-              <div key={id} style={{
-                backgroundColor: "var(--surface)",
-                border: tier.highlight ? "2px solid var(--rose-dust)" : "1px solid var(--border)",
-                borderRadius: 24,
-                boxShadow: tier.highlight ? "0 0 0 4px rgba(196,132,154,0.12), var(--shadow-md)" : "var(--shadow-sm)",
-                overflow: "hidden",
-                position: "relative",
-              }}>
-                {tier.badge && (
-                  <div style={{ position: "absolute", top: 16, right: 16, backgroundColor: "var(--rose-dust)", color: "white", borderRadius: 9999, padding: "3px 10px", fontSize: 10, fontWeight: 700, fontFamily: "'Inter', sans-serif" }}>
-                    {tier.badge}
-                  </div>
-                )}
-                <div style={{ padding: "20px 20px 0" }}>
-                  <div className="flex items-end justify-between mb-4">
-                    <div>
-                      <p style={{ fontSize: 18, fontWeight: 700, color: "var(--plum)", fontFamily: "'Playfair Display', serif" }}>{tier.name}</p>
-                      {isActive && <span style={{ fontSize: 10, fontWeight: 600, color: "var(--sage)", backgroundColor: "var(--sage-subtle)", borderRadius: 9999, padding: "2px 8px", fontFamily: "'Inter', sans-serif" }}>Current plan</span>}
-                    </div>
-                    <div className="text-right">
-                      <p style={{ fontSize: 28, fontWeight: 800, color: "var(--plum)", fontFamily: "'Inter', sans-serif", lineHeight: 1 }}>{displayPrice}</p>
-                      <p style={{ fontSize: 11, color: "var(--mauve)", fontFamily: "'Inter', sans-serif" }}>{displayPeriod}</p>
-                    </div>
-                  </div>
-                  <ul className="space-y-2 pb-5">
-                    {tier.features.map(f => (
-                      <li key={f} className="flex items-start gap-2.5">
-                        <Check style={{ width: 15, height: 15, color: "var(--rose-dust)", flexShrink: 0, marginTop: 1 }} />
-                        <span style={{ fontSize: 13, color: "var(--mauve)", fontFamily: "'Inter', sans-serif" }}>{f}</span>
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-                {tier.cta && !isActive && (
-                  <div style={{ padding: "0 20px 20px" }}>
-                    <button onClick={() => handleUpgrade(id)} disabled={loading}
-                      style={{ width: "100%", padding: "14px", borderRadius: 14, fontWeight: 700, fontSize: 14, border: "none", cursor: "pointer", fontFamily: "'Inter', sans-serif",
-                        backgroundColor: tier.highlight ? "var(--plum)" : "var(--rose-dust-subtle)",
-                        color: tier.highlight ? "white" : "var(--rose-dust)",
-                        opacity: loading ? 0.6 : 1 }}>
-                      {loading ? "Loading..." : tier.cta}
-                    </button>
-                  </div>
-                )}
-              </div>
-            );
-          })}
-        </div>
-
-        {/* Comparison table */}
-        <div style={{ backgroundColor: "var(--surface)", border: "1px solid var(--border)", borderRadius: 20, overflow: "hidden", marginBottom: 32 }}>
-          <div style={{ padding: "16px 20px 12px", borderBottom: "1px solid var(--border-subtle)" }}>
-            <p style={{ ...sLabel, marginBottom: 0 }}>Feature comparison</p>
-          </div>
-          <div style={{ overflowX: "auto" }}>
-            <table style={{ width: "100%", borderCollapse: "collapse" }}>
-              <thead>
-                <tr style={{ borderBottom: "1px solid var(--border-subtle)" }}>
-                  <th style={{ padding: "12px 16px", textAlign: "left", fontSize: 11, fontWeight: 700, color: "var(--mauve)", fontFamily: "'Inter', sans-serif" }}>Feature</th>
-                  {["Free", "Plus", "Pro"].map(t => (
-                    <th key={t} style={{ padding: "12px 12px", textAlign: "center", fontSize: 11, fontWeight: 700, color: t === "Plus" ? "var(--rose-dust)" : "var(--mauve)", fontFamily: "'Inter', sans-serif" }}>{t}</th>
-                  ))}
-                </tr>
-              </thead>
-              <tbody>
-                {COMPARISON.map((row, i) => (
-                  <tr key={row.feature} style={{ borderBottom: i < COMPARISON.length - 1 ? "1px solid var(--border-subtle)" : "none", backgroundColor: i % 2 === 0 ? "transparent" : "var(--ivory)" }}>
-                    <td style={{ padding: "10px 16px", fontSize: 12, color: "var(--plum)", fontFamily: "'Inter', sans-serif" }}>{row.feature}</td>
-                    {["free", "plus", "pro"].map(plan => (
-                      <td key={plan} style={{ padding: "10px 12px", textAlign: "center" }}>
-                        {typeof row[plan] === "boolean" ? (
-                          row[plan]
-                            ? <span style={{ color: "var(--sage)", fontSize: 14 }}>✓</span>
-                            : <span style={{ color: "var(--border)", fontSize: 12 }}>—</span>
-                        ) : (
-                          <span style={{ fontSize: 11, fontWeight: 500, color: "var(--plum)", fontFamily: "'Inter', sans-serif" }}>{row[plan]}</span>
-                        )}
-                      </td>
-                    ))}
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        </div>
-
-        {/* Testimonials */}
-        <div className="space-y-3 mb-10">
-          <p style={{ ...sLabel, marginBottom: 12 }}>What women say</p>
-          {TESTIMONIALS.map((t, i) => (
-            <div key={i} style={{ backgroundColor: "var(--surface)", border: "1px solid var(--border)", borderRadius: 16, padding: "16px 18px" }}>
-              <p style={{ fontSize: 13, color: "var(--plum)", fontFamily: "'Inter', sans-serif", lineHeight: 1.65, marginBottom: 8, fontStyle: "italic" }}>"{t.quote}"</p>
-              <p style={{ fontSize: 11, fontWeight: 600, color: "var(--mauve)", fontFamily: "'Inter', sans-serif" }}>{t.name} · {t.location}</p>
-            </div>
-          ))}
-        </div>
-
-        {/* FAQ */}
-        <div className="space-y-2 mb-10">
-          <p style={{ ...sLabel, marginBottom: 12 }}>FAQs</p>
-          {FAQS.map((faq, i) => (
-            <div key={i} style={{ backgroundColor: "var(--surface)", border: "1px solid var(--border)", borderRadius: 16, overflow: "hidden" }}>
-              <button onClick={() => setOpenFaq(openFaq === i ? null : i)}
-                style={{ width: "100%", display: "flex", alignItems: "center", justifyContent: "space-between", padding: "14px 16px", background: "none", border: "none", cursor: "pointer" }}>
-                <span style={{ fontSize: 13, fontWeight: 600, color: "var(--plum)", fontFamily: "'Inter', sans-serif", textAlign: "left" }}>{faq.q}</span>
-                {openFaq === i ? <ChevronUp className="w-4 h-4" style={{ color: "var(--mauve)", flexShrink: 0 }} /> : <ChevronDown className="w-4 h-4" style={{ color: "var(--mauve)", flexShrink: 0 }} />}
-              </button>
-              {openFaq === i && (
-                <div style={{ padding: "0 16px 14px" }}>
-                  <p style={{ fontSize: 13, color: "var(--mauve)", fontFamily: "'Inter', sans-serif", lineHeight: 1.65 }}>{faq.a}</p>
-                </div>
-              )}
-            </div>
-          ))}
-        </div>
-
-        <p className="text-center text-xs mb-8" style={{ color: "var(--mauve)", fontFamily: "'Inter', sans-serif" }}>Cancel anytime · Secure payments via Stripe · Your data stays yours</p>
-      </div>
+      )}
     </div>
   );
 }

@@ -41,6 +41,9 @@ export default function Profile() {
   const [uploadingPhoto, setUploadingPhoto] = useState(false);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [deleting, setDeleting] = useState(false);
+  const [showDataExportModal, setShowDataExportModal] = useState(false);
+  const [showDataDeleteModal, setShowDataDeleteModal] = useState(false);
+  const [dataDeletionRequested, setDataDeletionRequested] = useState(false);
 
   const handlePhotoUpload = async (e) => {
     const file = e.target.files?.[0];
@@ -275,15 +278,15 @@ export default function Profile() {
               </div>
               <input type="file" accept="image/*" style={{ display: "none" }} onChange={handlePhotoUpload} disabled={uploadingPhoto} />
             </label>
-            <span style={{
+            <a href={createPageUrl("Upgrade")} style={{
               background: "rgba(255,255,255,0.15)",
               border: "1px solid rgba(255,255,255,0.25)",
               borderRadius: 9999, padding: "4px 12px",
               fontSize: 11, fontWeight: 600, color: "white",
-              fontFamily: "'Inter', sans-serif",
+              fontFamily: "'Inter', sans-serif", textDecoration: "none",
             }}>
               {profile?.plan ? `${profile.plan} Plan` : "Free Plan"}
-            </span>
+            </a>
           </div>
           {/* Name row */}
           <p style={{ fontSize: 18, fontWeight: 700, color: "white", fontFamily: "'Inter', sans-serif", marginBottom: 2 }}>
@@ -563,7 +566,7 @@ export default function Profile() {
           <div style={divider} />
 
           {/* Privacy */}
-          <button style={rowItem}>
+          <button onClick={() => setShowDataExportModal(true)} style={rowItem}>
             <div style={iconBox("var(--sage-subtle)")}>
               <Shield className="w-4 h-4" style={{ color: "var(--sage)" }} />
             </div>
@@ -574,6 +577,130 @@ export default function Profile() {
             <ChevronRight className="w-4 h-4" style={{ color: "var(--border)" }} />
           </button>
         </div>
+
+        {/* Privacy section */}
+        <div style={{ ...card, overflow: "hidden", marginBottom: "16px" }}>
+          <div style={{ padding: "14px 16px 10px" }}>
+            <p style={sLabel}>Privacy</p>
+          </div>
+
+          {/* Your data row */}
+          <div style={{ ...rowItem, cursor: "default" }}>
+            <div style={iconBox("var(--sage-subtle)")}>
+              <Shield className="w-4 h-4" style={{ color: "var(--sage)" }} />
+            </div>
+            <div className="flex-1">
+              <p style={{ ...bodyText, fontWeight: 600 }}>Your data</p>
+              <p style={mutedText}>{checkins.length} check-ins stored</p>
+            </div>
+          </div>
+
+          <div style={divider} />
+
+          {/* Anonymous mode */}
+          <div style={{ ...rowItem, cursor: "default" }}>
+            <div style={iconBox("var(--mauve-subtle)")}>
+              <Shield className="w-4 h-4" style={{ color: "var(--mauve)" }} />
+            </div>
+            <div className="flex-1">
+              <p style={{ ...bodyText, fontWeight: 600 }}>Anonymous mode</p>
+              <p style={mutedText}>Your data stays yours. Not linked to analytics.</p>
+            </div>
+            <div
+              onClick={async () => {
+                if (!profile) return;
+                const next = !profile.anonymous_mode;
+                await base44.entities.UserProfile.update(profile.id, { anonymous_mode: next });
+                setProfile(p => ({ ...p, anonymous_mode: next }));
+              }}
+              style={{ width: 40, height: 22, borderRadius: 9999, position: "relative", backgroundColor: profile?.anonymous_mode ? "var(--plum)" : "var(--border)", transition: "background 0.2s", cursor: "pointer", flexShrink: 0 }}>
+              <div style={{ position: "absolute", top: 2, left: profile?.anonymous_mode ? 20 : 2, width: 18, height: 18, borderRadius: "50%", backgroundColor: "white", transition: "left 0.2s" }} />
+            </div>
+          </div>
+
+          <div style={divider} />
+
+          {/* Data export */}
+          <button onClick={() => setShowDataExportModal(true)} style={rowItem}>
+            <div style={iconBox("var(--ivory-dark)")}>
+              <ChevronRight className="w-4 h-4" style={{ color: "var(--mauve)" }} />
+            </div>
+            <div className="flex-1">
+              <p style={{ ...bodyText, fontWeight: 600 }}>Data export</p>
+              <p style={mutedText}>Download your health data</p>
+            </div>
+            <ChevronRight className="w-4 h-4" style={{ color: "var(--border)" }} />
+          </button>
+
+          <div style={divider} />
+
+          {/* Delete my data */}
+          <button onClick={() => setShowDataDeleteModal(true)} style={{ ...rowItem }}>
+            <div style={iconBox("#FFF0F0")}>
+              <Shield className="w-4 h-4" style={{ color: "#D94F4F" }} />
+            </div>
+            <div className="flex-1">
+              <p style={{ fontSize: "14px", color: "#D94F4F", fontFamily: "'Inter', sans-serif", fontWeight: 600 }}>Delete my data</p>
+              <p style={mutedText}>Request permanent deletion</p>
+            </div>
+            <ChevronRight className="w-4 h-4" style={{ color: "var(--border)" }} />
+          </button>
+        </div>
+
+        {/* Data Export Modal */}
+        {showDataExportModal && (
+          <div style={{ position: "fixed", inset: 0, zIndex: 60, display: "flex", alignItems: "flex-end" }}>
+            <div onClick={() => setShowDataExportModal(false)} style={{ position: "absolute", inset: 0, backgroundColor: "rgba(42,32,53,0.5)", backdropFilter: "blur(6px)" }} />
+            <div style={{ position: "relative", width: "100%", backgroundColor: "var(--surface)", borderRadius: "28px 28px 0 0", padding: 24, zIndex: 1 }}>
+              <h3 style={{ fontFamily: "'Playfair Display', serif", fontSize: 18, color: "var(--plum)", fontWeight: 600, marginBottom: 10 }}>Data export</h3>
+              <p style={{ fontSize: 14, color: "var(--mauve)", fontFamily: "'Inter', sans-serif", lineHeight: 1.65, marginBottom: 16 }}>
+                Your full data export will be available in a future update. For now, you can use Doctor Export to download a health summary.
+              </p>
+              <a href={createPageUrl("DoctorExport")} onClick={() => setShowDataExportModal(false)}
+                style={{ display: "block", width: "100%", textAlign: "center", padding: "13px", borderRadius: 12, backgroundColor: "var(--plum)", color: "white", fontSize: 14, fontWeight: 600, fontFamily: "'Inter', sans-serif", textDecoration: "none", marginBottom: 10 }}>
+                Open Doctor Export
+              </a>
+              <button onClick={() => setShowDataExportModal(false)} style={{ width: "100%", padding: "13px", borderRadius: 12, border: "1.5px solid var(--border)", backgroundColor: "transparent", fontSize: 14, fontWeight: 600, color: "var(--plum)", cursor: "pointer", fontFamily: "'Inter', sans-serif" }}>
+                Close
+              </button>
+            </div>
+          </div>
+        )}
+
+        {/* Delete Data Modal */}
+        {showDataDeleteModal && (
+          <div style={{ position: "fixed", inset: 0, zIndex: 60, display: "flex", alignItems: "flex-end" }}>
+            <div onClick={() => setShowDataDeleteModal(false)} style={{ position: "absolute", inset: 0, backgroundColor: "rgba(42,32,53,0.5)", backdropFilter: "blur(6px)" }} />
+            <div style={{ position: "relative", width: "100%", backgroundColor: "var(--surface)", borderRadius: "28px 28px 0 0", padding: 24, zIndex: 1 }}>
+              {dataDeletionRequested ? (
+                <>
+                  <h3 style={{ fontFamily: "'Playfair Display', serif", fontSize: 18, color: "var(--plum)", fontWeight: 600, marginBottom: 10 }}>Request received</h3>
+                  <p style={{ fontSize: 14, color: "var(--mauve)", fontFamily: "'Inter', sans-serif", lineHeight: 1.65, marginBottom: 20 }}>
+                    Your deletion request has been received. We will process it within 7 days and notify you by email.
+                  </p>
+                  <button onClick={() => { setShowDataDeleteModal(false); setDataDeletionRequested(false); }} style={{ width: "100%", padding: "13px", borderRadius: 12, backgroundColor: "var(--plum)", color: "white", fontSize: 14, fontWeight: 600, border: "none", cursor: "pointer", fontFamily: "'Inter', sans-serif" }}>
+                    Done
+                  </button>
+                </>
+              ) : (
+                <>
+                  <h3 style={{ fontFamily: "'Playfair Display', serif", fontSize: 18, color: "#D94F4F", fontWeight: 600, marginBottom: 10 }}>Delete my data</h3>
+                  <p style={{ fontSize: 14, color: "var(--mauve)", fontFamily: "'Inter', sans-serif", lineHeight: 1.65, marginBottom: 20 }}>
+                    This will permanently delete all your tracked data. This cannot be undone.
+                  </p>
+                  <div style={{ display: "flex", gap: 10 }}>
+                    <button onClick={() => setShowDataDeleteModal(false)} style={{ flex: 1, padding: "13px", borderRadius: 12, border: "1.5px solid var(--border)", backgroundColor: "transparent", fontSize: 14, fontWeight: 600, color: "var(--plum)", cursor: "pointer", fontFamily: "'Inter', sans-serif" }}>
+                      Cancel
+                    </button>
+                    <button onClick={() => setDataDeletionRequested(true)} style={{ flex: 1, padding: "13px", borderRadius: 12, border: "none", backgroundColor: "#D94F4F", fontSize: 14, fontWeight: 600, color: "white", cursor: "pointer", fontFamily: "'Inter', sans-serif" }}>
+                      Confirm Delete
+                    </button>
+                  </div>
+                </>
+              )}
+            </div>
+          </div>
+        )}
 
         {/* Life Stage */}
         <a href={createPageUrl("LifeStageCare")}

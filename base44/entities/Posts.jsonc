@@ -5,6 +5,12 @@
     "user_id": {
       "type": "string"
     },
+    "user_email": {
+      "type": "string"
+    },
+    "display_name": {
+      "type": "string"
+    },
     "content": {
       "type": "string"
     },
@@ -41,7 +47,13 @@
         "gratitude",
         "real_talk",
         "question",
-        "milestone"
+        "milestone",
+        "cycle",
+        "pcos",
+        "endometriosis",
+        "pmdd",
+        "pregnancy",
+        "menopause"
       ],
       "default": "general"
     },
@@ -61,6 +73,18 @@
           "default": 0
         }
       }
+    },
+    "reactions_helpful": {
+      "type": "number",
+      "default": 0
+    },
+    "reactions_relatable": {
+      "type": "number",
+      "default": 0
+    },
+    "reactions_thankyou": {
+      "type": "number",
+      "default": 0
     },
     "reply_count": {
       "type": "number",

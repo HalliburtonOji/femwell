@@ -298,58 +298,68 @@ export default function Today() {
 
   useEffect(() => {
     (async () => {
-      const u = await base44.auth.me();
-      setUser(u);
-      const [profiles, checkins, completions] = await Promise.all([
-        base44.entities.UserProfile.filter({ user_id: u.id }),
-        base44.entities.DailyCheckins.filter({ user_id: u.id, date: todayStr }),
-        base44.entities.ContentHistory.filter({ user_id: u.id, session_date: todayStr, is_deleted: false }).catch(() => []),
-      ]);
-      const [userPrograms, recs, allPrograms] = await Promise.all([
-        base44.entities.UserPrograms.filter({ user_id: u.id }).catch(() => []),
-        base44.entities.TodayRecommendations.filter({ user_id: u.id, date: todayStr }).catch(() => []),
-        base44.entities.Programs.list("-created_date", 50).catch(() => []),
-      ]);
+      // ── Batch 1: Critical (max 3 parallel) ──────────────────────────────────
+      let u;
+      try { u = await base44.auth.me(); setUser(u); } catch { setLoading(false); return; }
+
+      let profiles = [], checkins = [], completions = [];
+      try {
+        [profiles, checkins, completions] = await Promise.all([
+          base44.entities.UserProfile.filter({ user_id: u.id }).catch(() => []),
+          base44.entities.DailyCheckins.filter({ user_id: u.id, date: todayStr }).catch(() => []),
+          base44.entities.ContentHistory.filter({ user_id: u.id, session_date: todayStr, is_deleted: false }).catch(() => []),
+        ]);
+      } catch {}
+
       if (profiles[0]) setProfile(profiles[0]);
       if (checkins[0]) setTodayCheckin(checkins[0]);
       setTodayCompletions(completions.filter((c) => !c.is_deleted));
+      setLoading(false);
+
+      // ── Batch 2: Secondary (max 3 parallel, after batch 1) ──────────────────
+      await new Promise(r => setTimeout(r, 400));
+      let userPrograms = [], allPrograms = [];
+      try {
+        [userPrograms, allPrograms] = await Promise.all([
+          base44.entities.UserPrograms.filter({ user_id: u.id }).catch(() => []),
+          base44.entities.Programs.list("-created_date", 50).catch(() => []),
+        ]);
+      } catch {}
       setActivePrograms(userPrograms.filter((e) => e.is_saved || e.status === "active"));
       setProgramLibrary(allPrograms);
 
-      await new Promise(r => setTimeout(r, 300));
-      try {
-        const lifestyleItems = await base44.entities.LifestyleItems.list("-pub_date", 20);
-        const latestRead = lifestyleItems
-          .filter((item) => item.status === "PUBLISHED" || item.status === "NEEDS_REVIEW")
-          .sort((a, b) => new Date(b.pub_date || 0) - new Date(a.pub_date || 0))[0];
-        const todayItems = recs.slice(0, 3);
-        const fallbackItems = latestRead
-          ? [{
-              id: latestRead.id,
-              type: "READ",
-              title: latestRead.title,
-              reason: latestRead.summary || "Open the latest read.",
-              action_route: `/LifestyleDetail?id=${latestRead.id}`,
-              source_name: latestRead.source_name,
-            }, {
-              ...fallbackTodayRecommendations[0],
-            }, {
-              ...fallbackTodayRecommendations[1],
-              action_route: "/ProgramsHub?program_key=prog_pms_relief_path",
-            }].slice(0, 3)
-          : [{
-              ...fallbackTodayRecommendations[0],
-            }, {
-              ...fallbackTodayRecommendations[1],
-              action_route: "/ProgramsHub?program_key=prog_pms_relief_path",
-            }];
-        setHomeRecommendations(todayItems.length > 0 ? todayItems.slice(0, 3) : fallbackItems);
-      } catch {
-        setHomeRecommendations(fallbackTodayRecommendations);
-      }
-      setLoadingHomeRecommendations(false);
-
-      setLoading(false);
+      // ── Lazy batch: Non-critical, loaded 1.5s after first render ────────────
+      setTimeout(async () => {
+        // Chunk 1: TodayRecommendations + LifestyleItems
+        try {
+          const [recs, lifestyleItems] = await Promise.all([
+            base44.entities.TodayRecommendations.filter({ user_id: u.id, date: todayStr }).catch(() => []),
+            base44.entities.LifestyleItems.list("-pub_date", 20).catch(() => []),
+          ]);
+          const latestRead = lifestyleItems
+            .filter((item) => item.status === "PUBLISHED" || item.status === "NEEDS_REVIEW")
+            .sort((a, b) => new Date(b.pub_date || 0) - new Date(a.pub_date || 0))[0];
+          const todayItems = recs.slice(0, 3);
+          const fallbackItems = latestRead
+            ? [{
+                id: latestRead.id, type: "READ", title: latestRead.title,
+                reason: latestRead.summary || "Open the latest read.",
+                action_route: `/LifestyleDetail?id=${latestRead.id}`,
+                source_name: latestRead.source_name,
+              }, { ...fallbackTodayRecommendations[0] }, {
+                ...fallbackTodayRecommendations[1],
+                action_route: "/ProgramsHub?program_key=prog_pms_relief_path",
+              }].slice(0, 3)
+            : [{ ...fallbackTodayRecommendations[0] }, {
+                ...fallbackTodayRecommendations[1],
+                action_route: "/ProgramsHub?program_key=prog_pms_relief_path",
+              }];
+          setHomeRecommendations(todayItems.length > 0 ? todayItems.slice(0, 3) : fallbackItems);
+        } catch {
+          setHomeRecommendations(fallbackTodayRecommendations);
+        }
+        setLoadingHomeRecommendations(false);
+      }, 1500);
     })();
   }, []);
 

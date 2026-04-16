@@ -164,6 +164,10 @@
     "pregnancy_due_date": {
       "type": "string"
     },
+    "anonymous_mode": {
+      "type": "boolean",
+      "default": false
+    },
     "created_at": {
       "type": "string"
     },
