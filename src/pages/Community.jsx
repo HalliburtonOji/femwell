@@ -62,14 +62,17 @@ export default function Community() {
 
   useEffect(() => {
     (async () => {
-      const u = await base44.auth.me().catch(() => null);
-      setUser(u);
-      if (u) {
-        const profiles = await base44.entities.UserProfile.filter({ user_id: u.id }).catch(() => []);
-        setProfile(profiles[0] || null);
+      try {
+        const u = await base44.auth.me().catch(() => null);
+        setUser(u);
+        if (u) {
+          const profiles = await base44.entities.UserProfile.filter({ user_id: u.id }).catch(() => []);
+          setProfile(profiles[0] || null);
+        }
+        await loadPosts(0, "all", true);
+      } finally {
+        setLoading(false);
       }
-      await loadPosts(0, "all", true);
-      setLoading(false);
     })();
   }, []);
 
@@ -94,7 +97,7 @@ export default function Community() {
     setPage(0);
     setPosts([]);
     setLoading(true);
-    loadPosts(0, cat, true).then(() => setLoading(false));
+    loadPosts(0, cat, true).finally(() => setLoading(false));
   };
 
   const handleLoadMore = () => loadPosts(page + 1, filter);

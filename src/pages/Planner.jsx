@@ -54,11 +54,15 @@ export default function Planner() {
 
   useEffect(() => {
     (async () => {
-      const u = await base44.auth.me();
-      setUser(u);
-      const allItems = await base44.entities.PlannerItems.filter({ user_id: u.id }, "-created_date", 200).catch(() => []);
-      setItems(allItems);
-      setLoading(false);
+      try {
+        const u = await base44.auth.me().catch(() => null);
+        if (!u) return;
+        setUser(u);
+        const allItems = await base44.entities.PlannerItems.filter({ user_id: u.id }, "-created_date", 200).catch(() => []);
+        setItems(allItems);
+      } finally {
+        setLoading(false);
+      }
     })();
   }, []);
 

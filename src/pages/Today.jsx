@@ -154,38 +154,48 @@ export default function Today() {
   useEffect(() => {
     (async () => {
       let u;
-      try { u = await base44.auth.me(); setUser(u); } catch { setLoading(false); return; }
-
-      const [profiles, checkins, completions, hydrationLogs, dailyPlans] = await Promise.all([
-        base44.entities.UserProfile.filter({ user_id: u.id }).catch(() => []),
-        base44.entities.DailyCheckins.filter({ user_id: u.id, date: todayStr }).catch(() => []),
-        base44.entities.ContentHistory.filter({ user_id: u.id, session_date: todayStr, is_deleted: false }).catch(() => []),
-        base44.entities.HydrationLog.filter({ user_id: u.id, day_key: todayStr }).catch(() => []),
-        base44.entities.DailyPlan.filter({ user_id: u.id, day_key: todayStr }).catch(() => []),
-      ]);
-
-      if (profiles[0]) setProfile(profiles[0]);
-      const ci = checkins[0] || null;
-      if (ci) {
-        setTodayCheckin(ci);
-        if (ci.mood) setMood(ci.mood - 1);
-        if (ci.energy) setEnergy(ci.energy - 1);
+      try {
+        u = await base44.auth.me();
+        setUser(u);
+      } catch {
+        setLoading(false);
+        setLoadingHomeRecommendations(false);
+        return;
       }
-      setTodayCompletions(completions.filter(c => !c.is_deleted));
-      const hl = hydrationLogs[0] || null;
-      setHydrationLog(hl);
-      setGlasses(hl?.glasses_count || 0);
-      if (dailyPlans[0]) setDailyPlan(dailyPlans[0]);
 
-      setLoading(false);
+      try {
+        const [profiles, checkins, completions, hydrationLogs, dailyPlans] = await Promise.all([
+          base44.entities.UserProfile.filter({ user_id: u.id }).catch(() => []),
+          base44.entities.DailyCheckins.filter({ user_id: u.id, date: todayStr }).catch(() => []),
+          base44.entities.ContentHistory.filter({ user_id: u.id, session_date: todayStr, is_deleted: false }).catch(() => []),
+          base44.entities.HydrationLog.filter({ user_id: u.id, day_key: todayStr }).catch(() => []),
+          base44.entities.DailyPlan.filter({ user_id: u.id, day_key: todayStr }).catch(() => []),
+        ]);
 
-      // Secondary: programs
-      const [userPrograms, allPrograms] = await Promise.all([
+        if (profiles[0]) setProfile(profiles[0]);
+        const ci = checkins[0] || null;
+        if (ci) {
+          setTodayCheckin(ci);
+          if (ci.mood) setMood(ci.mood - 1);
+          if (ci.energy) setEnergy(ci.energy - 1);
+        }
+        setTodayCompletions(completions.filter(c => !c.is_deleted));
+        const hl = hydrationLogs[0] || null;
+        setHydrationLog(hl);
+        setGlasses(hl?.glasses_count || 0);
+        if (dailyPlans[0]) setDailyPlan(dailyPlans[0]);
+      } finally {
+        setLoading(false);
+      }
+
+      // Secondary: programs (non-blocking)
+      Promise.all([
         base44.entities.UserPrograms.filter({ user_id: u.id }).catch(() => []),
         base44.entities.Programs.list("-created_date", 50).catch(() => []),
-      ]);
-      setActivePrograms(userPrograms.filter(e => e.is_saved || e.status === "active"));
-      setProgramLibrary(allPrograms);
+      ]).then(([userPrograms, allPrograms]) => {
+        setActivePrograms(userPrograms.filter(e => e.is_saved || e.status === "active"));
+        setProgramLibrary(allPrograms);
+      }).catch(() => {});
 
       // Lazy: recommendations
       setTimeout(async () => {
@@ -194,8 +204,9 @@ export default function Today() {
           setHomeRecommendations(recs.length > 0 ? recs.slice(0, 3) : fallbackTodayRecommendations);
         } catch {
           setHomeRecommendations(fallbackTodayRecommendations);
+        } finally {
+          setLoadingHomeRecommendations(false);
         }
-        setLoadingHomeRecommendations(false);
       }, 1500);
     })();
   }, []);
