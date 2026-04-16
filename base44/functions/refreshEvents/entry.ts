@@ -1,19 +1,21 @@
-import { createClientFromRequest } from 'npm:@base44/sdk@0.8.20';
+/* global Deno */
+import { createClientFromRequest } from 'npm:@base44/sdk@0.8.25';
 
 Deno.serve(async (req) => {
   try {
     const base44 = createClientFromRequest(req);
-    // Fetch in two smaller batches to avoid JSON truncation issues
-    const fetchBatch = async (categories, limit) => {
+    // Fetch in smaller batches (8 items each) to avoid JSON truncation
+    const fetchBatch = async (categories) => {
       const res = await base44.asServiceRole.integrations.Core.InvokeLLM({
         model: 'gemini_3_flash',
         add_context_from_internet: true,
-        prompt: `Find upcoming real events over the next 60 days in major UK cities (London, Manchester, Birmingham, Leeds, Bristol) for: ${categories}. Include both free and paid events. Sources: Meetup.com, Dice.fm, Fever, Time Out, Fatsoma. Return ONLY direct booking URLs (not homepages). Return up to ${limit} items as JSON.`,
+        prompt: `Find 8 upcoming real events over the next 60 days in major UK cities (London, Manchester, Birmingham, Leeds, Bristol) for: ${categories}. Include both free and paid events. Return ONLY direct booking URLs. Return exactly 8 items as a JSON array.`,
         response_json_schema: {
           type: 'object',
           properties: {
             items: {
               type: 'array',
+              maxItems: 8,
               items: {
                 type: 'object',
                 properties: {
@@ -36,11 +38,13 @@ Deno.serve(async (req) => {
       return Array.isArray(res.items) ? res.items : [];
     };
 
-    const [batch1, batch2] = await Promise.all([
-      fetchBatch('women networking, fitness and wellness, talks and workshops, dating events', 20),
-      fetchBatch('social parties, gallery and culture events, food and coffee socials, virtual and online events', 20),
+    const [batch1, batch2, batch3, batch4] = await Promise.all([
+      fetchBatch('women networking, fitness and wellness'),
+      fetchBatch('talks and workshops, dating events'),
+      fetchBatch('social parties, gallery and culture events'),
+      fetchBatch('food and coffee socials, virtual and online events'),
     ]);
-    const result = { items: [...batch1, ...batch2] };
+    const result = { items: [...batch1, ...batch2, ...batch3, ...batch4] };
 
     const existing = await base44.asServiceRole.entities.EventsItems.list('-created_date', 300);
     await Promise.all(existing.map((item) => base44.asServiceRole.entities.EventsItems.delete(item.id)));
