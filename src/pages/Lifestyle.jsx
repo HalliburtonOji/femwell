@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { base44 } from "@/api/base44Client";
-import { ExternalLink, ChevronDown, ChevronUp, X, BookOpen } from "lucide-react";
+import { ExternalLink, ChevronDown, ChevronUp, X, BookOpen, Bookmark } from "lucide-react";
 
 // ── Helpers ──────────────────────────────────────────────────────────────────
 function stripHtml(str) {
@@ -38,17 +38,158 @@ function Pill({ label, color = PRIMARY, bg = PRIMARY_LIGHT }) {
   );
 }
 
-// ── Bottom sheet modal ────────────────────────────────────────────────────────
-function BottomSheet({ onClose, children }) {
+// ── Full-screen article reader sheet ─────────────────────────────────────────
+function ArticleSheet({ item, onClose }) {
+  const [saved, setSaved] = useState(false);
+  const paragraphs = (item.lede || item.summary || "").split(/\n\n+/).filter(Boolean);
+  const takeaways = Array.isArray(item.takeaways) ? item.takeaways : [];
+
+  const handleSave = async () => {
+    setSaved(true);
+    // Mark as bookmarked via ContentBookmarks if user is logged in
+    try {
+      const u = await base44.auth.me().catch(() => null);
+      if (u) {
+        await base44.entities.ContentBookmarks.create({
+          user_id: u.id,
+          item_id: item.id,
+          item_type: "lifestyle",
+          created_at: new Date().toISOString(),
+        }).catch(() => {});
+      }
+    } catch {}
+  };
+
   return (
     <>
-      <div onClick={onClose} style={{ position: "fixed", inset: 0, zIndex: 60, backgroundColor: "rgba(42,32,53,0.5)", backdropFilter: "blur(6px)" }} />
-      <div style={{ position: "fixed", bottom: 0, left: 0, right: 0, zIndex: 61, backgroundColor: "var(--surface)", borderRadius: "24px 24px 0 0", maxHeight: "88vh", display: "flex", flexDirection: "column" }}>
-        <div style={{ display: "flex", justifyContent: "center", padding: "12px 0 8px" }}>
+      <div onClick={onClose} style={{ position: "fixed", inset: 0, zIndex: 60, backgroundColor: "rgba(42,32,53,0.55)", backdropFilter: "blur(6px)" }} />
+      <div style={{ position: "fixed", bottom: 0, left: 0, right: 0, zIndex: 61, backgroundColor: "var(--surface)", borderRadius: "24px 24px 0 0", maxHeight: "92vh", display: "flex", flexDirection: "column" }}>
+        {/* Drag handle */}
+        <div style={{ display: "flex", justifyContent: "center", padding: "10px 0 6px", flexShrink: 0 }}>
           <div style={{ width: 32, height: 4, borderRadius: 9999, backgroundColor: "var(--border)" }} />
         </div>
-        <div style={{ flex: 1, overflowY: "auto", padding: "0 20px 40px" }}>{children}</div>
+        {/* Toolbar */}
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "0 18px 10px", flexShrink: 0 }}>
+          <button onClick={onClose} style={{ width: 32, height: 32, borderRadius: 9999, backgroundColor: "var(--ivory-dark)", border: "none", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center" }}>
+            <X className="w-4 h-4" style={{ color: "var(--mauve)" }} />
+          </button>
+          <button onClick={handleSave} style={{ display: "flex", alignItems: "center", gap: 5, padding: "6px 14px", borderRadius: 9999, border: "1px solid var(--border)", backgroundColor: saved ? PRIMARY_LIGHT : "transparent", cursor: "pointer", fontSize: 12, fontWeight: 600, color: saved ? PRIMARY : "var(--mauve)", fontFamily: "'Inter', sans-serif" }}>
+            <Bookmark className="w-3.5 h-3.5" style={{ fill: saved ? PRIMARY : "none" }} />
+            {saved ? "Saved" : "Save"}
+          </button>
+        </div>
+        {/* Scrollable content */}
+        <div style={{ flex: 1, overflowY: "auto", padding: "0 20px 48px" }}>
+          {/* Hero image */}
+          {item.image_url && (
+            <div style={{ height: 220, borderRadius: 18, overflow: "hidden", marginBottom: 20 }}>
+              <img src={item.image_url} alt="" style={{ width: "100%", height: "100%", objectFit: "cover" }} onError={e => e.target.parentElement.style.display = "none"} />
+            </div>
+          )}
+          {/* Pills */}
+          <div style={{ display: "flex", gap: 6, flexWrap: "wrap", marginBottom: 14 }}>
+            {item.category && <Pill label={item.category} />}
+            {item.emotional_tag && <Pill label={item.emotional_tag} color="#7C3AED" bg="#EDE9FE" />}
+          </div>
+          {/* Title */}
+          <h2 style={{ fontFamily: "'Playfair Display', serif", fontSize: 22, fontWeight: 700, color: "var(--plum)", lineHeight: 1.3, marginBottom: 10 }}>{item.title}</h2>
+          {/* Meta */}
+          <div style={{ display: "flex", gap: 8, flexWrap: "wrap", marginBottom: 20 }}>
+            {item.author_name && <span style={{ fontSize: 12, color: "var(--mauve)", fontFamily: "'Inter', sans-serif" }}>{item.author_name}</span>}
+            {item.published_at && <span style={{ fontSize: 12, color: "var(--mauve)", fontFamily: "'Inter', sans-serif", opacity: 0.7 }}>· {fmtDate(item.published_at)}</span>}
+            {item.source_name && <span style={{ fontSize: 12, color: "var(--mauve)", fontFamily: "'Inter', sans-serif", opacity: 0.7 }}>· {item.source_name}</span>}
+          </div>
+          {/* Body paragraphs */}
+          <div style={{ display: "flex", flexDirection: "column", gap: 16, marginBottom: 20 }}>
+            {paragraphs.map((para, i) => (
+              <p key={i} style={{ fontSize: 15, color: "var(--plum)", fontFamily: "'Inter', sans-serif", lineHeight: 1.75, margin: 0 }}>{stripHtml(para)}</p>
+            ))}
+          </div>
+          {/* Why it matters */}
+          {item.why_it_matters && (
+            <p style={{ fontSize: 13, color: "var(--mauve)", fontFamily: "'Inter', sans-serif", fontStyle: "italic", lineHeight: 1.65, marginBottom: 20 }}>{item.why_it_matters}</p>
+          )}
+          {/* Takeaways */}
+          {takeaways.length > 0 && (
+            <div style={{ backgroundColor: PRIMARY_LIGHT, borderRadius: 16, padding: "14px 16px", marginBottom: 20 }}>
+              <p style={{ fontSize: 10, fontWeight: 700, color: PRIMARY, textTransform: "uppercase", letterSpacing: "0.1em", fontFamily: "'Inter', sans-serif", marginBottom: 10 }}>Key takeaways</p>
+              <ul style={{ margin: 0, paddingLeft: 18 }}>
+                {takeaways.map((t, i) => (
+                  <li key={i} style={{ fontSize: 13, color: "var(--plum)", fontFamily: "'Inter', sans-serif", lineHeight: 1.65, marginBottom: 6 }}>{t}</li>
+                ))}
+              </ul>
+            </div>
+          )}
+          {/* External link fallback */}
+          {item.content_url && (
+            <a href={item.content_url} target="_blank" rel="noopener noreferrer"
+              style={{ display: "inline-flex", alignItems: "center", gap: 6, fontSize: 13, fontWeight: 600, color: PRIMARY, fontFamily: "'Inter', sans-serif", textDecoration: "none" }}>
+              Read on {item.source_name || "source"} <ExternalLink className="w-3.5 h-3.5" />
+            </a>
+          )}
+        </div>
       </div>
+    </>
+  );
+}
+
+// ── Tappable item card (opens sheet or new tab) ───────────────────────────────
+function ContentCard({ item, compact = false }) {
+  const [open, setOpen] = useState(false);
+  const hasInternalContent = item.lede || item.provider === "FEMWELL_AI";
+
+  const handleClick = () => {
+    if (hasInternalContent) {
+      setOpen(true);
+    } else if (item.content_url) {
+      window.open(item.content_url, "_blank", "noopener,noreferrer");
+    }
+  };
+
+  return (
+    <>
+      {compact ? (
+        <div onClick={handleClick} style={{ display: "flex", gap: 12, backgroundColor: "var(--surface)", border: "1px solid var(--border)", borderRadius: 16, overflow: "hidden", cursor: "pointer", boxShadow: "var(--shadow-sm)" }}>
+          {item.image_url && (
+            <div style={{ width: 90, flexShrink: 0, overflow: "hidden" }}>
+              <img src={item.image_url} alt="" style={{ width: "100%", height: "100%", objectFit: "cover" }} onError={e => e.target.parentElement.style.display = "none"} />
+            </div>
+          )}
+          <div style={{ flex: 1, padding: "12px 14px", minWidth: 0 }}>
+            {item.category && <Pill label={item.category} />}
+            <p style={{ fontSize: 14, fontWeight: 700, color: "var(--plum)", fontFamily: "'Inter', sans-serif", lineHeight: 1.35, margin: "6px 0 4px", display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical", overflow: "hidden" }}>{item.title}</p>
+            <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
+              {item.source_name && <span style={{ fontSize: 11, color: "var(--mauve)", fontFamily: "'Inter', sans-serif" }}>{item.source_name}</span>}
+              {item.published_at && <span style={{ fontSize: 11, color: "var(--mauve)", fontFamily: "'Inter', sans-serif", opacity: 0.6 }}>· {fmtDate(item.published_at)}</span>}
+            </div>
+            {!hasInternalContent && item.content_url && (
+              <span style={{ fontSize: 10, color: "var(--mauve)", fontFamily: "'Inter', sans-serif", opacity: 0.6, display: "block", marginTop: 4 }}>
+                Read on {item.source_name || "site"} →
+              </span>
+            )}
+          </div>
+        </div>
+      ) : (
+        <div onClick={handleClick} style={{ display: "block", backgroundColor: "var(--surface)", border: "1px solid var(--border)", borderRadius: 18, overflow: "hidden", cursor: "pointer", boxShadow: "var(--shadow-sm)" }}>
+          {item.image_url && (
+            <div style={{ height: 180, overflow: "hidden" }}>
+              <img src={item.image_url} alt="" loading="lazy" style={{ width: "100%", height: "100%", objectFit: "cover" }} onError={e => e.target.parentElement.style.display = "none"} />
+            </div>
+          )}
+          <div style={{ padding: "14px 16px 16px" }}>
+            {item.category && <Pill label={item.category} />}
+            <p style={{ fontSize: 15, fontWeight: 700, color: "var(--plum)", fontFamily: "'Inter', sans-serif", lineHeight: 1.4, margin: "8px 0 4px", display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical", overflow: "hidden" }}>{item.title}</p>
+            {item.summary && <p style={{ fontSize: 13, color: "var(--mauve)", fontFamily: "'Inter', sans-serif", lineHeight: 1.55, display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical", overflow: "hidden", margin: 0 }}>{stripHtml(item.summary)}</p>}
+            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginTop: 8 }}>
+              {item.source_name && <p style={{ fontSize: 11, color: "var(--mauve)", fontFamily: "'Inter', sans-serif", opacity: 0.7, margin: 0 }}>{item.source_name}</p>}
+              {!hasInternalContent && item.content_url && (
+                <span style={{ fontSize: 10, color: "var(--mauve)", fontFamily: "'Inter', sans-serif", opacity: 0.6 }}>Read on {item.source_name || "site"} →</span>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
+      {open && <ArticleSheet item={item} onClose={() => setOpen(false)} />}
     </>
   );
 }
@@ -60,8 +201,13 @@ function ForYouTab() {
 
   useEffect(() => {
     (async () => {
-      const all = await base44.entities.LifestyleItems.filter({ status: "PUBLISHED" }, "-engagement_score", 8).catch(() => []);
-      setItems(all);
+      const all = await base44.entities.LifestyleItems.filter({ status: "PUBLISHED" }, "-engagement_score", 20).catch(() => []);
+      // Prioritize FEMWELL_AI or items with lede
+      const sorted = [
+        ...all.filter(i => i.provider === "FEMWELL_AI" || i.lede),
+        ...all.filter(i => i.provider !== "FEMWELL_AI" && !i.lede),
+      ].slice(0, 12);
+      setItems(sorted);
       setLoading(false);
     })();
   }, []);
@@ -71,22 +217,7 @@ function ForYouTab() {
 
   return (
     <div className="space-y-4">
-      {items.map(item => (
-        <a key={item.id} href={item.content_url || "#"} target="_blank" rel="noopener noreferrer"
-          style={{ display: "block", backgroundColor: "var(--surface)", border: "1px solid var(--border)", borderRadius: 18, overflow: "hidden", textDecoration: "none", boxShadow: "var(--shadow-sm)" }}>
-          {item.image_url && (
-            <div style={{ height: 180, overflow: "hidden" }}>
-              <img src={item.image_url} alt="" loading="lazy" style={{ width: "100%", height: "100%", objectFit: "cover" }} onError={e => e.target.parentElement.style.display = "none"} />
-            </div>
-          )}
-          <div style={{ padding: "14px 16px 16px" }}>
-            {item.category && <Pill label={item.category} />}
-            <p style={{ fontSize: 15, fontWeight: 700, color: "var(--plum)", fontFamily: "'Inter', sans-serif", lineHeight: 1.4, margin: "8px 0 4px", display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical", overflow: "hidden" }}>{item.title}</p>
-            {item.summary && <p style={{ fontSize: 13, color: "var(--mauve)", fontFamily: "'Inter', sans-serif", lineHeight: 1.55, display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical", overflow: "hidden", margin: 0 }}>{stripHtml(item.summary)}</p>}
-            {item.source_name && <p style={{ fontSize: 11, color: "var(--mauve)", fontFamily: "'Inter', sans-serif", marginTop: 8, opacity: 0.7 }}>{item.source_name}</p>}
-          </div>
-        </a>
-      ))}
+      {items.map(item => <ContentCard key={item.id} item={item} />)}
     </div>
   );
 }
@@ -101,7 +232,6 @@ function DailyStoryTab() {
   useEffect(() => {
     (async () => {
       const today = todayStr();
-      // Get all published stories up to today
       const all = await base44.entities.DailyStory.list("-day_number", 100).catch(() => []);
       const published = all.filter(s => s.published_date <= today);
       if (published.length) {
@@ -121,7 +251,6 @@ function DailyStoryTab() {
 
   return (
     <div>
-      {/* Main story card */}
       <div style={{ borderRadius: 20, overflow: "hidden", marginBottom: 20, boxShadow: "var(--shadow-md)" }}>
         <div style={{ background: bg, padding: "28px 24px 24px", minHeight: 200 }}>
           <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 12 }}>
@@ -150,7 +279,6 @@ function DailyStoryTab() {
         </div>
       </div>
 
-      {/* Archive */}
       {archive.length > 0 && (
         <div>
           <p style={{ fontSize: "0.6rem", fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.12em", color: "var(--mauve)", fontFamily: "'Inter', sans-serif", marginBottom: 10 }}>Previous segments</p>
@@ -190,9 +318,14 @@ function ReadTab() {
 
   useEffect(() => {
     (async () => {
-      const all = await base44.entities.LifestyleItems.filter({ content_type: "ARTICLE", status: "PUBLISHED" }, "-published_at", 60).catch(() => []);
-      setItems(all);
-      const cats = ["All", ...new Set(all.map(i => i.category).filter(Boolean))];
+      const all = await base44.entities.LifestyleItems.filter({ content_type: "ARTICLE", status: "PUBLISHED" }, "-published_at", 80).catch(() => []);
+      // Prioritize FEMWELL_AI or items with lede — deprioritize filler
+      const sorted = [
+        ...all.filter(i => i.provider === "FEMWELL_AI" || i.lede),
+        ...all.filter(i => i.provider !== "FEMWELL_AI" && !i.lede),
+      ];
+      setItems(sorted);
+      const cats = ["All", ...new Set(sorted.map(i => i.category).filter(Boolean))];
       setCategories(cats);
       setLoading(false);
     })();
@@ -204,7 +337,6 @@ function ReadTab() {
 
   return (
     <div>
-      {/* Category filters */}
       <div style={{ display: "flex", gap: 6, overflowX: "auto", paddingBottom: 8, marginBottom: 16 }} className="lf-scroll">
         {categories.map(cat => (
           <button key={cat} onClick={() => setCatFilter(cat)}
@@ -217,69 +349,14 @@ function ReadTab() {
       </div>
       {filtered.length === 0 ? <EmptyState text="No articles yet." /> : (
         <div className="space-y-3">
-          {filtered.map(item => (
-            <a key={item.id} href={item.content_url || "#"} target="_blank" rel="noopener noreferrer"
-              style={{ display: "flex", gap: 12, backgroundColor: "var(--surface)", border: "1px solid var(--border)", borderRadius: 16, overflow: "hidden", textDecoration: "none", boxShadow: "var(--shadow-sm)" }}>
-              {item.image_url && (
-                <div style={{ width: 90, flexShrink: 0, overflow: "hidden" }}>
-                  <img src={item.image_url} alt="" style={{ width: "100%", height: "100%", objectFit: "cover" }} onError={e => e.target.parentElement.style.display = "none"} />
-                </div>
-              )}
-              <div style={{ flex: 1, padding: "12px 14px 12px", minWidth: 0 }}>
-                {item.category && <Pill label={item.category} />}
-                <p style={{ fontSize: 14, fontWeight: 700, color: "var(--plum)", fontFamily: "'Inter', sans-serif", lineHeight: 1.35, margin: "6px 0 4px", display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical", overflow: "hidden" }}>{item.title}</p>
-                <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
-                  {item.source_name && <span style={{ fontSize: 11, color: "var(--mauve)", fontFamily: "'Inter', sans-serif" }}>{item.source_name}</span>}
-                  {item.published_at && <span style={{ fontSize: 11, color: "var(--mauve)", fontFamily: "'Inter', sans-serif", opacity: 0.6 }}>· {fmtDate(item.published_at)}</span>}
-                </div>
-              </div>
-            </a>
-          ))}
+          {filtered.map(item => <ContentCard key={item.id} item={item} compact />)}
         </div>
       )}
     </div>
   );
 }
 
-// ── FICTION & STORIES shared card ─────────────────────────────────────────────
-function NarrativeCard({ item }) {
-  const [open, setOpen] = useState(false);
-  return (
-    <>
-      <div onClick={() => setOpen(true)} style={{ backgroundColor: "var(--surface)", border: "1px solid var(--border)", borderRadius: 18, padding: "18px 18px 16px", marginBottom: 14, cursor: "pointer", boxShadow: "var(--shadow-sm)" }}>
-        <div style={{ display: "flex", gap: 6, marginBottom: 10, flexWrap: "wrap" }}>
-          {item.emotional_tag && <Pill label={item.emotional_tag} color="#7C3AED" bg="#EDE9FE" />}
-          {item.category && <Pill label={item.category} />}
-        </div>
-        <h3 style={{ fontSize: 16, fontWeight: 700, color: "var(--plum)", fontFamily: "'Playfair Display', serif", margin: "0 0 8px", lineHeight: 1.3 }}>{item.title}</h3>
-        {item.lede && <p style={{ fontSize: 13, color: "var(--mauve)", fontFamily: "'Inter', sans-serif", lineHeight: 1.6, margin: 0, display: "-webkit-box", WebkitLineClamp: 3, WebkitBoxOrient: "vertical", overflow: "hidden" }}>{stripHtml(item.lede)}</p>}
-        <span style={{ fontSize: 12, fontWeight: 600, color: PRIMARY, fontFamily: "'Inter', sans-serif", marginTop: 10, display: "inline-block" }}>Read →</span>
-      </div>
-
-      {open && (
-        <BottomSheet onClose={() => setOpen(false)}>
-          <div style={{ paddingTop: 8 }}>
-            <div style={{ display: "flex", gap: 6, marginBottom: 14, flexWrap: "wrap" }}>
-              {item.emotional_tag && <Pill label={item.emotional_tag} color="#7C3AED" bg="#EDE9FE" />}
-              {item.category && <Pill label={item.category} />}
-            </div>
-            <h2 style={{ fontFamily: "'Playfair Display', serif", fontSize: 22, fontWeight: 700, color: "var(--plum)", lineHeight: 1.3, marginBottom: 16 }}>{item.title}</h2>
-            <p style={{ fontSize: 15, color: "var(--plum)", fontFamily: "'Inter', sans-serif", lineHeight: 1.75, whiteSpace: "pre-line" }}>
-              {stripHtml(item.summary || item.lede || "")}
-            </p>
-            {item.content_url && (
-              <a href={item.content_url} target="_blank" rel="noopener noreferrer"
-                style={{ display: "inline-flex", alignItems: "center", gap: 6, marginTop: 20, fontSize: 13, fontWeight: 600, color: PRIMARY, fontFamily: "'Inter', sans-serif", textDecoration: "none" }}>
-                Read full <ExternalLink className="w-3.5 h-3.5" />
-              </a>
-            )}
-          </div>
-        </BottomSheet>
-      )}
-    </>
-  );
-}
-
+// ── FICTION & STORIES tabs (use ContentCard in card mode) ─────────────────────
 function FictionTab() {
   const [items, setItems] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -291,7 +368,7 @@ function FictionTab() {
   }, []);
   if (loading) return <Spinner />;
   if (!items.length) return <EmptyState text="Fiction stories coming soon." />;
-  return <div>{items.map(item => <NarrativeCard key={item.id} item={item} />)}</div>;
+  return <div className="space-y-4">{items.map(item => <ContentCard key={item.id} item={item} />)}</div>;
 }
 
 function StoriesTab() {
@@ -305,7 +382,7 @@ function StoriesTab() {
   }, []);
   if (loading) return <Spinner />;
   if (!items.length) return <EmptyState text="Personal stories coming soon." />;
-  return <div>{items.map(item => <NarrativeCard key={item.id} item={item} />)}</div>;
+  return <div className="space-y-4">{items.map(item => <ContentCard key={item.id} item={item} />)}</div>;
 }
 
 // ── BOOKS tab ─────────────────────────────────────────────────────────────────
@@ -491,7 +568,6 @@ export default function Lifestyle() {
           <p style={{ fontSize: "0.6rem", fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.12em", color: "var(--mauve)", fontFamily: "'Inter', sans-serif" }}>Discover</p>
           <h1 style={{ fontSize: 24, fontWeight: 700, fontFamily: "'Playfair Display', serif", color: "var(--plum)", letterSpacing: "-0.02em", marginBottom: 12 }}>Lifestyle</h1>
 
-          {/* Tab pills */}
           <div className="lf-scroll" style={{ display: "flex", gap: 6, overflowX: "auto", paddingBottom: 2 }}>
             {TABS.map(t => (
               <button key={t.id} onClick={() => setTab(t.id)}

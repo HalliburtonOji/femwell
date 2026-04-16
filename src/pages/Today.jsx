@@ -3,7 +3,10 @@ import { useLocation } from "react-router-dom";
 import { base44 } from "@/api/base44Client";
 import { PageLoader } from "../components/common/LoadingSpinner";
 import { createPageUrl } from "@/utils";
-import { AlertCircle, ChevronRight, Utensils, Feather, Brain, Salad, Zap } from "lucide-react";
+import {
+  AlertCircle, ChevronRight, Utensils, Feather, Brain, Salad, Zap,
+  Droplets, UtensilsCrossed, BookOpen, Activity, Lightbulb, TrendingUp, X, Bookmark
+} from "lucide-react";
 import PanicModeModal from "../components/today/PanicModeModal";
 import DailyPromptCard from "../components/today/DailyPromptCard";
 import SmartContextBanner from "../components/common/SmartContextBanner";
@@ -48,13 +51,6 @@ function getCyclePhase(lastPeriodDate, cycleLength, periodLength) {
   return { phase: "luteal", day: dayOfCycle };
 }
 
-function isReminderDue(reminderTime) {
-  if (!reminderTime) return false;
-  const now = new Date();
-  const current = `${String(now.getHours()).padStart(2, "0")}:${String(now.getMinutes()).padStart(2, "0")}`;
-  return current >= reminderTime;
-}
-
 const card = {
   backgroundColor: "var(--surface)",
   border: "1px solid var(--border)",
@@ -90,24 +86,27 @@ function HydrationRing({ glasses, target, onAdd, onRemove }) {
   const circumference = 2 * Math.PI * r;
   const offset = circumference * (1 - pct);
   return (
-    <div style={{ backgroundColor: "var(--surface)", border: "1px solid var(--border)", borderRadius: 20, padding: 20, boxShadow: "var(--shadow-sm)" }}>
-      <p style={{ fontSize: "0.6rem", fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.12em", color: "var(--mauve)", fontFamily: "'Inter', sans-serif", marginBottom: 12 }}>Hydration</p>
+    <div style={{ backgroundColor: "var(--surface)", border: "1px solid var(--border)", borderRadius: 16, padding: "16px 18px", boxShadow: "var(--shadow-sm)" }}>
+      <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 12 }}>
+        <Droplets className="w-3.5 h-3.5" style={{ color: "#60B4FA" }} />
+        <p style={{ fontSize: "0.6rem", fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.12em", color: "var(--mauve)", fontFamily: "'Inter', sans-serif" }}>Hydration</p>
+      </div>
       <div style={{ display: "flex", alignItems: "center", gap: 20 }}>
-        <div style={{ position: "relative", width: 88, height: 88, flexShrink: 0 }}>
-          <svg width="88" height="88" style={{ transform: "rotate(-90deg)" }}>
-            <circle cx="44" cy="44" r={r} fill="none" stroke="var(--border)" strokeWidth="7" />
-            <circle cx="44" cy="44" r={r} fill="none" stroke="#60B4FA" strokeWidth="7" strokeDasharray={circumference} strokeDashoffset={offset} strokeLinecap="round" style={{ transition: "stroke-dashoffset 0.4s ease" }} />
+        <div style={{ position: "relative", width: 80, height: 80, flexShrink: 0 }}>
+          <svg width="80" height="80" style={{ transform: "rotate(-90deg)" }}>
+            <circle cx="40" cy="40" r={r} fill="none" stroke="var(--border)" strokeWidth="6" />
+            <circle cx="40" cy="40" r={r} fill="none" stroke="#60B4FA" strokeWidth="6" strokeDasharray={circumference} strokeDashoffset={offset} strokeLinecap="round" style={{ transition: "stroke-dashoffset 0.4s ease" }} />
           </svg>
           <div style={{ position: "absolute", inset: 0, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center" }}>
-            <span style={{ fontSize: 18, fontWeight: 700, color: "var(--plum)", fontFamily: "'Inter', sans-serif", lineHeight: 1 }}>{glasses}</span>
-            <span style={{ fontSize: 10, color: "var(--mauve)", fontFamily: "'Inter', sans-serif" }}>/ {target}</span>
+            <span style={{ fontSize: 17, fontWeight: 700, color: "var(--plum)", fontFamily: "'Inter', sans-serif", lineHeight: 1 }}>{glasses}</span>
+            <span style={{ fontSize: 9, color: "var(--mauve)", fontFamily: "'Inter', sans-serif" }}>/ {target}</span>
           </div>
         </div>
         <div style={{ flex: 1 }}>
-          <p style={{ fontSize: 13, color: "var(--mauve)", fontFamily: "'Inter', sans-serif", marginBottom: 12 }}>{glasses >= target ? "Daily goal reached! 🎉" : `${target - glasses} more glasses to go`}</p>
+          <p style={{ fontSize: 12, color: "var(--mauve)", fontFamily: "'Inter', sans-serif", marginBottom: 10 }}>{glasses >= target ? "Daily goal reached!" : `${target - glasses} more glasses to go`}</p>
           <div style={{ display: "flex", gap: 8 }}>
-            <button onClick={onRemove} disabled={glasses <= 0} style={{ flex: 1, height: 38, borderRadius: 9999, border: "1.5px solid var(--border)", backgroundColor: "var(--ivory)", color: "var(--plum)", fontSize: 18, cursor: "pointer", fontWeight: 700, opacity: glasses <= 0 ? 0.3 : 1 }}>−</button>
-            <button onClick={onAdd} style={{ flex: 1, height: 38, borderRadius: 9999, border: "none", backgroundColor: "#60B4FA", color: "white", fontSize: 18, cursor: "pointer", fontWeight: 700 }}>+</button>
+            <button onClick={onRemove} disabled={glasses <= 0} style={{ flex: 1, height: 34, borderRadius: 9999, border: "1.5px solid var(--border)", backgroundColor: "var(--ivory)", color: "var(--plum)", fontSize: 18, cursor: "pointer", fontWeight: 700, opacity: glasses <= 0 ? 0.3 : 1 }}>−</button>
+            <button onClick={onAdd} style={{ flex: 1, height: 34, borderRadius: 9999, border: "none", backgroundColor: "#60B4FA", color: "white", fontSize: 18, cursor: "pointer", fontWeight: 700 }}>+</button>
           </div>
         </div>
       </div>
@@ -115,11 +114,124 @@ function HydrationRing({ glasses, target, onAdd, onRemove }) {
   );
 }
 
+// ── Quick Actions row ─────────────────────────────────────────────────────────
+function QuickActionsRow({ onAddWater }) {
+  const actions = [
+    { icon: UtensilsCrossed, label: "Log meal",    bg: "var(--sage-subtle)",       color: "var(--sage)",       href: createPageUrl("Nutrition") },
+    { icon: Droplets,        label: "Add water",   bg: "#EFF8FF",                  color: "#60B4FA",            onClick: onAddWater },
+    { icon: BookOpen,        label: "Journal",     bg: "var(--rose-dust-subtle)",  color: "var(--rose-dust)",  href: createPageUrl("Journal") },
+    { icon: Activity,        label: "Symptom",     bg: "var(--mauve-subtle)",      color: "var(--mauve)",       href: createPageUrl("Today?open_log=1") },
+  ];
+  return (
+    <div style={{ backgroundColor: "var(--surface)", border: "1px solid var(--border)", borderRadius: 16, padding: "14px 16px", boxShadow: "var(--shadow-sm)" }}>
+      <p style={{ fontSize: "0.6rem", fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.12em", color: "var(--mauve)", fontFamily: "'Inter', sans-serif", marginBottom: 12 }}>Quick actions</p>
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 8 }}>
+        {actions.map(({ icon: Icon, label, bg, color, href, onClick }) => {
+          const inner = (
+            <>
+              <div style={{ width: 40, height: 40, borderRadius: 12, backgroundColor: bg, display: "flex", alignItems: "center", justifyContent: "center", marginBottom: 6 }}>
+                <Icon className="w-4 h-4" style={{ color }} />
+              </div>
+              <span style={{ fontSize: 10, fontWeight: 600, color: "var(--plum)", fontFamily: "'Inter', sans-serif", textAlign: "center", lineHeight: 1.3 }}>{label}</span>
+            </>
+          );
+          const btnStyle = { display: "flex", flexDirection: "column", alignItems: "center", background: "none", border: "none", cursor: "pointer", padding: 0, textDecoration: "none" };
+          return href
+            ? <a key={label} href={href} style={btnStyle}>{inner}</a>
+            : <button key={label} onClick={onClick} style={btnStyle}>{inner}</button>;
+        })}
+      </div>
+    </div>
+  );
+}
+
+// ── Today's Insight card ──────────────────────────────────────────────────────
+function TodayInsightCard({ userId }) {
+  const [insight, setInsight] = useState(null);
+  const [dismissed, setDismissed] = useState(false);
+
+  useEffect(() => {
+    if (!userId) return;
+    base44.entities.InsightCards.filter({ user_id: userId, is_read: false }, "-created_date", 1)
+      .then(res => setInsight(res[0] || null))
+      .catch(() => {});
+  }, [userId]);
+
+  const handleDismiss = async () => {
+    setDismissed(true);
+    if (insight?.id) {
+      await base44.entities.InsightCards.update(insight.id, { is_read: true }).catch(() => {});
+    }
+  };
+
+  if (!insight || dismissed) return null;
+
+  return (
+    <div style={{ backgroundColor: "var(--surface)", border: "1px solid var(--border)", borderRadius: 16, padding: "14px 16px", boxShadow: "var(--shadow-sm)" }}>
+      <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 8, marginBottom: 8 }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+          <div style={{ width: 28, height: 28, borderRadius: 8, backgroundColor: "#FEF3C7", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+            <Lightbulb className="w-3.5 h-3.5" style={{ color: "#D97706" }} />
+          </div>
+          <p style={{ fontSize: "0.6rem", fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.12em", color: "#D97706", fontFamily: "'Inter', sans-serif" }}>Today's Insight</p>
+        </div>
+        <button onClick={handleDismiss} style={{ background: "none", border: "none", cursor: "pointer", padding: 2, color: "var(--mauve)", flexShrink: 0 }}>
+          <X className="w-3.5 h-3.5" />
+        </button>
+      </div>
+      {insight.title && <p style={{ fontSize: 13, fontWeight: 700, color: "var(--plum)", fontFamily: "'Inter', sans-serif", marginBottom: 4 }}>{insight.title}</p>}
+      <p style={{ fontSize: 13, color: "var(--plum)", fontFamily: "'Inter', sans-serif", lineHeight: 1.6 }}>{insight.insight_text}</p>
+    </div>
+  );
+}
+
+// ── This Week card ────────────────────────────────────────────────────────────
+function ThisWeekCard({ userId }) {
+  const [weekly, setWeekly] = useState(null);
+
+  useEffect(() => {
+    if (!userId) return;
+    base44.entities.WeeklyInsights.filter({ user_id: userId }, "-week_start", 1)
+      .then(res => setWeekly(res[0] || null))
+      .catch(() => {});
+  }, [userId]);
+
+  if (!weekly) return null;
+
+  return (
+    <div style={{ backgroundColor: "var(--surface)", border: "1px solid var(--border)", borderRadius: 16, padding: "14px 16px", boxShadow: "var(--shadow-sm)" }}>
+      <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 10 }}>
+        <TrendingUp className="w-3.5 h-3.5" style={{ color: "var(--sage)" }} />
+        <p style={{ fontSize: "0.6rem", fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.12em", color: "var(--sage)", fontFamily: "'Inter', sans-serif" }}>This Week</p>
+      </div>
+      {weekly.insight_text && (
+        <p style={{ fontSize: 13, color: "var(--plum)", fontFamily: "'Inter', sans-serif", lineHeight: 1.6, marginBottom: 12 }}>{weekly.insight_text}</p>
+      )}
+      {(weekly.avg_mood || weekly.avg_energy) && (
+        <div style={{ display: "flex", gap: 8 }}>
+          {weekly.avg_mood != null && (
+            <div style={{ flex: 1, backgroundColor: "var(--rose-dust-subtle)", borderRadius: 10, padding: "8px 10px", textAlign: "center" }}>
+              <p style={{ fontSize: 18, fontWeight: 700, color: "var(--rose-dust)", fontFamily: "'Inter', sans-serif", lineHeight: 1 }}>{Number(weekly.avg_mood).toFixed(1)}</p>
+              <p style={{ fontSize: 10, color: "var(--mauve)", fontFamily: "'Inter', sans-serif", marginTop: 2 }}>Avg mood</p>
+            </div>
+          )}
+          {weekly.avg_energy != null && (
+            <div style={{ flex: 1, backgroundColor: "var(--sage-subtle)", borderRadius: 10, padding: "8px 10px", textAlign: "center" }}>
+              <p style={{ fontSize: 18, fontWeight: 700, color: "var(--sage)", fontFamily: "'Inter', sans-serif", lineHeight: 1 }}>{Number(weekly.avg_energy).toFixed(1)}</p>
+              <p style={{ fontSize: 10, color: "var(--mauve)", fontFamily: "'Inter', sans-serif", marginTop: 2 }}>Avg energy</p>
+            </div>
+          )}
+        </div>
+      )}
+    </div>
+  );
+}
+
 // ── Recommendation card icons ────────────────────────────────────────────────
 const REC_ICONS = {
-  session_recommendation: { icon: Zap, bg: "var(--sage-subtle)", color: "var(--sage)" },
-  nutrition_nudge:        { icon: Salad, bg: "#FEF3C7", color: "#D97706" },
-  mental_tool:            { icon: Brain, bg: "var(--mauve-subtle)", color: "var(--mauve)" },
+  session_recommendation: { icon: Zap,   bg: "var(--sage-subtle)",  color: "var(--sage)"  },
+  nutrition_nudge:        { icon: Salad, bg: "#FEF3C7",             color: "#D97706"       },
+  mental_tool:            { icon: Brain, bg: "var(--mauve-subtle)", color: "var(--mauve)"  },
 };
 
 // ── Main component ──────────────────────────────────────────────────────────
@@ -328,7 +440,7 @@ export default function Today() {
 
         {/* ── TODAY TAB */}
         {mainTab === "today" && (
-          <div className="pt-6 space-y-4">
+          <div className="pt-4 space-y-3">
             {/* Hero */}
             {profile?.life_stage === "ttc" ? (
               <TodayFertilityBanner user={user} profile={profile} />
@@ -338,11 +450,16 @@ export default function Today() {
             )}
             {profile && <DailyPhaseBrief profile={profile} />}
 
-            {/* Phase banner */}
+            {/* Phase banner — gradient circle indicator, no emoji */}
             {cycleInfo && (
-              <div style={{ background: PHASE_GRADIENTS[cycleInfo.phase], border: "1px solid var(--border)", borderRadius: 20, padding: "16px 20px" }}>
-                <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 4 }}>
-                  <div style={{ width: 8, height: 8, borderRadius: 9999, backgroundColor: PHASE_INFO[cycleInfo.phase].color }} />
+              <div style={{ background: PHASE_GRADIENTS[cycleInfo.phase], border: "1px solid var(--border)", borderRadius: 16, padding: "13px 16px" }}>
+                <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 3 }}>
+                  <div style={{
+                    width: 10, height: 10, borderRadius: 9999,
+                    background: `radial-gradient(circle at 35% 35%, white 0%, ${PHASE_INFO[cycleInfo.phase].color} 100%)`,
+                    boxShadow: `0 0 6px ${PHASE_INFO[cycleInfo.phase].color}55`,
+                    flexShrink: 0,
+                  }} />
                   <span style={{ fontSize: 10, fontWeight: 700, color: PHASE_INFO[cycleInfo.phase].color, textTransform: "uppercase", letterSpacing: "0.1em", fontFamily: "'Inter', sans-serif" }}>
                     {PHASE_INFO[cycleInfo.phase].label} · Day {cycleInfo.day}
                   </span>
@@ -362,28 +479,28 @@ export default function Today() {
             <DailyStoriesStrip user={user} />
 
             {/* Quick mood + energy check-in */}
-            <div style={{ backgroundColor: "var(--surface)", border: "1px solid var(--border)", borderRadius: 20, padding: "16px 18px", boxShadow: "var(--shadow-sm)" }}>
-              <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 12 }}>
+            <div style={{ backgroundColor: "var(--surface)", border: "1px solid var(--border)", borderRadius: 16, padding: "14px 16px", boxShadow: "var(--shadow-sm)" }}>
+              <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 10 }}>
                 <p style={{ fontSize: "0.6rem", fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.12em", color: "var(--mauve)", fontFamily: "'Inter', sans-serif" }}>How are you feeling?</p>
-                {checkinSaved && <span style={{ fontSize: 11, color: "var(--sage)", fontFamily: "'Inter', sans-serif" }}>Saved ✓</span>}
+                {checkinSaved && <span style={{ fontSize: 11, color: "var(--sage)", fontFamily: "'Inter', sans-serif" }}>Saved</span>}
               </div>
-              <div style={{ marginBottom: 12 }}>
-                <p style={{ fontSize: 11, color: "var(--mauve)", fontFamily: "'Inter', sans-serif", marginBottom: 6 }}>Mood</p>
-                <div style={{ display: "flex", gap: 8 }}>
+              <div style={{ marginBottom: 10 }}>
+                <p style={{ fontSize: 11, color: "var(--mauve)", fontFamily: "'Inter', sans-serif", marginBottom: 5 }}>Mood</p>
+                <div style={{ display: "flex", gap: 6 }}>
                   {MOOD_EMOJIS.map((e, i) => (
                     <button key={i} onClick={() => handleMoodSelect(i)}
-                      style={{ flex: 1, height: 40, borderRadius: 12, border: `2px solid ${mood === i ? "var(--plum)" : "var(--border)"}`, backgroundColor: mood === i ? "var(--plum)" : "transparent", fontSize: 18, cursor: "pointer", transition: "all 0.15s" }}>
+                      style={{ flex: 1, height: 38, borderRadius: 10, border: `2px solid ${mood === i ? "var(--plum)" : "var(--border)"}`, backgroundColor: mood === i ? "var(--plum)" : "transparent", fontSize: 17, cursor: "pointer", transition: "all 0.15s" }}>
                       {e}
                     </button>
                   ))}
                 </div>
               </div>
               <div>
-                <p style={{ fontSize: 11, color: "var(--mauve)", fontFamily: "'Inter', sans-serif", marginBottom: 6 }}>Energy</p>
-                <div style={{ display: "flex", gap: 8 }}>
+                <p style={{ fontSize: 11, color: "var(--mauve)", fontFamily: "'Inter', sans-serif", marginBottom: 5 }}>Energy</p>
+                <div style={{ display: "flex", gap: 6 }}>
                   {ENERGY_EMOJIS.map((e, i) => (
                     <button key={i} onClick={() => handleEnergySelect(i)}
-                      style={{ flex: 1, height: 40, borderRadius: 12, border: `2px solid ${energy === i ? "var(--plum)" : "var(--border)"}`, backgroundColor: energy === i ? "var(--plum)" : "transparent", fontSize: 18, cursor: "pointer", transition: "all 0.15s" }}>
+                      style={{ flex: 1, height: 38, borderRadius: 10, border: `2px solid ${energy === i ? "var(--plum)" : "var(--border)"}`, backgroundColor: energy === i ? "var(--plum)" : "transparent", fontSize: 17, cursor: "pointer", transition: "all 0.15s" }}>
                       {e}
                     </button>
                   ))}
@@ -391,16 +508,19 @@ export default function Today() {
               </div>
             </div>
 
+            {/* Quick Actions */}
+            <QuickActionsRow onAddWater={handleHydrationAdd} />
+
             {/* Daily plan recommendation cards */}
             {dailyPlan && (
-              <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+              <div style={{ display: "flex", flexDirection: "column", gap: 7 }}>
                 {["session_recommendation", "nutrition_nudge", "mental_tool"].filter(k => dailyPlan[k]).map(key => {
                   const meta = REC_ICONS[key];
                   const Icon = meta.icon;
                   return (
-                    <div key={key} style={{ backgroundColor: "var(--surface)", border: "1px solid var(--border)", borderRadius: 16, padding: "14px 16px", display: "flex", alignItems: "center", gap: 12, cursor: "pointer", boxShadow: "var(--shadow-sm)" }}
+                    <div key={key} style={{ backgroundColor: "var(--surface)", border: "1px solid var(--border)", borderRadius: 14, padding: "12px 14px", display: "flex", alignItems: "center", gap: 10, cursor: "pointer", boxShadow: "var(--shadow-sm)" }}
                       onClick={() => key === "session_recommendation" && dailyPlan.session_route && (window.location.href = dailyPlan.session_route)}>
-                      <div style={{ width: 38, height: 38, borderRadius: 12, backgroundColor: meta.bg, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+                      <div style={{ width: 34, height: 34, borderRadius: 10, backgroundColor: meta.bg, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
                         <Icon className="w-4 h-4" style={{ color: meta.color }} />
                       </div>
                       <p style={{ fontSize: 13, color: "var(--plum)", fontFamily: "'Inter', sans-serif", lineHeight: 1.5 }}>{dailyPlan[key]}</p>
@@ -420,15 +540,21 @@ export default function Today() {
 
             <RecommendedForYouSection loading={loadingHomeRecommendations} items={homeRecommendations} onTap={handleRecommendationTap} />
 
+            {/* Today's Insight */}
+            <TodayInsightCard userId={user?.id} />
+
+            {/* This Week */}
+            <ThisWeekCard userId={user?.id} />
+
             {/* Hydration ring */}
             <HydrationRing glasses={glasses} target={hydrationTarget} onAdd={handleHydrationAdd} onRemove={handleHydrationRemove} />
 
             <QuickMealLog user={user} profile={profile} getCyclePhase={getCyclePhase} />
 
             {/* Nutrition shortcut */}
-            <a href={createPageUrl("Nutrition")} className="flex items-center gap-3.5 rounded-[20px] p-4 mb-4 transition-all block" style={card}>
-              <div className="w-11 h-11 rounded-2xl flex items-center justify-center flex-shrink-0" style={{ backgroundColor: "var(--sage-subtle)", color: "var(--sage)" }}>
-                <Utensils className="w-5 h-5" strokeWidth={1.5} />
+            <a href={createPageUrl("Nutrition")} className="flex items-center gap-3 rounded-[16px] p-3.5 transition-all block" style={card}>
+              <div className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0" style={{ backgroundColor: "var(--sage-subtle)", color: "var(--sage)" }}>
+                <Utensils className="w-4 h-4" strokeWidth={1.5} />
               </div>
               <div className="flex-1">
                 <p className="font-semibold text-sm" style={{ color: "var(--plum)", fontFamily: "'Inter', sans-serif" }}>Nutrition</p>
@@ -438,22 +564,22 @@ export default function Today() {
             </a>
 
             {todayCheckin && !hasSkinLog && (
-              <button onClick={() => setShowCheckin(true)} style={{ display: "flex", alignItems: "center", gap: "12px", width: "100%", textAlign: "left", cursor: "pointer", backgroundColor: "var(--rose-dust-subtle)", border: "1px solid var(--rose-dust-light)", borderRadius: "20px", padding: "14px 16px", marginBottom: "16px" }}>
-                <div style={{ width: "36px", height: "36px", borderRadius: "12px", backgroundColor: "var(--rose-dust)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
-                  <Feather style={{ width: "16px", height: "16px", color: "white" }} />
+              <button onClick={() => setShowCheckin(true)} style={{ display: "flex", alignItems: "center", gap: "10px", width: "100%", textAlign: "left", cursor: "pointer", backgroundColor: "var(--rose-dust-subtle)", border: "1px solid var(--rose-dust-light)", borderRadius: "16px", padding: "12px 14px" }}>
+                <div style={{ width: "34px", height: "34px", borderRadius: "10px", backgroundColor: "var(--rose-dust)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+                  <Feather style={{ width: "15px", height: "15px", color: "white" }} />
                 </div>
                 <div style={{ flex: 1 }}>
                   <p style={{ fontSize: "13px", fontWeight: 600, color: "var(--plum)", fontFamily: "'Inter', sans-serif", marginBottom: "2px" }}>How's your skin today?</p>
-                  <p style={{ fontSize: "12px", color: "var(--rose-dust)", fontFamily: "'Inter', sans-serif" }}>Tap to add skin & hair to today's check-in</p>
+                  <p style={{ fontSize: "12px", color: "var(--rose-dust)", fontFamily: "'Inter', sans-serif" }}>Add skin & hair to today's check-in</p>
                 </div>
-                <ChevronRight style={{ width: "16px", height: "16px", color: "var(--rose-dust)", flexShrink: 0 }} />
+                <ChevronRight style={{ width: "15px", height: "15px", color: "var(--rose-dust)", flexShrink: 0 }} />
               </button>
             )}
 
-            {/* Lifestyle nudge */}
-            <a href={createPageUrl("Lifestyle")} style={{ display: "flex", alignItems: "center", gap: "12px", textDecoration: "none", backgroundColor: "var(--rose-dust-subtle)", border: "1px solid var(--rose-dust-light)", borderRadius: "20px", padding: "16px", marginBottom: "16px" }}>
+            {/* Lifestyle nudge — no emoji */}
+            <a href={createPageUrl("Lifestyle")} style={{ display: "flex", alignItems: "center", gap: "12px", textDecoration: "none", backgroundColor: "var(--rose-dust-subtle)", border: "1px solid var(--rose-dust-light)", borderRadius: "16px", padding: "14px 16px" }}>
               <div style={{ flex: 1 }}>
-                <p style={{ fontSize: "0.6rem", fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.12em", color: "var(--rose-dust)", fontFamily: "'Inter', sans-serif", marginBottom: 4 }}>Lifestyle</p>
+                <p style={{ fontSize: "0.6rem", fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.12em", color: "var(--rose-dust)", fontFamily: "'Inter', sans-serif", marginBottom: 3 }}>Lifestyle</p>
                 <p style={{ fontSize: 14, fontWeight: 600, color: "var(--plum)", fontFamily: "'Inter', sans-serif" }}>Stories, videos & reads for you</p>
                 <p style={{ fontSize: 12, color: "var(--mauve)", fontFamily: "'Inter', sans-serif", marginTop: 2 }}>Curated for your cycle phase today</p>
               </div>
