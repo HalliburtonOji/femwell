@@ -1,5 +1,9 @@
+// deno-lint-ignore-file no-undef
 /* eslint-disable no-undef */
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.25';
+
+// Deno global is provided by the Deno runtime
+const serve = (typeof Deno !== 'undefined') ? Deno.serve.bind(Deno) : () => {};
 
 function getMonday(date = new Date()) {
   const d = new Date(date);
@@ -31,7 +35,7 @@ function getPhaseForDate(profile, dateString) {
     : 'luteal';
 }
 
-Deno.serve(async (req) => {
+serve(async (req) => {
   try {
     const base44 = createClientFromRequest(req);
     const today = new Date();
