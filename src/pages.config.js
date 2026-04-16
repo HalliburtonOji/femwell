@@ -74,6 +74,7 @@ import Deals from './pages/Deals';
 import Events from './pages/Events';
 import LifestyleDetail from './pages/LifestyleDetail';
 import Track from './pages/Track';
+import Community from './pages/Community';
 import __Layout from './Layout.jsx';
 
 
@@ -104,6 +105,7 @@ export const PAGES = {
     "Events": Events,
     "LifestyleDetail": LifestyleDetail,
     "Track": Track,
+    "Community": Community,
 }
 
 export const pagesConfig = {

@@ -171,7 +171,7 @@ export default function Upgrade() {
             </div>
             {joinedWaitlist ? (
               <>
-                <h3 style={{ fontFamily: "'Playfair Display', serif", fontSize: 20, fontWeight: 700, color: "var(--plum)", textAlign: "center", marginBottom: 8 }}>You're on the list! 🎉</h3>
+                <h3 style={{ fontFamily: "'Playfair Display', serif", fontSize: 20, fontWeight: 700, color: "var(--plum)", textAlign: "center", marginBottom: 8 }}>You're on the list!</h3>
                 <p style={{ fontSize: 14, color: "var(--mauve)", fontFamily: "'Inter', sans-serif", textAlign: "center", lineHeight: 1.65, marginBottom: 24 }}>
                   We'll notify you the moment Plus launches. Early members get a special discount.
                 </p>
