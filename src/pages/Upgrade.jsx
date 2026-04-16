@@ -1,5 +1,6 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { ArrowLeft, Check, X, Sparkles, Shield, Lock } from "lucide-react";
+import { base44 } from "@/api/base44Client";
 
 const sLabel = { fontSize: "0.6rem", fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.12em", color: "var(--mauve)", fontFamily: "'Inter', sans-serif" };
 
@@ -18,6 +19,25 @@ const TRUST = ["No ads", "Cancel anytime", "Your data never sold", "GDPR complia
 
 export default function Upgrade() {
   const [showModal, setShowModal] = useState(false);
+  const [email, setEmail] = useState("");
+  const [joinedWaitlist, setJoinedWaitlist] = useState(false);
+  const [savingWaitlist, setSavingWaitlist] = useState(false);
+
+  useEffect(() => {
+    base44.auth.me().then(u => { if (u?.email) setEmail(u.email); }).catch(() => {});
+  }, []);
+
+  const handleJoinWaitlist = async () => {
+    if (!email.trim() || savingWaitlist) return;
+    setSavingWaitlist(true);
+    await base44.entities.NotificationLog.create({
+      notification_type: "waitlist",
+      body: email.trim(),
+      created_at: new Date().toISOString(),
+    }).catch(() => {});
+    setJoinedWaitlist(true);
+    setSavingWaitlist(false);
+  };
 
   return (
     <div className="min-h-screen pb-16" style={{ backgroundColor: "var(--ivory)" }}>
@@ -138,24 +158,46 @@ export default function Upgrade() {
 
       </div>
 
-      {/* Coming soon modal */}
+      {/* Waitlist modal */}
       {showModal && (
         <div style={{ position: "fixed", inset: 0, zIndex: 60 }}>
-          <div onClick={() => setShowModal(false)} style={{ position: "absolute", inset: 0, backgroundColor: "rgba(42,32,53,0.5)", backdropFilter: "blur(6px)" }} />
-          <div style={{ position: "absolute", bottom: 0, left: 0, right: 0, backgroundColor: "var(--surface)", borderRadius: "28px 28px 0 0", padding: 28, maxWidth: 560, margin: "0 auto" }}>
+          <div onClick={() => { setShowModal(false); setJoinedWaitlist(false); }} style={{ position: "absolute", inset: 0, backgroundColor: "rgba(42,32,53,0.5)", backdropFilter: "blur(6px)" }} />
+          <div style={{ position: "absolute", bottom: 0, left: 0, right: 0, backgroundColor: "var(--surface)", borderRadius: "28px 28px 0 0", padding: 28 }}>
             <div style={{ display: "flex", justifyContent: "center", marginBottom: 20 }}>
               <div style={{ width: 36, height: 4, borderRadius: 9999, backgroundColor: "var(--border)" }} />
             </div>
             <div style={{ width: 52, height: 52, borderRadius: 16, backgroundColor: "var(--rose-dust-subtle)", display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 16px" }}>
               <Sparkles style={{ width: 22, height: 22, color: "var(--rose-dust)" }} />
             </div>
-            <h3 style={{ fontFamily: "'Playfair Display', serif", fontSize: 20, fontWeight: 700, color: "var(--plum)", textAlign: "center", marginBottom: 8 }}>Coming soon</h3>
-            <p style={{ fontSize: 14, color: "var(--mauve)", fontFamily: "'Inter', sans-serif", textAlign: "center", lineHeight: 1.65, marginBottom: 24 }}>
-              Payment processing is coming soon. We'll notify you when Plus launches — and early sign-ups will get a discount.
-            </p>
-            <button onClick={() => setShowModal(false)} style={{ width: "100%", padding: "13px", borderRadius: 12, backgroundColor: "var(--plum)", color: "white", fontSize: 14, fontWeight: 600, border: "none", cursor: "pointer", fontFamily: "'Inter', sans-serif" }}>
-              Got it
-            </button>
+            {joinedWaitlist ? (
+              <>
+                <h3 style={{ fontFamily: "'Playfair Display', serif", fontSize: 20, fontWeight: 700, color: "var(--plum)", textAlign: "center", marginBottom: 8 }}>You're on the list! 🎉</h3>
+                <p style={{ fontSize: 14, color: "var(--mauve)", fontFamily: "'Inter', sans-serif", textAlign: "center", lineHeight: 1.65, marginBottom: 24 }}>
+                  We'll notify you the moment Plus launches. Early members get a special discount.
+                </p>
+                <button onClick={() => { setShowModal(false); setJoinedWaitlist(false); }} style={{ width: "100%", padding: "13px", borderRadius: 12, backgroundColor: "var(--plum)", color: "white", fontSize: 14, fontWeight: 600, border: "none", cursor: "pointer", fontFamily: "'Inter', sans-serif" }}>
+                  Done
+                </button>
+              </>
+            ) : (
+              <>
+                <h3 style={{ fontFamily: "'Playfair Display', serif", fontSize: 20, fontWeight: 700, color: "var(--plum)", textAlign: "center", marginBottom: 8 }}>Plus is launching soon</h3>
+                <p style={{ fontSize: 14, color: "var(--mauve)", fontFamily: "'Inter', sans-serif", textAlign: "center", lineHeight: 1.65, marginBottom: 20 }}>
+                  Join the waitlist and we'll notify you first. Early members get a special discount.
+                </p>
+                <input
+                  type="email"
+                  value={email}
+                  onChange={e => setEmail(e.target.value)}
+                  placeholder="Your email address"
+                  style={{ width: "100%", padding: "12px 14px", borderRadius: 12, border: "1.5px solid var(--border)", backgroundColor: "var(--ivory)", fontSize: 14, fontFamily: "'Inter', sans-serif", color: "var(--plum)", outline: "none", boxSizing: "border-box", marginBottom: 12 }}
+                />
+                <button onClick={handleJoinWaitlist} disabled={!email.trim() || savingWaitlist}
+                  style={{ width: "100%", padding: "13px", borderRadius: 12, backgroundColor: "var(--plum)", color: "white", fontSize: 14, fontWeight: 600, border: "none", cursor: "pointer", fontFamily: "'Inter', sans-serif", opacity: !email.trim() || savingWaitlist ? 0.6 : 1 }}>
+                  {savingWaitlist ? "Joining…" : "Join waitlist"}
+                </button>
+              </>
+            )}
           </div>
         </div>
       )}
