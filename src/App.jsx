@@ -43,22 +43,21 @@ const AuthenticatedApp = () => {
     if (isLoadingAuth || authError) return;
     if (sessionStorage.getItem('fw_ob_ok') === '1') return;
     if (location.pathname === '/Onboarding') return;
-    (async () => {
+    // Run onboarding check in background — never blocks page render
+    const timeout = setTimeout(async () => {
       try {
         const user = await base44.auth.me();
         if (!user?.id) return;
         const [profiles, checkins] = await Promise.all([
-          base44.entities.UserProfile.filter({ user_id: user.id }),
+          base44.entities.UserProfile.filter({ user_id: user.id }).catch(() => []),
           base44.entities.DailyCheckins.filter({ user_id: user.id }, "-date", 1).catch(() => []),
         ]);
         const isComplete = profiles.some(p => p?.onboarding_complete === true);
         const hasData = checkins.length > 0;
         if (isComplete || hasData) {
-          // Mark complete if they have data but flag wasn't set
           if (hasData && !isComplete && profiles[0]) {
             base44.entities.UserProfile.update(profiles[0].id, { onboarding_complete: true }).catch(() => {});
           } else if (hasData && !profiles[0]) {
-            // Has checkins but no profile — create one marked complete
             base44.entities.UserProfile.create({ user_id: user.id, onboarding_complete: true }).catch(() => {});
           }
           sessionStorage.setItem('fw_ob_ok', '1');
@@ -66,7 +65,8 @@ const AuthenticatedApp = () => {
           navigate('/Onboarding?mode=signup', { replace: true });
         }
       } catch {}
-    })();
+    }, 100);
+    return () => clearTimeout(timeout);
   }, [isLoadingAuth]);
 
   // Show loading spinner while checking app public settings or auth
