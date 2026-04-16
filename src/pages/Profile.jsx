@@ -6,6 +6,7 @@ import {
   Activity, Bookmark, Ticket, CalendarDays, Feather, Calendar, MapPin, Sparkles, Camera, Trash2,
   Stethoscope, Users
 } from "lucide-react";
+import ConditionHealthProfile from "../components/conditions/ConditionHealthProfile";
 
 function getCyclePhase(lastPeriodDate, cycleLen = 28, periodLen = 5) {
   if (!lastPeriodDate) return null;
@@ -104,7 +105,7 @@ export default function Profile() {
   ];
 
   const ALL_GOALS = ["calm", "sleep", "energy", "fitness", "nutrition", "hormone_support", "relationships", "confidence", "mindfulness", "cycle_awareness", "stress_reduction", "better_sleep"];
-  const ALL_CONDITIONS = ["PCOS", "Endometriosis", "PMDD", "Fibroids", "Thyroid", "None"];
+  const ALL_CONDITIONS = ["pcos", "endometriosis", "pmdd", "perimenopause", "fibroids", "adenomyosis", "thyroid", "prefer_not"];
 
   const [editGoals, setEditGoals] = useState(false);
   const [editConditions, setEditConditions] = useState(false);
@@ -391,38 +392,13 @@ export default function Profile() {
           )}
         </div>
 
-        {/* Health Conditions */}
-        <div style={{ ...card, padding: "16px", marginBottom: "16px" }}>
-          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 10 }}>
-            <p style={sLabel}>Health conditions</p>
-            <button onClick={() => setEditConditions(v => !v)} style={{ fontSize: 11, fontWeight: 600, color: "var(--rose-dust)", background: "none", border: "none", cursor: "pointer", fontFamily: "'Inter', sans-serif" }}>
-              {editConditions ? "Done" : "Edit"}
-            </button>
-          </div>
-          {editConditions ? (
-            <div className="flex flex-wrap gap-2">
-              {ALL_CONDITIONS.map(c => {
-                const active = (profile?.condition_flags || []).includes(c);
-                return (
-                  <button key={c} onClick={() => toggleCondition(c)}
-                    style={{ borderRadius: 9999, padding: "5px 13px", fontSize: 12, fontWeight: 500, cursor: "pointer", fontFamily: "'Inter', sans-serif", border: "1.5px solid",
-                      backgroundColor: active ? "var(--plum)" : "transparent",
-                      borderColor: active ? "var(--plum)" : "var(--border)",
-                      color: active ? "white" : "var(--mauve)" }}>
-                    {c}
-                  </button>
-                );
-              })}
-            </div>
-          ) : (
-            <div className="flex flex-wrap gap-2">
-              {(profile?.condition_flags || []).length === 0 && <p style={{ ...mutedText }}>None set</p>}
-              {(profile?.condition_flags || []).map(c => (
-                <span key={c} style={{ backgroundColor: "var(--rose-dust-subtle)", color: "var(--rose-dust)", borderRadius: 9999, padding: "4px 12px", fontSize: 12, fontWeight: 500, fontFamily: "'Inter', sans-serif" }}>{c}</span>
-              ))}
-            </div>
-          )}
-        </div>
+        {/* Health Profile (conditions + life stage) */}
+        {profile && (
+          <ConditionHealthProfile
+            profile={profile}
+            onProfileUpdate={(updates) => setProfile(p => ({ ...p, ...updates }))}
+          />
+        )}
 
         {/* Settings card */}
         <div style={{ ...card, overflow: "hidden", marginBottom: "16px" }}>
@@ -553,34 +529,6 @@ export default function Profile() {
           )}
 
           <div style={divider} />
-
-          {/* Life Stage */}
-          <button onClick={() => setEditLifeStage(v => !v)} style={rowItem}>
-            <div style={iconBox("var(--rose-dust-subtle)")}>
-              <Heart className="w-4 h-4" style={{ color: "var(--rose-dust)" }} />
-            </div>
-            <div className="flex-1">
-              <p style={{ ...bodyText, fontWeight: 600 }}>Life stage</p>
-              <p style={mutedText}>{profile?.life_stage && profile.life_stage !== "none" ? profile.life_stage.charAt(0).toUpperCase() + profile.life_stage.slice(1) : "None"}</p>
-            </div>
-            <ChevronRight className="w-4 h-4" style={{ color: "var(--border)" }} />
-          </button>
-          {editLifeStage && (
-            <div style={{ padding: "10px 16px 14px", backgroundColor: "var(--ivory)", borderBottom: "1px solid var(--border-subtle)", display: "flex", gap: 8 }}>
-              {["none", "pregnancy", "menopause"].map(s => {
-                const active = (profile?.life_stage || "none") === s;
-                return (
-                  <button key={s} onClick={() => updateLifeStage(s)}
-                    style={{ flex: 1, borderRadius: 12, padding: "9px 10px", fontSize: 12, fontWeight: 600, border: "1.5px solid", cursor: "pointer", fontFamily: "'Inter', sans-serif", textTransform: "capitalize",
-                      backgroundColor: active ? "var(--plum)" : "transparent",
-                      borderColor: active ? "var(--plum)" : "var(--border)",
-                      color: active ? "white" : "var(--mauve)" }}>
-                    {s === "none" ? "None" : s.charAt(0).toUpperCase() + s.slice(1)}
-                  </button>
-                );
-              })}
-            </div>
-          )}
 
           <div style={divider} />
 

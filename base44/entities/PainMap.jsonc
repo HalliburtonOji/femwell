@@ -1,0 +1,43 @@
+{
+  "name": "PainMap",
+  "type": "object",
+  "properties": {
+    "user_id": {
+      "type": "string"
+    },
+    "date": {
+      "type": "string"
+    },
+    "region": {
+      "type": "string"
+    },
+    "severity": {
+      "type": "number"
+    },
+    "pain_type": {
+      "type": "string",
+      "enum": [
+        "cramping",
+        "stabbing",
+        "aching",
+        "burning",
+        "pressure",
+        "throbbing"
+      ]
+    },
+    "notes": {
+      "type": "string"
+    },
+    "created_at": {
+      "type": "string"
+    },
+    "updated_at": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "user_id",
+    "date",
+    "region"
+  ]
+}

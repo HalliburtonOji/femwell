@@ -1,0 +1,65 @@
+{
+  "name": "FertileWindowLog",
+  "type": "object",
+  "properties": {
+    "user_id": {
+      "type": "string"
+    },
+    "date": {
+      "type": "string"
+    },
+    "bbt_celsius": {
+      "type": "number"
+    },
+    "bbt_time": {
+      "type": "string"
+    },
+    "lh_result": {
+      "type": "string",
+      "enum": [
+        "not_tested",
+        "negative",
+        "low",
+        "high",
+        "peak"
+      ],
+      "default": "not_tested"
+    },
+    "cervical_mucus": {
+      "type": "string",
+      "enum": [
+        "dry",
+        "sticky",
+        "creamy",
+        "watery",
+        "egg_white"
+      ]
+    },
+    "intercourse": {
+      "type": "boolean",
+      "default": false
+    },
+    "pregnancy_test": {
+      "type": "string",
+      "enum": [
+        "not_taken",
+        "negative",
+        "positive"
+      ],
+      "default": "not_taken"
+    },
+    "notes": {
+      "type": "string"
+    },
+    "created_at": {
+      "type": "string"
+    },
+    "updated_at": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "user_id",
+    "date"
+  ]
+}

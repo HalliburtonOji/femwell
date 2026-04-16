@@ -1,6 +1,6 @@
 import { useState, useEffect, useMemo } from "react";
 import { base44 } from "@/api/base44Client";
-import { WeeklyInsights } from '@/api/entities';
+
 import { subMonths, subDays, parseISO, differenceInDays, format } from "date-fns";
 import {
   BarChart, Bar, Cell, XAxis, YAxis, CartesianGrid, Tooltip,
@@ -14,6 +14,7 @@ import AIHealthSummaryCard from "../components/trends/AIHealthSummaryCard";
 import PredictiveAnalysisCard from "../components/trends/PredictiveAnalysisCard";
 import PeriodCountdownCard from "../components/pulse/PeriodCountdownCard";
 import PatternInsightCards from "../components/pulse/PatternInsightCards";
+import ConditionPulseCards from "../components/conditions/ConditionPulseCards";
 
 const PHASES = [
   { key: "Menstrual",  label: "Menstrual",  color: "#f43f5e", days: "Days 1–5"  },
@@ -318,6 +319,18 @@ export default function Pulse() {
         {user && (
           <div style={{ marginTop: "24px" }}>
             <PatternInsightCards userId={user.id} />
+          </div>
+        )}
+
+        {/* ── CONDITION-SPECIFIC INSIGHTS ── */}
+        {user && profile && (
+          <div style={{ marginTop: "16px" }}>
+            <ConditionPulseCards
+              userId={user.id}
+              profile={profile}
+              checkins={checkins}
+              cycleEvents={cycleEvents}
+            />
           </div>
         )}
 

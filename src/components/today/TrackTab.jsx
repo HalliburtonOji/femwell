@@ -3,11 +3,14 @@ import { base44 } from "@/api/base44Client";
 import { format, parseISO } from "date-fns";
 import {
   Droplets, AlertCircle, CheckCircle2, Plus, Pill,
-  CalendarDays, Trash2, Check, Loader2, PlayCircle, ThumbsUp, ThumbsDown
+  CalendarDays, Trash2, Check, Loader2, PlayCircle, ThumbsUp, ThumbsDown,
+  MapPin, Heart
 } from "lucide-react";
 import MonthlyCalendarCard from "../planner/MonthlyCalendarCard";
 import DayDetailSheet from "../planner/DayDetailSheet";
 import MedReminderSection from "./MedReminderSection";
+import PainMapSubTab from "../conditions/PainMapSubTab";
+import FertilitySubTab from "../conditions/FertilitySubTab";
 
 const todayStr = new Date().toISOString().split("T")[0];
 
@@ -37,7 +40,7 @@ const PRESET_HABITS = [
   { name: "Journaling",      category: "mindfulness" },
 ];
 
-const SUBTABS = [
+const BASE_SUBTABS = [
   { key: "calendar",  label: "Calendar",  Icon: CalendarDays },
   { key: "cycle",     label: "Cycle",     Icon: Droplets },
   { key: "symptoms",  label: "Symptoms",  Icon: AlertCircle },
@@ -45,6 +48,19 @@ const SUBTABS = [
   { key: "meds",      label: "Meds",      Icon: Pill },
   { key: "sessions",  label: "Sessions",  Icon: PlayCircle },
 ];
+
+function getSubTabs(profile) {
+  const flags = profile?.condition_flags || [];
+  const tabs = [...BASE_SUBTABS];
+  const symptomsIdx = tabs.findIndex(t => t.key === "symptoms");
+  if (flags.includes("endometriosis")) {
+    tabs.splice(symptomsIdx + 1, 0, { key: "pain_map", label: "Pain map", Icon: MapPin });
+  }
+  if (profile?.life_stage === "ttc") {
+    tabs.splice(symptomsIdx + 1, 0, { key: "fertility", label: "Fertility", Icon: Heart });
+  }
+  return tabs;
+}
 
 const FLOW_OPTIONS = ["light", "medium", "heavy"];
 const CYCLE_EVENT_TYPES = [
@@ -217,8 +233,63 @@ function CycleSubTab({ user, profile, selectedDate }) {
   );
 }
 
+// ── PMDD severity logger (shown in luteal phase) ─────────────────────────────
+function PMDDSeverityLogger({ user, profile, selectedDate }) {
+  const [severity, setSeverity] = useState(5);
+  const [saved, setSaved] = useState(false);
+  const [saving, setSaving] = useState(false);
+
+  const cycleDay = (() => {
+    if (!profile?.last_period_start_date) return null;
+    const last = new Date(profile.last_period_start_date);
+    const sel = new Date(selectedDate);
+    const diff = Math.floor((sel - last) / (1000 * 60 * 60 * 24));
+    return (diff % (profile.cycle_avg_length || 28)) + 1;
+  })();
+
+  if (!cycleDay || cycleDay < 14) return null;
+
+  const log = async () => {
+    setSaving(true);
+    await base44.entities.SymptomLogs.create({
+      user_id: user.id,
+      date: selectedDate,
+      symptom_type: "PMDD Severity",
+      severity,
+    });
+    setSaved(true);
+    setSaving(false);
+    setTimeout(() => setSaved(false), 2000);
+  };
+
+  return (
+    <div style={{ ...card, padding: 16, backgroundColor: "var(--mauve-subtle)", borderColor: "var(--mauve-light)" }}>
+      <p style={{ ...sLabel, marginBottom: 8, color: "var(--mauve)" }}>PMDD severity — Luteal day {cycleDay - 13}</p>
+      <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 6 }}>
+        <p style={{ fontSize: 12, color: "var(--mauve)", fontFamily: "'Inter', sans-serif" }}>Today's severity</p>
+        <strong style={{ fontSize: 12, color: "var(--plum)", fontFamily: "'Inter', sans-serif" }}>{severity}/10</strong>
+      </div>
+      <input type="range" min={1} max={10} value={severity} onChange={e => setSeverity(+e.target.value)} style={{ width: "100%", marginBottom: 10 }} />
+      <button onClick={log} disabled={saving || saved}
+        style={{ padding: "8px 18px", borderRadius: 9999, fontSize: 12, fontWeight: 600, border: "none", cursor: "pointer", fontFamily: "'Inter', sans-serif",
+          backgroundColor: saved ? "var(--sage)" : "var(--plum)", color: "white" }}>
+        {saving ? "Saving..." : saved ? "Logged" : "Log severity"}
+      </button>
+    </div>
+  );
+}
+
+// ── PCOS extra symptoms ───────────────────────────────────────────────────────
+const PCOS_SYMPTOMS = [
+  "Acne flare",
+  "Excess hair growth",
+  "Irregular cycle",
+  "Fatigue after eating",
+  "Sugar cravings",
+];
+
 // ── Symptoms sub-tab ──────────────────────────────────────────────────────────
-function SymptomsSubTab({ user, selectedDate }) {
+function SymptomsSubTab({ user, profile, selectedDate }) {
   const [symptoms, setSymptoms] = useState([]);
   const [selected, setSelected] = useState(null);
   const [severity, setSeverity] = useState(5);
@@ -261,8 +332,13 @@ function SymptomsSubTab({ user, selectedDate }) {
     return "Extreme";
   };
 
+  const flags = profile?.condition_flags || [];
+  const hasPMDD = flags.includes("pmdd");
+  const hasPCOS = flags.includes("pcos");
+
   return (
     <div className="pt-4 space-y-4">
+      {hasPMDD && <PMDDSeverityLogger user={user} profile={profile} selectedDate={selectedDate} />}
       {symptoms.length > 0 && (
         <div style={{ ...card, padding: 20 }}>
           <p style={{ ...sLabel, marginBottom: 12 }}>Logged on {selectedDate}</p>
@@ -283,7 +359,7 @@ function SymptomsSubTab({ user, selectedDate }) {
       <div style={{ ...card, padding: 20 }}>
         <p style={{ ...sLabel, marginBottom: 12 }}>Log a symptom</p>
         <div className="flex flex-wrap gap-2 mb-4">
-          {COMMON_SYMPTOMS.map(s => (
+          {[...COMMON_SYMPTOMS, ...(hasPCOS ? PCOS_SYMPTOMS : [])].map(s => (
             <button key={s} onClick={() => setSelected(selected === s ? null : s)}
               style={{ padding: "6px 12px", borderRadius: 9999, fontSize: 12, fontWeight: 500, border: "none", cursor: "pointer", fontFamily: "'Inter', sans-serif", backgroundColor: selected === s ? "var(--plum)" : "var(--ivory-dark)", color: selected === s ? "white" : "var(--mauve)" }}>
               {s}
@@ -652,6 +728,8 @@ export default function TrackTab({ user, profile }) {
   const [subTab, setSubTab] = useState("calendar");
   const [selectedDate, setSelectedDate] = useState(todayStr);
 
+  const SUBTABS = getSubTabs(profile);
+
   return (
     <div>
       {/* Sub-tab pills */}
@@ -680,10 +758,12 @@ export default function TrackTab({ user, profile }) {
 
       {subTab === "calendar"  && <CalendarSubTab user={user} profile={profile} />}
       {subTab === "cycle"     && <CycleSubTab user={user} profile={profile} selectedDate={selectedDate} />}
-      {subTab === "symptoms"  && <SymptomsSubTab user={user} selectedDate={selectedDate} />}
+      {subTab === "symptoms"  && <SymptomsSubTab user={user} profile={profile} selectedDate={selectedDate} />}
       {subTab === "habits"    && <HabitsSubTab user={user} profile={profile} selectedDate={selectedDate} />}
       {subTab === "meds"      && <MedsSubTab user={user} selectedDate={selectedDate} />}
       {subTab === "sessions"  && <SessionsSubTab user={user} selectedDate={selectedDate} />}
+      {subTab === "pain_map"  && <PainMapSubTab user={user} selectedDate={selectedDate} />}
+      {subTab === "fertility" && <FertilitySubTab user={user} profile={profile} selectedDate={selectedDate} units={profile?.units} />}
     </div>
   );
 }

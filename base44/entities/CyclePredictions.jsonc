@@ -1,0 +1,52 @@
+{
+  "name": "CyclePredictions",
+  "type": "object",
+  "properties": {
+    "user_id": {
+      "type": "string"
+    },
+    "period_start_predicted": {
+      "type": "string"
+    },
+    "window_start": {
+      "type": "string"
+    },
+    "window_end": {
+      "type": "string"
+    },
+    "fertile_window_start": {
+      "type": "string"
+    },
+    "fertile_window_end": {
+      "type": "string"
+    },
+    "ovulation_predicted_date": {
+      "type": "string"
+    },
+    "predicted_cycle_length": {
+      "type": "number"
+    },
+    "confidence": {
+      "type": "string",
+      "enum": [
+        "low",
+        "medium",
+        "high"
+      ],
+      "default": "low"
+    },
+    "method": {
+      "type": "string",
+      "default": "adaptive"
+    },
+    "created_at": {
+      "type": "string"
+    },
+    "updated_at": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "user_id"
+  ]
+}

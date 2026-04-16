@@ -25,6 +25,7 @@ import TodayHeroSection from "../components/today/TodayHeroSection";
 import DailyPlanCard from "../components/today/DailyPlanCard";
 import DailyStoriesStrip from "../components/today/DailyStoriesStrip";
 import TrackTab from "../components/today/TrackTab";
+import TodayFertilityBanner from "../components/conditions/TodayFertilityBanner";
 import { format, differenceInDays, parseISO } from "date-fns";
 
 // ── Cycle phase helper ──────────────────────────────────────────────────────
@@ -522,13 +523,17 @@ export default function Today() {
         {/* ── HERO ─────────────────────────────────────────────────────────── */}
         {mainTab === "today" && (
           <div className="pt-6">
-            <TodayHeroSection
-              user={user}
-              cycleInfo={cycleInfo}
-              todayCheckin={todayCheckin}
-              onOpenCheckin={() => setShowCheckin(true)}
-              onOpenCalendar={() => setMainTab("track")}
-            />
+            {profile?.life_stage === "ttc" ? (
+              <TodayFertilityBanner user={user} profile={profile} />
+            ) : (
+              <TodayHeroSection
+                user={user}
+                cycleInfo={cycleInfo}
+                todayCheckin={todayCheckin}
+                onOpenCheckin={() => setShowCheckin(true)}
+                onOpenCalendar={() => setMainTab("track")}
+              />
+            )}
           </div>
         )}
 
