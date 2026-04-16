@@ -31,6 +31,7 @@ function getPhaseForDate(profile, dateString) {
     : 'luteal';
 }
 
+// deno-lint-ignore no-undef
 // eslint-disable-next-line no-undef
 Deno.serve(async (req) => {
   try {
