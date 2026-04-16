@@ -711,7 +711,7 @@ export default function NutritionTodayTab({ user, profile, nutritionProfile, day
             <p style={{ fontSize: 12, color: "var(--mauve)", fontFamily: "'Inter', sans-serif", marginTop: showDrinks ? 0 : 10 }}>No drinks logged today.</p>
           ) : (
             <div style={{ display: "flex", flexWrap: "wrap", gap: 6, marginTop: showDrinks ? 0 : 10 }}>
-              {drinkLogs.map((log, i) => {
+              {drinkLogs.filter(Boolean).map((log, i) => {
                 const info = DRINK_TYPES.find((d) => d.id === log.drink_type);
                 return (
                   <span key={i} style={{ fontSize: 11, fontWeight: 600, color: "var(--plum)", backgroundColor: "var(--ivory-dark)", borderRadius: 9999, padding: "4px 10px", fontFamily: "'Inter', sans-serif" }}>
