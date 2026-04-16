@@ -75,6 +75,7 @@ import Events from './pages/Events';
 import LifestyleDetail from './pages/LifestyleDetail';
 import Track from './pages/Track';
 import Community from './pages/Community';
+import Planner from './pages/Planner';
 import __Layout from './Layout.jsx';
 
 
@@ -106,6 +107,7 @@ export const PAGES = {
     "LifestyleDetail": LifestyleDetail,
     "Track": Track,
     "Community": Community,
+    "Planner": Planner,
 }
 
 export const pagesConfig = {

@@ -1,19 +1,19 @@
 import { useState, useEffect } from "react";
 import { base44 } from "@/api/base44Client";
 import { format, parseISO, differenceInDays } from "date-fns";
-import { PenLine, Sparkles } from "lucide-react";
+import { PenLine } from "lucide-react";
 import JotterCard from "../components/journal/JotterCard";
 import NewEntrySheet from "../components/journal/NewEntrySheet";
 import JournalInsightsTab from "../components/journal/JournalInsightsTab";
 
 const FILTER_TYPES = [
   { id: "all",         label: "All" },
-  { id: "free",        label: "✍️ Free" },
-  { id: "gratitude",   label: "🙏 Gratitude" },
-  { id: "todo",        label: "✅ Todo" },
-  { id: "mood",        label: "💭 Mood" },
-  { id: "reflection",  label: "🪞 Reflection" },
-  { id: "dream",       label: "🌙 Dream" },
+  { id: "free",        label: "Free" },
+  { id: "gratitude",   label: "Gratitude" },
+  { id: "todo",        label: "Todo" },
+  { id: "mood",        label: "Mood" },
+  { id: "reflection",  label: "Reflection" },
+  { id: "dream",       label: "Dream" },
 ];
 
 function calcStreak(entries) {
@@ -142,11 +142,10 @@ export default function Journal() {
                 <h1 style={{ fontFamily: "'Playfair Display', serif", color: "var(--plum)", fontSize: 26, fontWeight: 700, letterSpacing: "-0.02em", margin: 0 }}>
                   Journal
                 </h1>
-                <Sparkles style={{ width: 18, height: 18, color: "var(--rose-dust)" }} />
               </div>
               {streak > 0 ? (
                 <p style={{ fontSize: 13, color: "var(--mauve)", fontFamily: "'Inter', sans-serif" }}>
-                  {streak} day journaling streak 🔥
+                  {streak} day journaling streak
                 </p>
               ) : (
                 <p style={{ fontSize: 13, color: "var(--mauve)", fontFamily: "'Inter', sans-serif" }}>
@@ -222,15 +221,17 @@ export default function Journal() {
             {/* Empty state */}
             {entries.length === 0 && (
               <div style={{ textAlign: "center", paddingTop: 60, paddingBottom: 40 }}>
-                <div style={{ fontSize: 64, marginBottom: 16 }}>📓✨</div>
+                <div style={{ width: 56, height: 56, borderRadius: 18, backgroundColor: "var(--rose-dust-subtle)", display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 16px" }}>
+                  <PenLine style={{ width: 24, height: 24, color: "var(--rose-dust)" }} />
+                </div>
                 <h2 style={{ fontFamily: "'Playfair Display', serif", fontSize: 22, color: "var(--plum)", marginBottom: 8 }}>
                   Your journal is waiting
                 </h2>
                 <p style={{ fontSize: 14, color: "var(--mauve)", fontFamily: "'Inter', sans-serif", marginBottom: 28 }}>
-                  Tap + to write your first entry
+                  Tap new entry to write your first
                 </p>
                 <div style={{ display: "flex", gap: 10, justifyContent: "center", flexWrap: "wrap" }}>
-                  {[{ icon: "✍️", label: "Free write" }, { icon: "🙏", label: "Gratitude" }, { icon: "🌙", label: "Dream log" }].map(t => (
+                  {[{ label: "Free write" }, { label: "Gratitude" }, { label: "Dream log" }].map(t => (
                     <button
                       key={t.label}
                       onClick={() => setShowNewEntry(true)}
@@ -241,7 +242,7 @@ export default function Journal() {
                         color: "var(--plum)", fontFamily: "'Inter', sans-serif",
                       }}
                     >
-                      {t.icon} {t.label}
+                      {t.label}
                     </button>
                   ))}
                 </div>
@@ -252,7 +253,7 @@ export default function Journal() {
             {pinnedEntries.length > 0 && filterType === "all" && (
               <div style={{ marginBottom: 20 }}>
                 <p style={{ fontSize: 11, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.1em", color: "var(--mauve)", fontFamily: "'Inter', sans-serif", marginBottom: 10 }}>
-                  ⭐ Pinned
+                  Pinned
                 </p>
                 <style>{`.pinned-scroll::-webkit-scrollbar{display:none}`}</style>
                 <div className="pinned-scroll" style={{ display: "flex", gap: 12, overflowX: "auto", paddingBottom: 8, scrollbarWidth: "none" }}>

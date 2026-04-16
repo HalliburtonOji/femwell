@@ -8,6 +8,9 @@
     "user_email": {
       "type": "string"
     },
+    "display_name": {
+      "type": "string"
+    },
     "onboarding_complete": {
       "type": "boolean",
       "default": false

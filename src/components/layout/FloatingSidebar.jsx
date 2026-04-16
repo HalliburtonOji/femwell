@@ -3,21 +3,22 @@ import { Link } from "react-router-dom";
 import { createPageUrl } from "@/utils";
 import { motion, AnimatePresence } from "framer-motion";
 import {
-  Sun, Compass, User, BookOpen, Newspaper, Utensils, X, Map, Activity, Feather, Menu, Heart, Users
+  Sun, Compass, User, BookOpen, Newspaper, Utensils, X, Map, Activity, Feather, Menu, Heart, Users, CalendarDays
 } from "lucide-react";
 
 const NAV = [
-  { label: "Today",     icon: Sun,       page: "Today" },
-  { label: "Nutrition", icon: Utensils,  page: "Nutrition" },
-  { label: "Programs",  icon: Map,       page: "ProgramsHub" },
-  { label: "Explore",   icon: Compass,   page: "Explore" },
-  { label: "Lifestyle", icon: BookOpen,  page: "Lifestyle" },
-  { label: "Community", icon: Users,     page: "Community" },
-  { label: "Journal",   icon: Newspaper, page: "Journal" },
-  { label: "Pulse",     icon: Activity,  page: "Pulse" },
-  { label: "Skin & Hair", icon: Feather,  page: "SkinHair" },
-  { label: "Life Stage", icon: Heart,    page: "LifeStageCare" },
-  { label: "Profile",   icon: User,      page: "Profile" },
+  { label: "Today",     icon: Sun,          page: "Today" },
+  { label: "Nutrition", icon: Utensils,     page: "Nutrition" },
+  { label: "Programs",  icon: Map,          page: "ProgramsHub" },
+  { label: "Planner",   icon: CalendarDays, page: "Planner" },
+  { label: "Explore",   icon: Compass,      page: "Explore" },
+  { label: "Lifestyle", icon: BookOpen,     page: "Lifestyle" },
+  { label: "Community", icon: Users,        page: "Community" },
+  { label: "Journal",   icon: Newspaper,    page: "Journal" },
+  { label: "Pulse",     icon: Activity,     page: "Pulse" },
+  { label: "Skin & Hair", icon: Feather,    page: "SkinHair" },
+  { label: "Life Stage", icon: Heart,       page: "LifeStageCare" },
+  { label: "Profile",   icon: User,         page: "Profile" },
 ];
 
 /* ── Desktop sidebar ───────────────────────────────────────────────────────── */

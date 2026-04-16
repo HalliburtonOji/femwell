@@ -39,7 +39,7 @@ const BODY_GOALS = [
   { id: "menopause",       label: "Menopause"        },
 ];
 
-const STEPS = ["welcome", "goals", "location", "interests", "preferences", "life_stage", "setup", "skin_profile", "assistant_intro", "done"];
+const STEPS = ["welcome", "display_name", "goals", "location", "interests", "preferences", "life_stage", "setup", "skin_profile", "assistant_intro", "done"];
 const PROGRESS_STEPS = ["goals", "location", "interests", "preferences", "life_stage", "setup", "skin_profile"];
 
 const PREG_FOCUSES = ["Sleep", "Nausea", "Movement", "Nutrition", "Birth prep", "Calm", "Pelvic health"];
@@ -96,6 +96,7 @@ export default function Onboarding() {
   const [pregTrimester, setPregTrimester] = useState("first");
   const [menoStage, setMenoStage] = useState("perimenopause");
   const toggleLifeStageFocus = (v) => setLifeStageFocus(c => c.includes(v) ? c.filter(i => i !== v) : [...c, v]);
+  const [displayName, setDisplayName] = useState("");
   const [assistantName, setAssistantName] = useState("Guide");
   const [showVoice, setShowVoice] = useState(false);
   const [micDenied, setMicDenied] = useState(false);
@@ -156,6 +157,7 @@ export default function Onboarding() {
         user_id: user.id, user_email: user.email, onboarding_complete: true,
         goals, tone_preference: tone,
         modules_enabled: cycleTrackingEnabled ? ["cycle"] : [],
+        display_name: displayName.trim() || undefined,
         skin_type: skinType, followed_categories: interests,
         hydration_target_ml: hydrationTarget,
         life_stage: lifeStage,
@@ -283,6 +285,35 @@ export default function Onboarding() {
             <button className="btn-primary w-full" onClick={() => setStep(1)}>
               Get started
             </button>
+          </div>
+        )}
+
+        {current === "display_name" && (
+          <div className="w-full space-y-6">
+            <div>
+              <h2 style={{ fontSize: "22px", fontWeight: 700, color: "var(--plum)", fontFamily: "'Playfair Display', serif", marginTop: "4px", lineHeight: 1.2 }}>
+                What should we call you?
+              </h2>
+              <p style={{ fontSize: "13px", color: "var(--mauve)", fontFamily: "'Inter', sans-serif", marginTop: "6px" }}>
+                Just your first name is perfect.
+              </p>
+            </div>
+            <input
+              type="text"
+              value={displayName}
+              onChange={e => setDisplayName(e.target.value)}
+              placeholder="e.g. Maya, Ava, Jo"
+              style={{
+                width: "100%", padding: "14px 16px", borderRadius: 16,
+                border: "1.5px solid var(--border)",
+                backgroundColor: "var(--surface)",
+                fontSize: 16, color: "var(--plum)",
+                fontFamily: "'Inter', sans-serif", outline: "none", boxSizing: "border-box",
+              }}
+              onFocus={e => e.target.style.borderColor = "var(--rose-dust-light)"}
+              onBlur={e => e.target.style.borderColor = "var(--border)"}
+            />
+            <p style={{ fontSize: 11, color: "var(--mauve)", fontFamily: "'Inter', sans-serif" }}>You can skip this — we will use your email if blank.</p>
           </div>
         )}
 
@@ -687,7 +718,7 @@ export default function Onboarding() {
         {current === "done" && (
           <div className="space-y-6 text-center w-full">
             <div style={{ width: 72, height: 72, borderRadius: 9999, margin: "0 auto", backgroundColor: "var(--rose-dust-subtle)", border: "1px solid var(--rose-dust-light)", display: "flex", alignItems: "center", justifyContent: "center" }}>
-              <span style={{ fontSize: 32 }}>🌸</span>
+              <span style={{ fontSize: 28, fontWeight: 700, fontFamily: "'Playfair Display', serif", color: "var(--rose-dust)" }}>F</span>
             </div>
             <div>
               <h2 style={{ fontSize: "26px", fontWeight: 700, fontFamily: "'Playfair Display', serif", color: "var(--plum)", lineHeight: 1.1 }}>You're all set</h2>
@@ -697,7 +728,6 @@ export default function Onboarding() {
             </div>
             <div style={{ ...card, padding: "16px", textAlign: "left", background: "var(--rose-dust-subtle)", borderColor: "var(--rose-dust-light)" }}>
               <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 8 }}>
-                <span style={{ fontSize: 20 }}>✨</span>
                 <p style={{ fontSize: 13, fontWeight: 700, color: "var(--plum)", fontFamily: "'Inter', sans-serif" }}>Meet {assistantName || "Guide"}</p>
               </div>
               <p style={{ fontSize: 13, color: "var(--plum)", lineHeight: 1.6, fontFamily: "'Inter', sans-serif" }}>Your personal wellness guide is waiting on the Today page. Tap the orb any time to ask for help, get phase insights, or just talk.</p>

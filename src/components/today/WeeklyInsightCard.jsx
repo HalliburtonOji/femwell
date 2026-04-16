@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { base44 } from "@/api/base44Client";
-import { Sparkles, RefreshCw, ChevronDown, ChevronUp } from "lucide-react";
+import { RefreshCw, ChevronDown, ChevronUp } from "lucide-react";
 import { subDays, format } from "date-fns";
 import { createPageUrl } from "@/utils";
 import { Link } from "react-router-dom";
@@ -66,6 +66,17 @@ ${recentCycles.map(c => `- ${c.date}: ${c.type}`).join("\n") || "None logged"}
 
 Write the insight in Markdown with clear sections. Keep it warm, personal, and actionable.`;
 
+    const totalDataPoints = recentJournals.length + recentCheckins.length + recentHabits.length + recentSymptoms.length + recentCycles.length;
+    if (totalDataPoints < 5) {
+      const text = "You are just getting started. The more you log, the sharper your insights become. Try logging a daily check-in, journaling, or tracking a habit this week — even small entries help build your personal health picture.";
+      const saved = await base44.entities.WeeklyInsights.create({
+        user_id: user.id, week_start: weekStart, week_end: weekEnd,
+        insight_text: text, generated_at: new Date().toISOString(),
+      });
+      setInsight(saved); setExpanded(true); setGenerating(false);
+      return;
+    }
+
     const result = await base44.integrations.Core.InvokeLLM({ prompt, model: "claude_sonnet_4_6" });
     const text = typeof result === "string" ? result : result?.text || result?.content || JSON.stringify(result);
 
@@ -100,7 +111,7 @@ Write the insight in Markdown with clear sections. Keep it warm, personal, and a
             backgroundColor: "var(--rose-dust-subtle)",
             display: "flex", alignItems: "center", justifyContent: "center"
           }}>
-            <Sparkles className="w-4 h-4" style={{ color: "var(--rose-dust)" }} />
+            <RefreshCw className="w-3.5 h-3.5" style={{ color: "var(--rose-dust)" }} />
           </div>
           <div>
             <p style={{ fontSize: "14px", fontWeight: 700, color: "var(--plum)", fontFamily: "'Inter', sans-serif" }}>

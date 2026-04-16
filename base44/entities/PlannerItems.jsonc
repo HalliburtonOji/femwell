@@ -1,0 +1,57 @@
+{
+  "name": "PlannerItems",
+  "type": "object",
+  "properties": {
+    "user_id": {
+      "type": "string"
+    },
+    "title": {
+      "type": "string"
+    },
+    "category": {
+      "type": "string",
+      "enum": [
+        "health",
+        "personal",
+        "work",
+        "social",
+        "wellbeing",
+        "reminder"
+      ],
+      "default": "reminder"
+    },
+    "date": {
+      "type": "string"
+    },
+    "time": {
+      "type": "string"
+    },
+    "repeat": {
+      "type": "string",
+      "enum": [
+        "once",
+        "daily",
+        "weekly",
+        "monthly"
+      ],
+      "default": "once"
+    },
+    "notes": {
+      "type": "string"
+    },
+    "is_completed": {
+      "type": "boolean",
+      "default": false
+    },
+    "created_at": {
+      "type": "string"
+    },
+    "updated_at": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "user_id",
+    "title"
+  ]
+}

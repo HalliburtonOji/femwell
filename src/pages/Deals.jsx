@@ -57,7 +57,7 @@ export default function Deals() {
         <div style={{ marginBottom: 20 }}>
           <p style={sLabel}>Member perks</p>
           <h1 style={{ fontSize: 26, fontWeight: 700, fontFamily: "'Playfair Display', serif", color: "var(--plum)", letterSpacing: "-0.02em", marginTop: 4 }}>
-            Wellbeing picks 🛍️
+            Wellbeing picks
           </h1>
           <p style={{ fontSize: 13, color: "var(--mauve)", fontFamily: "'Inter', sans-serif", marginTop: 6 }}>
             Products our community loves
@@ -127,7 +127,7 @@ export default function Deals() {
                     {/* Discount badge */}
                     {item.discount_text && (
                       <div style={{ backgroundColor: "var(--rose-dust-subtle)", border: "1px solid var(--rose-dust-light)", borderRadius: 10, padding: "8px 12px", marginBottom: 12 }}>
-                        <p style={{ fontSize: 12, fontWeight: 700, color: "var(--rose-dust)", fontFamily: "'Inter', sans-serif" }}>🎁 {item.discount_text}</p>
+                        <p style={{ fontSize: 12, fontWeight: 700, color: "var(--rose-dust)", fontFamily: "'Inter', sans-serif" }}>{item.discount_text}</p>
                       </div>
                     )}
 

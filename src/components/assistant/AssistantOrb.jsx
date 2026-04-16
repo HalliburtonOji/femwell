@@ -6,6 +6,7 @@ import { safeNavigate, ROUTES } from "@/lib/routeRegistry";
 // ── Cooldown helpers ────────────────────────────────────────────────────────
 const COOLDOWN_ANY_MS = 10 * 60 * 1000;   // 10 min between any suggestion
 const COOLDOWN_LOG_MS = 60 * 60 * 1000;    // 1 hr if user closed a "log" suggestion
+const COOLDOWN_HYDRATION_MS = 14400000;    // 4 hr if user closed a hydration suggestion
 const POLL_INTERVAL_MS = 12 * 60 * 1000;   // poll every 12 min
 
 function getCooldowns() {
@@ -17,6 +18,10 @@ function recordDismiss(category) {
   const now = Date.now();
   cd._any = now + COOLDOWN_ANY_MS;
   if (category === "log") cd.log = now + COOLDOWN_LOG_MS;
+  else if (category === "hydration") {
+    cd.hydration = now + COOLDOWN_HYDRATION_MS;
+    localStorage.setItem("femwell_hydration_dismissed", String(now));
+  }
   else if (category) cd[category] = now + COOLDOWN_ANY_MS;
   localStorage.setItem("fw_sugg_cd", JSON.stringify(cd));
 }
@@ -26,6 +31,11 @@ function isOnCooldown(category) {
   const now = Date.now();
   if (cd._any && now < cd._any) return true;
   if (category && cd[category] && now < cd[category]) return true;
+  // Check hydration-specific localStorage key
+  if (category === "hydration") {
+    const dismissed = localStorage.getItem("femwell_hydration_dismissed");
+    if (dismissed && now - Number(dismissed) < COOLDOWN_HYDRATION_MS) return true;
+  }
   return false;
 }
 
@@ -37,7 +47,7 @@ function getStoredPosition() {
 }
 
 export default function AssistantOrb({ currentPageName }) {
-  const defaultPos = () => ({ x: window.innerWidth - 84, y: window.innerHeight - 180 });
+  const defaultPos = () => ({ x: window.innerWidth - 84, y: 100 });
   const [position, setPosition] = useState(() => getStoredPosition() || defaultPos());
   const [dragging, setDragging] = useState(false);
   const [suggestion, setSuggestion] = useState(null);

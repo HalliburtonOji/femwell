@@ -125,14 +125,15 @@ const fallbackTodayRecommendations = [
 ];
 
 const recommendationTypeStyles = {
-  BREATHWORK: { backgroundColor: "#EEE6FF", color: "#9B7FCC", abbr: "BR" },
-  MEDITATION: { backgroundColor: "#FFE6F2", color: "#C96B9E", abbr: "MD" },
-  PROGRAMME: { backgroundColor: "#E6FFF8", color: "#4ABFA3", abbr: "PG" },
-  NUTRITION: { backgroundColor: "#FFF8E6", color: "#E8B84B", abbr: "NT" },
-  BOOK:      { backgroundColor: "#FFF0E8", color: "#C4804A", abbr: "BK" },
-  LIFESTYLE: { backgroundColor: "#F5ECF0", color: "#C4849A", abbr: "LF" },
-  EVENT:     { backgroundColor: "#E8F0FF", color: "#6B8AC4", abbr: "EV" },
-  default: { backgroundColor: "#F0F0F8", color: "#8888A8", abbr: "RC" },
+  BREATHWORK: { backgroundColor: "#EEE6FF", color: "#9B7FCC", label: "Audio" },
+  MEDITATION: { backgroundColor: "#FFE6F2", color: "#C96B9E", label: "Audio" },
+  PROGRAMME: { backgroundColor: "#E6FFF8", color: "#4ABFA3", label: "Programme" },
+  NUTRITION: { backgroundColor: "#FFF8E6", color: "#E8B84B", label: "Nutrition" },
+  BOOK:      { backgroundColor: "#FFF0E8", color: "#C4804A", label: "Story" },
+  LIFESTYLE: { backgroundColor: "#F5ECF0", color: "#C4849A", label: "Article" },
+  EVENT:     { backgroundColor: "#E8F0FF", color: "#6B8AC4", label: "Event" },
+  READ:      { backgroundColor: "#F5ECF0", color: "#C4849A", label: "Article" },
+  default: { backgroundColor: "#F0F0F8", color: "#8888A8", label: "Article" },
 };
 
 function getRecommendationTypeMeta(type) {
@@ -176,7 +177,7 @@ function TodayRecommendationCard({ item, onTap }) {
         style={{ width: 32, height: 32, borderRadius: 10, display: "flex", alignItems: "center", justifyContent: "center",
                  backgroundColor: typeMeta.backgroundColor, color: typeMeta.color, flexShrink: 0 }}
       >
-        <span style={{ fontSize: 11, fontWeight: 700, lineHeight: 1, fontFamily: "'Inter', sans-serif" }}>{typeMeta.abbr}</span>
+        <span style={{ fontSize: 9, fontWeight: 700, lineHeight: 1, fontFamily: "'Inter', sans-serif" }}>{typeMeta.label}</span>
       </div>
       <p style={{ color: "var(--plum)", fontSize: 14, fontWeight: 600, fontFamily: "'Inter', sans-serif",
                   display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical", overflow: "hidden",
@@ -218,6 +219,16 @@ function RecommendedForYouTodaySection({ loading, items, onTap }) {
       </div>
     </div>
   );
+}
+
+function extractDisplayName(profile, user) {
+  if (profile?.display_name) return profile.display_name;
+  if (user?.email) {
+    const prefix = user.email.split("@")[0];
+    const words = prefix.split(/[0-9_.\-]+/).filter(Boolean);
+    if (words[0]) return words[0].charAt(0).toUpperCase() + words[0].slice(1).toLowerCase();
+  }
+  return null;
 }
 
 function DailyStoriesRow({ todayCheckin, todayCompletions }) {
@@ -539,10 +550,12 @@ export default function Today() {
             ) : (
               <TodayHeroSection
                 user={user}
+                profile={profile}
                 cycleInfo={cycleInfo}
                 todayCheckin={todayCheckin}
                 onOpenCheckin={() => setShowCheckin(true)}
                 onOpenCalendar={() => setMainTab("track")}
+                extractDisplayName={extractDisplayName}
               />
             )}
             {profile && <DailyPhaseBrief profile={profile} />}
@@ -562,7 +575,6 @@ export default function Today() {
               </button>
             </div>
             <DailyStoriesStrip user={user} />
-            <DailyStoriesRow todayCheckin={todayCheckin} todayCompletions={todayCompletions} />
           </>
         )}
 

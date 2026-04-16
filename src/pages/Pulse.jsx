@@ -295,7 +295,7 @@ export default function Pulse() {
         {/* ── EMPTY STATE (< 3 checkins) ── */}
         {checkins.length < 3 && (
           <div style={{ marginTop: 32, backgroundColor: "var(--surface)", border: "1px solid var(--border)", borderRadius: 24, padding: "36px 24px", textAlign: "center", boxShadow: "var(--shadow-sm)" }}>
-            <div style={{ fontSize: 48, marginBottom: 14 }}>📊</div>
+            <div style={{ width: 48, height: 48, borderRadius: 16, backgroundColor: "var(--rose-dust-subtle)", display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 14px" }}><Activity style={{ width: 22, height: 22, color: "var(--rose-dust)" }} /></div>
             <h3 style={{ fontFamily: "'Playfair Display', serif", fontSize: 20, fontWeight: 700, color: "var(--plum)", marginBottom: 8 }}>Check in daily to unlock insights</h3>
             <p style={{ fontSize: 14, color: "var(--mauve)", fontFamily: "'Inter', sans-serif", lineHeight: 1.6, marginBottom: 20 }}>After a few check-ins, you'll see patterns in your mood, energy and sleep</p>
             <a href="/Today?open_log=1" style={{ backgroundColor: "var(--plum)", color: "white", borderRadius: 9999, padding: "12px 28px", fontSize: 14, fontWeight: 600, fontFamily: "'Inter', sans-serif", textDecoration: "none", display: "inline-block" }}>

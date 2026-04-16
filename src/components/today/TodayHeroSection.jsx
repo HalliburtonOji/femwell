@@ -5,22 +5,22 @@ import { createPageUrl } from "@/utils";
 
 const MORNING_MESSAGES = {
   menstrual: [
-    "Rest is productive today. 🌙",
+    "Rest is productive today.",
     "Your body is doing deep work. Be soft with yourself.",
     "Slow mornings are allowed. You don't have to do it all.",
   ],
   follicular: [
-    "Fresh energy incoming. ✨ What will you create?",
+    "Fresh energy incoming. What will you create?",
     "Your mind is sharp and ready. Great day to start something.",
     "Rising energy — lean into it.",
   ],
   ovulatory: [
-    "You're glowing today. Go connect with someone. 🌸",
+    "You're glowing today. Go connect with someone.",
     "Peak week. Your charisma is high — use it.",
     "Great day for big conversations and bold moves.",
   ],
   luteal: [
-    "Honour what you need today. 🍂",
+    "Honour what you need today.",
     "Your intuition is sharp this week. Trust it.",
     "It's okay to slow down. Deep rest is part of the cycle.",
   ],
@@ -119,6 +119,17 @@ function HeroAmbient({ phase }) {
   );
 }
 
+function extractFirstName(profile, user) {
+  if (profile?.display_name) return profile.display_name;
+  if (user?.full_name) return user.full_name.split(" ")[0];
+  if (user?.email) {
+    const prefix = user.email.split("@")[0];
+    const words = prefix.split(/[0-9_.\-]+/).filter(Boolean);
+    if (words[0]) return words[0].charAt(0).toUpperCase() + words[0].slice(1).toLowerCase();
+  }
+  return "";
+}
+
 export default function TodayHeroSection({
   user,
   profile,
@@ -128,7 +139,7 @@ export default function TodayHeroSection({
   onOpenCalendar,
 }) {
   const { word: greetWord, Icon: GreetIcon } = getGreeting();
-  const firstName = user?.full_name?.split(" ")[0] || "";
+  const firstName = extractFirstName(profile, user);
   const phaseMeta = cycleInfo ? PHASE_META[cycleInfo.phase] : null;
   const today = new Date();
 
@@ -250,7 +261,7 @@ export default function TodayHeroSection({
                     fontSize: 10, fontWeight: 700,
                     fontFamily: "'Inter', sans-serif",
                   }}>
-                    🌹 Period in {daysUntilPeriod}d
+                    Period in {daysUntilPeriod}d
                   </span>
                 )}
               </div>

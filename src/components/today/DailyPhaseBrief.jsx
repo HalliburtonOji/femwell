@@ -9,7 +9,6 @@ const PHASE_CONTENT = {
     color: "var(--rose-dust)",
     bg: "var(--rose-dust-subtle)",
     border: "var(--rose-dust-light)",
-    emoji: "🌸",
   },
   follicular: {
     headline: "Energy is rising",
@@ -19,7 +18,6 @@ const PHASE_CONTENT = {
     color: "var(--sage)",
     bg: "var(--sage-subtle)",
     border: "var(--sage-light)",
-    emoji: "🌱",
   },
   ovulatory: {
     headline: "Peak performance window",
@@ -29,7 +27,6 @@ const PHASE_CONTENT = {
     color: "#B89E6A",
     bg: "#FFF8EE",
     border: "#E8D8A0",
-    emoji: "✨",
   },
   luteal: {
     headline: "Wind down and nourish",
@@ -39,7 +36,6 @@ const PHASE_CONTENT = {
     color: "var(--mauve)",
     bg: "var(--mauve-subtle)",
     border: "var(--mauve-light)",
-    emoji: "🌙",
   },
 };
 
@@ -58,11 +54,39 @@ function getPhaseAndDay(profile) {
   return { phase, dayOfCycle };
 }
 
+const FALLBACK_CONTENT = {
+  phase: "getting_started",
+  headline: "Welcome to FemWell",
+  body: "Log your last period date in Track to start seeing personalised cycle insights.",
+  food: "Focus on iron-rich whole foods as a general foundation.",
+  move: "Any movement is good movement — walks, stretching, whatever feels right today.",
+  color: "var(--mauve)",
+  bg: "var(--mauve-subtle)",
+  border: "var(--mauve-light)",
+};
+
 export default function DailyPhaseBrief({ profile }) {
   const info = getPhaseAndDay(profile);
-  if (!info) return null;
+  const content = info ? PHASE_CONTENT[info.phase] : null;
 
-  const content = PHASE_CONTENT[info.phase];
+  if (!content) {
+    return (
+      <div style={{ backgroundColor: FALLBACK_CONTENT.bg, border: `1px solid ${FALLBACK_CONTENT.border}`, borderRadius: 20, padding: "16px 18px", marginBottom: 16 }}>
+        <div className="mb-3">
+          <p style={{ fontSize: "0.6rem", fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.12em", color: FALLBACK_CONTENT.color, fontFamily: "'Inter', sans-serif" }}>Getting started</p>
+          <p style={{ fontSize: 15, fontWeight: 700, color: "var(--plum)", fontFamily: "'Playfair Display', serif", marginTop: 1 }}>{FALLBACK_CONTENT.headline}</p>
+        </div>
+        <div className="space-y-2">
+          {[{ label: "Body", text: FALLBACK_CONTENT.body }, { label: "Food", text: FALLBACK_CONTENT.food }, { label: "Move", text: FALLBACK_CONTENT.move }].map(row => (
+            <div key={row.label} style={{ display: "flex", gap: 8 }}>
+              <span style={{ fontSize: 11, fontWeight: 700, color: FALLBACK_CONTENT.color, fontFamily: "'Inter', sans-serif", width: 36, flexShrink: 0, paddingTop: 1 }}>{row.label}</span>
+              <p style={{ fontSize: 12, color: "var(--plum)", fontFamily: "'Inter', sans-serif", lineHeight: 1.55 }}>{row.text}</p>
+            </div>
+          ))}
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div style={{
@@ -73,11 +97,11 @@ export default function DailyPhaseBrief({ profile }) {
       marginBottom: 16,
     }}>
       <div className="flex items-center gap-2 mb-3">
-        <span style={{ fontSize: 18 }}>{content.emoji}</span>
         <div>
           <p style={{ fontSize: "0.6rem", fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.12em", color: content.color, fontFamily: "'Inter', sans-serif" }}>
             Day {info.dayOfCycle} · {info.phase.charAt(0).toUpperCase() + info.phase.slice(1)} phase
           </p>
+          
           <p style={{ fontSize: 15, fontWeight: 700, color: "var(--plum)", fontFamily: "'Playfair Display', serif", marginTop: 1 }}>
             {content.headline}
           </p>

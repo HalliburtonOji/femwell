@@ -1,383 +1,307 @@
 import { useState, useEffect } from "react";
 import { base44 } from "@/api/base44Client";
-import { ChevronLeft, ChevronRight, CalendarDays } from "lucide-react";
-import { createPageUrl } from "@/utils";
-import { addDays, subDays, format, startOfMonth, endOfMonth, startOfWeek, endOfWeek, isSameMonth, isSameDay, parseISO, differenceInDays, addMonths, subMonths } from "date-fns";
+import { Plus, Trash2, Check, X } from "lucide-react";
+import { format, parseISO, addDays, startOfWeek } from "date-fns";
+import { differenceInDays } from "date-fns";
 
-const PHASE_COLORS = {
-  menstrual:  "#C4849A",
-  follicular: "#7A9E8E",
-  ovulatory:  "#B89E6A",
-  luteal:     "#8A7E88",
+const CATEGORIES = ["health", "personal", "work", "social", "wellbeing", "reminder"];
+const CATEGORY_STYLES = {
+  health:    { bg: "var(--sage-subtle)",       color: "var(--sage)" },
+  personal:  { bg: "var(--rose-dust-subtle)",  color: "var(--rose-dust)" },
+  work:      { bg: "#FFF8E6",                   color: "#C4954A" },
+  social:    { bg: "#E8F4FF",                   color: "#5B9BD5" },
+  wellbeing: { bg: "var(--mauve-subtle)",       color: "var(--mauve)" },
+  reminder:  { bg: "var(--ivory-dark)",         color: "var(--mauve)" },
+};
+const REPEAT_OPTIONS = ["once", "daily", "weekly", "monthly"];
+
+const PHASE_TIPS = {
+  menstrual:  "Schedule gentler tasks today — your body needs more rest.",
+  follicular: "Great day for new projects and important decisions.",
+  ovulatory:  "High energy — ideal for social plans and ambitious goals.",
+  luteal:     "Build in buffer time and avoid overcommitting this week.",
 };
 
-const MOON_PHASES = ["🌑","🌒","🌓","🌔","🌕","🌖","🌗","🌘"];
-
-function getMoonPhase(date) {
-  const known = new Date("2000-01-06");
-  const diff = differenceInDays(date, known);
-  const idx = Math.round(((diff % 29.53) / 29.53) * 8) % 8;
-  return MOON_PHASES[Math.abs(idx)];
-}
-
-function getCyclePhase(date, lastPeriodDate, cycleLen = 28, periodLen = 5) {
-  if (!lastPeriodDate) return null;
-  const last = parseISO(lastPeriodDate);
-  const diff = differenceInDays(date, last);
+function getPhase(profile) {
+  if (!profile?.last_period_start_date) return null;
+  const cycleLen = profile.cycle_avg_length || 28;
+  const periodLen = profile.period_length || 5;
+  const diff = differenceInDays(new Date(), parseISO(profile.last_period_start_date));
   if (diff < 0) return null;
-  const cycleDay = (diff % cycleLen) + 1;
-  if (cycleDay <= periodLen) return "menstrual";
-  if (cycleDay <= 13) return "follicular";
-  if (cycleDay <= 16) return "ovulatory";
+  const day = (diff % cycleLen) + 1;
+  if (day <= periodLen) return "menstrual";
+  if (day <= 13) return "follicular";
+  if (day <= 16) return "ovulatory";
   return "luteal";
 }
 
-function getMoodColor(mood) {
-  if (!mood) return null;
-  if (mood <= 2) return "#E57373";
-  if (mood <= 3) return "#FFB74D";
-  return "#81C784";
-}
+const PHASE_COLORS = {
+  menstrual: "var(--rose-dust)",
+  follicular: "var(--sage)",
+  ovulatory: "#B89E6A",
+  luteal: "var(--mauve)",
+};
 
-function DayDetailSheet({ date, checkin, symptoms, events, habits, onClose }) {
-  if (!date) return null;
-  const dateStr = format(date, "EEEE, MMMM d");
-  return (
-    <>
-      <div onClick={onClose} style={{ position: "fixed", inset: 0, backgroundColor: "rgba(42,32,53,0.45)", backdropFilter: "blur(6px)", zIndex: 50 }} />
-      <div style={{ position: "fixed", bottom: 0, left: 0, right: 0, zIndex: 51, backgroundColor: "var(--surface)", borderRadius: "28px 28px 0 0", maxHeight: "75vh", overflowY: "auto", boxShadow: "var(--shadow-lg)", paddingBottom: "env(safe-area-inset-bottom, 20px)" }}>
-        <div style={{ display: "flex", justifyContent: "center", paddingTop: 14, paddingBottom: 8 }}>
-          <div style={{ width: 32, height: 4, borderRadius: 9999, backgroundColor: "var(--border)" }} />
-        </div>
-        <div style={{ padding: "0 20px 28px" }}>
-          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 20 }}>
-            <div>
-              <p style={{ fontSize: 11, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.1em", color: "var(--mauve)", fontFamily: "'Inter', sans-serif" }}>Day Log</p>
-              <h3 style={{ fontSize: 18, fontWeight: 700, color: "var(--plum)", fontFamily: "'Playfair Display', serif", marginTop: 2 }}>{dateStr}</h3>
-            </div>
-            <button onClick={onClose} style={{ width: 32, height: 32, borderRadius: 9999, backgroundColor: "var(--ivory-dark)", border: "1px solid var(--border)", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", color: "var(--mauve)", fontWeight: 700, fontSize: 16 }}>×</button>
-          </div>
+const todayStr = new Date().toISOString().split("T")[0];
 
-          {checkin ? (
-            <div style={{ backgroundColor: "var(--ivory)", borderRadius: 16, padding: "14px 16px", marginBottom: 16 }}>
-              <p style={{ fontSize: 10, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.1em", color: "var(--mauve)", fontFamily: "'Inter', sans-serif", marginBottom: 10 }}>Check-in</p>
-              <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 8 }}>
-                {[["Mood", checkin.mood, "/5"], ["Energy", checkin.energy, "/5"], ["Stress", checkin.stress, "/5"], ["Sleep", checkin.sleep_hours, "h"]].map(([label, val, unit]) => (
-                  <div key={label} style={{ textAlign: "center" }}>
-                    <p style={{ fontSize: 18, fontWeight: 700, color: "var(--plum)", fontFamily: "'Playfair Display', serif", lineHeight: 1 }}>{val ?? "—"}<span style={{ fontSize: 10, color: "var(--mauve)" }}>{unit}</span></p>
-                    <p style={{ fontSize: 10, color: "var(--mauve)", marginTop: 2, fontFamily: "'Inter', sans-serif" }}>{label}</p>
-                  </div>
-                ))}
-              </div>
-            </div>
-          ) : (
-            <div style={{ backgroundColor: "var(--ivory)", borderRadius: 16, padding: "14px 16px", marginBottom: 16 }}>
-              <p style={{ fontSize: 13, color: "var(--mauve)", fontFamily: "'Inter', sans-serif" }}>No check-in logged for this day.</p>
-            </div>
-          )}
-
-          {symptoms.length > 0 && (
-            <div style={{ marginBottom: 16 }}>
-              <p style={{ fontSize: 10, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.1em", color: "var(--mauve)", fontFamily: "'Inter', sans-serif", marginBottom: 8 }}>Symptoms</p>
-              <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
-                {symptoms.map(s => (
-                  <span key={s.id} style={{ fontSize: 12, fontWeight: 500, padding: "4px 10px", borderRadius: 9999, backgroundColor: "var(--rose-dust-subtle)", color: "var(--rose-dust)", fontFamily: "'Inter', sans-serif", textTransform: "capitalize" }}>{s.symptom_type}</span>
-                ))}
-              </div>
-            </div>
-          )}
-
-          {events.length > 0 && (
-            <div style={{ marginBottom: 16 }}>
-              <p style={{ fontSize: 10, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.1em", color: "var(--mauve)", fontFamily: "'Inter', sans-serif", marginBottom: 8 }}>Events</p>
-              {events.map(ev => (
-                <div key={ev.id} style={{ backgroundColor: "var(--ivory)", borderRadius: 12, padding: "10px 14px", marginBottom: 6 }}>
-                  <p style={{ fontSize: 13, fontWeight: 600, color: "var(--plum)", fontFamily: "'Inter', sans-serif" }}>{ev.title}</p>
-                  {ev.location && <p style={{ fontSize: 11, color: "var(--mauve)", fontFamily: "'Inter', sans-serif", marginTop: 2 }}>{ev.location}</p>}
-                </div>
-              ))}
-            </div>
-          )}
-
-          {habits.length > 0 && (
-            <div>
-              <p style={{ fontSize: 10, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.1em", color: "var(--mauve)", fontFamily: "'Inter', sans-serif", marginBottom: 8 }}>Habits</p>
-              <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
-                {habits.filter(h => h.completed).map(h => (
-                  <span key={h.id} style={{ fontSize: 12, fontWeight: 500, padding: "4px 10px", borderRadius: 9999, backgroundColor: "var(--sage-subtle)", color: "var(--sage)", fontFamily: "'Inter', sans-serif" }}>{h.habit_name || h.habit_type}</span>
-                ))}
-              </div>
-            </div>
-          )}
-        </div>
-      </div>
-    </>
-  );
-}
+const sLabel = { fontSize: "0.6rem", fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.12em", color: "var(--mauve)", fontFamily: "'Inter', sans-serif" };
 
 export default function Planner() {
   const [user, setUser] = useState(null);
   const [profile, setProfile] = useState(null);
-  const [currentMonth, setCurrentMonth] = useState(new Date());
-  const [checkins, setCheckins] = useState({});
-  const [symptoms, setSymptoms] = useState({});
-  const [periodDates, setPeriodDates] = useState(new Set());
-  const [habitLogs, setHabitLogs] = useState({});
-  const [upcomingEvents, setUpcomingEvents] = useState([]);
-  const [selectedDate, setSelectedDate] = useState(null);
+  const [items, setItems] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [tab, setTab] = useState("today");
+  const [showAdd, setShowAdd] = useState(false);
+  const [selectedWeekDay, setSelectedWeekDay] = useState(null);
+  const [form, setForm] = useState({ title: "", category: "reminder", date: todayStr, time: "", repeat: "once", notes: "" });
 
   useEffect(() => {
     (async () => {
       const u = await base44.auth.me();
       setUser(u);
-      const today = new Date();
-      const from = format(subDays(today, 120), "yyyy-MM-dd");
-      const [profiles, allCheckins, allSymptoms, allCycleEvents, allHabits, events] = await Promise.all([
-        base44.entities.UserProfile.filter({ user_id: u.id }),
-        base44.entities.DailyCheckins.filter({ user_id: u.id }, "-date", 200),
-        base44.entities.SymptomLogs.filter({ user_id: u.id }, "-date", 300),
-        base44.entities.CycleEvents.filter({ user_id: u.id }, "-date", 200),
-        base44.entities.HabitLogs.filter({ user_id: u.id }, "-date", 200),
-        base44.entities.EventsItems.list("-date", 30),
+      const [profiles, plannerItems] = await Promise.all([
+        base44.entities.UserProfile.filter({ user_id: u.id }).catch(() => []),
+        base44.entities.PlannerItems.filter({ user_id: u.id }, "date", 200).catch(() => []),
       ]);
-
       setProfile(profiles[0] || null);
-
-      const checkinMap = {};
-      allCheckins.forEach(c => { checkinMap[c.date] = c; });
-      setCheckins(checkinMap);
-
-      const symptomMap = {};
-      allSymptoms.forEach(s => {
-        if (!symptomMap[s.date]) symptomMap[s.date] = [];
-        symptomMap[s.date].push(s);
-      });
-      setSymptoms(symptomMap);
-
-      const periodSet = new Set();
-      allCycleEvents.filter(e => e.type === "PeriodStart").forEach(e => {
-        periodSet.add(e.date);
-      });
-      setPeriodDates(periodSet);
-
-      const habitMap = {};
-      allHabits.forEach(h => {
-        if (!habitMap[h.date]) habitMap[h.date] = [];
-        habitMap[h.date].push(h);
-      });
-      setHabitLogs(habitMap);
-
-      const todayStr = format(today, "yyyy-MM-dd");
-      setUpcomingEvents(events.filter(e => e.date >= todayStr).slice(0, 3));
+      setItems(plannerItems);
       setLoading(false);
     })();
   }, []);
 
-  const daysInView = () => {
-    const start = startOfWeek(startOfMonth(currentMonth), { weekStartsOn: 1 });
-    const end = endOfWeek(endOfMonth(currentMonth), { weekStartsOn: 1 });
-    const days = [];
-    let d = start;
-    while (d <= end) { days.push(d); d = addDays(d, 1); }
-    return days;
+  const phase = getPhase(profile);
+  const phaseTip = phase ? PHASE_TIPS[phase] : null;
+  const phaseColor = phase ? PHASE_COLORS[phase] : "var(--mauve)";
+
+  const viewDate = selectedWeekDay || todayStr;
+  const todayItems = items.filter(i => i.date === viewDate).sort((a, b) => (a.time || "").localeCompare(b.time || ""));
+
+  const monday = startOfWeek(new Date(), { weekStartsOn: 1 });
+  const weekDays = Array.from({ length: 7 }, (_, i) => {
+    const d = addDays(monday, i);
+    return { str: d.toISOString().split("T")[0], d };
+  });
+
+  const handleSave = async () => {
+    if (!form.title.trim()) return;
+    const created = await base44.entities.PlannerItems.create({
+      user_id: user.id,
+      ...form,
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString(),
+    });
+    setItems(prev => [...prev, created]);
+    setForm({ title: "", category: "reminder", date: todayStr, time: "", repeat: "once", notes: "" });
+    setShowAdd(false);
   };
 
-  const predictedNextPeriod = (() => {
-    if (!profile?.last_period_start_date || !profile?.cycle_avg_length) return null;
-    const last = parseISO(profile.last_period_start_date);
-    return addDays(last, profile.cycle_avg_length);
-  })();
+  const handleToggle = async (item) => {
+    const updated = await base44.entities.PlannerItems.update(item.id, { is_completed: !item.is_completed });
+    setItems(prev => prev.map(i => i.id === item.id ? { ...i, is_completed: !i.is_completed } : i));
+  };
 
-  const today = new Date();
-  const todayStr = format(today, "yyyy-MM-dd");
-  const days = daysInView();
-
-  const getSelectedDayData = () => {
-    if (!selectedDate) return { checkin: null, symptoms: [], events: [], habits: [] };
-    const ds = format(selectedDate, "yyyy-MM-dd");
-    return {
-      checkin: checkins[ds] || null,
-      symptoms: symptoms[ds] || [],
-      events: upcomingEvents.filter(e => e.date === ds),
-      habits: habitLogs[ds] || [],
-    };
+  const handleDelete = async (id) => {
+    await base44.entities.PlannerItems.delete(id);
+    setItems(prev => prev.filter(i => i.id !== id));
   };
 
   if (loading) return (
-    <div style={{ minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center", backgroundColor: "var(--ivory)" }}>
-      <div style={{ width: 32, height: 32, borderRadius: "50%", border: "2px solid var(--rose-dust-light)", borderTopColor: "var(--rose-dust)", animation: "spin 0.7s linear infinite" }} />
-      <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
+    <div className="min-h-screen flex items-center justify-center" style={{ backgroundColor: "var(--ivory)" }}>
+      <div className="w-8 h-8 rounded-full border-2 border-t-transparent animate-spin" style={{ borderColor: "var(--rose-dust-light)", borderTopColor: "var(--rose-dust)" }} />
     </div>
   );
 
-  const { checkin: selCheckin, symptoms: selSymptoms, events: selEvents, habits: selHabits } = getSelectedDayData();
-
   return (
-    <div style={{ minHeight: "100vh", backgroundColor: "var(--ivory)", paddingBottom: 80 }}>
-      <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
-
+    <div className="min-h-screen pb-28" style={{ backgroundColor: "var(--ivory)" }}>
       {/* Header */}
-      <div style={{ padding: "48px 20px 0", maxWidth: 480, margin: "0 auto" }}>
-        <p style={{ fontSize: 10, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.12em", color: "var(--mauve)", fontFamily: "'Inter', sans-serif", marginBottom: 4 }}>Wellness Planner</p>
-        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-          <h1 style={{ fontSize: 26, fontWeight: 700, fontFamily: "'Playfair Display', serif", color: "var(--plum)", letterSpacing: "-0.02em" }}>Planner</h1>
-          <a href={createPageUrl("Today")} style={{ fontSize: 12, fontWeight: 600, color: "var(--rose-dust)", fontFamily: "'Inter', sans-serif", textDecoration: "none" }}>Today</a>
+      <div className="sticky top-0 z-30 px-4 pt-10 pb-4" style={{ backgroundColor: "rgba(250,248,245,0.97)", backdropFilter: "blur(20px)", borderBottom: "1px solid var(--border)" }}>
+        <div className="max-w-2xl mx-auto">
+          <p style={sLabel}>My Planner</p>
+          <h1 style={{ fontFamily: "'Playfair Display', serif", fontSize: 24, fontWeight: 700, color: "var(--plum)", letterSpacing: "-0.02em", marginTop: 2, marginBottom: 12 }}>
+            Stay on top of your day
+          </h1>
+          <div className="flex gap-1 p-1 rounded-2xl" style={{ backgroundColor: "var(--ivory-dark)" }}>
+            {[["today", "Today"], ["week", "This Week"]].map(([key, label]) => (
+              <button key={key} onClick={() => { setTab(key); setSelectedWeekDay(null); }}
+                className="flex-1 py-2.5 rounded-xl text-sm font-semibold transition-all"
+                style={{ backgroundColor: tab === key ? "var(--plum)" : "transparent", color: tab === key ? "white" : "var(--mauve)", fontFamily: "'Inter', sans-serif" }}>
+                {label}
+              </button>
+            ))}
+          </div>
         </div>
       </div>
 
-      <div style={{ maxWidth: 480, margin: "0 auto", padding: "20px 20px 0" }}>
-
-        {/* Month nav */}
-        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 16 }}>
-          <button onClick={() => setCurrentMonth(m => subMonths(m, 1))}
-            style={{ width: 36, height: 36, borderRadius: 12, border: "1px solid var(--border)", backgroundColor: "var(--surface)", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", color: "var(--plum)" }}>
-            <ChevronLeft style={{ width: 16, height: 16 }} />
-          </button>
-          <button onClick={() => setCurrentMonth(new Date())}
-            style={{ fontSize: 16, fontWeight: 700, fontFamily: "'Playfair Display', serif", color: "var(--plum)", background: "none", border: "none", cursor: "pointer" }}>
-            {format(currentMonth, "MMMM yyyy")}
-          </button>
-          <button onClick={() => setCurrentMonth(m => addMonths(m, 1))}
-            style={{ width: 36, height: 36, borderRadius: 12, border: "1px solid var(--border)", backgroundColor: "var(--surface)", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", color: "var(--plum)" }}>
-            <ChevronRight style={{ width: 16, height: 16 }} />
-          </button>
-        </div>
-
-        {/* Day-of-week headers */}
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(7, 1fr)", gap: 2, marginBottom: 4 }}>
-          {["Mo","Tu","We","Th","Fr","Sa","Su"].map(d => (
-            <div key={d} style={{ textAlign: "center", fontSize: 10, fontWeight: 700, color: "var(--mauve)", fontFamily: "'Inter', sans-serif", padding: "4px 0" }}>{d}</div>
-          ))}
-        </div>
-
-        {/* Calendar grid */}
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(7, 1fr)", gap: 2, backgroundColor: "var(--surface)", borderRadius: 20, border: "1px solid var(--border)", overflow: "hidden", boxShadow: "var(--shadow-sm)" }}>
-          {days.map((day, i) => {
-            const ds = format(day, "yyyy-MM-dd");
-            const inMonth = isSameMonth(day, currentMonth);
-            const isToday = isSameDay(day, today);
-            const isSelected = selectedDate && isSameDay(day, selectedDate);
-            const phase = getCyclePhase(day, profile?.last_period_start_date, profile?.cycle_avg_length || 28, profile?.period_length || 5);
-            const phaseColor = phase ? PHASE_COLORS[phase] : null;
-            const checkin = checkins[ds];
-            const moodColor = getMoodColor(checkin?.mood);
-            const hasPeriod = periodDates.has(ds);
-            const hasSymptom = !!(symptoms[ds]?.length);
-            const isPredictedPeriod = predictedNextPeriod && isSameDay(day, predictedNextPeriod);
-            const moon = getMoonPhase(day);
-
-            return (
-              <button
-                key={i}
-                onClick={() => setSelectedDate(day)}
-                style={{
-                  position: "relative",
-                  minHeight: 52,
-                  padding: "4px 2px",
-                  display: "flex",
-                  flexDirection: "column",
-                  alignItems: "center",
-                  justifyContent: "flex-start",
-                  cursor: "pointer",
-                  border: isSelected ? `1.5px solid var(--rose-dust)` : isToday ? "1.5px solid var(--rose-dust-light)" : "none",
-                  borderRadius: 8,
-                  backgroundColor: phaseColor && inMonth ? `${phaseColor}13` : "transparent",
-                  opacity: inMonth ? 1 : 0.3,
-                  outline: "none",
-                }}
-              >
-                {/* Day number */}
-                <span style={{
-                  fontSize: 11, fontWeight: isToday ? 700 : 500,
-                  color: isToday ? "var(--rose-dust)" : "var(--plum)",
-                  fontFamily: "'Inter', sans-serif",
-                  lineHeight: 1,
-                  marginTop: 4,
-                }}>{format(day, "d")}</span>
-
-                {/* Moon phase tiny */}
-                <span style={{ fontSize: 7, lineHeight: 1, marginTop: 1, opacity: 0.5 }}>{moon}</span>
-
-                {/* Indicator dots row */}
-                <div style={{ display: "flex", gap: 2, marginTop: "auto", marginBottom: 3, alignItems: "center" }}>
-                  {hasPeriod && <div style={{ width: 5, height: 5, borderRadius: "50%", backgroundColor: "#E57373", flexShrink: 0 }} />}
-                  {isPredictedPeriod && <div style={{ width: 4, height: 4, borderRadius: "50%", border: "1px dashed #E57373", flexShrink: 0 }} />}
-                  {hasSymptom && <div style={{ width: 4, height: 4, borderRadius: "50%", backgroundColor: "var(--mauve-light)", flexShrink: 0 }} />}
-                  {moodColor && <div style={{ width: 5, height: 5, borderRadius: "50%", backgroundColor: moodColor, flexShrink: 0 }} />}
-                </div>
-              </button>
-            );
-          })}
-        </div>
-
-        {/* Legend */}
-        <div style={{ display: "flex", gap: 14, marginTop: 12, flexWrap: "wrap" }}>
-          {[
-            { color: "#E57373", label: "Period" },
-            { color: "var(--mauve-light)", label: "Symptom" },
-            { color: "#81C784", label: "Mood" },
-            { color: "#C4849A", label: "Phase tint", opacity: 0.3 },
-          ].map(l => (
-            <div key={l.label} style={{ display: "flex", alignItems: "center", gap: 5 }}>
-              <div style={{ width: 8, height: 8, borderRadius: "50%", backgroundColor: l.color, opacity: l.opacity || 1 }} />
-              <span style={{ fontSize: 10, color: "var(--mauve)", fontFamily: "'Inter', sans-serif" }}>{l.label}</span>
-            </div>
-          ))}
-        </div>
-
-        {/* Phase key */}
-        {profile?.last_period_start_date && (
-          <div style={{ display: "flex", gap: 8, marginTop: 10, flexWrap: "wrap" }}>
-            {Object.entries(PHASE_COLORS).map(([phase, color]) => (
-              <div key={phase} style={{ display: "flex", alignItems: "center", gap: 4 }}>
-                <div style={{ width: 8, height: 8, borderRadius: 2, backgroundColor: color + "40", border: `1px solid ${color}` }} />
-                <span style={{ fontSize: 10, color: "var(--mauve)", fontFamily: "'Inter', sans-serif", textTransform: "capitalize" }}>{phase}</span>
-              </div>
-            ))}
+      <div className="max-w-2xl mx-auto px-4 pt-5">
+        {/* Phase tip */}
+        {phaseTip && (
+          <div style={{ backgroundColor: "var(--surface)", border: `1px solid var(--border)`, borderRadius: 16, padding: "12px 16px", marginBottom: 16, borderLeft: `3px solid ${phaseColor}` }}>
+            <p style={{ fontSize: 12, color: "var(--plum)", fontFamily: "'Inter', sans-serif", lineHeight: 1.6 }}>{phaseTip}</p>
           </div>
         )}
 
-        {/* Upcoming section */}
-        <div style={{ marginTop: 24 }}>
-          <p style={{ fontSize: 10, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.12em", color: "var(--mauve)", fontFamily: "'Inter', sans-serif", marginBottom: 12 }}>Upcoming</p>
-
-          {predictedNextPeriod && (
-            <div style={{ backgroundColor: "var(--rose-dust-subtle)", border: "1px solid var(--rose-dust-light)", borderRadius: 14, padding: "10px 14px", marginBottom: 8, display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-              <p style={{ fontSize: 13, fontWeight: 600, color: "var(--plum)", fontFamily: "'Inter', sans-serif" }}>Predicted next period</p>
-              <span style={{ fontSize: 12, fontWeight: 600, color: "var(--rose-dust)", fontFamily: "'Inter', sans-serif" }}>
-                {format(predictedNextPeriod, "MMM d")}
-              </span>
-            </div>
-          )}
-
-          {upcomingEvents.length > 0 ? upcomingEvents.map(ev => (
-            <div key={ev.id} style={{ backgroundColor: "var(--surface)", border: "1px solid var(--border)", borderRadius: 14, padding: "10px 14px", marginBottom: 8, display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-              <div style={{ flex: 1, minWidth: 0 }}>
-                <p style={{ fontSize: 13, fontWeight: 600, color: "var(--plum)", fontFamily: "'Inter', sans-serif", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{ev.title}</p>
-                {ev.location && <p style={{ fontSize: 11, color: "var(--mauve)", fontFamily: "'Inter', sans-serif", marginTop: 1 }}>{ev.location}</p>}
+        {/* TODAY VIEW */}
+        {(tab === "today" || selectedWeekDay) && (
+          <>
+            <div className="flex items-center justify-between mb-4">
+              <div>
+                {selectedWeekDay && (
+                  <button onClick={() => setSelectedWeekDay(null)} style={{ fontSize: 11, color: "var(--mauve)", fontFamily: "'Inter', sans-serif", background: "none", border: "none", cursor: "pointer", marginBottom: 4, padding: 0 }}>
+                    Back to week
+                  </button>
+                )}
+                <p style={{ fontSize: 16, fontWeight: 700, color: "var(--plum)", fontFamily: "'Playfair Display', serif" }}>
+                  {format(parseISO(viewDate), "EEEE, MMMM d")}
+                  {viewDate === todayStr && <span style={{ fontSize: 11, fontWeight: 600, color: "var(--rose-dust)", marginLeft: 8, backgroundColor: "var(--rose-dust-subtle)", borderRadius: 9999, padding: "2px 8px" }}>Today</span>}
+                </p>
               </div>
-              <span style={{ fontSize: 11, color: "var(--mauve)", fontFamily: "'Inter', sans-serif", flexShrink: 0, marginLeft: 8 }}>{ev.date}</span>
+              <button onClick={() => { setForm(f => ({ ...f, date: viewDate })); setShowAdd(true); }}
+                style={{ width: 36, height: 36, borderRadius: 9999, backgroundColor: "var(--plum)", color: "white", border: "none", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                <Plus style={{ width: 18, height: 18 }} />
+              </button>
             </div>
-          )) : (
-            <div style={{ backgroundColor: "var(--surface)", border: "1px solid var(--border)", borderRadius: 14, padding: "14px", textAlign: "center" }}>
-              <p style={{ fontSize: 13, color: "var(--mauve)", fontFamily: "'Inter', sans-serif" }}>No upcoming events.</p>
-              <a href={createPageUrl("Events")} style={{ fontSize: 12, fontWeight: 600, color: "var(--rose-dust)", fontFamily: "'Inter', sans-serif", textDecoration: "none", display: "inline-block", marginTop: 6 }}>Browse events</a>
-            </div>
-          )}
-        </div>
+
+            {todayItems.length === 0 ? (
+              <div style={{ textAlign: "center", padding: "48px 20px", backgroundColor: "var(--surface)", borderRadius: 20, border: "1px solid var(--border)" }}>
+                <p style={{ fontSize: 14, fontWeight: 600, color: "var(--plum)", fontFamily: "'Inter', sans-serif", marginBottom: 4 }}>Nothing scheduled</p>
+                <p style={{ fontSize: 12, color: "var(--mauve)", fontFamily: "'Inter', sans-serif" }}>Tap + to add something to this day.</p>
+              </div>
+            ) : (
+              <div className="space-y-3">
+                {todayItems.map(item => {
+                  const cat = CATEGORY_STYLES[item.category] || CATEGORY_STYLES.reminder;
+                  return (
+                    <div key={item.id} style={{ backgroundColor: "var(--surface)", border: "1px solid var(--border)", borderRadius: 16, padding: "14px 16px", display: "flex", alignItems: "center", gap: 12 }}>
+                      <button onClick={() => handleToggle(item)} style={{ width: 22, height: 22, borderRadius: 6, border: `2px solid ${item.is_completed ? "var(--sage)" : "var(--border)"}`, backgroundColor: item.is_completed ? "var(--sage)" : "transparent", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, cursor: "pointer" }}>
+                        {item.is_completed && <Check style={{ width: 12, height: 12, color: "white" }} strokeWidth={3} />}
+                      </button>
+                      <div style={{ flex: 1, minWidth: 0 }}>
+                        <div className="flex items-center gap-2 flex-wrap">
+                          {item.time && <span style={{ fontSize: 11, fontWeight: 600, color: "var(--mauve)", fontFamily: "'Inter', sans-serif" }}>{item.time}</span>}
+                          <span style={{ fontSize: 10, fontWeight: 600, color: cat.color, backgroundColor: cat.bg, borderRadius: 9999, padding: "1px 8px", textTransform: "capitalize", fontFamily: "'Inter', sans-serif" }}>{item.category}</span>
+                        </div>
+                        <p style={{ fontSize: 14, fontWeight: 600, color: item.is_completed ? "var(--mauve)" : "var(--plum)", fontFamily: "'Inter', sans-serif", textDecoration: item.is_completed ? "line-through" : "none", marginTop: 2 }}>{item.title}</p>
+                        {item.notes && <p style={{ fontSize: 12, color: "var(--mauve)", fontFamily: "'Inter', sans-serif", marginTop: 2 }}>{item.notes}</p>}
+                      </div>
+                      <button onClick={() => handleDelete(item.id)} style={{ color: "var(--mauve)", background: "none", border: "none", cursor: "pointer", padding: 4, flexShrink: 0 }}>
+                        <Trash2 style={{ width: 14, height: 14 }} />
+                      </button>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+          </>
+        )}
+
+        {/* WEEK VIEW */}
+        {tab === "week" && !selectedWeekDay && (
+          <div className="grid grid-cols-7 gap-2">
+            {weekDays.map(({ str, d }) => {
+              const dayItems = items.filter(i => i.date === str);
+              const isToday = str === todayStr;
+              return (
+                <button key={str} onClick={() => { setSelectedWeekDay(str); setTab("today"); }}
+                  style={{ border: `1px solid ${isToday ? "var(--rose-dust)" : "var(--border)"}`, borderRadius: 14, padding: "10px 6px", backgroundColor: isToday ? "var(--rose-dust-subtle)" : "var(--surface)", cursor: "pointer", textAlign: "center", minHeight: 90 }}>
+                  <p style={{ fontSize: 9, fontWeight: 700, textTransform: "uppercase", color: isToday ? "var(--rose-dust)" : "var(--mauve)", fontFamily: "'Inter', sans-serif", marginBottom: 2 }}>{format(d, "EEE")}</p>
+                  <p style={{ fontSize: 14, fontWeight: 700, color: isToday ? "var(--rose-dust)" : "var(--plum)", fontFamily: "'Playfair Display', serif" }}>{format(d, "d")}</p>
+                  <div style={{ marginTop: 6, display: "flex", flexDirection: "column", gap: 2 }}>
+                    {dayItems.slice(0, 3).map(item => {
+                      const cat = CATEGORY_STYLES[item.category] || CATEGORY_STYLES.reminder;
+                      return (
+                        <div key={item.id} style={{ backgroundColor: cat.bg, borderRadius: 4, padding: "2px 4px" }}>
+                          <p style={{ fontSize: 8, fontWeight: 600, color: cat.color, fontFamily: "'Inter', sans-serif", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{item.title}</p>
+                        </div>
+                      );
+                    })}
+                    {dayItems.length > 3 && <p style={{ fontSize: 8, color: "var(--mauve)", fontFamily: "'Inter', sans-serif" }}>+{dayItems.length - 3} more</p>}
+                  </div>
+                </button>
+              );
+            })}
+          </div>
+        )}
       </div>
 
-      {/* Day detail sheet */}
-      {selectedDate && (
-        <DayDetailSheet
-          date={selectedDate}
-          checkin={selCheckin}
-          symptoms={selSymptoms}
-          events={selEvents}
-          habits={selHabits}
-          onClose={() => setSelectedDate(null)}
-        />
+      {/* Floating + button */}
+      {tab !== "week" && !selectedWeekDay && (
+        <button onClick={() => { setForm(f => ({ ...f, date: todayStr })); setShowAdd(true); }}
+          style={{ position: "fixed", bottom: 100, right: 20, width: 52, height: 52, borderRadius: 9999, backgroundColor: "var(--plum)", color: "white", border: "none", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", boxShadow: "0 8px 24px rgba(42,32,53,0.28)", zIndex: 20 }}>
+          <Plus style={{ width: 22, height: 22 }} />
+        </button>
+      )}
+
+      {/* Add modal */}
+      {showAdd && (
+        <div style={{ position: "fixed", inset: 0, zIndex: 60 }}>
+          <div onClick={() => setShowAdd(false)} style={{ position: "absolute", inset: 0, backgroundColor: "rgba(42,32,53,0.45)", backdropFilter: "blur(6px)" }} />
+          <div style={{ position: "absolute", bottom: 0, left: 0, right: 0, backgroundColor: "var(--surface)", borderRadius: "28px 28px 0 0", padding: "24px 20px 40px", maxHeight: "88vh", overflowY: "auto" }}>
+            <div style={{ width: 32, height: 4, borderRadius: 9999, backgroundColor: "var(--border)", margin: "0 auto 20px" }} />
+            <div className="flex items-center justify-between mb-4">
+              <h3 style={{ fontFamily: "'Playfair Display', serif", fontSize: 18, fontWeight: 700, color: "var(--plum)" }}>Add item</h3>
+              <button onClick={() => setShowAdd(false)} style={{ width: 28, height: 28, borderRadius: 9999, backgroundColor: "var(--ivory-dark)", color: "var(--mauve)", border: "none", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                <X style={{ width: 14, height: 14 }} />
+              </button>
+            </div>
+            <div className="space-y-3">
+              <input
+                placeholder="Title *"
+                value={form.title}
+                onChange={e => setForm(f => ({ ...f, title: e.target.value }))}
+                style={{ width: "100%", padding: "12px 14px", borderRadius: 12, border: "1.5px solid var(--border)", backgroundColor: "var(--ivory)", fontSize: 14, fontFamily: "'Inter', sans-serif", color: "var(--plum)", outline: "none", boxSizing: "border-box" }}
+                onFocus={e => e.target.style.borderColor = "var(--rose-dust-light)"}
+                onBlur={e => e.target.style.borderColor = "var(--border)"}
+              />
+              <div className="flex flex-wrap gap-2">
+                {CATEGORIES.map(c => {
+                  const s = CATEGORY_STYLES[c];
+                  return (
+                    <button key={c} onClick={() => setForm(f => ({ ...f, category: c }))}
+                      style={{ borderRadius: 9999, padding: "6px 14px", fontSize: 12, fontWeight: 600, cursor: "pointer", border: "none", textTransform: "capitalize", fontFamily: "'Inter', sans-serif", backgroundColor: form.category === c ? "var(--plum)" : s.bg, color: form.category === c ? "white" : s.color }}>
+                      {c}
+                    </button>
+                  );
+                })}
+              </div>
+              <div className="grid grid-cols-2 gap-2">
+                <div>
+                  <p style={{ fontSize: 10, color: "var(--mauve)", fontFamily: "'Inter', sans-serif", marginBottom: 4 }}>Date</p>
+                  <input type="date" value={form.date} onChange={e => setForm(f => ({ ...f, date: e.target.value }))}
+                    style={{ width: "100%", padding: "10px 12px", borderRadius: 12, border: "1.5px solid var(--border)", backgroundColor: "var(--ivory)", fontSize: 13, fontFamily: "'Inter', sans-serif", color: "var(--plum)", outline: "none", boxSizing: "border-box" }} />
+                </div>
+                <div>
+                  <p style={{ fontSize: 10, color: "var(--mauve)", fontFamily: "'Inter', sans-serif", marginBottom: 4 }}>Time</p>
+                  <input type="time" value={form.time} onChange={e => setForm(f => ({ ...f, time: e.target.value }))}
+                    style={{ width: "100%", padding: "10px 12px", borderRadius: 12, border: "1.5px solid var(--border)", backgroundColor: "var(--ivory)", fontSize: 13, fontFamily: "'Inter', sans-serif", color: "var(--plum)", outline: "none", boxSizing: "border-box" }} />
+                </div>
+              </div>
+              <div>
+                <p style={{ fontSize: 10, color: "var(--mauve)", fontFamily: "'Inter', sans-serif", marginBottom: 4 }}>Repeat</p>
+                <div className="flex gap-2 flex-wrap">
+                  {REPEAT_OPTIONS.map(r => (
+                    <button key={r} onClick={() => setForm(f => ({ ...f, repeat: r }))}
+                      style={{ borderRadius: 9999, padding: "5px 12px", fontSize: 11, fontWeight: 600, cursor: "pointer", border: "none", textTransform: "capitalize", fontFamily: "'Inter', sans-serif", backgroundColor: form.repeat === r ? "var(--plum)" : "var(--ivory-dark)", color: form.repeat === r ? "white" : "var(--mauve)" }}>
+                      {r}
+                    </button>
+                  ))}
+                </div>
+              </div>
+              <input
+                placeholder="Notes (optional)"
+                value={form.notes}
+                onChange={e => setForm(f => ({ ...f, notes: e.target.value }))}
+                style={{ width: "100%", padding: "10px 14px", borderRadius: 12, border: "1.5px solid var(--border)", backgroundColor: "var(--ivory)", fontSize: 13, fontFamily: "'Inter', sans-serif", color: "var(--plum)", outline: "none", boxSizing: "border-box" }}
+                onFocus={e => e.target.style.borderColor = "var(--rose-dust-light)"}
+                onBlur={e => e.target.style.borderColor = "var(--border)"}
+              />
+              <button onClick={handleSave} disabled={!form.title.trim()}
+                style={{ width: "100%", padding: "13px", borderRadius: 12, backgroundColor: "var(--plum)", color: "white", fontSize: 14, fontWeight: 600, border: "none", cursor: "pointer", fontFamily: "'Inter', sans-serif", opacity: !form.title.trim() ? 0.5 : 1 }}>
+                Save
+              </button>
+            </div>
+          </div>
+        </div>
       )}
     </div>
   );
