@@ -1,4 +1,4 @@
-// deno-lint-ignore-file no-undef
+/* eslint-disable no-undef */
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.25';
 
 function getMonday(date = new Date()) {
@@ -31,7 +31,7 @@ function getPhaseForDate(profile, dateString) {
     : 'luteal';
 }
 
-Deno.serve(async (req) => {
+globalThis.Deno.serve(async (req) => {
   try {
     const base44 = createClientFromRequest(req);
     const today = new Date();
