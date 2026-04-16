@@ -23,6 +23,7 @@ import PartnerSettings from './pages/PartnerSettings';
 import PartnerView from './pages/PartnerView';
 import Community from './pages/Community';
 import Upgrade from './pages/Upgrade';
+import Planner from './pages/Planner';
 
 
 const { Pages, Layout, mainPage } = pagesConfig;
@@ -124,6 +125,7 @@ const AuthenticatedApp = () => {
           <Route path="/PartnerView" element={<PartnerView />} />
           <Route path="/Community" element={<LayoutWrapper currentPageName="Community"><Community /></LayoutWrapper>} />
           <Route path="/Upgrade" element={<LayoutWrapper currentPageName="Upgrade"><Upgrade /></LayoutWrapper>} />
+          <Route path="/Planner" element={<LayoutWrapper currentPageName="Planner"><Planner /></LayoutWrapper>} />
           <Route path="*" element={<PageNotFound />} />
         </Routes>
       </motion.div>
