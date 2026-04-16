@@ -19,11 +19,14 @@ export default function WeeklyInsightCard({ user }) {
   }, [user]);
 
   const loadInsight = async () => {
-    const insights = await base44.entities.WeeklyInsights.filter({ user_id: user.id }, "-generated_at", 1);
-    if (insights[0] && insights[0].week_start >= weekStart) {
-      setInsight(insights[0]);
-    }
-    setLoading(false);
+    base44.entities.WeeklyInsights.filter({ user_id: user.id }, "-generated_at", 1)
+      .then(insights => {
+        if (insights[0] && insights[0].week_start >= weekStart) {
+          setInsight(insights[0]);
+        }
+      })
+      .catch(() => {})
+      .finally(() => setLoading(false));
   };
 
   const generate = async () => {
