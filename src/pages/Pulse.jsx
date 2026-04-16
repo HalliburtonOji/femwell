@@ -15,6 +15,7 @@ import PredictiveAnalysisCard from "../components/trends/PredictiveAnalysisCard"
 import PeriodCountdownCard from "../components/pulse/PeriodCountdownCard";
 import PatternInsightCards from "../components/pulse/PatternInsightCards";
 import ConditionPulseCards from "../components/conditions/ConditionPulseCards";
+import WearableWeekCard from "../components/pulse/WearableWeekCard";
 
 const PHASES = [
   { key: "Menstrual",  label: "Menstrual",  color: "#f43f5e", days: "Days 1–5"  },
@@ -331,6 +332,13 @@ export default function Pulse() {
               checkins={checkins}
               cycleEvents={cycleEvents}
             />
+          </div>
+        )}
+
+        {/* ── WEARABLE METRICS ── */}
+        {user && (
+          <div style={{ marginTop: "16px" }}>
+            <WearableWeekCard userId={user.id} />
           </div>
         )}
 

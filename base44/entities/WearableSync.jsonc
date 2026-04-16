@@ -1,0 +1,63 @@
+{
+  "name": "WearableSync",
+  "type": "object",
+  "properties": {
+    "user_id": {
+      "type": "string"
+    },
+    "date": {
+      "type": "string"
+    },
+    "source": {
+      "type": "string",
+      "enum": [
+        "Apple Health",
+        "Oura",
+        "Garmin",
+        "Fitbit",
+        "Manual"
+      ],
+      "default": "Manual"
+    },
+    "resting_heart_rate": {
+      "type": "number"
+    },
+    "hrv_ms": {
+      "type": "number"
+    },
+    "body_temp_celsius": {
+      "type": "number"
+    },
+    "steps": {
+      "type": "number"
+    },
+    "active_calories": {
+      "type": "number"
+    },
+    "sleep_rem_hours": {
+      "type": "number"
+    },
+    "sleep_deep_hours": {
+      "type": "number"
+    },
+    "sleep_light_hours": {
+      "type": "number"
+    },
+    "readiness_score": {
+      "type": "number"
+    },
+    "spo2_percent": {
+      "type": "number"
+    },
+    "created_at": {
+      "type": "string"
+    },
+    "updated_at": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "user_id",
+    "date"
+  ]
+}

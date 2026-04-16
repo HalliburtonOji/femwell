@@ -1,0 +1,100 @@
+import { differenceInDays, parseISO } from "date-fns";
+
+const PHASE_CONTENT = {
+  menstrual: {
+    headline: "Rest and restore",
+    body: "Your progesterone has dropped — fatigue and cramping are normal today.",
+    food: "Iron-rich foods: leafy greens, lentils, red meat",
+    move: "Gentle yoga or walking only",
+    color: "var(--rose-dust)",
+    bg: "var(--rose-dust-subtle)",
+    border: "var(--rose-dust-light)",
+    emoji: "🌸",
+  },
+  follicular: {
+    headline: "Energy is rising",
+    body: "Oestrogen is climbing — you may feel sharper and more social.",
+    food: "Varied whole foods — your gut microbiome diversity improves now",
+    move: "Strength training and higher intensity work well",
+    color: "var(--sage)",
+    bg: "var(--sage-subtle)",
+    border: "var(--sage-light)",
+    emoji: "🌱",
+  },
+  ovulatory: {
+    headline: "Peak performance window",
+    body: "LH surge is imminent or happening — cervical mucus may change.",
+    food: "Zinc and antioxidants: pumpkin seeds, berries, broccoli",
+    move: "High intensity, HIIT, or anything ambitious",
+    color: "#B89E6A",
+    bg: "#FFF8EE",
+    border: "#E8D8A0",
+    emoji: "✨",
+  },
+  luteal: {
+    headline: "Wind down and nourish",
+    body: "Progesterone rises — you may feel warmer, more tired, or crave carbs.",
+    food: "Magnesium and B6: dark chocolate, bananas, oats, leafy greens",
+    move: "Pilates, swimming, or moderate walks",
+    color: "var(--mauve)",
+    bg: "var(--mauve-subtle)",
+    border: "var(--mauve-light)",
+    emoji: "🌙",
+  },
+};
+
+function getPhaseAndDay(profile) {
+  if (!profile?.last_period_start_date) return null;
+  const cycleLen = profile.cycle_avg_length || 28;
+  const periodLen = profile.period_length || 5;
+  const diff = differenceInDays(new Date(), parseISO(profile.last_period_start_date));
+  if (diff < 0) return null;
+  const dayOfCycle = (diff % cycleLen) + 1;
+  let phase;
+  if (dayOfCycle <= periodLen) phase = "menstrual";
+  else if (dayOfCycle <= 13) phase = "follicular";
+  else if (dayOfCycle <= 16) phase = "ovulatory";
+  else phase = "luteal";
+  return { phase, dayOfCycle };
+}
+
+export default function DailyPhaseBrief({ profile }) {
+  const info = getPhaseAndDay(profile);
+  if (!info) return null;
+
+  const content = PHASE_CONTENT[info.phase];
+
+  return (
+    <div style={{
+      backgroundColor: content.bg,
+      border: `1px solid ${content.border}`,
+      borderRadius: 20,
+      padding: "16px 18px",
+      marginBottom: 16,
+    }}>
+      <div className="flex items-center gap-2 mb-3">
+        <span style={{ fontSize: 18 }}>{content.emoji}</span>
+        <div>
+          <p style={{ fontSize: "0.6rem", fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.12em", color: content.color, fontFamily: "'Inter', sans-serif" }}>
+            Day {info.dayOfCycle} · {info.phase.charAt(0).toUpperCase() + info.phase.slice(1)} phase
+          </p>
+          <p style={{ fontSize: 15, fontWeight: 700, color: "var(--plum)", fontFamily: "'Playfair Display', serif", marginTop: 1 }}>
+            {content.headline}
+          </p>
+        </div>
+      </div>
+      <div className="space-y-2">
+        {[
+          { label: "Body", text: content.body },
+          { label: "Food", text: content.food },
+          { label: "Move", text: content.move },
+        ].map(row => (
+          <div key={row.label} style={{ display: "flex", gap: 8 }}>
+            <span style={{ fontSize: 11, fontWeight: 700, color: content.color, fontFamily: "'Inter', sans-serif", width: 36, flexShrink: 0, paddingTop: 1 }}>{row.label}</span>
+            <p style={{ fontSize: 12, color: "var(--plum)", fontFamily: "'Inter', sans-serif", lineHeight: 1.55 }}>{row.text}</p>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}

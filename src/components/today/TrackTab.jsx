@@ -4,13 +4,14 @@ import { format, parseISO } from "date-fns";
 import {
   Droplets, AlertCircle, CheckCircle2, Plus, Pill,
   CalendarDays, Trash2, Check, Loader2, PlayCircle, ThumbsUp, ThumbsDown,
-  MapPin, Heart
+  MapPin, Heart, Activity
 } from "lucide-react";
 import MonthlyCalendarCard from "../planner/MonthlyCalendarCard";
 import DayDetailSheet from "../planner/DayDetailSheet";
 import MedReminderSection from "./MedReminderSection";
 import PainMapSubTab from "../conditions/PainMapSubTab";
 import FertilitySubTab from "../conditions/FertilitySubTab";
+import HealthDataSubTab from "./HealthDataSubTab";
 
 const todayStr = new Date().toISOString().split("T")[0];
 
@@ -41,12 +42,13 @@ const PRESET_HABITS = [
 ];
 
 const BASE_SUBTABS = [
-  { key: "calendar",  label: "Calendar",  Icon: CalendarDays },
-  { key: "cycle",     label: "Cycle",     Icon: Droplets },
-  { key: "symptoms",  label: "Symptoms",  Icon: AlertCircle },
-  { key: "habits",    label: "Habits",    Icon: CheckCircle2 },
-  { key: "meds",      label: "Meds",      Icon: Pill },
-  { key: "sessions",  label: "Sessions",  Icon: PlayCircle },
+  { key: "calendar",    label: "Calendar",    Icon: CalendarDays },
+  { key: "cycle",       label: "Cycle",       Icon: Droplets },
+  { key: "symptoms",    label: "Symptoms",    Icon: AlertCircle },
+  { key: "habits",      label: "Habits",      Icon: CheckCircle2 },
+  { key: "meds",        label: "Meds",        Icon: Pill },
+  { key: "sessions",    label: "Sessions",    Icon: PlayCircle },
+  { key: "health_data", label: "Health Data", Icon: Activity },
 ];
 
 function getSubTabs(profile) {
@@ -762,8 +764,9 @@ export default function TrackTab({ user, profile }) {
       {subTab === "habits"    && <HabitsSubTab user={user} profile={profile} selectedDate={selectedDate} />}
       {subTab === "meds"      && <MedsSubTab user={user} selectedDate={selectedDate} />}
       {subTab === "sessions"  && <SessionsSubTab user={user} selectedDate={selectedDate} />}
-      {subTab === "pain_map"  && <PainMapSubTab user={user} selectedDate={selectedDate} />}
-      {subTab === "fertility" && <FertilitySubTab user={user} profile={profile} selectedDate={selectedDate} units={profile?.units} />}
+      {subTab === "pain_map"   && <PainMapSubTab user={user} selectedDate={selectedDate} />}
+      {subTab === "fertility"  && <FertilitySubTab user={user} profile={profile} selectedDate={selectedDate} units={profile?.units} />}
+      {subTab === "health_data" && <HealthDataSubTab user={user} selectedDate={selectedDate} />}
     </div>
   );
 }

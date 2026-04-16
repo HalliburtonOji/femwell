@@ -158,6 +158,74 @@ Deno.serve(async (req) => {
       }
     }
 
+    // ── WearableSync correlations ─────────────────────────────────────────────
+    for (const profile of profiles) {
+      if (!profile.user_id) continue;
+      const wearable = await base44.asServiceRole.entities.WearableSync.filter({ user_id: profile.user_id });
+      if (wearable.length < 7) continue;
+
+      const checkins = await base44.asServiceRole.entities.DailyCheckins.filter({ user_id: profile.user_id });
+      const checkinByDate = Object.fromEntries(checkins.map(c => [c.date, c]));
+      const wearableByDate = Object.fromEntries(wearable.map(w => [w.date, w]));
+
+      const sortedDates = [...new Set([...Object.keys(wearableByDate)].sort())];
+      const insightDate = new Date().toISOString().split('T')[0];
+
+      // hrv_ms vs next-day mood and energy
+      const hrvMoodPairsHigh = [], hrvMoodPairsLow = [];
+      const hrvEnergyPairsHigh = [], hrvEnergyPairsLow = [];
+      const hrRestPairs = [], hrSleepPairs = [];
+      const readinessHighEx = [], readinessLowEx = [];
+
+      for (let i = 0; i < sortedDates.length - 1; i++) {
+        const today = wearableByDate[sortedDates[i]];
+        const nextDate = sortedDates[i + 1];
+        const nextCheckin = checkinByDate[nextDate];
+        const todayCheckin = checkinByDate[sortedDates[i]];
+
+        if (today.hrv_ms != null && nextCheckin?.mood != null) {
+          if (today.hrv_ms >= 50) hrvMoodPairsHigh.push(nextCheckin.mood);
+          else hrvMoodPairsLow.push(nextCheckin.mood);
+        }
+        if (today.hrv_ms != null && nextCheckin?.energy != null) {
+          if (today.hrv_ms >= 50) hrvEnergyPairsHigh.push(nextCheckin.energy);
+          else hrvEnergyPairsLow.push(nextCheckin.energy);
+        }
+        if (today.resting_heart_rate != null && todayCheckin?.sleep_hours != null) {
+          hrSleepPairs.push({ hr: today.resting_heart_rate, sleep: todayCheckin.sleep_hours });
+        }
+        if (today.readiness_score != null && todayCheckin?.exercise_intensity != null) {
+          const intensityScore = { light: 1, moderate: 2, intense: 3 }[todayCheckin.exercise_intensity] || 0;
+          if (today.readiness_score >= 70) readinessHighEx.push(intensityScore);
+          else readinessLowEx.push(intensityScore);
+        }
+      }
+
+      const weekStart = getMonday(new Date()).toISOString().split('T')[0];
+
+      const hrvMoodHigh = avg(hrvMoodPairsHigh), hrvMoodLow = avg(hrvMoodPairsLow);
+      if (hrvMoodHigh != null && hrvMoodLow != null && hrvMoodHigh - hrvMoodLow >= 0.4) {
+        const text = `When your HRV is 50ms or higher, your next-day mood averages ${formatNum(hrvMoodHigh)} — compared to ${formatNum(hrvMoodLow)} on lower-HRV days. HRV reflects nervous system recovery.`;
+        await base44.asServiceRole.entities.InsightCards.create({ user_id: profile.user_id, source: 'correlation_engine', cycle_phase: 'any', insight_date: insightDate, title: 'HRV predicts your mood', insight_text: text, confidence: 0.76, is_read: false, recommended_action_route: null }).catch(() => {});
+        await base44.asServiceRole.entities.Correlations.create({ user_id: profile.user_id, metric_a: 'hrv_ms', metric_b: 'next_day_mood', correlation_type: 'W1', result_summary: text, data_points_used: hrvMoodPairsHigh.length + hrvMoodPairsLow.length, generated_at: new Date().toISOString(), week_start: weekStart }).catch(() => {});
+      }
+
+      const hrvEnergyHigh = avg(hrvEnergyPairsHigh), hrvEnergyLow = avg(hrvEnergyPairsLow);
+      if (hrvEnergyHigh != null && hrvEnergyLow != null && hrvEnergyHigh - hrvEnergyLow >= 0.4) {
+        const text = `Higher HRV days correlate with better next-day energy (avg ${formatNum(hrvEnergyHigh)} vs ${formatNum(hrvEnergyLow)}). Consider prioritising recovery when HRV drops.`;
+        await base44.asServiceRole.entities.InsightCards.create({ user_id: profile.user_id, source: 'correlation_engine', cycle_phase: 'any', insight_date: insightDate, title: 'HRV and your energy', insight_text: text, confidence: 0.74, is_read: false, recommended_action_route: null }).catch(() => {});
+      }
+
+      if (hrSleepPairs.length >= 5) {
+        const longSleepHR = avg(hrSleepPairs.filter(p => p.sleep >= 7).map(p => p.hr));
+        const shortSleepHR = avg(hrSleepPairs.filter(p => p.sleep < 7).map(p => p.hr));
+        if (longSleepHR != null && shortSleepHR != null && shortSleepHR - longSleepHR >= 2) {
+          const text = `Your resting heart rate is ${formatNum(shortSleepHR - longSleepHR)} bpm higher on nights with under 7 hours of sleep — a classic sign of incomplete cardiovascular recovery.`;
+          await base44.asServiceRole.entities.InsightCards.create({ user_id: profile.user_id, source: 'correlation_engine', cycle_phase: 'any', insight_date: insightDate, title: 'Sleep drives your resting HR', insight_text: text, confidence: 0.77, is_read: false, recommended_action_route: null }).catch(() => {});
+        }
+      }
+    }
+
     return Response.json({ success: true });
   } catch (error) {
     return Response.json({ error: error.message }, { status: 500 });

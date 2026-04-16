@@ -26,6 +26,7 @@ import DailyPlanCard from "../components/today/DailyPlanCard";
 import DailyStoriesStrip from "../components/today/DailyStoriesStrip";
 import TrackTab from "../components/today/TrackTab";
 import TodayFertilityBanner from "../components/conditions/TodayFertilityBanner";
+import DailyPhaseBrief from "../components/today/DailyPhaseBrief";
 import { format, differenceInDays, parseISO } from "date-fns";
 
 // ── Cycle phase helper ──────────────────────────────────────────────────────
@@ -534,6 +535,7 @@ export default function Today() {
                 onOpenCalendar={() => setMainTab("track")}
               />
             )}
+            {profile && <DailyPhaseBrief profile={profile} />}
           </div>
         )}
 

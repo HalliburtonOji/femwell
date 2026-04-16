@@ -1,0 +1,57 @@
+{
+  "name": "LabResults",
+  "type": "object",
+  "properties": {
+    "user_id": {
+      "type": "string"
+    },
+    "marker_name": {
+      "type": "string"
+    },
+    "value": {
+      "type": "number"
+    },
+    "unit": {
+      "type": "string"
+    },
+    "test_date": {
+      "type": "string"
+    },
+    "lab_name": {
+      "type": "string"
+    },
+    "normal_range_min": {
+      "type": "number"
+    },
+    "normal_range_max": {
+      "type": "number"
+    },
+    "category": {
+      "type": "string",
+      "enum": [
+        "Hormones",
+        "Thyroid",
+        "Iron",
+        "Vitamins",
+        "Metabolic",
+        "Other"
+      ],
+      "default": "Other"
+    },
+    "notes": {
+      "type": "string"
+    },
+    "created_at": {
+      "type": "string"
+    },
+    "updated_at": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "user_id",
+    "marker_name",
+    "value",
+    "test_date"
+  ]
+}
