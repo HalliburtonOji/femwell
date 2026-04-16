@@ -3,30 +3,23 @@ import { useLocation } from "react-router-dom";
 import { base44 } from "@/api/base44Client";
 import { PageLoader } from "../components/common/LoadingSpinner";
 import { createPageUrl } from "@/utils";
-import {
-  Sun, ChevronRight, Plus, Sparkles, Droplets, Activity, Heart,
-  Pill, Play, Trash2, Utensils, Loader2, Bell, Flame,
-  BookOpen, Compass, Droplet, Zap, CheckCircle2, Feather, Map, AlertCircle, X
-} from "lucide-react";
+import { AlertCircle, ChevronRight, Utensils, Feather } from "lucide-react";
 import PanicModeModal from "../components/today/PanicModeModal";
 import DailyPromptCard from "../components/today/DailyPromptCard";
-import ManualCompleteButton from "../components/sessions/ManualCompleteButton";
-import MonthlyCalendarCard from "../components/planner/MonthlyCalendarCard";
 import SmartContextBanner from "../components/common/SmartContextBanner";
-import DayDetailSheet from "../components/planner/DayDetailSheet";
 import DailyInsightBanner from "../components/today/DailyInsightBanner";
-import HabitCard from "../components/habits/HabitCard";
-import StreakMilestoneToast from "../components/habits/StreakMilestoneToast";
 import CheckinModal from "../components/today/CheckinModal";
 import WeeklyInsightCard from "../components/today/WeeklyInsightCard";
-import TrackCalendar from "../components/today/TrackCalendar";
-import MedReminderSection from "../components/today/MedReminderSection";
 import TodayHeroSection from "../components/today/TodayHeroSection";
 import DailyPlanCard from "../components/today/DailyPlanCard";
 import DailyStoriesStrip from "../components/today/DailyStoriesStrip";
 import TrackTab from "../components/today/TrackTab";
 import TodayFertilityBanner from "../components/conditions/TodayFertilityBanner";
 import DailyPhaseBrief from "../components/today/DailyPhaseBrief";
+import RecommendedForYouSection from "../components/today/RecommendedForYouSection";
+import QuickMealLog from "../components/today/QuickMealLog";
+import ActiveProgramCard from "../components/today/ActiveProgramCard";
+import QuickAccessGrid from "../components/today/QuickAccessGrid";
 import { format, differenceInDays, parseISO } from "date-fns";
 
 // ── Cycle phase helper ──────────────────────────────────────────────────────
@@ -55,28 +48,7 @@ function isReminderDue(reminderTime) {
   return current >= reminderTime;
 }
 
-// ── Track constants ─────────────────────────────────────────────────────────
-const TRACK_TABS = ["Planner", "Cycle", "Symptoms", "Habits", "Meds", "Sessions"];
 
-const FLOW_OPTIONS = [
-  { value: "light",  label: "Light" },
-  { value: "medium", label: "Medium" },
-  { value: "heavy",  label: "Heavy" },
-];
-
-const PERIOD_TYPES = [
-  { value: "PeriodStart", label: "Period Start" },
-  { value: "PeriodEnd",   label: "Period End" },
-  { value: "Spotting",    label: "Spotting" },
-];
-
-const COMMON_SYMPTOMS = [
-  "cramps", "bloating", "headache", "fatigue", "mood swings",
-  "breast tenderness", "back pain", "acne", "nausea", "insomnia",
-  "anxiety", "brain fog", "hot flashes", "night sweats", "joint pain",
-];
-
-const SEVERITY_LABELS = ["", "Mild", "Moderate", "Significant", "Severe", "Extreme"];
 
 // ── Shared card style ───────────────────────────────────────────────────────
 const card = {
@@ -94,132 +66,11 @@ const label = {
 };
 
 const fallbackTodayRecommendations = [
-  {
-    id: "fallback-breathwork",
-    type: "BREATHWORK",
-    title: "3-Minute Breathing Space",
-    reason: "A short, effective breathwork session to reset your nervous system.",
-    action_route: "/ContentPlayer?id=69ac3d2217940aebdf578c19",
-  },
-  {
-    id: "fallback-programme",
-    type: "PROGRAMME",
-    title: "PMS Relief Path",
-    reason: "A gentle, structured programme to support you through hormonal shifts.",
-    action_route: "/ProgramDetail?key=prog_pms_relief_path",
-  },
-  {
-    id: "fallback-lifestyle",
-    type: "LIFESTYLE",
-    title: "Written for you",
-    reason: "Stories and insights tailored to your cycle.",
-    action_route: "/Lifestyle?tab=femwell",
-  },
-  {
-    id: "fallback-book",
-    type: "BOOK",
-    title: "This week's book",
-    reason: "Curated wellness reading for your phase.",
-    action_route: "/Lifestyle?tab=books",
-  },
+  { id: "fallback-breathwork", type: "BREATHWORK", title: "3-Minute Breathing Space", reason: "A short, effective breathwork session to reset your nervous system.", action_route: "/ContentPlayer?id=69ac3d2217940aebdf578c19" },
+  { id: "fallback-programme",  type: "PROGRAMME",  title: "PMS Relief Path",           reason: "A gentle, structured programme to support you through hormonal shifts.", action_route: "/ProgramDetail?key=prog_pms_relief_path" },
+  { id: "fallback-lifestyle",  type: "LIFESTYLE",  title: "Written for you",            reason: "Stories and insights tailored to your cycle.", action_route: "/Lifestyle?tab=femwell" },
+  { id: "fallback-book",       type: "BOOK",        title: "This week's book",           reason: "Curated wellness reading for your phase.", action_route: "/Lifestyle?tab=books" },
 ];
-
-const recommendationTypeStyles = {
-  BREATHWORK: { backgroundColor: "#EEE6FF", color: "#9B7FCC", label: "Audio" },
-  MEDITATION: { backgroundColor: "#FFE6F2", color: "#C96B9E", label: "Audio" },
-  PROGRAMME: { backgroundColor: "#E6FFF8", color: "#4ABFA3", label: "Programme" },
-  NUTRITION: { backgroundColor: "#FFF8E6", color: "#E8B84B", label: "Nutrition" },
-  BOOK:      { backgroundColor: "#FFF0E8", color: "#C4804A", label: "Story" },
-  LIFESTYLE: { backgroundColor: "#F5ECF0", color: "#C4849A", label: "Article" },
-  EVENT:     { backgroundColor: "#E8F0FF", color: "#6B8AC4", label: "Event" },
-  READ:      { backgroundColor: "#F5ECF0", color: "#C4849A", label: "Article" },
-  default: { backgroundColor: "#F0F0F8", color: "#8888A8", label: "Article" },
-};
-
-function getRecommendationTypeMeta(type) {
-  return recommendationTypeStyles[type] || recommendationTypeStyles.default;
-}
-
-
-function RecommendationSkeletonCard() {
-  return (
-    <div
-      style={{
-        minWidth: "220px",
-        maxWidth: "220px",
-        height: "110px",
-        flexShrink: 0,
-        borderRadius: "16px",
-        backgroundColor: "var(--ivory-dark)",
-        border: "1px solid var(--border)",
-      }}
-    />
-  );
-}
-
-function TodayRecommendationCard({ item, onTap }) {
-  const typeMeta = getRecommendationTypeMeta(item.type);
-  return (
-    <a
-      href="#"
-      onClick={(e) => { e.preventDefault(); onTap(item); }}
-      style={{
-        backgroundColor: "var(--surface)",
-        border: "1px solid var(--border)",
-        borderRadius: 20, padding: 16,
-        minWidth: 220, maxWidth: 220, flexShrink: 0,
-        scrollSnapAlign: "start",
-        display: "flex", flexDirection: "column",
-        boxShadow: "var(--shadow-sm)", textDecoration: "none", cursor: "pointer",
-      }}
-    >
-      <div
-        style={{ width: 32, height: 32, borderRadius: 10, display: "flex", alignItems: "center", justifyContent: "center",
-                 backgroundColor: typeMeta.backgroundColor, color: typeMeta.color, flexShrink: 0 }}
-      >
-        <span style={{ fontSize: 9, fontWeight: 700, lineHeight: 1, fontFamily: "'Inter', sans-serif" }}>{typeMeta.label}</span>
-      </div>
-      <p style={{ color: "var(--plum)", fontSize: 14, fontWeight: 600, fontFamily: "'Inter', sans-serif",
-                  display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical", overflow: "hidden",
-                  marginTop: 10 }}>
-        {item.title}
-      </p>
-      <p style={{ color: "var(--mauve)", fontSize: 12, lineHeight: 1.4, fontFamily: "'Inter', sans-serif",
-                  display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical", overflow: "hidden",
-                  marginTop: 4, flex: 1 }}>
-        {item.reason}
-      </p>
-      <p style={{ color: "var(--rose-dust)", fontSize: 11, fontWeight: 600, fontFamily: "'Inter', sans-serif", marginTop: 10 }}>
-        View
-      </p>
-    </a>
-  );
-}
-
-function RecommendedForYouTodaySection({ loading, items, onTap }) {
-  return (
-    <div className="mt-6 mb-4">
-      <style>{`.recommended-scroll::-webkit-scrollbar{display:none;}`}</style>
-      <div className="flex items-center justify-between mb-3">
-        <p style={{ color: "var(--plum)", fontSize: "16px", fontWeight: 700, fontFamily: "'Inter', sans-serif" }}>
-          For you today
-        </p>
-        <a href={createPageUrl("Lifestyle")} style={{ color: "var(--rose-dust)", fontSize: "12px", fontFamily: "'Inter', sans-serif", fontWeight: 600, textDecoration: "none" }}>
-          See all
-        </a>
-      </div>
-
-      <div
-        className="recommended-scroll flex gap-3 overflow-x-auto pb-1"
-        style={{ scrollbarWidth: "none", WebkitOverflowScrolling: "touch", scrollSnapType: "x mandatory" }}
-      >
-        {loading
-          ? [0, 1, 2].map((index) => <RecommendationSkeletonCard key={index} />)
-          : items.map((item) => <TodayRecommendationCard key={item.id} item={item} onTap={onTap} />)}
-      </div>
-    </div>
-  );
-}
 
 function extractDisplayName(profile, user) {
   if (profile?.display_name) return profile.display_name;
@@ -229,57 +80,6 @@ function extractDisplayName(profile, user) {
     if (words[0]) return words[0].charAt(0).toUpperCase() + words[0].slice(1).toLowerCase();
   }
   return null;
-}
-
-function DailyStoriesRow({ todayCheckin, todayCompletions }) {
-  const stories = [
-    { id: "cycle",      label: "Cycle",       gradient: "linear-gradient(135deg, #FFE4F0, #F5C6D8)", route: createPageUrl("CycleSettings"), ring: !todayCheckin?.period_flow },
-    { id: "journal",   label: "Journal",     gradient: "linear-gradient(135deg, #E8F4FF, #C8DEFF)", route: createPageUrl("Journal"),       ring: false },
-    { id: "breathe",   label: "Breathe",     gradient: "linear-gradient(135deg, #E6FFF6, #B8F0DC)", route: createPageUrl("Explore") + "?type=Audio", ring: !(todayCompletions?.length > 0) },
-    { id: "nutrition", label: "Nutrition",   gradient: "linear-gradient(135deg, #FFFBE6, #FFE8A0)", route: createPageUrl("Nutrition"),     ring: false },
-    { id: "explore",   label: "Explore",     gradient: "linear-gradient(135deg, #F0EEFF, #D8CCFF)", route: createPageUrl("Explore"),       ring: false },
-    { id: "skin",      label: "Skin & Hair", gradient: "linear-gradient(135deg, #F5ECF0, #E8C4D0)", route: createPageUrl("SkinHair"),      ring: false },
-    { id: "programs",  label: "Programs",    gradient: "linear-gradient(135deg, #E8F0FF, #C8D8FF)", route: createPageUrl("ProgramsHub"),   ring: false },
-    { id: "pulse",     label: "Pulse",       gradient: "linear-gradient(135deg, #FFF0F5, #FFD6E7)", route: createPageUrl("Pulse"),         ring: false },
-    { id: "lifestyle", label: "Lifestyle",   gradient: "linear-gradient(135deg, #F0FFF4, #C8F0D8)", route: createPageUrl("Lifestyle"),     ring: false },
-    { id: "lifestage", label: "Life Stage",  gradient: "linear-gradient(135deg, #FFF8E6, #FFDFA0)", route: createPageUrl("LifeStageCare"), ring: false },
-    { id: "profile",   label: "Profile",     gradient: "linear-gradient(135deg, #F5F0FF, #DDD0FF)", route: createPageUrl("Profile"),       ring: false },
-    { id: "community", label: "Community",   gradient: "linear-gradient(135deg, #FFE6F2, #E8C4D0)", route: createPageUrl("Community"),     ring: false },
-  ];
-
-  return (
-    <div className="mx-[-16px] mt-3 mb-4">
-      <style>{`.daily-stories-scroll::-webkit-scrollbar{display:none;}.daily-story-circle:active{transform:scale(0.92);}`}</style>
-      <div className="daily-stories-scroll flex gap-4 overflow-x-auto px-4" style={{ scrollbarWidth: "none" }}>
-        {stories.map((story) => (
-          <button
-            key={story.id}
-            onClick={() => { window.location.href = story.route; }}
-            className="flex flex-col items-center text-center flex-shrink-0"
-          >
-            <div
-              className="daily-story-circle flex items-center justify-center rounded-full transition-transform"
-              style={{
-                width: 58, height: 58,
-                background: story.gradient,
-                border: story.ring ? "2px solid var(--rose-dust)" : "2px solid transparent",
-              }}
-            >
-              <span style={{ fontSize: "18px", fontWeight: 700, color: "rgba(42,32,53,0.7)", fontFamily: "'Inter', sans-serif" }}>
-                {story.label.charAt(0).toUpperCase()}
-              </span>
-            </div>
-            <span
-              className="mt-1.5 max-w-[64px] truncate"
-              style={{ fontSize: "11px", fontWeight: 500, color: "var(--plum)", fontFamily: "'Inter', sans-serif", textAlign: "center" }}
-            >
-              {story.label}
-            </span>
-          </button>
-        ))}
-      </div>
-    </div>
-  );
 }
 
 const todayStr = new Date().toISOString().split("T")[0];
@@ -589,89 +389,16 @@ export default function Today() {
             {user && <DailyPlanCard user={user} />}
             {user && <WeeklyInsightCard user={user} />}
 
-            {/* Program momentum */}
-            {activeProgram && (
-              <div className="rounded-[24px] p-5 mb-4" style={card}>
-                <div className="flex items-start justify-between gap-3 mb-4">
-                  <div>
-                    <p className="mb-1" style={label}>Active Program</p>
-                    <h3 className="text-lg font-semibold leading-tight" style={{ color: "var(--plum)", fontFamily: "'Playfair Display', serif" }}>{activeProgram.title}</h3>
-                    <p className="text-xs mt-1" style={{ color: "var(--mauve)", fontFamily: "'Inter', sans-serif" }}>Day {activeProgramEntry.current_day || 1} · pick up where you left off</p>
-                  </div>
-                  {activeProgramEntry.streak_count > 0 && (
-                    <div className="inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-semibold flex-shrink-0" style={{ backgroundColor: "var(--rose-dust-subtle)", color: "var(--rose-dust)" }}>
-                      <Flame className="w-3 h-3" />{activeProgramEntry.streak_count} day streak
-                    </div>
-                  )}
-                </div>
-                {showProgramReminder && (
-                  <div className="inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-medium mb-4" style={{ backgroundColor: "#FFF8EE", color: "#A07830" }}>
-                    <Bell className="w-3 h-3" /> Day {activeProgramEntry.current_day || 1} is ready
-                  </div>
-                )}
-                <div className="flex gap-2.5">
-                  <a href={createPageUrl(`ProgramDay?key=${activeProgram.program_key}&day=${activeProgramEntry.current_day || 1}`)}
-                    className="flex-1 py-2.5 rounded-xl text-sm font-semibold text-center"
-                    style={{ backgroundColor: "var(--plum)", color: "white", fontFamily: "'Inter', sans-serif" }}>
-                    Continue Program
-                  </a>
-                  <a href={createPageUrl(`ProgramDetail?key=${activeProgram.program_key}`)}
-                    className="flex-1 py-2.5 rounded-xl text-sm font-semibold text-center"
-                    style={{ border: "1.5px solid var(--border)", color: "var(--plum)", fontFamily: "'Inter', sans-serif" }}>
-                    Day List
-                  </a>
-                </div>
-              </div>
-            )}
+            <ActiveProgramCard activeProgramEntry={activeProgramEntry} activeProgram={activeProgram} />
 
 
-            <RecommendedForYouTodaySection
+            <RecommendedForYouSection
               loading={loadingHomeRecommendations}
               items={homeRecommendations}
               onTap={handleRecommendationTap}
             />
 
-
-            {/* Quick meal log */}
-            <div className="rounded-[24px] p-5 mb-4" style={card}>
-              <div className="flex items-center justify-between mb-4">
-                <div>
-                  <p style={label}>Quick Meal Log</p>
-                  <p className="text-sm font-semibold mt-0.5" style={{ color: "var(--plum)", fontFamily: "'Inter', sans-serif" }}>What did you eat?</p>
-                </div>
-                <a href={createPageUrl("Nutrition")} className="text-xs font-medium" style={{ color: "var(--rose-dust)", fontFamily: "'Inter', sans-serif" }}>Full tracker</a>
-              </div>
-              <textarea
-                value={quickMealText}
-                onChange={(e) => setQuickMealText(e.target.value)}
-                placeholder="e.g. oats with banana and almond milk…"
-                rows={2}
-                className="w-full p-3.5 rounded-2xl text-sm resize-none focus:outline-none transition-all"
-                style={{ backgroundColor: "var(--ivory)", border: "1.5px solid var(--border)", color: "var(--plum)", fontFamily: "'Inter', sans-serif", lineHeight: 1.6 }}
-                onFocus={e => e.target.style.borderColor = "var(--rose-dust-light)"}
-                onBlur={e => e.target.style.borderColor = "var(--border)"}
-              />
-              <div className="flex gap-1.5 mt-3 mb-4 overflow-x-auto pb-1" style={{ scrollbarWidth: "none" }}>
-                {MEAL_TYPES.map((t) => (
-                  <button key={t} onClick={() => setQuickMealType(t)}
-                    className="px-3.5 py-1.5 rounded-full text-xs font-semibold capitalize whitespace-nowrap transition-all"
-                    style={{
-                      backgroundColor: quickMealType === t ? "var(--plum)" : "var(--ivory)",
-                      color: quickMealType === t ? "white" : "var(--mauve)",
-                      border: `1px solid ${quickMealType === t ? "var(--plum)" : "var(--border)"}`,
-                      fontFamily: "'Inter', sans-serif",
-                    }}>
-                    {t}
-                  </button>
-                ))}
-              </div>
-              <button onClick={quickLogMeal} disabled={!quickMealText.trim() || quickLogging}
-                className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full text-sm font-semibold transition-all"
-                style={{ backgroundColor: "var(--plum)", color: "white", fontFamily: "'Inter', sans-serif", opacity: (!quickMealText.trim() || quickLogging) ? 0.5 : 1 }}>
-                {quickLogging ? <Loader2 className="w-4 h-4 animate-spin" /> : <Plus className="w-4 h-4" />}
-                {quickLogging ? "Logging…" : "Log Meal"}
-              </button>
-            </div>
+            <QuickMealLog user={user} profile={profile} getCyclePhase={getCyclePhase} />
 
             {/* Nutrition shortcut */}
             <a href={createPageUrl("Nutrition")} className="flex items-center gap-3.5 rounded-[20px] p-4 mb-4 transition-all block" style={card}>
@@ -726,57 +453,7 @@ export default function Today() {
               </button>
             )}
 
-            {/* Quick actions */}
-            <div style={{ marginBottom: "16px" }}>
-              <p style={{
-                fontSize: "0.6rem", fontWeight: 600, textTransform: "uppercase",
-                letterSpacing: "0.1em", color: "var(--mauve)",
-                fontFamily: "'Inter', sans-serif", marginBottom: "12px"
-              }}>Quick access</p>
-
-              <div className="grid grid-cols-3 gap-3">
-                {[
-                  { lab: "Cycle",     Icon: Droplets, action: () => setMainTab("track"), bg: "var(--rose-dust-subtle)", fg: "var(--rose-dust)" },
-                  { lab: "Journal",   Icon: BookOpen,  href: createPageUrl("Journal"),     bg: "#E8F4FF",               fg: "#5B9BD5" },
-                  { lab: "Nutrition", Icon: Utensils,  href: createPageUrl("Nutrition"),   bg: "var(--sage-subtle)",    fg: "var(--sage)" },
-                  { lab: "Programs",  Icon: Map,       href: createPageUrl("ProgramsHub"), bg: "var(--ivory-dark)",     fg: "var(--mauve)" },
-                  { lab: "Explore",   Icon: Compass,   href: createPageUrl("Explore"),     bg: "var(--ivory-dark)",     fg: "var(--mauve)" },
-                  { lab: "Pulse",     Icon: Activity,  href: createPageUrl("Pulse"),       bg: "var(--rose-dust-subtle)", fg: "var(--rose-dust)" },
-                ].map((a) => {
-                  const inner = (
-                    <>
-                      <div style={{
-                        width: "36px", height: "36px", borderRadius: "12px",
-                        backgroundColor: a.bg, display: "flex",
-                        alignItems: "center", justifyContent: "center",
-                        margin: "0 auto 8px"
-                      }}>
-                        <a.Icon className="w-4 h-4" style={{ color: a.fg }} strokeWidth={1.5} />
-                      </div>
-                      <p style={{
-                        fontSize: "11px", fontWeight: 600, color: "var(--plum)",
-                        fontFamily: "'Inter', sans-serif", textAlign: "center"
-                      }}>{a.lab}</p>
-                    </>
-                  );
-                  return a.href ? (
-                    <a key={a.lab} href={a.href}
-                       className="flex flex-col items-center rounded-[20px] p-4 text-center block"
-                       style={{ backgroundColor: "var(--surface)", border: "1px solid var(--border)",
-                                boxShadow: "var(--shadow-sm)", textDecoration: "none" }}>
-                      {inner}
-                    </a>
-                  ) : (
-                    <button key={a.lab} onClick={a.action}
-                            className="flex flex-col items-center rounded-[20px] p-4 text-center w-full"
-                            style={{ backgroundColor: "var(--surface)", border: "1px solid var(--border)",
-                                     boxShadow: "var(--shadow-sm)" }}>
-                      {inner}
-                    </button>
-                  );
-                })}
-              </div>
-            </div>
+            <QuickAccessGrid onCycleClick={() => setMainTab("track")} />
           </>
         )}
 

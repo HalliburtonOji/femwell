@@ -2,11 +2,12 @@ import { useState, useEffect } from "react";
 import { base44 } from "@/api/base44Client";
 import { createPageUrl } from "@/utils";
 import {
-  LogOut, ChevronRight, Bell, Moon, Heart, Shield, Settings,
-  Activity, Bookmark, Ticket, CalendarDays, Feather, Calendar, MapPin, Sparkles, Camera, Trash2,
-  Stethoscope, Users
+  ChevronRight, Bell, Moon, Heart, Shield, Settings,
+  Calendar, MapPin, Sparkles, Camera
 } from "lucide-react";
 import ConditionHealthProfile from "../components/conditions/ConditionHealthProfile";
+import ProfileNavLinks from "../components/profile/ProfileNavLinks";
+import ProfileDataModals from "../components/profile/ProfileDataModals";
 
 function getCyclePhase(lastPeriodDate, cycleLen = 28, periodLen = 5) {
   if (!lastPeriodDate) return null;
@@ -39,11 +40,8 @@ export default function Profile() {
   const [newCity, setNewCity] = useState('');
   const [savedField, setSavedField] = useState(null);
   const [uploadingPhoto, setUploadingPhoto] = useState(false);
-  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
-  const [deleting, setDeleting] = useState(false);
   const [showDataExportModal, setShowDataExportModal] = useState(false);
   const [showDataDeleteModal, setShowDataDeleteModal] = useState(false);
-  const [dataDeletionRequested, setDataDeletionRequested] = useState(false);
 
   const handlePhotoUpload = async (e) => {
     const file = e.target.files?.[0];
@@ -647,264 +645,18 @@ export default function Profile() {
           </button>
         </div>
 
-        {/* Data Export Modal */}
-        {showDataExportModal && (
-          <div style={{ position: "fixed", inset: 0, zIndex: 60, display: "flex", alignItems: "flex-end" }}>
-            <div onClick={() => setShowDataExportModal(false)} style={{ position: "absolute", inset: 0, backgroundColor: "rgba(42,32,53,0.5)", backdropFilter: "blur(6px)" }} />
-            <div style={{ position: "relative", width: "100%", backgroundColor: "var(--surface)", borderRadius: "28px 28px 0 0", padding: 24, zIndex: 1 }}>
-              <h3 style={{ fontFamily: "'Playfair Display', serif", fontSize: 18, color: "var(--plum)", fontWeight: 600, marginBottom: 10 }}>Data export</h3>
-              <p style={{ fontSize: 14, color: "var(--mauve)", fontFamily: "'Inter', sans-serif", lineHeight: 1.65, marginBottom: 16 }}>
-                Your full data export will be available in a future update. For now, you can use Doctor Export to download a health summary.
-              </p>
-              <a href={createPageUrl("DoctorExport")} onClick={() => setShowDataExportModal(false)}
-                style={{ display: "block", width: "100%", textAlign: "center", padding: "13px", borderRadius: 12, backgroundColor: "var(--plum)", color: "white", fontSize: 14, fontWeight: 600, fontFamily: "'Inter', sans-serif", textDecoration: "none", marginBottom: 10 }}>
-                Open Doctor Export
-              </a>
-              <button onClick={() => setShowDataExportModal(false)} style={{ width: "100%", padding: "13px", borderRadius: 12, border: "1.5px solid var(--border)", backgroundColor: "transparent", fontSize: 14, fontWeight: 600, color: "var(--plum)", cursor: "pointer", fontFamily: "'Inter', sans-serif" }}>
-                Close
-              </button>
-            </div>
-          </div>
-        )}
+        <ProfileDataModals
+          showExport={showDataExportModal}
+          showDelete={showDataDeleteModal}
+          onCloseExport={() => setShowDataExportModal(false)}
+          onCloseDelete={() => setShowDataDeleteModal(false)}
+        />
 
-        {/* Delete Data Modal */}
-        {showDataDeleteModal && (
-          <div style={{ position: "fixed", inset: 0, zIndex: 60, display: "flex", alignItems: "flex-end" }}>
-            <div onClick={() => setShowDataDeleteModal(false)} style={{ position: "absolute", inset: 0, backgroundColor: "rgba(42,32,53,0.5)", backdropFilter: "blur(6px)" }} />
-            <div style={{ position: "relative", width: "100%", backgroundColor: "var(--surface)", borderRadius: "28px 28px 0 0", padding: 24, zIndex: 1 }}>
-              {dataDeletionRequested ? (
-                <>
-                  <h3 style={{ fontFamily: "'Playfair Display', serif", fontSize: 18, color: "var(--plum)", fontWeight: 600, marginBottom: 10 }}>Request received</h3>
-                  <p style={{ fontSize: 14, color: "var(--mauve)", fontFamily: "'Inter', sans-serif", lineHeight: 1.65, marginBottom: 20 }}>
-                    Your deletion request has been received. We will process it within 7 days and notify you by email.
-                  </p>
-                  <button onClick={() => { setShowDataDeleteModal(false); setDataDeletionRequested(false); }} style={{ width: "100%", padding: "13px", borderRadius: 12, backgroundColor: "var(--plum)", color: "white", fontSize: 14, fontWeight: 600, border: "none", cursor: "pointer", fontFamily: "'Inter', sans-serif" }}>
-                    Done
-                  </button>
-                </>
-              ) : (
-                <>
-                  <h3 style={{ fontFamily: "'Playfair Display', serif", fontSize: 18, color: "#D94F4F", fontWeight: 600, marginBottom: 10 }}>Delete my data</h3>
-                  <p style={{ fontSize: 14, color: "var(--mauve)", fontFamily: "'Inter', sans-serif", lineHeight: 1.65, marginBottom: 20 }}>
-                    This will permanently delete all your tracked data. This cannot be undone.
-                  </p>
-                  <div style={{ display: "flex", gap: 10 }}>
-                    <button onClick={() => setShowDataDeleteModal(false)} style={{ flex: 1, padding: "13px", borderRadius: 12, border: "1.5px solid var(--border)", backgroundColor: "transparent", fontSize: 14, fontWeight: 600, color: "var(--plum)", cursor: "pointer", fontFamily: "'Inter', sans-serif" }}>
-                      Cancel
-                    </button>
-                    <button onClick={() => setDataDeletionRequested(true)} style={{ flex: 1, padding: "13px", borderRadius: 12, border: "none", backgroundColor: "#D94F4F", fontSize: 14, fontWeight: 600, color: "white", cursor: "pointer", fontFamily: "'Inter', sans-serif" }}>
-                      Confirm Delete
-                    </button>
-                  </div>
-                </>
-              )}
-            </div>
-          </div>
-        )}
-
-        {/* Life Stage */}
-        <a href={createPageUrl("LifeStageCare")}
-           style={{ ...card, padding: "16px", marginBottom: "16px", display: "flex", alignItems: "center", gap: "12px", textDecoration: "none" }}>
-          <div style={iconBox("var(--ivory-dark)")}>
-            <Heart className="w-4 h-4" style={{ color: "var(--mauve)" }} />
-          </div>
-          <div className="flex-1">
-            <p style={{ ...bodyText, fontWeight: 600 }}>Pregnancy & Menopause Support</p>
-            <p style={mutedText}>Daily tracking, setup, and personal guidance</p>
-          </div>
-          <ChevronRight className="w-4 h-4" style={{ color: "var(--border)" }} />
-        </a>
-
-        {/* Pulse */}
-        <a href={createPageUrl("Pulse")}
-           style={{ ...card, padding: "16px", marginBottom: "16px", display: "flex", alignItems: "center", gap: "12px", textDecoration: "none" }}>
-          <div style={iconBox("var(--rose-dust-subtle)")}>
-            <Activity className="w-4 h-4" style={{ color: "var(--rose-dust)" }} />
-          </div>
-          <div className="flex-1">
-            <p style={{ ...bodyText, fontWeight: 600 }}>Pulse</p>
-            <p style={mutedText}>Weekly summaries & pattern charts</p>
-          </div>
-          <ChevronRight className="w-4 h-4" style={{ color: "var(--border)" }} />
-        </a>
-
-        {/* Skin & Hair */}
-        <a
-          href={createPageUrl("SkinHair")}
-          style={{ ...card, padding: "16px", marginBottom: "16px", display: "block", textDecoration: "none" }}
-        >
-          <div className="flex items-center gap-3">
-            <div style={iconBox("var(--rose-dust-subtle)")}>
-              <Feather className="w-4 h-4" style={{ color: "var(--rose-dust)" }} />
-            </div>
-            <div className="flex-1">
-              <p style={{ ...bodyText, fontWeight: 600 }}>Skin & Hair</p>
-              {daysLoggedSkin === 0 && (
-                <p style={mutedText}>Phase patterns, breakouts & shedding trends</p>
-              )}
-            </div>
-            <ChevronRight className="w-4 h-4" style={{ color: "var(--border)" }} />
-          </div>
-          {daysLoggedSkin > 0 && (
-            <div className="flex gap-2 flex-wrap mt-3">
-              <span style={{
-                backgroundColor: "var(--rose-dust-subtle)", color: "var(--rose-dust)",
-                fontSize: "11px", fontWeight: 600, borderRadius: "9999px",
-                padding: "3px 10px", fontFamily: "'Inter', sans-serif"
-              }}>
-                {daysLoggedSkin} days logged
-              </span>
-              {skinConditionMode && (
-                <span style={{
-                  backgroundColor: "var(--rose-dust-subtle)", color: "var(--rose-dust)",
-                  fontSize: "11px", fontWeight: 600, borderRadius: "9999px",
-                  padding: "3px 10px", fontFamily: "'Inter', sans-serif"
-                }}>
-                  {skinConditionMode}
-                </span>
-              )}
-              {profile?.skin_type && (
-                <span style={{
-                  backgroundColor: "var(--rose-dust-subtle)", color: "var(--rose-dust)",
-                  fontSize: "11px", fontWeight: 600, borderRadius: "9999px",
-                  padding: "3px 10px", fontFamily: "'Inter', sans-serif"
-                }}>
-                  {profile.skin_type} skin
-                </span>
-              )}
-            </div>
-          )}
-        </a>
-
-        {/* Grid: Saved, Deals, Events */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-3 mb-4">
-          <a href={createPageUrl("Saved")}
-             style={{ ...card, padding: "16px", display: "flex", alignItems: "center", gap: "12px", textDecoration: "none" }}>
-            <div style={iconBox("var(--rose-dust-subtle)")}>
-              <Bookmark className="w-4 h-4" style={{ color: "var(--rose-dust)" }} />
-            </div>
-            <div className="flex-1">
-              <p style={{ ...bodyText, fontWeight: 600 }}>Saved</p>
-              <p style={mutedText}>Advice, content & programs</p>
-            </div>
-          </a>
-          <a href={createPageUrl("Deals")}
-             style={{ ...card, padding: "16px", display: "flex", alignItems: "center", gap: "12px", textDecoration: "none" }}>
-            <div style={iconBox("#FFF8EE")}>
-              <Ticket className="w-4 h-4" style={{ color: "#B89E6A" }} />
-            </div>
-            <div className="flex-1">
-              <p style={{ ...bodyText, fontWeight: 600 }}>Deals</p>
-              <p style={mutedText}>Coupon codes and offers</p>
-            </div>
-          </a>
-          <a href={createPageUrl("Events")}
-             style={{ ...card, padding: "16px", display: "flex", alignItems: "center", gap: "12px", textDecoration: "none" }}>
-            <div style={iconBox("var(--ivory-dark)")}>
-              <CalendarDays className="w-4 h-4" style={{ color: "var(--mauve)" }} />
-            </div>
-            <div className="flex-1">
-              <p style={{ ...bodyText, fontWeight: 600 }}>Events</p>
-              <p style={mutedText}>Free and paid listings</p>
-            </div>
-          </a>
-        </div>
-
-        {/* Doctor Export */}
-        <a href={createPageUrl("DoctorExport")}
-           style={{ ...card, padding: "16px", marginBottom: "16px", display: "flex", alignItems: "center", gap: "12px", textDecoration: "none" }}>
-          <div style={iconBox("var(--sage-subtle)")}>
-            <Stethoscope className="w-4 h-4" style={{ color: "var(--sage)" }} />
-          </div>
-          <div className="flex-1">
-            <p style={{ ...bodyText, fontWeight: 600 }}>Share with doctor</p>
-            <p style={mutedText}>90-day health summary to screenshot or copy</p>
-          </div>
-          <ChevronRight className="w-4 h-4" style={{ color: "var(--border)" }} />
-        </a>
-
-        {/* Partner Mode */}
-        <a href={createPageUrl("PartnerSettings")}
-           style={{ ...card, padding: "16px", marginBottom: "16px", display: "flex", alignItems: "center", gap: "12px", textDecoration: "none" }}>
-          <div style={iconBox("var(--rose-dust-subtle)")}>
-            <Users className="w-4 h-4" style={{ color: "var(--rose-dust)" }} />
-          </div>
-          <div className="flex-1">
-            <p style={{ ...bodyText, fontWeight: 600 }}>Partner access</p>
-            <p style={mutedText}>Share a gentle read-only view with someone you trust</p>
-          </div>
-          <ChevronRight className="w-4 h-4" style={{ color: "var(--border)" }} />
-        </a>
-
-        {/* Redo Onboarding */}
-        <a href="/Onboarding?mode=redo"
-           style={{ ...card, padding: "16px", marginBottom: "16px", marginTop: "16px", display: "flex", alignItems: "center", gap: "12px", textDecoration: "none" }}>
-          <div style={iconBox("var(--ivory-dark)")}>
-            <Settings className="w-4 h-4" style={{ color: "var(--mauve)" }} />
-          </div>
-          <div className="flex-1">
-            <p style={{ ...bodyText, fontWeight: 600 }}>Redo Onboarding</p>
-            <p style={mutedText}>Update goals and preferences</p>
-          </div>
-          <ChevronRight className="w-4 h-4" style={{ color: "var(--border)" }} />
-        </a>
-
-        {/* Sign out */}
-        <button
-          onClick={async () => { await base44.auth.logout(); window.location.href = "/"; }}
-          style={{ ...card, cursor: "pointer", border: "none", backgroundColor: "var(--surface)", padding: "16px", marginBottom: "16px", display: "flex", alignItems: "center", gap: "12px", width: "100%" }}
-        >
-          <div style={iconBox("#FFF0F0")}>
-            <LogOut className="w-4 h-4" style={{ color: "#D94F4F" }} />
-          </div>
-          <p style={{ fontSize: "14px", fontWeight: 600, color: "#D94F4F", fontFamily: "'Inter', sans-serif" }}>
-            Sign out
-          </p>
-        </button>
-
-        {/* Delete Account */}
-        {!showDeleteConfirm ? (
-          <button
-            onClick={() => setShowDeleteConfirm(true)}
-            style={{ ...card, cursor: "pointer", border: "1px solid #FCDCDC", backgroundColor: "#FFF8F8", padding: "16px", marginBottom: "32px", display: "flex", alignItems: "center", gap: "12px", width: "100%" }}
-          >
-            <div style={iconBox("#FFF0F0")}>
-              <Trash2 className="w-4 h-4" style={{ color: "#D94F4F" }} />
-            </div>
-            <p style={{ fontSize: "14px", fontWeight: 600, color: "#D94F4F", fontFamily: "'Inter', sans-serif" }}>
-              Delete account
-            </p>
-          </button>
-        ) : (
-          <div style={{ ...card, border: "1px solid #FCDCDC", backgroundColor: "#FFF8F8", padding: "20px", marginBottom: "32px" }}>
-            <p style={{ fontSize: "14px", fontWeight: 700, color: "#D94F4F", fontFamily: "'Inter', sans-serif", marginBottom: "8px" }}>Are you sure?</p>
-            <p style={{ fontSize: "13px", color: "var(--mauve)", fontFamily: "'Inter', sans-serif", lineHeight: 1.6, marginBottom: "16px" }}>
-              This will permanently delete your profile, cycle data, check-ins, and all personalisation. This cannot be undone.
-            </p>
-            <div style={{ display: "flex", gap: 10 }}>
-              <button
-                onClick={() => setShowDeleteConfirm(false)}
-                style={{ flex: 1, padding: "11px", borderRadius: 9999, border: "1.5px solid var(--border)", backgroundColor: "var(--surface)", fontSize: 13, fontWeight: 600, color: "var(--plum)", fontFamily: "'Inter', sans-serif", cursor: "pointer" }}
-              >
-                Cancel
-              </button>
-              <button
-                disabled={deleting}
-                onClick={async () => {
-                  setDeleting(true);
-                  try {
-                    if (profile) await base44.entities.UserProfile.delete(profile.id);
-                    await base44.auth.logout();
-                    window.location.href = "/";
-                  } catch { setDeleting(false); }
-                }}
-                style={{ flex: 1, padding: "11px", borderRadius: 9999, border: "none", backgroundColor: "#D94F4F", fontSize: 13, fontWeight: 600, color: "white", fontFamily: "'Inter', sans-serif", cursor: deleting ? "default" : "pointer", opacity: deleting ? 0.6 : 1 }}
-              >
-                {deleting ? "Deleting..." : "Yes, delete"}
-              </button>
-            </div>
-          </div>
-        )}
+        <ProfileNavLinks
+          profile={profile}
+          daysLoggedSkin={daysLoggedSkin}
+          skinConditionMode={skinConditionMode}
+        />
 
       </div>
     </div>
