@@ -152,15 +152,16 @@ function getCatGradient(category) {
 // ── Tappable item card (opens sheet or new tab) ───────────────────────────────
 function ContentCard({ item, compact = false }) {
   const [open, setOpen] = useState(false);
-  const hasInternalContent = item.lede || item.provider === "FEMWELL_AI";
+  const isRealExternal = !!item.content_url && !item.content_url.includes("femwell") && !item.content_url.startsWith("/");
+  const hasInternalContent = !isRealExternal || item.lede || item.provider === "FEMWELL_AI";
   const sourceName = item.source_name || "FemWell Editorial";
-  const hasExternalLink = !hasInternalContent && !!item.content_url;
+  const hasExternalLink = isRealExternal && !item.lede && item.provider !== "FEMWELL_AI";
 
   const handleClick = () => {
-    if (hasInternalContent) {
-      setOpen(true);
-    } else if (item.content_url) {
+    if (hasExternalLink) {
       window.open(item.content_url, "_blank", "noopener,noreferrer");
+    } else {
+      setOpen(true);
     }
   };
 
@@ -224,12 +225,12 @@ function ForYouTab() {
 
   useEffect(() => {
     (async () => {
-      const all = await base44.entities.LifestyleItems.filter({ status: "PUBLISHED" }, "-engagement_score", 20).catch(() => []);
+      const all = await base44.entities.LifestyleItems.filter({ status: "PUBLISHED" }, "-engagement_score", 100).catch(() => []);
       // Prioritize FEMWELL_AI or items with lede
       const sorted = [
         ...all.filter(i => i.provider === "FEMWELL_AI" || i.lede),
         ...all.filter(i => i.provider !== "FEMWELL_AI" && !i.lede),
-      ].slice(0, 12);
+      ];
       setItems(sorted);
       setLoading(false);
     })();

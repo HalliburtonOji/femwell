@@ -1,9 +1,9 @@
 import { useState, useEffect } from "react";
 import { base44 } from "@/api/base44Client";
-import { RefreshCw, Loader2 } from "lucide-react";
+import { RefreshCw } from "lucide-react";
 
 const todayStr = new Date().toISOString().split("T")[0];
-const card = { backgroundColor: "var(--surface)", border: "1px solid var(--border)", borderRadius: 20, padding: "16px 18px", boxShadow: "var(--shadow-sm)", marginBottom: 16 };
+const card = { backgroundColor: "var(--surface)", border: "1px solid var(--border)", borderRadius: 20, padding: "16px 18px", boxShadow: "var(--shadow-sm)" };
 
 export default function DailyPlanCard({ user }) {
   const [plan, setPlan] = useState(null);
@@ -42,23 +42,7 @@ export default function DailyPlanCard({ user }) {
     ? (typeof plan.plan_json === "string" ? JSON.parse(plan.plan_json) : plan.plan_json)
     : null;
 
-  if (!p) {
-    return (
-      <div style={card}>
-        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-          <div>
-            <p style={{ fontSize: "0.6rem", fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.12em", color: "var(--mauve)", fontFamily: "'Inter', sans-serif" }}>Your daily plan</p>
-            <p style={{ fontSize: 13, color: "var(--plum)", marginTop: 2, fontFamily: "'Inter', sans-serif" }}>Get your personalised plan for today.</p>
-          </div>
-          <button onClick={() => generate(false)} disabled={generating}
-            style={{ padding: "8px 16px", borderRadius: 9999, backgroundColor: "var(--plum)", color: "white", border: "none", fontSize: 12, fontWeight: 600, cursor: "pointer", opacity: generating ? 0.6 : 1, display: "flex", alignItems: "center", gap: 6, flexShrink: 0, fontFamily: "'Inter', sans-serif" }}>
-            {generating ? <Loader2 style={{ width: 12, height: 12 }} className="animate-spin" /> : null}
-            {generating ? "Generating..." : "Build my plan"}
-          </button>
-        </div>
-      </div>
-    );
-  }
+  if (!p) return null;
 
   return (
     <div style={card}>

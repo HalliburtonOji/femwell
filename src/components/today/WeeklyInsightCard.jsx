@@ -93,13 +93,14 @@ Write the insight in Markdown with clear sections. Keep it warm, personal, and a
   };
 
   if (loading) return null;
+  // Don't render an empty card — only show when there's an insight
+  if (!insight) return null;
 
   return (
     <div style={{
       backgroundColor: "var(--surface)",
       border: "1px solid var(--border)",
       borderRadius: "20px", padding: "16px",
-      marginBottom: "16px",
       boxShadow: "var(--shadow-sm)"
     }}>
 
@@ -164,18 +165,6 @@ Write the insight in Markdown with clear sections. Keep it warm, personal, and a
             Scanning your week…
           </p>
         </div>
-      )}
-
-      {!generating && !insight && (
-        <button onClick={generate} style={{
-          width: "100%", padding: "10px",
-          borderRadius: "12px", border: "none",
-          backgroundColor: "var(--ivory-dark)", cursor: "pointer",
-          fontSize: "13px", fontWeight: 600,
-          color: "var(--plum)", fontFamily: "'Inter', sans-serif"
-        }}>
-          Generate this week's insight
-        </button>
       )}
 
       {insight && expanded && (
