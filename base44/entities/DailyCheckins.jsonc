@@ -103,7 +103,27 @@
       "type": "number"
     },
     "notes": {
-      "type": "string"
+      "type": "string",
+      "description": "Free-text notes, max 500 chars enforced client-side"
+    },
+    "symptoms": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Controlled vocab symptom slugs"
+    },
+    "symptom_severity": {
+      "type": "number",
+      "description": "1-5 overall severity for logged symptoms"
+    },
+    "mood_score": {
+      "type": "number",
+      "description": "1-5 mood score (new unified field)"
+    },
+    "energy_level": {
+      "type": "number",
+      "description": "1-5 energy score (new unified field)"
     },
     "created_at": {
       "type": "string"

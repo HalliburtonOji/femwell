@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { base44 } from "@/api/base44Client";
 import { ExternalLink, ChevronDown, ChevronUp, X, BookOpen, Bookmark } from "lucide-react";
+import { CONTENT_CATEGORIES, categoryLabel } from "@/utils/contentCategory";
 
 // ── Helpers ──────────────────────────────────────────────────────────────────
 function stripHtml(str) {
@@ -219,14 +220,20 @@ function ContentCard({ item, compact = false }) {
 }
 
 // ── FOR YOU tab ───────────────────────────────────────────────────────────────
-function ForYouTab() {
+function matchCategory(item, filter) {
+  if (!filter || filter === "all") return true;
+  const raw = String(item.category || "").toLowerCase();
+  // Direct enum match OR legacy-text containing the slug.
+  return raw === filter || raw.includes(filter.replace(/_/g, " "));
+}
+
+function ForYouTab({ categoryFilter }) {
   const [items, setItems] = useState([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     (async () => {
       const all = await base44.entities.LifestyleItems.filter({ status: "PUBLISHED" }, "-engagement_score", 100).catch(() => []);
-      // Prioritize FEMWELL_AI or items with lede
       const sorted = [
         ...all.filter(i => i.provider === "FEMWELL_AI" || i.lede),
         ...all.filter(i => i.provider !== "FEMWELL_AI" && !i.lede),
@@ -237,11 +244,12 @@ function ForYouTab() {
   }, []);
 
   if (loading) return <Spinner />;
-  if (!items.length) return <EmptyState text="Your feed is warming up. Check back soon." />;
+  const filtered = items.filter(i => matchCategory(i, categoryFilter));
+  if (!filtered.length) return <EmptyState text="No posts match this category yet." />;
 
   return (
     <div className="space-y-4">
-      {items.map(item => <ContentCard key={item.id} item={item} />)}
+      {filtered.map(item => <ContentCard key={item.id} item={item} />)}
     </div>
   );
 }
@@ -334,7 +342,7 @@ function DailyStoryTab() {
 }
 
 // ── READ tab ──────────────────────────────────────────────────────────────────
-function ReadTab() {
+function ReadTab({ categoryFilter: globalFilter }) {
   const [items, setItems] = useState([]);
   const [loading, setLoading] = useState(true);
   const [catFilter, setCatFilter] = useState("All");
@@ -355,7 +363,8 @@ function ReadTab() {
     })();
   }, []);
 
-  const filtered = catFilter === "All" ? items : items.filter(i => i.category === catFilter);
+  const filtered = (catFilter === "All" ? items : items.filter(i => i.category === catFilter))
+    .filter(i => matchCategory(i, globalFilter));
 
   if (loading) return <Spinner />;
 
@@ -662,12 +671,42 @@ const TABS = [
   { id: "horoscope",   label: "Horoscope" },
 ];
 
+// ── Category filter chips (ContentItems enum) ─────────────────────────────────
+function CategoryChips({ active, onChange }) {
+  const chips = ["all", ...CONTENT_CATEGORIES];
+  return (
+    <div className="lf-scroll" style={{ display: "flex", gap: 6, overflowX: "auto", paddingBottom: 6, marginTop: 8 }}>
+      {chips.map(cat => {
+        const isActive = active === cat;
+        return (
+          <button
+            key={cat}
+            onClick={() => onChange(cat)}
+            aria-label={`Filter by ${cat === "all" ? "all categories" : categoryLabel(cat)}`}
+            aria-pressed={isActive}
+            style={{
+              flexShrink: 0, padding: "6px 14px", borderRadius: 9999,
+              fontSize: 11, fontWeight: 600, cursor: "pointer", border: "none",
+              fontFamily: "'Inter', sans-serif", whiteSpace: "nowrap", minHeight: 32,
+              backgroundColor: isActive ? PRIMARY : "var(--ivory-dark)",
+              color: isActive ? "white" : "var(--mauve)",
+            }}
+          >
+            {cat === "all" ? "All" : categoryLabel(cat)}
+          </button>
+        );
+      })}
+    </div>
+  );
+}
+
 // ── Main page ─────────────────────────────────────────────────────────────────
 export default function Lifestyle() {
   const [tab, setTab] = useState(() => {
     const p = new URLSearchParams(window.location.search).get("tab");
     return TABS.some(t => t.id === p) ? p : "for_you";
   });
+  const [categoryFilter, setCategoryFilter] = useState("all");
 
   return (
     <div className="min-h-screen pb-28" style={{ backgroundColor: "var(--ivory)" }}>
@@ -682,21 +721,24 @@ export default function Lifestyle() {
           <div className="lf-scroll" style={{ display: "flex", gap: 6, overflowX: "auto", paddingBottom: 2 }}>
             {TABS.map(t => (
               <button key={t.id} onClick={() => setTab(t.id)}
-                style={{ flexShrink: 0, padding: "7px 16px", borderRadius: 9999, fontSize: 12, fontWeight: 600, cursor: "pointer", border: "none", transition: "all 0.15s", fontFamily: "'Inter', sans-serif", whiteSpace: "nowrap",
+                aria-label={`Switch to ${t.label} tab`}
+                aria-pressed={tab === t.id}
+                style={{ flexShrink: 0, padding: "7px 16px", borderRadius: 9999, fontSize: 12, fontWeight: 600, cursor: "pointer", border: "none", transition: "all 0.15s", fontFamily: "'Inter', sans-serif", whiteSpace: "nowrap", minHeight: 32,
                   backgroundColor: tab === t.id ? PRIMARY : "var(--ivory-dark)",
                   color: tab === t.id ? "white" : "var(--mauve)" }}>
                 {t.label}
               </button>
             ))}
           </div>
+          <CategoryChips active={categoryFilter} onChange={setCategoryFilter} />
         </div>
       </div>
 
       {/* Content */}
       <div className="max-w-xl mx-auto px-4 pt-5">
-        {tab === "for_you"     && <ForYouTab />}
+        {tab === "for_you"     && <ForYouTab categoryFilter={categoryFilter} />}
         {tab === "daily_story" && <DailyStoryTab />}
-        {tab === "read"        && <ReadTab />}
+        {tab === "read"        && <ReadTab categoryFilter={categoryFilter} />}
         {tab === "fiction"     && <FictionTab />}
         {tab === "stories"     && <StoriesTab />}
         {tab === "books"       && <BooksTab />}

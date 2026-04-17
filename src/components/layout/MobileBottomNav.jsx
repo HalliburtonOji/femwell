@@ -20,13 +20,14 @@ export default function MobileBottomNav({ currentPageName }) {
 
   return (
     <nav
+      aria-label="Primary"
       className="fixed bottom-0 left-0 right-0 z-40"
       style={{
         backgroundColor: "rgba(255,255,255,0.97)",
         backdropFilter: "blur(20px)",
         WebkitBackdropFilter: "blur(20px)",
         borderTop: "1px solid var(--border)",
-        paddingBottom: "env(safe-area-inset-bottom)",
+        paddingBottom: "max(env(safe-area-inset-bottom, 0.5rem), 0.5rem)",
       }}
     >
       <div style={{ display: "flex", justifyContent: "space-around", alignItems: "center", padding: "8px 0 6px" }}>
@@ -36,14 +37,16 @@ export default function MobileBottomNav({ currentPageName }) {
             return (
               <button
                 key="menu"
+                aria-label="Open navigation menu"
                 onClick={() => window.dispatchEvent(new Event('open-nav-drawer'))}
                 style={{
                   display: "flex", flexDirection: "column", alignItems: "center",
-                  gap: 3, padding: "4px 10px", background: "none", border: "none",
+                  gap: 3, padding: "4px 10px", minWidth: 44, minHeight: 44,
+                  background: "none", border: "none",
                   cursor: "pointer", WebkitTapHighlightColor: "transparent", userSelect: "none",
                 }}
               >
-                <IconComp style={{ width: 22, height: 22, color: "var(--mauve)" }} strokeWidth={1.5} />
+                <IconComp style={{ width: 22, height: 22, color: "var(--mauve)" }} strokeWidth={1.5} aria-hidden="true" />
                 <span style={{ fontSize: 10, fontWeight: 500, color: "var(--mauve)", fontFamily: "'Inter', sans-serif" }}>Menu</span>
               </button>
             );
@@ -53,13 +56,17 @@ export default function MobileBottomNav({ currentPageName }) {
             <Link
               key={page}
               to={createPageUrl(page)}
+              aria-label={`Go to ${label}`}
+              aria-current={active ? "page" : undefined}
               style={{
                 display: "flex", flexDirection: "column", alignItems: "center",
-                gap: 3, padding: "4px 10px", textDecoration: "none",
+                gap: 3, padding: "4px 10px", minWidth: 44, minHeight: 44,
+                textDecoration: "none",
                 WebkitTapHighlightColor: "transparent", userSelect: "none",
               }}
             >
               <IconComp
+                aria-hidden="true"
                 style={{ width: 22, height: 22, color: active ? "var(--rose-dust)" : "var(--mauve)" }}
                 strokeWidth={active ? 2.5 : 1.5}
               />

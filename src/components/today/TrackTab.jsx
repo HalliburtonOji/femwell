@@ -12,6 +12,9 @@ import MedReminderSection from "./MedReminderSection";
 import PainMapSubTab from "../conditions/PainMapSubTab";
 import FertilitySubTab from "../conditions/FertilitySubTab";
 import HealthDataSubTab from "./HealthDataSubTab";
+import SymptomLogForm from "../track/SymptomLogForm";
+import SymptomHeatmap from "../track/SymptomHeatmap";
+import SymptomPatternCard from "../track/SymptomPatternCard";
 
 const todayStr = new Date().toISOString().split("T")[0];
 
@@ -298,11 +301,26 @@ function SymptomsSubTab({ user, profile, selectedDate }) {
   const [notes, setNotes] = useState("");
   const [saving, setSaving] = useState(false);
 
+  // New: daily check-in for the selected date + recent 14 days for heatmap/patterns.
+  const [todayCheckin, setTodayCheckin] = useState(null);
+  const [recentCheckins, setRecentCheckins] = useState([]);
+  const [refreshKey, setRefreshKey] = useState(0);
+
   const load = () =>
     base44.entities.SymptomLogs.filter({ user_id: user.id, date: selectedDate })
       .then(setSymptoms).catch(() => {});
 
   useEffect(() => { load(); }, [user, selectedDate]);
+
+  useEffect(() => {
+    if (!user?.id) return;
+    base44.entities.DailyCheckins.filter({ user_id: user.id, date: selectedDate })
+      .then(rows => setTodayCheckin(rows[0] || null))
+      .catch(() => setTodayCheckin(null));
+    base44.entities.DailyCheckins.filter({ user_id: user.id }, "-date", 30)
+      .then(setRecentCheckins)
+      .catch(() => setRecentCheckins([]));
+  }, [user, selectedDate, refreshKey]);
 
   const log = async () => {
     if (!selected) return;
@@ -340,6 +358,16 @@ function SymptomsSubTab({ user, profile, selectedDate }) {
 
   return (
     <div className="pt-4 space-y-4">
+      {/* New: structured daily log, heatmap, pattern card */}
+      <SymptomLogForm
+        userId={user?.id}
+        dateStr={selectedDate}
+        existing={todayCheckin}
+        onSaved={() => setRefreshKey(k => k + 1)}
+      />
+      <SymptomPatternCard checkins={recentCheckins} />
+      <SymptomHeatmap checkins={recentCheckins} />
+
       {hasPMDD && <PMDDSeverityLogger user={user} profile={profile} selectedDate={selectedDate} />}
       {symptoms.length > 0 && (
         <div style={{ ...card, padding: 20 }}>

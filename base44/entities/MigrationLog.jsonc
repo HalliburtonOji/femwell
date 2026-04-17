@@ -1,0 +1,32 @@
+{
+  "name": "MigrationLog",
+  "type": "object",
+  "description": "Audit trail for data migrations. One row per record mutated.",
+  "properties": {
+    "entity_name": {
+      "type": "string"
+    },
+    "record_id": {
+      "type": "string"
+    },
+    "migration_name": {
+      "type": "string"
+    },
+    "before_value": {
+      "type": "string"
+    },
+    "after_value": {
+      "type": "string"
+    },
+    "note": {
+      "type": "string"
+    },
+    "created_date": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "entity_name",
+    "migration_name"
+  ]
+}

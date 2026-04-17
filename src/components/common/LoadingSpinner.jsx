@@ -9,8 +9,11 @@ export default function LoadingSpinner({ size = "md" }) {
       className={`rounded-full border-t-transparent animate-spin flex-shrink-0 ${sizes[size]}`}
       style={{ borderColor: "var(--rose-dust-light)", borderTopColor: "var(--rose-dust)" }}
       role="status"
+      aria-live="polite"
       aria-label="Loading"
-    />
+    >
+      <span className="sr-only">Loading…</span>
+    </div>
   );
 }
 
@@ -19,6 +22,8 @@ export function PageLoader({ message }) {
     <div
       className="min-h-screen flex flex-col items-center justify-center gap-3"
       style={{ backgroundColor: "var(--ivory)" }}
+      role="status"
+      aria-live="polite"
     >
       <LoadingSpinner size="md" />
       {message && (

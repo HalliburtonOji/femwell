@@ -1,9 +1,11 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { X, AlertCircle } from "lucide-react";
 import { base44 } from "@/api/base44Client";
 import { createPageUrl } from "@/utils";
 import { toast } from "sonner";
 import CalmCards from "./CalmCards";
+import PreviousPanicSessions from "./PreviousPanicSessions";
+import { getCyclePhaseOrNull } from "@/utils/cyclePhase";
 
 const PANIC_CONTENT_MAP = {
   panic:     ["box-breathing", "4-7-8-breathing", "grounding-calm"],
@@ -29,10 +31,18 @@ export default function PanicModeModal({ userId, onClose }) {
   const [step, setStep] = useState("form"); // form | offer | grounding | followup | calmcards
   const [saving, setSaving] = useState(false);
   const [suggestedContent, setSuggestedContent] = useState([]);
-  const [panicLogId, setPanicLogId] = useState(null);
   const [panicSessionId, setPanicSessionId] = useState(null);
   const [followupRating, setFollowupRating] = useState(null);
+  const [sessionStartedAt, setSessionStartedAt] = useState(null);
+  const [profile, setProfile] = useState(null);
   const todayStr = new Date().toISOString().split("T")[0];
+
+  useEffect(() => {
+    if (!userId) return;
+    base44.entities.UserProfile.filter({ user_id: userId })
+      .then(rows => setProfile(rows[0] || null))
+      .catch(() => {});
+  }, [userId]);
 
   const handleLog = async (goToCalmCards = false) => {
     setSaving(true);
@@ -44,27 +54,28 @@ export default function PanicModeModal({ userId, onClose }) {
       .slice(0, 2);
     setSuggestedContent(matched);
 
-    const [session, log] = await Promise.all([
-      base44.entities.PanicSessions.create({
-        user_id: userId,
-        day_key: todayStr,
-        logged_at: new Date().toISOString(),
-        intensity,
-        feeling_type: feeling,
-        deck_type: goToCalmCards ? "GUIDED" : "NONE",
-      }).catch(() => null),
-      base44.entities.PanicLog.create({
-        user_id: userId,
-        timestamp: new Date().toISOString(),
-        feeling_type: feeling,
-        intensity,
-        trigger: feeling,
-        actions_taken: contentKeys,
-      }).catch(() => null),
-    ]);
+    const startedAt = new Date().toISOString();
+    setSessionStartedAt(startedAt);
+
+    // Phase captured only when status==='ok'; null otherwise — never fabricated.
+    const cyclePhaseAtSession = getCyclePhaseOrNull(profile);
+
+    // TODO: dead — PanicLog entity is deprecated. All writes consolidated to PanicSessions.
+    //       Schema is kept readable for legacy reads only; drop in next cleanup round.
+    const session = await base44.entities.PanicSessions.create({
+      user_id: userId,
+      day_key: todayStr,
+      logged_at: startedAt,
+      started_at: startedAt,
+      intensity,
+      feeling_type: feeling,
+      trigger_tags: [feeling],
+      techniques_used: goToCalmCards ? ["calm_cards", ...contentKeys] : ["grounding_54321", ...contentKeys],
+      deck_type: goToCalmCards ? "GUIDED" : "NONE",
+      cycle_phase_at_session: cyclePhaseAtSession,
+    }).catch(() => null);
 
     if (session?.id) setPanicSessionId(session.id);
-    if (log?.id) setPanicLogId(log.id);
     setSaving(false);
     toast.success("Logged. You are doing the right thing by noticing this.");
     setStep(goToCalmCards ? "calmcards" : "grounding");
@@ -72,8 +83,17 @@ export default function PanicModeModal({ userId, onClose }) {
 
   const handleFollowupRating = async (rating) => {
     setFollowupRating(rating);
-    if (panicLogId) {
-      await base44.entities.PanicLog.update(panicLogId, { resolved_rating: rating }).catch(() => {});
+    if (panicSessionId) {
+      const endedAt = new Date().toISOString();
+      const durationSeconds = sessionStartedAt
+        ? Math.round((new Date(endedAt) - new Date(sessionStartedAt)) / 1000)
+        : null;
+      await base44.entities.PanicSessions.update(panicSessionId, {
+        post_session_rating: rating,
+        resolved_rating: rating, // keep legacy field in sync
+        ended_at: endedAt,
+        duration_seconds: durationSeconds,
+      }).catch(() => {});
     }
     onClose();
   };
@@ -92,8 +112,8 @@ export default function PanicModeModal({ userId, onClose }) {
               <AlertCircle className="w-5 h-5" style={{ color: "var(--rose-dust)" }} />
               <h2 style={{ fontSize: 18, fontWeight: 700, color: "var(--plum)", fontFamily: "'Playfair Display', serif", margin: 0 }}>Panic mode</h2>
             </div>
-            <button onClick={onClose} style={{ width: 32, height: 32, borderRadius: 9999, backgroundColor: "var(--ivory-dark)", border: "none", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center" }}>
-              <X className="w-4 h-4" style={{ color: "var(--mauve)" }} />
+            <button onClick={onClose} aria-label="Close panic mode" style={{ width: 44, height: 44, borderRadius: 9999, backgroundColor: "var(--ivory-dark)", border: "none", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center" }}>
+              <X className="w-4 h-4" style={{ color: "var(--mauve)" }} aria-hidden="true" />
             </button>
           </div>
 
@@ -133,10 +153,13 @@ export default function PanicModeModal({ userId, onClose }) {
 
               <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
                 <button onClick={() => setStep("offer")}
+                  aria-label="Continue to next step"
                   style={{ height: 52, borderRadius: 9999, backgroundColor: "var(--plum)", color: "white", fontSize: 14, fontWeight: 600, border: "none", cursor: "pointer", fontFamily: "'Inter', sans-serif" }}>
                   Continue →
                 </button>
               </div>
+
+              <PreviousPanicSessions userId={userId} />
             </>
           )}
 

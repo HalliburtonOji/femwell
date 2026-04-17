@@ -11,6 +11,12 @@
     "logged_at": {
       "type": "string"
     },
+    "started_at": {
+      "type": "string"
+    },
+    "ended_at": {
+      "type": "string"
+    },
     "intensity": {
       "type": "number",
       "default": 3
@@ -26,6 +32,18 @@
       ],
       "default": "anxiety"
     },
+    "trigger_tags": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "techniques_used": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
     "notes": {
       "type": "string"
     },
@@ -40,8 +58,20 @@
     "resolved_rating": {
       "type": "number"
     },
+    "post_session_rating": {
+      "type": "number",
+      "description": "1-5 rating after session"
+    },
     "duration_seconds": {
       "type": "number"
+    },
+    "cycle_phase_at_session": {
+      "type": "string",
+      "description": "Phase at session start. Null when unknown \u2014 never fabricated."
+    },
+    "migrated_from": {
+      "type": "string",
+      "description": "Set to 'PanicLog' for rows imported during consolidation."
     },
     "created_at": {
       "type": "string"

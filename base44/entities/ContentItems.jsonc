@@ -51,6 +51,22 @@
         "type": "string"
       }
     },
+    "category": {
+      "type": "string",
+      "enum": [
+        "nutrition",
+        "movement",
+        "mindfulness",
+        "cycle_education",
+        "mental_health",
+        "sleep",
+        "relationships",
+        "hormones",
+        "self_care",
+        "other"
+      ],
+      "description": "Normalized content category slug"
+    },
     "embed_url": {
       "type": "string"
     },
