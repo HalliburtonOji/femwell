@@ -90,10 +90,10 @@ export default function ContentPlayer() {
       const u = await base44.auth.me();
       setUser(u);
       const [ents, bookmarks, saved, profiles] = await Promise.all([
-        base44.entities.Entitlements.filter({ user_id: u.id }),
-        contentKey ? base44.entities.ContentBookmarks.filter({ user_id: u.id }) : Promise.resolve([]),
-        base44.entities.SavedItems.filter({ user_id: u.id, item_type: "CONTENT" }, "-created_at", 200),
-        base44.entities.UserProfile.filter({ user_id: u.id }),
+        base44.entities.Entitlements.filter({ user_id: u.id }).catch(() => []),
+        contentKey ? base44.entities.ContentBookmarks.filter({ user_id: u.id }).catch(() => []) : Promise.resolve([]),
+        base44.entities.SavedItems.filter({ user_id: u.id, item_type: "CONTENT" }, "-created_at", 50).catch(() => []),
+        base44.entities.UserProfile.filter({ user_id: u.id }).catch(() => []),
       ]);
       setUserProfile(profiles[0] || null);
       if (ents[0]) setUserPlan(ents[0].plan || "free");
