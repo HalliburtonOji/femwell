@@ -49,30 +49,28 @@ export default function ProgramDay() {
   useEffect(() => {
     if (!programKey) return;
     (async () => {
+      try {
       const currentUser = await base44.auth.me();
       setUser(currentUser);
 
       const [programs, entitlements] = await Promise.all([
-        base44.entities.Programs.filter({ program_key: programKey }),
-        base44.entities.Entitlements.filter({ user_id: currentUser.id }),
+        base44.entities.Programs.filter({ program_key: programKey }).catch(() => []),
+        base44.entities.Entitlements.filter({ user_id: currentUser.id }).catch(() => []),
       ]);
 
       const selectedProgram = programs[0];
-      if (!selectedProgram) {
-        setLoading(false);
-        return;
-      }
+      if (!selectedProgram) return;
 
       setProgram(selectedProgram);
       if (entitlements[0]) setUserPlan(entitlements[0].plan || "free");
 
       const [days, allTasks, userPrograms, allCompletions, allContent, reflections] = await Promise.all([
-        base44.entities.ProgramDays.filter({ program_key: programKey }),
-        base44.entities.ProgramTasks.filter({ program_key: programKey }),
-        base44.entities.UserPrograms.filter({ user_id: currentUser.id, program_id: selectedProgram.id }),
-        base44.entities.UserTaskCompletions.filter({ user_id: currentUser.id, program_id: selectedProgram.id }),
-        base44.entities.ContentItems.list("-created_date", 200),
-        base44.entities.JournalEntries.filter({ user_id: currentUser.id, program_key: programKey, day_number: dayNumber }),
+        base44.entities.ProgramDays.filter({ program_key: programKey }).catch(() => []),
+        base44.entities.ProgramTasks.filter({ program_key: programKey }).catch(() => []),
+        base44.entities.UserPrograms.filter({ user_id: currentUser.id, program_id: selectedProgram.id }).catch(() => []),
+        base44.entities.UserTaskCompletions.filter({ user_id: currentUser.id, program_id: selectedProgram.id }).catch(() => []),
+        base44.entities.ContentItems.list("-created_date", 200).catch(() => []),
+        base44.entities.JournalEntries.filter({ user_id: currentUser.id, program_key: programKey, day_number: dayNumber }).catch(() => []),
       ]);
 
       const sortedDays = days.sort((a, b) => a.day_number - b.day_number);
@@ -98,7 +96,11 @@ export default function ProgramDay() {
       if (up && getMilestoneKey(up)) setTimeout(() => setShowMilestone(true), 500);
       setReflectionEntry(reflections[0] || null);
       setReflectionText(reflections[0]?.text || "");
-      setLoading(false);
+      } catch (err) {
+        console.error("ProgramDay page init failed:", err);
+      } finally {
+        setLoading(false);
+      }
     })();
   }, [programKey, dayNumber]);
 

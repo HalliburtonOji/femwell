@@ -106,19 +106,20 @@ export default function Pulse() {
 
   useEffect(() => {
     (async () => {
+      try {
       const u = await base44.auth.me();
       setUser(u);
-      const userProfiles = await base44.entities.UserProfile.filter({ user_id: u.id });
+      const userProfiles = await base44.entities.UserProfile.filter({ user_id: u.id }).catch(() => []);
       setProfile(userProfiles[0] || null);
 
       const [events, ckins, slogs, hlogs, journalEntries, mealLogs, wiRecords] = await Promise.all([
-        base44.entities.CycleEvents.filter({ user_id: u.id }),
-        base44.entities.DailyCheckins.filter({ user_id: u.id }),
-        base44.entities.SymptomLogs.filter({ user_id: u.id }),
-        base44.entities.HabitLogs.filter({ user_id: u.id }, "-date", 250),
-        base44.entities.JournalEntries.filter({ user_id: u.id }, "-created_date", 30),
-        base44.entities.MealLog.filter({ user_id: u.id }, "-logged_at", 100),
-        base44.entities.WeeklyInsights.filter({ user_id: u.id }, "-week_start", 12),
+        base44.entities.CycleEvents.filter({ user_id: u.id }).catch(() => []),
+        base44.entities.DailyCheckins.filter({ user_id: u.id }).catch(() => []),
+        base44.entities.SymptomLogs.filter({ user_id: u.id }).catch(() => []),
+        base44.entities.HabitLogs.filter({ user_id: u.id }, "-date", 250).catch(() => []),
+        base44.entities.JournalEntries.filter({ user_id: u.id }, "-created_date", 30).catch(() => []),
+        base44.entities.MealLog.filter({ user_id: u.id }, "-logged_at", 100).catch(() => []),
+        base44.entities.WeeklyInsights.filter({ user_id: u.id }, "-week_start", 12).catch(() => []),
       ]);
 
       const wCutoffDate = format(subDays(new Date(), 7), "yyyy-MM-dd");
@@ -137,8 +138,11 @@ export default function Pulse() {
       setSymptomTypes([...new Set(slogs.map(s => s.symptom_type).filter(Boolean))]);
       setHabitLogs(hlogs);
       setHabitNames([...new Set(hlogs.map(h => h.habit_type || h.habit_name).filter(Boolean))]);
-
-      setLoading(false);
+      } catch (err) {
+        console.error("Pulse page init failed:", err);
+      } finally {
+        setLoading(false);
+      }
     })();
   }, []);
 

@@ -28,10 +28,14 @@ export default function Deals() {
 
   useEffect(() => {
     (async () => {
-      const deals = await base44.entities.Deals.filter({ is_active: true }, "-created_date", 60);
-
-      setItems(deals);
-      setLoading(false);
+      try {
+        const deals = await base44.entities.Deals.filter({ is_active: true }, "-created_date", 60).catch(() => []);
+        setItems(deals);
+      } catch (err) {
+        console.error("Deals page init failed:", err);
+      } finally {
+        setLoading(false);
+      }
     })();
   }, []);
 

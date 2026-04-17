@@ -25,11 +25,16 @@ export default function PartnerSettings() {
 
   useEffect(() => {
     (async () => {
-      const u = await base44.auth.me();
-      setUser(u);
-      const items = await base44.entities.PartnerAccess.filter({ owner_user_id: u.id });
-      setAccesses(items);
-      setLoading(false);
+      try {
+        const u = await base44.auth.me();
+        setUser(u);
+        const items = await base44.entities.PartnerAccess.filter({ owner_user_id: u.id }).catch(() => []);
+        setAccesses(items);
+      } catch (err) {
+        console.error("PartnerSettings init failed:", err);
+      } finally {
+        setLoading(false);
+      }
     })();
   }, []);
 

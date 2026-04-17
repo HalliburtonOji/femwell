@@ -56,15 +56,20 @@ export default function Journal() {
 
   useEffect(() => {
     (async () => {
-      const u = await base44.auth.me();
-      setUser(u);
-      const [data, profiles] = await Promise.all([
-        base44.entities.JournalEntries.filter({ user_id: u.id }, "-created_date", 200),
-        base44.entities.UserProfile.filter({ user_id: u.id }),
-      ]);
-      setEntries(data);
-      setProfile(profiles[0] || null);
-      setLoading(false);
+      try {
+        const u = await base44.auth.me();
+        setUser(u);
+        const [data, profiles] = await Promise.all([
+          base44.entities.JournalEntries.filter({ user_id: u.id }, "-created_date", 200).catch(() => []),
+          base44.entities.UserProfile.filter({ user_id: u.id }).catch(() => []),
+        ]);
+        setEntries(data);
+        setProfile(profiles[0] || null);
+      } catch (err) {
+        console.error("Journal page init failed:", err);
+      } finally {
+        setLoading(false);
+      }
     })();
   }, []);
 

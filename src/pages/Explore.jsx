@@ -280,24 +280,28 @@ export default function Explore() {
 
   useEffect(() => {
     (async () => {
-      const u = await base44.auth.me();
-      setUser(u);
-      const [ents, bookmarks, items, profileResult, recs] = await Promise.all([
-        base44.entities.Entitlements.filter({ user_id: u.id }),
-        base44.entities.ContentBookmarks.filter({ user_id: u.id }),
-        base44.entities.ContentItems.list("-created_date", 60),
-        base44.entities.UserProfile.filter({ user_id: u.id }),
-        base44.entities.ProgramRecommendations.filter({ user_id: u.id }, "-created_date", 4).catch(() => []),
-      ]);
-      if (ents[0]) setUserPlan(ents[0].plan || "free");
-      setBookmarkIds(new Set(bookmarks.map((b) => b.content_id)));
-      setContent(items);
-      if (profileResult?.[0]) setUserProfile(profileResult[0]);
-      // New this week: items created in last 7 days
-      const oneWeekAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString();
-      setNewThisWeek(items.filter(i => (i.created_date || i.created_at || "") >= oneWeekAgo).slice(0, 6));
-      setRecommendations(recs);
-      setLoading(false);
+      try {
+        const u = await base44.auth.me();
+        setUser(u);
+        const [ents, bookmarks, items, profileResult, recs] = await Promise.all([
+          base44.entities.Entitlements.filter({ user_id: u.id }).catch(() => []),
+          base44.entities.ContentBookmarks.filter({ user_id: u.id }).catch(() => []),
+          base44.entities.ContentItems.list("-created_date", 60).catch(() => []),
+          base44.entities.UserProfile.filter({ user_id: u.id }).catch(() => []),
+          base44.entities.ProgramRecommendations.filter({ user_id: u.id }, "-created_date", 4).catch(() => []),
+        ]);
+        if (ents[0]) setUserPlan(ents[0].plan || "free");
+        setBookmarkIds(new Set(bookmarks.map((b) => b.content_id)));
+        setContent(items);
+        if (profileResult?.[0]) setUserProfile(profileResult[0]);
+        const oneWeekAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString();
+        setNewThisWeek(items.filter(i => (i.created_date || i.created_at || "") >= oneWeekAgo).slice(0, 6));
+        setRecommendations(recs);
+      } catch (err) {
+        console.error("Explore page init failed:", err);
+      } finally {
+        setLoading(false);
+      }
     })();
   }, []);
 

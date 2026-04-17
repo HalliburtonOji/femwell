@@ -591,15 +591,16 @@ export default function SkinHair() {
 
   useEffect(() => {
     (async () => {
+      try {
       const u = await base44.auth.me();
       setUser(u);
       const [profiles, allCheckins, skinR, hairR, tipCards, trends] = await Promise.all([
-        base44.entities.UserProfile.filter({ user_id: u.id }),
-        base44.entities.DailyCheckins.filter({ user_id: u.id }, "-date", 200),
-        base44.entities.SkinRoutine.filter({ user_id: u.id }),
-        base44.entities.HairRoutine.filter({ user_id: u.id }),
-        base44.entities.InsightCards.filter({ type: "SKIN_TIP" }),
-        base44.entities.LifestyleItems.filter({ content_type: "TREND" }, "-pub_date", 30),
+        base44.entities.UserProfile.filter({ user_id: u.id }).catch(() => []),
+        base44.entities.DailyCheckins.filter({ user_id: u.id }, "-date", 200).catch(() => []),
+        base44.entities.SkinRoutine.filter({ user_id: u.id }).catch(() => []),
+        base44.entities.HairRoutine.filter({ user_id: u.id }).catch(() => []),
+        base44.entities.InsightCards.filter({ type: "SKIN_TIP" }).catch(() => []),
+        base44.entities.LifestyleItems.filter({ content_type: "TREND" }, "-pub_date", 30).catch(() => []),
       ]);
       const sortedTips = tipCards.sort((a, b) => (b.created_date || '').localeCompare(a.created_date || ''));
       setDailyTip(sortedTips[0] || null);
@@ -614,7 +615,11 @@ export default function SkinHair() {
       // premium always enabled
       setSkinRoutines(skinR.sort((a, b) => (b.started_date || "").localeCompare(a.started_date || "")));
       setHairRoutines(hairR.sort((a, b) => (b.wash_date || "").localeCompare(a.wash_date || "")));
-      setLoading(false);
+      } catch (err) {
+        console.error("SkinHair page init failed:", err);
+      } finally {
+        setLoading(false);
+      }
     })();
   }, []);
 

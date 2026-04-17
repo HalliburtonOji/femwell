@@ -28,11 +28,16 @@ export default function Saved() {
 
   useEffect(() => {
     (async () => {
-      const currentUser = await base44.auth.me();
-      setUser(currentUser);
-      const saved = await base44.entities.SavedItems.filter({ user_id: currentUser.id }, "-created_at", 150);
-      setItems(saved);
-      setLoading(false);
+      try {
+        const currentUser = await base44.auth.me();
+        setUser(currentUser);
+        const saved = await base44.entities.SavedItems.filter({ user_id: currentUser.id }, "-created_at", 150).catch(() => []);
+        setItems(saved);
+      } catch (err) {
+        console.error("Saved page init failed:", err);
+      } finally {
+        setLoading(false);
+      }
     })();
   }, []);
 

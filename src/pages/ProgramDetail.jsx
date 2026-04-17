@@ -43,37 +43,39 @@ export default function ProgramDetail() {
   useEffect(() => {
     if (!programKey) return;
     (async () => {
-      const currentUser = await base44.auth.me();
-      setUser(currentUser);
-      const [programs, entitlements] = await Promise.all([
-        base44.entities.Programs.filter({ program_key: programKey }),
-        base44.entities.Entitlements.filter({ user_id: currentUser.id }),
-      ]);
+      try {
+        const currentUser = await base44.auth.me();
+        setUser(currentUser);
+        const [programs, entitlements] = await Promise.all([
+          base44.entities.Programs.filter({ program_key: programKey }).catch(() => []),
+          base44.entities.Entitlements.filter({ user_id: currentUser.id }).catch(() => []),
+        ]);
 
-      const selectedProgram = programs[0];
-      if (!selectedProgram) {
+        const selectedProgram = programs[0];
+        if (!selectedProgram) return;
+
+        setProgram(selectedProgram);
+        if (entitlements[0]) setUserPlan(entitlements[0].plan || "free");
+
+        const [programDays, programTasks, userProgramEntries, completionEntries] = await Promise.all([
+          base44.entities.ProgramDays.filter({ program_key: programKey }).catch(() => []),
+          base44.entities.ProgramTasks.filter({ program_key: programKey }).catch(() => []),
+          base44.entities.UserPrograms.filter({ user_id: currentUser.id, program_id: selectedProgram.id }).catch(() => []),
+          base44.entities.UserTaskCompletions.filter({ user_id: currentUser.id, program_id: selectedProgram.id }).catch(() => []),
+        ]);
+
+        const sortedDays = programDays.sort((a, b) => a.day_number - b.day_number);
+        setDays(sortedDays);
+        setTasks(programTasks.sort((a, b) => (a.order_index || a.task_order || 0) - (b.order_index || b.task_order || 0)));
+        setCompletions(completionEntries);
+        setUserProgram(userProgramEntries[0] || null);
+        setReminderTime(userProgramEntries[0]?.reminder_time || "");
+        setExpandedDay(sortedDays[0]?.day_number || 1);
+      } catch (err) {
+        console.error("ProgramDetail page init failed:", err);
+      } finally {
         setLoading(false);
-        return;
       }
-
-      setProgram(selectedProgram);
-      if (entitlements[0]) setUserPlan(entitlements[0].plan || "free");
-
-      const [programDays, programTasks, userProgramEntries, completionEntries] = await Promise.all([
-        base44.entities.ProgramDays.filter({ program_key: programKey }),
-        base44.entities.ProgramTasks.filter({ program_key: programKey }),
-        base44.entities.UserPrograms.filter({ user_id: currentUser.id, program_id: selectedProgram.id }),
-        base44.entities.UserTaskCompletions.filter({ user_id: currentUser.id, program_id: selectedProgram.id }),
-      ]);
-
-      const sortedDays = programDays.sort((a, b) => a.day_number - b.day_number);
-      setDays(sortedDays);
-      setTasks(programTasks.sort((a, b) => (a.order_index || a.task_order || 0) - (b.order_index || b.task_order || 0)));
-      setCompletions(completionEntries);
-      setUserProgram(userProgramEntries[0] || null);
-      setReminderTime(userProgramEntries[0]?.reminder_time || "");
-      setExpandedDay(sortedDays[0]?.day_number || 1);
-      setLoading(false);
     })();
   }, [programKey]);
 

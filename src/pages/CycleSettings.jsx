@@ -19,17 +19,22 @@ export default function CycleSettings() {
 
   useEffect(() => {
     (async () => {
-      const u = await base44.auth.me();
-      setUser(u);
-      const profiles = await base44.entities.UserProfile.filter({ user_id: u.id });
-      if (profiles[0]) {
-        const p = profiles[0];
-        setProfile(p);
-        setCycleLength(p.cycle_avg_length || 28);
-        setPeriodLength(p.period_length || 5);
-        setLastPeriod(p.last_period_start_date || "");
+      try {
+        const u = await base44.auth.me();
+        setUser(u);
+        const profiles = await base44.entities.UserProfile.filter({ user_id: u.id }).catch(() => []);
+        if (profiles[0]) {
+          const p = profiles[0];
+          setProfile(p);
+          setCycleLength(p.cycle_avg_length || 28);
+          setPeriodLength(p.period_length || 5);
+          setLastPeriod(p.last_period_start_date || "");
+        }
+      } catch (err) {
+        console.error("CycleSettings init failed:", err);
+      } finally {
+        setLoading(false);
       }
-      setLoading(false);
     })();
   }, []);
 

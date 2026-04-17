@@ -86,14 +86,15 @@ export default function ProgramsHub() {
 
   useEffect(() => {
     (async () => {
+      try {
       const user = await base44.auth.me();
       const [progs, ups, ents, programDays, programTasks, profiles] = await Promise.all([
-        base44.entities.Programs.list("-created_date", 50),
-        base44.entities.UserPrograms.filter({ user_id: user.id }),
-        base44.entities.Entitlements.filter({ user_id: user.id }),
-        base44.entities.ProgramDays.list("day_number", 250),
-        base44.entities.ProgramTasks.list("order_index", 500),
-        base44.entities.UserProfile.filter({ user_id: user.id }),
+        base44.entities.Programs.list("-created_date", 50).catch(() => []),
+        base44.entities.UserPrograms.filter({ user_id: user.id }).catch(() => []),
+        base44.entities.Entitlements.filter({ user_id: user.id }).catch(() => []),
+        base44.entities.ProgramDays.list("day_number", 250).catch(() => []),
+        base44.entities.ProgramTasks.list("order_index", 500).catch(() => []),
+        base44.entities.UserProfile.filter({ user_id: user.id }).catch(() => []),
       ]);
       setPrograms(progs);
 
@@ -130,9 +131,13 @@ export default function ProgramsHub() {
       setDays(programDays);
       setTasks(programTasks);
       if (ents[0]) setUserPlan(ents[0].plan || "free");
-      setLoading(false);
       // Generate fresh program recommendations in background
       base44.functions.invoke("generateProgramRecommendations", {}).catch(() => {});
+      } catch (err) {
+        console.error("ProgramsHub page init failed:", err);
+      } finally {
+        setLoading(false);
+      }
     })();
   }, []);
 

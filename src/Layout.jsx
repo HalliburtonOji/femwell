@@ -5,6 +5,7 @@ import AssistantOverlay from "./components/assistant/AssistantOverlay";
 import MobileBottomNav from "./components/layout/MobileBottomNav";
 import CheckinModal from "./components/today/CheckinModal";
 import AssistantOrb from "./components/assistant/AssistantOrb";
+import ErrorBoundary from "./components/common/ErrorBoundary";
 
 import { MilestoneEventListener } from "./components/programs/MilestoneCelebrationModal";
 
@@ -50,7 +51,7 @@ export default function Layout({ children, currentPageName }) {
       <style>{`@media print { .no-print { display: none !important; } .print-only { display: block !important; } }`}</style>
       {showNav && <FloatingSidebar currentPageName={currentPageName} mode={navMode} openQuickLog={openQuickLog} />}
       <div className={showNav ? "pb-24" : ""}>
-        {children}
+        <ErrorBoundary>{children}</ErrorBoundary>
       </div>
       {showNav && <MobileBottomNav currentPageName={currentPageName} />}
       {showNav && <AssistantOrb currentPageName={currentPageName} />}

@@ -76,15 +76,16 @@ export default function Trends() {
 
   useEffect(() => {
     (async () => {
+      try {
       const u = await base44.auth.me();
       setUser(u);
       const cutoff = subMonths(new Date(), 6).toISOString().split("T")[0];
 
       const [events, ckins, slogs, hlogs, corrs] = await Promise.all([
-        base44.entities.CycleEvents.filter({ user_id: u.id }),
-        base44.entities.DailyCheckins.filter({ user_id: u.id }),
-        base44.entities.SymptomLogs.filter({ user_id: u.id }),
-        base44.entities.HabitLogs.filter({ user_id: u.id }, "-date", 250),
+        base44.entities.CycleEvents.filter({ user_id: u.id }).catch(() => []),
+        base44.entities.DailyCheckins.filter({ user_id: u.id }).catch(() => []),
+        base44.entities.SymptomLogs.filter({ user_id: u.id }).catch(() => []),
+        base44.entities.HabitLogs.filter({ user_id: u.id }, "-date", 250).catch(() => []),
         base44.entities.Correlations.filter({ user_id: u.id }, "-created_date", 5).catch(() => []),
       ]);
       setCorrelations(corrs);
@@ -101,8 +102,11 @@ export default function Trends() {
       setHabitLogs(hFiltered);
       const hNames = [...new Set(hlogs.map((h) => h.habit_type || h.habit_name).filter(Boolean))];
       setHabitNames(hNames);
-
-      setLoading(false);
+      } catch (err) {
+        console.error("Trends page init failed:", err);
+      } finally {
+        setLoading(false);
+      }
     })();
   }, []);
 

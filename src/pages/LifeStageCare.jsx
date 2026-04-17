@@ -16,21 +16,26 @@ export default function LifeStageCare() {
 
   useEffect(() => {
     (async () => {
-      const currentUser = await base44.auth.me();
-      setUser(currentUser);
+      try {
+        const currentUser = await base44.auth.me();
+        setUser(currentUser);
 
-      const [pregProfiles, pregDaily, menoProfiles, menoDaily] = await Promise.all([
-        base44.entities.PregnancyProfile.filter({ user_id: currentUser.id }),
-        base44.entities.PregnancyDailyLog.filter({ user_id: currentUser.id }, "-date", 30),
-        base44.entities.MenopauseProfile.filter({ user_id: currentUser.id }),
-        base44.entities.MenopauseDailyLog.filter({ user_id: currentUser.id }, "-date", 30),
-      ]);
+        const [pregProfiles, pregDaily, menoProfiles, menoDaily] = await Promise.all([
+          base44.entities.PregnancyProfile.filter({ user_id: currentUser.id }).catch(() => []),
+          base44.entities.PregnancyDailyLog.filter({ user_id: currentUser.id }, "-date", 30).catch(() => []),
+          base44.entities.MenopauseProfile.filter({ user_id: currentUser.id }).catch(() => []),
+          base44.entities.MenopauseDailyLog.filter({ user_id: currentUser.id }, "-date", 30).catch(() => []),
+        ]);
 
-      setPregnancyProfile(pregProfiles[0] || null);
-      setPregnancyLogs(pregDaily);
-      setMenopauseProfile(menoProfiles[0] || null);
-      setMenopauseLogs(menoDaily);
-      setLoading(false);
+        setPregnancyProfile(pregProfiles[0] || null);
+        setPregnancyLogs(pregDaily);
+        setMenopauseProfile(menoProfiles[0] || null);
+        setMenopauseLogs(menoDaily);
+      } catch (err) {
+        console.error("LifeStageCare init failed:", err);
+      } finally {
+        setLoading(false);
+      }
     })();
   }, []);
 

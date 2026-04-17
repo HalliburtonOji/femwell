@@ -31,25 +31,30 @@ export default function DoctorExport() {
 
   useEffect(() => {
     (async () => {
-      const u = await base44.auth.me();
-      setUser(u);
-      const [profiles, allCheckins, allSymptoms, meds, medRems, journalEntries, corrs] = await Promise.all([
-        base44.entities.UserProfile.filter({ user_id: u.id }),
-        base44.entities.DailyCheckins.filter({ user_id: u.id }),
-        base44.entities.SymptomLogs.filter({ user_id: u.id }).catch(() => []),
-        base44.entities.MedicationLogs.filter({ user_id: u.id }).catch(() => []),
-        base44.entities.MedicationReminders.filter({ user_id: u.id }).catch(() => []),
-        base44.entities.JournalEntries.filter({ user_id: u.id }),
-        base44.entities.Correlations.filter({ user_id: u.id }).catch(() => []),
-      ]);
-      setProfile(profiles[0] || null);
-      setCheckins(allCheckins.filter(c => c.date >= cutoffStr).sort((a, b) => a.date.localeCompare(b.date)));
-      setSymptoms(allSymptoms.filter(s => (s.date || '') >= cutoffStr));
-      setMedications(meds.filter(m => (m.date || '') >= cutoffStr));
-      setMedReminders(medRems);
-      setJournals(journalEntries.filter(j => (j.session_date || j.created_at || '') >= cutoffStr).slice(-5));
-      setCorrelations(corrs);
-      setLoading(false);
+      try {
+        const u = await base44.auth.me();
+        setUser(u);
+        const [profiles, allCheckins, allSymptoms, meds, medRems, journalEntries, corrs] = await Promise.all([
+          base44.entities.UserProfile.filter({ user_id: u.id }).catch(() => []),
+          base44.entities.DailyCheckins.filter({ user_id: u.id }).catch(() => []),
+          base44.entities.SymptomLogs.filter({ user_id: u.id }).catch(() => []),
+          base44.entities.MedicationLogs.filter({ user_id: u.id }).catch(() => []),
+          base44.entities.MedicationReminders.filter({ user_id: u.id }).catch(() => []),
+          base44.entities.JournalEntries.filter({ user_id: u.id }).catch(() => []),
+          base44.entities.Correlations.filter({ user_id: u.id }).catch(() => []),
+        ]);
+        setProfile(profiles[0] || null);
+        setCheckins(allCheckins.filter(c => c.date >= cutoffStr).sort((a, b) => a.date.localeCompare(b.date)));
+        setSymptoms(allSymptoms.filter(s => (s.date || '') >= cutoffStr));
+        setMedications(meds.filter(m => (m.date || '') >= cutoffStr));
+        setMedReminders(medRems);
+        setJournals(journalEntries.filter(j => (j.session_date || j.created_at || '') >= cutoffStr).slice(-5));
+        setCorrelations(corrs);
+      } catch (err) {
+        console.error("DoctorExport page init failed:", err);
+      } finally {
+        setLoading(false);
+      }
     })();
   }, []);
 

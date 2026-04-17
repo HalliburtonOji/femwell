@@ -53,19 +53,24 @@ export default function Nutrition() {
     let unsubscribeHydration;
     let unsubscribeMeals;
     (async () => {
-      const u = await base44.auth.me();
-      setUser(u);
-      const [profiles, nutProfiles, checkins] = await Promise.all([
-        base44.entities.UserProfile.filter({ user_id: u.id }),
-        base44.entities.NutritionProfile.filter({ user_id: u.id }),
-        base44.entities.DailyCheckins.filter({ user_id: u.id, date: format(new Date(), "yyyy-MM-dd") }),
-      ]);
-      if (profiles[0]) setProfile(profiles[0]);
-      if (nutProfiles[0]) setNutritionProfile(nutProfiles[0]);
-      if (checkins[0]) setCheckin(checkins[0]);
-      unsubscribeHydration = base44.entities.HydrationLog.subscribe(() => setSelectedDate(d => new Date(d)));
-      unsubscribeMeals = base44.entities.MealLog.subscribe(() => setSelectedDate(d => new Date(d)));
-      setLoading(false);
+      try {
+        const u = await base44.auth.me();
+        setUser(u);
+        const [profiles, nutProfiles, checkins] = await Promise.all([
+          base44.entities.UserProfile.filter({ user_id: u.id }).catch(() => []),
+          base44.entities.NutritionProfile.filter({ user_id: u.id }).catch(() => []),
+          base44.entities.DailyCheckins.filter({ user_id: u.id, date: format(new Date(), "yyyy-MM-dd") }).catch(() => []),
+        ]);
+        if (profiles[0]) setProfile(profiles[0]);
+        if (nutProfiles[0]) setNutritionProfile(nutProfiles[0]);
+        if (checkins[0]) setCheckin(checkins[0]);
+        try { unsubscribeHydration = base44.entities.HydrationLog.subscribe(() => setSelectedDate(d => new Date(d))); } catch {}
+        try { unsubscribeMeals = base44.entities.MealLog.subscribe(() => setSelectedDate(d => new Date(d))); } catch {}
+      } catch (err) {
+        console.error("Nutrition page init failed:", err);
+      } finally {
+        setLoading(false);
+      }
     })();
     return () => {
       unsubscribeHydration?.();

@@ -87,35 +87,40 @@ export default function ContentPlayer() {
 
   useEffect(() => {
     (async () => {
-      const u = await base44.auth.me();
-      setUser(u);
-      const [ents, bookmarks, saved, profiles] = await Promise.all([
-        base44.entities.Entitlements.filter({ user_id: u.id }).catch(() => []),
-        contentKey ? base44.entities.ContentBookmarks.filter({ user_id: u.id }).catch(() => []) : Promise.resolve([]),
-        base44.entities.SavedItems.filter({ user_id: u.id, item_type: "CONTENT" }, "-created_at", 50).catch(() => []),
-        base44.entities.UserProfile.filter({ user_id: u.id }).catch(() => []),
-      ]);
-      setUserProfile(profiles[0] || null);
-      if (ents[0]) setUserPlan(ents[0].plan || "free");
+      try {
+        const u = await base44.auth.me();
+        setUser(u);
+        const [ents, bookmarks, saved, profiles] = await Promise.all([
+          base44.entities.Entitlements.filter({ user_id: u.id }).catch(() => []),
+          contentKey ? base44.entities.ContentBookmarks.filter({ user_id: u.id }).catch(() => []) : Promise.resolve([]),
+          base44.entities.SavedItems.filter({ user_id: u.id, item_type: "CONTENT" }, "-created_at", 50).catch(() => []),
+          base44.entities.UserProfile.filter({ user_id: u.id }).catch(() => []),
+        ]);
+        setUserProfile(profiles[0] || null);
+        if (ents[0]) setUserPlan(ents[0].plan || "free");
 
-      let ci = null;
-      if (contentKey) {
-        const items = await base44.entities.ContentItems.filter({ content_key: contentKey });
-        ci = items[0] || null;
-      } else if (contentId) {
-        const items = await base44.entities.ContentItems.filter({ id: contentId });
-        ci = items[0] || null;
-      }
+        let ci = null;
+        if (contentKey) {
+          const items = await base44.entities.ContentItems.filter({ content_key: contentKey }).catch(() => []);
+          ci = items[0] || null;
+        } else if (contentId) {
+          const items = await base44.entities.ContentItems.filter({ id: contentId }).catch(() => []);
+          ci = items[0] || null;
+        }
 
-      setItem(ci);
-      if (ci) setItemId(ci.id);
-      if (ci) {
-        const bm = bookmarks.find((b) => b.content_id === ci.id);
-        const savedItem = saved.find((entry) => entry.item_id === ci.id);
-        if (bm) { setBookmarked(true); setBookmarkId(bm.id); }
-        if (savedItem) setBookmarked(true);
+        setItem(ci);
+        if (ci) setItemId(ci.id);
+        if (ci) {
+          const bm = bookmarks.find((b) => b.content_id === ci.id);
+          const savedItem = saved.find((entry) => entry.item_id === ci.id);
+          if (bm) { setBookmarked(true); setBookmarkId(bm.id); }
+          if (savedItem) setBookmarked(true);
+        }
+      } catch (err) {
+        console.error("ContentPlayer init failed:", err);
+      } finally {
+        setLoading(false);
       }
-      setLoading(false);
     })();
   }, [contentKey, contentId]);
 

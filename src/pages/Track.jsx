@@ -119,12 +119,17 @@ export default function Track() {
 
   useEffect(() => {
     (async () => {
-      const u = await base44.auth.me();
-      setUser(u);
-      await loadData(u.id, selectedDate);
-      const all = await base44.entities.HabitLogs.filter({ user_id: u.id });
-      setAllHabitLogs(all);
-      setLoading(false);
+      try {
+        const u = await base44.auth.me();
+        setUser(u);
+        await loadData(u.id, selectedDate);
+        const all = await base44.entities.HabitLogs.filter({ user_id: u.id }).catch(() => []);
+        setAllHabitLogs(all);
+      } catch (err) {
+        console.error("Track page init failed:", err);
+      } finally {
+        setLoading(false);
+      }
     })();
   }, []);
 

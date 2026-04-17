@@ -66,20 +66,25 @@ export default function Profile() {
 
   useEffect(() => {
     (async () => {
-      const u = await base44.auth.me();
-      setUser(u);
-      const [profiles, prefs, allCheckins] = await Promise.all([
-        base44.entities.UserProfile.filter({ user_id: u.id }),
-        base44.entities.UserPreferences.filter({ user_id: u.id }),
-        base44.entities.DailyCheckins.filter({ user_id: u.id }),
-      ]);
-      if (profiles[0]) setProfile(profiles[0]);
-      if (prefs[0]) setPreferences(prefs[0]);
-      const cutoff = new Date();
-      cutoff.setDate(cutoff.getDate() - 90);
-      const cutoffStr = cutoff.toISOString().split("T")[0];
-      setCheckins(allCheckins.filter(c => c.date >= cutoffStr));
-      setLoading(false);
+      try {
+        const u = await base44.auth.me();
+        setUser(u);
+        const [profiles, prefs, allCheckins] = await Promise.all([
+          base44.entities.UserProfile.filter({ user_id: u.id }).catch(() => []),
+          base44.entities.UserPreferences.filter({ user_id: u.id }).catch(() => []),
+          base44.entities.DailyCheckins.filter({ user_id: u.id }).catch(() => []),
+        ]);
+        if (profiles[0]) setProfile(profiles[0]);
+        if (prefs[0]) setPreferences(prefs[0]);
+        const cutoff = new Date();
+        cutoff.setDate(cutoff.getDate() - 90);
+        const cutoffStr = cutoff.toISOString().split("T")[0];
+        setCheckins(allCheckins.filter(c => c.date >= cutoffStr));
+      } catch (err) {
+        console.error("Profile page init failed:", err);
+      } finally {
+        setLoading(false);
+      }
     })();
   }, []);
 

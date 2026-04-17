@@ -14,17 +14,21 @@ export default function LifestyleDetail() {
 
   useEffect(() => {
     (async () => {
-      const user = await base44.auth.me();
-      const [items, profiles] = await Promise.all([
-        base44.entities.LifestyleItems.filter({ id }),
-        base44.entities.UserProfile.filter({ user_id: user.id })
-      ]);
-      const nextProfile = profiles[0] || null;
-      setItem(items[0] || null);
-      setProfile(nextProfile);
-      setProfileId(nextProfile?.id || null);
-      setLiked((nextProfile?.liked_item_ids || []).includes(id));
-      setSaved((nextProfile?.saved_item_ids || []).includes(id));
+      try {
+        const user = await base44.auth.me();
+        const [items, profiles] = await Promise.all([
+          base44.entities.LifestyleItems.filter({ id }).catch(() => []),
+          base44.entities.UserProfile.filter({ user_id: user.id }).catch(() => [])
+        ]);
+        const nextProfile = profiles[0] || null;
+        setItem(items[0] || null);
+        setProfile(nextProfile);
+        setProfileId(nextProfile?.id || null);
+        setLiked((nextProfile?.liked_item_ids || []).includes(id));
+        setSaved((nextProfile?.saved_item_ids || []).includes(id));
+      } catch (err) {
+        console.error("LifestyleDetail init failed:", err);
+      }
     })();
   }, [id]);
 
