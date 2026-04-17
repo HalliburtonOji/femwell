@@ -359,10 +359,10 @@ export default function Today() {
     const next = glasses + 1;
     setGlasses(next);
     if (hydrationLog) {
-      await base44.entities.HydrationLog.update(hydrationLog.id, { glasses_count: next });
-      setHydrationLog(prev => ({ ...prev, glasses_count: next }));
+      await base44.entities.HydrationLog.update(hydrationLog.id, { glasses_count: next, amount_ml: next * 250 });
+      setHydrationLog(prev => ({ ...prev, glasses_count: next, amount_ml: next * 250 }));
     } else {
-      const created = await base44.entities.HydrationLog.create({ user_id: user.id, day_key: todayStr, glasses_count: next });
+      const created = await base44.entities.HydrationLog.create({ user_id: user.id, day_key: todayStr, glasses_count: next, amount_ml: next * 250 });
       setHydrationLog(created);
     }
   };
