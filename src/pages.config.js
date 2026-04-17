@@ -76,6 +76,7 @@ import LifestyleDetail from './pages/LifestyleDetail';
 import Track from './pages/Track';
 import Community from './pages/Community';
 import Planner from './pages/Planner';
+import Insights from './pages/Insights.jsx';
 import __Layout from './Layout.jsx';
 
 
@@ -108,6 +109,7 @@ export const PAGES = {
     "Track": Track,
     "Community": Community,
     "Planner": Planner,
+    "Insights": Insights,
 }
 
 export const pagesConfig = {

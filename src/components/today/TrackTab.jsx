@@ -368,6 +368,24 @@ function SymptomsSubTab({ user, profile, selectedDate }) {
       <SymptomPatternCard checkins={recentCheckins} />
       <SymptomHeatmap checkins={recentCheckins} />
 
+      <a
+        href="/Insights"
+        aria-label="View full insights dashboard"
+        style={{
+          display: "flex", alignItems: "center", justifyContent: "space-between",
+          padding: "12px 16px", borderRadius: 16,
+          backgroundColor: "var(--blush-surface, #FCE7F3)",
+          border: "1px solid rgba(225,29,116,0.18)",
+          textDecoration: "none", minHeight: 44,
+        }}
+      >
+        <div>
+          <p style={{ fontSize: 10, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.1em", color: "var(--rose-deep, #E11D74)", fontFamily: "'Inter', sans-serif" }}>Explore</p>
+          <p style={{ fontSize: 13, fontWeight: 600, color: "var(--plum)", fontFamily: "'Inter', sans-serif", marginTop: 2 }}>View full insights dashboard</p>
+        </div>
+        <span aria-hidden="true" style={{ fontSize: 18, color: "var(--rose-deep, #E11D74)" }}>→</span>
+      </a>
+
       {hasPMDD && <PMDDSeverityLogger user={user} profile={profile} selectedDate={selectedDate} />}
       {symptoms.length > 0 && (
         <div style={{ ...card, padding: 20 }}>

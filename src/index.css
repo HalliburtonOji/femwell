@@ -22,6 +22,16 @@
     --sage: #7A9E8E;
     --sage-light: #B5CEC5;
     --sage-subtle: #EBF2EF;
+
+    /* Extended tokens (MP#5) — additive, non-breaking */
+    --rose-deep: #E11D74;
+    --blush-surface: #FCE7F3;
+    --lavender-surface: #F5F3FF;
+    --slate-900: #0F172A;
+    --slate-500: #64748B;
+    --amber-streak: #F59E0B;
+    --font-serif-heading: 'Playfair Display', 'DM Serif Display', Georgia, serif;
+
     --border: #EDE8E4;
     --border-subtle: #F5F1EE;
     --shadow-sm: 0 1px 3px rgba(42,32,53,0.06), 0 1px 2px rgba(42,32,53,0.04);
