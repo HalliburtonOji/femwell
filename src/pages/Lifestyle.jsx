@@ -410,9 +410,114 @@ function StoriesTab() {
 }
 
 // ── BOOKS tab ─────────────────────────────────────────────────────────────────
+
+const BOOK_CAT_META = {
+  fiction:       { label: "Fiction",          color: "#7C3AED", bg: "#EDE9FE", icon: "📖" },
+  selfhelp:      { label: "Self-help",        color: "#0369A1", bg: "#E0F2FE", icon: "🧠" },
+  relationships: { label: "Relationships",    color: "#BE185D", bg: "#FCE7F3", icon: "💞" },
+  career:        { label: "Career & Money",   color: "#B45309", bg: "#FEF3C7", icon: "✨" },
+  wellness:      { label: "Wellness",         color: "#065F46", bg: "#D1FAE5", icon: "🌿" },
+};
+
+const ALL_BOOK_CATS = ["all", "fiction", "selfhelp", "relationships", "career", "wellness"];
+
+function BookCategoryChip({ cat, active, onClick }) {
+  const meta = BOOK_CAT_META[cat];
+  return (
+    <button onClick={onClick} style={{
+      flexShrink: 0, padding: "6px 14px", borderRadius: 9999, fontSize: 11, fontWeight: 600,
+      cursor: "pointer", border: "none", fontFamily: "'Inter', sans-serif", whiteSpace: "nowrap",
+      backgroundColor: active ? (meta?.color || PRIMARY) : "var(--ivory-dark)",
+      color: active ? "white" : "var(--mauve)",
+      transition: "all 0.15s",
+    }}>
+      {meta ? `${meta.icon} ${meta.label}` : "All"}
+    </button>
+  );
+}
+
+function SingleBookCard({ book, weekStart, defaultOpen = false }) {
+  const [open, setOpen] = useState(defaultOpen);
+  const cat = book.category || "wellness";
+  const meta = BOOK_CAT_META[cat] || BOOK_CAT_META.wellness;
+  const lessons = Array.isArray(book.key_lessons) ? book.key_lessons : [];
+
+  return (
+    <div style={{
+      backgroundColor: "var(--surface)", border: `1px solid ${meta.color}22`,
+      borderRadius: 20, overflow: "hidden", marginBottom: 14,
+      boxShadow: "var(--shadow-sm)", borderLeft: `4px solid ${meta.color}`,
+    }}>
+      <div style={{ padding: "16px 18px" }}>
+        {/* Category chip */}
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 10 }}>
+          <span style={{ fontSize: 10, fontWeight: 700, color: meta.color, backgroundColor: meta.bg, borderRadius: 9999, padding: "3px 10px", fontFamily: "'Inter', sans-serif" }}>
+            {meta.icon} {meta.label}
+          </span>
+          {weekStart && (
+            <span style={{ fontSize: 10, color: "var(--mauve)", fontFamily: "'Inter', sans-serif" }}>Week of {fmtDate(weekStart)}</span>
+          )}
+        </div>
+
+        <div style={{ display: "flex", gap: 14, alignItems: "flex-start" }}>
+          {/* Cover */}
+          <div style={{ width: 64, height: 90, borderRadius: 10, flexShrink: 0, overflow: "hidden", border: "1px solid var(--border)", background: meta.bg }}>
+            {book.cover_url
+              ? <img src={book.cover_url} alt="" style={{ width: "100%", height: "100%", objectFit: "cover" }} onError={e => { e.target.style.display = "none"; }} />
+              : <div style={{ width: "100%", height: "100%", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 22 }}>{meta.icon}</div>
+            }
+          </div>
+
+          {/* Info */}
+          <div style={{ flex: 1, minWidth: 0 }}>
+            <h3 style={{ fontFamily: "'Playfair Display', serif", fontSize: 16, fontWeight: 700, color: "var(--plum)", margin: "0 0 2px", lineHeight: 1.3 }}>{book.title}</h3>
+            <p style={{ fontSize: 12, color: "var(--mauve)", fontFamily: "'Inter', sans-serif", fontStyle: "italic", margin: "0 0 6px" }}>{book.author}</p>
+            {book.tagline && <p style={{ fontSize: 13, color: "var(--plum)", fontFamily: "'Inter', sans-serif", lineHeight: 1.5, margin: 0 }}>{book.tagline}</p>}
+          </div>
+        </div>
+
+        <button onClick={() => setOpen(v => !v)} style={{
+          display: "flex", alignItems: "center", gap: 4, marginTop: 10, fontSize: 12,
+          fontWeight: 600, color: meta.color, fontFamily: "'Inter', sans-serif",
+          background: "none", border: "none", cursor: "pointer", padding: 0,
+        }}>
+          {open ? "Less ↑" : "Read more ↓"}
+        </button>
+      </div>
+
+      {open && (
+        <div style={{ padding: "0 18px 18px", borderTop: "1px solid var(--border-subtle)" }}>
+          {book.summary && <p style={{ fontSize: 13, color: "var(--plum)", fontFamily: "'Inter', sans-serif", lineHeight: 1.7, marginBottom: 12, marginTop: 14 }}>{book.summary}</p>}
+          {lessons.length > 0 && (
+            <div style={{ backgroundColor: meta.bg, borderRadius: 14, padding: "12px 14px", marginBottom: 12 }}>
+              <p style={{ fontSize: 10, fontWeight: 700, color: meta.color, textTransform: "uppercase", letterSpacing: "0.1em", fontFamily: "'Inter', sans-serif", marginBottom: 8 }}>Key insights</p>
+              <ul style={{ margin: 0, paddingLeft: 16 }}>
+                {lessons.map((l, i) => <li key={i} style={{ fontSize: 13, color: "var(--plum)", fontFamily: "'Inter', sans-serif", lineHeight: 1.6, marginBottom: 4 }}>{l}</li>)}
+              </ul>
+            </div>
+          )}
+          {book.quote && (
+            <p style={{ fontSize: 13, color: "var(--mauve)", fontFamily: "'Inter', sans-serif", fontStyle: "italic", lineHeight: 1.6, marginBottom: 12 }}>"{book.quote}"</p>
+          )}
+          {book.femwell_connection && (
+            <p style={{ fontSize: 12, color: meta.color, fontFamily: "'Inter', sans-serif", marginBottom: 12 }}>📌 {book.femwell_connection}</p>
+          )}
+          {book.goodreads_url && (
+            <a href={book.goodreads_url} target="_blank" rel="noopener noreferrer"
+              style={{ display: "inline-flex", alignItems: "center", gap: 6, backgroundColor: meta.color, color: "white", borderRadius: 9999, padding: "8px 16px", fontSize: 12, fontWeight: 600, fontFamily: "'Inter', sans-serif", textDecoration: "none" }}>
+              <BookOpen className="w-3.5 h-3.5" /> View on Goodreads
+            </a>
+          )}
+        </div>
+      )}
+    </div>
+  );
+}
+
 function BooksTab() {
   const [picks, setPicks] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [catFilter, setCatFilter] = useState("all");
 
   useEffect(() => {
     (async () => {
@@ -424,59 +529,41 @@ function BooksTab() {
   if (loading) return <Spinner />;
   if (!picks.length) return <EmptyState text="Weekly book picks coming soon." />;
 
-  const [featured, ...rest] = picks;
+  // Flatten all books from all picks into a single list with weekStart
+  const allBooks = picks.flatMap(pick =>
+    (Array.isArray(pick.books) ? pick.books : []).map(book => ({ ...book, _weekStart: pick.week_start, _pickId: pick.id }))
+  );
 
-  const BookCard = ({ pick, featured: isFeatured }) => {
-    const books = Array.isArray(pick.books) ? pick.books : [];
-    const book = books[0];
-    if (!book) return null;
-    const lessons = Array.isArray(book.key_lessons) ? book.key_lessons : [];
-    return (
-      <div style={{ backgroundColor: "var(--surface)", border: "1px solid var(--border)", borderRadius: 20, overflow: "hidden", marginBottom: 16, boxShadow: "var(--shadow-sm)" }}>
-        {book.cover_url && isFeatured && (
-          <div style={{ height: 220, overflow: "hidden" }}>
-            <img src={book.cover_url} alt="" style={{ width: "100%", height: "100%", objectFit: "cover" }} onError={e => e.target.parentElement.style.display = "none"} />
-          </div>
-        )}
-        <div style={{ padding: isFeatured ? "20px 18px 18px" : "14px 16px 16px" }}>
-          {pick.week_start && (
-            <span style={{ fontSize: 10, fontWeight: 700, color: PRIMARY, textTransform: "uppercase", letterSpacing: "0.1em", fontFamily: "'Inter', sans-serif", display: "block", marginBottom: 6 }}>
-              Week of {fmtDate(pick.week_start)}
-            </span>
-          )}
-          <h3 style={{ fontFamily: "'Playfair Display', serif", fontSize: isFeatured ? 20 : 16, fontWeight: 700, color: "var(--plum)", margin: "0 0 2px", lineHeight: 1.3 }}>{book.title}</h3>
-          <p style={{ fontSize: 13, color: "var(--mauve)", fontFamily: "'Inter', sans-serif", fontStyle: "italic", margin: "0 0 10px" }}>{book.author}</p>
-          {book.tagline && isFeatured && <p style={{ fontSize: 14, color: "var(--plum)", fontFamily: "'Inter', sans-serif", lineHeight: 1.6, marginBottom: 14 }}>{book.tagline}</p>}
-          {lessons.length > 0 && isFeatured && (
-            <div style={{ backgroundColor: PRIMARY_LIGHT, borderRadius: 14, padding: "12px 14px", marginBottom: 14 }}>
-              <p style={{ fontSize: 10, fontWeight: 700, color: PRIMARY, textTransform: "uppercase", letterSpacing: "0.1em", fontFamily: "'Inter', sans-serif", marginBottom: 8 }}>Key lessons</p>
-              <ul style={{ margin: 0, paddingLeft: 16 }}>
-                {lessons.map((l, i) => <li key={i} style={{ fontSize: 13, color: "var(--plum)", fontFamily: "'Inter', sans-serif", lineHeight: 1.6, marginBottom: 4 }}>{l}</li>)}
-              </ul>
-            </div>
-          )}
-          {book.femwell_connection && isFeatured && (
-            <p style={{ fontSize: 13, color: "var(--mauve)", fontFamily: "'Inter', sans-serif", lineHeight: 1.6, fontStyle: "italic", marginBottom: 14 }}>{book.femwell_connection}</p>
-          )}
-          {book.goodreads_url && (
-            <a href={book.goodreads_url} target="_blank" rel="noopener noreferrer"
-              style={{ display: "inline-flex", alignItems: "center", gap: 6, backgroundColor: PRIMARY, color: "white", borderRadius: 9999, padding: "8px 18px", fontSize: 12, fontWeight: 600, fontFamily: "'Inter', sans-serif", textDecoration: "none" }}>
-              <BookOpen className="w-3.5 h-3.5" /> View on Goodreads
-            </a>
-          )}
-        </div>
-      </div>
-    );
-  };
+  const filtered = catFilter === "all" ? allBooks : allBooks.filter(b => (b.category || "wellness") === catFilter);
+
+  // This week's pick gets expanded first book by default
+  const thisWeekStart = picks[0]?.week_start;
 
   return (
     <div>
-      <BookCard pick={featured} featured />
-      {rest.length > 0 && (
-        <>
-          <p style={{ fontSize: "0.6rem", fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.12em", color: "var(--mauve)", fontFamily: "'Inter', sans-serif", marginBottom: 12, marginTop: 4 }}>Previous picks</p>
-          {rest.map(pick => <BookCard key={pick.id} pick={pick} featured={false} />)}
-        </>
+      {/* Category filter chips */}
+      <div className="lf-scroll" style={{ display: "flex", gap: 6, overflowX: "auto", paddingBottom: 10, marginBottom: 16 }}>
+        {ALL_BOOK_CATS.map(cat => (
+          <BookCategoryChip key={cat} cat={cat} active={catFilter === cat} onClick={() => setCatFilter(cat)} />
+        ))}
+      </div>
+
+      {/* This week header */}
+      {catFilter === "all" && picks[0] && (
+        <p style={{ fontSize: "0.6rem", fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.12em", color: "var(--mauve)", fontFamily: "'Inter', sans-serif", marginBottom: 10 }}>
+          This week's picks
+        </p>
+      )}
+
+      {filtered.length === 0 ? <EmptyState text="No books in this category yet." /> : (
+        filtered.map((book, i) => (
+          <SingleBookCard
+            key={`${book._pickId}-${book.title}-${i}`}
+            book={book}
+            weekStart={book._weekStart !== thisWeekStart || catFilter !== "all" ? book._weekStart : null}
+            defaultOpen={i === 0 && catFilter === "all"}
+          />
+        ))
       )}
     </div>
   );
