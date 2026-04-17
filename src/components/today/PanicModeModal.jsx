@@ -184,7 +184,7 @@ export default function PanicModeModal({ userId, onClose }) {
           )}
 
           {step === "calmcards" && (
-            <CalmCards userId={userId} sessionId={panicSessionId} panicLogId={panicLogId} onClose={onClose} />
+            <CalmCards userId={userId} sessionId={panicSessionId} onClose={onClose} />
           )}
 
           {step === "grounding" && (
