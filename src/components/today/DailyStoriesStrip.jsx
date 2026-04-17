@@ -67,8 +67,9 @@ export default function DailyStoriesStrip({ user }) {
 
   const readyItems = items.filter(i => i.item_status === "DONE" && i.title);
 
-  // Show nothing if no data at all
-  if (!loading && readyItems.length === 0 && (!pack || pack.status === "FAILED")) return null;
+  // Show nothing if no data at all or still loading with no pack
+  if (!loading && readyItems.length === 0) return null;
+  if (loading && !pack) return null;
 
   return (
     <div className="mx-[-16px] mt-3 mb-2">

@@ -133,10 +133,28 @@ function ArticleSheet({ item, onClose }) {
   );
 }
 
+// ── Category gradient placeholders ───────────────────────────────────────────
+const CAT_GRADIENTS = {
+  "Health":        "linear-gradient(135deg, #EBF2EF 0%, #B5CEC5 100%)",
+  "Nutrition":     "linear-gradient(135deg, #FFF8E6 0%, #FFE8A0 100%)",
+  "Mental Health": "linear-gradient(135deg, #F0EBF5 0%, #DDD0FF 100%)",
+  "Fitness":       "linear-gradient(135deg, #E8F4FF 0%, #C8DEFF 100%)",
+  "Cycle":         "linear-gradient(135deg, #F5ECF0 0%, #E8C4D0 100%)",
+  "Skin":          "linear-gradient(135deg, #FFF0F5 0%, #FFD6E7 100%)",
+  "Sleep":         "linear-gradient(135deg, #EBE8F5 0%, #C8BEFF 100%)",
+  "default":       "linear-gradient(135deg, #F3E8FF 0%, #E9D5FF 100%)",
+};
+
+function getCatGradient(category) {
+  return CAT_GRADIENTS[category] || CAT_GRADIENTS["default"];
+}
+
 // ── Tappable item card (opens sheet or new tab) ───────────────────────────────
 function ContentCard({ item, compact = false }) {
   const [open, setOpen] = useState(false);
   const hasInternalContent = item.lede || item.provider === "FEMWELL_AI";
+  const sourceName = item.source_name || "FemWell Editorial";
+  const hasExternalLink = !hasInternalContent && !!item.content_url;
 
   const handleClick = () => {
     if (hasInternalContent) {
@@ -150,40 +168,45 @@ function ContentCard({ item, compact = false }) {
     <>
       {compact ? (
         <div onClick={handleClick} style={{ display: "flex", gap: 12, backgroundColor: "var(--surface)", border: "1px solid var(--border)", borderRadius: 16, overflow: "hidden", cursor: "pointer", boxShadow: "var(--shadow-sm)" }}>
-          {item.image_url && (
-            <div style={{ width: 90, flexShrink: 0, overflow: "hidden" }}>
-              <img src={item.image_url} alt="" style={{ width: "100%", height: "100%", objectFit: "cover" }} onError={e => e.target.parentElement.style.display = "none"} />
-            </div>
-          )}
+          <div style={{ width: 90, flexShrink: 0, overflow: "hidden" }}>
+            {item.image_url
+              ? <img src={item.image_url} alt="" style={{ width: "100%", height: "100%", objectFit: "cover" }} onError={e => { e.target.style.display = "none"; e.target.parentElement.style.background = getCatGradient(item.category); }} />
+              : <div style={{ width: "100%", height: "100%", minHeight: 80, background: getCatGradient(item.category) }} />
+            }
+          </div>
           <div style={{ flex: 1, padding: "12px 14px", minWidth: 0 }}>
             {item.category && <Pill label={item.category} />}
             <p style={{ fontSize: 14, fontWeight: 700, color: "var(--plum)", fontFamily: "'Inter', sans-serif", lineHeight: 1.35, margin: "6px 0 4px", display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical", overflow: "hidden" }}>{item.title}</p>
-            <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
-              {item.source_name && <span style={{ fontSize: 11, color: "var(--mauve)", fontFamily: "'Inter', sans-serif" }}>{item.source_name}</span>}
+            <div style={{ display: "flex", alignItems: "center", gap: 5, flexWrap: "wrap", marginTop: 4 }}>
+              <span style={{ fontSize: 11, color: "var(--mauve)", fontFamily: "'Inter', sans-serif" }}>{sourceName}</span>
               {item.published_at && <span style={{ fontSize: 11, color: "var(--mauve)", fontFamily: "'Inter', sans-serif", opacity: 0.6 }}>· {fmtDate(item.published_at)}</span>}
+              {hasExternalLink && <ExternalLink style={{ width: 10, height: 10, color: "var(--mauve)", opacity: 0.5, flexShrink: 0 }} />}
             </div>
-            {!hasInternalContent && item.content_url && (
-              <span style={{ fontSize: 10, color: "var(--mauve)", fontFamily: "'Inter', sans-serif", opacity: 0.6, display: "block", marginTop: 4 }}>
-                Read on {item.source_name || "site"} →
-              </span>
-            )}
           </div>
         </div>
       ) : (
-        <div onClick={handleClick} style={{ display: "block", backgroundColor: "var(--surface)", border: "1px solid var(--border)", borderRadius: 18, overflow: "hidden", cursor: "pointer", boxShadow: "var(--shadow-sm)" }}>
-          {item.image_url && (
-            <div style={{ height: 180, overflow: "hidden" }}>
-              <img src={item.image_url} alt="" loading="lazy" style={{ width: "100%", height: "100%", objectFit: "cover" }} onError={e => e.target.parentElement.style.display = "none"} />
-            </div>
-          )}
-          <div style={{ padding: "14px 16px 16px" }}>
+        <div style={{ display: "block", backgroundColor: "var(--surface)", border: "1px solid var(--border)", borderRadius: 18, overflow: "hidden", cursor: "pointer", boxShadow: "var(--shadow-sm)" }}>
+          <div style={{ height: 180, overflow: "hidden" }} onClick={handleClick}>
+            {item.image_url
+              ? <img src={item.image_url} alt="" loading="lazy" style={{ width: "100%", height: "100%", objectFit: "cover" }} onError={e => { e.target.style.display = "none"; e.target.parentElement.style.background = getCatGradient(item.category); }} />
+              : <div style={{ width: "100%", height: "100%", background: getCatGradient(item.category) }} />
+            }
+          </div>
+          <div style={{ padding: "14px 16px 16px" }} onClick={handleClick}>
             {item.category && <Pill label={item.category} />}
             <p style={{ fontSize: 15, fontWeight: 700, color: "var(--plum)", fontFamily: "'Inter', sans-serif", lineHeight: 1.4, margin: "8px 0 4px", display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical", overflow: "hidden" }}>{item.title}</p>
             {item.summary && <p style={{ fontSize: 13, color: "var(--mauve)", fontFamily: "'Inter', sans-serif", lineHeight: 1.55, display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical", overflow: "hidden", margin: 0 }}>{stripHtml(item.summary)}</p>}
-            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginTop: 8 }}>
-              {item.source_name && <p style={{ fontSize: 11, color: "var(--mauve)", fontFamily: "'Inter', sans-serif", opacity: 0.7, margin: 0 }}>{item.source_name}</p>}
-              {!hasInternalContent && item.content_url && (
-                <span style={{ fontSize: 10, color: "var(--mauve)", fontFamily: "'Inter', sans-serif", opacity: 0.6 }}>Read on {item.source_name || "site"} →</span>
+            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginTop: 10 }}>
+              <div style={{ display: "flex", alignItems: "center", gap: 5 }}>
+                <span style={{ fontSize: 11, color: "var(--mauve)", fontFamily: "'Inter', sans-serif" }}>{sourceName}</span>
+                {hasExternalLink && <ExternalLink style={{ width: 10, height: 10, color: "var(--mauve)", opacity: 0.5 }} />}
+              </div>
+              {hasExternalLink && (
+                <a href={item.content_url} target="_blank" rel="noopener noreferrer"
+                  onClick={e => e.stopPropagation()}
+                  style={{ fontSize: 11, fontWeight: 600, color: PRIMARY, fontFamily: "'Inter', sans-serif", textDecoration: "none", display: "flex", alignItems: "center", gap: 3 }}>
+                  Read more <ExternalLink style={{ width: 10, height: 10 }} />
+                </a>
               )}
             </div>
           </div>
