@@ -29,6 +29,20 @@
     "notes": {
       "type": "string"
     },
+    "cards_completed": {
+      "type": "number",
+      "default": 0
+    },
+    "deck_type": {
+      "type": "string",
+      "default": "GUIDED"
+    },
+    "resolved_rating": {
+      "type": "number"
+    },
+    "duration_seconds": {
+      "type": "number"
+    },
     "created_at": {
       "type": "string"
     },

@@ -8,6 +8,7 @@ import {
   Droplets, UtensilsCrossed, BookOpen, Activity, Lightbulb, TrendingUp, X, Bookmark
 } from "lucide-react";
 import PanicModeModal from "../components/today/PanicModeModal";
+import CalmCards from "../components/today/CalmCards";
 import DailyPromptCard from "../components/today/DailyPromptCard";
 import SmartContextBanner from "../components/common/SmartContextBanner";
 import DailyInsightBanner from "../components/today/DailyInsightBanner";
@@ -248,6 +249,7 @@ export default function Today() {
   const [activePrograms, setActivePrograms] = useState([]);
   const [programLibrary, setProgramLibrary] = useState([]);
   const [panicOpen, setPanicOpen] = useState(false);
+  const [calmCardsOpen, setCalmCardsOpen] = useState(false);
 
   // Hydration
   const [hydrationLog, setHydrationLog] = useState(null);
@@ -418,6 +420,7 @@ export default function Today() {
   return (
     <div className="min-h-screen pb-28" style={{ backgroundColor: "var(--ivory)" }}>
       {panicOpen && <PanicModeModal userId={user?.id} onClose={() => setPanicOpen(false)} />}
+      {calmCardsOpen && <CalmCards userId={user?.id} onClose={() => setCalmCardsOpen(false)} />}
       {showCheckin && (
         <CheckinModal existing={todayCheckin} onClose={() => setShowCheckin(false)} onSave={handleSaveCheckin} userId={user?.id} dateStr={todayStr} />
       )}
@@ -468,13 +471,18 @@ export default function Today() {
               </div>
             )}
 
-            {/* Panic pill */}
-            <div className="flex items-center justify-end">
+            {/* Calm Cards + Panic pills */}
+            <div className="flex items-center justify-between gap-2">
+              <button onClick={() => setCalmCardsOpen(true)}
+                style={{ display: "flex", alignItems: "center", gap: 6, padding: "5px 14px", borderRadius: 9999, border: "1px solid #E9D5FF", backgroundColor: "#FAF5FF", color: "#7C3AED", fontSize: 12, fontWeight: 600, fontFamily: "'Inter', sans-serif", cursor: "pointer" }}>
+                🌿 Calm Cards
+              </button>
               <button onClick={() => setPanicOpen(true)}
                 style={{ display: "flex", alignItems: "center", gap: 6, padding: "5px 14px", borderRadius: 9999, border: "1px solid var(--rose-dust-light)", backgroundColor: "var(--rose-dust-subtle)", color: "var(--rose-dust)", fontSize: 12, fontWeight: 600, fontFamily: "'Inter', sans-serif", cursor: "pointer" }}>
                 <AlertCircle className="w-3.5 h-3.5" />Panic mode
               </button>
             </div>
+            
 
             <DailyStoriesStrip user={user} />
 
