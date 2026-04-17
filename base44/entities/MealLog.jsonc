@@ -48,7 +48,135 @@
       "default": "high"
     },
     "ai_analysis": {
-      "type": "string"
+      "type": "object",
+      "description": "Structured AI nutritional analysis",
+      "properties": {
+        "summary": {
+          "type": "object",
+          "properties": {
+            "calories": {
+              "type": "number"
+            },
+            "protein_g": {
+              "type": "number"
+            },
+            "carbs_g": {
+              "type": "number"
+            },
+            "fat_g": {
+              "type": "number"
+            },
+            "fiber_g": {
+              "type": "number"
+            }
+          }
+        },
+        "items": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "name": {
+                "type": "string"
+              },
+              "quantity_text": {
+                "type": "string"
+              },
+              "calories": {
+                "type": "number"
+              },
+              "protein_g": {
+                "type": "number"
+              },
+              "carbs_g": {
+                "type": "number"
+              },
+              "fat_g": {
+                "type": "number"
+              },
+              "fiber_g": {
+                "type": "number"
+              }
+            }
+          }
+        },
+        "tone_safety_note": {
+          "type": "string"
+        },
+        "smart_swaps": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "wellness_goal_match": {
+          "type": "string"
+        },
+        "meal_score": {
+          "type": "number",
+          "description": "1-10 scale"
+        },
+        "insight": {
+          "type": "object",
+          "properties": {
+            "headline": {
+              "type": "string"
+            },
+            "wellness_impact": {
+              "type": "string"
+            },
+            "action_items": {
+              "type": "string"
+            },
+            "smart_swap": {
+              "type": "string"
+            },
+            "confidence": {
+              "type": "string"
+            }
+          }
+        },
+        "quick_check": {
+          "type": "object",
+          "properties": {
+            "supports": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "bullets": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "micro_action": {
+              "type": "string"
+            },
+            "action_type": {
+              "type": "string"
+            }
+          }
+        }
+      }
+    },
+    "ai_analysis_legacy": {
+      "type": "string",
+      "description": "Raw legacy JSON string pre-migration; kept for safety"
+    },
+    "meal_score": {
+      "type": "number",
+      "description": "Overall meal score on 1-10 scale"
+    },
+    "portion_size": {
+      "type": "string",
+      "enum": [
+        "small",
+        "medium",
+        "large"
+      ],
+      "default": "medium"
     },
     "wellness_goal": {
       "type": "string"

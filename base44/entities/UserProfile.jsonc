@@ -171,6 +171,20 @@
       "type": "boolean",
       "default": false
     },
+    "meal_score_migrated_v1": {
+      "type": "boolean",
+      "default": false,
+      "description": "Guard flag: has 1-10 scale migration run for this user's last 20 meal logs"
+    },
+    "ai_analysis_migrated_v1": {
+      "type": "boolean",
+      "default": false,
+      "description": "Guard flag: has ai_analysis string->object migration run for this user"
+    },
+    "last_disclaimer_shown_at": {
+      "type": "string",
+      "description": "ISO timestamp of when the nutrition safety disclaimer was last shown"
+    },
     "created_at": {
       "type": "string"
     },

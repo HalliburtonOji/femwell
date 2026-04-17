@@ -1,6 +1,7 @@
 import { useMemo } from "react";
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell } from "recharts";
 import { format, subDays, parseISO } from "date-fns";
+import { getMealSummary } from "@/utils/nutritionAiAnalysis";
 
 const PHASE_COLORS = {
   menstrual: "#C4849A",
@@ -53,12 +54,7 @@ export default function WeeklyCaloriesChart({ allMealLogs, profile }) {
 
     return days.map(dateStr => {
       const dayMeals = (allMealLogs || []).filter(m => m.day_key === dateStr);
-      const calories = dayMeals.reduce((sum, m) => {
-        try {
-          const analysis = m.ai_analysis ? JSON.parse(m.ai_analysis) : null;
-          return sum + (analysis?.nutritional_summary?.calories || 0);
-        } catch { return sum; }
-      }, 0);
+      const calories = dayMeals.reduce((sum, m) => sum + (getMealSummary(m).summary?.calories || 0), 0);
       const phase = getPhaseForDate(dateStr, profile);
       return {
         label: format(parseISO(dateStr), "EEE"),

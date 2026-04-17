@@ -1,0 +1,24 @@
+{
+  "name": "AppEvent",
+  "type": "object",
+  "description": "Lightweight telemetry log for audit / observability events",
+  "properties": {
+    "user_id": {
+      "type": "string"
+    },
+    "type": {
+      "type": "string"
+    },
+    "meta": {
+      "type": "object",
+      "description": "Free-form event payload",
+      "additionalProperties": true
+    },
+    "created_at": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "type"
+  ]
+}

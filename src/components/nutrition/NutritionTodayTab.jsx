@@ -8,6 +8,12 @@ import { format } from "date-fns";
 import { createPageUrl } from "@/utils";
 import MacroDashboard from "./MacroDashboard";
 import WeeklyCaloriesChart from "./WeeklyCaloriesChart";
+import { getCyclePhaseOrNull, getCyclePhaseStatus } from "@/utils/cyclePhase";
+import { readAiAnalysis, getMealSummary, inferMealTypeFromTime } from "@/utils/nutritionAiAnalysis";
+import { logAppEvent } from "@/utils/appEvents";
+import { runNutritionMigrationsIfNeeded } from "@/utils/nutritionMigrations";
+
+const DISCLAIMER_THROTTLE_MS = 7 * 24 * 60 * 60 * 1000; // 7 days
 
 const MEAL_TYPES = ["breakfast", "lunch", "dinner", "snack"];
 
@@ -175,7 +181,8 @@ export default function NutritionTodayTab({ user, profile, nutritionProfile, day
   const [insights, setInsights]             = useState([]);
   const [loading, setLoading]               = useState(true);
   const [mealText, setMealText]             = useState("");
-  const [mealType, setMealType]             = useState("lunch");
+  const [mealType, setMealType]             = useState(() => inferMealTypeFromTime());
+  const [userToggledMealType, setUserToggledMealType] = useState(false);
   const [selectedGoal, setSelectedGoal]     = useState(null);
   const [logging, setLogging]               = useState(false);
   const [lastAnalysis, setLastAnalysis]     = useState(null);
@@ -269,60 +276,175 @@ export default function NutritionTodayTab({ user, profile, nutritionProfile, day
     setLoggingDrink(false);
   };
 
-  const logMeal = async (text, type, method = "text") => {
-    if (!text.trim()) return;
+  const logMeal = async (text, typeOverride, method = "text") => {
+    const trimmed = text.trim();
+    if (!trimmed) return;
     setLogging(true);
+
+    // One-time migrations on first write per session.
+    await runNutritionMigrationsIfNeeded(user, profile).catch(() => {});
+
+    // Meal type: explicit param > user toggle > time-of-day inference.
+    const resolvedMealType = typeOverride
+      || (userToggledMealType ? mealType : inferMealTypeFromTime());
+
+    // Cycle phase — never fake it.
+    const cyclePhaseAtLog = getCyclePhaseOrNull(profile);
+    const phaseStatus = getCyclePhaseStatus(profile);
+    const isShortInput = trimmed.length <= 8;
+
     const log = await base44.entities.MealLog.create({
       user_id: user.id, day_key: dayKey,
       logged_at: new Date().toISOString(),
-      meal_type: type, method, raw_text: text.trim(),
+      meal_type: resolvedMealType, method, raw_text: trimmed,
       wellness_goal: selectedGoal || undefined,
       portion_size: portionSize,
+      cycle_phase_at_log: cyclePhaseAtLog,
     });
     setMeals((prev) => [...prev, log]);
     setMealText("");
     toast.success("Meal logged");
-    // Cost deduplication: only call AI if not already analysed
+
+    if (isShortInput) {
+      logAppEvent("nutrition_short_input", { len: trimmed.length, meal_log_id: log.id }, user.id);
+    }
+
     if (log.ai_analysis) {
       setLogging(false);
       return;
     }
+
     try {
-      let phasePromptAppend = "";
-      if (profile?.last_period_start_date) {
-        const today = new Date();
-        const lastPeriod = new Date(profile.last_period_start_date);
-        const daysSince = Math.floor((today - lastPeriod) / (1000 * 60 * 60 * 24));
-        const cycleDay = (daysSince % profile.cycle_avg_length) + 1;
-        const periodLength = profile.period_length || 5;
-        const phase = cycleDay <= periodLength ? 'menstrual'
-          : cycleDay <= 13 ? 'follicular'
-          : cycleDay <= 17 ? 'ovulatory'
-          : 'luteal';
-        phasePromptAppend = ` The user is currently in their ${phase} phase.`;
-      }
+      // Gather smart_swaps from user's last 7 meals for dedupe.
+      let recentSwaps = [];
+      try {
+        const recent = await base44.entities.MealLog.filter({ user_id: user.id }, "-created_date", 7);
+        recentSwaps = recent
+          .flatMap((m) => {
+            const a = readAiAnalysis(m);
+            const list = (a?.smart_swaps || []);
+            if (a?.insight?.smart_swap) list.push(a.insight.smart_swap);
+            return list;
+          })
+          .filter(Boolean)
+          .map((s) => String(s).trim().toLowerCase());
+      } catch { /* ignore */ }
+
+      const phasePromptAppend = phaseStatus.status === "ok"
+        ? ` The user is currently in their ${phaseStatus.phase} phase.`
+        : "";
+
       const response = await base44.functions.invoke("analyzeMeal", {
-        raw_text: text.trim(), energy_level: checkin?.energy,
+        raw_text: trimmed,
+        energy_level: checkin?.energy,
         digestion_score: checkin?.digestion,
         wellness_goal: selectedGoal || "general wellness",
         prompt_append: phasePromptAppend,
+        short_input: isShortInput,
+        meal_log_id: log.id,
+        cycle_phase: cyclePhaseAtLog,
+        excluded_swaps: recentSwaps,
       });
       const res = response?.data || response;
-      if (res && (res.nutritional_summary || res.items)) {
-        setLastAnalysis(res);
-        setShowQuickCheck(true);
-        await base44.entities.MealLog.update(log.id, { ai_analysis: JSON.stringify(res) });
-        setMeals((prev) => prev.map((m) => m.id === log.id ? { ...m, ai_analysis: JSON.stringify(res) } : m));
-        if (res.insight) {
-          const { headline, wellness_impact, action_items, smart_swap, confidence, tone_safety_note } = res.insight;
-          const saved = await base44.entities.NutritionInsight.create({
-            user_id: user.id, meal_log_id: log.id, day_key: dayKey,
-            meal_description: text.trim(), wellness_goal: selectedGoal || "general wellness",
-            headline, wellness_impact, action_items, smart_swap,
-            confidence: confidence || "medium", tone_safety_note, user_feedback: "none",
-          });
-          setInsights((prev) => [...prev, saved]);
+      if (!res || typeof res !== "object") { setLogging(false); return; }
+      if (!(res.summary || res.nutritional_summary || res.items)) { setLogging(false); return; }
+
+      // Normalize to new schema: { summary, items, ... }. Prefer res.summary, fall back to nutritional_summary.
+      const structured = {
+        ...res,
+        summary: res.summary || res.nutritional_summary,
+      };
+      delete structured.nutritional_summary;
+
+      // Zero-fallback: if summary zeros but items have values, recompute.
+      const s = structured.summary || {};
+      const zeroish = (s.calories || 0) === 0
+        && (s.protein_g || 0) === 0
+        && (s.carbs_g || 0) === 0
+        && (s.fat_g || 0) === 0;
+      if (zeroish && (structured.items || []).length > 0) {
+        const summed = structured.items.reduce((acc, it) => ({
+          calories: acc.calories + (Number(it.calories) || 0),
+          protein_g: acc.protein_g + (Number(it.protein_g) || 0),
+          carbs_g: acc.carbs_g + (Number(it.carbs_g) || 0),
+          fat_g: acc.fat_g + (Number(it.fat_g) || 0),
+          fiber_g: acc.fiber_g + (Number(it.fiber_g) || 0),
+        }), { calories: 0, protein_g: 0, carbs_g: 0, fat_g: 0, fiber_g: 0 });
+        structured.summary = {
+          calories: Math.round(summed.calories),
+          protein_g: Math.round(summed.protein_g),
+          carbs_g: Math.round(summed.carbs_g),
+          fat_g: Math.round(summed.fat_g),
+          fiber_g: Math.round(summed.fiber_g),
+        };
+        logAppEvent("nutrition_summary_fallback", { meal_log_id: log.id }, user.id);
+      }
+
+      // Smart-swap dedupe.
+      if (Array.isArray(structured.smart_swaps)) {
+        structured.smart_swaps = structured.smart_swaps.filter(
+          (sw) => sw && !recentSwaps.includes(String(sw).trim().toLowerCase())
+        );
+      }
+      if (structured.insight?.smart_swap
+          && recentSwaps.includes(String(structured.insight.smart_swap).trim().toLowerCase())) {
+        structured.insight = { ...structured.insight, smart_swap: null };
+      }
+
+      // Normalize meal_score to 1–10 on write. If AI returned a sub-object like
+      // { protein, veg_fiber, balance } (0–5 each), average * 2 → 1–10.
+      let overallScore = null;
+      if (typeof structured.meal_score === "number") {
+        overallScore = structured.meal_score <= 5
+          ? Math.min(10, Math.round(structured.meal_score * 2))
+          : Math.round(structured.meal_score);
+      } else if (structured.meal_score && typeof structured.meal_score === "object") {
+        const vals = ["protein", "veg_fiber", "balance"]
+          .map((k) => Number(structured.meal_score[k]))
+          .filter((n) => Number.isFinite(n));
+        if (vals.length) {
+          const avg = vals.reduce((a, b) => a + b, 0) / vals.length;
+          overallScore = Math.min(10, Math.max(1, Math.round(avg * 2)));
         }
+      }
+
+      // Disclaimer throttle: keep tone_safety_note at most once per 7-day window.
+      const lastShown = profile?.last_disclaimer_shown_at
+        ? new Date(profile.last_disclaimer_shown_at).getTime()
+        : 0;
+      const withinWindow = lastShown && (Date.now() - lastShown) < DISCLAIMER_THROTTLE_MS;
+      if (withinWindow) {
+        if (structured.tone_safety_note) structured.tone_safety_note = null;
+        if (structured.insight?.tone_safety_note) {
+          structured.insight = { ...structured.insight, tone_safety_note: null };
+        }
+      } else if (structured.tone_safety_note || structured.insight?.tone_safety_note) {
+        // Mark shown.
+        if (profile?.id) {
+          base44.entities.UserProfile
+            .update(profile.id, { last_disclaimer_shown_at: new Date().toISOString() })
+            .catch(() => {});
+        }
+      }
+
+      setLastAnalysis(structured);
+      setShowQuickCheck(true);
+
+      const updatePayload = { ai_analysis: structured };
+      if (overallScore != null) updatePayload.meal_score = overallScore;
+
+      await base44.entities.MealLog.update(log.id, updatePayload);
+      setMeals((prev) => prev.map((m) => m.id === log.id ? { ...m, ...updatePayload } : m));
+
+      if (structured.insight) {
+        const { headline, wellness_impact, action_items, smart_swap, confidence, tone_safety_note } = structured.insight;
+        const saved = await base44.entities.NutritionInsight.create({
+          user_id: user.id, meal_log_id: log.id, day_key: dayKey,
+          meal_description: trimmed, wellness_goal: selectedGoal || "general wellness",
+          headline, wellness_impact, action_items, smart_swap,
+          confidence: confidence || "medium", tone_safety_note, user_feedback: "none",
+        });
+        setInsights((prev) => [...prev, saved]);
       }
     } catch (_) {}
     setLogging(false);
@@ -335,7 +457,11 @@ export default function NutritionTodayTab({ user, profile, nutritionProfile, day
 
   const repeatLast = () => {
     const last = [...meals].reverse().find((m) => m.raw_text);
-    if (last) { setMealText(last.raw_text); setMealType(last.meal_type); }
+    if (last) {
+      setMealText(last.raw_text);
+      setMealType(last.meal_type);
+      setUserToggledMealType(true);
+    }
   };
 
   const saveAsTemplate = async () => {
@@ -364,7 +490,7 @@ export default function NutritionTodayTab({ user, profile, nutritionProfile, day
     return acc;
   }, {});
 
-  const balancedScore   = meals.length > 0 ? Math.min(5, Math.round((meals.filter(m => m.ai_analysis).length / meals.length) * 5)) : 0;
+  const balancedScore   = meals.length > 0 ? Math.min(5, Math.round((meals.filter(m => readAiAnalysis(m)).length / meals.length) * 5)) : 0;
   const selectedGoalObj = WELLNESS_GOALS.find(g => g.id === selectedGoal);
 
   // Derive cycle phase from profile if available
@@ -382,25 +508,15 @@ export default function NutritionTodayTab({ user, profile, nutritionProfile, day
   })();
 
   const calorieTarget = nutritionProfile?.calories_target || nutritionProfile?.calorie_target || 2000;
-  const mealsWithCalories = meals.filter(m => {
-    try { return m.ai_analysis && JSON.parse(m.ai_analysis)?.nutritional_summary?.calories > 0; } catch { return false; }
-  });
+  const mealsWithCalories = meals.filter(m => (getMealSummary(m).summary?.calories || 0) > 0);
   const totalCalories = meals.reduce((sum, m) => {
-    try {
-      const cal = JSON.parse(m.ai_analysis)?.nutritional_summary?.calories || 0;
-      const multiplier = PORTION_MULTIPLIERS[m.portion_size] || 1.0;
-      return sum + Math.round(cal * multiplier);
-    } catch { return sum; }
+    const s = getMealSummary(m).summary;
+    const multiplier = PORTION_MULTIPLIERS[m.portion_size] || 1.0;
+    return sum + Math.round((s?.calories || 0) * multiplier);
   }, 0);
-  const totalProtein = mealsWithCalories.reduce((sum, m) => {
-    try { return sum + (JSON.parse(m.ai_analysis)?.nutritional_summary?.protein_g || 0); } catch { return sum; }
-  }, 0);
-  const totalCarbs = mealsWithCalories.reduce((sum, m) => {
-    try { return sum + (JSON.parse(m.ai_analysis)?.nutritional_summary?.carbs_g || 0); } catch { return sum; }
-  }, 0);
-  const totalFat = mealsWithCalories.reduce((sum, m) => {
-    try { return sum + (JSON.parse(m.ai_analysis)?.nutritional_summary?.fat_g || 0); } catch { return sum; }
-  }, 0);
+  const totalProtein = mealsWithCalories.reduce((sum, m) => sum + (getMealSummary(m).summary?.protein_g || 0), 0);
+  const totalCarbs = mealsWithCalories.reduce((sum, m) => sum + (getMealSummary(m).summary?.carbs_g || 0), 0);
+  const totalFat = mealsWithCalories.reduce((sum, m) => sum + (getMealSummary(m).summary?.fat_g || 0), 0);
   const totalDrinkCalories = drinkLogs.reduce((sum, d) => sum + (d.calories || 0), 0);
   const grandTotalCalories = totalCalories + totalDrinkCalories;
   const caloriePct = Math.min(100, Math.round((grandTotalCalories / calorieTarget) * 100));
@@ -544,20 +660,27 @@ export default function NutritionTodayTab({ user, profile, nutritionProfile, day
             onBlur={e => e.target.style.borderColor = "var(--border)"}
           />
 
-          {/* Meal type */}
+          {/* Meal type — user toggle always wins over time-of-day inference */}
           <div className="flex gap-1.5 mt-3 mb-3 overflow-x-auto pb-1" style={{ scrollbarWidth: "none" }}>
-            {MEAL_TYPES.map((t) => (
-              <button key={t} onClick={() => setMealType(t)}
-                className="px-3.5 py-1.5 rounded-full text-xs font-semibold whitespace-nowrap transition-all"
-                style={{
-                  backgroundColor: mealType === t ? "var(--plum)" : "var(--ivory)",
-                  color: mealType === t ? "white" : "var(--mauve)",
-                  border: `1px solid ${mealType === t ? "var(--plum)" : "var(--border)"}`,
-                  fontFamily: "'Inter', sans-serif",
-                }}>
-                {MEAL_LABELS[t]}
-              </button>
-            ))}
+            {MEAL_TYPES.map((t) => {
+              const effective = userToggledMealType ? mealType : inferMealTypeFromTime();
+              const isActive = effective === t;
+              return (
+                <button key={t}
+                  aria-label={`Select ${t}`}
+                  aria-pressed={isActive}
+                  onClick={() => { setMealType(t); setUserToggledMealType(true); }}
+                  className="px-3.5 py-1.5 rounded-full text-xs font-semibold whitespace-nowrap transition-all"
+                  style={{
+                    backgroundColor: isActive ? "var(--plum)" : "var(--ivory)",
+                    color: isActive ? "white" : "var(--mauve)",
+                    border: `1px solid ${isActive ? "var(--plum)" : "var(--border)"}`,
+                    fontFamily: "'Inter', sans-serif",
+                  }}>
+                  {MEAL_LABELS[t]}
+                </button>
+              );
+            })}
           </div>
 
           {/* Portion size */}
@@ -740,8 +863,10 @@ export default function NutritionTodayTab({ user, profile, nutritionProfile, day
               </div>
               <div className="space-y-3">
                 {typeMeals.map((meal) => {
-                  const analysis    = meal.ai_analysis ? JSON.parse(meal.ai_analysis) : null;
+                  const analysis    = readAiAnalysis(meal);
+                  const { summary: analysisSummary } = getMealSummary(meal);
                   const mealInsight = insights.find((ins) => ins.meal_log_id === meal.id);
+                  const overallScore = typeof meal.meal_score === "number" ? meal.meal_score : null;
                   return (
                     <div key={meal.id} className="rounded-2xl p-4" style={{ backgroundColor: "var(--ivory)", border: "1px solid var(--border-subtle)" }}>
                       <div className="flex items-start justify-between gap-2">
@@ -759,17 +884,26 @@ export default function NutritionTodayTab({ user, profile, nutritionProfile, day
                               {WELLNESS_GOALS.find(g => g.id === meal.wellness_goal)?.label}
                             </span>
                           )}
-                          {analysis?.meal_score && (
+                          {(overallScore != null || (analysis?.meal_score && typeof analysis.meal_score === "object")) && (
                             <div className="flex gap-1.5 mt-2 flex-wrap">
-                              <span className="text-[10px] px-2 py-0.5 rounded-full font-medium" style={{ backgroundColor: "#FFF8EE", color: "#A07830" }}>
-                                {"⭐".repeat(Math.min(5, Math.ceil((analysis.meal_score.protein || 0) / 2)))} Protein
-                              </span>
-                              <span className="text-[10px] px-2 py-0.5 rounded-full font-medium" style={{ backgroundColor: "var(--sage-subtle)", color: "var(--sage)" }}>
-                                {"⭐".repeat(Math.min(5, Math.ceil((analysis.meal_score.veg_fiber || 0) / 2)))} Fibre
-                              </span>
-                              <span className="text-[10px] px-2 py-0.5 rounded-full font-medium" style={{ backgroundColor: "var(--mauve-subtle)", color: "var(--mauve)" }}>
-                                {"⭐".repeat(Math.min(5, Math.ceil((analysis.meal_score.balance || 0) / 2)))} Balance
-                              </span>
+                              {overallScore != null && (
+                                <span className="text-[10px] px-2 py-0.5 rounded-full font-semibold" style={{ backgroundColor: "var(--rose-dust-subtle)", color: "var(--rose-dust)" }}>
+                                  Meal score {overallScore}/10
+                                </span>
+                              )}
+                              {analysis?.meal_score && typeof analysis.meal_score === "object" && (
+                                <>
+                                  <span className="text-[10px] px-2 py-0.5 rounded-full font-medium" style={{ backgroundColor: "#FFF8EE", color: "#A07830" }}>
+                                    Protein {Math.min(10, Math.round((analysis.meal_score.protein || 0) * 2))}/10
+                                  </span>
+                                  <span className="text-[10px] px-2 py-0.5 rounded-full font-medium" style={{ backgroundColor: "var(--sage-subtle)", color: "var(--sage)" }}>
+                                    Fibre {Math.min(10, Math.round((analysis.meal_score.veg_fiber || 0) * 2))}/10
+                                  </span>
+                                  <span className="text-[10px] px-2 py-0.5 rounded-full font-medium" style={{ backgroundColor: "var(--mauve-subtle)", color: "var(--mauve)" }}>
+                                    Balance {Math.min(10, Math.round((analysis.meal_score.balance || 0) * 2))}/10
+                                  </span>
+                                </>
+                              )}
                             </div>
                           )}
                           {/* Items list */}
@@ -787,9 +921,9 @@ export default function NutritionTodayTab({ user, profile, nutritionProfile, day
                           <p className="text-[10px] mt-1.5" style={{ color: "var(--mauve)" }}>
                             {meal.logged_at ? format(new Date(meal.logged_at), "HH:mm") : ""}
                           </p>
-                          {(analysis?.nutritional_summary?.calories) && (
+                          {analysisSummary?.calories > 0 && (
                             <span style={{ backgroundColor: "var(--ivory-dark)", borderRadius: "9999px", padding: "2px 8px", fontSize: "11px", fontWeight: 600, color: "var(--mauve)", marginTop: "4px", display: "inline-block", fontFamily: "'Inter', sans-serif" }}>
-                              ~{analysis.nutritional_summary.calories} kcal
+                              ~{analysisSummary.calories} kcal
                             </span>
                           )}
                         </div>

@@ -1,5 +1,6 @@
 import { useMemo } from "react";
 import { motion } from "framer-motion";
+import { readAiAnalysis, getMealSummary } from "@/utils/nutritionAiAnalysis";
 
 const MACROS = [
   { key: "protein", label: "Protein",   color: "#C4849A" },
@@ -40,24 +41,23 @@ function MacroBar({ label, actual, target, color, unit = "g" }) {
 export default function MacroDashboard({ meals, hydrationLogs, drinkLogs = [], nutritionProfile }) {
   const totals = useMemo(() => {
     return meals.reduce((acc, meal) => {
-      if (!meal.ai_analysis) return acc;
-      try {
-        const analysis = JSON.parse(meal.ai_analysis);
-        const m = meal.portion_size === "small" ? 0.7 : meal.portion_size === "large" ? 1.4 : 1.0;
-        if (analysis.nutritional_summary?.calories) {
-          acc.calories += Math.round((analysis.nutritional_summary.calories || 0) * m);
-          acc.protein  += Math.round((analysis.nutritional_summary.protein_g  || 0) * m);
-          acc.carbs    += Math.round((analysis.nutritional_summary.carbs_g    || 0) * m);
-          acc.fat      += Math.round((analysis.nutritional_summary.fat_g      || 0) * m);
-        } else {
-          (analysis.items || []).forEach((item) => {
-            acc.calories += Math.round((item.calories || item.estimated_calories || 0) * m);
-            acc.protein  += Math.round((item.protein_g || 0) * m);
-            acc.carbs    += Math.round((item.carbs_g   || 0) * m);
-            acc.fat      += Math.round((item.fat_g     || 0) * m);
-          });
-        }
-      } catch (_) {}
+      const analysis = readAiAnalysis(meal);
+      if (!analysis) return acc;
+      const m = meal.portion_size === "small" ? 0.7 : meal.portion_size === "large" ? 1.4 : 1.0;
+      const s = getMealSummary(meal).summary;
+      if (s?.calories) {
+        acc.calories += Math.round((s.calories || 0) * m);
+        acc.protein  += Math.round((s.protein_g  || 0) * m);
+        acc.carbs    += Math.round((s.carbs_g    || 0) * m);
+        acc.fat      += Math.round((s.fat_g      || 0) * m);
+      } else {
+        (analysis.items || []).forEach((item) => {
+          acc.calories += Math.round((item.calories || item.estimated_calories || 0) * m);
+          acc.protein  += Math.round((item.protein_g || 0) * m);
+          acc.carbs    += Math.round((item.carbs_g   || 0) * m);
+          acc.fat      += Math.round((item.fat_g     || 0) * m);
+        });
+      }
       return acc;
     }, { calories: 0, protein: 0, carbs: 0, fat: 0 });
   }, [meals]);
