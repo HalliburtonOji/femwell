@@ -33,7 +33,8 @@ function getPhaseForDate(profile, dateString) {
     : 'luteal';
 }
 
-globalThis.Deno.serve(async (req) => {
+// eslint-disable-next-line no-undef
+Deno.serve(async (req) => {
   try {
     const base44 = createClientFromRequest(req);
     const today = new Date();
