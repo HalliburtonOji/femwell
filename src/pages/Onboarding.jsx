@@ -5,6 +5,7 @@ import GuideVoiceMode from "../components/guide/GuideVoiceMode";
 import { createPageUrl } from "@/utils";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import CycleBasicsStep from "../components/onboarding/CycleBasicsStep";
 
 const GOALS = [
   { id: "calm",             label: "Calm"             },
@@ -39,8 +40,8 @@ const BODY_GOALS = [
   { id: "menopause",       label: "Menopause"        },
 ];
 
-const STEPS = ["welcome", "display_name", "goals", "location", "interests", "preferences", "life_stage", "setup", "skin_profile", "assistant_intro", "done"];
-const PROGRESS_STEPS = ["goals", "location", "interests", "preferences", "life_stage", "setup", "skin_profile"];
+const STEPS = ["welcome", "cycle_basics", "display_name", "goals", "location", "interests", "preferences", "life_stage", "setup", "skin_profile", "assistant_intro", "done"];
+const PROGRESS_STEPS = ["cycle_basics", "goals", "location", "interests", "preferences", "life_stage", "setup", "skin_profile"];
 
 const PREG_FOCUSES = ["Sleep", "Nausea", "Movement", "Nutrition", "Birth prep", "Calm", "Pelvic health"];
 const MENO_FOCUSES = ["Sleep", "Hot flashes", "Mood", "Energy", "Brain fog", "Joint comfort", "Weight balance"];
@@ -98,6 +99,8 @@ export default function Onboarding() {
   const toggleLifeStageFocus = (v) => setLifeStageFocus(c => c.includes(v) ? c.filter(i => i !== v) : [...c, v]);
   const [displayName, setDisplayName] = useState("");
   const [assistantName, setAssistantName] = useState("Guide");
+  const [cycleBasics, setCycleBasics] = useState(null);
+  const [cycleSaving, setCycleSaving] = useState(false);
   const [showVoice, setShowVoice] = useState(false);
   const [micDenied, setMicDenied] = useState(false);
   const voiceTimerRef = useRef(null);
@@ -140,7 +143,29 @@ export default function Onboarding() {
 
   const [saveError, setSaveError] = useState(false);
 
-
+  // Incremental save for cycle basics — runs even if user bails later
+  const saveCycleBasics = async (payload) => {
+    setCycleSaving(true);
+    try {
+      const user = await base44.auth.me();
+      const profiles = await base44.entities.UserProfile.filter({ user_id: user.id });
+      const data = {
+        user_id: user.id,
+        user_email: user.email,
+        ...payload,
+      };
+      if (profiles[0]) {
+        await base44.entities.UserProfile.update(profiles[0].id, data);
+      } else {
+        await base44.entities.UserProfile.create(data);
+      }
+      setCycleBasics(payload);
+    } catch (e) {
+      console.error("Cycle basics save failed:", e);
+    } finally {
+      setCycleSaving(false);
+    }
+  };
 
   const handleFinish = async () => {
     setSaving(true);
@@ -165,6 +190,7 @@ export default function Onboarding() {
         condition_flags: conditionFlags,
         ai_assistant_name: assistantName || "Guide",
         ...(locationCity ? { location_city: locationCity } : {}),
+        ...(cycleBasics || {}),
       };
       if (profiles[0]) {
         await base44.entities.UserProfile.update(profiles[0].id, pData);
@@ -286,6 +312,26 @@ export default function Onboarding() {
               Get started
             </button>
           </div>
+        )}
+
+        {current === "cycle_basics" && (
+          <CycleBasicsStep
+            initial={cycleBasics || {}}
+            saving={cycleSaving}
+            onSave={async (payload) => {
+              await saveCycleBasics(payload);
+              setStep(s => s + 1);
+            }}
+            onSkip={async () => {
+              const defaults = {
+                last_period_start_date: new Date().toISOString().split("T")[0],
+                cycle_avg_length: 28,
+                period_length: 5,
+              };
+              await saveCycleBasics(defaults);
+              setStep(s => s + 1);
+            }}
+          />
         )}
 
         {current === "display_name" && (
@@ -742,7 +788,7 @@ export default function Onboarding() {
 
       </div>
 
-      {step > 0 && !(["assistant_intro", "done", "welcome"].includes(current)) && (
+      {step > 0 && !(["assistant_intro", "done", "welcome", "cycle_basics"].includes(current)) && (
         <div style={{ display: "flex", gap: "12px", padding: "0 24px 40px", maxWidth: "448px", width: "100%", margin: "0 auto" }}>
           <button onClick={() => setStep(s => s - 1)} className="btn-secondary flex items-center gap-1">
             <ChevronLeft className="h-4 w-4" /> Back

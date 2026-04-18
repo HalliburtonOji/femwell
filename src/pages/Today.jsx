@@ -15,6 +15,7 @@ import DailyInsightBanner from "../components/today/DailyInsightBanner";
 import CheckinModal from "../components/today/CheckinModal";
 import WeeklyInsightCard from "../components/today/WeeklyInsightCard";
 import TodayHeroSection from "../components/today/TodayHeroSection";
+import CompleteProfileBanner from "../components/today/CompleteProfileBanner";
 import DailyPlanCard from "../components/today/DailyPlanCard";
 import DailyStoriesStrip from "../components/today/DailyStoriesStrip";
 import TrackTab from "../components/today/TrackTab";
@@ -452,6 +453,10 @@ export default function Today() {
                 onOpenCheckin={() => setShowCheckin(true)} onOpenCalendar={() => setMainTab("track")} extractDisplayName={extractDisplayName} />
             )}
             {profile && <DailyPhaseBrief profile={profile} />}
+
+            <CompleteProfileBanner
+              shouldShow={!!profile && (!profile.last_period_start_date || profile.onboarding_complete !== true)}
+            />
 
             {/* Phase banner — gradient circle indicator, no emoji */}
             {cycleInfo && (
