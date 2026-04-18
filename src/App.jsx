@@ -24,6 +24,9 @@ import PartnerView from './pages/PartnerView';
 import Community from './pages/Community';
 import CommunityMP8 from './pages/CommunityMP8';
 import Sessions from './pages/Sessions';
+import Settings from './pages/Settings';
+import Terms from './pages/Terms';
+import Privacy from './pages/Privacy';
 import Upgrade from './pages/Upgrade';
 import Planner from './pages/Planner';
 
@@ -128,6 +131,9 @@ const AuthenticatedApp = () => {
           <Route path="/Community" element={<LayoutWrapper currentPageName="Community"><CommunityMP8 /></LayoutWrapper>} />
           <Route path="/CommunityLegacy" element={<LayoutWrapper currentPageName="Community"><Community /></LayoutWrapper>} />
           <Route path="/Sessions" element={<LayoutWrapper currentPageName="Sessions"><Sessions /></LayoutWrapper>} />
+          <Route path="/Settings" element={<LayoutWrapper currentPageName="Settings"><Settings /></LayoutWrapper>} />
+          <Route path="/terms" element={<LayoutWrapper currentPageName="Terms"><Terms /></LayoutWrapper>} />
+          <Route path="/privacy" element={<LayoutWrapper currentPageName="Privacy"><Privacy /></LayoutWrapper>} />
           <Route path="/Upgrade" element={<LayoutWrapper currentPageName="Upgrade"><Upgrade /></LayoutWrapper>} />
           <Route path="/Planner" element={<LayoutWrapper currentPageName="Planner"><Planner /></LayoutWrapper>} />
           <Route path="*" element={<PageNotFound />} />

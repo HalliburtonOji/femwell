@@ -203,6 +203,49 @@
       "type": "number",
       "default": 0
     },
+    "bio": {
+      "type": "string",
+      "description": "Short bio, max 200 chars (client-enforced)"
+    },
+    "notification_preferences": {
+      "type": "object",
+      "description": "MP#9 notification toggles",
+      "properties": {
+        "daily_checkin_reminder": {
+          "type": "boolean",
+          "default": true
+        },
+        "cycle_prediction_alerts": {
+          "type": "boolean",
+          "default": true
+        },
+        "educational_content_weekly": {
+          "type": "boolean",
+          "default": true
+        },
+        "community_replies": {
+          "type": "boolean",
+          "default": true
+        },
+        "marketing_emails": {
+          "type": "boolean",
+          "default": false
+        }
+      },
+      "additionalProperties": true
+    },
+    "profile_is_public": {
+      "type": "boolean",
+      "default": false
+    },
+    "allow_anonymous_community_posts": {
+      "type": "boolean",
+      "default": true
+    },
+    "show_in_circle_finder": {
+      "type": "boolean",
+      "default": false
+    },
     "created_at": {
       "type": "string"
     },

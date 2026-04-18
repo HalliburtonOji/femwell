@@ -91,8 +91,18 @@ export default function ProfileNavLinks({ profile, daysLoggedSkin, skinCondition
         <ChevronRight className="w-4 h-4" style={{ color: "var(--border)" }} />
       </a>
 
+      {/* Settings */}
+      <a href={createPageUrl("Settings")} style={{ ...card, padding: "16px", marginBottom: "16px", marginTop: "16px", display: "flex", alignItems: "center", gap: "12px", textDecoration: "none" }}>
+        <div style={iconBox("#FFF1F2")}><Settings className="w-4 h-4" style={{ color: "#E11D48" }} /></div>
+        <div className="flex-1">
+          <p style={{ ...bodyText, fontWeight: 600 }}>Settings</p>
+          <p style={mutedText}>Account, notifications, privacy & data</p>
+        </div>
+        <ChevronRight className="w-4 h-4" style={{ color: "var(--border)" }} />
+      </a>
+
       {/* Redo Onboarding */}
-      <a href="/Onboarding?mode=redo" style={{ ...card, padding: "16px", marginBottom: "16px", marginTop: "16px", display: "flex", alignItems: "center", gap: "12px", textDecoration: "none" }}>
+      <a href="/Onboarding?mode=redo" style={{ ...card, padding: "16px", marginBottom: "16px", display: "flex", alignItems: "center", gap: "12px", textDecoration: "none" }}>
         <div style={iconBox("var(--ivory-dark)")}><Settings className="w-4 h-4" style={{ color: "var(--mauve)" }} /></div>
         <div className="flex-1">
           <p style={{ ...bodyText, fontWeight: 600 }}>Redo Onboarding</p>
@@ -100,6 +110,15 @@ export default function ProfileNavLinks({ profile, daysLoggedSkin, skinCondition
         </div>
         <ChevronRight className="w-4 h-4" style={{ color: "var(--border)" }} />
       </a>
+
+      {/* Footer legal links */}
+      <div style={{ display: "flex", justifyContent: "center", gap: 14, marginBottom: 16, fontSize: 12 }}>
+        <a href={createPageUrl("Settings")} style={{ color: "#E11D48", fontWeight: 600, fontFamily: "'Inter', sans-serif", textDecoration: "none" }}>Settings</a>
+        <span style={{ color: "var(--border)" }}>·</span>
+        <a href="/terms" style={{ color: "var(--mauve)", fontFamily: "'Inter', sans-serif", textDecoration: "none" }}>Terms</a>
+        <span style={{ color: "var(--border)" }}>·</span>
+        <a href="/privacy" style={{ color: "var(--mauve)", fontFamily: "'Inter', sans-serif", textDecoration: "none" }}>Privacy</a>
+      </div>
 
       {/* Sign out */}
       <button onClick={async () => { await base44.auth.logout(); window.location.href = "/"; }}
