@@ -50,9 +50,29 @@ export default function Layout({ children, currentPageName }) {
     <div className="min-h-screen" style={{ backgroundColor: "var(--ivory)" }}>
       <style>{`@media print { .no-print { display: none !important; } .print-only { display: block !important; } }`}</style>
       {showNav && <FloatingSidebar currentPageName={currentPageName} mode={navMode} openQuickLog={openQuickLog} />}
-      <div className={showNav ? "pb-24" : ""}>
+      <main
+        id="main-content"
+        role="main"
+        className={showNav ? "pb-24" : ""}
+      >
         <ErrorBoundary>{children}</ErrorBoundary>
-      </div>
+      </main>
+      {showNav && currentPageName !== "Today" && (
+        <footer
+          role="contentinfo"
+          className={showNav ? "pb-24 no-print" : "no-print"}
+          style={{
+            textAlign: "center",
+            padding: "16px",
+            fontSize: 11,
+            color: "var(--mauve)",
+            fontFamily: "'Inter', sans-serif",
+          }}
+        >
+          Made with <span aria-hidden="true" style={{ color: "#E11D48" }}>♥</span>
+          <span className="sr-only">love</span> in 2026
+        </footer>
+      )}
       {showNav && <MobileBottomNav currentPageName={currentPageName} />}
       {showNav && <AssistantOrb currentPageName={currentPageName} />}
       <AssistantOverlay

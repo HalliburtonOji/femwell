@@ -59,6 +59,7 @@ export default function MobileBottomNav({ currentPageName }) {
               aria-label={`Go to ${label}`}
               aria-current={active ? "page" : undefined}
               style={{
+                position: "relative",
                 display: "flex", flexDirection: "column", alignItems: "center",
                 gap: 3, padding: "4px 10px", minWidth: 44, minHeight: 44,
                 textDecoration: "none",
@@ -67,17 +68,32 @@ export default function MobileBottomNav({ currentPageName }) {
             >
               <IconComp
                 aria-hidden="true"
-                style={{ width: 22, height: 22, color: active ? "var(--rose-dust)" : "var(--mauve)" }}
+                style={{ width: 22, height: 22, color: active ? "#E11D48" : "var(--mauve)" }}
                 strokeWidth={active ? 2.5 : 1.5}
               />
               <span style={{
                 fontSize: 10, fontWeight: active ? 700 : 500,
-                color: active ? "var(--rose-dust)" : "var(--mauve)",
+                color: active ? "#E11D48" : "var(--mauve)",
                 fontFamily: "'Inter', sans-serif",
                 maxWidth: 64, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap",
               }}>
                 {label}
               </span>
+              {active && (
+                <span
+                  aria-hidden="true"
+                  style={{
+                    position: "absolute",
+                    bottom: -2,
+                    left: "50%",
+                    transform: "translateX(-50%)",
+                    width: 20,
+                    height: 2.5,
+                    borderRadius: 9999,
+                    backgroundColor: "#E11D48",
+                  }}
+                />
+              )}
             </Link>
           );
         })}

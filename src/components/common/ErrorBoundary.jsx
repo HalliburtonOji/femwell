@@ -89,13 +89,15 @@ export default class ErrorBoundary extends React.Component {
               marginBottom: 20,
             }}
           >
-            The page hit an unexpected error. A quick refresh usually fixes it.
+            We're on it. A quick reload usually fixes it.
           </p>
           <div style={{ display: "flex", gap: 8, justifyContent: "center", flexWrap: "wrap" }}>
             <button
+              type="button"
+              aria-label="Reload the page"
               onClick={this.handleRefresh}
               style={{
-                backgroundColor: "var(--plum, #2A2035)",
+                backgroundColor: "#E11D48",
                 color: "white",
                 borderRadius: 9999,
                 padding: "10px 22px",
@@ -106,9 +108,11 @@ export default class ErrorBoundary extends React.Component {
                 fontFamily: "'Inter', sans-serif",
               }}
             >
-              Refresh
+              Reload
             </button>
             <button
+              type="button"
+              aria-label="Go to home page"
               onClick={this.handleGoHome}
               style={{
                 backgroundColor: "transparent",
@@ -122,7 +126,7 @@ export default class ErrorBoundary extends React.Component {
                 fontFamily: "'Inter', sans-serif",
               }}
             >
-              Go home
+              Go Home
             </button>
           </div>
         </div>
