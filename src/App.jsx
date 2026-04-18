@@ -22,6 +22,8 @@ import DoctorExport from './pages/DoctorExport';
 import PartnerSettings from './pages/PartnerSettings';
 import PartnerView from './pages/PartnerView';
 import Community from './pages/Community';
+import CommunityMP8 from './pages/CommunityMP8';
+import Sessions from './pages/Sessions';
 import Upgrade from './pages/Upgrade';
 import Planner from './pages/Planner';
 
@@ -123,7 +125,9 @@ const AuthenticatedApp = () => {
           <Route path="/DoctorExport" element={<LayoutWrapper currentPageName="DoctorExport"><DoctorExport /></LayoutWrapper>} />
           <Route path="/PartnerSettings" element={<LayoutWrapper currentPageName="PartnerSettings"><PartnerSettings /></LayoutWrapper>} />
           <Route path="/PartnerView" element={<PartnerView />} />
-          <Route path="/Community" element={<LayoutWrapper currentPageName="Community"><Community /></LayoutWrapper>} />
+          <Route path="/Community" element={<LayoutWrapper currentPageName="Community"><CommunityMP8 /></LayoutWrapper>} />
+          <Route path="/CommunityLegacy" element={<LayoutWrapper currentPageName="Community"><Community /></LayoutWrapper>} />
+          <Route path="/Sessions" element={<LayoutWrapper currentPageName="Sessions"><Sessions /></LayoutWrapper>} />
           <Route path="/Upgrade" element={<LayoutWrapper currentPageName="Upgrade"><Upgrade /></LayoutWrapper>} />
           <Route path="/Planner" element={<LayoutWrapper currentPageName="Planner"><Planner /></LayoutWrapper>} />
           <Route path="*" element={<PageNotFound />} />

@@ -185,6 +185,24 @@
       "type": "string",
       "description": "ISO timestamp of when the nutrition safety disclaimer was last shown"
     },
+    "completed_sessions": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "IDs of WellnessSessions the user has marked complete"
+    },
+    "favorite_sessions": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "IDs of WellnessSessions the user has favorited"
+    },
+    "completed_sessions_count": {
+      "type": "number",
+      "default": 0
+    },
     "created_at": {
       "type": "string"
     },

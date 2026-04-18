@@ -1,0 +1,57 @@
+{
+  "name": "CommunityPosts",
+  "type": "object",
+  "description": "MP#8 community posts \u2014 lightweight schema per MP#8 spec",
+  "properties": {
+    "title": {
+      "type": "string"
+    },
+    "body": {
+      "type": "string"
+    },
+    "author_email": {
+      "type": "string"
+    },
+    "author_display": {
+      "type": "string"
+    },
+    "category": {
+      "type": "string",
+      "enum": [
+        "question",
+        "support",
+        "celebration",
+        "tip"
+      ],
+      "default": "question"
+    },
+    "topic_tag": {
+      "type": "string",
+      "enum": [
+        "cycle",
+        "nutrition",
+        "fitness",
+        "mental-health",
+        "relationships",
+        "other"
+      ],
+      "default": "other"
+    },
+    "likes_count": {
+      "type": "number",
+      "default": 0
+    },
+    "is_anonymous": {
+      "type": "boolean",
+      "default": false
+    },
+    "created_at": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "title",
+    "body",
+    "category"
+  ]
+}
