@@ -31,7 +31,7 @@ function getPhaseForDate(profile, dateString) {
     : 'luteal';
 }
 
-Deno.serve(async (req) => {
+globalThis.Deno.serve(async (req) => {
   try {
     const base44 = createClientFromRequest(req);
     const today = new Date();
