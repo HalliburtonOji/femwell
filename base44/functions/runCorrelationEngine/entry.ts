@@ -1,4 +1,6 @@
-/* eslint-disable */
+/* global Deno */
+// deno-lint-ignore-file
+/* eslint-disable no-undef */
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.25';
 
 function getMonday(date = new Date()) {
