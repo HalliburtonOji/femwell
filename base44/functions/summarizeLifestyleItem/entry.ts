@@ -124,20 +124,30 @@ async function fetchYouTubeCaptions(_videoId) {
 async function invokeLLMForVideoSummary(base44, ctx) {
   const prompt = `You are FemWell's content editor. Summarize this video for a UK women's wellness audience in 2 sentences max. Ground the summary in the actual video content (use captions if provided), not the channel description. Keep tone warm, considered, no emoji.
 
+Also infer which menstrual cycle phase(s) this content speaks to most. Most content is general-purpose — only return phase tags when the content is genuinely more relevant during a specific phase (e.g. an article about luteal-week cravings should tag ["luteal"]; an article about general nutrition should return []). Available phases: "menstrual", "follicular", "ovulatory", "luteal". Return at most 2 phases.
+
 Title: ${ctx.title}
 Duration: ${ctx.duration}
 Description: ${(ctx.description || '').slice(0, 800)}
 Captions (excerpt): ${ctx.captions ? ctx.captions.slice(0, 2000) : '(no captions available)'}
 
-Return JSON: { summary: string }`;
+Return JSON: { summary: string, phase_tags: string[] }`;
   const res = await base44.asServiceRole.integrations.Core.InvokeLLM({
     prompt,
     response_json_schema: {
       type: 'object',
-      properties: { summary: { type: 'string' } },
+      properties: {
+        summary: { type: 'string' },
+        phase_tags: {
+          type: 'array',
+          items: { type: 'string', enum: ['menstrual', 'follicular', 'ovulatory', 'luteal'] },
+          maxItems: 2,
+          default: [],
+        },
+      },
     },
   });
-  return res?.summary || '';
+  return { summary: res?.summary || '', phase_tags: Array.isArray(res?.phase_tags) ? res.phase_tags : [] };
 }
 
 async function processVideoItem(base44, item) {
@@ -174,13 +184,16 @@ async function processVideoItem(base44, item) {
   // Step E: summary grounded in actual content
   const captionText = await fetchYouTubeCaptions(item.video_id).catch(() => null);
   let summary = '';
+  let inferredPhaseTags = [];
   try {
-    summary = await invokeLLMForVideoSummary(base44, {
+    const llmRes = await invokeLLMForVideoSummary(base44, {
       title: meta.title || item.title,
       description: meta.description,
       captions: captionText,
       duration: durationLabel,
     });
+    summary = llmRes.summary;
+    inferredPhaseTags = llmRes.phase_tags;
   } catch (err) {
     await logIngestError(base44, 'summarizeLifestyleItem', 'summarization',
       { item_id: item.id, source_identifier: item.source_name || '' }, err);
@@ -204,6 +217,7 @@ async function processVideoItem(base44, item) {
     duration_label: durationLabel,
     is_embeddable: true,
     embed_url: embedUrl,
+    phase_tags: inferredPhaseTags,
     status: 'PUBLISHED',
     published_at: new Date().toISOString(),
     updated_at: new Date().toISOString(),
@@ -228,7 +242,8 @@ Return JSON with:
 - takeaway_3: third key takeaway (max 90 chars, or empty string if not needed)
 - why_it_matters: one-line statement on why this matters (max 80 chars)
 - category: one of [Womens Health, Relationships, Professional, Beauty, Lifestyle, Mental Health, Nutrition, Fitness]
-- tags: comma-separated keywords (max 5 tags)`;
+- tags: comma-separated keywords (max 5 tags)
+- phase_tags: array of menstrual cycle phases this article is most relevant during. Available: "menstrual", "follicular", "ovulatory", "luteal". Most articles are general-purpose — return [] for general content. Only tag phases when content is genuinely more relevant in that phase. Max 2 phases.`;
 
     const result = await base44.asServiceRole.integrations.Core.InvokeLLM({
       prompt,
@@ -242,6 +257,12 @@ Return JSON with:
           why_it_matters: { type: 'string' },
           category: { type: 'string' },
           tags: { type: 'string' },
+          phase_tags: {
+            type: 'array',
+            items: { type: 'string', enum: ['menstrual', 'follicular', 'ovulatory', 'luteal'] },
+            maxItems: 2,
+            default: [],
+          },
         },
       },
     });
@@ -249,12 +270,14 @@ Return JSON with:
     const tagsArr = result.tags
       ? result.tags.split(',').map(t => t.trim()).filter(Boolean)
       : (Array.isArray(item.tags) ? item.tags : []);
+    const phaseTagsArr = Array.isArray(result.phase_tags) ? result.phase_tags : [];
     await base44.asServiceRole.entities.LifestyleItems.update(item.id, {
       summary: result.summary || item.summary,
       takeaways: [result.takeaway_1, result.takeaway_2, result.takeaway_3].filter(Boolean),
       why_it_matters: result.why_it_matters || '',
       category: result.category === 'Womens Health' ? "Women's Health" : (result.category || item.category),
       tags: tagsArr,
+      phase_tags: phaseTagsArr,
       status: 'PUBLISHED',
       published_at: new Date().toISOString(),
       updated_at: new Date().toISOString(),

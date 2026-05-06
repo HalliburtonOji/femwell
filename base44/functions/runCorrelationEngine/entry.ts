@@ -1,6 +1,5 @@
+/* global Deno */
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.25';
-
-const Deno = globalThis.Deno;
 
 function getMonday(date = new Date()) {
   const d = new Date(date);
