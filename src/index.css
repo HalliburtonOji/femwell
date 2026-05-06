@@ -32,6 +32,22 @@
     --amber-streak: #F59E0B;
     --font-serif-heading: 'Playfair Display', 'DM Serif Display', Georgia, serif;
 
+    /* MP-A Lifestyle tokens (cream / rose family) */
+    --cream: #f7f0e6;
+    --cream-2: #f0e6d8;
+    --rose-primary: #D45E52;
+    --rose-soft-bg: #FBE9E6;
+    --rose-soft: #d4a5a0;
+    --rose-deep-2: #b67d77;
+    --plum-deep: #2b1e16;
+    --plum-accent: #4A2A3A;
+    --plum-mute: #8a7768;
+    --gold: #C9A95C;
+    --ink-line: rgba(43,30,22,0.10);
+    --shadow-card: 0 8px 22px -12px rgba(74,42,58,0.18);
+    --shadow-card-hover: 0 20px 40px -16px rgba(74,42,58,0.28);
+    --shadow-fab: 0 8px 22px -8px rgba(212,94,82,0.5);
+
     --border: #EDE8E4;
     --border-subtle: #F5F1EE;
     --shadow-sm: 0 1px 3px rgba(42,32,53,0.06), 0 1px 2px rgba(42,32,53,0.04);

@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { base44 } from "@/api/base44Client";
-import { ExternalLink, ChevronDown, ChevronUp, X, BookOpen, Bookmark } from "lucide-react";
+import { ExternalLink, ChevronDown, ChevronUp, X, BookOpen, Bookmark, BookText, Brain, Heart, Sparkles, Leaf, Pin } from "lucide-react";
 import { CONTENT_CATEGORIES, categoryLabel } from "@/utils/contentCategory";
 
 // ── Helpers ──────────────────────────────────────────────────────────────────
@@ -18,8 +18,8 @@ function todayStr() {
   return new Date().toISOString().split("T")[0];
 }
 
-const PRIMARY = "#C084FC";
-const PRIMARY_LIGHT = "#F3E8FF";
+const PRIMARY = "#D45E52";
+const PRIMARY_LIGHT = "#FBE9E6";
 
 // ── Shared spinner ────────────────────────────────────────────────────────────
 function Spinner() {
@@ -90,7 +90,7 @@ function ArticleSheet({ item, onClose }) {
           {/* Pills */}
           <div style={{ display: "flex", gap: 6, flexWrap: "wrap", marginBottom: 14 }}>
             {item.category && <Pill label={item.category} />}
-            {item.emotional_tag && <Pill label={item.emotional_tag} color="#7C3AED" bg="#EDE9FE" />}
+            {item.emotional_tag && <Pill label={item.emotional_tag} color="var(--rose-primary)" bg="var(--rose-soft-bg)" />}
           </div>
           {/* Title */}
           <h2 style={{ fontFamily: "'Playfair Display', serif", fontSize: 22, fontWeight: 700, color: "var(--plum)", lineHeight: 1.3, marginBottom: 10 }}>{item.title}</h2>
@@ -234,11 +234,34 @@ function ForYouTab({ categoryFilter }) {
   useEffect(() => {
     (async () => {
       const all = await base44.entities.LifestyleItems.filter({ status: "PUBLISHED" }, "-engagement_score", 100).catch(() => []);
-      const sorted = [
+
+      // Read followed_categories silently from current user's profile to nudge ranking.
+      let followed = [];
+      try {
+        const u = await base44.auth.me();
+        if (u?.id) {
+          const profiles = await base44.entities.UserProfile.filter({ user_id: u.id });
+          followed = Array.isArray(profiles?.[0]?.followed_categories) ? profiles[0].followed_categories : [];
+        }
+      } catch { /* silent */ }
+
+      const followedSet = new Set(followed.map(c => String(c).toLowerCase()));
+
+      // Existing two-tier sort, then re-rank with 1.2× boost for followed categories (stable).
+      const baseSorted = [
         ...all.filter(i => i.provider === "FEMWELL_AI" || i.lede),
         ...all.filter(i => i.provider !== "FEMWELL_AI" && !i.lede),
       ];
-      setItems(sorted);
+
+      const scored = baseSorted.map((item, idx) => {
+        const baseScore = (item.engagement_score || 0) + (baseSorted.length - idx) * 0.001; // preserve order
+        const cat = String(item.category || "").toLowerCase();
+        const boost = followedSet.size && followedSet.has(cat) ? 1.2 : 1.0;
+        return { item, score: baseScore * boost, idx };
+      });
+      scored.sort((a, b) => (b.score - a.score) || (a.idx - b.idx));
+
+      setItems(scored.map(s => s.item));
       setLoading(false);
     })();
   }, []);
@@ -421,17 +444,18 @@ function StoriesTab() {
 // ── BOOKS tab ─────────────────────────────────────────────────────────────────
 
 const BOOK_CAT_META = {
-  fiction:       { label: "Fiction",          color: "#7C3AED", bg: "#EDE9FE", icon: "📖" },
-  selfhelp:      { label: "Self-help",        color: "#0369A1", bg: "#E0F2FE", icon: "🧠" },
-  relationships: { label: "Relationships",    color: "#BE185D", bg: "#FCE7F3", icon: "💞" },
-  career:        { label: "Career & Money",   color: "#B45309", bg: "#FEF3C7", icon: "✨" },
-  wellness:      { label: "Wellness",         color: "#065F46", bg: "#D1FAE5", icon: "🌿" },
+  fiction:       { label: "Fiction",          color: "var(--rose-primary)", bg: "var(--rose-soft-bg)", Icon: BookText },
+  selfhelp:      { label: "Self-help",        color: "#0369A1",             bg: "#E0F2FE",             Icon: Brain },
+  relationships: { label: "Relationships",    color: "#BE185D",             bg: "#FCE7F3",             Icon: Heart },
+  career:        { label: "Career & Money",   color: "#B45309",             bg: "#FEF3C7",             Icon: Sparkles },
+  wellness:      { label: "Wellness",         color: "#065F46",             bg: "#D1FAE5",             Icon: Leaf },
 };
 
 const ALL_BOOK_CATS = ["all", "fiction", "selfhelp", "relationships", "career", "wellness"];
 
 function BookCategoryChip({ cat, active, onClick }) {
   const meta = BOOK_CAT_META[cat];
+  const ChipIcon = meta?.Icon;
   return (
     <button onClick={onClick} style={{
       flexShrink: 0, padding: "6px 14px", borderRadius: 9999, fontSize: 11, fontWeight: 600,
@@ -439,8 +463,10 @@ function BookCategoryChip({ cat, active, onClick }) {
       backgroundColor: active ? (meta?.color || PRIMARY) : "var(--ivory-dark)",
       color: active ? "white" : "var(--mauve)",
       transition: "all 0.15s",
+      display: "inline-flex", alignItems: "center", gap: 6,
     }}>
-      {meta ? `${meta.icon} ${meta.label}` : "All"}
+      {ChipIcon ? <ChipIcon size={12} aria-hidden="true" /> : null}
+      {meta ? meta.label : "All"}
     </button>
   );
 }
@@ -460,8 +486,8 @@ function SingleBookCard({ book, weekStart, defaultOpen = false }) {
       <div style={{ padding: "16px 18px" }}>
         {/* Category chip */}
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 10 }}>
-          <span style={{ fontSize: 10, fontWeight: 700, color: meta.color, backgroundColor: meta.bg, borderRadius: 9999, padding: "3px 10px", fontFamily: "'Inter', sans-serif" }}>
-            {meta.icon} {meta.label}
+          <span style={{ fontSize: 10, fontWeight: 700, color: meta.color, backgroundColor: meta.bg, borderRadius: 9999, padding: "3px 10px", fontFamily: "'Inter', sans-serif", display: "inline-flex", alignItems: "center", gap: 5 }}>
+            {meta.Icon ? <meta.Icon size={11} aria-hidden="true" /> : null} {meta.label}
           </span>
           {weekStart && (
             <span style={{ fontSize: 10, color: "var(--mauve)", fontFamily: "'Inter', sans-serif" }}>Week of {fmtDate(weekStart)}</span>
@@ -473,7 +499,7 @@ function SingleBookCard({ book, weekStart, defaultOpen = false }) {
           <div style={{ width: 64, height: 90, borderRadius: 10, flexShrink: 0, overflow: "hidden", border: "1px solid var(--border)", background: meta.bg }}>
             {book.cover_url
               ? <img src={book.cover_url} alt="" style={{ width: "100%", height: "100%", objectFit: "cover" }} onError={e => { e.target.style.display = "none"; }} />
-              : <div style={{ width: "100%", height: "100%", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 22 }}>{meta.icon}</div>
+              : <div style={{ width: "100%", height: "100%", display: "flex", alignItems: "center", justifyContent: "center", color: meta.color }}>{meta.Icon ? <meta.Icon size={22} aria-hidden="true" /> : null}</div>
             }
           </div>
 
@@ -509,7 +535,9 @@ function SingleBookCard({ book, weekStart, defaultOpen = false }) {
             <p style={{ fontSize: 13, color: "var(--mauve)", fontFamily: "'Inter', sans-serif", fontStyle: "italic", lineHeight: 1.6, marginBottom: 12 }}>"{book.quote}"</p>
           )}
           {book.femwell_connection && (
-            <p style={{ fontSize: 12, color: meta.color, fontFamily: "'Inter', sans-serif", marginBottom: 12 }}>📌 {book.femwell_connection}</p>
+            <p style={{ fontSize: 12, color: meta.color, fontFamily: "'Inter', sans-serif", marginBottom: 12, display: "inline-flex", alignItems: "center", gap: 5 }}>
+              <Pin size={12} aria-hidden="true" /> {book.femwell_connection}
+            </p>
           )}
           {book.goodreads_url && (
             <a href={book.goodreads_url} target="_blank" rel="noopener noreferrer"
