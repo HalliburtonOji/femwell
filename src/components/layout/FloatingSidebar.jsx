@@ -26,7 +26,7 @@ const NAV = [
 function DesktopSidebar({ currentPageName }) {
   return (
     <aside
-      className="hidden md:flex flex-col fixed top-0 left-0 bottom-0 w-64 z-30"
+      className="hidden lg:flex flex-col fixed top-0 left-0 bottom-0 w-64 z-30"
       style={{
         backgroundColor: "var(--surface)",
         borderRight: "1px solid var(--border)",
@@ -112,7 +112,6 @@ export default function FloatingSidebar({ currentPageName, mode = "full", openQu
 
   return (
     <>
-      <DesktopSidebar currentPageName={currentPageName} />
       {/* Mobile bottom sheet */}
       <AnimatePresence>
         {open && (

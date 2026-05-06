@@ -53,7 +53,7 @@ export default function Layout({ children, currentPageName }) {
       <main
         id="main-content"
         role="main"
-        className={showNav ? "pb-36 md:pb-0" : ""}
+        className={showNav ? "pb-36" : ""}
       >
         <ErrorBoundary>{children}</ErrorBoundary>
       </main>
