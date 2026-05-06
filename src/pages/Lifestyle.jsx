@@ -143,7 +143,7 @@ const CAT_GRADIENTS = {
   "Cycle":         "linear-gradient(135deg, #F5ECF0 0%, #E8C4D0 100%)",
   "Skin":          "linear-gradient(135deg, #FFF0F5 0%, #FFD6E7 100%)",
   "Sleep":         "linear-gradient(135deg, #EBE8F5 0%, #C8BEFF 100%)",
-  "default":       "linear-gradient(135deg, #F3E8FF 0%, #E9D5FF 100%)",
+  "default":       "linear-gradient(135deg, #FBE9E6 0%, #f0e6d8 100%)",
 };
 
 function getCatGradient(category) {
@@ -302,7 +302,7 @@ function DailyStoryTab() {
   if (loading) return <Spinner />;
   if (!current) return <EmptyState text="The daily story is being written. Check back soon." />;
 
-  const bg = current.image_gradient || "linear-gradient(135deg, #F3E8FF 0%, #E9D5FF 100%)";
+  const bg = current.image_gradient || "linear-gradient(135deg, #FBE9E6 0%, #f0e6d8 100%)";
 
   return (
     <div>
@@ -751,8 +751,8 @@ export default function Lifestyle() {
               <button key={t.id} onClick={() => setTab(t.id)}
                 aria-label={`Switch to ${t.label} tab`}
                 aria-pressed={tab === t.id}
-                style={{ flexShrink: 0, padding: "7px 16px", borderRadius: 9999, fontSize: 12, fontWeight: 600, cursor: "pointer", border: "none", transition: "all 0.15s", fontFamily: "'Inter', sans-serif", whiteSpace: "nowrap", minHeight: 32,
-                  backgroundColor: tab === t.id ? PRIMARY : "var(--ivory-dark)",
+                style={{ flexShrink: 0, padding: "7px 16px", borderRadius: 9999, fontSize: 14, fontWeight: tab === t.id ? 600 : 500, cursor: "pointer", border: "none", transition: "all 0.15s", fontFamily: "'Inter', sans-serif", whiteSpace: "nowrap", minHeight: 32,
+                  backgroundColor: tab === t.id ? PRIMARY : "var(--cream)",
                   color: tab === t.id ? "white" : "var(--mauve)" }}>
                 {t.label}
               </button>

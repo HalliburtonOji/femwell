@@ -59,7 +59,7 @@ const SECTION_HDR = {
   fontFamily: "'Inter', sans-serif",
   fontWeight: 600,
   fontSize: 12,
-  letterSpacing: "0.25em",
+  letterSpacing: "4px",
   textTransform: "uppercase",
   color: "var(--plum-mute)",
   marginTop: 28,
