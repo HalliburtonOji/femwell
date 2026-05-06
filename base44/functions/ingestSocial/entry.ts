@@ -1,4 +1,30 @@
-import { createClientFromRequest } from 'npm:@base44/sdk@0.8.20';
+// MP-Pipeline Phase 1+2:
+// - Hard-skips TikTok (deferred to Listen MP) and Instagram (Meta oembed died April 2025)
+// - Replaces silent catches with IngestErrorLog rows
+// - Existing TikTok/Instagram items in DB are left in place
+
+import { createClientFromRequest } from 'npm:@base44/sdk@0.8.25';
+
+// ── Inlined helper: structured ingest error log ────────────────────────────
+async function logIngestError(base44, function_name, stage, ctx, err) {
+  try {
+    const e = err && typeof err === 'object' ? err : new Error(String(err));
+    await base44.asServiceRole.entities.IngestErrorLog.create({
+      function_name,
+      stage,
+      source_identifier: ctx.source_identifier || '',
+      item_id: ctx.item_id || '',
+      error_message: e?.message || String(err),
+      error_stack: e?.stack || '',
+      raw_payload: ctx.raw_payload ? JSON.stringify(ctx.raw_payload).slice(0, 4000) : '',
+      logged_at: new Date().toISOString(),
+      status: 'logged',
+    });
+  } catch (logErr) {
+    console.error(`[ingest-error-log-failed] ${function_name} ${stage}`, logErr?.message);
+  }
+  console.error(`[ingest-error] ${function_name} ${stage}`, err?.message || err);
+}
 
 function simpleHash(str) {
   let h = 0;
@@ -6,22 +32,6 @@ function simpleHash(str) {
     h = (Math.imul(31, h) + str.charCodeAt(i)) | 0;
   }
   return Math.abs(h).toString(36);
-}
-
-// ── Instagram: fetch oEmbed preview for a post URL ────────────────────────
-async function fetchInstagramPreview(postUrl) {
-  try {
-    const oembed = await fetch(
-      `https://graph.facebook.com/v18.0/instagram_oembed?url=${encodeURIComponent(postUrl)}&fields=thumbnail_url,author_name,title&access_token=client_credentials`
-    );
-    if (oembed.ok) {
-      const data = await oembed.json();
-      return { thumbnail_url: data.thumbnail_url || '', author_name: data.author_name || '' };
-    }
-  } catch (_) { /* fall through */ }
-  // Fallback: extract username from URL for display
-  const match = postUrl.match(/instagram\.com\/([^/]+)\//);
-  return { thumbnail_url: '', author_name: match ? `@${match[1]}` : 'Instagram' };
 }
 
 Deno.serve(async (req) => {
@@ -33,7 +43,21 @@ Deno.serve(async (req) => {
     }
 
     const body = await req.json().catch(() => ({}));
-    const sourceType = body.source_type || 'INSTAGRAM'; // 'INSTAGRAM' | 'TIKTOK'
+    const sourceType = body.source_type || 'INSTAGRAM';
+
+    // MP-Phase1+2: TikTok deferred to Listen MP (portrait UI). Instagram permanently
+    // dropped (Meta oembed deprecated April 2025). Existing items stay in DB.
+    if (sourceType === 'TIKTOK' || sourceType === 'INSTAGRAM') {
+      return Response.json({
+        ingested: 0,
+        skipped: 0,
+        sources: 0,
+        deferred: true,
+        reason: sourceType === 'TIKTOK'
+          ? 'TikTok ingest deferred to Listen MP'
+          : 'Instagram ingest permanently disabled (Meta oembed deprecated)',
+      });
+    }
 
     const sources = await base44.asServiceRole.entities.LifestyleSources.filter({
       is_active: true,
@@ -45,61 +69,54 @@ Deno.serve(async (req) => {
     const errors = [];
 
     for (const source of sources) {
-      // feed_url stores a comma-separated list of post URLs for manual social sources
+      // MP-Phase1+2: also hard-skip per-source in case body.source_type was bypassed
+      const t = source.source_type || source.type;
+      if (t === 'TIKTOK' || t === 'INSTAGRAM') continue;
+
       const postUrls = (source.feed_url || '')
         .split(',')
         .map((u) => u.trim())
         .filter(Boolean);
 
       for (const postUrl of postUrls) {
-        if (!postUrl) continue;
-        const hash = simpleHash(postUrl);
+        try {
+          if (!postUrl) continue;
+          const hash = simpleHash(postUrl);
 
-        const existing = await base44.asServiceRole.entities.LifestyleItems.filter({ content_url_hash: hash });
-        if (existing.length > 0) { skipped++; continue; }
+          const existing = await base44.asServiceRole.entities.LifestyleItems.filter({ content_url_hash: hash });
+          if (existing.length > 0) { skipped++; continue; }
 
-        let image_url = '';
-        let title = source.name;
-        let media_type = sourceType === 'TIKTOK' ? 'TIKTOK' : 'INSTAGRAM';
-
-        if (sourceType === 'INSTAGRAM') {
-          const preview = await fetchInstagramPreview(postUrl);
-          image_url = preview.thumbnail_url;
-          if (preview.author_name) title = `${source.name} – ${preview.author_name}`;
-        } else if (sourceType === 'TIKTOK') {
-          // TikTok oEmbed (no auth required for public videos)
-          try {
-            const oembed = await fetch(
-              `https://www.tiktok.com/oembed?url=${encodeURIComponent(postUrl)}`
-            );
-            if (oembed.ok) {
-              const data = await oembed.json();
-              image_url = data.thumbnail_url || '';
-              title = data.title || source.name;
-            }
-          } catch (e) {
-            errors.push(`TikTok oEmbed failed for ${postUrl}: ${e.message}`);
+          if (!source.id || !source.name) {
+            await logIngestError(base44, 'ingestSocial', 'intake',
+              { source_identifier: source.name || '(unnamed)', raw_payload: { postUrl } },
+              new Error('Source missing id or name'));
+            continue;
           }
-        }
 
-        await base44.asServiceRole.entities.LifestyleItems.create({
-          source_id: source.id,
-          source_name: source.name,
-          source_logo_url: source.logo_url || '',
-          title: title.slice(0, 200),
-          content_url: postUrl,
-          embed_url: postUrl,
-          content_url_hash: hash,
-          image_url,
-          category: source.category || 'Lifestyle',
-          summary: `View this ${sourceType === 'TIKTOK' ? 'TikTok' : 'Instagram post'} from ${source.name}`,
-          pub_date: new Date().toISOString(),
-          ingested_at: new Date().toISOString(),
-          status: 'NEEDS_REVIEW',
-          media_type,
-          tags: source.category || 'Lifestyle',
-        });
-        ingested++;
+          await base44.asServiceRole.entities.LifestyleItems.create({
+            source_id: source.id,
+            source_name: source.name,
+            source_logo_url: source.logo_url || '',
+            title: (source.name || 'Post').slice(0, 200),
+            content_url: postUrl,
+            embed_url: postUrl,
+            content_url_hash: hash,
+            image_url: '',
+            category: source.category || 'Lifestyle',
+            summary: `View this post from ${source.name}`,
+            published_at: new Date().toISOString(),
+            ingested_at: new Date().toISOString(),
+            status: 'NEEDS_REVIEW',
+            media_type: 'CLIP',
+            tags: Array.isArray(source.tags) ? source.tags : [],
+          });
+          ingested++;
+        } catch (err) {
+          errors.push(`${source.name}: ${err.message}`);
+          await logIngestError(base44, 'ingestSocial', 'intake',
+            { source_identifier: source.name, raw_payload: { postUrl } }, err);
+          continue;
+        }
       }
     }
 

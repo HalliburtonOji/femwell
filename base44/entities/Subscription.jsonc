@@ -1,0 +1,64 @@
+{
+  "name": "Subscription",
+  "properties": {
+    "cancelled_at": {
+      "type": "string"
+    },
+    "created_at": {
+      "type": "string"
+    },
+    "ends_at": {
+      "type": "string"
+    },
+    "is_active": {
+      "default": false,
+      "type": "boolean"
+    },
+    "plan": {
+      "default": "free",
+      "enum": [
+        "free",
+        "plus",
+        "pro"
+      ],
+      "type": "string"
+    },
+    "renewal_date": {
+      "type": "string"
+    },
+    "source": {
+      "default": "manual",
+      "enum": [
+        "stripe",
+        "apple",
+        "google",
+        "manual",
+        "promo"
+      ],
+      "type": "string"
+    },
+    "started_at": {
+      "type": "string"
+    },
+    "stripe_customer_id": {
+      "type": "string"
+    },
+    "stripe_subscription_id": {
+      "type": "string"
+    },
+    "trial_ends_at": {
+      "type": "string"
+    },
+    "updated_at": {
+      "type": "string"
+    },
+    "user_id": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "user_id",
+    "plan"
+  ],
+  "type": "object"
+}

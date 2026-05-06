@@ -18,7 +18,8 @@
       "type": "string"
     },
     "embed_url": {
-      "type": "string"
+      "type": "string",
+      "description": "Canonical embed URL when is_embeddable=true. For YouTube: https://www.youtube.com/embed/<video_id>"
     },
     "content_url_hash": {
       "type": "string"
@@ -89,7 +90,8 @@
         "NEEDS_REVIEW",
         "SUMMARIZED",
         "PUBLISHED",
-        "HIDDEN"
+        "HIDDEN",
+        "REJECTED_EMBED"
       ],
       "default": "NEEDS_REVIEW"
     },
@@ -155,6 +157,22 @@
     },
     "duration_label": {
       "type": "string"
+    },
+    "duration_seconds": {
+      "type": "number",
+      "description": "Video duration in seconds; populated for VIDEO"
+    },
+    "rejection_reason": {
+      "type": "string",
+      "description": "Set when item is auto-HIDDEN or REJECTED_EMBED"
+    },
+    "is_embeddable": {
+      "type": "boolean",
+      "description": "Verified at ingest. True only if the video can play directly in the app."
+    },
+    "embed_check_reason": {
+      "type": "string",
+      "description": "When is_embeddable=false, why"
     },
     "content_type": {
       "type": "string",

@@ -1,0 +1,46 @@
+{
+  "name": "DailyPhaseBrief",
+  "properties": {
+    "body_tip": {
+      "type": "string"
+    },
+    "created_at": {
+      "type": "string"
+    },
+    "cycle_day": {
+      "type": "number"
+    },
+    "cycle_phase": {
+      "type": "string"
+    },
+    "date": {
+      "type": "string"
+    },
+    "energy_note": {
+      "type": "string"
+    },
+    "food_suggestion": {
+      "type": "string"
+    },
+    "headline": {
+      "type": "string"
+    },
+    "mood_note": {
+      "type": "string"
+    },
+    "movement_suggestion": {
+      "type": "string"
+    },
+    "updated_at": {
+      "type": "string"
+    },
+    "user_id": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "user_id",
+    "date"
+  ],
+  "type": "object"
+}

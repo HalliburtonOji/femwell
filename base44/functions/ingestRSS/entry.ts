@@ -1,32 +1,78 @@
-import { createClientFromRequest } from 'npm:@base44/sdk@0.8.23';
+// MP-Pipeline Phase 1+2:
+// - Replaces silent catches with IngestErrorLog rows
+// - Adds HEAD validation before each LifestyleItem write
+// - Skips items with empty title/content_url/source_id (no partial records)
+
+import { createClientFromRequest } from 'npm:@base44/sdk@0.8.25';
+
+// ── Inlined helper: structured ingest error log ────────────────────────────
+async function logIngestError(base44, function_name, stage, ctx, err) {
+  try {
+    const e = err && typeof err === 'object' ? err : new Error(String(err));
+    await base44.asServiceRole.entities.IngestErrorLog.create({
+      function_name,
+      stage,
+      source_identifier: ctx.source_identifier || '',
+      item_id: ctx.item_id || '',
+      error_message: e?.message || String(err),
+      error_stack: e?.stack || '',
+      raw_payload: ctx.raw_payload ? JSON.stringify(ctx.raw_payload).slice(0, 4000) : '',
+      logged_at: new Date().toISOString(),
+      status: 'logged',
+    });
+  } catch (logErr) {
+    console.error(`[ingest-error-log-failed] ${function_name} ${stage}`, logErr?.message);
+  }
+  console.error(`[ingest-error] ${function_name} ${stage}`, err?.message || err);
+}
+
+// ── Inlined helper: HEAD reachability check ────────────────────────────────
+async function isUrlReachable(url, timeoutMs = 5000) {
+  if (!url || typeof url !== 'string') return false;
+  try {
+    const ctrl = new AbortController();
+    const t = setTimeout(() => ctrl.abort(), timeoutMs);
+    const res = await fetch(url, { method: 'HEAD', redirect: 'follow', signal: ctrl.signal });
+    clearTimeout(t);
+    return res.status >= 200 && res.status < 400;
+  } catch {
+    return false;
+  }
+}
 
 function stripHtml(text) {
   return (text || '').replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim().slice(0, 300);
 }
 
-async function parseRSS(url) {
-  const res = await fetch(url, { headers: { 'User-Agent': 'FemWell/1.0 RSS Reader' } });
-  const text = await res.text();
-  const items = [];
-  const itemRegex = /<item[^>]*>([\s\S]*?)<\/item>|<entry[^>]*>([\s\S]*?)<\/entry>/gi;
-  let match;
-  while ((match = itemRegex.exec(text)) !== null) {
-    const block = match[1] || match[2] || '';
-    const get = (tag) => {
-      const cdata = block.match(new RegExp(`<${tag}[^>]*><!\\[CDATA\\[([\\s\\S]*?)\\]\\]><\\/${tag}>`, 'i'));
-      if (cdata?.[1]) return cdata[1].trim();
-      const plain = block.match(new RegExp(`<${tag}[^>]*>([\\s\\S]*?)<\\/${tag}>`, 'i'));
-      return plain?.[1]?.replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim() || '';
-    };
-    const linkAttr = block.match(/<link[^>]+href="([^"]+)"/i);
-    items.push({
-      title: get('title'),
-      link: linkAttr?.[1] || get('link') || get('guid'),
-      pubDate: get('pubDate') || get('published') || new Date().toISOString(),
-      description: get('description') || get('summary') || ''
-    });
+async function parseRSS(base44, sourceName, url) {
+  try {
+    const res = await fetch(url, { headers: { 'User-Agent': 'FemWell/1.0 RSS Reader' } });
+    if (!res.ok) throw new Error(`HTTP ${res.status} fetching ${url}`);
+    const text = await res.text();
+    const items = [];
+    const itemRegex = /<item[^>]*>([\s\S]*?)<\/item>|<entry[^>]*>([\s\S]*?)<\/entry>/gi;
+    let match;
+    while ((match = itemRegex.exec(text)) !== null) {
+      const block = match[1] || match[2] || '';
+      const get = (tag) => {
+        const cdata = block.match(new RegExp(`<${tag}[^>]*><!\\[CDATA\\[([\\s\\S]*?)\\]\\]><\\/${tag}>`, 'i'));
+        if (cdata?.[1]) return cdata[1].trim();
+        const plain = block.match(new RegExp(`<${tag}[^>]*>([\\s\\S]*?)<\\/${tag}>`, 'i'));
+        return plain?.[1]?.replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim() || '';
+      };
+      const linkAttr = block.match(/<link[^>]+href="([^"]+)"/i);
+      items.push({
+        title: get('title'),
+        link: linkAttr?.[1] || get('link') || get('guid'),
+        pubDate: get('pubDate') || get('published') || new Date().toISOString(),
+        description: get('description') || get('summary') || ''
+      });
+    }
+    return items;
+  } catch (err) {
+    await logIngestError(base44, 'parseRSS', 'intake', { source_identifier: sourceName, raw_payload: { url } }, err);
+    throw err; // rethrow so caller knows the parse failed
   }
-  return items;
 }
 
 Deno.serve(async (req) => {
@@ -43,13 +89,43 @@ Deno.serve(async (req) => {
 
     for (const source of activeSources) {
       if (!source.rss_url) continue;
+      let rssItems = [];
       try {
-        const rssItems = await parseRSS(source.rss_url);
-        for (const item of rssItems.slice(0, 20)) {
-          if (!item.title || !item.link) continue;
+        rssItems = await parseRSS(base44, source.name, source.rss_url);
+      } catch {
+        // Already logged inside parseRSS — keep going to next source.
+        continue;
+      }
+
+      for (const item of rssItems.slice(0, 20)) {
+        try {
+          if (!item.title || !item.link) {
+            await logIngestError(base44, 'ingestRSS', 'intake',
+              { source_identifier: source.name, raw_payload: item },
+              new Error('Missing required field: title or link'));
+            continue;
+          }
+
+          // Required-field guard: source_id, title, content_url all non-null.
+          if (!source.id) {
+            await logIngestError(base44, 'ingestRSS', 'intake',
+              { source_identifier: source.name, raw_payload: item },
+              new Error('Source has no id; skipping write'));
+            continue;
+          }
+
           const existing = await base44.asServiceRole.entities.LifestyleItems.filter({ content_url: item.link });
           if (existing.length > 0) {
             skipped += 1;
+            continue;
+          }
+
+          // HEAD validation: confirm URL is reachable before writing.
+          const reachable = await isUrlReachable(item.link);
+          if (!reachable) {
+            await logIngestError(base44, 'ingestRSS', 'url_validation',
+              { source_identifier: source.name, item_id: item.link, raw_payload: { link: item.link } },
+              new Error('HEAD non-200 or unreachable'));
             continue;
           }
 
@@ -68,9 +144,11 @@ Deno.serve(async (req) => {
             provider: 'RSS'
           });
           ingested += 1;
+        } catch (err) {
+          await logIngestError(base44, 'ingestRSS', 'intake',
+            { source_identifier: source.name, raw_payload: item }, err);
+          continue;
         }
-      } catch {
-        // do nothing
       }
     }
 

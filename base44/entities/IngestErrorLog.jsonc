@@ -1,0 +1,80 @@
+{
+  "name": "IngestErrorLog",
+  "type": "object",
+  "description": "Server-side ingest pipeline error log. Retention: 30 days.",
+  "properties": {
+    "function_name": {
+      "type": "string"
+    },
+    "source_identifier": {
+      "type": "string"
+    },
+    "error_message": {
+      "type": "string"
+    },
+    "error_stack": {
+      "type": "string"
+    },
+    "item_id": {
+      "type": "string"
+    },
+    "stage": {
+      "type": "string",
+      "enum": [
+        "intake",
+        "url_validation",
+        "enrichment",
+        "summarization",
+        "publish"
+      ]
+    },
+    "raw_payload": {
+      "type": "string"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "logged",
+        "resolved",
+        "ignored"
+      ],
+      "default": "logged"
+    },
+    "logged_at": {
+      "type": "string"
+    },
+    "created_at": {
+      "type": "string"
+    },
+    "updated_at": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "function_name",
+    "stage",
+    "logged_at"
+  ],
+  "rls": {
+    "create": {
+      "user_condition": {
+        "role": "system"
+      }
+    },
+    "read": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "update": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "delete": {
+      "user_condition": {
+        "role": "admin"
+      }
+    }
+  }
+}

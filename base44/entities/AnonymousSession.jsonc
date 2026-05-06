@@ -1,0 +1,27 @@
+{
+  "name": "AnonymousSession",
+  "type": "object",
+  "properties": {
+    "device_token": {
+      "type": "string",
+      "description": "Hashed device identifier \u2014 never raw device ID"
+    },
+    "created_at": {
+      "type": "string"
+    },
+    "last_active_at": {
+      "type": "string"
+    },
+    "is_active": {
+      "type": "boolean",
+      "default": true
+    },
+    "linked_user_id": {
+      "type": "string",
+      "description": "Set if user later creates an account and links it"
+    }
+  },
+  "required": [
+    "device_token"
+  ]
+}

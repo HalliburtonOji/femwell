@@ -1,0 +1,49 @@
+{
+  "name": "DailyStory",
+  "type": "object",
+  "properties": {
+    "series_key": {
+      "type": "string",
+      "description": "e.g. 'borrowed_light', 'salt_and_citrus'"
+    },
+    "series_title": {
+      "type": "string"
+    },
+    "day_number": {
+      "type": "number",
+      "description": "1-30, which day of the series this segment belongs to"
+    },
+    "segment_text": {
+      "type": "string",
+      "description": "100-150 words revealed on this day"
+    },
+    "cliffhanger": {
+      "type": "string",
+      "description": "Short teaser for tomorrow's segment"
+    },
+    "published_date": {
+      "type": "string",
+      "description": "YYYY-MM-DD, the calendar date this segment is available"
+    },
+    "image_gradient": {
+      "type": "string",
+      "description": "CSS gradient string for the card background"
+    },
+    "is_active": {
+      "type": "boolean",
+      "default": true
+    },
+    "created_at": {
+      "type": "string"
+    },
+    "updated_at": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "series_key",
+    "day_number",
+    "segment_text",
+    "published_date"
+  ]
+}
