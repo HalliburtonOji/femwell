@@ -105,6 +105,20 @@
         "type": "string"
       }
     },
+    "saved_item_phases": {
+      "type": "object",
+      "description": "Map of lifestyle item id -> cycle phase tag chosen at save time",
+      "additionalProperties": {
+        "type": "string",
+        "enum": [
+          "menstrual",
+          "follicular",
+          "ovulatory",
+          "luteal"
+        ]
+      },
+      "default": {}
+    },
     "blocked_source_ids": {
       "type": "array",
       "items": {

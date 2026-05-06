@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { base44 } from "@/api/base44Client";
 import { ExternalLink, ChevronDown, ChevronUp, X, BookOpen, Bookmark, BookText, Brain, Heart, Sparkles, Leaf, Pin } from "lucide-react";
 import { CONTENT_CATEGORIES, categoryLabel } from "@/utils/contentCategory";
+import ForYouTab from "@/components/lifestyle/foryou/ForYouTab";
 
 // ── Helpers ──────────────────────────────────────────────────────────────────
 function stripHtml(str) {
@@ -143,7 +144,7 @@ const CAT_GRADIENTS = {
   "Cycle":         "linear-gradient(135deg, #F5ECF0 0%, #E8C4D0 100%)",
   "Skin":          "linear-gradient(135deg, #FFF0F5 0%, #FFD6E7 100%)",
   "Sleep":         "linear-gradient(135deg, #EBE8F5 0%, #C8BEFF 100%)",
-  "default":       "linear-gradient(135deg, #F3E8FF 0%, #E9D5FF 100%)",
+  "default":       "linear-gradient(135deg, var(--rose-soft-bg) 0%, var(--cream-2) 100%)",
 };
 
 function getCatGradient(category) {
@@ -220,61 +221,11 @@ function ContentCard({ item, compact = false }) {
 }
 
 // ── FOR YOU tab ───────────────────────────────────────────────────────────────
+// Implementation moved to components/lifestyle/foryou/ForYouTab.jsx
 function matchCategory(item, filter) {
   if (!filter || filter === "all") return true;
   const raw = String(item.category || "").toLowerCase();
-  // Direct enum match OR legacy-text containing the slug.
   return raw === filter || raw.includes(filter.replace(/_/g, " "));
-}
-
-function ForYouTab({ categoryFilter }) {
-  const [items, setItems] = useState([]);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    (async () => {
-      const all = await base44.entities.LifestyleItems.filter({ status: "PUBLISHED" }, "-engagement_score", 100).catch(() => []);
-
-      // Read followed_categories silently from current user's profile to nudge ranking.
-      let followed = [];
-      try {
-        const u = await base44.auth.me();
-        if (u?.id) {
-          const profiles = await base44.entities.UserProfile.filter({ user_id: u.id });
-          followed = Array.isArray(profiles?.[0]?.followed_categories) ? profiles[0].followed_categories : [];
-        }
-      } catch { /* silent */ }
-
-      const followedSet = new Set(followed.map(c => String(c).toLowerCase()));
-
-      // Existing two-tier sort, then re-rank with 1.2× boost for followed categories (stable).
-      const baseSorted = [
-        ...all.filter(i => i.provider === "FEMWELL_AI" || i.lede),
-        ...all.filter(i => i.provider !== "FEMWELL_AI" && !i.lede),
-      ];
-
-      const scored = baseSorted.map((item, idx) => {
-        const baseScore = (item.engagement_score || 0) + (baseSorted.length - idx) * 0.001; // preserve order
-        const cat = String(item.category || "").toLowerCase();
-        const boost = followedSet.size && followedSet.has(cat) ? 1.2 : 1.0;
-        return { item, score: baseScore * boost, idx };
-      });
-      scored.sort((a, b) => (b.score - a.score) || (a.idx - b.idx));
-
-      setItems(scored.map(s => s.item));
-      setLoading(false);
-    })();
-  }, []);
-
-  if (loading) return <Spinner />;
-  const filtered = items.filter(i => matchCategory(i, categoryFilter));
-  if (!filtered.length) return <EmptyState text="No posts match this category yet." />;
-
-  return (
-    <div className="space-y-4">
-      {filtered.map(item => <ContentCard key={item.id} item={item} />)}
-    </div>
-  );
 }
 
 // ── DAILY STORY tab ───────────────────────────────────────────────────────────
@@ -302,7 +253,7 @@ function DailyStoryTab() {
   if (loading) return <Spinner />;
   if (!current) return <EmptyState text="The daily story is being written. Check back soon." />;
 
-  const bg = current.image_gradient || "linear-gradient(135deg, #F3E8FF 0%, #E9D5FF 100%)";
+  const bg = current.image_gradient || "linear-gradient(135deg, var(--rose-soft-bg) 0%, var(--cream-2) 100%)";
 
   return (
     <div>
@@ -700,12 +651,18 @@ const TABS = [
 ];
 
 // ── Category filter chips (ContentItems enum) ─────────────────────────────────
-function CategoryChips({ active, onChange }) {
+function CategoryChips({ active, onChange, followedCategories = [] }) {
   const chips = ["all", ...CONTENT_CATEGORIES];
+  const followedSet = new Set(
+    (Array.isArray(followedCategories) ? followedCategories : [])
+      .map((c) => String(c).toLowerCase())
+  );
   return (
-    <div className="lf-scroll" style={{ display: "flex", gap: 6, overflowX: "auto", paddingBottom: 6, marginTop: 8 }}>
+    <div className="lf-scroll" role="group" aria-label="Filter content by category"
+      style={{ display: "flex", gap: 6, overflowX: "auto", paddingBottom: 6, marginTop: 8, scrollSnapType: "x mandatory" }}>
       {chips.map(cat => {
         const isActive = active === cat;
+        const isFollowed = cat !== "all" && followedSet.has(String(cat).toLowerCase());
         return (
           <button
             key={cat}
@@ -713,13 +670,21 @@ function CategoryChips({ active, onChange }) {
             aria-label={`Filter by ${cat === "all" ? "all categories" : categoryLabel(cat)}`}
             aria-pressed={isActive}
             style={{
-              flexShrink: 0, padding: "6px 14px", borderRadius: 9999,
-              fontSize: 11, fontWeight: 600, cursor: "pointer", border: "none",
-              fontFamily: "'Inter', sans-serif", whiteSpace: "nowrap", minHeight: 32,
-              backgroundColor: isActive ? PRIMARY : "var(--ivory-dark)",
-              color: isActive ? "white" : "var(--mauve)",
+              flexShrink: 0, padding: "8px 16px", borderRadius: 9999,
+              fontSize: 13, fontWeight: isActive ? 600 : 500, cursor: "pointer", border: "none",
+              fontFamily: "'Inter', sans-serif", whiteSpace: "nowrap", minHeight: 44,
+              scrollSnapAlign: "start",
+              display: "inline-flex", alignItems: "center", gap: 4,
+              backgroundColor: isActive ? "var(--rose-primary)" : "var(--cream)",
+              color: isActive ? "white" : "var(--plum-deep)",
             }}
           >
+            {isFollowed && !isActive && (
+              <span aria-hidden="true" style={{
+                width: 6, height: 6, borderRadius: 9999,
+                background: "var(--rose-soft)", flexShrink: 0,
+              }} />
+            )}
             {cat === "all" ? "All" : categoryLabel(cat)}
           </button>
         );
@@ -735,6 +700,22 @@ export default function Lifestyle() {
     return TABS.some(t => t.id === p) ? p : "for_you";
   });
   const [categoryFilter, setCategoryFilter] = useState("all");
+  const [followedCategories, setFollowedCategories] = useState([]);
+
+  useEffect(() => {
+    (async () => {
+      try {
+        const u = await base44.auth.me();
+        if (u?.id) {
+          const profiles = await base44.entities.UserProfile.filter({ user_id: u.id });
+          const followed = profiles?.[0]?.followed_categories;
+          if (Array.isArray(followed)) setFollowedCategories(followed);
+        }
+      } catch { /* silent */ }
+    })();
+  }, []);
+
+  const isForYou = tab === "for_you";
 
   return (
     <div className="min-h-screen pb-28" style={{ backgroundColor: "var(--ivory)" }}>
@@ -758,20 +739,25 @@ export default function Lifestyle() {
               </button>
             ))}
           </div>
-          <CategoryChips active={categoryFilter} onChange={setCategoryFilter} />
+          <CategoryChips active={categoryFilter} onChange={setCategoryFilter} followedCategories={followedCategories} />
         </div>
       </div>
 
-      {/* Content */}
-      <div className="max-w-xl mx-auto px-4 pt-5">
-        {tab === "for_you"     && <ForYouTab categoryFilter={categoryFilter} />}
-        {tab === "daily_story" && <DailyStoryTab />}
-        {tab === "read"        && <ReadTab categoryFilter={categoryFilter} />}
-        {tab === "fiction"     && <FictionTab />}
-        {tab === "stories"     && <StoriesTab />}
-        {tab === "books"       && <BooksTab />}
-        {tab === "horoscope"   && <HoroscopeTab />}
-      </div>
+      {/* Content — For-You uses a wider container so the bento can breathe */}
+      {isForYou ? (
+        <div className="mx-auto pt-5" style={{ maxWidth: 1200 }}>
+          <ForYouTab categoryFilter={categoryFilter} />
+        </div>
+      ) : (
+        <div className="max-w-xl mx-auto px-4 pt-5">
+          {tab === "daily_story" && <DailyStoryTab />}
+          {tab === "read"        && <ReadTab categoryFilter={categoryFilter} />}
+          {tab === "fiction"     && <FictionTab />}
+          {tab === "stories"     && <StoriesTab />}
+          {tab === "books"       && <BooksTab />}
+          {tab === "horoscope"   && <HoroscopeTab />}
+        </div>
+      )}
     </div>
   );
 }
