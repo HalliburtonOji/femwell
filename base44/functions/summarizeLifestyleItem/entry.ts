@@ -29,6 +29,26 @@ async function logIngestError(base44, function_name, stage, ctx, err) {
   console.error(`[ingest-error] ${function_name} ${stage}`, err?.message || err);
 }
 
+// ── Inlined helper: validate try_this_content_key against ContentItems ──
+// Returns the key as-is if a ContentItems row with that content_key exists.
+// Returns "" otherwise. Fail-safe: empty rather than orphaned.
+async function validateContentKey(base44, proposedKey) {
+  if (!proposedKey || typeof proposedKey !== 'string' || !proposedKey.trim()) {
+    return '';
+  }
+  const trimmed = proposedKey.trim();
+  try {
+    const matches = await base44.asServiceRole.entities.ContentItems.filter(
+      { content_key: trimmed },
+      null,
+      1
+    );
+    return Array.isArray(matches) && matches.length > 0 ? trimmed : '';
+  } catch {
+    return '';
+  }
+}
+
 // ── Inlined helper: YouTube Data API ───────────────────────────────────────
 const YT_KEY = Deno.env.get('YOUTUBE_API_KEY');
 const UK_REGION = 'GB';
@@ -126,12 +146,14 @@ async function invokeLLMForVideoSummary(base44, ctx) {
 
 Also infer which menstrual cycle phase(s) this content speaks to most. Most content is general-purpose — only return phase tags when the content is genuinely more relevant during a specific phase (e.g. an article about luteal-week cravings should tag ["luteal"]; an article about general nutrition should return []). Available phases: "menstrual", "follicular", "ovulatory", "luteal". Return at most 2 phases.
 
+You may also suggest a try_this_content_key — a short kebab-case key linking to a related FemWell ContentItem (meditation / breathwork / guided session). Real keys you can suggest include: "sleep-wind-down", "body-scan-reset", "anxiety-reset", "pms-kindness", "menopause-calm", "self-compassion", "3-minute-breathing-space", "box-breathing", "4-7-8-breathing", "energising-breath", "downshift-breathing", "alternate-nostril-breathing", "coherent-breathing", "progressive-muscle-relaxation", "grounding-calm", "focus-sprint". If none of these clearly fits the video's content, return empty string. Don't invent new keys; suggest only from this list or leave empty.
+
 Title: ${ctx.title}
 Duration: ${ctx.duration}
 Description: ${(ctx.description || '').slice(0, 800)}
 Captions (excerpt): ${ctx.captions ? ctx.captions.slice(0, 2000) : '(no captions available)'}
 
-Return JSON: { summary: string, phase_tags: string[] }`;
+Return JSON: { summary: string, phase_tags: string[], try_this_content_key: string }`;
   const res = await base44.asServiceRole.integrations.Core.InvokeLLM({
     prompt,
     response_json_schema: {
@@ -144,10 +166,15 @@ Return JSON: { summary: string, phase_tags: string[] }`;
           maxItems: 2,
           default: [],
         },
+        try_this_content_key: { type: 'string', default: '' },
       },
     },
   });
-  return { summary: res?.summary || '', phase_tags: Array.isArray(res?.phase_tags) ? res.phase_tags : [] };
+  return {
+    summary: res?.summary || '',
+    phase_tags: Array.isArray(res?.phase_tags) ? res.phase_tags : [],
+    try_this_content_key: typeof res?.try_this_content_key === 'string' ? res.try_this_content_key : '',
+  };
 }
 
 async function processVideoItem(base44, item) {
@@ -185,6 +212,7 @@ async function processVideoItem(base44, item) {
   const captionText = await fetchYouTubeCaptions(item.video_id).catch(() => null);
   let summary = '';
   let inferredPhaseTags = [];
+  let validatedTryThisKey = '';
   try {
     const llmRes = await invokeLLMForVideoSummary(base44, {
       title: meta.title || item.title,
@@ -194,6 +222,7 @@ async function processVideoItem(base44, item) {
     });
     summary = llmRes.summary;
     inferredPhaseTags = llmRes.phase_tags;
+    validatedTryThisKey = await validateContentKey(base44, llmRes.try_this_content_key);
   } catch (err) {
     await logIngestError(base44, 'summarizeLifestyleItem', 'summarization',
       { item_id: item.id, source_identifier: item.source_name || '' }, err);
@@ -218,6 +247,7 @@ async function processVideoItem(base44, item) {
     is_embeddable: true,
     embed_url: embedUrl,
     phase_tags: inferredPhaseTags,
+    try_this_content_key: validatedTryThisKey,
     status: 'PUBLISHED',
     published_at: new Date().toISOString(),
     updated_at: new Date().toISOString(),
@@ -243,7 +273,8 @@ Return JSON with:
 - why_it_matters: one-line statement on why this matters (max 80 chars)
 - category: one of [Womens Health, Relationships, Professional, Beauty, Lifestyle, Mental Health, Nutrition, Fitness]
 - tags: comma-separated keywords (max 5 tags)
-- phase_tags: array of menstrual cycle phases this article is most relevant during. Available: "menstrual", "follicular", "ovulatory", "luteal". Most articles are general-purpose — return [] for general content. Only tag phases when content is genuinely more relevant in that phase. Max 2 phases.`;
+- phase_tags: array of menstrual cycle phases this article is most relevant during. Available: "menstrual", "follicular", "ovulatory", "luteal". Most articles are general-purpose — return [] for general content. Only tag phases when content is genuinely more relevant in that phase. Max 2 phases.
+- try_this_content_key: optional kebab-case key linking to a related FemWell ContentItem (meditation / breathwork / guided session). Suggest ONLY from this list of real keys: "sleep-wind-down", "body-scan-reset", "anxiety-reset", "pms-kindness", "menopause-calm", "self-compassion", "3-minute-breathing-space", "box-breathing", "4-7-8-breathing", "energising-breath", "downshift-breathing", "alternate-nostril-breathing", "coherent-breathing", "progressive-muscle-relaxation", "grounding-calm", "focus-sprint". If none clearly fits, return empty string.`;
 
     const result = await base44.asServiceRole.integrations.Core.InvokeLLM({
       prompt,
@@ -263,6 +294,7 @@ Return JSON with:
             maxItems: 2,
             default: [],
           },
+          try_this_content_key: { type: 'string', default: '' },
         },
       },
     });
@@ -271,6 +303,7 @@ Return JSON with:
       ? result.tags.split(',').map(t => t.trim()).filter(Boolean)
       : (Array.isArray(item.tags) ? item.tags : []);
     const phaseTagsArr = Array.isArray(result.phase_tags) ? result.phase_tags : [];
+    const validatedTryThisKey = await validateContentKey(base44, result.try_this_content_key);
     await base44.asServiceRole.entities.LifestyleItems.update(item.id, {
       summary: result.summary || item.summary,
       takeaways: [result.takeaway_1, result.takeaway_2, result.takeaway_3].filter(Boolean),
@@ -278,6 +311,7 @@ Return JSON with:
       category: result.category === 'Womens Health' ? "Women's Health" : (result.category || item.category),
       tags: tagsArr,
       phase_tags: phaseTagsArr,
+      try_this_content_key: validatedTryThisKey,
       status: 'PUBLISHED',
       published_at: new Date().toISOString(),
       updated_at: new Date().toISOString(),
