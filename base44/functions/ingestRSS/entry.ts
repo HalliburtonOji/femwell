@@ -88,10 +88,10 @@ Deno.serve(async (req) => {
     let skipped = 0;
 
     for (const source of activeSources) {
-      if (!source.rss_url) continue;
+      if (!source.feed_url) continue;
       let rssItems = [];
       try {
-        rssItems = await parseRSS(base44, source.name, source.rss_url);
+        rssItems = await parseRSS(base44, source.name, source.feed_url);
       } catch {
         // Already logged inside parseRSS — keep going to next source.
         continue;
@@ -140,6 +140,7 @@ Deno.serve(async (req) => {
             media_type: 'ARTICLE',
             status: 'PUBLISHED',
             tags: Array.isArray(source.tags) ? source.tags : [],
+            created_at: new Date().toISOString(),
             ingested_at: new Date().toISOString(),
             provider: 'RSS'
           });

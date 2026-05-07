@@ -42,6 +42,16 @@ async function isUrlReachable(url, timeoutMs = 5000) {
   }
 }
 
+// ── KNOWN ISSUE: hardcoded YouTube & RSS arrays ────────────────────────────
+//    This function uses hardcoded YOUTUBE_CHANNELS (~19 entries below) and
+//    hardcoded RSS_SOURCES (~11 entries below) instead of reading from the
+//    LifestyleSources entity. Consequences:
+//    - The 19 YOUTUBE_CHANNEL rows in LifestyleSources are UNUSED by this function
+//    - New sources added to LifestyleSources are NOT picked up here
+//    - Any daily_item_cap added in Phase 4-B will not affect YouTube videos
+//    Refactor planned for Phase 5: merge into a single LifestyleSources-driven
+//    loop so the entity is the source of truth for what gets ingested.
+// ───────────────────────────────────────────────────────────────────────────
 const YOUTUBE_CHANNELS = [
   { id: 'UC4cNjUPc2gQKucX3hLUayYQ', name: 'Dr. Mindy Pelz',      category: 'Hormones & Cycle', tags: ['hormones', 'fasting', 'cycle syncing'] },
   { id: 'UCFKE7WVJfvaHW5q283SxchA', name: 'Yoga With Adriene',    category: 'Mindfulness',      tags: ['yoga', 'movement', 'calm'] },
@@ -198,7 +208,7 @@ async function resolveRSSSourceId(base44, source, sourceCache) {
   try {
     const existing = await base44.asServiceRole.entities.LifestyleSources.filter({
       source_type: 'RSS',
-      rss_url: source.rss,
+      feed_url: source.rss,
     }).catch(() => []);
     if (existing && existing[0]?.id) {
       sourceCache.set(cacheKey, existing[0].id);
@@ -207,7 +217,7 @@ async function resolveRSSSourceId(base44, source, sourceCache) {
     const created = await base44.asServiceRole.entities.LifestyleSources.create({
       name: source.name,
       source_type: 'RSS',
-      rss_url: source.rss,
+      feed_url: source.rss,
       category: source.category,
       is_active: true,
     }).catch(() => null);
@@ -286,6 +296,7 @@ Deno.serve(async (req) => {
               image_url: v.thumbnail,
               content_url_hash: hash,
               published_at: v.published || new Date().toISOString(),
+              created_at: new Date().toISOString(),
               ingested_at: new Date().toISOString(),
               category: channel.category,
               content_type: 'VIDEO',
@@ -360,6 +371,7 @@ Deno.serve(async (req) => {
               lede,
               summary: lede,
               published_at: (() => { try { return new Date(item.pubDate).toISOString(); } catch { return new Date().toISOString(); } })(),
+              created_at: new Date().toISOString(),
               ingested_at: new Date().toISOString(),
               category: source.category,
               content_type: source.content_type,
