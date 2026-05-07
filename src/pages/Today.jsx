@@ -18,6 +18,7 @@ import TodayHeroSection from "../components/today/TodayHeroSection";
 import CompleteProfileBanner from "../components/today/CompleteProfileBanner";
 import DailyPlanCard from "../components/today/DailyPlanCard";
 import DailyStoriesStrip from "../components/today/DailyStoriesStrip";
+import TodayDailyChapterCard from "@/components/today/TodayDailyChapterCard";
 import TrackTab from "../components/today/TrackTab";
 import TodayFertilityBanner from "../components/conditions/TodayFertilityBanner";
 import DailyPhaseBrief from "../components/today/DailyPhaseBrief";
@@ -76,8 +77,8 @@ function extractDisplayName(profile, user) {
   return null;
 }
 
-const MOOD_EMOJIS = ["😔", "😕", "😐", "🙂", "😄"];
-const ENERGY_EMOJIS = ["🪫", "😴", "⚡", "🔥", "✨"];
+const MOOD_EMOJIS = ["1", "2", "3", "4", "5"];
+const ENERGY_EMOJIS = ["1", "2", "3", "4", "5"];
 
 const todayStr = new Date().toISOString().split("T")[0];
 
@@ -480,7 +481,7 @@ export default function Today() {
             <div className="flex items-center justify-between gap-2">
               <button onClick={() => setCalmCardsOpen(true)}
                 style={{ display: "flex", alignItems: "center", gap: 6, padding: "5px 14px", borderRadius: 9999, border: "1px solid #E9D5FF", backgroundColor: "#FAF5FF", color: "#7C3AED", fontSize: 12, fontWeight: 600, fontFamily: "'Inter', sans-serif", cursor: "pointer" }}>
-                🌿 Calm Cards
+                Calm Cards
               </button>
               <button onClick={() => setPanicOpen(true)}
                 style={{ display: "flex", alignItems: "center", gap: 6, padding: "5px 14px", borderRadius: 9999, border: "1px solid var(--rose-dust-light)", backgroundColor: "var(--rose-dust-subtle)", color: "var(--rose-dust)", fontSize: 12, fontWeight: 600, fontFamily: "'Inter', sans-serif", cursor: "pointer" }}>
@@ -490,6 +491,7 @@ export default function Today() {
             
 
             <DailyStoriesStrip user={user} />
+            <TodayDailyChapterCard />
 
             {/* Quick mood + energy check-in */}
             <div style={{ backgroundColor: "var(--surface)", border: "1px solid var(--border)", borderRadius: 16, padding: "14px 16px", boxShadow: "var(--shadow-sm)" }}>

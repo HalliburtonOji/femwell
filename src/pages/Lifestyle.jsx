@@ -260,24 +260,24 @@ function DailyStoryTab() {
       <div style={{ borderRadius: 20, overflow: "hidden", marginBottom: 20, boxShadow: "var(--shadow-md)" }}>
         <div style={{ background: bg, padding: "28px 24px 24px", minHeight: 200 }}>
           <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 12 }}>
-            <span style={{ fontSize: 10, fontWeight: 700, color: PRIMARY, backgroundColor: PRIMARY_LIGHT, borderRadius: 9999, padding: "3px 10px", fontFamily: "'Inter', sans-serif" }}>
+            <span style={{ fontSize: 10, fontWeight: 700, color: "var(--plum-deep)", backgroundColor: "var(--rose-soft-bg)", borderRadius: 9999, padding: "3px 10px", fontFamily: "'Inter', sans-serif" }}>
               Day {current.day_number} of 30
             </span>
           </div>
-          <p style={{ fontSize: 12, fontWeight: 600, color: "rgba(42,32,53,0.6)", textTransform: "uppercase", letterSpacing: "0.1em", fontFamily: "'Inter', sans-serif", marginBottom: 4 }}>
+          <p style={{ fontSize: 12, fontWeight: 600, color: "var(--plum-mute)", textTransform: "uppercase", letterSpacing: "0.6px", fontFamily: "'Inter', sans-serif", marginBottom: 4 }}>
             {current.series_title}
           </p>
-          <h2 style={{ fontFamily: "'Playfair Display', serif", fontSize: 22, fontWeight: 700, color: "var(--plum)", lineHeight: 1.3, marginBottom: 20 }}>
+          <h2 style={{ fontFamily: "'Fraunces', serif", fontSize: 22, fontWeight: 400, color: "var(--plum-deep)", letterSpacing: "-0.01em", lineHeight: 1.3, marginBottom: 20 }}>
             {current.title || `Day ${current.day_number}`}
           </h2>
-          <p style={{ fontSize: 15, color: "var(--plum)", fontFamily: "'Inter', sans-serif", lineHeight: 1.75, whiteSpace: "pre-line" }}>
+          <p style={{ fontSize: 15, color: "var(--plum-deep)", fontFamily: "'Inter', sans-serif", lineHeight: 1.7, whiteSpace: "pre-line" }}>
             {current.segment_text}
           </p>
           {current.cliffhanger && (
             <>
-              <div style={{ height: 1, backgroundColor: "rgba(42,32,53,0.12)", margin: "24px 0" }} />
-              <p style={{ fontSize: 13, color: "rgba(42,32,53,0.55)", fontFamily: "'Inter', sans-serif", fontStyle: "italic", lineHeight: 1.6 }}>
-                <strong style={{ fontSize: 10, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.1em", fontStyle: "normal", display: "block", marginBottom: 4 }}>Tomorrow…</strong>
+              <div style={{ height: 1, backgroundColor: "var(--ink-line)", margin: "24px 0" }} />
+              <p style={{ fontSize: 14, color: "var(--plum-mute)", fontFamily: "'Fraunces', serif", fontStyle: "italic", lineHeight: 1.6 }}>
+                <strong style={{ fontFamily: "'Inter', sans-serif", fontWeight: 600, fontSize: 10, letterSpacing: "0.4px", textTransform: "uppercase", color: "var(--plum-mute)", fontStyle: "normal", display: "block", marginBottom: 4 }}>Tomorrow…</strong>
                 {current.cliffhanger}
               </p>
             </>
@@ -287,7 +287,7 @@ function DailyStoryTab() {
 
       {archive.length > 0 && (
         <div>
-          <p style={{ fontSize: "0.6rem", fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.12em", color: "var(--mauve)", fontFamily: "'Inter', sans-serif", marginBottom: 10 }}>Previous segments</p>
+          <p style={{ fontSize: 11, fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.6px", color: "var(--plum-mute)", fontFamily: "'Inter', sans-serif", marginBottom: 10 }}>Previous segments</p>
           <div className="space-y-2">
             {archive.map(s => {
               const expanded = expandedDays.has(s.id);
@@ -295,14 +295,14 @@ function DailyStoryTab() {
                 <div key={s.id} style={{ backgroundColor: "var(--surface)", border: "1px solid var(--border)", borderRadius: 14 }}>
                   <button onClick={() => toggleDay(s.id)} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", width: "100%", padding: "12px 14px", background: "none", border: "none", cursor: "pointer", textAlign: "left" }}>
                     <div>
-                      <span style={{ fontSize: 11, fontWeight: 700, color: PRIMARY, fontFamily: "'Inter', sans-serif" }}>Day {s.day_number}</span>
-                      <p style={{ fontSize: 12, color: "var(--mauve)", fontFamily: "'Inter', sans-serif", margin: "2px 0 0" }}>{(s.segment_text || "").slice(0, 60)}{(s.segment_text || "").length > 60 ? "…" : ""}</p>
+                      <span style={{ fontSize: 11, fontWeight: 700, color: "var(--rose-primary)", fontFamily: "'Inter', sans-serif" }}>Day {s.day_number}</span>
+                      <p style={{ fontSize: 12, color: "var(--plum-mute)", fontFamily: "'Inter', sans-serif", margin: "2px 0 0" }}>{(s.segment_text || "").slice(0, 60)}{(s.segment_text || "").length > 60 ? "…" : ""}</p>
                     </div>
-                    {expanded ? <ChevronUp className="w-4 h-4" style={{ color: "var(--mauve)", flexShrink: 0 }} /> : <ChevronDown className="w-4 h-4" style={{ color: "var(--mauve)", flexShrink: 0 }} />}
+                    {expanded ? <ChevronUp className="w-4 h-4" style={{ color: "var(--plum-mute)", flexShrink: 0 }} /> : <ChevronDown className="w-4 h-4" style={{ color: "var(--plum-mute)", flexShrink: 0 }} />}
                   </button>
                   {expanded && (
                     <div style={{ padding: "0 14px 14px" }}>
-                      <p style={{ fontSize: 13, color: "var(--plum)", fontFamily: "'Inter', sans-serif", lineHeight: 1.65, whiteSpace: "pre-line" }}>{s.segment_text}</p>
+                      <p style={{ fontSize: 13, color: "var(--plum-deep)", fontFamily: "'Inter', sans-serif", lineHeight: 1.65, whiteSpace: "pre-line" }}>{s.segment_text}</p>
                     </div>
                   )}
                 </div>
