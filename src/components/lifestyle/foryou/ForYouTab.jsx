@@ -66,10 +66,27 @@ export default function ForYouTab({ categoryFilter }) {
       if (cancelled) return;
       setHero(heroItem);
 
-      // Main feed
-      const all = await base44.entities.LifestyleItems
-        .filter({ status: "PUBLISHED" }, "-engagement_score", 200)
-        .catch(() => []);
+      // Main feed — retry up to 3x if empty/failed. Intermittent fetch failures were
+      // leaving allItems as [] and surfacing the "Nothing more to explore" empty state
+      // on first load, which then resolved on reload.
+      let all = [];
+      for (let attempt = 0; attempt < 3; attempt++) {
+        try {
+          const res = await base44.entities.LifestyleItems
+            .filter({ status: "PUBLISHED" }, "-engagement_score", 200);
+          if (Array.isArray(res) && res.length > 0) {
+            all = res;
+            break;
+          }
+          all = res || [];
+        } catch {
+          all = [];
+        }
+        if (all.length > 0) break;
+        if (cancelled) return;
+        // Short backoff before retry (250ms, 500ms)
+        await new Promise(r => setTimeout(r, 250 * (attempt + 1)));
+      }
       if (cancelled) return;
       setAllItems(all);
 

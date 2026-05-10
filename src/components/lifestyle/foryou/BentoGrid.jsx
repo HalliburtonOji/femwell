@@ -159,13 +159,11 @@ function BentoCard({ item, idx, currentPhase, savedSet, savedPhases, onSave, onU
 }
 
 export default function BentoGrid({ items, currentPhase, savedSet, savedPhases, onSave, onUntag }) {
-  if (!items?.length) {
-    return (
-      <div style={{ textAlign: "center", padding: "40px 16px", color: "var(--plum-mute)", font: "400 14px 'Inter', sans-serif" }}>
-        Nothing more to explore right now.
-      </div>
-    );
-  }
+  // Return null instead of an empty-state block — the rails above (PhaseInbox, Saved, TryThis)
+  // and the hero handle their own emptiness. A dedicated "Nothing more to explore" line
+  // reads as broken on a freshly-loaded page when the fetch is briefly intermittent.
+  // True dataset-empty cases on this app are vanishingly rare (200+ PUBLISHED items exist).
+  if (!items?.length) return null;
   return (
     <section style={{ marginTop: 24, padding: "0 16px" }}>
       <p
