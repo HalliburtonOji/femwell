@@ -160,7 +160,12 @@ export default function LifestyleDetail() {
   }
 
   const isFemwell = FEMWELL_GENERATED_PROVIDERS.has(item.provider);
-  const showReadFullButton = !isFemwell && !!item.content_url;
+  const isYouTubeVideo = item.media_type === "VIDEO" && (item.provider === "YOUTUBE" || !!item.video_id || (item.embed_url || "").includes("youtube"));
+  const youtubeEmbedUrl = isYouTubeVideo
+    ? (item.embed_url || (item.video_id ? `https://www.youtube.com/embed/${item.video_id}` : null))
+    : null;
+  // Read button hidden for FemWell-generated content, and hidden when we've embedded the video in-app.
+  const showReadFullButton = !isFemwell && !youtubeEmbedUrl && !!item.content_url;
   const takeaways = Array.isArray(item.takeaways) ? item.takeaways : [];
 
   return (
@@ -181,6 +186,28 @@ export default function LifestyleDetail() {
         </div>
 
         <div className="rounded-3xl p-6 md:p-8" style={{ backgroundColor: "var(--surface)", border: "1px solid var(--border)", boxShadow: "var(--shadow-md)" }}>
+          {/* In-app YouTube embed for VIDEO items — no need to bounce users to youtube.com */}
+          {youtubeEmbedUrl && (
+            <div style={{
+              position: "relative",
+              width: "100%",
+              paddingBottom: "56.25%", /* 16:9 */
+              marginBottom: 20,
+              borderRadius: 14,
+              overflow: "hidden",
+              backgroundColor: "#000",
+            }}>
+              <iframe
+                src={youtubeEmbedUrl}
+                title={item.title || "Video"}
+                frameBorder="0"
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                allowFullScreen
+                style={{ position: "absolute", top: 0, left: 0, width: "100%", height: "100%", border: 0 }}
+              />
+            </div>
+          )}
+
           {/* Phase tags */}
           {item.phase_tags?.length > 0 && (
             <div style={{ display: "flex", gap: 6, marginBottom: 12 }}>
