@@ -91,9 +91,15 @@
         "SUMMARIZED",
         "PUBLISHED",
         "HIDDEN",
-        "REJECTED_EMBED"
+        "REJECTED_EMBED",
+        "DEAD_LINK",
+        "FAILED"
       ],
       "default": "NEEDS_REVIEW"
+    },
+    "revalidated_at": {
+      "type": "string",
+      "description": "ISO timestamp of the most recent successful HEAD check on content_url. Null until first revalidateUrls run."
     },
     "is_editor_pick": {
       "type": "boolean",
