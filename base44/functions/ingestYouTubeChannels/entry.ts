@@ -7,6 +7,11 @@
 // Phase 4-B:
 // - YouTube branch: enforces YOUTUBE_PER_CHANNEL_CAP (hardcoded=3) per channel per 24h
 // - RSS branch: reads daily_item_cap from LifestyleSources row, enforces per source per 24h
+// Phase 5-B2:
+// - YouTube branch: reads channel list from LifestyleSources (source_type='YOUTUBE_CHANNEL', is_active=true)
+//   instead of hardcoded YOUTUBE_CHANNELS array. Cap per channel comes from source.daily_item_cap.
+// - RSS-fallback branch: reads source list from LifestyleSources (source_type='RSS', is_active=true)
+//   instead of hardcoded RSS_SOURCES array. LifestyleSources is now the single source of truth.
 
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.25';
 
@@ -45,55 +50,7 @@ async function isUrlReachable(url, timeoutMs = 5000) {
   }
 }
 
-// ── KNOWN ISSUE: hardcoded YouTube & RSS arrays ────────────────────────────
-//    This function uses hardcoded YOUTUBE_CHANNELS (~19 entries below) and
-//    hardcoded RSS_SOURCES (~11 entries below) instead of reading from the
-//    LifestyleSources entity. Consequences:
-//    - The 19 YOUTUBE_CHANNEL rows in LifestyleSources are UNUSED by this function
-//    - New sources added to LifestyleSources are NOT picked up here
-//    - Any daily_item_cap added in Phase 4-B will not affect YouTube videos
-//    Refactor planned for Phase 5: merge into a single LifestyleSources-driven
-//    loop so the entity is the source of truth for what gets ingested.
-// ───────────────────────────────────────────────────────────────────────────
-const YOUTUBE_PER_CHANNEL_CAP = 3;
 
-const YOUTUBE_CHANNELS = [
-  { id: 'UC4cNjUPc2gQKucX3hLUayYQ', name: 'Dr. Mindy Pelz',      category: 'Hormones & Cycle', tags: ['hormones', 'fasting', 'cycle syncing'] },
-  { id: 'UCFKE7WVJfvaHW5q283SxchA', name: 'Yoga With Adriene',    category: 'Mindfulness',      tags: ['yoga', 'movement', 'calm'] },
-  { id: 'UCIJwWYOfsCfz6PjxbONYXSg', name: 'Blogilates',           category: 'Fitness',          tags: ['pilates', 'workout', 'women'] },
-  { id: 'UCPD55VPa1ZWx1a_nzWC2VJA', name: 'Dr. Stacy Sims',       category: 'Fitness',          tags: ['exercise science', 'female physiology', 'strength'] },
-  { id: 'UCIiI9tAbgvSPPL_50gefFtw', name: 'Nourish Move Love',     category: 'Fitness',          tags: ['strength', 'HIIT', 'women workout'] },
-  { id: 'UCSOrtpPOceNxjeyHxL3kD_Q', name: 'Lena Fit',             category: 'Fitness',          tags: ['strength', 'body', 'women'] },
-  { id: 'UCk4di8t80ySV8WIbX00ol8w', name: "Women's Health Mag",   category: "Women's Health",   tags: ['health', 'wellness', 'women'] },
-  { id: 'UCSaYCyda-i7enHvQ8Wns8_w', name: 'Abby Pollock',         category: 'Nutrition',        tags: ['nutrition', 'body composition', 'women'] },
-  { id: 'UCmrOBAi8o04ZqNZgPsNxSKg', name: 'Kait Malthaner',       category: 'Nutrition',        tags: ['nutrition', 'exercise', 'hormone health'] },
-  { id: 'UC6gdCj56YK5KxiFf3WSOLtA', name: 'The Gut Health MD',    category: 'Gut Health',       tags: ['gut health', 'microbiome', 'nutrition'] },
-  { id: 'UCxAB39SRMVabVZEOKTo6iVA', name: 'mindbodygreen',        category: 'Mental Wellness',  tags: ['holistic', 'wellness', 'mindset'] },
-  { id: 'UCogp-TMOSftFMx0cq1ZLSIQ', name: 'Lavendaire',           category: 'Mental Wellness',  tags: ['mindset', 'journaling', 'self growth'] },
-  { id: 'UCJjSDX7GzpB6pBFbhqUxEYw', name: 'Pick Up Limes',        category: 'Nutrition',        tags: ['plant based', 'recipes', 'wellbeing'] },
-  { id: 'UCBcRF18a7Qf58cCRy5xuWwQ', name: 'Maddie Lymburner',     category: 'Fitness',          tags: ['yoga', 'pilates', 'hiit', 'women'] },
-  { id: 'UCUOdekVwzRQoFN-L3XCKvbw', name: 'Yoga with Kassandra',  category: 'Mindfulness',      tags: ['yin yoga', 'flexibility', 'calm'] },
-  { id: 'UCc-Yj3lMj3s_n1tqcGIzQ6g', name: 'Dr Karan Rajan',       category: "Women's Health",   tags: ['nhs', 'surgeon', 'evidence-led', 'uk-clinician'] },
-  { id: 'UCc_q-Iwhv2bJG2lg8YCHQ2Q', name: 'Dr Hazel Wallace',     category: 'Nutrition',        tags: ['gp', 'nutrition', "women's health", 'uk-clinician'] },
-  { id: 'UCKdOrwnGmRl_dE11fY-O5YQ', name: 'Dr Tina Peers',        category: 'Menopause',        tags: ['menopause', 'hormones', 'uk-clinician'] },
-  { id: 'UCwGBV6mXtBB3O-rEQpevYHA', name: "Women's Health UK",    category: "Women's Health",   tags: ["women's health", 'uk', 'editorial'] },
-  { id: 'UCmggx47K40J3dQzX1GhxycQ', name: 'Dr Louise Newson',     category: 'Menopause',        tags: ['menopause', 'gp', 'uk-clinician'] },
-  { id: 'UCXh5LbrcKZZPDAzeYPA4tAA', name: 'Rhiannon Lambert',     category: 'Nutrition',        tags: ['nutrition', 'women', 'uk-clinician'] },
-];
-
-const RSS_SOURCES = [
-  { name: 'mindbodygreen',      rss: 'https://www.mindbodygreen.com/rss.xml',                category: 'Mental Wellness', content_type: 'ARTICLE' },
-  { name: 'Longreads',          rss: 'https://longreads.com/feed/',                          category: 'Lifestyle',       content_type: 'STORY'   },
-  { name: 'Narratively',        rss: 'https://www.narratively.com/feed',                     category: 'Lifestyle',       content_type: 'STORY'   },
-  { name: 'Electric Lit',       rss: 'https://electricliterature.com/feed/',                 category: 'Culture',         content_type: 'STORY'   },
-  { name: 'Granta',             rss: 'https://granta.com/feed/',                             category: 'Culture',         content_type: 'STORY'   },
-  { name: 'The Everygirl',      rss: 'https://theeverygirl.com/feed/',                       category: 'Lifestyle',       content_type: 'ARTICLE' },
-  { name: 'Aeon Essays',        rss: 'https://aeon.co/feed.rss',                             category: 'Mental Wellness', content_type: 'STORY'   },
-  { name: 'Lit Hub',            rss: 'https://lithub.com/feed/',                             category: 'Culture',         content_type: 'STORY'   },
-  { name: 'Girls Gone Strong',  rss: 'https://girlsgonestrong.com/feed/',                    category: 'Fitness',         content_type: 'ARTICLE' },
-  { name: 'SELF Magazine',      rss: 'https://www.self.com/feed/rss',                        category: 'Fitness',         content_type: 'ARTICLE' },
-  { name: 'The Guardian Women', rss: 'https://www.theguardian.com/lifeandstyle/women/rss',   category: "Women's Health",  content_type: 'ARTICLE' },
-];
 
 const sleep = (ms) => new Promise(r => setTimeout(r, ms));
 
@@ -181,70 +138,7 @@ function hashUrl(url) {
   return String(Math.abs(h));
 }
 
-// Look up (and lazily create) a LifestyleSources row for each curated channel,
-// so YouTube items always have a non-null source_id.
-async function resolveYouTubeSourceId(base44, channel, sourceCache) {
-  const cacheKey = `yt:${channel.id}`;
-  if (sourceCache.has(cacheKey)) return sourceCache.get(cacheKey);
-  try {
-    const existing = await base44.asServiceRole.entities.LifestyleSources.filter({
-      source_type: 'YOUTUBE',
-      external_id: channel.id,
-    }).catch(() => []);
-    if (existing && existing[0]?.id) {
-      sourceCache.set(cacheKey, existing[0].id);
-      return existing[0].id;
-    }
-    const created = await base44.asServiceRole.entities.LifestyleSources.create({
-      name: channel.name,
-      source_type: 'YOUTUBE',
-      external_id: channel.id,
-      category: channel.category,
-      tags: channel.tags,
-      is_active: true,
-    }).catch(() => null);
-    if (created?.id) {
-      sourceCache.set(cacheKey, created.id);
-      return created.id;
-    }
-  } catch (err) {
-    await logIngestError(base44, 'ingestYouTubeChannels', 'intake',
-      { source_identifier: channel.name, raw_payload: { channelId: channel.id } }, err);
-  }
-  sourceCache.set(cacheKey, '');
-  return '';
-}
 
-async function resolveRSSSourceId(base44, source, sourceCache) {
-  const cacheKey = `rss:${source.rss}`;
-  if (sourceCache.has(cacheKey)) return sourceCache.get(cacheKey);
-  try {
-    const existing = await base44.asServiceRole.entities.LifestyleSources.filter({
-      source_type: 'RSS',
-      feed_url: source.rss,
-    }).catch(() => []);
-    if (existing && existing[0]?.id) {
-      sourceCache.set(cacheKey, existing[0].id);
-      return existing[0].id;
-    }
-    const created = await base44.asServiceRole.entities.LifestyleSources.create({
-      name: source.name,
-      source_type: 'RSS',
-      feed_url: source.rss,
-      category: source.category,
-      is_active: true,
-    }).catch(() => null);
-    if (created?.id) {
-      sourceCache.set(cacheKey, created.id);
-      return created.id;
-    }
-  } catch (err) {
-    await logIngestError(base44, 'ingestYouTubeChannels', 'intake',
-      { source_identifier: source.name, raw_payload: { rss: source.rss } }, err);
-  }
-  sourceCache.set(cacheKey, '');
-  return '';
-}
 
 Deno.serve(async (req) => {
   try {
@@ -259,33 +153,54 @@ Deno.serve(async (req) => {
     // Pre-fetch all existing hashes in one query to avoid per-item filter rate-limit hits
     const allExisting = await base44.asServiceRole.entities.LifestyleItems.list('-created_date', 2000);
     const existingHashes = new Set(allExisting.map(i => i.content_url_hash).filter(Boolean));
-    const sourceCache = new Map();
 
     if (mode === 'youtube' || mode === 'all') {
-      for (const channel of YOUTUBE_CHANNELS) {
+      // Phase 5-B2: source list comes from LifestyleSources entity (was hardcoded YOUTUBE_CHANNELS).
+      const ytSources = await base44.asServiceRole.entities.LifestyleSources.filter(
+        { source_type: 'YOUTUBE_CHANNEL', is_active: true },
+        'priority',
+        50
+      ).catch(() => []);
+
+      for (const source of (ytSources || [])) {
+        if (!source.external_id) {
+          await logIngestError(base44, 'ingestYouTubeChannels', 'intake',
+            { source_identifier: source.name || '', raw_payload: { sourceId: source.id } },
+            new Error('YOUTUBE_CHANNEL row missing external_id; skipped'));
+          continue;
+        }
+        // Map LifestyleSources row to the {id, name, category, tags} shape parseYouTubeRSS + the create call expect.
+        const channel = {
+          id: source.external_id,
+          name: source.name,
+          category: source.category,
+          tags: Array.isArray(source.tags) ? source.tags : [],
+        };
+
         const videos = await parseYouTubeRSS(base44, channel);
         await sleep(200);
-        const sourceId = await resolveYouTubeSourceId(base44, channel, sourceCache);
+        const sourceId = source.id;  // LifestyleSources row id — direct, no resolve helper needed
 
-        // ── YouTube cap logic (hardcoded — Phase 5 will move to LifestyleSources field) ──
+        // ── YouTube cap logic — per-row from LifestyleSources.daily_item_cap ──
+        const cap = (source.daily_item_cap ?? 3);
         const ytSince = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
         let ytRecentCount = 0;
         try {
           const ytRecent = await base44.asServiceRole.entities.LifestyleItems.filter(
             { source_id: sourceId, created_at: { $gte: ytSince } },
             null,
-            YOUTUBE_PER_CHANNEL_CAP + 1
+            cap + 1
           );
           ytRecentCount = Array.isArray(ytRecent) ? ytRecent.length : 0;
         } catch { ytRecentCount = 0; }
 
-        if (ytRecentCount >= YOUTUBE_PER_CHANNEL_CAP) {
+        if (ytRecentCount >= cap) {
           await logIngestError(base44, 'ingestYouTubeChannels', 'cap_reached',
-            { source_identifier: channel.name, raw_payload: { recentCount: ytRecentCount, cap: YOUTUBE_PER_CHANNEL_CAP, source_id: sourceId } },
-            new Error(`youtube channel cap reached: ${ytRecentCount}/${YOUTUBE_PER_CHANNEL_CAP}`));
+            { source_identifier: channel.name, raw_payload: { recentCount: ytRecentCount, cap, source_id: sourceId } },
+            new Error(`youtube channel cap reached: ${ytRecentCount}/${cap}`));
           continue;
         }
-        const ytRemaining = YOUTUBE_PER_CHANNEL_CAP - ytRecentCount;
+        const ytRemaining = cap - ytRecentCount;
         let ytCreatedInThisRun = 0;
 
         for (const v of videos.slice(0, 20)) {
@@ -354,16 +269,36 @@ Deno.serve(async (req) => {
     }
 
     if (mode === 'rss' || mode === 'all') {
-      for (const source of RSS_SOURCES) {
+      // Phase 5-B2: source list comes from LifestyleSources entity (was hardcoded RSS_SOURCES).
+      // Note: ingestRSS already reads RSS sources from LifestyleSources independently;
+      // deduplication is protected by content_url_hash. A future MP can remove this branch.
+      const rssSources = await base44.asServiceRole.entities.LifestyleSources.filter(
+        { source_type: 'RSS', is_active: true },
+        'priority',
+        50
+      ).catch(() => []);
+
+      for (const sourceRow of (rssSources || [])) {
+        if (!sourceRow.feed_url) {
+          await logIngestError(base44, 'ingestYouTubeChannels', 'intake',
+            { source_identifier: sourceRow.name || '', raw_payload: { sourceId: sourceRow.id } },
+            new Error('RSS row missing feed_url; skipped'));
+          continue;
+        }
+        // Map to the {name, rss, category, content_type} shape parseRSS + the create call expect.
+        const source = {
+          name: sourceRow.name,
+          rss: sourceRow.feed_url,
+          category: sourceRow.category,
+          content_type: sourceRow.content_type || 'ARTICLE',
+        };
+
         const items = await parseRSS(base44, source);
         await sleep(200);
-        const sourceId = await resolveRSSSourceId(base44, source, sourceCache);
+        const sourceId = sourceRow.id;  // direct — no resolve helper needed
 
-        // ── RSS-branch cap logic (uses LifestyleSources.daily_item_cap) ──
-        const sourceRow = sourceId
-          ? await base44.asServiceRole.entities.LifestyleSources.filter({ id: sourceId }, null, 1).then(arr => arr?.[0]).catch(() => null)
-          : null;
-        const rssCap = (sourceRow?.daily_item_cap ?? 5);
+        // ── RSS cap logic — per-row from LifestyleSources.daily_item_cap ──
+        const rssCap = (sourceRow.daily_item_cap ?? 5);
         const rssSince = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
         let rssRecentCount = 0;
         try {
