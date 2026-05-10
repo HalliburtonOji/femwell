@@ -3,6 +3,7 @@ import { base44 } from "@/api/base44Client";
 import { ExternalLink, ChevronDown, ChevronUp, X, BookOpen, Bookmark, BookText, Brain, Heart, Sparkles, Leaf, Pin } from "lucide-react";
 import { CONTENT_CATEGORIES, categoryLabel } from "@/utils/contentCategory";
 import ForYouTab from "@/components/lifestyle/foryou/ForYouTab";
+import BrowseTab from "@/components/lifestyle/browse/BrowseTab";
 
 // ── Helpers ──────────────────────────────────────────────────────────────────
 function stripHtml(str) {
@@ -642,11 +643,8 @@ function EmptyState({ text }) {
 // ── Tab config ────────────────────────────────────────────────────────────────
 const TABS = [
   { id: "for_you",     label: "For You" },
+  { id: "browse",      label: "Browse" },
   { id: "daily_story", label: "Daily Story" },
-  { id: "read",        label: "Read" },
-  { id: "fiction",     label: "Fiction" },
-  { id: "stories",     label: "Stories" },
-  { id: "books",       label: "Books" },
   { id: "horoscope",   label: "Horoscope" },
 ];
 
@@ -751,10 +749,7 @@ export default function Lifestyle() {
       ) : (
         <div className="max-w-xl mx-auto px-4 pt-5">
           {tab === "daily_story" && <DailyStoryTab />}
-          {tab === "read"        && <ReadTab categoryFilter={categoryFilter} />}
-          {tab === "fiction"     && <FictionTab />}
-          {tab === "stories"     && <StoriesTab />}
-          {tab === "books"       && <BooksTab />}
+          {tab === "browse"      && <BrowseTab categoryFilter={categoryFilter} />}
           {tab === "horoscope"   && <HoroscopeTab />}
         </div>
       )}
