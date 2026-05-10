@@ -47,12 +47,15 @@ export default function BooksGrid({ books, savedSet, onHeartClick }) {
           const saveId = bookSaveId(book);
           const isSaved = savedSet?.has(saveId);
 
+          // Books-1: Goodreads links retired (reviews-with-zero-reviews experience).
+          // Tap now opens Bookshop.org UK — UK indie bookshop network, on-brand for FemWell.
+          // Prefer ISBN deep-link; fall back to keyword search by title + author.
           const handleTap = () => {
-            if (book.goodreads_url) {
-              window.open(book.goodreads_url, '_blank', 'noopener,noreferrer');
-            } else {
-              console.warn('BooksGrid: no goodreads_url for book', book.title);
-            }
+            const isbn = (book.isbn || '').replace(/[^0-9X]/gi, '');
+            const url = isbn
+              ? `https://uk.bookshop.org/books?keywords=${encodeURIComponent(isbn)}`
+              : `https://uk.bookshop.org/books?keywords=${encodeURIComponent(`${book.title || ''} ${book.author || ''}`.trim())}`;
+            window.open(url, '_blank', 'noopener,noreferrer');
           };
 
           const meta = [
@@ -72,7 +75,7 @@ export default function BooksGrid({ books, savedSet, onHeartClick }) {
                 overflow: 'hidden',
                 background: 'var(--cream)',
                 boxShadow: 'var(--shadow-card)',
-                cursor: book.goodreads_url ? 'pointer' : 'default',
+                cursor: 'pointer',
                 position: 'relative',
               }}
             >
