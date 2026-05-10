@@ -36,6 +36,175 @@ async function runPhase(base44, name, fnName, body) {
   }
 }
 
+// ── Inlined og:image extraction (mirrors extractOgImage util + ingestRSS inline pattern) ──
+const CHROME_UA =
+  'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36';
+
+function isPlausibleImageUrl(url) {
+  if (!url || url.length < 12) return false;
+  const lower = url.toLowerCase();
+  if (lower.includes('1x1')) return false;
+  if (lower.includes('pixel')) return false;
+  if (lower.includes('blank')) return false;
+  if (lower.includes('transparent')) return false;
+  if (lower.endsWith('.svg')) return false;
+  return true;
+}
+
+function resolveUrl(candidate, baseUrl) {
+  try {
+    if (/^https?:\/\//i.test(candidate)) return candidate;
+    if (/^\/\//.test(candidate)) {
+      const proto = new URL(baseUrl).protocol;
+      return `${proto}${candidate}`;
+    }
+    return new URL(candidate, baseUrl).toString();
+  } catch {
+    return null;
+  }
+}
+
+function parseOgImageFromHtml(html, baseUrl) {
+  if (!html || typeof html !== 'string') return null;
+  const headMatch = html.match(/<head[\s\S]*?<\/head>/i);
+  const haystack = headMatch ? headMatch[0] : html.slice(0, 200000);
+  const patterns = [
+    /<meta[^>]+property=["']og:image["'][^>]+content=["']([^"']+)["']/i,
+    /<meta[^>]+content=["']([^"']+)["'][^>]+property=["']og:image["']/i,
+    /<meta[^>]+property=["']og:image:url["'][^>]+content=["']([^"']+)["']/i,
+    /<meta[^>]+content=["']([^"']+)["'][^>]+property=["']og:image:url["']/i,
+    /<meta[^>]+name=["']twitter:image["'][^>]+content=["']([^"']+)["']/i,
+    /<meta[^>]+content=["']([^"']+)["'][^>]+name=["']twitter:image["']/i,
+    /<meta[^>]+name=["']twitter:image:src["'][^>]+content=["']([^"']+)["']/i,
+    /<meta[^>]+content=["']([^"']+)["'][^>]+name=["']twitter:image:src["']/i,
+  ];
+  for (const re of patterns) {
+    const m = haystack.match(re);
+    if (m && m[1]) {
+      const candidate = m[1].trim();
+      const resolved = resolveUrl(candidate, baseUrl);
+      if (resolved && isPlausibleImageUrl(resolved)) return resolved;
+    }
+  }
+  return null;
+}
+
+async function fetchOgImage(url) {
+  if (!url || typeof url !== 'string') return null;
+  try {
+    const res = await fetch(url, {
+      headers: {
+        'User-Agent': CHROME_UA,
+        'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
+      },
+      redirect: 'follow',
+      signal: AbortSignal.timeout(10000),
+    });
+    if (!res.ok) return null;
+    const html = await res.text();
+    return parseOgImageFromHtml(html, res.url || url);
+  } catch {
+    return null;
+  }
+}
+
+function needsOgBackfill(item) {
+  if (!item?.content_url) return false;
+  const img = (item.image_url || '').toLowerCase();
+  if (!img) return true;
+  if (img.includes('images.unsplash.com')) return true;
+  if (img.includes('source.unsplash.com')) return true;
+  return false;
+}
+
+// Phase 4: og:image backfill. Idempotent — the candidate filter (missing image_url
+// OR Unsplash placeholder) naturally shrinks as items get patched, so re-running
+// daily is safe. Caps at 200/run to stay under base44 function timeout; the
+// backlog clears over 3-5 daily runs given the current LifestyleItems volume.
+async function runOgBackfillPhase(base44) {
+  const startedAt = new Date().toISOString();
+  const BATCH_CAP = 200;
+  const counts = {
+    scanned: 0,
+    eligible: 0,
+    extracted: 0,
+    updated: 0,
+    skipped_has_image: 0,
+    skipped_no_og: 0,
+    errors: 0,
+  };
+
+  try {
+    const sb = base44.asServiceRole;
+
+    // Pull a window of PUBLISHED items, newest first. We over-fetch then filter
+    // client-side because base44 filters don't support OR / substring matching.
+    // Cap the scan window at 4x the batch cap so we don't burn the function
+    // timeout reading rows we'd skip anyway.
+    const scanWindow = BATCH_CAP * 4;
+    const items = await sb.entities.LifestyleItems.filter(
+      { status: 'PUBLISHED' },
+      '-created_date',
+      scanWindow,
+    );
+
+    const candidates = [];
+    for (const item of items) {
+      counts.scanned += 1;
+      if (!needsOgBackfill(item)) {
+        counts.skipped_has_image += 1;
+        continue;
+      }
+      candidates.push(item);
+      if (candidates.length >= BATCH_CAP) break;
+    }
+
+    counts.eligible = candidates.length;
+
+    for (const item of candidates) {
+      let og = null;
+      try {
+        og = await fetchOgImage(item.content_url);
+      } catch {
+        counts.errors += 1;
+        continue;
+      }
+      if (!og) {
+        counts.skipped_no_og += 1;
+        continue;
+      }
+      counts.extracted += 1;
+      try {
+        await sb.entities.LifestyleItems.update(item.id, { image_url: og });
+        counts.updated += 1;
+      } catch {
+        counts.errors += 1;
+      }
+    }
+
+    await logIngestError(
+      base44,
+      'pipelineOrchestrator',
+      'og_backfill:result',
+      {
+        source_identifier: 'og_backfill',
+        raw_payload: { startedAt, batch_cap: BATCH_CAP, scan_window: scanWindow, counts },
+      },
+      new Error('og_backfill ok'),
+    );
+    return { ok: true, result: { counts } };
+  } catch (err) {
+    await logIngestError(
+      base44,
+      'pipelineOrchestrator',
+      'og_backfill:fail',
+      { source_identifier: 'og_backfill', raw_payload: { startedAt, counts } },
+      err,
+    );
+    return { ok: false, err: err?.message || String(err) };
+  }
+}
+
 Deno.serve(async (req) => {
   const base44 = createClientFromRequest(req);
   const user = await base44.auth.me().catch(() => null);
@@ -55,6 +224,9 @@ Deno.serve(async (req) => {
 
   // Phase 3: summarizeLifestyleItem (drain the queue)
   phases.push({ name: 'summarizeLifestyleItem', ...(await runPhase(base44, 'summarizeLifestyleItem', 'summarizeLifestyleItem', { batch_size: 50 })) });
+
+  // Phase 4: backfillOgImages (idempotent — runs every day, self-clears backlog)
+  phases.push({ name: 'backfillOgImages', ...(await runOgBackfillPhase(base44)) });
 
   const finishedAt = new Date().toISOString();
   return Response.json({

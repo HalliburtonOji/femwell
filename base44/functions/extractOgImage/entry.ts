@@ -1,8 +1,8 @@
 // MP og:image extraction:
 // Fetch a remote URL and return the publisher-chosen hero image declared in
 // open-graph / twitter-card meta tags. Used by ingestRSS at intake time and
-// by backfillOgImages to patch previously-ingested items that have random
-// Unsplash placeholders sitting in image_url.
+// by the og_backfill phase of pipelineOrchestrator to patch previously-ingested
+// items that have random Unsplash placeholders sitting in image_url.
 //
 // Body: { url: string }
 // Returns: { image_url: string | null, fetched_at: ISO, source_url: string }
