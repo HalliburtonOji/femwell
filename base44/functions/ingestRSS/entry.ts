@@ -48,7 +48,13 @@ function stripHtml(text) {
 
 async function parseRSS(base44, sourceName, url) {
   try {
-    const res = await fetch(url, { headers: { 'User-Agent': 'FemWell/1.0 RSS Reader' } });
+    const res = await fetch(url, {
+      headers: {
+        'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36',
+        'Accept': 'application/rss+xml, application/atom+xml, application/xml, text/xml, */*'
+      },
+      signal: AbortSignal.timeout(10000)
+    });
     if (!res.ok) throw new Error(`HTTP ${res.status} fetching ${url}`);
     const text = await res.text();
     const items = [];
@@ -85,7 +91,7 @@ Deno.serve(async (req) => {
       return Response.json({ error: 'Admin only' }, { status: 403 });
     }
 
-    const activeSources = await base44.asServiceRole.entities.LifestyleSources.filter({ is_active: true }, 'priority', 15);
+    const activeSources = await base44.asServiceRole.entities.LifestyleSources.filter({ is_active: true }, 'priority', 40);
     let ingested = 0;
     let skipped = 0;
 

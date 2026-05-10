@@ -63,20 +63,22 @@ const YOUTUBE_CHANNELS = [
   { id: 'UCIJwWYOfsCfz6PjxbONYXSg', name: 'Blogilates',           category: 'Fitness',          tags: ['pilates', 'workout', 'women'] },
   { id: 'UCPD55VPa1ZWx1a_nzWC2VJA', name: 'Dr. Stacy Sims',       category: 'Fitness',          tags: ['exercise science', 'female physiology', 'strength'] },
   { id: 'UCIiI9tAbgvSPPL_50gefFtw', name: 'Nourish Move Love',     category: 'Fitness',          tags: ['strength', 'HIIT', 'women workout'] },
-  { id: 'UCZUUZFex6AaIU4QTopFudYA', name: 'Grow With Jo',         category: 'Fitness',          tags: ['walking', 'low impact', 'beginner'] },
   { id: 'UCSOrtpPOceNxjeyHxL3kD_Q', name: 'Lena Fit',             category: 'Fitness',          tags: ['strength', 'body', 'women'] },
   { id: 'UCk4di8t80ySV8WIbX00ol8w', name: "Women's Health Mag",   category: "Women's Health",   tags: ['health', 'wellness', 'women'] },
-  { id: 'UChVRfsT_ASBZk10o0An7Ucg', name: 'Pamela Reif',          category: 'Fitness',          tags: ['workout', 'fitness', 'women'] },
   { id: 'UCSaYCyda-i7enHvQ8Wns8_w', name: 'Abby Pollock',         category: 'Nutrition',        tags: ['nutrition', 'body composition', 'women'] },
   { id: 'UCmrOBAi8o04ZqNZgPsNxSKg', name: 'Kait Malthaner',       category: 'Nutrition',        tags: ['nutrition', 'exercise', 'hormone health'] },
   { id: 'UC6gdCj56YK5KxiFf3WSOLtA', name: 'The Gut Health MD',    category: 'Gut Health',       tags: ['gut health', 'microbiome', 'nutrition'] },
   { id: 'UCxAB39SRMVabVZEOKTo6iVA', name: 'mindbodygreen',        category: 'Mental Wellness',  tags: ['holistic', 'wellness', 'mindset'] },
-  { id: 'UCuM9fe_QPFMTJT3uQmoNMFg', name: 'fitbymik',             category: 'Fitness',          tags: ['strength', 'workout', 'women'] },
   { id: 'UCogp-TMOSftFMx0cq1ZLSIQ', name: 'Lavendaire',           category: 'Mental Wellness',  tags: ['mindset', 'journaling', 'self growth'] },
   { id: 'UCJjSDX7GzpB6pBFbhqUxEYw', name: 'Pick Up Limes',        category: 'Nutrition',        tags: ['plant based', 'recipes', 'wellbeing'] },
-  { id: 'UCImpROGHSCt2bEPbqf6YNOQ', name: 'Rachel Aust',          category: 'Lifestyle',        tags: ['minimalism', 'productivity', 'wellness'] },
   { id: 'UCBcRF18a7Qf58cCRy5xuWwQ', name: 'Maddie Lymburner',     category: 'Fitness',          tags: ['yoga', 'pilates', 'hiit', 'women'] },
   { id: 'UCUOdekVwzRQoFN-L3XCKvbw', name: 'Yoga with Kassandra',  category: 'Mindfulness',      tags: ['yin yoga', 'flexibility', 'calm'] },
+  { id: 'UCc-Yj3lMj3s_n1tqcGIzQ6g', name: 'Dr Karan Rajan',       category: "Women's Health",   tags: ['nhs', 'surgeon', 'evidence-led', 'uk-clinician'] },
+  { id: 'UCc_q-Iwhv2bJG2lg8YCHQ2Q', name: 'Dr Hazel Wallace',     category: 'Nutrition',        tags: ['gp', 'nutrition', "women's health", 'uk-clinician'] },
+  { id: 'UCKdOrwnGmRl_dE11fY-O5YQ', name: 'Dr Tina Peers',        category: 'Menopause',        tags: ['menopause', 'hormones', 'uk-clinician'] },
+  { id: 'UCwGBV6mXtBB3O-rEQpevYHA', name: "Women's Health UK",    category: "Women's Health",   tags: ["women's health", 'uk', 'editorial'] },
+  { id: 'UCmggx47K40J3dQzX1GhxycQ', name: 'Dr Louise Newson',     category: 'Menopause',        tags: ['menopause', 'gp', 'uk-clinician'] },
+  { id: 'UCXh5LbrcKZZPDAzeYPA4tAA', name: 'Rhiannon Lambert',     category: 'Nutrition',        tags: ['nutrition', 'women', 'uk-clinician'] },
 ];
 
 const RSS_SOURCES = [
@@ -126,7 +128,13 @@ async function parseYouTubeRSS(base44, channel) {
 
 async function parseRSS(base44, source) {
   try {
-    const res = await fetch(source.rss, { headers: { 'User-Agent': 'FemWell/1.0 RSS Reader' }, signal: AbortSignal.timeout(10000) });
+    const res = await fetch(source.rss, {
+      headers: {
+        'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36',
+        'Accept': 'application/rss+xml, application/atom+xml, application/xml, text/xml, */*'
+      },
+      signal: AbortSignal.timeout(10000)
+    });
     if (!res.ok) throw new Error(`HTTP ${res.status} fetching ${source.rss}`);
     const text = await res.text();
     const items = [];
