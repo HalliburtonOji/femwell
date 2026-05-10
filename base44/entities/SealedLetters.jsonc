@@ -1,0 +1,46 @@
+{
+  "name": "SealedLetters",
+  "type": "object",
+  "properties": {
+    "body": {
+      "type": "string",
+      "description": "The letter content. No max length."
+    },
+    "seal_date": {
+      "type": "string",
+      "format": "date",
+      "description": "The date the letter is allowed to be opened (ISO YYYY-MM-DD). Must be > today at creation time."
+    },
+    "unsealed_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Null until first client-side load after seal_date passes. Client sets to now() when it observes seal_date <= today AND unsealed_at == null."
+    },
+    "unseal_seen_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Null until the user actually opens the letter from the vault or taps the Today card. Drives whether the UnsealedLetterCard continues to render on Today."
+    },
+    "title": {
+      "type": "string",
+      "default": "",
+      "description": "Optional user-supplied title. Not rendered in v1 UI but captured for forward-compat."
+    }
+  },
+  "required": [
+    "body",
+    "seal_date"
+  ],
+  "indexes": [
+    {
+      "fields": [
+        "user_id"
+      ]
+    },
+    {
+      "fields": [
+        "seal_date"
+      ]
+    }
+  ]
+}
