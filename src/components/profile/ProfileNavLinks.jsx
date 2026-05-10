@@ -1,4 +1,4 @@
-import { ChevronRight, Heart, Activity, Bookmark, Ticket, CalendarDays, Stethoscope, Users, Settings, LogOut, Trash2, Feather } from "lucide-react";
+import { ChevronRight, Heart, Activity, Bookmark, Ticket, CalendarDays, Stethoscope, Users, Settings, LogOut, Trash2, Feather, Mail } from "lucide-react";
 import { createPageUrl } from "@/utils";
 import { useState } from "react";
 import { base44 } from "@/api/base44Client";
@@ -52,6 +52,18 @@ export default function ProfileNavLinks({ profile, daysLoggedSkin, skinCondition
             {profile?.skin_type && <span style={{ backgroundColor: "var(--rose-dust-subtle)", color: "var(--rose-dust)", fontSize: "11px", fontWeight: 600, borderRadius: "9999px", padding: "3px 10px", fontFamily: "'Inter', sans-serif" }}>{profile.skin_type} skin</span>}
           </div>
         )}
+      </a>
+
+      {/* Sealed Letters */}
+      <a href={createPageUrl("SealedLetters")} style={{ ...card, padding: "16px", marginBottom: "16px", display: "flex", alignItems: "center", gap: "12px", textDecoration: "none" }}>
+        <div style={iconBox("var(--rose-dust-subtle)")}>
+          <Mail className="w-4 h-4" style={{ color: "var(--rose-dust)" }} />
+        </div>
+        <div className="flex-1">
+          <p style={{ ...bodyText, fontWeight: 600 }}>Sealed Letters</p>
+          <p style={mutedText}>Notes to your future self, kept until the date you pick.</p>
+        </div>
+        <ChevronRight className="w-4 h-4" style={{ color: "var(--border)" }} />
       </a>
 
       {/* Grid: Saved, Deals, Events */}

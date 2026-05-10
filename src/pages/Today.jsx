@@ -21,6 +21,7 @@ import DailyStoriesStrip from "../components/today/DailyStoriesStrip";
 import TodayDailyChapterCard from "@/components/today/TodayDailyChapterCard";
 import OnThisDayLastCycleCard from "@/components/today/OnThisDayLastCycleCard";
 import FriendFrom6MonthsAgoCard from "@/components/today/FriendFrom6MonthsAgoCard";
+import UnsealedLetterCard from "@/components/today/UnsealedLetterCard";
 import TrackTab from "../components/today/TrackTab";
 import TodayFertilityBanner from "../components/conditions/TodayFertilityBanner";
 import DailyPhaseBrief from "../components/today/DailyPhaseBrief";
@@ -554,6 +555,7 @@ export default function Today() {
             {user && <DailyPlanCard user={user} />}
             {user && <WeeklyInsightCard user={user} />}
             <FriendFrom6MonthsAgoCard />
+            <UnsealedLetterCard />
 
             <ActiveProgramCard activeProgramEntry={activeProgramEntry} activeProgram={activeProgram} />
 
