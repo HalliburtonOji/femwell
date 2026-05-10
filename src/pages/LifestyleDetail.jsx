@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { base44 } from "@/api/base44Client";
-import { ArrowLeft, Bookmark, BookmarkCheck, Heart, HeartOff, Loader2 } from "lucide-react";
+import { ArrowLeft, Bookmark, BookmarkCheck, Heart, HeartOff, Loader2, PlayCircle } from "lucide-react";
 import { format } from "date-fns";
 
 const FEMWELL_GENERATED_PROVIDERS = new Set([
@@ -15,6 +15,60 @@ function stripHtml(str) {
   return str.replace(/<[^>]+>/g, " ").replace(/\s+/g, " ").trim();
 }
 
+function decodeHtmlEntities(str) {
+  if (!str) return "";
+  return str
+    .replace(/&amp;/g, "&")
+    .replace(/&#39;/g, "'")
+    .replace(/&apos;/g, "'")
+    .replace(/&quot;/g, '"')
+    .replace(/&lt;/g, "<")
+    .replace(/&gt;/g, ">")
+    .replace(/&nbsp;/g, " ")
+    .replace(/&hellip;/g, "…")
+    .replace(/&mdash;/g, "—")
+    .replace(/&ndash;/g, "–")
+    .replace(/&rsquo;/g, "'")
+    .replace(/&lsquo;/g, "'")
+    .replace(/&rdquo;/g, '"')
+    .replace(/&ldquo;/g, '"');
+}
+
+function formatRelativeDate(dateStr) {
+  if (!dateStr) return "";
+  const d = new Date(dateStr);
+  if (Number.isNaN(d.getTime())) return "";
+  const now = Date.now();
+  const diffMs = now - d.getTime();
+  const hours = diffMs / (1000 * 60 * 60);
+  if (hours < 24) return "today";
+  if (hours < 48) return "yesterday";
+  const days = Math.floor(hours / 24);
+  if (days < 7) return `${days} days ago`;
+  return format(d, "dd MMM yyyy");
+}
+
+// Splits a body string into typed blocks for editorial rendering.
+// `## Foo` → h2 section header. `### Foo` → uppercase eyebrow. Else paragraph.
+function renderBodyBlocks(body) {
+  if (!body) return [];
+  const decoded = decodeHtmlEntities(body);
+  const rawBlocks = decoded.split(/\n\n+/);
+  const blocks = [];
+  rawBlocks.forEach((raw) => {
+    const trimmed = raw.trim();
+    if (!trimmed) return;
+    if (trimmed.startsWith("## ")) {
+      blocks.push({ kind: "h2", text: trimmed.slice(3).trim() });
+    } else if (trimmed.startsWith("### ")) {
+      blocks.push({ kind: "eyebrow", text: trimmed.slice(4).trim() });
+    } else {
+      blocks.push({ kind: "p", text: trimmed });
+    }
+  });
+  return blocks;
+}
+
 export default function LifestyleDetail() {
   const urlParams = new URLSearchParams(window.location.search);
   const id = urlParams.get("id");
@@ -27,11 +81,14 @@ export default function LifestyleDetail() {
   const [profileId, setProfileId] = useState(null);
   const [liked, setLiked] = useState(false);
   const [saved, setSaved] = useState(false);
+  const [related, setRelated] = useState([]);
+  const [videoFailed, setVideoFailed] = useState(false);
 
   useEffect(() => {
     let cancelled = false;
     (async () => {
       setLoading(true);
+      setVideoFailed(false);
       try {
         const user = await base44.auth.me();
         const [items, profiles] = await Promise.all([
@@ -76,6 +133,21 @@ export default function LifestyleDetail() {
           } else {
             // External article: use summary as inline body
             if (!cancelled) setFullBody(stripHtml(fetched.summary || lede || ""));
+          }
+
+          // Related items — same category, exclude self.
+          try {
+            const relatedRows = await base44.entities.LifestyleItems
+              .filter({ category: fetched.category })
+              .catch(() => []);
+            if (!cancelled) {
+              const filtered = (relatedRows || [])
+                .filter((r) => r.id !== fetched.id)
+                .slice(0, 6);
+              setRelated(filtered);
+            }
+          } catch {
+            if (!cancelled) setRelated([]);
           }
         }
       } catch (err) {
@@ -168,9 +240,126 @@ export default function LifestyleDetail() {
   const showReadFullButton = !isFemwell && !youtubeEmbedUrl && !!item.content_url;
   const takeaways = Array.isArray(item.takeaways) ? item.takeaways : [];
 
+  // Decoded text for render.
+  const decodedTitle = decodeHtmlEntities(item.title || "");
+  const decodedWhy = decodeHtmlEntities(item.why_it_matters || "");
+  const decodedAuthor = decodeHtmlEntities(item.author_name || "");
+  const decodedSource = decodeHtmlEntities(item.source_name || "");
+  const byline = decodedAuthor || decodedSource;
+  const eyebrowSource = (decodedSource || decodedAuthor || "").toUpperCase();
+  const eyebrowDate = formatRelativeDate(item.published_at).toUpperCase();
+  const eyebrowCategory = (item.category || "").toString().toUpperCase();
+  const eyebrowBits = [eyebrowSource, eyebrowDate, eyebrowCategory].filter(Boolean);
+
+  // Build editorial body blocks.
+  const blocks = renderBodyBlocks(fullBody);
+  // Pull quote injects after block index 2 (or midpoint if <6 blocks).
+  const pullQuoteIndex = blocks.length >= 6 ? 2 : Math.max(0, Math.floor(blocks.length / 2) - 1);
+  // Track whether the first paragraph block has rendered yet so the drop cap only attaches once.
+  let firstParagraphSeen = false;
+
+  // Decide hero treatment: YouTube embed replaces the hero entirely.
+  const useYouTubeHero = !!youtubeEmbedUrl;
+  const youTubeEmbeddable = item.is_embeddable !== false && !videoFailed;
+
+  // Hero shape — image vs gradient — when not using YouTube.
+  const hasImage = !!item.image_url;
+  const heroAspect = hasImage ? "56.25%" : "75%";
+  const heroBg = hasImage ? "var(--plum-deep)" : (item.image_gradient || "linear-gradient(135deg, var(--plum-deep) 0%, var(--rose-primary) 100%)");
+
+  // Related-rail filter — only render the section if we have at least 2 items.
+  const relatedDecorated = (related || []).map((r) => ({
+    id: r.id,
+    title: decodeHtmlEntities(r.title || ""),
+    image_url: r.image_url,
+    image_gradient: r.image_gradient,
+    source: decodeHtmlEntities(r.source_name || r.author_name || ""),
+    rel: formatRelativeDate(r.published_at),
+  }));
+
   return (
     <div className="min-h-screen pb-10" style={{ backgroundColor: "var(--ivory)" }}>
-      <div className="max-w-3xl mx-auto px-4 pt-12">
+      <style>{`
+        @keyframes spin { to { transform: rotate(360deg); } }
+        .fw-reader-card .fw-dropcap {
+          font-family: 'Fraunces', serif;
+          font-weight: 500;
+          color: var(--rose-primary);
+          float: left;
+          line-height: 0.85;
+          padding: 4px 10px 0 0;
+          font-size: 52px;
+        }
+        @media (min-width: 768px) {
+          .fw-reader-card .fw-dropcap { font-size: 64px; }
+        }
+        .fw-reader-card .fw-ornament {
+          text-align: center;
+          color: var(--rose-primary);
+          letter-spacing: 12px;
+          font-size: 18px;
+          line-height: 28px;
+          margin: 28px 0;
+          font-family: 'Fraunces', serif;
+        }
+        .fw-reader-card .fw-body-p {
+          font-family: 'Inter', sans-serif;
+          font-size: 16px;
+          line-height: 1.78;
+          color: var(--plum);
+          font-weight: 400;
+          margin: 0 0 18px;
+        }
+        @media (min-width: 768px) {
+          .fw-reader-card .fw-body-p { font-size: 17px; }
+        }
+        .fw-reader-card .fw-body-p:last-child { margin-bottom: 0; }
+        .fw-reader-card .fw-h2 {
+          font-family: 'Fraunces', serif;
+          font-weight: 500;
+          font-size: 22px;
+          color: var(--plum-deep);
+          line-height: 1.25;
+          margin: 28px 0 12px;
+        }
+        @media (min-width: 768px) {
+          .fw-reader-card .fw-h2 { font-size: 24px; }
+        }
+        .fw-reader-card .fw-eyebrow-h {
+          font-family: 'Inter', sans-serif;
+          font-size: 11px;
+          font-weight: 700;
+          text-transform: uppercase;
+          letter-spacing: 0.14em;
+          color: var(--rose-primary);
+          margin: 22px 0 8px;
+        }
+        .fw-related-rail {
+          display: flex;
+          gap: 14px;
+          overflow-x: auto;
+          scroll-snap-type: x mandatory;
+          padding-bottom: 8px;
+          -webkit-overflow-scrolling: touch;
+        }
+        .fw-related-rail::-webkit-scrollbar { height: 6px; }
+        .fw-related-rail::-webkit-scrollbar-thumb { background: var(--rose-dust-light); border-radius: 999px; }
+        .fw-related-card {
+          width: 240px;
+          flex-shrink: 0;
+          scroll-snap-align: start;
+          cursor: pointer;
+          text-decoration: none;
+        }
+        .fw-related-title-clamp {
+          display: -webkit-box;
+          -webkit-line-clamp: 2;
+          -webkit-box-orient: vertical;
+          overflow: hidden;
+        }
+      `}</style>
+
+      <div className="max-w-2xl mx-auto px-4 pt-12">
         <div className="flex items-center justify-between mb-6">
           <button onClick={() => window.history.back()} className="w-10 h-10 rounded-xl flex items-center justify-center shadow-sm" style={{ backgroundColor: "rgba(255,255,255,0.85)" }}>
             <ArrowLeft className="w-4 h-4" style={{ color: "var(--plum)" }} />
@@ -185,33 +374,194 @@ export default function LifestyleDetail() {
           </div>
         </div>
 
-        <div className="rounded-3xl p-6 md:p-8" style={{ backgroundColor: "var(--surface)", border: "1px solid var(--border)", boxShadow: "var(--shadow-md)" }}>
-          {/* In-app YouTube embed for VIDEO items — no need to bounce users to youtube.com */}
-          {youtubeEmbedUrl && (
-            <div style={{
-              position: "relative",
-              width: "100%",
-              paddingBottom: "56.25%", /* 16:9 */
-              marginBottom: 20,
-              borderRadius: 14,
-              overflow: "hidden",
-              backgroundColor: "#000",
-            }}>
-              <iframe
-                src={youtubeEmbedUrl}
-                title={item.title || "Video"}
-                frameBorder="0"
-                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-                allowFullScreen
-                style={{ position: "absolute", top: 0, left: 0, width: "100%", height: "100%", border: 0 }}
-              />
+        <div
+          className="fw-reader-card p-6 md:p-10"
+          style={{
+            backgroundColor: "var(--surface)",
+            border: "1px solid var(--ink-line)",
+            boxShadow: "var(--shadow-card)",
+            borderRadius: 24,
+            overflow: "hidden",
+          }}
+        >
+          {useYouTubeHero ? (
+            <div style={{ marginBottom: 24 }}>
+              <p style={{
+                fontFamily: "'Inter', sans-serif",
+                fontSize: 11,
+                fontWeight: 700,
+                textTransform: "uppercase",
+                letterSpacing: "0.14em",
+                color: "var(--rose-primary)",
+                marginBottom: 10,
+                marginTop: 0,
+              }}>
+                Watch
+              </p>
+
+              {youTubeEmbeddable ? (
+                <div style={{
+                  position: "relative",
+                  width: "100%",
+                  paddingBottom: "56.25%", /* 16:9 */
+                  borderRadius: 14,
+                  overflow: "hidden",
+                  border: "1px solid var(--ink-line)",
+                  boxShadow: "var(--shadow-card)",
+                }}>
+                  <iframe
+                    src={youtubeEmbedUrl}
+                    title={decodedTitle || "Video"}
+                    frameBorder="0"
+                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                    allowFullScreen
+                    onError={() => setVideoFailed(true)}
+                    style={{ position: "absolute", top: 0, left: 0, width: "100%", height: "100%", border: 0 }}
+                  />
+                </div>
+              ) : (
+                <div
+                  style={{
+                    aspectRatio: "16/9",
+                    borderRadius: 14,
+                    overflow: "hidden",
+                    background: "linear-gradient(135deg, var(--plum-deep) 0%, var(--rose-dust) 100%)",
+                    display: "flex",
+                    flexDirection: "column",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    gap: 14,
+                    padding: 24,
+                    cursor: "pointer",
+                    border: "1px solid var(--ink-line)",
+                    boxShadow: "var(--shadow-card)",
+                  }}
+                  onClick={() => item.content_url && window.open(item.content_url, "_blank", "noopener,noreferrer")}
+                >
+                  <PlayCircle size={56} color="var(--cream)" strokeWidth={1.5} />
+                  <p style={{ font: "italic 400 18px/1.3 'Fraunces', serif", color: "var(--cream)", margin: 0, textAlign: "center", maxWidth: 320 }}>
+                    {decodedTitle}
+                  </p>
+                  <p style={{ font: "600 12px/1 'Inter', sans-serif", color: "rgba(247,240,230,0.8)", margin: 0, letterSpacing: "0.06em", textTransform: "uppercase" }}>
+                    Watch on YouTube
+                  </p>
+                </div>
+              )}
+
+              {byline && (
+                <p style={{
+                  marginTop: 12,
+                  marginBottom: 0,
+                  fontFamily: "'Inter', sans-serif",
+                  fontSize: 12,
+                  color: "var(--mauve)",
+                }}>
+                  {byline}
+                  {item.author_url ? (
+                    <>
+                      {" · "}
+                      <a
+                        href={item.author_url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        style={{ color: "var(--rose-primary)", textDecoration: "none", fontWeight: 600 }}
+                      >
+                        Channel
+                      </a>
+                    </>
+                  ) : null}
+                </p>
+              )}
+
+              <h1 style={{
+                marginTop: 20,
+                marginBottom: 0,
+                fontFamily: "'Fraunces', serif",
+                fontWeight: 400,
+                color: "var(--plum-deep)",
+                fontSize: 32,
+                lineHeight: 1.1,
+                letterSpacing: "-0.015em",
+              }}>
+                {decodedTitle}
+              </h1>
+            </div>
+          ) : (
+            <div
+              style={{
+                position: "relative",
+                width: "100%",
+                paddingBottom: heroAspect,
+                margin: "-24px -24px 20px",
+                background: heroBg,
+                overflow: "hidden",
+              }}
+              className="fw-reader-hero"
+            >
+              {hasImage && (
+                <img
+                  src={item.image_url}
+                  alt=""
+                  style={{
+                    position: "absolute",
+                    inset: 0,
+                    width: "100%",
+                    height: "100%",
+                    objectFit: "cover",
+                  }}
+                />
+              )}
+              <div style={{
+                position: "absolute",
+                inset: 0,
+                background: "linear-gradient(to top, rgba(43,28,46,0.78) 0%, rgba(43,28,46,0.15) 55%, rgba(0,0,0,0) 100%)",
+              }} />
+              <div style={{
+                position: "absolute",
+                left: 24,
+                right: 24,
+                bottom: 24,
+                color: "var(--cream)",
+              }}>
+                {eyebrowBits.length > 0 && (
+                  <p style={{
+                    fontFamily: "'Inter', sans-serif",
+                    fontSize: 11,
+                    fontWeight: 700,
+                    textTransform: "uppercase",
+                    letterSpacing: "0.14em",
+                    color: "rgba(247,240,230,0.85)",
+                    marginBottom: 10,
+                    marginTop: 0,
+                  }}>
+                    {eyebrowBits.join(" · ")}
+                  </p>
+                )}
+                <h1 style={{
+                  fontFamily: "'Fraunces', serif",
+                  fontWeight: 400,
+                  color: "var(--cream)",
+                  fontSize: 38,
+                  lineHeight: 1.08,
+                  letterSpacing: "-0.015em",
+                  margin: 0,
+                }} className="fw-reader-title">
+                  {decodedTitle}
+                </h1>
+              </div>
+              <style>{`
+                @media (min-width: 768px) {
+                  .fw-reader-hero { margin: -40px -40px 24px !important; }
+                  .fw-reader-title { font-size: 56px !important; line-height: 1.05 !important; letter-spacing: -0.02em !important; }
+                }
+              `}</style>
             </div>
           )}
 
-          {/* Phase tags */}
+          {/* Phase tags — below hero, above body */}
           {item.phase_tags?.length > 0 && (
-            <div style={{ display: "flex", gap: 6, marginBottom: 12 }}>
-              {item.phase_tags.map(pt => (
+            <div style={{ display: "flex", gap: 6, marginBottom: 14, flexWrap: "wrap" }}>
+              {item.phase_tags.map((pt) => (
                 <span key={pt} style={{ fontSize: 10, fontWeight: 600, color: "var(--mauve)", backgroundColor: "var(--ivory-dark)", borderRadius: 9999, padding: "3px 10px", textTransform: "capitalize", fontFamily: "'Inter', sans-serif" }}>
                   {pt} phase
                 </span>
@@ -219,51 +569,168 @@ export default function LifestyleDetail() {
             </div>
           )}
 
-          <h1 style={{ fontFamily: "'Fraunces', serif", fontSize: 30, fontWeight: 600, color: "var(--plum)", lineHeight: 1.2, marginBottom: 10 }}>
-            {item.title}
-          </h1>
-
-          <p className="mt-3 text-sm" style={{ color: "var(--mauve)", fontFamily: "'Inter', sans-serif" }}>
-            {item.author_name || item.source_name}
-            {item.published_at ? ` · ${format(new Date(item.published_at), "dd MMM yyyy")}` : ""}
-          </p>
-
-          {/* Why it matters — only for items that have it */}
-          {item.why_it_matters && (
-            <div style={{ borderLeft: "3px solid var(--rose-dust)", paddingLeft: 14, marginTop: 22, marginBottom: 22 }}>
-              <p style={{ fontSize: 14, color: "var(--plum)", fontStyle: "italic", lineHeight: 1.65, margin: 0, fontFamily: "'Fraunces', serif" }}>
-                {item.why_it_matters}
-              </p>
-            </div>
-          )}
-
-          {/* Body — full inline content */}
+          {/* Body — editorial blocks */}
           {bodyLoading ? (
             <div style={{ display: "flex", alignItems: "center", gap: 10, padding: "20px 0" }}>
               <Loader2 style={{ width: 18, height: 18, color: "var(--rose-dust)", animation: "spin 0.7s linear infinite" }} />
               <span style={{ fontSize: 13, color: "var(--mauve)", fontFamily: "'Inter', sans-serif" }}>Loading the rest…</span>
-              <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
             </div>
           ) : (
-            <p style={{ marginTop: 22, fontSize: 15, color: "var(--plum)", lineHeight: 1.8, fontFamily: "'Inter', sans-serif", whiteSpace: "pre-line" }}>
-              {fullBody || item.summary || ""}
-            </p>
+            <div>
+              {blocks.length === 0 && (
+                <p className="fw-body-p" style={{ fontFamily: "'Inter', sans-serif", fontSize: 16, lineHeight: 1.78, color: "var(--plum)" }}>
+                  {decodeHtmlEntities(item.summary || "")}
+                </p>
+              )}
+              {blocks.map((b, idx) => {
+                const rendered = [];
+
+                if (b.kind === "h2") {
+                  rendered.push(
+                    <h2 key={`h2-${idx}`} className="fw-h2">
+                      {b.text}
+                    </h2>
+                  );
+                } else if (b.kind === "eyebrow") {
+                  rendered.push(
+                    <p key={`eb-${idx}`} className="fw-eyebrow-h">
+                      {b.text}
+                    </p>
+                  );
+                } else {
+                  const isFirstP = !firstParagraphSeen;
+                  if (isFirstP) firstParagraphSeen = true;
+                  const text = b.text;
+                  if (isFirstP && text && text.length > 1) {
+                    const firstChar = text.charAt(0);
+                    const rest = text.slice(1);
+                    rendered.push(
+                      <p key={`p-${idx}`} className="fw-body-p">
+                        <span className="fw-dropcap">{firstChar}</span>
+                        {rest}
+                      </p>
+                    );
+                  } else {
+                    rendered.push(
+                      <p key={`p-${idx}`} className="fw-body-p">
+                        {text}
+                      </p>
+                    );
+                  }
+                }
+
+                // Pull quote injection after the chosen block index.
+                if (decodedWhy && idx === pullQuoteIndex) {
+                  rendered.push(
+                    <div
+                      key={`pq-${idx}`}
+                      style={{
+                        margin: "32px auto",
+                        padding: "24px 0",
+                        textAlign: "center",
+                        maxWidth: 560,
+                        borderTop: "1px solid var(--rose-primary)",
+                        borderBottom: "1px solid var(--rose-primary)",
+                      }}
+                    >
+                      <p style={{
+                        fontFamily: "'Fraunces', serif",
+                        fontStyle: "italic",
+                        fontWeight: 400,
+                        fontSize: 22,
+                        lineHeight: 1.4,
+                        color: "var(--plum-deep)",
+                        margin: 0,
+                      }} className="fw-pullquote">
+                        {decodedWhy}
+                      </p>
+                      <style>{`
+                        @media (min-width: 768px) {
+                          .fw-pullquote { font-size: 26px !important; }
+                        }
+                      `}</style>
+                    </div>
+                  );
+                }
+
+                // Ornament every 4 blocks (not as the very last element).
+                const isOrnamentSlot = (idx + 1) % 4 === 0 && idx !== blocks.length - 1;
+                if (isOrnamentSlot) {
+                  rendered.push(
+                    <div key={`orn-${idx}`} className="fw-ornament" aria-hidden="true">
+                      · · ·
+                    </div>
+                  );
+                }
+
+                return rendered;
+              })}
+            </div>
           )}
 
           {/* Takeaways */}
           {takeaways.length > 0 && (
-            <div style={{ backgroundColor: "var(--rose-dust-subtle)", border: "1px solid var(--rose-dust-light)", borderRadius: 16, padding: "16px 18px", marginTop: 24 }}>
-              <p style={{ fontSize: 10, fontWeight: 700, color: "var(--rose-dust)", textTransform: "uppercase", letterSpacing: "0.12em", marginBottom: 10, fontFamily: "'Inter', sans-serif" }}>
+            <div style={{
+              backgroundColor: "var(--cream-2)",
+              border: "1px solid var(--rose-dust-light)",
+              borderRadius: 18,
+              padding: "24px 22px",
+              marginTop: 32,
+            }}>
+              <p style={{
+                fontFamily: "'Fraunces', serif",
+                fontStyle: "italic",
+                fontWeight: 400,
+                fontSize: 14,
+                color: "var(--plum-deep)",
+                marginTop: 0,
+                marginBottom: 14,
+              }}>
                 Key takeaways
               </p>
-              {takeaways.map((t, i) => (
-                <div key={i} style={{ display: "flex", gap: 10, marginBottom: 8, alignItems: "flex-start" }}>
-                  <span style={{ width: 18, height: 18, borderRadius: "50%", backgroundColor: "var(--rose-dust)", color: "white", fontSize: 10, fontWeight: 700, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, fontFamily: "'Inter', sans-serif" }}>
-                    {i + 1}
-                  </span>
-                  <p style={{ fontSize: 13, color: "var(--plum)", lineHeight: 1.55, margin: 0, fontFamily: "'Inter', sans-serif" }}>{t}</p>
-                </div>
-              ))}
+              {takeaways.map((t, i) => {
+                const isLast = i === takeaways.length - 1;
+                return (
+                  <div
+                    key={i}
+                    style={{
+                      display: "flex",
+                      gap: 14,
+                      alignItems: "flex-start",
+                      padding: "12px 0",
+                      borderBottom: isLast ? "none" : "1px solid var(--rose-dust-light)",
+                    }}
+                  >
+                    <span style={{
+                      width: 28,
+                      height: 28,
+                      borderRadius: "50%",
+                      backgroundColor: "var(--rose-primary)",
+                      color: "var(--cream)",
+                      fontFamily: "'Fraunces', serif",
+                      fontSize: 16,
+                      fontWeight: 500,
+                      lineHeight: 1,
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      flexShrink: 0,
+                    }}>
+                      {i + 1}
+                    </span>
+                    <p style={{
+                      fontFamily: "'Inter', sans-serif",
+                      fontSize: 15,
+                      lineHeight: 1.55,
+                      color: "var(--plum)",
+                      margin: 0,
+                      flex: 1,
+                    }}>
+                      {decodeHtmlEntities(t)}
+                    </p>
+                  </div>
+                );
+              })}
             </div>
           )}
 
@@ -272,7 +739,7 @@ export default function LifestyleDetail() {
             <button
               onClick={handleReadFull}
               style={{
-                marginTop: 24,
+                marginTop: 28,
                 display: "inline-flex",
                 alignItems: "center",
                 justifyContent: "center",
@@ -280,8 +747,8 @@ export default function LifestyleDetail() {
                 padding: "12px 22px",
                 fontSize: 14,
                 fontWeight: 600,
-                backgroundColor: "var(--rose-dust)",
-                color: "white",
+                backgroundColor: "var(--rose-primary)",
+                color: "var(--cream)",
                 border: "none",
                 cursor: "pointer",
                 fontFamily: "'Inter', sans-serif",
@@ -292,6 +759,83 @@ export default function LifestyleDetail() {
             </button>
           )}
         </div>
+
+        {/* More like this rail */}
+        {relatedDecorated.length >= 2 && (
+          <div style={{ marginTop: 40 }}>
+            <p style={{
+              fontFamily: "'Fraunces', serif",
+              fontStyle: "italic",
+              fontWeight: 400,
+              fontSize: 22,
+              color: "var(--plum-deep)",
+              margin: "0 0 16px",
+            }}>
+              More like this
+            </p>
+            <div className="fw-related-rail">
+              {relatedDecorated.map((r) => {
+                const cardBg = r.image_gradient || "linear-gradient(135deg, var(--rose-soft-bg) 0%, var(--cream-2) 100%)";
+                const metaBits = [r.source ? r.source.toUpperCase() : "", r.rel ? r.rel.toUpperCase() : ""].filter(Boolean);
+                return (
+                  <a
+                    key={r.id}
+                    href={`/LifestyleDetail?id=${encodeURIComponent(r.id)}`}
+                    className="fw-related-card"
+                  >
+                    <div style={{
+                      width: 240,
+                      height: 140,
+                      borderRadius: 14,
+                      overflow: "hidden",
+                      background: cardBg,
+                      position: "relative",
+                    }}>
+                      {r.image_url && (
+                        <img
+                          src={r.image_url}
+                          alt=""
+                          style={{
+                            width: "100%",
+                            height: "100%",
+                            objectFit: "cover",
+                            display: "block",
+                          }}
+                        />
+                      )}
+                    </div>
+                    <p
+                      className="fw-related-title-clamp"
+                      style={{
+                        fontFamily: "'Fraunces', serif",
+                        fontWeight: 500,
+                        fontSize: 16,
+                        lineHeight: 1.25,
+                        color: "var(--plum)",
+                        margin: "10px 0 0",
+                      }}
+                    >
+                      {r.title}
+                    </p>
+                    {metaBits.length > 0 && (
+                      <p style={{
+                        fontFamily: "'Inter', sans-serif",
+                        fontSize: 11,
+                        fontWeight: 600,
+                        textTransform: "uppercase",
+                        letterSpacing: "0.1em",
+                        color: "var(--mauve)",
+                        margin: "6px 0 0",
+                      }}>
+                        {metaBits.join(" · ")}
+                      </p>
+                    )}
+                  </a>
+                );
+              })}
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );
