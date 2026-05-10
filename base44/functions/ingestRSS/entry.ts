@@ -4,8 +4,14 @@
 // - Skips items with empty title/content_url/source_id (no partial records)
 // Phase 4-B:
 // - Reads source.daily_item_cap (default 5), skips source if 24h cap reached, logs cap_reached
+// og:image MP:
+// - Before each LifestyleItems.create, fetches the article page and pulls the
+//   publisher-declared og:image / twitter:image meta tag, so the card hero is
+//   the article's real image instead of a random Unsplash placeholder.
 
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.25';
+
+const CHROME_UA = 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36';
 
 // ── Inlined helper: structured ingest error log ────────────────────────────
 async function logIngestError(base44, function_name, stage, ctx, err) {
@@ -44,6 +50,75 @@ async function isUrlReachable(url, timeoutMs = 5000) {
 
 function stripHtml(text) {
   return (text || '').replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim().slice(0, 300);
+}
+
+// ── Inlined og:image extraction (mirrors extractOgImage function) ──────────
+function isPlausibleImageUrl(url) {
+  if (!url || url.length < 12) return false;
+  const lower = url.toLowerCase();
+  if (lower.includes('1x1')) return false;
+  if (lower.includes('pixel')) return false;
+  if (lower.includes('blank')) return false;
+  if (lower.includes('transparent')) return false;
+  if (lower.endsWith('.svg')) return false;
+  return true;
+}
+
+function resolveUrl(candidate, baseUrl) {
+  try {
+    if (/^https?:\/\//i.test(candidate)) return candidate;
+    if (/^\/\//.test(candidate)) {
+      const proto = new URL(baseUrl).protocol;
+      return `${proto}${candidate}`;
+    }
+    return new URL(candidate, baseUrl).toString();
+  } catch {
+    return null;
+  }
+}
+
+function parseOgImageFromHtml(html, baseUrl) {
+  if (!html || typeof html !== 'string') return null;
+  const headMatch = html.match(/<head[\s\S]*?<\/head>/i);
+  const haystack = headMatch ? headMatch[0] : html.slice(0, 200000);
+  const patterns = [
+    /<meta[^>]+property=["']og:image["'][^>]+content=["']([^"']+)["']/i,
+    /<meta[^>]+content=["']([^"']+)["'][^>]+property=["']og:image["']/i,
+    /<meta[^>]+property=["']og:image:url["'][^>]+content=["']([^"']+)["']/i,
+    /<meta[^>]+content=["']([^"']+)["'][^>]+property=["']og:image:url["']/i,
+    /<meta[^>]+name=["']twitter:image["'][^>]+content=["']([^"']+)["']/i,
+    /<meta[^>]+content=["']([^"']+)["'][^>]+name=["']twitter:image["']/i,
+    /<meta[^>]+name=["']twitter:image:src["'][^>]+content=["']([^"']+)["']/i,
+    /<meta[^>]+content=["']([^"']+)["'][^>]+name=["']twitter:image:src["']/i,
+  ];
+  for (const re of patterns) {
+    const m = haystack.match(re);
+    if (m && m[1]) {
+      const candidate = m[1].trim();
+      const resolved = resolveUrl(candidate, baseUrl);
+      if (resolved && isPlausibleImageUrl(resolved)) return resolved;
+    }
+  }
+  return null;
+}
+
+async function fetchOgImage(url) {
+  if (!url || typeof url !== 'string') return null;
+  try {
+    const res = await fetch(url, {
+      headers: {
+        'User-Agent': CHROME_UA,
+        'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
+      },
+      redirect: 'follow',
+      signal: AbortSignal.timeout(10000),
+    });
+    if (!res.ok) return null;
+    const html = await res.text();
+    return parseOgImageFromHtml(html, res.url || url);
+  } catch {
+    return null;
+  }
 }
 
 async function parseRSS(base44, sourceName, url) {
@@ -159,12 +234,23 @@ Deno.serve(async (req) => {
             continue;
           }
 
+          // Pull publisher's og:image. Falls back to '' if extraction fails;
+          // the renderer already handles missing image_url gracefully.
+          let resolvedImageUrl = '';
+          try {
+            const og = await fetchOgImage(item.link);
+            if (og) resolvedImageUrl = og;
+          } catch {
+            // Non-fatal — proceed without an image rather than blocking ingest.
+          }
+
           await base44.asServiceRole.entities.LifestyleItems.create({
             source_id: source.id,
             source_name: source.name,
             title: item.title.slice(0, 220),
             content_url: item.link,
             summary: stripHtml(item.description),
+            image_url: resolvedImageUrl,
             published_at: (() => { try { return new Date(item.pubDate).toISOString(); } catch { return new Date().toISOString(); } })(),
             category: source.category,
             media_type: (Array.isArray(source.tags) && source.tags.includes('podcast')) ? 'PODCAST' : 'ARTICLE',
