@@ -7,25 +7,9 @@ const FALLBACK_GRADIENT = "linear-gradient(135deg, var(--rose-soft-bg) 0%, var(-
 export default function EditorialHero({ item, savedSet, savedPhases, onSave, onUntag }) {
   const navigate = useNavigate();
 
-  if (!item) {
-    return (
-      <div
-        style={{
-          maxWidth: 920,
-          margin: "0 auto 20px",
-          padding: "32px 24px",
-          textAlign: "center",
-          background: "var(--cream)",
-          border: "1px solid var(--ink-line)",
-          borderRadius: 22,
-          color: "var(--plum-accent)",
-          font: "400 16px 'Inter', sans-serif",
-        }}
-      >
-        Quiet on the shelf today. Check back soon.
-      </div>
-    );
-  }
+  // Return null when no hero item — avoids the "no article yet" flash during the async hero fetch.
+  // The page has plenty of other rails (PhaseInbox, Saved, TryThis, BentoGrid) that handle emptiness gracefully.
+  if (!item) return null;
 
   const isSaved = savedSet.has(item.id);
   const hasPhaseTag = !!savedPhases?.[item.id];
