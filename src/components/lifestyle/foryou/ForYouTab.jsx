@@ -6,6 +6,7 @@ import SavedRail from "./SavedRail";
 import TryThisRail from "./TryThisRail";
 import BentoGrid from "./BentoGrid";
 import Toast from "./Toast";
+import PhaseInboxRail from "./PhaseInboxRail";
 
 function matchCategoryFilter(item, filter) {
   if (!filter || filter === "all") return true;
@@ -308,6 +309,8 @@ export default function ForYouTab({ categoryFilter }) {
         onSave={handleSave}
         onUntag={handleUntag}
       />
+
+      <PhaseInboxRail items={allItems} currentPhase={currentPhase} />
 
       <SavedRail
         items={savedItems}
