@@ -4,6 +4,9 @@
 // - Adds HEAD validation on canonical watch URL before each write
 // - Populates source_id, source_name, source_logo_url (was missing — caused 47.8% null source_id)
 // - Replaces silent catches with IngestErrorLog rows
+// Phase 4-B:
+// - YouTube branch: enforces YOUTUBE_PER_CHANNEL_CAP (hardcoded=3) per channel per 24h
+// - RSS branch: reads daily_item_cap from LifestyleSources row, enforces per source per 24h
 
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.25';
 
@@ -52,6 +55,8 @@ async function isUrlReachable(url, timeoutMs = 5000) {
 //    Refactor planned for Phase 5: merge into a single LifestyleSources-driven
 //    loop so the entity is the source of truth for what gets ingested.
 // ───────────────────────────────────────────────────────────────────────────
+const YOUTUBE_PER_CHANNEL_CAP = 3;
+
 const YOUTUBE_CHANNELS = [
   { id: 'UC4cNjUPc2gQKucX3hLUayYQ', name: 'Dr. Mindy Pelz',      category: 'Hormones & Cycle', tags: ['hormones', 'fasting', 'cycle syncing'] },
   { id: 'UCFKE7WVJfvaHW5q283SxchA', name: 'Yoga With Adriene',    category: 'Mindfulness',      tags: ['yoga', 'movement', 'calm'] },
@@ -254,7 +259,29 @@ Deno.serve(async (req) => {
         await sleep(200);
         const sourceId = await resolveYouTubeSourceId(base44, channel, sourceCache);
 
+        // ── YouTube cap logic (hardcoded — Phase 5 will move to LifestyleSources field) ──
+        const ytSince = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
+        let ytRecentCount = 0;
+        try {
+          const ytRecent = await base44.asServiceRole.entities.LifestyleItems.filter(
+            { source_id: sourceId, created_at: { $gte: ytSince } },
+            null,
+            YOUTUBE_PER_CHANNEL_CAP + 1
+          );
+          ytRecentCount = Array.isArray(ytRecent) ? ytRecent.length : 0;
+        } catch { ytRecentCount = 0; }
+
+        if (ytRecentCount >= YOUTUBE_PER_CHANNEL_CAP) {
+          await logIngestError(base44, 'ingestYouTubeChannels', 'cap_reached',
+            { source_identifier: channel.name, raw_payload: { recentCount: ytRecentCount, cap: YOUTUBE_PER_CHANNEL_CAP, source_id: sourceId } },
+            new Error(`youtube channel cap reached: ${ytRecentCount}/${YOUTUBE_PER_CHANNEL_CAP}`));
+          continue;
+        }
+        const ytRemaining = YOUTUBE_PER_CHANNEL_CAP - ytRecentCount;
+        let ytCreatedInThisRun = 0;
+
         for (const v of videos.slice(0, 20)) {
+          if (ytCreatedInThisRun >= ytRemaining) break;
           try {
             if (!v.videoId || !v.title) {
               skipped++;
@@ -274,8 +301,7 @@ Deno.serve(async (req) => {
               continue;
             }
 
-            // Required-field guard: title and content_url already non-null;
-            // source_id can be empty if LifestyleSources write failed — log and skip rather than write a partial.
+            // Required-field guard
             if (!sourceId) {
               await logIngestError(base44, 'ingestYouTubeChannels', 'intake',
                 { source_identifier: channel.name, item_id: contentUrl, raw_payload: { videoId: v.videoId } },
@@ -308,6 +334,7 @@ Deno.serve(async (req) => {
             });
             existingHashes.add(hash);
             ytIngested++;
+            ytCreatedInThisRun += 1;
             await sleep(150);
           } catch (err) {
             await logIngestError(base44, 'ingestYouTubeChannels', 'intake',
@@ -324,7 +351,33 @@ Deno.serve(async (req) => {
         await sleep(200);
         const sourceId = await resolveRSSSourceId(base44, source, sourceCache);
 
+        // ── RSS-branch cap logic (uses LifestyleSources.daily_item_cap) ──
+        const sourceRow = sourceId
+          ? await base44.asServiceRole.entities.LifestyleSources.filter({ id: sourceId }, null, 1).then(arr => arr?.[0]).catch(() => null)
+          : null;
+        const rssCap = (sourceRow?.daily_item_cap ?? 5);
+        const rssSince = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
+        let rssRecentCount = 0;
+        try {
+          const rssRecent = await base44.asServiceRole.entities.LifestyleItems.filter(
+            { source_id: sourceId, created_at: { $gte: rssSince } },
+            null,
+            rssCap + 1
+          );
+          rssRecentCount = Array.isArray(rssRecent) ? rssRecent.length : 0;
+        } catch { rssRecentCount = 0; }
+
+        if (rssRecentCount >= rssCap) {
+          await logIngestError(base44, 'ingestYouTubeChannels', 'cap_reached',
+            { source_identifier: source.name, raw_payload: { recentCount: rssRecentCount, cap: rssCap, source_id: sourceId } },
+            new Error(`rss source cap reached: ${rssRecentCount}/${rssCap}`));
+          continue;
+        }
+        const rssRemaining = rssCap - rssRecentCount;
+        let rssCreatedInThisRun = 0;
+
         for (const item of items.slice(0, 20)) {
+          if (rssCreatedInThisRun >= rssRemaining) break;
           try {
             if (!item.title || !item.link) { skipped++; continue; }
             const hash = hashUrl(item.link);
@@ -382,6 +435,7 @@ Deno.serve(async (req) => {
             });
             existingHashes.add(hash);
             rssIngested++;
+            rssCreatedInThisRun += 1;
             await sleep(150);
           } catch (err) {
             await logIngestError(base44, 'ingestYouTubeChannels', 'intake',

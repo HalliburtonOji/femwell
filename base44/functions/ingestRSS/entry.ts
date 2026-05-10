@@ -2,6 +2,8 @@
 // - Replaces silent catches with IngestErrorLog rows
 // - Adds HEAD validation before each LifestyleItem write
 // - Skips items with empty title/content_url/source_id (no partial records)
+// Phase 4-B:
+// - Reads source.daily_item_cap (default 5), skips source if 24h cap reached, logs cap_reached
 
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.25';
 
@@ -71,7 +73,7 @@ async function parseRSS(base44, sourceName, url) {
     return items;
   } catch (err) {
     await logIngestError(base44, 'parseRSS', 'intake', { source_identifier: sourceName, raw_payload: { url } }, err);
-    throw err; // rethrow so caller knows the parse failed
+    throw err;
   }
 }
 
@@ -89,6 +91,29 @@ Deno.serve(async (req) => {
 
     for (const source of activeSources) {
       if (!source.feed_url) continue;
+
+      // ── Cap logic: skip this source if it hit its 24h cap ──
+      const cap = (source.daily_item_cap ?? 5);
+      const since = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
+      let recentCount = 0;
+      try {
+        const recent = await base44.asServiceRole.entities.LifestyleItems.filter(
+          { source_id: source.id, created_at: { $gte: since } },
+          null,
+          cap + 1
+        );
+        recentCount = Array.isArray(recent) ? recent.length : 0;
+      } catch { recentCount = 0; }
+
+      if (recentCount >= cap) {
+        await logIngestError(base44, 'ingestRSS', 'cap_reached',
+          { source_identifier: source.name, raw_payload: { recentCount, cap, source_id: source.id } },
+          new Error(`source cap reached: ${recentCount}/${cap}`));
+        continue;
+      }
+      const remaining = cap - recentCount;
+      let createdInThisRun = 0;
+
       let rssItems = [];
       try {
         rssItems = await parseRSS(base44, source.name, source.feed_url);
@@ -98,6 +123,7 @@ Deno.serve(async (req) => {
       }
 
       for (const item of rssItems.slice(0, 20)) {
+        if (createdInThisRun >= remaining) break;
         try {
           if (!item.title || !item.link) {
             await logIngestError(base44, 'ingestRSS', 'intake',
@@ -106,7 +132,6 @@ Deno.serve(async (req) => {
             continue;
           }
 
-          // Required-field guard: source_id, title, content_url all non-null.
           if (!source.id) {
             await logIngestError(base44, 'ingestRSS', 'intake',
               { source_identifier: source.name, raw_payload: item },
@@ -120,7 +145,6 @@ Deno.serve(async (req) => {
             continue;
           }
 
-          // HEAD validation: confirm URL is reachable before writing.
           const reachable = await isUrlReachable(item.link);
           if (!reachable) {
             await logIngestError(base44, 'ingestRSS', 'url_validation',
@@ -145,6 +169,7 @@ Deno.serve(async (req) => {
             provider: 'RSS'
           });
           ingested += 1;
+          createdInThisRun += 1;
         } catch (err) {
           await logIngestError(base44, 'ingestRSS', 'intake',
             { source_identifier: source.name, raw_payload: item }, err);

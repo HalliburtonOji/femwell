@@ -80,6 +80,11 @@
       "type": "number",
       "default": 5
     },
+    "daily_item_cap": {
+      "type": "number",
+      "default": 5,
+      "description": "Max LifestyleItems this source can produce per 24h ingest cycle. Null/undefined treated as 5 (RSS) or 3 (YouTube hardcoded constant) by ingest logic."
+    },
     "created_at": {
       "type": "string"
     },
