@@ -49,6 +49,160 @@ async function validateContentKey(base44, proposedKey) {
   }
 }
 
+// ── Inlined helper: free multi-source image finder ─────────────────────────
+// Mirrors findFreeImage/entry.ts. Inlined (not sub-invoked) so a single
+// summarize pass picks an image without an extra cross-function call,
+// matching the Phase 4-A inline-parseRSS pattern.
+const CHROME_UA =
+  'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36';
+
+function needsFreeImage(currentUrl) {
+  const img = (currentUrl || '').toLowerCase();
+  if (!img) return true;
+  if (img.includes('images.unsplash.com')) return true;
+  if (img.includes('source.unsplash.com')) return true;
+  return false;
+}
+
+function isQualityImageUrl(url) {
+  if (!url || typeof url !== 'string' || url.length < 12) return false;
+  const lower = url.toLowerCase();
+  if (lower.includes('1x1')) return false;
+  if (lower.includes('pixel')) return false;
+  if (lower.includes('blank')) return false;
+  if (lower.includes('placeholder')) return false;
+  if (lower.includes('default')) return false;
+  if (lower.includes('transparent')) return false;
+  if (lower.includes('_alpha')) return false;
+  if (lower.endsWith('.svg')) return false;
+  if (lower.endsWith('.svg.png')) return false;
+  if (/\/(icon|symbol|logo|flag|coat[_-]of[_-]arms)/i.test(url)) return false;
+  return true;
+}
+
+function buildTopicCandidates(input) {
+  const out = [];
+  const seen = new Set();
+  const add = (raw) => {
+    if (!raw || typeof raw !== 'string') return;
+    const cleaned = raw.trim();
+    if (!cleaned) return;
+    if (seen.has(cleaned.toLowerCase())) return;
+    seen.add(cleaned.toLowerCase());
+    out.push(cleaned);
+  };
+  const phaseMap = {
+    menstrual: 'Menstrual cycle',
+    follicular: 'Follicular phase',
+    ovulatory: 'Ovulation',
+    luteal: 'Luteal phase',
+  };
+  if (Array.isArray(input.phase_tags)) {
+    for (const p of input.phase_tags) {
+      const mapped = phaseMap[(p || '').toLowerCase()];
+      if (mapped) add(mapped);
+    }
+  }
+  if (input.emotional_tag) add(String(input.emotional_tag).replace(/-/g, ' '));
+  if (input.category) {
+    add(String(input.category).replace(/&.*$/, '').trim());
+    add(input.category);
+  }
+  if (input.title) {
+    const words = String(input.title).split(/\s+/).filter(Boolean);
+    const caps = words.filter((w) => /^[A-Z][a-z]{2,}/.test(w));
+    if (caps.length > 0) {
+      add(caps.slice(-3).join(' '));
+      add(caps.slice(-2).join(' '));
+      add(caps.slice(-1).join(' '));
+    }
+  }
+  return out;
+}
+
+async function fetchWikipediaImage(topic) {
+  const url = `https://en.wikipedia.org/api/rest_v1/page/summary/${encodeURIComponent(topic)}`;
+  try {
+    const res = await fetch(url, {
+      headers: { 'User-Agent': CHROME_UA, 'Accept': 'application/json' },
+      redirect: 'follow',
+      signal: AbortSignal.timeout(8000),
+    });
+    if (!res.ok) return null;
+    const data = await res.json();
+    const original = data?.originalimage;
+    const thumb = data?.thumbnail;
+    if (original?.source && typeof original.source === 'string') {
+      const w = Number(original.width || 0);
+      if ((w === 0 || w >= 200) && isQualityImageUrl(original.source)) return original.source;
+    }
+    if (thumb?.source && typeof thumb.source === 'string') {
+      const w = Number(thumb.width || 0);
+      if ((w === 0 || w >= 200) && isQualityImageUrl(thumb.source)) return thumb.source;
+    }
+    return null;
+  } catch {
+    return null;
+  }
+}
+
+async function fetchWikimediaCommonsImage(query) {
+  try {
+    const searchUrl = `https://commons.wikimedia.org/w/api.php?action=query&list=search&srsearch=${encodeURIComponent(
+      query,
+    )}&srnamespace=6&format=json&srlimit=5`;
+    const searchRes = await fetch(searchUrl, {
+      headers: { 'User-Agent': CHROME_UA, 'Accept': 'application/json' },
+      signal: AbortSignal.timeout(8000),
+    });
+    if (!searchRes.ok) return null;
+    const searchData = await searchRes.json();
+    const hits = searchData?.query?.search;
+    if (!Array.isArray(hits) || hits.length === 0) return null;
+    for (const hit of hits) {
+      const fileTitle = hit?.title;
+      if (!fileTitle || typeof fileTitle !== 'string') continue;
+      if (/(svg|icon|logo|symbol|flag|coat[_-]of[_-]arms)/i.test(fileTitle)) continue;
+      const infoUrl = `https://commons.wikimedia.org/w/api.php?action=query&titles=${encodeURIComponent(
+        fileTitle,
+      )}&prop=imageinfo&iiprop=url|size&format=json`;
+      const infoRes = await fetch(infoUrl, {
+        headers: { 'User-Agent': CHROME_UA, 'Accept': 'application/json' },
+        signal: AbortSignal.timeout(8000),
+      });
+      if (!infoRes.ok) continue;
+      const infoData = await infoRes.json();
+      const pages = infoData?.query?.pages;
+      if (!pages || typeof pages !== 'object') continue;
+      const firstKey = Object.keys(pages)[0];
+      const info = pages[firstKey]?.imageinfo?.[0];
+      const candidate = info?.url;
+      const width = Number(info?.width || 0);
+      if (!candidate || typeof candidate !== 'string') continue;
+      if (width && width < 200) continue;
+      if (!isQualityImageUrl(candidate)) continue;
+      return candidate;
+    }
+    return null;
+  } catch {
+    return null;
+  }
+}
+
+async function pickFreeImage(input) {
+  const candidates = buildTopicCandidates(input);
+  if (candidates.length === 0) return null;
+  for (const topic of candidates) {
+    const hit = await fetchWikipediaImage(topic);
+    if (hit) return hit;
+  }
+  for (const topic of candidates) {
+    const hit = await fetchWikimediaCommonsImage(topic);
+    if (hit) return hit;
+  }
+  return null;
+}
+
 // ── Inlined helper: YouTube Data API ───────────────────────────────────────
 const YT_KEY = Deno.env.get('YOUTUBE_API_KEY');
 const UK_REGION = 'GB';
@@ -239,7 +393,9 @@ async function processVideoItem(base44, item) {
     return { outcome: 'retry' };
   }
 
-  await base44.asServiceRole.entities.LifestyleItems.update(item.id, {
+  // Step G: free-image lookup if image_url is empty or a random Unsplash placeholder.
+  // Don't overwrite real thumbnails (YouTube items typically have one already).
+  const updatePayload: any = {
     summary,
     lede,
     duration_seconds: meta.duration_seconds,
@@ -251,7 +407,22 @@ async function processVideoItem(base44, item) {
     status: 'PUBLISHED',
     published_at: new Date().toISOString(),
     updated_at: new Date().toISOString(),
-  });
+  };
+  if (needsFreeImage(item.image_url)) {
+    try {
+      const picked = await pickFreeImage({
+        title: meta.title || item.title,
+        category: item.category,
+        emotional_tag: item.emotional_tag,
+        phase_tags: inferredPhaseTags,
+      });
+      if (picked) updatePayload.image_url = picked;
+    } catch (err) {
+      await logIngestError(base44, 'summarizeLifestyleItem', 'free_image_lookup',
+        { item_id: item.id, source_identifier: item.source_name || '' }, err);
+    }
+  }
+  await base44.asServiceRole.entities.LifestyleItems.update(item.id, updatePayload);
   return { outcome: 'published' };
 }
 
@@ -304,18 +475,38 @@ Return JSON with:
       : (Array.isArray(item.tags) ? item.tags : []);
     const phaseTagsArr = Array.isArray(result.phase_tags) ? result.phase_tags : [];
     const validatedTryThisKey = await validateContentKey(base44, result.try_this_content_key);
-    await base44.asServiceRole.entities.LifestyleItems.update(item.id, {
+    const resolvedCategory = result.category === 'Womens Health' ? "Women's Health" : (result.category || item.category);
+
+    // Free-image lookup if image_url is empty or a random Unsplash placeholder.
+    // This is the load-bearing branch for FemWell-generated content (FEMWELL_AI /
+    // FEMWELL_FICTION_*), which has no external page for og:image extraction.
+    const updatePayload: any = {
       summary: result.summary || item.summary,
       takeaways: [result.takeaway_1, result.takeaway_2, result.takeaway_3].filter(Boolean),
       why_it_matters: result.why_it_matters || '',
-      category: result.category === 'Womens Health' ? "Women's Health" : (result.category || item.category),
+      category: resolvedCategory,
       tags: tagsArr,
       phase_tags: phaseTagsArr,
       try_this_content_key: validatedTryThisKey,
       status: 'PUBLISHED',
       published_at: new Date().toISOString(),
       updated_at: new Date().toISOString(),
-    });
+    };
+    if (needsFreeImage(item.image_url)) {
+      try {
+        const picked = await pickFreeImage({
+          title: item.title,
+          category: resolvedCategory,
+          emotional_tag: item.emotional_tag,
+          phase_tags: phaseTagsArr,
+        });
+        if (picked) updatePayload.image_url = picked;
+      } catch (imgErr) {
+        await logIngestError(base44, 'summarizeLifestyleItem', 'free_image_lookup',
+          { item_id: item.id, source_identifier: item.source_name || '' }, imgErr);
+      }
+    }
+    await base44.asServiceRole.entities.LifestyleItems.update(item.id, updatePayload);
     return { outcome: 'published' };
   } catch (err) {
     await logIngestError(base44, 'summarizeLifestyleItem', 'summarization',
