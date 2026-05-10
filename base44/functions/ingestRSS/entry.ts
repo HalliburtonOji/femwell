@@ -167,7 +167,7 @@ Deno.serve(async (req) => {
             summary: stripHtml(item.description),
             published_at: (() => { try { return new Date(item.pubDate).toISOString(); } catch { return new Date().toISOString(); } })(),
             category: source.category,
-            media_type: 'ARTICLE',
+            media_type: (Array.isArray(source.tags) && source.tags.includes('podcast')) ? 'PODCAST' : 'ARTICLE',
             status: 'PUBLISHED',
             tags: Array.isArray(source.tags) ? source.tags : [],
             created_at: new Date().toISOString(),
