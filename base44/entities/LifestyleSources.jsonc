@@ -37,7 +37,11 @@
         "Menopause",
         "PCOS",
         "PMS",
-        "Fashion"
+        "Fashion",
+        "Hormones & Cycle",
+        "Mindfulness",
+        "Nutrition",
+        "Gut Health"
       ],
       "default": "Lifestyle"
     },
@@ -84,6 +88,17 @@
       "type": "number",
       "default": 5,
       "description": "Max LifestyleItems this source can produce per 24h ingest cycle. Null/undefined treated as 5 (RSS) or 3 (YouTube hardcoded constant) by ingest logic."
+    },
+    "external_id": {
+      "type": "string",
+      "description": "External system identifier \u2014 e.g. YouTube channel ID for YOUTUBE_CHANNEL rows. Null for non-external sources."
+    },
+    "tags": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Topical tags applied to items ingested from this source."
     },
     "created_at": {
       "type": "string"
