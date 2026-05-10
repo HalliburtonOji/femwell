@@ -4,6 +4,7 @@ import { ExternalLink, ChevronDown, ChevronUp, X, BookOpen, Bookmark, BookText, 
 import { CONTENT_CATEGORIES, categoryLabel } from "@/utils/contentCategory";
 import ForYouTab from "@/components/lifestyle/foryou/ForYouTab";
 import BrowseTab from "@/components/lifestyle/browse/BrowseTab";
+import ListenTab from "@/components/lifestyle/listen/ListenTab";
 
 // ── Helpers ──────────────────────────────────────────────────────────────────
 function stripHtml(str) {
@@ -644,6 +645,7 @@ function EmptyState({ text }) {
 const TABS = [
   { id: "for_you",     label: "For You" },
   { id: "browse",      label: "Browse" },
+  { id: "listen",      label: "Listen" },
   { id: "daily_story", label: "Daily Story" },
   { id: "horoscope",   label: "Horoscope" },
 ];
@@ -748,8 +750,9 @@ export default function Lifestyle() {
         </div>
       ) : (
         <div className="max-w-xl mx-auto px-4 pt-5">
-          {tab === "daily_story" && <DailyStoryTab />}
           {tab === "browse"      && <BrowseTab categoryFilter={categoryFilter} />}
+          {tab === "listen"      && <ListenTab categoryFilter={categoryFilter} />}
+          {tab === "daily_story" && <DailyStoryTab />}
           {tab === "horoscope"   && <HoroscopeTab />}
         </div>
       )}
