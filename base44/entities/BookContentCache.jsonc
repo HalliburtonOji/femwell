@@ -1,0 +1,30 @@
+{
+  "name": "BookContentCache",
+  "type": "object",
+  "properties": {
+    "gutendex_id": {
+      "type": "number",
+      "description": "Project Gutenberg book ID \u2014 unique per cached book"
+    },
+    "title": {
+      "type": "string"
+    },
+    "author": {
+      "type": "string"
+    },
+    "chapters_json": {
+      "type": "string",
+      "description": "JSON-stringified array of { heading, body }"
+    },
+    "source_url": {
+      "type": "string"
+    },
+    "cached_at": {
+      "type": "string",
+      "format": "date-time"
+    }
+  },
+  "required": [
+    "gutendex_id"
+  ]
+}
