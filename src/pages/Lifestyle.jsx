@@ -5,6 +5,7 @@ import { CONTENT_CATEGORIES, categoryLabel } from "@/utils/contentCategory";
 import ForYouTab from "@/components/lifestyle/foryou/ForYouTab";
 import BrowseTab from "@/components/lifestyle/browse/BrowseTab";
 import ListenTab from "@/components/lifestyle/listen/ListenTab";
+import DailyStoryReader from "@/components/lifestyle/DailyStoryReader";
 
 // ── Helpers ──────────────────────────────────────────────────────────────────
 function stripHtml(str) {
@@ -231,7 +232,14 @@ function matchCategory(item, filter) {
 }
 
 // ── DAILY STORY tab ───────────────────────────────────────────────────────────
+// Kindle-flip reader; full implementation in components/lifestyle/DailyStoryReader.jsx
 function DailyStoryTab() {
+  return <DailyStoryReader seriesKey="the_long_room" totalCount={30} />;
+}
+
+// Legacy day-by-day card view (kept for reference; not rendered). Removed when
+// DailyStoryReader took over. If we ever need a fallback list, restore from git.
+function _LegacyDailyStoryTab() {
   const [current, setCurrent] = useState(null);
   const [archive, setArchive] = useState([]);
   const [loading, setLoading] = useState(true);
