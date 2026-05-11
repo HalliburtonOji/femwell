@@ -232,14 +232,13 @@ function matchCategory(item, filter) {
 }
 
 // ── DAILY STORY tab ───────────────────────────────────────────────────────────
-// Kindle-flip reader; full implementation in components/lifestyle/DailyStoryReader.jsx
 function DailyStoryTab() {
   return <DailyStoryReader seriesKey="the_long_room" totalCount={30} />;
 }
 
 // Legacy day-by-day card view (kept for reference; not rendered). Removed when
 // DailyStoryReader took over. If we ever need a fallback list, restore from git.
-function _LegacyDailyStoryTab() {
+function LegacyDailyStoryTab() {
   const [current, setCurrent] = useState(null);
   const [archive, setArchive] = useState([]);
   const [loading, setLoading] = useState(true);

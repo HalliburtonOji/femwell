@@ -3,31 +3,22 @@ import { ChevronLeft, ChevronRight, Lock } from "lucide-react";
 import { base44 } from "@/api/base44Client";
 
 // ─────────────────────────────────────────────────────────────────────────────
-// DailyStoryReader — Kindle-flip book reader for the Daily Story tab.
-//
-// Generic `ReaderSource` contract:
-//   { kind: 'daily_story' | 'book' | 'article',
-//     items: ChapterLike[],
-//     currentIndex: number }
-//
+// DailyStoryReader — Kindle-flip reader for Lifestyle → Daily Story tab.
+// Generic ReaderSource contract:
+//   { kind: 'daily_story' | 'book' | 'article', items: ChapterLike[], currentIndex: number }
 // ChapterLike = { id, day_number?, title?, heading?, body, cliffhanger? }
-//
-// For now this component owns the data fetch for `daily_story` (the most
-// common path: Lifestyle → Daily Story tab). For `book` / `article` callers
-// pass in a `source` prop with a pre-built items array.
 // ─────────────────────────────────────────────────────────────────────────────
 
 function todayISO() {
   return new Date().toISOString().split("T")[0];
 }
 
-// Parse `## Chapter N — Title` from segment_text. Returns { heading, body }.
+// Parse `## Chapter N — Title` from segment_text
 function parseChapter(segment_text) {
   if (!segment_text) return { heading: "", body: "" };
   const lines = String(segment_text).split("\n");
   const firstNonEmpty = lines.findIndex((l) => l.trim().length > 0);
   if (firstNonEmpty < 0) return { heading: "", body: "" };
-
   const first = lines[firstNonEmpty];
   const headMatch = first.match(/^#{1,3}\s+(.+)$/);
   if (headMatch) {
@@ -38,19 +29,18 @@ function parseChapter(segment_text) {
   return { heading: "", body: segment_text.trim() };
 }
 
-// Split body into paragraphs preserving blank-line separation.
 function splitParagraphs(body) {
   if (!body) return [];
   return String(body).split(/\n\s*\n+/).map((p) => p.trim()).filter(Boolean);
 }
 
-// HH:MM:SS until next midnight (local time).
 function secondsUntilMidnight() {
   const now = new Date();
   const midnight = new Date(now);
   midnight.setHours(24, 0, 0, 0);
   return Math.max(0, Math.floor((midnight - now) / 1000));
 }
+
 function fmtCountdown(total) {
   const h = String(Math.floor(total / 3600)).padStart(2, "0");
   const m = String(Math.floor((total % 3600) / 60)).padStart(2, "0");
@@ -63,56 +53,12 @@ function prefersReducedMotion() {
   try { return window.matchMedia("(prefers-reduced-motion: reduce)").matches; } catch { return false; }
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
-// Page (a single revealed chapter)
-// ─────────────────────────────────────────────────────────────────────────────
-function ChapterPage({ chapter, dayLabel, indexHint, total, animClass }) {
-  const { heading, body } = useMemo(() => parseChapter(chapter.body || chapter.segment_text || ""), [chapter]);
-  const paragraphs = useMemo(() => splitParagraphs(body), [body]);
-
-  const headingText = heading || chapter.title || chapter.heading || (dayLabel ? `Chapter ${chapter.day_number || ""}` : "");
-
-  return (
-    <div className={`ds-reader-page ${animClass || ""}`} role="article" aria-label={headingText}>
-      {/* Chapter heading */}
-      {headingText && (
-        <>
-          <h1 className="ds-reader-h1">{headingText}</h1>
-          <div className="ds-reader-ornament" aria-hidden="true">· · ·</div>
-        </>
-      )}
-
-      {/* Body — first paragraph gets drop cap */}
-      <div className="ds-reader-body">
-        {paragraphs.map((p, i) => (
-          <p key={i} className={i === 0 ? "ds-reader-p ds-reader-p-first" : "ds-reader-p"}>
-            {p}
-          </p>
-        ))}
-      </div>
-
-      {/* Attribution slot (used by BookReader; harmless when empty) */}
-      {chapter.attribution && (
-        <p className="ds-reader-attribution">{chapter.attribution}</p>
-      )}
-
-      {/* Footer */}
-      {dayLabel && (
-        <p className="ds-reader-footer-label">
-          {dayLabel}
-        </p>
-      )}
-      {typeof indexHint === "number" && typeof total === "number" && (
-        <ProgressDots current={indexHint} total={total} />
-      )}
-    </div>
-  );
-}
-
+// ─── Progress dots ────────────────────────────────────────────────────────────
 function ProgressDots({ current, total }) {
+  const clamp = Math.min(total, 30);
   return (
     <div className="ds-reader-dots" aria-hidden="true">
-      {Array.from({ length: total }).map((_, i) => {
+      {Array.from({ length: clamp }).map((_, i) => {
         let cls = "ds-reader-dot";
         if (i < current) cls += " ds-reader-dot-visited";
         else if (i === current) cls += " ds-reader-dot-current";
@@ -123,17 +69,69 @@ function ProgressDots({ current, total }) {
   );
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
-// Locked cliffhanger screen
-// ─────────────────────────────────────────────────────────────────────────────
+// ─── Single chapter page ──────────────────────────────────────────────────────
+function ChapterPage({ chapter, dayLabel, indexHint, total, animClass }) {
+  const { heading, body } = useMemo(
+    () => parseChapter(chapter.body || chapter.segment_text || ""),
+    [chapter]
+  );
+  const paragraphs = useMemo(() => splitParagraphs(body), [body]);
+  const headingText =
+    heading ||
+    chapter.title ||
+    chapter.heading ||
+    (chapter.day_number ? `Chapter ${chapter.day_number}` : "");
+
+  return (
+    <div
+      className={`ds-reader-page ${animClass || ""}`}
+      role="article"
+      aria-label={headingText}
+    >
+      {headingText && (
+        <>
+          <h1 className="ds-reader-h1">{headingText}</h1>
+          <div className="ds-reader-ornament" aria-hidden="true">· · ·</div>
+        </>
+      )}
+
+      <div className="ds-reader-body">
+        {paragraphs.map((p, i) => (
+          <p key={i} className={i === 0 ? "ds-reader-p ds-reader-p-first" : "ds-reader-p"}>
+            {p}
+          </p>
+        ))}
+      </div>
+
+      {chapter.attribution && (
+        <p className="ds-reader-attribution">{chapter.attribution}</p>
+      )}
+
+      {dayLabel && (
+        <p className="ds-reader-footer-label">{dayLabel}</p>
+      )}
+
+      {typeof indexHint === "number" && typeof total === "number" && (
+        <ProgressDots current={indexHint} total={total} />
+      )}
+    </div>
+  );
+}
+
+// ─── Locked cliffhanger screen ────────────────────────────────────────────────
 function LockedCliffhanger({ cliffhanger, animClass }) {
   const [count, setCount] = useState(secondsUntilMidnight());
   useEffect(() => {
     const id = setInterval(() => setCount(secondsUntilMidnight()), 1000);
     return () => clearInterval(id);
   }, []);
+
   return (
-    <div className={`ds-reader-lock ${animClass || ""}`} role="status" aria-live="polite">
+    <div
+      className={`ds-reader-lock ${animClass || ""}`}
+      role="status"
+      aria-live="polite"
+    >
       <p className="ds-reader-lock-eyebrow">Next chapter</p>
       <div className="ds-reader-lock-ornament" aria-hidden="true">· · ·</div>
       <p className="ds-reader-lock-teaser">{cliffhanger}</p>
@@ -148,24 +146,22 @@ function LockedCliffhanger({ cliffhanger, animClass }) {
   );
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
-// Main reader
-// ─────────────────────────────────────────────────────────────────────────────
+// ─── Main reader ──────────────────────────────────────────────────────────────
 export default function DailyStoryReader({
-  source: providedSource,           // optional pre-built source
-  seriesKey = "the_long_room",      // default DailyStory series
-  totalCount = 30,                  // arc length for footer / progress
+  source: providedSource,
+  seriesKey = "the_long_room",
+  totalCount = 30,
 }) {
   const [chapters, setChapters] = useState(providedSource?.items || []);
   const [currentIndex, setCurrentIndex] = useState(providedSource?.currentIndex ?? 0);
   const [loading, setLoading] = useState(!providedSource);
   const [error, setError] = useState(false);
-  const [flipState, setFlipState] = useState({ phase: "idle", dir: 0 }); // idle | flipping | locked-shake
+  const [flipState, setFlipState] = useState({ phase: "idle", dir: 0 });
   const [showLocked, setShowLocked] = useState(false);
   const touchStartRef = useRef(null);
   const reducedMotion = prefersReducedMotion();
 
-  // Fetch DailyStory rows if no external source provided.
+  // Fetch DailyStory rows if no external source provided
   useEffect(() => {
     if (providedSource) return;
     let cancelled = false;
@@ -176,7 +172,6 @@ export default function DailyStoryReader({
         const all = await base44.entities.DailyStory.filter(
           { series_key: seriesKey, is_active: true }
         ).catch(() => []);
-        // Client-side filter for published_date <= today; sort ASC by day_number.
         const visible = (all || [])
           .filter((r) => !r.published_date || r.published_date <= today)
           .sort((a, b) => (a.day_number || 0) - (b.day_number || 0));
@@ -186,7 +181,6 @@ export default function DailyStoryReader({
           setChapters([]);
         } else {
           setChapters(visible);
-          // Default to latest revealed chapter
           setCurrentIndex(visible.length - 1);
         }
       } catch {
@@ -198,14 +192,11 @@ export default function DailyStoryReader({
     return () => { cancelled = true; };
   }, [providedSource, seriesKey]);
 
-  // The latest revealed index (chapters is already filtered to revealed)
   const latestRevealed = chapters.length - 1;
 
-  // Try to flip forward
   const flipForward = useCallback(() => {
-    if (showLocked) return; // already on locked screen
+    if (showLocked) return;
     if (currentIndex >= latestRevealed) {
-      // Show locked cliffhanger screen instead
       if (reducedMotion) {
         setShowLocked(true);
       } else {
@@ -281,26 +272,19 @@ export default function DailyStoryReader({
     touchStartRef.current = null;
   };
 
-  // Tap halves
-  const onTapZone = (zone) => () => {
-    if (zone === "left") flipBackward();
-    else if (zone === "right") flipForward();
-  };
-
-  // Loading / empty
   if (loading) {
     return (
-      <div className="ds-reader-shell">
-        <div className="ds-reader-empty">Loading the chapter…</div>
-        <ReaderStyles />
+      <div className="ds-reader-loading">
+        <div className="ds-reader-spinner" aria-label="Loading chapter" />
+        <p className="ds-reader-loading-text">Loading the chapter…</p>
       </div>
     );
   }
+
   if (error || !chapters.length) {
     return (
-      <div className="ds-reader-shell">
-        <div className="ds-reader-empty">The story is being written. Check back soon.</div>
-        <ReaderStyles />
+      <div className="ds-reader-empty">
+        The story is being written. Check back soon.
       </div>
     );
   }
@@ -310,29 +294,43 @@ export default function DailyStoryReader({
   const cliffhanger = latestChapter?.cliffhanger || "The next page hasn't been written yet.";
   const seriesTitle = currentChapter?.series_title || "The Long Room";
 
-  // animClass: when flipping, apply a 3D rotateY based on direction.
-  const animClass = flipState.phase === "flipping"
-    ? (flipState.dir > 0 ? "is-flipping-fwd" : "is-flipping-back")
-    : "";
+  const animClass =
+    flipState.phase === "flipping"
+      ? flipState.dir > 0
+        ? "is-flipping-fwd"
+        : "is-flipping-back"
+      : "";
+
+  const displayIndex = showLocked ? chapters.length : currentIndex;
+  const chapterLabel = showLocked
+    ? "Locked"
+    : `Chapter ${currentChapter.day_number || currentIndex + 1} / ${totalCount}`;
 
   return (
     <div
-      className="ds-reader-shell"
+      className="ds-reader-root"
       onTouchStart={onTouchStart}
       onTouchEnd={onTouchEnd}
     >
-      {/* Tap zones — invisible halves to flip. Live behind any clickable content. */}
-      <button
-        type="button"
-        className="ds-reader-tap ds-reader-tap-left"
+      <ReaderStyles reducedMotion={reducedMotion} />
+
+      {/* Series label */}
+      <p className="ds-reader-series-label">{seriesTitle}</p>
+
+      {/* Tap zones — invisible halves */}
+      <div
+        className="ds-reader-tap-left"
+        onClick={flipBackward}
         aria-label="Previous chapter"
-        onClick={onTapZone("left")}
+        role="button"
+        tabIndex={-1}
       />
-      <button
-        type="button"
-        className="ds-reader-tap ds-reader-tap-right"
+      <div
+        className="ds-reader-tap-right"
+        onClick={flipForward}
         aria-label="Next chapter"
-        onClick={onTapZone("right")}
+        role="button"
+        tabIndex={-1}
       />
 
       {/* 3D stage */}
@@ -342,297 +340,347 @@ export default function DailyStoryReader({
         ) : (
           <ChapterPage
             chapter={currentChapter}
-            dayLabel={`Day ${currentChapter.day_number || (currentIndex + 1)} of ${totalCount} · ${seriesTitle}`}
+            dayLabel={null}
             indexHint={currentIndex}
-            total={Math.max(totalCount, chapters.length)}
+            total={totalCount}
             animClass={animClass}
           />
         )}
       </div>
 
-      {/* Visible flip controls (desktop convenience, also touch fallback) */}
-      <div className="ds-reader-controls" aria-hidden="false">
+      {/* Visible nav row */}
+      <div className="ds-reader-nav">
         <button
-          type="button"
-          className="ds-reader-ctrl"
+          className="ds-reader-nav-btn"
           onClick={flipBackward}
-          disabled={!showLocked && currentIndex === 0}
+          disabled={!showLocked && currentIndex <= 0}
           aria-label="Previous chapter"
         >
-          <ChevronLeft size={16} />
+          <ChevronLeft size={18} />
         </button>
-        <span className="ds-reader-pageno" aria-live="polite">
-          {showLocked
-            ? "Locked"
-            : `Day ${currentChapter.day_number || (currentIndex + 1)}`}
-        </span>
+        <span className="ds-reader-chapter-label">{chapterLabel}</span>
         <button
-          type="button"
-          className="ds-reader-ctrl"
+          className="ds-reader-nav-btn"
           onClick={flipForward}
+          disabled={showLocked}
           aria-label="Next chapter"
         >
-          <ChevronRight size={16} />
+          <ChevronRight size={18} />
         </button>
       </div>
-
-      <ReaderStyles />
     </div>
   );
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
-// Styles (scoped via class names; respects prefers-reduced-motion)
+// Scoped styles — respects prefers-reduced-motion
 // ─────────────────────────────────────────────────────────────────────────────
-function ReaderStyles() {
+function ReaderStyles({ reducedMotion }) {
+  const flipAnim = reducedMotion
+    ? `
+      .is-flipping-fwd  { animation: ds-fade 0.2s ease; }
+      .is-flipping-back { animation: ds-fade 0.2s ease; }
+      @keyframes ds-fade { from { opacity: 0.3; } to { opacity: 1; } }
+    `
+    : `
+      .is-flipping-fwd  { animation: ds-flip-fwd  0.6s cubic-bezier(0.4,0,0.2,1) both; }
+      .is-flipping-back { animation: ds-flip-back 0.6s cubic-bezier(0.4,0,0.2,1) both; }
+      @keyframes ds-flip-fwd  {
+        0%   { transform: perspective(900px) rotateY(0deg);    opacity: 1; }
+        49%  { transform: perspective(900px) rotateY(-90deg);  opacity: 0; }
+        50%  { transform: perspective(900px) rotateY(90deg);   opacity: 0; }
+        100% { transform: perspective(900px) rotateY(0deg);    opacity: 1; }
+      }
+      @keyframes ds-flip-back {
+        0%   { transform: perspective(900px) rotateY(0deg);   opacity: 1; }
+        49%  { transform: perspective(900px) rotateY(90deg);  opacity: 0; }
+        50%  { transform: perspective(900px) rotateY(-90deg); opacity: 0; }
+        100% { transform: perspective(900px) rotateY(0deg);   opacity: 1; }
+      }
+    `;
+
   return (
     <style>{`
-      .ds-reader-shell {
+      @import url('https://fonts.googleapis.com/css2?family=Fraunces:ital,wght@0,400;0,500;1,400&display=swap');
+
+      .ds-reader-root {
         position: relative;
-        margin: 0 auto;
         max-width: 640px;
-        min-height: 640px;
-        perspective: 1500px;
-        border-radius: 22px;
-        background: linear-gradient(180deg, #FAF4EA 0%, #F7EFE1 100%);
-        box-shadow:
-          0 1px 2px rgba(43,30,22,0.05),
-          0 8px 22px -8px rgba(43,30,22,0.16),
-          0 24px 56px -16px rgba(43,30,22,0.12);
-        overflow: hidden;
-        user-select: text;
-      }
-      /* Page-curl shadow on right edge — Kindle look */
-      .ds-reader-shell::after {
-        content: "";
-        position: absolute;
-        top: 0; right: 0; bottom: 0;
-        width: 38px;
-        background: linear-gradient(270deg, rgba(43,30,22,0.10), rgba(43,30,22,0) 70%);
-        pointer-events: none;
-        z-index: 2;
+        margin: 0 auto;
+        padding: 0 0 32px;
+        font-family: 'Inter', sans-serif;
+        user-select: none;
       }
 
-      .ds-reader-stage {
-        position: relative;
-        transform-style: preserve-3d;
-        will-change: transform;
+      .ds-reader-series-label {
+        font-size: 10px;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.12em;
+        color: var(--mauve);
+        text-align: center;
+        margin: 0 0 16px;
+        font-family: 'Inter', sans-serif;
       }
 
-      .ds-reader-tap {
+      /* Invisible tap zones */
+      .ds-reader-tap-left,
+      .ds-reader-tap-right {
         position: absolute;
-        top: 0;
+        top: 36px;
         bottom: 60px;
-        width: 24%;
-        background: transparent;
-        border: none;
+        width: 45%;
+        z-index: 10;
         cursor: pointer;
-        z-index: 3;
-        padding: 0;
       }
       .ds-reader-tap-left  { left: 0; }
       .ds-reader-tap-right { right: 0; }
-      .ds-reader-tap:focus-visible {
-        outline: 2px solid var(--rose-primary);
-        outline-offset: -8px;
-      }
 
-      .ds-reader-controls {
-        position: absolute;
-        bottom: 0; left: 0; right: 0;
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        padding: 12px 22px 18px;
-        background: linear-gradient(180deg, rgba(247,239,225,0) 0%, rgba(247,239,225,0.95) 60%);
-        z-index: 4;
-      }
-      .ds-reader-ctrl {
-        width: 36px; height: 36px;
-        border-radius: 9999px;
-        background: rgba(255,255,255,0.7);
-        border: 1px solid var(--ink-line, rgba(43,30,22,0.12));
-        color: var(--plum-deep, #2b1e16);
-        display: flex; align-items: center; justify-content: center;
-        cursor: pointer;
-      }
-      .ds-reader-ctrl:disabled { opacity: 0.4; cursor: default; }
-      .ds-reader-pageno {
-        font-family: 'Fraunces', serif;
-        font-style: italic;
-        font-size: 13px;
-        color: var(--plum-mute, #6b4a56);
-      }
-
-      /* Page */
-      .ds-reader-page {
+      /* Book stage */
+      .ds-reader-stage {
+        background: var(--surface, #fff);
+        border: 1px solid var(--border, #EDE8E4);
+        border-radius: 20px;
+        box-shadow: 0 8px 32px rgba(42,32,53,0.10), 0 2px 8px rgba(42,32,53,0.06);
+        min-height: 520px;
+        padding: 40px 32px 32px;
         position: relative;
-        padding: 28px 32px 80px;
-        min-height: 640px;
-        transform-origin: left center;
-        backface-visibility: hidden;
+        transform-style: preserve-3d;
+        overflow: hidden;
       }
-      @media (min-width: 768px) {
-        .ds-reader-page { padding: 48px 56px 96px; min-height: 720px; }
+
+      @media (max-width: 480px) {
+        .ds-reader-stage { padding: 28px 20px 24px; min-height: 460px; }
+      }
+
+      /* Chapter page */
+      .ds-reader-page {
+        height: 100%;
       }
 
       .ds-reader-h1 {
-        font-family: 'Fraunces', serif;
-        font-weight: 400;
-        font-style: italic;
-        font-size: 28px;
-        line-height: 1.2;
+        font-family: 'Fraunces', 'Playfair Display', Georgia, serif;
+        font-size: clamp(18px, 4vw, 22px);
+        font-weight: 500;
         color: var(--plum-deep, #2b1e16);
+        letter-spacing: -0.01em;
+        line-height: 1.3;
+        margin: 0 0 10px;
         text-align: center;
-        margin: 8px 0 6px;
-        letter-spacing: -0.2px;
       }
+
       .ds-reader-ornament {
         text-align: center;
         color: var(--rose-primary, #D45E52);
-        font-size: 12px;
-        letter-spacing: 8px;
-        margin-bottom: 22px;
+        font-size: 14px;
+        letter-spacing: 0.3em;
+        margin: 0 0 24px;
+        user-select: none;
       }
-      .ds-reader-body { color: var(--plum-deep, #2b1e16); }
+
+      /* Body */
+      .ds-reader-body {
+        max-height: 380px;
+        overflow-y: auto;
+        scrollbar-width: none;
+        -ms-overflow-style: none;
+      }
+      .ds-reader-body::-webkit-scrollbar { display: none; }
+
       .ds-reader-p {
-        font-family: 'Fraunces', serif;
-        font-size: 17px;
+        font-family: 'Fraunces', Georgia, serif;
+        font-size: clamp(15px, 2.5vw, 17px);
+        color: var(--plum, #2A2035);
         line-height: 1.78;
-        color: var(--plum-deep, #2b1e16);
-        margin: 0 0 16px;
+        margin: 0 0 18px;
       }
+
+      /* Drop cap on first paragraph */
       .ds-reader-p-first::first-letter {
-        font-family: 'Fraunces', serif;
-        font-weight: 500;
-        font-size: 64px;
+        font-family: 'Fraunces', Georgia, serif;
+        font-size: 4.2em;
+        font-weight: 400;
+        line-height: 0.78;
         float: left;
-        line-height: 0.88;
-        padding: 6px 10px 0 0;
+        margin: 6px 8px -2px 0;
         color: var(--rose-primary, #D45E52);
       }
+
       .ds-reader-attribution {
         font-family: 'Inter', sans-serif;
-        font-style: italic;
         font-size: 11px;
-        color: var(--plum-mute, #6b4a56);
-        text-align: center;
-        margin: 24px 0 8px;
-        letter-spacing: 0.02em;
+        color: var(--mauve, #8A7E88);
+        font-style: italic;
+        text-align: right;
+        margin-top: 8px;
       }
+
       .ds-reader-footer-label {
-        position: absolute;
-        bottom: 64px; left: 0; right: 0;
-        text-align: center;
         font-family: 'Inter', sans-serif;
         font-size: 11px;
-        color: var(--plum-mute, #6b4a56);
-        letter-spacing: 0.08em;
-        margin: 0;
+        color: var(--mauve, #8A7E88);
+        text-align: center;
+        margin-top: 16px;
       }
+
+      /* Progress dots */
       .ds-reader-dots {
-        position: absolute;
-        bottom: 48px; left: 0; right: 0;
-        display: flex; gap: 4px; justify-content: center;
+        display: flex;
+        justify-content: center;
+        gap: 5px;
+        margin-top: 20px;
+        flex-wrap: wrap;
       }
       .ds-reader-dot {
-        width: 4px; height: 4px; border-radius: 9999px;
-        background: var(--cream-2, #F0E6D0);
+        width: 5px;
+        height: 5px;
+        border-radius: 50%;
+        flex-shrink: 0;
       }
-      .ds-reader-dot-visited { background: var(--rose-primary, #D45E52); opacity: 0.5; }
-      .ds-reader-dot-current { background: var(--plum-deep, #2b1e16); width: 8px; }
-      .ds-reader-dot-future  { background: var(--cream-2, #F0E6D0); }
+      .ds-reader-dot-visited { background: var(--rose-soft, #d4a5a0); }
+      .ds-reader-dot-current { background: var(--rose-primary, #D45E52); width: 10px; border-radius: 3px; }
+      .ds-reader-dot-future  { background: var(--border, #EDE8E4); }
 
-      /* Locked cliffhanger */
+      /* Locked screen */
       .ds-reader-lock {
+        min-height: 460px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        text-align: center;
+        background: linear-gradient(160deg, #2A2035 0%, #1a1224 100%);
+        border-radius: 18px;
+        padding: 40px 28px;
         position: relative;
-        padding: 90px 36px 110px;
-        min-height: 640px;
-        background:
-          radial-gradient(ellipse at top, rgba(107,74,86,0.55), rgba(43,30,22,0.95) 70%),
-          linear-gradient(180deg, #2b1e16 0%, #1a1108 100%);
-        color: var(--cream, #FAF8F5);
+        overflow: hidden;
       }
-      @media (min-width: 768px) { .ds-reader-lock { min-height: 720px; } }
+
       .ds-reader-lock-eyebrow {
-        font-family: 'Fraunces', serif;
-        font-style: italic;
-        font-size: 13px;
-        color: rgba(250,248,245,0.6);
-        text-align: center;
-        margin: 0 0 18px;
-        letter-spacing: 0.05em;
-      }
-      .ds-reader-lock-ornament {
-        text-align: center;
-        color: var(--gold, #C8A86B);
+        font-family: 'Inter', sans-serif;
         font-size: 10px;
-        letter-spacing: 12px;
-        margin: 0 0 28px;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.12em;
+        color: rgba(247,240,230,0.55);
+        margin: 0 0 12px;
       }
+
+      .ds-reader-lock-ornament {
+        color: var(--rose-primary, #D45E52);
+        font-size: 14px;
+        letter-spacing: 0.3em;
+        margin: 0 0 20px;
+      }
+
       .ds-reader-lock-teaser {
-        font-family: 'Fraunces', serif;
+        font-family: 'Fraunces', Georgia, serif;
+        font-size: clamp(15px, 3vw, 18px);
         font-style: italic;
-        font-weight: 300;
-        font-size: 22px;
-        line-height: 1.5;
-        color: var(--cream, #FAF8F5);
-        text-align: center;
-        max-width: 380px;
-        margin: 0 auto 40px;
-        letter-spacing: 0.01em;
+        font-weight: 400;
+        color: rgba(247,240,230,0.88);
+        line-height: 1.7;
+        max-width: 420px;
+        margin: 0 0 32px;
       }
+
       .ds-reader-lock-countdown {
-        font-family: 'Inter', ui-monospace, monospace;
+        font-family: 'Inter', sans-serif;
+        font-size: clamp(26px, 7vw, 38px);
+        font-weight: 700;
+        color: var(--cream, #f7f0e6);
+        letter-spacing: 0.06em;
+        margin-bottom: 10px;
         font-variant-numeric: tabular-nums;
-        font-weight: 300;
-        font-size: 32px;
-        color: var(--gold, #C8A86B);
-        text-align: center;
-        margin: 0 0 6px;
-        letter-spacing: 2px;
       }
+
       .ds-reader-lock-sub {
-        font-family: 'Fraunces', serif;
-        font-style: italic;
-        font-size: 13px;
-        color: rgba(250,248,245,0.6);
-        text-align: center;
+        font-family: 'Inter', sans-serif;
+        font-size: 12px;
+        color: rgba(247,240,230,0.5);
         margin: 0;
       }
+
+      /* Page-curl hint at bottom-right */
       .ds-reader-lock-curl {
         position: absolute;
-        right: 12px;
-        top: 50%;
-        transform: translateY(-50%);
-        color: rgba(250,248,245,0.3);
+        bottom: 14px;
+        right: 16px;
+        color: rgba(247,240,230,0.3);
+      }
+
+      /* Nav row */
+      .ds-reader-nav {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 16px;
+        margin-top: 18px;
+      }
+
+      .ds-reader-nav-btn {
+        width: 38px;
+        height: 38px;
+        border-radius: 50%;
+        border: 1px solid var(--border, #EDE8E4);
+        background: var(--surface, #fff);
+        color: var(--plum, #2A2035);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        transition: background 0.15s, color 0.15s;
+      }
+      .ds-reader-nav-btn:disabled {
+        opacity: 0.3;
+        cursor: default;
+      }
+      .ds-reader-nav-btn:not(:disabled):hover {
+        background: var(--ivory-dark, #F3EFE9);
+      }
+
+      .ds-reader-chapter-label {
+        font-family: 'Inter', sans-serif;
+        font-size: 12px;
+        font-weight: 600;
+        color: var(--mauve, #8A7E88);
+        min-width: 120px;
+        text-align: center;
+      }
+
+      /* Loading */
+      .ds-reader-loading {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        padding: 60px 24px;
+        gap: 14px;
+      }
+      .ds-reader-spinner {
+        width: 24px;
+        height: 24px;
+        border: 2px solid var(--rose-soft-bg, #FBE9E6);
+        border-top-color: var(--rose-primary, #D45E52);
+        border-radius: 50%;
+        animation: ds-spin 0.7s linear infinite;
+      }
+      @keyframes ds-spin { to { transform: rotate(360deg); } }
+      .ds-reader-loading-text {
+        font-family: 'Inter', sans-serif;
+        font-size: 13px;
+        color: var(--mauve, #8A7E88);
       }
 
       .ds-reader-empty {
-        padding: 60px 24px;
         text-align: center;
+        padding: 60px 24px;
         font-family: 'Inter', sans-serif;
         font-size: 14px;
-        color: var(--plum-mute, #6b4a56);
+        color: var(--mauve, #8A7E88);
       }
 
-      /* 3D flip animations — page-curl effect */
-      @keyframes ds-flip-fwd {
-        0%   { transform: rotateY(0deg); box-shadow: 0 0 0 rgba(0,0,0,0); }
-        50%  { transform: rotateY(-12deg); box-shadow: -8px 0 16px rgba(43,30,22,0.18); }
-        100% { transform: rotateY(0deg); box-shadow: 0 0 0 rgba(0,0,0,0); }
-      }
-      @keyframes ds-flip-back {
-        0%   { transform: rotateY(0deg); }
-        50%  { transform: rotateY(12deg); box-shadow: 8px 0 16px rgba(43,30,22,0.18); }
-        100% { transform: rotateY(0deg); }
-      }
-      .is-flipping-fwd  { animation: ds-flip-fwd 600ms ease-in-out; transform-origin: right center; }
-      .is-flipping-back { animation: ds-flip-back 600ms ease-in-out; transform-origin: left center; }
-
-      @media (prefers-reduced-motion: reduce) {
-        .is-flipping-fwd, .is-flipping-back { animation: none; }
-      }
+      ${flipAnim}
     `}</style>
   );
 }
