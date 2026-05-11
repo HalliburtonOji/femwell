@@ -77,15 +77,15 @@ export default function BookReader() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
-  const gutendexId = useMemo(() => {
-    const p = new URLSearchParams(window.location.search).get("gutendex_id");
+  const gutenbergId = useMemo(() => {
+    const p = new URLSearchParams(window.location.search).get("gutenberg_id");
     const n = Number(p);
     return Number.isFinite(n) && n > 0 ? n : null;
   }, []);
 
   useEffect(() => {
-    if (!gutendexId) {
-      setError("Missing gutendex_id");
+    if (!gutenbergId) {
+      setError("Missing gutenberg_id");
       setLoading(false);
       return;
     }
@@ -93,7 +93,7 @@ export default function BookReader() {
     (async () => {
       try {
         const res = await base44.functions.invoke("fetchGutenbergBook", {
-          gutendex_id: gutendexId,
+          gutenberg_id: gutenbergId,
         });
         if (cancelled) return;
         // Some base44 SDKs wrap the response — accept both shapes.
@@ -106,7 +106,7 @@ export default function BookReader() {
         const ch = splitChapters(data.text || "");
         // Attach attribution to each chapter so it prints at the bottom of
         // every page.
-        const sourceUrl = data.source_url || `https://www.gutenberg.org/ebooks/${gutendexId}`;
+        const sourceUrl = data.source_url || `https://www.gutenberg.org/ebooks/${gutenbergId}`;
         const attribution = `From Project Gutenberg · ${sourceUrl}`;
         const withAttr = ch.map((c) => ({
           ...c,
@@ -130,7 +130,7 @@ export default function BookReader() {
     return () => {
       cancelled = true;
     };
-  }, [gutendexId]);
+  }, [gutenbergId]);
 
   if (loading) {
     return (

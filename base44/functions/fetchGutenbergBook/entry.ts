@@ -9,14 +9,14 @@
 //
 // Notes:
 // - Auth-gated (same pattern as expandContent). Project Gutenberg is free and
-//   public domain so there's no licensing question; the gate is purely so we
-//   don't get scraped through a public endpoint.
+// public domain so there's no licensing question; the gate is purely so we
+// don't get scraped through a public endpoint.
 // - Chrome UA + 20s timeout via AbortSignal — Gutenberg can be slow for big
-//   books served from the .txt mirror.
+// books served from the .txt mirror.
 // - We try a few URL variants because Gutenberg's filename scheme drifts:
-//     /cache/epub/{id}/pg{id}.txt              (most common)
-//     /files/{id}/{id}.txt                     (older books)
-//     /files/{id}/{id}-0.txt                   (UTF-8 variant)
+// /cache/epub/{id}/pg{id}.txt (most common)
+// /files/{id}/{id}.txt (older books)
+// /files/{id}/{id}-0.txt (UTF-8 variant)
 
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.25';
 
@@ -54,8 +54,8 @@ async function fetchOnce(url: string, timeoutMs = 20000): Promise<string | null>
 
 function parseTitleAuthor(raw: string): { title: string; author: string } {
   // Project Gutenberg books start with a metadata block of the form:
-  //   Title: Pride and Prejudice
-  //   Author: Jane Austen
+  // Title: Pride and Prejudice
+  // Author: Jane Austen
   // before the START marker. Pull from there.
   const head = raw.slice(0, 4000);
   const title = (head.match(/^\s*Title:\s*(.+)$/im) || [])[1] || '';
@@ -87,8 +87,11 @@ Deno.serve(async (req) => {
   if (!user) return Response.json({ error: 'Unauthorized' }, { status: 401 });
 
   let payload: { gutenberg_id?: number };
-  try { payload = await req.json(); }
-  catch { return Response.json({ error: 'Bad JSON' }, { status: 400 }); }
+  try {
+    payload = await req.json();
+  } catch {
+    return Response.json({ error: 'Bad JSON' }, { status: 400 });
+  }
 
   const id = Number(payload?.gutenberg_id);
   if (!Number.isFinite(id) || id <= 0) {
@@ -99,12 +102,15 @@ Deno.serve(async (req) => {
   let source_url = '';
   for (const url of URL_VARIANTS(id)) {
     raw = await fetchOnce(url);
-    if (raw) { source_url = url; break; }
+    if (raw) {
+      source_url = url;
+      break;
+    }
   }
   if (!raw) {
     return Response.json(
       { error: 'Could not fetch this book from Project Gutenberg.' },
-      { status: 502 },
+      { status: 502 }
     );
   }
 
@@ -114,7 +120,7 @@ Deno.serve(async (req) => {
   if (!text || text.length < 200) {
     return Response.json(
       { error: 'Book content unavailable after stripping boilerplate.' },
-      { status: 502 },
+      { status: 502 }
     );
   }
 
