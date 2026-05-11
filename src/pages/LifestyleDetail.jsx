@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { base44 } from "@/api/base44Client";
 import { ArrowLeft, Bookmark, BookmarkCheck, Heart, HeartOff, Loader2, PlayCircle } from "lucide-react";
 import { format } from "date-fns";
+import { getCategoryGradient, attachFallbackOverlay } from "@/utils/imageFallback";
 
 const FEMWELL_GENERATED_PROVIDERS = new Set([
   "FEMWELL_AI",
@@ -48,24 +49,67 @@ function formatRelativeDate(dateStr) {
   return format(d, "dd MMM yyyy");
 }
 
+// Strip residual markdown that ingest pipelines sometimes leak into bodies.
+// Covers **bold**, *italic*, __bold__, _italic_, `code`, ~~strike~~.
+// Does NOT touch heading prefixes (## / ###) — those are consumed by
+// renderBodyBlocks before this runs.
+function stripMarkdown(text) {
+  if (!text) return "";
+  return text
+    .replace(/\*\*(.+?)\*\*/g, "$1")
+    .replace(/\*(.+?)\*/g, "$1")
+    .replace(/__(.+?)__/g, "$1")
+    .replace(/_(.+?)_/g, "$1")
+    .replace(/`(.+?)`/g, "$1")
+    .replace(/~~(.+?)~~/g, "$1");
+}
+
 // Splits a body string into typed blocks for editorial rendering.
-// `## Foo` → h2 section header. `### Foo` → uppercase eyebrow. Else paragraph.
+// Supported block kinds:
+//   h2       — `## Heading` (paragraph-start OR mid-paragraph on its own line)
+//   eyebrow  — `### Heading` (same rules)
+//   chapter  — `Chapter N` at the start of a paragraph (its own line)
+//   p        — everything else (plain paragraph, with markdown stripped)
 function renderBodyBlocks(body) {
   if (!body) return [];
   const decoded = decodeHtmlEntities(body);
   const rawBlocks = decoded.split(/\n\n+/);
   const blocks = [];
-  rawBlocks.forEach((raw) => {
-    const trimmed = raw.trim();
-    if (!trimmed) return;
-    if (trimmed.startsWith("## ")) {
-      blocks.push({ kind: "h2", text: trimmed.slice(3).trim() });
-    } else if (trimmed.startsWith("### ")) {
-      blocks.push({ kind: "eyebrow", text: trimmed.slice(4).trim() });
-    } else {
-      blocks.push({ kind: "p", text: trimmed });
-    }
-  });
+
+  // Push a paragraph after splitting any embedded headings AND extracting
+  // a leading "Chapter N" line into its own chapter block.
+  const pushParagraph = (paragraph) => {
+    if (!paragraph) return;
+    // Split on embedded heading lines so `Foo\n## Bar` becomes two blocks.
+    const segments = paragraph
+      .split(/\n(?=#{2,3}\s)/g)
+      .map((s) => s.trim())
+      .filter(Boolean);
+
+    segments.forEach((seg) => {
+      if (seg.startsWith("### ")) {
+        blocks.push({ kind: "eyebrow", text: stripMarkdown(seg.slice(4).trim()) });
+        return;
+      }
+      if (seg.startsWith("## ")) {
+        blocks.push({ kind: "h2", text: stripMarkdown(seg.slice(3).trim()) });
+        return;
+      }
+      // Detect leading "Chapter N" — extract it into its own block so it
+      // never runs together with the body text that follows.
+      const chapterMatch = seg.match(/^(Chapter\s+\d+\b[^\n.]*)([\s\S]*)$/i);
+      if (chapterMatch) {
+        const chapterLine = chapterMatch[1].trim();
+        const rest = (chapterMatch[2] || "").replace(/^[\s.:—-]+/, "").trim();
+        blocks.push({ kind: "chapter", text: stripMarkdown(chapterLine) });
+        if (rest) blocks.push({ kind: "p", text: stripMarkdown(rest) });
+        return;
+      }
+      blocks.push({ kind: "p", text: stripMarkdown(seg) });
+    });
+  };
+
+  rawBlocks.forEach((raw) => pushParagraph(raw.trim()));
   return blocks;
 }
 
@@ -265,7 +309,11 @@ export default function LifestyleDetail() {
   // Hero shape — image vs gradient — when not using YouTube.
   const hasImage = !!item.image_url;
   const heroAspect = hasImage ? "56.25%" : "75%";
-  const heroBg = hasImage ? "var(--plum-deep)" : (item.image_gradient || "linear-gradient(135deg, var(--plum-deep) 0%, var(--rose-primary) 100%)");
+  // Sit the image on a category-tied gradient so even a transparent or
+  // partial-loaded image reads as a branded panel rather than flat black.
+  const heroBg = hasImage
+    ? getCategoryGradient(item.category)
+    : (item.image_gradient || getCategoryGradient(item.category));
 
   // Related-rail filter — only render the section if we have at least 2 items.
   const relatedDecorated = (related || []).map((r) => ({
@@ -333,6 +381,19 @@ export default function LifestyleDetail() {
           letter-spacing: 0.14em;
           color: var(--rose-primary);
           margin: 22px 0 8px;
+        }
+        .fw-reader-card .fw-chapter {
+          font-family: 'Fraunces', serif;
+          font-weight: 600;
+          font-size: 22px;
+          color: var(--plum-deep);
+          letter-spacing: -0.005em;
+          line-height: 1.25;
+          margin: 32px 0 18px;
+          display: block;
+        }
+        @media (min-width: 768px) {
+          .fw-reader-card .fw-chapter { font-size: 24px; margin: 36px 0 20px; }
         }
         .fw-related-rail {
           display: flex;
@@ -509,6 +570,7 @@ export default function LifestyleDetail() {
                     height: "100%",
                     objectFit: "cover",
                   }}
+                  onError={(e) => attachFallbackOverlay(e, item.category)}
                 />
               )}
               <div style={{
@@ -579,7 +641,7 @@ export default function LifestyleDetail() {
             <div>
               {blocks.length === 0 && (
                 <p className="fw-body-p" style={{ fontFamily: "'Inter', sans-serif", fontSize: 16, lineHeight: 1.78, color: "var(--plum)" }}>
-                  {decodeHtmlEntities(item.summary || "")}
+                  {stripMarkdown(decodeHtmlEntities(item.summary || ""))}
                 </p>
               )}
               {blocks.map((b, idx) => {
@@ -594,6 +656,12 @@ export default function LifestyleDetail() {
                 } else if (b.kind === "eyebrow") {
                   rendered.push(
                     <p key={`eb-${idx}`} className="fw-eyebrow-h">
+                      {b.text}
+                    </p>
+                  );
+                } else if (b.kind === "chapter") {
+                  rendered.push(
+                    <p key={`ch-${idx}`} className="fw-chapter">
                       {b.text}
                     </p>
                   );
@@ -775,7 +843,7 @@ export default function LifestyleDetail() {
             </p>
             <div className="fw-related-rail">
               {relatedDecorated.map((r) => {
-                const cardBg = r.image_gradient || "linear-gradient(135deg, var(--rose-soft-bg) 0%, var(--cream-2) 100%)";
+                const cardBg = r.image_gradient || getCategoryGradient(item.category);
                 const metaBits = [r.source ? r.source.toUpperCase() : "", r.rel ? r.rel.toUpperCase() : ""].filter(Boolean);
                 return (
                   <a
@@ -791,7 +859,7 @@ export default function LifestyleDetail() {
                       background: cardBg,
                       position: "relative",
                     }}>
-                      {r.image_url && (
+                      {r.image_url ? (
                         <img
                           src={r.image_url}
                           alt=""
@@ -801,7 +869,23 @@ export default function LifestyleDetail() {
                             objectFit: "cover",
                             display: "block",
                           }}
+                          onError={(e) => attachFallbackOverlay(e, item.category)}
                         />
+                      ) : (
+                        <span
+                          aria-hidden="true"
+                          style={{
+                            position: "absolute", inset: 0,
+                            display: "flex", alignItems: "center", justifyContent: "center",
+                            padding: 12, textAlign: "center",
+                            fontFamily: "'Fraunces', serif",
+                            fontStyle: "italic", fontWeight: 400, fontSize: 18,
+                            color: "var(--cream)", opacity: 0.7,
+                            pointerEvents: "none",
+                          }}
+                        >
+                          {item.category || "More like this"}
+                        </span>
                       )}
                     </div>
                     <p

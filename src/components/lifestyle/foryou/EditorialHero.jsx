@@ -1,6 +1,7 @@
 import { useNavigate } from "react-router-dom";
 import { createPageUrl } from "@/utils";
 import SaveHeartButton from "./SaveHeartButton";
+import { getCategoryGradient, attachFallbackOverlay } from "@/utils/imageFallback";
 
 const FALLBACK_GRADIENT = "linear-gradient(135deg, var(--rose-soft-bg) 0%, var(--cream-2) 100%)";
 
@@ -13,9 +14,10 @@ export default function EditorialHero({ item, savedSet, savedPhases, onSave, onU
 
   const isSaved = savedSet.has(item.id);
   const hasPhaseTag = !!savedPhases?.[item.id];
+  // No image → fall back to image_gradient, then to a category-tied gradient.
   const bg = item.image_url
     ? undefined
-    : (item.image_gradient || FALLBACK_GRADIENT);
+    : (item.image_gradient || getCategoryGradient(item.category));
 
   const goToDetail = (e) => {
     if (e?.target?.closest?.('[data-no-nav="true"]')) return;
@@ -49,7 +51,7 @@ export default function EditorialHero({ item, savedSet, savedPhases, onSave, onU
             height: "100%",
             objectFit: "cover",
           }}
-          onError={(e) => { e.target.style.display = "none"; }}
+          onError={(e) => attachFallbackOverlay(e, item.category)}
         />
       )}
       {/* Bottom scrim */}

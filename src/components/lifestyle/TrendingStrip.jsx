@@ -1,4 +1,5 @@
 import CategoryPill from "./CategoryPill";
+import { getCategoryGradient, attachFallbackOverlay } from "@/utils/imageFallback";
 
 export default function TrendingStrip({ items }) {
   if (!items || items.length === 0) return null;
@@ -16,13 +17,31 @@ export default function TrendingStrip({ items }) {
             className="flex-shrink-0 w-36 rounded-xl overflow-hidden"
             style={{ backgroundColor: "var(--surface)", border: "1px solid var(--border)", boxShadow: "var(--shadow-sm)" }}
           >
-            {item.image_url ? (
-              <div className="h-20 overflow-hidden" style={{ backgroundColor: "var(--ivory-dark)" }}>
-                <img src={item.image_url} alt={item.title} className="w-full h-full object-cover" />
-              </div>
-            ) : (
-              <div className="h-20 flex items-center justify-center" style={{ backgroundColor: "var(--rose-dust-subtle)" }} />
-            )}
+            <div className="h-20 overflow-hidden relative" style={{ background: getCategoryGradient(item.category) }}>
+              {item.image_url ? (
+                <img
+                  src={item.image_url}
+                  alt={item.title}
+                  className="w-full h-full object-cover"
+                  onError={(e) => attachFallbackOverlay(e, item.category)}
+                />
+              ) : (
+                <span
+                  aria-hidden="true"
+                  style={{
+                    position: "absolute", inset: 0,
+                    display: "flex", alignItems: "center", justifyContent: "center",
+                    padding: 8, textAlign: "center",
+                    fontFamily: "'Fraunces', serif",
+                    fontStyle: "italic", fontWeight: 400, fontSize: 13,
+                    color: "var(--cream)", opacity: 0.7,
+                    pointerEvents: "none",
+                  }}
+                >
+                  {item.category || "More like this"}
+                </span>
+              )}
+            </div>
             <div className="p-2">
               <CategoryPill category={item.category} />
               <p className="text-xs font-semibold mt-1 line-clamp-2 leading-tight" style={{ color: "var(--plum)" }}>{item.title}</p>

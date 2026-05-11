@@ -3,6 +3,7 @@ import { formatDistanceToNow } from 'date-fns';
 import { createPageUrl } from '@/utils';
 import SaveHeartButton from '@/components/lifestyle/foryou/SaveHeartButton';
 import PhasePill from '@/components/lifestyle/foryou/PhasePill';
+import { getCategoryGradient, attachFallbackOverlay } from '@/utils/imageFallback';
 
 const FALLBACK_GRADIENT = 'linear-gradient(135deg, var(--rose-soft-bg) 0%, var(--cream-2) 100%)';
 
@@ -170,7 +171,7 @@ export default function BrowseGrid({
               {/* Image */}
               <div style={{
                 height: 180,
-                background: item.image_gradient || FALLBACK_GRADIENT,
+                background: item.image_gradient || getCategoryGradient(item.category),
                 position: 'relative',
                 overflow: 'hidden',
               }}>
@@ -180,7 +181,7 @@ export default function BrowseGrid({
                     alt=""
                     loading="lazy"
                     style={{ width: '100%', height: '100%', objectFit: 'cover' }}
-                    onError={(e) => { e.target.style.display = 'none'; }}
+                    onError={(e) => attachFallbackOverlay(e, item.category)}
                   />
                 )}
                 {/* Category pill top-left */}

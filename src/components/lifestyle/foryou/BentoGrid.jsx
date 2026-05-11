@@ -2,6 +2,7 @@ import { useNavigate } from "react-router-dom";
 import { createPageUrl } from "@/utils";
 import SaveHeartButton from "./SaveHeartButton";
 import PhasePill from "./PhasePill";
+import { getCategoryGradient, attachFallbackOverlay } from "@/utils/imageFallback";
 
 const FALLBACK_GRADIENT = "linear-gradient(135deg, var(--rose-soft-bg) 0%, var(--cream-2) 100%)";
 
@@ -46,7 +47,9 @@ function BentoCard({ item, idx, currentPhase, savedSet, savedPhases, onSave, onU
         style={{
           width: "100%",
           aspectRatio: "4/3",
-          background: item.image_gradient || FALLBACK_GRADIENT,
+          // When no image_gradient is set, fall back to a category-tied gradient
+          // so empty cards render a branded panel instead of a flat pale rectangle.
+          background: item.image_gradient || getCategoryGradient(item.category),
           position: "relative",
         }}
       >
@@ -56,7 +59,7 @@ function BentoCard({ item, idx, currentPhase, savedSet, savedPhases, onSave, onU
             alt=""
             loading="lazy"
             style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover" }}
-            onError={(e) => { e.target.style.display = "none"; }}
+            onError={(e) => attachFallbackOverlay(e, item.category)}
           />
         )}
         {item.category && (

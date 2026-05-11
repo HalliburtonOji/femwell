@@ -2,6 +2,7 @@ import { Play } from 'lucide-react';
 import PodcastCard from './PodcastCard';
 import SessionCard from './SessionCard';
 import SaveHeartButton from '@/components/lifestyle/foryou/SaveHeartButton';
+import { getCategoryGradient, attachFallbackOverlay } from '@/utils/imageFallback';
 
 // Shared play indicator — used by inline video card
 function PlayIndicator() {
@@ -75,16 +76,29 @@ function VideoCard({ item, saved, hasPhaseTag, onSave, onUntag }) {
       onClick={handleClick}
     >
       {/* 4:3 image area */}
-      <div style={{ position: 'relative', aspectRatio: '4/3', overflow: 'hidden' }}>
+      <div style={{ position: 'relative', aspectRatio: '4/3', overflow: 'hidden', background: getCategoryGradient(item.category) }}>
         {item.image_url ? (
           <img
             src={item.image_url}
             alt=""
             style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
-            onError={e => { e.target.style.display = 'none'; e.target.parentElement.style.background = fallbackGradient; }}
+            onError={e => attachFallbackOverlay(e, item.category)}
           />
         ) : (
-          <div style={{ width: '100%', height: '100%', background: fallbackGradient }} />
+          <span
+            aria-hidden="true"
+            style={{
+              position: 'absolute', inset: 0,
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              padding: 12, textAlign: 'center',
+              fontFamily: "'Fraunces', serif",
+              fontStyle: 'italic', fontWeight: 400, fontSize: 18,
+              color: 'var(--cream)', opacity: 0.7,
+              pointerEvents: 'none',
+            }}
+          >
+            {item.category || 'More like this'}
+          </span>
         )}
 
         {/* Top-left meta pill */}

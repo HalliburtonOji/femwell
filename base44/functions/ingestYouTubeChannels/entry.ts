@@ -210,6 +210,30 @@ Deno.serve(async (req) => {
               skipped++;
               continue;
             }
+
+            // ── Shorts filter ─────────────────────────────────────────────
+            // YouTube Shorts (<=60s clips, often <=30s) are noise on a
+            // women's wellness app. The standard channel RSS feed does NOT
+            // expose duration, so we use the two practical signals we have:
+            //   1) Title containing "#shorts" (case-insensitive)
+            //   2) An optional duration_seconds field if a future enrichment
+            //      pass populates it on the RSS-parsed object.
+            // Skipped items are logged to IngestErrorLog (stage='shorts_filter').
+            const titleHasShortsTag = /#shorts\b/i.test(v.title || '');
+            const durationSeconds = typeof v.duration_seconds === 'number'
+              ? v.duration_seconds
+              : null;
+            const isShort = titleHasShortsTag
+              || (durationSeconds !== null && durationSeconds > 0 && durationSeconds < 60);
+            if (isShort) {
+              await logIngestError(base44, 'ingestYouTubeChannels', 'shorts_filter',
+                { source_identifier: channel.name, item_id: v.videoId,
+                  raw_payload: { title: v.title, duration_seconds: durationSeconds, reason: titleHasShortsTag ? 'title_tag' : 'duration_lt_60s' } },
+                new Error(`skipped short: ${v.videoId}`));
+              skipped++;
+              continue;
+            }
+
             const contentUrl = `https://www.youtube.com/watch?v=${v.videoId}`;
             const hash = hashUrl(contentUrl);
             if (existingHashes.has(hash)) { skipped++; continue; }

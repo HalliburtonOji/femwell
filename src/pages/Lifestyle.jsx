@@ -255,31 +255,40 @@ function DailyStoryTab() {
   if (loading) return <Spinner />;
   if (!current) return <EmptyState text="The daily story is being written. Check back soon." />;
 
+  // Deep gradient → cream/light text. Default rose-soft → plum (dark) text.
+  const hasCustomGradient = !!current.image_gradient;
   const bg = current.image_gradient || "linear-gradient(135deg, var(--rose-soft-bg) 0%, var(--cream-2) 100%)";
+  const eyebrowColor  = hasCustomGradient ? "rgba(247,240,230,0.78)" : "var(--plum-mute)";
+  const titleColor    = hasCustomGradient ? "var(--cream)"           : "var(--plum-deep)";
+  const bodyColor     = hasCustomGradient ? "var(--cream)"           : "var(--plum-deep)";
+  const cliffColor    = hasCustomGradient ? "rgba(247,240,230,0.82)" : "var(--plum-mute)";
+  const dayChipBg     = hasCustomGradient ? "rgba(247,240,230,0.18)" : "var(--rose-soft-bg)";
+  const dayChipColor  = hasCustomGradient ? "var(--cream)"           : "var(--plum-deep)";
+  const dividerColor  = hasCustomGradient ? "rgba(247,240,230,0.22)" : "var(--ink-line)";
 
   return (
     <div>
       <div style={{ borderRadius: 20, overflow: "hidden", marginBottom: 20, boxShadow: "var(--shadow-md)" }}>
         <div style={{ background: bg, padding: "28px 24px 24px", minHeight: 200 }}>
           <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 12 }}>
-            <span style={{ fontSize: 10, fontWeight: 700, color: "var(--plum-deep)", backgroundColor: "var(--rose-soft-bg)", borderRadius: 9999, padding: "3px 10px", fontFamily: "'Inter', sans-serif" }}>
+            <span style={{ fontSize: 10, fontWeight: 700, color: dayChipColor, backgroundColor: dayChipBg, borderRadius: 9999, padding: "3px 10px", fontFamily: "'Inter', sans-serif" }}>
               Day {current.day_number} of 30
             </span>
           </div>
-          <p style={{ fontSize: 12, fontWeight: 600, color: "var(--plum-mute)", textTransform: "uppercase", letterSpacing: "0.6px", fontFamily: "'Inter', sans-serif", marginBottom: 4 }}>
+          <p style={{ fontSize: 12, fontWeight: 600, color: eyebrowColor, textTransform: "uppercase", letterSpacing: "0.6px", fontFamily: "'Inter', sans-serif", marginBottom: 4 }}>
             {current.series_title}
           </p>
-          <h2 style={{ fontFamily: "'Fraunces', serif", fontSize: 22, fontWeight: 400, color: "var(--plum-deep)", letterSpacing: "-0.01em", lineHeight: 1.3, marginBottom: 20 }}>
+          <h2 style={{ fontFamily: "'Fraunces', serif", fontSize: 22, fontWeight: 400, color: titleColor, letterSpacing: "-0.01em", lineHeight: 1.3, marginBottom: 20 }}>
             {current.title || `Day ${current.day_number}`}
           </h2>
-          <p style={{ fontSize: 15, color: "var(--plum-deep)", fontFamily: "'Inter', sans-serif", lineHeight: 1.7, whiteSpace: "pre-line" }}>
+          <p style={{ fontSize: 15, color: bodyColor, fontFamily: "'Inter', sans-serif", lineHeight: 1.7, whiteSpace: "pre-line" }}>
             {current.segment_text}
           </p>
           {current.cliffhanger && (
             <>
-              <div style={{ height: 1, backgroundColor: "var(--ink-line)", margin: "24px 0" }} />
-              <p style={{ fontSize: 14, color: "var(--plum-mute)", fontFamily: "'Fraunces', serif", fontStyle: "italic", lineHeight: 1.6 }}>
-                <strong style={{ fontFamily: "'Inter', sans-serif", fontWeight: 600, fontSize: 10, letterSpacing: "0.4px", textTransform: "uppercase", color: "var(--plum-mute)", fontStyle: "normal", display: "block", marginBottom: 4 }}>Tomorrow…</strong>
+              <div style={{ height: 1, backgroundColor: dividerColor, margin: "24px 0" }} />
+              <p style={{ fontSize: 14, color: cliffColor, fontFamily: "'Fraunces', serif", fontStyle: "italic", lineHeight: 1.6 }}>
+                <strong style={{ fontFamily: "'Inter', sans-serif", fontWeight: 600, fontSize: 10, letterSpacing: "0.4px", textTransform: "uppercase", color: eyebrowColor, fontStyle: "normal", display: "block", marginBottom: 4 }}>Tomorrow…</strong>
                 {current.cliffhanger}
               </p>
             </>

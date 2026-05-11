@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { X } from 'lucide-react';
 import SaveHeartButton from '@/components/lifestyle/foryou/SaveHeartButton';
+import { getCategoryGradient, attachFallbackOverlay } from '@/utils/imageFallback';
 
 export default function TikTokRail({ items, savedSet, savedPhases, onSave, onUntag }) {
   const [openItem, setOpenItem] = useState(null);
@@ -65,7 +66,7 @@ export default function TikTokRail({ items, savedSet, savedPhases, onSave, onUnt
 }
 
 function TikTokCard({ item, saved, hasPhaseTag, onOpen, onSave, onUntag }) {
-  const fallbackBg = 'linear-gradient(135deg, var(--rose-soft-bg) 0%, var(--cream-2) 100%)';
+  const fallbackBg = getCategoryGradient(item.category);
 
   return (
     <div
@@ -85,17 +86,32 @@ function TikTokCard({ item, saved, hasPhaseTag, onOpen, onSave, onUntag }) {
         scrollSnapAlign: 'start',
       }}
     >
-      {/* Thumbnail */}
-      {item.image_url ? (
-        <img
-          src={item.image_url}
-          alt=""
-          style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover' }}
-          onError={e => { e.target.style.display = 'none'; }}
-        />
-      ) : (
-        <div style={{ position: 'absolute', inset: 0, background: fallbackBg }} />
-      )}
+      {/* Thumbnail — falls back to a category-tied gradient panel with overlay */}
+      <div style={{ position: 'absolute', inset: 0, background: fallbackBg }}>
+        {item.image_url ? (
+          <img
+            src={item.image_url}
+            alt=""
+            style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover' }}
+            onError={e => attachFallbackOverlay(e, item.category)}
+          />
+        ) : (
+          <span
+            aria-hidden="true"
+            style={{
+              position: 'absolute', inset: 0,
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              padding: 12, textAlign: 'center',
+              fontFamily: "'Fraunces', serif",
+              fontStyle: 'italic', fontWeight: 400, fontSize: 18,
+              color: 'var(--cream)', opacity: 0.7,
+              pointerEvents: 'none',
+            }}
+          >
+            {item.category || 'More like this'}
+          </span>
+        )}
+      </div>
 
       {/* Top-left: TIKTOK pill */}
       <div style={{

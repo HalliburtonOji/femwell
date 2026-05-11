@@ -25,8 +25,15 @@ export default function TodayDailyChapterCard() {
 
   if (loading || !segment) return null;
 
+  // If the segment ships a custom gradient, it's a deep plum/maroon and
+  // demands light text. The default cream gradient takes dark text.
+  const hasCustomGradient = !!segment.image_gradient;
   const bg = segment.image_gradient
     || "linear-gradient(135deg, var(--rose-soft-bg) 0%, var(--cream-2) 100%)";
+
+  const eyebrowColor = hasCustomGradient ? "rgba(247,240,230,0.8)" : "var(--plum-mute)";
+  const bodyColor    = hasCustomGradient ? "var(--cream)"          : "var(--plum-deep)";
+  const ctaColor     = hasCustomGradient ? "var(--cream)"          : "var(--rose-primary)";
 
   const pullQuoteText = (segment.cliffhanger || segment.segment_text || "").slice(0, 120);
   const ellipsis = (segment.cliffhanger || segment.segment_text || "").length > 120 ? "…" : "";
@@ -61,7 +68,7 @@ export default function TodayDailyChapterCard() {
           fontWeight: 700,
           textTransform: "uppercase",
           letterSpacing: "0.12em",
-          color: "var(--plum-mute)",
+          color: eyebrowColor,
           marginBottom: 8,
           marginTop: 0,
         }}>
@@ -72,7 +79,7 @@ export default function TodayDailyChapterCard() {
           fontSize: 17,
           fontWeight: 400,
           fontStyle: "italic",
-          color: "var(--plum-deep)",
+          color: bodyColor,
           lineHeight: 1.55,
           marginBottom: 14,
           marginTop: 0,
@@ -86,7 +93,7 @@ export default function TodayDailyChapterCard() {
           fontFamily: "'Inter', sans-serif",
           fontSize: 13,
           fontWeight: 600,
-          color: "var(--rose-primary)",
+          color: ctaColor,
         }}>
           Read today's chapter <ArrowRight size={14} />
         </span>

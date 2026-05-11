@@ -2,6 +2,7 @@ import { useNavigate } from "react-router-dom";
 import { Heart } from "lucide-react";
 import { createPageUrl } from "@/utils";
 import PhasePill from "./PhasePill";
+import { getCategoryGradient, attachFallbackOverlay } from "@/utils/imageFallback";
 
 const FALLBACK_GRADIENT = "linear-gradient(135deg, var(--rose-soft-bg) 0%, var(--cream-2) 100%)";
 
@@ -80,7 +81,8 @@ export default function SavedRail({ items, currentPhase, savedPhases, onUntagOrU
                 style={{
                   height: 110,
                   width: "100%",
-                  background: item.image_gradient || FALLBACK_GRADIENT,
+                  background: item.image_gradient || getCategoryGradient(item.category),
+                  position: "relative",
                 }}
               >
                 {item.image_url && (
@@ -89,7 +91,7 @@ export default function SavedRail({ items, currentPhase, savedPhases, onUntagOrU
                     alt=""
                     loading="lazy"
                     style={{ width: "100%", height: "100%", objectFit: "cover" }}
-                    onError={(e) => { e.target.style.display = "none"; }}
+                    onError={(e) => attachFallbackOverlay(e, item.category)}
                   />
                 )}
               </div>

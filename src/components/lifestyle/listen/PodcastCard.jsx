@@ -1,5 +1,6 @@
 import { Play } from 'lucide-react';
 import SaveHeartButton from '@/components/lifestyle/foryou/SaveHeartButton';
+import { getCategoryGradient, attachFallbackOverlay } from '@/utils/imageFallback';
 
 function PlayIndicator() {
   return (
@@ -64,7 +65,7 @@ export default function PodcastCard({ item, saved, hasPhaseTag, onSave, onUntag 
         <div style={{
           position: 'absolute', inset: 0,
           backgroundImage: item.image_url ? `url(${item.image_url})` : undefined,
-          background: item.image_url ? undefined : 'linear-gradient(135deg, var(--rose-soft-bg) 0%, var(--cream-2) 100%)',
+          background: item.image_url ? undefined : getCategoryGradient(item.category),
           backgroundSize: 'cover',
           backgroundPosition: 'center',
           filter: 'blur(20px) brightness(0.85)',
@@ -82,7 +83,7 @@ export default function PodcastCard({ item, saved, hasPhaseTag, onSave, onUntag 
               height: '100%', aspectRatio: '1/1',
               objectFit: 'cover',
             }}
-            onError={e => { e.target.style.display = 'none'; }}
+            onError={e => attachFallbackOverlay(e, item.category)}
           />
         )}
 

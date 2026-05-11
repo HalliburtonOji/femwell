@@ -4,6 +4,7 @@ import CategoryPill from "./CategoryPill";
 import { createPageUrl } from "@/utils";
 import { toggleSavedItem } from "@/lib/savedItems";
 import { base44 } from "@/api/base44Client";
+import { getCategoryGradient, attachFallbackOverlay } from "@/utils/imageFallback";
 
 function timeAgo(dateStr) {
   if (!dateStr) return "";
@@ -72,24 +73,46 @@ export default function LifestyleCard({ item, onHide, onSave, onLike, onDislike,
 
   return (
     <div className="rounded-2xl overflow-hidden" style={{ backgroundColor: "var(--surface)", border: "1px solid var(--border)", boxShadow: "var(--shadow-sm)", animation: "fadeUp 0.3s ease-out" }}>
-      {/* Media */}
-      {item.image_url && (
-        <div className="relative h-44 overflow-hidden" style={{ backgroundColor: "var(--ivory-dark)" }}>
-          <img src={item.image_url} alt={item.title} className="w-full h-full object-cover" onError={(e) => { e.target.style.display = 'none'; }} />
-          {isVideo && (
-            <div className="absolute inset-0 flex items-center justify-center" style={{ backgroundColor: "rgba(0,0,0,0.3)" }}>
-              <button onClick={handleOpen} className="w-14 h-14 rounded-full flex items-center justify-center shadow-lg" style={{ backgroundColor: "rgba(255,255,255,0.9)" }}>
-                <span style={{ color: "var(--rose-dust)", fontSize: 20, marginLeft: 3 }}>&#9654;</span>
-              </button>
-            </div>
-          )}
-          {item.is_editor_pick && (
-            <div className="absolute top-3 left-3 px-2.5 py-1 text-[10px] font-bold rounded-full tracking-wide" style={{ backgroundColor: "var(--rose-dust)", color: "white" }}>
-              EDITOR'S PICK
-            </div>
-          )}
-        </div>
-      )}
+      {/* Media — always render the media well so missing-image cards get a
+          branded gradient panel (with category label overlay) instead of a
+          flat pale rectangle. */}
+      <div className="relative h-44 overflow-hidden" style={{ background: getCategoryGradient(item.category), position: "relative" }}>
+        {item.image_url ? (
+          <img
+            src={item.image_url}
+            alt={item.title}
+            className="w-full h-full object-cover"
+            onError={(e) => attachFallbackOverlay(e, item.category)}
+          />
+        ) : (
+          <span
+            aria-hidden="true"
+            style={{
+              position: "absolute", inset: 0,
+              display: "flex", alignItems: "center", justifyContent: "center",
+              padding: 12, textAlign: "center",
+              fontFamily: "'Fraunces', serif",
+              fontStyle: "italic", fontWeight: 400, fontSize: 18,
+              color: "var(--cream)", opacity: 0.7,
+              pointerEvents: "none",
+            }}
+          >
+            {item.category || "More like this"}
+          </span>
+        )}
+        {isVideo && (
+          <div className="absolute inset-0 flex items-center justify-center" style={{ backgroundColor: "rgba(0,0,0,0.3)" }}>
+            <button onClick={handleOpen} className="w-14 h-14 rounded-full flex items-center justify-center shadow-lg" style={{ backgroundColor: "rgba(255,255,255,0.9)" }}>
+              <span style={{ color: "var(--rose-dust)", fontSize: 20, marginLeft: 3 }}>&#9654;</span>
+            </button>
+          </div>
+        )}
+        {item.is_editor_pick && (
+          <div className="absolute top-3 left-3 px-2.5 py-1 text-[10px] font-bold rounded-full tracking-wide" style={{ backgroundColor: "var(--rose-dust)", color: "white" }}>
+            EDITOR'S PICK
+          </div>
+        )}
+      </div>
 
       <div className="p-4">
         {/* Header */}
