@@ -125,11 +125,15 @@ function FemwellBookCard({ book, isSaved, onHeartClick, onOpen }) {
   );
 }
 
-function GutenbergBookCard({ book, isSaved, onHeartClick }) {
+function GutenbergBookCard({ book, isSaved, onHeartClick, onOpen }) {
   const saveId = bookSaveId(book);
   const handleTap = () => {
-    if (!book.reader_url) return;
-    window.open(book.reader_url, '_blank', 'noopener,noreferrer');
+    if (book._gutenbergId && onOpen) {
+      onOpen(book);
+      return;
+    }
+    // Fallback to Gutenberg's HTML reader if we somehow don't have an id.
+    if (book.reader_url) window.open(book.reader_url, '_blank', 'noopener,noreferrer');
   };
   return (
     <BookCardShell
@@ -201,6 +205,17 @@ export default function BooksGrid({ books, loading, savedSet, onHeartClick }) {
     navigate(createPageUrl(`LifestyleDetail?id=${book._itemId}`));
   };
 
+  // Open Gutenberg books inside the FemWell BookReader (Kindle UI) instead of
+  // bouncing the user to gutenberg.org. Falls back to the external HTML
+  // reader if no _gutenbergId is present.
+  const openGutenberg = (book) => {
+    if (!book?._gutenbergId) {
+      if (book?.reader_url) window.open(book.reader_url, '_blank', 'noopener,noreferrer');
+      return;
+    }
+    navigate(createPageUrl(`BookReader?gutenberg_id=${book._gutenbergId}`));
+  };
+
   if (loading) {
     return (
       <div style={{ textAlign: 'center', padding: '48px 24px' }}>
@@ -256,6 +271,7 @@ export default function BooksGrid({ books, loading, savedSet, onHeartClick }) {
               book={book}
               isSaved={isSaved}
               onHeartClick={onHeartClick}
+              onOpen={openGutenberg}
             />
           );
         })}

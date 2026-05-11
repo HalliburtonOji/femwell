@@ -73,6 +73,7 @@ import Saved from './pages/Saved';
 import Deals from './pages/Deals';
 import Events from './pages/Events';
 import LifestyleDetail from './pages/LifestyleDetail';
+import BookReader from './pages/BookReader';
 import Track from './pages/Track';
 import Community from './pages/Community';
 import Planner from './pages/Planner';
@@ -106,6 +107,7 @@ export const PAGES = {
     "Deals": Deals,
     "Events": Events,
     "LifestyleDetail": LifestyleDetail,
+    "BookReader": BookReader,
     "Track": Track,
     "Community": Community,
     "Planner": Planner,
