@@ -4,7 +4,6 @@ import FloatingSidebar from "./components/layout/FloatingSidebar";
 import AssistantOverlay from "./components/assistant/AssistantOverlay";
 import MobileBottomNav from "./components/layout/MobileBottomNav";
 import CheckinModal from "./components/today/CheckinModal";
-import AssistantOrb from "./components/assistant/AssistantOrb";
 import ErrorBoundary from "./components/common/ErrorBoundary";
 
 import { MilestoneEventListener } from "./components/programs/MilestoneCelebrationModal";
@@ -74,7 +73,6 @@ export default function Layout({ children, currentPageName }) {
         </footer>
       )}
       {showNav && <MobileBottomNav currentPageName={currentPageName} />}
-      {showNav && <AssistantOrb currentPageName={currentPageName} />}
       <AssistantOverlay
         open={assistantOpen}
         onClose={() => setAssistantOpen(false)}

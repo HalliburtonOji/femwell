@@ -128,6 +128,25 @@ export default function LifestyleDetail() {
   const [related, setRelated] = useState([]);
   const [videoFailed, setVideoFailed] = useState(false);
 
+  // YouTube embed errors (153, 101, 150) don't fire iframe.onError — they're
+  // surfaced via postMessage from the IFrame Player API. Listen for those and
+  // flip videoFailed so the fallback gradient card renders instead.
+  useEffect(() => {
+    const onMsg = (e) => {
+      if (!e.origin || !/youtube(-nocookie)?\.com$/.test(new URL(e.origin).hostname)) return;
+      let data = e.data;
+      if (typeof data === "string") {
+        try { data = JSON.parse(data); } catch { return; }
+      }
+      if (data && data.event === "onError") {
+        const code = Number(data.info);
+        if ([101, 150, 153].includes(code)) setVideoFailed(true);
+      }
+    };
+    window.addEventListener("message", onMsg);
+    return () => window.removeEventListener("message", onMsg);
+  }, []);
+
   useEffect(() => {
     let cancelled = false;
     (async () => {
@@ -277,8 +296,17 @@ export default function LifestyleDetail() {
 
   const isFemwell = FEMWELL_GENERATED_PROVIDERS.has(item.provider);
   const isYouTubeVideo = item.media_type === "VIDEO" && (item.provider === "YOUTUBE" || !!item.video_id || (item.embed_url || "").includes("youtube"));
+  // Append enablejsapi=1 so YouTube emits onError postMessages back to us when
+  // an embed is blocked (Error 153 / 101 / 150). Without this flag the iframe
+  // just renders YouTube's in-frame error UI and our fallback never triggers.
   const youtubeEmbedUrl = isYouTubeVideo
-    ? (item.embed_url || (item.video_id ? `https://www.youtube.com/embed/${item.video_id}` : null))
+    ? (() => {
+        const base = item.embed_url || (item.video_id ? `https://www.youtube.com/embed/${item.video_id}` : null);
+        if (!base) return null;
+        const sep = base.includes("?") ? "&" : "?";
+        const origin = typeof window !== "undefined" ? encodeURIComponent(window.location.origin) : "";
+        return `${base}${sep}enablejsapi=1&origin=${origin}`;
+      })()
     : null;
   // Read button hidden for FemWell-generated content, and hidden when we've embedded the video in-app.
   const showReadFullButton = !isFemwell && !youtubeEmbedUrl && !!item.content_url;

@@ -74,6 +74,7 @@ import Deals from './pages/Deals';
 import Events from './pages/Events';
 import LifestyleDetail from './pages/LifestyleDetail';
 import BookReader from './pages/BookReader';
+import FictionReader from './pages/FictionReader';
 import Track from './pages/Track';
 import Community from './pages/Community';
 import Planner from './pages/Planner';
@@ -108,6 +109,7 @@ export const PAGES = {
     "Events": Events,
     "LifestyleDetail": LifestyleDetail,
     "BookReader": BookReader,
+    "FictionReader": FictionReader,
     "Track": Track,
     "Community": Community,
     "Planner": Planner,

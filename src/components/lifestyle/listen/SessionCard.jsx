@@ -1,4 +1,6 @@
 import { Play } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
+import { createPageUrl } from '@/utils';
 import SaveHeartButton from '@/components/lifestyle/foryou/SaveHeartButton';
 
 function PlayIndicator() {
@@ -27,9 +29,12 @@ function PlayIndicator() {
 }
 
 export default function SessionCard({ item, saved, onSave }) {
+  const navigate = useNavigate();
   const handleClick = () => {
     if (item.content_key) {
-      window.location.href = `/ContentPlayer?key=${item.content_key}`;
+      // Use react-router so the back button returns to the Listen grid
+      // instead of doing a full reload that breaks the back stack.
+      navigate(createPageUrl(`ContentPlayer?key=${item.content_key}`));
     } else {
       console.warn('SessionCard: no content_key on item', item.id);
     }

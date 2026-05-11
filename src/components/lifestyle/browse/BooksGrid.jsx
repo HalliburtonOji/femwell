@@ -1,8 +1,75 @@
 import { useNavigate } from 'react-router-dom';
 import { createPageUrl } from '@/utils';
 import SaveHeartButton from '@/components/lifestyle/foryou/SaveHeartButton';
+import { getBookCover } from '@/utils/bookCover';
 
 const FALLBACK_GRADIENT = 'linear-gradient(135deg, var(--rose-soft-bg) 0%, var(--gold) 100%)';
+
+// Render a deterministic gradient + serif initial when image_url is missing.
+// Cover renders independent of book kind so FemWell originals and Gutenberg
+// picks share the same visual language when no real cover image is available.
+function BookCoverArt({ title, kindLabel }) {
+  const { gradient, accent, initial } = getBookCover(title);
+  return (
+    <div
+      aria-hidden="true"
+      style={{
+        position: 'absolute', inset: 0,
+        background: gradient,
+        display: 'flex', alignItems: 'center', justifyContent: 'center',
+        overflow: 'hidden',
+      }}
+    >
+      {/* Big translucent serif initial */}
+      <span
+        style={{
+          fontFamily: "'Fraunces', serif",
+          fontWeight: 300,
+          fontSize: 'clamp(120px, 32vw, 200px)',
+          lineHeight: 1,
+          color: accent,
+          letterSpacing: '-0.05em',
+          userSelect: 'none',
+          textShadow: '0 4px 20px rgba(0,0,0,0.10)',
+        }}
+      >
+        {initial}
+      </span>
+      {/* Title overlay at bottom */}
+      <div style={{
+        position: 'absolute', left: 12, right: 12, bottom: 16,
+        textAlign: 'center',
+      }}>
+        <p style={{
+          fontFamily: "'Fraunces', serif",
+          fontStyle: 'italic',
+          fontWeight: 400,
+          fontSize: 'clamp(15px, 3.4vw, 18px)',
+          lineHeight: 1.2,
+          color: 'rgba(255,250,242,0.92)',
+          margin: 0,
+          display: '-webkit-box', WebkitLineClamp: 3, WebkitBoxOrient: 'vertical', overflow: 'hidden',
+          textShadow: '0 1px 2px rgba(0,0,0,0.20)',
+        }}>
+          {title}
+        </p>
+        {kindLabel && (
+          <p style={{
+            fontFamily: "'Inter', sans-serif",
+            fontSize: 10,
+            fontWeight: 700,
+            letterSpacing: '0.12em',
+            textTransform: 'uppercase',
+            color: 'rgba(255,250,242,0.78)',
+            margin: '6px 0 0',
+          }}>
+            {kindLabel}
+          </p>
+        )}
+      </div>
+    </div>
+  );
+}
 
 export function bookSaveId(book) {
   if (book._kind === 'femwell') return `book:femwell:${book._itemId}`;
@@ -53,10 +120,14 @@ function FemwellBookCard({ book, isSaved, onHeartClick, onOpen }) {
         background: FALLBACK_GRADIENT,
         overflow: 'hidden',
       }}>
+        {/* Generated cover art is always rendered as a base layer; if the
+            record has an image_url we overlay it on top. Means we never see
+            a flat panel while the image loads. */}
+        <BookCoverArt title={book.title} kindLabel="FemWell Original" />
         {book.cover_url && (
           <img
             src={book.cover_url}
-            alt={`Cover of ${book.title}`}
+            alt=""
             loading="lazy"
             style={{
               position: 'absolute', top: 0, left: 0,
@@ -78,12 +149,13 @@ function FemwellBookCard({ book, isSaved, onHeartClick, onOpen }) {
             fontWeight: 700,
             letterSpacing: '0.08em',
             textTransform: 'uppercase',
+            zIndex: 2,
           }}
         >
           FemWell Original
         </div>
         <div
-          style={{ position: 'absolute', top: 8, right: 8 }}
+          style={{ position: 'absolute', top: 8, right: 8, zIndex: 2 }}
           onClick={(e) => e.stopPropagation()}
         >
           <SaveHeartButton
@@ -146,10 +218,11 @@ function GutenbergBookCard({ book, isSaved, onHeartClick, onOpen }) {
         background: FALLBACK_GRADIENT,
         overflow: 'hidden',
       }}>
+        <BookCoverArt title={book.title} kindLabel="Public Domain" />
         {book.cover_url && (
           <img
             src={book.cover_url}
-            alt={`Cover of ${book.title}`}
+            alt=""
             loading="lazy"
             style={{
               position: 'absolute', top: 0, left: 0,
@@ -159,7 +232,7 @@ function GutenbergBookCard({ book, isSaved, onHeartClick, onOpen }) {
           />
         )}
         <div
-          style={{ position: 'absolute', top: 8, right: 8 }}
+          style={{ position: 'absolute', top: 8, right: 8, zIndex: 2 }}
           onClick={(e) => e.stopPropagation()}
         >
           <SaveHeartButton
@@ -200,9 +273,11 @@ function GutenbergBookCard({ book, isSaved, onHeartClick, onOpen }) {
 export default function BooksGrid({ books, loading, savedSet, onHeartClick }) {
   const navigate = useNavigate();
 
+  // FemWell-generated fiction goes through the dedicated FictionReader Kindle
+  // surface (drop cap, page flip, gradient cover), not the article reader.
   const openFemwell = (book) => {
     if (!book?._itemId) return;
-    navigate(createPageUrl(`LifestyleDetail?id=${book._itemId}`));
+    navigate(createPageUrl(`FictionReader?id=${book._itemId}`));
   };
 
   // Open Gutenberg books inside the FemWell BookReader (Kindle UI) instead of

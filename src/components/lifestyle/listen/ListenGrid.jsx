@@ -1,4 +1,6 @@
 import { Play } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
+import { createPageUrl } from '@/utils';
 import PodcastCard from './PodcastCard';
 import SessionCard from './SessionCard';
 import SaveHeartButton from '@/components/lifestyle/foryou/SaveHeartButton';
@@ -52,11 +54,13 @@ const EMPTY_STATES = {
 const fallbackGradient = 'linear-gradient(135deg, var(--rose-soft-bg) 0%, var(--cream-2) 100%)';
 
 function VideoCard({ item, saved, hasPhaseTag, onSave, onUntag }) {
+  const navigate = useNavigate();
   const handleClick = () => {
     // Route to LifestyleDetail so the YouTube iframe embeds in-app
     // (LifestyleDetail embeds for VIDEO items — no more bouncing users to youtube.com).
+    // Use react-router so the browser back stack is preserved.
     if (item.id) {
-      window.location.href = `/LifestyleDetail?id=${item.id}`;
+      navigate(createPageUrl(`LifestyleDetail?id=${item.id}`));
     } else if (item.content_url) {
       window.open(item.content_url, '_blank', 'noopener,noreferrer');
     }

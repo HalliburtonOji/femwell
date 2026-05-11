@@ -1,10 +1,21 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { Bookmark, BookmarkCheck, Heart, MoreHorizontal, ExternalLink, Volume2, X, ChevronRight } from "lucide-react";
 import CategoryPill from "./CategoryPill";
 import { createPageUrl } from "@/utils";
 import { toggleSavedItem } from "@/lib/savedItems";
 import { base44 } from "@/api/base44Client";
 import { getCategoryGradient, attachFallbackOverlay } from "@/utils/imageFallback";
+
+// FemWell-generated fiction goes through the dedicated FictionReader Kindle
+// surface, not the article reader.
+const FICTION_PROVIDERS = new Set(["FEMWELL_FICTION_WEEKLY", "FEMWELL_FICTION_PERSONAL"]);
+function isFiction(item) {
+  if (!item) return false;
+  if (FICTION_PROVIDERS.has(item.provider)) return true;
+  if (item.content_type === "FICTION") return true;
+  return false;
+}
 
 function timeAgo(dateStr) {
   if (!dateStr) return "";
@@ -18,6 +29,7 @@ function timeAgo(dateStr) {
 }
 
 export default function LifestyleCard({ item, onHide, onSave, onLike, onDislike, onMuteSource, saved, liked }) {
+  const navigate = useNavigate();
   const [localSaved, setLocalSaved] = useState(saved);
   const [localLiked, setLocalLiked] = useState(liked);
   const [hidden, setHidden] = useState(false);
@@ -56,7 +68,13 @@ export default function LifestyleCard({ item, onHide, onSave, onLike, onDislike,
 
   const handleOpen = () => {
     handleAction('open');
-    window.location.href = createPageUrl(`LifestyleDetail?id=${item.id}`);
+    // Fiction → Kindle reader. Everything else → article reader.
+    // Use react-router navigate so the browser back stack is preserved
+    // (window.location.href forces a full reload and breaks back nav).
+    const route = isFiction(item)
+      ? createPageUrl(`FictionReader?id=${item.id}`)
+      : createPageUrl(`LifestyleDetail?id=${item.id}`);
+    navigate(route);
   };
 
   const handleListen = () => {

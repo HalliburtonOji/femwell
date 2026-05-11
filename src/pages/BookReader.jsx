@@ -163,7 +163,10 @@ export default function BookReader() {
 
   return (
     <Frame
-      onBack={() => navigate(createPageUrl("Lifestyle?tab=browse"))}
+      // navigate(-1) preserves the back stack — returning to wherever the user
+      // came from (typically Browse → Books) instead of a fresh forward push
+      // that loses scroll position and filter state.
+      onBack={() => navigate(-1)}
       title={book?.title}
       author={book?.author}
       sourceUrl={book?.source_url}
