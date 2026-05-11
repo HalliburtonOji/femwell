@@ -35,7 +35,10 @@ export default function EditorialHero({ item, savedSet, savedPhases, onSave, onU
         cursor: "pointer",
         animation: "fy-fade 240ms ease-out",
         background: bg,
-        boxShadow: "var(--shadow-card)",
+        // Layered 3D shadow — sits a touch deeper than bento cards
+        boxShadow:
+          "0 2px 4px rgba(43,30,22,0.05), 0 8px 22px rgba(43,30,22,0.10), 0 24px 56px rgba(43,30,22,0.08)",
+        transition: "transform 240ms ease-out, box-shadow 240ms ease-out",
       }}
       className="fy-hero"
     >

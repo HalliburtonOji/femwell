@@ -72,7 +72,29 @@ export default function LifestyleCard({ item, onHide, onSave, onLike, onDislike,
   const isVideo = item.media_type === 'TIKTOK' || item.media_type === 'VIDEO' || item.media_type === 'INSTAGRAM' || item.media_type === 'CLIP';
 
   return (
-    <div className="rounded-2xl overflow-hidden" style={{ backgroundColor: "var(--surface)", border: "1px solid var(--border)", boxShadow: "var(--shadow-sm)", animation: "fadeUp 0.3s ease-out" }}>
+    <div
+      className="rounded-2xl overflow-hidden lf-card-3d"
+      style={{
+        backgroundColor: "var(--surface)",
+        border: "1px solid var(--border)",
+        // Layered shadow for subtle 3D depth on the card itself
+        boxShadow:
+          "0 1px 2px rgba(43,30,22,0.04), 0 4px 12px rgba(43,30,22,0.06), 0 12px 32px rgba(43,30,22,0.04)",
+        animation: "fadeUp 0.3s ease-out",
+        transition: "transform 240ms ease-out, box-shadow 240ms ease-out",
+      }}
+    >
+      <style>{`
+        @media (hover: hover) and (pointer: fine) and (prefers-reduced-motion: no-preference) {
+          .lf-card-3d:hover {
+            transform: perspective(1000px) translateY(-3px) rotateX(0.5deg);
+            box-shadow:
+              0 2px 4px rgba(43,30,22,0.06),
+              0 10px 24px rgba(43,30,22,0.10),
+              0 24px 56px rgba(43,30,22,0.08);
+          }
+        }
+      `}</style>
       {/* Media — always render the media well so missing-image cards get a
           branded gradient panel (with category label overlay) instead of a
           flat pale rectangle. */}

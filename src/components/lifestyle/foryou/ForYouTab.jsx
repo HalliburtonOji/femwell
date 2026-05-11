@@ -8,10 +8,21 @@ import BentoGrid from "./BentoGrid";
 import Toast from "./Toast";
 import PhaseInboxRail from "./PhaseInboxRail";
 
+// Accepts legacy string ("all" / single slug) OR array of slugs (Option B).
+// Empty array or "all" means no filter.
 function matchCategoryFilter(item, filter) {
-  if (!filter || filter === "all") return true;
+  if (!filter) return true;
+  if (Array.isArray(filter)) {
+    if (filter.length === 0) return true;
+    const raw = String(item.category || "").toLowerCase();
+    return filter.some((f) => {
+      const fl = String(f).toLowerCase();
+      return raw === fl || raw.includes(fl.replace(/_/g, " "));
+    });
+  }
+  if (filter === "all") return true;
   const raw = String(item.category || "").toLowerCase();
-  return raw === filter || raw.includes(filter.replace(/_/g, " "));
+  return raw === filter || raw.includes(String(filter).replace(/_/g, " "));
 }
 
 async function fetchHeroItem() {
@@ -316,6 +327,23 @@ export default function ForYouTab({ categoryFilter }) {
         }
         @media (prefers-reduced-motion: reduce) {
           .fy-bento-card, .fy-hero { animation: none !important; opacity: 1 !important; }
+        }
+        /* Subtle 3D depth on hover (desktop only) */
+        @media (hover: hover) and (pointer: fine) and (prefers-reduced-motion: no-preference) {
+          .fy-bento-card:hover {
+            transform: perspective(1000px) translateY(-3px) rotateX(0.5deg);
+            box-shadow:
+              0 2px 4px rgba(43,30,22,0.06),
+              0 10px 24px rgba(43,30,22,0.10),
+              0 24px 56px rgba(43,30,22,0.08) !important;
+          }
+          .fy-hero:hover {
+            transform: perspective(1200px) translateY(-2px);
+            box-shadow:
+              0 4px 8px rgba(43,30,22,0.08),
+              0 16px 36px rgba(43,30,22,0.12),
+              0 32px 64px rgba(43,30,22,0.10) !important;
+          }
         }
       `}</style>
 

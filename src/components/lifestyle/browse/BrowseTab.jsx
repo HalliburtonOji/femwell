@@ -25,8 +25,17 @@ const GUTENBERG_TOPIC = {
   other:           'women',
 };
 
+// `categorySlug` may be a string (legacy) or an array of slugs (Option B).
+// For Gutendex we pick the first slug as the topic search; "all"/empty falls
+// back to the women-focused default.
+function _firstSlug(input) {
+  if (Array.isArray(input)) return input[0] || 'all';
+  return input || 'all';
+}
+
 async function fetchGutenbergBooks(categorySlug) {
-  const topic = GUTENBERG_TOPIC[categorySlug] || GUTENBERG_TOPIC.all;
+  const slug = _firstSlug(categorySlug);
+  const topic = GUTENBERG_TOPIC[slug] || GUTENBERG_TOPIC.all;
   const url = `https://gutendex.com/books?topic=${encodeURIComponent(topic)}&languages=en&page_size=12`;
   try {
     const res = await fetch(url, { signal: AbortSignal.timeout(8000) });
@@ -105,10 +114,17 @@ async function fetchItems(chip, categorySlug, lifestyleProfile) {
     return [];
   }
 
-  // Compose with parent category chip — if user picked a specific category
-  // chip (Nutrition, Hormones, etc.) AND a type chip, both apply.
-  const categoryClause =
-    categorySlug && categorySlug !== 'all' ? { category: categorySlug } : {};
+  // Compose with parent category filter — if user picked specific categories
+  // AND a type chip, both apply. `categorySlug` is either a string (legacy)
+  // or an array of slugs (Option B); we adapt the base44 filter accordingly.
+  let categoryClause = {};
+  if (Array.isArray(categorySlug)) {
+    if (categorySlug.length === 1) categoryClause = { category: categorySlug[0] };
+    else if (categorySlug.length > 1) categoryClause = { category: { $in: categorySlug } };
+    // empty array → no clause
+  } else if (categorySlug && categorySlug !== 'all') {
+    categoryClause = { category: categorySlug };
+  }
 
   const items = await base44.entities.LifestyleItems.filter(
     { ...baseFilter, ...typeFilter, ...categoryClause },

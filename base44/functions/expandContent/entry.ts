@@ -51,8 +51,24 @@ Deno.serve(async (req) => {
 
   try {
     const isStory = content_type === 'STORY';
+    // Target lengths shortened ~20% (was 700-900 / 500-700) and explicit
+    // plain-language guardrails so FemWell-generated articles read at a
+    // Year-9 reading level. Markdown is stripped so the reader UI shows
+    // clean prose instead of literal `**bold**` and `## Heading`.
+    const articleSpec =
+      "article of 600-800 words. Use plain language; aim for a Year 9 " +
+      "reading level. Avoid jargon. If a 5-syllable word can be replaced " +
+      "with a 2-syllable word without losing meaning, replace it. No " +
+      "`**bold**`, no `## Heading`, no markdown — clean prose only.";
+    const storySpec =
+      "short story of 560-720 words. Use plain language; aim for a Year 9 " +
+      "reading level. Avoid jargon. No markdown — clean prose only.";
     const result = await base44.asServiceRole.integrations.Core.InvokeLLM({
-      prompt: `Write a complete, engaging ${isStory ? 'short story of 700-900 words' : 'article of 500-700 words'} for women. Title: "${title}". Opening: "${summary}". Write the FULL text continuing from where the opening left off. Same voice and style. Return JSON: { body: string }`,
+      prompt:
+        `Write a complete, engaging ${isStory ? storySpec : articleSpec} ` +
+        `for women. Title: "${title}". Opening: "${summary}". Write the ` +
+        `FULL text continuing from where the opening left off. Same voice ` +
+        `and style as the opening. Return JSON: { body: string }`,
       response_json_schema: {
         type: 'object',
         properties: { body: { type: 'string' } },

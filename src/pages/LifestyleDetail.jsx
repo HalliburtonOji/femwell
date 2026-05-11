@@ -607,13 +607,24 @@ export default function LifestyleDetail() {
                   lineHeight: 1.08,
                   letterSpacing: "-0.015em",
                   margin: 0,
+                  // Clamp long titles to 3 lines so they never push out of the
+                  // visible hero area. Combined with a hero min-height below,
+                  // 3-line titles stay legible without breaking the layout.
+                  display: "-webkit-box",
+                  WebkitBoxOrient: "vertical",
+                  WebkitLineClamp: 3,
+                  overflow: "hidden",
                 }} className="fw-reader-title">
                   {decodedTitle}
                 </h1>
               </div>
               <style>{`
+                /* Make sure the hero is tall enough to fit a 3-line title at
+                   any breakpoint. Default heroAspect math gives ~56% / 75% of
+                   width; that's tight for long titles, so we set a floor. */
+                .fw-reader-hero { min-height: 280px; }
                 @media (min-width: 768px) {
-                  .fw-reader-hero { margin: -40px -40px 24px !important; }
+                  .fw-reader-hero { margin: -40px -40px 24px !important; min-height: 360px; }
                   .fw-reader-title { font-size: 56px !important; line-height: 1.05 !important; letter-spacing: -0.02em !important; }
                 }
               `}</style>

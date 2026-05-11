@@ -39,7 +39,10 @@ function BentoCard({ item, idx, currentPhase, savedSet, savedPhases, onSave, onU
         borderRadius: 14,
         overflow: "hidden",
         cursor: "pointer",
-        boxShadow: "var(--shadow-card)",
+        // Layered 3D shadow stack
+        boxShadow:
+          "0 1px 2px rgba(43,30,22,0.04), 0 4px 12px rgba(43,30,22,0.06), 0 12px 32px rgba(43,30,22,0.04)",
+        transition: "transform 240ms ease-out, box-shadow 240ms ease-out",
         animationDelay: `${Math.min(idx, 12) * 50}ms`,
       }}
     >

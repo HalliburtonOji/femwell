@@ -1,6 +1,6 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { base44 } from "@/api/base44Client";
-import { ExternalLink, ChevronDown, ChevronUp, X, BookOpen, Bookmark, BookText, Brain, Heart, Sparkles, Leaf, Pin } from "lucide-react";
+import { ExternalLink, ChevronDown, ChevronUp, X, BookOpen, Bookmark, BookText, Brain, Heart, Sparkles, Leaf, Pin, SlidersHorizontal, Check } from "lucide-react";
 import { CONTENT_CATEGORIES, categoryLabel } from "@/utils/contentCategory";
 import ForYouTab from "@/components/lifestyle/foryou/ForYouTab";
 import BrowseTab from "@/components/lifestyle/browse/BrowseTab";
@@ -667,45 +667,168 @@ const TABS = [
   { id: "horoscope",   label: "Horoscope" },
 ];
 
-// ── Category filter chips (ContentItems enum) ─────────────────────────────────
-function CategoryChips({ active, onChange, followedCategories = [] }) {
-  const chips = ["all", ...CONTENT_CATEGORIES];
+// ── Category filter dropdown — Option B from Atelier review ───────────────────
+// Single right-aligned filter-icon button. Click opens a popover with category
+// checkboxes (multi-select). Active count appears as a badge on the icon.
+// `selected` is an array of category slugs (empty = "all").
+function CategoryFilterDropdown({ selected, onChange, followedCategories = [] }) {
+  const [open, setOpen] = useState(false);
+  const popoverRef = useRef(null);
+  const buttonRef = useRef(null);
+
   const followedSet = new Set(
-    (Array.isArray(followedCategories) ? followedCategories : [])
-      .map((c) => String(c).toLowerCase())
+    (Array.isArray(followedCategories) ? followedCategories : []).map((c) => String(c).toLowerCase())
   );
+  const selectedSet = new Set((selected || []).map((c) => String(c).toLowerCase()));
+  const count = selectedSet.size;
+
+  // Click-outside + Escape to close
+  useEffect(() => {
+    if (!open) return;
+    const onDoc = (e) => {
+      if (popoverRef.current && popoverRef.current.contains(e.target)) return;
+      if (buttonRef.current && buttonRef.current.contains(e.target)) return;
+      setOpen(false);
+    };
+    const onKey = (e) => { if (e.key === "Escape") setOpen(false); };
+    document.addEventListener("mousedown", onDoc);
+    document.addEventListener("keydown", onKey);
+    return () => {
+      document.removeEventListener("mousedown", onDoc);
+      document.removeEventListener("keydown", onKey);
+    };
+  }, [open]);
+
+  const toggle = (cat) => {
+    const slug = String(cat).toLowerCase();
+    const next = new Set(selectedSet);
+    if (next.has(slug)) next.delete(slug);
+    else next.add(slug);
+    onChange(Array.from(next));
+  };
+  const clear = () => onChange([]);
+
   return (
-    <div className="lf-scroll" role="group" aria-label="Filter content by category"
-      style={{ display: "flex", gap: 6, overflowX: "auto", paddingBottom: 6, marginTop: 8, scrollSnapType: "x mandatory" }}>
-      {chips.map(cat => {
-        const isActive = active === cat;
-        const isFollowed = cat !== "all" && followedSet.has(String(cat).toLowerCase());
-        return (
-          <button
-            key={cat}
-            onClick={() => onChange(cat)}
-            aria-label={`Filter by ${cat === "all" ? "all categories" : categoryLabel(cat)}`}
-            aria-pressed={isActive}
+    <div style={{ position: "relative", display: "flex", justifyContent: "flex-end", marginTop: 8 }}>
+      <button
+        ref={buttonRef}
+        type="button"
+        onClick={() => setOpen((v) => !v)}
+        aria-haspopup="true"
+        aria-expanded={open}
+        aria-label={count ? `Filter — ${count} selected` : "Filter by category"}
+        style={{
+          display: "inline-flex", alignItems: "center", gap: 6,
+          padding: "8px 14px", borderRadius: 9999,
+          fontFamily: "'Inter', sans-serif", fontSize: 12, fontWeight: 600,
+          minHeight: 36, cursor: "pointer",
+          border: "1px solid var(--border)",
+          background: count ? "var(--rose-soft-bg)" : "var(--cream)",
+          color: count ? "var(--rose-primary)" : "var(--plum-deep)",
+          position: "relative",
+        }}
+      >
+        <SlidersHorizontal style={{ width: 14, height: 14 }} />
+        <span>Filter</span>
+        {count > 0 && (
+          <span
+            aria-hidden="true"
             style={{
-              flexShrink: 0, padding: "8px 16px", borderRadius: 9999,
-              fontSize: 13, fontWeight: isActive ? 600 : 500, cursor: "pointer", border: "none",
-              fontFamily: "'Inter', sans-serif", whiteSpace: "nowrap", minHeight: 44,
-              scrollSnapAlign: "start",
-              display: "inline-flex", alignItems: "center", gap: 4,
-              backgroundColor: isActive ? "var(--rose-primary)" : "var(--cream)",
-              color: isActive ? "white" : "var(--plum-deep)",
+              marginLeft: 2, minWidth: 18, height: 18, padding: "0 5px",
+              borderRadius: 9999,
+              background: "var(--rose-primary)", color: "white",
+              font: "700 10px/18px 'Inter', sans-serif",
+              textAlign: "center",
             }}
           >
-            {isFollowed && !isActive && (
-              <span aria-hidden="true" style={{
-                width: 6, height: 6, borderRadius: 9999,
-                background: "var(--rose-soft)", flexShrink: 0,
-              }} />
-            )}
-            {cat === "all" ? "All" : categoryLabel(cat)}
-          </button>
-        );
-      })}
+            {count}
+          </span>
+        )}
+      </button>
+
+      {open && (
+        <div
+          ref={popoverRef}
+          role="dialog"
+          aria-label="Filter by category"
+          style={{
+            position: "absolute", top: "calc(100% + 6px)", right: 0,
+            width: 260, zIndex: 40,
+            background: "var(--surface)",
+            border: "1px solid var(--border)",
+            borderRadius: 14,
+            boxShadow:
+              "0 2px 4px rgba(43,30,22,0.06), 0 10px 24px rgba(43,30,22,0.10), 0 24px 56px rgba(43,30,22,0.08)",
+            padding: 12,
+            fontFamily: "'Inter', sans-serif",
+          }}
+        >
+          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 8 }}>
+            <p style={{ font: "700 11px/1 'Inter', sans-serif", color: "var(--plum-mute)", letterSpacing: "0.08em", textTransform: "uppercase", margin: 0 }}>
+              Categories
+            </p>
+            <button
+              type="button" onClick={clear} disabled={count === 0}
+              style={{
+                background: "none", border: "none",
+                color: count ? "var(--rose-primary)" : "var(--plum-mute)",
+                opacity: count ? 1 : 0.5,
+                cursor: count ? "pointer" : "default",
+                font: "500 11px/1 'Inter', sans-serif",
+                padding: 0,
+              }}
+            >
+              Clear
+            </button>
+          </div>
+          <div style={{ display: "flex", flexDirection: "column", maxHeight: 320, overflowY: "auto" }}>
+            {CONTENT_CATEGORIES.map((cat) => {
+              const slug = String(cat).toLowerCase();
+              const isActive = selectedSet.has(slug);
+              const isFollowed = followedSet.has(slug);
+              return (
+                <button
+                  key={cat}
+                  type="button"
+                  onClick={() => toggle(cat)}
+                  aria-pressed={isActive}
+                  style={{
+                    display: "flex", alignItems: "center", gap: 10,
+                    width: "100%", padding: "8px 6px", border: "none",
+                    background: "none", cursor: "pointer", textAlign: "left",
+                    borderRadius: 8,
+                  }}
+                >
+                  <span
+                    aria-hidden="true"
+                    style={{
+                      width: 18, height: 18, borderRadius: 5,
+                      border: isActive ? "1px solid var(--rose-primary)" : "1px solid var(--border)",
+                      background: isActive ? "var(--rose-primary)" : "transparent",
+                      display: "inline-flex", alignItems: "center", justifyContent: "center",
+                      color: "white",
+                    }}
+                  >
+                    {isActive && <Check style={{ width: 12, height: 12 }} />}
+                  </span>
+                  <span style={{ flex: 1, fontSize: 13, color: "var(--plum-deep)" }}>
+                    {categoryLabel(cat)}
+                  </span>
+                  {isFollowed && (
+                    <span
+                      aria-label="Followed"
+                      style={{
+                        width: 6, height: 6, borderRadius: 9999,
+                        background: "var(--rose-soft)",
+                      }}
+                    />
+                  )}
+                </button>
+              );
+            })}
+          </div>
+        </div>
+      )}
     </div>
   );
 }
@@ -716,7 +839,9 @@ export default function Lifestyle() {
     const p = new URLSearchParams(window.location.search).get("tab");
     return TABS.some(t => t.id === p) ? p : "for_you";
   });
-  const [categoryFilter, setCategoryFilter] = useState("all");
+  // Option B (Atelier review): multi-select category filter as array of slugs.
+  // Empty array = "all". Downstream tabs accept array OR legacy single string.
+  const [categoryFilter, setCategoryFilter] = useState([]);
   const [followedCategories, setFollowedCategories] = useState([]);
 
   useEffect(() => {
@@ -756,7 +881,11 @@ export default function Lifestyle() {
               </button>
             ))}
           </div>
-          <CategoryChips active={categoryFilter} onChange={setCategoryFilter} followedCategories={followedCategories} />
+          <CategoryFilterDropdown
+            selected={categoryFilter}
+            onChange={setCategoryFilter}
+            followedCategories={followedCategories}
+          />
         </div>
       </div>
 
