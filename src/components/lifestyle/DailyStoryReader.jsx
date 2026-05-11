@@ -157,6 +157,8 @@ export default function DailyStoryReader({
   const [loading, setLoading] = useState(!providedSource);
   const [error, setError] = useState(false);
   const [flipState, setFlipState] = useState({ phase: "idle", dir: 0 });
+  // Books (kind='book') have all chapters unlocked — no lock screen.
+  const noLock = providedSource?.kind === "book";
   const [showLocked, setShowLocked] = useState(false);
   const touchStartRef = useRef(null);
   const reducedMotion = prefersReducedMotion();
@@ -197,6 +199,7 @@ export default function DailyStoryReader({
   const flipForward = useCallback(() => {
     if (showLocked) return;
     if (currentIndex >= latestRevealed) {
+      if (noLock) return; // books: no lock screen, just stay on last chapter
       if (reducedMotion) {
         setShowLocked(true);
       } else {
@@ -304,6 +307,8 @@ export default function DailyStoryReader({
   const displayIndex = showLocked ? chapters.length : currentIndex;
   const chapterLabel = showLocked
     ? "Locked"
+    : noLock
+    ? `Chapter ${currentIndex + 1} / ${chapters.length}`
     : `Chapter ${currentChapter.day_number || currentIndex + 1} / ${totalCount}`;
 
   return (

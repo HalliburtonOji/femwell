@@ -7,17 +7,17 @@ import DailyStoryReader from "@/components/lifestyle/DailyStoryReader";
 
 // ─────────────────────────────────────────────────────────────────────────────
 // BookReader — renders a Project Gutenberg book in the FemWell Kindle UI.
-// Route:  /BookReader?gutenberg_id=N
-// Flow:   call fetchGutenbergBook → strip boilerplate → split into chapters →
-//         feed into DailyStoryReader via ReaderSource(kind='book').
+// Route: /BookReader?gutendex_id=N
+// Flow: call fetchGutenbergBook → strip boilerplate → split into chapters →
+// feed into DailyStoryReader via ReaderSource(kind='book').
 // ─────────────────────────────────────────────────────────────────────────────
 
 // Detect chapter breaks. Gutenberg books are inconsistent — match the most
 // common patterns: "CHAPTER X.", "Chapter X", standalone Roman numerals on
 // their own line ("I.", "II."). Fall back to a single-chapter book if none.
 const CHAPTER_RES = [
-  /^\s*CHAPTER\s+[IVXLCDM\d]+[\.\:\s]/im,
-  /^\s*Chapter\s+[IVXLCDM\d]+[\.\:\s]/im,
+  /^\s*CHAPTER\s+[IVXLCDM\d]+[\.:;\s]/im,
+  /^\s*Chapter\s+[IVXLCDM\d]+[\.:;\s]/im,
   /^\s*[IVXLCDM]+\.\s*$/im, // standalone Roman numeral
 ];
 
@@ -38,7 +38,7 @@ function splitChapters(text) {
       for (let i = 0; i < matches.length; i++) {
         const start = matches[i].index;
         const end = i + 1 < matches.length ? matches[i + 1].index : text.length;
-        const label = matches[i].label.replace(/[\.\s:]+$/, "").trim();
+        const label = matches[i].label.replace(/[\.:;]+$/, "").trim();
         const body = text.slice(start, end).trim();
         // Strip the leading "Chapter X" line from body so the heading isn't
         // duplicated when DailyStoryReader renders.
@@ -61,9 +61,9 @@ function splitChapters(text) {
   const chunks = [];
   for (let i = 0; i < words.length; i += pageSize) {
     chunks.push({
-      id: `page-${i / pageSize + 1}`,
-      day_number: i / pageSize + 1,
-      heading: `Page ${i / pageSize + 1}`,
+      id: `page-${Math.floor(i / pageSize) + 1}`,
+      day_number: Math.floor(i / pageSize) + 1,
+      heading: `Page ${Math.floor(i / pageSize) + 1}`,
       body: words.slice(i, i + pageSize).join(" "),
     });
   }
@@ -77,15 +77,15 @@ export default function BookReader() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
-  const gutenbergId = useMemo(() => {
-    const p = new URLSearchParams(window.location.search).get("gutenberg_id");
+  const gutendexId = useMemo(() => {
+    const p = new URLSearchParams(window.location.search).get("gutendex_id");
     const n = Number(p);
     return Number.isFinite(n) && n > 0 ? n : null;
   }, []);
 
   useEffect(() => {
-    if (!gutenbergId) {
-      setError("Missing gutenberg_id");
+    if (!gutendexId) {
+      setError("Missing gutendex_id");
       setLoading(false);
       return;
     }
@@ -93,7 +93,7 @@ export default function BookReader() {
     (async () => {
       try {
         const res = await base44.functions.invoke("fetchGutenbergBook", {
-          gutenberg_id: gutenbergId,
+          gutendex_id: gutendexId,
         });
         if (cancelled) return;
         // Some base44 SDKs wrap the response — accept both shapes.
@@ -106,10 +106,8 @@ export default function BookReader() {
         const ch = splitChapters(data.text || "");
         // Attach attribution to each chapter so it prints at the bottom of
         // every page.
-        const sourceUrl = data.source_url ||
-          `https://www.gutenberg.org/ebooks/${gutenbergId}`;
-        const attribution =
-          `From Project Gutenberg · ${sourceUrl}`;
+        const sourceUrl = data.source_url || `https://www.gutenberg.org/ebooks/${gutendexId}`;
+        const attribution = `From Project Gutenberg · ${sourceUrl}`;
         const withAttr = ch.map((c) => ({
           ...c,
           attribution,
@@ -129,13 +127,17 @@ export default function BookReader() {
         setLoading(false);
       }
     })();
-    return () => { cancelled = true; };
-  }, [gutenbergId]);
+    return () => {
+      cancelled = true;
+    };
+  }, [gutendexId]);
 
   if (loading) {
     return (
       <Frame onBack={() => navigate(-1)}>
-        <div style={emptyStyle}>Loading the book…</div>
+        <div style={emptyStyle}>
+          <p style={{ marginBottom: 10 }}>Loading the book…</p>
+        </div>
       </Frame>
     );
   }
@@ -143,12 +145,8 @@ export default function BookReader() {
     return (
       <Frame onBack={() => navigate(-1)}>
         <div style={emptyStyle}>
-          <p style={{ fontFamily: "'Fraunces', serif", fontSize: 18, color: "var(--plum-deep)", margin: 0 }}>
-            We couldn’t open this book.
-          </p>
-          <p style={{ fontFamily: "'Inter', sans-serif", fontSize: 13, color: "var(--plum-mute)", marginTop: 8 }}>
-            {error}
-          </p>
+          <p style={{ fontWeight: 600, marginBottom: 10 }}>We couldn't open this book.</p>
+          <p>{error}</p>
         </div>
       </Frame>
     );
@@ -156,7 +154,9 @@ export default function BookReader() {
   if (!chapters.length) {
     return (
       <Frame onBack={() => navigate(-1)}>
-        <div style={emptyStyle}>This book has no readable text.</div>
+        <div style={emptyStyle}>
+          <p>This book has no readable text.</p>
+        </div>
       </Frame>
     );
   }
@@ -174,6 +174,7 @@ export default function BookReader() {
           items: chapters,
           currentIndex: 0,
         }}
+        seriesKey="gutenberg_book"
         totalCount={chapters.length}
       />
     </Frame>
@@ -190,65 +191,38 @@ const emptyStyle = {
 
 function Frame({ children, onBack, title, author, sourceUrl }) {
   return (
-    <div style={{ minHeight: "100vh", paddingBottom: 80, background: "var(--ivory, #FAF4EA)" }}>
-      <div style={{
-        position: "sticky", top: 0, zIndex: 30,
-        background: "rgba(250,248,245,0.97)",
-        backdropFilter: "blur(20px)",
-        borderBottom: "1px solid var(--border)",
-      }}>
-        <div style={{ maxWidth: 760, margin: "0 auto", padding: "16px 20px", display: "flex", alignItems: "center", gap: 12 }}>
-          <button
-            type="button"
-            onClick={onBack}
-            aria-label="Back"
-            style={{
-              width: 36, height: 36, borderRadius: 9999,
-              border: "1px solid var(--border)",
-              background: "var(--cream)",
-              color: "var(--plum-deep)",
-              cursor: "pointer",
-              display: "flex", alignItems: "center", justifyContent: "center",
-            }}
+    <div style={{ minHeight: "100vh", backgroundColor: "var(--ivory)" }}>
+      <div className="max-w-2xl mx-auto px-4 pt-8 pb-8">
+        <button
+          onClick={onBack}
+          className="w-10 h-10 rounded-xl flex items-center justify-center shadow-sm mb-6"
+          style={{ backgroundColor: "rgba(255,255,255,0.85)" }}
+        >
+          <ArrowLeft className="w-4 h-4" style={{ color: "var(--plum)" }} />
+        </button>
+        {title && (
+          <h1 style={{ fontFamily: "'Fraunces', serif", fontSize: 28, fontWeight: 400, color: "var(--plum-deep)", margin: "0 0 8px 0", letterSpacing: "-0.015em" }}>
+            {title}
+          </h1>
+        )}
+        {author && (
+          <p style={{ fontFamily: "'Inter', sans-serif", fontSize: 14, color: "var(--plum-mute)", marginBottom: 20 }}>
+            {author} · Public domain
+          </p>
+        )}
+        {sourceUrl && (
+          <a
+            href={sourceUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            style={{ display: "inline-flex", alignItems: "center", gap: 6, fontSize: 12, color: "var(--rose-primary)", textDecoration: "none", marginBottom: 20 }}
           >
-            <ArrowLeft size={16} />
-          </button>
-          <div style={{ flex: 1, minWidth: 0 }}>
-            {title && (
-              <p style={{ font: "500 16px/1.2 'Fraunces', serif", color: "var(--plum-deep)", margin: 0, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
-                {title}
-              </p>
-            )}
-            {author && (
-              <p style={{ font: "400 12px/1.2 'Inter', sans-serif", color: "var(--plum-mute)", margin: "2px 0 0", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
-                {author} · Public domain
-              </p>
-            )}
-          </div>
-          {sourceUrl && (
-            <a
-              href={sourceUrl}
-              target="_blank"
-              rel="noopener noreferrer"
-              aria-label="View on Project Gutenberg"
-              style={{
-                display: "inline-flex", alignItems: "center", gap: 6,
-                font: "500 12px/1 'Inter', sans-serif",
-                color: "var(--plum-mute)",
-                textDecoration: "none",
-                padding: "8px 12px", borderRadius: 9999,
-                border: "1px solid var(--border)",
-                background: "var(--cream)",
-              }}
-            >
-              Source
-              <ExternalLink size={12} />
-            </a>
-          )}
-        </div>
+            <ExternalLink className="w-3 h-3" />
+            Read at gutenberg.org
+          </a>
+        )}
       </div>
-
-      <div style={{ maxWidth: 760, margin: "0 auto", padding: "20px" }}>
+      <div className="max-w-2xl mx-auto px-4">
         {children}
       </div>
     </div>

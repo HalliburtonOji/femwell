@@ -213,7 +213,7 @@ export default function BooksGrid({ books, loading, savedSet, onHeartClick }) {
       if (book?.reader_url) window.open(book.reader_url, '_blank', 'noopener,noreferrer');
       return;
     }
-    navigate(createPageUrl(`BookReader?gutenberg_id=${book._gutenbergId}`));
+    navigate(createPageUrl(`BookReader?gutendex_id=${book._gutenbergId}`));
   };
 
   if (loading) {

@@ -30,6 +30,7 @@ import Privacy from './pages/Privacy';
 import Upgrade from './pages/Upgrade';
 import Planner from './pages/Planner';
 import SealedLetters from './pages/SealedLetters';
+import BookReader from './pages/BookReader';
 
 
 const { Pages, Layout, mainPage } = pagesConfig;
@@ -138,6 +139,7 @@ const AuthenticatedApp = () => {
           <Route path="/Upgrade" element={<LayoutWrapper currentPageName="Upgrade"><Upgrade /></LayoutWrapper>} />
           <Route path="/Planner" element={<LayoutWrapper currentPageName="Planner"><Planner /></LayoutWrapper>} />
           <Route path="/SealedLetters" element={<LayoutWrapper currentPageName="SealedLetters"><SealedLetters /></LayoutWrapper>} />
+          <Route path="/BookReader" element={<LayoutWrapper currentPageName="BookReader"><BookReader /></LayoutWrapper>} />
           <Route path="*" element={<PageNotFound />} />
         </Routes>
       </motion.div>
