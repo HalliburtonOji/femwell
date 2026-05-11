@@ -454,6 +454,18 @@ async function runOgBackfillPhase(base44) {
   }
 }
 
+// ── On-demand phase dispatch ──────────────────────────────────────────────
+// Query params:
+//   ?run_phase=<name>   run ONLY that phase (default: all phases in order)
+//                       valid: ingestRSS | ingestYouTubeChannels |
+//                              summarizeLifestyleItem | backfillOgImages |
+//                              findFreeImageBackfill
+//   ?force=true         bypass any future cooldown guards (no-op today —
+//                       orchestrator currently has no guards — but reserved
+//                       so callers can pass it safely)
+//
+// Auth: admin user OR service-role (scheduler). Unauthenticated requests
+// reach this point only via service-role from the daily 04:30 UTC cron.
 Deno.serve(async (req) => {
   const base44 = createClientFromRequest(req);
   const user = await base44.auth.me().catch(() => null);
@@ -462,30 +474,49 @@ Deno.serve(async (req) => {
     return Response.json({ error: 'Admin only' }, { status: 403 });
   }
 
+  const url = new URL(req.url);
+  const runPhaseParam = (url.searchParams.get('run_phase') || '').trim();
+  // force is reserved for future cooldown guards; we accept and echo it.
+  const force = url.searchParams.get('force') === 'true';
+
   const startedAt = new Date().toISOString();
   const phases = [];
 
+  const wantsPhase = (name) => !runPhaseParam || runPhaseParam === name;
+
   // Phase 1: ingestRSS
-  phases.push({ name: 'ingestRSS', ...(await runPhase(base44, 'ingestRSS', 'ingestRSS')) });
+  if (wantsPhase('ingestRSS')) {
+    phases.push({ name: 'ingestRSS', ...(await runPhase(base44, 'ingestRSS', 'ingestRSS')) });
+  }
 
   // Phase 2: ingestYouTubeChannels
-  phases.push({ name: 'ingestYouTubeChannels', ...(await runPhase(base44, 'ingestYouTubeChannels', 'ingestYouTubeChannels')) });
+  if (wantsPhase('ingestYouTubeChannels')) {
+    phases.push({ name: 'ingestYouTubeChannels', ...(await runPhase(base44, 'ingestYouTubeChannels', 'ingestYouTubeChannels')) });
+  }
 
   // Phase 3: summarizeLifestyleItem (drain the queue)
-  phases.push({ name: 'summarizeLifestyleItem', ...(await runPhase(base44, 'summarizeLifestyleItem', 'summarizeLifestyleItem', { batch_size: 50 })) });
+  if (wantsPhase('summarizeLifestyleItem')) {
+    phases.push({ name: 'summarizeLifestyleItem', ...(await runPhase(base44, 'summarizeLifestyleItem', 'summarizeLifestyleItem', { batch_size: 50 })) });
+  }
 
-  // Phase 4: backfillOgImages (idempotent — runs every day, self-clears backlog)
-  phases.push({ name: 'backfillOgImages', ...(await runOgBackfillPhase(base44)) });
+  // Phase 4: backfillOgImages (idempotent — self-clears backlog)
+  if (wantsPhase('backfillOgImages')) {
+    phases.push({ name: 'backfillOgImages', ...(await runOgBackfillPhase(base44)) });
+  }
 
   // Phase 5: free-image backfill for FemWell-generated content (no content_url,
   // so og:image can't help). Idempotent + batch-capped + self-clearing.
-  phases.push({ name: 'findFreeImageBackfill', ...(await runFreeImageBackfillPhase(base44)) });
+  if (wantsPhase('findFreeImageBackfill')) {
+    phases.push({ name: 'findFreeImageBackfill', ...(await runFreeImageBackfillPhase(base44)) });
+  }
 
   const finishedAt = new Date().toISOString();
   return Response.json({
     started_at: startedAt,
     finished_at: finishedAt,
+    run_phase: runPhaseParam || 'all',
+    force,
     phases,
-    ok: phases.every(p => p.ok),
+    ok: phases.length > 0 && phases.every(p => p.ok),
   });
 });

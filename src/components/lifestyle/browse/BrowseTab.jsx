@@ -6,9 +6,86 @@ import BrowseSearch from './BrowseSearch';
 import BrowseGrid from './BrowseGrid';
 import BooksGrid from './BooksGrid';
 import Toast from '@/components/lifestyle/foryou/Toast';
-import SavePopover from '@/components/lifestyle/foryou/SavePopover';
 
-async function fetchItems(chip, lifestyleProfile) {
+// ── Gutendex (Project Gutenberg) free public-domain book search ────────────
+// Maps category slug (CONTENT_CATEGORIES) → Gutenberg topic search keywords.
+// "all" + unknown slugs fall back to a broad women-focused topic so we never
+// return empty.
+const GUTENBERG_TOPIC = {
+  all:             'women',
+  nutrition:       'food cookery',
+  movement:        'physical culture',
+  mindfulness:     'meditation philosophy',
+  cycle_education: 'women health',
+  mental_health:   'psychology',
+  sleep:           'rest sleep',
+  relationships:   'love marriage',
+  hormones:        'physiology women',
+  self_care:       'women essays',
+  other:           'women',
+};
+
+async function fetchGutenbergBooks(categorySlug) {
+  const topic = GUTENBERG_TOPIC[categorySlug] || GUTENBERG_TOPIC.all;
+  const url = `https://gutendex.com/books?topic=${encodeURIComponent(topic)}&languages=en&page_size=12`;
+  try {
+    const res = await fetch(url, { signal: AbortSignal.timeout(8000) });
+    if (!res.ok) return [];
+    const data = await res.json();
+    const books = Array.isArray(data?.results) ? data.results : [];
+    return books.map((b) => ({
+      _kind: 'gutenberg',
+      _gutenbergId: b.id,
+      title: b.title || '',
+      author: (b.authors && b.authors[0] && b.authors[0].name) || 'Unknown',
+      cover_url: `https://www.gutenberg.org/cache/epub/${b.id}/pg${b.id}.cover.medium.jpg`,
+      reader_url: `https://www.gutenberg.org/cache/epub/${b.id}/pg${b.id}-images.html`,
+    }));
+  } catch {
+    return [];
+  }
+}
+
+async function fetchFemwellFiction() {
+  // Fetch FemWell-generated fiction from both providers. base44 filters don't
+  // support $in on a single provider field cleanly, so query each and merge.
+  const [weekly, personal] = await Promise.all([
+    base44.entities.LifestyleItems.filter(
+      { provider: 'FEMWELL_FICTION_WEEKLY', status: 'PUBLISHED' },
+      '-published_at',
+      12,
+    ).catch(() => []),
+    base44.entities.LifestyleItems.filter(
+      { provider: 'FEMWELL_FICTION_PERSONAL', status: 'PUBLISHED' },
+      '-published_at',
+      12,
+    ).catch(() => []),
+  ]);
+  const merged = [...(weekly || []), ...(personal || [])];
+  return merged
+    .sort((a, b) => String(b.published_at || '').localeCompare(String(a.published_at || '')))
+    .slice(0, 12)
+    .map((it) => ({
+      _kind: 'femwell',
+      _itemId: it.id,
+      title: it.title || '',
+      author: 'FemWell',
+      lede: it.lede || it.summary || '',
+      cover_url: it.image_url || '',
+      category: it.category || '',
+    }));
+}
+
+async function fetchBooks(categorySlug) {
+  const [fem, gut] = await Promise.all([
+    fetchFemwellFiction(),
+    fetchGutenbergBooks(categorySlug),
+  ]);
+  // Show FemWell originals first, then Project Gutenberg free public-domain.
+  return [...fem, ...gut];
+}
+
+async function fetchItems(chip, categorySlug, lifestyleProfile) {
   if (chip === 'books') return [];
 
   const baseFilter = { status: 'PUBLISHED' };
@@ -28,10 +105,15 @@ async function fetchItems(chip, lifestyleProfile) {
     return [];
   }
 
+  // Compose with parent category chip — if user picked a specific category
+  // chip (Nutrition, Hormones, etc.) AND a type chip, both apply.
+  const categoryClause =
+    categorySlug && categorySlug !== 'all' ? { category: categorySlug } : {};
+
   const items = await base44.entities.LifestyleItems.filter(
-    { ...baseFilter, ...typeFilter },
+    { ...baseFilter, ...typeFilter, ...categoryClause },
     '-published_at',
-    24
+    24,
   ).catch(() => []);
 
   const hidden = new Set((lifestyleProfile?.hidden_item_ids) || []);
@@ -39,24 +121,7 @@ async function fetchItems(chip, lifestyleProfile) {
   return (items || []).filter(it => !hidden.has(it.id) && !blocked.has(it.category));
 }
 
-async function fetchBooks() {
-  const picks = await base44.entities.WeeklyBookPick.filter(
-    { status: 'PUBLISHED' },
-    '-week_start',
-    12
-  ).catch(() => []);
-
-  const out = [];
-  for (const pick of (picks || [])) {
-    const arr = Array.isArray(pick.books) ? pick.books : [];
-    for (const b of arr) {
-      out.push({ ...b, _pickId: pick.id, _weekStart: pick.week_start });
-    }
-  }
-  return out;
-}
-
-export default function BrowseTab() {
+export default function BrowseTab({ categoryFilter = 'all' }) {
   // Read initial chip from URL
   const initChip = () => {
     const p = new URLSearchParams(window.location.search).get('filter');
@@ -79,8 +144,6 @@ export default function BrowseTab() {
   const [savedPhases, setSavedPhases] = useState({});
 
   const [toast, setToast] = useState(null);
-  // popover state
-  const [pendingSave, setPendingSave] = useState(null); // { id, anchorRect }
 
   // Load user + profile once
   useEffect(() => {
@@ -106,14 +169,14 @@ export default function BrowseTab() {
     return () => { cancelled = true; };
   }, []);
 
-  // Fetch when chip changes
+  // Fetch when chip OR category filter changes — they compose.
   useEffect(() => {
     let cancelled = false;
     setLoading(true);
     setError(false);
     setSearchQuery('');
 
-    // Update URL
+    // Update URL with type chip (category lives on parent URL state)
     const url = new URL(window.location.href);
     url.searchParams.set('filter', activeChip);
     window.history.replaceState({}, '', url.toString());
@@ -121,10 +184,10 @@ export default function BrowseTab() {
     (async () => {
       try {
         if (activeChip === 'books') {
-          const b = await fetchBooks();
+          const b = await fetchBooks(categoryFilter);
           if (!cancelled) setBooks(b);
         } else {
-          const data = await fetchItems(activeChip, lifestyleProfile);
+          const data = await fetchItems(activeChip, categoryFilter, lifestyleProfile);
           if (!cancelled) setItems(data);
         }
       } catch {
@@ -135,7 +198,7 @@ export default function BrowseTab() {
     })();
     return () => { cancelled = true; };
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [activeChip]);
+  }, [activeChip, categoryFilter]);
 
   // Persist save to UserProfile
   const persist = useCallback(async (nextIds, nextPhases) => {
@@ -210,7 +273,6 @@ export default function BrowseTab() {
       handleSave({ id, phase: null, isBook: true });
       return;
     }
-    // Save immediately with phase null (SaveHeartButton's popover handles phase selection via onSave)
     handleSave({ id, phase: phase || null });
   }, [handleSave]);
 
@@ -221,9 +283,9 @@ export default function BrowseTab() {
     (async () => {
       try {
         if (activeChip === 'books') {
-          setBooks(await fetchBooks());
+          setBooks(await fetchBooks(categoryFilter));
         } else {
-          setItems(await fetchItems(activeChip, lifestyleProfile));
+          setItems(await fetchItems(activeChip, categoryFilter, lifestyleProfile));
         }
       } catch {
         setError(true);
@@ -242,6 +304,7 @@ export default function BrowseTab() {
         {activeChip === 'books' ? (
           <BooksGrid
             books={books}
+            loading={loading}
             savedSet={savedSet}
             onHeartClick={handleHeartClick}
           />
