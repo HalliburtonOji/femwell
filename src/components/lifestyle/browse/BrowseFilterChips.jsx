@@ -1,9 +1,11 @@
 import { useRef } from 'react';
 
+// 2026-05-12 — Fiction chip removed. Fiction items are surfaced through the
+// Books tab (each FemWell fiction is a book with genre tags), since two
+// places for the same thing was confusing.
 const CHIPS = [
   { id: 'all',      label: 'All' },
   { id: 'articles', label: 'Articles' },
-  { id: 'fiction',  label: 'Fiction' },
   { id: 'stories',  label: 'Stories' },
   { id: 'books',    label: 'Books' },
   { id: 'guides',   label: 'Guides' },

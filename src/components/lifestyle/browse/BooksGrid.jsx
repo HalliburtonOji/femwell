@@ -180,7 +180,9 @@ function FemwellBookCard({ book, isSaved, onHeartClick, onOpen }) {
         }}>
           {book.title}
         </p>
-        {book.lede && (
+        {/* Card synopsis: short summary (1-2 sentences). Never show the
+            chapter prose here — that's what the reader is for. */}
+        {book.summary && (
           <p style={{
             fontFamily: "'Inter', sans-serif",
             fontSize: 13, fontWeight: 400,
@@ -189,9 +191,49 @@ function FemwellBookCard({ book, isSaved, onHeartClick, onOpen }) {
             lineHeight: 1.5,
             ...clampStyle(3),
           }}>
-            {book.lede}
+            {book.summary}
           </p>
         )}
+        {/* Genre / theme tags + chapter count */}
+        {(Array.isArray(book.tags) && book.tags.length > 0) || book.chapterCount ? (
+          <div style={{
+            marginTop: 10,
+            display: 'flex',
+            flexWrap: 'wrap',
+            gap: 6,
+            alignItems: 'center',
+          }}>
+            {(book.tags || []).slice(0, 3).map((tag) => (
+              <span
+                key={tag}
+                style={{
+                  fontFamily: "'Inter', sans-serif",
+                  fontSize: 10,
+                  fontWeight: 600,
+                  letterSpacing: '0.04em',
+                  color: 'var(--plum-mute)',
+                  background: 'var(--rose-soft-bg, rgba(212,94,82,0.10))',
+                  padding: '3px 8px',
+                  borderRadius: 9999,
+                }}
+              >
+                {tag}
+              </span>
+            ))}
+            {book.chapterCount > 1 && (
+              <span style={{
+                fontFamily: "'Inter', sans-serif",
+                fontSize: 10,
+                fontWeight: 600,
+                letterSpacing: '0.04em',
+                color: 'var(--plum-mute)',
+                marginLeft: 'auto',
+              }}>
+                {book.chapterCount} chapter{book.chapterCount === 1 ? '' : 's'}
+              </span>
+            )}
+          </div>
+        ) : null}
       </div>
     </BookCardShell>
   );

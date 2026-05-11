@@ -116,6 +116,32 @@ export default function FictionReader() {
 
   const chapters = useMemo(() => {
     if (!item) return [];
+
+    // Preferred path: structured chapters live in chapters_json (array of
+    // { title, body }). Each entry is paginated independently and tagged
+    // with the chapter's display title so the reader shows chapter breaks.
+    if (Array.isArray(item.chapters_json) && item.chapters_json.length > 0) {
+      const out = [];
+      item.chapters_json.forEach((chap, chIdx) => {
+        const heading = chap?.title || `Chapter ${chIdx + 1}`;
+        const body = chap?.body || "";
+        const pages = paginate(body, WORDS_PER_PAGE);
+        pages.forEach((pageBody, pIdx) => {
+          out.push({
+            id: `${item.id}-ch${chIdx + 1}-p${pIdx + 1}`,
+            day_number: out.length + 1,
+            title: pIdx === 0 ? heading : "",
+            heading: pIdx === 0 ? heading : "",
+            body: pageBody,
+            cliffhanger: "",
+            series_title: item.title || "",
+          });
+        });
+      });
+      return out;
+    }
+
+    // Fallback: single-chapter records (legacy) — paginate the lede field.
     const text = item.body || item.lede || item.summary || "";
     const pages = paginate(text, WORDS_PER_PAGE);
     return pagesToChapters(pages, item);
@@ -147,9 +173,17 @@ export default function FictionReader() {
 
   // Cover page first, then the paginated pages.
   if (!showReader) {
+    const chapterCount = Array.isArray(item.chapters_json) && item.chapters_json.length > 0
+      ? item.chapters_json.length
+      : 1;
     return (
       <Frame onBack={() => navigate(-1)}>
-        <CoverPage item={item} pageCount={chapters.length} onOpen={() => setShowReader(true)} />
+        <CoverPage
+          item={item}
+          pageCount={chapters.length}
+          chapterCount={chapterCount}
+          onOpen={() => setShowReader(true)}
+        />
       </Frame>
     );
   }
@@ -165,9 +199,13 @@ export default function FictionReader() {
 }
 
 // ─── Cover page ──────────────────────────────────────────────────────────────
-function CoverPage({ item, pageCount, onOpen }) {
+function CoverPage({ item, pageCount, chapterCount, onOpen }) {
   const { gradient, accent, initial } = getBookCover(item.title);
   const subtitle = item.summary || item.why_it_matters || "";
+  const tags = Array.isArray(item.tags) ? item.tags.slice(0, 3) : [];
+  const cta = chapterCount > 1
+    ? `Open book · ${chapterCount} chapters`
+    : `Open story · ${pageCount} page${pageCount === 1 ? "" : "s"}`;
   return (
     <div style={coverShellStyle}>
       <div style={{ ...coverArtStyle, background: gradient }}>
@@ -181,8 +219,15 @@ function CoverPage({ item, pageCount, onOpen }) {
           <p style={coverByStyle}>By FemWell Fiction</p>
         </div>
       </div>
+      {tags.length > 0 && (
+        <div style={tagsRowStyle}>
+          {tags.map((t) => (
+            <span key={t} style={tagPillStyle}>{t}</span>
+          ))}
+        </div>
+      )}
       <button type="button" onClick={onOpen} style={openButtonStyle}>
-        Open story · {pageCount} page{pageCount === 1 ? "" : "s"}
+        {cta}
       </button>
     </div>
   );
@@ -310,6 +355,23 @@ const coverByStyle = {
   letterSpacing: "0.06em",
   color: "rgba(255,250,242,0.74)",
   margin: 0,
+};
+const tagsRowStyle = {
+  display: "flex",
+  flexWrap: "wrap",
+  gap: 8,
+  justifyContent: "center",
+};
+const tagPillStyle = {
+  fontFamily: "'Inter', sans-serif",
+  fontSize: 11,
+  fontWeight: 600,
+  letterSpacing: "0.04em",
+  color: "var(--plum-mute)",
+  background: "var(--cream-2, rgba(43,30,22,0.05))",
+  padding: "5px 11px",
+  borderRadius: 9999,
+  border: "1px solid var(--ink-line, rgba(43,30,22,0.08))",
 };
 const openButtonStyle = {
   fontFamily: "'Inter', sans-serif",

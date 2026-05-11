@@ -73,16 +73,25 @@ async function fetchFemwellFiction() {
   const merged = [...(weekly || []), ...(personal || [])];
   return merged
     .sort((a, b) => String(b.published_at || '').localeCompare(String(a.published_at || '')))
-    .slice(0, 12)
-    .map((it) => ({
-      _kind: 'femwell',
-      _itemId: it.id,
-      title: it.title || '',
-      author: 'FemWell',
-      lede: it.lede || it.summary || '',
-      cover_url: it.image_url || '',
-      category: it.category || '',
-    }));
+    .slice(0, 18)
+    .map((it) => {
+      const ch = Array.isArray(it.chapters_json) ? it.chapters_json : null;
+      const chapterCount = ch && ch.length > 0 ? ch.length : 1;
+      return {
+        _kind: 'femwell',
+        _itemId: it.id,
+        title: it.title || '',
+        author: 'FemWell',
+        // Card displays summary (one-line synopsis), NEVER the lede text —
+        // showing chapter-1 prose on a card is bad book-browsing UX.
+        summary: it.summary || it.why_it_matters || '',
+        // Genre / theme tags — first 3 render as pills on the card.
+        tags: Array.isArray(it.tags) ? it.tags.slice(0, 3) : [],
+        chapterCount,
+        cover_url: it.image_url || '',
+        category: it.category || '',
+      };
+    });
 }
 
 async function fetchBooks(categorySlug) {
@@ -101,11 +110,10 @@ async function fetchItems(chip, categorySlug, lifestyleProfile) {
   let typeFilter = {};
 
   if (chip === 'all') {
-    typeFilter = { content_type: { $in: ['ARTICLE', 'FICTION', 'STORY', 'GUIDE'] } };
+    // FICTION excluded from "all" — fiction lives in the Books surface only.
+    typeFilter = { content_type: { $in: ['ARTICLE', 'STORY', 'GUIDE'] } };
   } else if (chip === 'articles') {
     typeFilter = { content_type: 'ARTICLE' };
-  } else if (chip === 'fiction') {
-    typeFilter = { content_type: 'FICTION' };
   } else if (chip === 'stories') {
     typeFilter = { content_type: 'STORY' };
   } else if (chip === 'guides') {
@@ -138,10 +146,12 @@ async function fetchItems(chip, categorySlug, lifestyleProfile) {
 }
 
 export default function BrowseTab({ categoryFilter = 'all' }) {
-  // Read initial chip from URL
+  // Read initial chip from URL. Legacy ?filter=fiction redirects to ?filter=books
+  // since the Fiction tab has been collapsed into Books.
   const initChip = () => {
     const p = new URLSearchParams(window.location.search).get('filter');
-    const valid = ['all', 'articles', 'fiction', 'stories', 'books', 'guides'];
+    if (p === 'fiction') return 'books';
+    const valid = ['all', 'articles', 'stories', 'books', 'guides'];
     return valid.includes(p) ? p : 'all';
   };
 
