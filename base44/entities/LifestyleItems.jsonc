@@ -212,6 +212,21 @@
         "type": "string"
       }
     },
+    "chapters_json": {
+      "type": "array",
+      "description": "Multi-chapter fiction content. Each entry is one chapter. Absent/empty means legacy single-chapter (lede) record.",
+      "items": {
+        "type": "object",
+        "properties": {
+          "title": {
+            "type": "string"
+          },
+          "body": {
+            "type": "string"
+          }
+        }
+      }
+    },
     "created_at": {
       "type": "string"
     },

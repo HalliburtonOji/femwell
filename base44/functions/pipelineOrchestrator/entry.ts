@@ -454,6 +454,66 @@ async function runOgBackfillPhase(base44) {
   }
 }
 
+// Phase 6: extend FemWell fiction items to multi-chapter (up to 5 chapters).
+// Capped at 3 records per orchestrator run. Oldest first so the backlog fills in.
+async function runExtendFictionPhase(base44) {
+  const startedAt = new Date().toISOString();
+  const TARGET_CHAPTERS = 5;
+  const RUN_CAP = 3;
+  const sb = base44.asServiceRole;
+  const results = [];
+
+  try {
+    // Fetch published fiction from both providers. Two queries because base44
+    // doesn't reliably support $in on provider in the same filter.
+    const [weekly, personal] = await Promise.all([
+      sb.entities.LifestyleItems.filter(
+        { provider: 'FEMWELL_FICTION_WEEKLY', status: 'PUBLISHED' }, 'published_at', 50
+      ).catch(() => []),
+      sb.entities.LifestyleItems.filter(
+        { provider: 'FEMWELL_FICTION_PERSONAL', status: 'PUBLISHED' }, 'published_at', 50
+      ).catch(() => []),
+    ]);
+
+    const all = [...(weekly || []), ...(personal || [])]
+      .sort((a, b) => String(a.published_at || '').localeCompare(String(b.published_at || '')));
+
+    // Pick records that need more chapters
+    const candidates = all
+      .filter(item => {
+        const ch = Array.isArray(item.chapters_json) ? item.chapters_json : [];
+        return ch.length < TARGET_CHAPTERS;
+      })
+      .slice(0, RUN_CAP);
+
+    for (const item of candidates) {
+      try {
+        const res = await sb.functions.invoke('extendFiction', {
+          item_id: item.id,
+          target_chapters: TARGET_CHAPTERS,
+        });
+        const data = res?.data || res || {};
+        results.push({ item_id: item.id, title: item.title, ok: !!data.ok, chapters_count: data.chapters_count });
+      } catch (err) {
+        results.push({ item_id: item.id, title: item.title, ok: false, error: err?.message });
+      }
+    }
+
+    await logIngestError(
+      base44, 'pipelineOrchestrator', 'extendFictionDaily:result',
+      { source_identifier: 'extendFictionDaily', raw_payload: { startedAt, results } },
+      new Error('extendFictionDaily ok'),
+    );
+    return { ok: true, result: { processed: results.length, results } };
+  } catch (err) {
+    await logIngestError(
+      base44, 'pipelineOrchestrator', 'extendFictionDaily:fail',
+      { source_identifier: 'extendFictionDaily', raw_payload: { startedAt } }, err,
+    );
+    return { ok: false, err: err?.message || String(err) };
+  }
+}
+
 // ── On-demand phase dispatch ──────────────────────────────────────────────
 // Query params:
 //   ?run_phase=<name>   run ONLY that phase (default: all phases in order)
@@ -508,6 +568,13 @@ Deno.serve(async (req) => {
   // so og:image can't help). Idempotent + batch-capped + self-clearing.
   if (wantsPhase('findFreeImageBackfill')) {
     phases.push({ name: 'findFreeImageBackfill', ...(await runFreeImageBackfillPhase(base44)) });
+  }
+
+  // Phase 6: extend FemWell fiction to multi-chapter (target 5 chapters each).
+  // Capped at 3 records per run (~15 LLM calls/day worst case). Self-clears as
+  // records reach target_chapters. Oldest published_at first so backlog fills in.
+  if (wantsPhase('extendFictionDaily')) {
+    phases.push({ name: 'extendFictionDaily', ...(await runExtendFictionPhase(base44)) });
   }
 
   const finishedAt = new Date().toISOString();
