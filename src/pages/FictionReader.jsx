@@ -225,16 +225,19 @@ export default function FictionReader() {
     );
   }
 
+  // Reader v4: when the book is open, the reader IS the page. No Frame
+  // wrapper — Frame's chrome (header, padding) would push the page taller
+  // than the viewport and re-introduce scroll. The reader's own ← button
+  // calls onExit to return to the cover.
   return (
-    <Frame onBack={() => setShowReader(false)}>
-      <DailyStoryReader
-        source={{ kind: "book", items: chapters, currentIndex: 0 }}
-        totalCount={chapters.length}
-        textSize={textSize}
-        onTextSizeChange={handleTextSizeChange}
-        defaultImmersive
-      />
-    </Frame>
+    <DailyStoryReader
+      source={{ kind: "book", items: chapters, currentIndex: 0 }}
+      totalCount={chapters.length}
+      textSize={textSize}
+      onTextSizeChange={handleTextSizeChange}
+      defaultImmersive
+      onExit={() => setShowReader(false)}
+    />
   );
 }
 

@@ -302,6 +302,10 @@ export default function DailyStoryReader({
   // the screen, no card, no host-app chrome. FictionReader sets this when
   // the user taps "Open book" because that gesture is "I'm here to read."
   defaultImmersive = false,
+  // Optional exit handler — called when the user taps the immersive ←
+  // button or ✕ close. When FictionReader wraps us, this returns to the
+  // book cover. Falls back to "exit immersive only" when not provided.
+  onExit,
 }) {
   const [chapters, setChapters] = useState(providedSource?.items || []);
   const [currentIndex, setCurrentIndex] = useState(providedSource?.currentIndex ?? 0);
@@ -587,9 +591,9 @@ export default function DailyStoryReader({
           <button
             type="button"
             className="ds-reader-imm-btn"
-            onClick={() => setImmersive(false)}
-            aria-label="Exit full screen"
-            title="Exit (Esc)"
+            onClick={() => onExit ? onExit() : setImmersive(false)}
+            aria-label={onExit ? "Close book" : "Exit full screen"}
+            title={onExit ? "Close book" : "Exit (Esc)"}
           >
             <ArrowLeft size={18} />
           </button>
@@ -601,9 +605,9 @@ export default function DailyStoryReader({
           <button
             type="button"
             className="ds-reader-imm-btn"
-            onClick={() => setImmersive(false)}
-            aria-label="Close"
-            title="Close"
+            onClick={() => onExit ? onExit() : setImmersive(false)}
+            aria-label={onExit ? "Close book" : "Close"}
+            title={onExit ? "Close book" : "Close"}
           >
             <X size={18} />
           </button>
