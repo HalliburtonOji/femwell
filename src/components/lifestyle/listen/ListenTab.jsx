@@ -134,8 +134,11 @@ export default function ListenTab({ categoryFilter }) {
       }
     })();
     return () => { cancelled = true; };
+    // lifestyleProfile is intentionally included — when it loads after the
+    // initial mount, we want to re-fetch so hidden_item_ids + blocked_categories
+    // apply on the first paint instead of one render too late.
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [activeChip]);
+  }, [activeChip, lifestyleProfile]);
 
   const persist = useCallback(async (nextIds, nextPhases) => {
     if (!user?.id) { setToast('Sign in to save items.'); return false; }

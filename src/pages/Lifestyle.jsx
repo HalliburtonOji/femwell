@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import { base44 } from "@/api/base44Client";
-import { ExternalLink, ChevronDown, ChevronUp, X, BookOpen, Bookmark, BookText, Brain, Heart, Sparkles, Leaf, Pin, SlidersHorizontal, Check } from "lucide-react";
+import { ExternalLink, X, Bookmark, SlidersHorizontal, Check } from "lucide-react";
 import { CONTENT_CATEGORIES, categoryLabel } from "@/utils/contentCategory";
 import ForYouTab from "@/components/lifestyle/foryou/ForYouTab";
 import BrowseTab from "@/components/lifestyle/browse/BrowseTab";
@@ -50,20 +50,59 @@ function ArticleSheet({ item, onClose }) {
   const paragraphs = (item.lede || item.summary || "").split(/\n\n+/).filter(Boolean);
   const takeaways = Array.isArray(item.takeaways) ? item.takeaways : [];
 
+  // Read back the user's current saved state on open. ContentBookmarks is the
+  // legacy entity (only stores user_id + content_id, no item_type) so we
+  // resolve "saved" through UserProfile.saved_item_ids instead — that's the
+  // same source the heart icon uses on cards.
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      try {
+        const u = await base44.auth.me().catch(() => null);
+        if (!u || cancelled) return;
+        const profiles = await base44.entities.UserProfile.filter({ user_id: u.id }, undefined, 1).catch(() => []);
+        const ids = Array.isArray(profiles?.[0]?.saved_item_ids) ? profiles[0].saved_item_ids : [];
+        if (!cancelled) setSaved(ids.includes(item.id));
+      } catch { /* silent */ }
+    })();
+    return () => { cancelled = true; };
+  }, [item.id]);
+
+  // Body scroll lock while the sheet is open.
+  useEffect(() => {
+    const prev = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    return () => { document.body.style.overflow = prev; };
+  }, []);
+
   const handleSave = async () => {
-    setSaved(true);
-    // Mark as bookmarked via ContentBookmarks if user is logged in
+    // Optimistic toggle. Wire through UserProfile.saved_item_ids — the same
+    // place every other Lifestyle save touches. Avoids ContentBookmarks, which
+    // doesn't have item_type and was silently dropping our saves.
+    const next = !saved;
+    setSaved(next);
     try {
       const u = await base44.auth.me().catch(() => null);
-      if (u) {
-        await base44.entities.ContentBookmarks.create({
+      if (!u) return;
+      const profiles = await base44.entities.UserProfile.filter({ user_id: u.id }, undefined, 1).catch(() => []);
+      const row = profiles[0];
+      const current = Array.isArray(row?.saved_item_ids) ? row.saved_item_ids : [];
+      const nextIds = next
+        ? Array.from(new Set([...current, item.id]))
+        : current.filter((id) => id !== item.id);
+      if (!row?.id) {
+        await base44.entities.UserProfile.create({
           user_id: u.id,
-          item_id: item.id,
-          item_type: "lifestyle",
-          created_at: new Date().toISOString(),
-        }).catch(() => {});
+          user_email: u.email,
+          saved_item_ids: nextIds,
+        });
+      } else {
+        await base44.entities.UserProfile.update(row.id, { saved_item_ids: nextIds });
       }
-    } catch {}
+    } catch {
+      // Revert on failure so the UI is honest
+      setSaved((v) => !v);
+    }
   };
 
   return (
@@ -140,19 +179,48 @@ function ArticleSheet({ item, onClose }) {
 }
 
 // ── Category gradient placeholders ───────────────────────────────────────────
+// Keys mirror the actual `category` values written by ingestRSS /
+// summarizeLifestyleItem (see entity samples — "Women's Health",
+// "Mental Wellness", etc.). Match-by-keyword so a sub-category like
+// "Gut Health" still resolves cleanly.
 const CAT_GRADIENTS = {
-  "Health":        "linear-gradient(135deg, #EBF2EF 0%, #B5CEC5 100%)",
-  "Nutrition":     "linear-gradient(135deg, #FFF8E6 0%, #FFE8A0 100%)",
-  "Mental Health": "linear-gradient(135deg, #F0EBF5 0%, #DDD0FF 100%)",
-  "Fitness":       "linear-gradient(135deg, #E8F4FF 0%, #C8DEFF 100%)",
-  "Cycle":         "linear-gradient(135deg, #F5ECF0 0%, #E8C4D0 100%)",
-  "Skin":          "linear-gradient(135deg, #FFF0F5 0%, #FFD6E7 100%)",
-  "Sleep":         "linear-gradient(135deg, #EBE8F5 0%, #C8BEFF 100%)",
-  "default":       "linear-gradient(135deg, var(--rose-soft-bg) 0%, var(--cream-2) 100%)",
+  "Women's Health":  "linear-gradient(135deg, #EBF2EF 0%, #B5CEC5 100%)",
+  "Mental Wellness": "linear-gradient(135deg, #F0EBF5 0%, #DDD0FF 100%)",
+  "Gut Health":      "linear-gradient(135deg, #F5F0E0 0%, #E0CCA0 100%)",
+  "Nutrition":       "linear-gradient(135deg, #FFF8E6 0%, #FFE8A0 100%)",
+  "Movement":        "linear-gradient(135deg, #E8F4FF 0%, #C8DEFF 100%)",
+  "Fitness":         "linear-gradient(135deg, #E8F4FF 0%, #C8DEFF 100%)",
+  "Cycle":           "linear-gradient(135deg, #F5ECF0 0%, #E8C4D0 100%)",
+  "Hormones":        "linear-gradient(135deg, #F5ECF0 0%, #E8C4D0 100%)",
+  "Menopause":       "linear-gradient(135deg, #F1E5E5 0%, #D8B0B0 100%)",
+  "Skin":            "linear-gradient(135deg, #FFF0F5 0%, #FFD6E7 100%)",
+  "Skin & Hair":     "linear-gradient(135deg, #FFF0F5 0%, #FFD6E7 100%)",
+  "Sleep":           "linear-gradient(135deg, #EBE8F5 0%, #C8BEFF 100%)",
+  "Relationships":   "linear-gradient(135deg, #FCEAEA 0%, #F2C0C0 100%)",
+  "Self Care":       "linear-gradient(135deg, #F2E6FF 0%, #D5B8FF 100%)",
+  "Lifestyle":       "linear-gradient(135deg, #FFF1E6 0%, #FFD3A8 100%)",
+  "Culture":         "linear-gradient(135deg, #F4F1E8 0%, #D7CDB0 100%)",
+  "default":         "linear-gradient(135deg, var(--rose-soft-bg) 0%, var(--cream-2) 100%)",
 };
 
 function getCatGradient(category) {
-  return CAT_GRADIENTS[category] || CAT_GRADIENTS["default"];
+  if (!category) return CAT_GRADIENTS.default;
+  if (CAT_GRADIENTS[category]) return CAT_GRADIENTS[category];
+  // Loose keyword fallback so unrecognised sub-categories still get colour.
+  const lower = String(category).toLowerCase();
+  if (lower.includes("mental") || lower.includes("psych"))  return CAT_GRADIENTS["Mental Wellness"];
+  if (lower.includes("gut") || lower.includes("digest"))    return CAT_GRADIENTS["Gut Health"];
+  if (lower.includes("health"))                              return CAT_GRADIENTS["Women's Health"];
+  if (lower.includes("nutrition") || lower.includes("food")) return CAT_GRADIENTS["Nutrition"];
+  if (lower.includes("move") || lower.includes("fitness"))   return CAT_GRADIENTS["Movement"];
+  if (lower.includes("cycle") || lower.includes("hormone"))  return CAT_GRADIENTS["Hormones"];
+  if (lower.includes("menopause"))                           return CAT_GRADIENTS["Menopause"];
+  if (lower.includes("skin") || lower.includes("hair"))      return CAT_GRADIENTS["Skin & Hair"];
+  if (lower.includes("sleep"))                               return CAT_GRADIENTS["Sleep"];
+  if (lower.includes("relation") || lower.includes("love"))  return CAT_GRADIENTS["Relationships"];
+  if (lower.includes("self") || lower.includes("care"))      return CAT_GRADIENTS["Self Care"];
+  if (lower.includes("culture") || lower.includes("art"))    return CAT_GRADIENTS["Culture"];
+  return CAT_GRADIENTS.default;
 }
 
 // ── Tappable item card (opens sheet or new tab) ───────────────────────────────
@@ -226,364 +294,17 @@ function ContentCard({ item, compact = false }) {
 
 // ── FOR YOU tab ───────────────────────────────────────────────────────────────
 // Implementation moved to components/lifestyle/foryou/ForYouTab.jsx
-function matchCategory(item, filter) {
-  if (!filter || filter === "all") return true;
-  const raw = String(item.category || "").toLowerCase();
-  return raw === filter || raw.includes(filter.replace(/_/g, " "));
-}
 
 // ── DAILY STORY tab ───────────────────────────────────────────────────────────
+// DailyStoryReader internally pulls the active arc + chapter count from the
+// DailyStory entity, so the page indicator stays honest if the arc length
+// changes. Series fallback is "Daily Story" inside the reader itself.
 function DailyStoryTab() {
-  return <DailyStoryReader seriesKey="the_long_room" totalCount={30} />;
+  return <DailyStoryReader />;
 }
 
-// Legacy day-by-day card view (kept for reference; not rendered). Removed when
-// DailyStoryReader took over. If we ever need a fallback list, restore from git.
-function LegacyDailyStoryTab() {
-  const [current, setCurrent] = useState(null);
-  const [archive, setArchive] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [expandedDays, setExpandedDays] = useState(new Set());
-
-  useEffect(() => {
-    (async () => {
-      const today = todayStr();
-      const all = await base44.entities.DailyStory.list("-day_number", 100).catch(() => []);
-      const published = all.filter(s => s.published_date <= today);
-      if (published.length) {
-        setCurrent(published[0]);
-        setArchive(published.slice(1));
-      }
-      setLoading(false);
-    })();
-  }, []);
-
-  const toggleDay = (id) => setExpandedDays(prev => { const n = new Set(prev); n.has(id) ? n.delete(id) : n.add(id); return n; });
-
-  if (loading) return <Spinner />;
-  if (!current) return <EmptyState text="The daily story is being written. Check back soon." />;
-
-  // Deep gradient → cream/light text. Default rose-soft → plum (dark) text.
-  const hasCustomGradient = !!current.image_gradient;
-  const bg = current.image_gradient || "linear-gradient(135deg, var(--rose-soft-bg) 0%, var(--cream-2) 100%)";
-  const eyebrowColor  = hasCustomGradient ? "rgba(247,240,230,0.78)" : "var(--plum-mute)";
-  const titleColor    = hasCustomGradient ? "var(--cream)"           : "var(--plum-deep)";
-  const bodyColor     = hasCustomGradient ? "var(--cream)"           : "var(--plum-deep)";
-  const cliffColor    = hasCustomGradient ? "rgba(247,240,230,0.82)" : "var(--plum-mute)";
-  const dayChipBg     = hasCustomGradient ? "rgba(247,240,230,0.18)" : "var(--rose-soft-bg)";
-  const dayChipColor  = hasCustomGradient ? "var(--cream)"           : "var(--plum-deep)";
-  const dividerColor  = hasCustomGradient ? "rgba(247,240,230,0.22)" : "var(--ink-line)";
-
-  return (
-    <div>
-      <div style={{ borderRadius: 20, overflow: "hidden", marginBottom: 20, boxShadow: "var(--shadow-md)" }}>
-        <div style={{ background: bg, padding: "28px 24px 24px", minHeight: 200 }}>
-          <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 12 }}>
-            <span style={{ fontSize: 10, fontWeight: 700, color: dayChipColor, backgroundColor: dayChipBg, borderRadius: 9999, padding: "3px 10px", fontFamily: "'Inter', sans-serif" }}>
-              Day {current.day_number} of 30
-            </span>
-          </div>
-          <p style={{ fontSize: 12, fontWeight: 600, color: eyebrowColor, textTransform: "uppercase", letterSpacing: "0.6px", fontFamily: "'Inter', sans-serif", marginBottom: 4 }}>
-            {current.series_title}
-          </p>
-          <h2 style={{ fontFamily: "'Fraunces', serif", fontSize: 22, fontWeight: 400, color: titleColor, letterSpacing: "-0.01em", lineHeight: 1.3, marginBottom: 20 }}>
-            {current.title || `Day ${current.day_number}`}
-          </h2>
-          <p style={{ fontSize: 15, color: bodyColor, fontFamily: "'Inter', sans-serif", lineHeight: 1.7, whiteSpace: "pre-line" }}>
-            {current.segment_text}
-          </p>
-          {current.cliffhanger && (
-            <>
-              <div style={{ height: 1, backgroundColor: dividerColor, margin: "24px 0" }} />
-              <p style={{ fontSize: 14, color: cliffColor, fontFamily: "'Fraunces', serif", fontStyle: "italic", lineHeight: 1.6 }}>
-                <strong style={{ fontFamily: "'Inter', sans-serif", fontWeight: 600, fontSize: 10, letterSpacing: "0.4px", textTransform: "uppercase", color: eyebrowColor, fontStyle: "normal", display: "block", marginBottom: 4 }}>Tomorrow…</strong>
-                {current.cliffhanger}
-              </p>
-            </>
-          )}
-        </div>
-      </div>
-
-      {archive.length > 0 && (
-        <div>
-          <p style={{ fontSize: 11, fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.6px", color: "var(--plum-mute)", fontFamily: "'Inter', sans-serif", marginBottom: 10 }}>Previous segments</p>
-          <div className="space-y-2">
-            {archive.map(s => {
-              const expanded = expandedDays.has(s.id);
-              return (
-                <div key={s.id} style={{ backgroundColor: "var(--surface)", border: "1px solid var(--border)", borderRadius: 14 }}>
-                  <button onClick={() => toggleDay(s.id)} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", width: "100%", padding: "12px 14px", background: "none", border: "none", cursor: "pointer", textAlign: "left" }}>
-                    <div>
-                      <span style={{ fontSize: 11, fontWeight: 700, color: "var(--rose-primary)", fontFamily: "'Inter', sans-serif" }}>Day {s.day_number}</span>
-                      <p style={{ fontSize: 12, color: "var(--plum-mute)", fontFamily: "'Inter', sans-serif", margin: "2px 0 0" }}>{(s.segment_text || "").slice(0, 60)}{(s.segment_text || "").length > 60 ? "…" : ""}</p>
-                    </div>
-                    {expanded ? <ChevronUp className="w-4 h-4" style={{ color: "var(--plum-mute)", flexShrink: 0 }} /> : <ChevronDown className="w-4 h-4" style={{ color: "var(--plum-mute)", flexShrink: 0 }} />}
-                  </button>
-                  {expanded && (
-                    <div style={{ padding: "0 14px 14px" }}>
-                      <p style={{ fontSize: 13, color: "var(--plum-deep)", fontFamily: "'Inter', sans-serif", lineHeight: 1.65, whiteSpace: "pre-line" }}>{s.segment_text}</p>
-                    </div>
-                  )}
-                </div>
-              );
-            })}
-          </div>
-        </div>
-      )}
-    </div>
-  );
-}
-
-// ── READ tab ──────────────────────────────────────────────────────────────────
-function ReadTab({ categoryFilter: globalFilter }) {
-  const [items, setItems] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [catFilter, setCatFilter] = useState("All");
-  const [categories, setCategories] = useState([]);
-
-  useEffect(() => {
-    (async () => {
-      const all = await base44.entities.LifestyleItems.filter({ content_type: "ARTICLE", status: "PUBLISHED" }, "-published_at", 80).catch(() => []);
-      // Prioritize FEMWELL_AI or items with lede — deprioritize filler
-      const sorted = [
-        ...all.filter(i => i.provider === "FEMWELL_AI" || i.lede),
-        ...all.filter(i => i.provider !== "FEMWELL_AI" && !i.lede),
-      ];
-      setItems(sorted);
-      const cats = ["All", ...new Set(sorted.map(i => i.category).filter(Boolean))];
-      setCategories(cats);
-      setLoading(false);
-    })();
-  }, []);
-
-  const filtered = (catFilter === "All" ? items : items.filter(i => i.category === catFilter))
-    .filter(i => matchCategory(i, globalFilter));
-
-  if (loading) return <Spinner />;
-
-  return (
-    <div>
-      <div style={{ display: "flex", gap: 6, overflowX: "auto", paddingBottom: 8, marginBottom: 16 }} className="lf-scroll">
-        {categories.map(cat => (
-          <button key={cat} onClick={() => setCatFilter(cat)}
-            style={{ flexShrink: 0, padding: "6px 14px", borderRadius: 9999, fontSize: 11, fontWeight: 600, cursor: "pointer", border: "none", fontFamily: "'Inter', sans-serif",
-              backgroundColor: catFilter === cat ? PRIMARY : "var(--ivory-dark)",
-              color: catFilter === cat ? "white" : "var(--mauve)" }}>
-            {cat}
-          </button>
-        ))}
-      </div>
-      {filtered.length === 0 ? <EmptyState text="No articles yet." /> : (
-        <div className="space-y-3">
-          {filtered.map(item => <ContentCard key={item.id} item={item} compact />)}
-        </div>
-      )}
-    </div>
-  );
-}
-
-// ── FICTION & STORIES tabs (use ContentCard in card mode) ─────────────────────
-function FictionTab() {
-  const [items, setItems] = useState([]);
-  const [loading, setLoading] = useState(true);
-  useEffect(() => {
-    (async () => {
-      const all = await base44.entities.LifestyleItems.filter({ content_type: "FICTION", status: "PUBLISHED" }, "-published_at", 30).catch(() => []);
-      setItems(all); setLoading(false);
-    })();
-  }, []);
-  if (loading) return <Spinner />;
-  if (!items.length) return <EmptyState text="Fiction stories coming soon." />;
-  return <div className="space-y-4">{items.map(item => <ContentCard key={item.id} item={item} />)}</div>;
-}
-
-function StoriesTab() {
-  const [items, setItems] = useState([]);
-  const [loading, setLoading] = useState(true);
-  useEffect(() => {
-    (async () => {
-      const all = await base44.entities.LifestyleItems.filter({ content_type: "STORY", status: "PUBLISHED" }, "-published_at", 30).catch(() => []);
-      setItems(all); setLoading(false);
-    })();
-  }, []);
-  if (loading) return <Spinner />;
-  if (!items.length) return <EmptyState text="Personal stories coming soon." />;
-  return <div className="space-y-4">{items.map(item => <ContentCard key={item.id} item={item} />)}</div>;
-}
-
-// ── BOOKS tab ─────────────────────────────────────────────────────────────────
-
-const BOOK_CAT_META = {
-  fiction:       { label: "Fiction",          color: "var(--rose-primary)", bg: "var(--rose-soft-bg)", Icon: BookText },
-  selfhelp:      { label: "Self-help",        color: "#0369A1",             bg: "#E0F2FE",             Icon: Brain },
-  relationships: { label: "Relationships",    color: "#BE185D",             bg: "#FCE7F3",             Icon: Heart },
-  career:        { label: "Career & Money",   color: "#B45309",             bg: "#FEF3C7",             Icon: Sparkles },
-  wellness:      { label: "Wellness",         color: "#065F46",             bg: "#D1FAE5",             Icon: Leaf },
-};
-
-const ALL_BOOK_CATS = ["all", "fiction", "selfhelp", "relationships", "career", "wellness"];
-
-function BookCategoryChip({ cat, active, onClick }) {
-  const meta = BOOK_CAT_META[cat];
-  const ChipIcon = meta?.Icon;
-  return (
-    <button onClick={onClick} style={{
-      flexShrink: 0, padding: "6px 14px", borderRadius: 9999, fontSize: 11, fontWeight: 600,
-      cursor: "pointer", border: "none", fontFamily: "'Inter', sans-serif", whiteSpace: "nowrap",
-      backgroundColor: active ? (meta?.color || PRIMARY) : "var(--ivory-dark)",
-      color: active ? "white" : "var(--mauve)",
-      transition: "all 0.15s",
-      display: "inline-flex", alignItems: "center", gap: 6,
-    }}>
-      {ChipIcon ? <ChipIcon size={12} aria-hidden="true" /> : null}
-      {meta ? meta.label : "All"}
-    </button>
-  );
-}
-
-function SingleBookCard({ book, weekStart, defaultOpen = false }) {
-  const [open, setOpen] = useState(defaultOpen);
-  const cat = book.category || "wellness";
-  const meta = BOOK_CAT_META[cat] || BOOK_CAT_META.wellness;
-  const lessons = Array.isArray(book.key_lessons) ? book.key_lessons : [];
-
-  return (
-    <div style={{
-      backgroundColor: "var(--surface)", border: `1px solid ${meta.color}22`,
-      borderRadius: 20, overflow: "hidden", marginBottom: 14,
-      boxShadow: "var(--shadow-sm)", borderLeft: `4px solid ${meta.color}`,
-    }}>
-      <div style={{ padding: "16px 18px" }}>
-        {/* Category chip */}
-        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 10 }}>
-          <span style={{ fontSize: 10, fontWeight: 700, color: meta.color, backgroundColor: meta.bg, borderRadius: 9999, padding: "3px 10px", fontFamily: "'Inter', sans-serif", display: "inline-flex", alignItems: "center", gap: 5 }}>
-            {meta.Icon ? <meta.Icon size={11} aria-hidden="true" /> : null} {meta.label}
-          </span>
-          {weekStart && (
-            <span style={{ fontSize: 10, color: "var(--mauve)", fontFamily: "'Inter', sans-serif" }}>Week of {fmtDate(weekStart)}</span>
-          )}
-        </div>
-
-        <div style={{ display: "flex", gap: 14, alignItems: "flex-start" }}>
-          {/* Cover */}
-          <div style={{ width: 64, height: 90, borderRadius: 10, flexShrink: 0, overflow: "hidden", border: "1px solid var(--border)", background: meta.bg }}>
-            {book.cover_url
-              ? <img src={book.cover_url} alt="" style={{ width: "100%", height: "100%", objectFit: "cover" }} onError={e => { e.target.style.display = "none"; }} />
-              : <div style={{ width: "100%", height: "100%", display: "flex", alignItems: "center", justifyContent: "center", color: meta.color }}>{meta.Icon ? <meta.Icon size={22} aria-hidden="true" /> : null}</div>
-            }
-          </div>
-
-          {/* Info */}
-          <div style={{ flex: 1, minWidth: 0 }}>
-            <h3 style={{ fontFamily: "'Playfair Display', serif", fontSize: 16, fontWeight: 700, color: "var(--plum)", margin: "0 0 2px", lineHeight: 1.3 }}>{book.title}</h3>
-            <p style={{ fontSize: 12, color: "var(--mauve)", fontFamily: "'Inter', sans-serif", fontStyle: "italic", margin: "0 0 6px" }}>{book.author}</p>
-            {book.tagline && <p style={{ fontSize: 13, color: "var(--plum)", fontFamily: "'Inter', sans-serif", lineHeight: 1.5, margin: 0 }}>{book.tagline}</p>}
-          </div>
-        </div>
-
-        <button onClick={() => setOpen(v => !v)} style={{
-          display: "flex", alignItems: "center", gap: 4, marginTop: 10, fontSize: 12,
-          fontWeight: 600, color: meta.color, fontFamily: "'Inter', sans-serif",
-          background: "none", border: "none", cursor: "pointer", padding: 0,
-        }}>
-          {open ? "Less ↑" : "Read more ↓"}
-        </button>
-      </div>
-
-      {open && (
-        <div style={{ padding: "0 18px 18px", borderTop: "1px solid var(--border-subtle)" }}>
-          {book.summary && <p style={{ fontSize: 13, color: "var(--plum)", fontFamily: "'Inter', sans-serif", lineHeight: 1.7, marginBottom: 12, marginTop: 14 }}>{book.summary}</p>}
-          {lessons.length > 0 && (
-            <div style={{ backgroundColor: meta.bg, borderRadius: 14, padding: "12px 14px", marginBottom: 12 }}>
-              <p style={{ fontSize: 10, fontWeight: 700, color: meta.color, textTransform: "uppercase", letterSpacing: "0.1em", fontFamily: "'Inter', sans-serif", marginBottom: 8 }}>Key insights</p>
-              <ul style={{ margin: 0, paddingLeft: 16 }}>
-                {lessons.map((l, i) => <li key={i} style={{ fontSize: 13, color: "var(--plum)", fontFamily: "'Inter', sans-serif", lineHeight: 1.6, marginBottom: 4 }}>{l}</li>)}
-              </ul>
-            </div>
-          )}
-          {book.quote && (
-            <p style={{ fontSize: 13, color: "var(--mauve)", fontFamily: "'Inter', sans-serif", fontStyle: "italic", lineHeight: 1.6, marginBottom: 12 }}>"{book.quote}"</p>
-          )}
-          {book.femwell_connection && (
-            <p style={{ fontSize: 12, color: meta.color, fontFamily: "'Inter', sans-serif", marginBottom: 12, display: "inline-flex", alignItems: "center", gap: 5 }}>
-              <Pin size={12} aria-hidden="true" /> {book.femwell_connection}
-            </p>
-          )}
-          {book.goodreads_url && (
-            <a href={book.goodreads_url} target="_blank" rel="noopener noreferrer"
-              style={{ display: "inline-flex", alignItems: "center", gap: 6, backgroundColor: meta.color, color: "white", borderRadius: 9999, padding: "8px 16px", fontSize: 12, fontWeight: 600, fontFamily: "'Inter', sans-serif", textDecoration: "none" }}>
-              <BookOpen className="w-3.5 h-3.5" /> View on Goodreads
-            </a>
-          )}
-        </div>
-      )}
-    </div>
-  );
-}
-
-function BooksTab() {
-  const [picks, setPicks] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [catFilter, setCatFilter] = useState("all");
-
-  useEffect(() => {
-    (async () => {
-      const all = await base44.entities.WeeklyBookPick.filter({ status: "PUBLISHED" }, "-week_start", 20).catch(() => []);
-      setPicks(all); setLoading(false);
-    })();
-  }, []);
-
-  if (loading) return <Spinner />;
-  if (!picks.length) return <EmptyState text="Weekly book picks coming soon." />;
-
-  // Flatten all books from all picks into a single list with weekStart
-  const allBooks = picks.flatMap(pick =>
-    (Array.isArray(pick.books) ? pick.books : []).map(book => ({ ...book, _weekStart: pick.week_start, _pickId: pick.id }))
-  );
-
-  const filtered = catFilter === "all" ? allBooks : allBooks.filter(b => (b.category || "wellness") === catFilter);
-
-  // This week's pick gets expanded first book by default
-  const thisWeekStart = picks[0]?.week_start;
-
-  return (
-    <div>
-      {/* Category filter chips */}
-      <div className="lf-scroll" style={{ display: "flex", gap: 6, overflowX: "auto", paddingBottom: 10, marginBottom: 16 }}>
-        {ALL_BOOK_CATS.map(cat => (
-          <BookCategoryChip key={cat} cat={cat} active={catFilter === cat} onClick={() => setCatFilter(cat)} />
-        ))}
-      </div>
-
-      {/* This week header */}
-      {catFilter === "all" && picks[0] && (
-        <p style={{ fontSize: "0.6rem", fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.12em", color: "var(--mauve)", fontFamily: "'Inter', sans-serif", marginBottom: 10 }}>
-          This week's picks
-        </p>
-      )}
-
-      {filtered.length === 0 ? <EmptyState text="No books in this category yet." /> : (
-        filtered.map((book, i) => (
-          <SingleBookCard
-            key={`${book._pickId}-${book.title}-${i}`}
-            book={book}
-            weekStart={book._weekStart !== thisWeekStart || catFilter !== "all" ? book._weekStart : null}
-            defaultOpen={i === 0 && catFilter === "all"}
-          />
-        ))
-      )}
-    </div>
-  );
-}
 
 // ── HOROSCOPE tab ─────────────────────────────────────────────────────────────
-const ZODIAC = [
-  { name: "Aries", emoji: "♈" }, { name: "Taurus", emoji: "♉" }, { name: "Gemini", emoji: "♊" },
-  { name: "Cancer", emoji: "♋" }, { name: "Leo", emoji: "♌" }, { name: "Virgo", emoji: "♍" },
-  { name: "Libra", emoji: "♎" }, { name: "Scorpio", emoji: "♏" }, { name: "Sagittarius", emoji: "♐" },
-  { name: "Capricorn", emoji: "♑" }, { name: "Aquarius", emoji: "♒" }, { name: "Pisces", emoji: "♓" },
-];
-
 // HoroscopeTab is now the dedicated personalised reader living in
 // components/lifestyle/horoscope/. The 12-button zodiac picker stub was
 // replaced 2026-05-12 with the full MP-Horo-A rebuild: hero · triad ·
@@ -830,11 +551,17 @@ export default function Lifestyle() {
               </button>
             ))}
           </div>
-          <CategoryFilterDropdown
-            selected={categoryFilter}
-            onChange={setCategoryFilter}
-            followedCategories={followedCategories}
-          />
+          {/* Filter only applies to feed tabs. Daily Story is a single arc
+              and Horoscope is personalised by chart — neither honours the
+              category filter, so we hide the icon there to avoid a dead
+              affordance. */}
+          {tab !== "daily_story" && tab !== "horoscope" && (
+            <CategoryFilterDropdown
+              selected={categoryFilter}
+              onChange={setCategoryFilter}
+              followedCategories={followedCategories}
+            />
+          )}
         </div>
       </div>
 

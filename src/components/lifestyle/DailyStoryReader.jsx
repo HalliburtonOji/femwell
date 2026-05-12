@@ -150,7 +150,10 @@ function LockedCliffhanger({ cliffhanger, animClass }) {
 export default function DailyStoryReader({
   source: providedSource,
   seriesKey = "the_long_room",
-  totalCount = 30,
+  // When the caller doesn't pass totalCount we fall back to the actual
+  // number of fetched chapters below, so the page indicator stays honest
+  // (no more "Chapter 5 / 30" when only 5 chapters exist).
+  totalCount: totalCountProp,
 }) {
   const [chapters, setChapters] = useState(providedSource?.items || []);
   const [currentIndex, setCurrentIndex] = useState(providedSource?.currentIndex ?? 0);
@@ -295,7 +298,13 @@ export default function DailyStoryReader({
   const currentChapter = chapters[currentIndex];
   const latestChapter = chapters[latestRevealed];
   const cliffhanger = latestChapter?.cliffhanger || "The next page hasn't been written yet.";
-  const seriesTitle = currentChapter?.series_title || "The Long Room";
+  // Prefer the series title carried on the record; only fall back to a
+  // generic "Daily Story" label so empty data doesn't surface a raw key.
+  const seriesTitle = currentChapter?.series_title || "Daily Story";
+  // Honour the caller's totalCount if given, otherwise use the fetched
+  // chapter count. Avoids the "Chapter 5 / 30" bug when fewer than 30
+  // chapters are revealed yet.
+  const totalCount = totalCountProp ?? chapters.length;
 
   const animClass =
     flipState.phase === "flipping"
