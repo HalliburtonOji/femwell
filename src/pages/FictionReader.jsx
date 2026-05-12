@@ -232,6 +232,7 @@ export default function FictionReader() {
         totalCount={chapters.length}
         textSize={textSize}
         onTextSizeChange={handleTextSizeChange}
+        defaultImmersive
       />
     </Frame>
   );

@@ -298,6 +298,10 @@ export default function DailyStoryReader({
   // behave identically.
   textSize: textSizeProp,
   onTextSizeChange,
+  // When true, the reader starts in full-screen "movie mode" — the page IS
+  // the screen, no card, no host-app chrome. FictionReader sets this when
+  // the user taps "Open book" because that gesture is "I'm here to read."
+  defaultImmersive = false,
 }) {
   const [chapters, setChapters] = useState(providedSource?.items || []);
   const [currentIndex, setCurrentIndex] = useState(providedSource?.currentIndex ?? 0);
@@ -346,7 +350,7 @@ export default function DailyStoryReader({
     setSize(next);
   }, [textSize, setSize]);
 
-  const [immersive, setImmersive] = useState(false);
+  const [immersive, setImmersive] = useState(defaultImmersive);
   // DND tip — show once per immersive session, then auto-dismiss. Anchored to
   // a localStorage seen-flag so we don't badger returning readers.
   const [showDndTip, setShowDndTip] = useState(false);
@@ -742,29 +746,95 @@ function ReaderStyles({ reducedMotion }) {
         font-family: 'Inter', sans-serif;
         user-select: none;
       }
-      /* Immersive — fills the entire viewport, hard-clipped (no scroll EVER).
-         Measured pagination guarantees the visible slice fits. */
+      /* Immersive — Reader v4a, "page IS the screen" (Atelier spec).
+         No card, no border, no radius, no shadow. The page background is
+         the paper. The reading column is 580px max. Generous breathing
+         margins. Body scroll is hard-clipped — measured pagination handles
+         fit, even at XL font. */
       .ds-reader-root.ds-immersive {
         position: fixed;
         inset: 0;
         z-index: 9999;
         max-width: none;
-        background: var(--ivory, #faf6f0);
-        padding: 16px 24px 32px;
+        background: var(--paper, #FFFAF5);
+        padding: 0;
         overflow: hidden;
         display: flex;
         flex-direction: column;
+        /* theme defaults — Cream */
+        --paper: #FFFAF5;
+        --ink: #2A2035;
+        --ink-mute: #8A7E88;
+        --accent: #D45E52;
+        --rule: rgba(74,42,58,0.10);
       }
+      /* Theme overrides (applied via root class fw-theme-honey / -plum) */
+      .ds-reader-root.ds-immersive.fw-theme-honey {
+        --paper: #F5E6CD; --ink: #3A2818; --ink-mute: #7A6048;
+        --accent: #B68A3C; --rule: rgba(58,40,24,0.14);
+      }
+      .ds-reader-root.ds-immersive.fw-theme-plum {
+        --paper: #2B1E26; --ink: #F5E6D3; --ink-mute: #C9B8B0;
+        --accent: #E89289; --rule: rgba(245,230,211,0.14);
+      }
+      /* The stage in immersive is no longer a card — it's a transparent
+         reading column floated on the paper. The visible body is the page. */
       .ds-reader-root.ds-immersive .ds-reader-stage {
-        max-width: 760px;
+        background: transparent;
+        border: none;
+        border-radius: 0;
+        box-shadow: none;
+        max-width: 580px;
         margin: 0 auto;
         width: 100%;
         flex: 1;
         min-height: 0;
+        max-height: none;
         overflow: hidden;
+        padding: 64px 32px 56px;
+        color: var(--ink, #2A2035);
       }
-      /* Visible body in immersive must clip too — pagination handles fit. */
+      @media (max-width: 768px) {
+        .ds-reader-root.ds-immersive .ds-reader-stage {
+          padding: 56px 24px 40px;
+        }
+      }
+      /* Visible body inside the stage uses --ink for prose; clipped so a
+         miscount can't overflow. */
       .ds-reader-root.ds-immersive .ds-reader-body { overflow: hidden; }
+      .ds-reader-root.ds-immersive .ds-reader-p { color: var(--ink, #2A2035); }
+      .ds-reader-root.ds-immersive .ds-reader-h1 { color: var(--ink, #2A2035); }
+      .ds-reader-root.ds-immersive .ds-reader-p-first::first-letter {
+        color: var(--accent, #D45E52);
+      }
+      .ds-reader-root.ds-immersive .ds-reader-ornament { color: var(--accent, #D45E52); }
+      .ds-reader-root.ds-immersive .ds-reader-chapter-strip {
+        color: var(--ink-mute, #8A7E88);
+      }
+      /* In immersive, the inline series label is irrelevant — the bar
+         carries identity. Hide it so the page is unambiguously the page. */
+      .ds-reader-root.ds-immersive .ds-reader-series-inline { display: none; }
+      /* The bottom Prev / Next chevron row is also redundant; tap zones
+         handle navigation. Hide it. v4b reintroduces a minimal floating
+         progress bar at the bottom. */
+      .ds-reader-root.ds-immersive .ds-reader-nav { display: none; }
+      /* Lift the top control bar so it floats over the page rather than
+         pushing the stage down. v4b makes it auto-hide. */
+      .ds-reader-root.ds-immersive .ds-reader-immersive-bar {
+        position: absolute;
+        top: 0; left: 0; right: 0;
+        margin: 0;
+        padding: 12px 16px;
+        background: linear-gradient(to bottom, var(--paper, #FFFAF5) 0%, rgba(255,250,245,0) 100%);
+        z-index: 2;
+      }
+      /* Make sure the stage starts below the top bar visually. */
+      .ds-reader-root.ds-immersive .ds-reader-stage {
+        padding-top: max(72px, 64px);
+      }
+      @media (max-width: 768px) {
+        .ds-reader-root.ds-immersive .ds-reader-stage { padding-top: 64px; }
+      }
 
       /* Control bar — series label inline + volume-style font + fullscreen */
       .ds-reader-controls {
@@ -1043,18 +1113,21 @@ function ReaderStyles({ reducedMotion }) {
         margin: 0 0 18px;
       }
 
-      /* Text-size variants — 5 levels driven by the volume control. */
-      .ds-text-xs .ds-reader-p { font-size: clamp(13px, 2.0vw, 14px); line-height: 1.70; }
-      .ds-text-s  .ds-reader-p { font-size: clamp(15px, 2.3vw, 16px); line-height: 1.74; }
-      .ds-text-m  .ds-reader-p { font-size: clamp(16px, 2.5vw, 18px); line-height: 1.78; }
-      .ds-text-l  .ds-reader-p { font-size: clamp(18px, 2.9vw, 21px); line-height: 1.82; }
-      .ds-text-xl .ds-reader-p { font-size: clamp(21px, 3.3vw, 25px); line-height: 1.86; }
+      /* Text-size variants — absolute px per Atelier v4 spec (no clamp; we
+         control the page width via the 580px reading column). */
+      .ds-text-xs .ds-reader-p { font-size: 15px; line-height: 1.65; margin: 0 0 14px; }
+      .ds-text-s  .ds-reader-p { font-size: 16px; line-height: 1.70; margin: 0 0 16px; }
+      .ds-text-m  .ds-reader-p { font-size: 18px; line-height: 1.75; margin: 0 0 18px; }
+      .ds-text-l  .ds-reader-p { font-size: 20px; line-height: 1.80; margin: 0 0 20px; }
+      .ds-text-xl .ds-reader-p { font-size: 23px; line-height: 1.84; margin: 0 0 22px; }
 
-      .ds-text-xs .ds-reader-h1 { font-size: clamp(16px, 3.4vw, 18px); }
-      .ds-text-s  .ds-reader-h1 { font-size: clamp(18px, 3.8vw, 21px); }
-      .ds-text-m  .ds-reader-h1 { font-size: clamp(19px, 4vw,   23px); }
-      .ds-text-l  .ds-reader-h1 { font-size: clamp(22px, 4.6vw, 27px); }
-      .ds-text-xl .ds-reader-h1 { font-size: clamp(26px, 5.4vw, 32px); }
+      /* h1 = 1.55em of body, centred, tight leading. Drop-cap sizes follow. */
+      .ds-reader-h1 { font-size: 1.55em; line-height: 1.25; margin: 0 0 8px; text-align: center; font-weight: 500; }
+      .ds-text-xs .ds-reader-p-first::first-letter { font-size: 3.4em; }
+      .ds-text-s  .ds-reader-p-first::first-letter { font-size: 3.8em; }
+      .ds-text-m  .ds-reader-p-first::first-letter { font-size: 4.2em; }
+      .ds-text-l  .ds-reader-p-first::first-letter { font-size: 4.6em; }
+      .ds-text-xl .ds-reader-p-first::first-letter { font-size: 5.0em; }
 
       /* Drop cap on first paragraph */
       .ds-reader-p-first::first-letter {
