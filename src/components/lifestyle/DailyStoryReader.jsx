@@ -1,6 +1,6 @@
 import { useState, useEffect, useMemo, useRef, useCallback, useLayoutEffect } from "react";
 import { createPortal } from "react-dom";
-import { ChevronLeft, ChevronRight, Lock, ArrowLeft, X } from "lucide-react";
+import { ChevronLeft, ChevronRight, Lock, ArrowLeft, X, Bookmark } from "lucide-react";
 import { base44 } from "@/api/base44Client";
 
 // 5 text-size levels, exported so callers can use them in shared logic.
@@ -355,6 +355,40 @@ export default function DailyStoryReader({
   }, [textSize, setSize]);
 
   const [immersive, setImmersive] = useState(defaultImmersive);
+  // v4b — chrome (top bar + bottom progress) auto-hides after 3s of no
+  // input in immersive mode. Tap the center of the page to toggle. Any
+  // input (touch, click, keypress, slider drag) resets the timer.
+  const [chromeVisible, setChromeVisible] = useState(true);
+  const hideTimerRef = useRef(null);
+  const showChrome = useCallback(() => {
+    setChromeVisible(true);
+    if (hideTimerRef.current) clearTimeout(hideTimerRef.current);
+    hideTimerRef.current = setTimeout(() => setChromeVisible(false), 3000);
+  }, []);
+  useEffect(() => {
+    if (!immersive) {
+      setChromeVisible(true);
+      if (hideTimerRef.current) clearTimeout(hideTimerRef.current);
+      return;
+    }
+    showChrome();
+    const onActivity = () => showChrome();
+    window.addEventListener("touchstart", onActivity, { passive: true });
+    window.addEventListener("keydown", onActivity);
+    return () => {
+      if (hideTimerRef.current) clearTimeout(hideTimerRef.current);
+      window.removeEventListener("touchstart", onActivity);
+      window.removeEventListener("keydown", onActivity);
+    };
+  }, [immersive, showChrome]);
+  const toggleChrome = useCallback(() => {
+    setChromeVisible((v) => {
+      const next = !v;
+      if (next) showChrome(); // restart 3s timer if showing
+      else if (hideTimerRef.current) clearTimeout(hideTimerRef.current);
+      return next;
+    });
+  }, [showChrome]);
   // DND tip — show once per immersive session, then auto-dismiss. Anchored to
   // a localStorage seen-flag so we don't badger returning readers.
   const [showDndTip, setShowDndTip] = useState(false);
@@ -577,7 +611,7 @@ export default function DailyStoryReader({
 
   const readerBody = (
     <div
-      className={`ds-reader-root ds-text-${textSize} ${immersive ? "ds-immersive" : ""}`}
+      className={`ds-reader-root ds-text-${textSize} ${immersive ? "ds-immersive" : ""} ${immersive && !chromeVisible ? "ds-chrome-hidden" : "ds-chrome-visible"}`}
       onTouchStart={onTouchStart}
       onTouchEnd={onTouchEnd}
     >
@@ -587,31 +621,45 @@ export default function DailyStoryReader({
           Immersive: a slim top bar with ← (exit immersive) + Aa volume +
           ✕ (also exits) — nothing else, "like watching a movie". */}
       {immersive ? (
-        <div className="ds-reader-immersive-bar" role="toolbar" aria-label="Reader controls">
+        <>
+          {/* Center tap zone — single tap toggles chrome (top + bottom bars).
+              Sits BETWEEN the existing left/right flip zones so it doesn't
+              swallow page-flip gestures. */}
           <button
             type="button"
-            className="ds-reader-imm-btn"
-            onClick={() => onExit ? onExit() : setImmersive(false)}
-            aria-label={onExit ? "Close book" : "Exit full screen"}
-            title={onExit ? "Close book" : "Exit (Esc)"}
-          >
-            <ArrowLeft size={18} />
-          </button>
-          <FontSliderControl
-            textSize={textSize}
-            setSize={setSize}
-            variant="immersive"
+            className="ds-reader-center-tap"
+            onClick={toggleChrome}
+            aria-label={chromeVisible ? "Hide reader chrome" : "Show reader chrome"}
+            tabIndex={-1}
           />
-          <button
-            type="button"
-            className="ds-reader-imm-btn"
-            onClick={() => onExit ? onExit() : setImmersive(false)}
-            aria-label={onExit ? "Close book" : "Close"}
-            title={onExit ? "Close book" : "Close"}
-          >
-            <X size={18} />
-          </button>
-        </div>
+          {/* Top floating bar — auto-hides after 3s. Bookmark is a visual
+              affordance for v4b; v4c wires it to localStorage. */}
+          <div className="ds-reader-immersive-bar" role="toolbar" aria-label="Reader controls">
+            <button
+              type="button"
+              className="ds-reader-imm-btn"
+              onClick={() => onExit ? onExit() : setImmersive(false)}
+              aria-label={onExit ? "Close book" : "Exit full screen"}
+              title={onExit ? "Close book" : "Exit (Esc)"}
+            >
+              <ArrowLeft size={18} />
+            </button>
+            <FontSliderControl
+              textSize={textSize}
+              setSize={setSize}
+              variant="immersive"
+            />
+            <button
+              type="button"
+              className="ds-reader-imm-btn ds-reader-bookmark-btn"
+              onClick={() => { /* v4c wires this */ }}
+              aria-label="Bookmark this page"
+              title="Bookmark"
+            >
+              <Bookmark size={18} />
+            </button>
+          </div>
+        </>
       ) : (
         <div className="ds-reader-controls" role="toolbar" aria-label="Reader controls">
           <p className="ds-reader-series-label ds-reader-series-inline">{seriesTitle}</p>
@@ -678,6 +726,33 @@ export default function DailyStoryReader({
           />
         )}
       </div>
+
+      {/* v4b — bottom progress bar (immersive only). Text-only, auto-hides
+          with the rest of the chrome. Pulls the chapter context from the
+          current chapter + measured pageInChapter/page-count to show
+          "CHAPTER N · PAGE M OF P · ZZ%". */}
+      {immersive && !showLocked && (() => {
+        const ctx = currentChapter?.chapter_context;
+        const totalPagesInChapter = chapterPageCounts[currentChapter?.id] || 1;
+        const chapterIdx = ctx?.chapterIndex || (currentIndex + 1);
+        const chapterCount = ctx?.chapterCount || chapters.length;
+        // Rough whole-book progress: chapters already done + fraction of current.
+        const priorPages = chapters.slice(0, currentIndex)
+          .reduce((sum, c) => sum + (chapterPageCounts[c.id] || 1), 0);
+        const totalPages = chapters
+          .reduce((sum, c) => sum + (chapterPageCounts[c.id] || 1), 0) || 1;
+        const currentGlobalPage = priorPages + pageInChapter + 1;
+        const pct = Math.min(100, Math.max(0, Math.round((currentGlobalPage / totalPages) * 100)));
+        return (
+          <div className="ds-reader-bottom-bar" aria-live="polite">
+            <span className="ds-reader-bottom-text">
+              {`Chapter ${chapterIdx} of ${chapterCount}`}
+              {totalPagesInChapter > 1 ? ` · Page ${pageInChapter + 1} of ${totalPagesInChapter}` : ""}
+              {` · ${pct}%`}
+            </span>
+          </div>
+        );
+      })()}
 
       {/* Visible nav row */}
       <div className="ds-reader-nav">
@@ -823,15 +898,80 @@ function ReaderStyles({ reducedMotion }) {
          progress bar at the bottom. */
       .ds-reader-root.ds-immersive .ds-reader-nav { display: none; }
       /* Lift the top control bar so it floats over the page rather than
-         pushing the stage down. v4b makes it auto-hide. */
+         pushing the stage down. v4b: auto-hides with chrome state. */
       .ds-reader-root.ds-immersive .ds-reader-immersive-bar {
         position: absolute;
         top: 0; left: 0; right: 0;
         margin: 0;
         padding: 12px 16px;
         background: linear-gradient(to bottom, var(--paper, #FFFAF5) 0%, rgba(255,250,245,0) 100%);
-        z-index: 2;
+        z-index: 4;
+        transition: opacity 200ms ease, transform 200ms ease;
       }
+      .ds-reader-root.ds-immersive.ds-chrome-hidden .ds-reader-immersive-bar {
+        opacity: 0;
+        transform: translateY(-12px);
+        pointer-events: none;
+      }
+      .ds-reader-root.ds-immersive.ds-chrome-visible .ds-reader-immersive-bar {
+        opacity: 1;
+        transform: translateY(0);
+        pointer-events: auto;
+      }
+
+      /* v4b — bottom progress bar: Inter 11px text-only, gradient fade. */
+      .ds-reader-bottom-bar {
+        position: absolute;
+        bottom: 0; left: 0; right: 0;
+        height: 40px;
+        padding: 0 16px;
+        display: flex; align-items: center; justify-content: center;
+        background: linear-gradient(to top, var(--paper, #FFFAF5) 0%, rgba(255,250,245,0) 100%);
+        z-index: 4;
+        transition: opacity 200ms ease, transform 200ms ease;
+        pointer-events: none;
+      }
+      .ds-reader-bottom-text {
+        font-family: 'Inter', sans-serif;
+        font-size: 11px;
+        font-weight: 500;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        color: var(--ink-mute, #8A7E88);
+        white-space: nowrap;
+      }
+      .ds-reader-root.ds-chrome-hidden .ds-reader-bottom-bar {
+        opacity: 0;
+        transform: translateY(12px);
+      }
+      .ds-reader-root.ds-chrome-visible .ds-reader-bottom-bar {
+        opacity: 1;
+        transform: translateY(0);
+      }
+      @media (prefers-reduced-motion: reduce) {
+        .ds-reader-root.ds-immersive .ds-reader-immersive-bar,
+        .ds-reader-bottom-bar {
+          transition: none;
+        }
+      }
+
+      /* Center tap zone — toggles chrome. Sits inside the central column,
+         spans the height between the floating bars. Width is the central
+         60% so left/right edges still flip pages. */
+      .ds-reader-center-tap {
+        position: absolute;
+        top: 60px; bottom: 50px;
+        left: 20%; right: 20%;
+        background: transparent;
+        border: none;
+        cursor: pointer;
+        z-index: 1;
+      }
+      .ds-reader-center-tap:focus { outline: none; }
+
+      /* Bookmark button — sits inside the immersive-bar right side. */
+      .ds-reader-bookmark-btn { color: var(--ink-mute, #8A7E88); }
+      .ds-reader-bookmark-btn:hover { color: var(--accent, #D45E52); }
       /* Make sure the stage starts below the top bar visually. */
       .ds-reader-root.ds-immersive .ds-reader-stage {
         padding-top: max(72px, 64px);
