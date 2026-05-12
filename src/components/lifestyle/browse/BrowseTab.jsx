@@ -215,8 +215,10 @@ export default function BrowseTab({ categoryFilter = 'all' }) {
     setError(false);
     setSearchQuery('');
 
-    // Update URL with type chip (category lives on parent URL state)
+    // Update URL with type chip (and ensure tab=browse is set so back-stack
+    // restores Browse > Books rather than the default For-You).
     const url = new URL(window.location.href);
+    url.searchParams.set('tab', 'browse');
     url.searchParams.set('filter', activeChip);
     window.history.replaceState({}, '', url.toString());
 

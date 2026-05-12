@@ -77,26 +77,17 @@ export default function ForYouTab({ categoryFilter }) {
       if (cancelled) return;
       setHero(heroItem);
 
-      // Main feed — retry up to 3x if empty/failed. Intermittent fetch failures were
-      // leaving allItems as [] and surfacing the "Nothing more to explore" empty state
-      // on first load, which then resolved on reload.
+      // Main feed — single fetch, capped at 60. Bento only renders pageSize
+      // (12) on first paint and grows by 12 on scroll, so 60 is plenty for
+      // first paint and the infinite-scroll handler can fetch more later if
+      // needed. 200 was painful on slow networks for no payoff.
       let all = [];
-      for (let attempt = 0; attempt < 3; attempt++) {
-        try {
-          const res = await base44.entities.LifestyleItems
-            .filter({ status: "PUBLISHED" }, "-engagement_score", 200);
-          if (Array.isArray(res) && res.length > 0) {
-            all = res;
-            break;
-          }
-          all = res || [];
-        } catch {
-          all = [];
-        }
-        if (all.length > 0) break;
-        if (cancelled) return;
-        // Short backoff before retry (250ms, 500ms)
-        await new Promise(r => setTimeout(r, 250 * (attempt + 1)));
+      try {
+        const res = await base44.entities.LifestyleItems
+          .filter({ status: "PUBLISHED" }, "-engagement_score", 60);
+        all = Array.isArray(res) ? res : [];
+      } catch {
+        all = [];
       }
       if (cancelled) return;
       setAllItems(all);
@@ -130,11 +121,10 @@ export default function ForYouTab({ categoryFilter }) {
         if (!cancelled) setSavedItems(sorted);
       }
 
-      // Try-this rail
-      const tryItems = await base44.entities.LifestyleItems
-        .filter({ status: "PUBLISHED" }, "-engagement_score", 40)
-        .catch(() => []);
-      const withKey = tryItems.filter((it) => it.try_this_content_key);
+      // Try-this rail — derive from `all` instead of issuing a second fetch
+      // against the same entity with overlapping data. Saves one network call
+      // on first paint.
+      const withKey = all.filter((it) => it.try_this_content_key);
       let alreadyTried = new Set();
       if (u?.id && withKey.length) {
         const triedRows = await base44.entities.LifestyleInteractions

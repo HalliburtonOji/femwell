@@ -121,6 +121,40 @@ async function fetchOgImage(url) {
   }
 }
 
+// Pull an image URL straight out of an <item> / <entry> XML block. Many feeds
+// already declare a thumbnail via media:content, media:thumbnail, enclosure,
+// or an <img> inside content:encoded — using that is free and works even when
+// publisher origins block our Deno-edge IP for the og:image fetch.
+function extractImageFromItemBlock(block) {
+  if (!block || typeof block !== 'string') return '';
+
+  // <media:content url="..." medium="image" />  (RSS Media extension)
+  let m = block.match(/<media:content[^>]+url=["']([^"']+)["'][^>]*medium=["']image["']/i)
+       || block.match(/<media:content[^>]+medium=["']image["'][^>]*url=["']([^"']+)["']/i)
+       || block.match(/<media:content[^>]+url=["']([^"']+\.(?:jpe?g|png|webp|gif))["']/i);
+  if (m?.[1]) return m[1];
+
+  // <media:thumbnail url="..." />
+  m = block.match(/<media:thumbnail[^>]+url=["']([^"']+)["']/i);
+  if (m?.[1]) return m[1];
+
+  // <enclosure url="..." type="image/..." />
+  m = block.match(/<enclosure[^>]+url=["']([^"']+)["'][^>]*type=["']image\/[^"']+["']/i)
+   || block.match(/<enclosure[^>]+type=["']image\/[^"']+["'][^>]*url=["']([^"']+)["']/i);
+  if (m?.[1]) return m[1];
+
+  // First <img src="..."> inside content:encoded or description CDATA.
+  const contentMatch = block.match(/<content:encoded[^>]*>([\s\S]*?)<\/content:encoded>/i)
+                     || block.match(/<description[^>]*>([\s\S]*?)<\/description>/i)
+                     || block.match(/<summary[^>]*>([\s\S]*?)<\/summary>/i);
+  if (contentMatch?.[1]) {
+    const imgMatch = contentMatch[1].match(/<img[^>]+src=["']([^"']+)["']/i);
+    if (imgMatch?.[1] && isPlausibleImageUrl(imgMatch[1])) return imgMatch[1];
+  }
+
+  return '';
+}
+
 async function parseRSS(base44, sourceName, url) {
   try {
     const res = await fetch(url, {
@@ -148,7 +182,8 @@ async function parseRSS(base44, sourceName, url) {
         title: get('title'),
         link: linkAttr?.[1] || get('link') || get('guid'),
         pubDate: get('pubDate') || get('published') || new Date().toISOString(),
-        description: get('description') || get('summary') || ''
+        description: get('description') || get('summary') || '',
+        feed_image: extractImageFromItemBlock(block),
       });
     }
     return items;
@@ -234,14 +269,32 @@ Deno.serve(async (req) => {
             continue;
           }
 
-          // Pull publisher's og:image. Falls back to '' if extraction fails;
-          // the renderer already handles missing image_url gracefully.
+          // Image resolution chain:
+          //   1. Feed-supplied image (media:content, media:thumbnail,
+          //      enclosure, or first <img> in content:encoded) — free, fast,
+          //      and survives CDN bot-blocks on the article page.
+          //   2. og:image / twitter:image meta tag on the article page.
+          //   3. Empty string (renderer shows a gradient placeholder).
+          // Tier-3 failures are now logged to IngestErrorLog with a dedicated
+          // stage so we can spot publishers that need a manual fallback.
           let resolvedImageUrl = '';
-          try {
-            const og = await fetchOgImage(item.link);
-            if (og) resolvedImageUrl = og;
-          } catch {
-            // Non-fatal — proceed without an image rather than blocking ingest.
+          if (item.feed_image && isPlausibleImageUrl(item.feed_image)) {
+            const resolved = resolveUrl(item.feed_image, item.link) || item.feed_image;
+            if (resolved && isPlausibleImageUrl(resolved)) resolvedImageUrl = resolved;
+          }
+          if (!resolvedImageUrl) {
+            try {
+              const og = await fetchOgImage(item.link);
+              if (og) resolvedImageUrl = og;
+            } catch {
+              // Non-fatal — proceed without an image rather than blocking ingest.
+            }
+          }
+          if (!resolvedImageUrl) {
+            await logIngestError(base44, 'ingestRSS', 'image_missing',
+              { source_identifier: source.name, item_id: item.link,
+                raw_payload: { link: item.link, hadFeedImage: !!item.feed_image } },
+              new Error('No image found in feed XML or og:image meta'));
           }
 
           await base44.asServiceRole.entities.LifestyleItems.create({

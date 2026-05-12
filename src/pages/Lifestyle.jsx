@@ -505,10 +505,35 @@ function CategoryFilterDropdown({ selected, onChange, followedCategories = [] })
 
 // ── Main page ─────────────────────────────────────────────────────────────────
 export default function Lifestyle() {
-  const [tab, setTab] = useState(() => {
+  const [tab, setTabState] = useState(() => {
     const p = new URLSearchParams(window.location.search).get("tab");
     return TABS.some(t => t.id === p) ? p : "for_you";
   });
+  // setTab also writes ?tab=... to the URL so the browser back-stack remembers
+  // which tab the user was on when they opened a reader. Without this, hitting
+  // ← inside FictionReader / BookReader pops back to /Lifestyle with no tab
+  // param, which falls through to the For-You default.
+  const setTab = (next) => {
+    setTabState(next);
+    try {
+      const url = new URL(window.location.href);
+      if (next === "for_you") url.searchParams.delete("tab");
+      else url.searchParams.set("tab", next);
+      // pushState (not replace) so back returns to the previous tab too.
+      window.history.pushState({}, "", url.toString());
+    } catch { /* silent — URL sync is non-critical */ }
+  };
+
+  // Honour browser back/forward between tabs.
+  useEffect(() => {
+    const onPop = () => {
+      const p = new URLSearchParams(window.location.search).get("tab");
+      setTabState(TABS.some(t => t.id === p) ? p : "for_you");
+    };
+    window.addEventListener("popstate", onPop);
+    return () => window.removeEventListener("popstate", onPop);
+  }, []);
+
   // Option B (Atelier review): multi-select category filter as array of slugs.
   // Empty array = "all". Downstream tabs accept array OR legacy single string.
   const [categoryFilter, setCategoryFilter] = useState([]);
