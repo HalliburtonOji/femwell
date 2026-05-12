@@ -1,0 +1,63 @@
+{
+  "name": "CompatibilityReading",
+  "type": "object",
+  "properties": {
+    "user_id": {
+      "type": "string",
+      "description": "FK to User. The reading is FROM this user's chart TO their_birthday."
+    },
+    "user_sun_sign": {
+      "type": "string",
+      "description": "Captured at compute time so the row stands alone if the user later updates their birth date."
+    },
+    "their_name": {
+      "type": "string",
+      "description": "Free-text. Used for display + cache key."
+    },
+    "their_birthday": {
+      "type": "string",
+      "format": "date",
+      "description": "YYYY-MM-DD. Used to compute their_sun_sign + cache key."
+    },
+    "their_sun_sign": {
+      "type": "string",
+      "description": "Computed from their_birthday."
+    },
+    "score": {
+      "type": "number",
+      "description": "Overall synastry 0-100."
+    },
+    "label": {
+      "type": "string",
+      "description": "One-line element-meets-element label, e.g. 'Air meets Earth · easy but grounding'."
+    },
+    "narrative": {
+      "type": "string",
+      "description": "70-110 word body paragraph about how the two charts meet."
+    },
+    "talk_score": {
+      "type": "number",
+      "description": "Communication dimension 0-100."
+    },
+    "touch_score": {
+      "type": "number",
+      "description": "Physical/affection dimension 0-100."
+    },
+    "trust_score": {
+      "type": "number",
+      "description": "Trust/security dimension 0-100."
+    },
+    "grow_score": {
+      "type": "number",
+      "description": "Growth/expansion dimension 0-100."
+    },
+    "created_at": {
+      "type": "string",
+      "format": "date-time"
+    }
+  },
+  "required": [
+    "user_id",
+    "their_birthday"
+  ]
+}

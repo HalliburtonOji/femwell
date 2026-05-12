@@ -152,6 +152,7 @@ export default function HoroscopeTab(props) {
         reading={reading}
       />
       <Transits reading={reading} />
+      <Compatibility userId={user?.id} chart={chart} />
 
       <BirthDataSheet
         open={sheetOpen}
@@ -550,6 +551,178 @@ function fallbackTransits() {
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
+// Section 6 — Compatibility
+// ─────────────────────────────────────────────────────────────────────────────
+function Compatibility({ userId, chart }) {
+  const [name, setName] = useState("");
+  const [birthday, setBirthday] = useState("");
+  const [reading, setReading] = useState(null);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
+  const [history, setHistory] = useState([]); // last 3 readings for this user
+
+  // Load last few readings to show as chips
+  useEffect(() => {
+    if (!userId) return;
+    let cancelled = false;
+    (async () => {
+      try {
+        const rows = await base44.entities.CompatibilityReading.filter(
+          { user_id: userId },
+          "-created_date",
+          3,
+        ).catch(() => []);
+        if (cancelled) return;
+        setHistory(Array.isArray(rows) ? rows : []);
+      } catch { /* silent */ }
+    })();
+    return () => { cancelled = true; };
+  }, [userId]);
+
+  const run = async () => {
+    setError("");
+    if (!userId) { setError("Sign in to run a reading."); return; }
+    if (!birthday) { setError("Their birthday is needed."); return; }
+    setLoading(true);
+    try {
+      const res = await base44.functions.invoke("generateCompatibility", {
+        user_id: userId,
+        their_name: name.trim(),
+        their_birthday: birthday,
+      });
+      const row = res?.data?.reading || res?.reading || null;
+      if (!row) {
+        setError(res?.data?.error || res?.error || "Couldn't read this pairing.");
+      } else {
+        setReading(row);
+        // Refresh chip history
+        setHistory((prev) => {
+          const filtered = prev.filter((r) => r.id !== row.id);
+          return [row, ...filtered].slice(0, 3);
+        });
+      }
+    } catch (e) {
+      setError(e?.message || "Couldn't read this pairing.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const openHistory = (row) => {
+    setName(row.their_name || "");
+    setBirthday(row.their_birthday || "");
+    setReading(row);
+    setError("");
+  };
+
+  return (
+    <div style={{ marginTop: 32 }}>
+      <div style={compatHeadStyle}>
+        <div>
+          <h3 style={sectionTitleStyle}>
+            Compatibility <em style={{ fontStyle: "italic", color: "var(--rose-primary, #D45E52)" }}>reading</em>
+          </h3>
+          <p style={compatSubStyle}>
+            Try it with a friend, a partner, a crush — see where your charts meet.
+          </p>
+        </div>
+        {chart.sun && (
+          <span style={compatYouStyle}>
+            You: {chart.sun}{chart.birthday ? ` · ${prettyBirthday(chart.birthday)}` : ""}
+          </span>
+        )}
+      </div>
+
+      <div style={compatFormStyle}>
+        <div style={compatFieldStyle}>
+          <label style={compatLabelStyle} htmlFor="cp-name">Their name</label>
+          <input
+            id="cp-name"
+            type="text"
+            placeholder="e.g. Sam"
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+            style={compatInputStyle}
+          />
+        </div>
+        <div style={compatFieldStyle}>
+          <label style={compatLabelStyle} htmlFor="cp-date">Their birthday</label>
+          <input
+            id="cp-date"
+            type="date"
+            value={birthday}
+            onChange={(e) => setBirthday(e.target.value)}
+            style={compatInputStyle}
+          />
+        </div>
+        <button
+          type="button"
+          onClick={run}
+          disabled={loading || !birthday}
+          style={compatRunBtnStyle}
+        >
+          {loading ? "Reading…" : "✦ Read us"}
+        </button>
+      </div>
+
+      {history.length > 0 && (
+        <div style={historyRowStyle}>
+          {history.map((r) => (
+            <button
+              key={r.id}
+              type="button"
+              onClick={() => openHistory(r)}
+              style={{
+                ...historyChipStyle,
+                ...(reading?.id === r.id ? historyChipActiveStyle : {}),
+              }}
+            >
+              {(r.their_name || r.their_sun_sign || "Reading")} · {r.score}
+            </button>
+          ))}
+        </div>
+      )}
+
+      {error && <p style={compatErrorStyle}>{error}</p>}
+
+      {reading && (
+        <div style={compatResultStyle}>
+          <div style={compatScoreRowStyle}>
+            <div style={compatScoreBigStyle}>{reading.score}</div>
+            <div>
+              <p style={compatScoreLabelStyle}>Your synastry</p>
+              <p style={compatScoreDescStyle}>{reading.label}</p>
+            </div>
+          </div>
+          {reading.narrative && (
+            <p style={compatNarrativeStyle}>{reading.narrative}</p>
+          )}
+          <div style={dimsRowStyle}>
+            <Dim label="Talk"  val={reading.talk_score} />
+            <Dim label="Touch" val={reading.touch_score} />
+            <Dim label="Trust" val={reading.trust_score} />
+            <Dim label="Grow"  val={reading.grow_score} />
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+function Dim({ label, val }) {
+  const pct = Math.max(0, Math.min(100, Number(val) || 0));
+  return (
+    <div style={dimCellStyle}>
+      <div style={dimBarStyle}>
+        <div style={{ ...dimFillStyle, width: `${pct}%` }} />
+      </div>
+      <p style={dimLabelStyle}>{label}</p>
+      <p style={dimValStyle}>{pct}</p>
+    </div>
+  );
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
 // Onboarding card (shown when no AstroProfile yet)
 // ─────────────────────────────────────────────────────────────────────────────
 function OnboardingCard({ onOpen }) {
@@ -926,6 +1099,188 @@ const transitDescStyle = {
   fontSize: 13,
   lineHeight: 1.55,
   color: "var(--plum-mute, #6b4a56)",
+  margin: 0,
+};
+
+// Compatibility section
+const compatHeadStyle = {
+  display: "flex",
+  alignItems: "flex-start",
+  justifyContent: "space-between",
+  gap: 12,
+  marginBottom: 12,
+  flexWrap: "wrap",
+};
+const compatSubStyle = {
+  fontFamily: "'Inter', sans-serif",
+  fontSize: 13,
+  color: "var(--plum-mute, #6b4a56)",
+  margin: "6px 0 0",
+  lineHeight: 1.5,
+};
+const compatYouStyle = {
+  fontFamily: "'Inter', sans-serif",
+  fontSize: 11,
+  fontWeight: 600,
+  letterSpacing: "0.04em",
+  color: "var(--plum-mute, #6b4a56)",
+  background: "var(--cream-2, rgba(43,30,22,0.05))",
+  padding: "5px 12px",
+  borderRadius: 9999,
+  alignSelf: "flex-start",
+};
+const compatFormStyle = {
+  display: "grid",
+  gridTemplateColumns: "1fr 1fr auto",
+  gap: 10,
+  alignItems: "end",
+  marginBottom: 12,
+};
+const compatFieldStyle = { display: "flex", flexDirection: "column", minWidth: 0 };
+const compatLabelStyle = {
+  fontFamily: "'Inter', sans-serif",
+  fontSize: 11,
+  fontWeight: 600,
+  letterSpacing: "0.04em",
+  color: "var(--plum-deep, #2b1e16)",
+  marginBottom: 5,
+};
+const compatInputStyle = {
+  fontFamily: "'Inter', sans-serif",
+  fontSize: 14,
+  padding: "10px 12px",
+  borderRadius: 12,
+  border: "1px solid var(--ink-line, rgba(43,30,22,0.12))",
+  background: "var(--cream-2, rgba(255,255,255,0.6))",
+  color: "var(--plum-deep, #2b1e16)",
+  minHeight: 44,
+  width: "100%",
+  boxSizing: "border-box",
+};
+const compatRunBtnStyle = {
+  fontFamily: "'Inter', sans-serif",
+  fontWeight: 600,
+  fontSize: 13,
+  color: "var(--cream, #FAF4EA)",
+  background: "var(--rose-primary, #D45E52)",
+  border: "none",
+  borderRadius: 9999,
+  padding: "12px 18px",
+  cursor: "pointer",
+  minHeight: 44,
+  whiteSpace: "nowrap",
+  boxShadow: "0 2px 8px rgba(212,94,82,0.30)",
+};
+const historyRowStyle = {
+  display: "flex",
+  flexWrap: "wrap",
+  gap: 6,
+  margin: "0 0 12px",
+};
+const historyChipStyle = {
+  fontFamily: "'Inter', sans-serif",
+  fontSize: 11,
+  fontWeight: 600,
+  letterSpacing: "0.03em",
+  color: "var(--plum-mute, #6b4a56)",
+  background: "transparent",
+  border: "1px solid var(--ink-line, rgba(43,30,22,0.12))",
+  borderRadius: 9999,
+  padding: "5px 12px",
+  cursor: "pointer",
+  minHeight: 30,
+};
+const historyChipActiveStyle = {
+  color: "var(--cream, #FAF4EA)",
+  background: "var(--plum-deep, #2b1e16)",
+  borderColor: "var(--plum-deep, #2b1e16)",
+};
+const compatErrorStyle = {
+  fontFamily: "'Inter', sans-serif",
+  fontSize: 12,
+  color: "#A0312A",
+  background: "rgba(160,49,42,0.10)",
+  padding: "8px 12px",
+  borderRadius: 10,
+  margin: "0 0 12px",
+};
+const compatResultStyle = {
+  background: "var(--cream, #FAF4EA)",
+  border: "1px solid var(--ink-line, rgba(43,30,22,0.10))",
+  borderRadius: 18,
+  padding: "20px 22px 22px",
+  boxShadow: "0 1px 2px rgba(43,30,22,0.04), 0 6px 18px rgba(43,30,22,0.06)",
+};
+const compatScoreRowStyle = {
+  display: "flex",
+  alignItems: "center",
+  gap: 18,
+  marginBottom: 14,
+};
+const compatScoreBigStyle = {
+  fontFamily: "'Fraunces', serif",
+  fontWeight: 300,
+  fontSize: 56,
+  lineHeight: 1,
+  color: "var(--rose-primary, #D45E52)",
+  letterSpacing: "-0.02em",
+  minWidth: 78,
+};
+const compatScoreLabelStyle = {
+  fontFamily: "'Inter', sans-serif",
+  fontSize: 11,
+  fontWeight: 700,
+  letterSpacing: "0.14em",
+  textTransform: "uppercase",
+  color: "var(--plum-mute, #6b4a56)",
+  margin: "0 0 4px",
+};
+const compatScoreDescStyle = {
+  fontFamily: "'Fraunces', serif",
+  fontStyle: "italic",
+  fontSize: 16,
+  color: "var(--plum-deep, #2b1e16)",
+  margin: 0,
+};
+const compatNarrativeStyle = {
+  fontFamily: "'Inter', sans-serif",
+  fontSize: 13.5,
+  lineHeight: 1.6,
+  color: "var(--plum-mute, #6b4a56)",
+  margin: "0 0 16px",
+};
+const dimsRowStyle = {
+  display: "grid",
+  gridTemplateColumns: "repeat(4, 1fr)",
+  gap: 12,
+};
+const dimCellStyle = { display: "flex", flexDirection: "column", alignItems: "center", gap: 6 };
+const dimBarStyle = {
+  width: "100%",
+  height: 5,
+  borderRadius: 999,
+  background: "var(--cream-2, rgba(43,30,22,0.08))",
+  overflow: "hidden",
+};
+const dimFillStyle = {
+  height: "100%",
+  background: "linear-gradient(90deg, var(--rose-primary, #D45E52), var(--gold, #B89E6A))",
+  borderRadius: 999,
+};
+const dimLabelStyle = {
+  fontFamily: "'Inter', sans-serif",
+  fontSize: 10,
+  fontWeight: 700,
+  letterSpacing: "0.12em",
+  textTransform: "uppercase",
+  color: "var(--plum-mute, #6b4a56)",
+  margin: 0,
+};
+const dimValStyle = {
+  fontFamily: "'Fraunces', serif",
+  fontSize: 16,
+  fontWeight: 500,
+  color: "var(--plum-deep, #2b1e16)",
   margin: 0,
 };
 
