@@ -6,6 +6,7 @@ import ForYouTab from "@/components/lifestyle/foryou/ForYouTab";
 import BrowseTab from "@/components/lifestyle/browse/BrowseTab";
 import ListenTab from "@/components/lifestyle/listen/ListenTab";
 import DailyStoryReader from "@/components/lifestyle/DailyStoryReader";
+import HoroscopeTabImpl from "@/components/lifestyle/horoscope/HoroscopeTab";
 
 // ── Helpers ──────────────────────────────────────────────────────────────────
 function stripHtml(str) {
@@ -583,68 +584,17 @@ const ZODIAC = [
   { name: "Capricorn", emoji: "♑" }, { name: "Aquarius", emoji: "♒" }, { name: "Pisces", emoji: "♓" },
 ];
 
-function HoroscopeTab() {
-  const [selected, setSelected] = useState(() => localStorage.getItem("femwell_zodiac") || "Aries");
-  const [content, setContent] = useState(null);
-  const [loading, setLoading] = useState(false);
-
-  useEffect(() => {
-    (async () => {
-      setLoading(true);
-      setContent(null);
-      const all = await base44.entities.ContentItems.filter({ content_type: "GUIDE" }, "-created_date", 100).catch(() => []);
-      const match = all.find(it => {
-        const tags = Array.isArray(it.tags) ? it.tags : [];
-        return tags.some(t => t.toLowerCase() === selected.toLowerCase()) ||
-          (it.title || "").toLowerCase().includes(selected.toLowerCase());
-      });
-      setContent(match || null);
-      setLoading(false);
-    })();
-  }, [selected]);
-
-  const handleSelect = (name) => {
-    localStorage.setItem("femwell_zodiac", name);
-    setSelected(name);
-  };
-
-  const sign = ZODIAC.find(z => z.name === selected);
-
+// HoroscopeTab is now the dedicated personalised reader living in
+// components/lifestyle/horoscope/. The 12-button zodiac picker stub was
+// replaced 2026-05-12 with the full MP-Horo-A rebuild: hero · triad ·
+// today's weather · cycle × moon · transits. Birth data captured via
+// BirthDataSheet, readings generated daily by `generateHoroscopeReading`.
+function HoroscopeTab({ userProfile, lifestyleProfile }) {
   return (
-    <div>
-      <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 8, marginBottom: 20 }}>
-        {ZODIAC.map(({ name, emoji }) => (
-          <button key={name} onClick={() => handleSelect(name)}
-            style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 3, padding: "10px 6px", borderRadius: 14, border: "none", cursor: "pointer", fontFamily: "'Inter', sans-serif", transition: "all 0.15s",
-              backgroundColor: selected === name ? PRIMARY : "var(--ivory-dark)",
-              color: selected === name ? "white" : "var(--plum)" }}>
-            <span style={{ fontSize: 18 }}>{emoji}</span>
-            <span style={{ fontSize: 10, fontWeight: 600 }}>{name}</span>
-          </button>
-        ))}
-      </div>
-
-      {loading ? <Spinner /> : content ? (
-        <div style={{ backgroundColor: "var(--surface)", border: "1px solid var(--border)", borderRadius: 20, padding: "22px 20px", boxShadow: "var(--shadow-sm)" }}>
-          <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 14 }}>
-            <span style={{ fontSize: 28 }}>{sign?.emoji}</span>
-            <div>
-              <p style={{ fontSize: 10, fontWeight: 700, color: PRIMARY, textTransform: "uppercase", letterSpacing: "0.1em", fontFamily: "'Inter', sans-serif" }}>Horoscope</p>
-              <h2 style={{ fontFamily: "'Playfair Display', serif", fontSize: 20, fontWeight: 700, color: "var(--plum)", margin: 0 }}>{selected}</h2>
-            </div>
-          </div>
-          <p style={{ fontSize: 15, color: "var(--plum)", lineHeight: 1.75, fontFamily: "'Inter', sans-serif", whiteSpace: "pre-line" }}>
-            {stripHtml(content.body || content.summary || "")}
-          </p>
-        </div>
-      ) : (
-        <div style={{ backgroundColor: "var(--surface)", border: "1px solid var(--border)", borderRadius: 20, padding: "40px 24px", textAlign: "center", boxShadow: "var(--shadow-sm)" }}>
-          <span style={{ fontSize: 40, display: "block", marginBottom: 12 }}>{sign?.emoji}</span>
-          <p style={{ fontSize: 16, fontWeight: 600, color: "var(--plum)", fontFamily: "'Playfair Display', serif", marginBottom: 6 }}>{selected}</p>
-          <p style={{ fontSize: 13, color: "var(--mauve)", fontFamily: "'Inter', sans-serif" }}>Check back soon — your reading is being written.</p>
-        </div>
-      )}
-    </div>
+    <HoroscopeTabImpl
+      userProfile={userProfile}
+      lifestyleProfile={lifestyleProfile}
+    />
   );
 }
 
