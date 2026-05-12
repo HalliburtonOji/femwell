@@ -81,13 +81,25 @@ function ChapterPage({ chapter, dayLabel, indexHint, total, animClass }) {
     chapter.title ||
     chapter.heading ||
     (chapter.day_number ? `Chapter ${chapter.day_number}` : "");
+  // Persistent context strip — chapter title/page-count carried by every
+  // paginated page so multi-page chapters don't feel scattered.
+  const ctx = chapter.chapter_context;
 
   return (
     <div
       className={`ds-reader-page ${animClass || ""}`}
       role="article"
-      aria-label={headingText}
+      aria-label={headingText || ctx?.chapterTitle || ""}
     >
+      {/* Always-on chapter context strip */}
+      {ctx && (
+        <p className="ds-reader-chapter-strip">
+          Chapter {ctx.chapterIndex} of {ctx.chapterCount}
+          {ctx.pagesInChapter > 1 ? ` · page ${ctx.pageInChapter} of ${ctx.pagesInChapter}` : ""}
+        </p>
+      )}
+
+      {/* Big chapter heading — only on the first page of each chapter */}
       {headingText && (
         <>
           <h1 className="ds-reader-h1">{headingText}</h1>
@@ -165,6 +177,28 @@ export default function DailyStoryReader({
   const [showLocked, setShowLocked] = useState(false);
   const touchStartRef = useRef(null);
   const reducedMotion = prefersReducedMotion();
+  // Reader UX state — text size (S / M / L) + immersive fullscreen toggle.
+  // Both persist to localStorage so reading prefs survive between sessions.
+  const [textSize, setTextSize] = useState(() => {
+    try { return localStorage.getItem("fw_reader_text_size") || "m"; } catch { return "m"; }
+  });
+  const [immersive, setImmersive] = useState(false);
+  const setSize = useCallback((s) => {
+    setTextSize(s);
+    try { localStorage.setItem("fw_reader_text_size", s); } catch { /* silent */ }
+  }, []);
+  // Lock body scroll while immersive so the page behind doesn't drift.
+  useEffect(() => {
+    if (!immersive) return;
+    const prev = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    const onEsc = (e) => { if (e.key === "Escape") setImmersive(false); };
+    window.addEventListener("keydown", onEsc);
+    return () => {
+      document.body.style.overflow = prev;
+      window.removeEventListener("keydown", onEsc);
+    };
+  }, [immersive]);
 
   // Fetch DailyStory rows if no external source provided
   useEffect(() => {
@@ -322,14 +356,46 @@ export default function DailyStoryReader({
 
   return (
     <div
-      className="ds-reader-root"
+      className={`ds-reader-root ds-text-${textSize} ${immersive ? "ds-immersive" : ""}`}
       onTouchStart={onTouchStart}
       onTouchEnd={onTouchEnd}
     >
       <ReaderStyles reducedMotion={reducedMotion} />
 
-      {/* Series label */}
-      <p className="ds-reader-series-label">{seriesTitle}</p>
+      {/* Reader controls — text size + immersive toggle */}
+      <div className="ds-reader-controls" role="toolbar" aria-label="Reader controls">
+        <p className="ds-reader-series-label ds-reader-series-inline">{seriesTitle}</p>
+        <div className="ds-reader-control-group">
+          <button
+            type="button"
+            className={`ds-reader-ctrl-btn ${textSize === "s" ? "is-active" : ""}`}
+            onClick={() => setSize("s")}
+            aria-label="Smaller text"
+            title="Smaller text"
+          >A−</button>
+          <button
+            type="button"
+            className={`ds-reader-ctrl-btn ${textSize === "m" ? "is-active" : ""}`}
+            onClick={() => setSize("m")}
+            aria-label="Medium text"
+            title="Medium text"
+          >A</button>
+          <button
+            type="button"
+            className={`ds-reader-ctrl-btn ${textSize === "l" ? "is-active" : ""}`}
+            onClick={() => setSize("l")}
+            aria-label="Larger text"
+            title="Larger text"
+          >A+</button>
+          <button
+            type="button"
+            className="ds-reader-ctrl-btn ds-reader-ctrl-fullscreen"
+            onClick={() => setImmersive((v) => !v)}
+            aria-label={immersive ? "Exit full screen" : "Full screen"}
+            title={immersive ? "Exit (Esc)" : "Full screen"}
+          >{immersive ? "✕" : "⤢"}</button>
+        </div>
+      </div>
 
       {/* Tap zones — invisible halves */}
       <div
@@ -419,12 +485,66 @@ function ReaderStyles({ reducedMotion }) {
 
       .ds-reader-root {
         position: relative;
-        max-width: 640px;
+        max-width: 880px;
         margin: 0 auto;
         padding: 0 0 32px;
         font-family: 'Inter', sans-serif;
         user-select: none;
       }
+      /* Immersive — fills the viewport, scroll-locked elsewhere */
+      .ds-reader-root.ds-immersive {
+        position: fixed;
+        inset: 0;
+        z-index: 1000;
+        max-width: none;
+        background: var(--ivory, #faf6f0);
+        padding: 16px 24px 32px;
+        overflow-y: auto;
+      }
+      .ds-reader-root.ds-immersive .ds-reader-stage {
+        max-width: 760px;
+        margin: 0 auto;
+        min-height: calc(100vh - 140px);
+      }
+
+      /* Control bar — series label inline + text-size + fullscreen */
+      .ds-reader-controls {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+        margin: 0 0 14px;
+        flex-wrap: wrap;
+      }
+      .ds-reader-control-group {
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+        background: var(--surface, #fff);
+        border: 1px solid var(--border, #EDE8E4);
+        border-radius: 9999px;
+        padding: 2px;
+      }
+      .ds-reader-ctrl-btn {
+        min-width: 30px;
+        height: 28px;
+        padding: 0 8px;
+        border: none;
+        background: transparent;
+        font-family: 'Inter', sans-serif;
+        font-size: 12px;
+        font-weight: 600;
+        color: var(--plum-mute, #8A7E88);
+        border-radius: 9999px;
+        cursor: pointer;
+        transition: background 120ms, color 120ms;
+      }
+      .ds-reader-ctrl-btn:hover { color: var(--plum-deep, #2b1e16); }
+      .ds-reader-ctrl-btn.is-active {
+        background: var(--rose-soft-bg, #fbe9e6);
+        color: var(--rose-primary, #D45E52);
+      }
+      .ds-reader-ctrl-fullscreen { font-size: 14px; }
 
       .ds-reader-series-label {
         font-size: 10px;
@@ -435,6 +555,26 @@ function ReaderStyles({ reducedMotion }) {
         text-align: center;
         margin: 0 0 16px;
         font-family: 'Inter', sans-serif;
+      }
+      .ds-reader-series-inline {
+        margin: 0;
+        text-align: left;
+        flex: 0 1 auto;
+      }
+
+      /* Always-on chapter context strip — keeps multi-page chapters from
+         feeling scattered. Hidden when the page already shows the big
+         chapter heading (first page of each chapter) by being smaller and
+         visually subservient to the heading. */
+      .ds-reader-chapter-strip {
+        font-family: 'Inter', sans-serif;
+        font-size: 10px;
+        font-weight: 600;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        color: var(--mauve, #8A7E88);
+        text-align: center;
+        margin: 0 0 14px;
       }
 
       /* Invisible tap zones */
@@ -492,22 +632,28 @@ function ReaderStyles({ reducedMotion }) {
         user-select: none;
       }
 
-      /* Body */
+      /* Body — no clipped scroll-box; the chapter flows naturally and the stage
+         expands. Pagination already splits chapters into page-sized chunks. */
       .ds-reader-body {
-        max-height: 380px;
-        overflow-y: auto;
-        scrollbar-width: none;
-        -ms-overflow-style: none;
+        /* intentionally no max-height/overflow — pages should flow */
       }
-      .ds-reader-body::-webkit-scrollbar { display: none; }
 
       .ds-reader-p {
         font-family: 'Fraunces', Georgia, serif;
-        font-size: clamp(15px, 2.5vw, 17px);
+        font-size: clamp(16px, 2.5vw, 18px);
         color: var(--plum, #2A2035);
         line-height: 1.78;
         margin: 0 0 18px;
       }
+
+      /* Text-size variants (driven by A− / A / A+ control buttons) */
+      .ds-text-s .ds-reader-p { font-size: clamp(14px, 2.2vw, 16px); line-height: 1.72; }
+      .ds-text-m .ds-reader-p { font-size: clamp(16px, 2.5vw, 18px); line-height: 1.78; }
+      .ds-text-l .ds-reader-p { font-size: clamp(18px, 2.9vw, 21px); line-height: 1.82; }
+
+      .ds-text-s .ds-reader-h1 { font-size: clamp(17px, 3.6vw, 20px); }
+      .ds-text-m .ds-reader-h1 { font-size: clamp(19px, 4vw, 23px); }
+      .ds-text-l .ds-reader-h1 { font-size: clamp(22px, 4.6vw, 27px); }
 
       /* Drop cap on first paragraph */
       .ds-reader-p-first::first-letter {
@@ -518,6 +664,24 @@ function ReaderStyles({ reducedMotion }) {
         float: left;
         margin: 6px 8px -2px 0;
         color: var(--rose-primary, #D45E52);
+      }
+      .ds-text-s .ds-reader-p-first::first-letter { font-size: 3.6em; }
+      .ds-text-l .ds-reader-p-first::first-letter { font-size: 4.8em; }
+
+      /* Immersive (full-page) mode — let the reader breathe */
+      .ds-immersive .ds-reader-stage {
+        min-height: calc(100vh - 220px);
+        padding: 48px 40px 40px;
+      }
+      .ds-immersive .ds-reader-body {
+        max-width: 720px;
+        margin: 0 auto;
+      }
+      @media (max-width: 640px) {
+        .ds-immersive .ds-reader-stage {
+          padding: 32px 22px 28px;
+          min-height: calc(100vh - 180px);
+        }
       }
 
       .ds-reader-attribution {

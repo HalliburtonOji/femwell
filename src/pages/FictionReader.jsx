@@ -15,7 +15,11 @@ import { getBookCover } from "@/utils/bookCover";
 // Route: /FictionReader?id=<LifestyleItems.id>
 // ─────────────────────────────────────────────────────────────────────────────
 
-const WORDS_PER_PAGE = 450;
+// Bigger pages so a 2,000-word chapter splits into 3 pages instead of 5.
+// Combined with the reader's responsive shell (now up to 920px wide) this
+// makes the page rhythm uniform: short chapters fit one page, long chapters
+// 2-3, instead of the lumpy 1 vs 5 split we had before.
+const WORDS_PER_PAGE = 700;
 
 // Split a body of text into ~N-word pages, but break only at paragraph
 // boundaries so we never split a sentence across pages.
@@ -130,11 +134,22 @@ export default function FictionReader() {
           out.push({
             id: `${item.id}-ch${chIdx + 1}-p${pIdx + 1}`,
             day_number: out.length + 1,
+            // Big chapter heading only on first page of each chapter, but
+            // every page carries the chapter_context so the reader can show
+            // a small persistent strip ("Chapter 2 of 5 — The Half I…")
+            // even on continuation pages. Fixes the "scattered" feel.
             title: pIdx === 0 ? heading : "",
             heading: pIdx === 0 ? heading : "",
             body: pageBody,
             cliffhanger: "",
             series_title: item.title || "",
+            chapter_context: {
+              chapterIndex: chIdx + 1,
+              chapterCount: item.chapters_json.length,
+              chapterTitle: heading,
+              pageInChapter: pIdx + 1,
+              pagesInChapter: pages.length,
+            },
           });
         });
       });
