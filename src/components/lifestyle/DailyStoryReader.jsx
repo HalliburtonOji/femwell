@@ -1,6 +1,10 @@
 import { useState, useEffect, useMemo, useRef, useCallback } from "react";
-import { ChevronLeft, ChevronRight, Lock } from "lucide-react";
+import { ChevronLeft, ChevronRight, Lock, ArrowLeft, Minus, Plus, X } from "lucide-react";
 import { base44 } from "@/api/base44Client";
+
+// 5 text-size levels, exported so FictionReader can paginate per size.
+export const TEXT_SIZES = ["xs", "s", "m", "l", "xl"];
+export const TEXT_SIZE_INDEX = (s) => Math.max(0, TEXT_SIZES.indexOf(s));
 
 // ─────────────────────────────────────────────────────────────────────────────
 // DailyStoryReader — Kindle-flip reader for Lifestyle → Daily Story tab.
@@ -51,6 +55,56 @@ function fmtCountdown(total) {
 function prefersReducedMotion() {
   if (typeof window === "undefined") return false;
   try { return window.matchMedia("(prefers-reduced-motion: reduce)").matches; } catch { return false; }
+}
+
+// ─── Font-size volume control ─────────────────────────────────────────────────
+// Volume-knob-style font picker: A− [● ● ○ ○ ○] A+
+// Five segments, click a segment to jump, click − / + to step. Active segments
+// are filled; click outside the bar to leave at current.
+function FontVolumeControl({ textSize, stepSize, setSize, variant }) {
+  const i = TEXT_SIZE_INDEX(textSize);
+  const isImm = variant === "immersive";
+  return (
+    <div
+      className={`ds-reader-vol ${isImm ? "is-immersive" : ""}`}
+      role="group"
+      aria-label="Text size"
+    >
+      <button
+        type="button"
+        className="ds-reader-vol-step"
+        onClick={() => stepSize(-1)}
+        disabled={i <= 0}
+        aria-label="Smaller text"
+        title="Smaller"
+      >
+        <Minus size={14} />
+      </button>
+      <div className="ds-reader-vol-track" role="presentation">
+        {TEXT_SIZES.map((s, idx) => (
+          <button
+            key={s}
+            type="button"
+            className={`ds-reader-vol-seg ${idx <= i ? "is-on" : ""}`}
+            onClick={() => setSize(s)}
+            aria-label={`Text size ${s.toUpperCase()}`}
+            aria-pressed={idx === i}
+            title={`Text size ${s.toUpperCase()}`}
+          />
+        ))}
+      </div>
+      <button
+        type="button"
+        className="ds-reader-vol-step"
+        onClick={() => stepSize(1)}
+        disabled={i >= TEXT_SIZES.length - 1}
+        aria-label="Larger text"
+        title="Larger"
+      >
+        <Plus size={14} />
+      </button>
+    </div>
+  );
 }
 
 // ─── Progress dots ────────────────────────────────────────────────────────────
@@ -166,6 +220,13 @@ export default function DailyStoryReader({
   // number of fetched chapters below, so the page indicator stays honest
   // (no more "Chapter 5 / 30" when only 5 chapters exist).
   totalCount: totalCountProp,
+  // Controlled text-size mode: FictionReader lifts this state up so it can
+  // re-paginate chapters when the user changes size. If the caller passes
+  // textSize + onTextSizeChange we use those; otherwise we fall back to
+  // local state + localStorage. Either way the controls and CSS classes
+  // behave identically.
+  textSize: textSizeProp,
+  onTextSizeChange,
 }) {
   const [chapters, setChapters] = useState(providedSource?.items || []);
   const [currentIndex, setCurrentIndex] = useState(providedSource?.currentIndex ?? 0);
@@ -177,15 +238,48 @@ export default function DailyStoryReader({
   const [showLocked, setShowLocked] = useState(false);
   const touchStartRef = useRef(null);
   const reducedMotion = prefersReducedMotion();
-  // Reader UX state — text size (S / M / L) + immersive fullscreen toggle.
-  // Both persist to localStorage so reading prefs survive between sessions.
-  const [textSize, setTextSize] = useState(() => {
-    try { return localStorage.getItem("fw_reader_text_size") || "m"; } catch { return "m"; }
+
+  // Reader UX — 5-level text size (xs / s / m / l / xl) + immersive toggle.
+  // Sizes persist to localStorage. Caller can also drive textSize via prop.
+  const [localTextSize, setLocalTextSize] = useState(() => {
+    try {
+      const stored = localStorage.getItem("fw_reader_text_size") || "m";
+      // Legacy values from when we had 3 sizes — accept all 5.
+      return TEXT_SIZES.includes(stored) ? stored : "m";
+    } catch { return "m"; }
   });
+  const textSize = textSizeProp || localTextSize;
+  const setSize = useCallback((next) => {
+    if (!TEXT_SIZES.includes(next)) return;
+    if (onTextSizeChange) {
+      onTextSizeChange(next);
+    } else {
+      setLocalTextSize(next);
+    }
+    try { localStorage.setItem("fw_reader_text_size", next); } catch { /* silent */ }
+  }, [onTextSizeChange]);
+  const stepSize = useCallback((dir) => {
+    const i = TEXT_SIZE_INDEX(textSize);
+    const next = TEXT_SIZES[Math.max(0, Math.min(TEXT_SIZES.length - 1, i + dir))];
+    setSize(next);
+  }, [textSize, setSize]);
+
   const [immersive, setImmersive] = useState(false);
-  const setSize = useCallback((s) => {
-    setTextSize(s);
-    try { localStorage.setItem("fw_reader_text_size", s); } catch { /* silent */ }
+  // DND tip — show once per immersive session, then auto-dismiss. Anchored to
+  // a localStorage seen-flag so we don't badger returning readers.
+  const [showDndTip, setShowDndTip] = useState(false);
+  useEffect(() => {
+    if (!immersive) { setShowDndTip(false); return; }
+    let seen = false;
+    try { seen = localStorage.getItem("fw_reader_dnd_seen") === "1"; } catch { /* silent */ }
+    if (seen) return;
+    setShowDndTip(true);
+    const t = setTimeout(() => setShowDndTip(false), 6000);
+    return () => clearTimeout(t);
+  }, [immersive]);
+  const dismissDndTip = useCallback(() => {
+    setShowDndTip(false);
+    try { localStorage.setItem("fw_reader_dnd_seen", "1"); } catch { /* silent */ }
   }, []);
   // Lock body scroll while immersive so the page behind doesn't drift.
   useEffect(() => {
@@ -362,40 +456,68 @@ export default function DailyStoryReader({
     >
       <ReaderStyles reducedMotion={reducedMotion} />
 
-      {/* Reader controls — text size + immersive toggle */}
-      <div className="ds-reader-controls" role="toolbar" aria-label="Reader controls">
-        <p className="ds-reader-series-label ds-reader-series-inline">{seriesTitle}</p>
-        <div className="ds-reader-control-group">
+      {/* Reader controls — non-immersive: series label + volume-style font + ⤢
+          Immersive: a slim top bar with ← (exit immersive) + Aa volume +
+          ✕ (also exits) — nothing else, "like watching a movie". */}
+      {immersive ? (
+        <div className="ds-reader-immersive-bar" role="toolbar" aria-label="Reader controls">
           <button
             type="button"
-            className={`ds-reader-ctrl-btn ${textSize === "s" ? "is-active" : ""}`}
-            onClick={() => setSize("s")}
-            aria-label="Smaller text"
-            title="Smaller text"
-          >A−</button>
+            className="ds-reader-imm-btn"
+            onClick={() => setImmersive(false)}
+            aria-label="Exit full screen"
+            title="Exit (Esc)"
+          >
+            <ArrowLeft size={18} />
+          </button>
+          <FontVolumeControl
+            textSize={textSize}
+            stepSize={stepSize}
+            setSize={setSize}
+            variant="immersive"
+          />
           <button
             type="button"
-            className={`ds-reader-ctrl-btn ${textSize === "m" ? "is-active" : ""}`}
-            onClick={() => setSize("m")}
-            aria-label="Medium text"
-            title="Medium text"
-          >A</button>
-          <button
-            type="button"
-            className={`ds-reader-ctrl-btn ${textSize === "l" ? "is-active" : ""}`}
-            onClick={() => setSize("l")}
-            aria-label="Larger text"
-            title="Larger text"
-          >A+</button>
-          <button
-            type="button"
-            className="ds-reader-ctrl-btn ds-reader-ctrl-fullscreen"
-            onClick={() => setImmersive((v) => !v)}
-            aria-label={immersive ? "Exit full screen" : "Full screen"}
-            title={immersive ? "Exit (Esc)" : "Full screen"}
-          >{immersive ? "✕" : "⤢"}</button>
+            className="ds-reader-imm-btn"
+            onClick={() => setImmersive(false)}
+            aria-label="Close"
+            title="Close"
+          >
+            <X size={18} />
+          </button>
         </div>
-      </div>
+      ) : (
+        <div className="ds-reader-controls" role="toolbar" aria-label="Reader controls">
+          <p className="ds-reader-series-label ds-reader-series-inline">{seriesTitle}</p>
+          <div className="ds-reader-controls-right">
+            <FontVolumeControl
+              textSize={textSize}
+              stepSize={stepSize}
+              setSize={setSize}
+            />
+            <button
+              type="button"
+              className="ds-reader-ctrl-btn ds-reader-ctrl-fullscreen"
+              onClick={() => setImmersive(true)}
+              aria-label="Full screen"
+              title="Full screen"
+            >⤢</button>
+          </div>
+        </div>
+      )}
+
+      {/* DND tip — once per session, dismissable. Movie-mode feel. */}
+      {immersive && showDndTip && (
+        <div className="ds-reader-dnd-tip" role="status">
+          <span>Turn on Do Not Disturb for an uninterrupted read.</span>
+          <button
+            type="button"
+            className="ds-reader-dnd-dismiss"
+            onClick={dismissDndTip}
+            aria-label="Dismiss tip"
+          >Got it</button>
+        </div>
+      )}
 
       {/* Tap zones — invisible halves */}
       <div
@@ -507,7 +629,7 @@ function ReaderStyles({ reducedMotion }) {
         min-height: calc(100vh - 140px);
       }
 
-      /* Control bar — series label inline + text-size + fullscreen */
+      /* Control bar — series label inline + volume-style font + fullscreen */
       .ds-reader-controls {
         display: flex;
         align-items: center;
@@ -516,35 +638,129 @@ function ReaderStyles({ reducedMotion }) {
         margin: 0 0 14px;
         flex-wrap: wrap;
       }
-      .ds-reader-control-group {
+      .ds-reader-controls-right {
         display: inline-flex;
         align-items: center;
-        gap: 4px;
-        background: var(--surface, #fff);
-        border: 1px solid var(--border, #EDE8E4);
-        border-radius: 9999px;
-        padding: 2px;
+        gap: 8px;
       }
       .ds-reader-ctrl-btn {
-        min-width: 30px;
-        height: 28px;
-        padding: 0 8px;
-        border: none;
-        background: transparent;
+        min-width: 32px;
+        height: 32px;
+        padding: 0 10px;
+        border: 1px solid var(--border, #EDE8E4);
+        background: var(--surface, #fff);
         font-family: 'Inter', sans-serif;
-        font-size: 12px;
+        font-size: 14px;
         font-weight: 600;
         color: var(--plum-mute, #8A7E88);
         border-radius: 9999px;
         cursor: pointer;
         transition: background 120ms, color 120ms;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
       }
       .ds-reader-ctrl-btn:hover { color: var(--plum-deep, #2b1e16); }
-      .ds-reader-ctrl-btn.is-active {
-        background: var(--rose-soft-bg, #fbe9e6);
-        color: var(--rose-primary, #D45E52);
-      }
       .ds-reader-ctrl-fullscreen { font-size: 14px; }
+
+      /* Volume-style font control: − [● ● ○ ○ ○] + */
+      .ds-reader-vol {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        background: var(--surface, #fff);
+        border: 1px solid var(--border, #EDE8E4);
+        border-radius: 9999px;
+        padding: 3px 6px;
+      }
+      .ds-reader-vol-step {
+        width: 24px; height: 24px;
+        border: none; background: transparent;
+        color: var(--plum-mute, #8A7E88);
+        cursor: pointer; border-radius: 9999px;
+        display: inline-flex; align-items: center; justify-content: center;
+      }
+      .ds-reader-vol-step:hover:not(:disabled) {
+        color: var(--rose-primary, #D45E52);
+        background: var(--rose-soft-bg, #fbe9e6);
+      }
+      .ds-reader-vol-step:disabled { opacity: 0.35; cursor: default; }
+      .ds-reader-vol-track {
+        display: inline-flex; align-items: center; gap: 5px;
+        padding: 0 4px;
+      }
+      .ds-reader-vol-seg {
+        width: 9px; height: 9px;
+        border-radius: 9999px;
+        border: 1.5px solid var(--mauve, #8A7E88);
+        background: transparent;
+        cursor: pointer;
+        padding: 0;
+        transition: background 120ms, transform 120ms;
+      }
+      .ds-reader-vol-seg.is-on {
+        background: var(--rose-primary, #D45E52);
+        border-color: var(--rose-primary, #D45E52);
+      }
+      .ds-reader-vol-seg:hover { transform: scale(1.15); }
+
+      /* Immersive top bar — minimal: ← Aa-volume ✕ */
+      .ds-reader-immersive-bar {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+        padding: 12px 4px;
+        margin: 0 0 14px;
+      }
+      .ds-reader-imm-btn {
+        width: 38px; height: 38px;
+        border-radius: 9999px;
+        border: 1px solid var(--border, rgba(43,30,22,0.10));
+        background: var(--surface, rgba(255,255,255,0.85));
+        color: var(--plum-deep, #2b1e16);
+        cursor: pointer;
+        display: inline-flex; align-items: center; justify-content: center;
+        backdrop-filter: blur(8px);
+      }
+      .ds-reader-imm-btn:hover { background: var(--rose-soft-bg, #fbe9e6); }
+      .ds-reader-vol.is-immersive {
+        background: rgba(255,255,255,0.85);
+        backdrop-filter: blur(8px);
+      }
+
+      /* DND tip — soft banner under the immersive top bar */
+      .ds-reader-dnd-tip {
+        max-width: 560px;
+        margin: 0 auto 18px;
+        padding: 10px 16px;
+        border-radius: 12px;
+        background: var(--rose-soft-bg, #fbe9e6);
+        color: var(--plum-deep, #2b1e16);
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+        font-family: 'Inter', sans-serif;
+        font-size: 13px;
+        animation: ds-tip-in 240ms ease both;
+      }
+      @keyframes ds-tip-in {
+        from { opacity: 0; transform: translateY(-4px); }
+        to   { opacity: 1; transform: translateY(0); }
+      }
+      .ds-reader-dnd-dismiss {
+        flex: 0 0 auto;
+        border: none;
+        background: var(--rose-primary, #D45E52);
+        color: white;
+        font-family: 'Inter', sans-serif;
+        font-size: 12px;
+        font-weight: 600;
+        padding: 6px 12px;
+        border-radius: 9999px;
+        cursor: pointer;
+      }
 
       .ds-reader-series-label {
         font-size: 10px;
@@ -646,14 +862,18 @@ function ReaderStyles({ reducedMotion }) {
         margin: 0 0 18px;
       }
 
-      /* Text-size variants (driven by A− / A / A+ control buttons) */
-      .ds-text-s .ds-reader-p { font-size: clamp(14px, 2.2vw, 16px); line-height: 1.72; }
-      .ds-text-m .ds-reader-p { font-size: clamp(16px, 2.5vw, 18px); line-height: 1.78; }
-      .ds-text-l .ds-reader-p { font-size: clamp(18px, 2.9vw, 21px); line-height: 1.82; }
+      /* Text-size variants — 5 levels driven by the volume control. */
+      .ds-text-xs .ds-reader-p { font-size: clamp(13px, 2.0vw, 14px); line-height: 1.70; }
+      .ds-text-s  .ds-reader-p { font-size: clamp(15px, 2.3vw, 16px); line-height: 1.74; }
+      .ds-text-m  .ds-reader-p { font-size: clamp(16px, 2.5vw, 18px); line-height: 1.78; }
+      .ds-text-l  .ds-reader-p { font-size: clamp(18px, 2.9vw, 21px); line-height: 1.82; }
+      .ds-text-xl .ds-reader-p { font-size: clamp(21px, 3.3vw, 25px); line-height: 1.86; }
 
-      .ds-text-s .ds-reader-h1 { font-size: clamp(17px, 3.6vw, 20px); }
-      .ds-text-m .ds-reader-h1 { font-size: clamp(19px, 4vw, 23px); }
-      .ds-text-l .ds-reader-h1 { font-size: clamp(22px, 4.6vw, 27px); }
+      .ds-text-xs .ds-reader-h1 { font-size: clamp(16px, 3.4vw, 18px); }
+      .ds-text-s  .ds-reader-h1 { font-size: clamp(18px, 3.8vw, 21px); }
+      .ds-text-m  .ds-reader-h1 { font-size: clamp(19px, 4vw,   23px); }
+      .ds-text-l  .ds-reader-h1 { font-size: clamp(22px, 4.6vw, 27px); }
+      .ds-text-xl .ds-reader-h1 { font-size: clamp(26px, 5.4vw, 32px); }
 
       /* Drop cap on first paragraph */
       .ds-reader-p-first::first-letter {

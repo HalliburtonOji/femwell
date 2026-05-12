@@ -1,8 +1,8 @@
-import { useEffect, useState, useMemo } from "react";
+import { useEffect, useState, useMemo, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { ArrowLeft } from "lucide-react";
 import { base44 } from "@/api/base44Client";
-import DailyStoryReader from "@/components/lifestyle/DailyStoryReader";
+import DailyStoryReader, { TEXT_SIZES } from "@/components/lifestyle/DailyStoryReader";
 import { getBookCover } from "@/utils/bookCover";
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -15,15 +15,29 @@ import { getBookCover } from "@/utils/bookCover";
 // Route: /FictionReader?id=<LifestyleItems.id>
 // ─────────────────────────────────────────────────────────────────────────────
 
-// Bigger pages so a 2,000-word chapter splits into 3 pages instead of 5.
-// Combined with the reader's responsive shell (now up to 920px wide) this
-// makes the page rhythm uniform: short chapters fit one page, long chapters
-// 2-3, instead of the lumpy 1 vs 5 split we had before.
-const WORDS_PER_PAGE = 700;
+// Words-per-page is the lever that keeps chapters from overflowing the
+// visible page after a font-size change. Larger text → fewer words can fit
+// in one screen, so we re-paginate with a smaller cap. The numbers below
+// were tuned against a 880-px stage on a 13" laptop and a 390-pt iPhone;
+// in both cases each "page" comfortably fits without scroll.
+//
+// IMPORTANT: New chapter ALWAYS starts on a fresh page because each chapter
+// is paginated independently in the chapters_json loop below.
+const WORDS_PER_PAGE_BY_SIZE = {
+  xs: 1000,
+  s:   850,
+  m:   700, // default
+  l:   500,
+  xl:  380,
+};
+function wordsPerPageFor(size) {
+  return WORDS_PER_PAGE_BY_SIZE[size] || WORDS_PER_PAGE_BY_SIZE.m;
+}
 
 // Split a body of text into ~N-word pages, but break only at paragraph
 // boundaries so we never split a sentence across pages.
-function paginate(text, targetWords = WORDS_PER_PAGE) {
+function paginate(text, targetWords) {
+  if (!targetWords) targetWords = WORDS_PER_PAGE_BY_SIZE.m;
   if (!text) return [];
   // Normalize line endings, drop a leading "Chapter 1" / "Chapter N" line if
   // present (we'll attach the title separately so the heading isn't repeated).
@@ -86,6 +100,18 @@ export default function FictionReader() {
   const [error, setError] = useState("");
   const [showReader, setShowReader] = useState(false);
 
+  // textSize is owned HERE so we can re-paginate chapters whenever the user
+  // changes size. The DailyStoryReader receives it as a controlled prop.
+  const [textSize, setTextSize] = useState(() => {
+    try {
+      const stored = localStorage.getItem("fw_reader_text_size") || "m";
+      return TEXT_SIZES.includes(stored) ? stored : "m";
+    } catch { return "m"; }
+  });
+  const handleTextSizeChange = useCallback((next) => {
+    if (TEXT_SIZES.includes(next)) setTextSize(next);
+  }, []);
+
   const itemId = useMemo(() => {
     return new URLSearchParams(window.location.search).get("id") || null;
   }, []);
@@ -121,18 +147,22 @@ export default function FictionReader() {
   const chapters = useMemo(() => {
     if (!item) return [];
 
+    const wpp = wordsPerPageFor(textSize);
+
     // Preferred path: structured chapters live in chapters_json (array of
     // { title, body }). Each entry is paginated independently and tagged
     // with the chapter's display title so the reader shows chapter breaks.
+    // Because each chapter is paginated separately, a new chapter ALWAYS
+    // starts on a fresh page — the buffer doesn't carry across chapters.
     if (Array.isArray(item.chapters_json) && item.chapters_json.length > 0) {
       const out = [];
       item.chapters_json.forEach((chap, chIdx) => {
         const heading = chap?.title || `Chapter ${chIdx + 1}`;
         const body = chap?.body || "";
-        const pages = paginate(body, WORDS_PER_PAGE);
+        const pages = paginate(body, wpp);
         pages.forEach((pageBody, pIdx) => {
           out.push({
-            id: `${item.id}-ch${chIdx + 1}-p${pIdx + 1}`,
+            id: `${item.id}-ch${chIdx + 1}-p${pIdx + 1}-${textSize}`,
             day_number: out.length + 1,
             // Big chapter heading only on first page of each chapter, but
             // every page carries the chapter_context so the reader can show
@@ -158,9 +188,9 @@ export default function FictionReader() {
 
     // Fallback: single-chapter records (legacy) — paginate the lede field.
     const text = item.body || item.lede || item.summary || "";
-    const pages = paginate(text, WORDS_PER_PAGE);
+    const pages = paginate(text, wpp);
     return pagesToChapters(pages, item);
-  }, [item]);
+  }, [item, textSize]);
 
   if (loading) {
     return (
@@ -208,6 +238,8 @@ export default function FictionReader() {
       <DailyStoryReader
         source={{ kind: "book", items: chapters, currentIndex: 0 }}
         totalCount={chapters.length}
+        textSize={textSize}
+        onTextSizeChange={handleTextSizeChange}
       />
     </Frame>
   );
