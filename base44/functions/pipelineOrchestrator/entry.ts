@@ -514,6 +514,56 @@ async function runExtendFictionPhase(base44) {
   }
 }
 
+// Phase 7: generate today's HoroscopeReading for every onboarded user
+// (anyone with an AstroProfile row). Capped at 200 users per run. Idempotent:
+// generateHoroscopeReading skips users who already have today's row.
+async function runDailyHoroscopesPhase(base44) {
+  const startedAt = new Date().toISOString();
+  const RUN_CAP = 200;
+  const sb = base44.asServiceRole;
+  const results = [];
+  const today = new Date().toISOString().split('T')[0];
+
+  try {
+    const profiles = await sb.entities.AstroProfile.filter({}, '-updated_date', RUN_CAP).catch(() => []);
+    let skipped = 0;
+    let generated = 0;
+    let failed = 0;
+
+    for (const ap of profiles) {
+      if (!ap?.user_id) continue;
+      try {
+        // Cheap pre-check — skip the function call if today's row exists.
+        const existing = await sb.entities.HoroscopeReading.filter(
+          { user_id: ap.user_id, reading_date: today }, undefined, 1
+        ).catch(() => []);
+        if (existing.length > 0) { skipped++; continue; }
+
+        const res = await sb.functions.invoke('generateHoroscopeReading', { user_id: ap.user_id });
+        const data = res?.data || res || {};
+        if (data.ok) { generated++; }
+        else { failed++; results.push({ user_id: ap.user_id, error: data.error }); }
+      } catch (err) {
+        failed++;
+        results.push({ user_id: ap.user_id, error: err?.message });
+      }
+    }
+
+    await logIngestError(
+      base44, 'pipelineOrchestrator', 'generateDailyHoroscopes:result',
+      { source_identifier: 'generateDailyHoroscopes', raw_payload: { startedAt, generated, skipped, failed, errors: results.slice(0, 10) } },
+      new Error('generateDailyHoroscopes ok'),
+    );
+    return { ok: true, result: { processed: profiles.length, generated, skipped, failed } };
+  } catch (err) {
+    await logIngestError(
+      base44, 'pipelineOrchestrator', 'generateDailyHoroscopes:fail',
+      { source_identifier: 'generateDailyHoroscopes', raw_payload: { startedAt } }, err,
+    );
+    return { ok: false, err: err?.message || String(err) };
+  }
+}
+
 // ── On-demand phase dispatch ──────────────────────────────────────────────
 // Query params:
 //   ?run_phase=<name>   run ONLY that phase (default: all phases in order)
@@ -575,6 +625,13 @@ Deno.serve(async (req) => {
   // records reach target_chapters. Oldest published_at first so backlog fills in.
   if (wantsPhase('extendFictionDaily')) {
     phases.push({ name: 'extendFictionDaily', ...(await runExtendFictionPhase(base44)) });
+  }
+
+  // Phase 7: generate today's HoroscopeReading row per onboarded user. Capped
+  // at 200 users per run. Skips users who already have today's row.
+  // ~$0.001 / user / day via gpt-4o-mini.
+  if (wantsPhase('generateDailyHoroscopes')) {
+    phases.push({ name: 'generateDailyHoroscopes', ...(await runDailyHoroscopesPhase(base44)) });
   }
 
   const finishedAt = new Date().toISOString();

@@ -1,0 +1,55 @@
+{
+  "name": "AstroProfile",
+  "type": "object",
+  "properties": {
+    "user_id": {
+      "type": "string",
+      "description": "FK to User. One AstroProfile per user."
+    },
+    "birth_date": {
+      "type": "string",
+      "format": "date",
+      "description": "YYYY-MM-DD. Required for sun sign."
+    },
+    "birth_time": {
+      "type": "string",
+      "description": "HH:MM 24h. Optional — unlocks moon + rising."
+    },
+    "birth_place": {
+      "type": "string",
+      "description": "City, country. Free-text."
+    },
+    "sun_sign": {
+      "type": "string",
+      "description": "Computed from birth_date."
+    },
+    "sun_degree": {
+      "type": "number",
+      "description": "0-29, degrees into the sign."
+    },
+    "moon_sign": {
+      "type": "string",
+      "description": "Estimated by LLM when birth_time is present."
+    },
+    "rising_sign": {
+      "type": "string",
+      "description": "Estimated by LLM when birth_time + birth_place present."
+    },
+    "mercury_sign": {
+      "type": "string",
+      "description": "Mercury sign at birth (LLM)."
+    },
+    "created_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "updated_at": {
+      "type": "string",
+      "format": "date-time"
+    }
+  },
+  "required": [
+    "user_id",
+    "birth_date"
+  ]
+}

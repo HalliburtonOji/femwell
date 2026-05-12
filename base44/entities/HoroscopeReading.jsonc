@@ -1,0 +1,91 @@
+{
+  "name": "HoroscopeReading",
+  "type": "object",
+  "properties": {
+    "user_id": {
+      "type": "string",
+      "description": "FK to User. One reading per user per day."
+    },
+    "astro_profile_id": {
+      "type": "string",
+      "description": "FK to AstroProfile."
+    },
+    "reading_date": {
+      "type": "string",
+      "format": "date",
+      "description": "YYYY-MM-DD — local date the reading is for."
+    },
+    "headline": {
+      "type": "string",
+      "description": "Italic-emphasised, may contain *word* markers or <em>tags</em>."
+    },
+    "narrative": {
+      "type": "string",
+      "description": "Hero paragraph, ~70 words present tense."
+    },
+    "moon_phase": {
+      "type": "string",
+      "description": "e.g. 'Waxing gibbous'."
+    },
+    "moon_pct": {
+      "type": "number",
+      "description": "0-100 illumination."
+    },
+    "mercury_pill": {
+      "type": "string",
+      "description": "e.g. 'Mercury in Taurus'."
+    },
+    "triad_sun_desc": {
+      "type": "string"
+    },
+    "triad_moon_desc": {
+      "type": "string"
+    },
+    "triad_rising_desc": {
+      "type": "string"
+    },
+    "power_title": {
+      "type": "string"
+    },
+    "power_body": {
+      "type": "string"
+    },
+    "pressure_title": {
+      "type": "string"
+    },
+    "pressure_body": {
+      "type": "string"
+    },
+    "trouble_title": {
+      "type": "string"
+    },
+    "trouble_body": {
+      "type": "string"
+    },
+    "cycle_moon_headline": {
+      "type": "string"
+    },
+    "cycle_moon_body": {
+      "type": "string"
+    },
+    "cycle_phase": {
+      "type": "string",
+      "description": "menstrual | follicular | ovulatory | luteal"
+    },
+    "transits_json": {
+      "type": "array",
+      "description": "Array of { when: 'YYYY-MM-DD', glyph, title, desc } — 4 entries for the next 7 days.",
+      "items": {
+        "type": "object"
+      }
+    },
+    "created_at": {
+      "type": "string",
+      "format": "date-time"
+    }
+  },
+  "required": [
+    "user_id",
+    "reading_date"
+  ]
+}
