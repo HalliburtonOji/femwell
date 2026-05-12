@@ -147,50 +147,42 @@ export default function FictionReader() {
   const chapters = useMemo(() => {
     if (!item) return [];
 
-    const wpp = wordsPerPageFor(textSize);
-
-    // Preferred path: structured chapters live in chapters_json (array of
-    // { title, body }). Each entry is paginated independently and tagged
-    // with the chapter's display title so the reader shows chapter breaks.
-    // Because each chapter is paginated separately, a new chapter ALWAYS
-    // starts on a fresh page — the buffer doesn't carry across chapters.
+    // Reader v3: pass ONE entry per chapter. The reader does measured
+    // pagination on the chapter body and slices it into pages that fit the
+    // viewport. No more word-count guessing — fonts can grow and the reader
+    // just re-measures.
     if (Array.isArray(item.chapters_json) && item.chapters_json.length > 0) {
-      const out = [];
-      item.chapters_json.forEach((chap, chIdx) => {
+      return item.chapters_json.map((chap, chIdx) => {
         const heading = chap?.title || `Chapter ${chIdx + 1}`;
-        const body = chap?.body || "";
-        const pages = paginate(body, wpp);
-        pages.forEach((pageBody, pIdx) => {
-          out.push({
-            id: `${item.id}-ch${chIdx + 1}-p${pIdx + 1}-${textSize}`,
-            day_number: out.length + 1,
-            // Big chapter heading only on first page of each chapter, but
-            // every page carries the chapter_context so the reader can show
-            // a small persistent strip ("Chapter 2 of 5 — The Half I…")
-            // even on continuation pages. Fixes the "scattered" feel.
-            title: pIdx === 0 ? heading : "",
-            heading: pIdx === 0 ? heading : "",
-            body: pageBody,
-            cliffhanger: "",
-            series_title: item.title || "",
-            chapter_context: {
-              chapterIndex: chIdx + 1,
-              chapterCount: item.chapters_json.length,
-              chapterTitle: heading,
-              pageInChapter: pIdx + 1,
-              pagesInChapter: pages.length,
-            },
-          });
-        });
+        return {
+          id: `${item.id}-ch${chIdx + 1}`,
+          day_number: chIdx + 1,
+          title: heading,
+          heading,
+          body: chap?.body || "",
+          cliffhanger: "",
+          series_title: item.title || "",
+          chapter_context: {
+            chapterIndex: chIdx + 1,
+            chapterCount: item.chapters_json.length,
+            chapterTitle: heading,
+          },
+        };
       });
-      return out;
     }
 
-    // Fallback: single-chapter records (legacy) — paginate the lede field.
+    // Fallback: legacy single-chapter — wrap the whole body as one chapter.
     const text = item.body || item.lede || item.summary || "";
-    const pages = paginate(text, wpp);
-    return pagesToChapters(pages, item);
-  }, [item, textSize]);
+    return [{
+      id: `${item.id}-only`,
+      day_number: 1,
+      title: item.title || "",
+      heading: item.title || "",
+      body: text,
+      cliffhanger: "",
+      series_title: item.title || "",
+    }];
+  }, [item]);
 
   if (loading) {
     return (

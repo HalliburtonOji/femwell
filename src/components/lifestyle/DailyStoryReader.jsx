@@ -1,8 +1,9 @@
-import { useState, useEffect, useMemo, useRef, useCallback } from "react";
-import { ChevronLeft, ChevronRight, Lock, ArrowLeft, Minus, Plus, X } from "lucide-react";
+import { useState, useEffect, useMemo, useRef, useCallback, useLayoutEffect } from "react";
+import { createPortal } from "react-dom";
+import { ChevronLeft, ChevronRight, Lock, ArrowLeft, X } from "lucide-react";
 import { base44 } from "@/api/base44Client";
 
-// 5 text-size levels, exported so FictionReader can paginate per size.
+// 5 text-size levels, exported so callers can use them in shared logic.
 export const TEXT_SIZES = ["xs", "s", "m", "l", "xl"];
 export const TEXT_SIZE_INDEX = (s) => Math.max(0, TEXT_SIZES.indexOf(s));
 
@@ -57,52 +58,39 @@ function prefersReducedMotion() {
   try { return window.matchMedia("(prefers-reduced-motion: reduce)").matches; } catch { return false; }
 }
 
-// ─── Font-size volume control ─────────────────────────────────────────────────
-// Volume-knob-style font picker: A− [● ● ○ ○ ○] A+
-// Five segments, click a segment to jump, click − / + to step. Active segments
-// are filled; click outside the bar to leave at current.
-function FontVolumeControl({ textSize, stepSize, setSize, variant }) {
+// ─── Font-size slider control ─────────────────────────────────────────────────
+// A real range slider — small "A" on the left, large "A" on the right, the
+// thumb drags between five discrete positions (xs · s · m · l · xl).
+function FontSliderControl({ textSize, setSize, variant }) {
   const i = TEXT_SIZE_INDEX(textSize);
   const isImm = variant === "immersive";
+  const onChange = (e) => {
+    const idx = parseInt(e.target.value, 10);
+    if (Number.isFinite(idx) && idx >= 0 && idx < TEXT_SIZES.length) {
+      setSize(TEXT_SIZES[idx]);
+    }
+  };
   return (
     <div
-      className={`ds-reader-vol ${isImm ? "is-immersive" : ""}`}
+      className={`ds-reader-slider ${isImm ? "is-immersive" : ""}`}
       role="group"
       aria-label="Text size"
     >
-      <button
-        type="button"
-        className="ds-reader-vol-step"
-        onClick={() => stepSize(-1)}
-        disabled={i <= 0}
-        aria-label="Smaller text"
-        title="Smaller"
-      >
-        <Minus size={14} />
-      </button>
-      <div className="ds-reader-vol-track" role="presentation">
-        {TEXT_SIZES.map((s, idx) => (
-          <button
-            key={s}
-            type="button"
-            className={`ds-reader-vol-seg ${idx <= i ? "is-on" : ""}`}
-            onClick={() => setSize(s)}
-            aria-label={`Text size ${s.toUpperCase()}`}
-            aria-pressed={idx === i}
-            title={`Text size ${s.toUpperCase()}`}
-          />
-        ))}
-      </div>
-      <button
-        type="button"
-        className="ds-reader-vol-step"
-        onClick={() => stepSize(1)}
-        disabled={i >= TEXT_SIZES.length - 1}
-        aria-label="Larger text"
-        title="Larger"
-      >
-        <Plus size={14} />
-      </button>
+      <span className="ds-reader-slider-mark ds-reader-slider-mark-min" aria-hidden="true">A</span>
+      <input
+        type="range"
+        min="0"
+        max={TEXT_SIZES.length - 1}
+        step="1"
+        value={i}
+        onChange={onChange}
+        className="ds-reader-slider-input"
+        aria-valuemin={0}
+        aria-valuemax={TEXT_SIZES.length - 1}
+        aria-valuenow={i}
+        aria-valuetext={`Text size ${TEXT_SIZES[i].toUpperCase()}`}
+      />
+      <span className="ds-reader-slider-mark ds-reader-slider-mark-max" aria-hidden="true">A</span>
     </div>
   );
 }
@@ -123,8 +111,12 @@ function ProgressDots({ current, total }) {
   );
 }
 
-// ─── Single chapter page ──────────────────────────────────────────────────────
-function ChapterPage({ chapter, dayLabel, indexHint, total, animClass }) {
+// ─── Single chapter page (measured pagination) ───────────────────────────────
+// Each chapter receives its full body and decides at render-time how many
+// pages of paragraphs fit in the available viewport — and the user can flip
+// inside the chapter without ever scrolling. Re-measures when the textSize
+// changes or the viewport resizes.
+function ChapterPage({ chapter, dayLabel, indexHint, total, animClass, textSize, pageInChapter, onPageCount, immersive }) {
   const { heading, body } = useMemo(
     () => parseChapter(chapter.body || chapter.segment_text || ""),
     [chapter]
@@ -135,9 +127,64 @@ function ChapterPage({ chapter, dayLabel, indexHint, total, animClass }) {
     chapter.title ||
     chapter.heading ||
     (chapter.day_number ? `Chapter ${chapter.day_number}` : "");
-  // Persistent context strip — chapter title/page-count carried by every
-  // paginated page so multi-page chapters don't feel scattered.
   const ctx = chapter.chapter_context;
+
+  // Slice each chapter into pages that fit the visible viewport.
+  // slices: [[startParaIdx, endParaIdx], ...] — end is inclusive.
+  const measureRef = useRef(null);
+  const [slices, setSlices] = useState(null);
+  const [vpKey, setVpKey] = useState(0);
+
+  useEffect(() => {
+    const onResize = () => setVpKey(k => k + 1);
+    window.addEventListener("resize", onResize);
+    window.addEventListener("orientationchange", onResize);
+    return () => {
+      window.removeEventListener("resize", onResize);
+      window.removeEventListener("orientationchange", onResize);
+    };
+  }, []);
+
+  useLayoutEffect(() => {
+    if (!measureRef.current) return;
+    const ps = Array.from(measureRef.current.querySelectorAll(".ds-measure-p"));
+    if (!ps.length) {
+      setSlices([[0, 0]]);
+      onPageCount && onPageCount(chapter.id, 1);
+      return;
+    }
+    // How much vertical room is actually available inside the stage:
+    // viewport height minus the reader chrome (control bar + chapter strip +
+    // heading + footer dots + stage padding). Tuned conservatively so the
+    // last paragraph never gets clipped, even with the drop-cap on the first.
+    const reserved = immersive ? 220 : 280;
+    const minAvail = 260;
+    const available = Math.max(minAvail, window.innerHeight - reserved);
+
+    const out = [];
+    let start = 0;
+    let topAtStart = ps[0].offsetTop;
+    for (let i = 0; i < ps.length; i++) {
+      const bottom = ps[i].offsetTop + ps[i].offsetHeight;
+      const heightFromStart = bottom - topAtStart;
+      if (heightFromStart > available && i > start) {
+        out.push([start, i - 1]);
+        start = i;
+        topAtStart = ps[i].offsetTop;
+      }
+    }
+    out.push([start, ps.length - 1]);
+    setSlices(out);
+    onPageCount && onPageCount(chapter.id, out.length);
+  // We intentionally watch chapter.id, textSize, vpKey, immersive.
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [chapter.id, paragraphs.length, textSize, vpKey, immersive]);
+
+  // Clamp pageInChapter into range — re-flow may shrink the count.
+  const safePage = Math.max(0, Math.min((slices?.length ?? 1) - 1, pageInChapter || 0));
+  const [from, to] = slices ? slices[safePage] : [0, paragraphs.length - 1];
+  const pageCount = slices ? slices.length : 1;
+  const isFirstPage = safePage === 0;
 
   return (
     <div
@@ -145,35 +192,59 @@ function ChapterPage({ chapter, dayLabel, indexHint, total, animClass }) {
       role="article"
       aria-label={headingText || ctx?.chapterTitle || ""}
     >
-      {/* Always-on chapter context strip */}
-      {ctx && (
+      {/* Always-on chapter context strip — page-of-N now derived from the
+          actual measured slices, not pre-computed in FictionReader. */}
+      {(ctx || pageCount > 1) && (
         <p className="ds-reader-chapter-strip">
-          Chapter {ctx.chapterIndex} of {ctx.chapterCount}
-          {ctx.pagesInChapter > 1 ? ` · page ${ctx.pageInChapter} of ${ctx.pagesInChapter}` : ""}
+          {ctx ? `Chapter ${ctx.chapterIndex} of ${ctx.chapterCount}` : ""}
+          {ctx && pageCount > 1 ? " · " : ""}
+          {pageCount > 1 ? `page ${safePage + 1} of ${pageCount}` : ""}
         </p>
       )}
 
-      {/* Big chapter heading — only on the first page of each chapter */}
-      {headingText && (
+      {/* Big chapter heading — only on the first measured page of the chapter */}
+      {isFirstPage && headingText && (
         <>
           <h1 className="ds-reader-h1">{headingText}</h1>
           <div className="ds-reader-ornament" aria-hidden="true">· · ·</div>
         </>
       )}
 
+      {/* Visible slice */}
       <div className="ds-reader-body">
+        {slices && paragraphs.slice(from, to + 1).map((p, j) => {
+          const i = from + j;
+          // Drop cap only on the very first paragraph of the very first page.
+          const dropCap = i === 0 && isFirstPage;
+          return (
+            <p key={i} className={dropCap ? "ds-reader-p ds-reader-p-first" : "ds-reader-p"}>
+              {p}
+            </p>
+          );
+        })}
+      </div>
+
+      {/* Hidden measuring container — same width, paragraphs marked
+          ds-measure-p so useLayoutEffect can find them. Visually invisible
+          but laid out at the same width so offsetTop / offsetHeight are
+          accurate. */}
+      <div
+        ref={measureRef}
+        aria-hidden="true"
+        className="ds-reader-measure"
+      >
         {paragraphs.map((p, i) => (
-          <p key={i} className={i === 0 ? "ds-reader-p ds-reader-p-first" : "ds-reader-p"}>
+          <p key={i} className={i === 0 ? "ds-reader-p ds-measure-p ds-reader-p-first" : "ds-reader-p ds-measure-p"}>
             {p}
           </p>
         ))}
       </div>
 
-      {chapter.attribution && (
+      {chapter.attribution && safePage === pageCount - 1 && (
         <p className="ds-reader-attribution">{chapter.attribution}</p>
       )}
 
-      {dayLabel && (
+      {dayLabel && safePage === pageCount - 1 && (
         <p className="ds-reader-footer-label">{dayLabel}</p>
       )}
 
@@ -230,6 +301,17 @@ export default function DailyStoryReader({
 }) {
   const [chapters, setChapters] = useState(providedSource?.items || []);
   const [currentIndex, setCurrentIndex] = useState(providedSource?.currentIndex ?? 0);
+  // pageInChapter — measured pagination tracks WHICH page within the current
+  // chapter is visible. Resets to 0 on chapter change.
+  const [pageInChapter, setPageInChapter] = useState(0);
+  // chapter id → page count (reported back by ChapterPage's measurement pass)
+  const [chapterPageCounts, setChapterPageCounts] = useState({});
+  const reportPageCount = useCallback((chapterId, count) => {
+    if (!chapterId) return;
+    setChapterPageCounts(prev =>
+      prev[chapterId] === count ? prev : { ...prev, [chapterId]: count }
+    );
+  }, []);
   const [loading, setLoading] = useState(!providedSource);
   const [error, setError] = useState(false);
   const [flipState, setFlipState] = useState({ phase: "idle", dir: 0 });
@@ -326,11 +408,29 @@ export default function DailyStoryReader({
   }, [providedSource, seriesKey]);
 
   const latestRevealed = chapters.length - 1;
+  const currentChapterRef = chapters[currentIndex];
+  const currentChapterPages = chapterPageCounts[currentChapterRef?.id] || 1;
+  // Reset to page 0 whenever we move to a different chapter.
+  useEffect(() => { setPageInChapter(0); }, [currentIndex]);
 
   const flipForward = useCallback(() => {
     if (showLocked) return;
+    // Step inside the current chapter first.
+    if (pageInChapter < currentChapterPages - 1) {
+      if (reducedMotion) {
+        setPageInChapter(p => p + 1);
+      } else {
+        setFlipState({ phase: "flipping", dir: 1 });
+        setTimeout(() => {
+          setPageInChapter(p => p + 1);
+          setFlipState({ phase: "idle", dir: 0 });
+        }, 350);
+      }
+      return;
+    }
+    // At end of chapter — go to next chapter (or lock).
     if (currentIndex >= latestRevealed) {
-      if (noLock) return; // books: no lock screen, just stay on last chapter
+      if (noLock) return; // books: no lock screen, stay on last page
       if (reducedMotion) {
         setShowLocked(true);
       } else {
@@ -351,7 +451,7 @@ export default function DailyStoryReader({
         setFlipState({ phase: "idle", dir: 0 });
       }, 600);
     }
-  }, [currentIndex, latestRevealed, reducedMotion, showLocked]);
+  }, [pageInChapter, currentChapterPages, currentIndex, latestRevealed, reducedMotion, showLocked, noLock]);
 
   const flipBackward = useCallback(() => {
     if (showLocked) {
@@ -366,17 +466,36 @@ export default function DailyStoryReader({
       }
       return;
     }
+    // Step inside the current chapter first.
+    if (pageInChapter > 0) {
+      if (reducedMotion) {
+        setPageInChapter(p => p - 1);
+      } else {
+        setFlipState({ phase: "flipping", dir: -1 });
+        setTimeout(() => {
+          setPageInChapter(p => p - 1);
+          setFlipState({ phase: "idle", dir: 0 });
+        }, 350);
+      }
+      return;
+    }
     if (currentIndex <= 0) return;
+    // Jumping to previous chapter — land on its LAST page so flipping back
+    // feels continuous instead of teleporting to its first.
+    const prevChapter = chapters[currentIndex - 1];
+    const prevPageCount = chapterPageCounts[prevChapter?.id] || 1;
     if (reducedMotion) {
-      setCurrentIndex((i) => Math.max(i - 1, 0));
+      setCurrentIndex(i => Math.max(i - 1, 0));
+      setPageInChapter(prevPageCount - 1);
     } else {
       setFlipState({ phase: "flipping", dir: -1 });
       setTimeout(() => {
-        setCurrentIndex((i) => Math.max(i - 1, 0));
+        setCurrentIndex(i => Math.max(i - 1, 0));
+        setPageInChapter(prevPageCount - 1);
         setFlipState({ phase: "idle", dir: 0 });
       }, 600);
     }
-  }, [currentIndex, reducedMotion, showLocked]);
+  }, [pageInChapter, currentIndex, reducedMotion, showLocked, chapters, chapterPageCounts]);
 
   // Keyboard nav
   useEffect(() => {
@@ -448,7 +567,7 @@ export default function DailyStoryReader({
     ? `Chapter ${currentIndex + 1} / ${chapters.length}`
     : `Chapter ${currentChapter.day_number || currentIndex + 1} / ${totalCount}`;
 
-  return (
+  const readerBody = (
     <div
       className={`ds-reader-root ds-text-${textSize} ${immersive ? "ds-immersive" : ""}`}
       onTouchStart={onTouchStart}
@@ -470,9 +589,8 @@ export default function DailyStoryReader({
           >
             <ArrowLeft size={18} />
           </button>
-          <FontVolumeControl
+          <FontSliderControl
             textSize={textSize}
-            stepSize={stepSize}
             setSize={setSize}
             variant="immersive"
           />
@@ -490,9 +608,8 @@ export default function DailyStoryReader({
         <div className="ds-reader-controls" role="toolbar" aria-label="Reader controls">
           <p className="ds-reader-series-label ds-reader-series-inline">{seriesTitle}</p>
           <div className="ds-reader-controls-right">
-            <FontVolumeControl
+            <FontSliderControl
               textSize={textSize}
-              stepSize={stepSize}
               setSize={setSize}
             />
             <button
@@ -546,6 +663,10 @@ export default function DailyStoryReader({
             indexHint={currentIndex}
             total={totalCount}
             animClass={animClass}
+            textSize={textSize}
+            pageInChapter={pageInChapter}
+            onPageCount={reportPageCount}
+            immersive={immersive}
           />
         )}
       </div>
@@ -572,6 +693,14 @@ export default function DailyStoryReader({
       </div>
     </div>
   );
+
+  // Immersive renders through a portal to document.body so it floats above
+  // EVERY app surface (bottom nav, FABs, sticky headers) — "like watching a
+  // movie". Non-immersive renders inline.
+  if (immersive && typeof document !== "undefined") {
+    return createPortal(readerBody, document.body);
+  }
+  return readerBody;
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -613,21 +742,29 @@ function ReaderStyles({ reducedMotion }) {
         font-family: 'Inter', sans-serif;
         user-select: none;
       }
-      /* Immersive — fills the viewport, scroll-locked elsewhere */
+      /* Immersive — fills the entire viewport, hard-clipped (no scroll EVER).
+         Measured pagination guarantees the visible slice fits. */
       .ds-reader-root.ds-immersive {
         position: fixed;
         inset: 0;
-        z-index: 1000;
+        z-index: 9999;
         max-width: none;
         background: var(--ivory, #faf6f0);
         padding: 16px 24px 32px;
-        overflow-y: auto;
+        overflow: hidden;
+        display: flex;
+        flex-direction: column;
       }
       .ds-reader-root.ds-immersive .ds-reader-stage {
         max-width: 760px;
         margin: 0 auto;
-        min-height: calc(100vh - 140px);
+        width: 100%;
+        flex: 1;
+        min-height: 0;
+        overflow: hidden;
       }
+      /* Visible body in immersive must clip too — pagination handles fit. */
+      .ds-reader-root.ds-immersive .ds-reader-body { overflow: hidden; }
 
       /* Control bar — series label inline + volume-style font + fullscreen */
       .ds-reader-controls {
@@ -663,46 +800,84 @@ function ReaderStyles({ reducedMotion }) {
       .ds-reader-ctrl-btn:hover { color: var(--plum-deep, #2b1e16); }
       .ds-reader-ctrl-fullscreen { font-size: 14px; }
 
-      /* Volume-style font control: − [● ● ○ ○ ○] + */
-      .ds-reader-vol {
+      /* True range-slider font control — small A · [thumb on track] · big A */
+      .ds-reader-slider {
         display: inline-flex;
         align-items: center;
-        gap: 6px;
+        gap: 10px;
         background: var(--surface, #fff);
         border: 1px solid var(--border, #EDE8E4);
         border-radius: 9999px;
-        padding: 3px 6px;
+        padding: 4px 12px;
+        min-width: 180px;
       }
-      .ds-reader-vol-step {
-        width: 24px; height: 24px;
-        border: none; background: transparent;
+      .ds-reader-slider-mark {
+        font-family: 'Fraunces', Georgia, serif;
         color: var(--plum-mute, #8A7E88);
-        cursor: pointer; border-radius: 9999px;
-        display: inline-flex; align-items: center; justify-content: center;
+        line-height: 1;
+        font-weight: 500;
+        user-select: none;
       }
-      .ds-reader-vol-step:hover:not(:disabled) {
-        color: var(--rose-primary, #D45E52);
-        background: var(--rose-soft-bg, #fbe9e6);
-      }
-      .ds-reader-vol-step:disabled { opacity: 0.35; cursor: default; }
-      .ds-reader-vol-track {
-        display: inline-flex; align-items: center; gap: 5px;
-        padding: 0 4px;
-      }
-      .ds-reader-vol-seg {
-        width: 9px; height: 9px;
-        border-radius: 9999px;
-        border: 1.5px solid var(--mauve, #8A7E88);
+      .ds-reader-slider-mark-min { font-size: 11px; }
+      .ds-reader-slider-mark-max { font-size: 19px; }
+      .ds-reader-slider-input {
+        -webkit-appearance: none;
+        appearance: none;
+        flex: 1;
+        height: 18px;
         background: transparent;
+        margin: 0;
         cursor: pointer;
-        padding: 0;
-        transition: background 120ms, transform 120ms;
       }
-      .ds-reader-vol-seg.is-on {
+      /* WebKit track + thumb */
+      .ds-reader-slider-input::-webkit-slider-runnable-track {
+        height: 3px;
+        background: var(--border, #EDE8E4);
+        border-radius: 2px;
+      }
+      .ds-reader-slider-input::-webkit-slider-thumb {
+        -webkit-appearance: none;
+        appearance: none;
+        width: 16px; height: 16px;
+        margin-top: -7px;
+        border-radius: 9999px;
         background: var(--rose-primary, #D45E52);
-        border-color: var(--rose-primary, #D45E52);
+        border: 2px solid var(--surface, #fff);
+        box-shadow: 0 1px 3px rgba(74,42,58,0.25);
+        cursor: pointer;
       }
-      .ds-reader-vol-seg:hover { transform: scale(1.15); }
+      /* Firefox track + thumb */
+      .ds-reader-slider-input::-moz-range-track {
+        height: 3px;
+        background: var(--border, #EDE8E4);
+        border-radius: 2px;
+      }
+      .ds-reader-slider-input::-moz-range-thumb {
+        width: 16px; height: 16px;
+        border-radius: 9999px;
+        background: var(--rose-primary, #D45E52);
+        border: 2px solid var(--surface, #fff);
+        box-shadow: 0 1px 3px rgba(74,42,58,0.25);
+        cursor: pointer;
+      }
+      .ds-reader-slider.is-immersive {
+        background: rgba(255,255,255,0.85);
+        backdrop-filter: blur(8px);
+      }
+
+      /* Hidden measuring layer — visually invisible but laid out at the same
+         width so paragraph offsetTop / offsetHeight are accurate. */
+      .ds-reader-measure {
+        position: absolute;
+        top: 0; left: 0; right: 0;
+        visibility: hidden;
+        pointer-events: none;
+        opacity: 0;
+        max-width: 720px;
+        margin: 0 auto;
+        padding: 0;
+      }
+      .ds-immersive .ds-reader-measure { max-width: 720px; }
 
       /* Immersive top bar — minimal: ← Aa-volume ✕ */
       .ds-reader-immersive-bar {
@@ -806,18 +981,24 @@ function ReaderStyles({ reducedMotion }) {
       .ds-reader-tap-left  { left: 0; }
       .ds-reader-tap-right { right: 0; }
 
-      /* Book stage */
+      /* Book stage — content is hard-clipped here. The reader's measured
+         pagination computes how many paragraphs fit and only renders that
+         slice into the visible body; the rest is held in a hidden measurer
+         off to the side. */
       .ds-reader-stage {
         background: var(--surface, #fff);
         border: 1px solid var(--border, #EDE8E4);
         border-radius: 20px;
         box-shadow: 0 8px 32px rgba(42,32,53,0.10), 0 2px 8px rgba(42,32,53,0.06);
         min-height: 520px;
+        max-height: calc(100vh - 220px);
         padding: 40px 32px 32px;
         position: relative;
         transform-style: preserve-3d;
         overflow: hidden;
       }
+      /* And the visible body inside the stage clips too. */
+      .ds-reader-body { overflow: hidden; }
 
       @media (max-width: 480px) {
         .ds-reader-stage { padding: 28px 20px 24px; min-height: 460px; }
