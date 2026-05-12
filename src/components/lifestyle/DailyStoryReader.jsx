@@ -473,7 +473,7 @@ function ReaderStyles({ reducedMotion }) {
       }
 
       .ds-reader-h1 {
-        font-family: 'Fraunces', 'Playfair Display', Georgia, serif;
+        font-family: 'Fraunces', 'Fraunces', Georgia, serif;
         font-size: clamp(18px, 4vw, 22px);
         font-weight: 500;
         color: var(--plum-deep, #2b1e16);

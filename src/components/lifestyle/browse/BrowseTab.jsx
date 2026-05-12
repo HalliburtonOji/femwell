@@ -1,11 +1,25 @@
 import { useState, useEffect, useCallback } from 'react';
 import { base44 } from '@/api/base44Client';
 import { getCurrentCyclePhase } from '@/utils/cyclePhase';
+import { mapLegacyCategory } from '@/utils/contentCategory';
 import BrowseFilterChips from './BrowseFilterChips';
 import BrowseSearch from './BrowseSearch';
 import BrowseGrid from './BrowseGrid';
 import BooksGrid from './BooksGrid';
 import Toast from '@/components/lifestyle/foryou/Toast';
+
+// Canonical slug match for client-side filtering. Mirrors ForYouTab so the
+// `mental_health` slug catches "Mental Wellness" / "psychology" rows that
+// the server filter `{category: "mental_health"}` was silently missing.
+function _matchesCategorySlug(item, list) {
+  if (!list || list.length === 0) return true;
+  const raw = String(item.category || '').toLowerCase();
+  const itemSlug = mapLegacyCategory(item.category) || raw;
+  return list.some((f) => {
+    const fl = String(f).toLowerCase();
+    return itemSlug === fl || raw === fl;
+  });
+}
 
 // ── Gutendex (Project Gutenberg) free public-domain book search ────────────
 // Maps category slug (CONTENT_CATEGORIES) → Gutenberg topic search keywords.
@@ -122,27 +136,26 @@ async function fetchItems(chip, categorySlug, lifestyleProfile) {
     return [];
   }
 
-  // Compose with parent category filter — if user picked specific categories
-  // AND a type chip, both apply. `categorySlug` is either a string (legacy)
-  // or an array of slugs (Option B); we adapt the base44 filter accordingly.
-  let categoryClause = {};
-  if (Array.isArray(categorySlug)) {
-    if (categorySlug.length === 1) categoryClause = { category: categorySlug[0] };
-    else if (categorySlug.length > 1) categoryClause = { category: { $in: categorySlug } };
-    // empty array → no clause
-  } else if (categorySlug && categorySlug !== 'all') {
-    categoryClause = { category: categorySlug };
-  }
+  // Category filter is applied CLIENT-SIDE via slug normalisation because
+  // the entity stores free-form labels ("Mental Wellness") that don't match
+  // our slugs ("mental_health"). Server-side {category: "mental_health"}
+  // returned zero results. We overfetch (60 not 24) and filter in JS.
+  const filterList = Array.isArray(categorySlug)
+    ? categorySlug.filter((s) => s && s !== 'all')
+    : (categorySlug && categorySlug !== 'all' ? [categorySlug] : []);
 
   const items = await base44.entities.LifestyleItems.filter(
-    { ...baseFilter, ...typeFilter, ...categoryClause },
+    { ...baseFilter, ...typeFilter },
     '-published_at',
-    24,
+    60,
   ).catch(() => []);
 
   const hidden = new Set((lifestyleProfile?.hidden_item_ids) || []);
   const blocked = new Set((lifestyleProfile?.blocked_categories) || []);
-  return (items || []).filter(it => !hidden.has(it.id) && !blocked.has(it.category));
+  return (items || [])
+    .filter(it => !hidden.has(it.id) && !blocked.has(it.category))
+    .filter(it => _matchesCategorySlug(it, filterList))
+    .slice(0, 24);
 }
 
 export default function BrowseTab({ categoryFilter = 'all' }) {

@@ -113,7 +113,7 @@ export default function EditorialHero({ item, savedSet, savedPhases, onSave, onU
       >
         <h2
           style={{
-            font: "300 32px/1.15 'Playfair Display', serif",
+            font: "300 32px/1.15 'Fraunces', serif",
             letterSpacing: "-0.02em",
             color: "var(--cream)",
             margin: 0,

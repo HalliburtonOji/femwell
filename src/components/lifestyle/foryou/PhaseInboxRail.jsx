@@ -123,7 +123,7 @@ export default function PhaseInboxRail({ items, currentPhase }) {
               </div>
               <div style={{ padding: '8px 10px' }}>
                 <p style={{
-                  fontFamily: "'Playfair Display', serif",
+                  fontFamily: "'Fraunces', serif",
                   fontSize: 13,
                   fontWeight: 400,
                   color: 'var(--plum-deep)',

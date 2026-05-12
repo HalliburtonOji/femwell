@@ -105,7 +105,7 @@ function BentoCard({ item, idx, currentPhase, savedSet, savedPhases, onSave, onU
         {isStory && pullQuote ? (
           <p
             style={{
-              font: "italic 300 18px/1.4 'Playfair Display', serif",
+              font: "italic 300 18px/1.4 'Fraunces', serif",
               color: "var(--plum-deep)",
               margin: 0,
               display: "-webkit-box",
@@ -119,7 +119,7 @@ function BentoCard({ item, idx, currentPhase, savedSet, savedPhases, onSave, onU
         ) : (
           <h3
             style={{
-              font: "400 22px/1.25 'Playfair Display', serif",
+              font: "400 22px/1.25 'Fraunces', serif",
               color: "var(--plum-deep)",
               margin: 0,
               letterSpacing: "-0.01em",

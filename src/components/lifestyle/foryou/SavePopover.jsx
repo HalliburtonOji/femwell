@@ -95,7 +95,7 @@ export default function SavePopover({ anchorRect, hasExistingPhase, onPick, onAu
       <div
         style={{
           padding: "12px 16px 8px",
-          font: "italic 300 14px 'Playfair Display', serif",
+          font: "italic 300 14px 'Fraunces', serif",
           color: "var(--plum-mute)",
         }}
       >

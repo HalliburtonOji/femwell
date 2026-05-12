@@ -24,7 +24,7 @@ export default function TryThisRail({ items, contentByKey, userId }) {
     <section style={{ marginTop: 20 }} aria-label="Try this — cross-library sessions">
       <h3
         style={{
-          font: "italic 300 22px/1 'Playfair Display', serif",
+          font: "italic 300 22px/1 'Fraunces', serif",
           color: "var(--plum-deep)",
           margin: "0 0 8px 16px",
         }}
@@ -119,7 +119,7 @@ export default function TryThisRail({ items, contentByKey, userId }) {
                 )}
                 <p
                   style={{
-                    font: "400 15px/1.3 'Playfair Display', serif",
+                    font: "400 15px/1.3 'Fraunces', serif",
                     color: "var(--plum-deep)",
                     margin: "4px 0 0",
                     display: "-webkit-box",

@@ -23,7 +23,7 @@ export default function SavedRail({ items, currentPhase, savedPhases, onUntagOrU
       >
         <h3
           style={{
-            font: "italic 400 18px/1 'Playfair Display', serif",
+            font: "italic 400 18px/1 'Fraunces', serif",
             color: "var(--plum-deep)",
             margin: 0,
           }}
@@ -98,7 +98,7 @@ export default function SavedRail({ items, currentPhase, savedPhases, onUntagOrU
               <div style={{ padding: "8px 10px" }}>
                 <p
                   style={{
-                    font: "400 13px/1.3 'Playfair Display', serif",
+                    font: "400 13px/1.3 'Fraunces', serif",
                     color: "var(--plum-deep)",
                     margin: 0,
                     display: "-webkit-box",

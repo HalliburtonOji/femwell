@@ -137,7 +137,7 @@ function ArticleSheet({ item, onClose }) {
             {item.emotional_tag && <Pill label={item.emotional_tag} color="var(--rose-primary)" bg="var(--rose-soft-bg)" />}
           </div>
           {/* Title */}
-          <h2 style={{ fontFamily: "'Playfair Display', serif", fontSize: 22, fontWeight: 700, color: "var(--plum)", lineHeight: 1.3, marginBottom: 10 }}>{item.title}</h2>
+          <h2 style={{ fontFamily: "'Fraunces', serif", fontSize: 22, fontWeight: 700, color: "var(--plum)", lineHeight: 1.3, marginBottom: 10 }}>{item.title}</h2>
           {/* Meta */}
           <div style={{ display: "flex", gap: 8, flexWrap: "wrap", marginBottom: 20 }}>
             {item.author_name && <span style={{ fontSize: 12, color: "var(--mauve)", fontFamily: "'Inter', sans-serif" }}>{item.author_name}</span>}
@@ -537,7 +537,7 @@ export default function Lifestyle() {
       <div className="sticky top-0 z-30" style={{ backgroundColor: "rgba(250,248,245,0.97)", backdropFilter: "blur(20px)", borderBottom: "1px solid var(--border)" }}>
         <div className="max-w-xl mx-auto px-4 pt-10 pb-3">
           <p style={{ fontSize: "0.6rem", fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.12em", color: "var(--mauve)", fontFamily: "'Inter', sans-serif" }}>Discover</p>
-          <h1 style={{ fontSize: 24, fontWeight: 700, fontFamily: "'Playfair Display', serif", color: "var(--plum)", letterSpacing: "-0.02em", marginBottom: 12 }}>Lifestyle</h1>
+          <h1 style={{ fontSize: 24, fontWeight: 700, fontFamily: "'Fraunces', serif", color: "var(--plum)", letterSpacing: "-0.02em", marginBottom: 12 }}>Lifestyle</h1>
 
           <div className="lf-scroll" style={{ display: "flex", gap: 6, overflowX: "auto", paddingBottom: 2 }}>
             {TABS.map(t => (

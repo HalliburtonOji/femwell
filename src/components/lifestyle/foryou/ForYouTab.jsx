@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState, useCallback } from "react";
 import { base44 } from "@/api/base44Client";
 import { getCurrentCyclePhase } from "@/utils/cyclePhase";
+import { mapLegacyCategory } from "@/utils/contentCategory";
 import EditorialHero from "./EditorialHero";
 import SavedRail from "./SavedRail";
 import TryThisRail from "./TryThisRail";
@@ -8,21 +9,20 @@ import BentoGrid from "./BentoGrid";
 import Toast from "./Toast";
 import PhaseInboxRail from "./PhaseInboxRail";
 
-// Accepts legacy string ("all" / single slug) OR array of slugs (Option B).
-// Empty array or "all" means no filter.
+// Canonical slug match. Both sides normalise through mapLegacyCategory so
+// "Mental Wellness" / "Mental health" / "psychology" all resolve to the
+// same `mental_health` slug before comparison. Fixes the silent half-broken
+// filter where `mental_health` slug never matched "Mental Wellness" rows.
 function matchCategoryFilter(item, filter) {
   if (!filter) return true;
-  if (Array.isArray(filter)) {
-    if (filter.length === 0) return true;
-    const raw = String(item.category || "").toLowerCase();
-    return filter.some((f) => {
-      const fl = String(f).toLowerCase();
-      return raw === fl || raw.includes(fl.replace(/_/g, " "));
-    });
-  }
-  if (filter === "all") return true;
+  const list = Array.isArray(filter) ? filter : (filter === "all" ? [] : [filter]);
+  if (list.length === 0) return true;
   const raw = String(item.category || "").toLowerCase();
-  return raw === filter || raw.includes(String(filter).replace(/_/g, " "));
+  const itemSlug = mapLegacyCategory(item.category) || raw;
+  return list.some((f) => {
+    const fl = String(f).toLowerCase();
+    return itemSlug === fl || raw === fl;
+  });
 }
 
 async function fetchHeroItem() {
