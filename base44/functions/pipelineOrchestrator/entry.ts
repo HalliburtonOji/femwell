@@ -514,6 +514,31 @@ async function runExtendFictionPhase(base44) {
   }
 }
 
+// Phase 8: monthly Red/White Moon archetype classifier. Wraps computeRedWhiteMoon.
+// Gated on the orchestrator query side (wantsPhase('computeRedWhiteMoon')) so
+// the daily 04:30 UTC cron only triggers it on the 1st of each month — see
+// MONTHLY_PHASES below. Cheap to call (no LLM); ~1 SDK roundtrip per onboarded
+// user worst case.
+async function runComputeRedWhiteMoonPhase(base44) {
+  const startedAt = new Date().toISOString();
+  try {
+    const res = await base44.asServiceRole.functions.invoke('computeRedWhiteMoon', {});
+    const data = res?.data || res || {};
+    await logIngestError(
+      base44, 'pipelineOrchestrator', 'computeRedWhiteMoon:result',
+      { source_identifier: 'computeRedWhiteMoon', raw_payload: { startedAt, result: data } },
+      new Error('computeRedWhiteMoon ok'),
+    );
+    return { ok: !!data.ok, result: data };
+  } catch (err) {
+    await logIngestError(
+      base44, 'pipelineOrchestrator', 'computeRedWhiteMoon:fail',
+      { source_identifier: 'computeRedWhiteMoon', raw_payload: { startedAt } }, err,
+    );
+    return { ok: false, err: err?.message || String(err) };
+  }
+}
+
 // Phase 7: generate today's HoroscopeReading for every onboarded user
 // (anyone with an AstroProfile row). Capped at 200 users per run. Idempotent:
 // generateHoroscopeReading skips users who already have today's row.
@@ -592,7 +617,19 @@ Deno.serve(async (req) => {
   const startedAt = new Date().toISOString();
   const phases = [];
 
-  const wantsPhase = (name) => !runPhaseParam || runPhaseParam === name;
+  // Monthly phases — auto-fire on the 1st of each UTC month from the daily
+  // cron, AND run on explicit ?run_phase=<name> requests (so admin can
+  // re-trigger any day). When no run_phase is provided, monthly phases are
+  // skipped unless today is the 1st.
+  const todayUtcDay = new Date().getUTCDate();
+  const isFirstOfMonth = todayUtcDay === 1;
+  const MONTHLY_PHASES = new Set(['computeRedWhiteMoon']);
+
+  const wantsPhase = (name) => {
+    if (runPhaseParam) return runPhaseParam === name;
+    if (MONTHLY_PHASES.has(name)) return isFirstOfMonth;
+    return true;
+  };
 
   // Phase 1: ingestRSS
   if (wantsPhase('ingestRSS')) {
@@ -632,6 +669,13 @@ Deno.serve(async (req) => {
   // ~$0.001 / user / day via gpt-4o-mini.
   if (wantsPhase('generateDailyHoroscopes')) {
     phases.push({ name: 'generateDailyHoroscopes', ...(await runDailyHoroscopesPhase(base44)) });
+  }
+
+  // Phase 8 (monthly): Red/White Moon archetype classifier. Cheap, no LLM.
+  // Fires on the 1st of each UTC month from the daily cron, or on explicit
+  // ?run_phase=computeRedWhiteMoon admin requests.
+  if (wantsPhase('computeRedWhiteMoon')) {
+    phases.push({ name: 'computeRedWhiteMoon', ...(await runComputeRedWhiteMoonPhase(base44)) });
   }
 
   const finishedAt = new Date().toISOString();

@@ -1,0 +1,48 @@
+{
+  "name": "HoroscopePersistedClassification",
+  "type": "object",
+  "description": "Persisted Red Moon / White Moon archetype for a user. One row per user. Refreshed monthly by computeRedWhiteMoon (cron-driven). Read by the Red/White Moon section in the Horoscope tab.",
+  "properties": {
+    "user_id": {
+      "type": "string"
+    },
+    "red_white_archetype": {
+      "type": "string",
+      "enum": [
+        "red_moon",
+        "white_moon",
+        "pink_moon",
+        "purple_moon",
+        "mixed",
+        "insufficient_data"
+      ],
+      "default": "insufficient_data"
+    },
+    "confidence": {
+      "type": "number",
+      "description": "0..1 — matching/sample ratio."
+    },
+    "bleeds_at_phases": {
+      "type": "array",
+      "description": "Moon-phase keys for the last (up to) 6 period_starts, newest first.",
+      "items": {
+        "type": "string"
+      }
+    },
+    "last_computed_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "created_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "updated_at": {
+      "type": "string",
+      "format": "date-time"
+    }
+  },
+  "required": [
+    "user_id"
+  ]
+}

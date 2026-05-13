@@ -100,10 +100,10 @@ export default function HoroscopeTab(props) {
         moon={moon}
         reading={reading}
       />
-      <SkyDiary reading={reading} />
-      <RedWhiteMoon />
-      <AnnualProfections />
-      <Compatibility userId={user?.id} chart={chart} />
+      <SkyDiary reading={reading} userId={user?.id} userProfile={userProfile} />
+      <RedWhiteMoon userId={user?.id} />
+      <AnnualProfections userId={user?.id} userProfile={userProfile} astro={astro} />
+      <Compatibility userId={user?.id} chart={chart} userProfile={userProfile} />
       <AskTheSky userId={user?.id} />
       <QuietModeToggle />
       <ScienceFooter />
