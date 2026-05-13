@@ -283,7 +283,11 @@ Deno.serve(async (req) => {
         month,
         title: letter.title,
         body_html: letter.body_html,
-        draft: true,
+        // LC-2 (D6): AI-final for now — letters publish directly,
+        // no human sign-off bottleneck. Operator panel still exists for
+        // future curation but isn't on the critical path.
+        draft: false,
+        published_at: now,
         signed_by: 'Astra Cole, MA, FAS',
         created_at: now,
       });

@@ -174,18 +174,14 @@ export default function AtelierReading({ userId, user }) {
 
   // ── UNLOCKED variant ────────────────────────────────────────────────────
   if (hasAtelier) {
-    const monthKey = currentMonthKey();
-    const awaitingSignoff = !letter && draftRow && draftRow.month === monthKey;
+    // LC-2 (D6): AI-final for now — letters publish directly. No
+    // "Awaiting Astra's sign-off" banner ever surfaces to the user.
+    // If a current-month letter exists it renders; if not, the placeholder
+    // line shows ("Your first Atelier letter will land...").
     return (
       <SectionWrap>
         <div style={shellStyle}>
         <p style={eyebrowStyle}>ATELIER &middot; BACKED BY ASTRA COLE, MA, FAS</p>
-
-        {awaitingSignoff && (
-          <div style={awaitingBannerStyle}>
-            Awaiting Astra&rsquo;s sign-off &mdash; usually published by the 3rd.
-          </div>
-        )}
 
         {letter ? (
           <>
@@ -197,11 +193,11 @@ export default function AtelierReading({ userId, user }) {
             />
             <p style={signoffStyle}>&mdash; {letter.signed_by || "Astra Cole, MA, FAS"}</p>
           </>
-        ) : !awaitingSignoff ? (
+        ) : (
           <p style={italicBodyStyle}>
             Your first Atelier letter will land on the 1st of next month. Astra writes one for you every month, signed by hand.
           </p>
-        ) : null}
+        )}
 
         {isOperator && (
           <OperatorPanel drafts={operatorDrafts} onPublish={handlePublish} />
@@ -362,18 +358,6 @@ const renewalStyle = {
   color: "rgba(247,239,225,0.55)",
   margin: "10px 0 0",
   textAlign: "center",
-};
-const awaitingBannerStyle = {
-  fontFamily: "'Fraunces', serif",
-  fontStyle: "italic",
-  fontSize: 12.5,
-  lineHeight: 1.5,
-  color: "rgba(247,239,225,0.78)",
-  padding: "10px 12px",
-  borderRadius: 10,
-  background: "rgba(245,230,211,0.06)",
-  border: "1px dashed rgba(245,230,211,0.18)",
-  marginBottom: 14,
 };
 const bodyHtmlStyle = {
   fontFamily: "'Fraunces', serif",
