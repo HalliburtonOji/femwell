@@ -35,9 +35,10 @@ import PaidShelf from "./sections/PaidShelf";
 //   TwilightHero, TriadCards, TodaysWeather, CycleMoonDial, SkyDiary,
 //   Compatibility, AskTheSky
 //
-// Sections stubbed (return null until H2b/c/d):
-//   RedWhiteMoon, AnnualProfections, QuietModeToggle, ScienceFooter,
-//   PrivacyLine, GoddessBench, AtelierReading, PaidShelf
+// All sections active through H2d:
+//   TwilightHero, TriadCards, GoddessBench, TodaysWeather, CycleMoonDial,
+//   SkyDiary, RedWhiteMoon, AnnualProfections, Compatibility, AskTheSky,
+//   QuietModeToggle, ScienceFooter, PrivacyLine, AtelierReading, PaidShelf
 // ─────────────────────────────────────────────────────────────────────────────
 
 export default function HoroscopeTab(props) {
@@ -108,8 +109,8 @@ export default function HoroscopeTab(props) {
       <QuietModeToggle userId={user?.id} />
       <ScienceFooter />
       <PrivacyLine />
-      <AtelierReading />
-      <PaidShelf />
+      <AtelierReading userId={user?.id} user={user} />
+      <PaidShelf userId={user?.id} />
 
       <BirthDataSheet
         open={sheetOpen}

@@ -13,16 +13,27 @@ Deno.serve(async (req) => {
   const user = await base44.auth.me();
   if (!user) return Response.json({ error: 'Unauthorized' }, { status: 401 });
 
-  const { plan, success_url, cancel_url } = await req.json();
+  const { plan, success_url, cancel_url, return_to } = await req.json();
 
   const priceId = PRICE_IDS[plan];
   if (!priceId) return Response.json({ error: 'Invalid plan' }, { status: 400 });
 
+  // Allow callers (e.g. the Atelier paywall) to pass return_to: 'Horoscope'
+  // so Stripe drops the user back on the right tab after checkout. We
+  // whitelist the page key against pages.config to avoid open-redirect risk.
+  const origin = req.headers.get('origin') || '';
+  const WHITELIST = new Set(['Today', 'Horoscope', 'Lifestyle', 'Profile', 'Insights']);
+  const safeReturn = WHITELIST.has(String(return_to || '')) ? String(return_to) : null;
+  const computedSuccess = success_url
+    || (safeReturn ? `${origin}/${safeReturn}?upgraded=1` : `${origin}/`);
+  const computedCancel = cancel_url
+    || (safeReturn ? `${origin}/${safeReturn}` : `${origin}/`);
+
   const session = await stripe.checkout.sessions.create({
     mode: 'subscription',
     line_items: [{ price: priceId, quantity: 1 }],
-    success_url: success_url || `${req.headers.get('origin')}/`,
-    cancel_url: cancel_url || `${req.headers.get('origin')}/`,
+    success_url: computedSuccess,
+    cancel_url: computedCancel,
     metadata: { user_id: user.id, user_email: user.email, plan },
     customer_email: user.email,
   });

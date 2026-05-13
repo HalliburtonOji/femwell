@@ -1,0 +1,46 @@
+{
+  "name": "AtelierLetters",
+  "type": "object",
+  "description": "Monthly long-form letter from Astra Cole, MA, FAS for FemWell Plus subscribers. One row per (user, month). Drafted by the LLM via draftAtelierLetter, then human-signed by the operator (draft: true → false, sets published_at). See H2_DECISIONS.md D2 — attribution is Astra Cole, never Skyfield.",
+  "properties": {
+    "user_id": {
+      "type": "string",
+      "description": "FK to User."
+    },
+    "month": {
+      "type": "string",
+      "description": "YYYY-MM. One letter per user per month."
+    },
+    "title": {
+      "type": "string",
+      "description": "Letter title (Fraunces 22px on the card)."
+    },
+    "body_html": {
+      "type": "string",
+      "description": "Rich-text body with headings + paragraphs. Sanitised before render."
+    },
+    "draft": {
+      "type": "boolean",
+      "default": true,
+      "description": "True until the operator publishes. Locked card stays in 'awaiting sign-off' state while true."
+    },
+    "published_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Set when operator flips draft → false."
+    },
+    "signed_by": {
+      "type": "string",
+      "default": "Astra Cole, MA, FAS",
+      "description": "Always Astra Cole, MA, FAS per H2_DECISIONS.md D2."
+    },
+    "created_at": {
+      "type": "string",
+      "format": "date-time"
+    }
+  },
+  "required": [
+    "user_id",
+    "month"
+  ]
+}

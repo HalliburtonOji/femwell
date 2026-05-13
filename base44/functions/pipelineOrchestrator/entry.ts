@@ -539,6 +539,32 @@ async function runComputeRedWhiteMoonPhase(base44) {
   }
 }
 
+// Phase 9 (monthly): draft Atelier letters for FemWell Plus/Pro/Premium users.
+// Wraps draftAtelierLetter. Fires on the 1st of each UTC month after
+// computeRedWhiteMoon (so the LLM draft can read the freshly-computed
+// archetype). ~$0.005 / Plus user / month via gpt-4o-mini. Saves with
+// draft: true — operator publishes manually from the admin panel under the
+// Atelier card. See H2_DECISIONS.md D2 — attribution is Astra Cole, MA, FAS.
+async function runDraftAtelierLettersPhase(base44) {
+  const startedAt = new Date().toISOString();
+  try {
+    const res = await base44.asServiceRole.functions.invoke('draftAtelierLetter', {});
+    const data = res?.data || res || {};
+    await logIngestError(
+      base44, 'pipelineOrchestrator', 'draftAtelierLetters:result',
+      { source_identifier: 'draftAtelierLetter', raw_payload: { startedAt, result: data } },
+      new Error('draftAtelierLetters ok'),
+    );
+    return { ok: !!data.ok, result: data };
+  } catch (err) {
+    await logIngestError(
+      base44, 'pipelineOrchestrator', 'draftAtelierLetters:fail',
+      { source_identifier: 'draftAtelierLetter', raw_payload: { startedAt } }, err,
+    );
+    return { ok: false, err: err?.message || String(err) };
+  }
+}
+
 // Phase 7: generate today's HoroscopeReading for every onboarded user
 // (anyone with an AstroProfile row). Capped at 200 users per run. Idempotent:
 // generateHoroscopeReading skips users who already have today's row.
@@ -623,7 +649,7 @@ Deno.serve(async (req) => {
   // skipped unless today is the 1st.
   const todayUtcDay = new Date().getUTCDate();
   const isFirstOfMonth = todayUtcDay === 1;
-  const MONTHLY_PHASES = new Set(['computeRedWhiteMoon']);
+  const MONTHLY_PHASES = new Set(['computeRedWhiteMoon', 'draftAtelierLetters']);
 
   const wantsPhase = (name) => {
     if (runPhaseParam) return runPhaseParam === name;
@@ -676,6 +702,13 @@ Deno.serve(async (req) => {
   // ?run_phase=computeRedWhiteMoon admin requests.
   if (wantsPhase('computeRedWhiteMoon')) {
     phases.push({ name: 'computeRedWhiteMoon', ...(await runComputeRedWhiteMoonPhase(base44)) });
+  }
+
+  // Phase 9 (monthly): draft Atelier letters for Plus/Pro/Premium users.
+  // Runs AFTER computeRedWhiteMoon so the letter draft can reference each
+  // user's freshly-computed archetype. ~$0.005 / user / month.
+  if (wantsPhase('draftAtelierLetters')) {
+    phases.push({ name: 'draftAtelierLetters', ...(await runDraftAtelierLettersPhase(base44)) });
   }
 
   const finishedAt = new Date().toISOString();
