@@ -8,7 +8,10 @@ import {
   getMoonPhase,
 } from "@/utils/astrology";
 import { useBirthChart } from "./hooks/useBirthChart";
+import useHoroscopeToast from "./hooks/useHoroscopeToast";
 import BirthDataSheet from "./BirthDataSheet";
+import HoroscopeToast from "./HoroscopeToast";
+import SectionSkeleton from "./SectionSkeleton";
 import TwilightHero from "./sections/TwilightHero";
 import TriadCards from "./sections/TriadCards";
 import TodaysWeather from "./sections/TodaysWeather";
@@ -26,28 +29,29 @@ import AtelierReading from "./sections/AtelierReading";
 import PaidShelf from "./sections/PaidShelf";
 
 // ─────────────────────────────────────────────────────────────────────────────
-// HoroscopeTab — shell component at src/components/horoscope/HoroscopeTab.jsx.
+// HoroscopeTab
 //
-// Data is loaded by useBirthChart (hooks/useBirthChart.js). Derived chart facts
-// are memoised here and forwarded to each section component.
-//
-// Sections active in this commit (H2a):
-//   TwilightHero, TriadCards, TodaysWeather, CycleMoonDial, SkyDiary,
-//   Compatibility, AskTheSky
-//
-// All sections active through H2d:
-//   TwilightHero, TriadCards, GoddessBench, TodaysWeather, CycleMoonDial,
-//   SkyDiary, RedWhiteMoon, AnnualProfections, Compatibility, AskTheSky,
-//   QuietModeToggle, ScienceFooter, PrivacyLine, AtelierReading, PaidShelf
+// Improvements wired in this file:
+//   1. Global toast — useHoroscopeToast + <HoroscopeToast />
+//      Surfaces: chart save success, reading generation status, errors.
+//   2. Per-section skeletons — <SectionSkeleton variant="..." /> shown while
+//      sectionsReady is false. Each section gets its own variant so the layout
+//      never collapses.
+//   3. Real-time reading subscription — in useBirthChart via
+//      HoroscopeReading.subscribe(). generatingReading flag shows toast.
+//   4. Location autocomplete — in BirthDataSheet (Nominatim).
+//   5. Custom date pickers — in BirthDataSheet (day/month/year selects).
 // ─────────────────────────────────────────────────────────────────────────────
 
 export default function HoroscopeTab(props) {
   const [sheetOpen, setSheetOpen] = useState(false);
+  const { toast, showToast, dismissToast } = useHoroscopeToast();
 
   const {
     user, astro, reading,
     userProfile, lifestyleProfile,
-    loading, setAstro, setReading,
+    loading, sectionsReady, generatingReading,
+    setAstro, setReading,
   } = useBirthChart(props.userProfile, props.lifestyleProfile);
 
   const chart = useMemo(() => deriveChart(astro, userProfile), [astro, userProfile]);
@@ -57,13 +61,38 @@ export default function HoroscopeTab(props) {
   const cycleLength = cycleInfo.length;
   const moon = useMemo(() => getMoonPhase(new Date()), []);
 
+  // Surface reading-generation status as a toast
+  useMemo(() => {
+    if (generatingReading) {
+      showToast("Reading the sky for today…", "info");
+    } else if (!generatingReading && !loading && astro && reading) {
+      // Only flash "ready" if we were previously generating in this session
+      // (avoid toast on cold loads where reading already existed)
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [generatingReading]);
+
+  const handleChartSaved = (saved) => {
+    setAstro(saved);
+    showToast("Chart saved. Reading the sky…", "success");
+  };
+
   if (loading) {
-    return <div style={loadingStyle}>Reading the sky\u2026</div>;
+    return (
+      <div style={tabShellStyle}>
+        <SectionSkeleton variant="hero" />
+        <SectionSkeleton variant="triad" />
+        <SectionSkeleton variant="bench" />
+        <SectionSkeleton variant="weather" />
+        <SectionSkeleton variant="dial" />
+        <SectionSkeleton variant="diary" />
+      </div>
+    );
   }
 
   if (!astro) {
     return (
-      <div>
+      <div style={tabShellStyle}>
         <OnboardingCard onOpen={() => setSheetOpen(true)} />
         <BirthDataSheet
           open={sheetOpen}
@@ -71,14 +100,16 @@ export default function HoroscopeTab(props) {
           userId={user?.id}
           initial={null}
           userProfile={userProfile}
-          onSaved={(saved) => setAstro(saved)}
+          onSaved={handleChartSaved}
         />
+        <HoroscopeToast message={toast.message} type={toast.type} onDismiss={dismissToast} />
       </div>
     );
   }
 
   return (
     <div style={tabShellStyle}>
+      {/* Hero — always shows immediately with fallbacks if reading is loading */}
       <TwilightHero
         chart={chart}
         moon={moon}
@@ -86,31 +117,45 @@ export default function HoroscopeTab(props) {
         cyclePhase={cyclePhase}
         cycleDay={cycleDay}
       />
-      <TriadCards
-        chart={chart}
-        astro={astro}
-        reading={reading}
-        onAddBirthTime={() => setSheetOpen(true)}
-      />
-      <GoddessBench astro={astro} userProfile={userProfile} reading={reading} />
-      <TodaysWeather reading={reading} chart={chart} />
-      <CycleMoonDial
-        cyclePhase={cyclePhase}
-        cycleDay={cycleDay}
-        cycleLength={cycleLength}
-        moon={moon}
-        reading={reading}
-      />
-      <SkyDiary reading={reading} userId={user?.id} userProfile={userProfile} />
-      <RedWhiteMoon userId={user?.id} />
-      <AnnualProfections userId={user?.id} userProfile={userProfile} astro={astro} />
-      <Compatibility userId={user?.id} chart={chart} userProfile={userProfile} />
-      <AskTheSky userId={user?.id} />
-      <QuietModeToggle userId={user?.id} />
-      <ScienceFooter />
-      <PrivacyLine />
-      <AtelierReading userId={user?.id} user={user} />
-      <PaidShelf userId={user?.id} />
+
+      {/* Sections below hero — show skeletons until sectionsReady */}
+      {!sectionsReady ? (
+        <>
+          <SectionSkeleton variant="triad" />
+          <SectionSkeleton variant="bench" />
+          <SectionSkeleton variant="weather" />
+          <SectionSkeleton variant="dial" />
+          <SectionSkeleton variant="diary" />
+        </>
+      ) : (
+        <>
+          <TriadCards
+            chart={chart}
+            astro={astro}
+            reading={reading}
+            onAddBirthTime={() => setSheetOpen(true)}
+          />
+          <GoddessBench astro={astro} userProfile={userProfile} reading={reading} />
+          <TodaysWeather reading={reading} chart={chart} />
+          <CycleMoonDial
+            cyclePhase={cyclePhase}
+            cycleDay={cycleDay}
+            cycleLength={cycleLength}
+            moon={moon}
+            reading={reading}
+          />
+          <SkyDiary reading={reading} userId={user?.id} userProfile={userProfile} />
+          <RedWhiteMoon userId={user?.id} />
+          <AnnualProfections userId={user?.id} userProfile={userProfile} astro={astro} />
+          <Compatibility userId={user?.id} chart={chart} userProfile={userProfile} />
+          <AskTheSky userId={user?.id} />
+          <QuietModeToggle userId={user?.id} />
+          <ScienceFooter />
+          <PrivacyLine />
+          <AtelierReading userId={user?.id} user={user} />
+          <PaidShelf userId={user?.id} />
+        </>
+      )}
 
       <BirthDataSheet
         open={sheetOpen}
@@ -118,8 +163,10 @@ export default function HoroscopeTab(props) {
         userId={user?.id}
         initial={astro}
         userProfile={userProfile}
-        onSaved={(saved) => setAstro(saved)}
+        onSaved={handleChartSaved}
       />
+
+      <HoroscopeToast message={toast.message} type={toast.type} onDismiss={dismissToast} />
     </div>
   );
 }
@@ -187,26 +234,9 @@ function OnboardingCard({ onOpen }) {
 // ─────────────────────────────────────────────────────────────────────────────
 // Styles
 // ─────────────────────────────────────────────────────────────────────────────
-// Page-level wrap. TwilightHero uses margin: 0 -18px to bleed back to the
-// shell edges (within this 480px container), so the gradient hero is full
-// width of the shell but bounded by maxWidth on tablet/desktop. maxWidth
-// + margin auto keeps the column readable at tablet/desktop per the
-// FemWell one-unified-bottom-nav contract (feedback_femwell_multiplatform.md).
-// paddingBottom keeps the last paid card clear of the bottom nav.
-// Width is inherited from the Lifestyle page wrapper (which already
-// width-constrains per `feedback_femwell_multiplatform.md`). Adding our own
-// maxWidth here squished the cards inside an already-constrained column on
-// tablet/desktop. Just give the sections page padding and bottom-nav clearance.
 const tabShellStyle = {
   padding: "0 16px",
   paddingBottom: 96,
-};
-const loadingStyle = {
-  padding: "60px 24px",
-  textAlign: "center",
-  fontFamily: "'Inter', sans-serif",
-  fontSize: 14,
-  color: "var(--plum-mute, #6b4a56)",
 };
 const onboardingStyle = {
   position: "relative",
