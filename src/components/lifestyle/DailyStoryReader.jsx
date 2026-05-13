@@ -3,6 +3,28 @@ import { createPortal } from "react-dom";
 import { ChevronLeft, ChevronRight, Lock, ArrowLeft, X, Bookmark } from "lucide-react";
 import { base44 } from "@/api/base44Client";
 
+// v4c — persisted reader preferences (theme, typeface, line, margins).
+// All keys live in one place so other components could read them if needed.
+const PREF_KEYS = {
+  theme: "fw_reader_theme",     // cream | honey | plum
+  font: "fw_reader_font",       // fraunces | inter
+  line: "fw_reader_line",       // tight | normal | relaxed
+  margins: "fw_reader_margins", // narrow | normal | wide
+};
+const THEMES = ["cream", "honey", "plum"];
+const FONTS = ["fraunces", "inter"];
+const LINES = ["tight", "normal", "relaxed"];
+const MARGINS = ["narrow", "normal", "wide"];
+function readPref(key, valid, fallback) {
+  try {
+    const v = localStorage.getItem(key);
+    return valid.includes(v) ? v : fallback;
+  } catch { return fallback; }
+}
+function writePref(key, value) {
+  try { localStorage.setItem(key, value); } catch { /* silent */ }
+}
+
 // 5 text-size levels, exported so callers can use them in shared logic.
 export const TEXT_SIZES = ["xs", "s", "m", "l", "xl"];
 export const TEXT_SIZE_INDEX = (s) => Math.max(0, TEXT_SIZES.indexOf(s));
@@ -92,6 +114,133 @@ function FontSliderControl({ textSize, setSize, variant }) {
       />
       <span className="ds-reader-slider-mark ds-reader-slider-mark-max" aria-hidden="true">A</span>
     </div>
+  );
+}
+
+// ─── Settings drawer (v4c) ────────────────────────────────────────────────────
+// Bottom sheet (60vh) with 5 sections: text size, theme, typeface, line
+// spacing, margins. All changes persist immediately to localStorage. Closes
+// on scrim click, Esc, or the close button.
+function SettingsDrawer({
+  textSize, setSize,
+  theme, setTheme,
+  font, setFont,
+  line, setLine,
+  margins, setMargins,
+  onClose,
+}) {
+  useEffect(() => {
+    const onKey = (e) => { if (e.key === "Escape") onClose(); };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [onClose]);
+
+  const themeLabel = { cream: "Cream", honey: "Honey", plum: "Plum Night" };
+  const lineLabel = { tight: "Tight", normal: "Default", relaxed: "Relaxed" };
+  const marginLabel = { narrow: "Narrow", normal: "Default", wide: "Wide" };
+
+  return (
+    <>
+      <div
+        className="ds-reader-scrim"
+        onClick={onClose}
+        aria-hidden="true"
+      />
+      <div
+        className="ds-reader-sheet"
+        role="dialog"
+        aria-modal="true"
+        aria-label="Reader settings"
+      >
+        <button
+          type="button"
+          className="ds-reader-sheet-handle"
+          onClick={onClose}
+          aria-label="Close settings"
+        />
+        <div className="ds-reader-sheet-content">
+          {/* Section 1 — Text size */}
+          <div className="ds-reader-sheet-section">
+            <p className="ds-reader-sheet-label">Text size</p>
+            <FontSliderControl textSize={textSize} setSize={setSize} variant="sheet" />
+          </div>
+
+          {/* Section 2 — Theme */}
+          <div className="ds-reader-sheet-section">
+            <p className="ds-reader-sheet-label">Theme</p>
+            <div className="ds-reader-tile-row">
+              {THEMES.map((t) => (
+                <button
+                  key={t}
+                  type="button"
+                  className={`ds-reader-tile ds-reader-tile-theme fw-theme-${t} ${theme === t ? "is-selected" : ""}`}
+                  onClick={() => setTheme(t)}
+                  aria-pressed={theme === t}
+                >
+                  <span className="ds-reader-tile-aa">Aa</span>
+                  <span className="ds-reader-tile-label">{themeLabel[t]}</span>
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* Section 3 — Typeface */}
+          <div className="ds-reader-sheet-section">
+            <p className="ds-reader-sheet-label">Typeface</p>
+            <div className="ds-reader-tile-row">
+              {FONTS.map((f) => (
+                <button
+                  key={f}
+                  type="button"
+                  className={`ds-reader-tile ds-reader-tile-font fw-font-${f} ${font === f ? "is-selected" : ""}`}
+                  onClick={() => setFont(f)}
+                  aria-pressed={font === f}
+                >
+                  <span className="ds-reader-tile-aa">Aa</span>
+                  <span className="ds-reader-tile-label">{f === "fraunces" ? "Serif" : "Sans"}</span>
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* Section 4 — Line spacing */}
+          <div className="ds-reader-sheet-section">
+            <p className="ds-reader-sheet-label">Line spacing</p>
+            <div className="ds-reader-pill-row">
+              {LINES.map((l) => (
+                <button
+                  key={l}
+                  type="button"
+                  className={`ds-reader-pill ${line === l ? "is-selected" : ""}`}
+                  onClick={() => setLine(l)}
+                  aria-pressed={line === l}
+                >
+                  {lineLabel[l]}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* Section 5 — Margins */}
+          <div className="ds-reader-sheet-section">
+            <p className="ds-reader-sheet-label">Margins</p>
+            <div className="ds-reader-pill-row">
+              {MARGINS.map((m) => (
+                <button
+                  key={m}
+                  type="button"
+                  className={`ds-reader-pill ${margins === m ? "is-selected" : ""}`}
+                  onClick={() => setMargins(m)}
+                  aria-pressed={margins === m}
+                >
+                  {marginLabel[m]}
+                </button>
+              ))}
+            </div>
+          </div>
+        </div>
+      </div>
+    </>
   );
 }
 
@@ -355,6 +504,16 @@ export default function DailyStoryReader({
   }, [textSize, setSize]);
 
   const [immersive, setImmersive] = useState(defaultImmersive);
+  // v4c — settings drawer (Aa button) + persisted prefs.
+  const [showSettings, setShowSettings] = useState(false);
+  const [theme, setThemeState] = useState(() => readPref(PREF_KEYS.theme, THEMES, "cream"));
+  const [font, setFontState] = useState(() => readPref(PREF_KEYS.font, FONTS, "fraunces"));
+  const [line, setLineState] = useState(() => readPref(PREF_KEYS.line, LINES, "normal"));
+  const [margins, setMarginsState] = useState(() => readPref(PREF_KEYS.margins, MARGINS, "normal"));
+  const setTheme = useCallback((v) => { setThemeState(v); writePref(PREF_KEYS.theme, v); }, []);
+  const setFont = useCallback((v) => { setFontState(v); writePref(PREF_KEYS.font, v); }, []);
+  const setLine = useCallback((v) => { setLineState(v); writePref(PREF_KEYS.line, v); }, []);
+  const setMargins = useCallback((v) => { setMarginsState(v); writePref(PREF_KEYS.margins, v); }, []);
   // v4b — chrome (top bar + bottom progress) auto-hides after 3s of no
   // input in immersive mode. Tap the center of the page to toggle. Any
   // input (touch, click, keypress, slider drag) resets the timer.
@@ -611,7 +770,16 @@ export default function DailyStoryReader({
 
   const readerBody = (
     <div
-      className={`ds-reader-root ds-text-${textSize} ${immersive ? "ds-immersive" : ""} ${immersive && !chromeVisible ? "ds-chrome-hidden" : "ds-chrome-visible"}`}
+      className={[
+        "ds-reader-root",
+        `ds-text-${textSize}`,
+        immersive ? "ds-immersive" : "",
+        immersive && !chromeVisible ? "ds-chrome-hidden" : "ds-chrome-visible",
+        `fw-theme-${theme}`,
+        `fw-font-${font}`,
+        `fw-line-${line}`,
+        `fw-margins-${margins}`,
+      ].filter(Boolean).join(" ")}
       onTouchStart={onTouchStart}
       onTouchEnd={onTouchEnd}
     >
@@ -632,8 +800,9 @@ export default function DailyStoryReader({
             aria-label={chromeVisible ? "Hide reader chrome" : "Show reader chrome"}
             tabIndex={-1}
           />
-          {/* Top floating bar — auto-hides after 3s. Bookmark is a visual
-              affordance for v4b; v4c wires it to localStorage. */}
+          {/* Top floating bar — auto-hides after 3s. The Aa button opens the
+              settings drawer (v4c). Bookmark is still a visual affordance;
+              real bookmarks land in v4d alongside position persistence. */}
           <div className="ds-reader-immersive-bar" role="toolbar" aria-label="Reader controls">
             <button
               type="button"
@@ -644,20 +813,26 @@ export default function DailyStoryReader({
             >
               <ArrowLeft size={18} />
             </button>
-            <FontSliderControl
-              textSize={textSize}
-              setSize={setSize}
-              variant="immersive"
-            />
-            <button
-              type="button"
-              className="ds-reader-imm-btn ds-reader-bookmark-btn"
-              onClick={() => { /* v4c wires this */ }}
-              aria-label="Bookmark this page"
-              title="Bookmark"
-            >
-              <Bookmark size={18} />
-            </button>
+            <div className="ds-reader-imm-right">
+              <button
+                type="button"
+                className="ds-reader-imm-btn ds-reader-aa-btn"
+                onClick={() => setShowSettings(true)}
+                aria-label="Reader settings"
+                title="Reader settings"
+              >
+                <span className="ds-reader-aa-glyph">Aa</span>
+              </button>
+              <button
+                type="button"
+                className="ds-reader-imm-btn ds-reader-bookmark-btn"
+                onClick={() => { /* v4d wires this */ }}
+                aria-label="Bookmark this page"
+                title="Bookmark"
+              >
+                <Bookmark size={18} />
+              </button>
+            </div>
           </div>
         </>
       ) : (
@@ -726,6 +901,26 @@ export default function DailyStoryReader({
           />
         )}
       </div>
+
+      {/* v4c — settings drawer. Bottom sheet with text-size slider, theme
+          picker (3 tiles), typeface picker (2 tiles), line spacing (3
+          steps), margins (3 steps). Scrim dismisses; Esc closes. All
+          changes persist immediately to localStorage. */}
+      {immersive && showSettings && (
+        <SettingsDrawer
+          textSize={textSize}
+          setSize={setSize}
+          theme={theme}
+          setTheme={setTheme}
+          font={font}
+          setFont={setFont}
+          line={line}
+          setLine={setLine}
+          margins={margins}
+          setMargins={setMargins}
+          onClose={() => setShowSettings(false)}
+        />
+      )}
 
       {/* v4b — bottom progress bar (immersive only). Text-only, auto-hides
           with the rest of the chrome. Pulls the chapter context from the
@@ -972,6 +1167,161 @@ function ReaderStyles({ reducedMotion }) {
       /* Bookmark button — sits inside the immersive-bar right side. */
       .ds-reader-bookmark-btn { color: var(--ink-mute, #8A7E88); }
       .ds-reader-bookmark-btn:hover { color: var(--accent, #D45E52); }
+
+      /* v4c — right-side cluster (Aa + Bookmark) */
+      .ds-reader-imm-right { display: inline-flex; align-items: center; gap: 8px; }
+      .ds-reader-aa-btn { font-family: 'Fraunces', Georgia, serif; }
+      .ds-reader-aa-glyph {
+        font-weight: 500;
+        font-size: 18px;
+        line-height: 1;
+        color: var(--ink, #2A2035);
+        display: inline-block;
+      }
+      .ds-reader-aa-glyph::first-letter { font-size: 0.66em; vertical-align: 4px; }
+
+      /* v4c — settings drawer (60vh bottom sheet) */
+      .ds-reader-scrim {
+        position: fixed;
+        inset: 0;
+        background: rgba(74, 42, 58, 0.30);
+        backdrop-filter: blur(2px);
+        z-index: 10000;
+        animation: ds-scrim-in 180ms ease both;
+      }
+      @keyframes ds-scrim-in { from { opacity: 0; } to { opacity: 1; } }
+      .ds-reader-sheet {
+        position: fixed;
+        bottom: 0; left: 0; right: 0;
+        max-width: 560px;
+        margin: 0 auto;
+        height: 60vh;
+        max-height: 560px;
+        background: var(--paper, #FFFAF5);
+        color: var(--ink, #2A2035);
+        border-radius: 24px 24px 0 0;
+        box-shadow: 0 -8px 32px rgba(74,42,58,0.18);
+        z-index: 10001;
+        display: flex;
+        flex-direction: column;
+        animation: ds-sheet-in 240ms cubic-bezier(0.32, 0.72, 0.24, 1) both;
+      }
+      @keyframes ds-sheet-in {
+        from { transform: translateY(100%); }
+        to   { transform: translateY(0); }
+      }
+      @media (prefers-reduced-motion: reduce) {
+        .ds-reader-scrim, .ds-reader-sheet { animation: none; }
+      }
+      .ds-reader-sheet-handle {
+        align-self: center;
+        margin: 10px 0 6px;
+        width: 36px;
+        height: 4px;
+        border-radius: 9999px;
+        background: var(--rule, rgba(74,42,58,0.16));
+        border: none;
+        cursor: pointer;
+        padding: 0;
+      }
+      .ds-reader-sheet-content {
+        padding: 14px 24px 24px;
+        overflow-y: auto;
+        -webkit-overflow-scrolling: touch;
+      }
+      .ds-reader-sheet-section {
+        margin-bottom: 22px;
+      }
+      .ds-reader-sheet-section:last-child { margin-bottom: 8px; }
+      .ds-reader-sheet-label {
+        font-family: 'Fraunces', Georgia, serif;
+        font-style: italic;
+        font-weight: 500;
+        font-size: 13px;
+        color: var(--ink-mute, #8A7E88);
+        margin: 0 0 10px;
+      }
+
+      /* Tile rows for theme + typeface */
+      .ds-reader-tile-row { display: flex; gap: 10px; }
+      .ds-reader-tile {
+        flex: 1;
+        min-height: 88px;
+        border-radius: 14px;
+        border: 1px solid var(--rule, rgba(74,42,58,0.16));
+        background: var(--paper, #FFFAF5);
+        color: var(--ink, #2A2035);
+        cursor: pointer;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 6px;
+        padding: 10px;
+        transition: outline-offset 120ms, transform 120ms;
+        outline: 2px solid transparent;
+        outline-offset: -2px;
+      }
+      .ds-reader-tile.is-selected {
+        outline-color: var(--accent, #D45E52);
+        outline-width: 2px;
+      }
+      .ds-reader-tile:hover:not(.is-selected) { transform: translateY(-1px); }
+      .ds-reader-tile-aa {
+        font-family: 'Fraunces', Georgia, serif;
+        font-size: 28px;
+        line-height: 1;
+        font-weight: 500;
+      }
+      .ds-reader-tile-font.fw-font-inter .ds-reader-tile-aa { font-family: 'Inter', sans-serif; }
+      .ds-reader-tile-label {
+        font-family: 'Inter', sans-serif;
+        font-size: 11px;
+        letter-spacing: 0.04em;
+        color: var(--ink-mute, #8A7E88);
+      }
+
+      /* Pill rows for line spacing + margins */
+      .ds-reader-pill-row { display: flex; gap: 8px; }
+      .ds-reader-pill {
+        flex: 1;
+        padding: 10px 12px;
+        border-radius: 9999px;
+        border: 1px solid var(--rule, rgba(74,42,58,0.16));
+        background: var(--paper, #FFFAF5);
+        color: var(--ink, #2A2035);
+        cursor: pointer;
+        font-family: 'Inter', sans-serif;
+        font-size: 13px;
+        font-weight: 500;
+      }
+      .ds-reader-pill.is-selected {
+        background: var(--accent, #D45E52);
+        color: #FFFAF5;
+        border-color: var(--accent, #D45E52);
+      }
+
+      /* Variant: the slider lives inside the sheet too — match the paper bg */
+      .ds-reader-slider.is-sheet {
+        background: transparent;
+        border-color: var(--rule, rgba(74,42,58,0.16));
+        width: 100%;
+      }
+
+      /* v4c — typeface override. When user picks Inter, body paragraphs use
+         Inter; the h1 and drop-cap stay Fraunces (per Atelier). */
+      .fw-font-inter .ds-reader-p { font-family: 'Inter', sans-serif; }
+
+      /* v4c — line-spacing override. Multiplies the per-size line-height. */
+      .fw-line-tight   .ds-reader-p { line-height: 1.55 !important; }
+      .fw-line-normal  .ds-reader-p { /* default */ }
+      .fw-line-relaxed .ds-reader-p { line-height: 1.95 !important; }
+
+      /* v4c — margins override (changes the reading column max-width in
+         immersive mode only — the inline non-immersive reader keeps 880). */
+      .fw-margins-narrow.ds-immersive  .ds-reader-stage { max-width: 480px; }
+      .fw-margins-normal.ds-immersive  .ds-reader-stage { /* default 580px */ }
+      .fw-margins-wide.ds-immersive    .ds-reader-stage { max-width: 680px; }
       /* Make sure the stage starts below the top bar visually. */
       .ds-reader-root.ds-immersive .ds-reader-stage {
         padding-top: max(72px, 64px);

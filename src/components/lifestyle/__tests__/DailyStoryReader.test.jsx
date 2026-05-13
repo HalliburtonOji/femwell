@@ -91,12 +91,24 @@ describe("DailyStoryReader — v4 contract", () => {
     expect(styleBlocks).toMatch(/\.ds-reader-root\.ds-immersive\s+\.ds-reader-stage\s*\{[\s\S]*box-shadow:\s*none/);
   });
 
-  it("mounts the v4b floating chrome — slider, bottom progress, bookmark, center tap", () => {
+  it("mounts the v4b/v4c floating chrome — Aa button, bottom progress, bookmark, center tap", () => {
     render(<DailyStoryReader source={bookSource()} totalCount={2} defaultImmersive />);
-    expect(document.querySelector(".ds-reader-slider-input")).not.toBeNull();
+    expect(document.querySelector(".ds-reader-aa-btn")).not.toBeNull();
     expect(document.querySelector(".ds-reader-bottom-bar")).not.toBeNull();
     expect(document.querySelector(".ds-reader-bookmark-btn")).not.toBeNull();
     expect(document.querySelector(".ds-reader-center-tap")).not.toBeNull();
+    // v4c moves the slider into the settings drawer; it's not in the top bar
+    // anymore until the drawer is opened.
+    expect(document.querySelector(".ds-reader-slider-input")).toBeNull();
+  });
+
+  it("applies v4c theme + font + line + margins classes from defaults", () => {
+    render(<DailyStoryReader source={bookSource()} totalCount={2} defaultImmersive />);
+    const root = document.querySelector(".ds-reader-root");
+    expect(root.classList.contains("fw-theme-cream")).toBe(true);
+    expect(root.classList.contains("fw-font-fraunces")).toBe(true);
+    expect(root.classList.contains("fw-line-normal")).toBe(true);
+    expect(root.classList.contains("fw-margins-normal")).toBe(true);
   });
 
   it("starts with chromeVisible=true and applies ds-chrome-visible class", () => {
