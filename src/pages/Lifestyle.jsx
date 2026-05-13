@@ -590,17 +590,26 @@ export default function Lifestyle() {
         </div>
       </div>
 
-      {/* Content — For-You uses a wider container so the bento can breathe */}
+      {/* Content — different widths per tab.
+          - For-You bento: wide (1200px) so the grid breathes.
+          - Horoscope: medium (820px) so the Plum Night section cards have
+            air on desktop without becoming uncomfortable to read; mobile
+            still gets the full viewport width.
+          - Browse / Listen / Daily Story: tight 576px column (mobile-frame
+            magazine feel — unchanged). */}
       {isForYou ? (
         <div className="mx-auto pt-5" style={{ maxWidth: 1200 }}>
           <ForYouTab categoryFilter={categoryFilter} />
+        </div>
+      ) : tab === "horoscope" ? (
+        <div className="mx-auto pt-5" style={{ maxWidth: 820 }}>
+          <HoroscopeTab />
         </div>
       ) : (
         <div className="max-w-xl mx-auto px-4 pt-5">
           {tab === "browse"      && <BrowseTab categoryFilter={categoryFilter} />}
           {tab === "listen"      && <ListenTab categoryFilter={categoryFilter} />}
           {tab === "daily_story" && <DailyStoryTab />}
-          {tab === "horoscope"   && <HoroscopeTab />}
         </div>
       )}
     </div>
