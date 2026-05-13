@@ -1,6 +1,7 @@
 import useProfections from "../hooks/useProfections";
 import { houseOrdinal } from "@/lib/astrology/profections";
 import SectionWrap from "../SectionWrap";
+import { INK_NIGHT } from "../styles/tokens.jsx";
 
 // ─────────────────────────────────────────────────────────────────────────────
 // AnnualProfections — Section 6.5.
@@ -120,9 +121,10 @@ export default function AnnualProfections({ astro, userProfile }) {
 const profectionShellStyle = {
   borderRadius: 18,
   padding: "20px 22px 18px",
-  background: "linear-gradient(180deg, rgba(184,158,106,0.16) 0%, rgba(184,158,106,0.05) 100%)",
-  border: "1px solid rgba(184,158,106,0.32)",
-  boxShadow: "0 1px 2px rgba(43,30,22,0.04), 0 6px 18px rgba(184,158,106,0.10)",
+  // H2-fix2: deeper gold tint on dark plum wrap (was too faint to see at 0.16).
+  background: "linear-gradient(180deg, rgba(184,158,106,0.22) 0%, rgba(184,158,106,0.08) 100%)",
+  border: "1px solid rgba(184,158,106,0.42)",
+  boxShadow: "0 1px 2px rgba(43,30,22,0.20), 0 6px 18px rgba(184,158,106,0.18)",
 };
 const profectionEyeStyle = {
   fontFamily: "'Inter', sans-serif",
@@ -130,7 +132,8 @@ const profectionEyeStyle = {
   fontWeight: 700,
   letterSpacing: "0.16em",
   textTransform: "uppercase",
-  color: "var(--gold-deep, #8C6A38)",
+  // H2-fix2: brighter gold for readability on dark.
+  color: "#D9B97A",
   margin: "0 0 8px",
 };
 const profectionTitleStyle = {
@@ -138,19 +141,22 @@ const profectionTitleStyle = {
   fontWeight: 400,
   fontSize: 22,
   lineHeight: 1.3,
-  color: "var(--plum-deep, #2b1e16)",
+  // H2-fix2: cream-on-night now that we sit inside Plum Night SectionWrap.
+  color: INK_NIGHT,
   margin: "0 0 12px",
 };
 const profectionEmStyle = {
   fontStyle: "italic",
-  color: "var(--gold-deep, #8C6A38)",
+  // H2-fix2: brighter gold accent for italic emphasis.
+  color: "#D9B97A",
 };
 const profectionBodyStyle = {
   fontFamily: "'Fraunces', serif",
   fontStyle: "italic",
   fontSize: 14.5,
   lineHeight: 1.65,
-  color: "var(--plum-deep, #2b1e16)",
+  // H2-fix2: cream body on dark.
+  color: "rgba(245,230,211,0.86)",
   margin: "0 0 12px",
 };
 const profectionMetaRowStyle = {
@@ -163,22 +169,26 @@ const profectionMetaRowStyle = {
 const profectionMetaItemStyle = {
   fontFamily: "'Inter', sans-serif",
   fontSize: 12,
-  color: "var(--plum-deep, #2b1e16)",
+  // H2-fix2: cream meta on dark.
+  color: "rgba(245,230,211,0.82)",
 };
 const profectionMetaLabelStyle = {
   fontWeight: 700,
   letterSpacing: "0.04em",
   marginRight: 6,
-  color: "var(--gold-deep, #8C6A38)",
+  // H2-fix2: brighter gold label.
+  color: "#D9B97A",
 };
 
-// Saturn Return pane — sits above the profection card, slightly darker tint
+// Saturn Return pane — sits above the profection card. H2-fix2 brought into
+// cream-on-night since it sits inside a Plum Night SectionWrap.
 const saturnShellStyle = {
   borderRadius: 18,
   padding: "22px 22px 16px",
-  background: "linear-gradient(180deg, rgba(125,134,104,0.20) 0%, rgba(125,134,104,0.06) 100%)",
-  border: "1px solid rgba(125,134,104,0.40)",
-  boxShadow: "0 1px 2px rgba(43,30,22,0.04), 0 6px 18px rgba(125,134,104,0.12)",
+  // H2-fix2: deeper sage tint on dark plum.
+  background: "linear-gradient(180deg, rgba(125,134,104,0.28) 0%, rgba(125,134,104,0.10) 100%)",
+  border: "1px solid rgba(125,134,104,0.50)",
+  boxShadow: "0 1px 2px rgba(43,30,22,0.18), 0 6px 18px rgba(125,134,104,0.16)",
   marginBottom: 14,
 };
 const saturnEyeStyle = {
@@ -187,7 +197,8 @@ const saturnEyeStyle = {
   fontWeight: 700,
   letterSpacing: "0.16em",
   textTransform: "uppercase",
-  color: "#3E5B58",
+  // H2-fix2: brighter sage for readability on dark.
+  color: "#A6BEB0",
   margin: "0 0 8px",
 };
 const saturnTitleStyle = {
@@ -195,19 +206,22 @@ const saturnTitleStyle = {
   fontWeight: 400,
   fontSize: 17,
   lineHeight: 1.35,
-  color: "var(--plum-deep, #2b1e16)",
+  // H2-fix2: cream-on-night.
+  color: INK_NIGHT,
   margin: "0 0 12px",
 };
 const saturnEmStyle = {
   fontStyle: "italic",
-  color: "#3E5B58",
+  // H2-fix2: brighter sage emphasis.
+  color: "#A6BEB0",
 };
 const saturnBodyStyle = {
   fontFamily: "'Fraunces', serif",
   fontStyle: "italic",
   fontSize: 14,
   lineHeight: 1.65,
-  color: "var(--plum-deep, #2b1e16)",
+  // H2-fix2: cream body on night.
+  color: "rgba(245,230,211,0.86)",
   margin: "0 0 12px",
 };
 const saturnMetaRowStyle = {
@@ -215,24 +229,27 @@ const saturnMetaRowStyle = {
   flexWrap: "wrap",
   gap: 12,
   paddingTop: 10,
-  borderTop: "1px dashed rgba(125,134,104,0.45)",
+  borderTop: "1px dashed rgba(125,134,104,0.55)",
   marginBottom: 8,
 };
 const saturnMetaItemStyle = {
   fontFamily: "'Inter', sans-serif",
   fontSize: 11.5,
-  color: "var(--plum-deep, #2b1e16)",
+  // H2-fix2: cream meta.
+  color: "rgba(245,230,211,0.82)",
 };
 const saturnMetaLabelStyle = {
   fontWeight: 700,
   letterSpacing: "0.04em",
   marginRight: 6,
-  color: "#3E5B58",
+  // H2-fix2: brighter sage label.
+  color: "#A6BEB0",
 };
 const saturnSignoffStyle = {
   fontFamily: "'Fraunces', serif",
   fontStyle: "italic",
   fontSize: 12,
-  color: "var(--plum-mute, #6b4a56)",
+  // H2-fix2: muted cream signoff.
+  color: "rgba(245,230,211,0.62)",
   margin: 0,
 };

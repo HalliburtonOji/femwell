@@ -2,6 +2,7 @@ import { useMemo } from "react";
 import { getMoonPhase } from "@/utils/astrology";
 import useSkyDiary from "../hooks/useSkyDiary";
 import SectionWrap from "../SectionWrap";
+import { INK_NIGHT, ACCENT_NIGHT } from "../styles/tokens.jsx";
 
 // ─────────────────────────────────────────────────────────────────────────────
 // SkyDiary — Section 5.
@@ -46,7 +47,7 @@ function SectionHead({ title, emphasis, link }) {
   return (
     <div style={sectionHeadStyle}>
       <h2 style={sectionTitleStyle}>
-        {title} <em style={{ fontStyle: "italic", color: "var(--rose-primary, #D45E52)" }}>{emphasis}</em>
+        {title} <em style={{ fontStyle: "italic", color: ACCENT_NIGHT }}>{emphasis}</em>
       </h2>
       {link && <span style={sectionLinkStyle}>{link}</span>}
     </div>
@@ -308,14 +309,16 @@ const sectionTitleStyle = {
   fontFamily: "'Fraunces', serif",
   fontWeight: 400,
   fontSize: 22,
-  color: "var(--plum-deep, #2b1e16)",
+  // H2-fix2: cream-on-night — sits inside Plum Night SectionWrap.
+  color: INK_NIGHT,
   margin: 0,
 };
 const sectionLinkStyle = {
   fontFamily: "'Inter', sans-serif",
   fontSize: 12,
   fontWeight: 500,
-  color: "var(--plum-mute, #6b4a56)",
+  // H2-fix2: muted cream on night.
+  color: "rgba(245,230,211,0.66)",
 };
 const diaryCardStyle = {
   background: "var(--cream, #FAF4EA)",

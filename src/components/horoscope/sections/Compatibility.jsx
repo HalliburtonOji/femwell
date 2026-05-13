@@ -130,7 +130,7 @@ export default function Compatibility({ userId, chart, userProfile }) {
       <div style={compatHeadStyle}>
         <div>
           <h3 style={sectionTitleStyle}>
-            Compatibility <em style={{ fontStyle: "italic", color: "var(--rose-primary, #D45E52)" }}>reading</em>
+            Compatibility <em style={{ fontStyle: "italic", color: "#E89289" }}>reading</em>
           </h3>
           <p style={compatSubStyle}>
             Try it with a friend, a partner, a crush — see where your charts meet.
@@ -264,8 +264,9 @@ const compatYouStyle = {
   fontSize: 11,
   fontWeight: 600,
   letterSpacing: "0.04em",
-  color: "var(--plum-mute, #6b4a56)",
-  background: "var(--cream-2, rgba(43,30,22,0.05))",
+  // H2-fix2: cream chip on Plum Night.
+  color: "rgba(245,230,211,0.82)",
+  background: "rgba(245,230,211,0.06)",
   padding: "5px 12px",
   borderRadius: 9999,
   alignSelf: "flex-start",
@@ -275,8 +276,9 @@ const lastChipStyle = {
   fontSize: 10.5,
   fontWeight: 600,
   letterSpacing: "0.04em",
-  color: "var(--plum-mute, #6b4a56)",
-  background: "var(--cream-2, rgba(43,30,22,0.05))",
+  // H2-fix2: cream chip on Plum Night.
+  color: "rgba(245,230,211,0.82)",
+  background: "rgba(245,230,211,0.06)",
   padding: "5px 12px",
   borderRadius: 9999,
   alignSelf: "flex-start",
@@ -335,18 +337,20 @@ const historyChipStyle = {
   fontSize: 11,
   fontWeight: 600,
   letterSpacing: "0.03em",
-  color: "var(--plum-mute, #6b4a56)",
+  // H2-fix2: cream chip on Plum Night.
+  color: "rgba(245,230,211,0.78)",
   background: "transparent",
-  border: "1px solid var(--ink-line, rgba(43,30,22,0.12))",
+  border: "1px solid rgba(245,230,211,0.20)",
   borderRadius: 9999,
   padding: "5px 12px",
   cursor: "pointer",
   minHeight: 30,
 };
 const historyChipActiveStyle = {
-  color: "var(--cream, #FAF4EA)",
-  background: "var(--plum-deep, #2b1e16)",
-  borderColor: "var(--plum-deep, #2b1e16)",
+  // H2-fix2: invert — plum-deep text on cream pill for active state.
+  color: "#2B1E26",
+  background: "#F5E6D3",
+  borderColor: "#F5E6D3",
 };
 const compatErrorStyle = {
   fontFamily: "'Inter', sans-serif",
