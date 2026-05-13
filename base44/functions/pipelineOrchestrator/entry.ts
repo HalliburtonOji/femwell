@@ -648,12 +648,24 @@ Deno.serve(async (req) => {
   // re-trigger any day). When no run_phase is provided, monthly phases are
   // skipped unless today is the 1st.
   const todayUtcDay = new Date().getUTCDate();
+  const todayUtcDow = new Date().getUTCDay(); // 0 = Sunday
   const isFirstOfMonth = todayUtcDay === 1;
+  const isSunday = todayUtcDow === 0;
   const MONTHLY_PHASES = new Set(['computeRedWhiteMoon', 'draftAtelierLetters']);
+  // Weekly phases — run every Sunday UTC OR on explicit ?run_phase= request.
+  // Heavy-touch operations that don't need daily runs but should never become
+  // manual-invoke-only (which is how Listen Seed + YouTube embeddability + the
+  // TikTok emoji backfill silently broke).
+  const WEEKLY_PHASES = new Set([
+    'seedPodcasts',
+    'backfillYouTubeEmbeddability',
+    'backfillTikTokEmoji',
+  ]);
 
   const wantsPhase = (name) => {
     if (runPhaseParam) return runPhaseParam === name;
     if (MONTHLY_PHASES.has(name)) return isFirstOfMonth;
+    if (WEEKLY_PHASES.has(name)) return isSunday;
     return true;
   };
 
@@ -709,6 +721,33 @@ Deno.serve(async (req) => {
   // user's freshly-computed archetype. ~$0.005 / user / month.
   if (wantsPhase('draftAtelierLetters')) {
     phases.push({ name: 'draftAtelierLetters', ...(await runDraftAtelierLettersPhase(base44)) });
+  }
+
+  // Phase 10 (weekly, Sunday UTC): re-seed curated UK podcasts so the Podcasts
+  // shelf on Listen stays fresh. Idempotent — function dedupes on
+  // content_url_hash, so re-running just adds new episodes per source.
+  // ~30-60 sec runtime, ~12 RSS fetches.
+  if (wantsPhase('seedPodcasts')) {
+    phases.push({ name: 'seedPodcasts', ...(await runPhase(base44, 'seedPodcasts', 'seedPodcasts')) });
+  }
+
+  // Phase 11 (weekly, Sunday UTC): preflight YouTube embeddability for any
+  // rows ingested before the oEmbed check landed, OR where the network blip
+  // returned null and we held off marking. Idempotent — only touches rows
+  // with is_embeddable null/undefined.
+  if (wantsPhase('backfillYouTubeEmbeddability')) {
+    phases.push({
+      name: 'backfillYouTubeEmbeddability',
+      ...(await runPhase(base44, 'backfillYouTubeEmbeddability', 'backfillYouTubeEmbeddability', { limit: 500 })),
+    });
+  }
+
+  // Phase 12 (weekly, Sunday UTC): strip emoji codepoints from any TikTok
+  // rows whose titles were imported with emoji from source captions before
+  // the LC-4 ingest-time strip landed. Idempotent — function only touches
+  // rows whose title still matches the emoji regex.
+  if (wantsPhase('backfillTikTokEmoji')) {
+    phases.push({ name: 'backfillTikTokEmoji', ...(await runPhase(base44, 'backfillTikTokEmoji', 'backfillTikTokEmoji')) });
   }
 
   const finishedAt = new Date().toISOString();

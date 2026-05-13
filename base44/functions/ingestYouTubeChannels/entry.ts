@@ -139,6 +139,39 @@ function hashUrl(url) {
   return String(Math.abs(h));
 }
 
+// ── YouTube embeddability preflight (fix for Error 153) ─────────────────────
+// YouTube's IFrame Player API surfaces 101/150/153 via postMessage onError
+// events, but ONLY when the API JS actually initialises. When a video's owner
+// has disabled embedding entirely, YouTube serves a STATIC error page — no
+// JS API ever loads, so our render-time onError listener in LifestyleDetail
+// never fires and the broken "Watch video on YouTube / Error 153" chrome
+// bleeds through to the user.
+//
+// Fix: at ingest time, ping the oEmbed endpoint. It returns 200 for
+// embeddable videos and 401/403/404 for non-embeddable ones. Cheap (~100ms),
+// no API key required, no quota (lightly rate-limited; sleep between calls).
+// We persist the result as is_embeddable on the row; the render code already
+// respects that flag and shows the clean fallback gradient.
+//
+// Returns: true | false | null. Null = "unknown / network issue / don't block
+// ingest"; render-time backup detection still applies.
+async function isYouTubeEmbeddable(videoId) {
+  if (!videoId) return null;
+  try {
+    const url = `https://www.youtube.com/oembed?url=https://www.youtube.com/watch?v=${encodeURIComponent(videoId)}&format=json`;
+    const res = await fetch(url, {
+      method: 'GET',
+      signal: AbortSignal.timeout(8000),
+      headers: { 'User-Agent': 'FemWell/1.0 (+https://femwells.com)' },
+    });
+    if (res.ok) return true;
+    if ([401, 403, 404].includes(res.status)) return false;
+    return null;
+  } catch {
+    return null;
+  }
+}
+
 
 
 Deno.serve(async (req) => {
@@ -258,6 +291,20 @@ Deno.serve(async (req) => {
               continue;
             }
 
+            // Preflight oEmbed check — see isYouTubeEmbeddable comment.
+            // Three outcomes: true / false / null. We persist true and false
+            // both as boolean field values so the render code can trust the
+            // flag. Null means "don't know" — leave the field unset and let
+            // the render-time fallback decide.
+            const embeddable = await isYouTubeEmbeddable(v.videoId);
+            const embeddableField = embeddable === null ? {} : { is_embeddable: embeddable };
+            if (embeddable === false) {
+              // Log so we can audit how many channels disable embedding.
+              await logIngestError(base44, 'ingestYouTubeChannels', 'preflight_not_embeddable',
+                { source_identifier: channel.name, item_id: v.videoId, raw_payload: { title: v.title } },
+                new Error('oEmbed returned 401/403/404 — video is not embeddable, marking is_embeddable: false'));
+            }
+
             await base44.asServiceRole.entities.LifestyleItems.create({
               source_id: sourceId,
               source_name: channel.name,
@@ -279,6 +326,7 @@ Deno.serve(async (req) => {
               tags: channel.tags,
               status: 'NEEDS_REVIEW',
               engagement_score: Math.min(Math.floor((v.views || 0) / 1000), 50),
+              ...embeddableField,
             });
             existingHashes.add(hash);
             ytIngested++;
