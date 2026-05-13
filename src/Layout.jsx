@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { Heart } from "lucide-react";
 import { base44 } from "@/api/base44Client";
 import FloatingSidebar from "./components/layout/FloatingSidebar";
 import AssistantOverlay from "./components/assistant/AssistantOverlay";
@@ -66,9 +67,15 @@ export default function Layout({ children, currentPageName }) {
             fontSize: 11,
             color: "var(--mauve)",
             fontFamily: "'Inter', sans-serif",
+            display: "inline-flex",
+            alignItems: "center",
+            justifyContent: "center",
+            gap: 5,
+            width: "100%",
           }}
         >
-          Made with <span aria-hidden="true" style={{ color: "#E11D48" }}>♥</span>
+          Made with
+          <Heart aria-hidden="true" className="w-3 h-3" style={{ color: "#E11D48", fill: "#E11D48" }} />
           <span className="sr-only">love</span> in 2026
         </footer>
       )}
