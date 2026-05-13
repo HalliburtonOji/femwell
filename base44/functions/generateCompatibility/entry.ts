@@ -86,7 +86,18 @@ const COMPAT_SYSTEM = `You are FemWell's astrology voice — warm, literary, UK 
 
 You are scoring how two charts MEET, not whether they are 'good' or 'bad'. Honest about friction, generous about possibility. Avoid romance assumptions — the pair may be friends, family, partners, or strangers.`;
 
-async function callOpenAI(userPrompt: string) {
+// Quiet Mode + Soft Sky additions — appended when UserPreferences flags are on.
+const QUIET_MODE_BLOCK = `Quiet Mode is active: avoid shadow-language. Do not use words like 'war', 'wound', 'trauma', 'crisis', 'doom', 'endings'. Frame challenges as 'something-to-notice', not 'something-to-fear'.`;
+const SOFT_SKY_BLOCK = `Soft Sky is active: do not mention any planetary retrogrades or 'storm windows' in the daily reading. Stick to the moon-phase and personal-cycle alignment for daily framing.`;
+
+function composeSystem(quiet: boolean, soft: boolean): string {
+  let out = COMPAT_SYSTEM;
+  if (quiet) out = `${out}\n\n${QUIET_MODE_BLOCK}`;
+  if (quiet && soft) out = `${out}\n\n${SOFT_SKY_BLOCK}`;
+  return out;
+}
+
+async function callOpenAI(userPrompt: string, systemPrompt: string = COMPAT_SYSTEM) {
   const openaiKey = Deno.env.get('OPENAI_API_KEY');
   if (!openaiKey) throw new Error('OPENAI_API_KEY not set');
   const res = await fetch('https://api.openai.com/v1/chat/completions', {
@@ -100,7 +111,7 @@ async function callOpenAI(userPrompt: string) {
       temperature: 0.7,
       response_format: { type: 'json_object' },
       messages: [
-        { role: 'system', content: COMPAT_SYSTEM },
+        { role: 'system', content: systemPrompt },
         { role: 'user', content: userPrompt },
       ],
     }),
@@ -144,10 +155,16 @@ Deno.serve(async (req) => {
     if (cached) return Response.json({ ok: true, reading: cached, cached: true });
   }
 
-  // Load the user's astro profile
-  const aps = await sb.entities.AstroProfile.filter({ user_id }, undefined, 1).catch(() => []);
+  // Load the user's astro profile + tone preferences in parallel
+  const [aps, prefs] = await Promise.all([
+    sb.entities.AstroProfile.filter({ user_id }, undefined, 1).catch(() => []),
+    sb.entities.UserPreferences.filter({ user_id }, '-updated_at', 1).catch(() => []),
+  ]);
   const astro = aps[0];
   if (!astro) return Response.json({ error: 'No AstroProfile — onboard first.' }, { status: 422 });
+  const prefRow = prefs[0] || {};
+  const quietMode = !!prefRow.horoscope_quiet_mode;
+  const softSky = !!prefRow.horoscope_soft_sky;
 
   const userSignRec = getSunSign(astro.birth_date) || (astro.sun_sign ? ZODIAC.find(z => z.name === astro.sun_sign) || null : null);
   const theirSignRec = getSunSign(their_birthday);
@@ -174,7 +191,7 @@ Return JSON with exactly these keys:
 All four dimension scores should sit roughly within ±15 of "score". Return only valid JSON.`;
 
   let parsed: any;
-  try { parsed = await callOpenAI(prompt); }
+  try { parsed = await callOpenAI(prompt, composeSystem(quietMode, softSky)); }
   catch (err: any) { return Response.json({ error: err?.message || 'LLM failed' }, { status: 502 }); }
 
   const clamp = (n: any) => {

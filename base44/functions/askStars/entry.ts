@@ -66,13 +66,24 @@ function getCyclePhase(profile: any): string | null {
 }
 
 // ── LLM ─────────────────────────────────────────────────────────────────────
-const SYSTEM = `You are Jess, FemWell's astrology voice. Warm, literary, UK English. Year-9 reading level for the action; literary cadence in description. No emoji. No Markdown headings. Use *word* sparingly to italicise.
+const SYSTEM = `You are Astra, FemWell's astrology voice. Warm, literary, UK English. Year-9 reading level for the action; literary cadence in description. No emoji. No Markdown headings. Use *word* sparingly to italicise.
 
 You answer one question grounded in the reader's actual chart and today's astrology + cycle phase. Be specific. Refer to the chart facts. Avoid fortune-cookie generality. Be honest about friction; don't promise outcomes.
 
 Length: 80-130 words. Address the reader as "you". One paragraph. End with a small actionable suggestion or observation, not a sweeping pronouncement.`;
 
-async function callOpenAI(userPrompt: string) {
+// Quiet Mode + Soft Sky additions — appended when UserPreferences flags are on.
+const QUIET_MODE_BLOCK = `Quiet Mode is active: avoid shadow-language. Do not use words like 'war', 'wound', 'trauma', 'crisis', 'doom', 'endings'. Frame challenges as 'something-to-notice', not 'something-to-fear'.`;
+const SOFT_SKY_BLOCK = `Soft Sky is active: do not mention any planetary retrogrades or 'storm windows' in the daily reading. Stick to the moon-phase and personal-cycle alignment for daily framing.`;
+
+function composeSystem(quiet: boolean, soft: boolean): string {
+  let out = SYSTEM;
+  if (quiet) out = `${out}\n\n${QUIET_MODE_BLOCK}`;
+  if (quiet && soft) out = `${out}\n\n${SOFT_SKY_BLOCK}`;
+  return out;
+}
+
+async function callOpenAI(userPrompt: string, systemPrompt: string = SYSTEM) {
   const openaiKey = Deno.env.get('OPENAI_API_KEY');
   if (!openaiKey) throw new Error('OPENAI_API_KEY not set');
   const res = await fetch('https://api.openai.com/v1/chat/completions', {
@@ -86,7 +97,7 @@ async function callOpenAI(userPrompt: string) {
       temperature: 0.75,
       max_tokens: 320,
       messages: [
-        { role: 'system', content: SYSTEM },
+        { role: 'system', content: systemPrompt },
         { role: 'user', content: userPrompt },
       ],
     }),
@@ -120,14 +131,18 @@ Deno.serve(async (req) => {
 
   const sb = base44.asServiceRole;
 
-  // Load chart + cycle context
-  const [aps, ups] = await Promise.all([
+  // Load chart + cycle context + tone preferences
+  const [aps, ups, prefs] = await Promise.all([
     sb.entities.AstroProfile.filter({ user_id }, undefined, 1).catch(() => []),
     sb.entities.UserProfile.filter({ user_id }, undefined, 1).catch(() => []),
+    sb.entities.UserPreferences.filter({ user_id }, '-updated_at', 1).catch(() => []),
   ]);
   const astro = aps[0];
   if (!astro) return Response.json({ error: 'No AstroProfile — onboard first.' }, { status: 422 });
   const userProfile = ups[0] || {};
+  const prefRow = prefs[0] || {};
+  const quietMode = !!prefRow.horoscope_quiet_mode;
+  const softSky = !!prefRow.horoscope_soft_sky;
 
   const cyclePhase = getCyclePhase(userProfile);
   const moon = getMoonPhase(new Date());
@@ -153,7 +168,7 @@ Question: "${String(question).trim()}"
 Answer in 80-130 words. Be specific to their chart + today's sky + cycle phase. One paragraph. End with a small concrete suggestion.`;
 
   let answer = '';
-  try { answer = await callOpenAI(prompt); }
+  try { answer = await callOpenAI(prompt, composeSystem(quietMode, softSky)); }
   catch (err: any) { return Response.json({ error: err?.message || 'LLM failed' }, { status: 502 }); }
   if (!answer) return Response.json({ error: 'Empty answer' }, { status: 502 });
 

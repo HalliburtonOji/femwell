@@ -105,7 +105,7 @@ export default function HoroscopeTab(props) {
       <AnnualProfections userId={user?.id} userProfile={userProfile} astro={astro} />
       <Compatibility userId={user?.id} chart={chart} userProfile={userProfile} />
       <AskTheSky userId={user?.id} />
-      <QuietModeToggle />
+      <QuietModeToggle userId={user?.id} />
       <ScienceFooter />
       <PrivacyLine />
       <AtelierReading />

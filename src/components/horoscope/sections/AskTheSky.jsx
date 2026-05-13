@@ -2,15 +2,21 @@ import { useEffect, useState } from "react";
 import { base44 } from "@/api/base44Client";
 
 // ─────────────────────────────────────────────────────────────────────────────
-// AskTheSky — Section 7.
-// "Ask the Stars" dark panel: free-text question + prompt chips.
-// Copied 1-for-1 from the original HoroscopeTab AskStars function.
+// AskTheSky — Section 9.
+// Renamed in UI from "Ask the stars" to "Ask the sky". Entity topic stays
+// 'horoscope' so history persists across the rename — no data migration.
+//
+// Visual changes per demo §9:
+//   - Title "Ask the sky" (italic on "sky")
+//   - Notebook-ruled input (horizontal lines every 1.7em)
+//   - Chips re-worded queer-safe
+//   - Answer label "THE SKY SAYS"
 // ─────────────────────────────────────────────────────────────────────────────
 
 const ASK_CHIPS = [
-  "Should I text him back today?",
-  "Is this friendship draining me?",
-  "What should I let go of this week?",
+  "Should I rest more today?",
+  "Is now a good time to start the move?",
+  "Why am I dreaming so vividly?",
 ];
 
 export default function AskTheSky({ userId }) {
@@ -73,7 +79,7 @@ export default function AskTheSky({ userId }) {
         setHistory((prev) => [{ id: res?.data?.thread_id || `temp-${Date.now()}`, question: text, answer: ans }, ...prev].slice(0, 5));
       }
     } catch (e) {
-      setError(e?.message || "Couldn't reach Jess.");
+      setError(e?.message || "Couldn't reach the sky.");
     } finally {
       setAsking(false);
     }
@@ -87,15 +93,17 @@ export default function AskTheSky({ userId }) {
 
   return (
     <div style={askShellStyle}>
-      <p style={askEyebrowStyle}>Ask the <em style={{ fontStyle: "italic", color: "rgba(255,250,242,0.92)" }}>stars</em></p>
-      <p style={askSubStyle}>
-        Jess interprets through your chart — grounded, gentle, no fortune-cookie.
-      </p>
+      <div style={askHeadStyle}>
+        <p style={askEyebrowStyle}>
+          Ask the <em style={askEmStyle}>sky</em>
+        </p>
+        <span style={askSubChipStyle}>grounded in your chart, today's sky</span>
+      </div>
 
-      <div style={askInputRowStyle}>
+      <div style={askInputWrapStyle}>
         <input
           type="text"
-          placeholder="Why do I keep replying too fast?"
+          placeholder="Why does this week feel so unsettled, even though nothing's wrong?"
           value={question}
           onChange={(e) => setQuestion(e.target.value)}
           onKeyDown={(e) => { if (e.key === "Enter") submit(); }}
@@ -108,7 +116,7 @@ export default function AskTheSky({ userId }) {
           disabled={asking || !question.trim()}
           style={askSendBtnStyle}
         >
-          {asking ? "Asking\u2026" : "Ask \u2726"}
+          {asking ? "Asking…" : "Ask"}
         </button>
       </div>
 
@@ -130,7 +138,7 @@ export default function AskTheSky({ userId }) {
 
       {answer && (
         <div style={askAnswerStyle}>
-          <p style={askAnswerLabelStyle}>Jess says</p>
+          <p style={askAnswerLabelStyle}>The sky says</p>
           <p style={askAnswerBodyStyle}>{answer}</p>
         </div>
       )}
@@ -146,7 +154,7 @@ export default function AskTheSky({ userId }) {
                 onClick={() => openHistory(h)}
                 style={askHistoryChipStyle}
               >
-                {h.question.slice(0, 56)}{h.question.length > 56 ? "\u2026" : ""}
+                {h.question.slice(0, 56)}{h.question.length > 56 ? "…" : ""}
               </button>
             ))}
           </div>
@@ -166,22 +174,33 @@ const askShellStyle = {
   background: "radial-gradient(circle at 25% 30%, #3a2a4c 0%, #221a2e 60%, #15101e 100%)",
   boxShadow: "0 2px 4px rgba(43,30,22,0.10), 0 12px 32px rgba(43,30,22,0.18)",
 };
+const askHeadStyle = {
+  display: "flex",
+  alignItems: "baseline",
+  justifyContent: "space-between",
+  gap: 12,
+  flexWrap: "wrap",
+  marginBottom: 12,
+};
 const askEyebrowStyle = {
   fontFamily: "'Fraunces', serif",
   fontWeight: 400,
   fontSize: 22,
   color: "var(--cream, #FAF4EA)",
-  margin: "0 0 4px",
+  margin: 0,
   letterSpacing: "-0.005em",
 };
-const askSubStyle = {
-  fontFamily: "'Inter', sans-serif",
-  fontSize: 13,
-  color: "rgba(247,239,225,0.74)",
-  margin: "0 0 16px",
-  lineHeight: 1.5,
+const askEmStyle = {
+  fontStyle: "italic",
+  color: "rgba(255,250,242,0.92)",
 };
-const askInputRowStyle = {
+const askSubChipStyle = {
+  fontFamily: "'Inter', sans-serif",
+  fontSize: 10,
+  color: "rgba(247,239,225,0.55)",
+};
+// Notebook-ruled input: linear-gradient with horizontal lines every 1.7em.
+const askInputWrapStyle = {
   display: "flex",
   gap: 8,
   marginBottom: 12,
@@ -189,12 +208,18 @@ const askInputRowStyle = {
 };
 const askInputStyle = {
   flex: "1 1 240px",
-  fontFamily: "'Inter', sans-serif",
+  fontFamily: "'Fraunces', serif",
+  fontStyle: "italic",
   fontSize: 14,
-  padding: "12px 14px",
-  borderRadius: 9999,
+  lineHeight: "1.7em",
+  padding: "10px 14px",
+  borderRadius: 8,
   border: "1px solid rgba(247,239,225,0.20)",
-  background: "rgba(247,239,225,0.08)",
+  // Horizontal ruled lines, every 1.7em
+  backgroundColor: "rgba(247,239,225,0.05)",
+  backgroundImage:
+    "linear-gradient(to bottom, transparent 0, transparent calc(1.7em - 1px), rgba(247,239,225,0.18) calc(1.7em - 1px), rgba(247,239,225,0.18) 1.7em)",
+  backgroundSize: "100% 1.7em",
   color: "var(--cream, #FAF4EA)",
   minHeight: 44,
   outline: "none",
@@ -223,8 +248,8 @@ const askChipStyle = {
   fontSize: 12,
   fontWeight: 500,
   color: "rgba(247,239,225,0.84)",
-  background: "rgba(247,239,225,0.08)",
-  border: "1px solid rgba(247,239,225,0.18)",
+  background: "transparent",
+  border: "1px solid rgba(247,239,225,0.20)",
   borderRadius: 9999,
   padding: "8px 14px",
   cursor: "pointer",

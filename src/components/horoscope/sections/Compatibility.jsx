@@ -1,12 +1,37 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { base44 } from "@/api/base44Client";
 import { prettyBirthday } from "@/utils/astrology";
 
 // ─────────────────────────────────────────────────────────────────────────────
-// Compatibility — Section 6.
-// Name + birthday form. Calls generateCompatibility, shows score + dim bars.
-// Copied 1-for-1 from the original HoroscopeTab Compatibility function.
+// Compatibility — Section 8.
+// Restyle of the original Compatibility section per demo §8.
+//
+// Visual changes (no data-flow change):
+//   - Two-circle overlapping monogram (user initial + partner initial)
+//   - Big Fraunces score, italic label, body paragraph
+//   - 4 dim tiles labelled Talk · Touch · Trust · Time
+//
+// D1 — UI label for the 4th dimension is "Time", not "Grow". The DB field
+// is still `grow_score` (no migration). The mapping is explicit in the
+// `Tiles` component below.
 // ─────────────────────────────────────────────────────────────────────────────
+
+function initial(name) {
+  if (!name) return "?";
+  const t = String(name).trim();
+  return (t[0] || "?").toUpperCase();
+}
+
+function daysAgo(iso) {
+  if (!iso) return null;
+  const t = new Date(iso).getTime();
+  if (isNaN(t)) return null;
+  const days = Math.floor((Date.now() - t) / 86400000);
+  if (days < 0) return null;
+  if (days === 0) return "today";
+  if (days === 1) return "yesterday";
+  return `${days} days ago`;
+}
 
 function Dim({ label, val }) {
   const pct = Math.max(0, Math.min(100, Number(val) || 0));
@@ -21,7 +46,7 @@ function Dim({ label, val }) {
   );
 }
 
-export default function Compatibility({ userId, chart }) {
+export default function Compatibility({ userId, chart, userProfile }) {
   const [name, setName] = useState("");
   const [birthday, setBirthday] = useState("");
   const [reading, setReading] = useState(null);
@@ -45,6 +70,24 @@ export default function Compatibility({ userId, chart }) {
     })();
     return () => { cancelled = true; };
   }, [userId]);
+
+  const lastChip = useMemo(() => {
+    const top = history[0];
+    if (!top) return null;
+    const created = top.created_date || top.created_at || null;
+    const ago = daysAgo(created);
+    const who = top.their_name || top.their_sun_sign || "Last reading";
+    return ago ? `Last: ${who} · ${ago}` : `Last: ${who}`;
+  }, [history]);
+
+  const userInitial = useMemo(() => {
+    const candidate =
+      userProfile?.preferred_name ||
+      userProfile?.first_name ||
+      chart?.name ||
+      null;
+    return initial(candidate);
+  }, [userProfile, chart]);
 
   const run = async () => {
     setError("");
@@ -92,7 +135,10 @@ export default function Compatibility({ userId, chart }) {
             Try it with a friend, a partner, a crush — see where your charts meet.
           </p>
         </div>
-        {chart.sun && (
+        {lastChip && (
+          <span style={lastChipStyle}>{lastChip}</span>
+        )}
+        {!lastChip && chart?.sun && (
           <span style={compatYouStyle}>
             You: {chart.sun}{chart.birthday ? ` · ${prettyBirthday(chart.birthday)}` : ""}
           </span>
@@ -127,7 +173,7 @@ export default function Compatibility({ userId, chart }) {
           disabled={loading || !birthday}
           style={compatRunBtnStyle}
         >
-          {loading ? "Reading\u2026" : "\u2726 Read us"}
+          {loading ? "Reading…" : "Read us"}
         </button>
       </div>
 
@@ -153,6 +199,18 @@ export default function Compatibility({ userId, chart }) {
 
       {reading && (
         <div style={compatResultStyle}>
+          <div style={monogramRowStyle}>
+            <div style={{ ...monogramCircleStyle, ...monogramUserStyle }}>{userInitial}</div>
+            <div style={{ ...monogramCircleStyle, ...monogramPartnerStyle }}>{initial(reading.their_name || reading.their_sun_sign)}</div>
+            <div style={monogramLabelStyle}>
+              <p style={monogramWhoStyle}>
+                {(userProfile?.preferred_name || userProfile?.first_name || "You")} &amp; {reading.their_name || "them"}
+              </p>
+              <p style={monogramWhatStyle}>
+                {chart?.sun || "—"} · {reading.their_sun_sign || "—"}
+              </p>
+            </div>
+          </div>
           <div style={compatScoreRowStyle}>
             <div style={compatScoreBigStyle}>{reading.score}</div>
             <div>
@@ -167,7 +225,8 @@ export default function Compatibility({ userId, chart }) {
             <Dim label="Talk"  val={reading.talk_score} />
             <Dim label="Touch" val={reading.touch_score} />
             <Dim label="Trust" val={reading.trust_score} />
-            <Dim label="Grow"  val={reading.grow_score} />
+            {/* D1: UI label is Time; field name is grow_score */}
+            <Dim label="Time"  val={reading.grow_score} />
           </div>
         </div>
       )}
@@ -200,6 +259,17 @@ const compatSubStyle = {
 const compatYouStyle = {
   fontFamily: "'Inter', sans-serif",
   fontSize: 11,
+  fontWeight: 600,
+  letterSpacing: "0.04em",
+  color: "var(--plum-mute, #6b4a56)",
+  background: "var(--cream-2, rgba(43,30,22,0.05))",
+  padding: "5px 12px",
+  borderRadius: 9999,
+  alignSelf: "flex-start",
+};
+const lastChipStyle = {
+  fontFamily: "'Inter', sans-serif",
+  fontSize: 10.5,
   fontWeight: 600,
   letterSpacing: "0.04em",
   color: "var(--plum-mute, #6b4a56)",
@@ -289,6 +359,53 @@ const compatResultStyle = {
   borderRadius: 18,
   padding: "20px 22px 22px",
   boxShadow: "0 1px 2px rgba(43,30,22,0.04), 0 6px 18px rgba(43,30,22,0.06)",
+};
+const monogramRowStyle = {
+  display: "flex",
+  alignItems: "center",
+  gap: 14,
+  marginBottom: 14,
+};
+const monogramCircleStyle = {
+  width: 44,
+  height: 44,
+  borderRadius: 999,
+  display: "flex",
+  alignItems: "center",
+  justifyContent: "center",
+  fontFamily: "'Fraunces', serif",
+  fontWeight: 500,
+  fontSize: 19,
+  color: "var(--cream, #FAF4EA)",
+  boxShadow: "0 1px 2px rgba(0,0,0,0.10)",
+};
+const monogramUserStyle = {
+  background: "linear-gradient(135deg, #D45E52, #C9A2A8)",
+  marginRight: -12, // overlap
+  zIndex: 2,
+  border: "2px solid var(--cream, #FAF4EA)",
+};
+const monogramPartnerStyle = {
+  background: "linear-gradient(135deg, #7D8668, #5F8A85)",
+  border: "2px solid var(--cream, #FAF4EA)",
+  zIndex: 1,
+};
+const monogramLabelStyle = {
+  marginLeft: 8,
+  minWidth: 0,
+};
+const monogramWhoStyle = {
+  fontFamily: "'Fraunces', serif",
+  fontWeight: 500,
+  fontSize: 15,
+  color: "var(--plum-deep, #2b1e16)",
+  margin: 0,
+};
+const monogramWhatStyle = {
+  fontFamily: "'Inter', sans-serif",
+  fontSize: 11.5,
+  color: "var(--plum-mute, #6b4a56)",
+  margin: "2px 0 0",
 };
 const compatScoreRowStyle = {
   display: "flex",

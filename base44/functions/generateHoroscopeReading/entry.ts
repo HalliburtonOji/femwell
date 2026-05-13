@@ -158,6 +158,18 @@ function inDays(n: number): string {
 // ── LLM helpers ─────────────────────────────────────────────────────────────
 const NARRATIVE_SYSTEM = `You are FemWell's astrology voice — warm, literary, present-tense, UK English. Year-9 reading level for the action; literary cadence in description. No emoji, no Markdown headings. Use *word* sparingly to italicise. Never invent statistics. No melodrama. Each card a small, true observation. Never include unicode astrology glyphs (sun, moon, mercury, venus, mars, jupiter, saturn glyphs) or moon-phase emoji in any output.`;
 
+// Quiet Mode + Soft Sky additions — appended to the system prompt when the
+// user has the respective UserPreferences flags on. See H2c-2 / A3.
+const QUIET_MODE_BLOCK = `Quiet Mode is active: avoid shadow-language. Do not use words like 'war', 'wound', 'trauma', 'crisis', 'doom', 'endings'. Frame challenges as 'something-to-notice', not 'something-to-fear'.`;
+const SOFT_SKY_BLOCK = `Soft Sky is active: do not mention any planetary retrogrades or 'storm windows' in the daily reading. Stick to the moon-phase and personal-cycle alignment for daily framing.`;
+
+function composeSystemPrompt(base: string, quiet: boolean, soft: boolean): string {
+  let out = base;
+  if (quiet) out = `${out}\n\n${QUIET_MODE_BLOCK}`;
+  if (quiet && soft) out = `${out}\n\n${SOFT_SKY_BLOCK}`;
+  return out;
+}
+
 const CHART_SYSTEM = `You estimate the moon sign, rising sign, and Mercury sign at a person's birth from their date, time and place. Return only JSON. If birth_time is missing, return null for moon_sign and rising_sign. Mercury can be estimated from date alone.`;
 
 async function callOpenAI(systemPrompt: string, userPrompt: string, model = 'gpt-4o-mini') {
@@ -255,6 +267,13 @@ Deno.serve(async (req) => {
   const cyclePhase = getCyclePhase(userProfile);
   const name = userProfile.preferred_name || userProfile.first_name || userProfile.display_name || '';
 
+  // Load UserPreferences for Quiet Mode + Soft Sky (A3) tone flags.
+  // Soft Sky is only honoured when Quiet Mode is also on (see composeSystemPrompt).
+  const prefsRows = await sb.entities.UserPreferences.filter({ user_id: requestedUserId }, '-updated_at', 1).catch(() => []);
+  const prefs = prefsRows[0] || {};
+  const quietMode = !!prefs.horoscope_quiet_mode;
+  const softSky = !!prefs.horoscope_soft_sky;
+
   // Deterministic facts
   const sunSign = astro.sun_sign || getSunSign(astro.birth_date);
   const moon = getMoonPhase(new Date());
@@ -344,7 +363,8 @@ Return only valid JSON.`;
 
   let narrative: any;
   try {
-    narrative = await callOpenAI(NARRATIVE_SYSTEM, narrPrompt);
+    const systemPrompt = composeSystemPrompt(NARRATIVE_SYSTEM, quietMode, softSky);
+    narrative = await callOpenAI(systemPrompt, narrPrompt);
   } catch (err: any) {
     return Response.json({ error: err?.message || 'LLM failed' }, { status: 502 });
   }
