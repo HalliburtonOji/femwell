@@ -258,7 +258,7 @@ export default function Track() {
 
   return (
     <div className="min-h-screen pb-28" style={{ backgroundColor: "var(--ivory)" }}>
-      <div className="max-w-lg mx-auto px-4">
+      <div className="max-w-lg lg:max-w-5xl mx-auto px-4">
 
         {/* ── Header ──────────────────────────────────────────────────── */}
         <div className="pt-10 pb-5">

@@ -236,7 +236,7 @@ export default function Profile() {
 
   return (
     <div className="min-h-screen pb-28" style={{ backgroundColor: "var(--ivory)" }}>
-      <div className="max-w-3xl mx-auto px-4">
+      <div className="max-w-3xl lg:max-w-5xl mx-auto px-4">
 
         {/* Header */}
         <div style={{ paddingTop: "40px", paddingBottom: "20px" }}>

@@ -432,7 +432,7 @@ export default function Today() {
 
       {/* ── STICKY TAB HEADER */}
       <div className="sticky top-0 z-30 px-4 pt-10 pb-3" style={{ backgroundColor: "rgba(250,248,245,0.97)", backdropFilter: "blur(20px)", borderBottom: "1px solid var(--border)" }}>
-        <div className="max-w-3xl mx-auto">
+        <div className="max-w-3xl lg:max-w-5xl mx-auto">
           <div className="flex gap-1 p-1 rounded-2xl" style={{ backgroundColor: "var(--ivory-dark)" }}>
             {[["today", "Today"], ["track", "Track"]].map(([key, display]) => (
               <button key={key} onClick={() => setMainTab(key)} className="flex-1 py-2.5 rounded-xl text-sm font-semibold transition-all"
@@ -444,7 +444,7 @@ export default function Today() {
         </div>
       </div>
 
-      <div className="max-w-3xl mx-auto px-4">
+      <div className="max-w-3xl lg:max-w-5xl mx-auto px-4">
 
         {/* ── TODAY TAB */}
         {mainTab === "today" && (

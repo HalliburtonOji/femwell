@@ -259,7 +259,7 @@ export default function Insights() {
     <div className="min-h-screen pb-28" style={{ backgroundColor: "var(--ivory)" }}>
       {/* Header */}
       <div className="sticky top-0 z-30" style={{ backgroundColor: "rgba(250,248,245,0.97)", backdropFilter: "blur(20px)", borderBottom: "1px solid var(--border)" }}>
-        <div className="max-w-3xl mx-auto px-4 pt-10 pb-3">
+        <div className="max-w-3xl lg:max-w-5xl mx-auto px-4 pt-10 pb-3">
           <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
             <Link
               to={createPageUrl("Today")}
@@ -283,7 +283,7 @@ export default function Insights() {
         </div>
       </div>
 
-      <div className="max-w-3xl mx-auto px-4 pt-4">
+      <div className="max-w-3xl lg:max-w-5xl mx-auto px-4 pt-4">
         {loading ? (
           <InsightsSkeleton />
         ) : !hasAnyData ? (
