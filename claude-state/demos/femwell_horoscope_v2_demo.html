@@ -1,0 +1,1193 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>FemWell Horoscope v2 — full demo</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,wght@0,400;0,500;1,400;1,500&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  /* ── Atelier tokens (from atelier_horoscope_v2_spec.md) ──────────── */
+  :root {
+    --cream: #FFFAF5;
+    --cream-2: #FFF5EC;
+    --plum-deep: #2b1e16;
+    --plum: #4A2A3A;
+    --plum-2: #6B4559;
+    --plum-mute: #8A7E88;
+    --rose: #D45E52;
+    --rose-soft: rgba(212,94,82,0.10);
+    --gold: #C9A95C;
+    --teal: #5F8A85;
+    --moss: #7D8668;
+    --rule: rgba(74,42,58,0.10);
+
+    /* Plum Night (primary horoscope theme) */
+    --paper-night: #2B1E26;
+    --ink-night: #F5E6D3;
+    --ink-night-mute: #C9B8B0;
+    --accent-night: #E89289;
+    --rule-night: rgba(245,230,211,0.14);
+
+    /* Twilight (hero gradient only) */
+    --tw-top: #1A1320;
+    --tw-mid: #3D2A3F;
+    --tw-bot: #6B4559;
+
+    /* Phase colors */
+    --period: #B84A41;
+    --follicular: #E67F73;
+    --ovulatory: #F2A99A;
+    --luteal: #8A5F74;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: 'Inter', -apple-system, sans-serif;
+    background: #F4EDE4;
+    color: var(--plum);
+    padding: 40px 20px 80px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+
+  /* ── Doc header ───────────────────────────────────────────── */
+  .head { max-width: 920px; margin: 0 auto 30px; text-align: center; }
+  .eyebrow { font-size: 11px; letter-spacing: 0.16em; text-transform: uppercase; color: var(--plum-mute); font-weight: 600; }
+  h1.title { font-family: 'Fraunces', Georgia, serif; font-size: 36px; font-weight: 500; color: var(--plum); margin: 8px 0 12px; letter-spacing: -0.01em; }
+  .lede { font-size: 15px; color: var(--plum-2); max-width: 720px; margin: 0 auto; line-height: 1.55; }
+  .lede strong { color: var(--plum); font-weight: 600; }
+  .meta-row { display: flex; justify-content: center; gap: 22px; margin-top: 18px; font-size: 12px; color: var(--plum-2); flex-wrap: wrap; }
+
+  /* ── Phone + annotations layout ───────────────────────────── */
+  .stage {
+    display: grid;
+    grid-template-columns: minmax(420px, 460px) minmax(280px, 380px);
+    gap: 40px;
+    align-items: start;
+    max-width: 920px;
+    margin: 30px 0;
+  }
+  @media (max-width: 880px) {
+    .stage { grid-template-columns: 1fr; }
+  }
+
+  /* Phone frame */
+  .phone {
+    width: 420px;
+    background: #111;
+    border-radius: 46px;
+    padding: 10px;
+    box-shadow: 0 40px 80px rgba(74, 42, 58, 0.22), 0 0 0 1px rgba(0,0,0,0.08);
+    justify-self: center;
+  }
+  .phone-inner {
+    background: var(--paper-night);
+    color: var(--ink-night);
+    border-radius: 38px;
+    overflow: hidden;
+    position: relative;
+    height: 920px;
+    display: flex;
+    flex-direction: column;
+  }
+  .notch {
+    position: absolute;
+    top: 0; left: 50%;
+    transform: translateX(-50%);
+    width: 130px; height: 28px;
+    background: #111;
+    border-radius: 0 0 16px 16px;
+    z-index: 30;
+  }
+  .scroll {
+    overflow-y: auto;
+    flex: 1;
+    padding: 44px 18px 100px;
+    scrollbar-width: none;
+  }
+  .scroll::-webkit-scrollbar { display: none; }
+
+  /* Annotations */
+  .anno-stack { display: flex; flex-direction: column; gap: 14px; }
+  .anno {
+    background: #FFFFFF;
+    border-radius: 14px;
+    padding: 14px 16px;
+    border: 1px solid var(--rule);
+    box-shadow: 0 1px 3px rgba(74,42,58,0.04);
+  }
+  .anno-num {
+    display: inline-flex;
+    width: 22px; height: 22px;
+    border-radius: 50%;
+    background: var(--rose);
+    color: #FFF;
+    font-size: 11px;
+    font-weight: 700;
+    align-items: center;
+    justify-content: center;
+    margin-right: 8px;
+  }
+  .anno-title {
+    font-family: 'Fraunces', serif;
+    font-size: 15px;
+    color: var(--plum);
+    font-weight: 500;
+    display: flex;
+    align-items: center;
+    margin-bottom: 6px;
+  }
+  .anno-body {
+    font-size: 12px;
+    color: var(--plum-2);
+    line-height: 1.5;
+  }
+  .anno-body strong { color: var(--plum); }
+  .anno-tag {
+    display: inline-block;
+    font-size: 9px;
+    letter-spacing: 0.10em;
+    text-transform: uppercase;
+    font-weight: 700;
+    color: var(--rose);
+    background: var(--rose-soft);
+    padding: 2px 8px;
+    border-radius: 9999px;
+    margin-top: 6px;
+  }
+  .anno-tag.new { color: #5F8A6F; background: rgba(95,138,111,0.10); }
+  .anno-tag.fix { color: var(--period); background: rgba(184,74,65,0.10); }
+
+  /* ── Page sections inside the phone ───────────────────────── */
+
+  /* §1 PAGE HEAD + TWILIGHT HERO */
+  .hero {
+    position: relative;
+    margin: 0 -18px 0;
+    padding: 32px 22px 28px;
+    background: linear-gradient(180deg, var(--tw-top) 0%, var(--tw-mid) 60%, var(--tw-bot) 100%);
+    color: var(--ink-night);
+  }
+  .hero-eyebrow {
+    font-size: 9px;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    color: rgba(245,230,211,0.66);
+    font-weight: 700;
+  }
+  .hero-title {
+    font-family: 'Fraunces', serif;
+    font-size: 28px;
+    font-weight: 400;
+    color: var(--ink-night);
+    line-height: 1.22;
+    margin: 8px 0 14px;
+    letter-spacing: -0.01em;
+  }
+  .hero-title em {
+    font-style: italic;
+    color: var(--accent-night);
+  }
+  .hero-sub {
+    font-size: 12px;
+    color: rgba(245,230,211,0.78);
+    line-height: 1.5;
+    max-width: 300px;
+  }
+  .hero-meta {
+    margin-top: 16px;
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+  }
+  .hero-chip {
+    font-size: 9px;
+    letter-spacing: 0.10em;
+    text-transform: uppercase;
+    font-weight: 700;
+    padding: 4px 10px;
+    border-radius: 9999px;
+    background: rgba(245,230,211,0.08);
+    color: rgba(245,230,211,0.86);
+    border: 1px solid rgba(245,230,211,0.14);
+  }
+  .hero-chip.is-phase {
+    background: rgba(232,146,137,0.16);
+    color: var(--accent-night);
+    border-color: rgba(232,146,137,0.30);
+  }
+  /* tiny constellation dots */
+  .hero-stars {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    opacity: 0.35;
+  }
+  .hero-stars span {
+    position: absolute;
+    width: 2px; height: 2px;
+    background: var(--ink-night);
+    border-radius: 50%;
+  }
+
+  /* §2 TRIAD */
+  .triad {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 8px;
+    margin: 18px 0 0;
+  }
+  .triad-card {
+    background: rgba(245,230,211,0.04);
+    border: 1px solid var(--rule-night);
+    border-radius: 14px;
+    padding: 12px 8px;
+    text-align: center;
+  }
+  .triad-icon {
+    width: 28px; height: 28px;
+    margin: 0 auto 8px;
+    color: var(--accent-night);
+  }
+  .triad-icon svg { width: 100%; height: 100%; stroke: currentColor; stroke-width: 1.5; fill: none; }
+  .triad-eyebrow {
+    font-size: 9px;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: rgba(245,230,211,0.55);
+    font-weight: 700;
+  }
+  .triad-sign {
+    font-family: 'Fraunces', serif;
+    font-size: 17px;
+    color: var(--ink-night);
+    font-weight: 500;
+    margin: 4px 0 4px;
+  }
+  .triad-trait {
+    font-size: 10px;
+    color: rgba(245,230,211,0.70);
+    font-style: italic;
+    line-height: 1.35;
+  }
+
+  /* §2.5 GODDESS BENCH (asteroids) */
+  .goddess {
+    margin: 16px 0 0;
+    background: rgba(245,230,211,0.04);
+    border: 1px solid var(--rule-night);
+    border-radius: 16px;
+    padding: 14px 14px 12px;
+  }
+  .goddess-head {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    margin-bottom: 10px;
+  }
+  .goddess-title {
+    font-family: 'Fraunces', serif;
+    font-size: 15px;
+    color: var(--ink-night);
+    font-weight: 500;
+  }
+  .goddess-title em { font-style: italic; color: var(--accent-night); }
+  .goddess-sub {
+    font-size: 9px;
+    color: rgba(245,230,211,0.50);
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    font-weight: 700;
+  }
+  .goddess-row {
+    display: grid;
+    grid-template-columns: repeat(6, 1fr);
+    gap: 6px;
+  }
+  .goddess-stone {
+    text-align: center;
+    padding: 6px 2px;
+  }
+  .goddess-orb {
+    width: 32px;
+    height: 32px;
+    margin: 0 auto 4px;
+    border-radius: 50%;
+    background: radial-gradient(circle at 30% 30%, var(--accent-night) 0%, rgba(232,146,137,0.40) 60%, rgba(232,146,137,0.10) 100%);
+    border: 1.5px solid rgba(232,146,137,0.35);
+  }
+  .goddess-stone:nth-child(2) .goddess-orb {
+    background: radial-gradient(circle at 30% 30%, #C9A95C 0%, rgba(201,169,92,0.40) 60%, rgba(201,169,92,0.10) 100%);
+    border-color: rgba(201,169,92,0.40);
+  }
+  .goddess-stone:nth-child(3) .goddess-orb {
+    background: radial-gradient(circle at 30% 30%, #F2A99A 0%, rgba(242,169,154,0.40) 60%, rgba(242,169,154,0.10) 100%);
+    border-color: rgba(242,169,154,0.40);
+  }
+  .goddess-stone:nth-child(4) .goddess-orb {
+    background: radial-gradient(circle at 30% 30%, #7D8668 0%, rgba(125,134,104,0.40) 60%, rgba(125,134,104,0.10) 100%);
+    border-color: rgba(125,134,104,0.40);
+  }
+  .goddess-stone:nth-child(5) .goddess-orb {
+    background: radial-gradient(circle at 30% 30%, #B68A3C 0%, rgba(182,138,60,0.40) 60%, rgba(182,138,60,0.10) 100%);
+    border-color: rgba(182,138,60,0.40);
+  }
+  .goddess-stone:nth-child(6) .goddess-orb {
+    background: radial-gradient(circle at 30% 30%, #5F8A85 0%, rgba(95,138,133,0.40) 60%, rgba(95,138,133,0.10) 100%);
+    border-color: rgba(95,138,133,0.40);
+  }
+  .goddess-name {
+    font-family: 'Fraunces', serif;
+    font-size: 10px;
+    font-weight: 500;
+    color: var(--ink-night);
+    line-height: 1.2;
+  }
+  .goddess-role {
+    font-size: 8px;
+    color: rgba(245,230,211,0.50);
+    margin-top: 1px;
+    line-height: 1.2;
+  }
+  .goddess-read {
+    margin-top: 10px;
+    padding-top: 10px;
+    border-top: 1px dashed rgba(245,230,211,0.14);
+    font-family: 'Fraunces', serif;
+    font-size: 12px;
+    font-style: italic;
+    color: rgba(245,230,211,0.78);
+    line-height: 1.5;
+  }
+  .goddess-read strong { color: var(--accent-night); font-weight: 500; }
+
+  /* §6.5 ANNUAL PROFECTION card */
+  .profection {
+    margin: 18px 0;
+    background: linear-gradient(135deg, rgba(201,169,92,0.10) 0%, rgba(232,146,137,0.06) 100%);
+    border: 1px solid rgba(201,169,92,0.22);
+    border-radius: 16px;
+    padding: 16px 16px 14px;
+    position: relative;
+    overflow: hidden;
+  }
+  .profection-eyebrow {
+    font-size: 9px;
+    letter-spacing: 0.20em;
+    text-transform: uppercase;
+    color: var(--gold);
+    font-weight: 700;
+  }
+  .profection-title {
+    font-family: 'Fraunces', serif;
+    font-size: 19px;
+    font-weight: 500;
+    color: var(--ink-night);
+    margin: 6px 0 8px;
+    line-height: 1.25;
+  }
+  .profection-title em { color: var(--gold); font-style: italic; }
+  .profection-body {
+    font-family: 'Fraunces', serif;
+    font-style: italic;
+    font-size: 12px;
+    color: rgba(245,230,211,0.82);
+    line-height: 1.5;
+    margin-bottom: 10px;
+  }
+  .profection-meta {
+    display: flex;
+    gap: 14px;
+    font-size: 10px;
+    color: rgba(245,230,211,0.62);
+  }
+  .profection-meta strong { color: var(--gold); font-weight: 600; }
+
+  /* §3 TODAY'S WEATHER */
+  .weather {
+    background: rgba(245,230,211,0.04);
+    border: 1px solid var(--rule-night);
+    border-radius: 16px;
+    padding: 18px 18px 16px;
+    margin: 18px 0;
+  }
+  .weather-eyebrow {
+    font-size: 9px;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: rgba(245,230,211,0.55);
+    font-weight: 700;
+    margin-bottom: 6px;
+  }
+  .weather-line {
+    font-family: 'Fraunces', serif;
+    font-style: italic;
+    font-size: 18px;
+    font-weight: 400;
+    color: var(--ink-night);
+    line-height: 1.4;
+    margin-bottom: 12px;
+  }
+  .weather-row {
+    display: flex;
+    gap: 14px;
+    flex-wrap: wrap;
+    font-size: 11px;
+    color: rgba(245,230,211,0.78);
+  }
+  .weather-row strong { color: var(--accent-night); font-weight: 600; }
+
+  /* §4 CYCLE × MOON COMPOSITE DIAL */
+  .dial-section {
+    margin: 18px 0 24px;
+  }
+  .dial-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    margin-bottom: 8px;
+  }
+  .dial-title {
+    font-family: 'Fraunces', serif;
+    font-size: 16px;
+    color: var(--ink-night);
+    font-weight: 500;
+  }
+  .dial-meta {
+    font-size: 9px;
+    letter-spacing: 0.10em;
+    text-transform: uppercase;
+    font-weight: 700;
+    color: rgba(245,230,211,0.55);
+  }
+  .dial-wrap {
+    background: rgba(245,230,211,0.04);
+    border: 1px solid var(--rule-night);
+    border-radius: 16px;
+    padding: 14px;
+    display: flex;
+    gap: 14px;
+    align-items: center;
+  }
+  .dial-svg {
+    width: 130px;
+    height: 130px;
+    flex-shrink: 0;
+  }
+  .dial-legend {
+    flex: 1;
+    font-size: 11px;
+    color: rgba(245,230,211,0.78);
+    line-height: 1.55;
+  }
+  .dial-legend .lg-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 6px;
+  }
+  .lg-dot {
+    width: 8px; height: 8px;
+    border-radius: 50%;
+    flex-shrink: 0;
+  }
+
+  /* §5 SKY DIARY (12-cycle timeline) */
+  .diary {
+    margin: 20px 0;
+    background: rgba(245,230,211,0.04);
+    border: 1px solid var(--rule-night);
+    border-radius: 16px;
+    padding: 14px;
+  }
+  .diary-head { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 12px; }
+  .diary-title { font-family: 'Fraunces', serif; font-size: 16px; color: var(--ink-night); font-weight: 500; }
+  .diary-sub { font-size: 10px; color: rgba(245,230,211,0.55); }
+  .diary-timeline {
+    display: grid;
+    grid-template-columns: repeat(12, 1fr);
+    gap: 3px;
+    margin-bottom: 10px;
+  }
+  .diary-bar {
+    height: 24px;
+    border-radius: 4px;
+    background: linear-gradient(180deg, rgba(184,74,65,0.40) 0%, rgba(230,127,115,0.20) 50%, rgba(138,95,116,0.40) 100%);
+    position: relative;
+  }
+  .diary-bar.now {
+    outline: 2px solid var(--accent-night);
+    outline-offset: -1px;
+  }
+  .diary-bar .transit-dot {
+    position: absolute;
+    top: 4px;
+    width: 4px; height: 4px;
+    border-radius: 50%;
+    background: var(--accent-night);
+  }
+  .diary-bar .transit-dot.gold { background: var(--gold); }
+  .diary-bar .transit-dot.teal { background: var(--teal); }
+  .diary-row {
+    display: grid;
+    grid-template-columns: repeat(12, 1fr);
+    gap: 3px;
+    font-size: 8px;
+    color: rgba(245,230,211,0.45);
+    letter-spacing: 0.06em;
+    text-align: center;
+  }
+  .diary-now-card {
+    background: rgba(232,146,137,0.10);
+    border: 1px solid rgba(232,146,137,0.20);
+    border-radius: 10px;
+    padding: 10px 12px;
+    margin-top: 10px;
+  }
+  .diary-now-card .nc-eye { font-size: 9px; letter-spacing: 0.16em; text-transform: uppercase; color: var(--accent-night); font-weight: 700; }
+  .diary-now-card .nc-text { font-family: 'Fraunces', serif; font-style: italic; font-size: 13px; color: var(--ink-night); margin-top: 4px; line-height: 1.4; }
+
+  /* §6 RED MOON / WHITE MOON */
+  .moon-class {
+    margin: 18px 0;
+    background: rgba(245,230,211,0.04);
+    border: 1px solid var(--rule-night);
+    border-radius: 16px;
+    padding: 14px 16px;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+  }
+  .moon-glyph {
+    width: 48px; height: 48px;
+    border-radius: 50%;
+    background: radial-gradient(circle at 35% 35%, var(--gold) 0%, #9B7B3D 70%, #6B5023 100%);
+    flex-shrink: 0;
+  }
+  .moon-class.white .moon-glyph {
+    background: radial-gradient(circle at 35% 35%, #F5E6D3 0%, #C9B8B0 70%, #8A7E88 100%);
+  }
+  .moon-class-body { flex: 1; }
+  .mc-eye { font-size: 9px; letter-spacing: 0.16em; text-transform: uppercase; color: rgba(245,230,211,0.55); font-weight: 700; }
+  .mc-name { font-family: 'Fraunces', serif; font-size: 17px; color: var(--ink-night); font-weight: 500; margin: 4px 0 2px; }
+  .mc-detail { font-size: 11px; color: rgba(245,230,211,0.70); line-height: 1.4; }
+  .mc-link { font-size: 11px; color: var(--accent-night); font-weight: 600; }
+
+  /* §7 ATELIER READING (paid) */
+  .atelier-card {
+    margin: 22px 0;
+    background: linear-gradient(140deg, #3A2434 0%, #5E3E50 100%);
+    border-radius: 18px;
+    padding: 18px 18px 16px;
+    color: var(--ink-night);
+    border: 1px solid rgba(232,146,137,0.20);
+    position: relative;
+    overflow: hidden;
+  }
+  .atelier-card::before {
+    content: '';
+    position: absolute;
+    top: -20px; right: -20px;
+    width: 120px; height: 120px;
+    background: radial-gradient(circle, rgba(232,146,137,0.18) 0%, transparent 70%);
+    pointer-events: none;
+  }
+  .atelier-eyebrow { font-size: 9px; letter-spacing: 0.20em; text-transform: uppercase; color: var(--accent-night); font-weight: 700; }
+  .atelier-title { font-family: 'Fraunces', serif; font-size: 22px; font-style: italic; font-weight: 500; margin: 6px 0 8px; line-height: 1.2; }
+  .atelier-meta { font-size: 11px; color: rgba(245,230,211,0.66); margin-bottom: 14px; }
+  .atelier-preview { font-family: 'Fraunces', serif; font-size: 13px; font-style: italic; color: rgba(245,230,211,0.84); line-height: 1.55; margin-bottom: 16px; }
+  .atelier-cta {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: var(--accent-night);
+    color: #2B1E26;
+    font-weight: 600;
+    font-size: 12px;
+    padding: 9px 16px;
+    border-radius: 9999px;
+    border: none;
+    letter-spacing: 0.02em;
+  }
+  .atelier-price {
+    font-size: 10px;
+    color: rgba(245,230,211,0.54);
+    margin-top: 8px;
+    letter-spacing: 0.04em;
+  }
+
+  /* §8 COMPATIBILITY */
+  .compat {
+    margin: 20px 0;
+  }
+  .compat-head { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 10px; }
+  .compat-title { font-family: 'Fraunces', serif; font-size: 16px; color: var(--ink-night); font-weight: 500; }
+  .compat-title em { color: var(--accent-night); font-style: italic; }
+  .compat-card {
+    background: rgba(245,230,211,0.04);
+    border: 1px solid var(--rule-night);
+    border-radius: 16px;
+    padding: 14px 16px;
+  }
+  .compat-pair {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 12px;
+  }
+  .compat-circle {
+    width: 44px; height: 44px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, var(--accent-night), var(--gold));
+    color: #2B1E26;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: 'Fraunces', serif;
+    font-size: 17px;
+    font-weight: 500;
+    flex-shrink: 0;
+  }
+  .compat-amp { color: var(--accent-night); font-family: 'Fraunces', serif; font-size: 22px; font-style: italic; }
+  .compat-label { flex: 1; }
+  .compat-label .who { font-size: 12px; color: var(--ink-night); font-weight: 600; }
+  .compat-label .what { font-size: 10px; color: rgba(245,230,211,0.55); }
+  .compat-score {
+    display: flex;
+    align-items: baseline;
+    gap: 6px;
+    margin-bottom: 10px;
+  }
+  .compat-score .score {
+    font-family: 'Fraunces', serif;
+    font-size: 36px;
+    font-weight: 500;
+    color: var(--accent-night);
+    line-height: 1;
+  }
+  .compat-score .label { font-size: 11px; color: rgba(245,230,211,0.70); }
+  .compat-line {
+    font-family: 'Fraunces', serif;
+    font-style: italic;
+    font-size: 12px;
+    color: rgba(245,230,211,0.84);
+    line-height: 1.5;
+  }
+  .compat-dim-row {
+    display: flex;
+    gap: 8px;
+    margin-top: 10px;
+  }
+  .compat-dim {
+    flex: 1;
+    background: rgba(245,230,211,0.06);
+    border-radius: 8px;
+    padding: 6px 4px;
+    text-align: center;
+  }
+  .compat-dim .d-num { font-family: 'Fraunces', serif; font-size: 15px; color: var(--ink-night); font-weight: 500; }
+  .compat-dim .d-label { font-size: 8px; letter-spacing: 0.10em; text-transform: uppercase; color: rgba(245,230,211,0.55); font-weight: 700; margin-top: 2px; }
+
+  /* §9 ASK THE SKY */
+  .ask-section {
+    margin: 22px 0;
+  }
+  .ask-head { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 10px; }
+  .ask-title { font-family: 'Fraunces', serif; font-size: 16px; color: var(--ink-night); font-weight: 500; }
+  .ask-title em { font-style: italic; color: var(--accent-night); }
+  .ask-input {
+    background: rgba(245,230,211,0.04);
+    border: 1px solid var(--rule-night);
+    border-radius: 14px;
+    padding: 14px;
+    /* notebook ruling */
+    background-image:
+      linear-gradient(transparent calc(1.7em - 1px), rgba(245,230,211,0.08) 1px, transparent 1px),
+      linear-gradient(transparent calc(1.7em - 1px), rgba(245,230,211,0.08) 1px, transparent 1px);
+    background-size: 100% 1.7em;
+    background-position: 0 0.4em;
+  }
+  .ask-input .placeholder {
+    font-family: 'Fraunces', serif;
+    font-style: italic;
+    font-size: 14px;
+    color: rgba(245,230,211,0.50);
+    line-height: 1.7em;
+  }
+  .ask-recent { display: flex; gap: 6px; margin-top: 10px; flex-wrap: wrap; }
+  .ask-pill {
+    font-size: 10px;
+    color: rgba(245,230,211,0.70);
+    background: rgba(245,230,211,0.06);
+    border: 1px solid var(--rule-night);
+    padding: 5px 10px;
+    border-radius: 9999px;
+  }
+
+  /* §10 QUIET MODE FOOTER */
+  .quiet-row {
+    margin: 22px 0 0;
+    padding: 12px 14px;
+    background: rgba(245,230,211,0.04);
+    border: 1px solid var(--rule-night);
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+  .quiet-text { display: flex; flex-direction: column; }
+  .quiet-name { font-size: 12px; color: var(--ink-night); font-weight: 600; }
+  .quiet-help { font-size: 10px; color: rgba(245,230,211,0.55); font-style: italic; }
+  .toggle {
+    width: 36px; height: 20px;
+    background: var(--accent-night);
+    border-radius: 9999px;
+    position: relative;
+  }
+  .toggle::after {
+    content: '';
+    position: absolute;
+    top: 2px; right: 2px;
+    width: 16px; height: 16px;
+    border-radius: 50%;
+    background: #2B1E26;
+  }
+
+  /* footer */
+  .footer {
+    text-align: center;
+    max-width: 820px;
+    margin: 36px auto 0;
+    padding: 22px 28px;
+    background: rgba(74, 42, 58, 0.05);
+    border-radius: 14px;
+    font-size: 13px;
+    color: var(--plum-2);
+    line-height: 1.6;
+  }
+  .footer strong { color: var(--plum); font-weight: 600; }
+</style>
+</head>
+<body>
+
+<div class="head">
+  <div class="eyebrow">FemWell · Horoscope v2.1 · Visual demo (deeper)</div>
+  <h1 class="title">From "another reading" to <em style="font-style: italic;">your sky</em></h1>
+  <p class="lede">A 5-level lift on the current Horoscope tab. <strong>Plum Night</strong> theme + <strong>Twilight</strong> hero. Composite <strong>Cycle × Moon</strong> dial. <strong>Goddess Bench</strong> (asteroid astrology — Ceres/Pallas/Juno/Vesta/Chiron/Lilith — nobody else does this). <strong>Annual Profections</strong> (Hellenistic time-lord, unlocked on your birthday). Real <strong>peer-reviewed science</strong> backing the moon framing — Helfrich-Förster 2021, Cajochen 2013. <strong>Astra Cole, MA</strong> — a real-credentialed astrologer voice (the named-author moat every category-winner has). Four-stream monetisation: subscription + PDFs + chart atelier + electional service.</p>
+  <div class="meta-row">
+    <div><strong>Sources:</strong> research_horoscope_v2.md + <strong>research_horoscope_v2_DEEP.md</strong> · audit_horoscope_v2.md · atelier_horoscope_v2_spec.md</div>
+  </div>
+</div>
+
+<div class="stage">
+
+<!-- ========== PHONE FRAME ========== -->
+<div class="phone">
+  <div class="phone-inner">
+    <div class="notch"></div>
+    <div class="scroll">
+
+      <!-- §1 HERO (Twilight + Quiet horizon) -->
+      <div class="hero">
+        <div class="hero-stars">
+          <span style="top:12%; left:18%"></span>
+          <span style="top:8%; left:62%"></span>
+          <span style="top:22%; left:84%"></span>
+          <span style="top:34%; left:34%"></span>
+          <span style="top:46%; left:72%"></span>
+          <span style="top:18%; left:48%"></span>
+          <span style="top:28%; left:14%"></span>
+        </div>
+        <div class="hero-eyebrow">Discover · Horoscope</div>
+        <h1 class="hero-title">A steady day, Oji. The moon is <em>climbing</em>.</h1>
+        <p class="hero-sub">Day 18 of your cycle, day 9 of the moon's. A waxing gibbous in Scorpio — energy that asks for follow-through, not new beginnings.</p>
+        <div class="hero-meta">
+          <span class="hero-chip">Tuesday 13 May</span>
+          <span class="hero-chip is-phase">Luteal · Day 18</span>
+          <span class="hero-chip">Waxing gibbous · 76%</span>
+        </div>
+      </div>
+
+      <!-- §2 TRIAD -->
+      <div class="triad">
+        <div class="triad-card">
+          <div class="triad-icon">
+            <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"/></svg>
+          </div>
+          <div class="triad-eyebrow">Sun</div>
+          <div class="triad-sign">Aquarius</div>
+          <div class="triad-trait">considered, independent</div>
+        </div>
+        <div class="triad-card">
+          <div class="triad-icon">
+            <svg viewBox="0 0 24 24"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+          </div>
+          <div class="triad-eyebrow">Moon</div>
+          <div class="triad-sign">Pisces</div>
+          <div class="triad-trait">tender, intuitive</div>
+        </div>
+        <div class="triad-card">
+          <div class="triad-icon">
+            <svg viewBox="0 0 24 24"><path d="M17 18a5 5 0 0 0-10 0M12 2v7m4-3-4 4-4-4M1 18h22M5 22h14"/></svg>
+          </div>
+          <div class="triad-eyebrow">Rising</div>
+          <div class="triad-sign">Libra</div>
+          <div class="triad-trait">measured, warm</div>
+        </div>
+      </div>
+
+      <!-- §2.5 GODDESS BENCH (asteroid archetypes — original) -->
+      <div class="goddess">
+        <div class="goddess-head">
+          <div class="goddess-title">Goddess <em>bench</em></div>
+          <span class="goddess-sub">Asteroid astrology</span>
+        </div>
+        <div class="goddess-row">
+          <div class="goddess-stone">
+            <div class="goddess-orb"></div>
+            <div class="goddess-name">Ceres</div>
+            <div class="goddess-role">Mother · Cancer</div>
+          </div>
+          <div class="goddess-stone">
+            <div class="goddess-orb"></div>
+            <div class="goddess-name">Pallas</div>
+            <div class="goddess-role">Warrior · Gemini</div>
+          </div>
+          <div class="goddess-stone">
+            <div class="goddess-orb"></div>
+            <div class="goddess-name">Juno</div>
+            <div class="goddess-role">Partner · Pisces</div>
+          </div>
+          <div class="goddess-stone">
+            <div class="goddess-orb"></div>
+            <div class="goddess-name">Vesta</div>
+            <div class="goddess-role">Hearth · Virgo</div>
+          </div>
+          <div class="goddess-stone">
+            <div class="goddess-orb"></div>
+            <div class="goddess-name">Chiron</div>
+            <div class="goddess-role">Healer · Scorpio</div>
+          </div>
+          <div class="goddess-stone">
+            <div class="goddess-orb"></div>
+            <div class="goddess-name">Lilith</div>
+            <div class="goddess-role">Wild · Aries</div>
+          </div>
+        </div>
+        <div class="goddess-read">
+          "Your <strong>Juno in Pisces</strong> wants softness in commitment; your <strong>Lilith in Aries</strong> won't be tamed. The work is letting both speak."
+        </div>
+      </div>
+
+      <!-- §3 TODAY'S WEATHER -->
+      <div class="weather">
+        <div class="weather-eyebrow">Today's sky · signed by Astra</div>
+        <p class="weather-line">"A steady follicular day under a waxing Moon — start the thing you've been thinking about."</p>
+        <div class="weather-row">
+          <span><strong>Energy</strong> 7/10</span>
+          <span><strong>Mood</strong> Open, decisive</span>
+          <span><strong>Best for</strong> initiating, naming</span>
+        </div>
+      </div>
+
+      <!-- §4 CYCLE × MOON COMPOSITE DIAL -->
+      <div class="dial-section">
+        <div class="dial-head">
+          <div class="dial-title">Cycle × Moon</div>
+          <div class="dial-meta">Day 18 of 28 · Lunar 9 of 29.5</div>
+        </div>
+        <div class="dial-wrap">
+          <svg class="dial-svg" viewBox="0 0 130 130">
+            <!-- outer ring (lunar 29.5d) -->
+            <circle cx="65" cy="65" r="58" fill="none" stroke="rgba(245,230,211,0.10)" stroke-width="6"/>
+            <!-- outer phase fill 9/29.5 ≈ 30% -->
+            <circle cx="65" cy="65" r="58" fill="none" stroke="#C9B8B0" stroke-width="6"
+                    stroke-dasharray="109 365" transform="rotate(-90 65 65)"/>
+            <!-- outer disc (today's moon position) -->
+            <circle cx="65" cy="7" r="5" fill="#F5E6D3" transform="rotate(110 65 65)"/>
+
+            <!-- inner ring (menstrual 28d) -->
+            <circle cx="65" cy="65" r="42" fill="none" stroke="rgba(245,230,211,0.10)" stroke-width="6"/>
+            <!-- inner phase fill 18/28 ≈ 64% -->
+            <circle cx="65" cy="65" r="42" fill="none" stroke="#8A5F74" stroke-width="6"
+                    stroke-dasharray="169 264" transform="rotate(-90 65 65)"/>
+            <!-- inner disc (today's cycle day) -->
+            <circle cx="65" cy="23" r="5" fill="#E89289" transform="rotate(231 65 65)"/>
+
+            <!-- center label -->
+            <text x="65" y="62" text-anchor="middle" fill="#F5E6D3" font-family="Fraunces, serif" font-size="20" font-weight="500">Today</text>
+            <text x="65" y="78" text-anchor="middle" fill="rgba(245,230,211,0.55)" font-family="Inter, sans-serif" font-size="9" letter-spacing="1.5">TUE 13 MAY</text>
+          </svg>
+          <div class="dial-legend">
+            <div class="lg-row"><span class="lg-dot" style="background:#F5E6D3"></span><span><strong style="color:var(--ink-night)">Lunar</strong> · waxing gibbous · Scorpio</span></div>
+            <div class="lg-row"><span class="lg-dot" style="background:#E89289"></span><span><strong style="color:var(--ink-night)">Cycle</strong> · luteal · 8 days to next period</span></div>
+            <div class="lg-row" style="margin-top:8px; color: rgba(245,230,211,0.55); font-size: 10px; font-style: italic;">"The moon is ahead. Your cycle is half-way through."</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- §5 SKY DIARY -->
+      <div class="diary">
+        <div class="diary-head">
+          <div>
+            <div class="diary-title">Sky diary</div>
+            <div class="diary-sub">12 cycles overlaid with the transits that shaped them</div>
+          </div>
+          <div class="diary-sub">2025–2026</div>
+        </div>
+        <div class="diary-timeline">
+          <div class="diary-bar"></div>
+          <div class="diary-bar"><span class="transit-dot gold" style="left: 40%"></span></div>
+          <div class="diary-bar"></div>
+          <div class="diary-bar"><span class="transit-dot teal" style="left: 60%"></span></div>
+          <div class="diary-bar"></div>
+          <div class="diary-bar"></div>
+          <div class="diary-bar"><span class="transit-dot" style="left: 30%"></span></div>
+          <div class="diary-bar"></div>
+          <div class="diary-bar"><span class="transit-dot gold" style="left: 70%"></span></div>
+          <div class="diary-bar"></div>
+          <div class="diary-bar"></div>
+          <div class="diary-bar now"><span class="transit-dot" style="left: 64%"></span></div>
+        </div>
+        <div class="diary-row">
+          <div>Jun</div><div>Jul</div><div>Aug</div><div>Sep</div><div>Oct</div><div>Nov</div>
+          <div>Dec</div><div>Jan</div><div>Feb</div><div>Mar</div><div>Apr</div><div>May</div>
+        </div>
+        <div class="diary-now-card">
+          <div class="nc-eye">Right now</div>
+          <p class="nc-text">"Saturn squared your Sun across the last two cycles — explains the heaviness in April. You're past it."</p>
+        </div>
+      </div>
+
+      <!-- §6 RED MOON CLASSIFIER -->
+      <div class="moon-class">
+        <div class="moon-glyph"></div>
+        <div class="moon-class-body">
+          <div class="mc-eye">Your archetype</div>
+          <div class="mc-name">Red Moon</div>
+          <div class="mc-detail">You tend to menstruate at the new moon. Common in women who are rest-aligned, slower-paced. <span class="mc-link">Read more →</span></div>
+        </div>
+      </div>
+
+      <!-- §6.5 ANNUAL PROFECTION (Hellenistic time-lord — original) -->
+      <div class="profection">
+        <div class="profection-eyebrow">Year 27 · Annual Profection</div>
+        <h3 class="profection-title">A <em>Venus year</em> — the 5th house is lit.</h3>
+        <p class="profection-body">"Your time-lord for this year is Venus. Twenty-seven activates the 5th house — creativity, pleasure, the heart that wants to be seen. The first three months Saturn was in the way; from here, it's clearer."</p>
+        <div class="profection-meta">
+          <span><strong>Time-lord</strong> Venus</span>
+          <span><strong>Active house</strong> 5th</span>
+          <span><strong>Unlocks</strong> 14 Feb (next birthday)</span>
+        </div>
+      </div>
+
+      <!-- §7 ATELIER READING (paid hero) — now with named UK astrologer -->
+      <div class="atelier-card">
+        <div class="atelier-eyebrow">FemWell Plus · The Atelier</div>
+        <h2 class="atelier-title">May's reading — <em>a quieter shape</em></h2>
+        <div class="atelier-meta">6 pages · Astra Cole, MA, FAS · 14 min read</div>
+        <p class="atelier-preview">"Two cycles ago, Saturn was still pressing on you. This month it has moved on, and you'll feel the lift in your luteal days — gentler, less heavy. The work is to let the lightness in without bracing for it."</p>
+        <div style="display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 14px;">
+          <span class="hero-chip" style="background: rgba(232,146,137,0.10); color: var(--accent-night); border-color: rgba(232,146,137,0.30);">Real astrologer, not LLM</span>
+          <span class="hero-chip" style="background: rgba(245,230,211,0.06); color: rgba(245,230,211,0.78); border-color: rgba(245,230,211,0.14);">Backed by Skyfield</span>
+        </div>
+        <button class="atelier-cta">Unlock with FemWell Plus →</button>
+        <div class="atelier-price">£8.99 / month · or £69 / year · cancel anytime</div>
+      </div>
+
+      <!-- §7.5 ADDITIONAL ONE-SHOTS (the four-stream monetisation) -->
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin: 16px 0;">
+        <div style="background: rgba(245,230,211,0.04); border: 1px solid var(--rule-night); border-radius: 14px; padding: 12px 12px 10px;">
+          <div style="font-size: 9px; letter-spacing: 0.16em; text-transform: uppercase; color: rgba(245,230,211,0.55); font-weight: 700;">One-shot · PDF</div>
+          <div style="font-family: 'Fraunces', serif; font-size: 14px; color: var(--ink-night); font-weight: 500; margin: 4px 0 2px;">Year ahead</div>
+          <div style="font-size: 10px; color: rgba(245,230,211,0.62); margin-bottom: 8px;">12-page printable, signed</div>
+          <div style="font-family: 'Fraunces', serif; font-size: 15px; color: var(--accent-night);">£19</div>
+        </div>
+        <div style="background: rgba(245,230,211,0.04); border: 1px solid var(--rule-night); border-radius: 14px; padding: 12px 12px 10px;">
+          <div style="font-size: 9px; letter-spacing: 0.16em; text-transform: uppercase; color: rgba(245,230,211,0.55); font-weight: 700;">One-shot</div>
+          <div style="font-family: 'Fraunces', serif; font-size: 14px; color: var(--ink-night); font-weight: 500; margin: 4px 0 2px;">Birth chart atelier</div>
+          <div style="font-size: 10px; color: rgba(245,230,211,0.62); margin-bottom: 8px;">Full natal, with art</div>
+          <div style="font-family: 'Fraunces', serif; font-size: 15px; color: var(--accent-night);">£29</div>
+        </div>
+        <div style="grid-column: span 2; background: rgba(95,138,133,0.08); border: 1px solid rgba(95,138,133,0.22); border-radius: 14px; padding: 12px 14px 10px;">
+          <div style="font-size: 9px; letter-spacing: 0.16em; text-transform: uppercase; color: var(--teal); font-weight: 700;">By appointment · electional</div>
+          <div style="font-family: 'Fraunces', serif; font-size: 16px; color: var(--ink-night); font-weight: 500; margin: 4px 0 4px;">Choose <em style="font-style: italic; color: var(--teal);">the day</em></div>
+          <div style="font-size: 10px; color: rgba(245,230,211,0.70); margin-bottom: 8px; line-height: 1.5;">Wedding, surgery, launch, IVF transfer — Astra picks the auspicious window from a 3-month range. Reply within 48h, signed.</div>
+          <div style="font-family: 'Fraunces', serif; font-size: 15px; color: var(--teal);">£55</div>
+        </div>
+      </div>
+
+      <!-- §8 COMPATIBILITY -->
+      <div class="compat">
+        <div class="compat-head">
+          <div class="compat-title">Compatibility <em>reading</em></div>
+          <div class="dial-sub" style="font-size:10px; color: rgba(245,230,211,0.55);">Last: Sam · 6 days ago</div>
+        </div>
+        <div class="compat-card">
+          <div class="compat-pair">
+            <div class="compat-circle">O</div>
+            <span class="compat-amp">&amp;</span>
+            <div class="compat-circle" style="background: linear-gradient(135deg, #7D8668, #5F8A85);">S</div>
+            <div class="compat-label">
+              <div class="who">Oji &amp; Sam</div>
+              <div class="what">Aquarius · Leo</div>
+            </div>
+          </div>
+          <div class="compat-score">
+            <div class="score">78</div>
+            <div class="label">out of 100 · <em style="font-style: italic; color: var(--accent-night);">a steady fire</em></div>
+          </div>
+          <p class="compat-line">"You're opposite signs but you balance well — your reserve cools his heat, his warmth opens you. Watch the talk dimension: you process quietly, he wants to say it out."</p>
+          <div class="compat-dim-row">
+            <div class="compat-dim"><div class="d-num">82</div><div class="d-label">Talk</div></div>
+            <div class="compat-dim"><div class="d-num">74</div><div class="d-label">Touch</div></div>
+            <div class="compat-dim"><div class="d-num">79</div><div class="d-label">Trust</div></div>
+            <div class="compat-dim"><div class="d-num">77</div><div class="d-label">Time</div></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- §9 ASK THE SKY -->
+      <div class="ask-section">
+        <div class="ask-head">
+          <div class="ask-title">Ask the <em>sky</em></div>
+          <div class="dial-sub" style="font-size:10px; color: rgba(245,230,211,0.55);">grounded in your chart, today's sky</div>
+        </div>
+        <div class="ask-input">
+          <p class="placeholder">Why does this week feel so unsettled, even though nothing's wrong?</p>
+        </div>
+        <div class="ask-recent">
+          <span class="ask-pill">Should I rest more today?</span>
+          <span class="ask-pill">Is now a good time to start the move?</span>
+          <span class="ask-pill">Why am I dreaming so vividly?</span>
+        </div>
+      </div>
+
+      <!-- §10 QUIET MODE -->
+      <div class="quiet-row">
+        <div class="quiet-text">
+          <span class="quiet-name">Quiet Mode</span>
+          <span class="quiet-help">Soften shadow-language. No "war", "wound", "trauma" in your readings.</span>
+        </div>
+        <span class="toggle"></span>
+      </div>
+
+      <!-- §11 SCIENCE FOOTER — honest framing for the moon claim -->
+      <div style="margin: 22px 0 8px; padding: 14px 14px 12px; background: rgba(245,230,211,0.03); border: 1px dashed rgba(245,230,211,0.16); border-radius: 12px;">
+        <div style="font-size: 9px; letter-spacing: 0.16em; text-transform: uppercase; color: rgba(245,230,211,0.55); font-weight: 700; margin-bottom: 6px;">Why we trust the moon</div>
+        <p style="font-family: 'Fraunces', serif; font-style: italic; font-size: 12px; color: rgba(245,230,211,0.74); line-height: 1.55; margin-bottom: 8px;">"Some cycles sync to lunar phase. The science is real but partial — we frame it that way."</p>
+        <p style="font-size: 10px; color: rgba(245,230,211,0.55); line-height: 1.5;">
+          Helfrich-Förster 2021 (<em>Science Advances</em>) found ~24% of women under 35 sync their cycle to lunar phase, stronger when artificial light is low. Cajochen 2013 (<em>Current Biology</em>) found a 30% reduction in NREM delta sleep around the full moon. We cite these honestly; astrology beyond moon-phase remains symbolic.
+        </p>
+      </div>
+
+      <!-- §12 PRIVACY LINE — sale-readiness safeguard -->
+      <div style="margin: 6px 0 0; padding: 8px 12px; font-size: 10px; color: rgba(245,230,211,0.50); text-align: center; line-height: 1.5;">
+        Your birth time + cycle data never leaves your device unencrypted.<br>
+        FemWell Plus billing handled by Stripe (PCI-DSS L1).
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<!-- ========== ANNOTATIONS ========== -->
+<div class="anno-stack">
+  <div class="anno">
+    <div class="anno-title"><span class="anno-num">1</span> Twilight hero — single sentence</div>
+    <p class="anno-body">Atelier's <strong>Shape A — Quiet horizon</strong>. A dark plum-to-mauve gradient with seven faint constellation dots. The headline is ONE Fraunces sentence with an italic emphasis on the verb — "A steady day, Oji. The moon is <em>climbing</em>." Sub-line gives cycle + moon context plainly. No glyphs, no "Read me the sky" jargon.</p>
+    <span class="anno-tag new">NEW</span>
+    <span class="anno-tag fix">REPLACES current "Read me the sky" empty state</span>
+  </div>
+  <div class="anno">
+    <div class="anno-title"><span class="anno-num">2</span> Triad cards — Lucide, not ☉ ☽</div>
+    <p class="anno-body">Three small cards: Sun · Moon · Rising. Each uses a <strong>Lucide line icon</strong> (Sun / Moon / Sunrise) in rose-night accent. One-line trait. <strong>Zero Unicode astrology glyphs</strong> — these are emoji codepoints and ban the brand rule. Audit found them in <code>astrology.js:116-124</code> + <code>generateHoroscopeReading/entry.ts:67-75</code> shipping live.</p>
+    <span class="anno-tag fix">P0 BRAND FIX</span>
+  </div>
+  <div class="anno">
+    <div class="anno-title"><span class="anno-num">3</span> Today's weather — Astra-signed</div>
+    <p class="anno-body">Single Fraunces italic line ("start the thing you've been thinking about"). Authored by <strong>Astra</strong> — a named astrologer persona, separate from Jess. Signed copy is the sale-readiness moat: "human-in-the-loop" story, not "another LLM read".</p>
+    <span class="anno-tag new">NEW persona — Astra</span>
+  </div>
+  <div class="anno">
+    <div class="anno-title"><span class="anno-num">4</span> Cycle × Moon — one composite dial</div>
+    <p class="anno-body">The moat in one image. <strong>Outer ring = lunar 29.5d. Inner ring = menstrual 28d. Two discs mark today.</strong> Legend reads "lunar ahead, cycle half-way." Nobody else has this — Stardust has cycle, CHANI has lunar, neither combines them. The italic micro-sentence under the legend is the human read of the geometry.</p>
+    <span class="anno-tag new">MOAT — replaces current two-bar layout</span>
+  </div>
+  <div class="anno">
+    <div class="anno-title"><span class="anno-num">5</span> Sky Diary — 12 cycles + transits</div>
+    <p class="anno-body">Horizontal timeline of the last 12 cycles with transit dots overlaid (Saturn = teal, Jupiter = gold). The "Right now" card says <em>"Saturn squared your Sun across the last two cycles — explains the heaviness in April. You're past it."</em> — connects past-felt-experience to sky math. <strong>Anchor of the moat.</strong></p>
+    <span class="anno-tag new">WOW #1</span>
+  </div>
+  <div class="anno">
+    <div class="anno-title"><span class="anno-num">6</span> Red Moon / White Moon classifier</div>
+    <p class="anno-body">Auto-detected from cycle history — "Red Moon" = bleed at new moon (rest-aligned), "White Moon" = bleed at full moon (output-aligned). A genuinely novel feature; spiritual + practical. Read-more goes to a deep editorial piece (Mx Storyteller territory).</p>
+    <span class="anno-tag new">WOW #2 — original</span>
+  </div>
+  <div class="anno">
+    <div class="anno-title"><span class="anno-num">7</span> Atelier Reading — paid hero</div>
+    <p class="anno-body">Monthly long-form letter (~1500 words), AI-drafted + human-signed by Astra. The conversion hero. <strong>£8.99/mo or £69/year — "FemWell Plus."</strong> This is the line item that justifies the £1M valuation: recurring revenue + brand authority. Locked here, unlocked in tab when subscribed.</p>
+    <span class="anno-tag new">WOW #3 — monetisation hero</span>
+  </div>
+  <div class="anno">
+    <div class="anno-title"><span class="anno-num">8</span> Compatibility — 4 dimensions</div>
+    <p class="anno-body">Two circle-monograms, score in big Fraunces, four-dimension breakdown: <strong>Talk · Touch · Trust · Time</strong>. The dimensions exist in the current code but are never surfaced. One Fraunces-italic line describes the relationship narrative ("a steady fire"). Last reading appears as a chip up top.</p>
+    <span class="anno-tag fix">SURFACES existing hidden dimensions</span>
+  </div>
+  <div class="anno">
+    <div class="anno-title"><span class="anno-num">9</span> Ask The Sky (renamed)</div>
+    <p class="anno-body">Renamed from "Ask The Stars" — Atelier's call, less Co-Star-flavoured. <strong>Notebook ruling</strong> under the input, Fraunces italic placeholder. Three recent-question pills below. The visual signals "intentional question", not "chatbot prompt".</p>
+    <span class="anno-tag new">renamed + new input visual</span>
+  </div>
+  <div class="anno">
+    <div class="anno-title"><span class="anno-num">10</span> Quiet Mode toggle</div>
+    <p class="anno-body">Suppresses shadow-language (war, wound, trauma, crisis) in all readings. Direct answer to <strong>Co-Star's "bullying notifications" critique</strong> (Reddit + The Cut, 2023). Safeguarding-by-design — a story to tell on the sale call.</p>
+    <span class="anno-tag new">WOW #4 — sale-side IP</span>
+  </div>
+  <div class="anno" style="border-left: 3px solid var(--gold);">
+    <div class="anno-title"><span class="anno-num" style="background: var(--gold);">+</span> Goddess Bench (NEW in v2.1)</div>
+    <p class="anno-body"><strong>Asteroid astrology</strong> — Ceres / Pallas / Juno / Vesta / Chiron / Lilith — mapped to feminine archetypes (Mother / Warrior / Partner / Hearth / Wounded Healer / Wild Untamed). <strong>Co-Star, CHANI, The Pattern, Sanctuary, Stardust all omit asteroids.</strong> Zero competition in the category. Source: Demetra George "Asteroid Goddesses" (1986, still in print); Astro.com's asteroid module. The italic read connects two asteroids to a tension the user might recognise.</p>
+    <span class="anno-tag new">CATEGORY ORIGINAL · zero competition</span>
+  </div>
+  <div class="anno" style="border-left: 3px solid var(--gold);">
+    <div class="anno-title"><span class="anno-num" style="background: var(--gold);">+</span> Annual Profections (NEW in v2.1)</div>
+    <p class="anno-body"><strong>Hellenistic time-lord-of-the-year</strong> — your "year ruler" rotates annually, activating one house. Age 27 → 4th house (foundations) for some; here we show Year of Venus / 5th house. Real technique from Vettius Valens (Greek, 2nd c. CE), revived by Chris Brennan (host, "The Astrology Podcast"). <strong>Nobody productises this</strong>; CHANI mentions it in copy, Co-Star ignores it. Tiny dev (one calculation), big "this app actually knows astrology" signal.</p>
+    <span class="anno-tag new">CATEGORY ORIGINAL · cheap to build</span>
+  </div>
+  <div class="anno" style="border-left: 3px solid var(--rose);">
+    <div class="anno-title"><span class="anno-num">+</span> Atelier Reading — named-author moat</div>
+    <p class="anno-body">Now signed <strong>Astra Cole, MA, FAS</strong> (Faculty of Astrological Studies, London — real UK credential, contractable). Every category-winner has a named voice: Susan Miller (13M readers since '95), Chani Nicholas, the AstroTwins, Aliza Kelly, Lisa Stardust. <strong>This is the moat for the £1M sale</strong> — recurring rev + brand authority. Two chips show "Real astrologer, not LLM" and "Backed by Skyfield" (the MIT-licensed NASA-grade ephemeris that replaces the fabricated-transit code path).</p>
+    <span class="anno-tag new">NEW · sale-side IP moat</span>
+  </div>
+  <div class="anno" style="border-left: 3px solid var(--teal);">
+    <div class="anno-title"><span class="anno-num" style="background: var(--teal);">+</span> Four-stream monetisation</div>
+    <p class="anno-body">Subscription is one revenue stream of FOUR. <strong>£8.99/mo or £69/yr</strong> sub · <strong>£19 Year Ahead PDF</strong> (Etsy demand, £15-40 range) · <strong>£29 Birth Chart Atelier</strong> (printable, framable) · <strong>£55 Choose The Day</strong> (electional service, wedding/surgery/launch — reference: UK horary practitioners charge £125-150). Astro.com sells couple-reports for £40+; Sanctuary did annual reports for $40. The Choose The Day card is the biggest unclaimed offer — Sharon Knight (FAS) charges £150/hr, FemWell undercuts.</p>
+    <span class="anno-tag new">DIVERSIFIED · 4 streams not 1</span>
+  </div>
+  <div class="anno" style="border-left: 3px solid #9B7B3D;">
+    <div class="anno-title"><span class="anno-num" style="background: #9B7B3D;">+</span> Real science footer</div>
+    <p class="anno-body">"Why we trust the moon" cites <strong>Helfrich-Förster 2021 (Science Advances)</strong> on lunar entrainment of menstrual cycles (~24% under-35 sync rate) and <strong>Cajochen 2013 (Current Biology)</strong> on full-moon NREM sleep drop. We can frame moon honestly without overclaiming the rest of astrology. <strong>This is the line on the sale call</strong> — "we cite peer-reviewed science where it exists; the rest we mark as symbolic."</p>
+    <span class="anno-tag new">SALE-READINESS · honest framing</span>
+  </div>
+  <div class="anno" style="border-left: 3px solid var(--plum-mute);">
+    <div class="anno-title"><span class="anno-num" style="background: var(--plum-mute);">+</span> Privacy line</div>
+    <p class="anno-body">Visible at the bottom of every Horoscope render. <strong>Stardust nearly got pulled from Play Store Nov 2024</strong> over period-data exposure (Mozilla *Privacy Not Included* flagged it). FemWell's data architecture and privacy story will be scrutinised in £1M-sale diligence — this line is the user-facing surface of that story.</p>
+    <span class="anno-tag new">SALE-READINESS · privacy by design</span>
+  </div>
+  <div class="anno">
+    <div class="anno-title"><span class="anno-num">★</span> What is NOT shown here (queued)</div>
+    <p class="anno-body"><strong>Sky-aware Smart Save</strong> (Lifestyle integration: saved articles get tagged with today's sky + cycle for later "what was happening when I saved this" view). <strong>Birth-data sheet rebuild</strong> (currently a P0 race-condition bug per audit). <strong>Notifications opt-in</strong> (gentle by default, not Co-Star-bullying). <strong>Astrocartography</strong> for the relocation niche. <strong>Solar return chart</strong> on the user's actual birthday. These ship in subsequent phases of H2.</p>
+  </div>
+</div>
+
+</div>
+
+<div class="footer">
+  <strong>Status:</strong> Visual demo only — no code yet. Awaiting sign-off before Mr Lead Manager writes the MP spec.<br>
+  <strong>Next:</strong> you mark this approve / approve-with-changes / block. If approve, three commits ship in order — <strong>H2a</strong> (split god-component + P0 fixes — moon emoji, race condition, Skyfield to replace fabricated transits) → <strong>H2b</strong> (hero + triad + dial + Goddess Bench) → <strong>H2c</strong> (sky diary + classifier + profections + ask renamed + quiet mode + science footer + privacy line). <strong>H2d</strong> (Atelier Reading paid layer + one-shot PDFs + Choose The Day) is the optional commit if you want monetisation live now.<br>
+  <strong>What's new in v2.1 vs v2:</strong> Goddess Bench · Annual Profections · named Astra Cole MA FAS · Skyfield-backed transits · £19 PDF + £29 Atelier + £55 Choose The Day stream · science footer · privacy line.
+</div>
+
+</body>
+</html>

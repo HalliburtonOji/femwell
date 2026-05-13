@@ -1,0 +1,1221 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"/>
+<title>FemWell · Pulse — Live Demo (wired to your data)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600;9..144,700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --rose-50:#FFF7F5;--rose-100:#FFE9E4;--rose-200:#FBD2CC;--rose-300:#F2A89E;
+  --rose-400:#E67F73;--rose-500:#D45E52;--rose-600:#B0483E;
+  --plum:#4A2A3A;--cream:#FFFAF5;--ink:#2A1C20;--ink-soft:#6B555C;--ink-mute:#9B8289;
+  --line:rgba(74,42,58,.08);--glass:rgba(255,255,255,.72);
+  --sage:#7FA68A;--sage-soft:#CCE0D1;
+  --amber:#D99960;--amber-soft:#F7DFC0;
+  --water:#6DB5E0;--water-soft:#CBE4F3;
+  --lav:#8E7EB8;--lav-soft:#DDD3EF;
+  --night:#1A1522;--star:#F5E6D3;
+  --shadow-sm:0 1px 2px rgba(74,42,58,.06),0 4px 10px rgba(74,42,58,.05);
+  --shadow-md:0 6px 18px rgba(74,42,58,.08),0 20px 40px rgba(74,42,58,.07);
+  --shadow-lg:0 18px 40px rgba(74,42,58,.12),0 40px 90px rgba(74,42,58,.14);
+  --radius:18px;--radius-lg:28px;
+}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+html,body{height:100%}
+body{
+  font-family:Inter,system-ui,-apple-system,sans-serif;
+  background:
+    radial-gradient(1200px 700px at 10% -10%,#FFE9E4 0%,transparent 55%),
+    radial-gradient(900px 600px at 110% 10%,#F7E3EC 0%,transparent 60%),
+    linear-gradient(180deg,#FFF8F4 0%,#FBEEEA 100%);
+  min-height:100%;color:var(--ink);overflow-x:hidden;
+}
+.wrap{max-width:1480px;margin:0 auto;padding:28px 24px 120px}
+
+/* ====== PAGE HEADER ====== */
+.page-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:22px;flex-wrap:wrap;gap:14px}
+.brand{display:flex;align-items:center;gap:12px}
+.brand-mark{width:40px;height:40px;border-radius:12px;background:linear-gradient(135deg,var(--rose-400),var(--rose-500));
+  display:grid;place-items:center;color:#fff;font-family:Fraunces;font-weight:700;box-shadow:var(--shadow-md)}
+.brand-name{font-family:Fraunces;font-size:22px;font-weight:600;letter-spacing:-.01em}
+.brand-sub{font-size:12px;color:var(--ink-soft);margin-top:1px}
+.head-tabs{display:flex;gap:8px;background:var(--glass);border:1px solid var(--line);
+  border-radius:99px;padding:6px;backdrop-filter:blur(18px);flex-wrap:wrap}
+.tab{font-size:13px;font-weight:600;padding:9px 16px;border-radius:99px;cursor:pointer;
+  color:var(--ink-soft);border:none;background:transparent;font-family:inherit}
+.tab.on{background:var(--ink);color:#fff}
+.live-badge{display:inline-flex;align-items:center;gap:6px;font-size:10.5px;font-weight:700;
+  padding:4px 10px;border-radius:99px;background:#E6F7E9;color:#357042;letter-spacing:.04em;margin-left:10px}
+.live-badge i{width:6px;height:6px;border-radius:50%;background:#4AAE5E;animation:pulse 1.5s infinite}
+@keyframes pulse{50%{opacity:.4}}
+
+/* ====== STAGE ====== */
+.stage{display:grid;grid-template-columns:minmax(380px,460px) 1fr;gap:32px;align-items:start}
+@media (max-width:1024px){.stage{grid-template-columns:1fr}}
+
+/* ====== PHONE FRAME ====== */
+.phone-slot{position:sticky;top:24px}
+.phone{--w:420px;--h:880px;width:var(--w);height:var(--h);margin:0 auto;position:relative;
+  border-radius:52px;background:#0E0608;padding:14px;
+  box-shadow:0 2px 0 rgba(255,255,255,.06) inset,0 40px 80px -20px rgba(74,42,58,.35),0 20px 50px -20px rgba(74,42,58,.4)}
+.phone::before{content:"";position:absolute;top:18px;left:50%;transform:translateX(-50%);
+  width:120px;height:28px;background:#000;border-radius:20px;z-index:30}
+.screen{width:100%;height:100%;border-radius:40px;
+  background:radial-gradient(600px 400px at 30% -10%,#FFE2DB 0%,transparent 55%),
+    radial-gradient(500px 380px at 100% 20%,#F9DDE8 0%,transparent 60%),
+    linear-gradient(180deg,#FFF8F4 0%,#FDEEE9 70%,#F9E0D8 100%);
+  position:relative;overflow:hidden}
+.statusbar{height:52px;padding:18px 26px 0;display:flex;align-items:center;justify-content:space-between;
+  font-size:13px;font-weight:700;color:var(--ink)}
+.statusbar .time{font-family:Fraunces;font-weight:600}
+.status-icons{display:flex;gap:6px;align-items:center;font-size:11px;opacity:.75}
+.scroll{position:absolute;inset:52px 0 0;overflow-y:auto;overflow-x:hidden;scrollbar-width:none;padding-bottom:200px}
+.scroll::-webkit-scrollbar{display:none}
+
+/* ====== PAGE HEAD ====== */
+.p-head{padding:14px 22px 4px;display:flex;align-items:center;justify-content:space-between}
+.p-title{font-family:Fraunces;font-size:28px;font-weight:600;letter-spacing:-.02em;line-height:1.05}
+.p-sub{font-size:12.5px;color:var(--ink-soft);margin-top:3px;font-weight:500}
+.avatar{width:42px;height:42px;border-radius:14px;background:linear-gradient(135deg,#F5C7BE,#E89888);
+  box-shadow:var(--shadow-sm);display:grid;place-items:center;font-family:Fraunces;font-weight:700;color:#4A2A3A}
+
+/* ====== WEARABLE BAR ====== */
+.wear-bar{margin:8px 18px 10px;padding:10px 12px;border-radius:16px;display:flex;align-items:center;gap:10px;
+  background:rgba(255,255,255,.7);border:1px solid var(--line);backdrop-filter:blur(14px)}
+.wear-dot{width:8px;height:8px;border-radius:50%;background:var(--sage);box-shadow:0 0 0 3px rgba(127,166,138,.18)}
+.wear-text{flex:1;font-size:11.5px;color:var(--ink-soft);font-weight:500}
+.wear-text b{color:var(--plum);font-weight:700}
+.wear-sync{background:var(--ink);color:#fff;border:none;font-size:10.5px;font-weight:700;
+  padding:6px 10px;border-radius:99px;cursor:pointer;font-family:inherit;letter-spacing:.04em}
+
+/* ====== READINESS HERO ====== */
+.hero{margin:10px 18px 14px;padding:20px 18px;border-radius:var(--radius-lg);
+  background:linear-gradient(160deg,rgba(255,255,255,.88),rgba(255,255,255,.55));
+  border:1px solid rgba(255,255,255,.85);box-shadow:var(--shadow-md);
+  backdrop-filter:blur(22px);position:relative;overflow:hidden}
+.hero::after{content:"";position:absolute;right:-40px;top:-40px;width:180px;height:180px;border-radius:50%;
+  background:radial-gradient(circle,rgba(127,166,138,.32),transparent 60%);filter:blur(10px)}
+.hero-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;position:relative;z-index:1}
+.pill{display:inline-flex;align-items:center;gap:6px;padding:5px 10px;border-radius:99px;
+  background:rgba(154,142,196,.14);color:#6B5B9A;font-size:11px;font-weight:700;letter-spacing:.04em;text-transform:uppercase}
+.pill .dot{width:6px;height:6px;border-radius:50%;background:#8E7EB8;box-shadow:0 0 0 3px rgba(154,142,196,.2)}
+.pill.sage{background:rgba(127,166,138,.14);color:#3B6B4E}
+.pill.sage .dot{background:var(--sage);box-shadow:0 0 0 3px rgba(127,166,138,.2)}
+.pill.amb{background:rgba(217,153,96,.14);color:#8A5A29}
+.pill.amb .dot{background:var(--amber);box-shadow:0 0 0 3px rgba(217,153,96,.2)}
+.hero-body{display:grid;grid-template-columns:130px 1fr;gap:16px;align-items:center;position:relative;z-index:1}
+
+/* readiness ring */
+.ringwrap{position:relative;width:130px;height:130px}
+.ring-big{width:130px;height:130px;border-radius:50%;
+  background:conic-gradient(from 220deg,var(--sage) 0 72%,rgba(127,166,138,.18) 72% 100%);
+  display:grid;place-items:center;position:relative;
+  box-shadow:inset 0 0 0 1px rgba(255,255,255,.3),0 6px 18px rgba(127,166,138,.22)}
+.ring-big::before{content:"";position:absolute;inset:10px;border-radius:50%;background:#FFF9F5;box-shadow:inset 0 2px 6px rgba(74,42,58,.08)}
+.ring-inner{position:relative;text-align:center;z-index:2}
+.ring-inner .big{font-family:Fraunces;font-size:38px;font-weight:600;display:block;line-height:1;color:var(--plum)}
+.ring-inner .lbl{font-size:9.5px;text-transform:uppercase;letter-spacing:.14em;color:var(--ink-soft);font-weight:700;margin-top:3px;display:block}
+.ring-ticks{position:absolute;inset:-6px;border-radius:50%;pointer-events:none}
+.ring-ticks i{position:absolute;left:50%;top:0;width:2px;height:6px;background:rgba(74,42,58,.14);transform-origin:50% 71px}
+.hero-side h2{font-family:Fraunces;font-size:20px;line-height:1.15;font-weight:600;letter-spacing:-.02em}
+.hero-side p{font-size:12px;color:var(--ink-soft);margin-top:6px;line-height:1.45}
+.hero-side .srow{display:flex;gap:6px;margin-top:10px;flex-wrap:wrap}
+.hero-side .schip{font-size:10.5px;padding:4px 8px;border-radius:99px;background:rgba(74,42,58,.06);color:var(--plum);font-weight:600}
+
+/* mood quartet tiles */
+.quart{display:grid;grid-template-columns:repeat(4,1fr);gap:7px;padding:0 18px 12px}
+.qtile{background:#fff;border:1px solid var(--line);border-radius:16px;padding:10px 8px;text-align:center;position:relative;overflow:hidden}
+.qtile .qicn{font-size:15px;margin-bottom:3px}
+.qtile .qlbl{font-size:9.5px;font-weight:700;color:var(--ink-soft);text-transform:uppercase;letter-spacing:.08em}
+.qtile .qnum{font-family:Fraunces;font-size:19px;font-weight:600;margin-top:2px;line-height:1;color:var(--plum)}
+.qtile .qmax{font-size:9px;color:var(--ink-mute);font-weight:500}
+.qbar{position:absolute;left:0;right:0;bottom:0;height:4px;background:rgba(74,42,58,.06)}
+.qbar i{display:block;height:100%;border-radius:0 2px 0 0}
+
+/* ====== BIOMETRIC STRIP ====== */
+.slab{display:flex;justify-content:space-between;align-items:center;padding:0 22px 8px}
+.slab .lbl{font-family:Fraunces;font-size:13.5px;font-weight:600;letter-spacing:-.01em}
+.slab .act{font-size:10.5px;color:var(--plum);font-weight:700;background:rgba(74,42,58,.06);padding:4px 9px;border-radius:99px;border:none;cursor:pointer;font-family:inherit}
+
+.biostrip{display:flex;gap:8px;padding:0 18px 14px;overflow-x:auto;scrollbar-width:none}
+.biostrip::-webkit-scrollbar{display:none}
+.biocard{flex:0 0 108px;padding:12px 10px;border-radius:16px;background:#fff;border:1px solid var(--line);position:relative;overflow:hidden}
+.biocard .bl{font-size:9.5px;font-weight:700;color:var(--ink-soft);text-transform:uppercase;letter-spacing:.1em;display:flex;align-items:center;gap:4px}
+.biocard .bn{font-family:Fraunces;font-size:22px;font-weight:600;margin-top:4px;line-height:1;color:var(--plum)}
+.biocard .bu{font-size:10px;color:var(--ink-mute);font-weight:500;margin-top:1px}
+.biocard .btrend{font-size:10px;font-weight:700;margin-top:6px;color:var(--sage)}
+.biocard .btrend.up{color:var(--amber)}
+.biocard .bspark{position:absolute;right:6px;top:6px;width:38px;height:18px;opacity:.7}
+.biocard.hr{background:linear-gradient(160deg,#FFF1EC,#FDE0D7)}
+.biocard.hrv{background:linear-gradient(160deg,#ECF4EE,#D6E7DC)}
+.biocard.tmp{background:linear-gradient(160deg,#FFF1E8,#F8DFC7)}
+.biocard.spo{background:linear-gradient(160deg,#EBF3FB,#D5E5F4)}
+.biocard.stp{background:linear-gradient(160deg,#F3EDFA,#E1D4F0)}
+
+/* ====== SLEEP CARD ====== */
+.sleep{margin:0 18px 14px;padding:16px;border-radius:20px;background:#fff;border:1px solid var(--line)}
+.sleep-top{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:12px}
+.sleep-big{font-family:Fraunces;font-size:30px;font-weight:600;letter-spacing:-.02em;line-height:1;color:var(--plum)}
+.sleep-big span{font-size:13px;color:var(--ink-soft);font-family:Inter;font-weight:500}
+.sleep-lbl{font-size:10.5px;font-weight:700;color:var(--ink-soft);text-transform:uppercase;letter-spacing:.1em;margin-top:4px}
+.sleep-score{text-align:right}
+.sleep-score .s{font-family:Fraunces;font-size:22px;font-weight:600;color:var(--sage);line-height:1}
+.sleep-score .l{font-size:9.5px;color:var(--ink-soft);font-weight:700;text-transform:uppercase;letter-spacing:.1em;margin-top:2px}
+
+.sleep-bar{height:14px;border-radius:99px;display:flex;overflow:hidden;margin-bottom:10px;background:rgba(74,42,58,.05)}
+.sleep-bar i{height:100%;display:block;transition:width .5s}
+.sleep-rem{background:linear-gradient(90deg,#B8A0DE,#8E7EB8)}
+.sleep-deep{background:linear-gradient(90deg,#5B7BA8,#3D5678)}
+.sleep-light{background:linear-gradient(90deg,#9EC7E6,#6DB5E0)}
+.sleep-awake{background:rgba(74,42,58,.15)}
+.sleep-legend{display:grid;grid-template-columns:repeat(4,1fr);gap:6px}
+.sleg{display:flex;align-items:center;gap:6px;font-size:10px;font-weight:600;color:var(--ink-soft)}
+.sleg b{color:var(--plum);font-family:Fraunces;font-weight:600}
+.slegd{width:8px;height:8px;border-radius:3px}
+
+/* ====== PHASE INSIGHT CARD ====== */
+.insight-hero{margin:0 18px 14px;padding:18px;border-radius:22px;position:relative;overflow:hidden;
+  background:linear-gradient(135deg,#FFF1E8 0%,#FDE6D8 100%);border:1px solid rgba(217,153,96,.18)}
+.insight-hero::after{content:"";position:absolute;right:-30px;top:-30px;width:130px;height:130px;border-radius:50%;
+  background:radial-gradient(circle,rgba(217,153,96,.4),transparent 60%);filter:blur(8px)}
+.ih-top{display:flex;align-items:center;gap:8px;position:relative;z-index:1;margin-bottom:10px}
+.ih-type{font-size:9.5px;font-weight:700;color:var(--amber);letter-spacing:.16em;text-transform:uppercase}
+.ih-conf{margin-left:auto;font-size:9.5px;color:var(--ink-soft);font-weight:600;background:rgba(255,255,255,.6);padding:3px 7px;border-radius:99px}
+.ih-icn{width:32px;height:32px;border-radius:10px;background:linear-gradient(135deg,#F2B774,#D99960);display:grid;place-items:center;color:#fff;font-size:15px}
+.ih-title{font-family:Fraunces;font-size:19px;line-height:1.2;font-weight:600;letter-spacing:-.01em;position:relative;z-index:1;color:var(--plum)}
+.ih-copy{font-size:12.5px;color:var(--ink-soft);line-height:1.5;margin-top:8px;position:relative;z-index:1}
+.ih-cta{margin-top:12px;position:relative;z-index:1;display:flex;gap:8px;flex-wrap:wrap}
+.ih-btn{background:var(--ink);color:#fff;border:none;font-size:11.5px;font-weight:700;padding:8px 14px;border-radius:99px;cursor:pointer;font-family:inherit;display:inline-flex;align-items:center;gap:5px}
+.ih-btn.ghost{background:rgba(255,255,255,.7);color:var(--plum);border:1px solid rgba(217,153,96,.25)}
+.ih-fb{display:flex;gap:6px;margin-top:10px;position:relative;z-index:1}
+.ih-fb button{background:rgba(255,255,255,.8);border:1px solid rgba(217,153,96,.2);width:32px;height:32px;border-radius:10px;font-size:14px;cursor:pointer}
+
+/* ====== SYMPTOM HEATMAP ====== */
+.heat-wrap{margin:0 18px 14px;padding:16px;border-radius:20px;background:rgba(255,255,255,.7);border:1px solid var(--line);backdrop-filter:blur(14px)}
+.heat-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px}
+.heat-head .t{font-family:Fraunces;font-size:14px;font-weight:600;letter-spacing:-.01em}
+.heat-head .s{font-size:10.5px;color:var(--ink-soft);font-weight:500}
+.heatgrid{display:grid;grid-template-columns:80px repeat(14,1fr);gap:3px;align-items:center}
+.heatgrid .hlbl{font-size:9.5px;font-weight:600;color:var(--ink-soft);letter-spacing:.02em;white-space:nowrap}
+.hcell{height:18px;border-radius:4px;background:rgba(74,42,58,.05);cursor:pointer}
+.hc1{background:rgba(212,94,82,.18)}.hc2{background:rgba(212,94,82,.32)}.hc3{background:rgba(212,94,82,.5)}.hc4{background:rgba(212,94,82,.72)}.hc5{background:rgba(176,72,62,.9)}
+.heat-foot{display:flex;align-items:center;justify-content:space-between;margin-top:10px;font-size:9.5px;color:var(--ink-soft);font-weight:600}
+.heat-legend{display:flex;gap:3px;align-items:center}
+.heat-legend i{width:10px;height:10px;border-radius:3px}
+
+/* ====== CORRELATION ====== */
+.corr{margin:0 18px 14px;padding:16px;border-radius:20px;background:linear-gradient(135deg,#F3EDFA,#E7DDF4);border:1px solid rgba(142,126,184,.2)}
+.corr-head{display:flex;align-items:center;gap:8px;margin-bottom:10px}
+.corr-icn{width:30px;height:30px;border-radius:9px;background:linear-gradient(135deg,#A896D0,#8E7EB8);display:grid;place-items:center;color:#fff;font-size:14px}
+.corr-lbl{font-size:9.5px;color:var(--lav);font-weight:700;letter-spacing:.16em;text-transform:uppercase}
+.corr-row{display:flex;align-items:baseline;gap:10px;margin-bottom:10px}
+.corr-row:last-child{margin-bottom:0}
+.corr-eq{flex:1;font-family:Fraunces;font-size:14px;font-weight:600;line-height:1.3;color:var(--plum);letter-spacing:-.01em}
+.corr-str{background:rgba(142,126,184,.18);color:#5E4E8A;font-size:9.5px;font-weight:700;padding:3px 7px;border-radius:99px;white-space:nowrap}
+
+/* ====== WEEKLY SNAPSHOT ====== */
+.snap{margin:0 18px 14px;padding:16px;border-radius:20px;background:#fff;border:1px solid var(--line)}
+.snap-top{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px}
+.snap-top .t{font-family:Fraunces;font-size:14px;font-weight:600}
+.snap-top .r{font-size:10.5px;color:var(--ink-soft);font-weight:600}
+.snap-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
+.snap-tile{padding:10px 8px;border-radius:14px;background:rgba(74,42,58,.03);text-align:center}
+.snap-tile .l{font-size:9px;font-weight:700;color:var(--ink-soft);text-transform:uppercase;letter-spacing:.08em}
+.snap-tile .n{font-family:Fraunces;font-size:18px;font-weight:600;margin-top:3px;line-height:1;color:var(--plum)}
+.snap-tile .d{font-size:9.5px;font-weight:700;margin-top:3px}
+.snap-tile .d.good{color:var(--sage)}.snap-tile .d.bad{color:var(--rose-500)}.snap-tile .d.flat{color:var(--ink-mute)}
+.snap-top-sy{margin-top:12px;padding-top:12px;border-top:1px solid var(--line)}
+.snap-top-sy .sl{font-size:9.5px;font-weight:700;color:var(--ink-soft);text-transform:uppercase;letter-spacing:.1em;margin-bottom:6px}
+.sy-row{display:flex;gap:5px;flex-wrap:wrap}
+.sy-chip{background:rgba(212,94,82,.08);color:var(--rose-600);font-size:10px;font-weight:700;padding:4px 8px;border-radius:99px}
+.sy-chip b{font-family:Fraunces;margin-right:3px}
+
+/* ====== WEARABLE SWITCHER ====== */
+.wear-sw{margin:0 18px 14px}
+.wear-sw-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px}
+.wear-sw-head .t{font-family:Fraunces;font-size:13px;font-weight:600}
+.wear-sw-head .s{font-size:10px;color:var(--ink-soft);font-weight:500}
+.wear-sw-row{display:flex;gap:6px;overflow-x:auto;scrollbar-width:none;padding-bottom:2px}
+.wear-sw-row::-webkit-scrollbar{display:none}
+.wsrc{flex:0 0 auto;display:flex;align-items:center;gap:6px;padding:8px 12px;border-radius:99px;background:#fff;border:1px solid var(--line);font-size:11px;font-weight:600;cursor:pointer;font-family:inherit;color:var(--ink-soft)}
+.wsrc.on{background:var(--ink);color:#fff;border-color:var(--ink)}
+.wsrc .ws-ok{width:6px;height:6px;border-radius:50%;background:var(--sage)}
+.wsrc.on .ws-ok{background:#A5D5B4}
+
+/* ====== 3D PILLAR DECK ====== */
+.deck-scroll{padding:6px 0 18px;overflow-x:auto;scrollbar-width:none;perspective:1200px}
+.deck-scroll::-webkit-scrollbar{display:none}
+.deck-row{display:flex;gap:10px;padding:0 18px}
+.dcard{flex:0 0 150px;height:210px;border-radius:22px;padding:14px;position:relative;cursor:pointer;
+  display:flex;flex-direction:column;justify-content:space-between;overflow:hidden;
+  box-shadow:var(--shadow-md);transition:transform .2s;
+  transform-style:preserve-3d}
+.dcard:hover{transform:translateY(-3px) rotateY(-2deg)}
+.dcard.d-sleep{background:linear-gradient(135deg,#2E3556 0%,#4A3F6E 100%);color:#F5E6D3}
+.dcard.d-hrv{background:linear-gradient(135deg,#3B6B4E 0%,#7FA68A 100%);color:#fff}
+.dcard.d-sym{background:linear-gradient(135deg,#B0483E 0%,#D45E52 100%);color:#fff}
+.dcard.d-hf{background:linear-gradient(135deg,#C98A6B 0%,#D99960 100%);color:#fff}
+.dcard.d-pan{background:linear-gradient(135deg,#4A2A3A 0%,#6B3E54 100%);color:#fff}
+.dcard.d-rec{background:linear-gradient(135deg,#6DB5E0 0%,#4E8FB8 100%);color:#fff}
+.dcard.d-wear{background:linear-gradient(135deg,#8E7EB8 0%,#5E4E8A 100%);color:#fff}
+.dcard .dicn{width:38px;height:38px;border-radius:12px;background:rgba(255,255,255,.18);display:grid;place-items:center;font-size:17px;backdrop-filter:blur(10px)}
+.dcard .dlbl{font-size:9.5px;font-weight:700;letter-spacing:.16em;text-transform:uppercase;opacity:.85;margin-top:auto}
+.dcard .dtit{font-family:Fraunces;font-size:18px;font-weight:600;letter-spacing:-.01em;line-height:1.15;margin-top:4px}
+.dcard .dnum{font-family:Fraunces;font-size:24px;font-weight:600;margin-top:8px;line-height:1}
+.dcard .dsub{font-size:10px;opacity:.8;margin-top:2px;font-weight:500}
+.dcard::after{content:"";position:absolute;right:-20px;bottom:-30px;width:100px;height:100px;border-radius:50%;background:radial-gradient(circle,rgba(255,255,255,.16),transparent 65%);filter:blur(6px)}
+
+/* ====== PERSISTENT FANNED DOCK ====== */
+.dock-layer{position:absolute;left:0;right:0;bottom:62px;height:180px;pointer-events:none;z-index:40;perspective:1400px;perspective-origin:50% 100%}
+.dock-fade{position:absolute;left:0;right:0;bottom:0;height:160px;
+  background:linear-gradient(180deg,rgba(255,248,244,0) 0%,rgba(255,248,244,.85) 40%,rgba(253,238,233,1) 100%);pointer-events:none}
+.dock{position:absolute;left:50%;bottom:18px;transform:translateX(-50%);transform-style:preserve-3d;pointer-events:auto}
+.fcard{position:absolute;left:50%;bottom:0;width:104px;height:128px;border-radius:18px;
+  background:#fff;border:1px solid var(--line);box-shadow:var(--shadow-lg);padding:12px 10px;
+  display:flex;flex-direction:column;justify-content:space-between;cursor:pointer;transition:transform .2s;
+  transform-origin:50% 100%}
+.fcard:active{transform:scale(.97)}
+.fcard .ficn{width:32px;height:32px;border-radius:10px;display:grid;place-items:center;font-size:15px;color:#fff}
+.fcard .ftit{font-family:Fraunces;font-size:12.5px;font-weight:600;line-height:1.05}
+.fcard .fsub{font-size:9.5px;color:var(--ink-soft);font-weight:500;line-height:1.2;margin-top:2px}
+.fcard.f5{transform:translateX(-50%) rotate(36deg) translateY(30px) translateZ(-80px);z-index:1;background:#FFF6F2}
+.fcard.f4{transform:translateX(-50%) rotate(18deg) translateY(12px) translateZ(-40px);z-index:2}
+.fcard.f3{transform:translateX(-50%) rotate(0deg) translateY(-4px) translateZ(0);z-index:5}
+.fcard.f2{transform:translateX(-50%) rotate(-18deg) translateY(12px) translateZ(-40px);z-index:3}
+.fcard.f1{transform:translateX(-50%) rotate(-36deg) translateY(30px) translateZ(-80px);z-index:1;background:#FFF6F2}
+.tint-rose{background:linear-gradient(135deg,#FBD2CC,#E67F73)}
+.tint-red{background:linear-gradient(135deg,#F5B5B5,#E08080)}
+.tint-amb{background:linear-gradient(135deg,#FFE3B5,#F2B774)}
+.tint-lav{background:linear-gradient(135deg,#DDD3EF,#8E7EB8)}
+.tint-sage{background:linear-gradient(135deg,#CCE0D1,#7FA68A)}
+
+/* ====== BOTTOM NAV ====== */
+.bnav{position:absolute;left:10px;right:10px;bottom:14px;height:62px;z-index:50;display:flex;justify-content:center;pointer-events:none}
+.bnav-inner{pointer-events:auto;display:grid;grid-template-columns:repeat(5,1fr);gap:2px;
+  background:rgba(255,255,255,.82);backdrop-filter:blur(18px);border:1px solid var(--line);
+  box-shadow:0 -2px 8px rgba(43,30,22,.04),0 24px 60px rgba(43,30,22,.14);border-radius:26px;padding:8px 10px;width:100%}
+.bn{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;padding:6px 2px;border-radius:18px;cursor:pointer;color:var(--ink-mute);background:transparent;border:none;font-family:inherit}
+.bn.active{color:var(--plum);background:rgba(122,74,94,.08)}
+.bn .bni{width:22px;height:22px;display:grid;place-items:center}
+.bn .bni svg{width:22px;height:22px;stroke:currentColor;stroke-width:1.6;fill:none;stroke-linecap:round;stroke-linejoin:round}
+.bn.active .bni svg{stroke-width:2}
+.bn .bnl{font-size:10px;font-weight:500;letter-spacing:.01em}
+.bn.active .bnl{font-weight:600}
+.bn.fab{margin-top:-20px}
+.bn.fab .bni{width:42px;height:42px;background:linear-gradient(135deg,var(--plum),var(--rose-600));border-radius:50%;color:#fff;box-shadow:0 8px 22px rgba(122,74,94,.35)}
+.bn.fab .bni svg{width:20px;height:20px;stroke:#fff;stroke-width:2}
+
+/* ====== SHEETS ====== */
+.sheet-scrim{position:absolute;inset:0;background:rgba(26,10,18,.55);backdrop-filter:blur(8px);
+  opacity:0;pointer-events:none;transition:opacity .25s;z-index:70}
+.sheet-scrim.on{opacity:1;pointer-events:auto}
+.sheet{position:absolute;left:0;right:0;bottom:0;max-height:82%;
+  background:#FFF8F4;border-radius:32px 32px 0 0;box-shadow:0 -20px 60px rgba(74,42,58,.22);
+  transform:translateY(100%);transition:transform .35s cubic-bezier(.2,.8,.2,1);
+  z-index:80;overflow:hidden;display:flex;flex-direction:column}
+.sheet.on{transform:translateY(0)}
+.sheet-handle{width:44px;height:5px;border-radius:99px;background:rgba(74,42,58,.18);margin:10px auto 2px}
+.sheet-head{padding:8px 22px 10px;display:flex;align-items:center;justify-content:space-between}
+.sheet-title{font-family:Fraunces;font-size:21px;font-weight:600;letter-spacing:-.01em}
+.sheet-sub{font-size:11px;color:var(--ink-soft);margin-top:2px}
+.sheet-close{border:none;background:rgba(74,42,58,.08);color:var(--plum);width:32px;height:32px;border-radius:10px;cursor:pointer;font-weight:700}
+.sheet-body{flex:1;overflow-y:auto;padding:4px 22px 40px;scrollbar-width:none}
+.sheet-body::-webkit-scrollbar{display:none}
+
+.qgroup{padding:14px;border-radius:18px;background:#fff;border:1px solid var(--line);margin-bottom:10px}
+.qgroup .qtitle{font-family:Fraunces;font-size:14.5px;font-weight:600;margin-bottom:10px;letter-spacing:-.01em}
+.qrow{display:flex;gap:6px;flex-wrap:wrap}
+.qchip{padding:8px 12px;border-radius:99px;background:#fff;border:1px solid var(--line);
+  font-size:11.5px;font-weight:600;cursor:pointer;color:var(--ink);transition:all .15s}
+.qchip.on{background:var(--rose-500);color:#fff;border-color:var(--rose-500)}
+.slider{width:100%;-webkit-appearance:none;appearance:none;height:6px;background:rgba(74,42,58,.1);border-radius:99px;outline:none;margin:14px 0 10px}
+.slider::-webkit-slider-thumb{-webkit-appearance:none;width:22px;height:22px;border-radius:50%;background:var(--rose-500);box-shadow:var(--shadow-sm);cursor:pointer}
+.sev-row{display:flex;justify-content:space-between;align-items:center;margin-bottom:6px}
+.sev-row .sl{font-size:11px;font-weight:600;color:var(--ink-soft)}
+.sev-row .sn{font-family:Fraunces;font-size:20px;font-weight:600;color:var(--rose-500)}
+.ctabtn{width:100%;padding:13px;border-radius:14px;border:none;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit;background:var(--ink);color:#fff;margin-top:8px}
+.ctabtn.soft{background:rgba(74,42,58,.06);color:var(--plum)}
+
+/* Menu sheet */
+.menu-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+.mbtn{padding:14px 10px;border-radius:18px;background:#fff;border:1px solid var(--line);display:flex;flex-direction:column;align-items:center;gap:8px;cursor:pointer;text-align:center;font-family:inherit;color:var(--ink)}
+.mbtn .mi{width:40px;height:40px;border-radius:12px;display:grid;place-items:center;font-size:17px;color:#fff}
+.mbtn .ml{font-size:11px;font-weight:600}
+
+/* sync sources in sheet */
+.srclist{display:flex;flex-direction:column;gap:8px}
+.srcrow{padding:12px 14px;border-radius:14px;background:#fff;border:1px solid var(--line);display:flex;align-items:center;gap:12px;cursor:pointer}
+.srcrow .sic{width:36px;height:36px;border-radius:10px;display:grid;place-items:center;font-size:17px;color:#fff}
+.srcrow .sti{flex:1}
+.srcrow .sti .n{font-family:Fraunces;font-size:14px;font-weight:600;letter-spacing:-.01em}
+.srcrow .sti .s{font-size:10.5px;color:var(--ink-soft);margin-top:2px}
+.srcrow .stg{font-size:10px;color:var(--sage);font-weight:700;padding:4px 9px;border-radius:99px;background:rgba(127,166,138,.12)}
+.srcrow.off .stg{color:var(--ink-mute);background:rgba(74,42,58,.06)}
+
+/* week selector for insight/snapshot */
+.weeksel{display:flex;gap:4px;margin-bottom:12px}
+.wk{flex:1;padding:8px 0;text-align:center;border-radius:12px;background:#fff;border:1px solid var(--line);cursor:pointer}
+.wk.on{background:var(--ink);color:#fff;border-color:var(--ink)}
+.wk .wl{font-size:9px;text-transform:uppercase;letter-spacing:.1em;font-weight:700;opacity:.75}
+.wk .wn{font-family:Fraunces;font-size:14px;font-weight:600;margin-top:3px}
+
+/* ====== DESKTOP COPY PANEL ====== */
+.side{position:sticky;top:24px}
+.side h1{font-family:Fraunces;font-size:40px;font-weight:600;letter-spacing:-.03em;line-height:1.05;margin-bottom:8px}
+.side .hl{color:var(--rose-500)}
+.side .lede{font-size:15.5px;color:var(--ink-soft);line-height:1.55;margin-bottom:22px}
+.card{background:rgba(255,255,255,.75);border:1px solid var(--line);border-radius:22px;padding:20px;margin-bottom:14px;backdrop-filter:blur(14px)}
+.card h3{font-family:Fraunces;font-size:17px;font-weight:600;letter-spacing:-.01em;margin-bottom:8px}
+.card p{font-size:13.5px;color:var(--ink-soft);line-height:1.6}
+.card ul{list-style:none;margin-top:8px;display:flex;flex-direction:column;gap:6px}
+.card ul li{font-size:13px;color:var(--ink-soft);padding-left:18px;position:relative;line-height:1.5}
+.card ul li::before{content:"◆";position:absolute;left:0;color:var(--rose-500);font-size:9px;top:4px}
+.card .kbd{display:inline-block;background:rgba(74,42,58,.06);border:1px solid var(--line);border-radius:6px;padding:2px 6px;font-size:11px;font-family:ui-monospace,Menlo,monospace;color:var(--plum)}
+.keybox{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:8px}
+.keychip{padding:10px 12px;border-radius:14px;background:#fff;border:1px solid var(--line);font-size:12px}
+.keychip b{display:block;font-family:Fraunces;font-weight:600;color:var(--plum);font-size:14px;margin-bottom:2px}
+.entity-tag{display:inline-block;background:rgba(74,42,58,.06);color:var(--plum);font-family:ui-monospace,Menlo,monospace;font-size:11px;font-weight:600;padding:2px 6px;border-radius:5px;margin-right:5px;margin-bottom:4px}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <!-- HEADER -->
+  <div class="page-head">
+    <div class="brand">
+      <div class="brand-mark">F</div>
+      <div>
+        <div class="brand-name">FemWell · Pulse <span class="live-badge"><i></i> WIRED TO YOUR DATA</span></div>
+        <div class="brand-sub">A phase-aware biometric + symptom dashboard. Replaces the current Pulse tab.</div>
+      </div>
+    </div>
+    <div class="head-tabs">
+      <button class="tab on">Today</button>
+      <button class="tab">Week</button>
+      <button class="tab">Month</button>
+      <button class="tab">Phase view</button>
+    </div>
+  </div>
+
+  <div class="stage">
+
+    <!-- PHONE -->
+    <div class="phone-slot">
+      <div class="phone"><div class="screen">
+
+        <div class="statusbar">
+          <span class="time">9:14</span>
+          <span class="status-icons">5G ▲ 82%</span>
+        </div>
+
+        <div class="scroll">
+
+          <!-- Page head -->
+          <div class="p-head">
+            <div>
+              <div class="p-title">Pulse</div>
+              <div class="p-sub">Saturday · ovulatory · day 17</div>
+            </div>
+            <div class="avatar">H</div>
+          </div>
+
+          <!-- Wearable sync bar -->
+          <div class="wear-bar">
+            <span class="wear-dot"></span>
+            <div class="wear-text">Oura · <b>synced 4 min ago</b> · 7 metrics today</div>
+            <button class="wear-sync" onclick="openSheet('sync')">SYNC</button>
+          </div>
+
+          <!-- Readiness hero -->
+          <div class="hero">
+            <div class="hero-top">
+              <span class="pill sage"><i class="dot"></i> High output day</span>
+              <span class="pill amb"><i class="dot"></i> Fertile window</span>
+            </div>
+            <div class="hero-body">
+              <div class="ringwrap">
+                <div class="ring-big">
+                  <div class="ring-inner">
+                    <span class="big">82</span>
+                    <span class="lbl">Readiness</span>
+                  </div>
+                </div>
+                <div class="ring-ticks" id="ticks"></div>
+              </div>
+              <div class="hero-side">
+                <h2>Your body has room today.</h2>
+                <p>HRV and deep sleep both above your 14-day baseline. Ovulation typically lifts your physical ceiling — push a little.</p>
+                <div class="srow">
+                  <span class="schip">HRV ↑ 12%</span>
+                  <span class="schip">Deep ↑ 28m</span>
+                  <span class="schip">Pain 2/10</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Mood/energy/stress/pain quartet -->
+          <div class="quart">
+            <div class="qtile">
+              <div class="qicn">😊</div>
+              <div class="qlbl">Mood</div>
+              <div class="qnum">7<span class="qmax">/10</span></div>
+              <div class="qbar"><i style="width:70%;background:var(--sage)"></i></div>
+            </div>
+            <div class="qtile">
+              <div class="qicn">⚡</div>
+              <div class="qlbl">Energy</div>
+              <div class="qnum">8<span class="qmax">/10</span></div>
+              <div class="qbar"><i style="width:80%;background:var(--amber)"></i></div>
+            </div>
+            <div class="qtile">
+              <div class="qicn">🫧</div>
+              <div class="qlbl">Stress</div>
+              <div class="qnum">3<span class="qmax">/10</span></div>
+              <div class="qbar"><i style="width:30%;background:var(--water)"></i></div>
+            </div>
+            <div class="qtile">
+              <div class="qicn">🩶</div>
+              <div class="qlbl">Pain</div>
+              <div class="qnum">2<span class="qmax">/10</span></div>
+              <div class="qbar"><i style="width:20%;background:var(--rose-400)"></i></div>
+            </div>
+          </div>
+
+          <!-- Biometric strip -->
+          <div class="slab"><span class="lbl">Body today</span><button class="act">All metrics</button></div>
+          <div class="biostrip">
+            <div class="biocard hr">
+              <svg class="bspark" viewBox="0 0 40 18"><polyline points="0,12 5,9 10,11 15,5 20,9 25,7 30,10 35,4 40,8" fill="none" stroke="#B0483E" stroke-width="1.4"/></svg>
+              <div class="bl">❤ Resting HR</div>
+              <div class="bn">58</div>
+              <div class="bu">bpm</div>
+              <div class="btrend">↓ 3 bpm</div>
+            </div>
+            <div class="biocard hrv">
+              <svg class="bspark" viewBox="0 0 40 18"><polyline points="0,10 5,7 10,11 15,5 20,9 25,4 30,7 35,3 40,6" fill="none" stroke="#3B6B4E" stroke-width="1.4"/></svg>
+              <div class="bl">✨ HRV</div>
+              <div class="bn">64</div>
+              <div class="bu">ms · rmssd</div>
+              <div class="btrend">↑ 12%</div>
+            </div>
+            <div class="biocard tmp">
+              <svg class="bspark" viewBox="0 0 40 18"><polyline points="0,14 5,13 10,12 15,10 20,7 25,6 30,5 35,4 40,3" fill="none" stroke="#C98A6B" stroke-width="1.4"/></svg>
+              <div class="bl">🌡 Body temp</div>
+              <div class="bn">36.8</div>
+              <div class="bu">°C · post-OV lift</div>
+              <div class="btrend up">↑ 0.4°</div>
+            </div>
+            <div class="biocard spo">
+              <svg class="bspark" viewBox="0 0 40 18"><polyline points="0,6 5,7 10,5 15,6 20,5 25,7 30,6 35,5 40,6" fill="none" stroke="#4E8FB8" stroke-width="1.4"/></svg>
+              <div class="bl">💨 SpO₂</div>
+              <div class="bn">97</div>
+              <div class="bu">% overnight</div>
+              <div class="btrend">stable</div>
+            </div>
+            <div class="biocard stp">
+              <svg class="bspark" viewBox="0 0 40 18"><polyline points="0,16 5,14 10,12 15,13 20,10 25,8 30,6 35,7 40,5" fill="none" stroke="#5E4E8A" stroke-width="1.4"/></svg>
+              <div class="bl">👣 Steps</div>
+              <div class="bn">4,230</div>
+              <div class="bu">/ 8,000 goal</div>
+              <div class="btrend">on pace</div>
+            </div>
+          </div>
+
+          <!-- Sleep card -->
+          <div class="slab"><span class="lbl">Sleep · last night</span><button class="act">Trend</button></div>
+          <div class="sleep">
+            <div class="sleep-top">
+              <div>
+                <div class="sleep-big">7<span>h</span> 42<span>m</span></div>
+                <div class="sleep-lbl">Total asleep</div>
+              </div>
+              <div class="sleep-score">
+                <div class="s">86</div>
+                <div class="l">Sleep score</div>
+              </div>
+            </div>
+            <div class="sleep-bar">
+              <i class="sleep-rem" style="width:22%"></i>
+              <i class="sleep-deep" style="width:21%"></i>
+              <i class="sleep-light" style="width:52%"></i>
+              <i class="sleep-awake" style="width:5%"></i>
+            </div>
+            <div class="sleep-legend">
+              <div class="sleg"><span class="slegd" style="background:#8E7EB8"></span>REM · <b>1h 40m</b></div>
+              <div class="sleg"><span class="slegd" style="background:#3D5678"></span>Deep · <b>1h 37m</b></div>
+              <div class="sleg"><span class="slegd" style="background:#6DB5E0"></span>Light · <b>4h 00m</b></div>
+              <div class="sleg"><span class="slegd" style="background:rgba(74,42,58,.3)"></span>Awake · <b>25m</b></div>
+            </div>
+          </div>
+
+          <!-- PHASE INSIGHT card - real record -->
+          <div class="slab"><span class="lbl">Today's insight</span><button class="act" onclick="openSheet('insight')">All · 5</button></div>
+          <div class="insight-hero">
+            <div class="ih-top">
+              <div class="ih-icn">🌕</div>
+              <span class="ih-type">Phase insight</span>
+              <span class="ih-conf">confidence 0.85</span>
+            </div>
+            <div class="ih-title">Ovulation increases your physical output ceiling.</div>
+            <div class="ih-copy">Across your last 3 cycles, strength and endurance readings peaked the 2 days around ovulation. With HRV up today, a moderate-to-hard session is likely to feel easier than usual.</div>
+            <div class="ih-cta">
+              <button class="ih-btn">Start movement plan →</button>
+              <button class="ih-btn ghost">Save</button>
+            </div>
+            <div class="ih-fb">
+              <button title="Helpful">👍</button>
+              <button title="Not helpful">👎</button>
+              <button title="Dismiss">×</button>
+            </div>
+          </div>
+
+          <!-- SYMPTOM HEATMAP -->
+          <div class="slab"><span class="lbl">Symptoms · 14 days</span><button class="act" onclick="openSheet('symptom')">Log ＋</button></div>
+          <div class="heat-wrap">
+            <div class="heat-head">
+              <div>
+                <div class="t">Severity map</div>
+                <div class="s">Tap a cell to open the day</div>
+              </div>
+              <div style="font-size:10px;color:var(--ink-soft);font-weight:600">Apr 4 → 17</div>
+            </div>
+            <div class="heatgrid" id="heat"></div>
+            <div class="heat-foot">
+              <span>less</span>
+              <div class="heat-legend">
+                <i style="background:rgba(74,42,58,.05)"></i>
+                <i class="hc1"></i><i class="hc2"></i><i class="hc3"></i><i class="hc4"></i><i class="hc5"></i>
+              </div>
+              <span>more</span>
+            </div>
+          </div>
+
+          <!-- CORRELATIONS -->
+          <div class="slab"><span class="lbl">Patterns we've noticed</span><button class="act">Why?</button></div>
+          <div class="corr">
+            <div class="corr-head">
+              <div class="corr-icn">∞</div>
+              <span class="corr-lbl">Correlations · 8 weeks</span>
+            </div>
+            <div class="corr-row">
+              <div class="corr-eq">Pain spikes <b>2.1×</b> on nights with &lt; 6h sleep.</div>
+              <span class="corr-str">strong · r 0.68</span>
+            </div>
+            <div class="corr-row">
+              <div class="corr-eq">Mood drops <b>27%</b> in the luteal phase after caffeine past 2pm.</div>
+              <span class="corr-str">medium · r 0.41</span>
+            </div>
+            <div class="corr-row">
+              <div class="corr-eq">HRV rises <b>18%</b> on days with a breath work session.</div>
+              <span class="corr-str">strong · r 0.62</span>
+            </div>
+          </div>
+
+          <!-- WEARABLE SWITCHER -->
+          <div class="wear-sw">
+            <div class="wear-sw-head">
+              <span class="t">Connected sources</span>
+              <span class="s">Switch or add a wearable</span>
+            </div>
+            <div class="wear-sw-row">
+              <button class="wsrc on"><span class="ws-ok"></span> Oura · primary</button>
+              <button class="wsrc"><span class="ws-ok"></span> Apple Health</button>
+              <button class="wsrc"><span class="ws-ok" style="background:var(--ink-mute)"></span> Garmin · off</button>
+              <button class="wsrc"><span class="ws-ok" style="background:var(--ink-mute)"></span> Fitbit · off</button>
+              <button class="wsrc">＋ Manual entry</button>
+            </div>
+          </div>
+
+          <!-- WEEKLY SNAPSHOT -->
+          <div class="slab"><span class="lbl">This week · snapshot</span><button class="act">Compare</button></div>
+          <div class="snap">
+            <div class="snap-top">
+              <div class="t">Apr 13 → 19</div>
+              <div class="r">4 pain days · top symptoms</div>
+            </div>
+            <div class="snap-grid">
+              <div class="snap-tile"><div class="l">Avg sleep</div><div class="n">7.3h</div><div class="d good">+22m</div></div>
+              <div class="snap-tile"><div class="l">Avg stress</div><div class="n">3.8</div><div class="d good">−0.6</div></div>
+              <div class="snap-tile"><div class="l">Avg pain</div><div class="n">3.1</div><div class="d bad">+0.4</div></div>
+              <div class="snap-tile"><div class="l">Avg mood</div><div class="n">6.8</div><div class="d flat">+0.1</div></div>
+            </div>
+            <div class="snap-top-sy">
+              <div class="sl">Top symptoms this week</div>
+              <div class="sy-row">
+                <span class="sy-chip"><b>4</b>cramps</span>
+                <span class="sy-chip"><b>3</b>breast tenderness</span>
+                <span class="sy-chip"><b>3</b>headache</span>
+                <span class="sy-chip"><b>2</b>bloating</span>
+                <span class="sy-chip"><b>1</b>fatigue</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- 3D Pillar Deck -->
+          <div class="slab"><span class="lbl">Pulse pillars</span><span class="act" style="background:transparent;color:var(--ink-soft)">swipe →</span></div>
+          <div class="deck-scroll">
+            <div class="deck-row">
+              <div class="dcard d-sleep">
+                <div class="dicn">🌙</div>
+                <div>
+                  <div class="dlbl">Sleep</div>
+                  <div class="dtit">Restore<br/>score</div>
+                  <div class="dnum">86</div>
+                  <div class="dsub">REM + deep up</div>
+                </div>
+              </div>
+              <div class="dcard d-hrv">
+                <div class="dicn">💚</div>
+                <div>
+                  <div class="dlbl">HRV · Heart</div>
+                  <div class="dtit">Recovery<br/>readiness</div>
+                  <div class="dnum">64 ms</div>
+                  <div class="dsub">+12% vs 14d</div>
+                </div>
+              </div>
+              <div class="dcard d-sym">
+                <div class="dicn">🎯</div>
+                <div>
+                  <div class="dlbl">Symptoms</div>
+                  <div class="dtit">Today<br/>clear so far</div>
+                  <div class="dnum">0</div>
+                  <div class="dsub">4 logs this wk</div>
+                </div>
+              </div>
+              <div class="dcard d-hf">
+                <div class="dicn">🔥</div>
+                <div>
+                  <div class="dlbl">Hot flashes</div>
+                  <div class="dtit">None<br/>today</div>
+                  <div class="dnum">0</div>
+                  <div class="dsub">Last: 3 days ago</div>
+                </div>
+              </div>
+              <div class="dcard d-pan">
+                <div class="dicn">🫀</div>
+                <div>
+                  <div class="dlbl">Panic</div>
+                  <div class="dtit">Calm<br/>baseline</div>
+                  <div class="dnum">0</div>
+                  <div class="dsub">7-day streak</div>
+                </div>
+              </div>
+              <div class="dcard d-rec">
+                <div class="dicn">🌊</div>
+                <div>
+                  <div class="dlbl">Recovery</div>
+                  <div class="dtit">Breath +<br/>yoga NSDR</div>
+                  <div class="dnum">2</div>
+                  <div class="dsub">sessions · 7d</div>
+                </div>
+              </div>
+              <div class="dcard d-wear">
+                <div class="dicn">⌚</div>
+                <div>
+                  <div class="dlbl">Wearable</div>
+                  <div class="dtit">Oura<br/>synced</div>
+                  <div class="dnum">100%</div>
+                  <div class="dsub">battery 78%</div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div style="height:160px"></div>
+
+        </div><!-- /.scroll -->
+
+        <!-- FANNED DOCK -->
+        <div class="dock-layer">
+          <div class="dock-fade"></div>
+          <div class="dock">
+            <div class="fcard f1" onclick="openSheet('breath')">
+              <div class="ficn tint-lav">🌬️</div>
+              <div>
+                <div class="ftit">Breath work</div>
+                <div class="fsub">4-7-8 · 3 min</div>
+              </div>
+            </div>
+            <div class="fcard f2" onclick="openSheet('hotflash')">
+              <div class="ficn tint-amb">🔥</div>
+              <div>
+                <div class="ftit">Hot flash</div>
+                <div class="fsub">quick log</div>
+              </div>
+            </div>
+            <div class="fcard f3" onclick="openSheet('symptom')">
+              <div class="ficn tint-rose">🎯</div>
+              <div>
+                <div class="ftit">Log symptom</div>
+                <div class="fsub">severity + type</div>
+              </div>
+            </div>
+            <div class="fcard f4" onclick="openSheet('panic')">
+              <div class="ficn tint-red">🫀</div>
+              <div>
+                <div class="ftit">Panic log</div>
+                <div class="fsub">track + coping</div>
+              </div>
+            </div>
+            <div class="fcard f5" onclick="openSheet('sync')">
+              <div class="ficn tint-sage">⌚</div>
+              <div>
+                <div class="ftit">Sync wearable</div>
+                <div class="fsub">pull latest</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- BOTTOM NAV -->
+        <div class="bnav">
+          <div class="bnav-inner">
+            <button class="bn"><span class="bni"><svg viewBox="0 0 24 24"><path d="M3 12l9-8 9 8"/><path d="M5 10v10h14V10"/></svg></span><span class="bnl">Today</span></button>
+            <button class="bn"><span class="bni"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8"/><path d="M12 8v4l3 2"/></svg></span><span class="bnl">Lifestyle</span></button>
+            <button class="bn fab"><span class="bni"><svg viewBox="0 0 24 24"><path d="M21 11.5a8.5 8.5 0 1 1-17 0 8.5 8.5 0 0 1 17 0z"/><path d="M8 12h8M8 8h8M8 16h5"/></svg></span><span class="bnl">Jess</span></button>
+            <button class="bn active"><span class="bni"><svg viewBox="0 0 24 24"><path d="M3 12h4l2-7 4 14 2-7h6"/></svg></span><span class="bnl">Pulse</span></button>
+            <button class="bn" onclick="openSheet('menu')"><span class="bni"><svg viewBox="0 0 24 24"><path d="M4 6h16M4 12h16M4 18h16"/></svg></span><span class="bnl">Menu</span></button>
+          </div>
+        </div>
+
+        <!-- SHEET SCRIM -->
+        <div class="sheet-scrim" id="scrim" onclick="closeAll()"></div>
+
+        <!-- SYMPTOM SHEET -->
+        <div class="sheet" id="sheet-symptom">
+          <div class="sheet-handle"></div>
+          <div class="sheet-head">
+            <div>
+              <div class="sheet-title">Log a symptom</div>
+              <div class="sheet-sub">Apr 18 · ovulatory · day 17</div>
+            </div>
+            <button class="sheet-close" onclick="closeAll()">✕</button>
+          </div>
+          <div class="sheet-body">
+            <div class="qgroup">
+              <div class="qtitle">Type</div>
+              <div class="qrow">
+                <button class="qchip on">Cramps</button>
+                <button class="qchip">Headache</button>
+                <button class="qchip">Bloating</button>
+                <button class="qchip">Breast tenderness</button>
+                <button class="qchip">Fatigue</button>
+                <button class="qchip">Nausea</button>
+                <button class="qchip">Brain fog</button>
+                <button class="qchip">Acne</button>
+                <button class="qchip">Mood swing</button>
+                <button class="qchip">Back pain</button>
+                <button class="qchip">＋ other</button>
+              </div>
+            </div>
+            <div class="qgroup">
+              <div class="qtitle">Severity</div>
+              <div class="sev-row"><span class="sl">mild</span><span class="sn" id="sev-n">4</span><span class="sl">severe</span></div>
+              <input class="slider" type="range" min="1" max="10" value="4" oninput="document.getElementById('sev-n').textContent=this.value">
+            </div>
+            <div class="qgroup">
+              <div class="qtitle">Context</div>
+              <div class="qrow">
+                <button class="qchip">before workout</button>
+                <button class="qchip on">afternoon</button>
+                <button class="qchip">after eating</button>
+                <button class="qchip">stressful day</button>
+                <button class="qchip">poor sleep</button>
+              </div>
+            </div>
+            <button class="ctabtn">Save to timeline</button>
+            <button class="ctabtn soft">Quick-log + breath work</button>
+          </div>
+        </div>
+
+        <!-- PANIC SHEET -->
+        <div class="sheet" id="sheet-panic">
+          <div class="sheet-handle"></div>
+          <div class="sheet-head">
+            <div>
+              <div class="sheet-title">Panic log</div>
+              <div class="sheet-sub">Track the wave, then coping used</div>
+            </div>
+            <button class="sheet-close" onclick="closeAll()">✕</button>
+          </div>
+          <div class="sheet-body">
+            <div class="qgroup">
+              <div class="qtitle">How intense · right now</div>
+              <div class="sev-row"><span class="sl">1</span><span class="sn" id="pan-n">6</span><span class="sl">10</span></div>
+              <input class="slider" type="range" min="1" max="10" value="6" oninput="document.getElementById('pan-n').textContent=this.value">
+            </div>
+            <div class="qgroup">
+              <div class="qtitle">Triggers</div>
+              <div class="qrow">
+                <button class="qchip">work stress</button>
+                <button class="qchip">sleep deprivation</button>
+                <button class="qchip">caffeine</button>
+                <button class="qchip">social</button>
+                <button class="qchip">unknown</button>
+              </div>
+            </div>
+            <div class="qgroup">
+              <div class="qtitle">Try now</div>
+              <div class="qrow">
+                <button class="qchip on">Box breathing 4·4·4·4</button>
+                <button class="qchip">5-4-3-2-1 grounding</button>
+                <button class="qchip">Cold splash</button>
+                <button class="qchip">Jess chat</button>
+              </div>
+            </div>
+            <button class="ctabtn">Start breath work now →</button>
+            <button class="ctabtn soft">Log only</button>
+          </div>
+        </div>
+
+        <!-- HOT FLASH SHEET -->
+        <div class="sheet" id="sheet-hotflash">
+          <div class="sheet-handle"></div>
+          <div class="sheet-head">
+            <div>
+              <div class="sheet-title">Hot flash</div>
+              <div class="sheet-sub">Quick · under 20 seconds</div>
+            </div>
+            <button class="sheet-close" onclick="closeAll()">✕</button>
+          </div>
+          <div class="sheet-body">
+            <div class="qgroup">
+              <div class="qtitle">Intensity</div>
+              <div class="qrow">
+                <button class="qchip">mild</button>
+                <button class="qchip on">moderate</button>
+                <button class="qchip">severe</button>
+              </div>
+            </div>
+            <div class="qgroup">
+              <div class="qtitle">Where</div>
+              <div class="qrow">
+                <button class="qchip on">face + neck</button>
+                <button class="qchip">chest</button>
+                <button class="qchip">whole body</button>
+                <button class="qchip">night sweat</button>
+              </div>
+            </div>
+            <div class="qgroup">
+              <div class="qtitle">Possible trigger</div>
+              <div class="qrow">
+                <button class="qchip">hot drink</button>
+                <button class="qchip">alcohol</button>
+                <button class="qchip on">stress</button>
+                <button class="qchip">spicy food</button>
+                <button class="qchip">warm room</button>
+              </div>
+            </div>
+            <button class="ctabtn">Save</button>
+          </div>
+        </div>
+
+        <!-- SYNC SHEET -->
+        <div class="sheet" id="sheet-sync">
+          <div class="sheet-handle"></div>
+          <div class="sheet-head">
+            <div>
+              <div class="sheet-title">Sync wearable</div>
+              <div class="sheet-sub">Pull today's readings · choose primary</div>
+            </div>
+            <button class="sheet-close" onclick="closeAll()">✕</button>
+          </div>
+          <div class="sheet-body">
+            <div class="srclist">
+              <div class="srcrow">
+                <div class="sic" style="background:linear-gradient(135deg,#3B6B4E,#7FA68A)">⌚</div>
+                <div class="sti"><div class="n">Oura Ring · Gen 3</div><div class="s">Primary · synced 4 min ago · battery 78%</div></div>
+                <span class="stg">live</span>
+              </div>
+              <div class="srcrow">
+                <div class="sic" style="background:linear-gradient(135deg,#6B555C,#2A1C20)">🍎</div>
+                <div class="sti"><div class="n">Apple Health</div><div class="s">Steps + cycle data · synced hourly</div></div>
+                <span class="stg">live</span>
+              </div>
+              <div class="srcrow off">
+                <div class="sic" style="background:linear-gradient(135deg,#6DB5E0,#4E8FB8)">⌚</div>
+                <div class="sti"><div class="n">Garmin</div><div class="s">Not connected</div></div>
+                <span class="stg">connect</span>
+              </div>
+              <div class="srcrow off">
+                <div class="sic" style="background:linear-gradient(135deg,#8E7EB8,#5E4E8A)">⌚</div>
+                <div class="sti"><div class="n">Fitbit</div><div class="s">Not connected</div></div>
+                <span class="stg">connect</span>
+              </div>
+              <div class="srcrow off">
+                <div class="sic" style="background:linear-gradient(135deg,#D99960,#C98A6B)">✍</div>
+                <div class="sti"><div class="n">Manual entry</div><div class="s">Log HR, HRV, sleep yourself</div></div>
+                <span class="stg">open</span>
+              </div>
+            </div>
+            <button class="ctabtn" style="margin-top:12px">Sync all now</button>
+          </div>
+        </div>
+
+        <!-- BREATH SHEET -->
+        <div class="sheet" id="sheet-breath">
+          <div class="sheet-handle"></div>
+          <div class="sheet-head">
+            <div>
+              <div class="sheet-title">Breath work</div>
+              <div class="sheet-sub">Short wearable-aware sessions</div>
+            </div>
+            <button class="sheet-close" onclick="closeAll()">✕</button>
+          </div>
+          <div class="sheet-body">
+            <div class="qgroup">
+              <div class="qtitle">Choose a pattern</div>
+              <div class="qrow">
+                <button class="qchip on">4-7-8 · calm · 3m</button>
+                <button class="qchip">Box 4·4·4·4 · focus · 4m</button>
+                <button class="qchip">Physiological sigh · 1m</button>
+                <button class="qchip">Coherent 5.5 · 5m</button>
+              </div>
+            </div>
+            <div class="qgroup">
+              <div class="qtitle">Track HRV lift</div>
+              <div style="font-size:12px;color:var(--ink-soft);line-height:1.5">We'll read HRV from Oura before and after. Your last session lifted HRV from <b style="color:var(--plum)">58 → 71 ms</b>.</div>
+            </div>
+            <button class="ctabtn">Start 4-7-8 now →</button>
+          </div>
+        </div>
+
+        <!-- INSIGHT SHEET -->
+        <div class="sheet" id="sheet-insight">
+          <div class="sheet-handle"></div>
+          <div class="sheet-head">
+            <div>
+              <div class="sheet-title">Your insights</div>
+              <div class="sheet-sub">5 active · phase-aware · wearable-aware</div>
+            </div>
+            <button class="sheet-close" onclick="closeAll()">✕</button>
+          </div>
+          <div class="sheet-body">
+            <div class="weeksel">
+              <div class="wk on"><div class="wl">Today</div><div class="wn">Apr 18</div></div>
+              <div class="wk"><div class="wl">Week</div><div class="wn">Apr 13→19</div></div>
+              <div class="wk"><div class="wl">Cycle</div><div class="wn">Apr · C-42</div></div>
+              <div class="wk"><div class="wl">All time</div><div class="wn">∞</div></div>
+            </div>
+            <div class="qgroup" style="background:linear-gradient(135deg,#FFF1E8,#FDE6D8);border-color:rgba(217,153,96,.18)">
+              <div style="font-size:9.5px;font-weight:700;color:var(--amber);letter-spacing:.16em;text-transform:uppercase;margin-bottom:4px">Phase insight</div>
+              <div class="qtitle">Ovulation increases your physical output ceiling.</div>
+              <div style="font-size:12px;color:var(--ink-soft);line-height:1.5">Strength and endurance peaked during ovulation the last 3 cycles.</div>
+            </div>
+            <div class="qgroup">
+              <div style="font-size:9.5px;font-weight:700;color:var(--water);letter-spacing:.16em;text-transform:uppercase;margin-bottom:4px">Sleep tip</div>
+              <div class="qtitle">Screens off by 10pm pairs with +34 min deep sleep.</div>
+              <div style="font-size:12px;color:var(--ink-soft);line-height:1.5">Your deep-sleep days share one setting — try the Wind-down routine.</div>
+            </div>
+            <div class="qgroup">
+              <div style="font-size:9.5px;font-weight:700;color:var(--sage);letter-spacing:.16em;text-transform:uppercase;margin-bottom:4px">Mood tip</div>
+              <div class="qtitle">Your mood lifts 19% on days with 7k+ steps.</div>
+              <div style="font-size:12px;color:var(--ink-soft);line-height:1.5">A walk after lunch has shown up twice this week as a reliable re-set.</div>
+            </div>
+            <div class="qgroup">
+              <div style="font-size:9.5px;font-weight:700;color:var(--lav);letter-spacing:.16em;text-transform:uppercase;margin-bottom:4px">Correlation</div>
+              <div class="qtitle">Pain × sleep · r 0.68.</div>
+              <div style="font-size:12px;color:var(--ink-soft);line-height:1.5">Nights under 6h roughly double next-day pain scores.</div>
+            </div>
+            <div class="qgroup">
+              <div style="font-size:9.5px;font-weight:700;color:var(--rose-500);letter-spacing:.16em;text-transform:uppercase;margin-bottom:4px">Recovery tip</div>
+              <div class="qtitle">Breath work days show +18% HRV average.</div>
+              <div style="font-size:12px;color:var(--ink-soft);line-height:1.5">Your best HRV days all included a short breathwork session.</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- MENU SHEET -->
+        <div class="sheet" id="sheet-menu">
+          <div class="sheet-handle"></div>
+          <div class="sheet-head">
+            <div>
+              <div class="sheet-title">Menu</div>
+              <div class="sheet-sub">Everything in FemWell</div>
+            </div>
+            <button class="sheet-close" onclick="closeAll()">✕</button>
+          </div>
+          <div class="sheet-body">
+            <div class="menu-grid">
+              <button class="mbtn"><span class="mi" style="background:linear-gradient(135deg,#D45E52,#B0483E)">☀</span><span class="ml">Today</span></button>
+              <button class="mbtn"><span class="mi" style="background:linear-gradient(135deg,#7FA68A,#3B6B4E)">🥗</span><span class="ml">Nutrition</span></button>
+              <button class="mbtn"><span class="mi" style="background:linear-gradient(135deg,#8E7EB8,#5E4E8A)">📚</span><span class="ml">Programs</span></button>
+              <button class="mbtn"><span class="mi" style="background:linear-gradient(135deg,#C98A6B,#D99960)">📅</span><span class="ml">Planner</span></button>
+              <button class="mbtn"><span class="mi" style="background:linear-gradient(135deg,#4A2A3A,#6B3E54)">🧘</span><span class="ml">Sessions</span></button>
+              <button class="mbtn"><span class="mi" style="background:linear-gradient(135deg,#6DB5E0,#4E8FB8)">🧭</span><span class="ml">Explore</span></button>
+              <button class="mbtn"><span class="mi" style="background:linear-gradient(135deg,#F2B774,#D99960)">🌿</span><span class="ml">Lifestyle</span></button>
+              <button class="mbtn"><span class="mi" style="background:linear-gradient(135deg,#E67F73,#D45E52)">🫶</span><span class="ml">Community</span></button>
+              <button class="mbtn"><span class="mi" style="background:linear-gradient(135deg,#A896D0,#8E7EB8)">📓</span><span class="ml">Journal</span></button>
+              <button class="mbtn"><span class="mi" style="background:linear-gradient(135deg,#B0483E,#8A3530)">📊</span><span class="ml">Pulse</span></button>
+              <button class="mbtn"><span class="mi" style="background:linear-gradient(135deg,#F5C7BE,#E89888)">✨</span><span class="ml">Skin & Hair</span></button>
+              <button class="mbtn"><span class="mi" style="background:linear-gradient(135deg,#7A4A5E,#4A2A3A)">🌸</span><span class="ml">Life Stage</span></button>
+            </div>
+            <div style="margin-top:14px;padding:14px;border-radius:16px;background:rgba(74,42,58,.04);display:flex;gap:10px;flex-wrap:wrap">
+              <button class="mbtn" style="flex:1;flex-direction:row;justify-content:flex-start;background:transparent;border:none;padding:6px">⚙️ <span class="ml">Settings</span></button>
+              <button class="mbtn" style="flex:1;flex-direction:row;justify-content:flex-start;background:transparent;border:none;padding:6px">👤 <span class="ml">Profile</span></button>
+              <button class="mbtn" style="flex:1;flex-direction:row;justify-content:flex-start;background:transparent;border:none;padding:6px">❔ <span class="ml">Help</span></button>
+            </div>
+          </div>
+        </div>
+
+      </div></div><!-- /.phone -->
+    </div>
+
+    <!-- SIDE COPY -->
+    <div class="side">
+      <h1>A <span class="hl">phase-aware</span><br/>biometric dashboard.</h1>
+      <p class="lede">Pulse replaces the current tab with a single mobile screen that opens on your readiness today, your body data from whichever wearable you wear, and the insights your cycle phase unlocks.</p>
+
+      <div class="card">
+        <h3>Wired to real entities</h3>
+        <p>Every tile reads from your live FemWell data — no mock numbers.</p>
+        <div style="margin-top:10px">
+          <span class="entity-tag">DailyAggregates</span>
+          <span class="entity-tag">WearableSync</span>
+          <span class="entity-tag">SymptomLogs</span>
+          <span class="entity-tag">InsightCards</span>
+          <span class="entity-tag">InsightSnapshots</span>
+          <span class="entity-tag">HotFlashLog</span>
+          <span class="entity-tag">PanicLog</span>
+          <span class="entity-tag">WellnessSessions</span>
+          <span class="entity-tag">Correlations</span>
+        </div>
+      </div>
+
+      <div class="card">
+        <h3>What the hero shows</h3>
+        <ul>
+          <li><b>Readiness ring</b> · <span class="kbd">WearableSync.readiness_score</span> — today 82.</li>
+          <li><b>Phase pill</b> · ovulatory day 17, pulled from the same cycle engine as Today.</li>
+          <li><b>Top-line copy</b> · phase + HRV + deep sleep written like a coach, not a chart.</li>
+          <li><b>Mood · Energy · Stress · Pain</b> · 4 aggregate tiles from today's DailyAggregates.</li>
+        </ul>
+      </div>
+
+      <div class="card">
+        <h3>Body · sleep · symptoms</h3>
+        <div class="keybox">
+          <div class="keychip"><b>5 biometrics</b>Resting HR · HRV · Body temp · SpO₂ · Steps. Scrollable, sparkline per card.</div>
+          <div class="keychip"><b>Sleep breakdown</b>REM / deep / light / awake as a single bar with hours + score.</div>
+          <div class="keychip"><b>14-day symptom map</b>5 symptom rows × 14 days. Taps open the day's detail.</div>
+          <div class="keychip"><b>Correlations</b>Plain-English patterns with r-values. "Pain × sleep r 0.68."</div>
+        </div>
+      </div>
+
+      <div class="card">
+        <h3>Real insight, not a chart</h3>
+        <p>The amber card at the centre is a live InsightCard from your account:</p>
+        <div style="margin-top:10px;padding:12px;border-radius:12px;background:rgba(217,153,96,.1);font-size:13px">
+          <b style="color:var(--amber);font-family:Fraunces">Ovulation increases your physical output ceiling.</b><br/>
+          <span style="color:var(--ink-soft)">type: <code>PHASE_INSIGHT</code> · cycle_phase: <code>ovulatory</code> · confidence: <code>0.85</code> · insight_date: <code>2026-04-13</code></span>
+        </div>
+        <ul style="margin-top:10px">
+          <li>Thumbs up / down flip <span class="kbd">is_helpful</span> and drive the ranking.</li>
+          <li>CTA deep-links to <span class="kbd">recommended_action_route</span> (movement plan).</li>
+        </ul>
+      </div>
+
+      <div class="card">
+        <h3>Quick logs as a fan</h3>
+        <p>Persistent 5-card fan mirrors Nutrition + Today:</p>
+        <ul>
+          <li><b>Log symptom</b> · type + severity 1-10 + context → SymptomLogs.</li>
+          <li><b>Panic log</b> · intensity + trigger + coping → PanicLog (+ launch breath).</li>
+          <li><b>Hot flash</b> · 3-tap: intensity, location, trigger → HotFlashLog.</li>
+          <li><b>Breath work</b> · 4-7-8 / box / sigh / coherent → WellnessSessions, pre/post HRV.</li>
+          <li><b>Sync wearable</b> → open source switcher sheet (Oura / Apple / Garmin / Fitbit / Manual).</li>
+        </ul>
+      </div>
+
+      <div class="card">
+        <h3>Consistent with Today + Lifestyle</h3>
+        <ul>
+          <li>Same rose/plum palette, Fraunces + Inter, radial-gradient backdrop.</li>
+          <li>Bottom nav: Today · Lifestyle · Jess · <b>Pulse (active)</b> · Menu.</li>
+          <li>Menu sheet reveals Nutrition, Programs, Planner, Sessions, Explore, Community, Journal, Skin & Hair, Life Stage — the full page inventory from your app.</li>
+          <li>Replaces the current Pulse page end-to-end. No accumulation.</li>
+        </ul>
+      </div>
+
+      <div class="card">
+        <h3>Ready when you say go</h3>
+        <p>Say <span class="kbd">ship pulse to base44</span> and I'll wire this design into the live app — same build-verify-publish loop we used for Today and Lifestyle.</p>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<script>
+// tick marks around readiness ring
+(function(){
+  const t = document.getElementById('ticks');
+  if(!t) return;
+  for(let i=0;i<36;i++){
+    const tick = document.createElement('i');
+    tick.style.transform = `translateX(-50%) rotate(${i*10}deg)`;
+    t.appendChild(tick);
+  }
+})();
+
+// symptom heatmap data (14 days × 5 symptom rows)
+(function(){
+  const grid = document.getElementById('heat');
+  if(!grid) return;
+  const rows = [
+    {label:'Cramps', data:[3,4,3,2,1,0,0,0,0,0,0,0,1,2]},
+    {label:'Headache', data:[2,2,1,0,0,0,1,0,0,0,0,0,0,1]},
+    {label:'Bloating', data:[0,0,1,2,1,0,0,0,0,0,1,2,1,0]},
+    {label:'Tender', data:[0,0,0,0,0,0,0,0,0,0,2,3,2,1]},
+    {label:'Fatigue', data:[4,3,2,1,0,0,0,0,0,0,0,1,1,0]},
+  ];
+  rows.forEach(r=>{
+    const lbl = document.createElement('div');
+    lbl.className = 'hlbl';
+    lbl.textContent = r.label;
+    grid.appendChild(lbl);
+    r.data.forEach(v=>{
+      const c = document.createElement('div');
+      c.className = 'hcell' + (v>0 ? ' hc'+Math.min(v,5) : '');
+      grid.appendChild(c);
+    });
+  });
+})();
+
+// sheet controls
+function openSheet(id){
+  document.querySelectorAll('.sheet.on').forEach(s=>s.classList.remove('on'));
+  document.getElementById('scrim').classList.add('on');
+  const s = document.getElementById('sheet-'+id);
+  if(s) s.classList.add('on');
+}
+function closeAll(){
+  document.querySelectorAll('.sheet.on').forEach(s=>s.classList.remove('on'));
+  document.getElementById('scrim').classList.remove('on');
+}
+
+// qchip simple toggle within a group
+document.querySelectorAll('.qgroup .qrow').forEach(row=>{
+  row.querySelectorAll('.qchip').forEach(c=>{
+    c.addEventListener('click', ()=>{
+      row.querySelectorAll('.qchip').forEach(x=>x.classList.remove('on'));
+      c.classList.add('on');
+    });
+  });
+});
+// wearable source
+document.querySelectorAll('.wear-sw-row').forEach(row=>{
+  row.querySelectorAll('.wsrc').forEach(c=>{
+    c.addEventListener('click', ()=>{
+      row.querySelectorAll('.wsrc').forEach(x=>x.classList.remove('on'));
+      c.classList.add('on');
+    });
+  });
+});
+</script>
+</body>
+</html>

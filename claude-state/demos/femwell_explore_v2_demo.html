@@ -1,0 +1,832 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>FemWell — Explore v2 (Planner-language rebuild)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,500;0,9..144,600;1,9..144,400;1,9..144,500&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --cream:#FFFAF5; --cream-2:#FFF5EC; --cream-3:#F0E5D8;
+  --plum:#4A2A3A; --plum-2:#6B4559; --plum-mute:#8A7584;
+  --rose-300:#F2A99A; --rose-400:#E67F73; --rose-500:#D45E52; --rose-600:#B84A41;
+  --period:#B84A41; --follicular:#E67F73; --ovulatory:#F2A99A; --luteal:#8A5F74;
+  --gold:#C9A95C; --teal:#5F8A85; --moss:#7D8668; --lav:#B9A4C9;
+  --night:#1A1522; --star:#F5E6D3;
+  --ink:#2B1E16; --ink-soft:#4A3A30; --ink-mute:#8A7768;
+}
+*{box-sizing:border-box; -webkit-font-smoothing:antialiased}
+html,body{margin:0; padding:0}
+body{
+  font-family:'Inter', sans-serif; color:var(--ink);
+  background:
+    radial-gradient(1200px 800px at 20% 0%, #F5E6D6 0%, transparent 55%),
+    radial-gradient(1100px 700px at 90% 20%, #EED5CE 0%, transparent 50%),
+    radial-gradient(1400px 900px at 50% 100%, #F0DCCF 0%, transparent 55%),
+    var(--cream);
+  min-height:100vh;
+}
+.wrap{max-width:1440px; margin:0 auto; padding:56px 40px 80px}
+.header{max-width:900px; margin-bottom:44px}
+.eyebrow{font-family:'Fraunces',serif; font-style:italic; color:var(--rose-500); font-size:15px; letter-spacing:.02em}
+h1{font-family:'Fraunces',serif; font-weight:500; font-size:54px; line-height:1.03; margin:10px 0 14px; letter-spacing:-.015em; color:var(--plum)}
+h1 em{font-style:italic; color:var(--rose-500)}
+.sub{color:var(--ink-soft); font-size:16px; line-height:1.55; max-width:740px}
+.legend{display:flex; flex-wrap:wrap; gap:18px; margin-top:22px; color:var(--plum-mute); font-size:12.5px; letter-spacing:.02em; text-transform:uppercase}
+.legend span{display:inline-flex; align-items:center; gap:8px}
+.legend i{width:10px; height:10px; border-radius:50%; background:var(--rose-400); display:inline-block}
+
+.phones{display:grid; grid-template-columns:repeat(4, 1fr); gap:28px; margin-top:36px}
+@media (max-width:1300px){.phones{grid-template-columns:repeat(3, 1fr)}}
+@media (max-width:980px){.phones{grid-template-columns:repeat(2, 1fr)}}
+@media (max-width:560px){.phones{grid-template-columns:1fr}}
+
+.phone-wrap{display:flex; flex-direction:column; gap:10px}
+.phone-label{font-family:'Fraunces',serif; font-style:italic; font-size:14px; color:var(--plum); padding-left:4px}
+.phone-step{color:var(--plum-mute); font-size:11px; letter-spacing:.14em; text-transform:uppercase; padding-left:4px}
+
+.phone{
+  position:relative; aspect-ratio:1/2.05;
+  border-radius:46px; padding:10px;
+  background:linear-gradient(160deg,#1b1118,#2a1b25);
+  box-shadow: 0 30px 60px -20px rgba(74,42,58,.35), 0 10px 25px rgba(74,42,58,.12), inset 0 0 0 1px rgba(255,255,255,.03);
+}
+.phone::before{content:""; position:absolute; top:22px; left:50%; transform:translateX(-50%); width:120px; height:24px; border-radius:14px; background:#0f0810; z-index:3}
+.screen{
+  position:absolute; inset:10px; border-radius:38px; overflow:hidden;
+  background:var(--cream); display:flex; flex-direction:column;
+}
+.status{height:44px; flex-shrink:0; display:flex; justify-content:space-between; align-items:center; padding:0 22px; font-family:'Inter'; font-weight:600; font-size:12px; color:var(--plum)}
+.topbar{display:flex; justify-content:space-between; align-items:center; padding:0 20px 8px}
+.topbar h4{font-family:'Fraunces',serif; font-weight:500; font-size:22px; color:var(--plum); margin:0; font-style:italic}
+.topbar h4 em{color:var(--rose-500)}
+.topbar .searchbtn{width:32px; height:32px; border-radius:50%; background:rgba(74,42,58,.06); display:flex; align-items:center; justify-content:center; font-size:13px; color:var(--plum)}
+
+.body{flex:1; overflow-y:auto; padding:6px 0 80px; position:relative}
+.body::-webkit-scrollbar{display:none}
+
+/* tabs */
+.tabs{display:flex; gap:4px; padding:2px 20px 10px; overflow-x:auto; white-space:nowrap}
+.tabs::-webkit-scrollbar{display:none}
+.tab{padding:7px 14px; border-radius:999px; background:#fff; color:var(--plum); font-size:12.5px; font-weight:500; border:1px solid rgba(74,42,58,.08)}
+.tab.active{background:var(--plum); color:#fff; border-color:var(--plum)}
+
+/* Jess hero */
+.hero{
+  margin:0 16px 14px; border-radius:22px; padding:16px 16px 14px; position:relative; overflow:hidden;
+  background:linear-gradient(150deg,#FFEFE3,#FFDCD0);
+  border:1px solid rgba(212,94,82,.15);
+}
+.hero::after{content:""; position:absolute; right:-40px; top:-30px; width:180px; height:180px; border-radius:50%; background:radial-gradient(circle, rgba(212,94,82,.2), transparent 65%)}
+.hero .label{font-family:'Fraunces',serif; font-style:italic; font-size:11.5px; color:var(--rose-500); letter-spacing:.04em; text-transform:uppercase; z-index:1; position:relative}
+.hero h3{font-family:'Fraunces',serif; font-weight:500; font-size:20px; line-height:1.2; margin:5px 0 6px; color:var(--plum); z-index:1; position:relative}
+.hero h3 em{font-style:italic; color:var(--rose-500)}
+.hero p{font-size:12px; color:var(--ink-soft); line-height:1.45; margin:0 0 10px; z-index:1; position:relative}
+.hero .meta-row{display:flex; gap:6px; z-index:1; position:relative; margin-bottom:10px}
+.hero .meta-row span{padding:3px 9px; border-radius:999px; background:rgba(255,255,255,.7); font-size:10.5px; color:var(--plum); font-weight:500}
+.hero .play{
+  display:inline-flex; align-items:center; gap:6px; z-index:1; position:relative;
+  background:var(--plum); color:#fff; padding:8px 14px; border-radius:999px;
+  font-size:11.5px; font-weight:500;
+}
+
+/* shelf */
+.shelf{margin:16px 0}
+.shelf-head{display:flex; justify-content:space-between; align-items:baseline; padding:0 20px; margin-bottom:10px}
+.shelf-head h5{font-family:'Fraunces',serif; font-weight:500; font-size:15.5px; color:var(--plum); margin:0; font-style:italic}
+.shelf-head h5 em{color:var(--rose-500)}
+.shelf-head .all{font-size:11px; color:var(--plum-mute)}
+.shelf-scroll{display:flex; gap:10px; padding:0 20px 4px; overflow-x:auto}
+.shelf-scroll::-webkit-scrollbar{display:none}
+
+/* item — watch */
+.watch-item{flex-shrink:0; width:170px}
+.watch-thumb{
+  position:relative; aspect-ratio:16/10; border-radius:14px; overflow:hidden;
+  background:linear-gradient(135deg,var(--rose-400),var(--plum));
+  color:rgba(255,255,255,.85); display:flex; align-items:flex-end; padding:10px;
+}
+.watch-thumb.v2{background:linear-gradient(135deg,var(--luteal),var(--plum))}
+.watch-thumb.v3{background:linear-gradient(135deg,var(--gold),var(--rose-600))}
+.watch-thumb.v4{background:linear-gradient(135deg,var(--teal),var(--moss))}
+.watch-thumb.v5{background:linear-gradient(135deg,var(--follicular),var(--rose-500))}
+.watch-thumb .dur{position:absolute; bottom:8px; right:8px; background:rgba(26,21,34,.7); color:#fff; font-size:10px; padding:2px 7px; border-radius:999px; font-weight:500}
+.watch-thumb .play{position:absolute; top:8px; left:8px; width:24px; height:24px; border-radius:50%; background:rgba(255,255,255,.25); backdrop-filter:blur(6px); display:flex; align-items:center; justify-content:center; color:#fff; font-size:11px}
+.watch-title{margin-top:6px; font-size:11.5px; color:var(--plum); line-height:1.3; font-weight:500}
+.watch-meta{margin-top:2px; font-size:10px; color:var(--plum-mute); font-style:italic; font-family:'Fraunces',serif}
+
+/* item — read */
+.read-item{flex-shrink:0; width:180px; background:#fff; border-radius:14px; overflow:hidden; border:1px solid rgba(74,42,58,.08)}
+.read-cover{aspect-ratio:4/3; background:linear-gradient(135deg,#F5E6D6,#EED5CE); display:flex; align-items:center; justify-content:center; font-family:'Fraunces',serif; font-style:italic; color:var(--plum); font-size:34px}
+.read-cover.c2{background:linear-gradient(135deg,#EED5CE,#D4B5A8); color:#fff}
+.read-cover.c3{background:linear-gradient(135deg,#F0E0D4,#E8C9B5); color:var(--plum)}
+.read-cover.c4{background:linear-gradient(135deg,var(--rose-300),var(--rose-400)); color:#fff}
+.read-cover.c5{background:linear-gradient(135deg,var(--lav),#D4B5A8); color:#fff}
+.read-body{padding:9px 10px}
+.read-phase{display:inline-block; padding:2px 7px; border-radius:999px; font-size:9.5px; font-weight:600; color:#fff; letter-spacing:.02em; margin-bottom:4px}
+.read-phase.l{background:var(--luteal)}
+.read-phase.p{background:var(--period)}
+.read-phase.o{background:var(--ovulatory); color:var(--plum)}
+.read-phase.f{background:var(--follicular)}
+.read-phase.all{background:var(--plum-mute)}
+.read-title{font-size:11.5px; color:var(--plum); line-height:1.25; font-weight:500}
+.read-meta{font-size:10px; color:var(--plum-mute); font-style:italic; font-family:'Fraunces',serif; margin-top:2px}
+
+/* listen */
+.listen-item{flex-shrink:0; width:180px; background:#fff; border-radius:16px; overflow:hidden; border:1px solid rgba(74,42,58,.08)}
+.listen-wave{aspect-ratio:4/2; background:linear-gradient(135deg,var(--plum),var(--night)); position:relative; padding:10px 12px; color:#fff; display:flex; flex-direction:column; justify-content:space-between}
+.listen-wave.w2{background:linear-gradient(135deg,var(--luteal),var(--plum))}
+.listen-wave.w3{background:linear-gradient(135deg,var(--teal),var(--plum-2))}
+.listen-wave.w4{background:linear-gradient(135deg,var(--gold),var(--rose-600))}
+.listen-wave .expert{font-family:'Fraunces',serif; font-style:italic; font-size:11px; color:rgba(255,255,255,.7)}
+.listen-wave .host{font-family:'Fraunces',serif; font-weight:500; font-size:13px}
+.listen-wave svg{opacity:.6}
+.listen-body{padding:9px 11px}
+.listen-title{font-size:11.5px; color:var(--plum); line-height:1.3; font-weight:500}
+.listen-meta{font-size:10px; color:var(--plum-mute); margin-top:2px; display:flex; gap:6px; align-items:center}
+.listen-meta .dur{color:var(--plum); font-weight:500}
+
+/* AMA card */
+.ama-card{
+  margin:16px; border-radius:22px; padding:16px; position:relative; overflow:hidden;
+  background:linear-gradient(160deg,var(--plum),var(--night));
+  color:#fff;
+}
+.ama-card::before{content:""; position:absolute; right:-40px; bottom:-30px; width:160px; height:160px; border-radius:50%; background:radial-gradient(circle, rgba(242,169,154,.3), transparent 60%)}
+.ama-label{font-family:'Fraunces',serif; font-style:italic; font-size:11.5px; color:var(--rose-300); letter-spacing:.04em; text-transform:uppercase; position:relative; z-index:1}
+.ama-title{font-family:'Fraunces',serif; font-weight:500; font-size:20px; line-height:1.2; margin:6px 0; position:relative; z-index:1}
+.ama-title em{font-style:italic; color:var(--rose-300)}
+.ama-host{display:flex; align-items:center; gap:10px; margin-top:10px; position:relative; z-index:1}
+.ama-host .av{width:36px; height:36px; border-radius:50%; background:linear-gradient(135deg,var(--gold),var(--rose-600)); color:#fff; display:flex; align-items:center; justify-content:center; font-family:'Fraunces',serif; font-style:italic; font-size:16px}
+.ama-host .meta strong{display:block; font-size:12.5px; color:#fff; font-weight:500}
+.ama-host .meta span{font-size:10.5px; color:rgba(245,230,211,.6)}
+.ama-cta{display:inline-flex; align-items:center; gap:7px; background:rgba(245,230,211,.18); backdrop-filter:blur(8px); border:1px solid rgba(245,230,211,.25); color:#fff; padding:8px 14px; border-radius:999px; font-size:11.5px; font-weight:500; margin-top:12px; position:relative; z-index:1}
+.ama-cta .dot{width:6px; height:6px; border-radius:50%; background:var(--rose-300); animation:amaDot 1.5s ease-in-out infinite}
+@keyframes amaDot{0%,100%{opacity:.4} 50%{opacity:1}}
+
+/* Jess noticed */
+.jess-card{
+  margin:12px 16px 14px; padding:12px 14px; border-radius:16px;
+  background:linear-gradient(135deg,rgba(139,95,116,.1),rgba(74,42,58,.06));
+  border:1px solid rgba(74,42,58,.08);
+  display:flex; gap:10px; align-items:flex-start;
+}
+.jess-card .j{width:26px; height:26px; border-radius:50%; background:linear-gradient(135deg,var(--plum),var(--night)); color:#fff; font-family:'Fraunces',serif; font-style:italic; font-size:13px; display:flex; align-items:center; justify-content:center; flex-shrink:0}
+.jess-card .l{font-size:11.5px; color:var(--plum); line-height:1.4; font-family:'Fraunces',serif; font-style:italic}
+.jess-card .l em{color:var(--rose-500)}
+
+/* bottom nav */
+.nav{
+  position:absolute; left:10px; right:10px; bottom:10px; height:62px;
+  background:rgba(255,250,245,.92); backdrop-filter:blur(16px);
+  border-top:1px solid rgba(74,42,58,.08);
+  border-radius:0 0 38px 38px;
+  display:flex; align-items:center; justify-content:space-around;
+  padding:0 8px; z-index:2;
+}
+.nav-item{display:flex; flex-direction:column; align-items:center; gap:3px; font-size:9.5px; color:var(--plum-mute); font-weight:500}
+.nav-item.active{color:var(--rose-500)}
+.nav-item.fab{background:linear-gradient(135deg,var(--rose-500),var(--rose-600)); width:44px; height:44px; border-radius:50%; color:#fff; align-items:center; justify-content:center; font-family:'Fraunces',serif; font-style:italic; font-size:18px; margin-top:-12px; box-shadow:0 10px 20px -6px rgba(212,94,82,.55)}
+.nav-icon{font-size:15px}
+
+/* appendix */
+.appendix{margin-top:84px; background:linear-gradient(180deg,var(--cream-2),var(--cream)); border-radius:28px; padding:48px 48px 44px; border:1px solid rgba(74,42,58,.08)}
+.appendix h2{font-family:'Fraunces',serif; font-weight:500; font-size:34px; margin:0 0 8px; color:var(--plum); letter-spacing:-.01em}
+.appendix h2 em{font-style:italic; color:var(--rose-500)}
+.appendix p.lead{color:var(--ink-soft); font-size:15px; max-width:800px; line-height:1.55; margin:0 0 28px}
+.app-grid{display:grid; grid-template-columns:repeat(3, 1fr); gap:22px}
+@media (max-width:960px){.app-grid{grid-template-columns:1fr}}
+.app-card{background:#fff; border-radius:20px; padding:22px; border:1px solid rgba(74,42,58,.06); box-shadow:0 1px 2px rgba(74,42,58,.04)}
+.app-card h3{font-family:'Fraunces',serif; font-weight:500; font-size:18px; color:var(--plum); margin:0 0 8px}
+.app-card h3 em{font-style:italic; color:var(--rose-500)}
+.app-card ul{margin:6px 0 0; padding-left:18px; color:var(--ink-soft); font-size:13px; line-height:1.6}
+.app-card li{margin-bottom:4px}
+.app-card li b{color:var(--plum); font-weight:600}
+.tag{display:inline-block; padding:3px 9px; border-radius:999px; background:var(--plum); color:#fff; font-size:11px; font-weight:500}
+.tag.q2{background:var(--moss)} .tag.q3{background:var(--gold); color:var(--plum)} .tag.q4{background:var(--teal)}
+
+.footer{margin-top:60px; padding-top:28px; border-top:1px solid rgba(74,42,58,.1); color:var(--plum-mute); font-size:12.5px; font-style:italic; font-family:'Fraunces',serif}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header class="header">
+  <div class="eyebrow">FemWell · Explore rebuild · v2 · 2026-04-20</div>
+  <h1>Explore — <em>a library, not a feed.</em></h1>
+  <p class="sub">Rebuilt in Planner visual language. No zodiac (that's Lifestyle). No infinite scroll. One Jess-picked hero tuned to current phase, then Watch / Read / Listen shelves, a live AMA channel with Dr Aisha Patel, and a single Jess-noticed line threading the session back to the rest of the app. Media first, not metrics.</p>
+  <div class="legend">
+    <span><i style="background:var(--rose-500)"></i>Phase-matched</span>
+    <span><i style="background:var(--plum)"></i>Expert-curated</span>
+    <span><i style="background:var(--moss)"></i>UK-anchored</span>
+    <span><i style="background:var(--gold)"></i>Live AMA</span>
+  </div>
+</header>
+
+<section class="phones">
+
+<!-- ===== P1 Home ===== -->
+<div class="phone-wrap">
+  <div class="phone-step">Phone 1 / 4</div>
+  <div class="phone-label">Explore home · Jess-picked hero</div>
+  <div class="phone"><div class="screen">
+    <div class="status"><span>9:41</span><span>● ●</span></div>
+    <div class="topbar">
+      <h4>Explore</h4>
+      <div class="searchbtn">🔍</div>
+    </div>
+    <div class="body">
+      <div class="tabs">
+        <div class="tab active">For you</div>
+        <div class="tab">Watch</div>
+        <div class="tab">Read</div>
+        <div class="tab">Listen</div>
+        <div class="tab">Live</div>
+      </div>
+
+      <div class="hero">
+        <div class="label">Jess picked for your luteal day</div>
+        <h3>The <em>wisdom</em> of the quiet weeks</h3>
+        <p>A 12-minute talk from Dr Jolene Brighten on how to work with — not against — your luteal drop.</p>
+        <div class="meta-row"><span>12 min watch</span><span>Luteal-tuned</span><span>Body literacy</span></div>
+        <div class="play">▶ Play now</div>
+      </div>
+
+      <div class="shelf">
+        <div class="shelf-head"><h5>Continue <em>where you left off</em></h5><span class="all">see all</span></div>
+        <div class="shelf-scroll">
+          <div class="watch-item">
+            <div class="watch-thumb v2"><div class="play">▶</div><div class="dur">8 min left</div></div>
+            <div class="watch-title">Why your PMS is louder in your 30s</div>
+            <div class="watch-meta">Dr Aisha Patel · paused at 4:12</div>
+          </div>
+          <div class="read-item">
+            <div class="read-cover c3">E</div>
+            <div class="read-body">
+              <span class="read-phase l">luteal</span>
+              <div class="read-title">Eat to feel grounded this week</div>
+              <div class="read-meta">4 min · halfway</div>
+            </div>
+          </div>
+          <div class="listen-item">
+            <div class="listen-wave w3">
+              <div class="expert">Dr Aisha Patel Okwu</div>
+              <div class="host">AMA · Sleep in peri</div>
+            </div>
+            <div class="listen-body">
+              <div class="listen-title">What actually fixes my 3am wake-ups?</div>
+              <div class="listen-meta"><span class="dur">18 min</span><span>·</span><span>7 min in</span></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="jess-card">
+        <div class="j">J</div>
+        <div class="l">Since you're on luteal d22 — three picks below. <em>No algorithm</em>, just what usually helps you this week.</div>
+      </div>
+
+      <div class="shelf">
+        <div class="shelf-head"><h5>Watch · <em>for today</em></h5><span class="all">see all</span></div>
+        <div class="shelf-scroll">
+          <div class="watch-item">
+            <div class="watch-thumb"><div class="play">▶</div><div class="dur">9:42</div></div>
+            <div class="watch-title">The quiet before the period</div>
+            <div class="watch-meta">Dr Priya Shah · 9 min</div>
+          </div>
+          <div class="watch-item">
+            <div class="watch-thumb v4"><div class="play">▶</div><div class="dur">14:22</div></div>
+            <div class="watch-title">PMDD vs PMS — how to tell</div>
+            <div class="watch-meta">Dr Brighten · 14 min</div>
+          </div>
+          <div class="watch-item">
+            <div class="watch-thumb v5"><div class="play">▶</div><div class="dur">6:15</div></div>
+            <div class="watch-title">Iron the body asks for in luteal</div>
+            <div class="watch-meta">Dr Catherine O'Brien · 6 min</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="shelf">
+        <div class="shelf-head"><h5>Read · <em>short pieces</em></h5><span class="all">see all</span></div>
+        <div class="shelf-scroll">
+          <div class="read-item">
+            <div class="read-cover">T</div>
+            <div class="read-body">
+              <span class="read-phase l">luteal</span>
+              <div class="read-title">Three things to stop apologising for</div>
+              <div class="read-meta">3 min read</div>
+            </div>
+          </div>
+          <div class="read-item">
+            <div class="read-cover c4">S</div>
+            <div class="read-body">
+              <span class="read-phase all">all phases</span>
+              <div class="read-title">Sleep myths that are actually lies</div>
+              <div class="read-meta">6 min read</div>
+            </div>
+          </div>
+          <div class="read-item">
+            <div class="read-cover c5">R</div>
+            <div class="read-body">
+              <span class="read-phase l">luteal</span>
+              <div class="read-title">Rest is a kind of productivity</div>
+              <div class="read-meta">4 min read</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="shelf">
+        <div class="shelf-head"><h5>Listen · <em>long walks</em></h5><span class="all">see all</span></div>
+        <div class="shelf-scroll">
+          <div class="listen-item">
+            <div class="listen-wave">
+              <div class="expert">Dr Priya Shah Amoo</div>
+              <div class="host">AMA — body literacy</div>
+            </div>
+            <div class="listen-body">
+              <div class="listen-title">How our cycles were first mistranslated</div>
+              <div class="listen-meta"><span class="dur">32 min</span><span>·</span><span>new</span></div>
+            </div>
+          </div>
+          <div class="listen-item">
+            <div class="listen-wave w4">
+              <div class="expert">Dr Jolene Brighten</div>
+              <div class="host">Deep-cut</div>
+            </div>
+            <div class="listen-body">
+              <div class="listen-title">Birth control is data, not a verdict</div>
+              <div class="listen-meta"><span class="dur">48 min</span></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="nav">
+      <div class="nav-item"><span class="nav-icon">⌂</span>Today</div>
+      <div class="nav-item"><span class="nav-icon">✿</span>Lifestyle</div>
+      <div class="nav-item fab">J</div>
+      <div class="nav-item"><span class="nav-icon">◐</span>Profile</div>
+      <div class="nav-item active"><span class="nav-icon">☰</span>Menu</div>
+    </div>
+  </div></div>
+</div>
+
+<!-- ===== P2 Watch ===== -->
+<div class="phone-wrap">
+  <div class="phone-step">Phone 2 / 4</div>
+  <div class="phone-label">Watch · expert talks, body literacy</div>
+  <div class="phone"><div class="screen">
+    <div class="status"><span>9:41</span><span>● ●</span></div>
+    <div class="topbar">
+      <h4>Explore</h4>
+      <div class="searchbtn">🔍</div>
+    </div>
+    <div class="body">
+      <div class="tabs">
+        <div class="tab">For you</div>
+        <div class="tab active">Watch</div>
+        <div class="tab">Read</div>
+        <div class="tab">Listen</div>
+        <div class="tab">Live</div>
+      </div>
+      <div class="tabs" style="padding-top:0">
+        <div class="tab active" style="font-size:11px">All</div>
+        <div class="tab" style="font-size:11px">Body literacy</div>
+        <div class="tab" style="font-size:11px">PCOS / PMDD</div>
+        <div class="tab" style="font-size:11px">Peri & HRT</div>
+        <div class="tab" style="font-size:11px">Fertility</div>
+        <div class="tab" style="font-size:11px">Sleep</div>
+      </div>
+
+      <div class="hero">
+        <div class="label">Featured · London edit</div>
+        <h3>Dr Aisha Patel on <em>what nobody told us</em> about peri</h3>
+        <p>A 22-minute talk recorded in London, March 2026. Starts with the three signs we miss in the late 30s.</p>
+        <div class="meta-row"><span>22 min</span><span>Peri</span><span>New</span></div>
+        <div class="play">▶ Play now</div>
+      </div>
+
+      <div class="shelf">
+        <div class="shelf-head"><h5>New <em>this week</em></h5><span class="all">see all</span></div>
+        <div class="shelf-scroll">
+          <div class="watch-item">
+            <div class="watch-thumb v2"><div class="play">▶</div><div class="dur">12:04</div></div>
+            <div class="watch-title">The wisdom of the quiet weeks</div>
+            <div class="watch-meta">Dr Brighten · luteal</div>
+          </div>
+          <div class="watch-item">
+            <div class="watch-thumb"><div class="play">▶</div><div class="dur">9:42</div></div>
+            <div class="watch-title">The quiet before the period</div>
+            <div class="watch-meta">Dr Priya Shah</div>
+          </div>
+          <div class="watch-item">
+            <div class="watch-thumb v3"><div class="play">▶</div><div class="dur">15:20</div></div>
+            <div class="watch-title">HRT decisions, plainly</div>
+            <div class="watch-meta">Dr Aisha Patel · peri</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="shelf">
+        <div class="shelf-head"><h5>Body literacy <em>101</em></h5><span class="all">see all</span></div>
+        <div class="shelf-scroll">
+          <div class="watch-item">
+            <div class="watch-thumb v5"><div class="play">▶</div><div class="dur">8:30</div></div>
+            <div class="watch-title">The four phases, simply</div>
+            <div class="watch-meta">8 min · intro</div>
+          </div>
+          <div class="watch-item">
+            <div class="watch-thumb v4"><div class="play">▶</div><div class="dur">11:12</div></div>
+            <div class="watch-title">How to read your own cervical fluid</div>
+            <div class="watch-meta">Dr Catherine O'Brien</div>
+          </div>
+          <div class="watch-item">
+            <div class="watch-thumb"><div class="play">▶</div><div class="dur">6:40</div></div>
+            <div class="watch-title">Why tracking BBT matters</div>
+            <div class="watch-meta">Dr Brighten</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="shelf">
+        <div class="shelf-head"><h5>PCOS, PMDD, endo <em>explainers</em></h5><span class="all">see all</span></div>
+        <div class="shelf-scroll">
+          <div class="watch-item">
+            <div class="watch-thumb v3"><div class="play">▶</div><div class="dur">14:22</div></div>
+            <div class="watch-title">PMDD vs PMS — how to tell</div>
+            <div class="watch-meta">Dr Brighten · 14 min</div>
+          </div>
+          <div class="watch-item">
+            <div class="watch-thumb v2"><div class="play">▶</div><div class="dur">18:10</div></div>
+            <div class="watch-title">PCOS: it's not about carbs</div>
+            <div class="watch-meta">Dr Aisha Patel · 18 min</div>
+          </div>
+          <div class="watch-item">
+            <div class="watch-thumb v4"><div class="play">▶</div><div class="dur">12:45</div></div>
+            <div class="watch-title">Endo pain, re-framed</div>
+            <div class="watch-meta">Dr Priya Shah</div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="nav">
+      <div class="nav-item"><span class="nav-icon">⌂</span>Today</div>
+      <div class="nav-item"><span class="nav-icon">✿</span>Lifestyle</div>
+      <div class="nav-item fab">J</div>
+      <div class="nav-item"><span class="nav-icon">◐</span>Profile</div>
+      <div class="nav-item active"><span class="nav-icon">☰</span>Menu</div>
+    </div>
+  </div></div>
+</div>
+
+<!-- ===== P3 Read ===== -->
+<div class="phone-wrap">
+  <div class="phone-step">Phone 3 / 4</div>
+  <div class="phone-label">Read · short pieces, phase-tagged</div>
+  <div class="phone"><div class="screen">
+    <div class="status"><span>9:41</span><span>● ●</span></div>
+    <div class="topbar">
+      <h4>Explore</h4>
+      <div class="searchbtn">🔍</div>
+    </div>
+    <div class="body">
+      <div class="tabs">
+        <div class="tab">For you</div>
+        <div class="tab">Watch</div>
+        <div class="tab active">Read</div>
+        <div class="tab">Listen</div>
+        <div class="tab">Live</div>
+      </div>
+
+      <div class="hero" style="background:linear-gradient(150deg,#F0E0D4,#E8C9B5)">
+        <div class="label">Essay of the week</div>
+        <h3>On the <em>discipline</em> of rest</h3>
+        <p>Catherine Morgan on why resting in luteal is not laziness — it's engineering. 7 minutes, brewed tea optional.</p>
+        <div class="meta-row"><span>7 min read</span><span>Luteal-tuned</span><span>Yorkshire voice</span></div>
+        <div class="play">Read →</div>
+      </div>
+
+      <div class="shelf">
+        <div class="shelf-head"><h5>For your <em>luteal week</em></h5><span class="all">see all</span></div>
+        <div class="shelf-scroll">
+          <div class="read-item">
+            <div class="read-cover">T</div>
+            <div class="read-body">
+              <span class="read-phase l">luteal</span>
+              <div class="read-title">Three things to stop apologising for</div>
+              <div class="read-meta">3 min · saved</div>
+            </div>
+          </div>
+          <div class="read-item">
+            <div class="read-cover c2">Q</div>
+            <div class="read-body">
+              <span class="read-phase l">luteal</span>
+              <div class="read-title">Why quiet is a skill, not a failure</div>
+              <div class="read-meta">5 min</div>
+            </div>
+          </div>
+          <div class="read-item">
+            <div class="read-cover c5">S</div>
+            <div class="read-body">
+              <span class="read-phase l">luteal</span>
+              <div class="read-title">The 10pm craving, decoded</div>
+              <div class="read-meta">4 min · Dr Catherine O'Brien</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="shelf">
+        <div class="shelf-head"><h5>Body literacy · <em>evergreen</em></h5><span class="all">see all</span></div>
+        <div class="shelf-scroll">
+          <div class="read-item">
+            <div class="read-cover c3">F</div>
+            <div class="read-body">
+              <span class="read-phase all">evergreen</span>
+              <div class="read-title">What cervical fluid is trying to tell you</div>
+              <div class="read-meta">6 min read</div>
+            </div>
+          </div>
+          <div class="read-item">
+            <div class="read-cover c4">S</div>
+            <div class="read-body">
+              <span class="read-phase all">evergreen</span>
+              <div class="read-title">Sleep myths that are actually lies</div>
+              <div class="read-meta">6 min read</div>
+            </div>
+          </div>
+          <div class="read-item">
+            <div class="read-cover">W</div>
+            <div class="read-body">
+              <span class="read-phase all">evergreen</span>
+              <div class="read-title">Why your whoop score isn't everything</div>
+              <div class="read-meta">5 min read</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="shelf">
+        <div class="shelf-head"><h5>Voices from <em>home</em></h5><span class="all">see all</span></div>
+        <div class="shelf-scroll">
+          <div class="read-item">
+            <div class="read-cover c2">L</div>
+            <div class="read-body">
+              <span class="read-phase all">London</span>
+              <div class="read-title">A letter to my 34-year-old self</div>
+              <div class="read-meta">4 min · Amaka O.</div>
+            </div>
+          </div>
+          <div class="read-item">
+            <div class="read-cover c3">A</div>
+            <div class="read-body">
+              <span class="read-phase all">Manchester</span>
+              <div class="read-title">On being peri & African & tired</div>
+              <div class="read-meta">6 min · Hajara M.</div>
+            </div>
+          </div>
+          <div class="read-item">
+            <div class="read-cover c5">E</div>
+            <div class="read-body">
+              <span class="read-phase all">Edinburgh</span>
+              <div class="read-title">The ancestors knew iron</div>
+              <div class="read-meta">3 min · Emma W.</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="jess-card">
+        <div class="j">J</div>
+        <div class="l">You save <em>more reads than you finish.</em> Want me to re-surface saved pieces on weekends?</div>
+      </div>
+    </div>
+    <div class="nav">
+      <div class="nav-item"><span class="nav-icon">⌂</span>Today</div>
+      <div class="nav-item"><span class="nav-icon">✿</span>Lifestyle</div>
+      <div class="nav-item fab">J</div>
+      <div class="nav-item"><span class="nav-icon">◐</span>Profile</div>
+      <div class="nav-item active"><span class="nav-icon">☰</span>Menu</div>
+    </div>
+  </div></div>
+</div>
+
+<!-- ===== P4 Listen + Live AMA ===== -->
+<div class="phone-wrap">
+  <div class="phone-step">Phone 4 / 4</div>
+  <div class="phone-label">Listen + Live · AMAs, audio, Dr Aisha Patel</div>
+  <div class="phone"><div class="screen">
+    <div class="status"><span>9:41</span><span>● ●</span></div>
+    <div class="topbar">
+      <h4>Explore</h4>
+      <div class="searchbtn">🔍</div>
+    </div>
+    <div class="body">
+      <div class="tabs">
+        <div class="tab">For you</div>
+        <div class="tab">Watch</div>
+        <div class="tab">Read</div>
+        <div class="tab active">Listen</div>
+        <div class="tab">Live</div>
+      </div>
+
+      <div class="ama-card">
+        <div class="ama-label">Live · in 2 hours</div>
+        <div class="ama-title">Ask Dr Aisha Patel — <em>peri & HRT</em></div>
+        <div class="ama-host">
+          <div class="av">C</div>
+          <div class="meta">
+            <strong>Dr Aisha Patel Okwu · OB-GYN · London</strong>
+            <span>Wednesday 7pm BST · open questions until 6:45</span>
+          </div>
+        </div>
+        <div class="ama-cta"><span class="dot"></span>Save me a seat · submit a question</div>
+      </div>
+
+      <div class="shelf">
+        <div class="shelf-head"><h5>This week's <em>AMAs</em></h5><span class="all">see all</span></div>
+        <div class="shelf-scroll">
+          <div class="listen-item">
+            <div class="listen-wave">
+              <div class="expert">Dr Priya Shah Amoo</div>
+              <div class="host">AMA · body literacy</div>
+            </div>
+            <div class="listen-body">
+              <div class="listen-title">Our cycles, our first translator</div>
+              <div class="listen-meta"><span class="dur">32 min</span><span>·</span><span>recorded Mon</span></div>
+            </div>
+          </div>
+          <div class="listen-item">
+            <div class="listen-wave w2">
+              <div class="expert">Dr Catherine O'Brien</div>
+              <div class="host">AMA · nutrition</div>
+            </div>
+            <div class="listen-body">
+              <div class="listen-title">Iron, purple sprouting broccoli, and the luteal dip</div>
+              <div class="listen-meta"><span class="dur">27 min</span><span>·</span><span>Tue</span></div>
+            </div>
+          </div>
+          <div class="listen-item">
+            <div class="listen-wave w4">
+              <div class="expert">Dr Jolene Brighten</div>
+              <div class="host">AMA · hormones</div>
+            </div>
+            <div class="listen-body">
+              <div class="listen-title">Birth control debrief</div>
+              <div class="listen-meta"><span class="dur">45 min</span><span>·</span><span>Thu</span></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="shelf">
+        <div class="shelf-head"><h5>Meditations <em>& grounding</em></h5><span class="all">see all</span></div>
+        <div class="shelf-scroll">
+          <div class="listen-item">
+            <div class="listen-wave w3">
+              <div class="expert">Yorkshire · voice only</div>
+              <div class="host">Evening wind-down</div>
+            </div>
+            <div class="listen-body">
+              <div class="listen-title">Golden hour breath · luteal tune</div>
+              <div class="listen-meta"><span class="dur">8 min</span><span>·</span><span>played 6×</span></div>
+            </div>
+          </div>
+          <div class="listen-item">
+            <div class="listen-wave w2">
+              <div class="expert">Dr Aisha Patel · voice</div>
+              <div class="host">Night shift</div>
+            </div>
+            <div class="listen-body">
+              <div class="listen-title">Falling back to sleep at 3am</div>
+              <div class="listen-meta"><span class="dur">12 min</span></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="shelf">
+        <div class="shelf-head"><h5>Deep cuts · <em>long walks</em></h5><span class="all">see all</span></div>
+        <div class="shelf-scroll">
+          <div class="listen-item">
+            <div class="listen-wave">
+              <div class="expert">Dr Priya Shah</div>
+              <div class="host">How we were mistranslated</div>
+            </div>
+            <div class="listen-body">
+              <div class="listen-title">Colonial medicine & the body's language</div>
+              <div class="listen-meta"><span class="dur">58 min</span></div>
+            </div>
+          </div>
+          <div class="listen-item">
+            <div class="listen-wave w4">
+              <div class="expert">Dr Brighten</div>
+              <div class="host">Deep-cut</div>
+            </div>
+            <div class="listen-body">
+              <div class="listen-title">Birth control is data, not a verdict</div>
+              <div class="listen-meta"><span class="dur">48 min</span></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="jess-card">
+        <div class="j">J</div>
+        <div class="l">Your <em>Yorkshire</em> 8-min has played six times this cycle. I'll keep her voice warm on the Sessions mini-player.</div>
+      </div>
+    </div>
+    <div class="nav">
+      <div class="nav-item"><span class="nav-icon">⌂</span>Today</div>
+      <div class="nav-item"><span class="nav-icon">✿</span>Lifestyle</div>
+      <div class="nav-item fab">J</div>
+      <div class="nav-item"><span class="nav-icon">◐</span>Profile</div>
+      <div class="nav-item active"><span class="nav-icon">☰</span>Menu</div>
+    </div>
+  </div></div>
+</div>
+
+</section>
+
+<!-- ========================= APPENDIX ========================= -->
+<section class="appendix">
+  <h2>Appendix — <em>how Explore fits the system</em></h2>
+  <p class="lead">Rebuilt from the old dashboard-style Explore. No zodiac (that now lives on Lifestyle per the horoscope separation rule). No infinite scroll. Every surface returns to a Jess-picked opener, and every play writes to an entity so recommendations get smarter each cycle.</p>
+
+  <div class="app-grid">
+    <div class="app-card">
+      <h3>Entities <em>new for Explore</em></h3>
+      <ul>
+        <li><b>ExploreItems</b> — unified table: type (watch / read / listen), title, creator, duration, phase_tags[], life_stage_tags[], region_tags[], locked_to_pro.</li>
+        <li><b>ExplorePlays</b> — user × item × ts × progress × paused_at × finished.</li>
+        <li><b>ExploreShelves</b> — curator-authored groupings; Jess-overlay re-ranks within shelf by phase/goal.</li>
+        <li><b>Experts</b> — Dr Aisha Patel, Dr Priya Shah, Dr Catherine O'Brien, Dr Brighten. Bio + region + credentials + topics.</li>
+        <li><b>AMASessions</b> — scheduled live talks with question queue (QuestionSubmissions entity).</li>
+      </ul>
+    </div>
+    <div class="app-card">
+      <h3>Ranking rules</h3>
+      <ul>
+        <li><b>Default sort</b> for "For you" shelves = phase-match × goal-match × region-match × recency.</li>
+        <li><b>Continue where you left off</b> beats anything else — pulls top 3 from unfinished ExplorePlays, any type.</li>
+        <li><b>No engagement-optimised feed.</b> Items never re-ranked by "time on screen" or "scroll depth". Finished counts, paused counts, saved counts — not swipes.</li>
+        <li><b>New this week</b> shelf is curator-picked, not algorithmic.</li>
+        <li><b>London / Manchester / Edinburgh voices</b> are a dedicated shelf — not a tag buried inside.</li>
+      </ul>
+    </div>
+    <div class="app-card">
+      <h3>What we <em>removed</em> from old Explore</h3>
+      <ul>
+        <li>Horoscope cards — moved to Lifestyle permanently.</li>
+        <li>Step counter dashboard — lives on Pulse.</li>
+        <li>"Trending" feed — replaced with editor-picked New This Week.</li>
+        <li>Infinite scroll — replaced with three horizontal shelves per tab.</li>
+        <li>Generic wellness stock photos — replaced with gradient covers + expert photos.</li>
+        <li>Notification permission prompt on first scroll — removed; only requested after 3 saves.</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="app-grid" style="margin-top:20px">
+    <div class="app-card">
+      <h3>Jess-integration points</h3>
+      <ul>
+        <li><b>Hero pick</b> is a Jess tool call: <code>jess.pickForPhase({phase, goals, region})</code>.</li>
+        <li><b>Jess-noticed</b> line per tab — surfaced from ExplorePlays patterns.</li>
+        <li><b>"Teach me"</b> button on any expert talk deep-links to Jess conversation with context preloaded.</li>
+        <li><b>AMA question submission</b> can be drafted via Jess ("write this anonymously for me").</li>
+        <li><b>Saved-but-unfinished</b> → weekend re-surface, only if user opts in during onboarding goals.</li>
+      </ul>
+    </div>
+    <div class="app-card">
+      <h3>Ship order</h3>
+      <div style="display:flex; flex-direction:column; gap:8px; margin-top:8px">
+        <div style="display:flex; gap:9px; align-items:flex-start"><span class="tag q2">Q2</span><div>ExploreItems entity + For-you / Watch / Read / Listen tabs + phase-tagged Jess hero pick.</div></div>
+        <div style="display:flex; gap:9px; align-items:flex-start"><span class="tag q3">Q3</span><div>Live AMA channel + QuestionSubmissions + Experts directory. Dr Aisha Patel as first live host.</div></div>
+        <div style="display:flex; gap:9px; align-items:flex-start"><span class="tag q4">Q4</span><div>"Voices from home" shelf (London/Manchester/Edinburgh contributors), Teach-me integration deep-links.</div></div>
+      </div>
+    </div>
+    <div class="app-card">
+      <h3>Ground rules</h3>
+      <ul>
+        <li>No zodiac, no astrology, no birth-chart — Lifestyle only.</li>
+        <li>No ads. Ever. Pro subscription is the monetisation.</li>
+        <li>No push notifications from Explore. Content comes to you via Today digest.</li>
+        <li>Every expert is credentialled — no wellness influencers without MD/PhD/RD.</li>
+        <li>All media saveable offline (Pro).</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<div class="footer">
+  Designed 2026-04-20 · rebuild of femwell_explore_demo.html · phone-frame rose/plum v4.2 · 4 phones · Planner-language · no zodiac per horoscopes-on-Lifestyle rule.
+</div>
+
+</div>
+</body>
+</html>

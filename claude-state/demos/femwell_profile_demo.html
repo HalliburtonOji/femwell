@@ -1,0 +1,484 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>FemWell — Profile redesign</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300..800;1,9..144,300..800&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{--cream:#FFFAF5;--cream-2:#FFF5EC;--cream-3:#F0E5D8;--plum:#4A2A3A;--plum-2:#6B4559;--plum-mute:#8A7584;--rose-400:#E67F73;--rose-500:#D45E52;--period:#B84A41;--follicular:#E67F73;--ovulatory:#F2A99A;--luteal:#8A5F74;--gold:#C9A95C;--teal:#5F8A85;--moss:#7D8668;--lav:#B9A4C9;--night:#1A1522}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--cream);font-family:'Inter',sans-serif;color:var(--plum);line-height:1.5;padding:56px 32px 120px}
+.page-head{max-width:1400px;margin:0 auto 48px;text-align:center}
+.page-head h1{font-family:'Fraunces',serif;font-weight:300;font-size:56px;letter-spacing:-0.02em}
+.page-head h1 em{font-style:italic;color:var(--rose-500)}
+.page-head p{margin-top:14px;color:var(--plum-mute);font-size:15px;max-width:680px;margin-auto}
+.grid{max-width:1400px;margin:0 auto;display:grid;grid-template-columns:repeat(auto-fit,minmax(400px,1fr));gap:56px 40px;justify-items:center}
+.cap{margin-top:14px;font-size:13px;color:var(--plum-mute);text-align:center;max-width:380px}
+.cap b{color:var(--plum);font-weight:600}
+.phone{width:400px;aspect-ratio:1/2.05;background:var(--cream);border-radius:46px;box-shadow:0 40px 80px -30px rgba(74,42,58,.45),0 0 0 12px #1a1522,0 0 0 13px #3a2a32;overflow:hidden;position:relative}
+.notch{position:absolute;top:8px;left:50%;transform:translateX(-50%);width:120px;height:24px;background:#1a1522;border-radius:14px;z-index:50}
+.status{position:absolute;top:14px;left:28px;right:28px;display:flex;justify-content:space-between;font-size:11px;font-weight:600;color:var(--plum);z-index:40}
+.screen{position:absolute;top:46px;left:0;right:0;bottom:0;overflow-y:auto}
+.screen::-webkit-scrollbar{display:none}
+/* Profile hero */
+.p-hero{padding:20px 22px 14px;background:linear-gradient(135deg,#F5D9C9 0%,#E67F73 100%);position:relative}
+.p-hero::before{content:"";position:absolute;top:-60px;right:-40px;width:160px;height:160px;border-radius:50%;background:radial-gradient(closest-side,rgba(255,255,255,.5),transparent)}
+.p-top{display:flex;justify-content:space-between;align-items:center;font-size:11px;color:rgba(74,42,58,.65);margin-bottom:14px;position:relative}
+.p-top b{font-weight:600;color:var(--plum)}
+.p-you{display:flex;gap:14px;align-items:center;margin-bottom:16px;position:relative}
+.p-av{width:72px;height:72px;border-radius:50%;background:linear-gradient(135deg,#8A5F74,#4A2A3A);color:#fff;display:grid;place-items:center;font-family:'Fraunces',serif;font-weight:300;font-size:32px;box-shadow:0 8px 20px -8px rgba(74,42,58,.4)}
+.p-nm{flex:1}
+.p-n{font-family:'Fraunces',serif;font-size:24px;font-weight:300;line-height:1.1;color:var(--plum)}
+.p-n em{font-style:italic;font-size:16px;color:var(--plum-2);display:block;margin-top:2px}
+.p-pron{font-size:11px;color:var(--plum-2);opacity:.7;margin-top:4px}
+.p-edit{padding:6px 12px;background:rgba(255,255,255,.5);border-radius:99px;font-size:11px;color:var(--plum);align-self:center}
+.p-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;position:relative}
+.p-sc{padding:10px 12px;background:rgba(255,255,255,.55);border-radius:14px;text-align:center}
+.p-sv{font-family:'Fraunces',serif;font-size:20px;font-weight:400;color:var(--plum);line-height:1}
+.p-sl{font-size:10px;color:var(--plum-2);margin-top:4px;opacity:.85}
+/* garden */
+.g-sect{padding:18px 22px 6px;display:flex;justify-content:space-between;align-items:baseline}
+.g-sect h3{font-family:'Fraunces',serif;font-size:18px;font-weight:400}
+.g-sect .link{font-size:11px;color:var(--plum-mute)}
+.g-card{margin:6px 18px;padding:18px 20px;background:#1a1522;color:#f5e6d3;border-radius:22px;position:relative;overflow:hidden}
+.g-card::before{content:"";position:absolute;bottom:-30px;right:-30px;width:130px;height:130px;border-radius:50%;background:radial-gradient(closest-side,rgba(201,169,92,.3),transparent)}
+.g-cap{font-size:10px;letter-spacing:2px;text-transform:uppercase;color:#C9A95C;margin-bottom:4px;position:relative}
+.g-h{font-family:'Fraunces',serif;font-size:22px;font-weight:300;line-height:1.2;margin-bottom:10px;position:relative}
+.g-h em{font-style:italic;color:#F2A99A}
+.g-row{display:flex;gap:18px;margin-bottom:12px;position:relative}
+.g-rc{flex:1}
+.g-rv{font-family:'Fraunces',serif;font-size:20px;color:#fff;font-weight:400}
+.g-rl{font-size:10px;opacity:.55;margin-top:2px}
+.g-tiles{display:grid;grid-template-columns:repeat(14,1fr);gap:3px;position:relative;margin-bottom:10px}
+.g-t{aspect-ratio:1;background:rgba(245,230,211,.08);border-radius:2px}
+.g-t.l1{background:rgba(201,169,92,.3)}
+.g-t.l2{background:rgba(201,169,92,.55)}
+.g-t.l3{background:rgba(201,169,92,.8)}
+.g-t.l4{background:#C9A95C}
+.g-t.tod{outline:2px solid #F2A99A;outline-offset:1px}
+.g-seas{display:flex;gap:6px;font-size:10px;margin-top:8px;position:relative}
+.g-seas span{padding:4px 10px;background:rgba(245,230,211,.08);border-radius:99px;opacity:.7}
+.g-seas span.on{background:#C9A95C;color:#1a1522;opacity:1;font-weight:600}
+/* cycle summary */
+.cs{margin:0 18px 14px;padding:16px 18px;background:#fff;border-radius:20px;border:1px solid rgba(74,42,58,.08)}
+.cs-h{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:10px}
+.cs-t{font-family:'Fraunces',serif;font-size:15px}
+.cs-d{font-size:10px;color:var(--plum-mute)}
+.cs-rng{height:8px;background:var(--cream-2);border-radius:99px;position:relative;overflow:hidden;margin-bottom:14px}
+.cs-rng .period{position:absolute;top:0;bottom:0;left:0;width:18%;background:var(--period);border-radius:99px}
+.cs-rng .fol{position:absolute;top:0;bottom:0;left:18%;width:32%;background:var(--follicular)}
+.cs-rng .ov{position:absolute;top:0;bottom:0;left:50%;width:14%;background:var(--ovulatory)}
+.cs-rng .lu{position:absolute;top:0;bottom:0;left:64%;width:36%;background:var(--luteal)}
+.cs-rng .today{position:absolute;top:-3px;bottom:-3px;left:78%;width:2px;background:var(--plum)}
+.cs-rng .today::before{content:"today";position:absolute;top:-12px;left:-14px;font-size:8px;color:var(--plum);font-weight:600}
+.cs-g{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;font-size:10px;text-align:center}
+.cs-g div{padding:8px 4px;background:var(--cream-2);border-radius:10px}
+.cs-g .v{font-family:'Fraunces',serif;font-size:14px;color:var(--plum);margin-bottom:2px;display:block;font-weight:500}
+.cs-g .l{color:var(--plum-mute)}
+/* wearables */
+.wr{padding:0 18px}
+.wr-row{padding:12px 14px;background:#fff;border:1px solid rgba(74,42,58,.06);border-radius:14px;margin-bottom:6px;display:flex;gap:10px;align-items:center}
+.wr-dot{width:10px;height:10px;border-radius:50%;background:var(--moss);flex-shrink:0}
+.wr-dot.off{background:var(--plum-mute);opacity:.5}
+.wr-t{flex:1;font-size:12px;color:var(--plum-2)}
+.wr-t b{font-weight:600;color:var(--plum)}
+.wr-s{font-size:10px;color:var(--plum-mute)}
+.wr-tog{width:36px;height:20px;background:var(--moss);border-radius:99px;position:relative}
+.wr-tog::before{content:"";position:absolute;right:2px;top:2px;width:16px;height:16px;background:#fff;border-radius:50%}
+.wr-tog.off{background:rgba(74,42,58,.15)}
+.wr-tog.off::before{right:auto;left:2px}
+/* community reputation */
+.com-card{margin:14px 18px;padding:16px;background:#fff;border:1px solid rgba(74,42,58,.08);border-radius:18px}
+.com-h{font-family:'Fraunces',serif;font-size:15px;margin-bottom:4px}
+.com-s{font-size:11px;color:var(--plum-mute);margin-bottom:12px}
+.com-r{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px}
+.com-ri{text-align:center;padding:10px 4px;background:var(--cream-2);border-radius:10px}
+.com-rv{font-family:'Fraunces',serif;font-style:italic;font-size:18px;color:var(--rose-500);display:block;margin-bottom:2px}
+.com-rl{font-size:9px;color:var(--plum-mute)}
+.com-note{margin-top:10px;font-size:10px;color:var(--plum-mute);font-style:italic}
+/* pro card */
+.pro{margin:14px 18px;padding:18px 20px;background:linear-gradient(135deg,#C9A95C 0%,#8A5F74 100%);color:#fff;border-radius:22px;position:relative;overflow:hidden}
+.pro::before{content:"";position:absolute;top:-30px;right:-30px;width:100px;height:100px;border-radius:50%;background:radial-gradient(closest-side,rgba(255,255,255,.25),transparent)}
+.pro-l{font-size:10px;letter-spacing:2px;text-transform:uppercase;opacity:.8;margin-bottom:4px;position:relative}
+.pro-h{font-family:'Fraunces',serif;font-size:20px;font-weight:300;line-height:1.15;margin-bottom:8px;position:relative}
+.pro-s{font-size:11px;opacity:.85;margin-bottom:12px;position:relative}
+.pro-b{display:inline-flex;padding:8px 14px;background:rgba(255,255,255,.2);border-radius:99px;font-size:11px;font-weight:600;position:relative}
+/* simple section list */
+.list{padding:0 18px}
+.li{padding:14px 16px;background:#fff;border:1px solid rgba(74,42,58,.06);border-radius:14px;margin-bottom:6px;display:flex;justify-content:space-between;align-items:center;font-size:12px}
+.li .l{color:var(--plum-2)}
+.li .v{color:var(--plum-mute);font-size:11px}
+.li .v::after{content:"  ›";color:var(--plum-mute)}
+.li.danger .l{color:#B84A41}
+/* season review card (achievement replacement) */
+.sr{margin:14px 18px;padding:18px;background:linear-gradient(135deg,#FFE9D9,#F5D9C9);border-radius:20px}
+.sr-l{font-size:10px;letter-spacing:2px;text-transform:uppercase;color:var(--plum-2);font-weight:600;margin-bottom:8px}
+.sr-h{font-family:'Fraunces',serif;font-size:20px;font-weight:300;line-height:1.2;margin-bottom:4px}
+.sr-h em{font-style:italic;color:var(--rose-500)}
+.sr-s{font-size:11px;color:var(--plum-2);margin-bottom:12px}
+.sr-row{display:flex;gap:10px;overflow-x:auto;padding-bottom:4px}
+.sr-row::-webkit-scrollbar{display:none}
+.sr-card{flex:0 0 140px;padding:12px;background:#fff;border-radius:14px;border:1px solid rgba(74,42,58,.06)}
+.sr-card .num{font-family:'Fraunces',serif;font-size:22px;color:var(--rose-500);line-height:1;font-weight:400}
+.sr-card .lbl{font-size:10px;color:var(--plum-mute);margin-top:4px}
+.sr-card .nm{font-family:'Fraunces',serif;font-style:italic;font-size:12px;color:var(--plum);margin-top:4px}
+/* appendix */
+.app{max-width:1200px;margin:80px auto 0;padding:36px;background:#fff;border-radius:28px;border:1px solid rgba(74,42,58,.1)}
+.app h2{font-family:'Fraunces',serif;font-weight:300;font-size:30px;margin-bottom:8px}
+.app h2 em{font-style:italic;color:var(--rose-500)}
+.app .lead{color:var(--plum-mute);font-size:13px;margin-bottom:20px}
+.apgrid{display:grid;grid-template-columns:1fr 1fr;gap:30px}
+.apcol h4{font-size:11px;letter-spacing:2px;text-transform:uppercase;color:var(--plum-mute);margin-bottom:10px}
+.apcol li{font-size:13px;color:var(--plum-2);padding:6px 0;border-bottom:1px dotted rgba(74,42,58,.1);list-style:none;display:flex;justify-content:space-between;gap:10px}
+.apcol li b{color:var(--plum);font-weight:500}
+.ftr{max-width:900px;margin:60px auto 0;padding:28px;background:var(--plum);color:var(--cream);border-radius:24px;text-align:center}
+.ftr h3{font-family:'Fraunces',serif;font-style:italic;font-size:24px;font-weight:300;margin-bottom:8px}
+.ftr p{font-size:13px;opacity:.8;max-width:620px;margin:0 auto}
+</style></head><body>
+
+<div class="page-head">
+  <h1>Profile — <em>not a scorecard</em></h1>
+  <p>Garden first, data second, Pro last. No badges, no levels, no XP. Your cycle, your practice, your consent surfaces.</p>
+</div>
+
+<div class="grid">
+
+<!-- P1: Profile home -->
+<div><div class="phone"><div class="notch"></div>
+  <div class="status"><span>10:02</span><span>●●● 58%</span></div>
+  <div class="screen">
+    <div class="p-hero">
+      <div class="p-top"><span>member since <b>Oct 2025</b></span><span>⚙</span></div>
+      <div class="p-you">
+        <div class="p-av">H</div>
+        <div class="p-nm"><div class="p-n">Halliburton<em>Oji</em></div><div class="p-pron">she / her  ·  London</div></div>
+        <span class="p-edit">edit</span>
+      </div>
+      <div class="p-stats">
+        <div class="p-sc"><div class="p-sv">28 ± 1.4</div><div class="p-sl">avg cycle</div></div>
+        <div class="p-sc"><div class="p-sv">luteal</div><div class="p-sl">today · d22</div></div>
+        <div class="p-sc"><div class="p-sv">203</div><div class="p-sl">days with you</div></div>
+      </div>
+    </div>
+
+    <div class="g-sect"><h3>Your garden</h3><span class="link">open →</span></div>
+    <div class="g-card">
+      <div class="g-cap">spring · wk 3 of 12</div>
+      <div class="g-h">14 sits, 6 <em>rituals</em>,<br/>3 Sealed Letters.</div>
+      <div class="g-row">
+        <div class="g-rc"><div class="g-rv">14</div><div class="g-rl">sessions</div></div>
+        <div class="g-rc"><div class="g-rv">6</div><div class="g-rl">rituals held</div></div>
+        <div class="g-rc"><div class="g-rv">23</div><div class="g-rl">journal entries</div></div>
+        <div class="g-rc"><div class="g-rv">42</div><div class="g-rl">holds given</div></div>
+      </div>
+      <div class="g-tiles">
+        <span class="g-t l1"></span><span class="g-t l2"></span><span class="g-t"></span><span class="g-t l1"></span><span class="g-t l3"></span><span class="g-t l2"></span><span class="g-t"></span>
+        <span class="g-t l2"></span><span class="g-t l3"></span><span class="g-t l4"></span><span class="g-t l3"></span><span class="g-t l2"></span><span class="g-t l1"></span><span class="g-t l2"></span>
+        <span class="g-t l3"></span><span class="g-t l4"></span><span class="g-t l3"></span><span class="g-t l2"></span><span class="g-t l1"></span><span class="g-t l2"></span><span class="g-t l3"></span>
+        <span class="g-t l4"></span><span class="g-t l3"></span><span class="g-t l2"></span><span class="g-t l1"></span><span class="g-t l2"></span><span class="g-t l3"></span><span class="g-t tod l3"></span>
+      </div>
+      <div class="g-seas">
+        <span class="on">spring</span><span>winter 2026</span><span>autumn 2025</span><span>summer 2025</span>
+      </div>
+    </div>
+
+    <div class="g-sect"><h3>Cycle summary</h3><span class="link">history →</span></div>
+    <div class="cs">
+      <div class="cs-h"><span class="cs-t">Cycle 7 · day 22</span><span class="cs-d">Apr 2 — Apr 29 (est.)</span></div>
+      <div class="cs-rng"><span class="period"></span><span class="fol"></span><span class="ov"></span><span class="lu"></span><span class="today"></span></div>
+      <div class="cs-g">
+        <div><span class="v">28 d</span><span class="l">avg length</span></div>
+        <div><span class="v">4.2 d</span><span class="l">period</span></div>
+        <div><span class="v">reg</span><span class="l">pattern</span></div>
+        <div><span class="v">d14.5</span><span class="l">avg ovul</span></div>
+      </div>
+    </div>
+
+    <div class="g-sect"><h3>Community</h3></div>
+    <div class="com-card">
+      <div class="com-h">Gentle mark</div>
+      <div class="com-s">We don't rank you. We show how you show up.</div>
+      <div class="com-r">
+        <div class="com-ri"><span class="com-rv">42</span><span class="com-rl">holds given</span></div>
+        <div class="com-ri"><span class="com-rv">18</span><span class="com-rl">holds received</span></div>
+        <div class="com-ri"><span class="com-rv">0</span><span class="com-rl">strikes</span></div>
+      </div>
+      <div class="com-note">"You hold more than you ask for. That's a strong witness instinct."</div>
+    </div>
+
+    <div class="pro">
+      <div class="pro-l">FemWell Pro · active</div>
+      <div class="pro-h">Renews <em>Oct 14.</em></div>
+      <div class="pro-s">Includes: Sealed Letters, Echo Wall, Witness Mode, Care Bridge, TTC tools, Peri deep layer, encrypted Body Timeline.</div>
+      <span class="pro-b">manage plan →</span>
+    </div>
+  </div>
+</div>
+<div class="cap"><b>P1 · Profile home.</b> Hero → Garden (first-class) → Cycle summary → Community reputation (gentle, no karma) → Pro. No badges. No levels.</div></div>
+
+<!-- P2: Wearables + integrations -->
+<div><div class="phone"><div class="notch"></div>
+  <div class="status"><span>10:06</span><span>●●● 57%</span></div>
+  <div class="screen">
+    <div style="padding:16px 22px 10px"><div style="font-family:'Fraunces',serif;font-size:22px">Connections</div></div>
+    <div style="padding:0 22px 12px;font-size:12px;color:var(--plum-mute)">What Jess can see. Flip any switch off and she forgets it.</div>
+
+    <div class="g-sect"><h3>Wearables</h3></div>
+    <div class="wr">
+      <div class="wr-row"><span class="wr-dot"></span><div class="wr-t"><b>Oura</b></div><div class="wr-s">last sync 6 min ago</div><span class="wr-tog"></span></div>
+      <div class="wr-row"><span class="wr-dot"></span><div class="wr-t"><b>Apple Health</b></div><div class="wr-s">sleep · steps · cycle</div><span class="wr-tog"></span></div>
+      <div class="wr-row"><span class="wr-dot off"></span><div class="wr-t"><b>Whoop</b></div><div class="wr-s">not connected</div><span class="wr-tog off"></span></div>
+      <div class="wr-row"><span class="wr-dot off"></span><div class="wr-t"><b>Fitbit</b></div><div class="wr-s">not connected</div><span class="wr-tog off"></span></div>
+    </div>
+
+    <div class="g-sect"><h3>Calendars</h3></div>
+    <div class="wr">
+      <div class="wr-row"><span class="wr-dot"></span><div class="wr-t"><b>Google Calendar</b></div><div class="wr-s">personal · events only · no body</div><span class="wr-tog"></span></div>
+      <div class="wr-row"><span class="wr-dot off"></span><div class="wr-t"><b>Apple Calendar</b></div><div class="wr-s">off</div><span class="wr-tog off"></span></div>
+    </div>
+
+    <div class="g-sect"><h3>Partner</h3></div>
+    <div class="wr">
+      <div class="wr-row"><span class="wr-dot"></span><div class="wr-t"><b>Sam (husband)</b></div><div class="wr-s">sees: phase, mood word, what-helps list</div><span class="wr-tog"></span></div>
+      <div class="wr-row" style="background:var(--cream-2);border:1px dashed rgba(74,42,58,.15)"><span class="wr-dot off"></span><div class="wr-t" style="font-style:italic;color:var(--plum-mute)">+ invite a witness or care partner</div><span class="wr-s">&nbsp;</span></div>
+    </div>
+
+    <div class="g-sect"><h3>Clinicians</h3></div>
+    <div class="wr">
+      <div class="wr-row"><span class="wr-dot"></span><div class="wr-t"><b>Dr Siobhan Jenkins · GP · GMC 6115847</b></div><div class="wr-s">NHS · BMS-accredited · Care Bridge on your say-so</div><span class="wr-tog"></span></div>
+      <div class="wr-row"><span class="wr-dot off"></span><div class="wr-t" style="font-style:italic;color:var(--plum-mute)">+ add endo / therapist / dietitian</div><span class="wr-s">T1 verified only</span></div>
+    </div>
+  </div>
+</div>
+<div class="cap"><b>P2 · Connections.</b> One switch per source. Partner sync + clinician Care Bridge surface here. Every integration is consent-gated and visible.</div></div>
+
+<!-- P3: Season review / soft achievements -->
+<div><div class="phone"><div class="notch"></div>
+  <div class="status"><span>10:09</span><span>●●● 57%</span></div>
+  <div class="screen">
+    <div style="padding:16px 22px 10px"><div style="font-family:'Fraunces',serif;font-size:22px">Seasons</div></div>
+    <div style="padding:0 22px 12px;font-size:12px;color:var(--plum-mute)">What grew. Not what you won.</div>
+
+    <div class="sr">
+      <div class="sr-l">winter 2026 · complete</div>
+      <div class="sr-h">"The <em>iron</em> season."</div>
+      <div class="sr-s">Dec 21 → Mar 19. You started iron after your worst fatigue logs. By March the luteal slump dropped 38%.</div>
+      <div class="sr-row">
+        <div class="sr-card"><span class="num">29</span><span class="lbl">sessions</span><span class="nm">felt heavy, held</span></div>
+        <div class="sr-card"><span class="num">2</span><span class="lbl">rituals kept</span><span class="nm">iron am · bed 10:15</span></div>
+        <div class="sr-card"><span class="num">38%</span><span class="lbl">slump</span><span class="nm">dropped</span></div>
+      </div>
+    </div>
+
+    <div class="sr" style="background:linear-gradient(135deg,#B9A4C9,#8A5F74);color:#fff;margin-top:14px">
+      <div class="sr-l" style="color:rgba(255,255,255,.75)">autumn 2025 · steady</div>
+      <div class="sr-h" style="color:#fff">"Finding the <em>rhythm.</em>"</div>
+      <div class="sr-s" style="color:rgba(255,255,255,.85)">Sep 22 → Dec 20. First full FemWell season. 42 sits. You noticed your 4pm dip and moved snacks earlier.</div>
+      <div class="sr-row">
+        <div class="sr-card" style="background:rgba(255,255,255,.15);border-color:rgba(255,255,255,.2)"><span class="num" style="color:#F2A99A">42</span><span class="lbl" style="color:rgba(255,255,255,.65)">sessions</span><span class="nm" style="color:#fff">steady</span></div>
+        <div class="sr-card" style="background:rgba(255,255,255,.15);border-color:rgba(255,255,255,.2)"><span class="num" style="color:#F2A99A">3</span><span class="lbl" style="color:rgba(255,255,255,.65)">rituals kept</span><span class="nm" style="color:#fff">the core set</span></div>
+        <div class="sr-card" style="background:rgba(255,255,255,.15);border-color:rgba(255,255,255,.2)"><span class="num" style="color:#F2A99A">9</span><span class="lbl" style="color:rgba(255,255,255,.65)">holds received</span><span class="nm" style="color:#fff">first anchors</span></div>
+      </div>
+    </div>
+
+    <div class="sr" style="background:linear-gradient(135deg,#7D8668,#5F8A85);color:#fff;margin-top:14px">
+      <div class="sr-l" style="color:rgba(255,255,255,.75)">summer 2025 · rest</div>
+      <div class="sr-h" style="color:#fff">"The <em>quiet</em> one."</div>
+      <div class="sr-s" style="color:rgba(255,255,255,.85)">June 21 → Sep 21. 8 sits. You were figuring out whether this app was for you. That's a legitimate season.</div>
+      <div class="sr-row">
+        <div class="sr-card" style="background:rgba(255,255,255,.15);border-color:rgba(255,255,255,.2)"><span class="num" style="color:#F2A99A">8</span><span class="lbl" style="color:rgba(255,255,255,.65)">sessions</span><span class="nm" style="color:#fff">exploring</span></div>
+      </div>
+    </div>
+  </div>
+</div>
+<div class="cap"><b>P3 · Seasons.</b> Replaces badges/levels. Each 12-wk season gets a name (user can rename), a narrative, 3-4 qualitative numbers. Summer was "quiet" — rest is not failure.</div></div>
+
+<!-- P4: Data, privacy, account -->
+<div><div class="phone"><div class="notch"></div>
+  <div class="status"><span>10:12</span><span>●●● 57%</span></div>
+  <div class="screen">
+    <div style="padding:16px 22px 10px"><div style="font-family:'Fraunces',serif;font-size:22px">Your data</div></div>
+    <div style="padding:0 22px 14px;font-size:12px;color:var(--plum-mute)">Yours to hold, yours to remove. Always.</div>
+
+    <div class="g-sect"><h3>What's stored</h3></div>
+    <div class="list">
+      <div class="li"><span class="l">Cycle logs</span><span class="v">2,140 entries</span></div>
+      <div class="li"><span class="l">Journal entries</span><span class="v">23 · 11 device-only</span></div>
+      <div class="li"><span class="l">Sealed Letters</span><span class="v">3 · E2E encrypted</span></div>
+      <div class="li"><span class="l">Body Timeline photos</span><span class="v">18 · E2E encrypted</span></div>
+      <div class="li"><span class="l">Wearable data</span><span class="v">Oura, Apple Health</span></div>
+      <div class="li"><span class="l">Jess memory</span><span class="v">74 facts · you approved</span></div>
+    </div>
+
+    <div class="g-sect"><h3>Export</h3></div>
+    <div class="list">
+      <div class="li"><span class="l">Full account · JSON</span><span class="v">everything</span></div>
+      <div class="li"><span class="l">Care Bridge · PDF</span><span class="v">for a clinician</span></div>
+      <div class="li"><span class="l">Cycle CSV · 12 mo</span><span class="v">for research / self</span></div>
+    </div>
+
+    <div class="g-sect"><h3>Account</h3></div>
+    <div class="list">
+      <div class="li"><span class="l">Email</span><span class="v">halliburtonoji@…</span></div>
+      <div class="li"><span class="l">Password</span><span class="v">change</span></div>
+      <div class="li"><span class="l">Two-factor</span><span class="v">Authy · on</span></div>
+      <div class="li"><span class="l">Language</span><span class="v">English + regional accents</span></div>
+    </div>
+
+    <div class="g-sect"><h3>Emergency</h3></div>
+    <div class="list">
+      <div class="li"><span class="l">Trusted contact</span><span class="v">Sam Oji</span></div>
+      <div class="li"><span class="l">Panic-mode quick-dial</span><span class="v">Mother · 07… </span></div>
+      <div class="li"><span class="l">Samaritans (24/7)</span><span class="v">116 123 · free</span></div>
+      <div class="li"><span class="l">Shout (text)</span><span class="v">text to 85258</span></div>
+    </div>
+
+    <div class="g-sect"><h3 style="color:#B84A41">Quiet exits</h3></div>
+    <div class="list">
+      <div class="li danger"><span class="l">Pause my account (90 days)</span><span class="v">come back</span></div>
+      <div class="li danger"><span class="l">Delete everything</span><span class="v">irreversible</span></div>
+    </div>
+  </div>
+</div>
+<div class="cap"><b>P4 · Data.</b> Every store visible. Export in 3 formats. Account + emergency contact. Quiet exits — pause for 90 days, or delete everything (the wording matters).</div></div>
+
+<!-- P5: How you practice -->
+<div><div class="phone"><div class="notch"></div>
+  <div class="status"><span>10:15</span><span>●●● 56%</span></div>
+  <div class="screen">
+    <div style="padding:16px 22px 10px"><div style="font-family:'Fraunces',serif;font-size:22px">How you practice</div></div>
+    <div style="padding:0 22px 14px;font-size:12px;color:var(--plum-mute)">Life stage, rituals, voice, nudges. Flip any switch off and Jess adapts.</div>
+
+    <div class="g-sect"><h3>Life stage</h3><span class="link">change →</span></div>
+    <div class="cs" style="background:linear-gradient(135deg,#F5D9C9,#FFFAF5)">
+      <div class="cs-h" style="margin-bottom:6px"><span class="cs-t" style="font-family:'Fraunces',serif;font-size:17px;font-style:italic">You're in peri.</span><span class="cs-d">14 mo · 3 signals</span></div>
+      <div style="font-size:11px;color:var(--plum-2);margin-bottom:10px;line-height:1.45">sleep disruption · cycle shortening (26→23) · warmth surges</div>
+      <div class="cs-g" style="grid-template-columns:repeat(4,1fr)">
+        <div style="background:#fff"><span class="v">cycles</span><span class="l">active</span></div>
+        <div style="background:var(--rose-500)"><span class="v" style="color:#fff">peri</span><span class="l" style="color:rgba(255,255,255,.85)">active</span></div>
+        <div><span class="v">TTC</span><span class="l">off</span></div>
+        <div><span class="v" style="font-size:11px">post-meno</span><span class="l">later</span></div>
+      </div>
+    </div>
+
+    <div class="g-sect"><h3>Tending now</h3><span class="link">all rituals →</span></div>
+    <div class="list">
+      <div class="li" style="flex-direction:column;align-items:stretch;gap:6px;padding:12px 14px">
+        <div style="display:flex;justify-content:space-between;align-items:baseline">
+          <span style="font-family:'Fraunces',serif;font-style:italic;font-size:14px;color:var(--plum)">Iron in morning light.</span>
+          <span style="font-size:10px;color:var(--plum-mute)">day 14 · spring</span>
+        </div>
+        <div style="height:4px;background:var(--cream-2);border-radius:2px;overflow:hidden"><div style="width:70%;height:100%;background:var(--gold)"></div></div>
+      </div>
+      <div class="li" style="flex-direction:column;align-items:stretch;gap:6px;padding:12px 14px">
+        <div style="display:flex;justify-content:space-between;align-items:baseline">
+          <span style="font-family:'Fraunces',serif;font-style:italic;font-size:14px;color:var(--plum)">10:15 wind-down.</span>
+          <span style="font-size:10px;color:var(--plum-mute)">day 23 · holding</span>
+        </div>
+        <div style="height:4px;background:var(--cream-2);border-radius:2px;overflow:hidden"><div style="width:88%;height:100%;background:var(--moss)"></div></div>
+      </div>
+      <div class="li" style="flex-direction:column;align-items:stretch;gap:6px;padding:12px 14px">
+        <div style="display:flex;justify-content:space-between;align-items:baseline">
+          <span style="font-family:'Fraunces',serif;font-style:italic;font-size:14px;color:var(--plum)">Sunday phone-down hour.</span>
+          <span style="font-size:10px;color:var(--plum-mute)">wk 7 · adopted March</span>
+        </div>
+        <div style="height:4px;background:var(--cream-2);border-radius:2px;overflow:hidden"><div style="width:58%;height:100%;background:var(--lav)"></div></div>
+      </div>
+      <div class="li" style="background:var(--cream-2);border:1px dashed rgba(74,42,58,.15)"><span class="l" style="font-style:italic;color:var(--plum-mute)">Jess may propose one this week</span><span class="v" style="color:var(--plum-mute)">max 1 / 14d</span></div>
+    </div>
+
+    <div class="g-sect"><h3>Jess's voice</h3><span class="link">sample →</span></div>
+    <div class="com-card" style="margin:6px 18px">
+      <div style="font-family:'Fraunces',serif;font-style:italic;font-size:14px;color:var(--plum);margin-bottom:10px">"Received pronunciation." <span style="font-style:normal;font-family:'Inter',sans-serif;font-size:10px;color:var(--plum-mute);margin-left:4px">default</span></div>
+      <div style="display:flex;flex-wrap:wrap;gap:5px">
+        <span style="padding:4px 9px;background:var(--plum);color:var(--cream);border-radius:99px;font-size:10px;font-weight:500">RP · on</span>
+        <span style="padding:4px 9px;background:var(--cream-2);border-radius:99px;font-size:10px;color:var(--plum-2)">Glasgow</span>
+        <span style="padding:4px 9px;background:var(--cream-2);border-radius:99px;font-size:10px;color:var(--plum-2)">Scouse</span>
+        <span style="padding:4px 9px;background:var(--cream-2);border-radius:99px;font-size:10px;color:var(--plum-2)">Welsh-English</span>
+        <span style="padding:4px 9px;background:var(--cream-2);border-radius:99px;font-size:10px;color:var(--plum-2)">Yorkshire</span>
+        <span style="padding:4px 9px;background:var(--cream-2);border-radius:99px;font-size:10px;color:var(--plum-2)">Belfast</span>
+        <span style="padding:4px 9px;background:var(--cream-2);border-radius:99px;font-size:10px;color:var(--plum-2)">M-London</span>
+      </div>
+    </div>
+
+    <div class="g-sect"><h3>Smart Nudges</h3><span class="link">policy →</span></div>
+    <div class="list">
+      <div class="li"><span class="l">67 nudges in 30 days</span><span class="v" style="color:var(--moss)">89% felt helpful</span></div>
+      <div class="li"><span class="l">8 categories active</span><span class="v">tune</span></div>
+      <div class="li"><span class="l">Quiet hours</span><span class="v">21:30 — 07:30</span></div>
+    </div>
+
+    <div class="g-sect"><h3>Panic-mode</h3><span class="link">rehearse →</span></div>
+    <div class="com-card" style="margin:6px 18px;background:var(--cream-2);border:1px solid rgba(74,42,58,.08)">
+      <div style="font-family:'Fraunces',serif;font-style:italic;font-size:14px;color:var(--plum);margin-bottom:6px">Pre-packed, 2 taps away.</div>
+      <div style="font-size:11px;color:var(--plum-2);line-height:1.75">
+        breath · <b>4-7-8</b> <span style="color:var(--plum-mute)">(chose this in March)</span><br/>
+        reach · <b>Sam</b> → then Samaritans <b>116 123</b><br/>
+        ground · <b>5-4-3-2-1</b> <span style="color:var(--plum-mute)">(default)</span><br/>
+        after · <b>Sealed Letter</b> — you in, you out
+      </div>
+    </div>
+
+    <div class="g-sect"><h3>Living Wisdom</h3></div>
+    <div class="com-card" style="margin:6px 18px">
+      <div style="font-family:'Fraunces',serif;font-size:14px;margin-bottom:8px">4 of your own words, saved to re-meet you.</div>
+      <div style="padding:10px 12px;background:var(--cream-2);border-radius:12px;font-family:'Fraunces',serif;font-style:italic;font-size:13px;color:var(--plum);line-height:1.45">"It was iron, not character."<span style="display:block;font-style:normal;font-family:'Inter',sans-serif;font-size:10px;color:var(--plum-mute);margin-top:4px">winter 2026 · cycle 4 luteal · 90-day lockout</span></div>
+      <div style="font-size:10px;color:var(--plum-mute);margin-top:8px;font-style:italic">Surfaces in Today or Journal when your pattern re-rhymes. Never in Explore.</div>
+    </div>
+
+  </div>
+</div>
+<div class="cap"><b>P5 · Practice.</b> The control panel for how you're using FemWell right now — life stage, active rituals, Jess's voice, Smart Nudges, Panic preset, Living Wisdom. All derived, no new core entities.</div></div>
+
+</div>
+
+<div class="app">
+  <h2>Appendix — <em>Profile</em></h2>
+  <p class="lead">Five surfaces. No gamification. Every stat you see, you can question. Every state you see, you can flip.</p>
+  <div class="apgrid">
+    <div class="apcol">
+      <h4>Entities surfaced here</h4>
+      <ul>
+        <li><b>Users</b><span>name, pronouns, locale</span></li>
+        <li><b>CycleSummaries</b><span>derived · 12mo window</span></li>
+        <li><b>LifeStageFlags</b><span>peri / TTC / post-meno toggles</span></li>
+        <li><b>PracticeSeasons</b><span>12-wk arcs</span></li>
+        <li><b>RitualAdoptions</b><span>active ritual ids + tend state</span></li>
+        <li><b>UserNudgePolicy</b><span>categories + quiet hours + felt-sense</span></li>
+        <li><b>JessVoicePreference</b><span>UK regional voice code</span></li>
+        <li><b>PanicConfig</b><span>breath + quick-reach + ground + after</span></li>
+        <li><b>EchoWallEntries</b><span>Living Wisdom candidates</span></li>
+        <li><b>CommunityStanding</b><span>holds, strikes (soft)</span></li>
+        <li><b>Connections</b><span>wearables, calendars, partners, clinicians</span></li>
+        <li><b>Subscriptions</b><span>plan, renewal</span></li>
+      </ul>
+    </div>
+    <div class="apcol">
+      <h4>What's NOT here</h4>
+      <ul>
+        <li><b>✕ level</b><span>no XP, no rank</span></li>
+        <li><b>✕ streak</b><span>seasons replace it</span></li>
+        <li><b>✕ badges</b><span>season review replaces</span></li>
+        <li><b>✕ leaderboard</b><span>ever</span></li>
+        <li><b>✕ public profile</b><span>community anonymous by default</span></li>
+        <li><b>✕ auto-ritual adoption</b><span>user must tap to adopt</span></li>
+        <li><b>✕ nudge override</b><span>all policy caps are user-editable</span></li>
+      </ul>
+      <h4 style="margin-top:22px">Ship priority</h4>
+      <ul>
+        <li><b>Q2/26</b><span>P1 Home + P2 Connections + P4 Data + Life Stage card (Practice v1)</span></li>
+        <li><b>Q3/26</b><span>Seasons (P3) once auto-generated · Community gentle-mark once holds model ships</span></li>
+        <li><b>Q4/26</b><span>Practice (P5) full: Rituals tend + Smart Nudges audit + Panic preset + Living Wisdom</span></li>
+        <li><b>Q2/27</b><span>TTC toggle goes live in Life Stage card (behind Pro gate)</span></li>
+      </ul>
+    </div>
+  </div>
+</div>
+
+<div class="ftr">
+  <h3>"the profile is a garden, not a scorecard."</h3>
+  <p>5 phones · no new core entities (all derived from Garden, Rituals, Nudges, Panic, EchoWall). Core ships Q2/26 with Today v2. Seasons + gentle-mark land Q3/26. Full Practice panel lights up Q4/26 once Rituals + Smart Nudges ship. TTC toggle activates Q2/27.</p>
+</div>
+
+</body></html>

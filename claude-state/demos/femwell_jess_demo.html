@@ -1,0 +1,1417 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>FemWell Jess — the assistant, phase-aware, privacy-first</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,wght@0,400;0,500;0,600;1,400;1,500&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --cream: #FFFAF5;
+    --cream-2: #FFF5EC;
+    --cream-3: #F0E5D8;
+    --plum: #4A2A3A;
+    --plum-2: #6B4559;
+    --plum-mute: #8A7584;
+    --rose-400: #E67F73;
+    --rose-500: #D45E52;
+    --period: #B84A41;
+    --follicular: #E67F73;
+    --ovulatory: #F2A99A;
+    --luteal: #8A5F74;
+    --gold: #C9A95C;
+    --teal: #5F8A85;
+    --moss: #7D8668;
+    --lav: #B9A4C9;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif; background: #F4EDE4; color: var(--plum); padding: 44px 20px 80px; }
+
+  .wrap { max-width: 1320px; margin: 0 auto; }
+  .header { max-width: 900px; margin: 0 auto 24px; text-align: center; }
+  .eyebrow { font-size: 11px; letter-spacing: 0.16em; text-transform: uppercase; color: var(--plum-mute); font-weight: 600; }
+  h1.title { font-family: 'Fraunces', Georgia, serif; font-size: 38px; font-weight: 500; color: var(--plum); margin: 8px 0 12px; letter-spacing: -0.012em; }
+  h1.title em { font-style: italic; color: var(--plum-2); font-weight: 400; }
+  .lede { font-size: 15.5px; color: var(--plum-2); max-width: 780px; margin: 0 auto; line-height: 1.6; }
+  .lede strong { color: var(--plum); font-weight: 600; }
+
+  /* Hero band — Jess identity */
+  .hero { max-width: 1180px; margin: 30px auto 36px; background: linear-gradient(135deg, #4A2A3A 0%, #6B4559 45%, #C9A95C 120%); color: var(--cream); border-radius: 22px; padding: 30px 36px; display: grid; grid-template-columns: 160px 1fr; gap: 30px; align-items: center; position: relative; overflow: hidden; }
+  .hero::before { content: ''; position: absolute; width: 380px; height: 380px; border-radius: 50%; background: radial-gradient(circle, rgba(230,127,115,0.28), transparent 60%); right: -100px; top: -140px; }
+  .hero::after { content: ''; position: absolute; width: 200px; height: 200px; border-radius: 50%; background: radial-gradient(circle, rgba(185,164,201,0.22), transparent); left: -40px; bottom: -60px; }
+  .hero-av-wrap { position: relative; z-index: 1; display: flex; justify-content: center; }
+  .hero-av { width: 130px; height: 130px; border-radius: 50%; background: linear-gradient(135deg, var(--gold), var(--rose-400)); display: grid; place-items: center; font-family: 'Fraunces', serif; font-size: 64px; color: #FFF5EC; font-weight: 400; font-style: italic; box-shadow: 0 20px 50px rgba(0,0,0,0.3), 0 0 0 6px rgba(255,255,255,0.1); }
+  .hero-body { position: relative; z-index: 1; }
+  .hero-eye { font-size: 10px; letter-spacing: 0.22em; text-transform: uppercase; color: rgba(255,250,245,0.65); font-weight: 700; }
+  .hero-title { font-family: 'Fraunces', serif; font-size: 34px; font-weight: 500; margin: 8px 0 10px; letter-spacing: -0.01em; }
+  .hero-title em { font-style: italic; color: rgba(255,250,245,0.9); }
+  .hero-sub { font-size: 14.5px; color: rgba(255,250,245,0.8); line-height: 1.55; max-width: 640px; }
+  .hero-sub strong { color: var(--cream); font-weight: 600; }
+  .hero-traits { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 16px; }
+  .ht { font-size: 11px; padding: 5px 12px; border-radius: 14px; background: rgba(255,250,245,0.14); color: var(--cream); font-weight: 600; letter-spacing: 0.04em; }
+
+  /* TOC */
+  .toc { max-width: 1180px; margin: 0 auto 30px; display: flex; gap: 8px; justify-content: center; flex-wrap: wrap; }
+  .toc a { font-size: 11px; padding: 7px 14px; border-radius: 16px; background: #FFFFFF; border: 1px solid rgba(74,42,58,0.1); color: var(--plum); font-weight: 600; text-decoration: none; letter-spacing: 0.06em; }
+  .toc a:hover { background: var(--plum); color: var(--cream); }
+
+  /* Section head */
+  .section-head { max-width: 1180px; margin: 40px auto 18px; }
+  .sh-eye { font-size: 10px; letter-spacing: 0.22em; text-transform: uppercase; color: var(--plum-mute); font-weight: 700; }
+  .sh-title { font-family: 'Fraunces', serif; font-size: 26px; color: var(--plum); font-weight: 500; margin-top: 6px; letter-spacing: -0.01em; }
+  .sh-title em { font-style: italic; color: var(--plum-2); }
+  .sh-sub { font-size: 14px; color: var(--plum-2); margin-top: 6px; max-width: 720px; line-height: 1.55; }
+
+  /* Phone grids */
+  .two-up { display: grid; grid-template-columns: 1fr 1fr; gap: 30px; max-width: 1180px; margin: 0 auto; }
+  .three-up { display: grid; grid-template-columns: repeat(3, 1fr); gap: 22px; max-width: 1300px; margin: 0 auto; }
+  @media (max-width: 1100px) { .two-up, .three-up { grid-template-columns: 1fr; } }
+  .phone-col { display: flex; flex-direction: column; align-items: center; }
+  .phone-label { margin-bottom: 14px; text-align: center; max-width: 360px; }
+  .pl-eye { font-size: 10px; letter-spacing: 0.2em; text-transform: uppercase; color: var(--plum-mute); font-weight: 700; }
+  .pl-title { font-family: 'Fraunces', serif; font-size: 20px; color: var(--plum); font-weight: 500; margin-top: 4px; letter-spacing: -0.01em; }
+  .pl-title em { font-style: italic; color: var(--plum-2); }
+  .pl-sub { font-size: 12px; color: var(--plum-2); margin-top: 4px; line-height: 1.4; }
+
+  /* Phone frame */
+  .phone { width: 400px; background: #111; border-radius: 46px; padding: 10px; box-shadow: 0 40px 80px rgba(74, 42, 58, 0.22), 0 0 0 1px rgba(0,0,0,0.08); }
+  .phone-inner { background: var(--cream); border-radius: 38px; overflow: hidden; position: relative; height: 800px; display: flex; flex-direction: column; }
+  .phone.tall .phone-inner { height: 880px; }
+  .notch { position: absolute; top: 0; left: 50%; transform: translateX(-50%); width: 130px; height: 28px; background: #111; border-radius: 0 0 16px 16px; z-index: 30; }
+  .scroll { overflow-y: auto; flex: 1; padding: 44px 18px 120px; scrollbar-width: none; }
+  .scroll::-webkit-scrollbar { display: none; }
+
+  /* ═════ Shared ═════ */
+  .ph-head-row { display: flex; justify-content: space-between; align-items: flex-start; }
+  .ph-eyebrow { font-size: 10px; letter-spacing: 0.18em; text-transform: uppercase; color: var(--plum-mute); font-weight: 600; }
+  h1.ph-title { font-family: 'Fraunces', serif; font-size: 30px; font-weight: 500; margin: 6px 0 4px; letter-spacing: -0.015em; color: var(--plum); }
+  .ph-sub { font-size: 13px; color: var(--plum-2); }
+  .ph-sub strong { color: var(--plum); font-weight: 600; }
+  .pill { font-size: 10px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--plum-mute); font-weight: 700; padding: 5px 10px; border-radius: 12px; background: rgba(74, 42, 58, 0.06); display: flex; align-items: center; gap: 5px; white-space: nowrap; margin-top: 4px; }
+  .pill.phase-luteal { color: var(--luteal); background: rgba(138, 95, 116, 0.14); }
+
+  /* Nav */
+  .nav { position: absolute; bottom: 0; left: 0; right: 0; background: rgba(255, 250, 245, 0.96); backdrop-filter: blur(12px); border-top: 1px solid rgba(74, 42, 58, 0.08); height: 68px; display: grid; grid-template-columns: repeat(5, 1fr); padding: 10px 0 14px; z-index: 20; }
+  .nav-item { display: flex; flex-direction: column; align-items: center; gap: 5px; font-size: 9px; color: var(--plum-mute); font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; }
+  .nav-item.active { color: var(--plum); }
+  .nav-ico { width: 18px; height: 18px; border-radius: 5px; background: currentColor; opacity: 0.55; }
+  .nav-item.active .nav-ico { opacity: 1; }
+  .nav-item.jess-tab { position: relative; }
+  .nav-item.jess-tab .nav-ico { width: 30px; height: 30px; border-radius: 50%; background: linear-gradient(135deg, var(--gold), var(--rose-400)); display: grid; place-items: center; font-family: 'Fraunces', serif; font-size: 14px; color: #FFF5EC; opacity: 1; font-weight: 500; font-style: italic; margin-top: -6px; box-shadow: 0 4px 10px rgba(201,169,92,0.35); }
+  .nav-item.jess-tab .nav-ico::before { content: 'J'; }
+
+  /* ═════ PHONE 1 — Jess home tab ═════ */
+
+  /* Greeting card */
+  .greet { background: linear-gradient(155deg, #4A2A3A 0%, #6B4559 50%, #8A5F74 115%); color: var(--cream); border-radius: 18px; padding: 18px; margin: 20px 0 12px; position: relative; overflow: hidden; }
+  .greet::before { content: ''; position: absolute; width: 220px; height: 220px; border-radius: 50%; background: radial-gradient(circle, rgba(230,127,115,0.25), transparent 70%); right: -60px; top: -80px; }
+  .g-top { display: flex; gap: 14px; align-items: center; position: relative; z-index: 1; }
+  .g-av { width: 54px; height: 54px; border-radius: 50%; background: linear-gradient(135deg, var(--gold), var(--rose-400)); color: #FFF5EC; display: grid; place-items: center; font-family: 'Fraunces', serif; font-size: 26px; font-style: italic; font-weight: 500; flex-shrink: 0; box-shadow: 0 6px 16px rgba(0,0,0,0.25); }
+  .g-name-col { flex: 1; }
+  .g-eye { font-size: 9px; letter-spacing: 0.22em; text-transform: uppercase; color: rgba(255,250,245,0.7); font-weight: 700; }
+  .g-name { font-family: 'Fraunces', serif; font-size: 20px; color: var(--cream); font-weight: 500; margin-top: 2px; }
+  .g-phase { font-size: 10px; color: rgba(255,250,245,0.75); margin-top: 4px; letter-spacing: 0.04em; font-weight: 600; }
+  .g-msg { font-family: 'Fraunces', serif; font-size: 17px; color: var(--cream); font-weight: 500; line-height: 1.4; margin-top: 14px; position: relative; z-index: 1; font-style: italic; }
+  .g-cta-row { display: flex; gap: 8px; margin-top: 14px; position: relative; z-index: 1; }
+  .g-cta { flex: 1; font-size: 11px; padding: 10px; border-radius: 12px; text-align: center; font-weight: 700; letter-spacing: 0.04em; }
+  .g-cta.primary { background: var(--gold); color: var(--plum); }
+  .g-cta.ghost { background: rgba(255,250,245,0.14); color: var(--cream); }
+
+  /* Divider */
+  .divider { display: flex; align-items: baseline; justify-content: space-between; margin: 22px 0 12px; }
+  .div-title { font-family: 'Fraunces', serif; font-size: 18px; color: var(--plum); font-weight: 500; letter-spacing: -0.01em; }
+  .div-meta { font-size: 10px; color: var(--plum-mute); letter-spacing: 0.1em; text-transform: uppercase; font-weight: 600; }
+
+  /* Mode grid */
+  .modes { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+  .mode { background: #FFFFFF; border: 1px solid rgba(74,42,58,0.08); border-radius: 14px; padding: 12px; position: relative; overflow: hidden; }
+  .mode::after { content: ''; position: absolute; right: -30px; top: -30px; width: 80px; height: 80px; border-radius: 50%; opacity: 0.14; }
+  .mode.brief::after { background: var(--gold); }
+  .mode.unpack::after { background: var(--luteal); }
+  .mode.shape::after { background: var(--rose-400); }
+  .mode.research::after { background: var(--teal); }
+  .mode.voice::after { background: var(--lav); }
+  .mode.plan::after { background: var(--moss); }
+  .mode-ico { width: 26px; height: 26px; border-radius: 8px; display: grid; place-items: center; font-size: 13px; color: #FFF5EC; }
+  .mode.brief .mode-ico { background: var(--gold); }
+  .mode.unpack .mode-ico { background: var(--luteal); }
+  .mode.shape .mode-ico { background: var(--rose-400); }
+  .mode.research .mode-ico { background: var(--teal); }
+  .mode.voice .mode-ico { background: var(--lav); color: var(--plum); }
+  .mode.plan .mode-ico { background: var(--moss); }
+  .mode-name { font-family: 'Fraunces', serif; font-size: 14px; color: var(--plum); font-weight: 500; margin-top: 10px; letter-spacing: -0.005em; }
+  .mode-sub { font-size: 10.5px; color: var(--plum-mute); margin-top: 3px; line-height: 1.4; font-weight: 500; }
+
+  /* Ongoing conversations */
+  .convo { background: #FFFFFF; border: 1px solid rgba(74,42,58,0.06); border-radius: 14px; padding: 12px 14px; margin-bottom: 8px; display: flex; gap: 10px; align-items: flex-start; }
+  .convo-av { width: 28px; height: 28px; border-radius: 8px; background: linear-gradient(135deg, var(--gold), var(--rose-400)); color: #FFF5EC; display: grid; place-items: center; font-size: 11px; font-family: 'Fraunces', serif; font-style: italic; font-weight: 500; flex-shrink: 0; }
+  .convo-body { flex: 1; min-width: 0; }
+  .convo-top { display: flex; justify-content: space-between; align-items: center; }
+  .convo-tag { font-size: 9px; letter-spacing: 0.16em; text-transform: uppercase; color: var(--plum-mute); font-weight: 700; }
+  .convo-when { font-size: 10px; color: var(--plum-mute); font-weight: 600; letter-spacing: 0.04em; }
+  .convo-msg { font-family: 'Fraunces', serif; font-size: 13px; color: var(--plum); font-style: italic; line-height: 1.4; margin-top: 3px; }
+  .convo-meta { font-size: 10px; color: var(--plum-mute); margin-top: 6px; font-weight: 600; letter-spacing: 0.04em; }
+
+  /* Pattern ping */
+  .pping { background: linear-gradient(135deg, rgba(201,169,92,0.14), rgba(184,74,65,0.08)); border: 1px solid rgba(201,169,92,0.22); border-radius: 14px; padding: 14px 16px; margin-bottom: 10px; display: flex; gap: 10px; align-items: flex-start; }
+  .pp-av { width: 28px; height: 28px; border-radius: 50%; background: linear-gradient(135deg, var(--gold), var(--rose-400)); color: #FFF5EC; display: grid; place-items: center; font-family: 'Fraunces', serif; font-size: 12px; font-style: italic; flex-shrink: 0; }
+  .pp-body { flex: 1; }
+  .pp-lbl { font-size: 9px; letter-spacing: 0.18em; text-transform: uppercase; color: var(--plum-mute); font-weight: 700; }
+  .pp-msg { font-family: 'Fraunces', serif; font-size: 13.5px; color: var(--plum); font-style: italic; line-height: 1.4; margin-top: 3px; }
+  .pp-cta { font-size: 10px; color: var(--plum); font-weight: 700; margin-top: 6px; letter-spacing: 0.06em; }
+
+  /* Voice call card */
+  .vc-card { background: linear-gradient(155deg, rgba(185,164,201,0.2), rgba(138,95,116,0.12)); border: 1px solid rgba(185,164,201,0.3); border-radius: 14px; padding: 14px 16px; margin-bottom: 10px; display: flex; gap: 12px; align-items: center; }
+  .vc-orb { width: 40px; height: 40px; border-radius: 50%; background: radial-gradient(circle at 30% 30%, var(--lav), #8E7EB8); position: relative; flex-shrink: 0; }
+  .vc-orb::before { content: ''; position: absolute; inset: -4px; border-radius: 50%; border: 1px solid rgba(185,164,201,0.4); animation: pulse 2s ease-in-out infinite; }
+  @keyframes pulse { 0%, 100% { transform: scale(1); opacity: 1; } 50% { transform: scale(1.15); opacity: 0.4; } }
+  .vc-body { flex: 1; }
+  .vc-lbl { font-size: 9px; letter-spacing: 0.18em; text-transform: uppercase; color: var(--plum-mute); font-weight: 700; }
+  .vc-title { font-family: 'Fraunces', serif; font-size: 14px; color: var(--plum); font-weight: 500; margin-top: 2px; }
+  .vc-sub { font-size: 11px; color: var(--plum-2); margin-top: 3px; }
+  .vc-cta { font-size: 16px; color: var(--plum); }
+
+  /* Privacy row */
+  .privacy { background: rgba(74,42,58,0.05); border-radius: 14px; padding: 14px 16px; display: flex; gap: 12px; align-items: flex-start; margin-top: 10px; }
+  .priv-ico { width: 34px; height: 34px; border-radius: 10px; background: rgba(74,42,58,0.08); color: var(--plum); display: grid; place-items: center; font-size: 16px; flex-shrink: 0; }
+  .priv-body { flex: 1; }
+  .priv-title { font-size: 12px; color: var(--plum); font-weight: 700; letter-spacing: 0.04em; display: flex; justify-content: space-between; }
+  .priv-title .priv-link { color: var(--plum-mute); font-weight: 600; }
+  .priv-sub { font-size: 11px; color: var(--plum-2); margin-top: 4px; line-height: 1.5; }
+
+  /* ═════ PHONE 2 — Jess conversation ═════ */
+
+  .chat-head { display: flex; gap: 12px; align-items: center; padding-bottom: 14px; border-bottom: 1px solid rgba(74,42,58,0.08); }
+  .ch-back { font-size: 20px; color: var(--plum); font-weight: 300; }
+  .ch-av { width: 34px; height: 34px; border-radius: 50%; background: linear-gradient(135deg, var(--gold), var(--rose-400)); color: #FFF5EC; display: grid; place-items: center; font-family: 'Fraunces', serif; font-size: 15px; font-style: italic; font-weight: 500; flex-shrink: 0; position: relative; }
+  .ch-av::after { content: ''; position: absolute; bottom: -1px; right: -1px; width: 10px; height: 10px; border-radius: 50%; background: var(--teal); border: 2px solid var(--cream); }
+  .ch-name-col { flex: 1; }
+  .ch-name { font-family: 'Fraunces', serif; font-size: 15px; color: var(--plum); font-weight: 500; }
+  .ch-status { font-size: 10px; color: var(--plum-mute); margin-top: 1px; font-weight: 600; letter-spacing: 0.04em; display: flex; align-items: center; gap: 5px; }
+  .ch-status .d { width: 5px; height: 5px; border-radius: 50%; background: var(--teal); }
+  .ch-more { font-size: 16px; color: var(--plum-mute); }
+
+  /* Context bar */
+  .ctx-bar { display: flex; gap: 6px; margin: 14px 0 10px; padding: 8px 10px; background: rgba(138,95,116,0.08); border-radius: 10px; align-items: center; flex-wrap: wrap; font-size: 10px; color: var(--luteal); font-weight: 600; letter-spacing: 0.04em; }
+  .ctx-bar .d { width: 4px; height: 4px; border-radius: 50%; background: var(--luteal); opacity: 0.5; }
+  .ctx-bar .ctx-chip { padding: 3px 7px; background: rgba(138,95,116,0.14); border-radius: 8px; }
+
+  /* Messages */
+  .msg-user { background: var(--plum); color: var(--cream); padding: 10px 14px; border-radius: 18px 18px 4px 18px; max-width: 85%; margin-left: auto; margin-bottom: 10px; font-size: 13px; line-height: 1.45; }
+  .msg-user.short { max-width: 60%; }
+  .msg-jess { display: flex; gap: 8px; margin-bottom: 10px; align-items: flex-start; }
+  .mj-av { width: 22px; height: 22px; border-radius: 50%; background: linear-gradient(135deg, var(--gold), var(--rose-400)); color: #FFF5EC; display: grid; place-items: center; font-family: 'Fraunces', serif; font-size: 10px; font-style: italic; flex-shrink: 0; margin-top: 2px; }
+  .mj-bubble { flex: 1; background: #FFFFFF; border: 1px solid rgba(74,42,58,0.08); padding: 10px 14px; border-radius: 4px 18px 18px 18px; font-size: 13px; color: var(--plum); line-height: 1.5; font-family: 'Fraunces', serif; font-style: italic; }
+  .mj-bubble.system { background: rgba(95,138,133,0.1); border-color: rgba(95,138,133,0.2); font-family: 'Inter', sans-serif; font-style: normal; font-size: 12px; color: var(--teal); }
+  .mj-bubble p { margin-bottom: 6px; }
+  .mj-bubble p:last-child { margin-bottom: 0; }
+
+  /* Tool-use cards (inline with conversation) */
+  .tool { margin: 8px 0 10px 30px; border-radius: 12px; overflow: hidden; border: 1px solid rgba(74,42,58,0.1); background: var(--cream-2); }
+  .tool-head { padding: 8px 12px; background: rgba(74,42,58,0.06); display: flex; justify-content: space-between; align-items: center; font-size: 10px; color: var(--plum-mute); font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; }
+  .tool-head .t-ico { font-size: 11px; }
+  .tool-body { padding: 10px 12px; }
+  .tool-title { font-family: 'Fraunces', serif; font-size: 13px; color: var(--plum); font-weight: 500; line-height: 1.3; }
+  .tool-meta { font-size: 10px; color: var(--plum-mute); margin-top: 3px; font-weight: 600; letter-spacing: 0.04em; }
+  .tool-snip { font-family: 'Fraunces', serif; font-size: 12.5px; color: var(--plum-2); font-style: italic; line-height: 1.5; margin-top: 6px; }
+  .tool-cta-row { display: flex; gap: 6px; margin-top: 8px; padding-top: 8px; border-top: 1px solid rgba(74,42,58,0.06); }
+  .tool-cta { flex: 1; font-size: 10px; padding: 6px; border-radius: 8px; text-align: center; font-weight: 700; letter-spacing: 0.04em; }
+  .tool-cta.primary { background: var(--plum); color: var(--cream); }
+  .tool-cta.ghost { background: #FFFFFF; color: var(--plum); border: 1px solid rgba(74,42,58,0.08); }
+
+  /* Suggested follow-ups */
+  .suggested { display: flex; gap: 6px; flex-wrap: wrap; margin: 4px 0 0 30px; }
+  .sug { font-size: 11px; padding: 7px 12px; border-radius: 14px; background: var(--cream-2); color: var(--plum); font-weight: 600; font-family: 'Fraunces', serif; font-style: italic; border: 1px solid rgba(74,42,58,0.08); }
+
+  /* Input bar (sticky) */
+  .input-bar { position: absolute; bottom: 68px; left: 0; right: 0; background: var(--cream); border-top: 1px solid rgba(74,42,58,0.08); padding: 10px 14px 12px; display: flex; gap: 8px; align-items: center; z-index: 15; }
+  .in-attach { width: 32px; height: 32px; border-radius: 50%; background: rgba(74,42,58,0.08); color: var(--plum); display: grid; place-items: center; font-size: 15px; flex-shrink: 0; }
+  .in-field { flex: 1; background: #FFFFFF; border: 1px solid rgba(74,42,58,0.1); border-radius: 18px; padding: 8px 14px; font-size: 12.5px; color: var(--plum-mute); font-style: italic; }
+  .in-mic { width: 32px; height: 32px; border-radius: 50%; background: var(--plum); color: var(--cream); display: grid; place-items: center; font-size: 13px; flex-shrink: 0; }
+
+  /* ═════ PHONE 3 — Jess drawer over Journal ═════ */
+
+  .bg-page { position: absolute; top: 0; left: 0; right: 0; bottom: 0; background: var(--cream); padding: 44px 18px 80px; z-index: 1; opacity: 0.4; filter: blur(1px); }
+  .bg-faux-card { background: #FFFFFF; border: 1px solid rgba(74,42,58,0.06); border-radius: 14px; padding: 14px; margin-bottom: 10px; }
+  .bg-faux-line { height: 10px; background: rgba(74,42,58,0.1); border-radius: 4px; margin-bottom: 6px; }
+  .bg-faux-line.w60 { width: 60%; }
+  .bg-faux-line.w80 { width: 80%; }
+
+  .dim { position: absolute; top: 0; left: 0; right: 0; bottom: 0; background: rgba(74,42,58,0.35); z-index: 10; }
+
+  .drawer { position: absolute; bottom: 0; left: 0; right: 0; background: var(--cream); border-radius: 22px 22px 0 0; padding: 10px 18px 24px; z-index: 20; box-shadow: 0 -10px 40px rgba(0,0,0,0.15); }
+  .drag-handle { width: 40px; height: 4px; border-radius: 2px; background: rgba(74,42,58,0.18); margin: 6px auto 16px; }
+  .dr-head { display: flex; gap: 10px; align-items: center; margin-bottom: 14px; }
+  .dr-av { width: 36px; height: 36px; border-radius: 50%; background: linear-gradient(135deg, var(--gold), var(--rose-400)); color: #FFF5EC; display: grid; place-items: center; font-family: 'Fraunces', serif; font-size: 16px; font-style: italic; font-weight: 500; flex-shrink: 0; }
+  .dr-label-col { flex: 1; }
+  .dr-label { font-size: 9px; letter-spacing: 0.2em; text-transform: uppercase; color: var(--plum-mute); font-weight: 700; }
+  .dr-name { font-family: 'Fraunces', serif; font-size: 16px; color: var(--plum); font-weight: 500; }
+  .dr-close { font-size: 18px; color: var(--plum-mute); }
+  .dr-context { background: rgba(138,95,116,0.08); border-radius: 10px; padding: 10px 12px; margin-bottom: 14px; }
+  .dc-lbl { font-size: 9px; letter-spacing: 0.18em; text-transform: uppercase; color: var(--luteal); font-weight: 700; }
+  .dc-snip { font-family: 'Fraunces', serif; font-size: 12px; color: var(--plum); font-style: italic; line-height: 1.4; margin-top: 4px; }
+  .dr-msg { font-family: 'Fraunces', serif; font-size: 15px; color: var(--plum); font-style: italic; line-height: 1.45; margin-bottom: 14px; }
+  .dr-actions { display: flex; flex-direction: column; gap: 8px; margin-bottom: 14px; }
+  .dr-act { display: flex; gap: 12px; align-items: center; padding: 12px 14px; background: #FFFFFF; border: 1px solid rgba(74,42,58,0.08); border-radius: 12px; }
+  .dr-act-ico { width: 30px; height: 30px; border-radius: 8px; display: grid; place-items: center; font-size: 13px; color: #FFF5EC; flex-shrink: 0; }
+  .dr-act-ico.write { background: var(--luteal); }
+  .dr-act-ico.seal { background: var(--plum); }
+  .dr-act-ico.echo { background: var(--gold); }
+  .dr-act-body { flex: 1; }
+  .dr-act-name { font-family: 'Fraunces', serif; font-size: 13px; color: var(--plum); font-weight: 500; }
+  .dr-act-sub { font-size: 11px; color: var(--plum-mute); margin-top: 2px; }
+  .dr-act-ch { font-size: 14px; color: var(--plum-mute); }
+  .dr-talk { width: 100%; padding: 12px; background: var(--plum); color: var(--cream); border-radius: 12px; font-size: 12px; font-weight: 700; letter-spacing: 0.08em; text-align: center; }
+
+  /* ═════ PHONE 4 — Voice session ═════ */
+
+  .voice-scene { position: absolute; top: 0; left: 0; right: 0; bottom: 0; background: radial-gradient(ellipse at top, #3A2434 0%, #1A1522 80%); color: var(--cream); padding: 44px 18px 30px; display: flex; flex-direction: column; }
+  .v-top { display: flex; justify-content: space-between; align-items: center; }
+  .v-eye { font-size: 10px; letter-spacing: 0.22em; text-transform: uppercase; color: rgba(255,250,245,0.55); font-weight: 700; }
+  .v-close { font-size: 18px; color: rgba(255,250,245,0.7); }
+  .v-phase-chip { font-size: 9px; letter-spacing: 0.14em; padding: 4px 10px; border-radius: 12px; background: rgba(138,95,116,0.28); color: #E6C6D5; font-weight: 700; margin-top: 10px; display: inline-block; }
+  .v-orb-wrap { flex: 1; display: flex; align-items: center; justify-content: center; }
+  .v-orb { width: 180px; height: 180px; border-radius: 50%; background: radial-gradient(circle at 30% 25%, var(--gold) 0%, var(--rose-400) 40%, #7A4A52 80%, #3A2434 100%); position: relative; box-shadow: 0 30px 80px rgba(201,169,92,0.25), 0 0 0 1px rgba(255,255,255,0.05); }
+  .v-orb::before { content: ''; position: absolute; inset: -20px; border-radius: 50%; border: 1px solid rgba(201,169,92,0.3); animation: orbPulse 3s ease-in-out infinite; }
+  .v-orb::after { content: ''; position: absolute; inset: -40px; border-radius: 50%; border: 1px solid rgba(201,169,92,0.15); animation: orbPulse 3s ease-in-out infinite 0.5s; }
+  @keyframes orbPulse { 0%, 100% { transform: scale(1); opacity: 1; } 50% { transform: scale(1.12); opacity: 0.3; } }
+  .v-transcript { text-align: center; margin-bottom: 20px; }
+  .v-label { font-size: 9px; letter-spacing: 0.22em; text-transform: uppercase; color: rgba(255,250,245,0.5); font-weight: 700; }
+  .v-line { font-family: 'Fraunces', serif; font-size: 20px; color: var(--cream); font-weight: 400; margin-top: 10px; font-style: italic; line-height: 1.4; max-width: 300px; margin-left: auto; margin-right: auto; }
+  .v-meta { font-size: 11px; color: rgba(255,250,245,0.55); margin-top: 10px; letter-spacing: 0.04em; }
+  .v-controls { display: flex; justify-content: space-around; align-items: center; padding-top: 20px; border-top: 1px solid rgba(255,250,245,0.12); }
+  .v-btn { width: 48px; height: 48px; border-radius: 50%; background: rgba(255,250,245,0.1); color: var(--cream); display: grid; place-items: center; font-size: 18px; }
+  .v-btn.end { background: var(--rose-500); width: 60px; height: 60px; font-size: 20px; box-shadow: 0 10px 30px rgba(212,94,82,0.4); }
+  .v-btn.mic { background: var(--gold); color: var(--plum); }
+
+  /* ═════ PHONE 5 — Privacy & memory ═════ */
+
+  .mem-hero { background: linear-gradient(135deg, rgba(74,42,58,0.08), rgba(138,95,116,0.06)); border: 1px solid rgba(74,42,58,0.1); border-radius: 16px; padding: 18px; margin: 20px 0 14px; }
+  .mh-top { display: flex; gap: 12px; align-items: center; }
+  .mh-ico { width: 44px; height: 44px; border-radius: 12px; background: linear-gradient(135deg, var(--plum), #6B4559); color: var(--cream); display: grid; place-items: center; font-size: 18px; flex-shrink: 0; }
+  .mh-body { flex: 1; }
+  .mh-lbl { font-size: 9px; letter-spacing: 0.2em; text-transform: uppercase; color: var(--plum-mute); font-weight: 700; }
+  .mh-title { font-family: 'Fraunces', serif; font-size: 17px; color: var(--plum); font-weight: 500; margin-top: 3px; letter-spacing: -0.005em; }
+  .mh-sub { font-size: 12px; color: var(--plum-2); margin-top: 10px; line-height: 1.5; }
+
+  .mem-cat { background: #FFFFFF; border: 1px solid rgba(74,42,58,0.08); border-radius: 14px; margin-bottom: 10px; overflow: hidden; }
+  .mc-head { display: flex; justify-content: space-between; align-items: center; padding: 12px 14px; }
+  .mc-title-col { display: flex; gap: 10px; align-items: center; }
+  .mc-ico { width: 26px; height: 26px; border-radius: 8px; display: grid; place-items: center; font-size: 12px; color: #FFF5EC; flex-shrink: 0; }
+  .mc-ico.pat { background: var(--gold); }
+  .mc-ico.pre { background: var(--luteal); }
+  .mc-ico.cyc { background: var(--rose-400); }
+  .mc-ico.off { background: rgba(74,42,58,0.12); color: var(--plum-mute); }
+  .mc-title { font-family: 'Fraunces', serif; font-size: 14px; color: var(--plum); font-weight: 500; }
+  .mc-count { font-size: 10px; color: var(--plum-mute); letter-spacing: 0.06em; font-weight: 600; }
+  .mc-toggle { width: 36px; height: 20px; border-radius: 12px; background: var(--luteal); position: relative; flex-shrink: 0; }
+  .mc-toggle::after { content: ''; position: absolute; width: 16px; height: 16px; border-radius: 50%; background: #FFFFFF; top: 2px; right: 2px; box-shadow: 0 1px 2px rgba(0,0,0,0.15); }
+  .mc-toggle.off { background: rgba(74,42,58,0.14); }
+  .mc-toggle.off::after { right: auto; left: 2px; }
+  .mc-items { padding: 0 14px 12px; display: flex; flex-direction: column; gap: 6px; }
+  .mc-item { background: var(--cream-2); border-radius: 10px; padding: 8px 10px; font-family: 'Fraunces', serif; font-size: 12px; color: var(--plum); font-style: italic; line-height: 1.4; position: relative; padding-right: 26px; }
+  .mc-item::after { content: '✕'; position: absolute; right: 10px; top: 50%; transform: translateY(-50%); font-size: 10px; color: var(--plum-mute); font-style: normal; }
+
+  .mem-cta-row { display: flex; gap: 8px; margin-top: 12px; }
+  .mem-cta { flex: 1; padding: 12px; border-radius: 12px; text-align: center; font-size: 11px; font-weight: 700; letter-spacing: 0.06em; }
+  .mem-cta.primary { background: var(--plum); color: var(--cream); }
+  .mem-cta.ghost { background: var(--cream-2); color: var(--plum); border: 1px solid rgba(74,42,58,0.08); }
+  .mem-cta.danger { background: rgba(184,74,65,0.1); color: var(--period); }
+
+  /* ═════ PHONE 6 — Research response ═════ */
+
+  .research-q { background: var(--plum); color: var(--cream); padding: 12px 16px; border-radius: 18px 18px 4px 18px; max-width: 85%; margin-left: auto; margin-bottom: 12px; font-size: 13.5px; line-height: 1.45; font-weight: 500; }
+
+  .research-ans { background: #FFFFFF; border: 1px solid rgba(74,42,58,0.08); border-radius: 4px 18px 18px 18px; padding: 14px; margin-bottom: 10px; margin-right: 10px; }
+  .ra-head { display: flex; gap: 8px; align-items: center; margin-bottom: 10px; }
+  .ra-av { width: 22px; height: 22px; border-radius: 50%; background: linear-gradient(135deg, var(--gold), var(--rose-400)); color: #FFF5EC; display: grid; place-items: center; font-family: 'Fraunces', serif; font-size: 10px; font-style: italic; flex-shrink: 0; }
+  .ra-lbl { font-size: 9px; letter-spacing: 0.16em; text-transform: uppercase; color: var(--plum-mute); font-weight: 700; }
+  .ra-title { font-family: 'Fraunces', serif; font-size: 15px; color: var(--plum); font-weight: 500; line-height: 1.3; margin-bottom: 8px; font-style: italic; }
+  .ra-body { font-size: 12.5px; color: var(--plum-2); line-height: 1.6; }
+  .ra-body strong { color: var(--plum); font-weight: 600; }
+  .ra-body ol { margin: 6px 0 6px 18px; }
+  .ra-body li { margin-bottom: 4px; }
+  .cite { display: inline-block; font-size: 10px; padding: 0 5px; border-radius: 4px; background: rgba(95,138,133,0.16); color: var(--teal); font-weight: 700; margin: 0 2px; vertical-align: middle; }
+
+  .sources { background: rgba(95,138,133,0.08); border-radius: 12px; padding: 12px; margin-top: 10px; }
+  .src-lbl { font-size: 9px; letter-spacing: 0.18em; text-transform: uppercase; color: var(--teal); font-weight: 700; margin-bottom: 8px; }
+  .src { display: flex; gap: 10px; padding: 8px 10px; background: #FFFFFF; border-radius: 10px; margin-bottom: 6px; align-items: flex-start; }
+  .src:last-child { margin-bottom: 0; }
+  .src-num { width: 20px; height: 20px; border-radius: 6px; background: var(--teal); color: #FFF5EC; display: grid; place-items: center; font-size: 10px; font-weight: 700; flex-shrink: 0; }
+  .src-body { flex: 1; }
+  .src-title { font-size: 12px; color: var(--plum); font-weight: 600; line-height: 1.3; }
+  .src-meta { font-size: 10px; color: var(--plum-mute); margin-top: 2px; letter-spacing: 0.04em; font-weight: 600; }
+
+  .ra-caveat { background: rgba(201,169,92,0.12); border-radius: 10px; padding: 10px 12px; margin-top: 10px; display: flex; gap: 9px; align-items: flex-start; }
+  .ca-ico { font-size: 13px; color: #8A7740; flex-shrink: 0; }
+  .ca-txt { font-size: 11.5px; color: var(--plum-2); line-height: 1.5; }
+  .ca-txt strong { color: #8A7740; font-weight: 700; }
+
+  .ra-actions { display: flex; gap: 6px; margin-top: 12px; }
+  .ra-act { flex: 1; font-size: 10px; padding: 8px; border-radius: 10px; text-align: center; font-weight: 700; letter-spacing: 0.04em; }
+  .ra-act.save { background: var(--cream-2); color: var(--plum); }
+  .ra-act.book { background: var(--plum); color: var(--cream); }
+
+  /* ═════ Appendices ═════ */
+
+  .appendix-grid { max-width: 1180px; margin: 40px auto 0; display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+  @media (max-width: 900px) { .appendix-grid { grid-template-columns: 1fr; } }
+  .app-card { background: #FFFFFF; border: 1px solid rgba(74,42,58,0.08); border-radius: 18px; padding: 24px 26px; }
+  .app-eye { font-size: 10px; letter-spacing: 0.2em; text-transform: uppercase; color: var(--plum-mute); font-weight: 700; }
+  .app-title { font-family: 'Fraunces', serif; font-size: 22px; color: var(--plum); font-weight: 500; margin-top: 6px; margin-bottom: 16px; letter-spacing: -0.01em; }
+
+  /* Surfaces map */
+  .surfaces { display: flex; flex-direction: column; gap: 8px; }
+  .surf { display: grid; grid-template-columns: 100px 1fr; gap: 14px; padding: 10px 12px; background: var(--cream-2); border-radius: 10px; align-items: center; }
+  .surf-where { font-size: 11px; color: var(--plum); font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; }
+  .surf-what { font-size: 12.5px; color: var(--plum-2); line-height: 1.45; }
+  .surf-what strong { color: var(--plum); font-weight: 600; }
+
+  /* Tool table */
+  .tool-table { width: 100%; border-collapse: collapse; font-size: 12px; }
+  .tool-table th { text-align: left; font-size: 9px; letter-spacing: 0.16em; text-transform: uppercase; color: var(--plum-mute); font-weight: 700; padding: 6px 10px 6px 0; border-bottom: 1px solid rgba(74,42,58,0.1); }
+  .tool-table td { padding: 8px 10px 8px 0; border-bottom: 1px solid rgba(74,42,58,0.04); color: var(--plum-2); vertical-align: top; line-height: 1.5; }
+  .tool-table td.name { color: var(--plum); font-weight: 600; font-family: 'Fraunces', serif; font-size: 13px; }
+  .tt-pill { display: inline-block; font-size: 9px; padding: 2px 7px; border-radius: 8px; font-weight: 700; letter-spacing: 0.04em; }
+  .tt-pill.read { background: rgba(95,138,133,0.14); color: var(--teal); }
+  .tt-pill.write { background: rgba(201,169,92,0.22); color: #8A7740; }
+  .tt-pill.consent { background: rgba(138,95,116,0.16); color: var(--luteal); }
+
+  /* Guardrails */
+  .rail { display: flex; gap: 12px; padding: 12px 14px; background: var(--cream-2); border-radius: 10px; margin-bottom: 8px; align-items: flex-start; }
+  .rail.no { border-left: 3px solid var(--period); }
+  .rail.yes { border-left: 3px solid var(--teal); }
+  .rail-mark { font-size: 16px; flex-shrink: 0; font-weight: 700; }
+  .rail.no .rail-mark { color: var(--period); }
+  .rail.yes .rail-mark { color: var(--teal); }
+  .rail-body { flex: 1; }
+  .rail-h { font-size: 12px; color: var(--plum); font-weight: 700; }
+  .rail-s { font-size: 11.5px; color: var(--plum-2); margin-top: 3px; line-height: 1.5; }
+
+  /* Voice principles */
+  .voice-principles { display: flex; flex-direction: column; gap: 10px; }
+  .vp { display: grid; grid-template-columns: 120px 1fr; gap: 14px; padding: 12px 14px; background: var(--cream-2); border-radius: 10px; align-items: center; }
+  .vp-yes { font-family: 'Fraunces', serif; font-size: 13px; color: var(--teal); font-style: italic; font-weight: 500; }
+  .vp-no { font-family: 'Fraunces', serif; font-size: 13px; color: var(--period); font-style: italic; font-weight: 500; text-decoration: line-through; opacity: 0.7; }
+  .vp-lbl { font-size: 10px; color: var(--plum-mute); letter-spacing: 0.1em; text-transform: uppercase; font-weight: 700; }
+  .vp-row { display: flex; gap: 14px; align-items: center; }
+
+  /* Decision footer */
+  .decision { max-width: 1180px; margin: 40px auto 0; background: linear-gradient(135deg, var(--plum), #6B4559); color: var(--cream); border-radius: 20px; padding: 36px 40px; text-align: center; position: relative; overflow: hidden; }
+  .decision::before, .decision::after { content: ''; position: absolute; width: 220px; height: 220px; border-radius: 50%; }
+  .decision::before { background: radial-gradient(circle, rgba(201,169,92,0.2), transparent); top: -60px; left: -60px; }
+  .decision::after { background: radial-gradient(circle, rgba(185,164,201,0.16), transparent); bottom: -60px; right: -60px; }
+  .dc-eye { font-size: 10px; letter-spacing: 0.22em; text-transform: uppercase; color: rgba(255,250,245,0.6); font-weight: 700; position: relative; z-index: 1; }
+  .dc-title { font-family: 'Fraunces', serif; font-size: 28px; font-weight: 500; margin: 10px 0 10px; font-style: italic; position: relative; z-index: 1; }
+  .dc-sub { font-size: 14px; color: rgba(255,250,245,0.8); max-width: 680px; margin: 0 auto; line-height: 1.55; position: relative; z-index: 1; }
+  .dc-sub strong { color: var(--cream); font-weight: 600; }
+
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <!-- Header -->
+  <div class="header">
+    <div class="eyebrow">FemWell · Jess — the AI assistant</div>
+    <h1 class="title">Jess — a <em>warm, phase-aware thinking partner</em></h1>
+    <p class="lede">Jess already surfaces across FemWell — prompt cards, pattern pings, Plan-with-Jess, Echo scrub. This is <strong>her own page</strong>: center tab, with a home screen, a full conversation, a drawer for in-context help, voice mode, research answers with citations, and a memory panel that shows exactly what she's learned and lets you unlearn it. Locked to you by default. Never a therapist. Never a doctor. Always on your side.</p>
+  </div>
+
+  <!-- Hero -->
+  <div class="hero">
+    <div class="hero-av-wrap"><div class="hero-av">J</div></div>
+    <div class="hero-body">
+      <div class="hero-eye">The Jess character brief</div>
+      <div class="hero-title">"I'm here to <em>hold</em> and <em>help</em> — not to fix."</div>
+      <div class="hero-sub">A warm older-sister voice, tuned to your phase and your words. <strong>Speaks in sentences, not bullet lists.</strong> Picks up the Fraunces italic when she's reflecting back — Inter when she's giving you facts. Uses <em>hold</em>, <em>notice</em>, <em>soften</em>, <em>carry</em>. Never says <em>streak</em>, <em>goal</em>, <em>win</em>, <em>badge</em>. Asks one question at a time. Names what she sees before she suggests anything.</div>
+      <div class="hero-traits">
+        <div class="ht">Phase-aware</div>
+        <div class="ht">Locked by default</div>
+        <div class="ht">Consent-gated memory</div>
+        <div class="ht">Warm · UK-gentle</div>
+        <div class="ht">No diagnoses</div>
+        <div class="ht">Cites Programs &amp; AMAs</div>
+        <div class="ht">Escalates to Panic Mode</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- TOC -->
+  <div class="toc">
+    <a href="#home">01 · Home</a>
+    <a href="#convo">02 · Conversation</a>
+    <a href="#drawer">03 · Drawer</a>
+    <a href="#voice">04 · Voice</a>
+    <a href="#memory">05 · Memory</a>
+    <a href="#research">06 · Research</a>
+    <a href="#surfaces">07 · Surfaces map</a>
+    <a href="#tools">08 · Tool use</a>
+    <a href="#voice-brief">09 · Voice brief</a>
+    <a href="#rails">10 · Guardrails</a>
+  </div>
+
+  <!-- ═════ PHONES 1 & 2 ═════ -->
+  <div class="section-head" id="home">
+    <div class="sh-eye">01 · Home + 02 · Conversation</div>
+    <div class="sh-title">The tab <em>and</em> the chat</div>
+    <div class="sh-sub">Jess is the center tab in the bottom nav (not a FAB, not a drawer). Tapping her opens a home screen built around today's phase, your open threads with her, and quick-start modes. Tap a mode — or just start typing — and you drop into a conversation that shows its tool use inline, so you always know what she's pulling and what she's doing with it.</div>
+  </div>
+
+  <div class="two-up">
+
+    <!-- PHONE 1: Jess home -->
+    <div class="phone-col">
+      <div class="phone-label">
+        <div class="pl-eye">Phone 01 · Jess home</div>
+        <div class="pl-title">Greeting · modes · threads</div>
+        <div class="pl-sub">Phase-aware opening + 6-mode grid + open conversations + voice card + privacy tile</div>
+      </div>
+      <div class="phone tall">
+        <div class="phone-inner">
+          <div class="notch"></div>
+          <div class="scroll">
+
+            <div class="ph-head-row">
+              <div>
+                <div class="ph-eyebrow">Jess</div>
+                <h1 class="ph-title">Morning</h1>
+                <div class="ph-sub"><strong>Monday · Apr 20</strong> · you're on luteal day 19</div>
+              </div>
+              <div class="pill phase-luteal">● Luteal</div>
+            </div>
+
+            <!-- Greeting card -->
+            <div class="greet">
+              <div class="g-top">
+                <div class="g-av">J</div>
+                <div class="g-name-col">
+                  <div class="g-eye">Jess</div>
+                  <div class="g-name">Good morning, Oji.</div>
+                  <div class="g-phase">Luteal day 19 · softer is wiser today</div>
+                </div>
+              </div>
+              <div class="g-msg">"You wrote about sleep on four of your last five luteal d19s. Want to look at what Friday-you might plan for Sunday-you so you rest well?"</div>
+              <div class="g-cta-row">
+                <div class="g-cta primary">Start here →</div>
+                <div class="g-cta ghost">Not today</div>
+              </div>
+            </div>
+
+            <!-- Modes -->
+            <div class="divider">
+              <div class="div-title">How can I help?</div>
+              <div class="div-meta">6 modes</div>
+            </div>
+            <div class="modes">
+              <div class="mode brief">
+                <div class="mode-ico">☀</div>
+                <div class="mode-name">Morning brief</div>
+                <div class="mode-sub">Phase · sleep · what's on today</div>
+              </div>
+              <div class="mode unpack">
+                <div class="mode-ico">◐</div>
+                <div class="mode-name">Unpack something</div>
+                <div class="mode-sub">A feeling, a loop, a hard day</div>
+              </div>
+              <div class="mode shape">
+                <div class="mode-ico">✎</div>
+                <div class="mode-name">Shape something</div>
+                <div class="mode-sub">A message, a post, an entry</div>
+              </div>
+              <div class="mode research">
+                <div class="mode-ico">✦</div>
+                <div class="mode-name">Research a question</div>
+                <div class="mode-sub">With citations. Not medical advice.</div>
+              </div>
+              <div class="mode voice">
+                <div class="mode-ico">◉</div>
+                <div class="mode-name">Talk it out</div>
+                <div class="mode-sub">Voice · hands-free · up to 20 min</div>
+              </div>
+              <div class="mode plan">
+                <div class="mode-ico">◇</div>
+                <div class="mode-name">Plan the week</div>
+                <div class="mode-sub">Across your cycle · with the Planner</div>
+              </div>
+            </div>
+
+            <!-- Pattern ping -->
+            <div class="divider">
+              <div class="div-title">I noticed</div>
+              <div class="div-meta">2 things</div>
+            </div>
+            <div class="pping">
+              <div class="pp-av">J</div>
+              <div class="pp-body">
+                <div class="pp-lbl">A gentle pattern</div>
+                <div class="pp-msg">"Three out of your last four Sundays ended on the phone with your mum. Tomorrow's Sunday — want me to hold a 10-minute window for it?"</div>
+                <div class="pp-cta">Plan it →</div>
+              </div>
+            </div>
+            <div class="pping">
+              <div class="pp-av">J</div>
+              <div class="pp-body">
+                <div class="pp-lbl">Sealed letter opens in 9 days</div>
+                <div class="pp-msg">"Luteal-you wrote something for your next follicular. It's sealed — I can't read it. I'll just tap you when it opens."</div>
+                <div class="pp-cta">View sealed letters →</div>
+              </div>
+            </div>
+
+            <!-- Ongoing conversations -->
+            <div class="divider">
+              <div class="div-title">Our conversations</div>
+              <div class="div-meta">3 open</div>
+            </div>
+            <div class="convo">
+              <div class="convo-av">J</div>
+              <div class="convo-body">
+                <div class="convo-top">
+                  <div class="convo-tag">Unpack · ongoing</div>
+                  <div class="convo-when">yesterday</div>
+                </div>
+                <div class="convo-msg">"We were talking about the Sunday thing. You said yes and then felt it. Want to pick it up?"</div>
+                <div class="convo-meta">12 messages · not shared</div>
+              </div>
+            </div>
+            <div class="convo">
+              <div class="convo-av">J</div>
+              <div class="convo-body">
+                <div class="convo-top">
+                  <div class="convo-tag">Research · paused</div>
+                  <div class="convo-when">3 days ago</div>
+                </div>
+                <div class="convo-msg">"I pulled 4 sources on progesterone &amp; sleep for you. Want a summary, or keep digging?"</div>
+                <div class="convo-meta">4 sources saved</div>
+              </div>
+            </div>
+            <div class="convo">
+              <div class="convo-av">J</div>
+              <div class="convo-body">
+                <div class="convo-top">
+                  <div class="convo-tag">Shape · draft</div>
+                  <div class="convo-when">1 week ago</div>
+                </div>
+                <div class="convo-msg">"A note to your sister — we had 3 versions. The short one felt most like you."</div>
+                <div class="convo-meta">draft · not sent</div>
+              </div>
+            </div>
+
+            <!-- Voice card -->
+            <div class="vc-card">
+              <div class="vc-orb"></div>
+              <div class="vc-body">
+                <div class="vc-lbl">Talk it out</div>
+                <div class="vc-title">Hands-free Jess</div>
+                <div class="vc-sub">Speak freely. I'll transcribe and hold.</div>
+              </div>
+              <div class="vc-cta">›</div>
+            </div>
+
+            <!-- Privacy -->
+            <div class="privacy">
+              <div class="priv-ico">◐</div>
+              <div class="priv-body">
+                <div class="priv-title">
+                  <span>What I know about you</span>
+                  <span class="priv-link">Manage →</span>
+                </div>
+                <div class="priv-sub">34 memory items · all consented. Nothing trained. Exportable. You can unlearn any of them anytime.</div>
+              </div>
+            </div>
+
+          </div>
+          <div class="nav">
+            <div class="nav-item"><div class="nav-ico"></div>Today</div>
+            <div class="nav-item"><div class="nav-ico"></div>Lifestyle</div>
+            <div class="nav-item active jess-tab"><div class="nav-ico"></div>Jess</div>
+            <div class="nav-item"><div class="nav-ico"></div>Profile</div>
+            <div class="nav-item"><div class="nav-ico"></div>Menu</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- PHONE 2: Jess conversation -->
+    <div class="phone-col" id="convo">
+      <div class="phone-label">
+        <div class="pl-eye">Phone 02 · Conversation</div>
+        <div class="pl-title">Tool use <em>visible</em></div>
+        <div class="pl-sub">Unpack mode — context bar + messages + inline tool cards + suggested follow-ups + sticky input</div>
+      </div>
+      <div class="phone tall">
+        <div class="phone-inner">
+          <div class="notch"></div>
+          <div class="scroll">
+
+            <!-- Chat head -->
+            <div class="chat-head">
+              <div class="ch-back">‹</div>
+              <div class="ch-av">J</div>
+              <div class="ch-name-col">
+                <div class="ch-name">Jess</div>
+                <div class="ch-status"><span class="d"></span> Holding · unpack mode · 9:08 AM</div>
+              </div>
+              <div class="ch-more">⋯</div>
+            </div>
+
+            <!-- Context bar -->
+            <div class="ctx-bar">
+              <span>Context</span>
+              <span class="d"></span>
+              <span class="ctx-chip">luteal d19</span>
+              <span class="ctx-chip">slept 5h 12m</span>
+              <span class="ctx-chip">2 journal entries today</span>
+            </div>
+
+            <!-- System header -->
+            <div class="msg-jess">
+              <div class="mj-av">J</div>
+              <div class="mj-bubble system">◐ Locked to you. Every message in this chat is encrypted. Nothing leaves this conversation unless you send it somewhere.</div>
+            </div>
+
+            <!-- Jess opener -->
+            <div class="msg-jess">
+              <div class="mj-av">J</div>
+              <div class="mj-bubble">
+                <p>"What's circling, love?"</p>
+              </div>
+            </div>
+
+            <!-- User msg -->
+            <div class="msg-user">I woke up with that wet-sand feeling again. I have a 2pm and I don't want to be in the room.</div>
+
+            <!-- Jess reflection -->
+            <div class="msg-jess">
+              <div class="mj-av">J</div>
+              <div class="mj-bubble">
+                <p>"That coat. I remember you called it that last month too — same day of the cycle. Let me pull that up."</p>
+              </div>
+            </div>
+
+            <!-- Tool: journal lookup -->
+            <div class="tool">
+              <div class="tool-head">
+                <span>◐ Pulled from your journal · with your permission</span>
+                <span class="t-ico">✓</span>
+              </div>
+              <div class="tool-body">
+                <div class="tool-title">Mar 23 · luteal day 19 · 10:12 AM</div>
+                <div class="tool-meta">Thread: Body listening · heavy</div>
+                <div class="tool-snip">"Coat of wet sand again. Took a 3pm nap. Skipped the gym. By 7pm the day felt mine again."</div>
+              </div>
+            </div>
+
+            <!-- Jess follow-up -->
+            <div class="msg-jess">
+              <div class="mj-av">J</div>
+              <div class="mj-bubble">
+                <p>"Last time, a nap turned it. The 2pm is 5 hours from now. What if we shape it — shorter, quieter — and then a 20-minute nap right after?"</p>
+              </div>
+            </div>
+
+            <!-- Tool: planner slot -->
+            <div class="tool">
+              <div class="tool-head">
+                <span>◇ Draft for your planner · not saved yet</span>
+                <span class="t-ico">◌</span>
+              </div>
+              <div class="tool-body">
+                <div class="tool-title">Today · proposed shape</div>
+                <div class="tool-snip">2:00–2:25 pm · the meeting (video off · 25 min max)<br>2:30–2:50 pm · 20-min nap (no alarm on phone, bedside clock)<br>3:00 pm · 10-min walk before next thing</div>
+                <div class="tool-cta-row">
+                  <div class="tool-cta primary">Save to Planner</div>
+                  <div class="tool-cta ghost">Adjust</div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Jess close -->
+            <div class="msg-jess">
+              <div class="mj-av">J</div>
+              <div class="mj-bubble">
+                <p>"One line in your journal before you pick? I'll note the pattern if you want."</p>
+              </div>
+            </div>
+
+            <!-- Suggested follow-ups -->
+            <div class="suggested">
+              <div class="sug">"Yes, let's shape it."</div>
+              <div class="sug">"I need to cancel it."</div>
+              <div class="sug">"What if I take the day?"</div>
+            </div>
+
+            <!-- spacer -->
+            <div style="height: 90px;"></div>
+
+          </div>
+
+          <!-- Input bar -->
+          <div class="input-bar">
+            <div class="in-attach">+</div>
+            <div class="in-field">Type or say what's up…</div>
+            <div class="in-mic">◉</div>
+          </div>
+
+          <div class="nav">
+            <div class="nav-item"><div class="nav-ico"></div>Today</div>
+            <div class="nav-item"><div class="nav-ico"></div>Lifestyle</div>
+            <div class="nav-item active jess-tab"><div class="nav-ico"></div>Jess</div>
+            <div class="nav-item"><div class="nav-ico"></div>Profile</div>
+            <div class="nav-item"><div class="nav-ico"></div>Menu</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- ═════ PHONES 3 & 4 ═════ -->
+  <div class="section-head" id="drawer">
+    <div class="sh-eye">03 · Drawer + 04 · Voice</div>
+    <div class="sh-title">In-context <em>and</em> hands-free</div>
+    <div class="sh-sub">Jess isn't only the tab. Swipe her up from any page and she appears as a half-sheet drawer with the surrounding context already loaded — so you can shape a journal line or ask a quick question without leaving the page. When you want to speak rather than type, voice mode goes full-screen: one orb, a live line of transcript, and end-session controls.</div>
+  </div>
+
+  <div class="two-up">
+
+    <!-- PHONE 3: Drawer over Journal -->
+    <div class="phone-col">
+      <div class="phone-label">
+        <div class="pl-eye">Phone 03 · Drawer over Journal</div>
+        <div class="pl-title">Context-aware sheet</div>
+        <div class="pl-sub">Swipe up from any page · Jess picks up the entry you're on</div>
+      </div>
+      <div class="phone tall">
+        <div class="phone-inner">
+          <div class="notch"></div>
+
+          <!-- Faded background page -->
+          <div class="bg-page">
+            <div class="bg-faux-card">
+              <div class="bg-faux-line w60"></div>
+              <div class="bg-faux-line"></div>
+              <div class="bg-faux-line w80"></div>
+            </div>
+            <div class="bg-faux-card">
+              <div class="bg-faux-line w60"></div>
+              <div class="bg-faux-line"></div>
+            </div>
+            <div class="bg-faux-card">
+              <div class="bg-faux-line w60"></div>
+              <div class="bg-faux-line"></div>
+              <div class="bg-faux-line w80"></div>
+            </div>
+          </div>
+
+          <div class="dim"></div>
+
+          <!-- Drawer -->
+          <div class="drawer">
+            <div class="drag-handle"></div>
+            <div class="dr-head">
+              <div class="dr-av">J</div>
+              <div class="dr-label-col">
+                <div class="dr-label">Jess · here for this entry</div>
+                <div class="dr-name">What would help?</div>
+              </div>
+              <div class="dr-close">✕</div>
+            </div>
+
+            <div class="dr-context">
+              <div class="dc-lbl">◐ She's looking at your entry</div>
+              <div class="dc-snip">"The coat made of wet sand" · today · 9:42 AM · luteal d19 · soft</div>
+            </div>
+
+            <div class="dr-msg">"I've got three gentle moves. None of them leave this entry. Pick any — or close me."</div>
+
+            <div class="dr-actions">
+              <div class="dr-act">
+                <div class="dr-act-ico write">✎</div>
+                <div class="dr-act-body">
+                  <div class="dr-act-name">Help me finish writing it</div>
+                  <div class="dr-act-sub">I'll ask you one question. Nothing saved without you.</div>
+                </div>
+                <div class="dr-act-ch">›</div>
+              </div>
+              <div class="dr-act">
+                <div class="dr-act-ico seal">◐</div>
+                <div class="dr-act-body">
+                  <div class="dr-act-name">Seal this for future-you</div>
+                  <div class="dr-act-sub">Opens when your next follicular starts (Apr 29).</div>
+                </div>
+                <div class="dr-act-ch">›</div>
+              </div>
+              <div class="dr-act">
+                <div class="dr-act-ico echo">▂</div>
+                <div class="dr-act-body">
+                  <div class="dr-act-name">Pull one line as an echo</div>
+                  <div class="dr-act-sub">"Every movement takes two steps to arrive." · names scrubbed · 10-min pause.</div>
+                </div>
+                <div class="dr-act-ch">›</div>
+              </div>
+            </div>
+
+            <div class="dr-talk">◉ Or just talk to me</div>
+          </div>
+
+          <div class="nav" style="z-index: 21;">
+            <div class="nav-item"><div class="nav-ico"></div>Today</div>
+            <div class="nav-item"><div class="nav-ico"></div>Lifestyle</div>
+            <div class="nav-item jess-tab"><div class="nav-ico"></div>Jess</div>
+            <div class="nav-item"><div class="nav-ico"></div>Profile</div>
+            <div class="nav-item"><div class="nav-ico"></div>Menu</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- PHONE 4: Voice -->
+    <div class="phone-col" id="voice">
+      <div class="phone-label">
+        <div class="pl-eye">Phone 04 · Voice session</div>
+        <div class="pl-title">Hands-free · <em>one orb</em></div>
+        <div class="pl-sub">Full-screen · live transcript · 20-min soft cap · always on-device until you send</div>
+      </div>
+      <div class="phone tall">
+        <div class="phone-inner">
+          <div class="notch"></div>
+          <div class="voice-scene">
+            <div class="v-top">
+              <div>
+                <div class="v-eye">Jess · voice mode</div>
+                <div class="v-phase-chip">● Luteal · d19 · encrypted</div>
+              </div>
+              <div class="v-close">✕</div>
+            </div>
+
+            <div class="v-orb-wrap">
+              <div class="v-orb"></div>
+            </div>
+
+            <div class="v-transcript">
+              <div class="v-label">Jess is listening</div>
+              <div class="v-line">"Tell me what's on your chest — we can untangle it together."</div>
+              <div class="v-meta">● Live transcript · 2 min 14 sec</div>
+            </div>
+
+            <div class="v-controls">
+              <div class="v-btn">🔇</div>
+              <div class="v-btn end">✕</div>
+              <div class="v-btn mic">◉</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- ═════ PHONES 5 & 6 ═════ -->
+  <div class="section-head" id="memory">
+    <div class="sh-eye">05 · Memory + 06 · Research</div>
+    <div class="sh-title">Consent you can <em>see</em> · answers you can <em>cite</em></div>
+    <div class="sh-sub">The memory page shows every fact Jess has learned about you, grouped by kind, each one deletable with a tap. Research mode is for factual questions — progesterone, sleep, perimenopause — and comes back with inline numbered citations from Programs, AMAs, or trusted external sources. Every research answer ends in the same caveat: <em>not medical advice, here's where to go if this is urgent</em>.</div>
+  </div>
+
+  <div class="two-up">
+
+    <!-- PHONE 5: Memory -->
+    <div class="phone-col">
+      <div class="phone-label">
+        <div class="pl-eye">Phone 05 · Memory &amp; privacy</div>
+        <div class="pl-title">What Jess knows · editable</div>
+        <div class="pl-sub">34 consented items · 3 categories · one export, one delete-all</div>
+      </div>
+      <div class="phone tall">
+        <div class="phone-inner">
+          <div class="notch"></div>
+          <div class="scroll">
+
+            <div class="ph-head-row">
+              <div>
+                <div class="ph-eyebrow">Jess · memory</div>
+                <h1 class="ph-title">What I know</h1>
+                <div class="ph-sub"><strong>34 items</strong> · all consented · 0 shared externally</div>
+              </div>
+              <div class="pill">◐ Yours</div>
+            </div>
+
+            <!-- Hero card -->
+            <div class="mem-hero">
+              <div class="mh-top">
+                <div class="mh-ico">◐</div>
+                <div class="mh-body">
+                  <div class="mh-lbl">The promise</div>
+                  <div class="mh-title">"I only remember what you let me remember."</div>
+                </div>
+              </div>
+              <div class="mh-sub">Every memory item started with "want me to remember this?" — or it doesn't exist. Turn a category off and I lose the items with it. Delete individual items anytime. Export everything as JSON if you ever leave.</div>
+            </div>
+
+            <!-- Patterns category -->
+            <div class="mem-cat">
+              <div class="mc-head">
+                <div class="mc-title-col">
+                  <div class="mc-ico pat">◉</div>
+                  <div>
+                    <div class="mc-title">Patterns I've noticed</div>
+                    <div class="mc-count">12 items</div>
+                  </div>
+                </div>
+                <div class="mc-toggle"></div>
+              </div>
+              <div class="mc-items">
+                <div class="mc-item">"You rest better with morning light &amp; no phone before 9."</div>
+                <div class="mc-item">"Your hardest luteal window is d17–22."</div>
+                <div class="mc-item">"Sunday phone calls with mum end with you cooking."</div>
+                <div class="mc-item">"Follicular is when you start work, not finish it."</div>
+              </div>
+            </div>
+
+            <!-- Preferences category -->
+            <div class="mem-cat">
+              <div class="mc-head">
+                <div class="mc-title-col">
+                  <div class="mc-ico pre">☽</div>
+                  <div>
+                    <div class="mc-title">Your preferences</div>
+                    <div class="mc-count">14 items</div>
+                  </div>
+                </div>
+                <div class="mc-toggle"></div>
+              </div>
+              <div class="mc-items">
+                <div class="mc-item">"Don't suggest running in luteal."</div>
+                <div class="mc-item">"You prefer audio reflections over written ones."</div>
+                <div class="mc-item">"Call you Oji — not your full name."</div>
+              </div>
+            </div>
+
+            <!-- Cycle history category -->
+            <div class="mem-cat">
+              <div class="mc-head">
+                <div class="mc-title-col">
+                  <div class="mc-ico cyc">●</div>
+                  <div>
+                    <div class="mc-title">Cycle history (last 6 cycles)</div>
+                    <div class="mc-count">8 summaries</div>
+                  </div>
+                </div>
+                <div class="mc-toggle"></div>
+              </div>
+              <div class="mc-items">
+                <div class="mc-item">"Luteal sleep dipped Feb, Mar, Apr — averaging 5.3h."</div>
+                <div class="mc-item">"No period this Mar · you marked 'stress' — not pregnancy."</div>
+              </div>
+            </div>
+
+            <!-- Off category -->
+            <div class="mem-cat">
+              <div class="mc-head">
+                <div class="mc-title-col">
+                  <div class="mc-ico off">✕</div>
+                  <div>
+                    <div class="mc-title">Off · relationships &amp; people</div>
+                    <div class="mc-count">You turned this off</div>
+                  </div>
+                </div>
+                <div class="mc-toggle off"></div>
+              </div>
+            </div>
+
+            <!-- CTAs -->
+            <div class="mem-cta-row">
+              <div class="mem-cta primary">Export all (JSON)</div>
+              <div class="mem-cta ghost">Pause Jess</div>
+            </div>
+            <div style="margin-top: 8px;">
+              <div class="mem-cta danger">Delete everything Jess knows</div>
+            </div>
+
+            <div class="privacy">
+              <div class="priv-ico">☐</div>
+              <div class="priv-body">
+                <div class="priv-title"><span>Never trained on.</span></div>
+                <div class="priv-sub">Your messages, entries, and memory items are not used to train any model — Jess's or otherwise. They live in your account, encrypted, and leave only when you say so.</div>
+              </div>
+            </div>
+
+          </div>
+          <div class="nav">
+            <div class="nav-item"><div class="nav-ico"></div>Today</div>
+            <div class="nav-item"><div class="nav-ico"></div>Lifestyle</div>
+            <div class="nav-item active jess-tab"><div class="nav-ico"></div>Jess</div>
+            <div class="nav-item"><div class="nav-ico"></div>Profile</div>
+            <div class="nav-item"><div class="nav-ico"></div>Menu</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- PHONE 6: Research -->
+    <div class="phone-col" id="research">
+      <div class="phone-label">
+        <div class="pl-eye">Phone 06 · Research response</div>
+        <div class="pl-title">Cited · caveated · actionable</div>
+        <div class="pl-sub">Sources from Programs, AMAs, and trusted external · always ends with "here's where to go if urgent"</div>
+      </div>
+      <div class="phone tall">
+        <div class="phone-inner">
+          <div class="notch"></div>
+          <div class="scroll">
+
+            <!-- Chat head -->
+            <div class="chat-head">
+              <div class="ch-back">‹</div>
+              <div class="ch-av">J</div>
+              <div class="ch-name-col">
+                <div class="ch-name">Jess · research</div>
+                <div class="ch-status"><span class="d"></span> Citing · no diagnosis · 9:42 AM</div>
+              </div>
+              <div class="ch-more">⋯</div>
+            </div>
+
+            <div style="height: 14px;"></div>
+
+            <!-- User q -->
+            <div class="research-q">"Why do I sleep so badly the week before my period?"</div>
+
+            <!-- Jess answer -->
+            <div class="research-ans">
+              <div class="ra-head">
+                <div class="ra-av">J</div>
+                <div class="ra-lbl">Answer · cycle-aware</div>
+              </div>
+              <div class="ra-title">"Short version: progesterone rises through your luteal phase, then drops before your period. Both the rise and the drop mess with sleep — and they do it in different ways."</div>
+
+              <div class="ra-body">
+                <p>Three mechanisms are consistently named in the literature <span class="cite">1</span><span class="cite">2</span>:</p>
+                <ol>
+                  <li><strong>Body temperature</strong> — progesterone raises your basal temp by ~0.3–0.5°C, and a warmer body falls asleep later. <span class="cite">1</span></li>
+                  <li><strong>GABA sensitivity shifts</strong> — progesterone's metabolites bind to GABA receptors; withdrawal in late luteal can feel like anxiety at 3am. <span class="cite">3</span></li>
+                  <li><strong>Fragmented REM</strong> — REM tends to shorten in the late luteal window, which is why you wake remembering dreams. <span class="cite">2</span></li>
+                </ol>
+                <p>Your own pattern tracks this — <strong>your last four luteal weeks averaged 5.3 h sleep</strong>, vs 7.1 h follicular. That's not "bad sleep" — that's a seasonal shift.</p>
+              </div>
+
+              <div class="sources">
+                <div class="src-lbl">◉ Sources · 3</div>
+                <div class="src">
+                  <div class="src-num">1</div>
+                  <div class="src-body">
+                    <div class="src-title">Progesterone &amp; thermoregulation — Program "Luteal Sleep Reset"</div>
+                    <div class="src-meta">FemWell Programs · Aisha Patel, OB-GYN · Apr 2026</div>
+                  </div>
+                </div>
+                <div class="src">
+                  <div class="src-num">2</div>
+                  <div class="src-body">
+                    <div class="src-title">REM architecture across the menstrual cycle</div>
+                    <div class="src-meta">Sleep Medicine Reviews · 2022 · peer-reviewed</div>
+                  </div>
+                </div>
+                <div class="src">
+                  <div class="src-num">3</div>
+                  <div class="src-body">
+                    <div class="src-title">AMA: PMDD &amp; late-luteal anxiety — Dr Aisha Patel</div>
+                    <div class="src-meta">FemWell AMA · Mar 14, 2026 · 1h 04m</div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="ra-caveat">
+                <div class="ca-ico">▲</div>
+                <div class="ca-txt"><strong>Not medical advice.</strong> If your sleep change is sudden, extreme, or pairs with suicidal thoughts — that's PMDD territory and it deserves a clinician. I can help you prep questions for one.</div>
+              </div>
+
+              <div class="ra-actions">
+                <div class="ra-act save">◐ Save to Library</div>
+                <div class="ra-act book">Book a Session →</div>
+              </div>
+            </div>
+
+          </div>
+
+          <div class="input-bar">
+            <div class="in-attach">+</div>
+            <div class="in-field">Ask another…</div>
+            <div class="in-mic">◉</div>
+          </div>
+
+          <div class="nav">
+            <div class="nav-item"><div class="nav-ico"></div>Today</div>
+            <div class="nav-item"><div class="nav-ico"></div>Lifestyle</div>
+            <div class="nav-item active jess-tab"><div class="nav-ico"></div>Jess</div>
+            <div class="nav-item"><div class="nav-ico"></div>Profile</div>
+            <div class="nav-item"><div class="nav-ico"></div>Menu</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- ═════ Appendices ═════ -->
+
+  <div class="section-head" id="surfaces">
+    <div class="sh-eye">07 · Surfaces map + 08 · Tool use + 09 · Voice brief + 10 · Guardrails</div>
+    <div class="sh-title">Where she lives · <em>what she does</em> · how she sounds</div>
+    <div class="sh-sub">Reference tables for engineering + brand. Keep these with Jess's prompt library so Jess-the-character and Jess-the-system stay the same person.</div>
+  </div>
+
+  <div class="appendix-grid">
+
+    <!-- 07 · Surfaces -->
+    <div class="app-card">
+      <div class="app-eye">07 · Where Jess appears across the app</div>
+      <div class="app-title">Surfaces map</div>
+      <div class="surfaces">
+        <div class="surf">
+          <div class="surf-where">Today</div>
+          <div class="surf-what">Morning brief card · "what today asks of you" · phase-tuned</div>
+        </div>
+        <div class="surf">
+          <div class="surf-where">Journal</div>
+          <div class="surf-what">Phase-tuned prompt · <strong>pattern card</strong> · Share-as-Echo line pick · Sealed Letter unlock pings · Anniversary surfacing</div>
+        </div>
+        <div class="surf">
+          <div class="surf-where">Community</div>
+          <div class="surf-what">Post-with-Jess shaping · Echo Wall <strong>scrub &amp; cooling pause</strong> · Witness-mode crisis escalation</div>
+        </div>
+        <div class="surf">
+          <div class="surf-where">Planner</div>
+          <div class="surf-what">Plan-with-Jess week shaping · luteal softening · retroactive "how did that land?" check-ins</div>
+        </div>
+        <div class="surf">
+          <div class="surf-where">Programs</div>
+          <div class="surf-what">Picked-for-you carousel · continue-journey nudges · program-complete reflection</div>
+        </div>
+        <div class="surf">
+          <div class="surf-where">Pulse</div>
+          <div class="surf-what">Correlation narration ("you sleep worse on the 3 nights before your period") · anomaly nudges</div>
+        </div>
+        <div class="surf">
+          <div class="surf-where">Nutrition</div>
+          <div class="surf-what">Phase-aware swaps · luteal plate reasoning · "why this craving right now"</div>
+        </div>
+        <div class="surf">
+          <div class="surf-where">Panic Mode</div>
+          <div class="surf-what"><strong>Does not speak first.</strong> Sits beside the reading cards. Appears only if user asks.</div>
+        </div>
+        <div class="surf">
+          <div class="surf-where">Sessions</div>
+          <div class="surf-what">Pre-session prep ("what do you want to bring?") · post-session hold</div>
+        </div>
+        <div class="surf">
+          <div class="surf-where">Drawer</div>
+          <div class="surf-what">Swipe-up sheet · context-loaded · available on every screen</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 08 · Tool use -->
+    <div class="app-card" id="tools">
+      <div class="app-eye">08 · What Jess can do</div>
+      <div class="app-title">Tool use &amp; consent</div>
+      <table class="tool-table">
+        <thead>
+          <tr><th>Tool</th><th>What it does</th><th>Access</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td class="name">journal.query</td>
+            <td>Look up your past entries by date, phase, thread, or keyword.</td>
+            <td><span class="tt-pill consent">per-call consent</span></td>
+          </tr>
+          <tr>
+            <td class="name">cycle.context</td>
+            <td>Pull current phase + day, next phase, last 6 cycles.</td>
+            <td><span class="tt-pill read">always</span></td>
+          </tr>
+          <tr>
+            <td class="name">pulse.correlate</td>
+            <td>Find relationships between symptoms, cycle, sleep, mood.</td>
+            <td><span class="tt-pill read">always</span></td>
+          </tr>
+          <tr>
+            <td class="name">planner.propose</td>
+            <td>Draft calendar slots. <em>Never writes without tap.</em></td>
+            <td><span class="tt-pill write">on confirm</span></td>
+          </tr>
+          <tr>
+            <td class="name">journal.draft</td>
+            <td>Offer a line back to the user to finish.</td>
+            <td><span class="tt-pill write">on confirm</span></td>
+          </tr>
+          <tr>
+            <td class="name">letter.seal</td>
+            <td>Client-encrypt &amp; store a letter for a future unlock.</td>
+            <td><span class="tt-pill write">on confirm</span></td>
+          </tr>
+          <tr>
+            <td class="name">echo.scrub</td>
+            <td>Strip names, substances, identifiers from a proposed echo.</td>
+            <td><span class="tt-pill write">on confirm</span></td>
+          </tr>
+          <tr>
+            <td class="name">programs.recommend</td>
+            <td>Surface relevant FemWell programs as sources.</td>
+            <td><span class="tt-pill read">always</span></td>
+          </tr>
+          <tr>
+            <td class="name">sessions.suggest</td>
+            <td>Propose a clinician or expert session when appropriate.</td>
+            <td><span class="tt-pill write">on confirm</span></td>
+          </tr>
+          <tr>
+            <td class="name">panic.open</td>
+            <td>Jump the user to Panic Mode. Only on user phrase or explicit ask.</td>
+            <td><span class="tt-pill write">on ask</span></td>
+          </tr>
+          <tr>
+            <td class="name">memory.remember</td>
+            <td>Add an item to the consented memory store.</td>
+            <td><span class="tt-pill consent">per-item consent</span></td>
+          </tr>
+          <tr>
+            <td class="name">memory.forget</td>
+            <td>Remove or pause memory items.</td>
+            <td><span class="tt-pill write">always</span></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- 09 · Voice brief -->
+    <div class="app-card" id="voice-brief">
+      <div class="app-eye">09 · How Jess sounds</div>
+      <div class="app-title">Brand voice brief</div>
+      <div class="voice-principles">
+        <div class="vp">
+          <div class="vp-lbl">Say</div>
+          <div class="vp-row">
+            <div class="vp-yes">"I'm holding this."</div>
+            <div class="vp-no">"Great job!"</div>
+          </div>
+        </div>
+        <div class="vp">
+          <div class="vp-lbl">Say</div>
+          <div class="vp-row">
+            <div class="vp-yes">"What's circling, love?"</div>
+            <div class="vp-no">"How can I help you today?"</div>
+          </div>
+        </div>
+        <div class="vp">
+          <div class="vp-lbl">Say</div>
+          <div class="vp-row">
+            <div class="vp-yes">"Let's soften it."</div>
+            <div class="vp-no">"Let's optimize your day."</div>
+          </div>
+        </div>
+        <div class="vp">
+          <div class="vp-lbl">Say</div>
+          <div class="vp-row">
+            <div class="vp-yes">"That's seasonal, not permanent."</div>
+            <div class="vp-no">"Don't worry about it."</div>
+          </div>
+        </div>
+        <div class="vp">
+          <div class="vp-lbl">Say</div>
+          <div class="vp-row">
+            <div class="vp-yes">"Want me to remember this?"</div>
+            <div class="vp-no">"Saved to your profile."</div>
+          </div>
+        </div>
+        <div class="vp">
+          <div class="vp-lbl">Always</div>
+          <div class="vp-row">
+            <div class="vp-yes">One question at a time.</div>
+            <div class="vp-no">Three-bullet recap.</div>
+          </div>
+        </div>
+        <div class="vp">
+          <div class="vp-lbl">Always</div>
+          <div class="vp-row">
+            <div class="vp-yes">Name what you see first.</div>
+            <div class="vp-no">Jump to solutions.</div>
+          </div>
+        </div>
+        <div class="vp">
+          <div class="vp-lbl">Form</div>
+          <div class="vp-row">
+            <div class="vp-yes">Sentences. Italic for reflection.</div>
+            <div class="vp-no">Bullet lists. Emoji strings.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 10 · Guardrails -->
+    <div class="app-card" id="rails">
+      <div class="app-eye">10 · What Jess won't do</div>
+      <div class="app-title">Guardrails</div>
+      <div class="rail no">
+        <div class="rail-mark">✕</div>
+        <div class="rail-body">
+          <div class="rail-h">Diagnose anything</div>
+          <div class="rail-s">Jess names patterns; she doesn't name conditions. Users hear "this is PMDD territory — a clinician can confirm" not "you have PMDD".</div>
+        </div>
+      </div>
+      <div class="rail no">
+        <div class="rail-mark">✕</div>
+        <div class="rail-body">
+          <div class="rail-h">Prescribe or dose</div>
+          <div class="rail-s">Never suggests medications, supplements, doses, or stopping/starting anything prescribed. Always routes to Sessions or the user's own clinician.</div>
+        </div>
+      </div>
+      <div class="rail no">
+        <div class="rail-mark">✕</div>
+        <div class="rail-body">
+          <div class="rail-h">Be the crisis response</div>
+          <div class="rail-s">If language signals acute crisis, Jess hands off to Panic Mode + regional lines (iTherapist UK) and the user's Person. She doesn't try to be the bridge alone.</div>
+        </div>
+      </div>
+      <div class="rail no">
+        <div class="rail-mark">✕</div>
+        <div class="rail-body">
+          <div class="rail-h">Read without consent</div>
+          <div class="rail-s">Every journal pull, every pattern, every memory is gated. Sealed letters are client-encrypted — Jess has no read access at all.</div>
+        </div>
+      </div>
+      <div class="rail no">
+        <div class="rail-mark">✕</div>
+        <div class="rail-body">
+          <div class="rail-h">Share across users</div>
+          <div class="rail-s">Echoes are anonymized at write time. Jess never surfaces one user's words to another as "Jess's suggestion." If it's from a sister, it's labelled.</div>
+        </div>
+      </div>
+      <div class="rail yes">
+        <div class="rail-mark">✓</div>
+        <div class="rail-body">
+          <div class="rail-h">Pull citations, always</div>
+          <div class="rail-s">Research mode always shows Programs · AMAs · peer-reviewed sources with numbered inline citations. No unsourced claims.</div>
+        </div>
+      </div>
+      <div class="rail yes">
+        <div class="rail-mark">✓</div>
+        <div class="rail-body">
+          <div class="rail-h">Take the loss when unsure</div>
+          <div class="rail-s">"I don't know" and "I'm not the right shape for this" are acceptable and encouraged. Handing off to Programs, Sessions, or Panic Mode is not failure — it's Jess doing her job.</div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Decision -->
+  <div class="decision">
+    <div class="dc-eye">LD recommendation</div>
+    <div class="dc-title">"Ship the home tab + conversation + drawer first."</div>
+    <div class="dc-sub">Phones 1, 2, 3 are the core surface area and can ship on top of existing model + RAG. <strong>Voice (phone 4)</strong> is its own integration (real-time STT/TTS, cost model) — put it in MVP+1. <strong>Memory (phone 5)</strong> needs the consent data model built first — tie it to the same Q1 sprint as Journal v2 Sealed Letters. <strong>Research (phone 6)</strong> needs Programs + AMAs to be tagged as citable sources — add that as a data-model prereq in Q1. Ship the character-brief + guardrails as a prompt-library artifact in the same PR so Jess-the-feature never drifts from Jess-the-character.</div>
+  </div>
+
+</div>
+</body>
+</html>

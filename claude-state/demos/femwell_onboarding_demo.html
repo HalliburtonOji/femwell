@@ -1,0 +1,716 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>FemWell — Onboarding flow redesign</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,500;0,9..144,600;1,9..144,400;1,9..144,500&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --cream:#FFFAF5; --cream-2:#FFF5EC; --cream-3:#F0E5D8;
+  --plum:#4A2A3A; --plum-2:#6B4559; --plum-mute:#8A7584;
+  --rose-300:#F2A99A; --rose-400:#E67F73; --rose-500:#D45E52; --rose-600:#B84A41;
+  --period:#B84A41; --follicular:#E67F73; --ovulatory:#F2A99A; --luteal:#8A5F74;
+  --gold:#C9A95C; --teal:#5F8A85; --moss:#7D8668; --lav:#B9A4C9;
+  --night:#1A1522; --star:#F5E6D3;
+  --ink:#2B1E16; --ink-soft:#4A3A30; --ink-mute:#8A7768;
+}
+*{box-sizing:border-box; -webkit-font-smoothing:antialiased}
+html,body{margin:0; padding:0}
+body{
+  font-family:'Inter', sans-serif; color:var(--ink);
+  background:
+    radial-gradient(1200px 800px at 20% 0%, #F5E6D6 0%, transparent 55%),
+    radial-gradient(1100px 700px at 90% 20%, #EED5CE 0%, transparent 50%),
+    radial-gradient(1400px 900px at 50% 100%, #F0DCCF 0%, transparent 55%),
+    var(--cream);
+  min-height:100vh;
+}
+.wrap{max-width:1440px; margin:0 auto; padding:56px 40px 80px}
+.header{max-width:900px; margin-bottom:44px}
+.eyebrow{font-family:'Fraunces',serif; font-style:italic; color:var(--rose-500); font-size:15px; letter-spacing:.02em}
+h1{font-family:'Fraunces',serif; font-weight:500; font-size:54px; line-height:1.03; margin:10px 0 14px; letter-spacing:-.015em; color:var(--plum)}
+h1 em{font-style:italic; color:var(--rose-500)}
+.sub{color:var(--ink-soft); font-size:16px; line-height:1.55; max-width:740px}
+.legend{display:flex; flex-wrap:wrap; gap:18px; margin-top:22px; color:var(--plum-mute); font-size:12.5px; letter-spacing:.02em; text-transform:uppercase}
+.legend span{display:inline-flex; align-items:center; gap:8px}
+.legend i{width:10px; height:10px; border-radius:50%; background:var(--rose-400); display:inline-block}
+
+.phones{display:grid; grid-template-columns:repeat(5, 1fr); gap:28px; margin-top:36px}
+@media (max-width:1400px){.phones{grid-template-columns:repeat(4, 1fr)}}
+@media (max-width:1150px){.phones{grid-template-columns:repeat(3, 1fr)}}
+@media (max-width:860px){.phones{grid-template-columns:repeat(2, 1fr)}}
+@media (max-width:560px){.phones{grid-template-columns:1fr}}
+
+.phone-wrap{display:flex; flex-direction:column; gap:10px}
+.phone-label{font-family:'Fraunces',serif; font-style:italic; font-size:14px; color:var(--plum); padding-left:4px}
+.phone-step{color:var(--plum-mute); font-size:11px; letter-spacing:.14em; text-transform:uppercase; padding-left:4px}
+
+.phone{
+  position:relative; aspect-ratio:1/2.05;
+  border-radius:46px; padding:10px;
+  background:linear-gradient(160deg,#1b1118,#2a1b25);
+  box-shadow: 0 30px 60px -20px rgba(74,42,58,.35), 0 10px 25px rgba(74,42,58,.12), inset 0 0 0 1px rgba(255,255,255,.03);
+}
+.phone::before{content:""; position:absolute; top:22px; left:50%; transform:translateX(-50%); width:120px; height:24px; border-radius:14px; background:#0f0810; z-index:3}
+.screen{
+  position:absolute; inset:10px; border-radius:38px; overflow:hidden;
+  background:var(--cream); display:flex; flex-direction:column;
+}
+.status{height:44px; flex-shrink:0; display:flex; justify-content:space-between; align-items:center; padding:0 22px; font-family:'Inter'; font-weight:600; font-size:12px; color:var(--plum)}
+.body{flex:1; overflow:hidden; position:relative; padding:10px 18px 16px; display:flex; flex-direction:column; gap:14px}
+
+/* progress dots */
+.dots{display:flex; gap:5px; justify-content:center; padding-top:6px}
+.dots i{width:6px; height:6px; border-radius:50%; background:#e8d5c9}
+.dots i.active{background:var(--rose-500); width:20px; border-radius:3px}
+
+/* typography helpers */
+.display{font-family:'Fraunces',serif; font-weight:500; font-size:32px; line-height:1.1; letter-spacing:-.01em; color:var(--plum)}
+.display em{font-style:italic; color:var(--rose-500)}
+.p{color:var(--ink-soft); font-size:13.5px; line-height:1.5}
+.mut{color:var(--ink-mute); font-size:12px; line-height:1.45}
+
+/* card base */
+.card{background:#fff; border-radius:18px; padding:14px; box-shadow:0 1px 2px rgba(74,42,58,.04), 0 8px 24px -16px rgba(74,42,58,.15); border:1px solid rgba(74,42,58,.05)}
+.softcard{background:linear-gradient(150deg,#FFF1E5,#FFDCD0); border-radius:22px; padding:16px; border:1px solid rgba(212,94,82,.15)}
+
+/* primary cta */
+.cta{
+  margin-top:auto; width:100%; padding:14px; border-radius:16px;
+  background:linear-gradient(135deg,var(--rose-500),var(--rose-600));
+  color:#fff; font-family:'Inter'; font-weight:600; font-size:14.5px; letter-spacing:.01em;
+  border:0; box-shadow:0 12px 22px -10px rgba(212,94,82,.55);
+  display:flex; align-items:center; justify-content:center; gap:8px;
+}
+.cta.ghost{background:transparent; color:var(--plum); box-shadow:none; border:1px solid rgba(74,42,58,.15)}
+.linkrow{display:flex; justify-content:space-between; align-items:center; margin-top:10px}
+.link-mut{font-family:'Inter'; font-size:12.5px; color:var(--plum-mute); text-decoration:underline; text-underline-offset:3px}
+
+/* P1 welcome orb */
+.orb{
+  width:58%; aspect-ratio:1/1; margin:10px auto 0; border-radius:50%;
+  background:
+    radial-gradient(circle at 30% 30%, rgba(255,220,208,.95), rgba(212,94,82,.65) 60%, rgba(74,42,58,.85) 100%);
+  box-shadow:0 25px 50px -20px rgba(212,94,82,.45), inset 0 -20px 60px rgba(74,42,58,.4);
+  position:relative;
+  animation:orbBreath 6s ease-in-out infinite;
+}
+@keyframes orbBreath{0%,100%{transform:scale(1)} 50%{transform:scale(1.04)}}
+.orb::after{content:""; position:absolute; inset:12%; border-radius:50%; border:1px solid rgba(255,255,255,.15)}
+
+/* P2 input */
+.input{
+  width:100%; padding:14px 16px; border-radius:14px; border:1px solid rgba(74,42,58,.15);
+  background:#fff; font:inherit; font-size:15px; color:var(--plum);
+}
+.input:focus{outline:2px solid var(--rose-300); outline-offset:1px}
+.label{font-family:'Inter'; font-weight:500; color:var(--plum); font-size:12.5px; letter-spacing:.04em; text-transform:uppercase; margin-bottom:6px}
+.chips{display:flex; flex-wrap:wrap; gap:6px}
+.chip{padding:8px 12px; border-radius:999px; background:#fff; color:var(--plum); font-size:12.5px; font-weight:500; border:1px solid rgba(74,42,58,.12)}
+.chip.on{background:var(--plum); color:#fff; border-color:var(--plum)}
+.chip.rose.on{background:var(--rose-500); border-color:var(--rose-500)}
+
+/* P3 stage picker */
+.stage{
+  border-radius:18px; padding:14px 15px; border:1px solid transparent;
+  display:flex; gap:12px; align-items:flex-start;
+  position:relative; overflow:hidden;
+}
+.stage .glyph{
+  width:36px; height:36px; border-radius:11px; flex-shrink:0;
+  display:flex; align-items:center; justify-content:center;
+  font-family:'Fraunces',serif; font-style:italic; font-size:18px; color:#fff;
+}
+.stage .meta{flex:1; min-width:0}
+.stage h4{font-family:'Fraunces',serif; font-weight:500; font-size:15px; margin:0 0 2px; color:var(--plum)}
+.stage p{margin:0; font-size:11.5px; color:var(--ink-soft); line-height:1.4}
+.stage.active{border-color:var(--rose-500); background:linear-gradient(135deg,rgba(242,169,154,.2),rgba(212,94,82,.1))}
+.stage.active::before{content:"✓"; position:absolute; right:12px; top:12px; width:20px; height:20px; border-radius:50%; background:var(--rose-500); color:#fff; font-size:11px; display:flex; align-items:center; justify-content:center}
+.stage-teen .glyph{background:linear-gradient(135deg,#F2A99A,#E67F73)}
+.stage-repro .glyph{background:linear-gradient(135deg,var(--rose-500),var(--rose-600))}
+.stage-peri .glyph{background:linear-gradient(135deg,var(--luteal),var(--plum))}
+.stage-meno .glyph{background:linear-gradient(135deg,var(--plum),var(--night))}
+.stage-post .glyph{background:linear-gradient(135deg,var(--moss),var(--teal))}
+
+/* P4 cycle date */
+.date-field{display:flex; gap:8px; align-items:center}
+.date-field .num{font-family:'Fraunces',serif; font-size:40px; line-height:1; color:var(--plum); font-weight:500}
+.date-field .num.mini{font-size:22px; color:var(--plum-2)}
+.slider-wrap{margin-top:10px}
+.slider-bar{height:6px; background:#f0e0d4; border-radius:4px; position:relative}
+.slider-fill{position:absolute; left:0; top:0; bottom:0; width:56%; background:linear-gradient(90deg,var(--rose-400),var(--rose-500)); border-radius:4px}
+.slider-knob{position:absolute; left:56%; top:50%; transform:translate(-50%,-50%); width:18px; height:18px; border-radius:50%; background:#fff; border:2px solid var(--rose-500); box-shadow:0 3px 8px rgba(212,94,82,.4)}
+.slider-scale{display:flex; justify-content:space-between; margin-top:6px; font-size:10.5px; color:var(--ink-mute)}
+
+/* P5 goals grid */
+.goal-grid{display:grid; grid-template-columns:1fr 1fr; gap:8px}
+.goal{
+  background:#fff; border-radius:14px; padding:12px 11px; border:1px solid rgba(74,42,58,.08);
+  font-size:12px; color:var(--plum); display:flex; align-items:center; gap:8px;
+}
+.goal .dot{width:18px; height:18px; border-radius:6px; background:#f0e0d4; flex-shrink:0; display:flex; align-items:center; justify-content:center; font-size:11px; color:#fff}
+.goal.on{border-color:var(--rose-500); background:linear-gradient(135deg,#FFF5EC,#FFDCD0)}
+.goal.on .dot{background:var(--rose-500)}
+.goal .txt{line-height:1.2}
+.count{font-size:11px; color:var(--plum-mute); text-align:right}
+
+/* P6 symptom grid */
+.symp-grid{display:grid; grid-template-columns:repeat(3,1fr); gap:7px}
+.symp{
+  background:#fff; border-radius:12px; padding:9px 7px; text-align:center;
+  font-size:10.5px; color:var(--plum); border:1px solid rgba(74,42,58,.08); line-height:1.2;
+}
+.symp .emoji{font-size:17px; display:block; margin-bottom:3px}
+.symp.on{background:linear-gradient(135deg,#FFEFE3,#FFDCD0); border-color:var(--rose-400)}
+
+/* P7 wearables */
+.dev{display:flex; align-items:center; gap:11px; padding:11px; background:#fff; border-radius:14px; border:1px solid rgba(74,42,58,.08)}
+.dev .ico{width:36px; height:36px; border-radius:10px; background:linear-gradient(135deg,#EEE,#DDD); display:flex; align-items:center; justify-content:center; font-size:15px; color:var(--plum)}
+.dev .meta{flex:1; min-width:0}
+.dev .meta strong{font-size:13px; color:var(--plum); font-weight:600; display:block}
+.dev .meta span{font-size:11px; color:var(--ink-mute)}
+.dev.on{border-color:var(--moss); background:linear-gradient(135deg,#F5F7EE,#fff)}
+.dev.on .ico{background:linear-gradient(135deg,var(--moss),#6b7a5a); color:#fff}
+.pill{padding:5px 11px; border-radius:999px; font-size:10.5px; font-weight:600}
+.pill.off{background:#f0e0d4; color:var(--ink-mute)}
+.pill.on{background:var(--moss); color:#fff}
+
+/* P8 Jess intro */
+.jess-hero{
+  background:linear-gradient(160deg,var(--plum),var(--night));
+  border-radius:22px; padding:18px; color:#fff; position:relative; overflow:hidden;
+}
+.jess-hero::after{content:""; position:absolute; right:-20px; top:-30px; width:150px; height:150px; border-radius:50%; background:radial-gradient(circle, rgba(242,169,154,.25), transparent 60%)}
+.jess-label{font-family:'Fraunces',serif; font-style:italic; font-size:12.5px; color:var(--rose-300); letter-spacing:.02em}
+.jess-line{font-family:'Fraunces',serif; font-size:19px; line-height:1.3; margin-top:6px; position:relative; z-index:1}
+.jess-line em{font-style:italic; color:var(--rose-300)}
+.consent{background:#fff; border-radius:14px; padding:11px 12px; display:flex; gap:10px; align-items:flex-start; border:1px solid rgba(74,42,58,.08)}
+.consent .tgl{width:30px; height:18px; border-radius:10px; background:var(--moss); flex-shrink:0; margin-top:2px; position:relative}
+.consent .tgl::after{content:""; position:absolute; right:2px; top:2px; width:14px; height:14px; border-radius:50%; background:#fff}
+.consent .tgl.off{background:#e8d5c9}
+.consent .tgl.off::after{left:2px; right:auto}
+.consent .meta{flex:1; min-width:0}
+.consent .meta strong{display:block; font-size:12px; color:var(--plum); font-weight:600; margin-bottom:1px}
+.consent .meta span{font-size:11px; color:var(--ink-mute); line-height:1.35}
+
+/* P9 notifications */
+.notif-item{display:flex; justify-content:space-between; align-items:center; padding:11px 12px; background:#fff; border-radius:14px; border:1px solid rgba(74,42,58,.08)}
+.notif-item .meta strong{display:block; font-size:12.5px; color:var(--plum); font-weight:600}
+.notif-item .meta span{font-size:11px; color:var(--ink-mute); margin-top:2px; display:block}
+.timegate{background:linear-gradient(135deg,#1A1522,#2A1B33); color:#fff; border-radius:16px; padding:13px; position:relative}
+.timegate h5{font-family:'Fraunces',serif; font-style:italic; font-size:14px; margin:0 0 3px; color:#F2A99A; font-weight:500}
+.timegate p{margin:0; font-size:11px; color:rgba(255,255,255,.7); line-height:1.35}
+.timegate .times{display:flex; justify-content:space-between; margin-top:9px; padding-top:9px; border-top:1px solid rgba(255,255,255,.08)}
+.timegate .times span{font-family:'Fraunces',serif; font-style:italic; font-size:13px; color:#fff}
+
+/* P10 today preview */
+.preview-card{
+  background:linear-gradient(150deg,#FFEFE3,#FFDCD0);
+  border-radius:22px; padding:16px; border:1px solid rgba(212,94,82,.15);
+}
+.preview-hero{display:flex; align-items:flex-start; gap:10px}
+.preview-hero .avatar{width:42px; height:42px; border-radius:50%; background:linear-gradient(135deg,var(--rose-500),var(--plum)); color:#fff; display:flex; align-items:center; justify-content:center; font-family:'Fraunces',serif; font-style:italic; font-size:18px; flex-shrink:0}
+.preview-hero .meta strong{display:block; font-family:'Fraunces',serif; font-size:17px; color:var(--plum); font-weight:500; line-height:1.2}
+.preview-hero .meta span{font-size:11px; color:var(--plum-mute); font-style:italic; font-family:'Fraunces',serif}
+.phase-row{display:flex; gap:4px; margin-top:12px}
+.phase-row i{flex:1; height:6px; border-radius:3px; background:#e8d5c9}
+.phase-row i.p{background:var(--period)}
+.phase-row i.f{background:var(--follicular)}
+.phase-row i.o{background:var(--ovulatory)}
+.phase-row i.l{background:var(--luteal)}
+.jess-quick{background:#fff; border-radius:14px; padding:11px; display:flex; gap:9px; align-items:flex-start; margin-top:10px}
+.jess-quick .badge{width:26px; height:26px; border-radius:50%; background:linear-gradient(135deg,var(--plum),var(--night)); color:#fff; font-family:'Fraunces',serif; font-style:italic; font-size:13px; display:flex; align-items:center; justify-content:center; flex-shrink:0}
+.jess-quick .line{font-size:11.5px; line-height:1.4; color:var(--plum)}
+.jess-quick .line em{font-family:'Fraunces',serif; font-style:italic; color:var(--rose-500)}
+.quick-row{display:flex; gap:6px; margin-top:10px}
+.quick-row .qa{flex:1; background:#fff; border-radius:10px; padding:8px 6px; text-align:center; font-size:10px; color:var(--plum); border:1px solid rgba(74,42,58,.06)}
+.quick-row .qa .e{font-size:16px; display:block; margin-bottom:2px}
+
+/* badges */
+.rose-chip{display:inline-block; padding:3px 10px; border-radius:999px; background:var(--rose-500); color:#fff; font-size:10.5px; font-weight:600; letter-spacing:.02em}
+.ghost-chip{display:inline-block; padding:3px 9px; border-radius:999px; background:rgba(74,42,58,.08); color:var(--plum); font-size:10.5px; font-weight:500}
+
+/* appendix */
+.appendix{margin-top:84px; background:linear-gradient(180deg,var(--cream-2),var(--cream)); border-radius:28px; padding:48px 48px 44px; border:1px solid rgba(74,42,58,.08)}
+.appendix h2{font-family:'Fraunces',serif; font-weight:500; font-size:34px; margin:0 0 8px; color:var(--plum); letter-spacing:-.01em}
+.appendix h2 em{font-style:italic; color:var(--rose-500)}
+.appendix p.lead{color:var(--ink-soft); font-size:15px; max-width:800px; line-height:1.55; margin:0 0 28px}
+.app-grid{display:grid; grid-template-columns:repeat(3, 1fr); gap:22px}
+@media (max-width:960px){.app-grid{grid-template-columns:1fr}}
+.app-card{background:#fff; border-radius:20px; padding:22px; border:1px solid rgba(74,42,58,.06); box-shadow:0 1px 2px rgba(74,42,58,.04)}
+.app-card h3{font-family:'Fraunces',serif; font-weight:500; font-size:18px; color:var(--plum); margin:0 0 8px}
+.app-card h3 em{font-style:italic; color:var(--rose-500)}
+.app-card ul{margin:6px 0 0; padding-left:18px; color:var(--ink-soft); font-size:13px; line-height:1.6}
+.app-card li{margin-bottom:4px}
+.app-card li b{color:var(--plum); font-weight:600}
+.tag{display:inline-block; padding:3px 9px; border-radius:999px; background:var(--plum); color:#fff; font-size:11px; font-weight:500}
+.tag.q2{background:var(--moss)} .tag.q3{background:var(--gold); color:var(--plum)} .tag.q4{background:var(--teal)}
+table{border-collapse:collapse; width:100%; font-size:12.5px; margin-top:10px}
+th{text-align:left; font-weight:600; color:var(--plum); padding:6px 9px; border-bottom:1px solid rgba(74,42,58,.1); font-size:11.5px}
+td{padding:8px 9px; color:var(--ink-soft); vertical-align:top; border-bottom:1px solid rgba(74,42,58,.04); line-height:1.45}
+
+.footer{margin-top:60px; padding-top:28px; border-top:1px solid rgba(74,42,58,.1); color:var(--plum-mute); font-size:12.5px; font-style:italic; font-family:'Fraunces',serif}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header class="header">
+  <div class="eyebrow">FemWell · Onboarding redesign · v1 · 2026-04-20</div>
+  <h1>The first ten minutes — so you feel <em>met, not measured.</em></h1>
+  <p class="sub">Ten screens. Low ask, high trust. We pick the life-stage upfront (Teen → Reproductive → Peri → Meno → Post-meno) so every downstream surface speaks the right language. Consent is explicit — the user chooses what Jess remembers before she starts learning. Payoff screen is a live preview of the first Today, not a generic "you're all set."</p>
+  <div class="legend">
+    <span><i style="background:var(--rose-500)"></i>Adaptive tone</span>
+    <span><i style="background:var(--moss)"></i>Explicit consent</span>
+    <span><i style="background:var(--plum)"></i>Jess personalisation</span>
+    <span><i style="background:var(--gold)"></i>Low-friction defaults</span>
+  </div>
+</header>
+
+<section class="phones">
+
+<!-- ===== PHONE 1 — Welcome ===== -->
+<div class="phone-wrap">
+  <div class="phone-step">Step 1 / 10</div>
+  <div class="phone-label">Welcome — the first breath</div>
+  <div class="phone"><div class="screen">
+    <div class="status"><span>9:41</span><span>● ●</span></div>
+    <div class="body" style="background:linear-gradient(180deg,#FFFAF5 0%,#FFEEE4 100%)">
+      <div class="dots"><i class="active"></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div>
+      <div class="orb"></div>
+      <div style="text-align:center; margin-top:6px">
+        <div class="display"><em>Welcome.</em></div>
+        <div class="display" style="font-size:22px; margin-top:6px">Let's go slow.</div>
+      </div>
+      <p class="p" style="text-align:center; padding:0 10px">FemWell is a place to notice your body, not grade it. Ten questions, two minutes. Skip anything you'd rather not answer.</p>
+      <button class="cta">Begin · two minutes</button>
+      <div class="linkrow" style="justify-content:center"><a class="link-mut">Sign in · already have an account</a></div>
+    </div>
+  </div></div>
+</div>
+
+<!-- ===== PHONE 2 — Name + pronouns ===== -->
+<div class="phone-wrap">
+  <div class="phone-step">Step 2 / 10</div>
+  <div class="phone-label">What should Jess call you?</div>
+  <div class="phone"><div class="screen">
+    <div class="status"><span>9:41</span><span>● ●</span></div>
+    <div class="body">
+      <div class="dots"><i></i><i class="active"></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div>
+      <div class="display" style="margin-top:6px">What should <em>Jess</em> call you?</div>
+      <p class="p">First name or a nickname. You can change this anytime.</p>
+      <div>
+        <div class="label">Name</div>
+        <input class="input" placeholder="Halliburton" value="Halliburton"/>
+      </div>
+      <div>
+        <div class="label">Pronouns</div>
+        <div class="chips">
+          <div class="chip rose on">she/her</div>
+          <div class="chip">they/them</div>
+          <div class="chip">he/him</div>
+          <div class="chip">prefer not to say</div>
+          <div class="chip">custom…</div>
+        </div>
+      </div>
+      <div class="softcard" style="margin-top:auto">
+        <div style="font-family:'Fraunces',serif; font-style:italic; font-size:13px; color:var(--plum)">Jess won't share your name with the community.</div>
+        <div class="mut" style="margin-top:3px">Posts are anonymous by default. You choose what's shared.</div>
+      </div>
+      <button class="cta">Continue</button>
+    </div>
+  </div></div>
+</div>
+
+<!-- ===== PHONE 3 — Life stage (inline per pattern notes) ===== -->
+<div class="phone-wrap">
+  <div class="phone-step">Step 3 / 10</div>
+  <div class="phone-label">Life stage · inline, not hidden</div>
+  <div class="phone"><div class="screen">
+    <div class="status"><span>9:41</span><span>● ●</span></div>
+    <div class="body">
+      <div class="dots"><i></i><i></i><i class="active"></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div>
+      <div class="display">Where are you in your <em>life season?</em></div>
+      <p class="p">This changes how Jess speaks and what FemWell surfaces. You can switch anytime.</p>
+      <div style="display:flex; flex-direction:column; gap:7px; margin-top:2px">
+        <div class="stage stage-teen">
+          <div class="glyph">T</div>
+          <div class="meta"><h4>Teen / early cycles</h4><p>Still figuring out rhythm. Gentle tracking, no pressure.</p></div>
+        </div>
+        <div class="stage stage-repro active">
+          <div class="glyph">R</div>
+          <div class="meta"><h4>Reproductive years</h4><p>Regular or irregular cycles. Fertility, energy, mood across phases.</p></div>
+        </div>
+        <div class="stage stage-peri">
+          <div class="glyph">P</div>
+          <div class="meta"><h4>Perimenopause</h4><p>Changes creeping in. Flashes, shifts, HRT options.</p></div>
+        </div>
+        <div class="stage stage-meno">
+          <div class="glyph">M</div>
+          <div class="meta"><h4>Menopause</h4><p>Through it. No longer cycling.</p></div>
+        </div>
+        <div class="stage stage-post">
+          <div class="glyph">∞</div>
+          <div class="meta"><h4>Post-menopause</h4><p>Life seasons, not cycle phases.</p></div>
+        </div>
+      </div>
+      <button class="cta" style="margin-top:6px">Continue</button>
+    </div>
+  </div></div>
+</div>
+
+<!-- ===== PHONE 4 — Cycle recency ===== -->
+<div class="phone-wrap">
+  <div class="phone-step">Step 4 / 10</div>
+  <div class="phone-label">Last period + cycle length</div>
+  <div class="phone"><div class="screen">
+    <div class="status"><span>9:41</span><span>● ●</span></div>
+    <div class="body">
+      <div class="dots"><i></i><i></i><i></i><i class="active"></i><i></i><i></i><i></i><i></i><i></i><i></i></div>
+      <div class="display">Quick cycle <em>snapshot.</em></div>
+      <p class="p">We'll predict your next phase in about three cycles. Estimates are fine.</p>
+
+      <div class="card">
+        <div class="label">Last period started</div>
+        <div style="display:flex; align-items:baseline; gap:10px; margin-top:4px">
+          <span class="num" style="font-family:'Fraunces',serif; font-size:34px; color:var(--plum); font-weight:500">Mar 30</span>
+          <span class="mut">21 days ago · around day 22 today</span>
+        </div>
+        <div class="chips" style="margin-top:8px">
+          <div class="chip on" style="font-size:11px">I'm sure</div>
+          <div class="chip" style="font-size:11px">roughly</div>
+          <div class="chip" style="font-size:11px">skip — I'll log it later</div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="label">Typical cycle length</div>
+        <div style="display:flex; align-items:baseline; gap:8px; margin-top:4px">
+          <span style="font-family:'Fraunces',serif; font-size:34px; color:var(--plum); font-weight:500">28</span>
+          <span class="mut">days · ± 1.4</span>
+        </div>
+        <div class="slider-wrap">
+          <div class="slider-bar"><div class="slider-fill"></div><div class="slider-knob"></div></div>
+          <div class="slider-scale"><span>21d</span><span>28d</span><span>35d</span><span>45d+</span></div>
+        </div>
+      </div>
+
+      <div class="softcard" style="padding:10px 12px">
+        <div class="mut" style="font-family:'Fraunces',serif; font-style:italic; color:var(--plum)">Not sure? Jess will learn from three cycles of data. No urgency.</div>
+      </div>
+      <button class="cta">Continue</button>
+    </div>
+  </div></div>
+</div>
+
+<!-- ===== PHONE 5 — Goals ===== -->
+<div class="phone-wrap">
+  <div class="phone-step">Step 5 / 10</div>
+  <div class="phone-label">What are you here for? (pick 3)</div>
+  <div class="phone"><div class="screen">
+    <div class="status"><span>9:41</span><span>● ●</span></div>
+    <div class="body">
+      <div class="dots"><i></i><i></i><i></i><i></i><i class="active"></i><i></i><i></i><i></i><i></i><i></i></div>
+      <div class="display">What matters <em>right now?</em></div>
+      <p class="p">Pick up to three. These shape your Today feed, Programs, and Jess's suggestions.</p>
+      <div class="goal-grid">
+        <div class="goal on"><div class="dot">✓</div><div class="txt">Understand my cycle</div></div>
+        <div class="goal on"><div class="dot">✓</div><div class="txt">Manage PMS / mood</div></div>
+        <div class="goal"><div class="dot"></div><div class="txt">Energy & sleep</div></div>
+        <div class="goal on"><div class="dot">✓</div><div class="txt">Panic / anxiety tools</div></div>
+        <div class="goal"><div class="dot"></div><div class="txt">Fertility awareness</div></div>
+        <div class="goal"><div class="dot"></div><div class="txt">Skin, hair & body</div></div>
+        <div class="goal"><div class="dot"></div><div class="txt">Eat for my phase</div></div>
+        <div class="goal"><div class="dot"></div><div class="txt">Feel less alone</div></div>
+      </div>
+      <div class="count">3 of 3 chosen · tap a goal to swap</div>
+      <div class="softcard" style="padding:10px 12px">
+        <div style="font-family:'Fraunces',serif; font-style:italic; font-size:12.5px; color:var(--plum)">Jess noticed: you picked <em>panic tools</em>. I'll put Panic Mode one tap away on Today.</div>
+      </div>
+      <button class="cta">Continue</button>
+    </div>
+  </div></div>
+</div>
+
+<!-- ===== PHONE 6 — Symptom focus ===== -->
+<div class="phone-wrap">
+  <div class="phone-step">Step 6 / 10</div>
+  <div class="phone-label">Symptoms you track</div>
+  <div class="phone"><div class="screen">
+    <div class="status"><span>9:41</span><span>● ●</span></div>
+    <div class="body">
+      <div class="dots"><i></i><i></i><i></i><i></i><i></i><i class="active"></i><i></i><i></i><i></i><i></i></div>
+      <div class="display">What does <em>your body</em> usually tell you?</div>
+      <p class="p">Your usual suspects. Tap a few — no need to be comprehensive.</p>
+      <div class="symp-grid">
+        <div class="symp on"><span class="emoji">🌊</span>Cramps</div>
+        <div class="symp on"><span class="emoji">💭</span>Mood dips</div>
+        <div class="symp"><span class="emoji">🤕</span>Headache</div>
+        <div class="symp on"><span class="emoji">😴</span>Fatigue</div>
+        <div class="symp on"><span class="emoji">🫧</span>Bloating</div>
+        <div class="symp"><span class="emoji">🌡️</span>Hot flashes</div>
+        <div class="symp"><span class="emoji">💨</span>Anxiety</div>
+        <div class="symp on"><span class="emoji">🥀</span>Breakouts</div>
+        <div class="symp"><span class="emoji">🌀</span>Brain fog</div>
+        <div class="symp"><span class="emoji">🌙</span>Insomnia</div>
+        <div class="symp"><span class="emoji">🤍</span>Tender breasts</div>
+        <div class="symp"><span class="emoji">+</span>Add</div>
+      </div>
+      <div class="softcard" style="padding:10px 12px">
+        <div style="font-family:'Fraunces',serif; font-style:italic; font-size:12.5px; color:var(--plum)">5 picked · these get one-tap log chips on Today. You can edit anytime.</div>
+      </div>
+      <button class="cta">Continue</button>
+    </div>
+  </div></div>
+</div>
+
+<!-- ===== PHONE 7 — Wearables (optional) ===== -->
+<div class="phone-wrap">
+  <div class="phone-step">Step 7 / 10</div>
+  <div class="phone-label">Wearables — optional</div>
+  <div class="phone"><div class="screen">
+    <div class="status"><span>9:41</span><span>● ●</span></div>
+    <div class="body">
+      <div class="dots"><i></i><i></i><i></i><i></i><i></i><i></i><i class="active"></i><i></i><i></i><i></i></div>
+      <div class="display">Connect a <em>wearable?</em></div>
+      <p class="p">Skip this if you don't wear one. Connecting gives Jess sleep, HRV and temperature context.</p>
+      <div style="display:flex; flex-direction:column; gap:8px">
+        <div class="dev on">
+          <div class="ico">⌚</div>
+          <div class="meta"><strong>Oura Ring</strong><span>Sleep · HRV · body temp</span></div>
+          <div class="pill on">Connected</div>
+        </div>
+        <div class="dev">
+          <div class="ico">❤</div>
+          <div class="meta"><strong>Apple Health</strong><span>Steps · heart rate · cycles</span></div>
+          <div class="pill off">Connect</div>
+        </div>
+        <div class="dev">
+          <div class="ico">🟢</div>
+          <div class="meta"><strong>Whoop 4.0</strong><span>Recovery · strain · sleep</span></div>
+          <div class="pill off">Connect</div>
+        </div>
+        <div class="dev">
+          <div class="ico">🩶</div>
+          <div class="meta"><strong>Fitbit</strong><span>Steps · heart · skin temp</span></div>
+          <div class="pill off">Connect</div>
+        </div>
+      </div>
+      <div class="softcard" style="padding:10px 12px">
+        <div class="mut" style="font-family:'Fraunces',serif; font-style:italic; color:var(--plum)">Data stays on your device until you log in on another. You pick what Jess reads.</div>
+      </div>
+      <div class="linkrow"><a class="link-mut">Skip · connect later</a><a class="link-mut">What does Jess read?</a></div>
+      <button class="cta">Continue</button>
+    </div>
+  </div></div>
+</div>
+
+<!-- ===== PHONE 8 — Jess intro + consent ===== -->
+<div class="phone-wrap">
+  <div class="phone-step">Step 8 / 10</div>
+  <div class="phone-label">Meet Jess · consent gates</div>
+  <div class="phone"><div class="screen">
+    <div class="status"><span>9:41</span><span>● ●</span></div>
+    <div class="body">
+      <div class="dots"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i class="active"></i><i></i><i></i></div>
+      <div class="jess-hero">
+        <div class="jess-label">Meet Jess</div>
+        <div class="jess-line">Hi Halliburton. I'm <em>Jess</em> — your quiet companion. I only remember what you let me.</div>
+      </div>
+      <p class="p" style="margin-top:0">Pick what Jess is allowed to do. All toggles stay editable in Settings.</p>
+      <div style="display:flex; flex-direction:column; gap:7px">
+        <div class="consent">
+          <div class="tgl"></div>
+          <div class="meta"><strong>Let Jess remember your symptom patterns</strong><span>Used to surface "Jess noticed" insights. Never sold, never shared.</span></div>
+        </div>
+        <div class="consent">
+          <div class="tgl"></div>
+          <div class="meta"><strong>Let Jess ask follow-up questions</strong><span>Only when context is unclear — always skippable.</span></div>
+        </div>
+        <div class="consent">
+          <div class="tgl off"></div>
+          <div class="meta"><strong>Let Jess draft journal entries</strong><span>You'll review before anything saves. Default off.</span></div>
+        </div>
+        <div class="consent">
+          <div class="tgl"></div>
+          <div class="meta"><strong>Let Jess send one morning digest</strong><span>One soft tap at your wake time. You control the time next.</span></div>
+        </div>
+      </div>
+      <button class="cta">Continue with these</button>
+    </div>
+  </div></div>
+</div>
+
+<!-- ===== PHONE 9 — Notifications ===== -->
+<div class="phone-wrap">
+  <div class="phone-step">Step 9 / 10</div>
+  <div class="phone-label">Notifications · quiet hours</div>
+  <div class="phone"><div class="screen">
+    <div class="status"><span>9:41</span><span>● ●</span></div>
+    <div class="body">
+      <div class="dots"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i class="active"></i><i></i></div>
+      <div class="display">When should we <em>whisper?</em></div>
+      <p class="p">Soft by default. No rings, no red badges. You can turn any of these off.</p>
+
+      <div style="display:flex; flex-direction:column; gap:7px">
+        <div class="notif-item">
+          <div class="meta"><strong>Morning digest</strong><span>One line, at your wake time</span></div>
+          <div class="pill on">07:15</div>
+        </div>
+        <div class="notif-item">
+          <div class="meta"><strong>Phase change</strong><span>"You entered your luteal phase"</span></div>
+          <div class="pill on">on</div>
+        </div>
+        <div class="notif-item">
+          <div class="meta"><strong>Period predicted</strong><span>Heads-up 2 days before</span></div>
+          <div class="pill on">on</div>
+        </div>
+        <div class="notif-item">
+          <div class="meta"><strong>Community holds received</strong><span>"D. held your echo"</span></div>
+          <div class="pill off">weekly</div>
+        </div>
+      </div>
+
+      <div class="timegate">
+        <h5>Quiet hours</h5>
+        <p>Jess won't send anything outside these. Panic Mode always works.</p>
+        <div class="times"><span>22:30</span><span>→</span><span>07:00</span></div>
+      </div>
+      <button class="cta">Continue</button>
+    </div>
+  </div></div>
+</div>
+
+<!-- ===== PHONE 10 — First Today preview ===== -->
+<div class="phone-wrap">
+  <div class="phone-step">Step 10 / 10</div>
+  <div class="phone-label">First Today — the payoff</div>
+  <div class="phone"><div class="screen">
+    <div class="status"><span>9:41</span><span>● ●</span></div>
+    <div class="body" style="background:linear-gradient(180deg,#FFFAF5 0%,#FFEFE3 100%)">
+      <div class="dots"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i class="active"></i></div>
+      <div style="text-align:center">
+        <div class="display" style="font-size:22px">A first look at <em>your Today.</em></div>
+        <div class="mut">You can keep adjusting after you're in.</div>
+      </div>
+
+      <div class="preview-card">
+        <div class="preview-hero">
+          <div class="avatar">H</div>
+          <div class="meta">
+            <strong>Good morning, Halliburton.</strong>
+            <span>Sunday, April 20 · luteal, day 22</span>
+          </div>
+        </div>
+        <div class="phase-row">
+          <i class="p"></i><i class="p"></i><i class="p"></i><i class="p"></i><i class="p"></i>
+          <i class="f"></i><i class="f"></i><i class="f"></i><i class="f"></i><i class="f"></i>
+          <i class="f"></i><i class="f"></i><i class="o"></i><i class="o"></i><i class="o"></i>
+          <i class="o"></i><i class="o"></i><i class="l"></i><i class="l"></i><i class="l"></i>
+          <i class="l"></i><i style="background:var(--luteal); box-shadow:0 0 0 2px #fff, 0 0 0 4px var(--rose-500)"></i><i class="l"></i><i class="l"></i><i class="l"></i><i class="l"></i><i class="l"></i><i class="p"></i>
+        </div>
+        <div class="jess-quick">
+          <div class="badge">J</div>
+          <div class="line">Based on what you told me — <em>panic tools, mood, breakouts</em> — here's where I'll start. A soft breath session, a one-tap mood check, and Panic Mode pinned.</div>
+        </div>
+        <div class="quick-row">
+          <div class="qa"><span class="e">🌬</span>Breath<br>5 min</div>
+          <div class="qa"><span class="e">💭</span>Mood<br>tap to log</div>
+          <div class="qa"><span class="e">🆘</span>Panic<br>one tap</div>
+          <div class="qa"><span class="e">📖</span>Journal<br>today's prompt</div>
+        </div>
+      </div>
+
+      <div style="text-align:center; margin-top:2px">
+        <span class="rose-chip">Your data stays on-device</span>
+      </div>
+      <button class="cta">Enter FemWell</button>
+      <div class="linkrow" style="justify-content:center"><a class="link-mut">Adjust anything · go back a step</a></div>
+    </div>
+  </div></div>
+</div>
+
+</section>
+
+<!-- ========================= APPENDIX ========================= -->
+<section class="appendix">
+  <h2>Appendix — <em>how onboarding wires into base44</em></h2>
+  <p class="lead">Onboarding collects the minimum to make the first Today feel tailored. Every answer writes to a real entity, gated by explicit consent. Ship order: stage picker + consent gates + first-Today preview in Q2; wearable gating + symptom templates in Q3.</p>
+
+  <div class="app-grid">
+    <div class="app-card">
+      <h3>Entities <em>touched by onboarding</em></h3>
+      <ul>
+        <li><b>UserProfile</b> — name, pronouns, life stage, region, primary language.</li>
+        <li><b>CycleProfile</b> — last period, avg length, confidence flag.</li>
+        <li><b>UserGoals</b> — max 3 goal tags; shapes Today feed ranking.</li>
+        <li><b>SymptomTemplate</b> — curated one-tap chips surfaced on Today.</li>
+        <li><b>Integrations</b> — wearable/calendar connections with per-source scope.</li>
+        <li><b>ToolConsents</b> — Jess capability grants (remember/ask/draft/digest).</li>
+        <li><b>NotificationPolicies</b> — 4 channels, quiet-hours window, per-channel cadence.</li>
+      </ul>
+    </div>
+    <div class="app-card">
+      <h3>Stage → downstream <em>language changes</em></h3>
+      <table>
+        <tr><th>Stage</th><th>Today phrase</th><th>Default voice</th></tr>
+        <tr><td>Teen</td><td>"Day 4 of your cycle"</td><td>Yorkshire — patient</td></tr>
+        <tr><td>Repro</td><td>"Luteal day 22"</td><td>Yorkshire — warm</td></tr>
+        <tr><td>Peri</td><td>"A softer few days"</td><td>Dr Aisha Patel — steady</td></tr>
+        <tr><td>Meno</td><td>"This month's rhythm"</td><td>Glasgow — grounded</td></tr>
+        <tr><td>Post</td><td>"Week 3 of spring season"</td><td>Sam — spacious</td></tr>
+      </table>
+    </div>
+    <div class="app-card">
+      <h3>Friction budget <em>(why this works)</em></h3>
+      <ul>
+        <li><b>10 screens</b>, median ~1:45 to complete in prototype.</li>
+        <li><b>Every screen is skippable</b> except name + stage (needed for language).</li>
+        <li><b>Stage picker is inline</b> — pattern notes risk A: locale must be visible, not buried in Settings.</li>
+        <li><b>Consent = separate toggles</b>, not a big "Accept all". Aligns with risk B / memory-creep stance.</li>
+        <li><b>Payoff is a live preview</b>, not a generic "all set" screen — instant proof of tailoring.</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="app-grid" style="margin-top:20px">
+    <div class="app-card">
+      <h3>Ship order</h3>
+      <div style="display:flex; flex-direction:column; gap:8px; margin-top:8px">
+        <div style="display:flex; gap:9px; align-items:flex-start"><span class="tag q2">Q2</span><div>Welcome · Name · Stage picker · Cycle · Goals · Consent gates · First-Today preview. Core flow.</div></div>
+        <div style="display:flex; gap:9px; align-items:flex-start"><span class="tag q3">Q3</span><div>Wearable connect (Oura + Apple Health only), symptom templates per stage, notification quiet hours.</div></div>
+        <div style="display:flex; gap:9px; align-items:flex-start"><span class="tag q4">Q4</span><div>A/B test stage-ordering, re-onboarding for returning users whose stage changed.</div></div>
+      </div>
+    </div>
+    <div class="app-card">
+      <h3>What we <em>don't</em> ask</h3>
+      <ul>
+        <li>Weight, BMI, calorie targets.</li>
+        <li>Sexual orientation.</li>
+        <li>Phone number (until push notif permission, which we delay until step 9).</li>
+        <li>Partner info (moves to Profile → Connections only if user opts).</li>
+        <li>Religion / astrology defaults (Lifestyle tab handles this).</li>
+      </ul>
+    </div>
+    <div class="app-card">
+      <h3>Edge behaviour</h3>
+      <ul>
+        <li><b>No cycle</b> (post-meno / pregnancy): skip step 4, replace with "Life season picker" — 12-wk named arcs.</li>
+        <li><b>Goal conflict</b>: "Fertility" + "Panic tools" both on → Jess surfaces fertility gently, keeps Panic primary.</li>
+        <li><b>Multi-stage</b> (Peri shifting into Meno): user can tick both; Today chooses dominant language but offers a "switch view" chip.</li>
+        <li><b>Back-nav</b>: any answer editable from dots. No "are you sure" dialogs.</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<div class="footer">
+  Designed 2026-04-20 · rose/plum system v4.2 · 10 phones · pattern-notes-01 risks A + B addressed (inline stage picker, per-tool consent, no big-Accept pattern).
+</div>
+
+</div>
+</body>
+</html>

@@ -1,0 +1,900 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>FemWell · Care Bridge v2 — clinician portal + her control</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,wght@0,300..800;1,300..800&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --cream:#f7f0e6; --ivory:#fbf7f0; --ink:#2b1e16; --ink-soft:#4a3a30; --ink-mute:#8a7768;
+  --rose:#d4a5a0; --rose-deep:#b67d77; --rose-500:#D45E52; --clay:#c98a6b;
+  --gold:#c9a961; --plum:#7a4a5e; --plum-deep:#4A2A3A; --lavender:#b9a4c9;
+  --moss:#7d8668; --teal:#6b8a8a; --night:#1a1522; --star:#f5e6d3; --luteal:#8A5F74;
+  --follicular:#c98a6b; --ovulatory:#c9a961; --period:#b67d77;
+  --ok:#7a9a7a; --warn:#c99961; --crit:#c97761;
+  --surface:#fbf7f0; --surface-2:#f3ecdf; --border:rgba(43,30,22,.1);
+  --clinic-bg:#fafaf7; --clinic-ink:#1d2330; --clinic-muted:#5e6b7a;
+}
+*{box-sizing:border-box}
+html,body{margin:0;padding:0;background:var(--cream);color:var(--ink);font-family:'Inter',system-ui,sans-serif;-webkit-font-smoothing:antialiased}
+body{padding:48px 24px 120px}
+.page{max-width:1520px;margin:0 auto}
+h1,h2,h3,h4,h5{font-family:'Fraunces',serif;font-weight:400;letter-spacing:-0.01em;margin:0}
+.eyebrow{font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--ink-mute);font-weight:500;margin-bottom:10px}
+.kicker{font-family:'Fraunces',serif;font-style:italic;color:var(--plum);font-size:14px}
+.header{max-width:900px;margin-bottom:44px}
+.header h1{font-size:48px;line-height:1.04;letter-spacing:-0.025em}
+.header h1 em{font-style:italic;color:var(--plum)}
+.header p{font-size:16px;color:var(--ink-soft);line-height:1.55;margin:18px 0 0;max-width:780px}
+
+.split-head{display:flex;gap:16px;margin:36px 0 24px;flex-wrap:wrap}
+.side-label{flex:1;min-width:280px;background:var(--ivory);border-radius:16px;padding:18px 22px;border:1px solid rgba(43,30,22,.06)}
+.side-label .t{font-family:'Fraunces',serif;font-size:22px;margin-bottom:4px}
+.side-label .s{font-size:12.5px;color:var(--ink-soft);line-height:1.55}
+.side-label.her{background:linear-gradient(140deg,#faebdb 0%,#f2d9cf 100%)}
+.side-label.clinician{background:linear-gradient(140deg,#e5eaef 0%,#d1d9e2 100%);color:var(--clinic-ink)}
+.side-label.clinician .s{color:#3c4655}
+
+/* ===== phone frame (her side) ===== */
+.phones-row{display:flex;flex-wrap:wrap;gap:30px;justify-content:flex-start;margin-bottom:48px}
+.phone{width:400px;height:820px;background:var(--night);border-radius:46px;padding:9px;position:relative;box-shadow:0 24px 60px rgba(43,30,22,.18);flex-shrink:0}
+.phone-screen{width:100%;height:100%;background:var(--cream);border-radius:38px;overflow:hidden;position:relative}
+.notch{position:absolute;top:9px;left:50%;transform:translateX(-50%);width:120px;height:24px;background:var(--night);border-radius:0 0 18px 18px;z-index:20}
+.phone-scroll{width:100%;height:100%;overflow:auto;-webkit-overflow-scrolling:touch}
+.phone-scroll::-webkit-scrollbar{display:none;width:0}
+.statusbar{display:flex;justify-content:space-between;align-items:center;padding:14px 24px 0;font-size:12px;font-weight:500;color:var(--ink-soft);letter-spacing:.04em}
+.page-title{padding:24px 24px 10px;display:flex;align-items:center;justify-content:space-between}
+.page-title h2{font-size:26px;letter-spacing:-0.02em}
+.ghost-btn{background:transparent;border:1px solid rgba(43,30,22,.15);border-radius:100px;padding:6px 12px;font-size:11px;color:var(--ink-soft);letter-spacing:.02em}
+.sec-lab{padding:8px 24px 2px;font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--ink-mute);font-weight:500}
+.card{background:var(--ivory);border-radius:20px;padding:18px;margin:10px 24px;border:1px solid rgba(43,30,22,.05)}
+.card .kick{font-family:'Fraunces',serif;font-style:italic;color:var(--plum);font-size:12.5px;margin-bottom:6px}
+.card h3{font-size:18px;line-height:1.22;margin-bottom:6px;color:var(--ink)}
+.card p{font-size:12.5px;color:var(--ink-soft);line-height:1.55;margin:0}
+.cta{border-radius:100px;padding:10px 16px;font-size:12.5px;font-weight:500;letter-spacing:.02em;border:1px solid transparent;display:inline-flex;align-items:center;gap:6px;cursor:pointer}
+.cta.primary{background:var(--plum);color:var(--star)}
+.cta.ghost{background:transparent;border-color:rgba(43,30,22,.18);color:var(--ink-soft)}
+.cta.danger{background:rgba(212,94,82,.08);color:var(--rose-500);border:1px solid rgba(212,94,82,.3)}
+.chip{font-size:11px;padding:4px 10px;border-radius:100px;background:rgba(122,74,94,.08);color:var(--plum);letter-spacing:.02em}
+.chip.ok{background:rgba(122,154,122,.15);color:var(--ok)}
+.chip.expired{background:rgba(201,119,97,.12);color:var(--crit)}
+.chip.luteal{background:var(--luteal);color:var(--star)}
+
+.hero-her{margin:18px 24px 6px;padding:22px;border-radius:22px;background:radial-gradient(130% 100% at 10% 10%, rgba(212,94,82,.24), transparent 60%),linear-gradient(140deg,#faebdb 0%,#f2d9cf 52%,#e6c4d1 100%);position:relative}
+.hero-her .av{position:absolute;top:18px;right:18px;width:36px;height:36px;border-radius:50%;background:linear-gradient(140deg,var(--rose-500),var(--plum));display:flex;align-items:center;justify-content:center;color:var(--star);font-family:'Fraunces',serif;font-style:italic}
+.hero-her .k{font-family:'Fraunces',serif;font-style:italic;color:var(--plum);font-size:13px;margin-bottom:6px}
+.hero-her .t{font-family:'Fraunces',serif;font-size:22px;line-height:1.2;color:var(--plum-deep);letter-spacing:-0.015em}
+.hero-her .s{font-size:12.5px;color:var(--ink-soft);margin-top:8px;line-height:1.55}
+.hero-her .acts{display:flex;gap:8px;margin-top:14px;flex-wrap:wrap}
+
+.consent-row{display:flex;align-items:center;justify-content:space-between;padding:14px 0;border-bottom:1px solid rgba(43,30,22,.06)}
+.consent-row:last-child{border-bottom:0}
+.consent-row .lab{flex:1;padding-right:14px}
+.consent-row .lab .n{font-family:'Fraunces',serif;font-size:15px;color:var(--ink);line-height:1.2}
+.consent-row .lab .d{font-size:11px;color:var(--ink-mute);margin-top:3px;line-height:1.45}
+.pills3{display:flex;background:rgba(43,30,22,.06);border-radius:100px;padding:3px;font-size:10px;letter-spacing:.05em;text-transform:uppercase;font-weight:500;flex-shrink:0}
+.pills3 span{padding:4px 10px;border-radius:100px;color:var(--ink-mute)}
+.pills3 span.on{background:var(--plum);color:var(--star)}
+
+.invite-visual{text-align:center;padding:20px 0 10px}
+.invite-visual .qr{width:140px;height:140px;margin:0 auto 10px;border-radius:14px;background:
+  linear-gradient(135deg,#1d2330 25%,transparent 25%) -8px 0,
+  linear-gradient(225deg,#1d2330 25%,transparent 25%) -8px 0,
+  linear-gradient(315deg,#1d2330 25%,transparent 25%),
+  linear-gradient(45deg,#1d2330 25%,transparent 25%),#fbf7f0;
+  background-size:22px 22px;border:1px solid var(--border);position:relative}
+.invite-visual .qr::after{content:'';position:absolute;inset:40%;background:var(--ivory);border-radius:4px}
+.invite-visual .code{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:14px;color:var(--ink);letter-spacing:.1em}
+.invite-visual .exp{font-size:11px;color:var(--ink-mute);margin-top:6px}
+
+.log-strip{padding:14px 0;border-bottom:1px solid rgba(43,30,22,.06)}
+.log-strip:last-child{border-bottom:0}
+.log-strip .when{font-size:10.5px;color:var(--ink-mute);letter-spacing:.05em;margin-bottom:3px}
+.log-strip .what{font-size:13px;color:var(--ink-soft);line-height:1.4}
+.log-strip .what b{color:var(--ink);font-weight:600}
+
+/* ===== CLINICIAN PORTAL (desktop-style frame) ===== */
+.laptop{background:#e8e8e8;border-radius:24px;padding:22px 18px 14px;box-shadow:0 32px 60px rgba(43,30,22,.22);margin-bottom:40px;border:1px solid rgba(43,30,22,.1)}
+.laptop .bar{display:flex;align-items:center;gap:8px;padding:0 6px 12px}
+.laptop .bar .dot{width:11px;height:11px;border-radius:50%;background:#cbcbcb}
+.laptop .bar .dot.r{background:#e07878}.laptop .bar .dot.y{background:#dfbc62}.laptop .bar .dot.g{background:#82b074}
+.laptop .bar .url{flex:1;background:#fafafa;border-radius:8px;padding:6px 14px;font-size:11.5px;color:var(--clinic-muted);font-family:ui-monospace,SFMono-Regular,Menlo,monospace;border:1px solid #d8d8d8}
+.laptop .bar .url .lock{color:var(--ok);margin-right:6px}
+.portal{background:var(--clinic-bg);border-radius:14px;overflow:hidden;color:var(--clinic-ink);border:1px solid #dcdcd4}
+
+.portal-top{display:flex;align-items:center;justify-content:space-between;padding:18px 28px;background:#fff;border-bottom:1px solid #e4e4dd}
+.portal-top .brand{display:flex;align-items:center;gap:12px}
+.portal-top .brand .logo{width:32px;height:32px;border-radius:8px;background:linear-gradient(140deg,var(--rose-500),var(--plum));color:var(--star);display:flex;align-items:center;justify-content:center;font-family:'Fraunces',serif;font-style:italic;font-size:15px}
+.portal-top .brand .n{font-family:'Fraunces',serif;font-size:17px;letter-spacing:-0.01em}
+.portal-top .brand .s{font-size:10.5px;color:var(--clinic-muted);letter-spacing:.1em;text-transform:uppercase;margin-top:2px}
+.portal-top .session-bar{display:flex;align-items:center;gap:14px;font-size:11.5px;color:var(--clinic-muted)}
+.session-bar .pill{background:#f0ece3;padding:4px 10px;border-radius:100px;font-size:10.5px;letter-spacing:.06em;color:var(--clinic-ink)}
+.session-bar .pill.warn{background:rgba(201,153,97,.18);color:#8a6a35}
+.session-bar .pill.ok{background:rgba(122,154,122,.2);color:#3e6a3e}
+.session-bar .countdown{font-family:ui-monospace;font-size:11.5px;color:#8a6a35}
+
+.portal-body{display:grid;grid-template-columns:260px 1fr;min-height:780px}
+.portal-nav{background:#fafaf4;border-right:1px solid #e8e8df;padding:22px 14px}
+.portal-nav .who{padding:0 10px 16px;border-bottom:1px solid #ecece3;margin-bottom:14px}
+.portal-nav .who .name{font-family:'Fraunces',serif;font-size:17px;letter-spacing:-0.01em}
+.portal-nav .who .role{font-size:11px;color:var(--clinic-muted);margin-top:2px}
+.portal-nav .label{font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--clinic-muted);padding:10px 10px 6px;font-weight:600}
+.portal-nav .nav-item{display:flex;align-items:center;justify-content:space-between;padding:8px 12px;border-radius:10px;font-size:13px;color:var(--clinic-ink);cursor:pointer}
+.portal-nav .nav-item:hover{background:#f0ece3}
+.portal-nav .nav-item.active{background:var(--plum);color:var(--star)}
+.portal-nav .nav-item .count{font-size:10px;background:rgba(29,35,48,.08);padding:2px 8px;border-radius:100px;color:var(--clinic-muted)}
+.portal-nav .nav-item.active .count{background:rgba(245,230,211,.2);color:var(--star)}
+
+.portal-main{padding:28px 34px;background:var(--clinic-bg)}
+.consent-banner{display:flex;align-items:center;gap:10px;padding:10px 16px;background:rgba(122,74,94,.08);border-radius:12px;font-size:12.5px;color:#5a3a4a;border:1px solid rgba(122,74,94,.18);margin-bottom:20px}
+.consent-banner .dot{width:6px;height:6px;border-radius:50%;background:var(--plum);box-shadow:0 0 0 3px rgba(122,74,94,.2)}
+
+.patient-head{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:18px;gap:24px;flex-wrap:wrap}
+.patient-head .left{display:flex;align-items:flex-start;gap:16px;flex-wrap:wrap}
+.patient-head .av{width:52px;height:52px;border-radius:50%;background:linear-gradient(140deg,var(--rose-500),var(--plum));color:var(--star);display:flex;align-items:center;justify-content:center;font-family:'Fraunces',serif;font-style:italic;font-size:22px;flex-shrink:0}
+.patient-head .meta h2{font-size:24px;letter-spacing:-0.015em;color:var(--clinic-ink)}
+.patient-head .meta .sub{font-size:12px;color:var(--clinic-muted);margin-top:3px}
+.patient-head .meta .chips{display:flex;gap:6px;margin-top:8px;flex-wrap:wrap}
+.patient-head .right{display:flex;gap:8px;align-items:center}
+
+.c-pill{font-size:11px;padding:4px 10px;border-radius:100px;letter-spacing:.02em;font-weight:500;background:#ecece3;color:var(--clinic-ink);border:1px solid #dcdcd0}
+.c-pill.plum{background:var(--plum);color:var(--star);border-color:transparent}
+.c-pill.warn{background:rgba(201,153,97,.2);color:#8a6a35;border-color:rgba(201,153,97,.35)}
+.c-pill.ok{background:rgba(122,154,122,.15);color:#3e6a3e;border-color:rgba(122,154,122,.3)}
+.c-pill.crit{background:rgba(201,119,97,.15);color:#8a4a3a;border-color:rgba(201,119,97,.35)}
+
+/* ===== clinician grid ===== */
+.c-grid{display:grid;grid-template-columns:2fr 1.1fr;gap:22px;margin-top:6px}
+.c-card{background:#fff;border-radius:14px;padding:22px;border:1px solid #e4e4dd;box-shadow:0 2px 6px rgba(29,35,48,.03)}
+.c-card .hd{display:flex;align-items:baseline;justify-content:space-between;margin-bottom:16px}
+.c-card .hd h3{font-size:17px;letter-spacing:-0.01em;color:var(--clinic-ink);font-family:'Fraunces',serif;font-weight:500}
+.c-card .hd .hint{font-size:11px;color:var(--clinic-muted)}
+.c-card .sub{font-size:12.5px;color:var(--clinic-muted);line-height:1.55;margin:0 0 12px}
+
+/* HRT timeline */
+.hrt-row{display:flex;align-items:flex-end;gap:2px;height:72px;margin:14px 0 8px;position:relative}
+.hrt-row::after{content:'';position:absolute;left:0;right:0;bottom:22px;height:1px;background:#ebebe0}
+.hrt-bar{flex:1;border-radius:3px;position:relative;transition:opacity .15s ease}
+.hrt-bar .lbl{position:absolute;bottom:-18px;left:0;right:0;text-align:center;font-size:9.5px;color:var(--clinic-muted);letter-spacing:.04em}
+.hrt-axis{display:flex;justify-content:space-between;font-size:10px;color:var(--clinic-muted);margin-top:22px;border-top:1px dashed #ebebe0;padding-top:6px}
+.hrt-legend{display:flex;gap:18px;margin-top:16px;font-size:11.5px;color:var(--clinic-muted)}
+.hrt-legend .dot{width:10px;height:10px;border-radius:3px;margin-right:6px;display:inline-block}
+
+.hrt-rx{background:#fafaf4;border-radius:12px;padding:14px 16px;font-size:12.5px;margin-top:12px;color:var(--clinic-ink);border:1px solid #ecece3;line-height:1.55}
+.hrt-rx b{font-family:'Fraunces',serif;font-weight:500}
+
+/* flash heat-map */
+.flash-grid{display:grid;grid-template-columns:auto repeat(24,1fr);gap:3px;margin-top:10px}
+.flash-grid .hour{font-size:9px;color:var(--clinic-muted);text-align:center;padding-top:3px}
+.flash-grid .day-lbl{font-size:11px;color:var(--clinic-muted);display:flex;align-items:center;justify-content:flex-end;padding-right:8px}
+.flash-cell{aspect-ratio:1;border-radius:3px;background:#ecece3}
+.flash-legend{display:flex;align-items:center;gap:8px;margin-top:12px;font-size:11px;color:var(--clinic-muted)}
+.flash-legend .gradient{flex:1;height:8px;border-radius:4px;background:linear-gradient(90deg,#ecece3 0%,#efd9cf 30%,#d79b85 60%,#c97761 100%)}
+
+/* symptom lines */
+.symp-chart{height:160px;position:relative;margin-top:6px;border-bottom:1px dashed #ebebe0;border-left:1px dashed #ebebe0;padding:6px 0 0 8px}
+.symp-svg{width:100%;height:100%;overflow:visible}
+.symp-legend{display:flex;gap:14px;margin-top:10px;font-size:11.5px;color:var(--clinic-muted);flex-wrap:wrap}
+.symp-legend .dot{width:8px;height:8px;border-radius:50%;margin-right:6px;display:inline-block;vertical-align:middle}
+.symp-x{display:flex;justify-content:space-between;font-size:10px;color:var(--clinic-muted);margin-top:2px}
+
+/* right column */
+.note-card textarea{width:100%;min-height:140px;border:1px solid #dcdcd0;border-radius:10px;padding:12px 14px;font-family:inherit;font-size:13px;color:var(--clinic-ink);background:#fafaf4;resize:vertical;line-height:1.5}
+.note-card .quick{display:flex;gap:6px;margin-top:10px;flex-wrap:wrap}
+.qr-chip{font-size:11px;padding:6px 12px;border-radius:100px;background:#f0ece3;color:var(--clinic-ink);cursor:pointer;border:1px solid #dcdcd0}
+.qr-chip:hover{background:#e7e2d3}
+.note-meta{display:flex;align-items:center;justify-content:space-between;font-size:11px;color:var(--clinic-muted);margin-top:12px}
+.btn-primary{background:var(--plum);color:var(--star);border:0;border-radius:100px;padding:9px 18px;font-size:12.5px;font-weight:500;cursor:pointer;letter-spacing:.02em}
+.btn-ghost{background:transparent;border:1px solid #dcdcd0;border-radius:100px;padding:9px 14px;font-size:12.5px;color:var(--clinic-ink);cursor:pointer}
+
+.summary-list li{padding:10px 0;border-bottom:1px solid #ecece3;font-size:12.5px;list-style:none;line-height:1.5;color:var(--clinic-ink)}
+.summary-list li:last-child{border-bottom:0}
+.summary-list li b{font-family:'Fraunces',serif;font-weight:500;display:block;margin-bottom:2px}
+.summary-list{padding:0;margin:6px 0 0}
+.summary-list .meta{color:var(--clinic-muted);font-size:10.5px;margin-top:2px;letter-spacing:.02em}
+
+.audit-row{display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid #ecece3;font-size:11.5px}
+.audit-row:last-child{border-bottom:0}
+.audit-row .a{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;color:var(--clinic-muted);font-size:10.5px;letter-spacing:.04em}
+.audit-row .b{color:var(--clinic-ink)}
+
+/* ============ appendix ============ */
+.appendix{margin-top:80px}
+.appendix-head{max-width:820px;margin-bottom:28px}
+.appendix-head h2{font-size:32px;letter-spacing:-0.02em}
+.grid-2{display:grid;grid-template-columns:repeat(2,minmax(360px,1fr));gap:28px}
+@media(max-width:780px){.grid-2{grid-template-columns:1fr}}
+.block{background:var(--ivory);border-radius:22px;padding:28px;border:1px solid rgba(43,30,22,.08)}
+.block h3{font-size:22px;margin-bottom:14px}
+.block ol,.block ul{margin:0;padding:0 0 0 20px}
+.block li{font-size:13.5px;color:var(--ink-soft);line-height:1.6;margin-bottom:10px}
+.block li b{color:var(--ink);font-weight:600}
+.block.dark{background:linear-gradient(140deg,#2e2238 0%,#1a1522 100%);color:var(--star)}
+.block.dark h3{color:var(--star)}
+.block.dark li{color:rgba(245,230,211,.85)}
+.block.dark li b{color:var(--star)}
+.code{background:#221823;color:#f5e6d3;border-radius:18px;padding:20px 22px;font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:12px;line-height:1.65;white-space:pre-wrap;word-break:break-word}
+.table{width:100%;background:var(--ivory);border-radius:22px;border:1px solid rgba(43,30,22,.08);overflow:hidden;border-collapse:separate;border-spacing:0;margin-top:18px}
+.table th,.table td{text-align:left;padding:14px 18px;font-size:13px;vertical-align:top;border-bottom:1px solid rgba(43,30,22,.06)}
+.table th{background:rgba(122,74,94,.06);font-family:'Fraunces',serif;font-weight:400;font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--plum)}
+.table td:first-child{font-family:'Fraunces',serif;font-size:14px;color:var(--ink)}
+.table tr:last-child td{border-bottom:0}
+.footer{margin-top:80px;padding-top:32px;border-top:1px solid rgba(43,30,22,.1);font-size:12px;color:var(--ink-mute);line-height:1.6;max-width:720px}
+.footer b{color:var(--ink-soft)}
+</style>
+</head>
+<body>
+<main class="page">
+
+  <header class="header">
+    <div class="eyebrow">FemWell · Care Bridge v2 · clinician portal + her control</div>
+    <h1>Her clinician reads <em>what she chose to share</em>, for 14 days, on a read-only portal that leaves a trail.</h1>
+    <p>Care Bridge v2 is how her gynaecologist, endocrinologist, or GP sees the signal behind her symptoms — HRT dosing, flash patterns, sleep, mood arc — without pulling her whole app, her journal, her panic log, or her cycle data into a clinical record she can't control. This demo shows both sides. <b>Her side</b> is a 3-phone flow: invite a clinician, decide what to share, revoke or extend. <b>Clinician side</b> is a desktop-only portal at <code style="font-family:ui-monospace;font-size:13px">care.femwells.com</code>, 14-day expiring invite, read-only, async-note-back-only, every page-view and note logged to an UK GDPR + DPA 2018 audit trail she can see.</p>
+  </header>
+
+  <!-- ============= HER SIDE ============= -->
+  <div class="split-head">
+    <div class="side-label her">
+      <div class="t">Her side · FemWell app</div>
+      <div class="s">Phones 1–3 · Send invite · tune share scope · revoke + note-reply · audit trail of clinician behaviour.</div>
+    </div>
+  </div>
+
+  <section class="phones-row">
+
+    <!-- ======= PHONE 1 — send invite ======= -->
+    <div class="phone">
+      <div class="phone-screen">
+        <div class="notch"></div>
+        <div class="phone-scroll">
+          <div class="statusbar"><span>9:14</span><span>• • •</span></div>
+          <div class="page-title">
+            <h2>Care Bridge</h2>
+            <button class="ghost-btn">← Profile</button>
+          </div>
+
+          <div class="hero-her">
+            <div class="av">H</div>
+            <div class="k">jess picked for your peri check-in</div>
+            <div class="t">Share 90 days with Dr Aisha Patel before Friday's video call.</div>
+            <div class="s">Last visit you told me you forgot the flashes after-hours detail. Let's send that this time — you control the 14-day window.</div>
+            <div class="acts"><button class="cta primary">Draft the share</button><button class="cta ghost">Not this visit</button></div>
+          </div>
+
+          <div class="sec-lab">Who you'd share with</div>
+          <div class="card">
+            <div style="display:flex;align-items:center;gap:12px">
+              <div style="width:44px;height:44px;border-radius:50%;background:#e5eaef;color:#1d2330;display:flex;align-items:center;justify-content:center;font-family:'Fraunces',serif;font-size:18px">C</div>
+              <div style="flex:1">
+                <div style="font-family:'Fraunces',serif;font-size:16px">Dr Aisha Patel Okwu, MD</div>
+                <div style="font-size:11px;color:var(--ink-mute);margin-top:2px">Endocrinologist · LUTH, London · GMC 45812</div>
+              </div>
+              <span class="chip ok">Verified</span>
+            </div>
+            <p style="margin-top:12px;font-size:11px;color:var(--ink-mute);line-height:1.5">Verified means: GMC/GMC/AMA number confirmed, identity checked by FemWell. He cannot add himself — you invite him.</p>
+          </div>
+
+          <div class="sec-lab">What he'll see · 3 positions per row</div>
+          <div class="card">
+            <div class="consent-row"><div class="lab"><div class="n">HRT timeline</div><div class="d">Doses, changes, patch rotations. Last 90 days.</div></div><div class="pills3"><span>off</span><span>summary</span><span class="on">full</span></div></div>
+            <div class="consent-row"><div class="lab"><div class="n">Flash + sleep pattern</div><div class="d">Heat-map + count. Hour-of-day visible.</div></div><div class="pills3"><span>off</span><span>summary</span><span class="on">full</span></div></div>
+            <div class="consent-row"><div class="lab"><div class="n">Mood arc</div><div class="d">3-band summary. No journal text, ever.</div></div><div class="pills3"><span>off</span><span class="on">summary</span><span>full</span></div></div>
+            <div class="consent-row"><div class="lab"><div class="n">Bleed pattern</div><div class="d">Cycle irregularity, spotting days.</div></div><div class="pills3"><span>off</span><span>summary</span><span class="on">full</span></div></div>
+            <div class="consent-row"><div class="lab"><div class="n">Pelvic / pain logs</div><div class="d">Severity bands, not journal notes.</div></div><div class="pills3"><span>off</span><span class="on">summary</span><span>full</span></div></div>
+            <div class="consent-row"><div class="lab"><div class="n">Wearable metrics</div><div class="d">rHR, HRV, sleep hours from Oura.</div></div><div class="pills3"><span>off</span><span>summary</span><span class="on">full</span></div></div>
+          </div>
+
+          <div class="sec-lab">What he will never see</div>
+          <div class="card">
+            <p style="font-size:12px;color:var(--ink-soft);line-height:1.6">Journal text · sealed letters · panic log · body photos · sex/masturbation log · partner data · witness entries · food · weight · community posts · contacts of anyone · your real address.</p>
+          </div>
+
+          <div class="sec-lab">Access window</div>
+          <div class="card">
+            <div style="display:flex;gap:8px;margin-bottom:10px"><span class="chip">7 days</span><span class="chip luteal">14 days</span><span class="chip">21 days</span><span class="chip">30 days</span></div>
+            <p style="font-size:12.5px">Default 14 days. Expires automatically — no renewal without you re-tapping. Dr Aisha Patel cannot request an extension without a one-line reason and your tap.</p>
+          </div>
+
+          <div class="sec-lab">Ready to send</div>
+          <div class="card" style="background:linear-gradient(140deg,#faebdb,#f2d9cf);border:0">
+            <h3 style="font-size:17px;margin-bottom:6px">One-time magic link</h3>
+            <p style="color:var(--ink-soft);font-size:12.5px;line-height:1.55">Jess will text or email the link to Dr Aisha Patel's verified clinic phone. It's single-use, device-binds on first open, expires 72h if unused.</p>
+            <div style="display:flex;gap:8px;margin-top:12px"><button class="cta primary">Send via SMS</button><button class="cta ghost">Send via email</button></div>
+          </div>
+
+          <div style="height:32px"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ======= PHONE 2 — active share: what he's doing + audit ======= -->
+    <div class="phone">
+      <div class="phone-screen">
+        <div class="notch"></div>
+        <div class="phone-scroll">
+          <div class="statusbar"><span>9:14</span><span>• • •</span></div>
+          <div class="page-title">
+            <h2>Your shares</h2>
+            <button class="ghost-btn">History</button>
+          </div>
+
+          <div class="card" style="background:linear-gradient(140deg,#f4e8e4,#e8d5cd);border:0;padding:22px">
+            <div style="display:flex;align-items:center;gap:12px">
+              <div style="width:40px;height:40px;border-radius:50%;background:#e5eaef;color:#1d2330;display:flex;align-items:center;justify-content:center;font-family:'Fraunces',serif;font-size:16px">C</div>
+              <div style="flex:1">
+                <div style="font-family:'Fraunces',serif;font-size:16px">Dr Aisha Patel Okwu</div>
+                <div style="font-size:11px;color:var(--ink-mute);margin-top:2px">Access active · 9 days remaining</div>
+              </div>
+              <span class="chip ok">●&nbsp;active</span>
+            </div>
+            <div style="display:flex;gap:6px;margin-top:14px;flex-wrap:wrap"><span class="chip">HRT · full</span><span class="chip">Flash · full</span><span class="chip">Mood · summary</span><span class="chip">Bleed · full</span><span class="chip">Pelvic · summary</span><span class="chip">Wearable · full</span></div>
+            <div style="display:flex;gap:8px;margin-top:14px"><button class="cta ghost">Change what's shared</button><button class="cta ghost">Extend 7 days</button></div>
+          </div>
+
+          <div class="sec-lab">Jess-noticed about how he's reading</div>
+          <div class="card">
+            <div class="kick">jess-noticed</div>
+            <h3 style="font-size:16px;margin-bottom:6px">Dr Aisha Patel opened 3 times. Every view logged.</h3>
+            <p>He looked at your flash pattern Tue, your HRT timeline Wed, and your mood arc Thu. Didn't download anything. Wrote one note back for you.</p>
+          </div>
+
+          <div class="sec-lab">His note to you · async</div>
+          <div class="card" style="background:#fafaf4;border:1px solid rgba(43,30,22,.08)">
+            <div style="font-family:'Fraunces',serif;font-style:italic;color:var(--ink-mute);font-size:11.5px;margin-bottom:6px">Dr Aisha Patel Okwu · 2026-04-17 · reviewed before sending</div>
+            <p style="font-size:13px;line-height:1.6;color:var(--ink-soft)">"Halliburton — the flash pattern is consistent with under-dosing on the oestradiol. I'd like to adjust from 50µg → 75µg patch at Friday's visit. The mood arc looks settled — good sign. Sleep is where the patch increase should help most. Reply if any concerns before Friday."</p>
+            <div style="display:flex;gap:8px;margin-top:12px;flex-wrap:wrap"><button class="cta primary">Reply</button><button class="cta ghost">Add to my notes</button><button class="cta ghost">Mark seen</button></div>
+          </div>
+
+          <div class="sec-lab">Full audit · what Dr Aisha Patel did</div>
+          <div class="card" style="padding:6px 18px">
+            <div class="log-strip"><div class="when">THU 17:42 · 2026-04-17</div><div class="what">Opened <b>HRT timeline</b> · 3m 12s</div></div>
+            <div class="log-strip"><div class="when">THU 17:46 · 2026-04-17</div><div class="what">Opened <b>Mood arc</b> · 1m 04s</div></div>
+            <div class="log-strip"><div class="when">THU 17:48 · 2026-04-17</div><div class="what">Saved an async note · pending Halliburton review</div></div>
+            <div class="log-strip"><div class="when">WED 09:21 · 2026-04-16</div><div class="what">Opened <b>Flash + sleep heat-map</b> · 5m 41s</div></div>
+            <div class="log-strip"><div class="when">TUE 14:02 · 2026-04-15</div><div class="what">First open · device-bound · iPhone (clinic network)</div></div>
+            <div class="log-strip"><div class="when">TUE 13:59 · 2026-04-15</div><div class="what">Magic link opened · identity verified via GMC 45812</div></div>
+          </div>
+          <p style="padding:0 24px;font-size:11px;color:var(--ink-mute);line-height:1.5;margin-top:6px">UK GDPR + DPA 2018-compliant audit — every page view, download attempt (none), and async-note write is logged with timestamp + device + IP-prefix. You can export this log.</p>
+
+          <div class="sec-lab">Revoke</div>
+          <div class="card" style="background:rgba(212,94,82,.04);border-color:rgba(212,94,82,.15)">
+            <h3 style="font-size:16px;color:var(--rose-500);margin-bottom:4px">End access now</h3>
+            <p>Link stops working immediately. He sees "access ended by patient" with no reason. His 14-day session memory wipes.</p>
+            <div style="display:flex;gap:8px;margin-top:12px;flex-wrap:wrap"><button class="cta ghost">Narrow scope</button><button class="cta danger">End now</button></div>
+          </div>
+
+          <div style="height:32px"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ======= PHONE 3 — invite visual + past shares ======= -->
+    <div class="phone">
+      <div class="phone-screen">
+        <div class="notch"></div>
+        <div class="phone-scroll">
+          <div class="statusbar"><span>9:14</span><span>• • •</span></div>
+          <div class="page-title">
+            <h2>The invite</h2>
+            <button class="ghost-btn">Done</button>
+          </div>
+
+          <div class="card" style="background:linear-gradient(140deg,#fbf7f0,#f4e8d5);border:0">
+            <div class="kick">this link is single-use</div>
+            <h3 style="font-size:18px;margin-bottom:6px">Dr Aisha Patel Okwu — your 14-day window</h3>
+            <div class="invite-visual">
+              <div class="qr"></div>
+              <div class="code">care.femwells.com / h · 9t4 · xr72</div>
+              <div class="exp">opens once · binds to first device · 72h to use · 14d window · 2026-05-01 23:59 BST</div>
+            </div>
+            <div style="display:flex;gap:8px;margin-top:16px;justify-content:center;flex-wrap:wrap"><button class="cta primary">Send via SMS</button><button class="cta ghost">Copy link</button></div>
+          </div>
+
+          <div class="sec-lab">Past shares · archived</div>
+          <div class="card" style="padding:6px 18px">
+            <div class="log-strip"><div class="when">Dec 2025 · 14-day window</div><div class="what"><b>Dr Priya Shah · GP · Manchester</b> · used 4 of 14 days · 1 note received · archived</div></div>
+            <div class="log-strip"><div class="when">Sept 2025 · 7-day window</div><div class="what"><b>Dr Obi · Endocrinologist · London</b> · used 7 of 7 days · 2 notes · archived</div></div>
+            <div class="log-strip"><div class="when">Jun 2025 · 14-day window</div><div class="what"><b>Dr Aisha Patel Okwu</b> · used 11 of 14 · HRT started · archived</div></div>
+            <div class="log-strip"><div class="when">Mar 2025 · 21-day window</div><div class="what"><b>Dr Ibe · Pelvic pain</b> · used 5 of 21 · ended early by you · archived</div></div>
+          </div>
+
+          <div class="sec-lab">What "archived" means</div>
+          <div class="card">
+            <p>His access is off. The audit of what he saw is yours forever — export as PDF or hand to another clinician. The data he saw was never copied, only rendered. Nothing to delete on his end because nothing was stored there.</p>
+            <div style="display:flex;gap:8px;margin-top:12px"><button class="cta ghost">Export audit PDF</button><button class="cta ghost">Hand to another clinician</button></div>
+          </div>
+
+          <div class="sec-lab">Your rule of thumb</div>
+          <div class="card" style="background:rgba(122,74,94,.06);border-color:rgba(122,74,94,.15)">
+            <div class="kick">jess-noticed</div>
+            <h3 style="font-size:15px;margin-bottom:4px">You share closer to the visit, not long before.</h3>
+            <p style="font-size:12px">The average gap between invite and appointment is 2.3 days. That's tight but deliberate — it means Dr Aisha Patel reads fresh data, not stale context. Nice rhythm.</p>
+          </div>
+
+          <div style="height:32px"></div>
+        </div>
+      </div>
+    </div>
+
+  </section>
+
+  <!-- ============= CLINICIAN SIDE ============= -->
+  <div class="split-head">
+    <div class="side-label clinician">
+      <div class="t">Clinician side · <code style="font-family:ui-monospace;font-size:13px">care.femwells.com</code></div>
+      <div class="s">Desktop-only read-only portal. 14-day expiring session. Async note slot (no chat). Every action logged to her audit trail. No download. No copy. Print via controlled PDF only.</div>
+    </div>
+  </div>
+
+  <div class="laptop">
+    <div class="bar">
+      <span class="dot r"></span><span class="dot y"></span><span class="dot g"></span>
+      <span class="url"><span class="lock">🔒</span>care.femwells.com / session / h-9t4-xr72</span>
+    </div>
+
+    <div class="portal">
+
+      <!-- top bar -->
+      <div class="portal-top">
+        <div class="brand">
+          <div class="logo">F</div>
+          <div><div class="n">FemWell · Care Bridge</div><div class="s">Clinician portal · read-only</div></div>
+        </div>
+        <div class="session-bar">
+          <span class="pill ok">● GMC 45812 verified</span>
+          <span class="pill">Device: iPhone · clinic-wifi</span>
+          <span class="pill warn">Session expires in <span class="countdown">9d 06h 13m</span></span>
+          <button class="btn-ghost">Sign out</button>
+        </div>
+      </div>
+
+      <div class="portal-body">
+
+        <!-- nav -->
+        <aside class="portal-nav">
+          <div class="who"><div class="name">Dr Aisha Patel Okwu</div><div class="role">Endocrinologist · LUTH</div></div>
+
+          <div class="label">1 active patient</div>
+          <div class="nav-item active"><span>Halliburton O.</span><span class="count">3</span></div>
+
+          <div class="label">Sections</div>
+          <div class="nav-item"><span>Overview</span></div>
+          <div class="nav-item"><span>HRT timeline</span></div>
+          <div class="nav-item"><span>Flash + sleep heat-map</span></div>
+          <div class="nav-item"><span>Symptom trajectory</span></div>
+          <div class="nav-item"><span>Bleed pattern</span></div>
+          <div class="nav-item"><span>Mood arc</span><span class="count">sum</span></div>
+          <div class="nav-item"><span>Wearable metrics</span></div>
+
+          <div class="label">Actions</div>
+          <div class="nav-item"><span>Write async note</span></div>
+          <div class="nav-item"><span>Request extension</span></div>
+          <div class="nav-item"><span>Export PDF (she approves)</span></div>
+
+          <div class="label" style="margin-top:14px">Your audit</div>
+          <div style="padding:4px 10px">
+            <div style="font-size:11px;color:var(--clinic-muted);line-height:1.5">Every view Halliburton sees. Exports require her tap.</div>
+          </div>
+        </aside>
+
+        <!-- main -->
+        <main class="portal-main">
+
+          <div class="consent-banner">
+            <span class="dot"></span>
+            <span>This is Halliburton's read-only window. You cannot download, copy, or export without her approval. She sees your view-log in real time. Session expires automatically in 9d 06h.</span>
+          </div>
+
+          <!-- patient head -->
+          <div class="patient-head">
+            <div class="left">
+              <div class="av">H</div>
+              <div class="meta">
+                <h2>Halliburton Oji · 34 · perimenopause</h2>
+                <div class="sub">Patient since Jun 2025 · Cycle irregular · HRT since 2025-07-12 · No diagnosed comorbidity · London</div>
+                <div class="chips">
+                  <span class="c-pill plum">Shared 90 days</span>
+                  <span class="c-pill warn">HRT · titrating</span>
+                  <span class="c-pill">Oura connected</span>
+                  <span class="c-pill">No critical alerts</span>
+                </div>
+              </div>
+            </div>
+            <div class="right">
+              <button class="btn-ghost">Request extension</button>
+              <button class="btn-primary">Write async note</button>
+            </div>
+          </div>
+
+          <!-- grid -->
+          <div class="c-grid">
+
+            <!-- left column — HRT, Flash, Symptom -->
+            <div>
+
+              <!-- HRT timeline -->
+              <div class="c-card">
+                <div class="hd">
+                  <h3>HRT timeline · 90 days</h3>
+                  <span class="hint">patches + rotations · patient-logged</span>
+                </div>
+                <p class="sub">50µg oestradiol patch (Evorel) applied twice weekly · started 2025-07-12 · 2 rotations logged this window. Progesterone 100mg nightly, cyclic.</p>
+
+                <div class="hrt-row" id="hrtRow"></div>
+                <div class="hrt-axis"><span>Jan 22</span><span>Feb 5</span><span>Feb 19</span><span>Mar 5</span><span>Mar 19</span><span>Apr 2</span><span>Apr 16 (now)</span></div>
+
+                <div class="hrt-legend">
+                  <span><i class="dot" style="background:var(--plum)"></i>Oestradiol patch</span>
+                  <span><i class="dot" style="background:var(--clay)"></i>Progesterone (cyclic)</span>
+                  <span><i class="dot" style="background:#d0d0c3"></i>Missed dose</span>
+                  <span><i class="dot" style="background:var(--crit)"></i>Rotation flagged late</span>
+                </div>
+
+                <div class="hrt-rx">
+                  <b>Prescription history (as patient reports):</b> 50µg patch → 50µg patch (no dose change) for 92 days. 3 missed patch-change days (all travel). Progesterone adherence 84/89.<br>
+                  <b>Flag for visit:</b> flashes persist at current dose — consider 75µg trial.
+                </div>
+              </div>
+
+              <!-- Flash heat-map -->
+              <div class="c-card" style="margin-top:22px">
+                <div class="hd">
+                  <h3>Hot-flash heat-map · last 28 days × 24h</h3>
+                  <span class="hint">hour-of-day · intensity bands</span>
+                </div>
+                <p class="sub">Hour-of-day pattern. Darker = more/more-intense flashes that hour over the window. Most concentrated 22:00–03:00, consistent with sleep-disrupting vasomotor.</p>
+
+                <div class="flash-grid" id="flashGrid"></div>
+
+                <div class="flash-legend">
+                  <span>low</span>
+                  <div class="gradient"></div>
+                  <span>high</span>
+                </div>
+
+                <div class="hrt-rx" style="margin-top:16px">
+                  <b>Clinical picture:</b> 71 flashes logged over 28 days. Peak hour 01:00. Mean duration 4.1 min. Highly clustered in luteal-equivalent sub-window. Sleep onset within 20 min of flash in 62% of cases.
+                </div>
+              </div>
+
+              <!-- Symptom trajectory -->
+              <div class="c-card" style="margin-top:22px">
+                <div class="hd">
+                  <h3>Symptom trajectory · 90 days</h3>
+                  <span class="hint">weekly average · patient-reported band</span>
+                </div>
+                <p class="sub">Three tracked-by-patient signals. Mood is shown at summary scope — full text unavailable per patient's share settings.</p>
+
+                <div class="symp-chart">
+                  <svg class="symp-svg" viewBox="0 0 600 160" preserveAspectRatio="none">
+                    <!-- grid -->
+                    <line x1="0" y1="40" x2="600" y2="40" stroke="#ecece3" stroke-dasharray="3 4"/>
+                    <line x1="0" y1="80" x2="600" y2="80" stroke="#ecece3" stroke-dasharray="3 4"/>
+                    <line x1="0" y1="120" x2="600" y2="120" stroke="#ecece3" stroke-dasharray="3 4"/>
+
+                    <!-- Flashes/wk (plum) -->
+                    <polyline fill="none" stroke="#7a4a5e" stroke-width="2.4" points="0,90 46,75 92,82 138,60 184,50 230,62 276,42 322,38 368,48 414,36 460,28 506,40 552,32 600,28"/>
+                    <!-- Sleep (teal) -->
+                    <polyline fill="none" stroke="#6b8a8a" stroke-width="2.4" points="0,55 46,60 92,58 138,48 184,50 230,38 276,44 322,35 368,40 414,32 460,28 506,30 552,26 600,25"/>
+                    <!-- Mood band (rose) -->
+                    <polyline fill="none" stroke="#d45e52" stroke-width="2.2" stroke-dasharray="4 4" points="0,80 46,85 92,78 138,70 184,74 230,64 276,60 322,55 368,60 414,55 460,48 506,50 552,45 600,42"/>
+                    <!-- HRT start -->
+                    <line x1="0" y1="0" x2="0" y2="160" stroke="#c9a961" stroke-width="2"/>
+                    <text x="6" y="14" font-size="10" fill="#8a6a35" font-family="Inter">HRT start ↘</text>
+                    <!-- Now -->
+                    <line x1="600" y1="0" x2="600" y2="160" stroke="#4A2A3A" stroke-width="1.5" stroke-dasharray="2 3"/>
+                    <text x="570" y="14" font-size="10" fill="#4A2A3A" font-family="Inter" text-anchor="end">now</text>
+                  </svg>
+                </div>
+                <div class="symp-x"><span>day 0 · HRT start</span><span>day 30</span><span>day 60</span><span>day 90</span></div>
+
+                <div class="symp-legend">
+                  <span><i class="dot" style="background:#7a4a5e"></i>Flashes / week</span>
+                  <span><i class="dot" style="background:#6b8a8a"></i>Sleep hrs (Oura)</span>
+                  <span><i class="dot" style="background:#d45e52"></i>Mood band (avg of week, 1-3)</span>
+                </div>
+
+                <div class="hrt-rx" style="margin-top:16px">
+                  <b>Trend:</b> flash count trending down (−43%), sleep trending up (+1.8h/night), mood holding "steady-to-bright" since week 8. Consistent with effective HRT. Persisting flash hours (late night) suggest dose head-room.
+                </div>
+              </div>
+
+            </div>
+
+            <!-- right column — summary, note, audit -->
+            <div>
+
+              <!-- one-screen summary -->
+              <div class="c-card">
+                <div class="hd">
+                  <h3>At-a-glance</h3>
+                  <span class="hint">patient-curated summary</span>
+                </div>
+                <ul class="summary-list">
+                  <li><b>Peri · HRT titration phase</b>Week 13 of current regimen</li>
+                  <li><b>Active symptoms</b>Flashes (persistent), sleep fragmentation, occasional dry skin</li>
+                  <li><b>Resolved this window</b>Daytime brain-fog (weeks 1–4), pelvic spotting (week 6–7)</li>
+                  <li><b>Patient goals</b>Fewer late-night flashes · more Oura-sleep continuity · preserved libido</li>
+                  <li><b>Last clinician visit</b>Dec 2025 · Dr Priya Shah · GP</li>
+                  <li><b>No red flags</b>No unusual bleeding. No chest pain. No unilateral leg swelling.</li>
+                </ul>
+              </div>
+
+              <!-- async note -->
+              <div class="c-card note-card" style="margin-top:22px">
+                <div class="hd">
+                  <h3>Async note · for Halliburton</h3>
+                  <span class="hint">she reviews before it reaches her</span>
+                </div>
+                <p class="sub">One async note per session day. No chat thread. No photos. No links outside FemWell. She marks it seen; it lands in her Pulse page's Clinician card.</p>
+
+                <textarea placeholder="Halliburton — the flash pattern is consistent with under-dosing on the oestradiol. I'd like to adjust from 50µg → 75µg patch at Friday's visit..."></textarea>
+
+                <div class="quick">
+                  <span class="qr-chip">Continue current dose</span>
+                  <span class="qr-chip">Titrate up</span>
+                  <span class="qr-chip">Book follow-up in 2 wks</span>
+                  <span class="qr-chip">No action needed</span>
+                  <span class="qr-chip">Request labs</span>
+                </div>
+
+                <div class="note-meta">
+                  <span>1 note/day · patient approves before visible to her</span>
+                  <div style="display:flex;gap:8px"><button class="btn-ghost">Discard</button><button class="btn-primary">Send to Halliburton</button></div>
+                </div>
+              </div>
+
+              <!-- audit trail (her-visible) -->
+              <div class="c-card" style="margin-top:22px">
+                <div class="hd">
+                  <h3>Your audit this session</h3>
+                  <span class="hint">she sees this live</span>
+                </div>
+                <p class="sub">Every page you open, every note you write, every attempted export is visible to Halliburton. You cannot edit this log.</p>
+                <div style="margin-top:6px">
+                  <div class="audit-row"><span class="b">Opened HRT timeline</span><span class="a">THU 17:42 · 3m 12s</span></div>
+                  <div class="audit-row"><span class="b">Opened Mood arc (summary)</span><span class="a">THU 17:46 · 1m 04s</span></div>
+                  <div class="audit-row"><span class="b">Opened Flash heat-map</span><span class="a">WED 09:21 · 5m 41s</span></div>
+                  <div class="audit-row"><span class="b">Opened Symptom trajectory</span><span class="a">WED 09:27 · 2m 18s</span></div>
+                  <div class="audit-row"><span class="b">Session established</span><span class="a">TUE 13:59 · GMC verified</span></div>
+                </div>
+              </div>
+
+            </div>
+          </div>
+
+        </main>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============= APPENDIX ============= -->
+  <section class="appendix">
+    <div class="appendix-head">
+      <div class="kicker">appendix · build spec</div>
+      <h2>How Care Bridge v2 actually works</h2>
+    </div>
+
+    <div class="grid-2">
+      <div class="block">
+        <h3>Core rules</h3>
+        <ol>
+          <li><b>Clinician never has a FemWell app.</b> Desktop web portal only (<code style="font-family:ui-monospace;font-size:11px">care.femwells.com</code>) — mobile is blocked to prevent casual screenshots over coffee.</li>
+          <li><b>Magic-link + verified GMC/GMC.</b> Clinician enters their regulator ID on first session; FemWell verifies against the live GMC register (or GMC/AMA for diaspora). Unverified clinician = no portal access.</li>
+          <li><b>Single-patient per session.</b> Dr Aisha Patel does not see a roster. Each patient invites him with a separate magic link + separate session. He can hold multiple active windows, but they never aggregate into a "my patients" list.</li>
+          <li><b>14-day default, 7/14/21/30 options.</b> Hard-expire on the day. She can extend once; he can request an extension with one-line reason but cannot unilaterally extend.</li>
+          <li><b>Async note only — no chat.</b> One note per session day. She reviews before it's visible to her. No photos, no links, no files attached.</li>
+          <li><b>No download. No copy.</b> Portal is render-only. PDF export requires her tap to approve — the PDF is watermarked with her name, his GMC, and the session window.</li>
+          <li><b>UK GDPR + DPA 2018 audit is hers.</b> Every view is logged with timestamp/device-fingerprint/IP-prefix; she sees it in real time; she can export it; the log is immutable.</li>
+          <li><b>Silent revoke.</b> She ends access. He sees "access ended by patient" — no reason, no re-invite request. She chooses whether to tell him why outside the app.</li>
+        </ol>
+      </div>
+      <div class="block dark">
+        <h3>What we refuse to build</h3>
+        <ul>
+          <li><b>No chat thread.</b> Clinical chats become liability; one async note is enough.</li>
+          <li><b>No in-portal prescribing.</b> The portal shows data; prescribing happens at the visit or via her clinic's own Rx system. FemWell is not an EHR.</li>
+          <li><b>No "clinician can invite patient".</b> Inversion kills the consent arrow. Patient always initiates.</li>
+          <li><b>No aggregate clinician view.</b> No "I have 12 patients in peri this week" dashboard. If Dr Aisha Patel wants aggregate peri insight he uses the Pro-educator channel, not his patients' portals.</li>
+          <li><b>No insurance integration at launch.</b> Care Bridge is between her and her doctor. Not between her data and an insurer.</li>
+          <li><b>No journal text ever.</b> No sealed letters, no panic log, no body photos. These never cross regardless of clinical justification.</li>
+          <li><b>No clinician-to-clinician sharing.</b> If she needs a second opinion she invites the second clinician directly.</li>
+          <li><b>No auto-renew, no silent-extend.</b> Expires always means expires.</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="grid-2" style="margin-top:28px">
+      <div class="block">
+        <h3>Consent scopes · 3-position</h3>
+        <table class="table" style="margin-top:0">
+          <thead><tr><th>Scope</th><th>off</th><th>summary</th><th>full</th></tr></thead>
+          <tbody>
+            <tr><td>HRT timeline</td><td>hidden</td><td>regimen summary (names, strengths)</td><td>timeline + rotations + missed</td></tr>
+            <tr><td>Flash + sleep</td><td>hidden</td><td>count + weekly trend</td><td>28-day hour-of-day heat-map</td></tr>
+            <tr><td>Mood arc</td><td>hidden</td><td>3-band weekly</td><td>never (journal stays hers)</td></tr>
+            <tr><td>Bleed pattern</td><td>hidden</td><td>irregularity flag</td><td>full calendar + spotting days</td></tr>
+            <tr><td>Pelvic/pain</td><td>hidden</td><td>severity bands</td><td>bands + area + duration (no text)</td></tr>
+            <tr><td>Wearable</td><td>hidden</td><td>weekly averages</td><td>daily rHR/HRV/sleep</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="block">
+        <h3>UK GDPR + DPA 2018 compliance — what we commit</h3>
+        <ol>
+          <li><b>Lawful basis:</b> explicit patient consent on a per-session basis. No "legitimate interest" carveout.</li>
+          <li><b>Purpose-binding:</b> the portal's only purpose is the stated clinical consultation. Data used for anything else (e.g. research) requires a separate consent flow.</li>
+          <li><b>Data minimisation:</b> tight payload per scope. The clinician sees rendered views, not raw tables. Server never exposes a "get_all_user_data" endpoint to the portal.</li>
+          <li><b>Retention:</b> her data stays on FemWell servers; the portal holds render-only session state. At session expiry, all portal-side state is destroyed.</li>
+          <li><b>Subject rights:</b> she can request her audit log, export it, and end access — within the app in under 30 seconds.</li>
+          <li><b>Breach response:</b> 72h disclosure to the ICO if any portal session leaks beyond the intended clinician. Patient notified simultaneously.</li>
+          <li><b>Data localisation:</b> UK users' data on UK-hosted infra (AWS eu-west-2, London). Expat users' data stays in-region of residence.</li>
+        </ol>
+      </div>
+    </div>
+
+    <div class="block" style="margin-top:28px">
+      <h3>Entities · base44</h3>
+      <table class="table">
+        <thead><tr><th>Entity</th><th>Tier</th><th>Notes</th></tr></thead>
+        <tbody>
+          <tr><td>Clinician</td><td>T1 · verified</td><td>GMC/GMC/AMA number, verified by admin, specialty, institution.</td></tr>
+          <tr><td>CareBridgeInvite</td><td>T1 · ephemeral</td><td>single-use magic link, 72h unused-TTL, device-binds on first open.</td></tr>
+          <tr><td>CareBridgeSession</td><td>T2 · per-user-encrypted</td><td>one per dyad × window, holds consent-scope matrix + expiry.</td></tr>
+          <tr><td>SessionView</td><td>T1</td><td>append-only log entries — page opened, duration, device, IP-prefix.</td></tr>
+          <tr><td>AsyncNote</td><td>T2</td><td>clinician→patient, max 1/day, patient approves before visible to her.</td></tr>
+          <tr><td>ExtensionRequest</td><td>T1</td><td>clinician requests extra days + one-line reason; patient taps to approve.</td></tr>
+          <tr><td>ExportRequest</td><td>T1</td><td>PDF export requires patient approval; watermarked output.</td></tr>
+          <tr><td>RevokeEvent</td><td>T1</td><td>patient ends access; propagates within 30s; clinician sees "access ended".</td></tr>
+          <tr><td>ClinicianVerification</td><td>T1</td><td>regulator ID, verified date, verifier admin. Re-verified yearly.</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="grid-2" style="margin-top:28px">
+      <div class="block">
+        <h3>Portal-side render contract</h3>
+        <p style="font-size:13.5px;color:var(--ink-soft);margin:0 0 12px">The portal fetches rendered views, not raw data. Mental model: the server is the kitchen, the portal gets the plate — and can only see what's on the plate.</p>
+        <ul>
+          <li>Each scope maps to a single render endpoint: <code style="font-family:ui-monospace;font-size:11.5px">/session/:id/hrt</code>, <code style="font-family:ui-monospace;font-size:11.5px">/flash</code>, <code style="font-family:ui-monospace;font-size:11.5px">/bleed</code>, <code style="font-family:ui-monospace;font-size:11.5px">/mood</code>, <code style="font-family:ui-monospace;font-size:11.5px">/wearable</code>, <code style="font-family:ui-monospace;font-size:11.5px">/pelvic</code>.</li>
+          <li>Endpoints enforce the consent-scope on the server before returning anything — scope mismatch returns 403, logged.</li>
+          <li>No batch endpoint, no search endpoint, no "download JSON" endpoint. Intentionally missing.</li>
+          <li>Right-click, copy, and screen-capture APIs are blocked via CSP + disable handlers. Screenshot protection is best-effort (desktop OS can always override).</li>
+          <li>Portal is a separate build with its own CSP, served from a separate subdomain — not a route in the main app.</li>
+        </ul>
+      </div>
+      <div class="block">
+        <h3>Ship order</h3>
+        <ol>
+          <li><b>Q3 2026</b> — clinician verification flow (GMC integration), invite+session skeleton, HRT timeline + Flash heat-map views, async note, UK GDPR + DPA 2018 audit trail. 14-day default. Launch with London endocrinologist cohort (≤30 clinicians).</li>
+          <li><b>Q4 2026</b> — Symptom trajectory, bleed pattern, wearable metrics, extension-request flow, controlled PDF export, 7/14/21/30 windows. Broaden to gynae + GP.</li>
+          <li><b>Q1 2027</b> — clinician-side aggregate visit-prep (dedicated "tonight's visits" view that clinician opens before office hours, still one-patient-per-session), async-note structured templates per specialty.</li>
+          <li><b>Q2 2027</b> — diaspora clinician verification (GMC/AMA), language toggle on portal (regional dialects not shown to clinicians unless they opt-in).</li>
+          <li><b>Never</b> — insurance-integration, clinician-invites-patient, journal-sharing, in-portal prescribing, clinician-to-clinician sharing.</li>
+        </ol>
+      </div>
+    </div>
+
+    <div class="block" style="margin-top:28px">
+      <h3>Schema sketch · session + audit</h3>
+      <div class="code">// session payload — server-side permission gate runs on every render fetch
+type CareBridgeSession = {
+  id: string
+  patient_user_id: string
+  clinician_id: string           // refs verified Clinician
+  window_days: 7 | 14 | 21 | 30
+  starts_at: ISOString
+  expires_at: ISOString
+  consent_scope: {
+    hrt: 'off' | 'summary' | 'full'
+    flash: 'off' | 'summary' | 'full'
+    mood: 'off' | 'summary'       // never 'full'
+    bleed: 'off' | 'summary' | 'full'
+    pelvic: 'off' | 'summary' | 'full'
+    wearable: 'off' | 'summary' | 'full'
+  }
+  status: 'pending' | 'active' | 'expired' | 'revoked'
+  device_fingerprint?: string     // set on first open, immutable after
+}
+
+// append-only log — immutable, user-visible
+type SessionView = {
+  session_id: string
+  at: ISOString
+  actor_clinician_id: string
+  path: '/hrt' | '/flash' | '/mood' | '/bleed' | '/pelvic' | '/wearable' | '/overview'
+  duration_sec: number
+  device_fingerprint: string
+  ip_prefix: string               // /24 only, never full IP
+  scope_resolved: 'summary' | 'full'
+}
+
+// invariant: no mutable endpoint exists on the clinician portal.
+// invariant: clinician never receives raw entity IDs — only session-scoped anonymised handles.
+// invariant: SessionView rows are write-once; deleting a view-log is technically impossible.</div>
+    </div>
+  </section>
+
+  <footer class="footer">
+    <b>Demo owner:</b> Halliburton · <b>Built:</b> 2026-04-20 (autonomous loop) · <b>Builds on:</b> roadmap-brainstorm §Care Bridge v2 · future-features-brainstorm §Category 3 Clinical (P0) · Life Stage demo (Peri dashboard + HRT tracker). <br><br>
+    <b>Open Qs for Q3 scoping:</b> Clinician onboarding price (free during launch, paid thereafter?). GMC API rate limits — should we cache verification quarterly? Controlled-PDF watermark exact design (QR back to audit, or just text fingerprint?). London-based infra vendor for UK GDPR + DPA 2018-compliant hosting. Decide in the first Q3 sprint.
+  </footer>
+</main>
+
+<script>
+// === HRT bar row data ===
+(() => {
+  const row = document.getElementById('hrtRow');
+  if(!row) return;
+  // 92 days — dose band per-day: 50 (standard), 0 (miss), 100 (prog nights)
+  const days = 92;
+  for(let i=0;i<days;i++){
+    const bar = document.createElement('div');
+    bar.className = 'hrt-bar';
+    // simulate missed days
+    let isMiss = [21,52,79].includes(i);
+    let hasProg = (i % 28) < 12; // cyclic prog nights
+    let dose = isMiss ? 0 : 50;
+    let height = isMiss ? 8 : 34;
+    let color = isMiss ? '#c97761' : '#7a4a5e';
+    if(hasProg){ height = 48; color = '#7a4a5e'; }
+    // last third: still 50, indicating flat dosing
+    bar.style.height = height + 'px';
+    bar.style.background = color;
+    bar.style.opacity = isMiss ? '0.8' : '0.92';
+    // overlay small clay stripe for prog nights
+    if(hasProg){
+      const p = document.createElement('div');
+      p.style.cssText = 'position:absolute;bottom:0;left:0;right:0;height:8px;background:#c98a6b;border-radius:0 0 3px 3px;';
+      bar.appendChild(p);
+    }
+    row.appendChild(bar);
+  }
+})();
+
+// === Flash heat-map ===
+(() => {
+  const grid = document.getElementById('flashGrid');
+  if(!grid) return;
+  // header row: hour labels
+  const blank = document.createElement('div'); blank.className = 'day-lbl'; grid.appendChild(blank);
+  for(let h=0;h<24;h++){
+    const hd = document.createElement('div'); hd.className = 'hour';
+    hd.textContent = h % 3 === 0 ? h : '';
+    grid.appendChild(hd);
+  }
+  // 28 days x 24h
+  const peakHours = new Set([22,23,0,1,2,3]);
+  const midHours = new Set([21,4,5,20]);
+  for(let d=0; d<28; d++){
+    const lbl = document.createElement('div'); lbl.className = 'day-lbl';
+    lbl.textContent = d === 0 ? 'day -27' : (d === 13 ? 'day -14' : (d === 27 ? 'today' : ''));
+    grid.appendChild(lbl);
+    for(let h=0; h<24; h++){
+      const c = document.createElement('div'); c.className = 'flash-cell';
+      const r = Math.random();
+      let color = '#ecece3';
+      // higher probability of flash in peak hours + in middle of window
+      const windowBias = 1 - Math.abs(d-14)/14; // 0..1
+      if(peakHours.has(h)){
+        if(r < 0.55*windowBias) color = '#c97761';
+        else if(r < 0.8*windowBias) color = '#d79b85';
+        else if(r < 0.92) color = '#efd9cf';
+      } else if(midHours.has(h)){
+        if(r < 0.3*windowBias) color = '#d79b85';
+        else if(r < 0.55*windowBias) color = '#efd9cf';
+      } else {
+        if(r < 0.08) color = '#efd9cf';
+      }
+      c.style.background = color;
+      grid.appendChild(c);
+    }
+  }
+})();
+</script>
+</body>
+</html>

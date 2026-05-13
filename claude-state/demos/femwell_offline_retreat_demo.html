@@ -1,0 +1,731 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>FemWell — Offline Retreat Mode</title>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,wght@0,300;0,400;0,500;0,600;1,400&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --cream:#f7f0e6; --cream-2:#efe5d4; --paper:#fbf6ed;
+    --plum:#4A2A3A; --plum-2:#7a4a5e; --plum-ink:#2a1823;
+    --rose:#d4a5a0; --rose-soft:#ead3cd;
+    --gold:#C9A95C; --gold-soft:#e9d9a6;
+    --luteal:#8A5F74; --moss:#6b7a5a; --moss-soft:#c6cfb3;
+    --night:#1a1522; --night-2:#2a2333;
+    --star:#f5e6d3; --sky:#c7d2e0;
+    --line:rgba(74,42,58,0.12);
+    --line-2:rgba(74,42,58,0.22);
+    --shadow:0 18px 46px -24px rgba(74,42,58,0.35), 0 2px 6px rgba(74,42,58,0.06);
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{
+    font-family:'Inter',system-ui,sans-serif;
+    background:
+      radial-gradient(1200px 600px at 10% 0%, #f3dfd6 0%, transparent 55%),
+      radial-gradient(1000px 500px at 90% 10%, #e9d9a6 0%, transparent 55%),
+      linear-gradient(180deg,#f1e4d2 0%, #e4d3bb 100%);
+    min-height:100vh; color:var(--plum); padding:36px 20px 80px;
+  }
+  .wrap{max-width:1960px;margin:0 auto}
+  .page-head{text-align:center;margin-bottom:36px}
+  .eyebrow{
+    display:inline-block; font-family:'Fraunces',serif; font-style:italic;
+    font-size:13px; letter-spacing:.18em; text-transform:uppercase;
+    color:var(--plum-2); margin-bottom:8px;
+  }
+  h1{font-family:'Fraunces',serif;font-weight:400;font-size:44px;line-height:1.08;color:var(--plum-ink)}
+  h1 em{font-style:italic;color:var(--luteal)}
+  .sub{max-width:780px;margin:10px auto 0;color:var(--plum-2);font-size:14.5px;line-height:1.55}
+  .phones{
+    display:grid;
+    grid-template-columns:repeat(3, 420px);
+    gap:28px; justify-content:center; align-items:start;
+  }
+  .phone{
+    width:420px; height:1580px; position:relative;
+    background:var(--cream); border-radius:44px;
+    border:12px solid #1a1522;
+    box-shadow:var(--shadow), inset 0 0 0 1px rgba(255,255,255,0.4);
+    overflow:hidden;
+  }
+  .notch{
+    position:absolute; top:10px; left:50%; transform:translateX(-50%);
+    width:124px; height:26px; background:#1a1522; border-radius:14px; z-index:30;
+  }
+  .status{
+    position:absolute;top:14px;left:0;right:0;display:flex;justify-content:space-between;
+    padding:0 32px;font-size:12px;font-weight:600;color:var(--plum);z-index:31;
+  }
+  .status .r{display:flex;gap:6px;align-items:center}
+  .status .dot{width:6px;height:6px;border-radius:3px;background:var(--plum)}
+  .screen{position:absolute;inset:0;padding:52px 18px 98px;overflow:hidden}
+  .label{
+    position:absolute; left:50%; transform:translateX(-50%);
+    bottom:-46px; font-family:'Fraunces',serif; font-style:italic;
+    color:var(--plum-2); font-size:14px; white-space:nowrap;
+  }
+  .label b{font-style:normal;font-weight:500;color:var(--plum-ink);margin-right:6px}
+
+  /* Bottom nav */
+  .nav{
+    position:absolute; left:12px; right:12px; bottom:12px; height:72px;
+    background:rgba(255,252,246,0.96); backdrop-filter:blur(10px);
+    border:1px solid var(--line); border-radius:28px;
+    display:grid; grid-template-columns:1fr 1fr 86px 1fr 1fr; align-items:center;
+    padding:0 10px; z-index:20;
+  }
+  .nav .item{display:flex;flex-direction:column;align-items:center;gap:3px;font-size:10.5px;color:var(--plum-2);font-weight:500}
+  .nav .item.act{color:var(--plum)}
+  .nav .ic{width:22px;height:22px;border-radius:7px;background:rgba(74,42,58,0.1);display:grid;place-items:center;font-size:11px}
+  .nav .item.act .ic{background:var(--plum);color:var(--cream)}
+  .fab{width:64px;height:64px;border-radius:50%;background:linear-gradient(135deg,#C9A95C 0%, #d4a5a0 100%);display:grid;place-items:center;color:#fff;font-family:'Fraunces',serif;font-style:italic;font-size:17px;box-shadow:0 14px 28px -10px rgba(201,169,92,.5)}
+
+  /* Generic page bits */
+  .eyebrow-2{font-family:'Fraunces',serif;font-style:italic;font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:var(--plum-2)}
+  .h-title{font-family:'Fraunces',serif;font-weight:400;font-size:30px;line-height:1.08;color:var(--plum-ink)}
+  .h-title em{font-style:italic;color:var(--luteal)}
+  .p-muted{color:var(--plum-2);font-size:12.5px;line-height:1.55}
+  .card{background:#fff;border:1px solid var(--line);border-radius:20px;padding:16px}
+  .card.dark{background:var(--night);border:1px solid rgba(245,230,211,0.12);color:var(--star)}
+  .pill{display:inline-flex;align-items:center;gap:6px;padding:4px 10px;border-radius:999px;font-size:10.5px;font-weight:600;letter-spacing:.04em;text-transform:uppercase}
+
+  /* ===== PHONE 1 — PRE-FLIGHT PACK ===== */
+  .hero1{
+    margin-bottom:14px; padding:16px; border-radius:22px;
+    background:linear-gradient(180deg, #2a2333 0%, #1a1522 100%);
+    color:var(--star); position:relative; overflow:hidden;
+  }
+  .hero1::after{
+    content:""; position:absolute; top:-40px; right:-40px; width:180px; height:180px;
+    background:radial-gradient(closest-side, rgba(201,169,92,0.35), transparent 70%);
+  }
+  .hero1 .eye{font-family:'Fraunces',serif;font-style:italic;font-size:11.5px;letter-spacing:.18em;text-transform:uppercase;color:var(--gold-soft);opacity:.9}
+  .hero1 h2{font-family:'Fraunces',serif;font-weight:400;font-size:26px;line-height:1.1;margin:6px 0 8px}
+  .hero1 h2 em{font-style:italic;color:var(--gold-soft)}
+  .hero1 .why{font-size:11.5px;line-height:1.5;color:rgba(245,230,211,0.8)}
+  .hero1 .bar{margin-top:12px;height:6px;border-radius:4px;background:rgba(255,255,255,0.08);overflow:hidden;position:relative;z-index:1}
+  .hero1 .bar>span{display:block;height:100%;width:64%;background:linear-gradient(90deg,#C9A95C,#d4a5a0);border-radius:4px}
+  .hero1 .bar-label{display:flex;justify-content:space-between;font-size:10px;color:rgba(245,230,211,0.7);margin-top:6px;position:relative;z-index:1}
+
+  .chk-group{margin-bottom:12px}
+  .chk-title{display:flex;justify-content:space-between;align-items:baseline;margin:0 4px 8px}
+  .chk-title h3{font-family:'Fraunces',serif;font-weight:500;font-size:15px;color:var(--plum-ink)}
+  .chk-title .mb{font-size:10.5px;color:var(--plum-2)}
+
+  .pack-row{
+    display:flex;align-items:center;gap:10px;padding:11px 12px;
+    background:#fff;border:1px solid var(--line);border-radius:14px;margin-bottom:7px;
+  }
+  .pack-row .checkbox{
+    width:22px;height:22px;border-radius:7px;background:var(--plum);color:var(--cream);
+    display:grid;place-items:center;font-size:11px;flex-shrink:0;
+  }
+  .pack-row.off .checkbox{background:#fff;border:1.5px solid var(--line-2);color:transparent}
+  .pack-row .info{flex:1;min-width:0}
+  .pack-row .info .n{font-size:12.5px;font-weight:600;color:var(--plum-ink)}
+  .pack-row .info .s{font-size:10.5px;color:var(--plum-2);margin-top:1px}
+  .pack-row .info .s em{font-style:italic;color:var(--luteal)}
+  .pack-row .size{font-size:11px;color:var(--plum-2);font-weight:600;text-align:right;flex-shrink:0}
+  .pack-row .size b{display:block;color:var(--plum-ink);font-weight:600;font-size:11.5px}
+  .pack-row.tick .checkbox{background:var(--moss)}
+
+  .diag-card{
+    background:linear-gradient(180deg,#fbf6ed, #f5ead6);
+    border:1px solid var(--line); border-radius:18px; padding:13px; margin-bottom:12px;
+  }
+  .diag-card .t{font-family:'Fraunces',serif;font-weight:500;font-size:13.5px;color:var(--plum-ink);margin-bottom:6px}
+  .diag-card .rows{display:grid;grid-template-columns:repeat(2,1fr);gap:8px;margin-top:10px}
+  .diag-card .metric{background:rgba(255,255,255,0.7);border-radius:12px;padding:8px 10px}
+  .diag-card .metric .l{font-size:9.5px;color:var(--plum-2);text-transform:uppercase;letter-spacing:.08em}
+  .diag-card .metric .v{font-family:'Fraunces',serif;font-size:17px;color:var(--plum-ink);margin-top:2px}
+  .diag-card .metric .v em{font-style:italic;color:var(--luteal);font-size:12px;margin-left:3px}
+
+  .pack-cta{
+    width:100%;padding:14px;border:0;border-radius:16px;cursor:pointer;
+    background:var(--plum); color:var(--cream);
+    font-family:'Inter',sans-serif;font-size:13px;font-weight:600;
+    display:flex;justify-content:center;align-items:center;gap:8px;
+  }
+  .pack-cta .meta{font-weight:400;color:rgba(247,240,230,.6);font-size:11px}
+  .pack-cta-sub{
+    width:100%;padding:11px;border:1px solid var(--line-2);border-radius:14px;background:transparent;
+    font-family:'Fraunces',serif;font-style:italic;font-size:12px;color:var(--plum-2);margin-top:8px;cursor:pointer;
+  }
+
+  /* ===== PHONE 2 — OFFLINE TODAY ===== */
+  .off-banner{
+    display:flex;align-items:center;justify-content:space-between;gap:10px;
+    padding:10px 12px;border-radius:14px;margin-bottom:14px;
+    background:linear-gradient(90deg, rgba(138,95,116,0.14), rgba(201,169,92,0.14));
+    border:1px solid rgba(138,95,116,0.25);
+  }
+  .off-banner .pi{display:flex;align-items:center;gap:9px}
+  .off-banner .glyph{
+    width:30px;height:30px;border-radius:50%;background:var(--plum);color:var(--cream);
+    display:grid;place-items:center;font-family:'Fraunces',serif;font-style:italic;font-size:13px;
+  }
+  .off-banner .txt .l{font-size:9.5px;text-transform:uppercase;letter-spacing:.1em;color:var(--plum-2);font-weight:600}
+  .off-banner .txt .n{font-family:'Fraunces',serif;font-size:14px;color:var(--plum-ink)}
+  .off-banner .txt .n em{font-style:italic;color:var(--luteal)}
+  .off-banner .countdown{font-family:'Fraunces',serif;font-style:italic;font-size:11.5px;color:var(--plum-2)}
+
+  .hero2{
+    padding:16px 14px; border-radius:22px; margin-bottom:14px;
+    background:linear-gradient(165deg, #f5d9cf 0%, #e9d9a6 100%);
+    position:relative; overflow:hidden;
+  }
+  .hero2 .phase{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px}
+  .hero2 .day{font-family:'Fraunces',serif;font-style:italic;font-size:12px;color:var(--plum-2)}
+  .hero2 .chip{padding:3px 10px;border-radius:999px;background:rgba(255,255,255,0.55);font-size:10px;font-weight:600;color:var(--plum-ink);text-transform:uppercase;letter-spacing:.06em}
+  .hero2 h2{font-family:'Fraunces',serif;font-weight:400;font-size:25px;line-height:1.12;color:var(--plum-ink)}
+  .hero2 h2 em{font-style:italic;color:var(--luteal)}
+  .hero2 .jess-from{display:flex;align-items:center;gap:6px;margin-top:10px;font-size:11px;color:var(--plum-2)}
+  .hero2 .jess-from .av{width:22px;height:22px;border-radius:50%;background:linear-gradient(135deg,#C9A95C,#d4a5a0);display:grid;place-items:center;color:#fff;font-family:'Fraunces',serif;font-style:italic;font-size:11px}
+  .hero2 .jess-from em{font-style:italic;color:var(--luteal)}
+
+  .offline-card{
+    background:#fff;border:1px solid var(--line);border-radius:18px;
+    padding:13px; margin-bottom:9px; position:relative;
+  }
+  .offline-card .row1{display:flex;justify-content:space-between;align-items:flex-start}
+  .offline-card h4{font-family:'Fraunces',serif;font-weight:500;font-size:14px;color:var(--plum-ink)}
+  .offline-card h4 em{font-style:italic;color:var(--luteal)}
+  .offline-card p{font-size:11.5px;color:var(--plum-2);margin-top:3px;line-height:1.5}
+  .tag-ok{padding:3px 8px;border-radius:999px;background:rgba(107,122,90,0.14);color:var(--moss);font-size:9.5px;font-weight:600;text-transform:uppercase;letter-spacing:.06em;display:inline-flex;align-items:center;gap:4px;flex-shrink:0}
+  .tag-ok::before{content:"";width:6px;height:6px;border-radius:50%;background:var(--moss)}
+  .tag-warn{padding:3px 8px;border-radius:999px;background:rgba(74,42,58,0.08);color:var(--plum-2);font-size:9.5px;font-weight:600;text-transform:uppercase;letter-spacing:.06em;display:inline-flex;align-items:center;gap:4px;flex-shrink:0}
+
+  .ghost-card{
+    background:rgba(255,255,255,0.45);border:1px dashed var(--line-2);border-radius:18px;
+    padding:13px; margin-bottom:9px; opacity:.78;
+  }
+  .ghost-card .row1{display:flex;justify-content:space-between;align-items:flex-start}
+  .ghost-card h4{font-family:'Fraunces',serif;font-weight:500;font-size:13.5px;color:var(--plum-2)}
+  .ghost-card p{font-size:11px;color:var(--plum-2);opacity:.8;margin-top:3px}
+
+  .pack-progress{
+    display:flex;align-items:center;gap:8px;margin:6px 0 10px 0;
+    font-size:10.5px;color:var(--plum-2);
+  }
+  .pack-progress .bar{flex:1;height:4px;border-radius:3px;background:rgba(74,42,58,0.1);overflow:hidden}
+  .pack-progress .bar>span{display:block;height:100%;width:82%;background:var(--luteal);border-radius:3px}
+
+  /* Panic button — offline still works */
+  .panic-tile{
+    display:flex;align-items:center;gap:12px;padding:12px 14px;
+    background:linear-gradient(90deg, rgba(122,74,94,0.1), rgba(212,165,160,0.14));
+    border:1px solid rgba(122,74,94,0.18); border-radius:18px; margin-bottom:9px;
+  }
+  .panic-tile .ic{width:36px;height:36px;border-radius:12px;background:var(--plum);color:var(--cream);display:grid;place-items:center;font-family:'Fraunces',serif;font-style:italic;font-size:14px;flex-shrink:0}
+  .panic-tile .t{flex:1}
+  .panic-tile .t .l{font-family:'Fraunces',serif;font-weight:500;font-size:13.5px;color:var(--plum-ink)}
+  .panic-tile .t .s{font-size:10.5px;color:var(--plum-2);margin-top:1px}
+  .panic-tile .arrow{font-size:14px;color:var(--plum-2)}
+
+  /* ===== PHONE 3 — RECONNECT SYNC ===== */
+  .reco-hero{
+    padding:16px; border-radius:22px; margin-bottom:14px;
+    background:linear-gradient(180deg, #e9d9a6 0%, #f3dfd6 100%);
+    border:1px solid rgba(201,169,92,0.3);
+  }
+  .reco-hero .wifi{display:inline-flex;align-items:center;gap:6px;padding:4px 10px;border-radius:999px;background:rgba(107,122,90,0.15);color:var(--moss);font-size:10px;font-weight:600;letter-spacing:.06em;text-transform:uppercase}
+  .reco-hero h2{font-family:'Fraunces',serif;font-weight:400;font-size:22px;line-height:1.15;color:var(--plum-ink);margin-top:10px}
+  .reco-hero h2 em{font-style:italic;color:var(--luteal)}
+  .reco-hero .sub{font-size:11.5px;color:var(--plum-2);margin-top:6px;line-height:1.5}
+
+  .queue-card{
+    background:#fff;border:1px solid var(--line);border-radius:18px;padding:14px;margin-bottom:10px;
+  }
+  .queue-card .head{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:10px}
+  .queue-card .head h4{font-family:'Fraunces',serif;font-weight:500;font-size:14px;color:var(--plum-ink)}
+  .queue-card .head .ct{font-size:10.5px;color:var(--plum-2)}
+
+  .q-item{display:flex;align-items:center;gap:10px;padding:8px 0;border-top:1px solid var(--line)}
+  .q-item:first-of-type{border-top:0}
+  .q-item .seal{
+    width:26px;height:26px;border-radius:8px;background:var(--plum);color:var(--gold-soft);
+    display:grid;place-items:center;font-family:'Fraunces',serif;font-style:italic;font-size:11px;flex-shrink:0;
+  }
+  .q-item .tx{flex:1;min-width:0}
+  .q-item .tx .n{font-size:12px;color:var(--plum-ink);font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .q-item .tx .s{font-size:10px;color:var(--plum-2);margin-top:1px}
+  .q-item .st{font-size:10px;font-weight:600;color:var(--moss);flex-shrink:0;display:inline-flex;align-items:center;gap:4px}
+  .q-item .st.pending{color:var(--luteal)}
+  .q-item .st.fail{color:#b8524f}
+
+  .reco-meta{
+    display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:12px;
+  }
+  .reco-meta .m{background:#fff;border:1px solid var(--line);border-radius:14px;padding:10px 8px;text-align:center}
+  .reco-meta .m .n{font-family:'Fraunces',serif;font-size:19px;color:var(--plum-ink)}
+  .reco-meta .m .l{font-size:9px;color:var(--plum-2);text-transform:uppercase;letter-spacing:.08em;margin-top:2px}
+
+  .jess-note{
+    background:linear-gradient(180deg,#fbf6ed,#f5ead6);
+    border:1px solid var(--line);border-radius:18px;padding:14px;margin-bottom:10px;
+    display:flex;gap:10px;
+  }
+  .jess-note .av{width:30px;height:30px;border-radius:50%;background:linear-gradient(135deg,#C9A95C,#d4a5a0);color:#fff;display:grid;place-items:center;font-family:'Fraunces',serif;font-style:italic;font-size:13px;flex-shrink:0}
+  .jess-note .tx .l{font-family:'Fraunces',serif;font-style:italic;font-size:10.5px;color:var(--plum-2);letter-spacing:.06em}
+  .jess-note .tx .body{font-family:'Fraunces',serif;font-weight:400;font-size:13.5px;color:var(--plum-ink);line-height:1.35;margin-top:3px}
+  .jess-note .tx .body em{font-style:italic;color:var(--luteal)}
+
+  .conflict-card{
+    background:rgba(212,165,160,0.14); border:1px solid rgba(122,74,94,0.18);
+    border-radius:18px; padding:14px; margin-bottom:10px;
+  }
+  .conflict-card h4{font-family:'Fraunces',serif;font-weight:500;font-size:13.5px;color:var(--plum-ink);margin-bottom:6px;display:flex;align-items:center;gap:6px}
+  .conflict-card p{font-size:11.5px;color:var(--plum-2);line-height:1.5;margin-bottom:8px}
+  .conflict-card .choice{display:flex;gap:7px}
+  .conflict-card .choice button{
+    flex:1;padding:8px;border:1px solid var(--line-2);border-radius:12px;background:#fff;
+    font-family:'Fraunces',serif;font-style:italic;font-size:11.5px;color:var(--plum-ink);cursor:pointer;
+  }
+  .conflict-card .choice button.prim{background:var(--plum);color:var(--cream);border-color:var(--plum)}
+
+  .ship-row{
+    display:flex;gap:8px;
+  }
+  .ship-row button{
+    flex:1;padding:13px;border-radius:14px;border:1px solid var(--line-2);background:#fff;cursor:pointer;
+    font-family:'Inter',sans-serif;font-size:12px;font-weight:600;color:var(--plum-ink);
+  }
+  .ship-row button.prim{background:var(--plum);color:var(--cream);border-color:var(--plum)}
+
+  /* ===== SPEC PANEL ===== */
+  .spec{
+    max-width:1320px; margin:60px auto 0; background:#fff;
+    border:1px solid var(--line); border-radius:26px; padding:30px 36px;
+    box-shadow:var(--shadow);
+  }
+  .spec h2{font-family:'Fraunces',serif;font-weight:400;font-size:28px;color:var(--plum-ink);margin-bottom:4px}
+  .spec h2 em{font-style:italic;color:var(--luteal)}
+  .spec .sub{max-width:none;margin-bottom:20px}
+  .spec .grid{display:grid;grid-template-columns:1fr 1fr;gap:24px}
+  .spec h3{font-family:'Fraunces',serif;font-weight:500;font-size:16px;color:var(--plum-ink);margin:18px 0 8px;display:flex;align-items:center;gap:8px}
+  .spec h3::before{content:"";width:5px;height:14px;border-radius:3px;background:var(--gold)}
+  .spec p, .spec li{font-size:12.5px;color:var(--plum);line-height:1.6}
+  .spec ul{padding-left:18px}
+  .spec code{font-family:'JetBrains Mono',ui-monospace,monospace;background:var(--cream-2);padding:1px 5px;border-radius:4px;font-size:11.5px;color:var(--plum-ink)}
+  .spec pre{background:var(--night);color:var(--star);padding:14px;border-radius:12px;font-family:'JetBrains Mono',ui-monospace,monospace;font-size:11px;line-height:1.55;overflow-x:auto;margin-top:6px}
+  .spec .never{background:rgba(212,165,160,0.15);border:1px solid rgba(122,74,94,0.2);border-radius:12px;padding:12px 14px;margin-top:10px}
+  .spec .never b{color:var(--plum-ink)}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<div class="page-head">
+  <div class="eyebrow">Feature · Offline Retreat Mode</div>
+  <h1>A week off the grid, without <em>losing the plot</em></h1>
+  <p class="sub">One setting packs a sealed week of Jess, programs, prompts, breathwork and panic scripts for when you fly, retreat, or lose signal. Journal entries encrypt-and-queue; nothing is pushed anywhere until you return. Reuses the Sealed Letters cipher — we hold only encrypted blobs.</p>
+</div>
+
+<div class="phones">
+  <!-- ============== PHONE 1 — PRE-FLIGHT PACK ============== -->
+  <div class="phone">
+    <div class="notch"></div>
+    <div class="status"><span>9:42</span><div class="r"><span>Wi-Fi</span><span>100%</span><span class="dot"></span></div></div>
+
+    <div class="screen">
+      <div class="hero1">
+        <div class="eye">Retreat Mode · Pre-flight pack</div>
+        <h2>Packing quietly for <em>the 7 days you're away</em></h2>
+        <p class="why">We download what you'd reach for if signal dropped mid-week — and nothing else. No tracking pixels, no social, no ad assets. Roughly the size of a podcast.</p>
+        <div class="bar"><span></span></div>
+        <div class="bar-label"><span>64% chosen</span><span>38 MB / ~60 MB cap</span></div>
+      </div>
+
+      <div class="chk-group">
+        <div class="chk-title"><h3>Cycle essentials</h3><span class="mb">always on</span></div>
+        <div class="pack-row tick">
+          <div class="checkbox">✓</div>
+          <div class="info"><div class="n">Today's Jess briefing (7 days)</div><div class="s">Phase-aware · mornings pre-composed for day 14–21</div></div>
+          <div class="size"><b>2.1 MB</b>text</div>
+        </div>
+        <div class="pack-row tick">
+          <div class="checkbox">✓</div>
+          <div class="info"><div class="n">Cycle predictions & phase chart</div><div class="s">Next window · symptoms most likely · luteal heads-up</div></div>
+          <div class="size"><b>0.4 MB</b>data</div>
+        </div>
+        <div class="pack-row tick">
+          <div class="checkbox">✓</div>
+          <div class="info"><div class="n">Panic scripts & afterglow</div><div class="s"><em>Offline-safe even if everything else is toggled off</em></div></div>
+          <div class="size"><b>1.8 MB</b>audio</div>
+        </div>
+      </div>
+
+      <div class="chk-group">
+        <div class="chk-title"><h3>Programs you're in</h3><span class="mb">3 active</span></div>
+        <div class="pack-row tick">
+          <div class="checkbox">✓</div>
+          <div class="info"><div class="n">Cramp Soft Week 2</div><div class="s">4 sessions · self-contained · no streaming</div></div>
+          <div class="size"><b>9.4 MB</b>video·lo</div>
+        </div>
+        <div class="pack-row tick">
+          <div class="checkbox">✓</div>
+          <div class="info"><div class="n">Sleep Reset · luteal edition</div><div class="s">Wind-down audio + cue cards</div></div>
+          <div class="size"><b>12 MB</b>audio</div>
+        </div>
+        <div class="pack-row off">
+          <div class="checkbox">✓</div>
+          <div class="info"><div class="n">Pelvic Floor w/ Tola</div><div class="s">Skip — you paused this last week</div></div>
+          <div class="size"><b>6 MB</b>video</div>
+        </div>
+      </div>
+
+      <div class="chk-group">
+        <div class="chk-title"><h3>Companions</h3><span class="mb">optional</span></div>
+        <div class="pack-row tick">
+          <div class="checkbox">✓</div>
+          <div class="info"><div class="n">Week of journal prompts (14)</div><div class="s">Phase-ordered · plus your 3 favourite rituals</div></div>
+          <div class="size"><b>0.3 MB</b>text</div>
+        </div>
+        <div class="pack-row tick">
+          <div class="checkbox">✓</div>
+          <div class="info"><div class="n">Breathwork library (6)</div><div class="s">4-7-8 · Ujjayi · Double sigh · Box · Lengthened exhale</div></div>
+          <div class="size"><b>4.2 MB</b>audio</div>
+        </div>
+        <div class="pack-row off">
+          <div class="checkbox"></div>
+          <div class="info"><div class="n">Community echoes (50 recent)</div><div class="s">Read-only · no replies possible offline</div></div>
+          <div class="size"><b>0.8 MB</b>text</div>
+        </div>
+        <div class="pack-row off">
+          <div class="checkbox"></div>
+          <div class="info"><div class="n">Local pattern dossier</div><div class="s">Your last 3 cycles summarised by Jess</div></div>
+          <div class="size"><b>0.2 MB</b>data</div>
+        </div>
+      </div>
+
+      <div class="diag-card">
+        <div class="t">We checked your week</div>
+        <p class="p-muted">You're travelling Mon–Sun. Luteal window lands Wed–Sat — we pre-weighted the luteal pack. If you're in London ↔ rural Ondo, expect patchy 3G; everything works in airplane mode.</p>
+        <div class="rows">
+          <div class="metric"><div class="l">Pack size</div><div class="v">38 <em>MB</em></div></div>
+          <div class="metric"><div class="l">Battery impact</div><div class="v">~0.2 <em>%/day</em></div></div>
+        </div>
+      </div>
+
+      <button class="pack-cta">Seal & download pack <span class="meta">· Wi-Fi only</span></button>
+      <button class="pack-cta-sub">Edit what's included →</button>
+    </div>
+
+    <div class="nav">
+      <div class="item act"><div class="ic">◐</div>Today</div>
+      <div class="item"><div class="ic">◇</div>Lifestyle</div>
+      <div class="fab">J</div>
+      <div class="item"><div class="ic">◎</div>Profile</div>
+      <div class="item"><div class="ic">≡</div>Menu</div>
+    </div>
+    <div class="label"><b>P1</b>Pre-flight pack — sealed & Wi-Fi-only</div>
+  </div>
+
+  <!-- ============== PHONE 2 — OFFLINE TODAY ============== -->
+  <div class="phone">
+    <div class="notch"></div>
+    <div class="status"><span>7:14</span><div class="r"><span>✈︎ Offline</span><span>76%</span><span class="dot"></span></div></div>
+
+    <div class="screen">
+      <div class="off-banner">
+        <div class="pi">
+          <div class="glyph">✈︎</div>
+          <div class="txt">
+            <div class="l">Retreat mode · day 3</div>
+            <div class="n">Okigwe <em>→</em> no signal since Tuesday</div>
+          </div>
+        </div>
+        <div class="countdown">syncs in<br>4 days</div>
+      </div>
+
+      <div class="hero2">
+        <div class="phase">
+          <div class="day">Thursday · day 18</div>
+          <span class="chip">luteal</span>
+        </div>
+        <h2>A quiet one today. Your body wants <em>warm things, slow things, repeating things.</em></h2>
+        <div class="jess-from">
+          <div class="av">J</div>
+          <span>From Jess · <em>pre-composed before you left</em></span>
+        </div>
+      </div>
+
+      <div class="pack-progress">
+        <span>5 of 7 days unpacked</span>
+        <div class="bar"><span></span></div>
+        <span>2 left</span>
+      </div>
+
+      <div class="offline-card">
+        <div class="row1">
+          <h4>Today's ritual · <em>evening unwind</em></h4>
+          <span class="tag-ok">ready</span>
+        </div>
+        <p>Luteal-friendly: 6-min magnesium breath + 3-prompt wind-down. Saved before you left.</p>
+      </div>
+
+      <div class="offline-card">
+        <div class="row1">
+          <h4>Cramp Soft · Session 3/4</h4>
+          <span class="tag-ok">ready</span>
+        </div>
+        <p>18 min guided · lo-res video · no buffering. Plays in airplane mode.</p>
+      </div>
+
+      <div class="offline-card">
+        <div class="row1">
+          <h4>Journal · day 3 prompt</h4>
+          <span class="tag-ok">encrypt-&-queue</span>
+        </div>
+        <p><em>"What has this slow week asked you to let go of quietly?"</em> — your answer seals now, posts when you reconnect.</p>
+      </div>
+
+      <div class="offline-card">
+        <div class="row1">
+          <h4>Breathwork · 4-7-8</h4>
+          <span class="tag-ok">ready</span>
+        </div>
+        <p>5 min · offline audio · no network ping.</p>
+      </div>
+
+      <div class="panic-tile">
+        <div class="ic">♡</div>
+        <div class="t">
+          <div class="l">Panic scripts still work</div>
+          <div class="s">Tap & hold Jess · fully offline · no signal required</div>
+        </div>
+        <div class="arrow">›</div>
+      </div>
+
+      <div class="ghost-card">
+        <div class="row1"><h4>Community echoes</h4><span class="tag-warn">read-only</span></div>
+        <p>50 echoes from before you left. New ones arrive after sync.</p>
+      </div>
+
+      <div class="ghost-card">
+        <div class="row1"><h4>Explore · Watch / Read</h4><span class="tag-warn">not packed</span></div>
+        <p>Comes back Sunday when you reconnect.</p>
+      </div>
+
+      <div class="ghost-card">
+        <div class="row1"><h4>Partner Sync</h4><span class="tag-warn">paused</span></div>
+        <p>Alex can't see updates this week. You pre-wrote a heads-up — we'll send it when you land.</p>
+      </div>
+    </div>
+
+    <div class="nav">
+      <div class="item act"><div class="ic">◐</div>Today</div>
+      <div class="item"><div class="ic">◇</div>Lifestyle</div>
+      <div class="fab">J</div>
+      <div class="item"><div class="ic">◎</div>Profile</div>
+      <div class="item"><div class="ic">≡</div>Menu</div>
+    </div>
+    <div class="label"><b>P2</b>Offline Today — what's still here</div>
+  </div>
+
+  <!-- ============== PHONE 3 — RECONNECT SYNC ============== -->
+  <div class="phone">
+    <div class="notch"></div>
+    <div class="status"><span>11:08</span><div class="r"><span>LTE</span><span>82%</span><span class="dot"></span></div></div>
+
+    <div class="screen">
+      <div class="reco-hero">
+        <span class="wifi">◉ reconnected · london · lte</span>
+        <h2>Welcome back. We held <em>seven days of you</em> quietly.</h2>
+        <p class="sub">Nothing left your phone while you were away. Now it goes home, in order — and you get to choose what anyone else sees.</p>
+      </div>
+
+      <div class="reco-meta">
+        <div class="m"><div class="n">7</div><div class="l">journal entries</div></div>
+        <div class="m"><div class="n">12</div><div class="l">logs synced</div></div>
+        <div class="m"><div class="n">0</div><div class="l">conflicts</div></div>
+      </div>
+
+      <div class="queue-card">
+        <div class="head"><h4>Sealed letters in queue</h4><span class="ct">7 · end-to-end</span></div>
+        <div class="q-item">
+          <div class="seal">✉︎</div>
+          <div class="tx"><div class="n">Mon · morning pages</div><div class="s">Encrypted Nov 17 · 06:12</div></div>
+          <div class="st">◉ sent</div>
+        </div>
+        <div class="q-item">
+          <div class="seal">✉︎</div>
+          <div class="tx"><div class="n">Tue · luteal prompt reply</div><div class="s">Encrypted Nov 18 · 21:04</div></div>
+          <div class="st">◉ sent</div>
+        </div>
+        <div class="q-item">
+          <div class="seal">✉︎</div>
+          <div class="tx"><div class="n">Wed · cramp log + note</div><div class="s">Encrypted Nov 19 · 14:27</div></div>
+          <div class="st">◉ sent</div>
+        </div>
+        <div class="q-item">
+          <div class="seal">✉︎</div>
+          <div class="tx"><div class="n">Thu · evening ritual reflection</div><div class="s">Encrypted Nov 20 · 22:50</div></div>
+          <div class="st pending">○ sending…</div>
+        </div>
+        <div class="q-item">
+          <div class="seal">✉︎</div>
+          <div class="tx"><div class="n">Fri · panic afterglow note</div><div class="s">Encrypted Nov 21 · 03:11 · private</div></div>
+          <div class="st pending">○ queued</div>
+        </div>
+        <div class="q-item">
+          <div class="seal">✉︎</div>
+          <div class="tx"><div class="n">Sat · dream fragment</div><div class="s">Encrypted Nov 22 · 05:44</div></div>
+          <div class="st pending">○ queued</div>
+        </div>
+      </div>
+
+      <div class="jess-note">
+        <div class="av">J</div>
+        <div class="tx">
+          <div class="l">Jess · a quiet observation</div>
+          <div class="body">Your HRV dropped <em>only</em> on day 4 — the evening you wrote about your mother. Everything else held. <em>Worth a look together when you're ready.</em></div>
+        </div>
+      </div>
+
+      <div class="conflict-card">
+        <div>
+          <h4>◐ One small conflict</h4>
+        </div>
+        <p>You logged a period start for <b>Nov 19</b> offline. Alex logged one for you in Care Bridge on <b>Nov 20</b> (you'd texted her). Which is right?</p>
+        <div class="choice">
+          <button class="prim">Mine (Nov 19)</button>
+          <button>Alex's (Nov 20)</button>
+        </div>
+      </div>
+
+      <div class="ship-row">
+        <button>Review before anything posts</button>
+        <button class="prim">Sync all · sealed</button>
+      </div>
+    </div>
+
+    <div class="nav">
+      <div class="item act"><div class="ic">◐</div>Today</div>
+      <div class="item"><div class="ic">◇</div>Lifestyle</div>
+      <div class="fab">J</div>
+      <div class="item"><div class="ic">◎</div>Profile</div>
+      <div class="item"><div class="ic">≡</div>Menu</div>
+    </div>
+    <div class="label"><b>P3</b>Reconnect — review, then sync</div>
+  </div>
+</div>
+
+<!-- ============== SPEC PANEL ============== -->
+<div class="spec">
+  <h2>Engineering notes — <em>Offline Retreat Mode</em></h2>
+  <p class="sub p-muted">A low-bandwidth, low-pressure companion for retreats, travel, hospital stays, and dead-signal weeks. Reuses Sealed Letters cipher + queue. Nothing syncs without the user's tap. The panic path is always offline-capable.</p>
+
+  <div class="grid">
+    <div>
+      <h3>Entities (base44)</h3>
+      <pre>RetreatPacks
+  id, user_id, created_at, expires_at,
+  pack_size_bytes, items_manifest_json,
+  covers_date_range, phase_window_snapshot,
+  wifi_only_download, sealed_state,
+  media_bitrate ('lo'|'standard'),
+  battery_budget_pct_per_day
+
+PackManifest (item rows)
+  id, pack_id, kind
+    (jess_brief|program|prompt|ritual|audio|
+     panic_script|pattern_dossier|community_cache),
+  source_entity, source_id, bytes,
+  required (bool), phase_band, day_offset,
+  encryption ('e2e'|'local-only')
+
+OfflineJournalQueue
+  id, user_id, encrypted_blob,
+  client_created_at (ISO), phase_band,
+  kind ('journal'|'log'|'ritual_tend'|'afterglow'),
+  partner_visible (bool, default false),
+  sync_status ('queued'|'sending'|'sent'|'conflict'),
+  conflict_with, last_attempted_at
+
+SyncSessions
+  id, user_id, session_start, session_end,
+  items_synced, conflicts_detected,
+  conflicts_resolved, bytes_uploaded,
+  user_reviewed_before_post (bool)
+
+RetreatSettings (per user)
+  wifi_only_default, auto_pack_on_calendar_travel,
+  panic_always_packed (always true),
+  community_cache_optin, partner_notify_on_reconnect</pre>
+
+      <h3>Pack composer</h3>
+      <ul>
+        <li>Runs on <code>setting_toggle</code> or when calendar detects ≥3 consecutive travel days.</li>
+        <li>Picks items by phase overlap with pack window → always packs luteal + period support if window overlaps.</li>
+        <li>Lo-bitrate video path: 480p, 200kbps — 10min session ≈ 15 MB.</li>
+        <li>Cap: default 60 MB, hard ceiling 120 MB. Shows user what was trimmed.</li>
+        <li>Never packs: ads, growth notifications, analytics SDKs, 3rd-party trackers, Explore social content.</li>
+      </ul>
+
+      <h3>Cryptography</h3>
+      <ul>
+        <li>Reuses Sealed Letters keypair — server holds only public key, device holds private.</li>
+        <li>Offline journal entries encrypted on-device immediately, queued as opaque blobs.</li>
+        <li>Server cannot read content before, during, or after sync — it stores the sealed blob only.</li>
+        <li>Queue survives app kill, reinstall-from-iCloud, and SIM swap (tied to device keychain + biometric).</li>
+      </ul>
+    </div>
+
+    <div>
+      <h3>Reconnect flow</h3>
+      <pre>on network_reachable:
+  if OfflineJournalQueue.any_queued:
+    show ReconnectSheet     (not auto-post)
+    build ConflictSet from
+      (offline_log, partner_log_during_window)
+    user taps "Sync all sealed"
+      → fire sealed_letter_sync one-by-one
+      → exponential backoff on failure
+      → keep sealed blob locally until server
+        confirms write (ack via message_id)
+  else:
+    silent background refresh only</pre>
+
+      <h3>Conflict resolution</h3>
+      <ul>
+        <li><b>Cycle data</b> (period start, flow, symptoms): user wins unless user opts otherwise.</li>
+        <li><b>Care Bridge partner-logged events</b>: if timestamps overlap, show side-by-side, let user pick.</li>
+        <li><b>Program progress</b>: offline completions honored; duplicate-completes collapse.</li>
+        <li>Never merges journal text — always keeps both entries, dates preserved.</li>
+      </ul>
+
+      <h3>Panic path (always-offline)</h3>
+      <ul>
+        <li>Scripts, afterglow audio, breathing pacer, and sealed journaling all work in airplane mode.</li>
+        <li>Crisis line numbers cached locally per-country (999, UK 116 123, US 988).</li>
+        <li>Partner-notify on panic respects Retreat Mode — queues until reconnect unless user chose "notify even offline via SMS" in Partner Sync.</li>
+      </ul>
+
+      <h3>Surfacing rules</h3>
+      <ul>
+        <li>Pack prompt appears once per travel event; never nags a second time that trip.</li>
+        <li>Pre-flight card in Today if calendar shows "Travel" / "Flight" / "Retreat" event in next 72h.</li>
+        <li>During offline: banner on Today with day count + sync countdown; never red, never alarming.</li>
+        <li>Reconnect card ships once; dismiss-to-dashboard if user doesn't review in 24h (queue stays sealed regardless).</li>
+      </ul>
+
+      <div class="never">
+        <b>Never, in any form:</b>
+        <ul style="margin-top:6px">
+          <li>Auto-post journal entries on reconnect without user tap.</li>
+          <li>Show a "streak saved" or "you missed N days" framing.</li>
+          <li>Sync analytics events from the offline window (we truly don't record them).</li>
+          <li>Download anything over cellular without explicit "allow cellular" toggle.</li>
+          <li>Push marketing or Explore content into Retreat pack.</li>
+          <li>Expose offline journal content to Partner Sync or Care Bridge unless user opts per-entry after reconnect.</li>
+          <li>Retry-upload after 14 days — queue auto-seals to local-only and prompts user to decide.</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</div>
+
+</div>
+</body>
+</html>

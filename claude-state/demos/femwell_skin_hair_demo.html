@@ -1,0 +1,369 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>FemWell — Skin & Hair redesign</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300..800;1,9..144,300..800&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{--cream:#FFFAF5;--cream-2:#FFF5EC;--cream-3:#F0E5D8;--plum:#4A2A3A;--plum-2:#6B4559;--plum-mute:#8A7584;--rose-400:#E67F73;--rose-500:#D45E52;--period:#B84A41;--follicular:#E67F73;--ovulatory:#F2A99A;--luteal:#8A5F74;--gold:#C9A95C;--teal:#5F8A85;--moss:#7D8668;--lav:#B9A4C9;--night:#1A1522}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--cream);font-family:'Inter',sans-serif;color:var(--plum);line-height:1.5;padding:56px 32px 120px}
+.page-head{max-width:1400px;margin:0 auto 48px;text-align:center}
+.page-head h1{font-family:'Fraunces',serif;font-weight:300;font-size:56px;letter-spacing:-0.02em}
+.page-head h1 em{font-style:italic;color:var(--rose-500)}
+.page-head p{margin-top:14px;color:var(--plum-mute);font-size:15px;max-width:680px;margin-left:auto;margin-right:auto}
+.grid{max-width:1400px;margin:0 auto;display:grid;grid-template-columns:repeat(auto-fit,minmax(400px,1fr));gap:56px 40px;justify-items:center}
+.cap{margin-top:14px;font-size:13px;color:var(--plum-mute);text-align:center;max-width:380px}
+.cap b{color:var(--plum);font-weight:600}
+.phone{width:400px;aspect-ratio:1/2.05;background:var(--cream);border-radius:46px;box-shadow:0 40px 80px -30px rgba(74,42,58,.45),0 0 0 12px #1a1522,0 0 0 13px #3a2a32;overflow:hidden;position:relative}
+.notch{position:absolute;top:8px;left:50%;transform:translateX(-50%);width:120px;height:24px;background:#1a1522;border-radius:14px;z-index:50}
+.status{position:absolute;top:14px;left:28px;right:28px;display:flex;justify-content:space-between;font-size:11px;font-weight:600;color:var(--plum);z-index:40}
+.screen{position:absolute;top:46px;left:0;right:0;bottom:0;overflow-y:auto}
+.screen::-webkit-scrollbar{display:none}
+.hdr{padding:14px 22px 10px;display:flex;justify-content:space-between;align-items:center}
+.hdr .ttl{font-family:'Fraunces',serif;font-size:22px;font-weight:400;letter-spacing:-0.01em}
+.hdr .phase{display:inline-flex;align-items:center;gap:6px;padding:5px 11px;background:rgba(138,95,116,.12);border-radius:99px;font-size:11px;font-weight:600;color:var(--luteal)}
+.hdr .phase::before{content:"";width:6px;height:6px;background:var(--luteal);border-radius:50%}
+.sub{padding:0 22px;font-size:12px;color:var(--plum-mute);margin-bottom:14px}
+.sect{padding:18px 22px 6px;display:flex;justify-content:space-between;align-items:baseline}
+.sect h3{font-family:'Fraunces',serif;font-size:17px;font-weight:400}
+/* hero card — skin today */
+.ht{margin:6px 18px 14px;padding:22px 20px;border-radius:24px;background:linear-gradient(135deg,#FFE9D9 0%,#F5D9C9 100%);color:var(--plum)}
+.ht-t{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:14px}
+.ht-l{font-size:11px;color:var(--plum-mute);letter-spacing:2px;text-transform:uppercase}
+.ht-d{font-family:'Fraunces',serif;font-style:italic;font-size:13px;color:var(--plum-2)}
+.ht-h{font-family:'Fraunces',serif;font-size:28px;font-weight:300;letter-spacing:-0.01em;line-height:1.15;margin-bottom:8px}
+.ht-h em{font-style:italic;color:var(--rose-500)}
+.ht-s{font-size:12px;color:var(--plum-2);margin-bottom:16px;max-width:260px}
+.ht-act{display:flex;gap:8px}
+.ht-b{padding:10px 16px;border-radius:99px;font-size:12px;font-weight:600}
+.ht-b.m{background:var(--plum);color:var(--cream)}
+.ht-b.a{background:rgba(255,255,255,.6);color:var(--plum)}
+/* quick log */
+.ql{padding:0 18px;margin-bottom:20px}
+.ql h4{font-size:11px;color:var(--plum-mute);letter-spacing:2px;text-transform:uppercase;margin-bottom:10px;font-weight:600}
+.ql-g{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
+.ql-c{padding:12px 6px;background:#fff;border:1px solid rgba(74,42,58,.08);border-radius:14px;text-align:center;font-size:11px}
+.ql-c .em{display:block;font-family:'Fraunces',serif;font-style:italic;color:var(--rose-500);font-size:20px;margin-bottom:4px}
+.ql-c.on{background:rgba(230,127,115,.12);border-color:var(--rose-400)}
+/* tracked areas */
+.ta{padding:0 18px;margin-bottom:14px}
+.ta-row{display:flex;gap:10px;padding:14px;background:#fff;border:1px solid rgba(74,42,58,.06);border-radius:16px;margin-bottom:8px;align-items:center}
+.ta-em{width:40px;height:40px;border-radius:12px;background:var(--cream-2);display:grid;place-items:center;font-family:'Fraunces',serif;font-style:italic;font-size:18px;color:var(--plum)}
+.ta-m{flex:1}
+.ta-t{font-family:'Fraunces',serif;font-size:13px;font-weight:500}
+.ta-s{font-size:10px;color:var(--plum-mute);margin-top:2px}
+.ta-v{font-size:11px;color:var(--rose-500);font-weight:600}
+/* phase heat map */
+.ph{padding:0 22px 18px}
+.ph h4{font-family:'Fraunces',serif;font-size:16px;margin-bottom:4px}
+.ph-s{font-size:11px;color:var(--plum-mute);margin-bottom:14px}
+.ph-grid{display:grid;grid-template-columns:60px repeat(28,1fr);gap:2px;font-size:8px;align-items:center}
+.ph-grid .lbl{color:var(--plum-mute);font-size:9px;text-align:right;padding-right:6px}
+.ph-grid .c{aspect-ratio:1;background:var(--cream-2);border-radius:2px;position:relative}
+.ph-grid .c.x1{background:rgba(230,127,115,.25)}
+.ph-grid .c.x2{background:rgba(230,127,115,.5)}
+.ph-grid .c.x3{background:rgba(230,127,115,.75)}
+.ph-grid .c.x4{background:var(--rose-500)}
+.ph-grid .c.phase-p{box-shadow:inset 0 -2px 0 #B84A41}
+.ph-grid .c.phase-l{box-shadow:inset 0 -2px 0 #8A5F74}
+.ph-leg{display:flex;justify-content:space-between;font-size:10px;color:var(--plum-mute);margin-top:8px;padding:0 4px}
+.ph-ins{margin-top:14px;padding:12px 14px;background:rgba(201,169,92,.12);border-left:2px solid var(--gold);border-radius:0 10px 10px 0;font-size:12px;font-family:'Fraunces',serif;font-style:italic;color:var(--plum);line-height:1.4}
+.ph-ins b{font-family:'Inter',sans-serif;font-style:normal;font-weight:600;color:var(--plum)}
+/* body timeline gallery */
+.bt-cap{padding:20px 22px 4px;font-size:11px;letter-spacing:2px;text-transform:uppercase;color:var(--plum-mute);font-weight:600;display:flex;justify-content:space-between;align-items:center}
+.bt-cap .lck{font-size:10px;color:var(--gold);letter-spacing:1px}
+.bt-head{padding:0 22px;font-family:'Fraunces',serif;font-size:24px;font-weight:300;line-height:1.2;margin-bottom:4px}
+.bt-head em{font-style:italic;color:var(--rose-500)}
+.bt-sub{padding:0 22px;font-size:11px;color:var(--plum-mute);margin-bottom:14px}
+.bt-row{padding:0 18px 4px;display:flex;gap:10px;overflow-x:auto;margin-bottom:12px}
+.bt-row::-webkit-scrollbar{display:none}
+.bt-tile{flex:0 0 120px;aspect-ratio:3/4;border-radius:14px;background:linear-gradient(160deg,#F5D9C9,#8A5F74);position:relative;overflow:hidden}
+.bt-tile::before{content:"";position:absolute;inset:0;background:radial-gradient(circle at 30% 30%,rgba(255,255,255,.4),transparent 60%)}
+.bt-tile .d{position:absolute;bottom:8px;left:10px;font-size:10px;color:#fff;font-weight:600;text-shadow:0 1px 3px rgba(0,0,0,.3)}
+.bt-tile .p{position:absolute;top:8px;right:8px;padding:3px 7px;background:rgba(26,21,34,.5);border-radius:99px;font-size:9px;color:#fff}
+.bt-stitch{margin:0 22px 14px;padding:14px;background:#1a1522;color:#f5e6d3;border-radius:16px}
+.bt-stitch h5{font-family:'Fraunces',serif;font-style:italic;font-size:13px;margin-bottom:6px}
+.bt-stitch p{font-size:11px;opacity:.7;line-height:1.4}
+.bt-stitch .cta{margin-top:10px;display:inline-block;font-size:11px;color:#F2A99A;font-weight:600}
+/* routine */
+.rt{padding:0 18px;margin-bottom:14px}
+.rt-row{padding:14px;background:#fff;border:1px solid rgba(74,42,58,.06);border-radius:16px;margin-bottom:8px;display:flex;gap:12px;align-items:center}
+.rt-dot{width:10px;height:10px;border-radius:50%;background:var(--rose-400);flex-shrink:0}
+.rt-dot.g{background:var(--moss)}
+.rt-dot.gd{background:var(--gold)}
+.rt-m{flex:1;min-width:0}
+.rt-t{font-family:'Fraunces',serif;font-size:13px;font-weight:500}
+.rt-s{font-size:10px;color:var(--plum-mute);margin-top:2px}
+.rt-a{font-size:11px;color:var(--plum-mute)}
+.rt-chk{width:22px;height:22px;border-radius:50%;border:1px solid rgba(74,42,58,.2);display:grid;place-items:center;font-size:10px;color:#fff}
+.rt-chk.on{background:var(--moss);border-color:var(--moss)}
+.rt-chk.on::before{content:"✓"}
+/* product log */
+.pl{padding:0 22px}
+.pl-c{padding:14px;background:#fff;border:1px solid rgba(74,42,58,.06);border-radius:16px;margin-bottom:8px}
+.pl-h{display:flex;justify-content:space-between;margin-bottom:6px}
+.pl-t{font-family:'Fraunces',serif;font-size:14px;font-weight:500}
+.pl-dur{font-size:10px;color:var(--plum-mute)}
+.pl-s{font-size:11px;color:var(--plum-2);margin-bottom:8px}
+.pl-b{height:4px;background:var(--cream-2);border-radius:99px;overflow:hidden;margin-bottom:4px}
+.pl-b i{display:block;height:100%;background:var(--moss)}
+.pl-n{font-size:10px;color:var(--plum-mute)}
+/* appendix */
+.app{max-width:1200px;margin:80px auto 0;padding:36px;background:#fff;border-radius:28px;border:1px solid rgba(74,42,58,.1)}
+.app h2{font-family:'Fraunces',serif;font-weight:300;font-size:30px;margin-bottom:8px}
+.app h2 em{font-style:italic;color:var(--rose-500)}
+.app .lead{color:var(--plum-mute);font-size:13px;margin-bottom:20px}
+.apgrid{display:grid;grid-template-columns:1fr 1fr;gap:30px}
+.apcol h4{font-size:11px;letter-spacing:2px;text-transform:uppercase;color:var(--plum-mute);margin-bottom:10px}
+.apcol li{font-size:13px;color:var(--plum-2);padding:6px 0;border-bottom:1px dotted rgba(74,42,58,.1);list-style:none;display:flex;justify-content:space-between;gap:10px}
+.apcol li b{color:var(--plum);font-weight:500}
+.ftr{max-width:900px;margin:60px auto 0;padding:28px;background:var(--plum);color:var(--cream);border-radius:24px;text-align:center}
+.ftr h3{font-family:'Fraunces',serif;font-style:italic;font-size:24px;font-weight:300;margin-bottom:8px}
+.ftr p{font-size:13px;opacity:.8;max-width:580px;margin:0 auto}
+</style></head><body>
+
+<div class="page-head">
+  <h1>Skin & Hair — <em>cycle-visible</em></h1>
+  <p>Log once a day. Claude correlates with phase. Photos stay on your device. Body timeline is E2E encrypted — not even FemWell can see them.</p>
+</div>
+
+<div class="grid">
+
+<!-- P1: Today -->
+<div><div class="phone"><div class="notch"></div>
+  <div class="status"><span>8:22</span><span>●●● 87%</span></div>
+  <div class="screen">
+    <div class="hdr"><span class="ttl">Skin & Hair</span><span class="phase">luteal · d22</span></div>
+    <div class="sub">PMS acne window usually starts here — 48h ahead for you.</div>
+
+    <div class="ht">
+      <div class="ht-t"><span class="ht-l">today  ·  1 min</span><span class="ht-d">Mon, Apr 20</span></div>
+      <div class="ht-h">how's your <em>skin</em><br/>feeling today?</div>
+      <div class="ht-s">one tap logs it. I'll watch for the pattern.</div>
+      <div class="ht-act"><span class="ht-b m">quick log</span><span class="ht-b a">+ photo</span></div>
+    </div>
+
+    <div class="ql">
+      <h4>skin — tap what fits</h4>
+      <div class="ql-g">
+        <div class="ql-c on"><span class="em">☾</span>clear</div>
+        <div class="ql-c"><span class="em">◦</span>dry</div>
+        <div class="ql-c on"><span class="em">◉</span>oily T-zone</div>
+        <div class="ql-c"><span class="em">▲</span>breakout</div>
+        <div class="ql-c"><span class="em">~</span>redness</div>
+        <div class="ql-c"><span class="em">☼</span>glowy</div>
+        <div class="ql-c"><span class="em">•</span>tender</div>
+        <div class="ql-c"><span class="em">+</span>other</div>
+      </div>
+    </div>
+
+    <div class="ql">
+      <h4>hair — tap what fits</h4>
+      <div class="ql-g">
+        <div class="ql-c"><span class="em">☁</span>fluffy</div>
+        <div class="ql-c on"><span class="em">◈</span>oily roots</div>
+        <div class="ql-c"><span class="em">~</span>shedding</div>
+        <div class="ql-c"><span class="em">♥</span>wash day</div>
+      </div>
+    </div>
+
+    <div class="sect"><h3>Tracked areas</h3></div>
+    <div class="ta">
+      <div class="ta-row"><span class="ta-em">c</span><div class="ta-m"><div class="ta-t">Chin breakouts</div><div class="ta-s">appeared 11 of last 12 luteals</div></div><span class="ta-v">watching</span></div>
+      <div class="ta-row"><span class="ta-em">s</span><div class="ta-m"><div class="ta-t">Scalp itch</div><div class="ta-s">correlates with stress, not cycle</div></div><span class="ta-v">stable</span></div>
+      <div class="ta-row"><span class="ta-em">h</span><div class="ta-m"><div class="ta-t">Hairline shedding</div><div class="ta-s">dropped 40% since iron started</div></div><span class="ta-v">↓ 40%</span></div>
+    </div>
+  </div>
+</div>
+<div class="cap"><b>P1 · Today.</b> One-minute log, two categories (skin, hair), three tracked areas with Jess-watched trends.</div></div>
+
+<!-- P2: Phase heat-map insight -->
+<div><div class="phone"><div class="notch"></div>
+  <div class="status"><span>8:28</span><span>●●● 86%</span></div>
+  <div class="screen">
+    <div class="hdr"><span class="ttl">Patterns</span><span class="phase">6 cycles</span></div>
+    <div class="sub">How your skin moved across the last 6 cycles, phase-aligned.</div>
+
+    <div class="ph">
+      <h4>Chin breakout severity</h4>
+      <div class="ph-s">each row = one cycle · 28 days · d1 at left</div>
+      <div class="ph-grid" style="grid-template-columns:44px repeat(28,1fr)">
+        <span class="lbl">Mar</span>
+        <span class="c phase-p"></span><span class="c phase-p x1"></span><span class="c phase-p"></span><span class="c phase-p"></span><span class="c phase-p"></span>
+        <span class="c"></span><span class="c"></span><span class="c"></span><span class="c"></span><span class="c"></span><span class="c"></span><span class="c"></span>
+        <span class="c"></span><span class="c"></span><span class="c"></span>
+        <span class="c phase-l x1"></span><span class="c phase-l x2"></span><span class="c phase-l x2"></span><span class="c phase-l x3"></span><span class="c phase-l x4"></span><span class="c phase-l x3"></span><span class="c phase-l x3"></span><span class="c phase-l x2"></span><span class="c phase-l x1"></span><span class="c phase-l x1"></span><span class="c phase-l"></span><span class="c phase-l"></span><span class="c phase-l"></span>
+
+        <span class="lbl">Feb</span>
+        <span class="c phase-p x1"></span><span class="c phase-p"></span><span class="c phase-p"></span><span class="c phase-p"></span>
+        <span class="c"></span><span class="c"></span><span class="c"></span><span class="c"></span><span class="c"></span><span class="c"></span><span class="c"></span><span class="c"></span>
+        <span class="c"></span><span class="c"></span><span class="c"></span>
+        <span class="c phase-l"></span><span class="c phase-l x1"></span><span class="c phase-l x2"></span><span class="c phase-l x3"></span><span class="c phase-l x4"></span><span class="c phase-l x4"></span><span class="c phase-l x3"></span><span class="c phase-l x2"></span><span class="c phase-l x2"></span><span class="c phase-l x1"></span><span class="c phase-l"></span><span class="c phase-l"></span><span class="c phase-l"></span>
+
+        <span class="lbl">Jan</span>
+        <span class="c phase-p"></span><span class="c phase-p"></span><span class="c phase-p"></span><span class="c phase-p"></span><span class="c phase-p"></span>
+        <span class="c"></span><span class="c"></span><span class="c"></span><span class="c"></span><span class="c"></span><span class="c"></span><span class="c"></span>
+        <span class="c"></span><span class="c"></span><span class="c"></span>
+        <span class="c phase-l"></span><span class="c phase-l x1"></span><span class="c phase-l x2"></span><span class="c phase-l x3"></span><span class="c phase-l x3"></span><span class="c phase-l x4"></span><span class="c phase-l x3"></span><span class="c phase-l x3"></span><span class="c phase-l x2"></span><span class="c phase-l x1"></span><span class="c phase-l"></span><span class="c phase-l"></span><span class="c phase-l"></span>
+
+        <span class="lbl">Dec</span>
+        <span class="c phase-p"></span><span class="c phase-p"></span><span class="c phase-p"></span><span class="c phase-p"></span>
+        <span class="c"></span><span class="c"></span><span class="c"></span><span class="c"></span><span class="c"></span><span class="c"></span><span class="c"></span><span class="c"></span>
+        <span class="c"></span><span class="c"></span><span class="c"></span>
+        <span class="c phase-l"></span><span class="c phase-l x1"></span><span class="c phase-l x2"></span><span class="c phase-l x2"></span><span class="c phase-l x3"></span><span class="c phase-l x3"></span><span class="c phase-l x2"></span><span class="c phase-l x1"></span><span class="c phase-l"></span><span class="c phase-l"></span><span class="c phase-l"></span><span class="c phase-l"></span><span class="c phase-l"></span>
+
+        <span class="lbl">Nov</span>
+        <span class="c phase-p x1"></span><span class="c phase-p x1"></span><span class="c phase-p"></span><span class="c phase-p"></span><span class="c phase-p"></span>
+        <span class="c"></span><span class="c"></span><span class="c"></span><span class="c"></span><span class="c"></span><span class="c"></span><span class="c"></span>
+        <span class="c"></span><span class="c"></span><span class="c"></span>
+        <span class="c phase-l"></span><span class="c phase-l x1"></span><span class="c phase-l x1"></span><span class="c phase-l x2"></span><span class="c phase-l x3"></span><span class="c phase-l x3"></span><span class="c phase-l x2"></span><span class="c phase-l x2"></span><span class="c phase-l x1"></span><span class="c phase-l"></span><span class="c phase-l"></span><span class="c phase-l"></span><span class="c phase-l"></span>
+
+        <span class="lbl">Oct</span>
+        <span class="c phase-p"></span><span class="c phase-p"></span><span class="c phase-p"></span><span class="c phase-p"></span><span class="c phase-p"></span>
+        <span class="c"></span><span class="c"></span><span class="c"></span><span class="c"></span><span class="c"></span><span class="c"></span><span class="c"></span><span class="c"></span>
+        <span class="c"></span><span class="c"></span><span class="c"></span>
+        <span class="c phase-l"></span><span class="c phase-l x1"></span><span class="c phase-l x2"></span><span class="c phase-l x3"></span><span class="c phase-l x4"></span><span class="c phase-l x4"></span><span class="c phase-l x3"></span><span class="c phase-l x2"></span><span class="c phase-l x1"></span><span class="c phase-l x1"></span><span class="c phase-l"></span><span class="c phase-l"></span>
+      </div>
+      <div class="ph-leg"><span>d1</span><span>d14</span><span>d28</span></div>
+
+      <div class="ph-ins">"Your chin breakouts peak <b>luteal d19-21</b>. They've been <b>~30% milder</b> since you started evening omega-3 in December. Want me to queue a salicylic spot treatment reminder for d18?"</div>
+    </div>
+
+    <div class="sect"><h3>Correlations</h3></div>
+    <div class="ta">
+      <div class="ta-row"><span class="ta-em">~</span><div class="ta-m"><div class="ta-t">Skin + sleep</div><div class="ta-s">less than 6h → +60% breakout next day</div></div><span class="ta-v">strong</span></div>
+      <div class="ta-row"><span class="ta-em">+</span><div class="ta-m"><div class="ta-t">Skin + dairy</div><div class="ta-s">2+ servings → +40% tenderness d16-22</div></div><span class="ta-v">moderate</span></div>
+    </div>
+  </div>
+</div>
+<div class="cap"><b>P2 · Patterns.</b> Phase-aligned 6-cycle heat-map of chin breakouts. Jess reads the pattern, names the window, proposes action.</div></div>
+
+<!-- P3: Body timeline (encrypted) -->
+<div><div class="phone"><div class="notch"></div>
+  <div class="status"><span>8:31</span><span>●●● 86%</span></div>
+  <div class="screen">
+    <div class="hdr"><span class="ttl">Body timeline</span></div>
+    <div class="bt-cap"><span>visual journal</span><span class="lck">● encrypted · device-only</span></div>
+    <div class="bt-head">90 days of <em>you,</em><br/>with phase context.</div>
+    <div class="bt-sub">FemWell cannot see these photos. Keys live on this device.</div>
+
+    <div class="sect" style="padding-top:6px"><h3>Skin · front</h3></div>
+    <div class="bt-row">
+      <div class="bt-tile"><span class="p">luteal</span><span class="d">Mar 8</span></div>
+      <div class="bt-tile" style="background:linear-gradient(160deg,#B84A41,#4A2A3A)"><span class="p">period</span><span class="d">Mar 14</span></div>
+      <div class="bt-tile" style="background:linear-gradient(160deg,#E67F73,#D45E52)"><span class="p">follic</span><span class="d">Mar 22</span></div>
+      <div class="bt-tile" style="background:linear-gradient(160deg,#F2A99A,#E67F73)"><span class="p">ovul</span><span class="d">Apr 1</span></div>
+      <div class="bt-tile"><span class="p">luteal</span><span class="d">Apr 12</span></div>
+      <div class="bt-tile" style="background:linear-gradient(160deg,#8A5F74,#4A2A3A)"><span class="p">luteal</span><span class="d">Apr 20</span></div>
+    </div>
+
+    <div class="sect"><h3>Hair · 90 days</h3></div>
+    <div class="bt-row">
+      <div class="bt-tile" style="background:linear-gradient(160deg,#C9A95C,#8A5F74)"><span class="p">Jan 20</span><span class="d">baseline</span></div>
+      <div class="bt-tile" style="background:linear-gradient(160deg,#C9A95C,#8A5F74)"><span class="p">Feb 20</span><span class="d">+ biotin</span></div>
+      <div class="bt-tile" style="background:linear-gradient(160deg,#C9A95C,#8A5F74)"><span class="p">Mar 20</span><span class="d">+ iron</span></div>
+      <div class="bt-tile" style="background:linear-gradient(160deg,#C9A95C,#8A5F74)"><span class="p">Apr 20</span><span class="d">today</span></div>
+    </div>
+
+    <div class="bt-stitch">
+      <h5>"skin feels brighter this cycle."</h5>
+      <p>Stitched by Jess: I compared luteal d20 ± 2 days across Dec / Jan / Feb / Mar / Apr. You chose "brighter" or "clearer" 4 of the last 5 luteal windows since omega-3 started. 90-day side-by-side ready.</p>
+      <a class="cta">view stitched →</a>
+    </div>
+  </div>
+</div>
+<div class="cap"><b>P3 · Body timeline.</b> Encrypted photo journal. Phase tags on each shot. Jess stitches comparable days across cycles — never sees the image itself, only the metadata user adds.</div></div>
+
+<!-- P4: Routine + products -->
+<div><div class="phone"><div class="notch"></div>
+  <div class="status"><span>8:34</span><span>●●● 85%</span></div>
+  <div class="screen">
+    <div class="hdr"><span class="ttl">Routine</span><span class="phase">luteal</span></div>
+    <div class="sub">Phase-adaptive: evening routine shifts on d17 through d28.</div>
+
+    <div class="sect"><h3>Tonight (luteal)</h3></div>
+    <div class="rt">
+      <div class="rt-row"><span class="rt-dot"></span><div class="rt-m"><div class="rt-t">Oil cleanse (Bioré)</div><div class="rt-s">luteal swap — gentler than gel</div></div><span class="rt-chk on"></span></div>
+      <div class="rt-row"><span class="rt-dot g"></span><div class="rt-m"><div class="rt-t">Hydrating toner (Cosrx)</div><div class="rt-s">every night</div></div><span class="rt-chk on"></span></div>
+      <div class="rt-row"><span class="rt-dot"></span><div class="rt-m"><div class="rt-t">Salicylic spot (2% BHA)</div><div class="rt-s">luteal d18-24 only · chin + jaw</div></div><span class="rt-chk"></span></div>
+      <div class="rt-row"><span class="rt-dot gd"></span><div class="rt-m"><div class="rt-t">Niacinamide</div><div class="rt-s">every night</div></div><span class="rt-chk"></span></div>
+      <div class="rt-row"><span class="rt-dot g"></span><div class="rt-m"><div class="rt-t">Ceramide moisturizer</div><div class="rt-s">thicker layer in luteal</div></div><span class="rt-chk"></span></div>
+    </div>
+
+    <div class="sect"><h3>Products · in use</h3></div>
+    <div class="pl">
+      <div class="pl-c">
+        <div class="pl-h"><span class="pl-t">Cosrx BHA blackhead</span><span class="pl-dur">68 days in</span></div>
+        <div class="pl-s">pattern: chin breakouts -30% since start · phase-dependent</div>
+        <div class="pl-b"><i style="width:62%"></i></div>
+        <div class="pl-n">62% used  ·  repurchase in ~14 days at this rate</div>
+      </div>
+      <div class="pl-c">
+        <div class="pl-h"><span class="pl-t">Ordinary niacinamide</span><span class="pl-dur">102 days in</span></div>
+        <div class="pl-s">redness -15% · stable across phases</div>
+        <div class="pl-b"><i style="width:31%"></i></div>
+        <div class="pl-n">31% left  ·  set a reminder for day-30</div>
+      </div>
+      <div class="pl-c">
+        <div class="pl-h"><span class="pl-t">UK shea + hibiscus oil</span><span class="pl-dur">hair · 45 days</span></div>
+        <div class="pl-s">wash-day only · edges softening</div>
+        <div class="pl-b"><i style="width:78%"></i></div>
+        <div class="pl-n">78% left</div>
+      </div>
+    </div>
+  </div>
+</div>
+<div class="cap"><b>P4 · Routine.</b> Phase-adaptive routine (luteal swaps gentler cleanser, adds spot treatment window d18-24). Product log tracks usage, pattern effect, repurchase.</div></div>
+
+</div>
+
+<div class="app">
+  <h2>Appendix — <em>Skin & Hair</em></h2>
+  <p class="lead">Wired to real data. Photos never leave device. Jess stitches across phases without seeing the image.</p>
+  <div class="apgrid">
+    <div class="apcol">
+      <h4>Entities</h4>
+      <ul>
+        <li><b>SkinLogs</b><span>daily quick-log (new)</span></li>
+        <li><b>HairLogs</b><span>daily quick-log (new)</span></li>
+        <li><b>TrackedAreas</b><span>recurring spots (new)</span></li>
+        <li><b>BodyPhotos</b><span>E2E encrypted blobs (new)</span></li>
+        <li><b>PhotoTimelines</b><span>stitched views (new)</span></li>
+        <li><b>Routines</b><span>phase-adaptive steps (new)</span></li>
+        <li><b>Products</b><span>usage + effect log (new)</span></li>
+      </ul>
+      <h4 style="margin-top:22px">Jess tools</h4>
+      <ul>
+        <li><b>skin.correlate</b><span>phase × symptom</span></li>
+        <li><b>timeline.stitch</b><span>same-phase across cycles</span></li>
+        <li><b>routine.shift</b><span>phase-aware swap</span></li>
+        <li><b>product.watch</b><span>effect tracking</span></li>
+      </ul>
+    </div>
+    <div class="apcol">
+      <h4>Privacy architecture</h4>
+      <ul>
+        <li><b>Photos encrypted E2E</b><span>device-local AES keys</span></li>
+        <li><b>Jess reads metadata only</b><span>tag / phase / note</span></li>
+        <li><b>Server stores blob</b><span>never a decrypt key</span></li>
+        <li><b>Legal export</b><span>user-initiated only</span></li>
+      </ul>
+      <h4 style="margin-top:22px">What's different</h4>
+      <ul>
+        <li><b>+ phase heat-map</b><span>6-cycle view</span></li>
+        <li><b>+ encrypted timeline</b><span>like Sealed Letters for the body</span></li>
+        <li><b>+ UK-local shelf</b><span>shea, hibiscus, black soap</span></li>
+        <li><b>+ product effect tracking</b><span>not just inventory</span></li>
+      </ul>
+    </div>
+  </div>
+</div>
+
+<div class="ftr">
+  <h3>"the mirror, quietly, over 90 days."</h3>
+  <p>4 phones · 7 new entities · 4 new Jess tools. Ship order: quick-log + phase map Q2, encrypted timeline Q2 (reuse Sealed Letters key infra), routine + product log Q3.</p>
+</div>
+
+</body></html>

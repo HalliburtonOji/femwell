@@ -1,0 +1,758 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>FemWell · Partner Sync — dual-side demo</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,wght@0,300..800;1,300..800&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --cream:#f7f0e6; --ivory:#fbf7f0; --ink:#2b1e16; --ink-soft:#4a3a30; --ink-mute:#8a7768;
+  --rose:#d4a5a0; --rose-deep:#b67d77; --rose-500:#D45E52; --clay:#c98a6b;
+  --gold:#c9a961; --plum:#7a4a5e; --plum-deep:#4A2A3A; --lavender:#b9a4c9;
+  --moss:#7d8668; --teal:#6b8a8a; --night:#1a1522; --star:#f5e6d3; --luteal:#8A5F74;
+  --follicular:#c98a6b; --ovulatory:#c9a961; --period:#b67d77;
+}
+*{box-sizing:border-box}
+html,body{margin:0;padding:0;background:var(--cream);color:var(--ink);font-family:'Inter',system-ui,sans-serif;-webkit-font-smoothing:antialiased}
+body{padding:48px 24px 120px}
+.page{max-width:1520px;margin:0 auto}
+h1,h2,h3,h4,h5{font-family:'Fraunces',serif;font-weight:400;letter-spacing:-0.01em;margin:0}
+.eyebrow{font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--ink-mute);font-weight:500;margin-bottom:10px}
+.kicker{font-family:'Fraunces',serif;font-style:italic;color:var(--plum);font-size:14px}
+
+.header{max-width:920px;margin-bottom:52px}
+.header h1{font-size:48px;line-height:1.04;letter-spacing:-0.025em}
+.header h1 em{font-style:italic;color:var(--plum)}
+.header p{font-size:16px;color:var(--ink-soft);line-height:1.55;margin:18px 0 0;max-width:780px}
+
+.split-head{display:flex;gap:16px;margin:40px 0 24px;flex-wrap:wrap}
+.side-label{flex:1;min-width:280px;background:var(--ivory);border-radius:16px;padding:18px 22px;border:1px solid rgba(43,30,22,.06)}
+.side-label .t{font-family:'Fraunces',serif;font-size:22px;margin-bottom:4px}
+.side-label .s{font-size:12.5px;color:var(--ink-soft);line-height:1.55}
+.side-label.her{background:linear-gradient(140deg,#faebdb 0%,#f2d9cf 100%)}
+.side-label.partner{background:linear-gradient(140deg,#efe6ee 0%,#ddd0db 100%)}
+
+.phones-row{display:flex;flex-wrap:wrap;gap:36px;justify-content:center;margin-bottom:36px}
+
+/* =================== phone frame =================== */
+.phone{width:400px;height:820px;background:var(--night);border-radius:46px;padding:9px;position:relative;box-shadow:0 24px 60px rgba(43,30,22,.18),inset 0 0 0 2px rgba(255,255,255,.05);flex-shrink:0}
+.phone-screen{width:100%;height:100%;background:var(--cream);border-radius:38px;overflow:hidden;position:relative}
+.notch{position:absolute;top:9px;left:50%;transform:translateX(-50%);width:120px;height:24px;background:var(--night);border-radius:0 0 18px 18px;z-index:20}
+.phone.dark .phone-screen{background:var(--night)}
+.phone-scroll{width:100%;height:100%;overflow:auto;-webkit-overflow-scrolling:touch}
+.phone-scroll::-webkit-scrollbar{width:0;display:none}
+
+.statusbar{display:flex;justify-content:space-between;align-items:center;padding:14px 24px 0;font-size:12px;font-weight:500;color:var(--ink-soft);letter-spacing:.04em}
+.phone.dark .statusbar{color:rgba(245,230,211,.8)}
+.statusbar .icons{display:flex;gap:6px}
+
+.page-title{padding:28px 24px 12px;display:flex;align-items:center;justify-content:space-between}
+.page-title h2{font-size:28px;letter-spacing:-0.02em;color:var(--ink)}
+.phone.dark .page-title h2{color:var(--star)}
+.page-title .ghost-btn{background:transparent;border:1px solid rgba(43,30,22,.15);border-radius:100px;padding:6px 12px;font-size:11px;color:var(--ink-soft);letter-spacing:.02em}
+.phone.dark .page-title .ghost-btn{border-color:rgba(245,230,211,.2);color:rgba(245,230,211,.7)}
+
+/* common cards */
+.card{background:var(--ivory);border-radius:20px;padding:18px;margin:10px 24px;border:1px solid rgba(43,30,22,.05)}
+.phone.dark .card{background:rgba(245,230,211,.04);border-color:rgba(245,230,211,.08);color:var(--star)}
+.card .kick{font-family:'Fraunces',serif;font-style:italic;color:var(--plum);font-size:12.5px;margin-bottom:6px}
+.card h3{font-size:19px;line-height:1.22;margin-bottom:6px;color:var(--ink)}
+.phone.dark .card h3{color:var(--star)}
+.card p{font-size:12.5px;color:var(--ink-soft);line-height:1.55;margin:0}
+.phone.dark .card p{color:rgba(245,230,211,.72)}
+.sec-lab{padding:8px 24px 2px;font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--ink-mute);font-weight:500}
+.phone.dark .sec-lab{color:rgba(245,230,211,.55)}
+
+.ctrow{display:flex;gap:6px;align-items:center;flex-wrap:wrap}
+.chip{font-size:11px;padding:4px 10px;border-radius:100px;background:rgba(122,74,94,.08);color:var(--plum);letter-spacing:.02em}
+.chip.luteal{background:var(--luteal);color:var(--star)}
+.chip.folli{background:var(--follicular);color:var(--ink)}
+.chip.ovu{background:var(--ovulatory);color:var(--ink)}
+.chip.period{background:var(--period);color:var(--star)}
+.chip.ghost{background:transparent;border:1px solid rgba(43,30,22,.12);color:var(--ink-soft)}
+.phone.dark .chip.ghost{border-color:rgba(245,230,211,.2);color:rgba(245,230,211,.7)}
+
+.cta{border-radius:100px;padding:10px 16px;font-size:12.5px;font-weight:500;letter-spacing:.02em;border:1px solid transparent;display:inline-flex;align-items:center;gap:6px;cursor:pointer}
+.cta.primary{background:var(--plum);color:var(--star)}
+.cta.rose{background:var(--rose-500);color:var(--star)}
+.cta.ghost{background:transparent;border-color:rgba(43,30,22,.18);color:var(--ink-soft)}
+.cta.star{background:var(--star);color:var(--plum-deep)}
+.cta.danger{background:rgba(212,94,82,.08);color:var(--rose-500);border:1px solid rgba(212,94,82,.3)}
+.phone.dark .cta.ghost{border-color:rgba(245,230,211,.25);color:rgba(245,230,211,.75)}
+
+/* ====== HER side specific ====== */
+.hero-her{margin:18px 24px 6px;padding:22px;border-radius:22px;background:
+  radial-gradient(130% 100% at 10% 10%, rgba(212,94,82,.24), transparent 60%),
+  linear-gradient(140deg,#faebdb 0%,#f2d9cf 52%,#e6c4d1 100%);position:relative;overflow:hidden}
+.hero-her .av{position:absolute;top:18px;right:18px;width:36px;height:36px;border-radius:50%;background:linear-gradient(140deg,var(--rose-500),var(--plum));display:flex;align-items:center;justify-content:center;color:var(--star);font-family:'Fraunces',serif;font-style:italic}
+.hero-her .k{font-family:'Fraunces',serif;font-style:italic;color:var(--plum);font-size:13px;margin-bottom:6px}
+.hero-her .t{font-family:'Fraunces',serif;font-size:22px;line-height:1.2;color:var(--plum-deep);letter-spacing:-0.015em}
+.hero-her .s{font-size:12.5px;color:var(--ink-soft);margin-top:8px;line-height:1.55}
+.hero-her .acts{display:flex;gap:8px;margin-top:14px;flex-wrap:wrap}
+
+.consent-row{display:flex;align-items:center;justify-content:space-between;padding:14px 0;border-bottom:1px solid rgba(43,30,22,.06)}
+.consent-row:last-child{border-bottom:0}
+.consent-row .lab{flex:1;padding-right:16px}
+.consent-row .lab .n{font-family:'Fraunces',serif;font-size:15px;color:var(--ink);line-height:1.2}
+.consent-row .lab .d{font-size:11.5px;color:var(--ink-mute);margin-top:3px;line-height:1.45}
+.pills3{display:flex;background:rgba(43,30,22,.06);border-radius:100px;padding:3px;font-size:10px;letter-spacing:.05em;text-transform:uppercase;font-weight:500;flex-shrink:0}
+.pills3 span{padding:4px 10px;border-radius:100px;color:var(--ink-mute)}
+.pills3 span.on{background:var(--plum);color:var(--star)}
+
+.widget-row{display:flex;gap:8px;flex-wrap:wrap;margin-top:14px}
+.widget{flex:1;min-width:120px;background:rgba(255,250,245,.6);border-radius:14px;padding:12px;border:1px solid rgba(43,30,22,.05)}
+.widget .n{font-family:'Fraunces',serif;font-size:20px;color:var(--ink);line-height:1}
+.widget .l{font-size:10.5px;color:var(--ink-mute);margin-top:4px;letter-spacing:.02em}
+
+/* ====== PARTNER side specific — narrower data, gentle ====== */
+.phone.partner .phone-screen{background:linear-gradient(180deg,#f5f0f4 0%,#efe8ed 100%)}
+.hero-partner{margin:18px 24px 6px;padding:22px;border-radius:22px;background:
+  radial-gradient(130% 100% at 100% 0%, rgba(185,164,201,.3), transparent 55%),
+  linear-gradient(140deg,#efe6ee 0%,#ddd0db 100%)}
+.hero-partner .k{font-family:'Fraunces',serif;font-style:italic;color:var(--plum);font-size:13px;margin-bottom:6px}
+.hero-partner .t{font-family:'Fraunces',serif;font-size:22px;line-height:1.18;color:var(--plum-deep);letter-spacing:-0.015em}
+.hero-partner .s{font-size:12.5px;color:var(--ink-soft);margin-top:8px;line-height:1.55}
+
+.signal-card{background:var(--ivory);border-radius:18px;padding:16px 18px;margin:10px 24px;border:1px solid rgba(43,30,22,.05)}
+.signal-card .lab{font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-mute);font-weight:500;margin-bottom:6px}
+.signal-card .val{font-family:'Fraunces',serif;font-size:22px;color:var(--ink);letter-spacing:-0.01em}
+.signal-card .sub{font-size:12px;color:var(--ink-soft);margin-top:4px;line-height:1.5}
+
+.window-bar{display:flex;gap:4px;margin-top:10px;align-items:flex-end}
+.wb{flex:1;border-radius:4px;background:rgba(122,74,94,.2)}
+.wb.lo{height:6px}.wb.md{height:14px}.wb.hi{height:22px}.wb.xhi{height:28px;background:var(--plum)}
+
+.helps-list li{list-style:none;padding:12px 0;border-bottom:1px solid rgba(43,30,22,.06);display:flex;align-items:flex-start;gap:10px;font-size:13px;line-height:1.45;color:var(--ink-soft)}
+.helps-list li:last-child{border-bottom:0}
+.helps-list li .e{width:22px;font-size:15px}
+.helps-list li b{color:var(--ink);font-weight:600}
+.helps-list{padding:0;margin:4px 0 0}
+
+.voice-note{display:flex;align-items:center;gap:12px;padding:12px 14px;background:var(--ivory);border-radius:16px;margin:10px 24px;border:1px solid rgba(43,30,22,.05)}
+.voice-play{width:40px;height:40px;border-radius:50%;background:var(--plum);color:var(--star);display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.voice-meta{flex:1}
+.voice-meta .n{font-family:'Fraunces',serif;font-size:14px;color:var(--ink)}
+.voice-meta .s{font-size:11px;color:var(--ink-mute);margin-top:2px}
+.voice-wave{display:flex;align-items:flex-end;gap:2px;height:16px;opacity:.6}
+.voice-wave span{width:2px;border-radius:2px;background:var(--plum)}
+
+.quick-resp{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:10px 24px 6px}
+.qr{background:var(--ivory);border-radius:14px;padding:12px 14px;text-align:center;font-family:'Fraunces',serif;font-style:italic;color:var(--plum);font-size:13px;border:1px solid rgba(43,30,22,.05);line-height:1.35}
+.qr:hover{background:rgba(122,74,94,.06)}
+
+.digest-card{background:linear-gradient(140deg,#4A2A3A 0%,#2e2238 100%);color:var(--star);border-radius:22px;padding:22px;margin:14px 24px}
+.digest-card .k{font-family:'Fraunces',serif;font-style:italic;opacity:.75;font-size:12px;margin-bottom:6px}
+.digest-card .t{font-family:'Fraunces',serif;font-size:20px;letter-spacing:-0.01em;line-height:1.22}
+.digest-card .s{font-size:12px;opacity:.8;margin-top:8px;line-height:1.55}
+.digest-card .rows{margin-top:14px;display:flex;flex-direction:column;gap:8px}
+.digest-row{display:flex;align-items:center;justify-content:space-between;padding:10px 0;border-bottom:1px solid rgba(245,230,211,.1)}
+.digest-row:last-child{border-bottom:0}
+.digest-row .l{font-size:12px;opacity:.82}
+.digest-row .v{font-family:'Fraunces',serif;font-size:14px;color:var(--star)}
+
+.consent-banner{display:flex;align-items:center;gap:8px;padding:10px 14px;margin:10px 24px;border-radius:12px;background:rgba(122,74,94,.08);color:var(--plum);font-size:11.5px;line-height:1.45}
+.dot{width:6px;height:6px;border-radius:50%;background:var(--plum);box-shadow:0 0 0 3px rgba(122,74,94,.2);flex-shrink:0}
+
+.hist-strip{display:flex;gap:3px;margin-top:10px;align-items:flex-end;height:42px}
+.hist-strip div{flex:1;border-radius:3px}
+
+/* ====== HER Panic — when she hits panic, partner flow ====== */
+.panic-preview{margin:10px 24px;border-radius:18px;background:linear-gradient(140deg,#3a2028 0%,#1a1522 100%);color:var(--star);padding:18px}
+.panic-preview .k{font-family:'Fraunces',serif;font-style:italic;font-size:12px;opacity:.75;margin-bottom:6px}
+.panic-preview .t{font-family:'Fraunces',serif;font-size:17px;line-height:1.25}
+.panic-preview .s{font-size:11.5px;opacity:.75;margin-top:6px;line-height:1.55}
+.panic-preview .who{display:flex;gap:6px;margin-top:12px}
+.panic-preview .who span{background:rgba(245,230,211,.12);padding:4px 10px;border-radius:100px;font-size:11px}
+
+/* ============ appendix ============ */
+.appendix{margin-top:80px}
+.appendix-head{max-width:820px;margin-bottom:28px}
+.appendix-head h2{font-size:32px;letter-spacing:-0.02em}
+.grid-2{display:grid;grid-template-columns:repeat(2,minmax(360px,1fr));gap:28px}
+@media(max-width:780px){.grid-2{grid-template-columns:1fr}}
+.block{background:var(--ivory);border-radius:22px;padding:28px;border:1px solid rgba(43,30,22,.08)}
+.block h3{font-size:22px;margin-bottom:14px}
+.block ol,.block ul{margin:0;padding:0 0 0 20px}
+.block li{font-size:13.5px;color:var(--ink-soft);line-height:1.6;margin-bottom:10px}
+.block li b{color:var(--ink);font-weight:600}
+.block.dark{background:linear-gradient(140deg,#2e2238 0%,#1a1522 100%);color:var(--star)}
+.block.dark h3{color:var(--star)}
+.block.dark li{color:rgba(245,230,211,.85)}
+.block.dark li b{color:var(--star)}
+.code{background:#221823;color:#f5e6d3;border-radius:18px;padding:20px 22px;font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:12px;line-height:1.65;white-space:pre-wrap;word-break:break-word}
+.table{width:100%;background:var(--ivory);border-radius:22px;border:1px solid rgba(43,30,22,.08);overflow:hidden;border-collapse:separate;border-spacing:0;margin-top:18px}
+.table th,.table td{text-align:left;padding:14px 18px;font-size:13px;vertical-align:top;border-bottom:1px solid rgba(43,30,22,.06)}
+.table th{background:rgba(122,74,94,.06);font-family:'Fraunces',serif;font-weight:400;font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--plum)}
+.table td:first-child{font-family:'Fraunces',serif;font-size:14px;color:var(--ink)}
+.table tr:last-child td{border-bottom:0}
+.footer{margin-top:80px;padding-top:32px;border-top:1px solid rgba(43,30,22,.1);font-size:12px;color:var(--ink-mute);line-height:1.6;max-width:720px}
+.footer b{color:var(--ink-soft)}
+</style>
+</head>
+<body>
+<main class="page">
+
+  <!-- ========== HEADER ========== -->
+  <header class="header">
+    <div class="eyebrow">FemWell · Partner Sync · dual-side design</div>
+    <h1>Let him <em>read her</em>, not read her phone.</h1>
+    <p>Partner Sync is the narrowest window in the product: the partner sees a phase, a mood, and a "what helps" list — nothing more. No logs, no chats, no metrics. She chooses every bit of what he sees; she can revoke in one tap. The partner's side is a PWA (not a login on her app). This demo covers both sides + the mechanics: consent, digest, revocation, and panic-forwarding behaviour.</p>
+  </header>
+
+  <!-- =============== SIDE LABELS =============== -->
+  <div class="split-head">
+    <div class="side-label her">
+      <div class="t">Her side · inside FemWell</div>
+      <div class="s">Phones 1–3 · Profile → Connections → Partner Sync control. She controls the tap, the tuning, the tone. Revoke is always one tap.</div>
+    </div>
+    <div class="side-label partner">
+      <div class="t">Partner side · standalone PWA at <code style="font-family:ui-monospace;font-size:11px">with.femwells.com</code></div>
+      <div class="s">Phones 4–6 · Home · Week digest · Panic alert. No login — magic link + device binding. Read-only. No logs, no searching, no history beyond 4 weeks.</div>
+    </div>
+  </div>
+
+  <!-- ============== PHONES: HER SIDE ============== -->
+  <section class="phones-row">
+
+    <!-- ======= PHONE 1 · her partner sync setup ======= -->
+    <div class="phone">
+      <div class="phone-screen">
+        <div class="notch"></div>
+        <div class="phone-scroll">
+          <div class="statusbar"><span>9:14</span><span class="icons">• • •</span></div>
+          <div class="page-title">
+            <h2>Partner Sync</h2>
+            <button class="ghost-btn">← Back</button>
+          </div>
+
+          <!-- hero -->
+          <div class="hero-her">
+            <div class="av">H</div>
+            <div class="k">jess-noticed about Sam</div>
+            <div class="t">Sam reads you well on luteal days — he's earned a narrower window.</div>
+            <div class="s">You've been syncing 14 cycles. He's never opened during your period, never pinged you after 21:00. I trust him with more if you want.</div>
+            <div class="acts"><button class="cta primary">Tune what he sees</button><button class="cta ghost">Pause for a day</button></div>
+          </div>
+
+          <div class="sec-lab">Connected partner</div>
+          <div class="card">
+            <div style="display:flex;align-items:center;gap:12px">
+              <div style="width:44px;height:44px;border-radius:50%;background:linear-gradient(140deg,#b9a4c9,#7a4a5e);display:flex;align-items:center;justify-content:center;color:var(--star);font-family:'Fraunces',serif;font-style:italic;font-size:18px">T</div>
+              <div style="flex:1">
+                <div style="font-family:'Fraunces',serif;font-size:16px">Sam · partner</div>
+                <div style="font-size:11.5px;color:var(--ink-mute);margin-top:2px">Connected Feb 2025 · 14 cycles · last opened yesterday 18:22</div>
+              </div>
+              <div class="chip ghost">●&nbsp;active</div>
+            </div>
+          </div>
+
+          <div class="sec-lab">What Sam can see</div>
+          <div class="card">
+            <div class="consent-row">
+              <div class="lab"><div class="n">Phase</div><div class="d">Just the word — luteal, follicular. No dates.</div></div>
+              <div class="pills3"><span>off</span><span>see</span><span class="on">show</span></div>
+            </div>
+            <div class="consent-row">
+              <div class="lab"><div class="n">Mood signal</div><div class="d">Simplified to 3 bands — bright · steady · tender.</div></div>
+              <div class="pills3"><span>off</span><span class="on">see</span><span>show</span></div>
+            </div>
+            <div class="consent-row">
+              <div class="lab"><div class="n">What helps today</div><div class="d">Up to 5 items you curate. He cannot add to this.</div></div>
+              <div class="pills3"><span>off</span><span>see</span><span class="on">show</span></div>
+            </div>
+            <div class="consent-row">
+              <div class="lab"><div class="n">Flash &amp; sleep signal</div><div class="d">Directional only. No numbers.</div></div>
+              <div class="pills3"><span class="on">off</span><span>see</span><span>show</span></div>
+            </div>
+            <div class="consent-row">
+              <div class="lab"><div class="n">Panic · live forward</div><div class="d">If you tap "reach Sam" during a panic. Never without.</div></div>
+              <div class="pills3"><span>off</span><span class="on">see</span><span>show</span></div>
+            </div>
+            <div class="consent-row">
+              <div class="lab"><div class="n">Weekly digest</div><div class="d">One paragraph every Sunday. You review before sending.</div></div>
+              <div class="pills3"><span>off</span><span>see</span><span class="on">show</span></div>
+            </div>
+          </div>
+
+          <div class="sec-lab">What Sam will never see</div>
+          <div class="card">
+            <p style="font-size:12.5px;color:var(--ink-soft);line-height:1.65">Journal entries · Sealed Letters · exact cycle dates · body photos · panic history · symptom severity · weight · food · wearable numbers · people &amp; witnesses · your Pro tier · the word "trying to conceive" unless you say so.</p>
+          </div>
+
+          <div class="sec-lab">His behaviour — let me notice</div>
+          <div class="card">
+            <div class="kick">jess-noticed</div>
+            <h3 style="font-size:16px;margin-bottom:8px">He's respected quiet hours 14/14 cycles.</h3>
+            <p style="font-size:12.5px">Never opened past 22:00 · never buzzed you via the app · read the "what helps" list 11 times this cycle, acted on it 8.</p>
+            <div class="ctrow" style="margin-top:10px"><span class="chip">steady</span><span class="chip">respectful</span><span class="chip">reading &gt; sending</span></div>
+          </div>
+
+          <div class="sec-lab">Revoke</div>
+          <div class="card" style="background:rgba(212,94,82,.04);border-color:rgba(212,94,82,.15)">
+            <h3 style="font-size:16px;margin-bottom:4px;color:var(--rose-500)">Pause · or end · any time</h3>
+            <p>Pause: he sees "Halliburton is resting this window" until you un-pause. End: his link stops working immediately and his 4-week history on his phone is wiped.</p>
+            <div style="display:flex;gap:8px;margin-top:12px"><button class="cta ghost">Pause 24h</button><button class="cta ghost">Pause this cycle</button><button class="cta danger">End the sync</button></div>
+          </div>
+
+          <div style="height:32px"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ======= PHONE 2 · her "what helps today" curator ======= -->
+    <div class="phone">
+      <div class="phone-screen">
+        <div class="notch"></div>
+        <div class="phone-scroll">
+          <div class="statusbar"><span>9:14</span><span class="icons">• • •</span></div>
+          <div class="page-title">
+            <h2>What helps · today</h2>
+            <button class="ghost-btn">Save</button>
+          </div>
+
+          <div class="hero-her">
+            <div class="av">H</div>
+            <div class="k">jess drafted this for your luteal d22</div>
+            <div class="t">Warm food, no news after 20:00, a walk if you want it.</div>
+            <div class="s">Draft based on what worked cycles 11–13. Edit, approve, or start blank. Sam will see the final list at 07:00 tomorrow.</div>
+            <div class="acts"><button class="cta primary">Approve &amp; send at 07:00</button><button class="cta ghost">Edit</button></div>
+          </div>
+
+          <div class="sec-lab">Tonight's list · Sam's view</div>
+          <div class="card" style="padding:6px 18px">
+            <ul class="helps-list">
+              <li><span class="e">🍲</span><div><b>Warm food, not salad.</b> slow-cooked lentil stew or ginger noodles. No iced drinks.</div></li>
+              <li><span class="e">📵</span><div><b>No news after 20:00.</b> The kitchen TV stays off.</div></li>
+              <li><span class="e">🚶🏽‍♀️</span><div><b>A slow walk would help</b> — only if I say I want one. Don't plan it for me.</div></li>
+              <li><span class="e">🫖</span><div><b>Warm bath before bed.</b> The plum salt is on the shelf.</div></li>
+              <li><span class="e">🫂</span><div><b>Hold more, plan less.</b> I don't need solutions tonight.</div></li>
+            </ul>
+          </div>
+
+          <div class="sec-lab">Tone of voice</div>
+          <div class="card">
+            <div class="ctrow" style="margin-bottom:10px"><span class="chip luteal">soft</span><span class="chip ghost">warm</span><span class="chip ghost">practical</span><span class="chip ghost">playful</span></div>
+            <p>Jess will rewrite the list in Sam's preferred tone once you save. You set the spirit.</p>
+          </div>
+
+          <div class="sec-lab">Past nights — your library</div>
+          <div class="card" style="padding:14px 18px">
+            <div style="display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid rgba(43,30,22,.06)"><div><div style="font-family:'Fraunces',serif;font-size:14px">Cycle 13, d21</div><div style="font-size:11.5px;color:var(--ink-mute)">"Warm food, early bed." — worked</div></div><button class="cta ghost" style="padding:4px 10px;font-size:11px">Reuse</button></div>
+            <div style="display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid rgba(43,30,22,.06)"><div><div style="font-family:'Fraunces',serif;font-size:14px">Cycle 12, d23</div><div style="font-size:11.5px;color:var(--ink-mute)">"Hold, don't fix." — worked</div></div><button class="cta ghost" style="padding:4px 10px;font-size:11px">Reuse</button></div>
+            <div style="display:flex;justify-content:space-between;align-items:center;padding:10px 0"><div><div style="font-family:'Fraunces',serif;font-size:14px">Cycle 11, d20</div><div style="font-size:11.5px;color:var(--ink-mute)">"Walk, then talk." — didn't work</div></div><button class="cta ghost" style="padding:4px 10px;font-size:11px">—</button></div>
+          </div>
+
+          <div class="sec-lab">Something he asked last night</div>
+          <div class="card" style="background:rgba(185,164,201,.08);border-color:rgba(185,164,201,.3)">
+            <div class="kick">Sam → you · via the window only</div>
+            <h3 style="font-size:15px;margin-bottom:4px">"Want me to pick up something warm?"</h3>
+            <p style="font-size:12.5px">Sent 18:22 yesterday. He used the one pre-written response option from your list.</p>
+            <div style="display:flex;gap:8px;margin-top:10px"><button class="cta primary">Yes please</button><button class="cta ghost">Not tonight</button><button class="cta ghost">Heart</button></div>
+          </div>
+
+          <div style="height:32px"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ======= PHONE 3 · her view of "what he sees right now" preview ======= -->
+    <div class="phone">
+      <div class="phone-screen">
+        <div class="notch"></div>
+        <div class="phone-scroll">
+          <div class="statusbar"><span>9:14</span><span class="icons">• • •</span></div>
+          <div class="page-title">
+            <h2>What he sees · live</h2>
+            <button class="ghost-btn">Close</button>
+          </div>
+
+          <div class="consent-banner"><span class="dot"></span><span>This is exactly Sam's view right now. If it feels like too much, tighten it in Partner Sync.</span></div>
+
+          <!-- mini preview card simulating partner app -->
+          <div class="hero-partner" style="margin-top:8px">
+            <div class="k">halliburton · today</div>
+            <div class="t">Luteal · d22 of 30 · tender</div>
+            <div class="s">Last 24h she's asked for warm food and quiet after 20:00. She walks if she says so — don't plan it for her.</div>
+          </div>
+
+          <div class="sec-lab" style="color:var(--ink-mute)">He sees</div>
+          <div class="widget-row" style="margin:4px 24px">
+            <div class="widget"><div class="n">Luteal</div><div class="l">phase</div></div>
+            <div class="widget"><div class="n">Tender</div><div class="l">mood band</div></div>
+            <div class="widget"><div class="n">5</div><div class="l">helps today</div></div>
+          </div>
+
+          <div class="sec-lab" style="color:var(--ink-mute)">He does not see</div>
+          <div class="card">
+            <p style="font-size:12px;color:var(--ink-soft);line-height:1.65">Cycle day number (exact) · panic log · sleep numbers · your weight · food logs · journal · sealed letters · cycle dates · Pro tier · "trying to conceive" (you haven't enabled)</p>
+          </div>
+
+          <div class="sec-lab" style="color:var(--ink-mute)">His recent behaviour</div>
+          <div class="card" style="padding:14px 18px">
+            <div style="display:flex;align-items:center;justify-content:space-between"><div style="font-size:12.5px;color:var(--ink-soft)">Last opened</div><div style="font-family:'Fraunces',serif;font-size:14px">yesterday 18:22</div></div>
+            <div style="display:flex;align-items:center;justify-content:space-between;margin-top:10px"><div style="font-size:12.5px;color:var(--ink-soft)">Opens this cycle</div><div style="font-family:'Fraunces',serif;font-size:14px">11 of 22 days</div></div>
+            <div style="display:flex;align-items:center;justify-content:space-between;margin-top:10px"><div style="font-size:12.5px;color:var(--ink-soft)">Read, didn't ping</div><div style="font-family:'Fraunces',serif;font-size:14px">11 / 11</div></div>
+            <div style="display:flex;align-items:center;justify-content:space-between;margin-top:10px"><div style="font-size:12.5px;color:var(--ink-soft)">Acted on "what helps"</div><div style="font-family:'Fraunces',serif;font-size:14px">8 times</div></div>
+          </div>
+
+          <div class="sec-lab">His weekly pulse · last 6 weeks</div>
+          <div class="card">
+            <p style="font-size:12px;color:var(--ink-soft);line-height:1.5">Consistency of opens — not frequency. Jess dampens "more = better".</p>
+            <div class="hist-strip" style="margin-top:14px">
+              <div style="background:rgba(122,74,94,.15);height:35%"></div>
+              <div style="background:rgba(122,74,94,.3);height:55%"></div>
+              <div style="background:rgba(122,74,94,.22);height:45%"></div>
+              <div style="background:var(--plum);height:75%"></div>
+              <div style="background:rgba(122,74,94,.35);height:60%"></div>
+              <div style="background:rgba(122,74,94,.4);height:68%"></div>
+            </div>
+          </div>
+
+          <div class="sec-lab">If this window opens too wide</div>
+          <div class="card" style="background:rgba(212,94,82,.04);border-color:rgba(212,94,82,.12)">
+            <h3 style="font-size:15px;color:var(--rose-500);margin-bottom:4px">Narrow it</h3>
+            <p style="font-size:12.5px">You can hide mood, hide "what helps", or pause everything in one tap. Sam won't be notified — he'll just see a soft "Halliburton is resting this window".</p>
+            <div style="display:flex;gap:8px;margin-top:10px"><button class="cta ghost">Hide mood</button><button class="cta danger">Pause all</button></div>
+          </div>
+
+          <div style="height:32px"></div>
+        </div>
+      </div>
+    </div>
+
+  </section>
+
+  <!-- ============== PHONES: PARTNER SIDE ============== -->
+  <section class="phones-row">
+
+    <!-- ======= PHONE 4 · partner home (PWA) ======= -->
+    <div class="phone partner">
+      <div class="phone-screen">
+        <div class="notch"></div>
+        <div class="phone-scroll">
+          <div class="statusbar"><span>9:14</span><span class="icons">• • •</span></div>
+          <div style="padding:22px 24px 10px;display:flex;align-items:center;justify-content:space-between">
+            <div>
+              <div style="font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--ink-mute);margin-bottom:4px">with · her window</div>
+              <h2 style="font-size:26px;letter-spacing:-0.02em">Halliburton, today</h2>
+            </div>
+            <div style="width:40px;height:40px;border-radius:50%;background:linear-gradient(140deg,var(--rose-500),var(--plum));display:flex;align-items:center;justify-content:center;color:var(--star);font-family:'Fraunces',serif;font-style:italic;font-size:18px">H</div>
+          </div>
+
+          <div class="consent-banner"><span class="dot"></span><span>A read-only window. Nothing you tap pings her.</span></div>
+
+          <div class="hero-partner">
+            <div class="k">her words, rewritten for you</div>
+            <div class="t">Luteal · tender.</div>
+            <div class="s">She's a little inward this week. Warm food, quiet after 20:00, a walk only if she says. She's strong — this isn't fragile, it's just a tone.</div>
+          </div>
+
+          <div class="sec-lab">Phase + mood signal</div>
+          <div class="signal-card">
+            <div class="lab">phase</div>
+            <div class="val">Luteal</div>
+            <div class="sub">The slow, inward stretch before her next cycle. Lasts a few more days.</div>
+          </div>
+          <div class="signal-card">
+            <div class="lab">mood band</div>
+            <div class="val">Tender</div>
+            <div class="sub">Not sad. More sensitive to noise, news, and overplanning.</div>
+          </div>
+
+          <div class="sec-lab">What helps today · her list</div>
+          <div class="card" style="padding:6px 18px">
+            <ul class="helps-list">
+              <li><span class="e">🍲</span><div><b>Warm food, not salad.</b></div></li>
+              <li><span class="e">📵</span><div><b>No news after 20:00.</b></div></li>
+              <li><span class="e">🚶🏽‍♀️</span><div><b>A walk only if she asks.</b></div></li>
+              <li><span class="e">🫖</span><div><b>Warm bath · plum salt, shelf.</b></div></li>
+              <li><span class="e">🫂</span><div><b>Hold more. Fix less.</b></div></li>
+            </ul>
+          </div>
+
+          <div class="sec-lab">One gentle response — pick one</div>
+          <div class="quick-resp">
+            <div class="qr">"I'm on it — want something warm?"</div>
+            <div class="qr">"I'll keep it quiet tonight."</div>
+            <div class="qr">"Holding, not fixing."</div>
+            <div class="qr">"Thinking of you — no reply needed."</div>
+          </div>
+
+          <div class="voice-note">
+            <div class="voice-play">🎙</div>
+            <div class="voice-meta">
+              <div class="n">Send a 20-sec voice note</div>
+              <div class="s">She'll hear it when she opens. No ping.</div>
+            </div>
+            <div class="voice-wave"><span style="height:4px"></span><span style="height:7px"></span><span style="height:11px"></span><span style="height:9px"></span><span style="height:13px"></span><span style="height:6px"></span></div>
+          </div>
+
+          <div style="margin:22px 24px 0;padding:16px 18px;border-radius:16px;background:rgba(43,30,22,.04);border:1px dashed rgba(43,30,22,.15)">
+            <div style="font-family:'Fraunces',serif;font-style:italic;color:var(--ink-mute);font-size:12px;margin-bottom:6px">the rules on your side</div>
+            <p style="font-size:12px;color:var(--ink-soft);margin:0;line-height:1.55">You can't see her logs, her journal, her history, or her dates. The list above refreshes every 07:00 BST. If she pauses the window, this page says "she's resting this window". The app never sends you a reminder to check.</p>
+          </div>
+
+          <div style="height:40px"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ======= PHONE 5 · partner weekly digest ======= -->
+    <div class="phone partner dark" style="background:#2b1a26">
+      <div class="phone-screen" style="background:linear-gradient(180deg,#1a1522 0%,#2e2238 100%)">
+        <div class="notch"></div>
+        <div class="phone-scroll">
+          <div class="statusbar" style="color:rgba(245,230,211,.75)"><span>9:14</span><span class="icons">• • •</span></div>
+          <div style="padding:22px 24px 6px">
+            <div style="font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:rgba(245,230,211,.5);margin-bottom:4px">with · sunday digest</div>
+            <h2 style="font-size:26px;letter-spacing:-0.02em;color:var(--star)">The week that was</h2>
+          </div>
+
+          <div class="digest-card">
+            <div class="k">from her, rewritten for you</div>
+            <div class="t">She started the week bright. Wednesday shifted. Sunday she was tender.</div>
+            <div class="s">She slept well five nights out of seven. Two rituals she wanted: the short walks on Tuesday and the warm bath on Saturday. The quiet after 20:00 kept holding — thank you for that.</div>
+            <div class="rows">
+              <div class="digest-row"><div class="l">Phase window</div><div class="v">Ovulatory → Luteal</div></div>
+              <div class="digest-row"><div class="l">Mood arc</div><div class="v">Bright · steady · tender</div></div>
+              <div class="digest-row"><div class="l">Most-worked thing you did</div><div class="v">Walks · no-news</div></div>
+              <div class="digest-row"><div class="l">Thing that didn't land</div><div class="v">Saturday plans</div></div>
+            </div>
+          </div>
+
+          <div style="padding:0 24px;margin-top:12px">
+            <div style="font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:rgba(245,230,211,.55);margin:10px 0 6px">What she'd like you to try next</div>
+            <div style="background:rgba(245,230,211,.06);border:1px solid rgba(245,230,211,.1);border-radius:18px;padding:16px;color:var(--star)">
+              <ul style="padding-left:18px;margin:0;font-size:13px;line-height:1.7">
+                <li>Keep the 20:00 quiet — she said it twice this week.</li>
+                <li>Offer warm food without naming what kind.</li>
+                <li>Short walks, not long ones. Keep Saturday plan-light.</li>
+              </ul>
+            </div>
+
+            <div style="font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:rgba(245,230,211,.55);margin:22px 0 6px">Her week in rhythm</div>
+            <div style="background:rgba(245,230,211,.04);border:1px solid rgba(245,230,211,.08);border-radius:18px;padding:16px">
+              <div style="display:grid;grid-template-columns:repeat(7,1fr);gap:3px;margin-top:4px">
+                <div style="height:28px;border-radius:4px;background:var(--ovulatory);opacity:.8"></div>
+                <div style="height:28px;border-radius:4px;background:var(--ovulatory)"></div>
+                <div style="height:28px;border-radius:4px;background:var(--ovulatory);opacity:.7"></div>
+                <div style="height:28px;border-radius:4px;background:var(--luteal)"></div>
+                <div style="height:28px;border-radius:4px;background:var(--luteal);opacity:.8"></div>
+                <div style="height:28px;border-radius:4px;background:var(--luteal);opacity:.9"></div>
+                <div style="height:28px;border-radius:4px;background:var(--luteal)"></div>
+              </div>
+              <div style="display:grid;grid-template-columns:repeat(7,1fr);gap:3px;font-size:10px;margin-top:6px;color:rgba(245,230,211,.55);text-align:center">
+                <span>Mon</span><span>Tue</span><span>Wed</span><span>Thu</span><span>Fri</span><span>Sat</span><span>Sun</span>
+              </div>
+            </div>
+
+            <div style="font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:rgba(245,230,211,.55);margin:22px 0 6px">A quiet line from her</div>
+            <div style="padding:14px 0;color:rgba(245,230,211,.85);font-family:'Fraunces',serif;font-style:italic;font-size:17px;line-height:1.35">"Thank you for the Saturday bath. I don't say this often — I felt held."</div>
+            <div style="font-size:10.5px;color:rgba(245,230,211,.5);letter-spacing:.06em">she approved this line before you saw it</div>
+
+            <div style="display:flex;gap:8px;margin-top:22px"><button class="cta star">Heart the week</button><button class="cta ghost">Record a voice reply</button></div>
+            <div style="height:40px"></div>
+          </div>
+
+        </div>
+      </div>
+    </div>
+
+    <!-- ======= PHONE 6 · partner panic alert ======= -->
+    <div class="phone partner dark">
+      <div class="phone-screen" style="background:linear-gradient(180deg,#1a0f16 0%,#3a2028 52%,#1a1522 100%)">
+        <div class="notch"></div>
+        <div class="phone-scroll">
+          <div class="statusbar" style="color:rgba(245,230,211,.8)"><span>22:48</span><span class="icons">• • •</span></div>
+          <div style="padding:26px 24px 10px">
+            <div style="font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:rgba(245,230,211,.7);margin-bottom:8px">she reached you</div>
+            <h2 style="font-size:30px;letter-spacing:-0.02em;color:var(--star);line-height:1.15">Halliburton is in <em style="font-family:'Fraunces',serif;font-style:italic;color:var(--rose)">panic mode</em>.<br>She chose to tell you.</h2>
+            <p style="color:rgba(245,230,211,.75);font-size:13px;margin-top:14px;line-height:1.55">This is a soft forward — she tapped "reach Sam" inside Jess. She didn't auto-broadcast. You can reply, but she may not respond right now. Don't call unless she asked you to.</p>
+          </div>
+
+          <div style="padding:0 24px;margin-top:6px">
+            <div style="background:rgba(245,230,211,.06);border:1px solid rgba(245,230,211,.1);border-radius:18px;padding:18px;color:var(--star)">
+              <div style="font-family:'Fraunces',serif;font-style:italic;color:rgba(245,230,211,.6);font-size:12px;margin-bottom:4px">from her — one line only</div>
+              <div style="font-family:'Fraunces',serif;font-size:19px;line-height:1.35">"I'm breathing. Just stay close to your phone."</div>
+              <div style="font-size:10.5px;color:rgba(245,230,211,.5);margin-top:10px;letter-spacing:.06em">sent 22:46 · jess is with her</div>
+            </div>
+
+            <div style="font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:rgba(245,230,211,.55);margin:22px 0 6px">One gentle response — pick one</div>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+              <button class="qr" style="background:rgba(245,230,211,.06);color:var(--star);border-color:rgba(245,230,211,.15)">"I'm here. Take your time."</button>
+              <button class="qr" style="background:rgba(245,230,211,.06);color:var(--star);border-color:rgba(245,230,211,.15)">"I'll come over — say yes or no."</button>
+              <button class="qr" style="background:rgba(245,230,211,.06);color:var(--star);border-color:rgba(245,230,211,.15)">"I'll be quiet. I've got my phone."</button>
+              <button class="qr" style="background:rgba(245,230,211,.06);color:var(--star);border-color:rgba(245,230,211,.15)">"I love you. No reply needed."</button>
+            </div>
+
+            <div class="voice-note" style="background:rgba(245,230,211,.06);border-color:rgba(245,230,211,.1);color:var(--star);margin:14px 0">
+              <div class="voice-play" style="background:var(--star);color:var(--plum-deep)">🎙</div>
+              <div class="voice-meta">
+                <div class="n" style="color:var(--star)">Send a 20-sec voice note</div>
+                <div class="s" style="color:rgba(245,230,211,.55)">Jess will hold it. She'll hear it when she surfaces.</div>
+              </div>
+            </div>
+
+            <div style="font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:rgba(245,230,211,.55);margin:22px 0 6px">What you know about panic · very short</div>
+            <div style="background:rgba(245,230,211,.04);border:1px solid rgba(245,230,211,.08);border-radius:16px;padding:16px;color:rgba(245,230,211,.88);font-size:12.5px;line-height:1.6">
+              Panic mode is a session she runs with Jess — not a medical emergency line. If she wanted emergency help, she'd use the Samaritans 116 123, not this. Your job: be warm, be brief, be available. Don't problem-solve. Don't call her parents.
+            </div>
+
+            <div style="font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:rgba(245,230,211,.55);margin:22px 0 6px">If this is too much tonight</div>
+            <div style="display:flex;gap:8px"><button class="cta ghost" style="border-color:rgba(245,230,211,.25);color:rgba(245,230,211,.8)">I can't right now</button><button class="cta ghost" style="border-color:rgba(245,230,211,.25);color:rgba(245,230,211,.8)">I'm driving</button></div>
+            <p style="font-size:10.5px;color:rgba(245,230,211,.5);margin-top:10px;line-height:1.55">If you pick either of these, Jess hears it. She'll offer Halliburton a different option — she'll never be left with just you, untold.</p>
+
+            <div style="height:40px"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </section>
+
+  <!-- =============== APPENDIX · SPEC =============== -->
+  <section class="appendix">
+    <div class="appendix-head">
+      <div class="kicker">appendix · build spec</div>
+      <h2>How Partner Sync actually works</h2>
+    </div>
+
+    <div class="grid-2">
+      <div class="block">
+        <h3>Core rules</h3>
+        <ol>
+          <li><b>Partner never has a FemWell account.</b> Standalone PWA at <code style="font-family:ui-monospace;font-size:11px">with.femwells.com</code>. No app store. Installable on her request only.</li>
+          <li><b>Magic-link + device-bind.</b> He gets a one-time link from her phone (Bluetooth pair or SMS). Once used, the device is bound. New device = new invite from her.</li>
+          <li><b>Read-only.</b> His side cannot write to her data. He can send one voice note (≤20s) or pick one of the 4 quick-responses per day. Nothing more.</li>
+          <li><b>Four-week rolling memory.</b> His side holds 4 weeks of digests + "what helps" snapshots. Older data is wiped locally and on the relay server.</li>
+          <li><b>Server-side "tight pipe".</b> Only 3 payloads per user: <code>phase_band</code>, <code>mood_band</code>, <code>helps_list</code>. Plus two optional: <code>flash_direction</code>, <code>panic_forward</code>. Nothing else ever crosses.</li>
+          <li><b>Quiet-hours universal.</b> His app never ping-notifies after 22:00 BST or before 07:00, regardless of his settings.</li>
+          <li><b>She always sees what he sees.</b> Phone 3 is a live mirror — if she doesn't see it, it isn't there.</li>
+        </ol>
+      </div>
+      <div class="block dark">
+        <h3>What we refuse to build (on purpose)</h3>
+        <ul>
+          <li><b>No chat thread.</b> Chats become logs; logs become evidence in abuse. He picks from 4 responses or records one 20-sec voice note.</li>
+          <li><b>No cycle predictions for him.</b> He never sees "her period starts in 4 days" — that's hers to share if she wants.</li>
+          <li><b>No map / location / proximity signal.</b> Never. Not a feature.</li>
+          <li><b>No "likes", "reactions" on her content.</b> He can heart the weekly digest once. That's it.</li>
+          <li><b>No cross-partner leaderboard.</b> "Most responsive partner" is the kind of metric that gets women hurt.</li>
+          <li><b>No alerts to him during her period.</b> She opts in — default is silent.</li>
+          <li><b>No text-search of history.</b> He cannot search "what did she ask last week". He reads this week, nothing else.</li>
+          <li><b>No panic auto-forward.</b> Panic mode never notifies him unless she taps "reach Sam" inside Panic. Default is off.</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="grid-2" style="margin-top:28px">
+      <div class="block">
+        <h3>Consent grammar</h3>
+        <p style="font-size:13.5px;color:var(--ink-soft);line-height:1.55;margin:0 0 14px">Each data surface has 3 positions. Never a binary toggle.</p>
+        <table class="table" style="margin-top:0">
+          <thead><tr><th>Position</th><th>What it means</th></tr></thead>
+          <tbody>
+            <tr><td>off</td><td>Hidden entirely. He sees no placeholder. He can't know it existed.</td></tr>
+            <tr><td>see</td><td>He sees a summary band (e.g. "tender"). No underlying data.</td></tr>
+            <tr><td>show</td><td>He sees Jess's rewritten version of her words. Still not raw data — always filtered.</td></tr>
+          </tbody>
+        </table>
+        <p style="font-size:12.5px;color:var(--ink-mute);margin:14px 0 0;line-height:1.55"><b>Rule:</b> she can flip any row to "off" at any time — the change propagates within 30 seconds. His side shows a "this window is narrower today" row rather than disappearing silently, so he doesn't assume she's ignoring him.</p>
+      </div>
+
+      <div class="block">
+        <h3>Panic-forward · the exact flow</h3>
+        <ol>
+          <li>She opens Panic Mode. Jess never auto-forwards.</li>
+          <li>Inside Panic, the "reach" card has 4 soft destinations: Sam, Mother, Friend, Samaritans 116 123.</li>
+          <li>Tapping "reach Sam" shows one box: "what one line do you want him to know?" (2 defaults + blank).</li>
+          <li>One line + one timestamp crosses. Never a panic log. Never severity. Never "how bad".</li>
+          <li>Sam's phone gets a gentle banner — no alarm sound, no red UI. Reads "she reached you".</li>
+          <li>He can pick one of 4 responses or send one voice note. Never call auto-routed.</li>
+          <li>If he taps "I can't right now", Jess silently offers Halliburton a different reach option. She's never left with just his silence.</li>
+        </ol>
+      </div>
+    </div>
+
+    <div class="block" style="margin-top:28px">
+      <h3>Entities · base44</h3>
+      <table class="table">
+        <thead><tr><th>Entity</th><th>Tier</th><th>Notes</th></tr></thead>
+        <tbody>
+          <tr><td>PartnerInvite</td><td>Tier 1 · public within dyad</td><td>short-lived magic link, device-fingerprint bound, auto-expires 72h.</td></tr>
+          <tr><td>PartnerBond</td><td>Tier 2 · per-user-encrypted</td><td>one per dyad; holds consent matrix, tone preference, quiet-hours.</td></tr>
+          <tr><td>PartnerWindow</td><td>Tier 2</td><td>daily snapshot: phase_band, mood_band, flash_direction. Rewritten by Jess at 07:00 BST.</td></tr>
+          <tr><td>HelpsList</td><td>Tier 2</td><td>user-curated · ≤5 items · versioned per day · drafted by Jess from prior cycles.</td></tr>
+          <tr><td>PartnerActivity</td><td>Tier 2</td><td>his open/read/response events. Used for the "his behaviour" card only. Never shown to him.</td></tr>
+          <tr><td>PartnerResponse</td><td>Tier 2</td><td>one of 4 prewrites or one voice note. Max 1/day.</td></tr>
+          <tr><td>WeeklyDigest</td><td>Tier 2</td><td>generated Sunday 18:00 BST. She approves before it sends. Never auto-sends.</td></tr>
+          <tr><td>PanicForward</td><td>Tier 3 · E2E device-only</td><td>one-line · one-timestamp · expires 24h · reuses SecureStore primitive from Sealed Letters.</td></tr>
+          <tr><td>RevokeEvent</td><td>Tier 1</td><td>timestamp + scope (row / all). Propagates in ≤30s.</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="grid-2" style="margin-top:28px">
+      <div class="block">
+        <h3>Abuse-resistance design</h3>
+        <ul>
+          <li><b>No location, ever.</b> Partners of abusive men should not fear geotags inside the app.</li>
+          <li><b>Revocation is silent on his side.</b> He sees "she's resting this window", not "she revoked you". Gives her plausible safety.</li>
+          <li><b>Ghost-pause.</b> She can leave the window appearing active while actually showing stale 3-day-old data. If he confronts her, the app looks the same.</li>
+          <li><b>Trusted-friend escrow.</b> She can name a trusted friend; if her account goes inactive 21+ days, Jess messages the friend — not the partner.</li>
+          <li><b>Impossible to screenshot her logs.</b> Partner's side physically has nothing to screenshot beyond the window.</li>
+          <li><b>No "she hasn't opened today" notification.</b> Silence isn't a signal anyone should weaponise.</li>
+        </ul>
+      </div>
+      <div class="block">
+        <h3>Ship order</h3>
+        <ol>
+          <li><b>Q2 2026</b> — invite flow · magic-link · 3-position consent matrix · "what helps" curator · partner PWA home · her-mirror screen. (Phones 1, 2, 3, 4 functional.)</li>
+          <li><b>Q3 2026</b> — weekly digest · one-voice-note · 4 quick responses · revocation + ghost-pause · behaviour analytics card. (Phone 5 functional.)</li>
+          <li><b>Q4 2026</b> — panic-forward + "I can't right now" handoff to Jess · trusted-friend escrow · period-mute default · UK-voice digest rewrite. (Phone 6 functional.)</li>
+          <li><b>Q1 2027</b> — optional: Circle of Three (mother + sister alongside partner) with distinct consent matrix per contact. Not same code path.</li>
+        </ol>
+      </div>
+    </div>
+
+    <div class="block" style="margin-top:28px">
+      <h3>Schema sketch · Partner tight-pipe</h3>
+      <div class="code">// payload that crosses from her device → relay → his PWA
+// verified-minimal — no extra fields allowed through the type gate
+type PartnerWindow = {
+  bond_id: string
+  generated_at: ISOString        // 07:00 BST local
+  phase_band: 'follicular' | 'ovulatory' | 'luteal' | 'period' | 'hidden'
+  mood_band: 'bright' | 'steady' | 'tender' | 'low' | 'hidden'
+  flash_direction?: 'up' | 'down' | 'steady' | null
+  helps_today: string[]          // max 5 items · plain text · Jess-rewritten
+  tone: 'soft' | 'warm' | 'practical' | 'playful'
+  quiet_hours: [start:string, end:string]
+  window_width: 'wide' | 'narrow' | 'resting'
+}
+
+// never in this object:
+//   exact cycle day · panic log · sleep numbers · symptom severity
+//   weight · food · journal text · sealed letters · twin-peer info
+//   pro tier · region · language · other partners · connected clinicians
+
+// panic-forward is a separate, ephemeral payload — never bundled with the window
+type PanicForward = {
+  bond_id: string
+  sent_at: ISOString           // server-timestamped, not device
+  one_line: string             // max 120 chars, Jess-reviewed
+  expires_at: ISOString        // +24h hard TTL
+}</div>
+    </div>
+  </section>
+
+  <footer class="footer">
+    <b>Demo owner:</b> Halliburton · <b>Built:</b> 2026-04-20 (autonomous loop) · <b>Builds on:</b> roadmap brainstorm §Partner Sync++ · strategic-synthesis §Competitive position (no app holds this position) · Panic Mode demo (reach-Sam path). <br><br>
+    <b>Open Qs before Q2 ship:</b> Does the partner PWA need an offline mode or is "reload on open" enough? Should "what helps" support regional dialect rewrite per partner's chosen tone? How do we handle partner-of-multiple scenarios (polyamory) — one bond at a time, or multiple PartnerBond rows? Decide in the first Q2 sprint.
+  </footer>
+</main>
+</body>
+</html>

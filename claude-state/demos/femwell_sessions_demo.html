@@ -1,0 +1,371 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>FemWell — Sessions redesign</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300..800;1,9..144,300..800&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --cream:#FFFAF5; --cream-2:#FFF5EC; --cream-3:#F0E5D8;
+  --plum:#4A2A3A; --plum-2:#6B4559; --plum-mute:#8A7584;
+  --rose-400:#E67F73; --rose-500:#D45E52;
+  --period:#B84A41; --follicular:#E67F73; --ovulatory:#F2A99A; --luteal:#8A5F74;
+  --gold:#C9A95C; --teal:#5F8A85; --moss:#7D8668; --lav:#B9A4C9; --night:#1A1522;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--cream);font-family:'Inter',sans-serif;color:var(--plum);line-height:1.5;padding:56px 32px 120px}
+.page-head{max-width:1400px;margin:0 auto 48px;text-align:center}
+.page-head h1{font-family:'Fraunces',serif;font-weight:300;font-size:56px;letter-spacing:-0.02em;color:var(--plum)}
+.page-head h1 em{font-style:italic;color:var(--rose-500)}
+.page-head p{margin-top:14px;color:var(--plum-mute);font-size:15px;max-width:640px;margin-left:auto;margin-right:auto}
+.grid{max-width:1400px;margin:0 auto;display:grid;grid-template-columns:repeat(auto-fit,minmax(400px,1fr));gap:56px 40px;justify-items:center}
+.cap{margin-top:14px;font-size:13px;color:var(--plum-mute);text-align:center;max-width:380px}
+.cap b{color:var(--plum);font-weight:600}
+/* phone */
+.phone{width:400px;aspect-ratio:1/2.05;background:var(--cream);border-radius:46px;box-shadow:0 40px 80px -30px rgba(74,42,58,.45),0 0 0 12px #1a1522,0 0 0 13px #3a2a32;overflow:hidden;position:relative}
+.notch{position:absolute;top:8px;left:50%;transform:translateX(-50%);width:120px;height:24px;background:#1a1522;border-radius:14px;z-index:50}
+.status{position:absolute;top:14px;left:28px;right:28px;display:flex;justify-content:space-between;font-size:11px;font-weight:600;color:var(--plum);z-index:40}
+.status .r{display:flex;gap:6px;align-items:center}
+.screen{position:absolute;top:46px;left:0;right:0;bottom:0;overflow-y:auto}
+.screen::-webkit-scrollbar{display:none}
+.screen{-ms-overflow-style:none;scrollbar-width:none}
+/* headers & typography */
+.hdr{padding:14px 22px 10px;display:flex;justify-content:space-between;align-items:center}
+.hdr .ttl{font-family:'Fraunces',serif;font-size:22px;font-weight:400;letter-spacing:-0.01em}
+.hdr .phase{display:inline-flex;align-items:center;gap:6px;padding:5px 11px;background:rgba(138,95,116,.12);border-radius:99px;font-size:11px;font-weight:600;color:var(--luteal)}
+.hdr .phase::before{content:"";width:6px;height:6px;background:var(--luteal);border-radius:50%}
+.sub{padding:0 22px;font-size:12px;color:var(--plum-mute);margin-bottom:14px}
+.sect{padding:18px 22px 6px;display:flex;justify-content:space-between;align-items:baseline}
+.sect h3{font-family:'Fraunces',serif;font-size:17px;font-weight:400}
+.sect .see{font-size:11px;color:var(--plum-mute);font-weight:500}
+/* jess pick hero */
+.jhero{margin:6px 18px 18px;padding:20px;border-radius:24px;background:linear-gradient(135deg,#F5D9C9 0%,#E8B7A6 100%);position:relative;overflow:hidden;color:#4A2A3A}
+.jhero::before{content:"";position:absolute;top:-60px;right:-40px;width:160px;height:160px;border-radius:50%;background:radial-gradient(closest-side,rgba(255,255,255,.6),transparent)}
+.jh-top{display:flex;gap:10px;align-items:center;font-size:11px;margin-bottom:12px;position:relative}
+.jh-av{width:28px;height:28px;border-radius:50%;background:conic-gradient(from 215deg,#c9a95c,#d4857a,#8a5f74,#c9a95c);display:grid;place-items:center;font-family:'Fraunces',serif;font-style:italic;color:var(--cream);font-size:15px}
+.jh-top b{font-weight:600}
+.jh-label{opacity:.7}
+.jh-title{font-family:'Fraunces',serif;font-style:italic;font-size:26px;font-weight:400;line-height:1.15;margin-bottom:6px;position:relative}
+.jh-why{font-size:12px;color:rgba(74,42,58,.75);margin-bottom:16px;position:relative}
+.jh-meta{display:flex;gap:10px;font-size:11px;color:rgba(74,42,58,.65);margin-bottom:14px;position:relative}
+.jh-meta span::before{content:"•";margin-right:8px;opacity:.4}
+.jh-meta span:first-child::before{display:none}
+.jh-play{display:inline-flex;align-items:center;gap:10px;padding:11px 20px;background:var(--plum);color:var(--cream);border-radius:99px;font-size:13px;font-weight:600;position:relative}
+.jh-play::before{content:"▶";font-size:10px}
+/* category pills row */
+.cats{padding:0 22px;display:flex;gap:8px;overflow-x:auto;margin-bottom:16px;padding-bottom:4px}
+.cats::-webkit-scrollbar{display:none}
+.cat{flex:0 0 auto;padding:8px 14px;border:1px solid rgba(74,42,58,.12);border-radius:99px;font-size:12px;font-weight:500;color:var(--plum-2);background:#fff}
+.cat.on{background:var(--plum);color:var(--cream);border-color:var(--plum)}
+.cat .c-ct{opacity:.6;margin-left:6px;font-size:10px}
+/* shelf */
+.shelf{padding:0 18px 4px;display:flex;gap:12px;overflow-x:auto;padding-bottom:8px}
+.shelf::-webkit-scrollbar{display:none}
+.scard{flex:0 0 180px;background:#fff;border:1px solid rgba(74,42,58,.08);border-radius:18px;overflow:hidden;box-shadow:0 4px 10px -4px rgba(74,42,58,.08)}
+.scard .thumb{aspect-ratio:1.4/1;position:relative;background:linear-gradient(135deg,var(--color-a,#F2A99A),var(--color-b,#8A5F74));display:grid;place-items:center;color:#fff;font-family:'Fraunces',serif;font-style:italic;font-size:32px;opacity:.95}
+.scard .thumb .dur{position:absolute;bottom:8px;right:8px;background:rgba(26,21,34,.6);color:#fff;padding:3px 8px;border-radius:99px;font-size:10px;font-weight:600;font-family:'Inter',sans-serif;font-style:normal}
+.scard .meta{padding:10px 12px 12px}
+.scard .t{font-family:'Fraunces',serif;font-size:14px;font-weight:500;margin-bottom:3px;line-height:1.25}
+.scard .s{font-size:10px;color:var(--plum-mute);display:flex;gap:6px}
+.scard .s span::before{content:"•";margin-right:6px;opacity:.4}
+.scard .s span:first-child::before{display:none}
+/* row card */
+.lst{padding:0 18px}
+.lrow{display:flex;gap:12px;padding:10px 12px;background:#fff;border-radius:16px;margin-bottom:8px;align-items:center;border:1px solid rgba(74,42,58,.06)}
+.lrow .lth{width:44px;height:44px;border-radius:14px;background:linear-gradient(135deg,var(--color-a,#F2A99A),var(--color-b,#8A5F74));display:grid;place-items:center;color:#fff;font-family:'Fraunces',serif;font-style:italic;font-size:20px;flex-shrink:0}
+.lrow .lm{flex:1;min-width:0}
+.lrow .lt{font-family:'Fraunces',serif;font-size:14px;font-weight:500;line-height:1.2}
+.lrow .ls{font-size:11px;color:var(--plum-mute);margin-top:2px;display:flex;gap:6px}
+.lrow .ls span::before{content:"•";margin-right:6px;opacity:.4}
+.lrow .ls span:first-child::before{display:none}
+.lrow .lp{width:32px;height:32px;border-radius:50%;background:var(--cream-2);display:grid;place-items:center;color:var(--plum);font-size:10px}
+/* now playing mini */
+.np{margin:14px 18px;padding:14px 16px;background:var(--plum);color:var(--cream);border-radius:22px;display:flex;gap:12px;align-items:center;box-shadow:0 20px 40px -20px rgba(74,42,58,.5)}
+.np .orb{width:42px;height:42px;border-radius:50%;background:radial-gradient(circle at 30% 30%,#f5d9c9,#d4857a);flex-shrink:0;animation:np-pulse 3.5s ease-in-out infinite}
+@keyframes np-pulse{0%,100%{transform:scale(1);box-shadow:0 0 0 0 rgba(245,217,201,.4)}50%{transform:scale(1.06);box-shadow:0 0 0 8px rgba(245,217,201,0)}}
+.np .nm{flex:1;min-width:0}
+.np .nt{font-family:'Fraunces',serif;font-style:italic;font-size:13px;line-height:1.15;margin-bottom:2px}
+.np .ns{font-size:10px;opacity:.7}
+.np .nb{display:flex;gap:8px}
+.np .btn{width:28px;height:28px;border-radius:50%;background:rgba(255,250,245,.15);display:grid;place-items:center;font-size:10px}
+/* player screen */
+.pl-scr{background:linear-gradient(180deg,#F2A99A 0%,#8A5F74 60%,#4A2A3A 100%);height:100%;color:#fff;padding:0 22px 30px;display:flex;flex-direction:column}
+.pl-top{display:flex;justify-content:space-between;padding:14px 0 0}
+.pl-top .x{font-size:18px;opacity:.8}
+.pl-top .more{font-size:16px;opacity:.7;letter-spacing:2px}
+.pl-body{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:18px;padding:40px 0}
+.pl-orb{width:200px;height:200px;border-radius:50%;background:radial-gradient(circle at 30% 30%,rgba(255,255,255,.4),rgba(255,255,255,.1) 60%,transparent);position:relative;animation:orb-breath 5s ease-in-out infinite}
+.pl-orb::before{content:"";position:absolute;inset:20px;border-radius:50%;border:2px solid rgba(255,255,255,.3)}
+.pl-orb::after{content:"";position:absolute;inset:50px;border-radius:50%;background:rgba(255,255,255,.25);backdrop-filter:blur(10px)}
+@keyframes orb-breath{0%,100%{transform:scale(1)}50%{transform:scale(1.12)}}
+.pl-phase{font-family:'Fraunces',serif;font-style:italic;font-size:26px;text-align:center;margin-top:6px}
+.pl-cue{font-size:12px;opacity:.7;letter-spacing:2px;text-transform:uppercase;text-align:center}
+.pl-tit{text-align:center;margin-bottom:8px}
+.pl-tit h2{font-family:'Fraunces',serif;font-weight:300;font-size:28px;letter-spacing:-0.01em}
+.pl-tit p{font-size:12px;opacity:.65;margin-top:4px}
+.pl-bar{height:3px;background:rgba(255,255,255,.2);border-radius:99px;margin-bottom:8px;overflow:hidden}
+.pl-bar i{display:block;width:34%;height:100%;background:#fff}
+.pl-time{display:flex;justify-content:space-between;font-size:10px;opacity:.65;margin-bottom:16px}
+.pl-ctrls{display:flex;justify-content:center;gap:24px;align-items:center;margin-bottom:12px}
+.pl-ctrls .cb{width:48px;height:48px;border-radius:50%;background:rgba(255,255,255,.12);display:grid;place-items:center;font-size:14px}
+.pl-ctrls .cp{width:72px;height:72px;border-radius:50%;background:#fff;color:var(--plum);display:grid;place-items:center;font-size:22px}
+.pl-voice{display:flex;justify-content:center;gap:6px;font-size:10px;opacity:.7;letter-spacing:1px}
+.pl-voice span{padding:5px 10px;border-radius:99px;background:rgba(255,255,255,.1)}
+.pl-voice .act{background:#fff;color:var(--plum);font-weight:600}
+/* afterglow */
+.ag{background:#1a1522;height:100%;color:#f5e6d3;padding:26px 22px 30px;display:flex;flex-direction:column}
+.ag-cap{font-size:11px;letter-spacing:3px;text-transform:uppercase;opacity:.55;margin-bottom:10px}
+.ag-head{font-family:'Fraunces',serif;font-style:italic;font-size:30px;font-weight:300;line-height:1.2;margin-bottom:6px}
+.ag-sub{font-size:12px;opacity:.55;margin-bottom:26px}
+.ag-q{font-size:13px;opacity:.8;margin-bottom:14px}
+.ag-mood{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:22px}
+.ag-m{padding:14px 6px;background:rgba(245,230,211,.06);border:1px solid rgba(245,230,211,.1);border-radius:14px;text-align:center;font-size:11px}
+.ag-m .em{font-family:'Fraunces',serif;font-style:italic;font-size:22px;color:#F2A99A;display:block;margin-bottom:4px}
+.ag-m.pick{background:rgba(242,169,154,.18);border-color:#F2A99A}
+.ag-note{background:rgba(245,230,211,.06);border:1px solid rgba(245,230,211,.1);border-radius:18px;padding:14px 16px;margin-bottom:22px}
+.ag-note .l{font-size:10px;opacity:.5;letter-spacing:2px;text-transform:uppercase;margin-bottom:8px}
+.ag-note .tx{font-family:'Fraunces',serif;font-style:italic;font-size:15px;line-height:1.4;opacity:.9}
+.ag-note .tx::before{content:"„ ";color:#F2A99A;font-size:22px;opacity:.6}
+.ag-seq{font-size:11px;opacity:.55;margin-bottom:18px}
+.ag-seq b{color:#F2A99A;font-weight:400;font-style:italic;font-family:'Fraunces',serif}
+.ag-btm{display:flex;gap:10px}
+.ag-b{flex:1;padding:14px;border-radius:99px;text-align:center;font-size:13px;font-weight:600}
+.ag-b.main{background:#F2A99A;color:#1a1522}
+.ag-b.alt{border:1px solid rgba(245,230,211,.15);color:#f5e6d3}
+/* garden history */
+.gar-cap{padding:16px 22px 6px;font-size:11px;letter-spacing:3px;text-transform:uppercase;color:var(--plum-mute);font-weight:600}
+.gar-head{padding:0 22px;font-family:'Fraunces',serif;font-size:26px;font-weight:300;line-height:1.2;margin-bottom:10px}
+.gar-head em{font-style:italic;color:var(--rose-500)}
+.gar-stat{padding:0 22px 18px;font-size:12px;color:var(--plum-mute)}
+.gar-grid{padding:0 22px;display:grid;grid-template-columns:repeat(7,1fr);gap:6px;margin-bottom:16px}
+.gar-d{aspect-ratio:1/1;border-radius:8px;background:var(--cream-2);display:grid;place-items:center;font-size:9px;color:var(--plum-mute);position:relative}
+.gar-d.l1{background:rgba(201,169,92,.15)}
+.gar-d.l2{background:rgba(201,169,92,.35)}
+.gar-d.l3{background:rgba(201,169,92,.6);color:#fff}
+.gar-d.l4{background:var(--gold);color:#fff}
+.gar-d.tod{outline:2px solid var(--plum);outline-offset:2px}
+.gar-leg{padding:0 22px 16px;display:flex;gap:12px;font-size:10px;color:var(--plum-mute);align-items:center}
+.gar-leg .sw{display:inline-flex;gap:3px;align-items:center}
+.gar-leg .sw i{width:10px;height:10px;border-radius:3px;background:var(--gold)}
+.gar-seas{padding:0 22px 14px}
+.gar-seas h4{font-family:'Fraunces',serif;font-size:15px;margin-bottom:10px}
+.gar-sr{display:flex;justify-content:space-between;padding:10px 0;border-bottom:1px solid rgba(74,42,58,.08);font-size:12px}
+.gar-sr span:first-child{color:var(--plum-2)}
+.gar-sr span:last-child{color:var(--plum-mute)}
+/* appendix */
+.app{max-width:1200px;margin:80px auto 0;padding:36px;background:#fff;border-radius:28px;border:1px solid rgba(74,42,58,.1)}
+.app h2{font-family:'Fraunces',serif;font-weight:300;font-size:30px;margin-bottom:8px}
+.app h2 em{font-style:italic;color:var(--rose-500)}
+.app .lead{color:var(--plum-mute);font-size:13px;margin-bottom:20px}
+.apgrid{display:grid;grid-template-columns:1fr 1fr;gap:30px}
+.apcol h4{font-size:11px;letter-spacing:2px;text-transform:uppercase;color:var(--plum-mute);margin-bottom:10px}
+.apcol li{font-size:13px;color:var(--plum-2);padding:6px 0;border-bottom:1px dotted rgba(74,42,58,.1);list-style:none;display:flex;justify-content:space-between;gap:10px}
+.apcol li b{color:var(--plum);font-weight:500}
+.ftr{max-width:900px;margin:60px auto 0;padding:28px;background:var(--plum);color:var(--cream);border-radius:24px;text-align:center}
+.ftr h3{font-family:'Fraunces',serif;font-style:italic;font-size:24px;font-weight:300;margin-bottom:8px}
+.ftr p{font-size:13px;opacity:.8;max-width:580px;margin:0 auto 14px}
+</style></head>
+<body>
+
+<div class="page-head">
+  <h1>Sessions — <em>the practice</em></h1>
+  <p>Breathwork, meditation, sleep, movement, affirmation. Phase-aware, voice-led, never a streak. Wired to WellnessSessions.</p>
+</div>
+
+<div class="grid">
+
+<!-- P1: Sessions home -->
+<div><div class="phone"><div class="notch"></div>
+  <div class="status"><span>9:42</span><span class="r">●●● 73%</span></div>
+  <div class="screen">
+    <div class="hdr"><span class="ttl">Sessions</span><span class="phase">luteal · d22</span></div>
+    <div class="sub">8-min practice is usually enough before bed tonight.</div>
+
+    <div class="jhero">
+      <div class="jh-top"><span class="jh-av">J</span><b>Jess picked</b><span class="jh-label">· luteal wind-down</span></div>
+      <div class="jh-title">Golden hour<br/>breath</div>
+      <div class="jh-why">you've been in your head since 4pm — this is the slow 4-7-8 with a UK dusk ambient</div>
+      <div class="jh-meta"><span>8 min</span><span>breath</span><span>headphones ok</span></div>
+      <a class="jh-play">start</a>
+    </div>
+
+    <div class="cats">
+      <span class="cat on">for you <span class="c-ct">12</span></span>
+      <span class="cat">breath <span class="c-ct">34</span></span>
+      <span class="cat">meditate <span class="c-ct">28</span></span>
+      <span class="cat">sleep <span class="c-ct">19</span></span>
+      <span class="cat">move <span class="c-ct">15</span></span>
+      <span class="cat">speak <span class="c-ct">9</span></span>
+    </div>
+
+    <div class="sect"><h3>Shorter than 5 min</h3><span class="see">see all</span></div>
+    <div class="shelf">
+      <div class="scard"><div class="thumb" style="--color-a:#F2A99A;--color-b:#D45E52">4-7-8<span class="dur">4:12</span></div><div class="meta"><div class="t">Box breath, one round</div><div class="s"><span>breath</span><span>d17-28</span></div></div></div>
+      <div class="scard"><div class="thumb" style="--color-a:#B9A4C9;--color-b:#6B4559">grd<span class="dur">3:40</span></div><div class="meta"><div class="t">5–4–3–2–1 grounding</div><div class="s"><span>anxiety</span><span>any phase</span></div></div></div>
+      <div class="scard"><div class="thumb" style="--color-a:#C9A95C;--color-b:#8A5F74">aff<span class="dur">2:58</span></div><div class="meta"><div class="t">morning blessing</div><div class="s"><span>affirm</span><span>UK</span></div></div></div>
+    </div>
+
+    <div class="sect"><h3>Made for luteal</h3><span class="see">see 12</span></div>
+    <div class="lst">
+      <div class="lrow"><span class="lth" style="--color-a:#8A5F74;--color-b:#4A2A3A">sl</span><div class="lm"><div class="lt">Magnesium body scan</div><div class="ls"><span>sleep</span><span>14 min</span><span>Yorkshire voice</span></div></div><span class="lp">▶</span></div>
+      <div class="lrow"><span class="lth" style="--color-a:#F2A99A;--color-b:#D45E52">br</span><div class="lm"><div class="lt">Pre-menstrual softening</div><div class="ls"><span>breath</span><span>9 min</span><span>paired w/ tea</span></div></div><span class="lp">▶</span></div>
+      <div class="lrow"><span class="lth" style="--color-a:#7D8668;--color-b:#5F8A85">mv</span><div class="lm"><div class="lt">Gentle hip opener</div><div class="ls"><span>move</span><span>11 min</span><span>mat, floor</span></div></div><span class="lp">▶</span></div>
+      <div class="lrow"><span class="lth" style="--color-a:#B9A4C9;--color-b:#6B4559">md</span><div class="lm"><div class="lt">Witness the waiting</div><div class="ls"><span>meditate</span><span>7 min</span><span>by Dr Aisha Patel</span></div></div><span class="lp">▶</span></div>
+    </div>
+
+    <div class="np">
+      <div class="orb"></div>
+      <div class="nm">
+        <div class="nt">Golden hour breath</div>
+        <div class="ns">2:14 of 8:00  ·  breath</div>
+      </div>
+      <div class="nb"><span class="btn">⏸</span><span class="btn">✕</span></div>
+    </div>
+  </div>
+</div>
+<div class="cap"><b>P1 · Home.</b> Jess-picked hero, quick-shelf, luteal list, persistent mini-player when a session is active.</div></div>
+
+<!-- P2: Player -->
+<div><div class="phone"><div class="notch"></div>
+  <div class="status"><span>9:44</span><span class="r">●●● 72%</span></div>
+  <div class="screen">
+    <div class="pl-scr">
+      <div class="pl-top"><span class="x">✕</span><span class="more">⋯</span></div>
+      <div class="pl-body">
+        <div class="pl-orb"></div>
+        <div class="pl-cue">inhale · 4</div>
+        <div class="pl-phase">breathe in,<br/>slowly</div>
+      </div>
+      <div class="pl-tit"><h2>Golden hour breath</h2><p>Yorkshire · luteal wind-down · 8 min</p></div>
+      <div class="pl-bar"><i></i></div>
+      <div class="pl-time"><span>2:42</span><span>-5:18</span></div>
+      <div class="pl-ctrls">
+        <span class="cb">⏮</span>
+        <span class="cb">-15</span>
+        <span class="cp">❚❚</span>
+        <span class="cb">+15</span>
+        <span class="cb">⏭</span>
+      </div>
+      <div class="pl-voice">
+        <span class="act">Yorkshire</span>
+        <span>Manchester</span>
+        <span>Silent</span>
+      </div>
+    </div>
+  </div>
+</div>
+<div class="cap"><b>P2 · Player.</b> Breathing orb that paces with the practice. Voice switcher (UK Warm default), silent mode keeps animation without cues.</div></div>
+
+<!-- P3: Afterglow -->
+<div><div class="phone"><div class="notch"></div>
+  <div class="status"><span>9:52</span><span class="r">●●● 71%</span></div>
+  <div class="screen">
+    <div class="ag">
+      <div class="ag-cap">afterglow</div>
+      <div class="ag-head">stayed<br/>with you?</div>
+      <div class="ag-sub">8 minutes, 3 rounds, shoulders dropped 40 seconds in.</div>
+
+      <div class="ag-q">how do you feel now, compared to before?</div>
+      <div class="ag-mood">
+        <div class="ag-m"><span class="em">↑</span>lifted</div>
+        <div class="ag-m pick"><span class="em">∞</span>softer</div>
+        <div class="ag-m"><span class="em">=</span>same</div>
+        <div class="ag-m"><span class="em">•</span>tender</div>
+      </div>
+
+      <div class="ag-note">
+        <div class="l">one word  ·  optional</div>
+        <div class="tx">quiet"</div>
+      </div>
+
+      <div class="ag-seq">Jess logged this to <b>luteal patterns</b> — you've picked "softer" after 6 of 8 Yorkshire sessions. She'll lean Yorkshire on d20–28.</div>
+
+      <div class="ag-btm">
+        <span class="ag-b main">keep going</span>
+        <span class="ag-b alt">thread to journal</span>
+      </div>
+    </div>
+  </div>
+</div>
+<div class="cap"><b>P3 · Afterglow.</b> No streak, no rating. Felt-sense check that feeds Jess's phase-learning. Option to bridge the session into a journal entry.</div></div>
+
+<!-- P4: Garden / history -->
+<div><div class="phone"><div class="notch"></div>
+  <div class="status"><span>9:53</span><span class="r">●●● 71%</span></div>
+  <div class="screen">
+    <div class="hdr"><span class="ttl">Your practice</span><span class="phase" style="background:rgba(201,169,92,.15);color:#8a6f2a">∞ a season</span></div>
+    <div class="gar-cap">spring ·  wk 3 of 12</div>
+    <div class="gar-head">not a streak —<br/>a <em>living thing.</em></div>
+    <div class="gar-stat">you've sat 14 times in spring. 3 with Yorkshire voice, 8 silent, 3 moving.</div>
+
+    <div class="gar-grid">
+      <div class="gar-d l1"></div><div class="gar-d l2"></div><div class="gar-d"></div><div class="gar-d l1"></div><div class="gar-d l3"></div><div class="gar-d l2"></div><div class="gar-d"></div>
+      <div class="gar-d l1"></div><div class="gar-d"></div><div class="gar-d l2"></div><div class="gar-d l3"></div><div class="gar-d l4"></div><div class="gar-d l2"></div><div class="gar-d"></div>
+      <div class="gar-d l2"></div><div class="gar-d l3"></div><div class="gar-d l4"></div><div class="gar-d l3"></div><div class="gar-d l2"></div><div class="gar-d l1"></div><div class="gar-d l2"></div>
+      <div class="gar-d l3"></div><div class="gar-d l4"></div><div class="gar-d l3"></div><div class="gar-d l2"></div><div class="gar-d l1"></div><div class="gar-d l2"></div><div class="gar-d tod l3"></div>
+    </div>
+
+    <div class="gar-leg"><span>density, not daily</span><span class="sw"><i style="background:rgba(201,169,92,.35)"></i>light</span><span class="sw"><i style="background:rgba(201,169,92,.6)"></i>more</span><span class="sw"><i></i>deep</span></div>
+
+    <div class="gar-seas">
+      <h4>Seasons so far</h4>
+      <div class="gar-sr"><span>Spring (in progress)</span><span>14 sits</span></div>
+      <div class="gar-sr"><span>Winter 2026</span><span>29 sits · felt heavy</span></div>
+      <div class="gar-sr"><span>Autumn 2025</span><span>42 sits · felt steady</span></div>
+      <div class="gar-sr"><span>Summer 2025</span><span>8 sits · rest season</span></div>
+    </div>
+  </div>
+</div>
+<div class="cap"><b>P4 · Garden.</b> Replaces streak UI. 12-week seasons, density heat-map, qualitative seasonal reflection. Skipping isn't failing.</div></div>
+
+</div>
+
+<!-- Appendix -->
+<div class="app">
+  <h2>Appendix — <em>Sessions</em></h2>
+  <p class="lead">What's wired, what's new, what replaces.</p>
+  <div class="apgrid">
+    <div class="apcol">
+      <h4>Data · base44 entities</h4>
+      <ul>
+        <li><b>WellnessSessions</b><span>session catalogue (existing)</span></li>
+        <li><b>SessionPlays</b><span>per-play logs (new)</span></li>
+        <li><b>Afterglows</b><span>post-session felt-sense (new)</span></li>
+        <li><b>PracticeSeasons</b><span>12-wk qualitative arc (new)</span></li>
+        <li><b>VoicePreferences</b><span>Yorkshire / Manchester / Silent (new)</span></li>
+      </ul>
+      <h4 style="margin-top:22px">Tools Jess uses here</h4>
+      <ul>
+        <li><b>sessions.suggest</b><span>phase + recent pattern</span></li>
+        <li><b>afterglow.log</b><span>mood + one-word</span></li>
+        <li><b>garden.render</b><span>season view</span></li>
+      </ul>
+    </div>
+    <div class="apcol">
+      <h4>What changes</h4>
+      <ul>
+        <li><b>— streak counter</b><span>removed</span></li>
+        <li><b>— star rating</b><span>removed</span></li>
+        <li><b>+ afterglow felt-sense</b><span>softer measure of landing</span></li>
+        <li><b>+ voice switcher</b><span>Yorkshire / Manchester / Silent</span></li>
+        <li><b>+ 12-wk seasons</b><span>replaces streak</span></li>
+        <li><b>+ UK-local category</b><span>morning blessings, movement practices</span></li>
+      </ul>
+      <h4 style="margin-top:22px">Guardrails</h4>
+      <ul>
+        <li><b>✕ no streak</b><span>no daily-count pressure</span></li>
+        <li><b>✕ no shame</b><span>skipped week = "rest season"</span></li>
+        <li><b>✓ phase-aware</b><span>luteal ≠ follicular sessions</span></li>
+        <li><b>✓ headphone-optional</b><span>silent mode always available</span></li>
+      </ul>
+    </div>
+  </div>
+</div>
+
+<div class="ftr">
+  <h3>"the practice stays, even when the app closes."</h3>
+  <p>4 phones — Home · Player · Afterglow · Garden. 3 new entities · 3 new Jess tools. Ship order: player+afterglow first (Q2), then garden (Q3 after Programs tagging), then voice switcher (Q3).</p>
+</div>
+
+</body></html>

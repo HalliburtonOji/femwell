@@ -1,0 +1,949 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>FemWell · Rituals — a practice garden, not a streak</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,wght@0,400;0,500;0,600;1,400;1,500&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --cream:#FFFAF5; --cream-2:#FFF5EC; --cream-3:#F0E5D8; --cream-4:#EBDFCF;
+    --plum:#4A2A3A; --plum-2:#6B4559; --plum-3:#8A7584; --plum-deep:#32202A;
+    --rose-400:#E67F73; --rose-500:#D45E52; --period:#B84A41;
+    --follicular:#E67F73; --ovulatory:#F2A99A; --luteal:#8A5F74;
+    --gold:#C9A95C; --teal:#5F8A85; --moss:#7D8668; --lav:#B9A4C9;
+    --ink:#2b1e16; --ink-soft:#4a3a30; --ink-mute:#8a7768;
+    --leaf-1:#A8C190; --leaf-2:#7D8668; --leaf-3:#5A6E4A;
+    --soil:#5C4534; --sky:#C5D4D9; --dusk:#7A91A3;
+    --night:#1a1522; --star:#f5e6d3;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:'Inter',-apple-system,BlinkMacSystemFont,sans-serif;background:#F4EDE4;color:var(--plum);padding:44px 20px 80px}
+  .wrap{max-width:1780px;margin:0 auto}
+  .header{max-width:980px;margin:0 auto 28px;text-align:center}
+  .eyebrow{font-size:11px;letter-spacing:.18em;text-transform:uppercase;color:var(--plum-3);font-weight:600}
+  h1.title{font-family:'Fraunces',serif;font-size:42px;font-weight:500;margin:10px 0 12px;letter-spacing:-0.015em}
+  h1.title em{font-style:italic;color:var(--plum-2);font-weight:400}
+  .lede{font-size:15.5px;color:var(--plum-2);max-width:820px;margin:0 auto;line-height:1.62}
+  .lede strong{color:var(--plum);font-weight:600}
+
+  .anti-strip{max-width:1380px;margin:32px auto 40px;display:grid;grid-template-columns:repeat(4,1fr);gap:14px}
+  @media(max-width:900px){.anti-strip{grid-template-columns:1fr 1fr}}
+  .ac{background:#FFF;border:1px solid rgba(74,42,58,0.08);border-radius:16px;padding:18px 20px;position:relative;overflow:hidden}
+  .ac.dark{background:linear-gradient(160deg,#2a1b25,#1a1522);color:var(--cream)}
+  .ac.dark .ac-eye{color:rgba(201,169,92,.85)}
+  .ac.dark .ac-title,.ac.dark .ac-body strong{color:var(--cream)}
+  .ac.dark .ac-body{color:rgba(245,230,211,.78)}
+  .ac-eye{font-size:9.5px;letter-spacing:.22em;text-transform:uppercase;color:var(--plum-3);font-weight:700}
+  .ac-title{font-family:'Fraunces',serif;font-size:19px;color:var(--plum);font-weight:500;margin:8px 0 6px;letter-spacing:-0.01em;line-height:1.2}
+  .ac-body{font-size:12.5px;color:var(--plum-2);line-height:1.55}
+  .ac-body strong{color:var(--plum);font-weight:600}
+
+  .toc{max-width:1180px;margin:0 auto 36px;display:flex;gap:10px;justify-content:center;flex-wrap:wrap}
+  .toc a{font-size:11px;padding:7px 14px;border-radius:16px;background:#FFF;border:1px solid rgba(74,42,58,.1);color:var(--plum);font-weight:600;text-decoration:none;letter-spacing:.06em}
+  .toc a:hover{background:var(--plum);color:var(--cream)}
+
+  .gallery{display:grid;grid-template-columns:repeat(4,1fr);gap:22px;max-width:1780px;margin:0 auto 60px}
+  @media(max-width:1560px){.gallery{grid-template-columns:1fr 1fr}}
+  @media(max-width:860px){.gallery{grid-template-columns:1fr}}
+  .phone-col{display:flex;flex-direction:column;align-items:center}
+  .phone-label{margin-bottom:14px;text-align:center;max-width:400px}
+  .pl-eye{font-size:10px;letter-spacing:.2em;text-transform:uppercase;color:var(--plum-3);font-weight:700}
+  .pl-title{font-family:'Fraunces',serif;font-size:22px;color:var(--plum);font-weight:500;margin-top:4px;letter-spacing:-0.01em}
+  .pl-title em{font-style:italic;color:var(--plum-2)}
+  .pl-sub{font-size:12.5px;color:var(--plum-2);margin-top:4px;line-height:1.5}
+
+  .phone{width:400px;background:#111;border-radius:44px;padding:9px;box-shadow:0 40px 80px rgba(74,42,58,.22),0 0 0 1px rgba(0,0,0,.08)}
+  .phone-inner{background:var(--cream);border-radius:36px;overflow:hidden;position:relative;height:1580px;display:flex;flex-direction:column}
+  .notch{position:absolute;top:0;left:50%;transform:translateX(-50%);width:124px;height:26px;background:#111;border-radius:0 0 16px 16px;z-index:30}
+  .scroll{overflow-y:auto;flex:1;padding:40px 18px 120px;scrollbar-width:none}
+  .scroll::-webkit-scrollbar{display:none}
+  .sbar{position:absolute;top:14px;left:0;right:0;display:flex;justify-content:space-between;padding:0 28px;font-size:11px;color:var(--plum);font-weight:600;z-index:20;letter-spacing:.04em}
+
+  .ph-head{display:flex;justify-content:space-between;align-items:flex-start}
+  .ph-eye{font-size:10px;letter-spacing:.18em;text-transform:uppercase;color:var(--plum-3);font-weight:600}
+  h1.ph-title{font-family:'Fraunces',serif;font-size:30px;font-weight:500;margin:6px 0 4px;letter-spacing:-0.015em;color:var(--plum);line-height:1.08}
+  .ph-sub{font-size:12.5px;color:var(--plum-2);line-height:1.5}
+  .ph-sub strong{color:var(--plum);font-weight:600}
+
+  .phase-chip{font-size:9.5px;letter-spacing:.16em;text-transform:uppercase;color:var(--luteal);font-weight:700;padding:4px 10px;border-radius:12px;background:rgba(138,95,116,.16);display:inline-flex;align-items:center;gap:5px;white-space:nowrap}
+  .phase-chip .dot{width:6px;height:6px;border-radius:50%;background:var(--luteal)}
+
+  /* ================= GARDEN VIEW (P1) ================= */
+  .garden{margin-top:18px;border-radius:24px;overflow:hidden;border:1px solid rgba(74,42,58,.08);position:relative;background:linear-gradient(175deg,#d9e2e5 0%,#e9ddd2 42%,#e4c8b5 100%);height:440px}
+  .garden-sky{position:absolute;top:0;left:0;right:0;height:130px;background:linear-gradient(180deg,#C5D4D9,#E8D9C7 80%);opacity:.6}
+  .garden-sun{position:absolute;top:24px;right:28px;width:44px;height:44px;border-radius:50%;background:radial-gradient(circle,#F5DDB8,#C9A95C);box-shadow:0 0 40px rgba(201,169,92,.5)}
+  .garden-soil{position:absolute;bottom:0;left:0;right:0;height:80px;background:linear-gradient(180deg,#8B6F5A,#5C4534)}
+  .garden-mist{position:absolute;bottom:80px;left:0;right:0;height:32px;background:linear-gradient(180deg,rgba(255,250,245,0),rgba(255,250,245,.55))}
+
+  /* Ritual plants */
+  .plant{position:absolute;bottom:70px;display:flex;flex-direction:column;align-items:center;cursor:pointer}
+  .plant .stem{width:3px;background:linear-gradient(180deg,var(--leaf-2),var(--leaf-3));border-radius:3px}
+  .plant .label{position:absolute;bottom:-18px;font-size:9.5px;color:var(--plum);font-weight:700;letter-spacing:.06em;text-transform:uppercase;white-space:nowrap;background:rgba(255,250,245,.75);padding:2px 7px;border-radius:8px}
+  .plant.thriving .bloom{width:34px;height:34px;border-radius:50%;margin-bottom:-6px;background:radial-gradient(circle,var(--rose-400),var(--rose-500));box-shadow:0 0 20px rgba(212,94,82,.5),inset 2px -3px 8px rgba(74,42,58,.2)}
+  .plant.steady .leaf{width:30px;height:24px;background:linear-gradient(135deg,var(--leaf-1),var(--leaf-2));border-radius:60% 0 60% 0;margin-bottom:-4px;transform:rotate(-15deg)}
+  .plant.resting .bulb{width:22px;height:22px;background:radial-gradient(circle,var(--leaf-1),var(--soil));border-radius:50% 50% 40% 40%;margin-bottom:-2px;opacity:.65}
+  .plant.sprouting .sprout{width:16px;height:14px;background:radial-gradient(circle,var(--gold),var(--leaf-1));border-radius:80% 20% 80% 20%;margin-bottom:-3px;transform:rotate(-25deg)}
+
+  .plant.p1{left:34px;bottom:88px}
+  .plant.p1 .stem{height:60px}
+  .plant.p2{left:88px;bottom:78px}
+  .plant.p2 .stem{height:70px}
+  .plant.p3{left:148px;bottom:82px}
+  .plant.p3 .stem{height:56px}
+  .plant.p4{left:204px;bottom:86px}
+  .plant.p4 .stem{height:66px}
+  .plant.p5{left:256px;bottom:80px}
+  .plant.p5 .stem{height:48px}
+  .plant.p6{left:306px;bottom:90px}
+  .plant.p6 .stem{height:40px}
+  .plant .pulse{position:absolute;top:-6px;width:10px;height:10px;border-radius:50%;border:2px solid var(--plum);opacity:0;animation:pulse 2s infinite}
+  @keyframes pulse{0%{transform:scale(.6);opacity:.8}100%{transform:scale(2);opacity:0}}
+
+  .garden-caption{position:absolute;bottom:14px;left:16px;right:16px;display:flex;justify-content:space-between;color:#FFF;font-size:10px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;z-index:2}
+  .garden-caption em{font-family:'Fraunces',serif;font-style:italic;color:#F8EBD5;font-weight:400;text-transform:none;letter-spacing:0;font-size:12px}
+
+  /* Ritual cards below garden */
+  .sect-head{margin:24px 0 10px;font-family:'Fraunces',serif;font-size:17px;color:var(--plum);font-weight:500;display:flex;justify-content:space-between;align-items:baseline}
+  .sect-head .see-all{font-size:10.5px;color:var(--plum-3);font-weight:600;letter-spacing:.04em;text-transform:uppercase;font-family:'Inter',sans-serif}
+
+  .rit-card{background:#FFF;border:1px solid rgba(74,42,58,.08);border-radius:16px;padding:14px 16px 12px;margin-top:10px;display:flex;gap:12px;align-items:center}
+  .rit-glyph{width:40px;height:40px;border-radius:12px;display:grid;place-items:center;flex-shrink:0;font-family:'Fraunces',serif;font-size:18px;color:#FFF;font-weight:500}
+  .rit-glyph.tea{background:linear-gradient(135deg,#D4A573,#8B6242)}
+  .rit-glyph.breath{background:linear-gradient(135deg,#B9A4C9,#7B6090)}
+  .rit-glyph.iron{background:linear-gradient(135deg,#B84A41,#7E2A24)}
+  .rit-glyph.walk{background:linear-gradient(135deg,#A8C190,#5A6E4A)}
+  .rit-glyph.read{background:linear-gradient(135deg,#C9A95C,#8B7340)}
+  .rit-glyph.journal{background:linear-gradient(135deg,#8A5F74,#4A2A3A)}
+  .rit-body{flex:1;min-width:0}
+  .rit-name{font-family:'Fraunces',serif;font-size:15.5px;color:var(--plum);font-weight:500;letter-spacing:-0.005em}
+  .rit-when{font-size:11px;color:var(--plum-3);margin-top:2px;font-weight:500}
+  .rit-state{font-size:10px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;padding:4px 9px;border-radius:10px;white-space:nowrap}
+  .rit-state.thriving{background:rgba(212,94,82,.14);color:var(--rose-500)}
+  .rit-state.steady{background:rgba(125,134,104,.2);color:var(--leaf-3)}
+  .rit-state.resting{background:rgba(138,117,132,.18);color:var(--plum-3)}
+  .rit-state.sprouting{background:rgba(201,169,92,.22);color:#8A7340}
+
+  .rit-tend{width:34px;height:34px;border-radius:12px;background:rgba(74,42,58,.07);color:var(--plum);display:grid;place-items:center;font-size:16px;cursor:pointer}
+
+  .not-streak{margin-top:18px;text-align:center;font-size:11.5px;color:var(--plum-3);font-style:italic;line-height:1.55}
+  .not-streak strong{color:var(--plum);font-weight:600;font-style:normal}
+
+  .bnav{position:absolute;bottom:0;left:0;right:0;background:rgba(255,250,245,.95);backdrop-filter:blur(20px);border-top:1px solid rgba(74,42,58,.08);padding:10px 20px 30px;display:flex;justify-content:space-around;align-items:flex-start;z-index:40}
+  .bnav-item{display:flex;flex-direction:column;align-items:center;gap:3px;font-size:10px;color:var(--plum-3);font-weight:600;letter-spacing:.04em}
+  .bnav-item .dot{width:6px;height:6px;border-radius:50%;background:var(--plum-3);opacity:.3}
+  .bnav-item.active{color:var(--plum)}
+  .bnav-item.active .dot{background:var(--plum);opacity:1}
+  .bnav-fab{width:44px;height:44px;border-radius:50%;background:linear-gradient(135deg,var(--gold),var(--rose-400));color:#FFF5EC;display:grid;place-items:center;font-family:'Fraunces',serif;font-size:17px;font-weight:500;box-shadow:0 6px 16px rgba(74,42,58,.25);margin-top:-10px}
+
+  /* ================= ADOPT FLOW (P2) ================= */
+  .jess-propose{margin-top:18px;background:linear-gradient(160deg,#FCEFE4,#E9D3E0);border-radius:22px;padding:22px 20px;position:relative;overflow:hidden}
+  .jess-propose::before{content:'';position:absolute;top:-40px;right:-30px;width:180px;height:180px;background:radial-gradient(circle,rgba(255,255,255,.4),transparent 60%);border-radius:50%}
+  .jp-eye{font-size:9.5px;letter-spacing:.22em;text-transform:uppercase;color:var(--plum-3);font-weight:700;display:flex;align-items:center;gap:8px;position:relative;z-index:1}
+  .jp-glyph{width:18px;height:18px;border-radius:50%;background:linear-gradient(135deg,var(--gold),var(--rose-400));color:#FFF5EC;display:grid;place-items:center;font-family:'Fraunces',serif;font-size:10px;font-weight:500}
+  .jp-title{font-family:'Fraunces',serif;font-size:26px;color:var(--plum);font-weight:500;margin:12px 0 6px;letter-spacing:-0.015em;line-height:1.15;position:relative;z-index:1}
+  .jp-title em{font-style:italic;color:var(--plum-2)}
+  .jp-sub{font-size:13px;color:var(--plum-2);line-height:1.55;position:relative;z-index:1}
+  .jp-sub strong{color:var(--plum);font-weight:600}
+
+  .ritual-preview{margin-top:18px;background:rgba(255,250,245,.78);border-radius:18px;padding:20px;position:relative;z-index:1;border:1px solid rgba(74,42,58,.08)}
+  .rp-row{display:flex;gap:14px;align-items:flex-start}
+  .rp-glyph{width:52px;height:52px;border-radius:14px;flex-shrink:0;display:grid;place-items:center;color:#FFF;font-family:'Fraunces',serif;font-size:22px;font-weight:500}
+  .rp-name{font-family:'Fraunces',serif;font-size:20px;color:var(--plum);font-weight:500;letter-spacing:-0.01em}
+  .rp-when{font-size:11.5px;color:var(--plum-2);margin-top:3px;font-weight:500}
+  .rp-why{margin-top:14px;font-size:12.5px;color:var(--plum-2);line-height:1.6;padding-top:12px;border-top:1px dashed rgba(74,42,58,.12)}
+  .rp-why strong{color:var(--plum);font-weight:600}
+  .rp-why em{font-family:'Fraunces',serif;font-style:italic;color:var(--plum)}
+
+  .rp-spec{margin-top:14px;display:grid;grid-template-columns:1fr 1fr;gap:8px}
+  .rp-spec-cell{background:#FFF;border-radius:10px;padding:10px 12px;border:1px solid rgba(74,42,58,.06)}
+  .rp-spec-cell .lab{font-size:9px;color:var(--plum-3);letter-spacing:.14em;text-transform:uppercase;font-weight:700}
+  .rp-spec-cell .val{font-family:'Fraunces',serif;font-size:14px;color:var(--plum);font-weight:500;margin-top:3px}
+
+  .cta-row{margin-top:18px;display:flex;gap:8px;position:relative;z-index:1}
+  .cta{flex:1;font-size:12px;padding:12px;border-radius:12px;font-weight:700;letter-spacing:.06em;text-align:center}
+  .cta.keep{background:var(--plum);color:var(--cream)}
+  .cta.try{background:rgba(74,42,58,.1);color:var(--plum)}
+  .cta.pass{background:rgba(255,255,255,.6);color:var(--plum-2)}
+
+  .adj-card{margin-top:14px;background:#FFF;border:1px solid rgba(74,42,58,.08);border-radius:14px;padding:14px 16px}
+  .adj-title{font-family:'Fraunces',serif;font-size:15.5px;color:var(--plum);font-weight:500;letter-spacing:-0.005em}
+  .adj-row{margin-top:10px;display:flex;gap:6px;flex-wrap:wrap}
+  .adj-chip{font-size:10.5px;padding:5px 11px;border-radius:12px;background:rgba(74,42,58,.06);color:var(--plum-2);font-weight:600;letter-spacing:.04em;cursor:pointer}
+  .adj-chip.active{background:var(--plum);color:var(--cream)}
+
+  .footer-note{margin-top:18px;font-size:11px;color:var(--plum-3);text-align:center;line-height:1.5}
+
+  /* ================= DETAIL VIEW (P3) ================= */
+  .rit-hero{margin-top:14px;background:linear-gradient(160deg,#F5E0D0,#E4A983);border-radius:22px;padding:22px 20px;position:relative;overflow:hidden}
+  .rit-hero::before{content:'';position:absolute;top:-30px;right:-20px;width:160px;height:160px;background:radial-gradient(circle,rgba(255,255,255,.4),transparent 60%);border-radius:50%}
+  .rit-hero-row{display:flex;gap:14px;align-items:center;position:relative;z-index:1}
+  .rit-hero-name{font-family:'Fraunces',serif;font-size:30px;color:var(--plum);font-weight:500;letter-spacing:-0.015em;line-height:1.1}
+  .rit-hero-when{font-size:12.5px;color:var(--plum-2);margin-top:6px}
+  .rit-hero-state{margin-top:14px;display:inline-block;font-size:10px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;padding:5px 11px;border-radius:12px;background:rgba(212,94,82,.22);color:var(--rose-500);position:relative;z-index:1}
+
+  .history-strip{margin-top:18px;background:#FFF;border:1px solid rgba(74,42,58,.08);border-radius:16px;padding:16px 18px}
+  .hs-eye{font-size:9.5px;letter-spacing:.2em;text-transform:uppercase;color:var(--plum-3);font-weight:700;margin-bottom:10px;display:flex;justify-content:space-between}
+  .hs-eye .soft{font-weight:500;text-transform:none;letter-spacing:0;font-size:11px;color:var(--plum-2)}
+  .weeks{display:grid;grid-template-columns:repeat(12,1fr);gap:4px;margin-bottom:10px}
+  .week{height:36px;border-radius:6px;display:flex;flex-direction:column;justify-content:flex-end;padding:3px;font-size:7.5px;color:#FFF;font-weight:700;letter-spacing:.04em}
+  .week.thriving{background:linear-gradient(180deg,var(--rose-400),var(--rose-500))}
+  .week.steady{background:linear-gradient(180deg,var(--leaf-1),var(--leaf-2))}
+  .week.resting{background:linear-gradient(180deg,rgba(138,117,132,.4),rgba(138,117,132,.6));color:rgba(255,250,245,.6)}
+  .week.sprouting{background:linear-gradient(180deg,var(--gold),#8B7340)}
+  .week.future{background:rgba(74,42,58,.06);color:var(--plum-3)}
+  .hs-legend{display:flex;gap:10px;font-size:10px;color:var(--plum-2);flex-wrap:wrap}
+  .hs-legend .lg-dot{display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:5px;vertical-align:middle}
+  .hs-legend .lg-dot.thriving{background:var(--rose-500)}
+  .hs-legend .lg-dot.steady{background:var(--leaf-2)}
+  .hs-legend .lg-dot.resting{background:rgba(138,117,132,.6)}
+  .hs-legend .lg-dot.sprouting{background:var(--gold)}
+
+  .rest-card{margin-top:14px;background:linear-gradient(155deg,rgba(245,238,247,.92),rgba(236,220,228,.82));border:1px solid rgba(138,95,116,.18);border-radius:16px;padding:16px 18px}
+  .rest-eye{font-size:9.5px;letter-spacing:.22em;text-transform:uppercase;color:var(--luteal);font-weight:700;display:flex;align-items:center;gap:8px}
+  .rest-eye .glyph{width:14px;height:14px;border-radius:50%;background:radial-gradient(circle,var(--luteal),transparent 70%)}
+  .rest-title{font-family:'Fraunces',serif;font-size:17px;color:var(--plum);font-weight:500;margin:8px 0 6px;letter-spacing:-0.005em;line-height:1.3}
+  .rest-body{font-size:12.5px;color:var(--plum-2);line-height:1.55}
+  .rest-body em{font-family:'Fraunces',serif;font-style:italic;color:var(--plum)}
+
+  .rit-actions{margin-top:18px;display:flex;flex-direction:column;gap:8px}
+  .act-row{background:#FFF;border:1px solid rgba(74,42,58,.08);border-radius:14px;padding:14px 16px;display:flex;justify-content:space-between;align-items:center}
+  .act-row .l{display:flex;gap:10px;align-items:center}
+  .act-row .ico{width:28px;height:28px;border-radius:9px;background:rgba(74,42,58,.06);display:grid;place-items:center;color:var(--plum);font-family:'Fraunces',serif;font-size:14px;font-weight:500}
+  .act-row .name{font-size:13.5px;color:var(--plum);font-weight:600}
+  .act-row .sub{font-size:11px;color:var(--plum-3);margin-top:2px;font-weight:500}
+  .act-row .chev{color:var(--plum-3);font-size:14px}
+  .act-row.warn{background:rgba(184,74,65,.04);border-color:rgba(184,74,65,.15)}
+
+  /* ================= STATS (P4) ================= */
+  .stats-hero{margin-top:14px;background:linear-gradient(165deg,#D6C3E0,#8A5F74 85%);border-radius:22px;padding:26px 22px;color:var(--cream);position:relative;overflow:hidden}
+  .stats-hero::before{content:'';position:absolute;top:-40px;right:-40px;width:180px;height:180px;background:radial-gradient(circle,rgba(255,255,255,.28),transparent 55%);border-radius:50%}
+  .sh-eye{font-size:10px;letter-spacing:.2em;text-transform:uppercase;color:rgba(245,230,211,.78);font-weight:700;position:relative;z-index:1}
+  .sh-title{font-family:'Fraunces',serif;font-size:30px;font-weight:500;margin:10px 0 8px;letter-spacing:-0.015em;position:relative;z-index:1;line-height:1.1}
+  .sh-title em{font-family:'Fraunces',serif;font-style:italic;color:#F2C4D4}
+  .sh-sub{font-size:12.5px;color:rgba(245,230,211,.85);line-height:1.55;position:relative;z-index:1}
+  .sh-sub strong{color:var(--cream);font-weight:600}
+  .season-pill{margin-top:14px;display:inline-flex;align-items:center;gap:8px;padding:6px 12px;border-radius:12px;background:rgba(255,250,245,.22);font-size:11px;color:var(--cream);font-weight:600;letter-spacing:.06em;position:relative;z-index:1}
+  .season-pill::before{content:'';width:8px;height:8px;border-radius:50%;background:#F2C4D4}
+
+  .no-numbers{margin-top:16px;background:#FFF;border:1px solid rgba(74,42,58,.08);border-radius:16px;padding:16px 18px}
+  .nn-title{font-family:'Fraunces',serif;font-size:16px;color:var(--plum);font-weight:500;letter-spacing:-0.005em;margin-bottom:8px}
+  .nn-row{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:10px}
+  .nn-cell{background:var(--cream-2);border-radius:10px;padding:12px 14px}
+  .nn-cell .lab{font-size:9.5px;color:var(--plum-3);letter-spacing:.14em;text-transform:uppercase;font-weight:700}
+  .nn-cell .val{font-family:'Fraunces',serif;font-size:22px;color:var(--plum);font-weight:500;margin-top:4px;letter-spacing:-0.01em}
+  .nn-cell .sub{font-size:11px;color:var(--plum-2);margin-top:2px}
+  .nn-cell .val em{font-style:italic;color:var(--plum-2);font-weight:400;font-size:20px}
+
+  .cycle-rhythm{margin-top:16px;background:#FFF;border:1px solid rgba(74,42,58,.08);border-radius:16px;padding:16px 18px}
+  .cr-title{font-family:'Fraunces',serif;font-size:16px;color:var(--plum);font-weight:500;letter-spacing:-0.005em}
+  .cr-sub{font-size:11.5px;color:var(--plum-2);margin-top:4px;line-height:1.5}
+  .cycle-map{margin-top:14px;display:grid;grid-template-columns:repeat(28,1fr);gap:2px}
+  .cm-day{height:26px;border-radius:3px;background:rgba(74,42,58,.06);position:relative}
+  .cm-day.fol{background:rgba(230,127,115,.3)}
+  .cm-day.ovu{background:rgba(242,169,154,.45)}
+  .cm-day.lut{background:rgba(138,95,116,.35)}
+  .cm-day.per{background:rgba(184,74,65,.3)}
+  .cm-day.adopted{outline:2px solid var(--gold);outline-offset:-2px}
+  .cm-legend{margin-top:10px;display:flex;gap:10px;font-size:10px;color:var(--plum-2);flex-wrap:wrap}
+  .cm-legend .lg{display:inline-flex;align-items:center;gap:4px}
+  .cm-legend .lg-dot{width:8px;height:8px;border-radius:50%}
+
+  .reflection{margin-top:18px;background:linear-gradient(160deg,#FBF3EA,#F0E3D0);border:1px solid rgba(201,169,92,.2);border-radius:16px;padding:16px 18px}
+  .rf-eye{font-size:9.5px;letter-spacing:.22em;text-transform:uppercase;color:#8A7340;font-weight:700;display:flex;align-items:center;gap:8px}
+  .rf-eye .g{width:16px;height:16px;border-radius:50%;background:linear-gradient(135deg,var(--gold),var(--rose-400))}
+  .rf-body{font-family:'Fraunces',serif;font-style:italic;font-size:15px;color:var(--plum);line-height:1.45;font-weight:500;margin-top:10px}
+  .rf-source{font-size:10.5px;color:var(--plum-3);margin-top:10px;font-weight:600}
+
+  .no-compare{margin-top:18px;text-align:center;font-size:11px;color:var(--plum-3);font-style:italic;line-height:1.55}
+
+  /* Engineering */
+  .spec{max-width:1320px;margin:0 auto 60px;background:#FFF;border:1px solid rgba(74,42,58,.08);border-radius:22px;padding:36px 40px}
+  .spec h2{font-family:'Fraunces',serif;font-size:24px;color:var(--plum);font-weight:500;margin-bottom:14px;letter-spacing:-0.01em}
+  .spec h3{font-family:'Fraunces',serif;font-size:18px;color:var(--plum);font-weight:500;margin:22px 0 10px;letter-spacing:-0.005em}
+  .spec p{font-size:13.5px;color:var(--plum-2);line-height:1.65;margin-bottom:10px}
+  .spec p strong{color:var(--plum);font-weight:600}
+  .spec ul{padding-left:20px;margin:8px 0 14px;font-size:13.5px;color:var(--plum-2);line-height:1.65}
+  .spec ul li{margin-bottom:6px}
+  .spec ul li strong{color:var(--plum);font-weight:600}
+  .spec code{font-family:ui-monospace,Menlo,monospace;font-size:12.5px;color:var(--plum);background:rgba(74,42,58,.06);padding:1px 6px;border-radius:5px}
+  .spec pre{background:#221823;color:#f5e6d3;border-radius:14px;padding:18px 20px;font-family:ui-monospace,Menlo,monospace;font-size:11.5px;line-height:1.7;white-space:pre-wrap;margin:10px 0 16px}
+  .spec-grid{display:grid;grid-template-columns:1fr 1fr;gap:20px}
+  @media(max-width:900px){.spec-grid{grid-template-columns:1fr}}
+  .spec-card{background:var(--cream-2);border-radius:14px;padding:18px 22px}
+  .spec-card h4{font-family:'Fraunces',serif;font-size:16px;color:var(--plum);font-weight:500;margin-bottom:8px}
+  .never-list{background:linear-gradient(155deg,#2E1F2A,#1E1320);color:var(--star);border-radius:14px;padding:18px 22px;margin-top:12px}
+  .never-list h4{color:var(--cream);font-family:'Fraunces',serif;font-size:16px;font-weight:500;margin-bottom:10px}
+  .never-list ul{padding-left:18px;color:rgba(245,230,211,.86);font-size:12.5px;margin:0}
+  .never-list ul li::marker{color:var(--gold)}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="header">
+    <div class="eyebrow">App-wide feature · rank 4 (quiet favourite) · <em style="font-style:italic">demo</em></div>
+    <h1 class="title">Rituals — a practice garden, <em>not a streak</em></h1>
+    <p class="lede">
+      Short phase-tagged practices she voluntarily adopts. Tea on luteal day 2. Four-seven-eight before bed in follicular. Iron-rich breakfast on period day 1.
+      They grow a visible <strong>ritual garden</strong> — a living thing, not a scoreboard. Skipping a week just means a leaf rests.
+      Jess proposes one ritual per phase based on data; she keeps or discards. This is the feature that resolves the tension between <em>"we don't do streaks"</em> and <em>"we need retention."</em>
+    </p>
+  </div>
+
+  <div class="anti-strip">
+    <div class="ac">
+      <div class="ac-eye">What it is</div>
+      <div class="ac-title">A living garden of practices</div>
+      <div class="ac-body">Each ritual becomes a plant. <strong>Thriving</strong> = rose bloom. <strong>Steady</strong> = green leaf. <strong>Resting</strong> = dormant bulb. <strong>Sprouting</strong> = gold bud.</div>
+    </div>
+    <div class="ac">
+      <div class="ac-eye">How it stays</div>
+      <div class="ac-title">Jess proposes one per phase</div>
+      <div class="ac-body">Not ten at once. One ritual per cycle phase, data-justified. The user keeps, adjusts, or discards. <strong>No defaults</strong> — every plant in the garden was chosen.</div>
+    </div>
+    <div class="ac">
+      <div class="ac-eye">What it refuses</div>
+      <div class="ac-title">Zero streak surface area</div>
+      <div class="ac-body">No day count. No "X weeks in a row." No failure state. Skipping = <strong>rest</strong>, not break. A ritual at rest can return in a season; it never dies.</div>
+    </div>
+    <div class="ac dark">
+      <div class="ac-eye">Why it works</div>
+      <div class="ac-title">Retention through ownership</div>
+      <div class="ac-body">Competitors force habits on users and call it discipline. FemWell waits until you claim a practice. <strong>You don't ditch what you planted.</strong></div>
+    </div>
+  </div>
+
+  <div class="toc">
+    <a href="#p1">1 · Garden home</a>
+    <a href="#p2">2 · Jess proposes a ritual</a>
+    <a href="#p3">3 · Ritual detail + rest state</a>
+    <a href="#p4">4 · Season stats (no compare)</a>
+    <a href="#spec">Eng spec</a>
+  </div>
+
+  <div class="gallery">
+
+    <!-- ============ P1 GARDEN HOME ============ -->
+    <div class="phone-col" id="p1">
+      <div class="phone-label">
+        <div class="pl-eye">Phone 1</div>
+        <div class="pl-title">Garden · <em>what you've planted</em></div>
+        <div class="pl-sub">The home view. Six rituals, each a plant. Two thriving, two steady, one resting, one sprouting. No numbers. No streaks. Just the shape of a practice.</div>
+      </div>
+      <div class="phone">
+        <div class="phone-inner">
+          <div class="notch"></div>
+          <div class="sbar"><span>9:58</span><span>●●●●</span></div>
+          <div class="scroll">
+            <div class="ph-head">
+              <div>
+                <div class="ph-eye">Tuesday · April 21</div>
+                <h1 class="ph-title">Your ritual<br>garden</h1>
+              </div>
+              <span class="phase-chip"><span class="dot"></span>Luteal · d19</span>
+            </div>
+            <p class="ph-sub" style="margin-top:10px">Six rituals. Four rooted, one resting, one just sprouting. The season is <strong>Finding the rhythm</strong>.</p>
+
+            <div class="garden">
+              <div class="garden-sky"></div>
+              <div class="garden-sun"></div>
+              <div class="garden-mist"></div>
+              <div class="garden-soil"></div>
+
+              <div class="plant p1 thriving">
+                <div class="bloom"></div>
+                <div class="stem"></div>
+                <div class="label">tea d2</div>
+              </div>
+              <div class="plant p2 steady">
+                <div class="leaf"></div>
+                <div class="stem"></div>
+                <div class="label">4-7-8</div>
+              </div>
+              <div class="plant p3 thriving">
+                <div class="bloom" style="background:radial-gradient(circle,#B84A41,#7E2A24)"></div>
+                <div class="stem"></div>
+                <div class="label">iron d1</div>
+              </div>
+              <div class="plant p4 steady">
+                <div class="leaf" style="background:linear-gradient(135deg,#C9A95C,#8B7340);transform:rotate(20deg)"></div>
+                <div class="stem"></div>
+                <div class="label">walk 17:00</div>
+              </div>
+              <div class="plant p5 resting">
+                <div class="bulb"></div>
+                <div class="stem" style="height:14px;opacity:.6"></div>
+                <div class="label">morning pages</div>
+              </div>
+              <div class="plant p6 sprouting">
+                <div class="sprout"></div>
+                <div class="stem" style="height:20px"></div>
+                <div class="label">luteal journal</div>
+              </div>
+
+              <div class="garden-caption">
+                <span>season · finding the rhythm</span>
+                <em>week 11 of 12</em>
+              </div>
+            </div>
+
+            <div class="not-streak">
+              no days-in-a-row. no wall to climb.<br>
+              <strong>a resting plant is not a broken plant.</strong>
+            </div>
+
+            <div class="sect-head">today, two rituals are ready
+              <span class="see-all">tend all →</span>
+            </div>
+
+            <div class="rit-card">
+              <div class="rit-glyph breath">4·7·8</div>
+              <div class="rit-body">
+                <div class="rit-name">Luteal breath before bed</div>
+                <div class="rit-when">every luteal evening · 9:30pm</div>
+              </div>
+              <span class="rit-state steady">steady</span>
+              <div class="rit-tend">+</div>
+            </div>
+
+            <div class="rit-card">
+              <div class="rit-glyph walk">w</div>
+              <div class="rit-body">
+                <div class="rit-name">Gentle walk after work</div>
+                <div class="rit-when">luteal + ovulatory · 5pm</div>
+              </div>
+              <span class="rit-state steady">steady</span>
+              <div class="rit-tend">+</div>
+            </div>
+
+            <div class="sect-head">this week's rituals
+              <span class="see-all">see all →</span>
+            </div>
+
+            <div class="rit-card">
+              <div class="rit-glyph tea">t</div>
+              <div class="rit-body">
+                <div class="rit-name">Ginger tea on luteal d2</div>
+                <div class="rit-when">done 7× of last 8 luteals</div>
+              </div>
+              <span class="rit-state thriving">thriving</span>
+              <div class="rit-tend">+</div>
+            </div>
+
+            <div class="rit-card">
+              <div class="rit-glyph iron">i</div>
+              <div class="rit-body">
+                <div class="rit-name">Iron-rich breakfast · period d1</div>
+                <div class="rit-when">done 5× of last 6 periods</div>
+              </div>
+              <span class="rit-state thriving">thriving</span>
+              <div class="rit-tend">+</div>
+            </div>
+
+            <div class="rit-card">
+              <div class="rit-glyph read">r</div>
+              <div class="rit-body">
+                <div class="rit-name">Morning pages</div>
+                <div class="rit-when">resting since 2 weeks ago</div>
+              </div>
+              <span class="rit-state resting">resting</span>
+              <div class="rit-tend">~</div>
+            </div>
+
+            <div class="rit-card">
+              <div class="rit-glyph journal">j</div>
+              <div class="rit-body">
+                <div class="rit-name">One-line luteal journal</div>
+                <div class="rit-when">just sprouted 3 days ago</div>
+              </div>
+              <span class="rit-state sprouting">sprouting</span>
+              <div class="rit-tend">+</div>
+            </div>
+          </div>
+          <div class="bnav">
+            <div class="bnav-item"><div class="dot"></div>today</div>
+            <div class="bnav-item active"><div class="dot"></div>rituals</div>
+            <div class="bnav-fab">j</div>
+            <div class="bnav-item"><div class="dot"></div>journal</div>
+            <div class="bnav-item"><div class="dot"></div>menu</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ============ P2 ADOPT FLOW ============ -->
+    <div class="phone-col" id="p2">
+      <div class="phone-label">
+        <div class="pl-eye">Phone 2</div>
+        <div class="pl-title">Adopt · <em>Jess proposes, she decides</em></div>
+        <div class="pl-sub">Jess has noticed a pattern and offers one ritual for this phase. Shows the why (data), the ritual, the when, and the three buttons: keep, try for a cycle, pass.</div>
+      </div>
+      <div class="phone">
+        <div class="phone-inner">
+          <div class="notch"></div>
+          <div class="sbar"><span>10:02</span><span>●●●●</span></div>
+          <div class="scroll">
+            <div class="ph-head">
+              <div>
+                <div class="ph-eye">Ritual suggestion · luteal</div>
+                <h1 class="ph-title">Jess has one<br>for your luteal</h1>
+              </div>
+              <span class="phase-chip"><span class="dot"></span>Luteal</span>
+            </div>
+            <p class="ph-sub" style="margin-top:10px">Not a plan. Not a template. <strong>One ritual, shaped from your own data</strong>. Keep it, try it, or let it pass.</p>
+
+            <div class="jess-propose">
+              <div class="jp-eye"><span class="jp-glyph">j</span> from three cycles of your data</div>
+              <div class="jp-title">Magnesium glycinate<br><em>on luteal day 18</em></div>
+              <div class="jp-sub">
+                Your <strong>HRV drops ≥5%</strong> on luteal d18 in 4 of your last 4 cycles. Sleep quality follows the next two nights. Magnesium glycinate taken in the evening has <strong>RCT evidence</strong> for sleep onset and HRV recovery in luteal-phase studies.
+              </div>
+
+              <div class="ritual-preview">
+                <div class="rp-row">
+                  <div class="rp-glyph" style="background:linear-gradient(135deg,#B9A4C9,#7B6090)">m</div>
+                  <div>
+                    <div class="rp-name">Magnesium glycinate · 200mg</div>
+                    <div class="rp-when">luteal d18 · evening · with food</div>
+                  </div>
+                </div>
+                <div class="rp-spec">
+                  <div class="rp-spec-cell">
+                    <div class="lab">when</div>
+                    <div class="val">Luteal d18, 9pm</div>
+                  </div>
+                  <div class="rp-spec-cell">
+                    <div class="lab">season</div>
+                    <div class="val">Next 3 cycles</div>
+                  </div>
+                  <div class="rp-spec-cell">
+                    <div class="lab">form</div>
+                    <div class="val">Glycinate (gentle)</div>
+                  </div>
+                  <div class="rp-spec-cell">
+                    <div class="lab">why this phase</div>
+                    <div class="val">HRV drop pattern</div>
+                  </div>
+                </div>
+                <div class="rp-why">
+                  <strong>I could be wrong.</strong> If your next luteal d18 doesn't feel different, let it rest. <em>We don't force practice.</em> If you're on medication or have a kidney condition, please check with Care Bridge first.
+                </div>
+              </div>
+
+              <div class="cta-row">
+                <button class="cta keep">Keep · plant it</button>
+                <button class="cta try">Try for 1 cycle</button>
+                <button class="cta pass">Pass</button>
+              </div>
+            </div>
+
+            <div class="sect-head">adjust before you plant
+              <span class="see-all">reset →</span>
+            </div>
+
+            <div class="adj-card">
+              <div class="adj-title">When should this ritual fire?</div>
+              <div class="adj-row">
+                <span class="adj-chip">Luteal d16</span>
+                <span class="adj-chip">Luteal d17</span>
+                <span class="adj-chip active">Luteal d18</span>
+                <span class="adj-chip">Luteal d19</span>
+                <span class="adj-chip">Let Jess adapt</span>
+              </div>
+            </div>
+
+            <div class="adj-card">
+              <div class="adj-title">Time of day</div>
+              <div class="adj-row">
+                <span class="adj-chip">Morning</span>
+                <span class="adj-chip">Afternoon</span>
+                <span class="adj-chip active">Evening (21:00)</span>
+                <span class="adj-chip">Before bed</span>
+              </div>
+            </div>
+
+            <div class="adj-card">
+              <div class="adj-title">Season (how long)</div>
+              <div class="adj-row">
+                <span class="adj-chip">Try 1 cycle</span>
+                <span class="adj-chip active">3 cycles (season)</span>
+                <span class="adj-chip">Until I stop it</span>
+              </div>
+            </div>
+
+            <div class="adj-card">
+              <div class="adj-title">Nudge</div>
+              <div class="adj-row">
+                <span class="adj-chip">Silent (garden only)</span>
+                <span class="adj-chip active">One gentle on d18 9pm</span>
+                <span class="adj-chip">Morning-of only</span>
+              </div>
+            </div>
+
+            <div class="footer-note">
+              planted rituals grow as plants in your garden.<br>
+              you can uproot any, any time, with no flag.
+            </div>
+          </div>
+          <div class="bnav">
+            <div class="bnav-item"><div class="dot"></div>today</div>
+            <div class="bnav-item active"><div class="dot"></div>rituals</div>
+            <div class="bnav-fab">j</div>
+            <div class="bnav-item"><div class="dot"></div>journal</div>
+            <div class="bnav-item"><div class="dot"></div>menu</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ============ P3 DETAIL + REST STATE ============ -->
+    <div class="phone-col" id="p3">
+      <div class="phone-label">
+        <div class="pl-eye">Phone 3</div>
+        <div class="pl-title">Detail · <em>ritual at rest</em></div>
+        <div class="pl-sub">Morning pages has been resting 2 weeks. No guilt, no red, no "you broke your streak." 12-week history, soft return prompt, and graceful actions: resume, adjust, or let rest longer.</div>
+      </div>
+      <div class="phone">
+        <div class="phone-inner">
+          <div class="notch"></div>
+          <div class="sbar"><span>10:06</span><span>●●●●</span></div>
+          <div class="scroll">
+            <div class="ph-head">
+              <div>
+                <div class="ph-eye">Ritual · follicular</div>
+                <h1 class="ph-title">Morning pages</h1>
+              </div>
+              <span class="phase-chip" style="color:var(--rose-500);background:rgba(230,127,115,.16)">
+                <span class="dot" style="background:var(--rose-400)"></span>Follicular
+              </span>
+            </div>
+            <p class="ph-sub" style="margin-top:10px">Planted <strong>9 weeks ago</strong>. Steady for 7 weeks. Resting the last 2.</p>
+
+            <div class="rit-hero">
+              <div class="rit-hero-row">
+                <div class="rp-glyph" style="background:linear-gradient(135deg,#C9A95C,#8B7340);width:64px;height:64px;font-size:26px">p</div>
+                <div>
+                  <div class="rit-hero-name">Morning pages</div>
+                  <div class="rit-hero-when">3 pages · longhand · before anything else</div>
+                </div>
+              </div>
+              <span class="rit-hero-state" style="background:rgba(138,117,132,.22);color:var(--plum-2)">at rest · 14 days</span>
+            </div>
+
+            <div class="history-strip">
+              <div class="hs-eye">12-week history <span class="soft">each cell = 1 week</span></div>
+              <div class="weeks">
+                <div class="week sprouting">w1</div>
+                <div class="week steady">w2</div>
+                <div class="week steady">w3</div>
+                <div class="week thriving">w4</div>
+                <div class="week thriving">w5</div>
+                <div class="week steady">w6</div>
+                <div class="week steady">w7</div>
+                <div class="week steady">w8</div>
+                <div class="week resting">w9</div>
+                <div class="week resting">w10</div>
+                <div class="week future">w11</div>
+                <div class="week future">w12</div>
+              </div>
+              <div class="hs-legend">
+                <span><span class="lg-dot sprouting"></span>sprouting</span>
+                <span><span class="lg-dot steady"></span>steady</span>
+                <span><span class="lg-dot thriving"></span>thriving</span>
+                <span><span class="lg-dot resting"></span>resting</span>
+              </div>
+            </div>
+
+            <div class="rest-card">
+              <div class="rest-eye"><span class="glyph"></span>jess noticed</div>
+              <div class="rest-title">Your pages went quiet in week 9 — <em>around the same time sleep got heavier.</em></div>
+              <div class="rest-body">
+                Not a failure. Your body was asking for something else. <strong>Rest is part of the practice</strong>. When morning energy returns, we can sprout this again — maybe shorter (1 page), maybe later (after coffee), maybe with a different ritual leading it.
+              </div>
+            </div>
+
+            <div class="rit-actions">
+              <div class="act-row">
+                <div class="l">
+                  <div class="ico">↻</div>
+                  <div>
+                    <div class="name">Resume · keep as is</div>
+                    <div class="sub">3 pages, longhand, first thing</div>
+                  </div>
+                </div>
+                <span class="chev">›</span>
+              </div>
+              <div class="act-row">
+                <div class="l">
+                  <div class="ico">≈</div>
+                  <div>
+                    <div class="name">Resume · softer</div>
+                    <div class="sub">1 page · after first coffee</div>
+                  </div>
+                </div>
+                <span class="chev">›</span>
+              </div>
+              <div class="act-row">
+                <div class="l">
+                  <div class="ico">~</div>
+                  <div>
+                    <div class="name">Let rest another cycle</div>
+                    <div class="sub">Jess will check back next follicular</div>
+                  </div>
+                </div>
+                <span class="chev">›</span>
+              </div>
+              <div class="act-row warn">
+                <div class="l">
+                  <div class="ico">⊘</div>
+                  <div>
+                    <div class="name">Uproot · remove from garden</div>
+                    <div class="sub">Keeps the history, removes the plant</div>
+                  </div>
+                </div>
+                <span class="chev">›</span>
+              </div>
+            </div>
+
+            <div class="footer-note" style="margin-top:22px">
+              uprooting feels like a choice, not a failure.<br>
+              the weeks you did it stay in the ground.
+            </div>
+          </div>
+          <div class="bnav">
+            <div class="bnav-item"><div class="dot"></div>today</div>
+            <div class="bnav-item active"><div class="dot"></div>rituals</div>
+            <div class="bnav-fab">j</div>
+            <div class="bnav-item"><div class="dot"></div>journal</div>
+            <div class="bnav-item"><div class="dot"></div>menu</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ============ P4 SEASON STATS ============ -->
+    <div class="phone-col" id="p4">
+      <div class="phone-label">
+        <div class="pl-eye">Phone 4</div>
+        <div class="pl-title">Season stats · <em>no compare, no numbers to beat</em></div>
+        <div class="pl-sub">The backward view. Cycle rhythm map. Two per-cycle stats (not lifetime). Jess reflection. No rank. No benchmark. Nothing to fail against.</div>
+      </div>
+      <div class="phone">
+        <div class="phone-inner">
+          <div class="notch"></div>
+          <div class="sbar"><span>10:12</span><span>●●●●</span></div>
+          <div class="scroll">
+            <div class="ph-head">
+              <div>
+                <div class="ph-eye">Rituals · this season</div>
+                <h1 class="ph-title">Your rhythm<br>this season</h1>
+              </div>
+            </div>
+
+            <div class="stats-hero">
+              <div class="sh-eye">season 3 · 11 of 12 weeks</div>
+              <div class="sh-title">Finding the <em>rhythm</em></div>
+              <div class="sh-sub">Six rituals in the ground. Two thriving, two steady, one resting, one sprouting. You tend them when you're ready. <strong>Your garden shape matches the Finding-the-rhythm season.</strong></div>
+              <div class="season-pill">hex tile · 4-wk consistency</div>
+            </div>
+
+            <div class="no-numbers">
+              <div class="nn-title">this cycle</div>
+              <div class="nn-row">
+                <div class="nn-cell">
+                  <div class="lab">rooted rituals</div>
+                  <div class="val">4 <em>of 6</em></div>
+                  <div class="sub">two resting or sprouting</div>
+                </div>
+                <div class="nn-cell">
+                  <div class="lab">phase coverage</div>
+                  <div class="val">4 <em>of 4</em></div>
+                  <div class="sub">all phases have 1+ ritual</div>
+                </div>
+              </div>
+              <div style="margin-top:8px;font-size:10.5px;color:var(--plum-3);text-align:center;font-style:italic">
+                no "365-day streak." no "best week." we show <strong>this cycle</strong>.
+              </div>
+            </div>
+
+            <div class="cycle-rhythm">
+              <div class="cr-title">where your rituals land</div>
+              <div class="cr-sub">Each day of this cycle, coloured by phase. <strong>Gold outline = you tended a ritual</strong>. No gaps to feel bad about.</div>
+              <div class="cycle-map">
+                <!-- period d1-5 -->
+                <div class="cm-day per adopted">1</div><div class="cm-day per">2</div><div class="cm-day per">3</div><div class="cm-day per">4</div><div class="cm-day per">5</div>
+                <!-- follicular d6-12 -->
+                <div class="cm-day fol">6</div><div class="cm-day fol">7</div><div class="cm-day fol adopted">8</div><div class="cm-day fol">9</div><div class="cm-day fol adopted">10</div><div class="cm-day fol">11</div><div class="cm-day fol">12</div>
+                <!-- ovulatory d13-16 -->
+                <div class="cm-day ovu">13</div><div class="cm-day ovu adopted">14</div><div class="cm-day ovu">15</div><div class="cm-day ovu adopted">16</div>
+                <!-- luteal d17-28 -->
+                <div class="cm-day lut">17</div><div class="cm-day lut adopted">18</div><div class="cm-day lut adopted">19</div><div class="cm-day lut">20</div><div class="cm-day lut adopted">21</div><div class="cm-day lut adopted">22</div><div class="cm-day lut">23</div><div class="cm-day lut adopted">24</div><div class="cm-day lut">25</div><div class="cm-day lut adopted">26</div><div class="cm-day lut">27</div><div class="cm-day lut">28</div>
+              </div>
+              <div class="cm-legend">
+                <span class="lg"><span class="lg-dot" style="background:rgba(184,74,65,.5)"></span>period</span>
+                <span class="lg"><span class="lg-dot" style="background:rgba(230,127,115,.5)"></span>follicular</span>
+                <span class="lg"><span class="lg-dot" style="background:rgba(242,169,154,.65)"></span>ovulatory</span>
+                <span class="lg"><span class="lg-dot" style="background:rgba(138,95,116,.55)"></span>luteal</span>
+                <span class="lg"><span class="lg-dot" style="background:var(--gold);outline:1.5px solid var(--plum);outline-offset:-1.5px"></span>tended</span>
+              </div>
+            </div>
+
+            <div class="reflection">
+              <div class="rf-eye"><span class="g"></span>jess reflection · written this cycle</div>
+              <div class="rf-body">"Your luteal has turned from the season you dreaded into the season you plant in. Four of your six rituals land here on purpose — that's not an accident. It's who you're becoming in the quiet weeks."</div>
+              <div class="rf-source">Drafted from your Pulse + Journal · editable · never shared</div>
+            </div>
+
+            <div class="no-compare">
+              no other users shown here. no leaderboard. no "60% of women do this."<br>
+              <strong>this is your rhythm, not a ranking.</strong>
+            </div>
+          </div>
+          <div class="bnav">
+            <div class="bnav-item"><div class="dot"></div>today</div>
+            <div class="bnav-item active"><div class="dot"></div>rituals</div>
+            <div class="bnav-fab">j</div>
+            <div class="bnav-item"><div class="dot"></div>journal</div>
+            <div class="bnav-item"><div class="dot"></div>menu</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============ SPEC ============ -->
+  <section class="spec" id="spec">
+    <h2>Engineering spec — Rituals</h2>
+    <p>Adds a first-class <strong>practice garden</strong> surface with three thin new entities + a proposer job. All rituals are user-chosen, data-justified, and reversible without penalty. Ties into the existing <code>PracticeSeasons</code> entity from the Garden palette library so a user's ritual garden shape maps to their current season.</p>
+
+    <h3>New entities (base44)</h3>
+    <div class="spec-grid">
+      <div class="spec-card">
+        <h4>Rituals (template)</h4>
+        <ul>
+          <li><strong>id</strong> uuid</li>
+          <li><strong>name</strong> string — "Magnesium glycinate", "4-7-8 before bed"</li>
+          <li><strong>category</strong> enum: supplement / breath / movement / food / journal / light / sleep</li>
+          <li><strong>phase_tag</strong> enum[]: period / follicular / ovulatory / luteal (a ritual may span multiple)</li>
+          <li><strong>cycle_day_window</strong> json — e.g. {from:18,to:20} or {phase:"luteal",anchor:"evening"}</li>
+          <li><strong>evidence</strong> string — short human-readable justification</li>
+          <li><strong>evidence_urls</strong> string[] — DOI/PubMed/guideline links</li>
+          <li><strong>contraindications</strong> string[] — "pregnancy", "kidney disease", "SSRI", etc.</li>
+          <li><strong>glyph_shape</strong> enum: bloom / leaf / sprout / bulb / candle — drives garden visual</li>
+        </ul>
+      </div>
+      <div class="spec-card">
+        <h4>RitualAdoptions (user ↔ ritual)</h4>
+        <ul>
+          <li><strong>id</strong> uuid</li>
+          <li><strong>user_id</strong> fk</li>
+          <li><strong>ritual_id</strong> fk</li>
+          <li><strong>adopted_at</strong> ts</li>
+          <li><strong>custom_when</strong> json — overrides template's cycle_day_window</li>
+          <li><strong>custom_time</strong> string — "21:00"</li>
+          <li><strong>season_length_cycles</strong> int — 1 / 3 / forever</li>
+          <li><strong>nudge_mode</strong> enum: silent / gentle_single / morning_of</li>
+          <li><strong>origin</strong> enum: jess_proposed / user_added / onboarding_seed</li>
+          <li><strong>jess_why</strong> json — signals that justified the proposal (shown in Adopt flow)</li>
+          <li><strong>uproot_at</strong> ts nullable — soft-delete, history preserved</li>
+        </ul>
+      </div>
+    </div>
+    <div class="spec-grid" style="margin-top:14px">
+      <div class="spec-card">
+        <h4>RitualStates (the living signal)</h4>
+        <ul>
+          <li><strong>id</strong> uuid</li>
+          <li><strong>adoption_id</strong> fk RitualAdoptions</li>
+          <li><strong>week_index</strong> int (since adoption)</li>
+          <li><strong>cycle_index</strong> int (which cycle since adoption)</li>
+          <li><strong>state</strong> enum: <code>sprouting</code> (first 2 weeks) / <code>steady</code> (≥ 50% tends, weeks 3+) / <code>thriving</code> (≥ 80% tends, weeks 3+) / <code>resting</code> (< 20% tends over last 2 weeks)</li>
+          <li><strong>tend_events</strong> int — number of times marked done this week</li>
+          <li><strong>notes</strong> string — optional user notes about this week</li>
+          <li><strong>state_changed_at</strong> ts</li>
+        </ul>
+      </div>
+      <div class="spec-card">
+        <h4>RitualTendEvents (single "I did it")</h4>
+        <ul>
+          <li><strong>id</strong> uuid</li>
+          <li><strong>adoption_id</strong> fk</li>
+          <li><strong>tended_at</strong> ts</li>
+          <li><strong>phase_band</strong> enum — cached for stats</li>
+          <li><strong>cycle_day</strong> int — cached</li>
+          <li><strong>source</strong> enum: user_tap / auto_inferred (via Pulse data) / jess_prompt</li>
+          <li><strong>felt_sense</strong> enum nullable: lifted / same / softer / tender — the optional afterglow tag</li>
+        </ul>
+      </div>
+    </div>
+
+    <h3>State machine — the plant's life</h3>
+    <pre>sprouting     first 2 weeks after adoption                         gold bud
+steady        weeks 3+ AND ≥50% of expected tends last 2 weeks    green leaf
+thriving      weeks 3+ AND ≥80% of expected tends last 2 weeks    rose bloom
+resting       weeks 3+ AND <20% of expected tends last 2 weeks    dormant bulb
+
+rest → steady:    re-enters on 2 consecutive expected tends
+rest → uprooted:  only if user explicitly uproots. never auto-removed.
+never: broken, failed, lapsed, expired. those words don't exist in the UI.</pre>
+
+    <h3>Jess proposer — how a ritual gets suggested</h3>
+    <ul>
+      <li><strong>Signals</strong>: 3+ cycles of Pulse data, Journal topics (last 30d), Sessions plays, existing symptoms. Need phase-correlated pattern with ≥3-cycle consistency.</li>
+      <li><strong>Threshold</strong>: proposer only fires when Jess has <em>≥75% confidence</em> the ritual would help this user specifically (based on pattern strength + literature match).</li>
+      <li><strong>Rate</strong>: one proposal per 14 days maximum. Never more than one open proposal at a time.</li>
+      <li><strong>Evidence-first</strong>: every Jess-proposed ritual must link to ≥1 RCT/guideline. No "might help." No "some women find."</li>
+      <li><strong>Contraindication check</strong>: screens against user's Care Bridge-logged meds + conditions. Defers to Care Bridge if uncertain.</li>
+      <li><strong>Refusal-safe framing</strong>: the Adopt card always includes "pass" equally weighted with "keep". Passing generates no follow-up nudge for ≥30 days on that ritual.</li>
+    </ul>
+
+    <h3>Garden rendering — from state to shape</h3>
+    <pre>plant.position_x = user.garden_layout.order[adoption_id]
+plant.height     = adoption.age_weeks * 4px  (capped at 80px)
+plant.bloom      = (state == "thriving") ? 34px rose bloom
+plant.leaf       = (state == "steady")   ? 30px green leaf
+plant.bulb       = (state == "resting")  ? 22px dormant bulb, stem 60% opacity
+plant.sprout     = (state == "sprouting") ? 16px gold bud, smaller stem
+plant.pulse      = (state == "thriving" AND tended_today) ? animated ring
+
+garden.backdrop  = user.current_season.gradient (from Garden palette library)
+garden.soil      = cream→soil gradient, constant
+garden.caption   = "season · {season.name}" + "week N of 12"</pre>
+
+    <h3>Ties to other systems</h3>
+    <ul>
+      <li><strong>Garden palette library</strong> — each ritual plant sits on the season backdrop; the garden tile-shape matches the season tile (hex, dot, square, etc).</li>
+      <li><strong>Smart Nudges</strong> — ritual-triggered nudges go through the same earned-push pipeline; never a batch schedule.</li>
+      <li><strong>Journal</strong> — tend events can be auto-logged from Journal entries ("had ginger tea" inferred), but only with explicit Ritual-inference opt-in.</li>
+      <li><strong>Pulse</strong> — wearable-inferred tends (e.g. breath sessions detected from HRV spike) are opt-in, always confirmable.</li>
+      <li><strong>Today</strong> — "2 rituals are ready" card on Today surfaces today's due rituals, respecting nudge_mode.</li>
+      <li><strong>Profile Seasons</strong> — completed 12-week seasons show the ritual garden as it was, preserved.</li>
+    </ul>
+
+    <h3>Ship order</h3>
+    <ul>
+      <li><strong>Q3 2026</strong> — Garden home (P1) + manual tend events + hand-curated starter rituals. No Jess proposer. User-added only.</li>
+      <li><strong>Q4 2026</strong> — Jess proposer (P2) + adjust flow + contraindication engine (reads Care Bridge meds).</li>
+      <li><strong>Q1 2027</strong> — Detail + rest states (P3) + graceful resume options + "softer return" variants.</li>
+      <li><strong>Q2 2027</strong> — Season stats (P4) + per-cycle view + Jess season reflection draft.</li>
+      <li><strong>Q3 2027</strong> — auto-inference from Pulse/Journal (opt-in), Partner Sync integration (show "what helps today" sourced from thriving rituals).</li>
+    </ul>
+
+    <div class="never-list">
+      <h4>What Rituals will never have</h4>
+      <ul>
+        <li><strong>Streaks.</strong> No day counter, no "X days in a row", no "streak broken" state, no "best streak" leaderboard.</li>
+        <li><strong>Badges or XP.</strong> No levels, no trophies, no unlocks tied to consistency.</li>
+        <li><strong>Compare-to-others.</strong> No "80% of women in your phase do this." The garden is entirely private.</li>
+        <li><strong>Public sharing.</strong> No share-your-garden feature. Ever. (Partner Sync can surface "what helps" — that's the ceiling.)</li>
+        <li><strong>Red / failure states.</strong> Resting uses plum-soft. Uprooting is a gentle, neutral action. No guilt in the palette.</li>
+        <li><strong>Auto-add rituals at onboarding.</strong> New users start with an empty garden. Every plant is chosen.</li>
+        <li><strong>Proposer spam.</strong> One proposal per 14 days. Passing a proposal silences that ritual for 30+ days.</li>
+        <li><strong>Medical prescribing.</strong> Rituals can be supplements or food, but never prescription medication. Those route to Care Bridge.</li>
+      </ul>
+    </div>
+  </section>
+</div>
+</body>
+</html>

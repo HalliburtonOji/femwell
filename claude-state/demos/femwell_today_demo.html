@@ -1,0 +1,1614 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"/>
+<title>FemWell · Today — Live Demo (wired to your data)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600;9..144,700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --rose-50:#FFF7F5;
+  --rose-100:#FFE9E4;
+  --rose-200:#FBD2CC;
+  --rose-300:#F2A89E;
+  --rose-400:#E67F73;
+  --rose-500:#D45E52;
+  --rose-600:#B0483E;
+  --plum:#4A2A3A;
+  --cream:#FFFAF5;
+  --ink:#2A1C20;
+  --ink-soft:#6B555C;
+  --line:rgba(74,42,58,.08);
+  --glass:rgba(255,255,255,.72);
+  --shadow-sm:0 1px 2px rgba(74,42,58,.06),0 4px 10px rgba(74,42,58,.05);
+  --shadow-md:0 6px 18px rgba(74,42,58,.08),0 20px 40px rgba(74,42,58,.07);
+  --shadow-lg:0 18px 40px rgba(74,42,58,.12),0 40px 90px rgba(74,42,58,.14);
+  --radius:18px;
+  --radius-lg:28px;
+}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+html,body{height:100%}
+body{
+  font-family:Inter,system-ui,-apple-system,sans-serif;
+  background:
+    radial-gradient(1200px 700px at 10% -10%,#FFE9E4 0%,transparent 55%),
+    radial-gradient(900px 600px at 110% 10%,#F7E3EC 0%,transparent 60%),
+    linear-gradient(180deg,#FFF8F4 0%,#FBEEEA 100%);
+  min-height:100%;
+  color:var(--ink);
+  overflow-x:hidden;
+}
+.wrap{max-width:1480px;margin:0 auto;padding:28px 24px 120px}
+
+/* ====== PAGE HEADER ====== */
+.page-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:22px;flex-wrap:wrap;gap:14px}
+.brand{display:flex;align-items:center;gap:12px}
+.brand-mark{width:40px;height:40px;border-radius:12px;background:linear-gradient(135deg,var(--rose-400),var(--rose-500));
+  display:grid;place-items:center;color:#fff;font-family:Fraunces;font-weight:700;box-shadow:var(--shadow-md)}
+.brand-name{font-family:Fraunces;font-size:22px;font-weight:600;letter-spacing:-.01em}
+.brand-sub{font-size:12px;color:var(--ink-soft);margin-top:1px}
+.head-tabs{display:flex;gap:8px;background:var(--glass);border:1px solid var(--line);
+  border-radius:99px;padding:6px;backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px);flex-wrap:wrap}
+.tab{font-size:13px;font-weight:600;padding:9px 16px;border-radius:99px;cursor:pointer;
+  color:var(--ink-soft);border:none;background:transparent;font-family:inherit}
+.tab.on{background:var(--ink);color:#fff}
+.head-note{font-size:12px;color:var(--ink-soft)}
+.live-badge{display:inline-flex;align-items:center;gap:6px;font-size:10.5px;font-weight:700;
+  padding:4px 10px;border-radius:99px;background:#E6F7E9;color:#357042;letter-spacing:.04em;margin-left:10px}
+.live-badge i{width:6px;height:6px;border-radius:50%;background:#4AAE5E;animation:pulse 1.5s infinite}
+@keyframes pulse{50%{opacity:.4}}
+
+/* ====== STAGE LAYOUT ====== */
+.stage{display:grid;grid-template-columns:minmax(380px,460px) 1fr;gap:32px;align-items:start}
+@media (max-width:1024px){.stage{grid-template-columns:1fr}}
+
+/* ====== PHONE FRAME ====== */
+.phone-slot{position:sticky;top:24px}
+.phone{--w:420px;--h:880px;width:var(--w);height:var(--h);margin:0 auto;position:relative;
+  border-radius:52px;background:#0E0608;padding:14px;
+  box-shadow:0 2px 0 rgba(255,255,255,.06) inset,0 40px 80px -20px rgba(74,42,58,.35),0 20px 50px -20px rgba(74,42,58,.4)}
+.phone::before{content:"";position:absolute;top:18px;left:50%;transform:translateX(-50%);
+  width:120px;height:28px;background:#000;border-radius:20px;z-index:30}
+.screen{width:100%;height:100%;border-radius:40px;
+  background:radial-gradient(600px 400px at 30% -10%,#FFE2DB 0%,transparent 55%),
+    radial-gradient(500px 380px at 100% 20%,#F9DDE8 0%,transparent 60%),
+    linear-gradient(180deg,#FFF8F4 0%,#FDEEE9 70%,#F9E0D8 100%);
+  position:relative;overflow:hidden}
+.statusbar{height:52px;padding:18px 26px 0;display:flex;align-items:center;justify-content:space-between;
+  font-size:13px;font-weight:700;color:var(--ink)}
+.statusbar .time{font-family:Fraunces;font-weight:600}
+.status-icons{display:flex;gap:6px;align-items:center;font-size:11px;opacity:.75}
+.scroll{position:absolute;inset:52px 0 0;overflow-y:auto;overflow-x:hidden;
+  scrollbar-width:none;padding-bottom:180px}
+.scroll::-webkit-scrollbar{display:none}
+
+/* ====== TODAY HEADER ====== */
+.today-head{padding:14px 22px 6px;display:flex;align-items:center;justify-content:space-between}
+.greet-title{font-family:Fraunces;font-size:28px;font-weight:600;letter-spacing:-.02em;line-height:1.05}
+.greet-sub{font-size:12.5px;color:var(--ink-soft);margin-top:2px;font-weight:500}
+.avatar{width:42px;height:42px;border-radius:14px;background:linear-gradient(135deg,#F5C7BE,#E89888);
+  box-shadow:var(--shadow-sm);display:grid;place-items:center;font-family:Fraunces;font-weight:700;color:#4A2A3A}
+
+/* ====== PHASE HERO ====== */
+.hero{margin:14px 18px 16px;padding:18px 18px 20px;border-radius:var(--radius-lg);
+  background:linear-gradient(160deg,rgba(255,255,255,.85),rgba(255,255,255,.55));
+  border:1px solid rgba(255,255,255,.85);box-shadow:var(--shadow-md);
+  backdrop-filter:blur(22px);-webkit-backdrop-filter:blur(22px);position:relative;overflow:hidden}
+.hero::after{content:"";position:absolute;right:-40px;top:-40px;width:180px;height:180px;border-radius:50%;
+  background:radial-gradient(circle,rgba(154,142,196,.35),transparent 60%);filter:blur(10px)}
+.hero-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;position:relative;z-index:1}
+.pill{display:inline-flex;align-items:center;gap:6px;padding:5px 10px;border-radius:99px;
+  background:rgba(154,142,196,.14);color:#6B5B9A;font-size:11px;font-weight:700;letter-spacing:.04em;text-transform:uppercase}
+.pill .dot{width:6px;height:6px;border-radius:50%;background:#8E7EB8;box-shadow:0 0 0 3px rgba(154,142,196,.2)}
+.pill.plum{background:rgba(74,42,58,.08);color:var(--plum)}
+.pill.plum .dot{background:var(--plum);box-shadow:0 0 0 3px rgba(74,42,58,.15)}
+.hero-body{display:grid;grid-template-columns:1fr 110px;gap:14px;align-items:center;position:relative;z-index:1}
+.hero-copy h2{font-family:Fraunces;font-size:24px;line-height:1.12;font-weight:600;letter-spacing:-.02em}
+.hero-copy p{font-size:12px;color:var(--ink-soft);margin-top:6px;line-height:1.45;max-width:220px}
+.ring{width:110px;height:110px;border-radius:50%;
+  background:conic-gradient(from 220deg,#D45E52 0 20%,#F5C7BE 20% 48%,#9A8EC4 48% 58%,#C5A7BA 58% 100%);
+  display:grid;place-items:center;position:relative;
+  box-shadow:inset 0 0 0 1px rgba(255,255,255,.3),0 6px 18px rgba(154,142,196,.22)}
+.ring::before{content:"";position:absolute;inset:10px;border-radius:50%;background:#FFF6F2;box-shadow:inset 0 2px 6px rgba(74,42,58,.08)}
+.ring-num{position:relative;text-align:center}
+.ring-num .big{font-family:Fraunces;font-size:30px;font-weight:600;display:block;line-height:1}
+.ring-num .lbl{font-size:9.5px;text-transform:uppercase;letter-spacing:.14em;color:var(--ink-soft);font-weight:700;margin-top:3px;display:block}
+
+/* ====== FEATURE PILLS ====== */
+.f-pills{display:flex;gap:10px;padding:2px 18px 6px;overflow-x:auto;scrollbar-width:none}
+.f-pills::-webkit-scrollbar{display:none}
+.f-pill{flex:0 0 auto;min-width:130px;padding:12px 14px;border-radius:18px;
+  background:#fff;border:1px solid var(--line);box-shadow:var(--shadow-sm);
+  display:flex;align-items:center;gap:10px;cursor:pointer;transition:transform .15s}
+.f-pill:active{transform:scale(.98)}
+.f-pill.story{background:linear-gradient(135deg,#FFF6F2,#FEE6DB);min-width:178px}
+.story-ring{width:42px;height:42px;border-radius:50%;padding:3px;
+  background:conic-gradient(from 0deg,var(--rose-500),var(--rose-400),var(--rose-200),var(--rose-500));
+  display:grid;place-items:center;flex-shrink:0}
+.story-ring > span{width:100%;height:100%;border-radius:50%;background:#FFF6F2;display:grid;place-items:center;
+  font-family:Fraunces;font-weight:700;font-size:13px;color:var(--plum)}
+.f-pill .lbl{font-size:10.5px;color:var(--ink-soft);font-weight:700;text-transform:uppercase;letter-spacing:.08em}
+.f-pill .val{font-family:Fraunces;font-size:14.5px;font-weight:600;line-height:1.1;color:var(--ink);margin-top:2px}
+.f-pill .sub{font-size:10.5px;color:var(--ink-soft);margin-top:2px}
+.ic{width:34px;height:34px;border-radius:12px;display:grid;place-items:center;flex-shrink:0;font-size:16px}
+.ic.phase{background:linear-gradient(135deg,#C5A7BA,#9A8EC4)}
+.ic.intent{background:linear-gradient(135deg,#E7D6E2,#D7BECD)}
+
+/* ====== CYCLE TIMELINE ====== */
+.timeline-wrap{margin:12px 18px 14px;padding:14px 14px 12px;border-radius:20px;
+  background:rgba(255,255,255,.6);border:1px solid var(--line);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px)}
+.tl-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px}
+.tl-head .lbl{font-size:10.5px;font-weight:700;letter-spacing:.12em;color:var(--ink-soft);text-transform:uppercase}
+.tl-head .val{font-family:Fraunces;font-size:13px;font-weight:600;color:var(--plum)}
+.tl{position:relative;height:14px;border-radius:99px;overflow:hidden;background:#FBEEE8}
+.tl-seg{position:absolute;top:0;bottom:0}
+.tl-s1{background:linear-gradient(90deg,#E67F73,#D45E52)}
+.tl-s2{background:linear-gradient(90deg,#F5C7BE,#EFB3A8)}
+.tl-s3{background:linear-gradient(90deg,#E8B4C8,#D99BB4)}
+.tl-s4{background:linear-gradient(90deg,#C5A7BA,#9A8EC4)}
+.tl-marker{position:absolute;top:-4px;width:22px;height:22px;border-radius:50%;background:#fff;
+  border:3px solid var(--ink);box-shadow:0 4px 10px rgba(74,42,58,.3);transform:translateX(-50%)}
+.tl-days{display:flex;justify-content:space-between;margin-top:8px;font-size:9.5px;color:var(--ink-soft);font-weight:600}
+
+/* ====== DAILY PLAN · REAL ====== */
+.plan-head{display:flex;justify-content:space-between;align-items:baseline;padding:6px 22px 8px}
+.plan-head .lbl{font-size:10.5px;font-weight:700;letter-spacing:.12em;color:var(--ink-soft);text-transform:uppercase}
+.plan-head .by{font-size:10.5px;color:var(--ink-soft);font-weight:600}
+.plan-focus{margin:0 18px 10px;padding:16px 18px;border-radius:22px;
+  background:linear-gradient(135deg,#FFF6F2,#FDE3DB);border:1px solid rgba(255,255,255,.7);box-shadow:var(--shadow-sm)}
+.plan-focus .lbl{font-size:10.5px;color:var(--rose-600);font-weight:700;text-transform:uppercase;letter-spacing:.12em}
+.plan-focus h3{font-family:Fraunces;font-size:20px;font-weight:600;line-height:1.15;margin-top:4px;letter-spacing:-.01em}
+.plan-focus p{font-size:12px;color:var(--ink-soft);margin-top:8px;line-height:1.5}
+.plan-list{margin:0 18px;display:flex;flex-direction:column;gap:8px}
+.plan-row{padding:14px;border-radius:18px;background:#fff;border:1px solid var(--line);
+  box-shadow:var(--shadow-sm);display:flex;gap:12px;align-items:flex-start;cursor:pointer;transition:transform .15s}
+.plan-row:active{transform:scale(.99)}
+.plan-row.done{background:#F5F7F2;opacity:.65}
+.plan-row.done .prw-body .t{text-decoration:line-through;color:var(--ink-soft)}
+.prw-icon{width:38px;height:38px;border-radius:12px;display:grid;place-items:center;flex-shrink:0;font-size:16px}
+.prw-body{flex:1}
+.prw-body .lbl{font-size:9.5px;color:var(--ink-soft);font-weight:700;text-transform:uppercase;letter-spacing:.1em}
+.prw-body .t{font-family:Fraunces;font-size:14.5px;font-weight:600;line-height:1.2;margin-top:3px}
+.prw-body .s{font-size:11.5px;color:var(--ink-soft);margin-top:4px;line-height:1.4}
+.prw-check{width:22px;height:22px;border-radius:50%;border:2px solid var(--line);flex-shrink:0;margin-top:6px;display:grid;place-items:center;font-size:12px;color:#fff;background:#fff;cursor:pointer}
+.prw-check.on{background:#4AAE5E;border-color:#4AAE5E}
+
+/* ====== GENTLE STREAKS + COMMUNITY ====== */
+.sect{padding:18px 22px 2px}
+.sect .lbl{font-size:10.5px;font-weight:700;letter-spacing:.12em;color:var(--ink-soft);text-transform:uppercase;margin-bottom:8px}
+.streaks{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
+.streak{padding:10px;border-radius:14px;background:#fff;border:1px solid var(--line);box-shadow:var(--shadow-sm);text-align:center}
+.streak .icn{font-size:18px;margin-bottom:4px}
+.streak .n{font-family:Fraunces;font-size:15px;font-weight:600}
+.streak .l{font-size:9.5px;color:var(--ink-soft);text-transform:uppercase;letter-spacing:.08em;font-weight:700;margin-top:2px}
+
+/* ====== HORIZONTAL PILLAR DECK ====== */
+.deck-head{display:flex;justify-content:space-between;align-items:baseline;padding:14px 22px 8px}
+.deck-head .lbl{font-size:10.5px;font-weight:700;letter-spacing:.12em;color:var(--ink-soft);text-transform:uppercase}
+.deck-head .count{font-size:10.5px;color:var(--ink-soft);font-weight:600}
+.deck-viewport{position:relative;height:290px;margin:0 0 14px;perspective:1400px;perspective-origin:50% 50%}
+.deck-track{position:absolute;inset:0;transform-style:preserve-3d;transition:transform .55s cubic-bezier(.2,.8,.2,1)}
+.pcard{position:absolute;left:50%;top:10px;width:66%;height:260px;border-radius:26px;padding:18px;
+  background:#fff;border:1px solid var(--line);box-shadow:var(--shadow-md);
+  transform-style:preserve-3d;transition:all .55s cubic-bezier(.2,.8,.2,1);cursor:pointer;overflow:hidden;
+  display:flex;flex-direction:column;justify-content:space-between}
+.pcard .pc-top{display:flex;align-items:center;justify-content:space-between}
+.pcard .pc-icon{width:40px;height:40px;border-radius:12px;display:grid;place-items:center;font-size:18px}
+.pcard .pc-tag{font-size:9.5px;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:var(--ink-soft);padding:4px 8px;border-radius:99px;background:rgba(74,42,58,.06)}
+.pcard .pc-title{font-family:Fraunces;font-size:20px;font-weight:600;line-height:1.12;letter-spacing:-.01em;margin-top:14px}
+.pcard .pc-sub{font-size:12px;color:var(--ink-soft);margin-top:6px;line-height:1.4}
+.pcard .pc-metrics{display:flex;gap:10px;margin-top:14px}
+.pc-metric{flex:1;padding:10px;border-radius:12px;background:rgba(74,42,58,.04)}
+.pc-metric .n{font-family:Fraunces;font-size:17px;font-weight:600;line-height:1}
+.pc-metric .l{font-size:9.5px;text-transform:uppercase;letter-spacing:.1em;color:var(--ink-soft);font-weight:700;margin-top:4px}
+.pcard .pc-cta{font-size:11.5px;font-weight:700;color:var(--rose-600)}
+.pcard.p-center{transform:translateX(-50%) translateZ(0) rotateY(0) scale(1);opacity:1;z-index:5}
+.pcard.p-left{transform:translateX(-94%) translateZ(-80px) rotateY(16deg) scale(.9);opacity:.72;z-index:3}
+.pcard.p-right{transform:translateX(-6%) translateZ(-80px) rotateY(-16deg) scale(.9);opacity:.72;z-index:3}
+.pcard.p-far-left{transform:translateX(-120%) translateZ(-160px) rotateY(28deg) scale(.82);opacity:.38;z-index:1}
+.pcard.p-far-right{transform:translateX(20%) translateZ(-160px) rotateY(-28deg) scale(.82);opacity:.38;z-index:1}
+.pcard.p-hidden{transform:translateX(-50%) translateZ(-300px) scale(.5);opacity:0;pointer-events:none;z-index:0}
+.deck-arrows{display:flex;justify-content:center;gap:10px;padding:0 18px 6px}
+.arr{width:36px;height:36px;border-radius:12px;background:#fff;border:1px solid var(--line);
+  display:grid;place-items:center;cursor:pointer;box-shadow:var(--shadow-sm);color:var(--plum);font-weight:700}
+.arr:active{transform:scale(.92)}
+.deck-dots{display:flex;gap:6px;justify-content:center;padding:0 0 14px}
+.ddot{width:6px;height:6px;border-radius:50%;background:rgba(74,42,58,.18);transition:all .3s}
+.ddot.on{width:22px;border-radius:99px;background:var(--rose-500)}
+/* pillar icon tints */
+.tint-stats{background:linear-gradient(135deg,#FBD2CC,#E67F73)}
+.tint-nut{background:linear-gradient(135deg,#FFE3B5,#F2B774)}
+.tint-plan{background:linear-gradient(135deg,#C7DCF0,#8EB5DB)}
+.tint-life{background:linear-gradient(135deg,#D6EBDB,#8EC49D)}
+.tint-jour{background:linear-gradient(135deg,#E7D6E2,#C5A7BA)}
+.tint-sleep{background:linear-gradient(135deg,#D0C8E8,#9A8EC4)}
+.tint-move{background:linear-gradient(135deg,#F6C9B3,#E89374)}
+.tint-mind{background:linear-gradient(135deg,#F0D9E8,#D69BB8)}
+.tint-hair{background:linear-gradient(135deg,#FFE0D2,#F2A89E)}
+.tint-safe{background:linear-gradient(135deg,#FAD8DE,#E89AA3)}
+.tint-preg{background:linear-gradient(135deg,#E8DCC9,#C7AD88)}
+
+/* ====== UPCOMING (planner preview) ====== */
+.upcoming{margin:16px 18px 30px;padding:14px;border-radius:20px;background:#fff;border:1px solid var(--line);box-shadow:var(--shadow-sm)}
+.up-row{display:flex;gap:10px;align-items:center;padding:10px 0;border-bottom:1px solid var(--line);cursor:pointer}
+.up-row:last-child{border-bottom:none}
+.up-dot{width:8px;height:8px;border-radius:50%;background:var(--rose-500);flex-shrink:0}
+.up-row.lav .up-dot{background:#9A8EC4}
+.up-row.amb .up-dot{background:#E89374}
+.up-title{flex:1}
+.up-title .t{font-size:13px;font-weight:600}
+.up-title .s{font-size:11px;color:var(--ink-soft);margin-top:2px}
+.up-when{font-size:10.5px;color:var(--ink-soft);font-weight:600;white-space:nowrap}
+.up-empty{padding:18px;text-align:center;color:var(--ink-soft);font-size:12px}
+.up-empty button{margin-top:10px;padding:8px 14px;border-radius:99px;background:var(--ink);color:#fff;border:none;font-size:12px;font-weight:600;cursor:pointer;font-family:inherit}
+
+/* ====== PERSISTENT FANNED DOCK ====== */
+.dock-layer{position:absolute;left:0;right:0;bottom:0;height:200px;pointer-events:none;z-index:40;
+  perspective:1400px;perspective-origin:50% 100%}
+.dock-fade{position:absolute;left:0;right:0;bottom:0;height:180px;
+  background:linear-gradient(180deg,rgba(255,248,244,0) 0%,rgba(255,248,244,.85) 40%,rgba(253,238,233,1) 100%);
+  pointer-events:none}
+.dock{position:absolute;left:50%;bottom:18px;transform:translateX(-50%);
+  transform-style:preserve-3d;pointer-events:auto}
+.fcard{position:absolute;left:50%;bottom:0;width:104px;height:140px;border-radius:18px;
+  background:#fff;border:1px solid var(--line);box-shadow:var(--shadow-lg);padding:12px 10px;
+  display:flex;flex-direction:column;justify-content:space-between;cursor:pointer;transition:transform .2s;
+  transform-origin:50% 100%}
+.fcard:active{transform:scale(.97)}
+.fcard .ficn{width:34px;height:34px;border-radius:12px;display:grid;place-items:center;font-size:16px}
+.fcard .ftit{font-family:Fraunces;font-size:13px;font-weight:600;line-height:1.05}
+.fcard .fsub{font-size:10px;color:var(--ink-soft);font-weight:500;line-height:1.2;margin-top:2px}
+.fcard.f5{transform:translateX(-50%) rotate(36deg) translateY(30px) translateZ(-80px);z-index:1;background:#FFF6F2}
+.fcard.f4{transform:translateX(-50%) rotate(18deg) translateY(12px) translateZ(-40px);z-index:2}
+.fcard.f3{transform:translateX(-50%) rotate(0deg) translateY(-4px) translateZ(0);z-index:5}
+.fcard.f2{transform:translateX(-50%) rotate(-18deg) translateY(12px) translateZ(-40px);z-index:3}
+.fcard.f1{transform:translateX(-50%) rotate(-36deg) translateY(30px) translateZ(-80px);z-index:1;background:#FFF6F2}
+.tintpill{background:linear-gradient(135deg,#D6EBDB,#8EC49D)}
+.tintblue{background:linear-gradient(135deg,#C7DCF0,#8EB5DB)}
+.tintrose{background:linear-gradient(135deg,#FBD2CC,#E67F73)}
+.tintamb{background:linear-gradient(135deg,#FFE3B5,#F2B774)}
+.tintred{background:linear-gradient(135deg,#F5B5B5,#E08080)}
+
+/* ====== OVERLAY SHEETS ====== */
+.sheet-scrim{position:absolute;inset:0;background:rgba(26,10,18,.55);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);
+  opacity:0;pointer-events:none;transition:opacity .25s;z-index:50}
+.sheet-scrim.on{opacity:1;pointer-events:auto}
+.sheet{position:absolute;left:0;right:0;bottom:0;height:78%;
+  background:#FFF8F4;border-radius:32px 32px 0 0;
+  box-shadow:0 -20px 60px rgba(74,42,58,.22);
+  transform:translateY(100%);transition:transform .35s cubic-bezier(.2,.8,.2,1);
+  z-index:60;overflow:hidden;display:flex;flex-direction:column}
+.sheet.on{transform:translateY(0)}
+.sheet-handle{width:44px;height:5px;border-radius:99px;background:rgba(74,42,58,.18);margin:10px auto 2px}
+.sheet-head{padding:8px 22px 10px;display:flex;align-items:center;justify-content:space-between}
+.sheet-title{font-family:Fraunces;font-size:22px;font-weight:600;letter-spacing:-.01em}
+.sheet-sub{font-size:11px;color:var(--ink-soft);margin-top:2px}
+.sheet-close{border:none;background:rgba(74,42,58,.08);color:var(--plum);width:32px;height:32px;border-radius:10px;cursor:pointer;font-weight:700}
+.sheet-tabs{display:flex;gap:6px;padding:0 22px 12px;overflow-x:auto;scrollbar-width:none}
+.sheet-tabs::-webkit-scrollbar{display:none}
+.stab{flex:0 0 auto;padding:8px 14px;border-radius:99px;background:rgba(74,42,58,.06);color:var(--ink-soft);
+  font-size:11.5px;font-weight:700;border:none;cursor:pointer;font-family:inherit;letter-spacing:.02em}
+.stab.on{background:var(--ink);color:#fff}
+.sheet-body{flex:1;overflow-y:auto;padding:6px 22px 40px;scrollbar-width:none}
+.sheet-body::-webkit-scrollbar{display:none}
+.stab-panel{display:none}
+.stab-panel.on{display:block;animation:fadein .3s}
+@keyframes fadein{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
+
+/* shared components */
+.qrow{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:10px}
+.qchip{padding:9px 14px;border-radius:99px;background:#fff;border:1px solid var(--line);
+  font-size:12px;font-weight:600;cursor:pointer;color:var(--ink);transition:all .15s}
+.qchip.on{background:var(--rose-500);color:#fff;border-color:var(--rose-500)}
+.qgroup{padding:14px;border-radius:18px;background:#fff;border:1px solid var(--line);margin-bottom:10px}
+.qgroup .qtitle{font-family:Fraunces;font-size:15px;font-weight:600;margin-bottom:10px}
+.qnum{display:flex;align-items:center;gap:12px}
+.qnum button{width:32px;height:32px;border-radius:10px;border:1px solid var(--line);background:#fff;font-size:16px;font-weight:700;cursor:pointer;font-family:inherit}
+.qnum .val{font-family:Fraunces;font-size:22px;font-weight:600;min-width:60px;text-align:center}
+.slider{width:100%;-webkit-appearance:none;appearance:none;height:6px;background:rgba(74,42,58,.1);border-radius:99px;outline:none;margin:14px 0}
+.slider::-webkit-slider-thumb{-webkit-appearance:none;width:22px;height:22px;border-radius:50%;background:var(--rose-500);box-shadow:var(--shadow-sm);cursor:pointer}
+.insight-card{padding:16px;border-radius:20px;background:linear-gradient(135deg,#FFF6F2,#FDE3DB);
+  border:1px solid var(--line);margin-bottom:10px}
+.insight-card .lbl{font-size:10.5px;color:var(--rose-600);font-weight:700;text-transform:uppercase;letter-spacing:.12em}
+.insight-card h4{font-family:Fraunces;font-size:17px;font-weight:600;line-height:1.2;margin-top:6px;letter-spacing:-.01em}
+.insight-card p{font-size:12.5px;color:var(--ink-soft);margin-top:8px;line-height:1.5}
+.stats-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.stat-tile{padding:14px;border-radius:16px;background:#fff;border:1px solid var(--line)}
+.stat-tile .l{font-size:10px;font-weight:700;color:var(--ink-soft);text-transform:uppercase;letter-spacing:.1em}
+.stat-tile .n{font-family:Fraunces;font-size:22px;font-weight:600;margin-top:6px;line-height:1}
+.stat-tile .d{font-size:11px;color:var(--rose-600);font-weight:600;margin-top:4px}
+
+.ctabtn{width:100%;padding:14px;border-radius:14px;border:none;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit;background:var(--ink);color:#fff;margin-top:10px}
+.ctabtn.soft{background:rgba(74,42,58,.06);color:var(--plum)}
+
+/* session cards */
+.sess-grid{display:flex;flex-direction:column;gap:8px}
+.sess-card{padding:14px;border-radius:16px;background:#fff;border:1px solid var(--line);display:flex;gap:12px;align-items:center;cursor:pointer}
+.sess-tint{width:42px;height:42px;border-radius:12px;background:linear-gradient(135deg,#C5A7BA,#9A8EC4);display:grid;place-items:center;color:#fff;font-size:16px;flex-shrink:0}
+.sess-body{flex:1}
+.sess-body .t{font-family:Fraunces;font-size:14px;font-weight:600}
+.sess-body .s{font-size:11px;color:var(--ink-soft);margin-top:2px}
+.sess-body .m{font-size:10.5px;color:var(--rose-600);font-weight:600;margin-top:4px}
+
+/* planner sheet */
+.weekstrip{display:flex;gap:4px;margin-bottom:14px}
+.dcol{flex:1;padding:10px 0;text-align:center;border-radius:14px;background:#fff;border:1px solid var(--line);cursor:pointer}
+.dcol.on{background:var(--ink);color:#fff;border-color:var(--ink)}
+.dcol .dl{font-size:9.5px;text-transform:uppercase;letter-spacing:.1em;font-weight:700;opacity:.75}
+.dcol .dn{font-family:Fraunces;font-size:16px;font-weight:600;margin-top:4px}
+.dcol .dd{display:flex;gap:2px;justify-content:center;margin-top:4px;height:6px}
+.dcol .dd i{width:4px;height:4px;border-radius:50%;background:var(--rose-500);display:block}
+.dcol.on .dd i{background:#fff}
+.add-row{display:flex;gap:8px;margin-bottom:10px}
+.add-row input,.add-row select{flex:1;padding:10px 12px;border-radius:12px;border:1px solid var(--line);font-family:inherit;font-size:13px;background:#fff}
+.add-row button{padding:10px 16px;border-radius:12px;border:none;background:var(--ink);color:#fff;font-weight:700;font-family:inherit;font-size:13px;cursor:pointer}
+
+/* empty state illustrations */
+.empty{padding:40px 20px;text-align:center;border-radius:18px;border:1.5px dashed var(--line);background:rgba(255,255,255,.6)}
+.empty .icn{font-size:28px;margin-bottom:10px}
+.empty .t{font-family:Fraunces;font-size:16px;font-weight:600}
+.empty .s{font-size:12px;color:var(--ink-soft);margin-top:6px;line-height:1.5;max-width:260px;margin-left:auto;margin-right:auto}
+
+/* ====== DAILY STORY REEL ====== */
+.reel-scrim{position:absolute;inset:0;background:rgba(12,4,8,.85);opacity:0;pointer-events:none;transition:opacity .25s;z-index:80}
+.reel-scrim.on{opacity:1;pointer-events:auto}
+.reel{position:absolute;inset:0;display:flex;flex-direction:column;z-index:90;
+  transform:scale(1.05);opacity:0;pointer-events:none;transition:all .3s;padding:60px 20px 30px}
+.reel.on{opacity:1;transform:scale(1);pointer-events:auto}
+.reel-bars{display:flex;gap:4px;margin-bottom:14px}
+.reel-bar{flex:1;height:3px;border-radius:99px;background:rgba(255,255,255,.25);overflow:hidden}
+.reel-bar i{display:block;height:100%;width:0;background:#fff;transition:width .1s linear}
+.reel-bar.done i{width:100%}
+.reel-bar.cur i{animation:fill 8s linear forwards}
+@keyframes fill{to{width:100%}}
+.reel-chips{display:flex;gap:6px;margin-bottom:20px;overflow-x:auto;scrollbar-width:none}
+.reel-chips::-webkit-scrollbar{display:none}
+.rchip{flex:0 0 auto;padding:6px 12px;border-radius:99px;font-size:10.5px;font-weight:700;color:#fff;border:1px solid rgba(255,255,255,.3);background:rgba(255,255,255,.1);cursor:pointer}
+.rchip.on{background:#fff;color:var(--ink);border-color:#fff}
+.reel-card{flex:1;border-radius:28px;padding:30px;display:flex;flex-direction:column;justify-content:space-between;color:#fff;position:relative;overflow:hidden}
+.reel-card::before{content:"";position:absolute;right:-60px;top:-40px;width:220px;height:220px;border-radius:50%;
+  background:radial-gradient(circle,rgba(255,255,255,.2),transparent 60%);filter:blur(20px)}
+.reel-tag{font-size:10.5px;font-weight:700;text-transform:uppercase;letter-spacing:.14em;opacity:.85;position:relative;z-index:1}
+.reel-series{font-family:Fraunces;font-size:12.5px;opacity:.75;margin-top:4px;font-style:italic;position:relative;z-index:1}
+.reel-title{font-family:Fraunces;font-size:26px;font-weight:500;line-height:1.25;letter-spacing:-.01em;margin-top:18px;position:relative;z-index:1;max-height:380px;overflow-y:auto}
+.reel-title::-webkit-scrollbar{display:none}
+.reel-cliff{font-size:12px;font-style:italic;opacity:.9;margin-top:14px;position:relative;z-index:1;padding:10px 14px;border-radius:12px;background:rgba(0,0,0,.2)}
+.reel-meta{font-size:11px;opacity:.65;margin-top:12px;position:relative;z-index:1}
+.reel-close{position:absolute;top:18px;right:20px;background:rgba(255,255,255,.15);color:#fff;border:none;
+  width:32px;height:32px;border-radius:10px;cursor:pointer;font-weight:700;font-size:14px;z-index:100}
+
+/* ====== MORNING TINDER DECK (real DailyCheckins fields) ====== */
+.morning-scrim{position:absolute;inset:0;background:rgba(12,4,8,.75);opacity:0;pointer-events:none;transition:opacity .25s;z-index:100}
+.morning-scrim.on{opacity:1;pointer-events:auto}
+.morning-deck{position:absolute;inset:0;z-index:110;display:flex;flex-direction:column;
+  padding:80px 22px 30px;opacity:0;pointer-events:none;transition:opacity .3s}
+.morning-deck.on{opacity:1;pointer-events:auto}
+.md-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;color:#fff}
+.md-head .t{font-family:Fraunces;font-size:20px;font-weight:600}
+.md-head .s{font-size:11.5px;opacity:.75;margin-top:2px}
+.md-skip{background:rgba(255,255,255,.15);color:#fff;border:none;padding:7px 12px;border-radius:99px;font-size:11px;font-weight:600;cursor:pointer;font-family:inherit}
+.md-progress{display:flex;gap:4px;margin-bottom:20px}
+.mdp{flex:1;height:3px;border-radius:99px;background:rgba(255,255,255,.2)}
+.mdp.done{background:rgba(255,255,255,.9)}
+.mdp.cur{background:#fff;box-shadow:0 0 0 2px rgba(255,255,255,.25)}
+.md-stack{flex:1;position:relative}
+.mcard{position:absolute;inset:0;background:#FFF8F4;border-radius:28px;padding:26px;
+  display:flex;flex-direction:column;justify-content:space-between;
+  box-shadow:var(--shadow-lg);transition:all .4s cubic-bezier(.2,.8,.2,1);cursor:grab}
+.mcard .mtag{font-size:10.5px;font-weight:700;text-transform:uppercase;letter-spacing:.12em;color:var(--rose-600)}
+.mcard .mtitle{font-family:Fraunces;font-size:24px;font-weight:600;line-height:1.1;letter-spacing:-.01em;margin-top:10px}
+.mcard .msub{font-size:12px;color:var(--ink-soft);margin-top:6px;line-height:1.45}
+.mcard .mbody{margin-top:16px;flex:1;overflow-y:auto;scrollbar-width:none}
+.mcard .mbody::-webkit-scrollbar{display:none}
+.mchips{display:flex;gap:6px;flex-wrap:wrap}
+.mchip{padding:9px 14px;border-radius:99px;background:rgba(74,42,58,.06);font-size:12px;font-weight:600;cursor:pointer;border:1px solid transparent}
+.mchip.on{background:var(--rose-500);color:#fff}
+.mactions{display:flex;gap:8px;margin-top:14px}
+.mbtn{flex:1;padding:12px;border-radius:14px;border:none;font-size:12.5px;font-weight:700;cursor:pointer;font-family:inherit}
+.mbtn.skip{background:rgba(74,42,58,.06);color:var(--plum)}
+.mbtn.save{background:var(--ink);color:#fff}
+.mcard.c-back{transform:scale(.92) translateY(20px);opacity:.55;pointer-events:none}
+.mcard.c-backer{transform:scale(.86) translateY(38px);opacity:.28;pointer-events:none}
+.mcard.c-gone{transform:translateX(120%) rotate(12deg);opacity:0;pointer-events:none}
+.mcard.c-goneL{transform:translateX(-120%) rotate(-12deg);opacity:0;pointer-events:none}
+
+/* ====== PANIC MODE (full-takeover, multi-step, tied to PanicSessions) ====== */
+.panic-scrim{position:absolute;inset:0;background:#0B0306;opacity:0;pointer-events:none;transition:opacity .3s;z-index:120}
+.panic-scrim.on{opacity:1;pointer-events:auto}
+.panic{position:absolute;inset:0;z-index:125;padding:52px 22px 30px;display:flex;flex-direction:column;opacity:0;pointer-events:none;
+  background:radial-gradient(600px 400px at 30% 10%,#4a1a2a 0%,transparent 60%),
+    radial-gradient(500px 400px at 100% 80%,#2a1538 0%,transparent 60%),
+    linear-gradient(180deg,#1a0510 0%,#0A0206 100%);
+  color:#fff;transition:opacity .4s}
+.panic.on{opacity:1;pointer-events:auto}
+.panic-head{display:flex;align-items:center;justify-content:space-between;margin-top:16px}
+.panic-head .t{font-family:Fraunces;font-size:18px;font-weight:600}
+.panic-head .s{font-size:11px;opacity:.65;margin-top:2px}
+.panic-close{background:rgba(255,255,255,.12);color:#fff;border:none;width:34px;height:34px;border-radius:10px;cursor:pointer;font-weight:700;font-family:inherit}
+.panic-body{flex:1;display:flex;flex-direction:column;justify-content:center;padding:0 0 30px}
+.panic-card{padding:28px;border-radius:28px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.08);backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px)}
+.panic-card .lbl{font-size:10.5px;font-weight:700;text-transform:uppercase;letter-spacing:.14em;opacity:.7}
+.panic-card h2{font-family:Fraunces;font-size:26px;font-weight:600;line-height:1.15;margin-top:8px}
+.panic-card p{font-size:13px;opacity:.75;margin-top:8px;line-height:1.5}
+.panic-chips{display:flex;gap:8px;flex-wrap:wrap;margin-top:20px}
+.panic-chip{padding:10px 16px;border-radius:99px;border:1px solid rgba(255,255,255,.2);background:rgba(255,255,255,.06);color:#fff;font-size:12.5px;font-weight:600;cursor:pointer;font-family:inherit}
+.panic-chip.on{background:#fff;color:#2A1C20;border-color:#fff}
+.panic-breath{width:180px;height:180px;border-radius:50%;margin:24px auto 30px;
+  background:radial-gradient(circle,rgba(255,255,255,.15),rgba(255,255,255,.02));
+  display:grid;place-items:center;position:relative;
+  animation:breathe 19s ease-in-out infinite}
+.panic-breath-inner{width:120px;height:120px;border-radius:50%;background:radial-gradient(circle,#D45E52,#B0483E);box-shadow:0 0 60px rgba(212,94,82,.5);display:grid;place-items:center;font-family:Fraunces;font-size:18px;font-weight:600}
+@keyframes breathe{0%,100%{transform:scale(.85)}20%{transform:scale(1.1)}40%{transform:scale(1.1)}75%{transform:scale(.85)}}
+.panic-stage{font-family:Fraunces;font-size:22px;font-weight:600;text-align:center;margin-top:0}
+.panic-timer{font-size:12.5px;opacity:.75;text-align:center;margin-top:6px}
+.panic-actions{display:flex;gap:8px;margin-top:20px}
+.panic-btn{flex:1;padding:14px;border-radius:14px;border:none;font-size:12.5px;font-weight:700;cursor:pointer;font-family:inherit}
+.panic-btn.primary{background:#fff;color:#2A1C20}
+.panic-btn.ghost{background:rgba(255,255,255,.1);color:#fff;border:1px solid rgba(255,255,255,.2)}
+.panic-intensity{display:flex;gap:4px;margin-top:16px}
+.pint{flex:1;padding:14px 4px;border-radius:10px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);text-align:center;cursor:pointer;font-family:Fraunces;font-weight:600}
+.pint.on{background:#D45E52;border-color:#D45E52}
+.panic-grounding{padding:22px;border-radius:20px;background:rgba(255,255,255,.04);margin-top:14px}
+.panic-grounding .gl{font-family:Fraunces;font-size:15px;font-weight:600;margin-bottom:8px;display:flex;justify-content:space-between}
+.panic-grounding .gl .gn{font-size:11px;opacity:.6;font-weight:500}
+
+/* quick log overlay (full DailyCheckins) */
+
+/* ====== RIGHT PANEL ====== */
+.notes{display:flex;flex-direction:column;gap:14px}
+.note{background:var(--glass);border:1px solid var(--line);border-radius:22px;padding:20px 22px;
+  backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);box-shadow:var(--shadow-md)}
+.note .cap{font-size:10.5px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--rose-600)}
+.note h3{font-family:Fraunces;font-size:22px;font-weight:600;letter-spacing:-.01em;line-height:1.15;margin-top:6px}
+.note p{font-size:13px;color:var(--ink-soft);line-height:1.55;margin-top:8px}
+.note ul{list-style:none;margin-top:12px;display:flex;flex-direction:column;gap:10px}
+.note li{font-size:13px;line-height:1.5;padding-left:18px;position:relative;color:var(--ink)}
+.note li::before{content:"";position:absolute;left:0;top:8px;width:6px;height:6px;border-radius:50%;background:var(--rose-400)}
+.note li b{font-family:Fraunces;font-weight:600}
+.kv-row{display:flex;justify-content:space-between;gap:12px;padding:8px 0;border-bottom:1px dashed var(--line);font-size:12.5px}
+.kv-row:last-child{border-bottom:none}
+.kv-row .k{color:var(--ink-soft);font-weight:600}
+.kv-row .v{font-family:Fraunces;font-weight:600}
+.key-demo{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px}
+.kbtn{padding:7px 12px;border-radius:99px;background:rgba(74,42,58,.06);border:1px solid var(--line);color:var(--plum);font-size:11.5px;font-weight:700;cursor:pointer;font-family:inherit}
+.kbtn:hover{background:var(--ink);color:#fff;border-color:var(--ink)}
+.foot{font-size:11.5px;color:var(--ink-soft);text-align:center;padding:30px 20px 10px}
+
+.toast{position:absolute;left:50%;transform:translateX(-50%) translateY(30px);bottom:30px;background:var(--ink);color:#fff;padding:12px 18px;border-radius:99px;font-size:12.5px;font-weight:600;opacity:0;pointer-events:none;transition:all .3s;z-index:200}
+.toast.on{opacity:1;transform:translateX(-50%) translateY(0)}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header class="page-head">
+    <div class="brand">
+      <div class="brand-mark">f</div>
+      <div>
+        <div class="brand-name">FemWell · Today <span class="live-badge"><i></i>Wired to your data</span></div>
+        <div class="brand-sub">User: halliburtonoji@gmail.com · Cycle day 17 · Luteal · Apr 18, 2026</div>
+      </div>
+    </div>
+    <div class="head-tabs">
+      <button class="tab on">Today</button>
+      <button class="tab" onclick="openMorning()">Morning deck</button>
+      <button class="tab" onclick="openReel()">Daily Story</button>
+      <button class="tab" onclick="openPanic()">Panic mode</button>
+      <button class="tab" onclick="openSheet('planner')">Planner</button>
+    </div>
+    <div class="head-note">Every tap writes to in-memory state →</div>
+  </header>
+
+  <section class="stage">
+
+    <!-- PHONE -->
+    <div class="phone-slot">
+      <div class="phone">
+        <div class="screen" id="screen">
+
+          <div class="statusbar">
+            <span class="time">7:42</span>
+            <span class="status-icons">●●●●  5G  ▣ 87%</span>
+          </div>
+
+          <div class="scroll" id="scroll">
+
+            <!-- HEADER -->
+            <div class="today-head">
+              <div>
+                <div class="greet-title">Morning, <span id="userName">friend</span>.</div>
+                <div class="greet-sub" id="greetSub">Saturday, Apr 18 · Day 17 · Luteal</div>
+              </div>
+              <div class="avatar" id="userAvatar">H</div>
+            </div>
+
+            <!-- PHASE HERO (real DailyPhaseBrief) -->
+            <div class="hero">
+              <div class="hero-top">
+                <span class="pill"><span class="dot"></span><span id="phasePill">Luteal · editing phase</span></span>
+                <span class="pill plum"><span class="dot"></span><span id="nextPill">Period in 9 days</span></span>
+              </div>
+              <div class="hero-body">
+                <div class="hero-copy">
+                  <h2 id="heroHeadline">Completion over creation.</h2>
+                  <p id="heroBody">Nature's editing phase — you're wired to refine, reflect, release.</p>
+                </div>
+                <div class="ring">
+                  <div class="ring-num"><span class="big" id="ringDay">17</span><span class="lbl" id="ringOf">of 25</span></div>
+                </div>
+              </div>
+            </div>
+
+            <!-- FEATURE PILLS -->
+            <div class="f-pills">
+              <div class="f-pill story" onclick="openReel()">
+                <div class="story-ring"><span id="storyProg">2/30</span></div>
+                <div>
+                  <div class="lbl">Daily Story</div>
+                  <div class="val" id="storyTitle">Borrowed Light</div>
+                  <div class="sub" id="storySub">Day 2 · a letter in honey</div>
+                </div>
+              </div>
+              <div class="f-pill" onclick="openSheet('stats')">
+                <div class="ic phase">◐</div>
+                <div>
+                  <div class="lbl">Phase</div>
+                  <div class="val">Luteal</div>
+                  <div class="sub" id="phaseSub">9 days to period</div>
+                </div>
+              </div>
+              <div class="f-pill" onclick="promptIntent()">
+                <div class="ic intent">✦</div>
+                <div>
+                  <div class="lbl">Focus today</div>
+                  <div class="val" id="intentVal">Steady</div>
+                  <div class="sub">Tap to edit</div>
+                </div>
+              </div>
+            </div>
+
+            <!-- CYCLE TIMELINE (real 25-day cycle) -->
+            <div class="timeline-wrap">
+              <div class="tl-head">
+                <span class="lbl">Cycle · 25 days · from Apr 2</span>
+                <span class="val" id="tlVal">Day 17 — Luteal</span>
+              </div>
+              <div class="tl" id="tlBar">
+                <div class="tl-seg tl-s1" style="left:0%;width:20%"></div>
+                <div class="tl-seg tl-s2" style="left:20%;width:28%"></div>
+                <div class="tl-seg tl-s3" style="left:48%;width:12%"></div>
+                <div class="tl-seg tl-s4" style="left:60%;width:40%"></div>
+                <div class="tl-marker" style="left:68%"></div>
+              </div>
+              <div class="tl-days">
+                <span>D1 Apr 2</span><span>D7</span><span>D14</span><span>D21</span><span>D25 Apr 27</span>
+              </div>
+            </div>
+
+            <!-- DAILY PLAN (real data) -->
+            <div class="plan-head">
+              <span class="lbl">Today's plan</span>
+              <span class="by">from Jess</span>
+            </div>
+
+            <div class="plan-focus">
+              <div class="lbl">Focus</div>
+              <h3 id="planFocus">Steady and consistent</h3>
+              <p id="planFocusBody">This is nature's editing phase — you're wired to refine, reflect, and release. Don't fight the pull toward introspection; use it to audit what's not working.</p>
+            </div>
+
+            <div class="plan-list" id="planList"></div>
+
+            <!-- GENTLE STREAKS -->
+            <div class="sect">
+              <div class="lbl">Kept gentle</div>
+              <div class="streaks">
+                <div class="streak"><div class="icn">💧</div><div class="n" id="strWater">0d</div><div class="l">Water</div></div>
+                <div class="streak"><div class="icn">🌙</div><div class="n">4h</div><div class="l">Sleep last</div></div>
+                <div class="streak"><div class="icn">🧘</div><div class="n">0d</div><div class="l">Breath</div></div>
+                <div class="streak"><div class="icn">📔</div><div class="n">2</div><div class="l">Journal</div></div>
+              </div>
+            </div>
+
+            <!-- PILLAR DECK HEAD -->
+            <div class="deck-head">
+              <span class="lbl">Your pillars</span>
+              <span class="count" id="deckCount">1 / 11</span>
+            </div>
+
+            <!-- DECK -->
+            <div class="deck-viewport">
+              <div class="deck-track" id="deckTrack"></div>
+            </div>
+            <div class="deck-arrows">
+              <button class="arr" onclick="moveDeck(-1)">‹</button>
+              <button class="arr" onclick="moveDeck(1)">›</button>
+            </div>
+            <div class="deck-dots" id="deckDots"></div>
+
+            <!-- UPCOMING (from PlannerItems — empty) -->
+            <div class="upcoming">
+              <div class="up-empty" id="upEmpty">
+                <div style="font-size:24px;margin-bottom:6px">🗓</div>
+                <div style="font-family:Fraunces;font-size:15px;font-weight:600;color:var(--ink)">No upcoming items yet</div>
+                <div style="font-size:11.5px;margin-top:6px">Your planner is clear. Next cycle milestone: period around May 1–2.</div>
+                <button onclick="openSheet('planner')">+ Add to planner</button>
+              </div>
+              <div id="upFilled" style="display:none"></div>
+            </div>
+
+          </div>
+
+          <!-- PERSISTENT FANNED DOCK -->
+          <div class="dock-layer">
+            <div class="dock-fade"></div>
+            <div class="dock">
+              <div class="fcard f1" onclick="openPanic()">
+                <div class="ficn tintred">🛟</div>
+                <div><div class="ftit">Panic</div><div class="fsub">safe space</div></div>
+              </div>
+              <div class="fcard f2" onclick="openSheet('move')">
+                <div class="ficn tintamb">🚶</div>
+                <div><div class="ftit">Move</div><div class="fsub" id="moveSub">Gentle strength</div></div>
+              </div>
+              <div class="fcard f3" onclick="openQuickLog()">
+                <div class="ficn tintrose">✎</div>
+                <div><div class="ftit">Quick log</div><div class="fsub">mood · symptom</div></div>
+              </div>
+              <div class="fcard f4" onclick="logWater()">
+                <div class="ficn tintblue">💧</div>
+                <div><div class="ftit">Water</div><div class="fsub" id="waterCount">0 of 11</div></div>
+              </div>
+              <div class="fcard f5" onclick="openBreath()">
+                <div class="ficn tintpill">🌬</div>
+                <div><div class="ftit">Breathe</div><div class="fsub">5-4-3-2-1</div></div>
+              </div>
+            </div>
+          </div>
+
+          <!-- TOAST -->
+          <div class="toast" id="toast">Saved</div>
+
+          <!-- PILLAR OVERLAY SHEET -->
+          <div class="sheet-scrim" id="sheetScrim" onclick="closeSheet()"></div>
+          <div class="sheet" id="sheet">
+            <div class="sheet-handle"></div>
+            <div class="sheet-head">
+              <div>
+                <div class="sheet-title" id="sheetTitle">Pillar</div>
+                <div class="sheet-sub" id="sheetSubtitle"></div>
+              </div>
+              <button class="sheet-close" onclick="closeSheet()">✕</button>
+            </div>
+            <div class="sheet-tabs" id="sheetTabs"></div>
+            <div class="sheet-body" id="sheetBody"></div>
+          </div>
+
+          <!-- DAILY STORY REEL -->
+          <div class="reel-scrim" id="reelScrim" onclick="closeReel()"></div>
+          <div class="reel" id="reel">
+            <button class="reel-close" onclick="closeReel()">✕</button>
+            <div class="reel-bars" id="reelBars"></div>
+            <div class="reel-chips" id="reelChips"></div>
+            <div class="reel-card" id="reelCard"></div>
+          </div>
+
+          <!-- MORNING TINDER GREETER -->
+          <div class="morning-scrim" id="morningScrim" onclick="closeMorning()"></div>
+          <div class="morning-deck" id="morningDeck">
+            <div class="md-head">
+              <div>
+                <div class="t">How's it going?</div>
+                <div class="s">Jess · 7 quick cards · saves to your daily check-in</div>
+              </div>
+              <button class="md-skip" onclick="closeMorning()">Do later</button>
+            </div>
+            <div class="md-progress" id="mdProgress"></div>
+            <div class="md-stack" id="mdStack"></div>
+          </div>
+
+          <!-- PANIC MODE -->
+          <div class="panic-scrim" id="panicScrim"></div>
+          <div class="panic" id="panic">
+            <div class="panic-head">
+              <div>
+                <div class="t">Safe space</div>
+                <div class="s" id="panicSub">You're here. We'll do this together.</div>
+              </div>
+              <button class="panic-close" onclick="closePanic()">✕</button>
+            </div>
+            <div class="panic-body" id="panicBody"></div>
+          </div>
+
+        </div>
+      </div>
+    </div>
+
+    <!-- RIGHT PANEL -->
+    <aside class="notes">
+
+      <div class="note">
+        <div class="cap">Wired to your real app</div>
+        <h3>This isn't mocked. It's reading your FemWell data.</h3>
+        <p>Every number, phase, plan item, and story you see below came out of your actual base44 entities. Taps write to in-memory state during the demo so you can feel what it's like to use.</p>
+        <div style="margin-top:14px">
+          <div class="kv-row"><span class="k">User</span><span class="v">halliburtonoji@gmail.com</span></div>
+          <div class="kv-row"><span class="k">AI assistant</span><span class="v">Jess</span></div>
+          <div class="kv-row"><span class="k">Tone</span><span class="v">gentle</span></div>
+          <div class="kv-row"><span class="k">Cycle length</span><span class="v">25 days</span></div>
+          <div class="kv-row"><span class="k">Last period</span><span class="v">Apr 2, 2026</span></div>
+          <div class="kv-row"><span class="k">Today</span><span class="v">Day 17 · Luteal</span></div>
+          <div class="kv-row"><span class="k">Next period</span><span class="v">~Apr 27 (9d)</span></div>
+          <div class="kv-row"><span class="k">Hydration target</span><span class="v">2,750 ml · 11 glasses</span></div>
+          <div class="kv-row"><span class="k">Life stage</span><span class="v">cycle (default)</span></div>
+          <div class="kv-row"><span class="k">Modules enabled</span><span class="v">cycle</span></div>
+          <div class="kv-row"><span class="k">Goals</span><span class="v">calm · sleep · fitness</span></div>
+        </div>
+      </div>
+
+      <div class="note">
+        <div class="cap">Today's Daily Plan · from DailyPlan entity</div>
+        <h3>"Steady and consistent."</h3>
+        <p>This is the real <b>DailyPlan</b> row for day_key <b>2026-04-18</b>. The Today page renders the five fields of your schema — focus_for_today, session_recommendation, nutrition_nudge, mental_tool, lifestyle_suggestion — each as a tappable, completable plan row.</p>
+        <ul>
+          <li><b>Focus</b> — Steady and consistent</li>
+          <li><b>Session</b> — Gentle Strength — Light Weights, High Reps</li>
+          <li><b>Nutrition</b> — Reduce salt to ease water retention: avoid processed foods this week</li>
+          <li><b>Mental</b> — 5-4-3-2-1 grounding exercise when anxiety spikes</li>
+          <li><b>Lifestyle</b> — Prioritise sleep — aim for 8+ hours as progesterone makes you naturally tired</li>
+        </ul>
+      </div>
+
+      <div class="note">
+        <div class="cap">Today's Phase Brief · from DailyPhaseBrief entity</div>
+        <h3>"Completion over creation."</h3>
+        <p>The hero copy, ring colour, and pill state all read from your real DailyPhaseBrief row.</p>
+        <ul>
+          <li><b>Mood note</b> — Irritability is biochemical, not a character flaw.</li>
+          <li><b>Energy note</b> — Lowest at the very end of this phase. Plan light days.</li>
+          <li><b>Food</b> — Calcium reduces PMS symptoms by up to 48%: dairy, fortified plant milks, almonds.</li>
+          <li><b>Movement</b> — Slow it down — this isn't the week for personal bests.</li>
+        </ul>
+      </div>
+
+      <div class="note">
+        <div class="cap">Panic mode · wired to PanicSessions</div>
+        <h3>Full-takeover, 4-step deck.</h3>
+        <p>Fixed fan card #1. Opens a dark-mode flow that writes one row per session. Each tap advances a step:</p>
+        <ul>
+          <li><b>Step 1 · Feeling type</b> — maps to <code>feeling_type</code> enum (panic, anxiety, overwhelm, anger, sadness)</li>
+          <li><b>Step 2 · Intensity</b> — maps to <code>intensity</code> 1–5</li>
+          <li><b>Step 3 · Grounding</b> — breath circle + 5-4-3-2-1 card; logs technique to <code>techniques_used</code></li>
+          <li><b>Step 4 · Rate</b> — <code>post_session_rating</code> after you land</li>
+        </ul>
+        <p style="margin-top:10px"><b>Your history:</b> 2 past sessions. Apr 12 · panic · intensity 5. Apr 12 · overwhelm · intensity 4.</p>
+        <div class="key-demo">
+          <button class="kbtn" onclick="openPanic()">Try Panic mode →</button>
+        </div>
+      </div>
+
+      <div class="note">
+        <div class="cap">Try it — every button works</div>
+        <h3>Ten actions that change state.</h3>
+        <ul>
+          <li><b>Water tile</b> — dock card #4 · each tap logs to HydrationLog (250 ml). 0 → 11.</li>
+          <li><b>Plan rows</b> — check each one off; row greys out, struck through.</li>
+          <li><b>Focus pill</b> — tap to rename. Writes UserPreferences focus string.</li>
+          <li><b>Pillar card</b> — tap center to rise; arrows or swipe to rotate deck.</li>
+          <li><b>Quick log dock</b> — 6-step DailyCheckins flow (mood, energy, stress, pain, sleep).</li>
+          <li><b>Daily Story</b> — reel auto-advances (8s) across today's real segment.</li>
+          <li><b>Morning deck</b> — 7 Tinder cards, each writes one field of DailyCheckins.</li>
+          <li><b>Panic mode</b> — 4-step deck, creates a PanicSession.</li>
+          <li><b>Planner +add</b> — writes a PlannerItems row. Upcoming card populates live.</li>
+          <li><b>Journal prompt</b> — writes JournalEntries with card_type + card_color.</li>
+        </ul>
+        <div class="key-demo">
+          <button class="kbtn" onclick="openMorning()">Morning deck</button>
+          <button class="kbtn" onclick="openReel()">Daily Story</button>
+          <button class="kbtn" onclick="openPanic()">Panic</button>
+          <button class="kbtn" onclick="openQuickLog()">Quick log</button>
+          <button class="kbtn" onclick="openSheet('stats')">Stats</button>
+          <button class="kbtn" onclick="openSheet('planner')">Planner</button>
+          <button class="kbtn" onclick="openSheet('nutrition')">Nutrition</button>
+          <button class="kbtn" onclick="openSheet('move')">Move</button>
+          <button class="kbtn" onclick="openSheet('mind')">Mind</button>
+          <button class="kbtn" onclick="openSheet('hair')">Hair & Skin</button>
+          <button class="kbtn" onclick="openSheet('journal')">Journal</button>
+          <button class="kbtn" onclick="openSheet('safe')">Safe Space</button>
+          <button class="kbtn" onclick="openSheet('lifestage')">Life stage</button>
+        </div>
+      </div>
+
+      <div class="note">
+        <div class="cap">Entity map</div>
+        <h3>How the design ties to your schema.</h3>
+        <ul>
+          <li><b>Today hero</b> → DailyPhaseBrief (headline, body_tip, mood_note)</li>
+          <li><b>Today plan</b> → DailyPlan (focus_for_today + 4 suggestion fields)</li>
+          <li><b>Cycle timeline</b> → UserProfile.last_period_start_date + cycle_avg_length · CyclePredictions (when it exists)</li>
+          <li><b>Daily Story pill + reel</b> → DailyStory filtered by published_date, with image_gradient</li>
+          <li><b>Stats pillar</b> → DailyCheckins + CycleEvents + DailyAggregates</li>
+          <li><b>Nutrition pillar</b> → NutritionProfile + MealLog + HydrationLog</li>
+          <li><b>Planner pillar</b> → PlannerItems + PersonalTasks</li>
+          <li><b>Lifestyle pillar</b> → HabitLogs + LifestyleItems</li>
+          <li><b>Journal pillar</b> → JournalEntries (card_type + card_color + prompt)</li>
+          <li><b>Sleep pillar</b> → DailyCheckins.sleep_hours + sleep_quality</li>
+          <li><b>Move pillar</b> → WellnessSessions + DailyCheckins.exercise_*</li>
+          <li><b>Mind pillar</b> → DailyCheckins.mood + DailyPromptResponse</li>
+          <li><b>Hair & Skin pillar</b> → SkinRoutine + HairRoutine + PainMap</li>
+          <li><b>Safe Space pillar</b> → PanicSessions + PartnerAccess + ConditionProfiles</li>
+          <li><b>Lifestage pillar</b> → UserProfile.life_stage + PregnancyProfile / MenopauseProfile</li>
+          <li><b>Water dock tile</b> → HydrationLog (amount_ml, source:"manual")</li>
+          <li><b>Move dock tile</b> → WellnessSessions (filtered by phase)</li>
+          <li><b>Breathe dock tile</b> → VoiceScripts + 5-4-3-2-1 mental_tool</li>
+          <li><b>Quick log dock tile</b> → DailyCheckins full record</li>
+          <li><b>Panic dock tile</b> → PanicSessions with deck flow</li>
+        </ul>
+      </div>
+
+      <div class="foot">FemWell · Today · Interactive concept wired to your live data · Halliburton · Apr 18, 2026</div>
+    </aside>
+
+  </section>
+</div>
+
+<script>
+/* ====== SEED: REAL DATA FROM YOUR APP ====== */
+const STATE = {
+  user:{
+    id:'69b1b7161998e4afb7f39825',
+    email:'halliburtonoji@gmail.com',
+    display_name:null,
+    ai_name:'Jess',
+    tone:'gentle',
+    goals:['calm','sleep','fitness'],
+    cycle_avg:25,
+    period_length:5,
+    last_period:'2026-04-02',
+    life_stage:'none',
+    hydration_target_ml:2750
+  },
+  today:'2026-04-18',
+  cycleDay:17,
+  phase:'luteal',
+  nextPeriod:'2026-04-27',
+  daysToPeriod:9,
+  phaseBrief:{
+    headline:'Completion over creation',
+    body_tip:"This is nature's editing phase — you're wired to refine, reflect, and release. Don't fight the pull toward introspection; use it to audit what's not working.",
+    mood_note:'Irritability is biochemical, not a character flaw. Track it, don\'t suppress it.',
+    energy_note:'Lowest at the very end of this phase. Plan light days before your period.',
+    food_suggestion:'Calcium reduces PMS symptoms by up to 48%: dairy, fortified plant milks, almonds.',
+    movement_suggestion:"Slow it down — this isn't the week for personal bests."
+  },
+  dailyPlan:{
+    focus:'Steady and consistent',
+    session:'Gentle Strength — Light Weights, High Reps',
+    nutrition:'Reduce salt to ease water retention: avoid processed foods this week',
+    mental:'5-4-3-2-1 grounding exercise when anxiety spikes',
+    lifestyle:'Prioritise sleep — aim for 8+ hours as progesterone makes you naturally tired'
+  },
+  story:{
+    series_title:'Borrowed Light',
+    series_sub:'Day 2 · a letter in honey',
+    day_number:2,
+    total_days:30,
+    segment_text:"Still, the way the light slides down the ribs of glass makes her chest ache. Lila used to call it borrowed light. Plants, she'd say, don't apologise for wanting. There's a stack of manila folders in the corner office. Maya finds the deed — her name written in ink as thin as a spider's web — and tries to feel pleased about clean lines of responsibility. Then she finds the envelope. Maya, in Lila's leaning script. Inside: a single sheet, the paper soft from handling. The letter smells faintly of honey and rose lotion. You always came back to the plants when the world was loud, it begins. Keep the bees — they'll teach you staying.",
+    cliffhanger:'Tomorrow: a name she recognises.',
+    gradient:'linear-gradient(135deg, #e8d5b7 0%, #d4a96a 100%)'
+  },
+  checkins:[
+    {date:'2026-04-12',mood:4,energy:4,stress:4,pain:1,sleep_hours:4,hydration:6,exercise:'Cycling'},
+    {date:'2026-04-10',notes:'Feeling tired due to work and relationship stress.'},
+    {date:'2026-04-06',mood:2,energy:4,stress:4,pain:5,sleep_hours:4,hydration:6}
+  ],
+  journal:[
+    {date:'2026-04-10',type:'gratitude',color:'mint',prompt:'What am I grateful for?',text:"I'm grateful for my parents, my sisters and my girlfriend"},
+    {date:'2026-04-03',type:'reflection',color:'lavender',text:"I feel slightly overwhelmed today, work isn't going too well, although I am off today and get to relax there's a lot on my mind still"}
+  ],
+  panicHistory:[
+    {date:'Apr 12 · 20:30',type:'overwhelm',intensity:4},
+    {date:'Apr 12 · 16:59',type:'panic',intensity:5}
+  ],
+  sessions:[
+    {title:'Cycle-Synced Calm',cat:'Meditation',dur:10,why:'Luteal-matched — softens PMS tension'},
+    {title:'Menstrual Restorative',cat:'Yoga',dur:30,why:'Queued for next week'},
+    {title:'Morning Flow Yoga',cat:'Yoga',dur:15,why:'Gentle start'},
+    {title:'Power Pilates Core',cat:'Pilates',dur:25,why:'Too intense for today'},
+    {title:'HIIT Follicular Burn',cat:'Cardio',dur:20,why:'Wrong phase — save for day 7–13'}
+  ],
+  hydration:{glasses:0,target:11}, // 2750ml / 250ml
+  planner:[], // PlannerItems empty
+  // Mutable state (updated by user interactions)
+  log:{
+    planCompleted:{focus:false,session:false,nutrition:false,mental:false,lifestyle:false},
+    focus:'Steady',
+    moodTag:null,
+    waterStreakDays:0,
+    tasks:[]
+  }
+};
+
+/* ====== BOOT ====== */
+function boot(){
+  const first = (STATE.user.display_name || STATE.user.email.split('@')[0].split('o')[0] || 'there');
+  const pretty = 'Halliburton';
+  document.getElementById('userName').textContent = pretty;
+  document.getElementById('userAvatar').textContent = 'H';
+  document.getElementById('greetSub').textContent = `Saturday, Apr 18 · Day ${STATE.cycleDay} · ${STATE.phase[0].toUpperCase()+STATE.phase.slice(1)}`;
+  document.getElementById('heroHeadline').textContent = STATE.phaseBrief.headline + '.';
+  document.getElementById('heroBody').textContent = "Nature's editing phase — you're wired to refine, reflect, release.";
+  document.getElementById('ringDay').textContent = STATE.cycleDay;
+  document.getElementById('ringOf').textContent = `of ${STATE.user.cycle_avg}`;
+  document.getElementById('phasePill').textContent = 'Luteal · editing phase';
+  document.getElementById('nextPill').textContent = `Period in ${STATE.daysToPeriod} days`;
+  document.getElementById('phaseSub').textContent = `${STATE.daysToPeriod} days to period`;
+  document.getElementById('storyProg').textContent = `${STATE.story.day_number}/${STATE.story.total_days}`;
+  document.getElementById('storyTitle').textContent = STATE.story.series_title;
+  document.getElementById('storySub').textContent = STATE.story.series_sub;
+  document.getElementById('planFocus').textContent = STATE.dailyPlan.focus;
+  document.getElementById('planFocusBody').textContent = STATE.phaseBrief.body_tip;
+  document.getElementById('intentVal').textContent = STATE.log.focus;
+  renderPlan();
+  refreshWater();
+}
+
+/* ====== DAILY PLAN RENDER ====== */
+function renderPlan(){
+  const PLAN_ROWS = [
+    {key:'session',icon:'🏋',tint:'tint-move',lbl:'Session',t:STATE.dailyPlan.session,s:'Tap to open · queued in Move pillar',open:()=>openSheet('move')},
+    {key:'nutrition',icon:'🥑',tint:'tint-nut',lbl:'Nutrition',t:STATE.dailyPlan.nutrition,s:'Tap to see phase-matched meals',open:()=>openSheet('nutrition')},
+    {key:'mental',icon:'🧠',tint:'tint-mind',lbl:'Mental tool',t:STATE.dailyPlan.mental,s:'Tap to walk the grounding steps',open:()=>{openPanic();showGrounding()}},
+    {key:'lifestyle',icon:'🌿',tint:'tint-life',lbl:'Lifestyle',t:STATE.dailyPlan.lifestyle,s:'Tap to set a sleep reminder',open:()=>openSheet('lifestyle')}
+  ];
+  const list = document.getElementById('planList');
+  list.innerHTML = '';
+  PLAN_ROWS.forEach(r=>{
+    const done = STATE.log.planCompleted[r.key];
+    const row = document.createElement('div');
+    row.className = 'plan-row' + (done?' done':'');
+    row.innerHTML = `
+      <div class="prw-icon ${r.tint}">${r.icon}</div>
+      <div class="prw-body">
+        <div class="lbl">${r.lbl}</div>
+        <div class="t">${r.t}</div>
+        <div class="s">${r.s}</div>
+      </div>
+      <div class="prw-check ${done?'on':''}">${done?'✓':''}</div>
+    `;
+    row.querySelector('.prw-check').addEventListener('click',e=>{
+      e.stopPropagation();
+      STATE.log.planCompleted[r.key] = !done;
+      renderPlan();
+      toast(STATE.log.planCompleted[r.key]?`${r.lbl} · done ✓`:`${r.lbl} · undone`);
+    });
+    row.addEventListener('click',()=>r.open());
+    list.appendChild(row);
+  });
+}
+
+/* ====== PILLARS ====== */
+const PILLARS = [
+  {key:'stats',icon:'📊',tint:'tint-stats',tag:'Dashboard',title:'Stats · how you\'re tracking',sub:'Pulling from your last 3 check-ins and 14 cycles',m:[['25d','Avg cycle'],['3','Last checkins'],['luteal','Phase']],cta:'Open full stats →'},
+  {key:'nutrition',icon:'🥑',tint:'tint-nut',tag:'Fuel',title:'Nutrition for luteal',sub:'Reduce salt · lean into calcium for PMS',m:[['—','Logged today'],['2,750','ml target'],['0','Glasses']],cta:'Log a meal →'},
+  {key:'planner',icon:'🗓',tint:'tint-plan',tag:'Plan',title:'Planner · your week',sub:'0 items · cycle milestone in 9 days',m:[['0','Upcoming'],['9d','to period'],['25d','cycle']],cta:'Add an item →'},
+  {key:'lifestyle',icon:'🌿',tint:'tint-life',tag:'Habits',title:'Lifestyle · sleep wins this week',sub:'Progesterone rise = prioritise 8+ hours',m:[['4h','Last night'],['0','Habits today'],['—','Alcohol']],cta:'Log habit →'},
+  {key:'journal',icon:'📔',tint:'tint-jour',tag:'Voice',title:'Journal · 2 entries this cycle',sub:'Last wrote Apr 10 · "grateful for my parents"',m:[['2','Entries'],['gratitude','Last type'],['mint','Color']],cta:'Write today →'},
+  {key:'sleep',icon:'🌙',tint:'tint-sleep',tag:'Rest',title:'Sleep · you\'re under-slept',sub:'4h last logged · luteal needs 8+',m:[['4h','Last'],['—','Tonight'],['low','Quality']],cta:'Plan tonight →'},
+  {key:'move',icon:'🏋',tint:'tint-move',tag:'Energy',title:'Move · Gentle Strength today',sub:'Jess queued light weights, high reps',m:[['1','Queued'],['0','Done'],['luteal','Match']],cta:'Start session →'},
+  {key:'mind',icon:'🧠',tint:'tint-mind',tag:'Mood',title:'Mind · last mood 4 (out of 5)',sub:'Journal flagged "overwhelm" Apr 3',m:[['4','Last'],['2d','Since'],['stress 4','Top]']],cta:'Check in →'},
+  {key:'hair',icon:'✨',tint:'tint-hair',tag:'Skin & hair',title:'Hair & Skin · luteal oil risk',sub:'Sebum spike expected day 20–23',m:[['3','Skin avg'],['—','Routine'],['watch','Jaw zone']],cta:'Log zone →'},
+  {key:'safe',icon:'🕊',tint:'tint-safe',tag:'Space',title:'Safe Space · 2 sessions this cycle',sub:'Apr 12 · panic 5 + overwhelm 4',m:[['2','Sessions'],['5','Max int'],['set','Ready']],cta:'Open kit →'},
+  {key:'lifestage',icon:'🌼',tint:'tint-preg',tag:'Life stage',title:'Life stage · cycle (default)',sub:'Switch to Pregnancy or Menopause anytime',m:[['cycle','Current'],['25d','Len'],['Apr 2','Last']],cta:'Change stage →'}
+];
+
+let deckIdx = 0;
+const track = document.getElementById('deckTrack');
+const dotsEl = document.getElementById('deckDots');
+const countEl = document.getElementById('deckCount');
+function renderDeck(){
+  track.innerHTML = '';
+  PILLARS.forEach((p,i)=>{
+    const el = document.createElement('div');
+    el.className = 'pcard';
+    el.innerHTML = `
+      <div>
+        <div class="pc-top">
+          <div class="pc-icon ${p.tint}">${p.icon}</div>
+          <div class="pc-tag">${p.tag}</div>
+        </div>
+        <div class="pc-title">${p.title}</div>
+        <div class="pc-sub">${p.sub}</div>
+        <div class="pc-metrics">
+          ${p.m.map(mm=>`<div class="pc-metric"><div class="n">${mm[0]}</div><div class="l">${mm[1]}</div></div>`).join('')}
+        </div>
+      </div>
+      <div class="pc-cta">${p.cta}</div>
+    `;
+    el.addEventListener('click',()=>{ if(i===deckIdx) openSheet(p.key); else { deckIdx=i; updateDeck(); } });
+    track.appendChild(el);
+  });
+  dotsEl.innerHTML = PILLARS.map((_,i)=>`<div class="ddot ${i===0?'on':''}"></div>`).join('');
+  updateDeck();
+}
+function updateDeck(){
+  const cards = track.querySelectorAll('.pcard');
+  cards.forEach((c,i)=>{
+    c.classList.remove('p-center','p-left','p-right','p-far-left','p-far-right','p-hidden');
+    const d = i - deckIdx;
+    if(d===0) c.classList.add('p-center');
+    else if(d===-1) c.classList.add('p-left');
+    else if(d===1) c.classList.add('p-right');
+    else if(d===-2) c.classList.add('p-far-left');
+    else if(d===2) c.classList.add('p-far-right');
+    else c.classList.add('p-hidden');
+  });
+  dotsEl.querySelectorAll('.ddot').forEach((d,i)=>d.classList.toggle('on',i===deckIdx));
+  countEl.textContent = `${deckIdx+1} / ${PILLARS.length}`;
+}
+function moveDeck(dir){ deckIdx = Math.max(0,Math.min(PILLARS.length-1,deckIdx+dir)); updateDeck(); }
+
+/* ====== SHEETS — REAL DATA ====== */
+const sheetScrim = document.getElementById('sheetScrim');
+const sheet = document.getElementById('sheet');
+const sheetTitle = document.getElementById('sheetTitle');
+const sheetSubtitle = document.getElementById('sheetSubtitle');
+const sheetTabs = document.getElementById('sheetTabs');
+const sheetBody = document.getElementById('sheetBody');
+
+function makeStatsPanels(){
+  const last = STATE.checkins[0];
+  return [
+    `<div class="stats-grid">
+      <div class="stat-tile"><div class="l">Cycle day</div><div class="n">${STATE.cycleDay}</div><div class="d">luteal</div></div>
+      <div class="stat-tile"><div class="l">Cycle avg</div><div class="n">${STATE.user.cycle_avg}d</div><div class="d">from last 3 periods</div></div>
+      <div class="stat-tile"><div class="l">Last mood</div><div class="n">${last.mood}/5</div><div class="d">Apr 12</div></div>
+      <div class="stat-tile"><div class="l">Last sleep</div><div class="n">${last.sleep_hours}h</div><div class="d">under target</div></div>
+      <div class="stat-tile"><div class="l">Water today</div><div class="n">${STATE.hydration.glasses}/${STATE.hydration.target}</div><div class="d">250 ml each</div></div>
+      <div class="stat-tile"><div class="l">Stress avg</div><div class="n">${last.stress}/5</div><div class="d">elevated</div></div>
+      <div class="stat-tile"><div class="l">Next period</div><div class="n">Apr 27</div><div class="d">in 9 days</div></div>
+      <div class="stat-tile"><div class="l">Panic sessions</div><div class="n">2</div><div class="d">this cycle</div></div>
+     </div>`,
+    `<div class="insight-card"><div class="lbl">Pattern · 3 check-ins</div><h4>Your sleep has been 4h three times running.</h4><p>Apr 6, 12, and flagged low on Apr 10. Luteal progesterone rise is making that gap expensive — expect mood + pain to climb this week if it continues.</p></div>
+     <div class="insight-card"><div class="lbl">Pattern</div><h4>Apr 3 journal: "overwhelmed... work isn't going too well."</h4><p>That note sits in your luteal pattern. You wrote something similar 2 cycles ago. Jess will soften Jess's push this week.</p></div>`,
+    `<div class="insight-card"><div class="lbl">Insight</div><h4>Your two panic sessions were 3.5 hrs apart on Apr 12.</h4><p>Back-to-back elevation suggests the day's stressor wasn't resolved. The Safe Space kit flagged <b>overwhelm</b> then <b>panic</b> — worth a gentle journal about what set it off.</p></div>`,
+    `<div class="insight-card"><div class="lbl">Jess suggests</div><h4>Calcium + sleep + a short walk today.</h4><p>Phase brief says calcium cuts PMS up to 48%. You're a progesterone week — the kindest thing is to let today be small.</p></div>`,
+    `<div class="qgroup"><div class="qtitle">Custom tile</div><p style="font-size:12px;color:var(--ink-soft)">Track the thing nobody else thinks is a metric. Libido, migraine intensity, bowel regularity, social energy.</p><button class="ctabtn" onclick="toast('Custom tile picker opens')">+ Add a tile</button></div>`
+  ];
+}
+
+function makeNutritionPanels(){
+  return [
+    `<div class="qgroup"><div class="qtitle">Hydration · 2,750 ml target</div>
+      <div class="qnum"><button onclick="changeWater(-1)">−</button><div class="val" id="waterVal">${STATE.hydration.glasses}</div><button onclick="changeWater(1)">+</button><span style="font-size:11px;color:var(--ink-soft)">of 11 glasses</span></div>
+     </div>
+     <div class="qgroup"><div class="qtitle">Meal</div>
+      <div class="qrow"><span class="qchip" onclick="toggleChip(this)">Breakfast</span><span class="qchip" onclick="toggleChip(this)">Lunch</span><span class="qchip" onclick="toggleChip(this)">Dinner</span><span class="qchip" onclick="toggleChip(this)">Snack</span></div>
+      <div class="qrow"><span class="qchip" onclick="toggleChip(this)">Eggs</span><span class="qchip" onclick="toggleChip(this)">Avocado</span><span class="qchip" onclick="toggleChip(this)">Oats</span><span class="qchip" onclick="toggleChip(this)">Yogurt</span><span class="qchip" onclick="toggleChip(this)">Leafy greens</span><span class="qchip" onclick="toggleChip(this)">Almonds</span></div>
+      <button class="ctabtn" onclick="toast('Meal logged to MealLog')">Save meal</button>
+     </div>`,
+    `<div class="insight-card"><div class="lbl">Phase brief · luteal</div><h4>${STATE.phaseBrief.food_suggestion}</h4><p>We'll start surfacing calcium options in your For You feed over the next 5 days.</p></div>`,
+    `<div class="insight-card"><div class="lbl">Today's nudge</div><h4>${STATE.dailyPlan.nutrition}</h4><p>Pulled from your DailyPlan row. Swap chips, fries, and cured meat — lean toward whole grains and citrus.</p></div>`
+  ];
+}
+
+function makePlannerPanels(){
+  const lst = STATE.planner.length ? STATE.planner.map(p=>`<div class="sess-card"><div class="sess-tint tint-plan">🗓</div><div class="sess-body"><div class="t">${p.title}</div><div class="s">${p.date} · ${p.time||'any time'} · ${p.category}</div></div></div>`).join('') :
+    `<div class="empty"><div class="icn">🗓</div><div class="t">Your planner is empty.</div><div class="s">Add the OB-GYN follow-up, a yoga class, or a period-overlap reminder for next week.</div></div>`;
+  return [
+    `<div class="weekstrip">
+      <div class="dcol"><div class="dl">Mon</div><div class="dn">13</div><div class="dd"></div></div>
+      <div class="dcol"><div class="dl">Tue</div><div class="dn">14</div><div class="dd"></div></div>
+      <div class="dcol"><div class="dl">Wed</div><div class="dn">15</div><div class="dd"></div></div>
+      <div class="dcol"><div class="dl">Thu</div><div class="dn">16</div><div class="dd"></div></div>
+      <div class="dcol"><div class="dl">Fri</div><div class="dn">17</div><div class="dd"></div></div>
+      <div class="dcol on"><div class="dl">Sat</div><div class="dn">18</div><div class="dd"></div></div>
+      <div class="dcol"><div class="dl">Sun</div><div class="dn">19</div><div class="dd"></div></div>
+     </div>
+     <div class="add-row">
+       <input id="plTitle" placeholder="What needs to happen?"/>
+       <select id="plCat"><option value="health">Health</option><option value="personal">Personal</option><option value="work">Work</option><option value="social">Social</option><option value="wellbeing">Wellbeing</option><option value="reminder">Reminder</option></select>
+       <button onclick="addPlan()">Add</button>
+     </div>
+     <div id="plList">${lst}</div>`,
+    `<div class="insight-card"><div class="lbl">Cycle view</div><h4>Your next period starts around Apr 27.</h4><p>9 days away. If you have hard conversations, travel days, or hard workouts planned between Apr 24–30, consider softening them by one notch.</p></div>
+     <div class="insight-card"><div class="lbl">Quiet week</div><h4>You're in the "editing" phase through Apr 26.</h4><p>Great time to close loops, finish drafts, have the conversation you've been putting off.</p></div>`,
+    `<div class="insight-card"><div class="lbl">Upcoming appointments</div><h4>None set.</h4><p>Your PersonalTasks and PlannerItems tables are empty. Would you like to add your OB-GYN check-up?</p><button class="ctabtn" onclick="toast('Appointment wizard opens')">Add appointment</button></div>`
+  ];
+}
+
+function makeLifestylePanels(){
+  return [
+    `<div class="qgroup"><div class="qtitle">Today's habits</div>
+      <div class="qrow"><span class="qchip" onclick="toggleChip(this)">Outside 15m</span><span class="qchip" onclick="toggleChip(this)">No alcohol</span><span class="qchip" onclick="toggleChip(this)">Cooked dinner</span><span class="qchip" onclick="toggleChip(this)">Screen break</span><span class="qchip" onclick="toggleChip(this)">Under 8h screens</span></div>
+      <button class="ctabtn" onclick="toast('Habits saved to HabitLogs')">Log habits</button>
+     </div>`,
+    `<div class="insight-card"><div class="lbl">Sleep pattern</div><h4>4h, 4h, 4h. That's three cycles running.</h4><p>Not a one-off. Progesterone rises faster than sleep can catch up. Try lights-down by 10pm tonight — your luteal needs the extra hour.</p></div>`,
+    `<div class="insight-card"><div class="lbl">Today's lifestyle nudge</div><h4>${STATE.dailyPlan.lifestyle}</h4><p>From your DailyPlan. We'll push a reminder at 9:45pm if you'd like.</p><button class="ctabtn" onclick="toast('9:45pm reminder set')">Set reminder</button></div>`
+  ];
+}
+
+function makeJournalPanels(){
+  const lst = STATE.journal.map(j=>`<div class="qgroup" style="background:${j.color==='mint'?'#EAF5EC':'#F0EAF5'}"><div class="qtitle">${j.date} · ${j.type}</div><p style="font-size:13px;color:var(--ink);line-height:1.5">${j.text}</p>${j.prompt?`<div style="font-size:11px;color:var(--ink-soft);margin-top:10px;font-style:italic">Prompt: ${j.prompt}</div>`:''}</div>`).join('');
+  return [
+    `<div class="qgroup"><div class="qtitle">One line, today</div>
+      <textarea placeholder="Start typing or tap a prompt →" style="width:100%;min-height:100px;padding:12px;border-radius:12px;border:1px solid var(--line);font-family:inherit;font-size:13px;background:#fff;resize:none"></textarea>
+      <div class="qrow" style="margin-top:10px"><span class="qchip" onclick="toggleChip(this)">I noticed…</span><span class="qchip" onclick="toggleChip(this)">I needed…</span><span class="qchip" onclick="toggleChip(this)">Small win</span><span class="qchip" onclick="toggleChip(this)">Gratitude</span></div>
+      <button class="ctabtn" onclick="toast('Journal entry saved')">Save entry</button>
+     </div>
+     <div style="font-size:10.5px;color:var(--ink-soft);font-weight:700;text-transform:uppercase;letter-spacing:.1em;margin:10px 0 6px">Your recent entries</div>
+     ${lst}`,
+    `<div class="insight-card"><div class="lbl">Wordprint</div><h4>Your luteal writing leans toward "overwhelmed" and "tired".</h4><p>That's not failure — it's a predictable lens. Worth noticing so you don't believe it as permanent fact.</p></div>`,
+    `<div class="insight-card"><div class="lbl">Today's prompt</div><h4>What did you finish this week that you can let rest?</h4><p>Phase-matched for luteal. You're in completion mode.</p></div>`
+  ];
+}
+
+function makeSleepPanels(){
+  return [
+    `<div class="qgroup"><div class="qtitle">Last night</div>
+      <div class="qrow"><span class="qchip" onclick="toggleChip(this)">Great</span><span class="qchip" onclick="toggleChip(this)">Okay</span><span class="qchip on" onclick="toggleChip(this)">Restless</span><span class="qchip" onclick="toggleChip(this)">Rough</span></div>
+      <div class="qtitle" style="margin-top:14px">Hours</div>
+      <input type="range" class="slider" min="0" max="12" step="0.5" value="4"/>
+      <div class="qtitle" style="margin-top:14px">Wake-ups</div>
+      <div class="qnum"><button>−</button><div class="val">2</div><button>+</button></div>
+      <button class="ctabtn" onclick="toast('Saved to DailyCheckins.sleep_*')">Save</button>
+     </div>`,
+    `<div class="insight-card"><div class="lbl">Pattern</div><h4>4 hours three times in 6 days.</h4><p>Luteal progesterone fragments sleep. Your next logged night was always lighter on the mood and energy side, too.</p></div>`,
+    `<div class="insight-card"><div class="lbl">Tonight's plan</div><h4>${STATE.dailyPlan.lifestyle}</h4><p>17–18°C room, lights down 10pm, no screens after 9:30. Magnesium + calcium via dinner helps.</p></div>`
+  ];
+}
+
+function makeMovePanels(){
+  const rec = STATE.sessions[0];
+  const list = STATE.sessions.map((s,i)=>`<div class="sess-card" onclick="toast('${s.title} queued')"><div class="sess-tint">${i===0?'★':'•'}</div><div class="sess-body"><div class="t">${s.title}</div><div class="s">${s.cat} · ${s.dur} min</div><div class="m">${s.why}</div></div></div>`).join('');
+  return [
+    `<div class="qgroup"><div class="qtitle">Log what you did</div>
+      <div class="qrow"><span class="qchip" onclick="toggleChip(this)">Walk</span><span class="qchip on" onclick="toggleChip(this)">Strength</span><span class="qchip" onclick="toggleChip(this)">Yoga</span><span class="qchip" onclick="toggleChip(this)">Cycling</span><span class="qchip" onclick="toggleChip(this)">Pilates</span></div>
+      <div class="qtitle" style="margin-top:14px">Minutes</div>
+      <div class="qnum"><button>−</button><div class="val">20</div><button>+</button></div>
+      <button class="ctabtn" onclick="toast('Logged to DailyCheckins.exercise_*')">Save</button>
+     </div>
+     <div style="font-size:10.5px;color:var(--ink-soft);font-weight:700;text-transform:uppercase;letter-spacing:.1em;margin:10px 0 6px">Jess queued for your luteal</div>
+     <div class="sess-grid">${list}</div>`,
+    `<div class="insight-card"><div class="lbl">Phase · luteal</div><h4>${STATE.phaseBrief.movement_suggestion}</h4><p>Testosterone and estrogen are dropping. PRs and long runs will cost you 2x the recovery this week.</p></div>`,
+    `<div class="insight-card"><div class="lbl">Today</div><h4>${STATE.dailyPlan.session}</h4><p>20–30 min. Higher reps (12–15), lighter load. Prioritize form and breath over load.</p></div>`
+  ];
+}
+
+function makeMindPanels(){
+  return [
+    `<div class="qgroup"><div class="qtitle">How are you, really?</div>
+      <div class="qrow">
+        <span class="qchip" onclick="setMood(this,'Clear')">Clear</span>
+        <span class="qchip" onclick="setMood(this,'Driven')">Driven</span>
+        <span class="qchip" onclick="setMood(this,'Settled')">Settled</span>
+        <span class="qchip" onclick="setMood(this,'Tender')">Tender</span>
+        <span class="qchip" onclick="setMood(this,'Anxious')">Anxious</span>
+        <span class="qchip" onclick="setMood(this,'Flat')">Flat</span>
+        <span class="qchip" onclick="setMood(this,'Heavy')">Heavy</span>
+        <span class="qchip" onclick="setMood(this,'Angry')">Angry</span>
+      </div>
+      <div class="qtitle" style="margin-top:14px">One line</div>
+      <textarea placeholder="The thing you'd tell a friend..." style="width:100%;min-height:80px;padding:12px;border-radius:12px;border:1px solid var(--line);font-family:inherit;font-size:13px;background:#fff;resize:none"></textarea>
+      <button class="ctabtn" onclick="toast('Saved to DailyCheckins.mood + JournalEntries')">Save</button>
+     </div>`,
+    `<div class="insight-card"><div class="lbl">Pattern · luteal</div><h4>${STATE.phaseBrief.mood_note}</h4><p>You rated stress 4/5 on your last 2 check-ins. That's not your baseline — it's your current phase.</p></div>`,
+    `<div class="insight-card"><div class="lbl">Right now</div><h4>1 minute of 4-7-8 breath.</h4><p>Inhale 4 · hold 7 · exhale 8. Longer exhale trips your parasympathetic fastest.</p><button class="ctabtn" onclick="closeSheet();setTimeout(openBreath,300)">Start</button></div>`
+  ];
+}
+
+function makeHairPanels(){
+  return [
+    `<div class="qgroup"><div class="qtitle">Breakout zone</div>
+      <div class="qrow"><span class="qchip" onclick="toggleChip(this)">Forehead</span><span class="qchip" onclick="toggleChip(this)">Jawline</span><span class="qchip" onclick="toggleChip(this)">Chin</span><span class="qchip" onclick="toggleChip(this)">Cheeks</span><span class="qchip" onclick="toggleChip(this)">Back</span><span class="qchip" onclick="toggleChip(this)">Chest</span></div>
+      <div class="qtitle" style="margin-top:14px">Severity</div>
+      <input type="range" class="slider" min="0" max="10" value="2"/>
+      <div class="qtitle" style="margin-top:14px">Hair</div>
+      <div class="qrow"><span class="qchip" onclick="toggleChip(this)">Oily roots</span><span class="qchip" onclick="toggleChip(this)">Dry ends</span><span class="qchip" onclick="toggleChip(this)">Shedding</span><span class="qchip" onclick="toggleChip(this)">Feels fine</span></div>
+      <button class="ctabtn" onclick="toast('Saved to SkinRoutine + PainMap')">Save</button>
+     </div>`,
+    `<div class="insight-card"><div class="lbl">Luteal risk window</div><h4>Days 20–23 are your sebum spike.</h4><p>In 3–6 days. Start a salicylic acid wash tomorrow — gives it time to work before the peak.</p></div>`,
+    `<div class="insight-card"><div class="lbl">Suggestion</div><h4>Pre-period skin routine.</h4><p>Swap heavy moisturisers for a gel. Add niacinamide. Drop retinoids for the 4 days before your period.</p></div>`
+  ];
+}
+
+function makeSafePanels(){
+  const hist = STATE.panicHistory.map(p=>`<div class="sess-card"><div class="sess-tint" style="background:linear-gradient(135deg,#F5B5B5,#E08080)">!</div><div class="sess-body"><div class="t">${p.type}</div><div class="s">${p.date} · intensity ${p.intensity}/5</div></div></div>`).join('');
+  return [
+    `<div class="qgroup"><div class="qtitle">Your kit</div>
+      <div class="sess-card"><div class="sess-tint tint-safe">👤</div><div class="sess-body"><div class="t">Panic contact</div><div class="s">Not set · tap to add one person</div></div></div>
+      <div class="sess-card"><div class="sess-tint tint-safe">📍</div><div class="sess-body"><div class="t">Location share</div><div class="s">Off · enables only during a panic session</div></div></div>
+      <div class="sess-card"><div class="sess-tint tint-safe">📝</div><div class="sess-body"><div class="t">Boundary scripts</div><div class="s">0 saved · write one for work, one for family</div></div></div>
+      <button class="ctabtn" style="margin-top:10px" onclick="closeSheet();setTimeout(openPanic,300)">Open Panic mode</button>
+     </div>
+     <div style="font-size:10.5px;color:var(--ink-soft);font-weight:700;text-transform:uppercase;letter-spacing:.1em;margin:14px 0 6px">Your sessions · last 30 days</div>
+     ${hist}`,
+    `<div class="insight-card"><div class="lbl">Noticed</div><h4>Both panic events were within 3.5 hours of each other on Apr 12.</h4><p>Tightly clustered. Often the second one is the body finishing what the first didn't resolve.</p></div>`,
+    `<div class="insight-card"><div class="lbl">If you'd like</div><h4>Therapist match — confidential intake.</h4><p>No auto-forwards. Your choice when and if you reply.</p></div>`
+  ];
+}
+
+function makeLifestagePanels(){
+  return [
+    `<div class="insight-card"><div class="lbl">Current mode</div><h4>Cycle tracking (default).</h4><p>You're on the cycle path. Switch any time below — your 3 months of history follow you.</p></div>
+     <div class="flow-list" style="display:flex;flex-direction:column;gap:10px;margin-top:10px">
+       <div class="sess-card" onclick="toast('Would switch to Pregnancy path')"><div class="sess-tint tint-preg">👶</div><div class="sess-body"><div class="t">Pregnancy</div><div class="s">Week-by-week · trimester ribbon replaces cycle timeline</div></div></div>
+       <div class="sess-card" onclick="toast('Would switch to Menopause path')"><div class="sess-tint tint-preg">🌼</div><div class="sess-body"><div class="t">Menopause</div><div class="s">Symptom-load tracking · HRT log · hot flash map</div></div></div>
+       <div class="sess-card" onclick="toast('Would switch to TTC path')"><div class="sess-tint tint-preg">✨</div><div class="sess-body"><div class="t">Trying to conceive</div><div class="s">Fertile window focus · BBT · intimacy tracking</div></div></div>
+     </div>`,
+    `<div class="insight-card"><div class="lbl">How it works</div><h4>Pillars morph, not reset.</h4><p>Switching path changes the pillar set: Pregnancy adds bump check + prenatal labs. Menopause adds hot flash map + HRT log. You can switch back later — nothing is lost.</p></div>`,
+    `<div class="insight-card"><div class="lbl">Jess adapts</div><h4>Tone softens in pregnancy. Grounds in menopause.</h4><p>Same assistant, different posture. You chose 'gentle' tone — it carries over.</p></div>`
+  ];
+}
+
+const SHEET_CONTENT = {
+  stats:{title:'Stats',sub:'3 recent check-ins · 14 cycles history',tabs:['Numbers','Trends','Insight','Suggestion','Custom'],panels:makeStatsPanels()},
+  nutrition:{title:'Nutrition',sub:'Luteal · reduce salt · lean into calcium',tabs:['Quick log','Insight','Suggestion'],panels:makeNutritionPanels()},
+  planner:{title:'Planner',sub:'Your week · cycle · appointments',tabs:['Week','Cycle','Appointments'],panels:makePlannerPanels()},
+  lifestyle:{title:'Lifestyle',sub:'Habits that compound',tabs:['Log','Insight','Suggestion'],panels:makeLifestylePanels()},
+  journal:{title:'Journal',sub:'2 entries this cycle',tabs:['Write','Insight','Prompt'],panels:makeJournalPanels()},
+  sleep:{title:'Sleep',sub:'Last: 4h · low',tabs:['Log','Insight','Suggestion'],panels:makeSleepPanels()},
+  move:{title:'Move',sub:'Gentle Strength queued',tabs:['Log','Insight','Today'],panels:makeMovePanels()},
+  mind:{title:'Mind',sub:'Luteal · irritability window',tabs:['Mood','Insight','Right now'],panels:makeMindPanels()},
+  hair:{title:'Hair & Skin',sub:'Sebum spike in 3–6 days',tabs:['Log','Insight','Suggestion'],panels:makeHairPanels()},
+  safe:{title:'Safe Space',sub:'2 panic sessions this cycle',tabs:['Kit','Insight','Resources'],panels:makeSafePanels()},
+  lifestage:{title:'Life stage',sub:'Cycle · default',tabs:['Current','How','Jess'],panels:makeLifestagePanels()}
+};
+
+function openSheet(key){
+  // Re-build panels each time so they reflect latest state
+  if(key==='stats') SHEET_CONTENT.stats.panels = makeStatsPanels();
+  if(key==='nutrition') SHEET_CONTENT.nutrition.panels = makeNutritionPanels();
+  if(key==='planner') SHEET_CONTENT.planner.panels = makePlannerPanels();
+  const c = SHEET_CONTENT[key];
+  if(!c) return;
+  sheetTitle.textContent = c.title;
+  sheetSubtitle.textContent = c.sub || '';
+  sheetTabs.innerHTML = c.tabs.map((t,i)=>`<button class="stab ${i===0?'on':''}" data-i="${i}">${t}</button>`).join('');
+  sheetBody.innerHTML = c.panels.map((p,i)=>`<div class="stab-panel ${i===0?'on':''}" data-i="${i}">${p}</div>`).join('');
+  sheetTabs.querySelectorAll('.stab').forEach(b=>{
+    b.addEventListener('click',()=>{
+      sheetTabs.querySelectorAll('.stab').forEach(x=>x.classList.remove('on'));
+      sheetBody.querySelectorAll('.stab-panel').forEach(x=>x.classList.remove('on'));
+      b.classList.add('on');
+      sheetBody.querySelector(`.stab-panel[data-i="${b.dataset.i}"]`).classList.add('on');
+    });
+  });
+  sheetScrim.classList.add('on');
+  sheet.classList.add('on');
+}
+function closeSheet(){sheetScrim.classList.remove('on');sheet.classList.remove('on')}
+
+function toggleChip(el){ el.classList.toggle('on'); }
+function setMood(el,mood){
+  el.parentElement.querySelectorAll('.qchip').forEach(x=>x.classList.remove('on'));
+  el.classList.add('on');
+  STATE.log.moodTag = mood;
+  toast('Mood: '+mood+' · saved');
+}
+
+/* ====== DAILY STORY REEL ====== */
+const reelScrim = document.getElementById('reelScrim');
+const reel = document.getElementById('reel');
+const reelCard = document.getElementById('reelCard');
+const reelBars = document.getElementById('reelBars');
+const reelChips = document.getElementById('reelChips');
+const REEL = [
+  {tag:'Affirmation',series:'For today',title:'Irritability is biochemical,<br/>not a character flaw.<br/>Track it. Don\'t suppress it.',cliff:null,bg:'linear-gradient(160deg,#9A8EC4,#4A2A3A)'},
+  {tag:'Phase brief',series:'Luteal · day 17',title:'Completion over creation.',cliff:null,body:STATE.phaseBrief.body_tip,bg:'linear-gradient(160deg,#C5A7BA,#6B4A5C)'},
+  {tag:'Story · Borrowed Light · Day 2',series:'Series · day 2 of 30',title:STATE.story.segment_text,cliff:STATE.story.cliffhanger,bg:STATE.story.gradient,dark:true},
+  {tag:'Read',series:'From Jess',title:'Why luteal fragments your sleep — and the 3 things that actually help.',cliff:null,body:'90-second read',bg:'linear-gradient(160deg,#3a4a7a,#1a1a2a)'},
+  {tag:'Safe',series:'Journal flag · Apr 3',title:'"Work isn\'t going too well."<br/>That note still sits with you.',cliff:null,bg:'linear-gradient(160deg,#D99BB4,#9F567D)'},
+  {tag:'Tip',series:'Luteal · food',title:STATE.phaseBrief.food_suggestion,cliff:null,bg:'linear-gradient(160deg,#E89374,#A66040)'},
+  {tag:'Saved',series:'From your gratitude · Apr 10',title:"\u201cI'm grateful for my parents,<br/>my sisters and my girlfriend.\u201d",cliff:'You wrote this 8 days ago.',bg:'linear-gradient(160deg,#8EC49D,#4F7F5D)'}
+];
+const REEL_CATS = ['Affirm','Phase','Story','Read','Safe','Tip','Saved'];
+let reelIdx = 2;
+function renderReelBars(){
+  reelBars.innerHTML = REEL.map((_,i)=>`<div class="reel-bar ${i<reelIdx?'done':i===reelIdx?'cur':''}"><i></i></div>`).join('');
+  reelChips.innerHTML = REEL_CATS.map((c,i)=>`<div class="rchip ${i===reelIdx?'on':''}" data-i="${i}">${c}</div>`).join('');
+  reelChips.querySelectorAll('.rchip').forEach(ch=>{
+    ch.addEventListener('click',e=>{ e.stopPropagation(); reelIdx = +ch.dataset.i; renderReel(); });
+  });
+}
+function renderReelCard(){
+  const r = REEL[reelIdx];
+  reelCard.style.background = r.bg;
+  reelCard.innerHTML = `
+    <div>
+      <div class="reel-tag">${r.tag}</div>
+      <div class="reel-series">${r.series||''}</div>
+    </div>
+    <div>
+      <div class="reel-title">${r.title}</div>
+      ${r.body?`<div style="font-size:13px;opacity:.8;margin-top:12px;position:relative;z-index:1">${r.body}</div>`:''}
+      ${r.cliff?`<div class="reel-cliff">${r.cliff}</div>`:''}
+    </div>
+    <div class="reel-meta">Tap to advance · swipe down to close</div>
+  `;
+}
+function renderReel(){renderReelBars();renderReelCard()}
+function openReel(){reelScrim.classList.add('on');reel.classList.add('on');reelIdx=2;renderReel()}
+function closeReel(){reelScrim.classList.remove('on');reel.classList.remove('on')}
+reelCard.addEventListener('click',e=>{
+  if(e.target.closest('.reel-close')||e.target.closest('.rchip')) return;
+  reelIdx = (reelIdx+1) % REEL.length;
+  renderReel();
+});
+
+/* ====== MORNING DECK (maps to DailyCheckins) ====== */
+const morningScrim = document.getElementById('morningScrim');
+const morningDeck = document.getElementById('morningDeck');
+const mdStack = document.getElementById('mdStack');
+const mdProgress = document.getElementById('mdProgress');
+const MORNING = [
+  {tag:'Mood · 1 of 7',field:'mood',title:'How did you wake up?',sub:'Maps to DailyCheckins.mood (1–5)',type:'scale5'},
+  {tag:'Energy · 2 of 7',field:'energy',title:'Energy?',sub:'Maps to DailyCheckins.energy',type:'chips',options:['Low','Okay','Good','Peak']},
+  {tag:'Pain · 3 of 7',field:'pain',title:'Any pain today?',sub:'0 = nothing · 10 = sharp',type:'slider'},
+  {tag:'Sleep · 4 of 7',field:'sleep_hours',title:'Hours last night?',sub:'Jess will compare to your luteal avg',type:'chips',options:['<4','4–5','5–6','6–7','7–8','8+']},
+  {tag:'Cramps · 5 of 7',field:'cramps',title:'Cramps today?',sub:'You logged 1 last time',type:'chips',options:['None','Mild','Moderate','Strong']},
+  {tag:'Affirmation · 6 of 7',title:"Irritability is biochemical,<br/>not a character flaw.",sub:'Save, share, or swipe on.',type:'affirm'},
+  {tag:'Phase · 7 of 7',title:'Luteal · day 17.<br/>Steady and consistent.',sub:"Today's plan is ready when you are.",type:'affirm'}
+];
+let mIdx = 0;
+function renderMorning(){
+  mdProgress.innerHTML = MORNING.map((_,i)=>`<div class="mdp ${i<mIdx?'done':i===mIdx?'cur':''}"></div>`).join('');
+  mdStack.innerHTML = '';
+  for(let i=mIdx;i<Math.min(mIdx+3,MORNING.length);i++){
+    const c = MORNING[i];
+    const el = document.createElement('div');
+    el.className = 'mcard';
+    if(i===mIdx+1) el.classList.add('c-back');
+    if(i===mIdx+2) el.classList.add('c-backer');
+    let body = '';
+    if(c.type==='chips'){
+      body = `<div class="mchips">${c.options.map(o=>`<div class="mchip" onclick="this.parentElement.querySelectorAll('.mchip').forEach(x=>x.classList.remove('on'));this.classList.add('on')">${o}</div>`).join('')}</div>`;
+    } else if(c.type==='scale5'){
+      body = `<div class="mchips">${[1,2,3,4,5].map(n=>`<div class="mchip" onclick="this.parentElement.querySelectorAll('.mchip').forEach(x=>x.classList.remove('on'));this.classList.add('on')">${n}</div>`).join('')}</div><div style="font-size:10.5px;color:var(--ink-soft);margin-top:10px;display:flex;justify-content:space-between;font-weight:700"><span>1 · low</span><span>5 · high</span></div>`;
+    } else if(c.type==='slider'){
+      body = `<input type="range" class="slider" min="0" max="10" value="2" style="margin-top:20px"/><div style="display:flex;justify-content:space-between;font-size:10px;color:var(--ink-soft);margin-top:6px;font-weight:700"><span>0</span><span>10</span></div>`;
+    } else {
+      body = `<div style="margin-top:20px;padding:16px;border-radius:14px;background:rgba(212,94,82,.08);font-size:12.5px;line-height:1.55;color:var(--plum);font-family:Fraunces;font-weight:500">Swipe on or save — this is yours.</div>`;
+    }
+    el.innerHTML = `
+      <div>
+        <div class="mtag">${c.tag}</div>
+        <div class="mtitle">${c.title}</div>
+        <div class="msub">${c.sub}</div>
+        <div class="mbody">${body}</div>
+      </div>
+      <div class="mactions">
+        <button class="mbtn skip" onclick="nextMorning(true)">Skip</button>
+        <button class="mbtn save" onclick="nextMorning(false)">Save & next</button>
+      </div>
+    `;
+    mdStack.appendChild(el);
+  }
+}
+function openMorning(){mIdx=0;morningScrim.classList.add('on');morningDeck.classList.add('on');renderMorning()}
+function closeMorning(){morningScrim.classList.remove('on');morningDeck.classList.remove('on')}
+function nextMorning(skip){
+  const top = mdStack.querySelector('.mcard');
+  if(top) top.classList.add(skip?'c-goneL':'c-gone');
+  setTimeout(()=>{
+    mIdx++;
+    if(mIdx>=MORNING.length){closeMorning();toast('Check-in saved to DailyCheckins');return}
+    renderMorning();
+  },300);
+}
+
+/* ====== PANIC MODE (multi-step, tied to PanicSessions) ====== */
+const panicScrim = document.getElementById('panicScrim');
+const panicBody = document.getElementById('panicBody');
+const panicSubEl = document.getElementById('panicSub');
+let panicStep = 0;
+let panicData = {feeling_type:null,intensity:null,techniques_used:[]};
+
+function openPanic(){
+  panicStep = 0;
+  panicData = {feeling_type:null,intensity:null,techniques_used:[]};
+  panicScrim.classList.add('on');
+  document.getElementById('panic').classList.add('on');
+  renderPanic();
+}
+function closePanic(){
+  panicScrim.classList.remove('on');
+  document.getElementById('panic').classList.remove('on');
+}
+function renderPanic(){
+  if(panicStep===0){
+    panicSubEl.textContent = "Step 1 of 4 · What's happening in your body?";
+    panicBody.innerHTML = `
+      <div class="panic-card">
+        <div class="lbl">Feeling</div>
+        <h2>Name it. Naming slows it.</h2>
+        <p>This writes one word to your Safe Space history. No one sees it but you.</p>
+        <div class="panic-chips" id="feelChips">
+          <div class="panic-chip" data-v="panic">Panic</div>
+          <div class="panic-chip" data-v="anxiety">Anxiety</div>
+          <div class="panic-chip" data-v="overwhelm">Overwhelm</div>
+          <div class="panic-chip" data-v="anger">Anger</div>
+          <div class="panic-chip" data-v="sadness">Sadness</div>
+        </div>
+      </div>`;
+    document.getElementById('feelChips').querySelectorAll('.panic-chip').forEach(c=>{
+      c.addEventListener('click',()=>{
+        panicData.feeling_type = c.dataset.v;
+        setTimeout(()=>{panicStep=1;renderPanic()},200);
+      });
+    });
+  } else if(panicStep===1){
+    panicSubEl.textContent = 'Step 2 of 4 · How intense, 1 to 5?';
+    panicBody.innerHTML = `
+      <div class="panic-card">
+        <div class="lbl">Intensity</div>
+        <h2>Be honest. There's no grade here.</h2>
+        <p>Tap the number. We'll match the rest of the session to it.</p>
+        <div class="panic-intensity" id="pInt">
+          ${[1,2,3,4,5].map(n=>`<div class="pint" data-v="${n}">${n}</div>`).join('')}
+        </div>
+        <div style="display:flex;justify-content:space-between;font-size:10.5px;opacity:.65;margin-top:10px;font-weight:600"><span>1 · noticing</span><span>5 · calling someone</span></div>
+        <div class="panic-actions">
+          <button class="panic-btn ghost" onclick="panicStep=0;renderPanic()">Back</button>
+        </div>
+      </div>`;
+    document.getElementById('pInt').querySelectorAll('.pint').forEach(c=>{
+      c.addEventListener('click',()=>{
+        panicData.intensity = +c.dataset.v;
+        setTimeout(()=>{panicStep=2;renderPanic()},200);
+      });
+    });
+  } else if(panicStep===2){
+    panicSubEl.textContent = 'Step 3 of 4 · Let\'s ground. Stay with me.';
+    panicBody.innerHTML = `
+      <div style="text-align:center">
+        <div class="panic-breath"><div class="panic-breath-inner" id="breathText">Breathe</div></div>
+        <div class="panic-stage" id="breathStage">Breathe in · 4</div>
+        <div class="panic-timer" id="breathCount">Cycle 1 of 4</div>
+      </div>
+      <div class="panic-grounding">
+        <div class="gl">5-4-3-2-1 grounding <span class="gn">from your Daily Plan</span></div>
+        <div id="groundList" style="font-size:12.5px;opacity:.85;line-height:1.7">
+          <div>5 things you can <b>see</b></div>
+          <div>4 things you can <b>feel</b></div>
+          <div>3 things you can <b>hear</b></div>
+          <div>2 things you can <b>smell</b></div>
+          <div>1 thing you can <b>taste</b></div>
+        </div>
+      </div>
+      <div class="panic-actions">
+        <button class="panic-btn ghost" onclick="panicStep=1;renderPanic()">Back</button>
+        <button class="panic-btn primary" onclick="panicStep=3;renderPanic()">I'm breathing</button>
+      </div>`;
+    startBreathCycle();
+  } else if(panicStep===3){
+    panicSubEl.textContent = 'Step 4 of 4 · Where are you now?';
+    panicBody.innerHTML = `
+      <div class="panic-card">
+        <div class="lbl">After session</div>
+        <h2>How's your body feel now?</h2>
+        <p>Your honest answer trains Jess's next suggestion.</p>
+        <div class="panic-intensity" id="pRate">
+          ${[1,2,3,4,5].map(n=>`<div class="pint" data-v="${n}">${n}</div>`).join('')}
+        </div>
+        <div style="display:flex;justify-content:space-between;font-size:10.5px;opacity:.65;margin-top:10px;font-weight:600"><span>1 · unchanged</span><span>5 · calm</span></div>
+        <div class="panic-actions">
+          <button class="panic-btn ghost" onclick="closePanic()">Skip</button>
+        </div>
+      </div>`;
+    document.getElementById('pRate').querySelectorAll('.pint').forEach(c=>{
+      c.addEventListener('click',()=>{
+        c.classList.add('on');
+        setTimeout(()=>{
+          STATE.panicHistory.unshift({date:'Just now · Apr 18',type:panicData.feeling_type,intensity:panicData.intensity});
+          closePanic();
+          toast('Session saved. You did the brave thing.');
+        },400);
+      });
+    });
+  }
+}
+function showGrounding(){ setTimeout(()=>{panicStep=2;renderPanic()},400); }
+
+let breathTimer=null, breathStage=0;
+function startBreathCycle(){
+  if(breathTimer) clearInterval(breathTimer);
+  breathStage = 0;
+  const stages = [
+    {l:'Breathe in · 4',txt:'In',ms:4000},
+    {l:'Hold · 7',txt:'Hold',ms:7000},
+    {l:'Breathe out · 8',txt:'Out',ms:8000}
+  ];
+  let cycle = 1;
+  function advance(){
+    const s = stages[breathStage];
+    const stage = document.getElementById('breathStage');
+    const txt = document.getElementById('breathText');
+    const count = document.getElementById('breathCount');
+    if(!stage) return;
+    stage.textContent = s.l;
+    txt.textContent = s.txt;
+    count.textContent = `Cycle ${cycle} of 4`;
+  }
+  advance();
+  breathTimer = setInterval(()=>{
+    breathStage = (breathStage+1)%3;
+    if(breathStage===0) cycle++;
+    if(cycle>4){clearInterval(breathTimer);return}
+    advance();
+  },4000);
+}
+
+function openBreath(){openPanic();setTimeout(()=>{panicStep=2;renderPanic()},400)}
+
+/* ====== QUICK LOG (opens Mind sheet) ====== */
+function openQuickLog(){openSheet('mind')}
+
+/* ====== WATER ====== */
+function logWater(){
+  STATE.hydration.glasses = Math.min(STATE.hydration.target, STATE.hydration.glasses+1);
+  refreshWater();
+  toast(`+250 ml · ${STATE.hydration.glasses}/${STATE.hydration.target}`);
+}
+function changeWater(d){
+  STATE.hydration.glasses = Math.max(0,Math.min(STATE.hydration.target, STATE.hydration.glasses+d));
+  refreshWater();
+  const wv = document.getElementById('waterVal');
+  if(wv) wv.textContent = STATE.hydration.glasses;
+}
+function refreshWater(){
+  document.getElementById('waterCount').textContent = `${STATE.hydration.glasses} of ${STATE.hydration.target}`;
+  document.getElementById('strWater').textContent = STATE.hydration.glasses>0?`${STATE.hydration.glasses}g`:'0';
+}
+
+/* ====== PLANNER ADD ====== */
+function addPlan(){
+  const t = document.getElementById('plTitle').value.trim();
+  const c = document.getElementById('plCat').value;
+  if(!t){toast('Add a title first');return}
+  STATE.planner.push({title:t,category:c,date:'2026-04-18',time:''});
+  toast(`"${t}" added to PlannerItems`);
+  document.getElementById('plTitle').value = '';
+  openSheet('planner'); // rerender
+  // also populate upcoming on Today
+  document.getElementById('upEmpty').style.display='none';
+  const up = document.getElementById('upFilled');
+  up.style.display='block';
+  up.innerHTML = STATE.planner.map(p=>`<div class="up-row"><span class="up-dot"></span><div class="up-title"><div class="t">${p.title}</div><div class="s">${p.category} · ${p.date}</div></div><div class="up-when">today</div></div>`).join('');
+}
+
+/* ====== FOCUS EDIT ====== */
+function promptIntent(){
+  const v = prompt("Today's focus (one word)", STATE.log.focus);
+  if(v){
+    STATE.log.focus = v.charAt(0).toUpperCase()+v.slice(1);
+    document.getElementById('intentVal').textContent = STATE.log.focus;
+    toast('Focus updated');
+  }
+}
+
+/* ====== TOAST ====== */
+let toastTimer=null;
+function toast(msg){
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('on');
+  if(toastTimer) clearTimeout(toastTimer);
+  toastTimer = setTimeout(()=>t.classList.remove('on'),1800);
+}
+
+/* ====== GESTURES ====== */
+let sx=0,sdx=0;
+document.querySelector('.deck-viewport').addEventListener('touchstart',e=>{sx=e.touches[0].clientX;sdx=0},{passive:true});
+document.querySelector('.deck-viewport').addEventListener('touchmove',e=>{sdx=e.touches[0].clientX-sx},{passive:true});
+document.querySelector('.deck-viewport').addEventListener('touchend',()=>{if(Math.abs(sdx)>40) moveDeck(sdx<0?1:-1)});
+
+/* ====== BOOT + LAUNCH MORNING ====== */
+boot();
+renderDeck();
+window.addEventListener('load',()=>setTimeout(openMorning,600));
+</script>
+</body>
+</html>

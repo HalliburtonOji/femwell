@@ -1,0 +1,510 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>FemWell — Life Stage redesign</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300..800;1,9..144,300..800&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{--cream:#FFFAF5;--cream-2:#FFF5EC;--cream-3:#F0E5D8;--plum:#4A2A3A;--plum-2:#6B4559;--plum-mute:#8A7584;--rose-400:#E67F73;--rose-500:#D45E52;--period:#B84A41;--follicular:#E67F73;--ovulatory:#F2A99A;--luteal:#8A5F74;--gold:#C9A95C;--teal:#5F8A85;--moss:#7D8668;--lav:#B9A4C9;--night:#1A1522}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--cream);font-family:'Inter',sans-serif;color:var(--plum);line-height:1.5;padding:56px 32px 120px}
+.page-head{max-width:1400px;margin:0 auto 48px;text-align:center}
+.page-head h1{font-family:'Fraunces',serif;font-weight:300;font-size:56px;letter-spacing:-0.02em}
+.page-head h1 em{font-style:italic;color:var(--rose-500)}
+.page-head p{margin-top:14px;color:var(--plum-mute);font-size:15px;max-width:680px;margin-auto}
+.stage-strip{max-width:1200px;margin:30px auto 0;padding:14px 22px;background:#fff;border-radius:99px;display:flex;gap:10px;justify-content:center;flex-wrap:wrap}
+.stage-strip span{padding:8px 16px;border-radius:99px;font-size:12px;font-weight:500;background:var(--cream-2);color:var(--plum-2)}
+.stage-strip span.on{background:var(--plum);color:var(--cream)}
+.grid{max-width:1400px;margin:48px auto 0;display:grid;grid-template-columns:repeat(auto-fit,minmax(400px,1fr));gap:56px 40px;justify-items:center}
+.cap{margin-top:14px;font-size:13px;color:var(--plum-mute);text-align:center;max-width:380px}
+.cap b{color:var(--plum);font-weight:600}
+.cap .stg{display:inline-block;padding:3px 9px;background:rgba(138,95,116,.15);color:var(--luteal);border-radius:99px;font-size:10px;font-weight:600;letter-spacing:1px;text-transform:uppercase;margin-right:6px}
+.phone{width:400px;aspect-ratio:1/2.05;background:var(--cream);border-radius:46px;box-shadow:0 40px 80px -30px rgba(74,42,58,.45),0 0 0 12px #1a1522,0 0 0 13px #3a2a32;overflow:hidden;position:relative}
+.notch{position:absolute;top:8px;left:50%;transform:translateX(-50%);width:120px;height:24px;background:#1a1522;border-radius:14px;z-index:50}
+.status{position:absolute;top:14px;left:28px;right:28px;display:flex;justify-content:space-between;font-size:11px;font-weight:600;color:var(--plum);z-index:40}
+.screen{position:absolute;top:46px;left:0;right:0;bottom:0;overflow-y:auto}
+.screen::-webkit-scrollbar{display:none}
+.hdr{padding:14px 22px 8px;display:flex;justify-content:space-between;align-items:center}
+.hdr .ttl{font-family:'Fraunces',serif;font-size:22px;font-weight:400}
+.hdr .stg-pill{display:inline-flex;align-items:center;gap:6px;padding:5px 11px;border-radius:99px;font-size:11px;font-weight:600;background:rgba(201,169,92,.15);color:#8a6f2a}
+.hdr .stg-pill::before{content:"◐";font-size:10px}
+.sub{padding:0 22px 12px;font-size:12px;color:var(--plum-mute)}
+/* stage hero */
+.sh{margin:6px 18px 16px;padding:22px 20px;border-radius:24px;color:var(--plum);position:relative;overflow:hidden}
+.sh.rep{background:linear-gradient(135deg,#F5D9C9,#E67F73)}
+.sh.peri{background:linear-gradient(135deg,#F5D9C9,#C9A95C,#8A5F74)}
+.sh.meno{background:linear-gradient(135deg,#B9A4C9,#8A5F74)}
+.sh.teen{background:linear-gradient(135deg,#F2A99A,#B9A4C9)}
+.sh-t{font-size:11px;letter-spacing:2px;text-transform:uppercase;opacity:.7;margin-bottom:8px}
+.sh-h{font-family:'Fraunces',serif;font-size:26px;font-weight:300;line-height:1.2;margin-bottom:8px}
+.sh-h em{font-style:italic}
+.sh-s{font-size:12px;color:rgba(74,42,58,.75);margin-bottom:14px}
+.sh-stats{display:flex;gap:12px;margin-bottom:14px}
+.sh-sc{flex:1;padding:10px 12px;background:rgba(255,255,255,.45);border-radius:14px}
+.sh-sv{font-family:'Fraunces',serif;font-size:22px;font-weight:400;color:var(--plum);line-height:1}
+.sh-sl{font-size:10px;color:var(--plum-2);margin-top:4px;opacity:.8}
+.sh-act{display:inline-flex;padding:10px 16px;background:var(--plum);color:var(--cream);border-radius:99px;font-size:12px;font-weight:600}
+/* sect */
+.sect{padding:16px 22px 6px;display:flex;justify-content:space-between;align-items:baseline}
+.sect h3{font-family:'Fraunces',serif;font-size:17px;font-weight:400}
+.sect .see{font-size:11px;color:var(--plum-mute);font-weight:500}
+/* hot flash heat map */
+.hf{padding:0 22px 18px}
+.hf-grid{display:grid;grid-template-columns:44px repeat(24,1fr);gap:1px;font-size:8px}
+.hf-grid .row-lbl{color:var(--plum-mute);font-size:9px;text-align:right;padding-right:6px;align-self:center}
+.hf-grid .col-lbl{color:var(--plum-mute);font-size:8px;text-align:center}
+.hf-grid .cell{aspect-ratio:1;background:var(--cream-2);border-radius:2px}
+.hf-grid .cell.x1{background:rgba(230,127,115,.25)}
+.hf-grid .cell.x2{background:rgba(230,127,115,.5)}
+.hf-grid .cell.x3{background:rgba(230,127,115,.8)}
+.hf-grid .cell.x4{background:var(--rose-500)}
+.hf-ins{margin-top:14px;padding:12px 14px;background:rgba(201,169,92,.12);border-left:2px solid var(--gold);border-radius:0 10px 10px 0;font-size:12px;font-family:'Fraunces',serif;font-style:italic;color:var(--plum);line-height:1.4}
+.hf-ins b{font-family:'Inter',sans-serif;font-style:normal;font-weight:600}
+/* quick log bar */
+.qlb{padding:0 22px 16px}
+.qlb-h{font-size:11px;color:var(--plum-mute);letter-spacing:2px;text-transform:uppercase;margin-bottom:10px;font-weight:600}
+.qlb-g{display:grid;grid-template-columns:repeat(5,1fr);gap:6px}
+.qlb-c{padding:12px 4px;background:#fff;border:1px solid rgba(74,42,58,.08);border-radius:12px;text-align:center;font-size:10px}
+.qlb-c span.sev{display:block;font-family:'Fraunces',serif;font-style:italic;font-size:20px;margin-bottom:4px}
+.qlb-c.s1 .sev{color:var(--rose-400)}
+.qlb-c.s2 .sev{color:var(--rose-500)}
+.qlb-c.s3 .sev{color:#B84A41}
+.qlb-c.s4 .sev{color:var(--plum)}
+.qlb-c.none .sev{color:var(--moss)}
+.qlb-c.on{background:rgba(184,74,65,.08);border-color:#B84A41}
+/* HRT tracker */
+.hrt{padding:0 18px}
+.hrt-card{padding:16px;background:#fff;border:1px solid rgba(74,42,58,.08);border-radius:18px;margin-bottom:10px}
+.hrt-h{display:flex;justify-content:space-between;margin-bottom:8px}
+.hrt-t{font-family:'Fraunces',serif;font-size:15px;font-weight:500}
+.hrt-d{font-size:11px;color:var(--moss);font-weight:600}
+.hrt-r{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:10px 0}
+.hrt-ri{padding:10px 12px;background:var(--cream-2);border-radius:10px}
+.hrt-ri .l{font-size:9px;color:var(--plum-mute);letter-spacing:1px;text-transform:uppercase;margin-bottom:3px}
+.hrt-ri .v{font-family:'Fraunces',serif;font-size:14px;font-weight:500}
+.hrt-s{font-size:11px;color:var(--plum-2);line-height:1.4}
+.hrt-s b{color:var(--plum)}
+.hrt-btm{display:flex;gap:8px;margin-top:10px}
+.hrt-b{flex:1;padding:8px;background:var(--cream-2);border-radius:99px;text-align:center;font-size:11px;color:var(--plum-2)}
+.hrt-b.on{background:var(--plum);color:var(--cream)}
+/* TTC mode panel */
+.ttc-scr{background:linear-gradient(180deg,#FFE9D9 0%,#F5D9C9 100%);height:100%;padding:0;overflow:hidden}
+.ttc-top{padding:20px 22px 14px}
+.ttc-cap{font-size:11px;letter-spacing:2px;text-transform:uppercase;color:var(--plum-2);font-weight:600;margin-bottom:6px}
+.ttc-h{font-family:'Fraunces',serif;font-size:26px;font-weight:300;line-height:1.15;margin-bottom:4px}
+.ttc-h em{font-style:italic;color:var(--rose-500)}
+.ttc-d{font-size:12px;color:var(--plum-2);opacity:.75}
+.ttc-win{margin:6px 18px;padding:16px;background:#fff;border-radius:18px;border:1px solid rgba(74,42,58,.08)}
+.ttc-win-h{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px}
+.ttc-win-t{font-size:11px;color:var(--plum-mute);font-weight:600;letter-spacing:1px;text-transform:uppercase}
+.ttc-win-c{font-family:'Fraunces',serif;font-size:22px;font-weight:400;line-height:1.1;margin-bottom:4px}
+.ttc-win-s{font-size:11px;color:var(--plum-mute);margin-bottom:10px}
+.ttc-win-bar{height:32px;background:var(--cream-2);border-radius:8px;position:relative;overflow:hidden;margin-bottom:6px}
+.ttc-win-bar .f{position:absolute;top:0;bottom:0;background:linear-gradient(90deg,#F2A99A 0%,var(--rose-500) 60%,#F2A99A 100%);border-radius:8px;left:26%;right:50%}
+.ttc-win-bar .today{position:absolute;top:-4px;bottom:-4px;width:2px;background:var(--plum);left:36%}
+.ttc-win-bar .today::before{content:"today";position:absolute;top:-14px;left:-14px;font-size:8px;color:var(--plum);white-space:nowrap;font-weight:600}
+.ttc-win-lbl{display:flex;justify-content:space-between;font-size:9px;color:var(--plum-mute)}
+.ttc-row{padding:0 18px}
+.ttc-lr{padding:12px 14px;background:rgba(255,255,255,.7);border-radius:14px;margin-bottom:8px;display:flex;gap:10px;align-items:center}
+.ttc-lr .em{width:36px;height:36px;border-radius:50%;background:var(--cream-2);display:grid;place-items:center;font-family:'Fraunces',serif;font-style:italic;font-size:16px;color:var(--plum);flex-shrink:0}
+.ttc-lr .m{flex:1}
+.ttc-lr .t{font-family:'Fraunces',serif;font-size:13px;font-weight:500}
+.ttc-lr .s{font-size:10px;color:var(--plum-mute);margin-top:2px}
+.ttc-lr .v{font-family:'Fraunces',serif;font-size:15px;color:var(--rose-500);font-weight:400}
+.ttc-jess{margin:14px 18px;padding:14px;background:var(--plum);color:var(--cream);border-radius:18px}
+.ttc-jess h5{font-family:'Fraunces',serif;font-style:italic;font-size:14px;margin-bottom:6px;color:#F2A99A}
+.ttc-jess p{font-size:12px;opacity:.85;line-height:1.4}
+/* AMA card */
+.ama{padding:0 18px}
+.ama-card{padding:18px;background:#1a1522;color:#f5e6d3;border-radius:20px;margin-bottom:10px;position:relative;overflow:hidden}
+.ama-card::before{content:"";position:absolute;top:-40px;right:-40px;width:120px;height:120px;border-radius:50%;background:radial-gradient(closest-side,rgba(201,169,92,.3),transparent)}
+.ama-l{font-size:10px;letter-spacing:2px;text-transform:uppercase;color:#C9A95C;margin-bottom:6px;position:relative}
+.ama-h{font-family:'Fraunces',serif;font-size:18px;font-weight:400;line-height:1.2;margin-bottom:8px;position:relative}
+.ama-h em{font-style:italic;color:#F2A99A}
+.ama-m{display:flex;gap:8px;font-size:11px;opacity:.7;margin-bottom:12px;position:relative}
+.ama-m span::before{content:"•";margin-right:6px;opacity:.4}
+.ama-m span:first-child::before{display:none}
+.ama-dr{display:flex;gap:10px;align-items:center;margin-bottom:12px;position:relative}
+.ama-av{width:40px;height:40px;border-radius:50%;background:linear-gradient(135deg,#C9A95C,#8A5F74);color:#fff;display:grid;place-items:center;font-family:'Fraunces',serif;font-style:italic;font-size:16px;flex-shrink:0}
+.ama-dn{font-family:'Fraunces',serif;font-size:13px}
+.ama-ds{font-size:10px;opacity:.6}
+.ama-b{display:inline-flex;padding:10px 16px;background:#F2A99A;color:#1a1522;border-radius:99px;font-size:12px;font-weight:600;position:relative}
+/* appendix */
+.app{max-width:1200px;margin:80px auto 0;padding:36px;background:#fff;border-radius:28px;border:1px solid rgba(74,42,58,.1)}
+.app h2{font-family:'Fraunces',serif;font-weight:300;font-size:30px;margin-bottom:8px}
+.app h2 em{font-style:italic;color:var(--rose-500)}
+.app .lead{color:var(--plum-mute);font-size:13px;margin-bottom:20px}
+.apgrid{display:grid;grid-template-columns:1fr 1fr;gap:30px}
+.apcol h4{font-size:11px;letter-spacing:2px;text-transform:uppercase;color:var(--plum-mute);margin-bottom:10px}
+.apcol li{font-size:13px;color:var(--plum-2);padding:6px 0;border-bottom:1px dotted rgba(74,42,58,.1);list-style:none;display:flex;justify-content:space-between;gap:10px}
+.apcol li b{color:var(--plum);font-weight:500}
+.stage-lang{max-width:1200px;margin:28px auto 0;padding:20px 28px;background:var(--cream-2);border-radius:20px}
+.stage-lang h4{font-family:'Fraunces',serif;font-size:18px;font-weight:400;margin-bottom:12px}
+.stage-lang table{width:100%;font-size:12px}
+.stage-lang th{text-align:left;padding:8px 10px;color:var(--plum-mute);font-size:10px;letter-spacing:1px;text-transform:uppercase;font-weight:600;border-bottom:1px solid rgba(74,42,58,.1)}
+.stage-lang td{padding:10px;border-bottom:1px dotted rgba(74,42,58,.08);vertical-align:top}
+.stage-lang td:first-child{font-family:'Fraunces',serif;font-style:italic;color:var(--rose-500);font-size:13px}
+.ftr{max-width:900px;margin:60px auto 0;padding:28px;background:var(--plum);color:var(--cream);border-radius:24px;text-align:center}
+.ftr h3{font-family:'Fraunces',serif;font-style:italic;font-size:24px;font-weight:300;margin-bottom:8px}
+.ftr p{font-size:13px;opacity:.8;max-width:620px;margin:0 auto}
+</style></head><body>
+
+<div class="page-head">
+  <h1>Life Stage — <em>first-class</em></h1>
+  <p>FemWell adapts its language, data model, and Jess's tone to where you are in life. Teen / Reproductive / Peri / Meno / Post-meno. No generic wellness overlay.</p>
+  <div class="stage-strip">
+    <span>Teen</span>
+    <span>Reproductive</span>
+    <span class="on">Peri-menopause</span>
+    <span>Menopause</span>
+    <span>Post-meno</span>
+  </div>
+</div>
+
+<div class="grid">
+
+<!-- P1: Peri-menopause dashboard -->
+<div><div class="phone"><div class="notch"></div>
+  <div class="status"><span>9:12</span><span>●●● 64%</span></div>
+  <div class="screen">
+    <div class="hdr"><span class="ttl">This transition</span><span class="stg-pill">peri · yr 2</span></div>
+    <div class="sub">"Luteal" is less accurate for you now — I'll use softer language.</div>
+
+    <div class="sh peri">
+      <div class="sh-t">this week</div>
+      <div class="sh-h">A hotter<br/><em>few days ahead.</em></div>
+      <div class="sh-s">barometric pressure drop Wed + your 47-day rhythm — 3 peri-flash nights likely Tue through Thu.</div>
+      <div class="sh-stats">
+        <div class="sh-sc"><div class="sh-sv">47 d</div><div class="sh-sl">last cycle</div></div>
+        <div class="sh-sc"><div class="sh-sv">11</div><div class="sh-sl">flashes / 7d</div></div>
+        <div class="sh-sc"><div class="sh-sv">6.2h</div><div class="sh-sl">sleep avg</div></div>
+      </div>
+      <span class="sh-act">show me the pattern</span>
+    </div>
+
+    <div class="qlb">
+      <div class="qlb-h">hot flashes — last 6 hours</div>
+      <div class="qlb-g">
+        <div class="qlb-c none"><span class="sev">◯</span>none</div>
+        <div class="qlb-c s1"><span class="sev">◐</span>1 mild</div>
+        <div class="qlb-c s2 on"><span class="sev">◑</span>2 med</div>
+        <div class="qlb-c s3"><span class="sev">◕</span>3+ hot</div>
+        <div class="qlb-c s4"><span class="sev">●</span>night</div>
+      </div>
+    </div>
+
+    <div class="sect"><h3>Top symptoms · this month</h3></div>
+    <div style="padding:0 18px">
+      <div class="hrt-card" style="padding:12px 14px;margin-bottom:6px;display:flex;gap:10px;align-items:center">
+        <span style="width:8px;height:36px;background:var(--rose-500);border-radius:3px"></span>
+        <div style="flex:1"><div style="font-family:'Fraunces',serif;font-size:13px">Night sweats</div><div style="font-size:10px;color:var(--plum-mute)">14 episodes · peaking 2-4am</div></div>
+        <span style="font-family:'Fraunces',serif;font-style:italic;color:var(--rose-500);font-size:16px">↑</span>
+      </div>
+      <div class="hrt-card" style="padding:12px 14px;margin-bottom:6px;display:flex;gap:10px;align-items:center">
+        <span style="width:8px;height:36px;background:var(--gold);border-radius:3px"></span>
+        <div style="flex:1"><div style="font-family:'Fraunces',serif;font-size:13px">Mood volatility</div><div style="font-size:10px;color:var(--plum-mute)">worst on low-sleep days</div></div>
+        <span style="font-family:'Fraunces',serif;font-style:italic;color:var(--gold);font-size:16px">↕</span>
+      </div>
+      <div class="hrt-card" style="padding:12px 14px;display:flex;gap:10px;align-items:center">
+        <span style="width:8px;height:36px;background:var(--moss);border-radius:3px"></span>
+        <div style="flex:1"><div style="font-family:'Fraunces',serif;font-size:13px">Joint stiffness · AM</div><div style="font-size:10px;color:var(--plum-mute)">better on movement days</div></div>
+        <span style="font-family:'Fraunces',serif;font-style:italic;color:var(--moss);font-size:16px">↓</span>
+      </div>
+    </div>
+  </div>
+</div>
+<div class="cap"><span class="stg">peri</span><b>P1 · Peri dashboard.</b> Language softens: "this transition", "a hotter few days", not "luteal d22". Weekly forecast. 3-tap symptom log.</div></div>
+
+<!-- P2: Hot-flash heat map -->
+<div><div class="phone"><div class="notch"></div>
+  <div class="status"><span>9:15</span><span>●●● 64%</span></div>
+  <div class="screen">
+    <div class="hdr"><span class="ttl">Hot flash map</span><span class="stg-pill">30d</span></div>
+    <div class="sub">Time-of-day × severity · last 30 days.</div>
+
+    <div class="hf">
+      <div class="hf-grid" id="hfg" style="grid-template-columns:44px repeat(24,1fr)">
+        <span></span>
+        <span class="col-lbl">0</span><span class="col-lbl"></span><span class="col-lbl"></span><span class="col-lbl"></span><span class="col-lbl"></span><span class="col-lbl"></span>
+        <span class="col-lbl">6</span><span class="col-lbl"></span><span class="col-lbl"></span><span class="col-lbl"></span><span class="col-lbl"></span><span class="col-lbl"></span>
+        <span class="col-lbl">12</span><span class="col-lbl"></span><span class="col-lbl"></span><span class="col-lbl"></span><span class="col-lbl"></span><span class="col-lbl"></span>
+        <span class="col-lbl">18</span><span class="col-lbl"></span><span class="col-lbl"></span><span class="col-lbl"></span><span class="col-lbl"></span><span class="col-lbl"></span>
+      </div>
+      <div class="hf-grid" style="grid-template-columns:44px repeat(24,1fr);margin-top:4px" id="hfg2"></div>
+    </div>
+
+    <div class="hf-ins" style="margin:6px 22px 0">"Your night peak is <b>2am–4am</b>. On nights after <b>&gt;2 glasses of wine</b>, flashes are <b>2× more frequent</b> and last <b>40% longer</b>. Want me to gently flag that in Today when you log wine?"</div>
+
+    <div class="sect"><h3>Trend · 6 months</h3></div>
+    <div style="padding:0 22px 14px">
+      <svg viewBox="0 0 320 120" width="100%" style="background:#fff;border-radius:14px;padding:14px;box-sizing:border-box;border:1px solid rgba(74,42,58,.08)">
+        <line x1="0" y1="100" x2="320" y2="100" stroke="rgba(74,42,58,.1)" stroke-width="1"/>
+        <path d="M 10 80 L 60 78 L 110 70 L 160 55 L 210 40 L 260 30 L 310 20" stroke="#D45E52" stroke-width="2.5" fill="none"/>
+        <path d="M 10 85 L 60 82 L 110 78 L 160 68 L 210 58 L 260 50 L 310 42" stroke="#8A5F74" stroke-width="1.5" stroke-dasharray="3,3" fill="none" opacity=".7"/>
+        <circle cx="310" cy="20" r="4" fill="#D45E52"/>
+        <text x="0" y="112" fill="#8A7584" font-size="8" font-family="Inter">Nov</text>
+        <text x="50" y="112" fill="#8A7584" font-size="8" font-family="Inter">Dec</text>
+        <text x="100" y="112" fill="#8A7584" font-size="8" font-family="Inter">Jan</text>
+        <text x="150" y="112" fill="#8A7584" font-size="8" font-family="Inter">Feb</text>
+        <text x="200" y="112" fill="#8A7584" font-size="8" font-family="Inter">Mar</text>
+        <text x="250" y="112" fill="#8A7584" font-size="8" font-family="Inter">Apr</text>
+        <text x="160" y="10" fill="#4A2A3A" font-size="9" font-family="Fraunces" font-style="italic">— flashes / week  ·  — severity</text>
+      </svg>
+    </div>
+  </div>
+</div>
+<div class="cap"><span class="stg">peri</span><b>P2 · Hot-flash map.</b> 24-hour heat-map + 6-month trend + Jess correlation with triggers (wine, room temp, stress). Surfaces the 2-4am peak.</div></div>
+
+<!-- P3: HRT tracker -->
+<div><div class="phone"><div class="notch"></div>
+  <div class="status"><span>9:18</span><span>●●● 64%</span></div>
+  <div class="screen">
+    <div class="hdr"><span class="ttl">HRT</span><span class="stg-pill">day 47</span></div>
+    <div class="sub">Estradiol patch + micronised progesterone since Mar 4.</div>
+
+    <div class="hrt">
+      <div class="hrt-card">
+        <div class="hrt-h"><span class="hrt-t">Estradiol patch</span><span class="hrt-d">→ change Thu</span></div>
+        <div class="hrt-r">
+          <div class="hrt-ri"><div class="l">dose</div><div class="v">50 μg/day</div></div>
+          <div class="hrt-ri"><div class="l">brand</div><div class="v">Estradot</div></div>
+        </div>
+        <div class="hrt-s"><b>Applied Apr 17 · lower back.</b> Next rotate: upper thigh, Thu Apr 23.</div>
+        <div class="hrt-btm">
+          <span class="hrt-b on">log site</span>
+          <span class="hrt-b">skip</span>
+          <span class="hrt-b">side-effect</span>
+        </div>
+      </div>
+
+      <div class="hrt-card">
+        <div class="hrt-h"><span class="hrt-t">Micronised progesterone</span><span class="hrt-d">nightly</span></div>
+        <div class="hrt-r">
+          <div class="hrt-ri"><div class="l">dose</div><div class="v">100 mg</div></div>
+          <div class="hrt-ri"><div class="l">form</div><div class="v">oral capsule</div></div>
+        </div>
+        <div class="hrt-s">Taken 43 of last 47 nights. <b>Sleep +38min</b> on nights taken — Jess noticed.</div>
+        <div class="hrt-btm">
+          <span class="hrt-b on">log 10pm</span>
+          <span class="hrt-b">snooze</span>
+        </div>
+      </div>
+
+      <div class="hrt-card">
+        <div class="hrt-h"><span class="hrt-t">Since starting HRT</span><span class="hrt-d">6 weeks</span></div>
+        <div class="hrt-s"><b>Night sweats ↓ 38%</b>  ·  <b>sleep +54 min/night</b>  ·  <b>mood volatility ↓ 22%</b>.<br/>Side effects logged: mild breast tenderness (week 2-3, resolved).</div>
+      </div>
+
+      <div class="hrt-card" style="background:var(--cream-2);border:none">
+        <div class="hrt-h"><span class="hrt-t">Export for Dr Catherine O'Brien</span><span class="hrt-d">Thu 3pm</span></div>
+        <div class="hrt-s">Jess has a Care Bridge PDF ready: 6 wks of HRT data, symptoms, sleep, side effects, and your questions draft.</div>
+        <div class="hrt-btm"><span class="hrt-b on">preview PDF</span></div>
+      </div>
+    </div>
+  </div>
+</div>
+<div class="cap"><span class="stg">peri · meno</span><b>P3 · HRT tracker.</b> Dose, rotation site, adherence, effect on symptoms + sleep, side-effect log, Care Bridge export for clinicians.</div></div>
+
+<!-- P4: TTC mode (reproductive) -->
+<div><div class="phone"><div class="notch"></div>
+  <div class="status"><span>9:21</span><span>●●● 63%</span></div>
+  <div class="screen">
+    <div class="ttc-scr">
+      <div class="ttc-top">
+        <div class="ttc-cap">trying to conceive  ·  mode</div>
+        <div class="ttc-h"><em>Cycle 4,</em> day 13.</div>
+        <div class="ttc-d">Fertile window opens today. Peak estimated Wed.</div>
+      </div>
+
+      <div class="ttc-win">
+        <div class="ttc-win-h"><span class="ttc-win-t">fertile window</span><span class="ttc-win-c" style="font-size:15px;color:var(--rose-500);font-style:italic;font-family:'Fraunces',serif">open</span></div>
+        <div class="ttc-win-bar">
+          <div class="f"></div>
+          <div class="today"></div>
+        </div>
+        <div class="ttc-win-lbl"><span>d10</span><span>d13</span><span>d16</span><span>d19</span></div>
+        <div class="ttc-win-s" style="margin-top:8px">2 clear-mucus days logged. BBT not yet risen. Strip window Mon–Wed.</div>
+      </div>
+
+      <div class="ttc-row" style="margin-top:8px">
+        <div class="ttc-lr"><span class="em">B</span><div class="m"><div class="t">BBT · this morning</div><div class="s">6:04am · woke before alarm</div></div><span class="v">36.42 °C</span></div>
+        <div class="ttc-lr"><span class="em">M</span><div class="m"><div class="t">Cervical mucus</div><div class="s">d11 · sticky → d12 · creamy → today</div></div><span class="v">clear</span></div>
+        <div class="ttc-lr"><span class="em">L</span><div class="m"><div class="t">LH strip</div><div class="s">Clearblue · faint positive</div></div><span class="v">rising</span></div>
+      </div>
+
+      <div class="ttc-jess">
+        <h5>"I won't say 'you missed it' if this month doesn't land."</h5>
+        <p>If this cycle doesn't result in a positive test, I'll meet you where you are on d28. Next month, I'll have two cycles of BBT + strip data to sharpen the window. No pressure language, no countdown, no "optimize."</p>
+      </div>
+    </div>
+  </div>
+</div>
+<div class="cap"><span class="stg">reproductive</span><b>P4 · TTC mode.</b> Settings toggle re-skins Planner with fertility band, adds BBT/mucus/LH logging, shifts Jess into gentle window-coach. Never "you missed it."</div></div>
+
+<!-- P5: Dr Aisha Patel AMA channel -->
+<div><div class="phone"><div class="notch"></div>
+  <div class="status"><span>9:24</span><span>●●● 63%</span></div>
+  <div class="screen">
+    <div class="hdr"><span class="ttl">Stage experts</span><span class="stg-pill">peri</span></div>
+    <div class="sub">Vetted clinicians who answer, weekly. No diagnoses — context.</div>
+
+    <div class="ama">
+      <div class="ama-card">
+        <div class="ama-l">live Wed 7pm BST  ·  with Dr Aisha Patel Okwu</div>
+        <div class="ama-h">"the <em>2am wake</em> — hormones, not insomnia"</div>
+        <div class="ama-m"><span>45 min</span><span>Q&A</span><span>replay ok</span></div>
+        <div class="ama-dr">
+          <span class="ama-av">C</span>
+          <div><div class="ama-dn">Dr Aisha Patel Okwu</div><div class="ama-ds">gyn · MB BCh · London · peri specialist</div></div>
+        </div>
+        <a class="ama-b">reserve seat</a>
+      </div>
+
+      <div class="ama-card" style="background:#4A2A3A">
+        <div class="ama-l" style="color:#F2A99A">recorded  ·  last Thu</div>
+        <div class="ama-h">"HRT — <em>scared of cancer?</em><br/>real risk, real data."</div>
+        <div class="ama-m"><span>38 min</span><span>3,412 listened</span></div>
+        <div class="ama-dr"><span class="ama-av">A</span><div><div class="ama-dn">Dr Priya Shah Eze</div><div class="ama-ds">endocrinologist · Manchester</div></div></div>
+        <a class="ama-b" style="background:#C9A95C;color:#1a1522">listen</a>
+      </div>
+
+      <div class="ama-card" style="background:#8A5F74">
+        <div class="ama-l" style="color:#F2A99A">ask the expert · anonymous</div>
+        <div class="ama-h" style="font-size:16px">"is it peri if I'm <em>only 38?</em>"</div>
+        <div class="ama-m"><span>from D., 38</span><span>Dr Aisha Patel replies Thu</span></div>
+        <a class="ama-b" style="background:rgba(245,230,211,.15);color:#fff">ask yours →</a>
+      </div>
+    </div>
+  </div>
+</div>
+<div class="cap"><span class="stg">peri · meno</span><b>P5 · Stage experts.</b> Dr Aisha Patel Okwu channel with weekly AMAs, anonymous question queue, recorded library, UK-local panel.</div></div>
+
+<!-- P6: Stage switcher / stage picker (onboarding-like) -->
+<div><div class="phone"><div class="notch"></div>
+  <div class="status"><span>9:27</span><span>●●● 63%</span></div>
+  <div class="screen">
+    <div class="hdr"><span class="ttl">Your stage</span></div>
+    <div class="sub">This changes the language, data, Jess's tone, and the Programs shelf.</div>
+
+    <div style="padding:6px 18px 20px">
+
+      <div style="padding:18px 20px;background:linear-gradient(135deg,#F2A99A,#B9A4C9);border-radius:20px;margin-bottom:12px">
+        <div style="font-size:10px;letter-spacing:2px;text-transform:uppercase;color:rgba(74,42,58,.6);margin-bottom:6px">stage 1</div>
+        <div style="font-family:'Fraunces',serif;font-size:22px;font-weight:300;margin-bottom:4px">Teen / first cycles.</div>
+        <div style="font-size:11px;color:var(--plum-2);margin-bottom:10px">Gentle language. Parent-consent mode. Period-first ed. No TTC surfaces. No HRT.</div>
+        <span style="padding:8px 14px;background:rgba(255,255,255,.5);border-radius:99px;font-size:11px;color:var(--plum)">select</span>
+      </div>
+
+      <div style="padding:18px 20px;background:linear-gradient(135deg,#F5D9C9,#E67F73);border-radius:20px;margin-bottom:12px">
+        <div style="font-size:10px;letter-spacing:2px;text-transform:uppercase;color:rgba(74,42,58,.6);margin-bottom:6px">stage 2  ·  your current default</div>
+        <div style="font-family:'Fraunces',serif;font-size:22px;font-weight:300;margin-bottom:4px">Reproductive.</div>
+        <div style="font-size:11px;color:var(--plum-2);margin-bottom:10px">Full cycle language. Optional TTC mode. Full symptom surface. Reproductive-choice content.</div>
+        <span style="padding:8px 14px;background:rgba(255,255,255,.5);border-radius:99px;font-size:11px;color:var(--plum)">switch back</span>
+      </div>
+
+      <div style="padding:18px 20px;background:linear-gradient(135deg,#F5D9C9,#C9A95C,#8A5F74);border-radius:20px;margin-bottom:12px;border:2px solid var(--plum)">
+        <div style="font-size:10px;letter-spacing:2px;text-transform:uppercase;color:rgba(74,42,58,.75);margin-bottom:6px">stage 3  ·  selected</div>
+        <div style="font-family:'Fraunces',serif;font-size:22px;font-weight:300;margin-bottom:4px">Peri-menopause.</div>
+        <div style="font-size:11px;color:var(--plum-2);margin-bottom:10px">Softened language ("this transition"). Hot-flash map. HRT tracker. Irregular-cycle friendly. Dr Aisha Patel channel. "Luteal" replaced.</div>
+        <span style="padding:8px 14px;background:var(--plum);color:var(--cream);border-radius:99px;font-size:11px">current</span>
+      </div>
+
+      <div style="padding:18px 20px;background:linear-gradient(135deg,#B9A4C9,#8A5F74);border-radius:20px;margin-bottom:12px;color:#fff">
+        <div style="font-size:10px;letter-spacing:2px;text-transform:uppercase;opacity:.75;margin-bottom:6px">stage 4</div>
+        <div style="font-family:'Fraunces',serif;font-size:22px;font-weight:300;margin-bottom:4px">Menopause.</div>
+        <div style="font-size:11px;opacity:.85;margin-bottom:10px">12mo without a period. Cycle UI retires. HRT + hot-flash remain. Bone & cardio layer.</div>
+        <span style="padding:8px 14px;background:rgba(255,255,255,.2);border-radius:99px;font-size:11px">select</span>
+      </div>
+
+      <div style="padding:18px 20px;background:linear-gradient(135deg,#8A5F74,#4A2A3A);border-radius:20px;color:#fff">
+        <div style="font-size:10px;letter-spacing:2px;text-transform:uppercase;opacity:.75;margin-bottom:6px">stage 5</div>
+        <div style="font-family:'Fraunces',serif;font-size:22px;font-weight:300;margin-bottom:4px">Post-menopause.</div>
+        <div style="font-size:11px;opacity:.85;margin-bottom:10px">Longevity layer: bone, vascular, cognitive. HRT continuation. Life-after framing.</div>
+        <span style="padding:8px 14px;background:rgba(255,255,255,.2);border-radius:99px;font-size:11px">select</span>
+      </div>
+
+    </div>
+  </div>
+</div>
+<div class="cap"><b>P6 · Stage picker.</b> First-class stage identity. Switching re-colours the whole app — language, defaults, data model, Jess's tone.</div></div>
+
+</div>
+
+<!-- hf grid filler script -->
+<script>
+(function(){
+  const grid2 = document.getElementById('hfg2');
+  if(!grid2) return;
+  const rows = ['Apr 1-7','Apr 8-14','Apr 15-20'];
+  const pattern = [
+    [0,0,2,3,4,3,2,0,0,0,0,0,0,1,1,0,0,0,0,1,2,2,2,1],
+    [0,0,3,4,4,3,1,0,0,0,0,0,0,0,1,1,0,0,0,2,2,3,3,2],
+    [0,1,3,4,4,4,2,0,0,0,0,0,0,0,0,1,1,0,1,2,3,3,2,1]
+  ];
+  rows.forEach((lbl,i)=>{
+    const l=document.createElement('span');l.className='row-lbl';l.textContent=lbl;grid2.appendChild(l);
+    pattern[i].forEach(v=>{
+      const c=document.createElement('span');c.className='cell'+(v?' x'+v:'');grid2.appendChild(c);
+    });
+  });
+})();
+</script>
+
+<div class="stage-lang">
+  <h4>Language adaptation · cycle → stage</h4>
+  <table>
+    <tr><th></th><th>Reproductive</th><th>Peri-menopause</th><th>Post-menopause</th></tr>
+    <tr><td>phase name</td><td>"luteal day 22"</td><td>"a softer few days"</td><td>(no phase, life season instead)</td></tr>
+    <tr><td>period prompt</td><td>"period starting?"</td><td>"spotting? bleed?"</td><td>"check-in with me"</td></tr>
+    <tr><td>Jess opener</td><td>"today in your cycle..."</td><td>"this week in your transition..."</td><td>"in this life chapter..."</td></tr>
+    <tr><td>notifications</td><td>"ovulation in 3 days"</td><td>"hotter 3 days ahead"</td><td>"bone-day tomorrow"</td></tr>
+    <tr><td>Programs shelf</td><td>PCOS · PMDD · TTC</td><td>Peri · HRT · sleep</td><td>Longevity · bone · vascular</td></tr>
+  </table>
+</div>
+
+<div class="app">
+  <h2>Appendix — <em>Life Stage</em></h2>
+  <p class="lead">Entities, tools, stage-gated features.</p>
+  <div class="apgrid">
+    <div class="apcol">
+      <h4>Entities</h4>
+      <ul>
+        <li><b>LifeStages</b><span>Teen / Repro / Peri / Meno / Post (new)</span></li>
+        <li><b>StageTransitions</b><span>history, user-moved (new)</span></li>
+        <li><b>HotFlashLog</b><span>extend: time-of-day, trigger</span></li>
+        <li><b>HRTEntries</b><span>dose · site · adherence · effect (new)</span></li>
+        <li><b>HRTSideEffects</b><span>new</span></li>
+        <li><b>TTCProfile</b><span>BBT / mucus / LH / partner (new)</span></li>
+        <li><b>StageExperts</b><span>Dr Aisha Patel · Dr Priya Shah · Dr Catherine O'Brien</span></li>
+        <li><b>AMASessions</b><span>live + recorded</span></li>
+        <li><b>AMAQuestions</b><span>anonymous queue</span></li>
+      </ul>
+    </div>
+    <div class="apcol">
+      <h4>Stage-gated features</h4>
+      <ul>
+        <li><b>Teen only</b><span>parent-consent, basic ed, no TTC/HRT</span></li>
+        <li><b>Repro only</b><span>TTC mode, fertility band, BBT</span></li>
+        <li><b>Peri + Meno</b><span>HRT tracker, hot-flash map</span></li>
+        <li><b>Meno + Post</b><span>cycle UI retires, life-seasons replaces</span></li>
+        <li><b>Post only</b><span>bone · vascular · cognitive layer</span></li>
+      </ul>
+      <h4 style="margin-top:22px">Jess tool additions</h4>
+      <ul>
+        <li><b>stage.infer</b><span>cycle irregularity + age → suggest switch</span></li>
+        <li><b>flash.map</b><span>time × severity × trigger</span></li>
+        <li><b>hrt.effect</b><span>before/after symptoms</span></li>
+        <li><b>ttc.window-coach</b><span>never "missed it"</span></li>
+        <li><b>ama.relevant</b><span>stage-matched surfacing</span></li>
+      </ul>
+    </div>
+  </div>
+</div>
+
+<div class="ftr">
+  <h3>"Stage is not a setting. It's the whole weather system."</h3>
+  <p>6 phones · 9 new entities · 5 new Jess tools. Ship order: Peri dashboard + hot-flash map + HRT tracker Q2 (biggest underserved segment). TTC mode Q3 (Pro tier). Post-meno bone/vascular layer Q4.</p>
+</div>
+
+</body></html>

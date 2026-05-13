@@ -1,0 +1,444 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>FemWell Programs — phase-matched journeys</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:wght@400;500;600&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --cream: #FFFAF5;
+    --cream-2: #FFF5EC;
+    --cream-3: #F0E5D8;
+    --plum: #4A2A3A;
+    --plum-2: #6B4559;
+    --plum-mute: #8A7584;
+    --rose-400: #E67F73;
+    --rose-500: #D45E52;
+    --period: #B84A41;
+    --follicular: #E67F73;
+    --ovulatory: #F2A99A;
+    --luteal: #8A5F74;
+    --gold: #C9A95C;
+    --teal: #5F8A85;
+    --moss: #7D8668;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif; background: #F4EDE4; color: var(--plum); padding: 40px 20px 80px; display: flex; flex-direction: column; align-items: center; }
+
+  .header { max-width: 880px; margin: 0 auto 32px; text-align: center; }
+  .eyebrow { font-size: 11px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--plum-mute); font-weight: 600; }
+  h1.title { font-family: 'Fraunces', Georgia, serif; font-size: 34px; font-weight: 500; color: var(--plum); margin: 8px 0 12px; letter-spacing: -0.01em; }
+  .lede { font-size: 15px; color: var(--plum-2); max-width: 720px; margin: 0 auto; line-height: 1.55; }
+  .lede strong { color: var(--plum); font-weight: 600; }
+  .meta-row { display: flex; justify-content: center; gap: 22px; margin-top: 18px; font-size: 12px; color: var(--plum-2); flex-wrap: wrap; }
+  .meta-row strong { color: var(--plum); font-weight: 600; }
+
+  /* Phone frame */
+  .phone { width: 420px; background: #111; border-radius: 46px; padding: 10px; box-shadow: 0 40px 80px rgba(74, 42, 58, 0.22), 0 0 0 1px rgba(0,0,0,0.08); margin: 32px 0; }
+  .phone-inner { background: var(--cream); border-radius: 38px; overflow: hidden; position: relative; height: 920px; display: flex; flex-direction: column; }
+  .notch { position: absolute; top: 0; left: 50%; transform: translateX(-50%); width: 130px; height: 28px; background: #111; border-radius: 0 0 16px 16px; z-index: 30; }
+  .scroll { overflow-y: auto; flex: 1; padding: 44px 18px 120px; scrollbar-width: none; }
+  .scroll::-webkit-scrollbar { display: none; }
+
+  /* Page head */
+  .ph-eyebrow { font-size: 10px; letter-spacing: 0.18em; text-transform: uppercase; color: var(--plum-mute); font-weight: 600; }
+  h1.ph-title { font-family: 'Fraunces', serif; font-size: 32px; font-weight: 500; margin: 6px 0 4px; letter-spacing: -0.015em; color: var(--plum); }
+  .ph-sub { font-size: 13px; color: var(--plum-2); }
+  .ph-sub strong { color: var(--plum); font-weight: 600; }
+
+  /* Continue journey */
+  .continue { position: relative; background: linear-gradient(135deg, rgba(138, 95, 116, 0.18), rgba(201, 169, 92, 0.12)); border: 1px solid rgba(138, 95, 116, 0.22); border-radius: 16px; padding: 16px; margin: 22px 0 10px; overflow: hidden; }
+  .continue::after { content: '☽'; position: absolute; top: 14px; right: 18px; font-size: 30px; opacity: 0.2; color: var(--luteal); }
+  .cont-eyebrow { font-size: 9px; letter-spacing: 0.18em; text-transform: uppercase; color: var(--plum-mute); font-weight: 700; }
+  .cont-title { font-family: 'Fraunces', serif; font-size: 20px; font-weight: 500; color: var(--plum); margin: 6px 0 4px; letter-spacing: -0.01em; }
+  .cont-sub { font-size: 12px; color: var(--plum-2); line-height: 1.45; max-width: 85%; }
+  .cont-progress { height: 5px; background: rgba(255, 250, 245, 0.65); border-radius: 4px; margin-top: 14px; overflow: hidden; }
+  .cont-progress .fill { height: 100%; width: 20%; background: var(--plum); border-radius: 4px; }
+  .cont-meta { display: flex; justify-content: space-between; align-items: center; margin-top: 10px; }
+  .cont-days { font-size: 11px; color: var(--plum-mute); letter-spacing: 0.06em; font-weight: 600; }
+  .cont-cta { font-size: 12px; color: var(--plum); font-weight: 700; background: var(--cream); padding: 8px 16px; border-radius: 20px; letter-spacing: 0.04em; }
+  .cont-jess { display: flex; align-items: flex-start; gap: 10px; margin-top: 14px; padding-top: 12px; border-top: 1px solid rgba(74, 42, 58, 0.1); }
+  .jess-av-sm { width: 28px; height: 28px; border-radius: 50%; background: linear-gradient(135deg, var(--gold), var(--rose-400)); color: #FFF5EC; display: grid; place-items: center; font-family: 'Fraunces', serif; font-size: 13px; font-weight: 500; flex-shrink: 0; }
+  .jess-msg-sm { font-family: 'Fraunces', serif; font-size: 13px; color: var(--plum); font-style: italic; line-height: 1.4; }
+
+  /* Picked banner */
+  .picked-banner { display: flex; justify-content: space-between; align-items: baseline; margin: 22px 0 8px; }
+  .pb-title { font-family: 'Fraunces', serif; font-size: 18px; color: var(--plum); font-weight: 500; }
+  .pb-meta { font-size: 10px; color: var(--plum-mute); letter-spacing: 0.12em; text-transform: uppercase; font-weight: 700; display: flex; align-items: center; gap: 5px; }
+  .pb-meta .dot-l { width: 6px; height: 6px; border-radius: 50%; background: var(--luteal); display: inline-block; }
+
+  /* Phase-matched carousel */
+  .match-row { display: flex; gap: 10px; overflow-x: auto; margin: 0 -18px; padding: 0 18px 6px; scrollbar-width: none; }
+  .match-row::-webkit-scrollbar { display: none; }
+  .match { flex-shrink: 0; width: 190px; background: #FFFFFF; border: 1px solid rgba(74, 42, 58, 0.07); border-radius: 14px; padding: 14px; position: relative; }
+  .match-phase-dot { position: absolute; top: 14px; right: 14px; display: flex; gap: 4px; align-items: center; font-size: 9px; color: var(--plum-mute); letter-spacing: 0.1em; font-weight: 700; text-transform: uppercase; }
+  .match-phase-dot .d { width: 5px; height: 5px; border-radius: 50%; background: var(--luteal); }
+  .match-ico { width: 38px; height: 38px; border-radius: 10px; display: grid; place-items: center; font-size: 18px; margin-bottom: 10px; }
+  .match-ico.sleep { background: rgba(74, 42, 58, 0.1); color: var(--plum); }
+  .match-ico.pms { background: rgba(184, 74, 65, 0.12); color: var(--period); }
+  .match-ico.stress { background: rgba(95, 138, 133, 0.15); color: var(--teal); }
+  .match-name { font-family: 'Fraunces', serif; font-size: 15px; color: var(--plum); font-weight: 500; line-height: 1.25; margin-bottom: 4px; }
+  .match-desc { font-size: 11px; color: var(--plum-2); line-height: 1.4; min-height: 48px; }
+  .match-foot { display: flex; justify-content: space-between; align-items: center; margin-top: 10px; padding-top: 10px; border-top: 1px solid rgba(74, 42, 58, 0.06); }
+  .match-meta { font-size: 10px; color: var(--plum-mute); letter-spacing: 0.06em; font-weight: 600; }
+  .match-status { font-size: 10px; padding: 3px 8px; border-radius: 10px; background: var(--cream-2); color: var(--plum-2); letter-spacing: 0.08em; text-transform: uppercase; font-weight: 700; }
+  .match-status.active { background: var(--plum); color: var(--cream); }
+  .match-status.new { background: rgba(201, 169, 92, 0.22); color: #8A7740; }
+
+  /* Sort + filter */
+  .sort-row { display: flex; justify-content: space-between; align-items: center; margin-top: 20px; margin-bottom: 10px; }
+  .sort-label { font-size: 10px; color: var(--plum-mute); letter-spacing: 0.12em; text-transform: uppercase; font-weight: 700; }
+  .sort-opts { display: flex; gap: 4px; }
+  .sort-opt { font-size: 11px; color: var(--plum-mute); padding: 4px 10px; border-radius: 12px; font-weight: 600; }
+  .sort-opt.active { background: rgba(74, 42, 58, 0.08); color: var(--plum); }
+
+  .filters { display: flex; gap: 6px; overflow-x: auto; margin: 0 -18px; padding: 0 18px 6px; scrollbar-width: none; }
+  .filters::-webkit-scrollbar { display: none; }
+  .filter { flex-shrink: 0; font-size: 11px; padding: 6px 12px; border-radius: 14px; background: var(--cream-2); color: var(--plum-2); font-weight: 600; letter-spacing: 0.02em; }
+  .filter.active { background: var(--plum); color: var(--cream); }
+
+  /* Section divider */
+  .divider { display: flex; align-items: baseline; justify-content: space-between; margin: 26px 0 12px; }
+  .div-title { font-family: 'Fraunces', serif; font-size: 19px; color: var(--plum); font-weight: 500; letter-spacing: -0.01em; }
+  .div-meta { font-size: 10px; color: var(--plum-mute); letter-spacing: 0.1em; text-transform: uppercase; font-weight: 600; }
+
+  /* Shelf */
+  .shelf { display: flex; gap: 10px; overflow-x: auto; margin: 0 -18px; padding: 0 18px 6px; scrollbar-width: none; }
+  .shelf::-webkit-scrollbar { display: none; }
+  .shelf-card { flex-shrink: 0; width: 180px; border-radius: 14px; padding: 14px; position: relative; overflow: hidden; }
+  .shelf-card.plain { background: #FFFFFF; border: 1px solid rgba(74, 42, 58, 0.07); }
+  .shelf-card.pro { background: linear-gradient(140deg, var(--cream-2), var(--cream-3)); border: 1px solid rgba(201, 169, 92, 0.22); }
+  .shelf-ico { width: 36px; height: 36px; border-radius: 10px; display: grid; place-items: center; font-size: 16px; margin-bottom: 10px; }
+  .ico-sleep { background: rgba(74, 42, 58, 0.08); color: var(--plum); }
+  .ico-stress { background: rgba(95, 138, 133, 0.15); color: var(--teal); }
+  .ico-pms { background: rgba(184, 74, 65, 0.12); color: var(--period); }
+  .ico-pcos { background: rgba(242, 169, 154, 0.3); color: var(--rose-500); }
+  .ico-pmdd { background: rgba(201, 169, 92, 0.18); color: var(--gold); }
+  .ico-mobility { background: rgba(125, 134, 104, 0.2); color: var(--moss); }
+  .ico-peri { background: rgba(138, 95, 116, 0.18); color: var(--luteal); }
+  .ico-meno { background: rgba(107, 69, 89, 0.15); color: var(--plum-2); }
+  .ico-post { background: rgba(242, 169, 154, 0.28); color: var(--rose-500); }
+  .shelf-name { font-family: 'Fraunces', serif; font-size: 15px; color: var(--plum); font-weight: 500; line-height: 1.25; margin-bottom: 4px; }
+  .shelf-desc { font-size: 11px; color: var(--plum-2); line-height: 1.4; min-height: 44px; }
+  .shelf-foot { display: flex; justify-content: space-between; align-items: center; margin-top: 10px; padding-top: 10px; border-top: 1px solid rgba(74, 42, 58, 0.06); }
+  .shelf-len { font-size: 10px; color: var(--plum-mute); letter-spacing: 0.06em; font-weight: 600; }
+  .pro-lock { position: absolute; top: 14px; right: 14px; font-size: 9px; letter-spacing: 0.12em; padding: 3px 8px; border-radius: 10px; background: rgba(201, 169, 92, 0.26); color: #8A7740; text-transform: uppercase; font-weight: 700; display: flex; align-items: center; gap: 4px; }
+
+  /* Life stage list */
+  .stage-list { display: flex; flex-direction: column; gap: 8px; }
+  .stage-row { display: flex; align-items: center; gap: 12px; background: #FFFFFF; border: 1px solid rgba(74, 42, 58, 0.06); border-radius: 12px; padding: 12px 14px; }
+  .stage-ico { width: 38px; height: 38px; border-radius: 10px; display: grid; place-items: center; font-size: 17px; flex-shrink: 0; }
+  .stage-body { flex: 1; min-width: 0; }
+  .stage-name { font-family: 'Fraunces', serif; font-size: 15px; color: var(--plum); font-weight: 500; line-height: 1.2; display: flex; align-items: center; gap: 8px; }
+  .stage-meta { font-size: 11px; color: var(--plum-mute); margin-top: 3px; line-height: 1.35; }
+  .stage-chev { font-size: 18px; color: var(--plum-mute); flex-shrink: 0; }
+  .pro-inline { font-size: 8px; letter-spacing: 0.14em; padding: 2px 6px; border-radius: 6px; background: rgba(201, 169, 92, 0.22); color: #8A7740; text-transform: uppercase; font-weight: 700; }
+
+  /* Movement block */
+  .single-card { background: linear-gradient(135deg, rgba(125, 134, 104, 0.14), rgba(95, 138, 133, 0.1)); border: 1px solid rgba(125, 134, 104, 0.2); border-radius: 14px; padding: 14px 16px; display: flex; align-items: center; gap: 14px; }
+  .single-ico { width: 44px; height: 44px; border-radius: 12px; background: rgba(125, 134, 104, 0.22); color: var(--moss); display: grid; place-items: center; font-size: 20px; flex-shrink: 0; }
+  .single-body { flex: 1; }
+  .single-name { font-family: 'Fraunces', serif; font-size: 15px; color: var(--plum); font-weight: 500; line-height: 1.2; }
+  .single-desc { font-size: 11px; color: var(--plum-2); margin-top: 3px; line-height: 1.4; }
+  .single-len { font-size: 10px; color: var(--plum-mute); letter-spacing: 0.06em; font-weight: 600; margin-top: 6px; }
+
+  /* Why */
+  .why { background: rgba(255, 255, 255, 0.7); border: 1px solid rgba(74, 42, 58, 0.07); border-radius: 14px; padding: 16px; margin-bottom: 10px; }
+  .why-head { font-family: 'Fraunces', serif; font-size: 16px; color: var(--plum); font-weight: 500; margin-bottom: 10px; font-style: italic; }
+  .why-row { display: flex; gap: 10px; align-items: flex-start; padding: 8px 0; border-top: 1px solid rgba(74, 42, 58, 0.06); }
+  .why-row:first-of-type { border-top: none; padding-top: 2px; }
+  .why-num { font-family: 'Fraunces', serif; font-size: 14px; color: var(--plum); font-weight: 500; width: 20px; flex-shrink: 0; }
+  .why-body { flex: 1; }
+  .why-label { font-size: 12px; color: var(--plum); font-weight: 600; line-height: 1.3; }
+  .why-desc { font-size: 11px; color: var(--plum-mute); line-height: 1.4; margin-top: 2px; }
+
+  /* Plan with Jess */
+  .jess { background: linear-gradient(135deg, rgba(201, 169, 92, 0.14), rgba(184, 74, 65, 0.08)); border: 1px solid rgba(201, 169, 92, 0.2); border-radius: 14px; padding: 14px 16px; display: flex; align-items: center; gap: 12px; margin-top: 12px; margin-bottom: 10px; }
+  .jess-av { width: 40px; height: 40px; border-radius: 50%; background: linear-gradient(135deg, var(--gold), var(--rose-400)); color: #FFF5EC; display: grid; place-items: center; font-family: 'Fraunces', serif; font-size: 18px; font-weight: 500; flex-shrink: 0; }
+  .jess-body { flex: 1; }
+  .jess-name { font-size: 9px; letter-spacing: 0.18em; text-transform: uppercase; color: var(--plum-mute); font-weight: 700; }
+  .jess-msg { font-family: 'Fraunces', serif; font-size: 14px; color: var(--plum); font-style: italic; line-height: 1.35; margin-top: 3px; }
+  .jess-cta { font-size: 18px; color: var(--plum); font-weight: 500; }
+
+  /* Nav + FAB */
+  .nav { position: absolute; bottom: 0; left: 0; right: 0; background: rgba(255, 250, 245, 0.96); backdrop-filter: blur(12px); border-top: 1px solid rgba(74, 42, 58, 0.08); height: 68px; display: grid; grid-template-columns: repeat(5, 1fr); padding: 10px 0 14px; z-index: 20; }
+  .nav-item { display: flex; flex-direction: column; align-items: center; gap: 5px; font-size: 9px; color: var(--plum-mute); font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; }
+  .nav-item.active { color: var(--plum); }
+  .nav-ico { width: 18px; height: 18px; border-radius: 5px; background: currentColor; opacity: 0.55; }
+  .nav-item.active .nav-ico { opacity: 1; }
+  .fab { position: absolute; bottom: 84px; right: 22px; width: 54px; height: 54px; border-radius: 50%; background: var(--plum); color: var(--cream); display: grid; place-items: center; font-size: 26px; box-shadow: 0 10px 30px rgba(74, 42, 58, 0.32); z-index: 15; }
+
+  .footer { text-align: center; max-width: 820px; margin: 36px auto 0; padding: 22px; background: rgba(74, 42, 58, 0.05); border-radius: 14px; font-size: 13px; color: var(--plum-2); line-height: 1.6; }
+  .footer strong { color: var(--plum); font-weight: 600; }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="eyebrow">FemWell · Programs redesign</div>
+  <h1 class="title">Programs — guided 5-day journeys, phase-matched</h1>
+  <p class="lede">Same visual language as Planner / Nutrition / Pulse. <strong>Continue your journey</strong> hero mirrors the active Sleep Reset Day 1 shown on Planner, then a <strong>Picked for luteal day 19</strong> carousel, categorised shelves, Pro-lock treatment, and Jess-signed nudges. No streak-punishing copy.</p>
+  <div class="meta-row">
+    <div>phase context · <strong>luteal · day 19</strong></div>
+    <div>active · <strong>Sleep Reset Day 1</strong></div>
+    <div>programs wired · <strong>9 real from base44</strong></div>
+    <div>entities · <strong>Programs + UserPrograms</strong></div>
+  </div>
+</div>
+
+<div class="phone">
+  <div class="phone-inner">
+    <div class="notch"></div>
+    <div class="scroll">
+
+      <!-- Page head -->
+      <div class="ph-eyebrow">Your programs</div>
+      <h1 class="ph-title">Programs</h1>
+      <div class="ph-sub"><strong>Luteal · day 19</strong> · 7 days to period · one journey active</div>
+
+      <!-- Continue journey -->
+      <div class="continue">
+        <div class="cont-eyebrow">Continue your journey</div>
+        <div class="cont-title">Sleep Reset Blueprint</div>
+        <div class="cont-sub">Day 1 of 5 · tonight's focus: <strong>wind-down at 9:30pm, lights low by 10pm</strong>.</div>
+        <div class="cont-progress"><div class="fill"></div></div>
+        <div class="cont-meta">
+          <div class="cont-days">Day 1 · 4 more to go</div>
+          <div class="cont-cta">Continue →</div>
+        </div>
+        <div class="cont-jess">
+          <div class="jess-av-sm">J</div>
+          <div class="jess-msg-sm">"Luteal week is the best time to run Sleep Reset — progesterone's already asking for earlier nights. Let's lean in."</div>
+        </div>
+      </div>
+
+      <!-- Picked for you -->
+      <div class="picked-banner">
+        <div class="pb-title">Picked for you</div>
+        <div class="pb-meta"><span class="dot-l"></span> Luteal day 19</div>
+      </div>
+
+      <div class="match-row">
+        <div class="match">
+          <div class="match-phase-dot"><span class="d"></span> Luteal fit</div>
+          <div class="match-ico sleep">☽</div>
+          <div class="match-name">Sleep Reset Blueprint</div>
+          <div class="match-desc">Rebuild deep sleep in 5 gentle nights. Progesterone-friendly wind-down.</div>
+          <div class="match-foot">
+            <div class="match-meta">5 days · free</div>
+            <div class="match-status active">Active</div>
+          </div>
+        </div>
+        <div class="match">
+          <div class="match-phase-dot"><span class="d"></span> Luteal fit</div>
+          <div class="match-ico pms">✿</div>
+          <div class="match-name">PMS Relief Protocol</div>
+          <div class="match-desc">Soften the pre-period week — mood, cravings, cramps, sleep. Built for your luteal window.</div>
+          <div class="match-foot">
+            <div class="match-meta">5 days · free</div>
+            <div class="match-status">Start</div>
+          </div>
+        </div>
+        <div class="match">
+          <div class="match-phase-dot"><span class="d"></span> Any phase</div>
+          <div class="match-ico stress">◊</div>
+          <div class="match-name">Stress &amp; Nervous System Reset</div>
+          <div class="match-desc">Down-regulate a hot nervous system in 5 days. Breath, vagus-tone, boundaries.</div>
+          <div class="match-foot">
+            <div class="match-meta">5 days · free</div>
+            <div class="match-status new">New</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Sort + filter -->
+      <div class="sort-row">
+        <div class="sort-label">All programs</div>
+        <div class="sort-opts">
+          <div class="sort-opt active">Recommended</div>
+          <div class="sort-opt">Shortest</div>
+          <div class="sort-opt">Newest</div>
+        </div>
+      </div>
+      <div class="filters">
+        <div class="filter active">All</div>
+        <div class="filter">Sleep</div>
+        <div class="filter">Stress</div>
+        <div class="filter">PMS</div>
+        <div class="filter">Hormones</div>
+        <div class="filter">Life stage</div>
+        <div class="filter">Mobility</div>
+        <div class="filter">Postpartum</div>
+      </div>
+
+      <!-- Sleep & calm -->
+      <div class="divider">
+        <div class="div-title">Sleep &amp; calm</div>
+        <div class="div-meta">2 programs</div>
+      </div>
+      <div class="shelf">
+        <div class="shelf-card plain">
+          <div class="shelf-ico ico-sleep">☽</div>
+          <div class="shelf-name">Sleep Reset Blueprint</div>
+          <div class="shelf-desc">Rebuild deep sleep in 5 gentle nights. Wind-down ritual, caffeine timing, progesterone support.</div>
+          <div class="shelf-foot">
+            <div class="shelf-len">5 days · free</div>
+            <div class="match-status active">Day 1</div>
+          </div>
+        </div>
+        <div class="shelf-card plain">
+          <div class="shelf-ico ico-stress">◊</div>
+          <div class="shelf-name">Stress &amp; Nervous System Reset</div>
+          <div class="shelf-desc">Down-regulate a hot nervous system. Box-breathing, vagus-tone, gentle boundaries.</div>
+          <div class="shelf-foot">
+            <div class="shelf-len">5 days · free</div>
+            <div class="match-status">Start</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Hormone support -->
+      <div class="divider">
+        <div class="div-title">Hormone support</div>
+        <div class="div-meta">3 programs</div>
+      </div>
+      <div class="shelf">
+        <div class="shelf-card plain">
+          <div class="shelf-ico ico-pms">✿</div>
+          <div class="shelf-name">PMS Relief Protocol</div>
+          <div class="shelf-desc">Soften the pre-period week — mood, cravings, cramps, sleep. Matched to luteal.</div>
+          <div class="shelf-foot">
+            <div class="shelf-len">5 days · free</div>
+            <div class="match-status">Start</div>
+          </div>
+        </div>
+        <div class="shelf-card pro">
+          <div class="pro-lock">◆ Pro</div>
+          <div class="shelf-ico ico-pcos">❋</div>
+          <div class="shelf-name">PCOS Fundamentals</div>
+          <div class="shelf-desc">Insulin-aware meals, cycle care without ovulation, gentle movement for androgens.</div>
+          <div class="shelf-foot">
+            <div class="shelf-len">5 days · Pro</div>
+            <div class="match-status">Unlock</div>
+          </div>
+        </div>
+        <div class="shelf-card pro">
+          <div class="pro-lock">◆ Pro</div>
+          <div class="shelf-ico ico-pmdd">✦</div>
+          <div class="shelf-name">PMDD Support Program</div>
+          <div class="shelf-desc">For severe late-luteal shifts. Tracking, nervous-system care, and when to call your clinician.</div>
+          <div class="shelf-foot">
+            <div class="shelf-len">5 days · Pro</div>
+            <div class="match-status">Unlock</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Life stage -->
+      <div class="divider">
+        <div class="div-title">Life stage</div>
+        <div class="div-meta">3 programs</div>
+      </div>
+      <div class="stage-list">
+        <div class="stage-row">
+          <div class="stage-ico ico-peri">☾</div>
+          <div class="stage-body">
+            <div class="stage-name">Perimenopause Navigator <span class="pro-inline">Pro</span></div>
+            <div class="stage-meta">When cycles shift. 5 days on sleep, temperature, mood, and what's still in your control.</div>
+          </div>
+          <div class="stage-chev">›</div>
+        </div>
+        <div class="stage-row">
+          <div class="stage-ico ico-meno">◐</div>
+          <div class="stage-body">
+            <div class="stage-name">Menopause Mastery <span class="pro-inline">Pro</span></div>
+            <div class="stage-meta">Post-cycle living. Bone, brain, cardiovascular — and the rituals that carry you through.</div>
+          </div>
+          <div class="stage-chev">›</div>
+        </div>
+        <div class="stage-row">
+          <div class="stage-ico ico-post">❀</div>
+          <div class="stage-body">
+            <div class="stage-name">Postpartum Recovery</div>
+            <div class="stage-meta">First-year support — pelvic floor, sleep in fragments, nourishment, mood watch.</div>
+          </div>
+          <div class="stage-chev">›</div>
+        </div>
+      </div>
+
+      <!-- Movement -->
+      <div class="divider">
+        <div class="div-title">Movement &amp; mobility</div>
+        <div class="div-meta">1 program</div>
+      </div>
+      <div class="single-card">
+        <div class="single-ico">◎</div>
+        <div class="single-body">
+          <div class="single-name">Mobility &amp; Pain Relief</div>
+          <div class="single-desc">5 gentle sessions for hips, low back, and shoulders. Modified for period and luteal days.</div>
+          <div class="single-len">5 days · free</div>
+        </div>
+      </div>
+
+      <!-- Plan with Jess -->
+      <div class="jess">
+        <div class="jess-av">J</div>
+        <div class="jess-body">
+          <div class="jess-name">Plan with Jess</div>
+          <div class="jess-msg">"Not sure which to start? Tell me what's heaviest this week."</div>
+        </div>
+        <div class="jess-cta">›</div>
+      </div>
+
+      <!-- Why 5-day -->
+      <div class="divider">
+        <div class="div-title">Why 5-day journeys</div>
+        <div class="div-meta">Our method</div>
+      </div>
+      <div class="why">
+        <div class="why-head">Small shifts. Real rhythm. No streaks.</div>
+        <div class="why-row">
+          <div class="why-num">01</div>
+          <div class="why-body">
+            <div class="why-label">Matched to your phase</div>
+            <div class="why-desc">Each program is designed for a specific cycle window — so you're working with your body, not against it.</div>
+          </div>
+        </div>
+        <div class="why-row">
+          <div class="why-num">02</div>
+          <div class="why-body">
+            <div class="why-label">Five days, not forever</div>
+            <div class="why-desc">Long enough to feel a shift. Short enough to finish — no month-long pressure.</div>
+          </div>
+        </div>
+        <div class="why-row">
+          <div class="why-num">03</div>
+          <div class="why-body">
+            <div class="why-label">Miss a day? Just pick up tomorrow</div>
+            <div class="why-desc">No broken streaks. No guilt copy. Rhythm beats perfection every time.</div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <div class="fab">+</div>
+    <div class="nav">
+      <div class="nav-item"><div class="nav-ico"></div>Today</div>
+      <div class="nav-item"><div class="nav-ico"></div>Lifestyle</div>
+      <div class="nav-item active"><div class="nav-ico"></div>Jess</div>
+      <div class="nav-item"><div class="nav-ico"></div>Profile</div>
+      <div class="nav-item"><div class="nav-ico"></div>Menu</div>
+    </div>
+  </div>
+</div>
+
+<div class="footer">
+  <strong>Wired to real base44 entities:</strong> Programs (9 programs, 3 Pro-locked) · UserPrograms (Sleep Reset Day 1 active) · CycleEvents + PhaseHistory (luteal day 19, 7 days to period).<br>
+  <strong>Design system:</strong> phone frame · rose/plum palette · Fraunces + Inter · continue-journey smart card · phase-matched carousel · categorised shelves · Pro-lock treatment · Jess signatures · no-streak-punishment copy.
+</div>
+
+</body>
+</html>

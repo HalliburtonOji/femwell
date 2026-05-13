@@ -1,0 +1,982 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>FemWell · Smart Nudges — every push earns its send</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,wght@0,400;0,500;0,600;1,400;1,500&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --cream:#FFFAF5; --cream-2:#FFF5EC; --cream-3:#F0E5D8; --cream-4:#EBDFCF;
+    --plum:#4A2A3A; --plum-2:#6B4559; --plum-3:#8A7584; --plum-deep:#32202A;
+    --rose-400:#E67F73; --rose-500:#D45E52; --period:#B84A41;
+    --follicular:#E67F73; --ovulatory:#F2A99A; --luteal:#8A5F74;
+    --gold:#C9A95C; --teal:#5F8A85; --moss:#7D8668; --lav:#B9A4C9;
+    --night:#1a1522; --star:#f5e6d3;
+    --ok:#6F9376; --warn:#C99961; --soft-red:#C97761;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:'Inter',-apple-system,BlinkMacSystemFont,sans-serif;background:#F4EDE4;color:var(--plum);padding:44px 20px 80px}
+  .wrap{max-width:1780px;margin:0 auto}
+  .header{max-width:980px;margin:0 auto 28px;text-align:center}
+  .eyebrow{font-size:11px;letter-spacing:.18em;text-transform:uppercase;color:var(--plum-3);font-weight:600}
+  h1.title{font-family:'Fraunces',serif;font-size:42px;font-weight:500;margin:10px 0 12px;letter-spacing:-0.015em}
+  h1.title em{font-style:italic;color:var(--plum-2);font-weight:400}
+  .lede{font-size:15.5px;color:var(--plum-2);max-width:820px;margin:0 auto;line-height:1.62}
+  .lede strong{color:var(--plum);font-weight:600}
+
+  .principle-strip{max-width:1380px;margin:32px auto 40px;display:grid;grid-template-columns:repeat(4,1fr);gap:14px}
+  @media(max-width:900px){.principle-strip{grid-template-columns:1fr 1fr}}
+  .ps-card{background:#FFF;border:1px solid rgba(74,42,58,0.08);border-radius:16px;padding:18px 20px}
+  .ps-eye{font-size:9.5px;letter-spacing:.22em;text-transform:uppercase;color:var(--plum-3);font-weight:700}
+  .ps-title{font-family:'Fraunces',serif;font-size:18px;color:var(--plum);font-weight:500;margin:8px 0 6px;letter-spacing:-0.01em;line-height:1.2}
+  .ps-body{font-size:12.5px;color:var(--plum-2);line-height:1.55}
+  .ps-body strong{color:var(--plum);font-weight:600}
+  .ps-card.dark{background:linear-gradient(160deg,#2a1b25,#1a1522);color:var(--cream)}
+  .ps-card.dark .ps-eye{color:rgba(201,169,92,.85)}
+  .ps-card.dark .ps-title{color:var(--cream)}
+  .ps-card.dark .ps-body{color:rgba(245,230,211,.78)}
+  .ps-card.dark .ps-body strong{color:var(--cream)}
+
+  .toc{max-width:1180px;margin:0 auto 36px;display:flex;gap:10px;justify-content:center;flex-wrap:wrap}
+  .toc a{font-size:11px;padding:7px 14px;border-radius:16px;background:#FFF;border:1px solid rgba(74,42,58,.1);color:var(--plum);font-weight:600;text-decoration:none;letter-spacing:.06em}
+  .toc a:hover{background:var(--plum);color:var(--cream)}
+
+  .gallery{display:grid;grid-template-columns:repeat(4,1fr);gap:22px;max-width:1780px;margin:0 auto 60px}
+  @media(max-width:1560px){.gallery{grid-template-columns:1fr 1fr}}
+  @media(max-width:860px){.gallery{grid-template-columns:1fr}}
+  .phone-col{display:flex;flex-direction:column;align-items:center}
+  .phone-label{margin-bottom:14px;text-align:center;max-width:400px}
+  .pl-eye{font-size:10px;letter-spacing:.2em;text-transform:uppercase;color:var(--plum-3);font-weight:700}
+  .pl-title{font-family:'Fraunces',serif;font-size:22px;color:var(--plum);font-weight:500;margin-top:4px;letter-spacing:-0.01em}
+  .pl-title em{font-style:italic;color:var(--plum-2)}
+  .pl-sub{font-size:12.5px;color:var(--plum-2);margin-top:4px;line-height:1.5}
+
+  .phone{width:400px;background:#111;border-radius:44px;padding:9px;box-shadow:0 40px 80px rgba(74,42,58,.22),0 0 0 1px rgba(0,0,0,.08)}
+  .phone-inner{background:var(--cream);border-radius:36px;overflow:hidden;position:relative;height:1580px;display:flex;flex-direction:column}
+  .notch{position:absolute;top:0;left:50%;transform:translateX(-50%);width:124px;height:26px;background:#111;border-radius:0 0 16px 16px;z-index:30}
+  .scroll{overflow-y:auto;flex:1;padding:40px 18px 120px;scrollbar-width:none}
+  .scroll::-webkit-scrollbar{display:none}
+  .sbar{position:absolute;top:14px;left:0;right:0;display:flex;justify-content:space-between;padding:0 28px;font-size:11px;color:var(--plum);font-weight:600;z-index:20;letter-spacing:.04em}
+
+  .ph-head{display:flex;justify-content:space-between;align-items:flex-start}
+  .ph-eye{font-size:10px;letter-spacing:.18em;text-transform:uppercase;color:var(--plum-3);font-weight:600}
+  h1.ph-title{font-family:'Fraunces',serif;font-size:30px;font-weight:500;margin:6px 0 4px;letter-spacing:-0.015em;color:var(--plum);line-height:1.08}
+  .ph-sub{font-size:12.5px;color:var(--plum-2);line-height:1.5}
+  .ph-sub strong{color:var(--plum);font-weight:600}
+
+  .phase-chip{font-size:9.5px;letter-spacing:.16em;text-transform:uppercase;color:var(--luteal);font-weight:700;padding:4px 10px;border-radius:12px;background:rgba(138,95,116,.16);display:inline-flex;align-items:center;gap:5px;white-space:nowrap}
+  .phase-chip .dot{width:6px;height:6px;border-radius:50%;background:var(--luteal)}
+
+  /* ============ P1 NOTIFICATION CENTER ============ */
+  .nudge-count{margin-top:18px;padding:14px 18px;background:#FFF;border:1px solid rgba(74,42,58,.08);border-radius:14px;display:flex;justify-content:space-between;align-items:center}
+  .nc-left .num{font-family:'Fraunces',serif;font-size:28px;color:var(--plum);font-weight:500;letter-spacing:-0.015em}
+  .nc-left .lab{font-size:11px;color:var(--plum-3);font-weight:600;letter-spacing:.04em}
+  .nc-right{text-align:right}
+  .nc-right .num{font-family:'Fraunces',serif;font-size:18px;color:var(--teal);font-weight:500}
+  .nc-right .lab{font-size:10px;color:var(--plum-3);font-weight:600;letter-spacing:.06em;text-transform:uppercase}
+
+  .nudge{margin-top:12px;background:#FFF;border:1px solid rgba(74,42,58,.08);border-radius:16px;padding:16px 18px;position:relative;overflow:hidden}
+  .nudge.earned{border-left:3px solid var(--teal)}
+  .nudge.sent{border-left:3px solid var(--gold)}
+  .nudge.suppressed{opacity:.68;background:rgba(255,250,245,.5)}
+  .nudge-top{display:flex;justify-content:space-between;align-items:center}
+  .nt-eye{font-size:9.5px;letter-spacing:.2em;text-transform:uppercase;color:var(--plum-3);font-weight:700;display:flex;align-items:center;gap:8px}
+  .nt-cat{padding:3px 9px;border-radius:10px;font-size:9.5px;font-weight:700;letter-spacing:.04em}
+  .nt-cat.supplement{background:rgba(185,164,201,.25);color:#6A4E82}
+  .nt-cat.sleep{background:rgba(95,138,133,.2);color:var(--teal)}
+  .nt-cat.food{background:rgba(212,165,112,.25);color:#8A6234}
+  .nt-cat.ritual{background:rgba(201,169,92,.25);color:#8A7340}
+  .nt-cat.care{background:rgba(138,95,116,.2);color:var(--luteal)}
+  .nt-time{font-size:10.5px;color:var(--plum-3);font-weight:600}
+
+  .nudge-title{font-family:'Fraunces',serif;font-size:17px;color:var(--plum);font-weight:500;margin:10px 0 4px;letter-spacing:-0.005em;line-height:1.25}
+  .nudge-body{font-size:12.5px;color:var(--plum-2);line-height:1.55}
+  .nudge-body strong{color:var(--plum);font-weight:600}
+
+  .why-row{margin-top:12px;padding-top:12px;border-top:1px dashed rgba(74,42,58,.12)}
+  .why-eye{font-size:9.5px;letter-spacing:.16em;text-transform:uppercase;color:var(--plum-3);font-weight:700;display:flex;align-items:center;gap:8px;margin-bottom:6px}
+  .why-eye .j{width:14px;height:14px;border-radius:50%;background:linear-gradient(135deg,var(--gold),var(--rose-400))}
+  .why-body{font-size:11.5px;color:var(--plum-2);line-height:1.55}
+  .why-body strong{color:var(--plum);font-weight:600}
+  .why-sigs{margin-top:8px;display:flex;flex-wrap:wrap;gap:4px}
+  .sig{font-size:9.5px;padding:3px 8px;border-radius:9px;background:rgba(74,42,58,.06);color:var(--plum-2);font-weight:600;letter-spacing:.04em}
+  .sig.on{background:rgba(95,138,133,.2);color:var(--teal)}
+
+  .n-actions{margin-top:10px;display:flex;gap:6px;flex-wrap:wrap}
+  .n-act{font-size:10.5px;padding:6px 11px;border-radius:10px;font-weight:600;letter-spacing:.04em;cursor:pointer;border:none}
+  .n-act.did{background:var(--plum);color:var(--cream)}
+  .n-act.not-now{background:rgba(74,42,58,.08);color:var(--plum)}
+  .n-act.silence{background:rgba(201,119,97,.12);color:var(--soft-red)}
+
+  .suppr-pill{display:inline-flex;align-items:center;gap:6px;background:rgba(74,42,58,.06);padding:4px 10px;border-radius:10px;font-size:10px;color:var(--plum-3);font-weight:600;letter-spacing:.04em;margin-top:8px}
+
+  .section-h{margin:24px 0 8px;font-family:'Fraunces',serif;font-size:17px;color:var(--plum);font-weight:500;letter-spacing:-0.005em;display:flex;justify-content:space-between;align-items:baseline}
+  .section-h .right{font-size:10.5px;color:var(--plum-3);font-weight:600;letter-spacing:.04em;text-transform:uppercase;font-family:'Inter',sans-serif}
+
+  .quiet-row{margin-top:18px;background:linear-gradient(160deg,#2a1b25,#1a1522);color:var(--star);border-radius:16px;padding:14px 18px;display:flex;justify-content:space-between;align-items:center}
+  .quiet-row .lab{font-size:10px;letter-spacing:.2em;text-transform:uppercase;color:rgba(201,169,92,.85);font-weight:700}
+  .quiet-row .val{font-family:'Fraunces',serif;font-size:16px;color:var(--cream);font-weight:500;margin-top:2px}
+  .quiet-row .dot-on{width:10px;height:10px;border-radius:50%;background:var(--gold);box-shadow:0 0 10px rgba(201,169,92,.5)}
+
+  .bnav{position:absolute;bottom:0;left:0;right:0;background:rgba(255,250,245,.95);backdrop-filter:blur(20px);border-top:1px solid rgba(74,42,58,.08);padding:10px 20px 30px;display:flex;justify-content:space-around;align-items:flex-start;z-index:40}
+  .bnav-item{display:flex;flex-direction:column;align-items:center;gap:3px;font-size:10px;color:var(--plum-3);font-weight:600;letter-spacing:.04em}
+  .bnav-item .dot{width:6px;height:6px;border-radius:50%;background:var(--plum-3);opacity:.3}
+  .bnav-item.active{color:var(--plum)}
+  .bnav-item.active .dot{background:var(--plum);opacity:1}
+  .bnav-fab{width:44px;height:44px;border-radius:50%;background:linear-gradient(135deg,var(--gold),var(--rose-400));color:#FFF5EC;display:grid;place-items:center;font-family:'Fraunces',serif;font-size:17px;font-weight:500;box-shadow:0 6px 16px rgba(74,42,58,.25);margin-top:-10px}
+
+  /* ============ P2 PER-CATEGORY SETTINGS ============ */
+  .cat-hero{margin-top:14px;background:linear-gradient(160deg,#FCEFE4,#E9D3E0);border-radius:20px;padding:22px 20px}
+  .ch-eye{font-size:10px;letter-spacing:.22em;text-transform:uppercase;color:var(--plum-3);font-weight:700}
+  .ch-title{font-family:'Fraunces',serif;font-size:26px;color:var(--plum);font-weight:500;margin:8px 0 6px;letter-spacing:-0.015em;line-height:1.1}
+  .ch-title em{font-family:'Fraunces',serif;font-style:italic;color:var(--plum-2)}
+  .ch-sub{font-size:12.5px;color:var(--plum-2);line-height:1.55}
+  .ch-sub strong{color:var(--plum);font-weight:600}
+  .ch-totals{margin-top:14px;display:flex;gap:14px}
+  .ch-total{flex:1;background:rgba(255,255,255,.6);border-radius:12px;padding:10px 12px;text-align:center}
+  .ch-total .num{font-family:'Fraunces',serif;font-size:22px;color:var(--plum);font-weight:500}
+  .ch-total .lab{font-size:9.5px;color:var(--plum-3);letter-spacing:.12em;text-transform:uppercase;font-weight:700;margin-top:2px}
+
+  .cat-card{margin-top:12px;background:#FFF;border:1px solid rgba(74,42,58,.08);border-radius:16px;padding:16px 18px}
+  .cat-row{display:flex;justify-content:space-between;align-items:flex-start;gap:12px}
+  .cat-name{font-family:'Fraunces',serif;font-size:16px;color:var(--plum);font-weight:500;letter-spacing:-0.005em}
+  .cat-sub{font-size:11.5px;color:var(--plum-2);margin-top:2px;line-height:1.45}
+  .cat-stat{font-size:10px;color:var(--plum-3);font-weight:600;letter-spacing:.04em;margin-top:6px}
+
+  .toggle-row{margin-top:10px;display:flex;gap:4px;background:rgba(74,42,58,.06);padding:3px;border-radius:10px}
+  .toggle-opt{flex:1;text-align:center;font-size:10px;padding:7px;border-radius:8px;color:var(--plum-2);font-weight:700;letter-spacing:.04em;cursor:pointer;text-transform:uppercase}
+  .toggle-opt.active{background:var(--plum);color:var(--cream)}
+
+  .snooze-row{margin-top:10px;display:flex;gap:6px;flex-wrap:wrap}
+  .snooze-chip{font-size:10px;padding:4px 9px;border-radius:9px;background:rgba(74,42,58,.06);color:var(--plum-2);font-weight:600;letter-spacing:.04em;cursor:pointer}
+  .snooze-chip.active{background:rgba(201,169,92,.2);color:#8A7340}
+
+  .no-push{margin-top:22px;padding:18px 20px;background:linear-gradient(160deg,#2a1b25,#1a1522);color:var(--star);border-radius:18px}
+  .np-eye{font-size:10px;letter-spacing:.22em;text-transform:uppercase;color:rgba(201,169,92,.85);font-weight:700}
+  .np-title{font-family:'Fraunces',serif;font-size:19px;color:var(--cream);font-weight:500;margin:8px 0 8px;letter-spacing:-0.01em}
+  .np-body{font-size:12.5px;color:rgba(245,230,211,.82);line-height:1.55}
+  .np-body strong{color:var(--cream);font-weight:600}
+  .big-off{margin-top:16px;padding:12px;border-radius:12px;background:rgba(201,119,97,.18);color:#F6D6CE;text-align:center;font-weight:700;letter-spacing:.06em;font-size:12px}
+
+  /* ============ P3 RULE ENGINE BROWSE ============ */
+  .rule-head{margin-top:14px;padding:18px;background:#FFF;border:1px solid rgba(74,42,58,.08);border-radius:16px}
+  .rh-title{font-family:'Fraunces',serif;font-size:22px;color:var(--plum);font-weight:500;letter-spacing:-0.01em;line-height:1.15}
+  .rh-title em{font-family:'Fraunces',serif;font-style:italic;color:var(--plum-2)}
+  .rh-sub{font-size:12px;color:var(--plum-2);margin-top:6px;line-height:1.5}
+
+  .rule-tabs{margin-top:14px;display:flex;gap:4px;overflow-x:auto;padding-bottom:4px}
+  .rule-tab{flex-shrink:0;padding:6px 11px;border-radius:10px;font-size:10.5px;color:var(--plum-2);background:rgba(74,42,58,.06);font-weight:700;letter-spacing:.06em;white-space:nowrap}
+  .rule-tab.active{background:var(--plum);color:var(--cream)}
+
+  .rule{margin-top:10px;background:#FFF;border:1px solid rgba(74,42,58,.08);border-radius:16px;padding:16px 18px}
+  .rule-top{display:flex;justify-content:space-between;align-items:baseline;gap:8px}
+  .rule-name{font-family:'Fraunces',serif;font-size:16.5px;color:var(--plum);font-weight:500;letter-spacing:-0.005em;line-height:1.2}
+  .rule-cat{font-size:9.5px;padding:3px 8px;border-radius:9px;font-weight:700;letter-spacing:.04em;flex-shrink:0}
+  .rule-if{margin-top:10px;font-size:12px;color:var(--plum-2);line-height:1.55;font-family:ui-monospace,Menlo,monospace;background:rgba(74,42,58,.04);padding:10px 12px;border-radius:10px}
+  .rule-if .kw{color:var(--plum);font-weight:700}
+  .rule-if .val{color:var(--teal);font-weight:700}
+  .rule-text{margin-top:10px;font-size:12px;color:var(--plum-2);line-height:1.55}
+  .rule-text strong{color:var(--plum);font-weight:600}
+  .rule-evidence{margin-top:10px;padding:8px 12px;background:rgba(95,138,133,.08);border-radius:10px;font-size:10.5px;color:var(--teal);font-weight:600;letter-spacing:.03em;display:flex;gap:6px;align-items:center}
+  .rule-evidence::before{content:'';width:8px;height:8px;border-radius:50%;background:var(--teal);flex-shrink:0}
+  .rule-fire{margin-top:10px;display:flex;justify-content:space-between;font-size:10.5px;color:var(--plum-3);font-weight:600;letter-spacing:.04em}
+  .rule-fire .live-dot{display:inline-block;width:7px;height:7px;border-radius:50%;background:var(--teal);margin-right:5px}
+
+  /* ============ P4 POST-NUDGE FELT SENSE ============ */
+  .felt-hero{margin-top:14px;background:linear-gradient(170deg,#F5E0D0 0%,#D7B0B3 100%);border-radius:22px;padding:24px 22px;position:relative;overflow:hidden}
+  .felt-hero::before{content:'';position:absolute;top:-30px;right:-20px;width:180px;height:180px;background:radial-gradient(circle,rgba(255,255,255,.35),transparent 55%);border-radius:50%}
+  .fh-eye{font-size:9.5px;letter-spacing:.22em;text-transform:uppercase;color:var(--plum-2);font-weight:700;display:flex;align-items:center;gap:8px;position:relative;z-index:1}
+  .fh-eye .g{width:18px;height:18px;border-radius:50%;background:linear-gradient(135deg,var(--gold),var(--rose-400));color:#FFF5EC;display:grid;place-items:center;font-family:'Fraunces',serif;font-size:10px;font-weight:500}
+  .fh-title{font-family:'Fraunces',serif;font-size:26px;color:var(--plum);font-weight:500;margin:12px 0 6px;letter-spacing:-0.015em;line-height:1.15;position:relative;z-index:1}
+  .fh-title em{font-family:'Fraunces',serif;font-style:italic;color:var(--plum-2)}
+  .fh-sub{font-size:12.5px;color:var(--plum-2);line-height:1.55;position:relative;z-index:1}
+  .fh-sub strong{color:var(--plum);font-weight:600}
+
+  .recall{margin-top:16px;background:rgba(255,250,245,.72);border:1px solid rgba(74,42,58,.08);border-radius:14px;padding:14px 16px;position:relative;z-index:1}
+  .recall-eye{font-size:9.5px;letter-spacing:.16em;text-transform:uppercase;color:var(--plum-3);font-weight:700}
+  .recall-text{font-family:'Fraunces',serif;font-style:italic;font-size:15.5px;color:var(--plum);margin-top:6px;line-height:1.4;font-weight:500}
+
+  .felt-grid{margin-top:14px;display:grid;grid-template-columns:repeat(2,1fr);gap:8px;position:relative;z-index:1}
+  .felt-cell{background:rgba(255,250,245,.6);border-radius:12px;padding:14px 12px;text-align:center;cursor:pointer;border:1.5px solid transparent;transition:border 120ms}
+  .felt-cell:hover{border:1.5px solid rgba(74,42,58,.15)}
+  .felt-cell.selected{background:var(--plum);color:var(--cream);border-color:var(--plum)}
+  .felt-cell .icon{font-family:'Fraunces',serif;font-size:22px;color:var(--plum);margin-bottom:6px}
+  .felt-cell.selected .icon{color:var(--cream)}
+  .felt-cell .lab{font-size:12px;color:var(--plum);font-weight:600}
+  .felt-cell.selected .lab{color:var(--cream)}
+  .felt-cell .sub{font-size:10px;color:var(--plum-3);margin-top:2px}
+  .felt-cell.selected .sub{color:rgba(245,230,211,.78)}
+
+  .one-word{margin-top:14px;background:#FFF;border:1px solid rgba(74,42,58,.08);border-radius:14px;padding:14px 16px}
+  .ow-lab{font-size:10px;color:var(--plum-3);letter-spacing:.14em;text-transform:uppercase;font-weight:700}
+  .ow-input{margin-top:8px;font-family:'Fraunces',serif;font-style:italic;font-size:17px;color:var(--plum);line-height:1.3;font-weight:500}
+  .ow-input::after{content:'';display:inline-block;width:2px;height:18px;background:var(--plum);vertical-align:middle;margin-left:2px;animation:blink 1.1s infinite}
+  @keyframes blink{50%{opacity:0}}
+
+  .learning{margin-top:14px;background:linear-gradient(155deg,rgba(245,238,247,.92),rgba(236,220,228,.72));border:1px solid rgba(138,95,116,.18);border-radius:16px;padding:16px 18px}
+  .lr-eye{font-size:9.5px;letter-spacing:.22em;text-transform:uppercase;color:var(--luteal);font-weight:700;display:flex;align-items:center;gap:8px}
+  .lr-eye .dot{width:12px;height:12px;border-radius:50%;background:radial-gradient(circle,var(--luteal),transparent 70%)}
+  .lr-body{font-size:12.5px;color:var(--plum-2);margin-top:10px;line-height:1.55}
+  .lr-body strong{color:var(--plum);font-weight:600}
+  .lr-body em{font-style:italic;color:var(--plum);font-family:'Fraunces',serif}
+
+  .future-action{margin-top:14px;background:#FFF;border:1px solid rgba(74,42,58,.08);border-radius:14px;padding:14px 16px;display:flex;justify-content:space-between;align-items:center;gap:10px}
+  .fa-left{flex:1}
+  .fa-lab{font-size:10px;color:var(--plum-3);letter-spacing:.1em;text-transform:uppercase;font-weight:700}
+  .fa-name{font-size:13px;color:var(--plum);font-weight:600;margin-top:3px;line-height:1.35}
+  .fa-btn{padding:8px 12px;border-radius:10px;background:rgba(95,138,133,.18);color:var(--teal);font-size:10.5px;font-weight:700;letter-spacing:.04em}
+
+  .finish-row{margin-top:20px;display:flex;gap:8px}
+  .finish-btn{flex:1;padding:13px;border-radius:12px;font-weight:700;letter-spacing:.06em;font-size:12px;text-align:center}
+  .finish-btn.save{background:var(--plum);color:var(--cream)}
+  .finish-btn.skip{background:rgba(74,42,58,.08);color:var(--plum)}
+
+  .softnote{margin-top:14px;font-size:10.5px;color:var(--plum-3);text-align:center;font-style:italic;line-height:1.5}
+
+  /* SPEC */
+  .spec{max-width:1320px;margin:0 auto 60px;background:#FFF;border:1px solid rgba(74,42,58,.08);border-radius:22px;padding:36px 40px}
+  .spec h2{font-family:'Fraunces',serif;font-size:24px;color:var(--plum);font-weight:500;margin-bottom:14px;letter-spacing:-0.01em}
+  .spec h3{font-family:'Fraunces',serif;font-size:18px;color:var(--plum);font-weight:500;margin:22px 0 10px;letter-spacing:-0.005em}
+  .spec p{font-size:13.5px;color:var(--plum-2);line-height:1.65;margin-bottom:10px}
+  .spec p strong{color:var(--plum);font-weight:600}
+  .spec ul{padding-left:20px;margin:8px 0 14px;font-size:13.5px;color:var(--plum-2);line-height:1.65}
+  .spec ul li{margin-bottom:6px}
+  .spec ul li strong{color:var(--plum);font-weight:600}
+  .spec code{font-family:ui-monospace,Menlo,monospace;font-size:12.5px;color:var(--plum);background:rgba(74,42,58,.06);padding:1px 6px;border-radius:5px}
+  .spec pre{background:#221823;color:#f5e6d3;border-radius:14px;padding:18px 20px;font-family:ui-monospace,Menlo,monospace;font-size:11.5px;line-height:1.7;white-space:pre-wrap;margin:10px 0 16px}
+  .spec-grid{display:grid;grid-template-columns:1fr 1fr;gap:20px}
+  @media(max-width:900px){.spec-grid{grid-template-columns:1fr}}
+  .spec-card{background:var(--cream-2);border-radius:14px;padding:18px 22px}
+  .spec-card h4{font-family:'Fraunces',serif;font-size:16px;color:var(--plum);font-weight:500;margin-bottom:8px}
+  .never-list{background:linear-gradient(155deg,#2E1F2A,#1E1320);color:var(--star);border-radius:14px;padding:18px 22px;margin-top:12px}
+  .never-list h4{color:var(--cream);font-family:'Fraunces',serif;font-size:16px;font-weight:500;margin-bottom:10px}
+  .never-list ul{padding-left:18px;color:rgba(245,230,211,.86);font-size:12.5px;margin:0}
+  .never-list ul li::marker{color:var(--gold)}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="header">
+    <div class="eyebrow">App-wide feature · rank 5 of 10 · <em>demo</em></div>
+    <h1 class="title">Smart Nudges — <em>every push earns its send</em></h1>
+    <p class="lede">
+      Not calendar-based. Not cohort-average. <strong>Every push is justified by your data.</strong>
+      Magnesium on luteal day 22 — only if your sleep has been poor this cycle.
+      Iron on period day 1 — only if last cycle was heavy. "Bed early tonight or luteal tomorrow will cost you" —
+      only when HRV trend predicts it. If no signal, no send. <strong>Silence is the default.</strong>
+    </p>
+  </div>
+
+  <div class="principle-strip">
+    <div class="ps-card">
+      <div class="ps-eye">Principle 1</div>
+      <div class="ps-title">Signal-triggered, never scheduled</div>
+      <div class="ps-body">Rules fire when <strong>user data crosses a threshold</strong>. No "9am supplement reminder" unless today's data says it matters. Absent signal = <strong>no push</strong>.</div>
+    </div>
+    <div class="ps-card">
+      <div class="ps-eye">Principle 2</div>
+      <div class="ps-title">Every nudge shows its work</div>
+      <div class="ps-body">Tap any nudge → <strong>why this, why now</strong>. Full signal list. Evidence link. Rule ID. If Jess can't explain it in plain English, she can't send it.</div>
+    </div>
+    <div class="ps-card">
+      <div class="ps-eye">Principle 3</div>
+      <div class="ps-title">Per-category snooze, instant</div>
+      <div class="ps-body">Supplement pushes, sleep pushes, food pushes, care pushes, ritual pushes — <strong>each muted independently</strong>. One tap to silence; mute lasts as long as user sets (cycle / 3 / forever).</div>
+    </div>
+    <div class="ps-card dark">
+      <div class="ps-eye">Principle 4</div>
+      <div class="ps-title">Budget of 3 per day, cap of 10 per week</div>
+      <div class="ps-body">No exceptions. If a fourth rule earns send today, it <strong>waits for tomorrow</strong>. Quiet hours are hard. <strong>Panic Mode bypasses all caps</strong>.</div>
+    </div>
+  </div>
+
+  <div class="toc">
+    <a href="#p1">1 · Today's nudges</a>
+    <a href="#p2">2 · Per-category controls</a>
+    <a href="#p3">3 · Rule engine browse</a>
+    <a href="#p4">4 · Post-nudge felt sense</a>
+    <a href="#spec">Eng spec</a>
+  </div>
+
+  <div class="gallery">
+
+    <!-- ============ P1 TODAY'S NUDGES ============ -->
+    <div class="phone-col" id="p1">
+      <div class="phone-label">
+        <div class="pl-eye">Phone 1</div>
+        <div class="pl-title">Today's nudges · <em>3 earned, 4 suppressed</em></div>
+        <div class="pl-sub">The full log. 3 pushes earned today's send; 4 were considered but dropped because signals didn't cross threshold. Each nudge shows its own "why."</div>
+      </div>
+      <div class="phone">
+        <div class="phone-inner">
+          <div class="notch"></div>
+          <div class="sbar"><span>10:24</span><span>●●●●</span></div>
+          <div class="scroll">
+            <div class="ph-head">
+              <div>
+                <div class="ph-eye">Tuesday · April 21</div>
+                <h1 class="ph-title">Today's nudges</h1>
+              </div>
+              <span class="phase-chip"><span class="dot"></span>Luteal · d19</span>
+            </div>
+            <p class="ph-sub" style="margin-top:10px">Jess considered <strong>7 rules</strong> for you today. <strong>3 earned</strong> their send.</p>
+
+            <div class="nudge-count">
+              <div class="nc-left">
+                <div class="num">3</div>
+                <div class="lab">earned today · of daily 3 budget</div>
+              </div>
+              <div class="nc-right">
+                <div class="num">4</div>
+                <div class="lab">suppressed</div>
+              </div>
+            </div>
+
+            <div class="section-h">earned <span class="right">sent today →</span></div>
+
+            <div class="nudge earned">
+              <div class="nudge-top">
+                <div class="nt-eye">
+                  <span class="nt-cat sleep">sleep</span>
+                </div>
+                <span class="nt-time">07:14 · this morning</span>
+              </div>
+              <div class="nudge-title">Softer morning today.</div>
+              <div class="nudge-body">Sleep was light (6h12m, HRV −6%). I moved your 8am workout to 17:30, pushed Kafka review to 14:00. <strong>Luteal energy usually returns by mid-afternoon.</strong></div>
+              <div class="why-row">
+                <div class="why-eye"><span class="j"></span>why this earned its send</div>
+                <div class="why-body">
+                  Total sleep <strong>6h12m</strong> (your baseline 7h30m). HRV <strong>−6% vs 7-day avg</strong>. Two luteal-d19s ago you reported heavy energy drop after a morning workout.
+                </div>
+                <div class="why-sigs">
+                  <span class="sig on">sleep &lt; baseline −1h</span>
+                  <span class="sig on">hrv drop ≥5%</span>
+                  <span class="sig on">phase · luteal d19</span>
+                  <span class="sig on">historical match × 2</span>
+                </div>
+              </div>
+              <div class="n-actions">
+                <button class="n-act did">Thanks · helpful</button>
+                <button class="n-act not-now">Not helpful</button>
+              </div>
+            </div>
+
+            <div class="nudge earned">
+              <div class="nudge-top">
+                <div class="nt-eye">
+                  <span class="nt-cat supplement">supplement</span>
+                </div>
+                <span class="nt-time">21:00 · in 11 hours</span>
+              </div>
+              <div class="nudge-title">Magnesium glycinate · before bed.</div>
+              <div class="nudge-body">Your adopted luteal-d18 ritual is due tonight — and HRV is low. <strong>Skipping tonight is fine.</strong> This is a reminder, not a requirement.</div>
+              <div class="why-row">
+                <div class="why-eye"><span class="j"></span>why this earned its send</div>
+                <div class="why-body">
+                  You adopted this ritual <strong>5 cycles ago</strong>. You've tended it <strong>4 of last 5 luteal-d18s</strong>. HRV today justifies the reminder (your rule threshold: <strong>fire if HRV &lt; −3%</strong>).
+                </div>
+                <div class="why-sigs">
+                  <span class="sig on">adopted ritual · luteal d18</span>
+                  <span class="sig on">hrv drop ≥3%</span>
+                  <span class="sig on">evening window 21:00</span>
+                </div>
+              </div>
+              <div class="n-actions">
+                <button class="n-act did">Done it</button>
+                <button class="n-act not-now">Snooze 1h</button>
+                <button class="n-act silence">Silence supplements · 1 cycle</button>
+              </div>
+            </div>
+
+            <div class="nudge earned">
+              <div class="nudge-top">
+                <div class="nt-eye">
+                  <span class="nt-cat care">care</span>
+                </div>
+                <span class="nt-time">14:00 · in 4 hours</span>
+              </div>
+              <div class="nudge-title">Care Bridge window closes in 3 days.</div>
+              <div class="nudge-body">Dr Aisha Patel's clinician session for your peri review expires <strong>Friday</strong>. Your data is fresh; you haven't reviewed it. One tap to preview what he'll see.</div>
+              <div class="why-row">
+                <div class="why-eye"><span class="j"></span>why this earned its send</div>
+                <div class="why-body">Care Bridge window has <strong>3 days left of 14</strong>. User has not previewed the shared bundle. <strong>This is a time-sensitive nudge — sent only once per care bridge session.</strong></div>
+                <div class="why-sigs">
+                  <span class="sig on">care · 3d to expiry</span>
+                  <span class="sig on">unviewed preview</span>
+                  <span class="sig on">first reminder only</span>
+                </div>
+              </div>
+              <div class="n-actions">
+                <button class="n-act did">Preview bundle</button>
+                <button class="n-act not-now">Remind tomorrow</button>
+              </div>
+            </div>
+
+            <div class="section-h">suppressed <span class="right">considered but dropped →</span></div>
+
+            <div class="nudge suppressed">
+              <div class="nudge-top">
+                <div class="nt-eye"><span class="nt-cat food">food</span></div>
+                <span class="nt-time">dropped 06:00</span>
+              </div>
+              <div class="nudge-title">Iron-rich breakfast on period d1</div>
+              <div class="why-body" style="margin-top:8px">
+                Considered, <strong>not sent</strong> — you're on luteal d19, not period d1. Will reconsider around day 28.
+              </div>
+              <div class="suppr-pill">· rule threshold not met</div>
+            </div>
+
+            <div class="nudge suppressed">
+              <div class="nudge-top">
+                <div class="nt-eye"><span class="nt-cat ritual">ritual</span></div>
+                <span class="nt-time">dropped 08:30</span>
+              </div>
+              <div class="nudge-title">Morning pages</div>
+              <div class="why-body" style="margin-top:8px">
+                Considered, <strong>not sent</strong> — this ritual is resting. Jess won't nudge a resting plant. Will ask to resume next follicular.
+              </div>
+              <div class="suppr-pill">· ritual state · resting</div>
+            </div>
+
+            <div class="nudge suppressed">
+              <div class="nudge-top">
+                <div class="nt-eye"><span class="nt-cat sleep">sleep</span></div>
+                <span class="nt-time">dropped 09:00</span>
+              </div>
+              <div class="nudge-title">Hydration · 3 glasses by noon</div>
+              <div class="why-body" style="margin-top:8px">
+                Considered, <strong>not sent</strong> — you haven't opted in to hydration nudges. Live signal would qualify (280ml logged by 9am), but respecting the category mute.
+              </div>
+              <div class="suppr-pill">· category muted</div>
+            </div>
+
+            <div class="quiet-row">
+              <div>
+                <div class="lab">quiet hours active</div>
+                <div class="val">22:30 → 07:00 · no pushes</div>
+              </div>
+              <div class="dot-on"></div>
+            </div>
+          </div>
+          <div class="bnav">
+            <div class="bnav-item"><div class="dot"></div>today</div>
+            <div class="bnav-item"><div class="dot"></div>lifestyle</div>
+            <div class="bnav-fab">j</div>
+            <div class="bnav-item"><div class="dot"></div>journal</div>
+            <div class="bnav-item active"><div class="dot"></div>menu</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ============ P2 CATEGORY CONTROLS ============ -->
+    <div class="phone-col" id="p2">
+      <div class="phone-label">
+        <div class="pl-eye">Phone 2</div>
+        <div class="pl-title">Category controls · <em>mute per type</em></div>
+        <div class="pl-sub">Each nudge type has its own off switch. Per-category snooze (cycle / 3 cycles / off). One global kill switch at bottom — off = absolutely no pushes, ever.</div>
+      </div>
+      <div class="phone">
+        <div class="phone-inner">
+          <div class="notch"></div>
+          <div class="sbar"><span>10:28</span><span>●●●●</span></div>
+          <div class="scroll">
+            <div class="ph-head">
+              <div>
+                <div class="ph-eye">Nudges · your controls</div>
+                <h1 class="ph-title">Keep · snooze · silence</h1>
+              </div>
+            </div>
+            <p class="ph-sub" style="margin-top:10px">Each category is its own switch. Silence doesn't penalise Jess — she just stops sending.</p>
+
+            <div class="cat-hero">
+              <div class="ch-eye">last 30 days</div>
+              <div class="ch-title">Jess sent you <em>34 nudges</em></div>
+              <div class="ch-sub">You marked <strong>27 helpful</strong>, <strong>5 not helpful</strong>, <strong>2 ignored</strong>. Jess dropped <strong>112 more</strong> because thresholds weren't met.</div>
+              <div class="ch-totals">
+                <div class="ch-total"><div class="num">80%</div><div class="lab">helpful</div></div>
+                <div class="ch-total"><div class="num">15%</div><div class="lab">not helpful</div></div>
+                <div class="ch-total"><div class="num">5%</div><div class="lab">ignored</div></div>
+              </div>
+            </div>
+
+            <div class="section-h">by category</div>
+
+            <div class="cat-card">
+              <div class="cat-row">
+                <div>
+                  <div class="cat-name">Sleep & energy</div>
+                  <div class="cat-sub">HRV-triggered schedule shifts, bedtime nudges</div>
+                  <div class="cat-stat">last 30d · 12 sent · 10 helpful</div>
+                </div>
+              </div>
+              <div class="toggle-row">
+                <div class="toggle-opt active">on</div>
+                <div class="toggle-opt">gentle</div>
+                <div class="toggle-opt">silent</div>
+              </div>
+            </div>
+
+            <div class="cat-card">
+              <div class="cat-row">
+                <div>
+                  <div class="cat-name">Supplements & micronutrients</div>
+                  <div class="cat-sub">Adopted-ritual reminders; never unprescribed</div>
+                  <div class="cat-stat">last 30d · 8 sent · 8 helpful</div>
+                </div>
+              </div>
+              <div class="toggle-row">
+                <div class="toggle-opt active">on</div>
+                <div class="toggle-opt">gentle</div>
+                <div class="toggle-opt">silent</div>
+              </div>
+              <div class="snooze-row">
+                <span class="snooze-chip">Snooze 1 cycle</span>
+                <span class="snooze-chip">3 cycles</span>
+                <span class="snooze-chip">Until I turn back on</span>
+              </div>
+            </div>
+
+            <div class="cat-card">
+              <div class="cat-row">
+                <div>
+                  <div class="cat-name">Food & hydration</div>
+                  <div class="cat-sub">Phase-timed iron, magnesium-rich foods, hydration</div>
+                  <div class="cat-stat">last 30d · 4 sent · 3 helpful · <strong>muted now</strong></div>
+                </div>
+              </div>
+              <div class="toggle-row">
+                <div class="toggle-opt">on</div>
+                <div class="toggle-opt">gentle</div>
+                <div class="toggle-opt active">silent</div>
+              </div>
+              <div class="snooze-row">
+                <span class="snooze-chip active">Silent · until I turn back on</span>
+              </div>
+            </div>
+
+            <div class="cat-card">
+              <div class="cat-row">
+                <div>
+                  <div class="cat-name">Rituals</div>
+                  <div class="cat-sub">Due-today tends; only for rituals you've adopted</div>
+                  <div class="cat-stat">last 30d · 6 sent · 5 helpful</div>
+                </div>
+              </div>
+              <div class="toggle-row">
+                <div class="toggle-opt active">on</div>
+                <div class="toggle-opt">gentle</div>
+                <div class="toggle-opt">silent</div>
+              </div>
+            </div>
+
+            <div class="cat-card">
+              <div class="cat-row">
+                <div>
+                  <div class="cat-name">Care & bridge</div>
+                  <div class="cat-sub">Window-closes, unviewed previews, async-note replies</div>
+                  <div class="cat-stat">last 30d · 2 sent · 2 helpful</div>
+                </div>
+              </div>
+              <div class="toggle-row">
+                <div class="toggle-opt active">on</div>
+                <div class="toggle-opt">gentle</div>
+                <div class="toggle-opt">silent</div>
+              </div>
+            </div>
+
+            <div class="cat-card">
+              <div class="cat-row">
+                <div>
+                  <div class="cat-name">Rest & boundaries</div>
+                  <div class="cat-sub">"Go to bed early tonight" when HRV trend predicts tomorrow</div>
+                  <div class="cat-stat">last 30d · 2 sent · 1 helpful · 1 not</div>
+                </div>
+              </div>
+              <div class="toggle-row">
+                <div class="toggle-opt">on</div>
+                <div class="toggle-opt active">gentle</div>
+                <div class="toggle-opt">silent</div>
+              </div>
+            </div>
+
+            <div class="no-push">
+              <div class="np-eye">the big off</div>
+              <div class="np-title">Turn off all pushes</div>
+              <div class="np-body">Your data still generates insights inside the app — but <strong>nothing will buzz your phone</strong>. Panic Mode stays available. Care Bridge expiry still shows inside FemWell but won't push.</div>
+              <div class="big-off">all pushes · off · across all categories</div>
+            </div>
+
+            <div class="softnote">
+              muting a category never changes how much Jess sees.<br>
+              she just stops talking until you let her back in.
+            </div>
+          </div>
+          <div class="bnav">
+            <div class="bnav-item"><div class="dot"></div>today</div>
+            <div class="bnav-item"><div class="dot"></div>lifestyle</div>
+            <div class="bnav-fab">j</div>
+            <div class="bnav-item"><div class="dot"></div>journal</div>
+            <div class="bnav-item active"><div class="dot"></div>menu</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ============ P3 RULE ENGINE BROWSE ============ -->
+    <div class="phone-col" id="p3">
+      <div class="phone-label">
+        <div class="pl-eye">Phone 3</div>
+        <div class="pl-title">Rules · <em>what Jess knows how to do</em></div>
+        <div class="pl-sub">Every rule Jess can fire is browseable. Plain-English "if this, then that." Evidence links visible. User can disable any individual rule without muting its whole category.</div>
+      </div>
+      <div class="phone">
+        <div class="phone-inner">
+          <div class="notch"></div>
+          <div class="sbar"><span>10:34</span><span>●●●●</span></div>
+          <div class="scroll">
+            <div class="ph-head">
+              <div>
+                <div class="ph-eye">Nudges · rules catalogue</div>
+                <h1 class="ph-title">What makes<br>Jess speak up</h1>
+              </div>
+            </div>
+
+            <div class="rule-head">
+              <div class="rh-title">28 rules · <em>all visible, all editable</em></div>
+              <div class="rh-sub">Each rule has an <strong>if-this-then-that</strong> condition. No hidden logic. No A/B. Every rule shows which signals trigger it and the evidence behind the copy.</div>
+            </div>
+
+            <div class="rule-tabs">
+              <div class="rule-tab active">All 28</div>
+              <div class="rule-tab">Sleep (6)</div>
+              <div class="rule-tab">Supplements (5)</div>
+              <div class="rule-tab">Food (5)</div>
+              <div class="rule-tab">Rituals (4)</div>
+              <div class="rule-tab">Care (3)</div>
+              <div class="rule-tab">Rest (5)</div>
+            </div>
+
+            <div class="rule">
+              <div class="rule-top">
+                <div class="rule-name">Softer morning after light sleep</div>
+                <span class="rule-cat" style="background:rgba(95,138,133,.18);color:var(--teal)">sleep</span>
+              </div>
+              <div class="rule-if"><span class="kw">IF</span> sleep_total &lt; <span class="val">baseline − 1h</span> <span class="kw">AND</span> hrv_delta &lt; <span class="val">−5%</span> <span class="kw">AND</span> phase == <span class="val">luteal</span> <span class="kw">THEN</span> <span class="val">suggest_schedule_shift</span></div>
+              <div class="rule-text">Moves morning workout to later; reschedules high-cognitive tasks to early afternoon. <strong>Never auto-applies</strong> — only suggests.</div>
+              <div class="rule-evidence">Evidence: <strong>Sleep Medicine Reviews 2023</strong> · luteal-phase sleep-HRV coupling</div>
+              <div class="rule-fire"><span><span class="live-dot"></span>last fired · today 07:14</span><span>fired 12× in 30d</span></div>
+            </div>
+
+            <div class="rule">
+              <div class="rule-top">
+                <div class="rule-name">Magnesium reminder when adopted ritual is due</div>
+                <span class="rule-cat" style="background:rgba(185,164,201,.3);color:#6A4E82">supplement</span>
+              </div>
+              <div class="rule-if"><span class="kw">IF</span> has_ritual(<span class="val">magnesium_glycinate</span>) <span class="kw">AND</span> ritual.cycle_day == <span class="val">today</span> <span class="kw">AND</span> hrv_delta &lt; <span class="val">−3%</span> <span class="kw">THEN</span> <span class="val">gentle_single_push</span></div>
+              <div class="rule-text">Fires only for <strong>adopted rituals</strong>. Never introduces a new supplement via push — that requires the Rituals proposer + user opt-in.</div>
+              <div class="rule-evidence">Evidence: linked ritual's original proposal evidence</div>
+              <div class="rule-fire"><span><span class="live-dot"></span>last fired · today 10:15</span><span>fired 8× in 30d</span></div>
+            </div>
+
+            <div class="rule">
+              <div class="rule-top">
+                <div class="rule-name">Iron-rich foods on period day 1</div>
+                <span class="rule-cat" style="background:rgba(212,165,112,.3);color:#8A6234">food</span>
+              </div>
+              <div class="rule-if"><span class="kw">IF</span> today == <span class="val">period_d1</span> <span class="kw">AND</span> last_cycle_bleed_intensity ≥ <span class="val">heavy</span> <span class="kw">THEN</span> <span class="val">morning_food_nudge</span></div>
+              <div class="rule-text">Surfaces Cornish mackerel, Scottish oats, purple sprouting broccoli, wilted spinach with British Lion eggs — UK-local foods when available. Falls back to generic iron-rich list if locale not set.</div>
+              <div class="rule-evidence">Evidence: <strong>BJOG 2021</strong> · iron supplementation and absorption in heavy menstrual bleeding</div>
+              <div class="rule-fire"><span>last fired · 23 days ago</span><span>fired 4× in 30d</span></div>
+            </div>
+
+            <div class="rule">
+              <div class="rule-top">
+                <div class="rule-name">Early bedtime before predicted hard day</div>
+                <span class="rule-cat" style="background:rgba(125,134,104,.22);color:#4A5533">rest</span>
+              </div>
+              <div class="rule-if"><span class="kw">IF</span> tomorrow_phase_day predicts <span class="val">high demand</span> <span class="kw">AND</span> hrv_trend_7d <span class="val">downward</span> <span class="kw">AND</span> time == <span class="val">22:00</span> <span class="kw">THEN</span> <span class="val">gentle_evening_cue</span></div>
+              <div class="rule-text">"Go to bed early tonight — luteal tomorrow usually costs you." Copy written by clinician. Never guilts.</div>
+              <div class="rule-evidence">Evidence: <strong>Clinical Sleep Medicine 2022</strong> · sleep debt impact on premenstrual symptoms</div>
+              <div class="rule-fire"><span>last fired · yesterday 22:03</span><span>fired 6× in 30d</span></div>
+            </div>
+
+            <div class="rule">
+              <div class="rule-top">
+                <div class="rule-name">Care Bridge window closes in 3 days</div>
+                <span class="rule-cat" style="background:rgba(138,95,116,.22);color:var(--luteal)">care</span>
+              </div>
+              <div class="rule-if"><span class="kw">IF</span> care_bridge_session.days_to_expiry == <span class="val">3</span> <span class="kw">AND</span> preview_viewed == <span class="val">false</span> <span class="kw">THEN</span> <span class="val">single_reminder</span></div>
+              <div class="rule-text">Fires exactly once per session. Shows what the clinician will see so user can still revoke before window closes.</div>
+              <div class="rule-evidence">Design: UK GDPR + DPA 2018 Care Bridge consent requirements</div>
+              <div class="rule-fire"><span><span class="live-dot"></span>last fired · today 10:02</span><span>fired 2× in 30d</span></div>
+            </div>
+
+            <div class="rule">
+              <div class="rule-top">
+                <div class="rule-name">Pre-panic check-in · luteal evenings</div>
+                <span class="rule-cat" style="background:rgba(201,119,97,.18);color:var(--soft-red)">rest</span>
+              </div>
+              <div class="rule-if"><span class="kw">IF</span> panic_count_this_cycle ≥ <span class="val">3</span> <span class="kw">AND</span> phase == <span class="val">luteal</span> <span class="kw">AND</span> time == <span class="val">20:30</span> <span class="kw">AND</span> user.opted_in == <span class="val">true</span> <span class="kw">THEN</span> <span class="val">gentle_check_in</span></div>
+              <div class="rule-text">Opt-in only. Offers a 2-minute breath + journal prompt before panic-window opens. Never alarm language.</div>
+              <div class="rule-evidence">Design: Panic Mode design brief, 2026-04-20</div>
+              <div class="rule-fire"><span>last fired · 3 days ago</span><span>fired 3× in 30d</span></div>
+            </div>
+
+            <div class="softnote">
+              <strong>Any rule can be turned off individually.</strong><br>
+              Rules never update themselves; FemWell engineers publish new ones in versioned releases.
+            </div>
+          </div>
+          <div class="bnav">
+            <div class="bnav-item"><div class="dot"></div>today</div>
+            <div class="bnav-item"><div class="dot"></div>lifestyle</div>
+            <div class="bnav-fab">j</div>
+            <div class="bnav-item"><div class="dot"></div>journal</div>
+            <div class="bnav-item active"><div class="dot"></div>menu</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ============ P4 POST-NUDGE FELT SENSE ============ -->
+    <div class="phone-col" id="p4">
+      <div class="phone-label">
+        <div class="pl-eye">Phone 4</div>
+        <div class="pl-title">Afterglow · <em>did this land?</em></div>
+        <div class="pl-sub">30 minutes after a nudge, Jess quietly asks how it landed. 4 felt-sense options + one word + option to tighten the rule. No 1-10 rating. The loop is how rules stay earned.</div>
+      </div>
+      <div class="phone">
+        <div class="phone-inner">
+          <div class="notch"></div>
+          <div class="sbar"><span>14:00</span><span>●●●●</span></div>
+          <div class="scroll">
+            <div class="ph-head">
+              <div>
+                <div class="ph-eye">30 min after softer-morning nudge</div>
+                <h1 class="ph-title">Jess wants to<br>know — <em>did it land?</em></h1>
+              </div>
+            </div>
+
+            <div class="felt-hero">
+              <div class="fh-eye"><span class="g">j</span>gently · one tap · no right answer</div>
+              <div class="fh-title">How did this<br>morning feel?</div>
+              <div class="fh-sub">I moved your workout to 17:30 and your Kafka review to 14:00. You didn't push back. <strong>Would you do it again?</strong></div>
+
+              <div class="recall">
+                <div class="recall-eye">the nudge at 07:14</div>
+                <div class="recall-text">"softer morning today. sleep was light (6h12m, HRV −6%). moved 8am workout → 17:30, Kafka review → 14:00. luteal energy usually returns by mid-afternoon."</div>
+              </div>
+
+              <div class="felt-grid">
+                <div class="felt-cell selected">
+                  <div class="icon">↑</div>
+                  <div class="lab">Lifted</div>
+                  <div class="sub">this was the right call</div>
+                </div>
+                <div class="felt-cell">
+                  <div class="icon">~</div>
+                  <div class="lab">Softer</div>
+                  <div class="sub">helpful, gentle</div>
+                </div>
+                <div class="felt-cell">
+                  <div class="icon">=</div>
+                  <div class="lab">Same</div>
+                  <div class="sub">didn't move the needle</div>
+                </div>
+                <div class="felt-cell">
+                  <div class="icon">✕</div>
+                  <div class="lab">Not for me</div>
+                  <div class="sub">mute this rule</div>
+                </div>
+              </div>
+            </div>
+
+            <div class="one-word">
+              <div class="ow-lab">one word (optional)</div>
+              <div class="ow-input">permission</div>
+            </div>
+
+            <div class="learning">
+              <div class="lr-eye"><span class="dot"></span>what this teaches jess</div>
+              <div class="lr-body">
+                <strong>Lifted</strong> on a sleep-triggered schedule shift, luteal d19, HRV −6%. This pattern now weighs <strong>+1</strong> toward firing the same rule next time. If you mark it Lifted again on d20, <em>I'll start moving your calendar without asking</em> — only if you let me.
+              </div>
+            </div>
+
+            <div class="future-action">
+              <div class="fa-left">
+                <div class="fa-lab">next level</div>
+                <div class="fa-name">Let Jess pre-move calendar on days like this</div>
+              </div>
+              <div class="fa-btn">Enable →</div>
+            </div>
+
+            <div class="future-action" style="background:rgba(255,250,245,.6)">
+              <div class="fa-left">
+                <div class="fa-lab">tighten the rule</div>
+                <div class="fa-name">Only fire when HRV drop is ≥ 7%</div>
+              </div>
+              <div class="fa-btn" style="background:rgba(74,42,58,.08);color:var(--plum)">Adjust →</div>
+            </div>
+
+            <div class="finish-row">
+              <button class="finish-btn save">Save · teach jess</button>
+              <button class="finish-btn skip">Skip · not now</button>
+            </div>
+
+            <div class="softnote">
+              the loop is the point. every push · every answer · every rule sharpens.<br>
+              <strong>no answer is wrong.</strong>
+            </div>
+          </div>
+          <div class="bnav">
+            <div class="bnav-item"><div class="dot"></div>today</div>
+            <div class="bnav-item"><div class="dot"></div>lifestyle</div>
+            <div class="bnav-fab">j</div>
+            <div class="bnav-item"><div class="dot"></div>journal</div>
+            <div class="bnav-item active"><div class="dot"></div>menu</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============ SPEC ============ -->
+  <section class="spec" id="spec">
+    <h2>Engineering spec — Smart Nudges</h2>
+    <p>A <strong>rules engine + outbox</strong>, not a notifications service. Rules are human-written (clinician + engineering review), versioned, evidence-linked. The engine evaluates every rule against user signals on a 15-min cadence and on explicit triggers; only rules that <em>earn</em> send reach the push outbox. Every send is logged with full signal snapshot.</p>
+
+    <h3>New entities (base44)</h3>
+    <div class="spec-grid">
+      <div class="spec-card">
+        <h4>NudgeRules (template library)</h4>
+        <ul>
+          <li><strong>id</strong> string — stable rule key, e.g. <code>SOFT_MORNING_LOW_SLEEP_LUTEAL</code></li>
+          <li><strong>version</strong> int — bumped on any condition or copy change</li>
+          <li><strong>category</strong> enum: sleep / supplement / food / ritual / care / rest</li>
+          <li><strong>name</strong> string — plain-English name</li>
+          <li><strong>conditions</strong> json-dsl — structured if/and/or tree over allowed signals</li>
+          <li><strong>copy_template</strong> string — includes substitutions {{sleep_total}}, {{phase_day}}</li>
+          <li><strong>evidence_links</strong> string[] — DOI/PubMed/clinical-guideline URLs</li>
+          <li><strong>author</strong> string — clinician who drafted copy</li>
+          <li><strong>cooldown_hours</strong> int — min gap between same-rule fires for same user</li>
+          <li><strong>default_channel</strong> enum: push / in_app_only / silent</li>
+          <li><strong>requires_opt_in</strong> bool — true for panic-related, aggressive-care rules</li>
+        </ul>
+      </div>
+      <div class="spec-card">
+        <h4>UserNudgePolicy (per user)</h4>
+        <ul>
+          <li><strong>user_id</strong> fk</li>
+          <li><strong>global_enabled</strong> bool — master switch</li>
+          <li><strong>category_states</strong> json — e.g. <code>{"sleep":"on","food":"silent","supplement":"gentle"}</code></li>
+          <li><strong>per_rule_overrides</strong> json — disable/tighten specific rules</li>
+          <li><strong>quiet_hours</strong> json — e.g. <code>{"start":"22:30","end":"07:00"}</code></li>
+          <li><strong>daily_budget</strong> int default <strong>3</strong></li>
+          <li><strong>weekly_budget</strong> int default <strong>10</strong></li>
+          <li><strong>learning_enabled</strong> bool — whether "did it help?" answers adjust weights</li>
+          <li><strong>opted_in_rules</strong> string[] — explicit opt-ins for care/panic/aggressive</li>
+        </ul>
+      </div>
+    </div>
+    <div class="spec-grid" style="margin-top:14px">
+      <div class="spec-card">
+        <h4>NudgeEvaluations (the "considered" log)</h4>
+        <ul>
+          <li><strong>id</strong> uuid</li>
+          <li><strong>user_id</strong> fk</li>
+          <li><strong>rule_id</strong> fk NudgeRules</li>
+          <li><strong>rule_version</strong> int</li>
+          <li><strong>evaluated_at</strong> ts</li>
+          <li><strong>decision</strong> enum: sent / suppressed</li>
+          <li><strong>suppress_reason</strong> enum nullable: threshold_not_met / category_muted / rule_disabled / quiet_hours / daily_budget / weekly_budget / cooldown / requires_opt_in</li>
+          <li><strong>signals_snapshot</strong> json — denormalised signals used by condition evaluation</li>
+          <li><strong>copy_rendered</strong> string nullable — only if decision=sent</li>
+          <li><strong>push_id</strong> fk nullable — push outbox record if sent</li>
+        </ul>
+      </div>
+      <div class="spec-card">
+        <h4>NudgeFeedback (post-nudge felt sense)</h4>
+        <ul>
+          <li><strong>id</strong> uuid</li>
+          <li><strong>evaluation_id</strong> fk NudgeEvaluations</li>
+          <li><strong>answered_at</strong> ts</li>
+          <li><strong>felt_sense</strong> enum: lifted / softer / same / not_for_me</li>
+          <li><strong>one_word</strong> string nullable (optional free-text, never shown to anyone else)</li>
+          <li><strong>action_taken</strong> enum: enabled_auto / tightened_rule / muted_rule / nothing</li>
+          <li><strong>applied_to_policy</strong> bool — did this feedback change UserNudgePolicy</li>
+        </ul>
+      </div>
+    </div>
+
+    <h3>Rule condition DSL (signals allowed)</h3>
+    <pre>// Conditions are structured — never free-form LLM evaluation.
+{
+  "all": [
+    { "signal": "sleep_total",  "op": "<", "value": "baseline − 1h" },
+    { "signal": "hrv_delta_7d", "op": "<", "value": "-5%" },
+    { "signal": "phase_band",    "op": "==", "value": "luteal" }
+  ]
+}
+
+Allowed signals (read-only, derived from Pulse/Cycle/Journal):
+  phase_band, phase_day, cycle_day, bleed_intensity_last, bleed_flow_today,
+  sleep_total, sleep_onset, sleep_baseline, hrv_now, hrv_delta_7d, hrv_trend,
+  rhr_now, rhr_delta_7d, journal_topics_7d, panic_count_cycle, panic_count_30d,
+  ritual_due_today[], ritual_state[], care_bridge_days_to_expiry,
+  care_bridge_preview_viewed, time_of_day, locale, opted_in_rules
+
+Disallowed in conditions:
+  user PII, user name, user pronouns, any other user's data,
+  step count, body weight, body fat, BMI, sexual activity,
+  partner data, clinician notes, journal content (only derived topics)</pre>
+
+    <h3>Evaluation cadence</h3>
+    <ul>
+      <li><strong>15-min cron</strong> — every user × every enabled rule evaluated. ~40 rules × 100k users = 40M evaluations/day (manageable in base44 cron).</li>
+      <li><strong>Event triggers</strong> — immediate eval on wearable sync, cycle state change, panic log, Care Bridge state change.</li>
+      <li><strong>Budget gate</strong> — before outbox, check user's <code>daily_budget</code> and <code>weekly_budget</code>. Panic-related and Care-Bridge-expiry bypass daily budget, never weekly.</li>
+      <li><strong>Cooldown gate</strong> — per-rule cooldown prevents chatter (min 3h; most rules 24h).</li>
+      <li><strong>Quiet hours gate</strong> — hard; sends delayed to window_end unless rule marked <code>urgent</code>.</li>
+    </ul>
+
+    <h3>Learning loop (Principle 5)</h3>
+    <p>Feedback adjusts rule weights <strong>per user only</strong>, never globally. If a user marks "softer-morning" rule as <em>Lifted</em> 3× at HRV −5%, the threshold tightens for them to −4% next time. If they mark it <em>Not for me</em> 2×, the rule disables itself for them and surfaces a "we won't fire this again" note.</p>
+    <pre>per_user_rule_weight = base_weight
+  + (lifted_count × 0.10)
+  + (softer_count × 0.05)
+  - (same_count × 0.02)
+  - (not_for_me_count × 0.50)  // strong downweight
+
+if per_user_rule_weight &lt; -0.50 → auto-mute rule for user, surface toast in-app</pre>
+
+    <h3>Ship order</h3>
+    <ul>
+      <li><strong>Q3 2026</strong> — core engine + 8 rules (2 sleep, 2 supplement, 2 food, 2 care). No feedback loop yet. Category mutes + daily budget live.</li>
+      <li><strong>Q4 2026</strong> — feedback loop (P4) + per-rule disable + rule catalogue browse (P3) + 12 more rules.</li>
+      <li><strong>Q1 2027</strong> — per-user rule weights + quiet-hours + Panic-bypass + Care Bridge bypass. Ritual integration.</li>
+      <li><strong>Q2 2027</strong> — pre-panic opt-in rule + tighten-rule-from-feedback (P4 second card). Partner Sync "she'd rest well tonight" relay (her consent required).</li>
+      <li><strong>Q3 2027</strong> — UK-local food nudge variants + regional dialect copy for opt-in users.</li>
+    </ul>
+
+    <div class="never-list">
+      <h4>What Smart Nudges will never be</h4>
+      <ul>
+        <li><strong>Scheduled pushes.</strong> No "8am daily wellness reminder." Rules fire from signals, not clocks.</li>
+        <li><strong>Growth-driven.</strong> Rules are not tuned for DAU/retention. Helpful-rate is the only engagement metric; it is reported to users, not A/B optimised.</li>
+        <li><strong>LLM-authored copy at send time.</strong> Rules ship with clinician-written templates. Signal substitutions only. No runtime generation.</li>
+        <li><strong>Cross-user "women like you" aggregations.</strong> Every rule's signals are yours only.</li>
+        <li><strong>Panic-Mode without opt-in.</strong> Every panic-related rule requires explicit user opt-in; turning off is instant.</li>
+        <li><strong>Medical prescribing.</strong> Nudges never introduce new prescription medication. Those route to Care Bridge as "talk to your clinician."</li>
+        <li><strong>Marketing or upsell.</strong> Nudges are about care, never Pro conversions or referral asks.</li>
+        <li><strong>Partner-visible.</strong> Partner Sync cannot see your nudge list or feedback.</li>
+        <li><strong>Un-editable.</strong> Every rule is individually toggleable. Every category is individually muteable. The global off-switch is real.</li>
+      </ul>
+    </div>
+  </section>
+</div>
+</body>
+</html>

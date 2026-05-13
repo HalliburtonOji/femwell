@@ -1,0 +1,590 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>FemWell — Panic Mode redesign</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,500;0,9..144,600;1,9..144,400;1,9..144,500&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --cream:#FFFAF5; --cream-2:#FFF5EC; --cream-3:#F0E5D8;
+  --plum:#4A2A3A; --plum-2:#6B4559; --plum-mute:#8A7584;
+  --rose-300:#F2A99A; --rose-400:#E67F73; --rose-500:#D45E52;
+  --luteal:#8A5F74;
+  --gold:#C9A95C; --teal:#5F8A85; --moss:#7D8668; --lav:#B9A4C9;
+  --night:#1A1522; --night-2:#2A1B33; --star:#F5E6D3;
+  --ink:#2B1E16; --ink-soft:#4A3A30; --ink-mute:#8A7768;
+}
+*{box-sizing:border-box; -webkit-font-smoothing:antialiased}
+html,body{margin:0; padding:0}
+body{
+  font-family:'Inter', sans-serif; color:var(--ink);
+  background:
+    radial-gradient(1000px 600px at 15% 0%, #F5E6D6 0%, transparent 55%),
+    radial-gradient(900px 600px at 90% 20%, #E8D2CB 0%, transparent 55%),
+    radial-gradient(1100px 700px at 50% 100%, #EFDBCF 0%, transparent 55%),
+    var(--cream);
+  min-height:100vh;
+}
+.wrap{max-width:1440px; margin:0 auto; padding:56px 40px 80px}
+.header{max-width:900px; margin-bottom:44px}
+.eyebrow{font-family:'Fraunces',serif; font-style:italic; color:var(--luteal); font-size:15px}
+h1{font-family:'Fraunces',serif; font-weight:500; font-size:54px; line-height:1.03; margin:10px 0 14px; letter-spacing:-.015em; color:var(--plum)}
+h1 em{font-style:italic; color:var(--rose-500)}
+.sub{color:var(--ink-soft); font-size:16px; line-height:1.55; max-width:740px}
+.legend{display:flex; flex-wrap:wrap; gap:18px; margin-top:22px; color:var(--plum-mute); font-size:12.5px; letter-spacing:.02em; text-transform:uppercase}
+.legend span{display:inline-flex; align-items:center; gap:8px}
+.legend i{width:10px; height:10px; border-radius:50%; background:var(--rose-400); display:inline-block}
+
+.phones{display:grid; grid-template-columns:repeat(5, 1fr); gap:28px; margin-top:36px}
+@media (max-width:1400px){.phones{grid-template-columns:repeat(3, 1fr)}}
+@media (max-width:900px){.phones{grid-template-columns:repeat(2, 1fr)}}
+@media (max-width:560px){.phones{grid-template-columns:1fr}}
+
+.phone-wrap{display:flex; flex-direction:column; gap:10px}
+.phone-label{font-family:'Fraunces',serif; font-style:italic; font-size:14px; color:var(--plum); padding-left:4px}
+.phone-step{color:var(--plum-mute); font-size:11px; letter-spacing:.14em; text-transform:uppercase; padding-left:4px}
+
+.phone{
+  position:relative; aspect-ratio:1/2.05;
+  border-radius:46px; padding:10px;
+  background:linear-gradient(160deg,#0e060f,#1a0f1e);
+  box-shadow: 0 30px 60px -20px rgba(26,21,34,.5), 0 10px 25px rgba(26,21,34,.2), inset 0 0 0 1px rgba(255,255,255,.04);
+}
+.phone::before{content:""; position:absolute; top:22px; left:50%; transform:translateX(-50%); width:120px; height:24px; border-radius:14px; background:#0a0410; z-index:3}
+.screen{
+  position:absolute; inset:10px; border-radius:38px; overflow:hidden;
+  color:#F5E6D3; display:flex; flex-direction:column;
+}
+.screen.dark{
+  background:
+    radial-gradient(500px 400px at 50% 20%, rgba(212,94,82,.28), transparent 60%),
+    radial-gradient(500px 500px at 50% 100%, rgba(138,95,116,.30), transparent 60%),
+    linear-gradient(180deg,#1A1522 0%,#2A1B33 100%);
+}
+.screen.dusk{
+  background:
+    radial-gradient(400px 400px at 50% 0%, rgba(242,169,154,.35), transparent 60%),
+    linear-gradient(180deg,#3A2434 0%,#1A1522 100%);
+}
+.screen.dawn{
+  background:
+    radial-gradient(600px 500px at 50% 20%, rgba(255,220,208,.95), rgba(212,94,82,.4) 60%, rgba(74,42,58,.7) 100%);
+  color:var(--plum);
+}
+.status{height:44px; flex-shrink:0; display:flex; justify-content:space-between; align-items:center; padding:0 22px; font-family:'Inter'; font-weight:600; font-size:12px; color:rgba(245,230,211,.7)}
+.screen.dawn .status{color:rgba(74,42,58,.6)}
+.body{flex:1; overflow:hidden; position:relative; padding:12px 20px 18px; display:flex; flex-direction:column; gap:12px}
+
+/* soft CTAs on dark screens */
+.cta-dark{
+  margin-top:auto; width:100%; padding:14px; border-radius:16px;
+  background:rgba(245,230,211,.12);
+  color:#F5E6D3; font-family:'Inter'; font-weight:500; font-size:14px; letter-spacing:.01em;
+  border:1px solid rgba(245,230,211,.15);
+  display:flex; align-items:center; justify-content:center; gap:8px;
+  backdrop-filter:blur(12px);
+}
+.cta-dark.solid{background:linear-gradient(135deg,var(--rose-400),var(--rose-500)); color:#fff; border-color:transparent}
+.cta-dark.ghost{background:transparent}
+
+/* display type */
+.display{font-family:'Fraunces',serif; font-weight:400; font-size:28px; line-height:1.2; letter-spacing:-.01em}
+.display em{font-style:italic; color:var(--rose-300)}
+.p{color:rgba(245,230,211,.75); font-size:13.5px; line-height:1.55}
+.mut{color:rgba(245,230,211,.5); font-size:12px; line-height:1.45}
+.screen.dawn .display em{color:var(--rose-500)}
+.screen.dawn .p{color:var(--ink-soft)}
+.screen.dawn .mut{color:var(--ink-mute)}
+
+/* gentle X top-right */
+.close-x{
+  position:absolute; top:12px; right:16px; width:28px; height:28px; border-radius:50%;
+  background:rgba(245,230,211,.08); color:rgba(245,230,211,.6);
+  display:flex; align-items:center; justify-content:center; font-size:14px; z-index:4;
+  border:1px solid rgba(245,230,211,.1);
+}
+
+/* ===== P1 entry ===== */
+.entry-glow{
+  width:72%; aspect-ratio:1/1; margin:10px auto 0; border-radius:50%;
+  background:
+    radial-gradient(circle at 50% 50%, rgba(255,220,208,.95) 0%, rgba(242,169,154,.55) 40%, rgba(138,95,116,.2) 70%, transparent 100%);
+  position:relative;
+  animation:glowPulse 4s ease-in-out infinite;
+  filter:blur(.3px);
+}
+@keyframes glowPulse{0%,100%{transform:scale(1); opacity:.9} 50%{transform:scale(1.08); opacity:1}}
+
+/* P1 stacked option cards */
+.soft-opt{
+  background:rgba(245,230,211,.08); border:1px solid rgba(245,230,211,.12);
+  border-radius:16px; padding:13px 14px; backdrop-filter:blur(8px);
+  display:flex; gap:12px; align-items:center;
+}
+.soft-opt .ico{width:32px; height:32px; border-radius:10px; background:rgba(245,230,211,.12); display:flex; align-items:center; justify-content:center; font-size:16px}
+.soft-opt .meta strong{display:block; font-family:'Fraunces',serif; font-size:14.5px; color:#F5E6D3; font-weight:500}
+.soft-opt .meta span{display:block; font-size:11.5px; color:rgba(245,230,211,.55); margin-top:2px; line-height:1.35}
+
+/* ===== P2 breathing orb ===== */
+.breath-wrap{display:flex; flex-direction:column; align-items:center; justify-content:center; flex:1; position:relative}
+.breath-orb{
+  width:65%; aspect-ratio:1/1; border-radius:50%;
+  background:
+    radial-gradient(circle at 35% 35%, rgba(255,230,220,.95), rgba(242,169,154,.75) 50%, rgba(138,95,116,.3) 80%);
+  box-shadow:0 0 80px rgba(242,169,154,.35), inset 0 -20px 60px rgba(74,42,58,.3);
+  position:relative;
+  animation:breath478 19s ease-in-out infinite;
+}
+@keyframes breath478{
+  0%{transform:scale(.7)} /* inhale start */
+  21%{transform:scale(1.05)} /* inhale end 4s */
+  58%{transform:scale(1.05)} /* hold 7s */
+  100%{transform:scale(.7)} /* exhale 8s */
+}
+.breath-orb::after{content:""; position:absolute; inset:20%; border-radius:50%; border:1px solid rgba(255,255,255,.2)}
+.breath-label{
+  position:absolute; top:50%; left:50%; transform:translate(-50%,-50%);
+  font-family:'Fraunces',serif; font-style:italic; font-size:26px; color:#fff; text-align:center;
+  animation:labelSwap 19s steps(1) infinite;
+}
+@keyframes labelSwap{
+  0%,20%{content:"inhale"}
+  21%,57%{content:"hold"}
+  58%,100%{content:"exhale"}
+}
+.breath-caption{font-family:'Fraunces',serif; font-style:italic; font-size:22px; color:var(--rose-300); text-align:center; margin-top:20px}
+.breath-counts{display:flex; justify-content:center; gap:16px; margin-top:8px; color:rgba(245,230,211,.6); font-size:12px; font-family:'Inter'}
+.breath-counts span b{font-family:'Fraunces',serif; font-size:18px; color:#F5E6D3; font-weight:500; margin-right:3px}
+
+.cycle-pill{
+  position:absolute; top:12px; left:50%; transform:translateX(-50%);
+  background:rgba(245,230,211,.1); border:1px solid rgba(245,230,211,.12);
+  padding:6px 14px; border-radius:999px; font-size:11px; color:rgba(245,230,211,.75);
+  letter-spacing:.05em; backdrop-filter:blur(8px);
+}
+
+/* ===== P3 grounding 5-4-3-2-1 ===== */
+.ground-stack{display:flex; flex-direction:column; gap:10px; margin-top:4px}
+.ground-card{
+  background:rgba(245,230,211,.07);
+  border:1px solid rgba(245,230,211,.12);
+  border-radius:18px; padding:14px; backdrop-filter:blur(10px);
+  position:relative;
+}
+.ground-card.active{
+  background:linear-gradient(135deg,rgba(242,169,154,.25),rgba(138,95,116,.18));
+  border-color:rgba(242,169,154,.35);
+}
+.ground-card .num{font-family:'Fraunces',serif; font-size:38px; line-height:1; color:var(--rose-300); font-weight:500}
+.ground-card.active .num{color:var(--rose-300)}
+.ground-card h5{font-family:'Fraunces',serif; font-weight:500; font-size:15px; color:#F5E6D3; margin:4px 0 2px}
+.ground-card p{margin:0; font-size:11.5px; color:rgba(245,230,211,.6); line-height:1.4}
+.ground-input{margin-top:10px; padding:8px 10px; background:rgba(26,21,34,.5); border-radius:10px; border:1px solid rgba(245,230,211,.1); font-size:11.5px; color:rgba(245,230,211,.8); font-style:italic; font-family:'Fraunces',serif}
+.ground-head{display:flex; justify-content:space-between; align-items:center}
+.ground-head .step{font-family:'Fraunces',serif; font-style:italic; font-size:12px; color:var(--rose-300)}
+
+/* ===== P4 companion ===== */
+.voice-hero{
+  display:flex; align-items:center; gap:12px;
+  background:rgba(245,230,211,.08); border:1px solid rgba(245,230,211,.12);
+  border-radius:18px; padding:14px; position:relative;
+}
+.voice-ico{
+  width:50px; height:50px; border-radius:50%;
+  background:linear-gradient(135deg,var(--rose-400),var(--plum));
+  display:flex; align-items:center; justify-content:center;
+  color:#fff; font-family:'Fraunces',serif; font-style:italic; font-size:22px;
+  position:relative;
+}
+.voice-ico::after{content:""; position:absolute; inset:-6px; border-radius:50%; border:2px solid rgba(242,169,154,.4); animation:voiceRing 2s ease-out infinite}
+@keyframes voiceRing{0%{transform:scale(1); opacity:1} 100%{transform:scale(1.4); opacity:0}}
+.voice-meta strong{display:block; font-family:'Fraunces',serif; font-size:15px; color:#F5E6D3; font-weight:500}
+.voice-meta span{font-size:11px; color:rgba(245,230,211,.55); font-style:italic; font-family:'Fraunces',serif}
+.voice-line{
+  background:rgba(245,230,211,.05); border-left:2px solid var(--rose-300);
+  padding:10px 12px; border-radius:0 10px 10px 0; margin-top:8px;
+  font-family:'Fraunces',serif; font-style:italic; font-size:13.5px; color:rgba(245,230,211,.9); line-height:1.45;
+}
+
+.reach-group h5{font-family:'Fraunces',serif; font-style:italic; font-size:13px; color:var(--rose-300); margin:8px 0 6px; font-weight:500}
+.reach-opt{
+  background:rgba(245,230,211,.06); border:1px solid rgba(245,230,211,.1);
+  border-radius:14px; padding:11px 12px; display:flex; align-items:center; gap:10px;
+}
+.reach-opt + .reach-opt{margin-top:6px}
+.reach-opt .av{width:32px; height:32px; border-radius:50%; background:linear-gradient(135deg,var(--lav),var(--plum-2)); color:#fff; display:flex; align-items:center; justify-content:center; font-family:'Fraunces',serif; font-style:italic; font-size:14px}
+.reach-opt .meta{flex:1; min-width:0}
+.reach-opt .meta strong{display:block; font-size:12.5px; color:#F5E6D3; font-weight:500}
+.reach-opt .meta span{font-size:10.5px; color:rgba(245,230,211,.55)}
+.reach-opt .btn{background:rgba(242,169,154,.18); color:var(--rose-300); font-size:11px; padding:6px 12px; border-radius:999px; font-weight:500}
+
+/* ===== P5 afterglow ===== */
+.felt-grid{display:grid; grid-template-columns:repeat(4,1fr); gap:6px}
+.felt{
+  border-radius:14px; padding:10px 6px; text-align:center;
+  font-size:11px; color:var(--ink-soft); background:#fff;
+  border:1px solid rgba(74,42,58,.08);
+}
+.felt .emoji{display:block; font-size:18px; margin-bottom:3px}
+.felt.on{background:linear-gradient(135deg,#FFEFE3,#FFDCD0); border-color:var(--rose-400); color:var(--plum)}
+
+.one-word{
+  background:#fff; border-radius:14px; padding:12px; border:1px solid rgba(74,42,58,.08);
+}
+.one-word .label{font-family:'Inter'; font-weight:500; color:var(--plum); font-size:11.5px; letter-spacing:.04em; text-transform:uppercase; margin-bottom:4px}
+.one-word input{width:100%; border:0; font-family:'Fraunces',serif; font-style:italic; font-size:22px; color:var(--plum); background:transparent; padding:4px 0; outline:none}
+.one-word input::placeholder{color:var(--plum-mute)}
+
+.jess-stitch{
+  background:linear-gradient(135deg,var(--plum),var(--night));
+  color:#fff; border-radius:16px; padding:13px 14px;
+}
+.jess-stitch .title{font-family:'Fraunces',serif; font-style:italic; font-size:12px; color:var(--rose-300); margin-bottom:4px}
+.jess-stitch .line{font-family:'Fraunces',serif; font-size:14.5px; line-height:1.4}
+.jess-stitch .line em{font-style:italic; color:var(--rose-300)}
+.after-actions{display:flex; gap:7px}
+.after-actions .a{flex:1; background:#fff; border-radius:12px; padding:9px 6px; text-align:center; font-size:10.5px; color:var(--plum); border:1px solid rgba(74,42,58,.08)}
+.after-actions .a .e{font-size:15px; display:block; margin-bottom:2px}
+
+/* header/footer bits */
+.safe-pill{
+  display:inline-flex; align-items:center; gap:6px;
+  background:rgba(125,134,104,.15); color:var(--moss);
+  padding:4px 10px; border-radius:999px; font-size:11px; font-weight:500;
+}
+.dots-small{display:flex; gap:5px; justify-content:center; margin-top:4px}
+.dots-small i{width:5px; height:5px; border-radius:50%; background:rgba(245,230,211,.2)}
+.dots-small i.active{background:var(--rose-300); width:16px; border-radius:3px}
+
+/* appendix */
+.appendix{margin-top:84px; background:linear-gradient(180deg,var(--cream-2),var(--cream)); border-radius:28px; padding:48px 48px 44px; border:1px solid rgba(74,42,58,.08)}
+.appendix h2{font-family:'Fraunces',serif; font-weight:500; font-size:34px; margin:0 0 8px; color:var(--plum); letter-spacing:-.01em}
+.appendix h2 em{font-style:italic; color:var(--rose-500)}
+.appendix p.lead{color:var(--ink-soft); font-size:15px; max-width:800px; line-height:1.55; margin:0 0 28px}
+.app-grid{display:grid; grid-template-columns:repeat(3, 1fr); gap:22px}
+@media (max-width:960px){.app-grid{grid-template-columns:1fr}}
+.app-card{background:#fff; border-radius:20px; padding:22px; border:1px solid rgba(74,42,58,.06); box-shadow:0 1px 2px rgba(74,42,58,.04)}
+.app-card h3{font-family:'Fraunces',serif; font-weight:500; font-size:18px; color:var(--plum); margin:0 0 8px}
+.app-card h3 em{font-style:italic; color:var(--rose-500)}
+.app-card ul{margin:6px 0 0; padding-left:18px; color:var(--ink-soft); font-size:13px; line-height:1.6}
+.app-card li{margin-bottom:4px}
+.app-card li b{color:var(--plum); font-weight:600}
+.tag{display:inline-block; padding:3px 9px; border-radius:999px; background:var(--plum); color:#fff; font-size:11px; font-weight:500}
+.tag.q2{background:var(--moss)} .tag.q3{background:var(--gold); color:var(--plum)} .tag.q4{background:var(--teal)}
+table{border-collapse:collapse; width:100%; font-size:12.5px; margin-top:10px}
+th{text-align:left; font-weight:600; color:var(--plum); padding:6px 9px; border-bottom:1px solid rgba(74,42,58,.1); font-size:11.5px}
+td{padding:8px 9px; color:var(--ink-soft); vertical-align:top; border-bottom:1px solid rgba(74,42,58,.04); line-height:1.45}
+
+.footer{margin-top:60px; padding-top:28px; border-top:1px solid rgba(74,42,58,.1); color:var(--plum-mute); font-size:12.5px; font-style:italic; font-family:'Fraunces',serif}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header class="header">
+  <div class="eyebrow">FemWell · Panic Mode redesign · v2 · 2026-04-20</div>
+  <h1>When it's loud, we go <em>soft.</em></h1>
+  <p class="sub">Panic Mode is a full-screen refuge, not a feature. One tap from Today, always reachable — even during quiet hours. No red, no siren language, no forms. The first thing the user sees is a breath. The last thing is a quiet log, if they want to leave one.</p>
+  <div class="legend">
+    <span><i style="background:var(--rose-400)"></i>Soft palette · no alarms</span>
+    <span><i style="background:var(--moss)"></i>Always reachable</span>
+    <span><i style="background:var(--plum)"></i>On-device by default</span>
+    <span><i style="background:var(--gold)"></i>Optional escalation</span>
+  </div>
+</header>
+
+<section class="phones">
+
+<!-- ===== P1 — Entry ===== -->
+<div class="phone-wrap">
+  <div class="phone-step">Step 1 / 5</div>
+  <div class="phone-label">Entry — the softest landing</div>
+  <div class="phone"><div class="screen dark">
+    <div class="close-x">✕</div>
+    <div class="status"><span>9:41</span><span>● ●</span></div>
+    <div class="body">
+      <div class="dots-small"><i class="active"></i><i></i><i></i><i></i><i></i></div>
+      <div style="text-align:center; padding-top:4px">
+        <div style="font-family:'Fraunces',serif; font-style:italic; font-size:11.5px; color:var(--rose-300); letter-spacing:.08em; text-transform:uppercase">Panic mode</div>
+        <div class="display" style="margin-top:6px">You're safe. <em>I'm here.</em></div>
+      </div>
+      <div class="entry-glow"></div>
+      <p class="p" style="text-align:center; padding:0 6px">Take one breath first. Then pick where you want to go.</p>
+      <div style="display:flex; flex-direction:column; gap:8px">
+        <div class="soft-opt">
+          <div class="ico">🌬</div>
+          <div class="meta"><strong>Breathe with me</strong><span>4 · 7 · 8 · about 3 minutes</span></div>
+        </div>
+        <div class="soft-opt">
+          <div class="ico">🌿</div>
+          <div class="meta"><strong>Ground me</strong><span>5 · 4 · 3 · 2 · 1 sensory walk</span></div>
+        </div>
+        <div class="soft-opt">
+          <div class="ico">🕊</div>
+          <div class="meta"><strong>Stay with me</strong><span>Yorkshire voice, one minute at a time</span></div>
+        </div>
+        <div class="soft-opt">
+          <div class="ico">🤲</div>
+          <div class="meta"><strong>Reach someone</strong><span>Sam · Mother · therapist · hotline</span></div>
+        </div>
+      </div>
+      <div style="text-align:center; margin-top:auto">
+        <span class="safe-pill">● private · on your device only</span>
+      </div>
+    </div>
+  </div></div>
+</div>
+
+<!-- ===== P2 — Breath ===== -->
+<div class="phone-wrap">
+  <div class="phone-step">Step 2 / 5</div>
+  <div class="phone-label">4-7-8 breath · silent or guided</div>
+  <div class="phone"><div class="screen dark">
+    <div class="close-x">✕</div>
+    <div class="cycle-pill">Cycle 2 of 4 · 1:42 left</div>
+    <div class="status"><span>9:42</span><span>● ●</span></div>
+    <div class="body">
+      <div class="dots-small"><i></i><i class="active"></i><i></i><i></i><i></i></div>
+      <div class="breath-wrap">
+        <div class="breath-orb">
+          <div class="breath-label">inhale</div>
+        </div>
+        <div class="breath-caption">Breathe with <em>me.</em></div>
+        <div class="breath-counts"><span><b>4</b>in</span><span><b>7</b>hold</span><span><b>8</b>out</span></div>
+      </div>
+      <div style="display:flex; gap:6px">
+        <div class="cta-dark ghost" style="flex:1; font-size:11px; padding:9px">Yorkshire</div>
+        <div class="cta-dark" style="flex:1; font-size:11px; padding:9px">Silent</div>
+        <div class="cta-dark ghost" style="flex:1; font-size:11px; padding:9px">Dr Aisha Patel</div>
+      </div>
+      <div class="cta-dark solid">Keep breathing</div>
+    </div>
+  </div></div>
+</div>
+
+<!-- ===== P3 — Grounding 5-4-3-2-1 ===== -->
+<div class="phone-wrap">
+  <div class="phone-step">Step 3 / 5</div>
+  <div class="phone-label">Grounding · 5 senses, one at a time</div>
+  <div class="phone"><div class="screen dark">
+    <div class="close-x">✕</div>
+    <div class="status"><span>9:45</span><span>● ●</span></div>
+    <div class="body">
+      <div class="dots-small"><i></i><i></i><i class="active"></i><i></i><i></i></div>
+      <div>
+        <div style="font-family:'Fraunces',serif; font-style:italic; font-size:11.5px; color:var(--rose-300); letter-spacing:.08em; text-transform:uppercase">Grounding · come back</div>
+        <div class="display" style="margin-top:6px; font-size:22px">Name what you can <em>see.</em></div>
+      </div>
+      <div class="ground-stack">
+        <div class="ground-card active">
+          <div class="ground-head"><span class="num">5</span><span class="step">Step 1 of 5</span></div>
+          <h5>Five things you can see.</h5>
+          <p>Look around. Notice colour, texture, light. No need to write — whisper them if you can.</p>
+          <div class="ground-input">wooden blinds · a blue mug · the rain outside</div>
+        </div>
+        <div class="ground-card">
+          <div class="ground-head"><span class="num" style="color:rgba(245,230,211,.4)">4</span><span class="step" style="color:rgba(245,230,211,.4)">Step 2 · touch</span></div>
+          <h5 style="color:rgba(245,230,211,.5)">Four things you can feel.</h5>
+        </div>
+        <div class="ground-card">
+          <div class="ground-head"><span class="num" style="color:rgba(245,230,211,.4)">3</span><span class="step" style="color:rgba(245,230,211,.4)">Step 3 · hear</span></div>
+          <h5 style="color:rgba(245,230,211,.5)">Three things you can hear.</h5>
+        </div>
+        <div class="ground-card">
+          <div class="ground-head"><span class="num" style="color:rgba(245,230,211,.4)">2</span><span class="step" style="color:rgba(245,230,211,.4)">Step 4 · smell</span></div>
+          <h5 style="color:rgba(245,230,211,.5)">Two things you can smell.</h5>
+        </div>
+        <div class="ground-card">
+          <div class="ground-head"><span class="num" style="color:rgba(245,230,211,.4)">1</span><span class="step" style="color:rgba(245,230,211,.4)">Step 5 · taste</span></div>
+          <h5 style="color:rgba(245,230,211,.5)">One thing you can taste.</h5>
+        </div>
+      </div>
+      <div style="display:flex; gap:8px">
+        <div class="cta-dark ghost" style="flex:1">Pause</div>
+        <div class="cta-dark solid" style="flex:2">Next · touch</div>
+      </div>
+    </div>
+  </div></div>
+</div>
+
+<!-- ===== P4 — Companion voice + reach ===== -->
+<div class="phone-wrap">
+  <div class="phone-step">Step 4 / 5</div>
+  <div class="phone-label">Stay with me · optional reach</div>
+  <div class="phone"><div class="screen dusk">
+    <div class="close-x">✕</div>
+    <div class="status"><span>9:48</span><span>● ●</span></div>
+    <div class="body">
+      <div class="dots-small"><i></i><i></i><i></i><i class="active"></i><i></i></div>
+      <div>
+        <div style="font-family:'Fraunces',serif; font-style:italic; font-size:11.5px; color:var(--rose-300); letter-spacing:.08em; text-transform:uppercase">Companion voice</div>
+        <div class="display" style="margin-top:6px; font-size:22px">I'll stay with you. <em>As long as you need.</em></div>
+      </div>
+
+      <div class="voice-hero">
+        <div class="voice-ico">A</div>
+        <div class="voice-meta">
+          <strong>Yorkshire · listening</strong>
+          <span>her voice, low and steady</span>
+        </div>
+      </div>
+      <div class="voice-line">
+        "O ku ise. You are not the storm. You are the one who notices it. Let's just stay here, on the in-breath… and the out-breath. I'm not going anywhere."
+      </div>
+
+      <div class="reach-group">
+        <h5>If you want, reach someone</h5>
+        <div class="reach-opt">
+          <div class="av">T</div>
+          <div class="meta"><strong>Sam · partner</strong><span>last reached 3 days ago</span></div>
+          <div class="btn">text</div>
+        </div>
+        <div class="reach-opt">
+          <div class="av">M</div>
+          <div class="meta"><strong>Mother</strong><span>+234 ···· 2231</span></div>
+          <div class="btn">call</div>
+        </div>
+        <div class="reach-opt">
+          <div class="av" style="background:linear-gradient(135deg,var(--moss),var(--teal))">+</div>
+          <div class="meta"><strong>Mental-health hotline</strong><span>Samaritans 116 123 · 24/7</span></div>
+          <div class="btn" style="background:rgba(125,134,104,.25); color:var(--moss)">call</div>
+        </div>
+      </div>
+
+      <div class="cta-dark solid">Keep going · I'm okay for now</div>
+    </div>
+  </div></div>
+</div>
+
+<!-- ===== P5 — Afterglow ===== -->
+<div class="phone-wrap">
+  <div class="phone-step">Step 5 / 5</div>
+  <div class="phone-label">Afterglow · optional log</div>
+  <div class="phone"><div class="screen dawn">
+    <div class="close-x" style="background:rgba(74,42,58,.08); color:var(--plum)">✕</div>
+    <div class="status"><span>9:54</span><span>● ●</span></div>
+    <div class="body">
+      <div class="dots-small"><i style="background:rgba(74,42,58,.15)"></i><i style="background:rgba(74,42,58,.15)"></i><i style="background:rgba(74,42,58,.15)"></i><i style="background:rgba(74,42,58,.15)"></i><i class="active" style="background:var(--rose-500)"></i></div>
+      <div>
+        <div style="font-family:'Fraunces',serif; font-style:italic; font-size:11.5px; color:var(--rose-500); letter-spacing:.08em; text-transform:uppercase">You made it through</div>
+        <div class="display" style="margin-top:6px; font-size:26px; color:var(--plum)">How is your body <em>now?</em></div>
+      </div>
+
+      <div>
+        <div style="font-family:'Inter'; font-weight:500; color:var(--plum); font-size:11.5px; letter-spacing:.04em; text-transform:uppercase; margin-bottom:6px">Felt sense</div>
+        <div class="felt-grid">
+          <div class="felt"><span class="emoji">☁️</span>same</div>
+          <div class="felt on"><span class="emoji">🌅</span>softer</div>
+          <div class="felt"><span class="emoji">🌊</span>lifted</div>
+          <div class="felt"><span class="emoji">🌱</span>tender</div>
+        </div>
+      </div>
+
+      <div class="one-word">
+        <div class="label">One word (optional)</div>
+        <input type="text" placeholder="quiet…" value="smaller"/>
+      </div>
+
+      <div class="jess-stitch">
+        <div class="title">Jess noticed</div>
+        <div class="line">Fourth <em>panic log</em> this cycle — d18, d20, d21, d22. Mostly luteal, mostly evenings. Want me to keep watching, or set a <em>pre-panic</em> check for d17 next cycle?</div>
+      </div>
+
+      <div class="after-actions">
+        <div class="a"><span class="e">📖</span>Thread to<br>journal</div>
+        <div class="a"><span class="e">🫥</span>Don't save<br>this one</div>
+        <div class="a"><span class="e">🌬</span>Another<br>breath</div>
+      </div>
+
+      <div style="margin-top:auto; text-align:center">
+        <span class="safe-pill">● logged privately · device-only</span>
+      </div>
+    </div>
+  </div></div>
+</div>
+
+</section>
+
+<!-- ========================= APPENDIX ========================= -->
+<section class="appendix">
+  <h2>Appendix — <em>the safety mechanics behind Panic Mode</em></h2>
+  <p class="lead">Panic Mode is the single most load-bearing feature for trust. It has to work offline. It has to bypass notification settings and quiet hours. It has to never crash. Every visual decision below follows from those three constraints.</p>
+
+  <div class="app-grid">
+    <div class="app-card">
+      <h3>Design rules</h3>
+      <ul>
+        <li><b>No red.</b> Red is triggering during panic. Luteal plum + rose-300 + cream only.</li>
+        <li><b>No countdowns.</b> A 3-min timer feels like pressure. Cycles shown, time estimated, never enforced.</li>
+        <li><b>No alarm language.</b> "Call now", "emergency", "crisis" all replaced. "Reach someone", "stay with me", "come back".</li>
+        <li><b>Exit always one tap.</b> Top-right ✕ visible on every screen — no hold-to-confirm.</li>
+        <li><b>Full-screen immersive.</b> No bottom nav, no header, no chrome.</li>
+        <li><b>Dark backgrounds in phase 1–4</b>, dawn in phase 5 — visual metaphor for coming through.</li>
+      </ul>
+    </div>
+    <div class="app-card">
+      <h3>Entities <em>written during a panic session</em></h3>
+      <ul>
+        <li><b>PanicLog</b> — id, started_at, ended_at, techniques_used[], cycle_day, phase_at_time.</li>
+        <li><b>PanicAfterglow</b> — felt_sense enum, one_word optional, threaded_to_journal_id nullable.</li>
+        <li><b>PanicReaches</b> — contact_id hashed, method (text/call), completed bool. Never stores contact content.</li>
+        <li><b>PrePanicCheck</b> — optional, Jess sets after 3+ panics in same phase. Default off.</li>
+        <li>All five entities are <b>E2E-encrypted on device</b>. Reuse Sealed Letters / BodyPhotos key infrastructure — no new crypto.</li>
+      </ul>
+    </div>
+    <div class="app-card">
+      <h3>Always-reachable rules</h3>
+      <ul>
+        <li><b>Quiet hours do not apply.</b> Panic Mode button on Today is live 24/7.</li>
+        <li><b>Works offline.</b> Breath, grounding, companion-voice cached. Only "reach someone" needs network.</li>
+        <li><b>Survives crashes.</b> On relaunch, if unfinished PanicLog exists, show "still with me?" resume card.</li>
+        <li><b>No auth wall.</b> If user is logged out, Panic Mode still accessible — logs queue locally until next login.</li>
+        <li><b>Panic Mode button</b> appears on Today, Journal, Jess drawer, and Settings safety footer. Never more than one tap away.</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="app-grid" style="margin-top:20px">
+    <div class="app-card">
+      <h3>Jess integration — <em>pre-panic layer</em></h3>
+      <p style="font-size:13px; color:var(--ink-soft); margin:0 0 6px">Pattern noticed in four panic logs across this cycle, all luteal-phase evenings. Jess's Pre-Panic tool (from Jess v2 appendix) offers a gentle check-in on <b>day 17</b> next cycle — <em>one line, one question, skippable</em>.</p>
+      <table>
+        <tr><th>Trigger</th><th>Jess response</th></tr>
+        <tr><td>3+ panics in same phase</td><td>Offers opt-in pre-panic check</td></tr>
+        <tr><td>Panic started during quiet hours</td><td>No follow-up ping for 24h; Afterglow only</td></tr>
+        <tr><td>Panic + journal thread created</td><td>Jess asks "read it back tomorrow?" once</td></tr>
+        <tr><td>Panic during peri hot-flash</td><td>Routes to Life-Stage flash toolkit, not general panic</td></tr>
+      </table>
+    </div>
+    <div class="app-card">
+      <h3>Ship order</h3>
+      <div style="display:flex; flex-direction:column; gap:8px; margin-top:8px">
+        <div style="display:flex; gap:9px; align-items:flex-start"><span class="tag q2">Q2</span><div>Entry · 4-7-8 breath · Yorkshire voice · Afterglow felt-sense + one-word · E2E PanicLog.</div></div>
+        <div style="display:flex; gap:9px; align-items:flex-start"><span class="tag q3">Q3</span><div>Grounding 5-4-3-2-1 swipable · Thread to journal · Reach-someone with Sam/Mother contacts.</div></div>
+        <div style="display:flex; gap:9px; align-items:flex-start"><span class="tag q4">Q4</span><div>Pre-panic check (opt-in) · Hotline integration · Offline voice-pack · Auto-resume on crash.</div></div>
+      </div>
+    </div>
+    <div class="app-card">
+      <h3>Escalation — <em>what Jess will NEVER do</em></h3>
+      <ul>
+        <li>Never auto-dial anyone. Always user tap.</li>
+        <li>Never send a status to partner without explicit share — even with Partner Sync on.</li>
+        <li>Never display "this is an emergency" banners.</li>
+        <li>Never suggest a specific diagnosis ("panic attack", "PMDD episode"). Uses the word "this" or "now".</li>
+        <li>Never score panics on severity. Afterglow is felt-sense only, never 1–10.</li>
+        <li>Never summarise panic logs in the weekly digest unless user opts in.</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<div class="footer">
+  Designed 2026-04-20 · rose/plum system v4.2 · 5 phones · full-screen immersive · E2E PanicLog · pattern-notes scoreboard-replacement rule applied to Afterglow (no 1–10).
+</div>
+
+</div>
+</body>
+</html>

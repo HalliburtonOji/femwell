@@ -1,0 +1,36 @@
+- [FemWell app on base44](project_femwell_app.md) — UK-based women's wellness app; app id 69a9891a6ccccc1822bbb4bc; live at femwells.com
+- [FemWell market is UK, not Nigeria](feedback_femwell_is_uk.md) — Earlier Naija-local drift was unsourced invention; lock UK context + sweep affected demos
+- [LingoTrip app on base44](project_lingotrip_app.md) — Language/travel app; app id 69e16dd9053192415a7be3ef; live at speak-journey-pro.base44.app
+- [LiveMore app on base44](project_livemore_app.md) — Visa/relocation planning app; app id 69d3c2f5011fe9d550216f6a
+- [Build-verify-publish loop for FemWell](feedback_build_workflow.md) — Always inspect after each build, publish to live, then verify on femwells.com
+- [FemWell design refresh — sign-off status](project_femwell_design_status.md) — Today ✅ & Lifestyle ✅ signed off. Don't re-pitch approved pages. Nutrition in progress.
+- [Visually audit live pages before designing](feedback_visually_audit_live.md) — Pull live DOM first; enumerate every section. Guessing from schemas = repeat-correction trap.
+- [Horoscopes belong on Lifestyle, not Explore](feedback_horoscopes_on_lifestyle.md) — Don't duplicate zodiac content to other tabs; live Explore has none.
+- [FemWell roadmap brainstorm (app-wide)](project_femwell_roadmap_brainstorm.md) — 10 app-wide features beyond page redesigns (Partner Sync, Care Bridge, Rituals, Smart Nudges, etc).
+- [Always save deliverables as you produce them](feedback_save_as_you_go.md) — Save brainstorms/research/plans to workspace + memory immediately, not on ask.
+- [Autonomous build-brainstorm loop mode](feedback_autonomous_mode.md) — When user says keep working, alternate build+brainstorm, save as go, phone has no connectors.
+- [No "brick on bread" — replace, don't pile](feedback_no_brick_on_bread.md) — Audit live first; every MP element maps to replace/add/delete; never duplicate UI for same purpose.
+- [No stale features — every new thing must do work](feedback_no_stale_features.md) — Wire to entities, surface across pages; reject decorative-only UI.
+- [Use lead-manager agent for base44 MPs](feedback_lead_manager_agent.md) — Plan agent scopes diff + plumbing; general-purpose agent verifies post-build.
+- [FemWell agent team — named roster](feedback_femwell_agent_team.md) — Mr Lead Manager · Ms Deep Search · Ms Verify · Mr Fix-it · Ms Atelier (UI/UX). Call by name; always dispatch.
+- [Careful planning workflow for FemWell MPs](feedback_careful_planning_workflow.md) — 10-step loop: live walk → entity walk → spec → Atelier review → user align → MP → publish → verify → craft pass.
+- [No emoji in FemWell — ever](feedback_no_emoji_in_femwell.md) — Brand uses Fraunces + Inter + Lucide/SVG glyphs only. No emoji codepoints anywhere.
+- [FemWell uses ONE unified bottom nav](feedback_femwell_multiplatform.md) — Same 5-slot bottom nav at mobile + tablet + desktop. NO desktop sidebar. Width-constrain the nav at large viewports; never substitute a different pattern.
+- [FemWell Lifestyle architecture (locked)](project_femwell_lifestyle_architecture.md) — 5 tabs: For You · Browse · Listen · Daily Story · Horoscope. Hybrid magazine+data-mirror job. TTS audio + phase-aware smart saves are cross-cutting features.
+- [Content pipeline broken — pause visual MPs](project_femwell_content_pipeline_broken.md) — Books dead links, news sparse, video summary/duration mismatch, automations failing. Gate before more UI work.
+- [Future MP: standards verifier](project_femwell_standards_verifier.md) — godAgent being deleted in Phase 1+2; user wants a lean replacement (`content_auditor`) built in a later MP after pipeline phases ship.
+- [TOMORROW: verify Phase 2.5](project_femwell_phase25_verify_tomorrow.md) — re-sample LifestyleItems after next ingest cycle; confirm phase_tags populating with real LLM inferences. Surface proactively at start of next session.
+- [FemWell git repo](project_femwell_git_repo.md) — github.com/HalliburtonOji/femwell.git. Use for codebase grep, route maps, component inspection.
+- [FemWell state — 2026-05-11 session end](project_femwell_2026-05-11_state.md) — 8 commits pushed to main (incl. Kindle reader, Gutenberg in-app, bug fixes). 30 Long Room chapters live on base44. 3 MPs staged in `mnt/femwell/base44_mps/2026-05-11_lucha/` — surface this README at next session start.
+- [Pipeline hidden bugs (2026-05-07)](project_femwell_pipeline_hidden_bugs.md) — ingestRSS broken (rss_url vs feed_url), created_at null on all rows, YouTube decoupled from LifestyleSources. Phase 4-A pipeline fix BEFORE caps.
+- [base44 prompt size limits](feedback_base44_prompt_size_limits.md) — don't combine "invoke external function" + "schema change" + "code edit" + "re-invoke" in one prompt. Agent hangs. Split into sequential prompts.
+- [FemWell ingestRSS image chain](project_femwell_ingest_image_chain.md) — feed-image → og:image → IngestErrorLog(image_missing). Reference before touching ingest image extraction.
+- [FemWell Lifestyle URL state](project_femwell_lifestyle_url_state.md) — tab=for_you|browse|... in URL via pushState; child filters write parent tab in their replaceState. Back-stack contract.
+- [Can auto-publish base44 via Chrome](feedback_base44_publish_via_chrome.md) — After `git push`, navigate base44 builder → Preview → Publish → Publish App. No need to wait for user.
+- [Build FemWell directly in repo, not via builder MPs](feedback_build_direct_not_builder.md) — base44 builder prompts cost credits. Direct repo edits → git push → Chrome MCP Publish only.
+- [H2 Horoscope v2 shipped (2026-05-13)](project_femwell_h2_shipped.md) — 8 commits on main, live on femwells.com. Plum Night + Astra Cole authorship + 4 paid surfaces. Verification deferred per user.
+- [Live-walk every build before "done"](feedback_live_walk_after_every_build.md) — vite + eslint green is NOT done. Chrome MCP screenshot of the live page is. Bake into every agent dispatch as exit gate.
+- [Hybrid workflow — repo for safe stuff, MPs for risky stuff](feedback_hybrid_repo_plus_mp_workflow.md) — Pivot 2026-05-13. Direct edits only for trivial changes; everything substantive ships as a paste-ready mega prompt the user pastes themselves.
+- [Chrome MCP frame binding](feedback_chrome_mcp_frame_binding.md) — javascript_tool runs in the preview iframe; click base44 chrome elements (device toggle, Publish) via computer.left_click + screen coords.
+- [Master plan is a living doc](project_femwell_master_plan_living_doc.md) — mnt/femwell/femwell_master_plan_2026-05-13.md is the whole-app direction file. Update on every crazy idea, every shipped MP, every strategic decision. 6-month sale aim, 9-month soft cap.
+- [MCP stuck recovery: close tab + reopen](feedback_mcp_stuck_recovery.md) — Don't wait 13 min for a stalled base44 publish or unresponsive screenshot. Close the tab, reopen, retry. Also: MCP says "Chrome" but user is on Edge — say "browser."

@@ -1,0 +1,1151 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"/>
+<title>FemWell · Explore — Live Demo (wired to your data)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600;9..144,700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --rose-50:#FFF7F5;--rose-100:#FFE9E4;--rose-200:#FBD2CC;--rose-300:#F2A89E;
+  --rose-400:#E67F73;--rose-500:#D45E52;--rose-600:#B0483E;
+  --plum:#4A2A3A;--cream:#FFFAF5;--ink:#2A1C20;--ink-soft:#6B555C;--ink-mute:#9B8289;
+  --line:rgba(74,42,58,.08);--glass:rgba(255,255,255,.72);
+  --sage:#7FA68A;--amber:#D99960;--water:#6DB5E0;--lav:#8E7EB8;--night:#1A1522;
+  --shadow-sm:0 1px 2px rgba(74,42,58,.06),0 4px 10px rgba(74,42,58,.05);
+  --shadow-md:0 6px 18px rgba(74,42,58,.08),0 20px 40px rgba(74,42,58,.07);
+  --shadow-lg:0 18px 40px rgba(74,42,58,.12),0 40px 90px rgba(74,42,58,.14);
+  --radius:18px;--radius-lg:28px;
+}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+html,body{height:100%}
+body{
+  font-family:Inter,system-ui,-apple-system,sans-serif;
+  background:
+    radial-gradient(1200px 700px at 10% -10%,#FFE9E4 0%,transparent 55%),
+    radial-gradient(900px 600px at 110% 10%,#F7E3EC 0%,transparent 60%),
+    linear-gradient(180deg,#FFF8F4 0%,#FBEEEA 100%);
+  min-height:100%;color:var(--ink);overflow-x:hidden;
+}
+.wrap{max-width:1480px;margin:0 auto;padding:28px 24px 120px}
+
+/* HEADER */
+.page-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:22px;flex-wrap:wrap;gap:14px}
+.brand{display:flex;align-items:center;gap:12px}
+.brand-mark{width:40px;height:40px;border-radius:12px;background:linear-gradient(135deg,var(--rose-400),var(--rose-500));display:grid;place-items:center;color:#fff;font-family:Fraunces;font-weight:700;box-shadow:var(--shadow-md)}
+.brand-name{font-family:Fraunces;font-size:22px;font-weight:600;letter-spacing:-.01em}
+.brand-sub{font-size:12px;color:var(--ink-soft);margin-top:1px}
+.head-tabs{display:flex;gap:8px;background:var(--glass);border:1px solid var(--line);border-radius:99px;padding:6px;backdrop-filter:blur(18px);flex-wrap:wrap}
+.tab{font-size:13px;font-weight:600;padding:9px 16px;border-radius:99px;cursor:pointer;color:var(--ink-soft);border:none;background:transparent;font-family:inherit}
+.tab.on{background:var(--ink);color:#fff}
+.live-badge{display:inline-flex;align-items:center;gap:6px;font-size:10.5px;font-weight:700;padding:4px 10px;border-radius:99px;background:#E6F7E9;color:#357042;letter-spacing:.04em;margin-left:10px}
+.live-badge i{width:6px;height:6px;border-radius:50%;background:#4AAE5E;animation:pulse 1.5s infinite}
+@keyframes pulse{50%{opacity:.4}}
+
+/* STAGE */
+.stage{display:grid;grid-template-columns:minmax(380px,460px) 1fr;gap:32px;align-items:start}
+@media (max-width:1024px){.stage{grid-template-columns:1fr}}
+
+/* PHONE FRAME */
+.phone-slot{position:sticky;top:24px}
+.phone{--w:420px;--h:880px;width:var(--w);height:var(--h);margin:0 auto;position:relative;
+  border-radius:52px;background:#0E0608;padding:14px;
+  box-shadow:0 2px 0 rgba(255,255,255,.06) inset,0 40px 80px -20px rgba(74,42,58,.35),0 20px 50px -20px rgba(74,42,58,.4)}
+.phone::before{content:"";position:absolute;top:18px;left:50%;transform:translateX(-50%);width:120px;height:28px;background:#000;border-radius:20px;z-index:30}
+.screen{width:100%;height:100%;border-radius:40px;
+  background:radial-gradient(600px 400px at 30% -10%,#FFE2DB 0%,transparent 55%),
+    radial-gradient(500px 380px at 100% 20%,#F9DDE8 0%,transparent 60%),
+    linear-gradient(180deg,#FFF8F4 0%,#FDEEE9 70%,#F9E0D8 100%);
+  position:relative;overflow:hidden}
+.statusbar{height:52px;padding:18px 26px 0;display:flex;align-items:center;justify-content:space-between;font-size:13px;font-weight:700;color:var(--ink)}
+.statusbar .time{font-family:Fraunces;font-weight:600}
+.status-icons{display:flex;gap:6px;align-items:center;font-size:11px;opacity:.75}
+.scroll{position:absolute;inset:52px 0 0;overflow-y:auto;overflow-x:hidden;scrollbar-width:none;padding-bottom:200px}
+.scroll::-webkit-scrollbar{display:none}
+
+/* PAGE HEAD */
+.p-head{padding:14px 22px 8px;display:flex;align-items:center;justify-content:space-between}
+.p-title{font-family:Fraunces;font-size:28px;font-weight:600;letter-spacing:-.02em;line-height:1.05}
+.p-sub{font-size:12.5px;color:var(--ink-soft);margin-top:3px;font-weight:500}
+.avatar{width:42px;height:42px;border-radius:14px;background:linear-gradient(135deg,#F5C7BE,#E89888);box-shadow:var(--shadow-sm);display:grid;place-items:center;font-family:Fraunces;font-weight:700;color:#4A2A3A}
+
+/* SEARCH BAR */
+.searchbar{margin:4px 18px 12px;display:flex;align-items:center;gap:10px;padding:12px 14px;border-radius:18px;background:#fff;border:1px solid var(--line);box-shadow:var(--shadow-sm)}
+.searchbar svg{width:18px;height:18px;stroke:var(--ink-soft);fill:none;stroke-width:2;stroke-linecap:round}
+.searchbar input{flex:1;border:none;outline:none;font-family:inherit;font-size:14px;color:var(--ink);background:transparent}
+.searchbar input::placeholder{color:var(--ink-mute)}
+.searchbar .mic{width:28px;height:28px;border-radius:10px;background:linear-gradient(135deg,var(--rose-400),var(--rose-500));display:grid;place-items:center;color:#fff;font-size:13px}
+
+/* CATEGORY STRIP */
+.catstrip{display:flex;gap:8px;padding:2px 18px 14px;overflow-x:auto;scrollbar-width:none}
+.catstrip::-webkit-scrollbar{display:none}
+.cchip{flex:0 0 auto;display:inline-flex;align-items:center;gap:6px;padding:9px 14px;border-radius:99px;background:rgba(255,255,255,.75);border:1px solid var(--line);font-size:12px;font-weight:600;color:var(--ink-soft);cursor:pointer;backdrop-filter:blur(14px);font-family:inherit;white-space:nowrap}
+.cchip .ci{font-size:13px}
+.cchip.on{background:var(--ink);color:#fff;border-color:var(--ink)}
+.cchip.phase{background:linear-gradient(135deg,#DDD3EF,#C4B3DC);color:#4A2A3A;border-color:rgba(142,126,184,.3)}
+.cchip.phase.on{background:var(--lav);color:#fff;border-color:var(--lav)}
+
+/* FEATURED HERO */
+.hero{margin:4px 18px 14px;border-radius:var(--radius-lg);overflow:hidden;position:relative;
+  background:linear-gradient(135deg,#2E3556 0%,#4A3F6E 60%,#6B3E54 100%);color:#fff;box-shadow:var(--shadow-md);cursor:pointer}
+.hero-art{position:absolute;inset:0;background:
+  radial-gradient(200px 180px at 80% 30%,rgba(245,230,211,.35),transparent 70%),
+  radial-gradient(200px 180px at 20% 80%,rgba(142,126,184,.4),transparent 70%);pointer-events:none}
+.hero-art::after{content:"🌙";position:absolute;right:24px;top:18px;font-size:56px;opacity:.35}
+.hero-in{position:relative;padding:22px 22px 20px;z-index:1}
+.hero-eyebrow{display:flex;align-items:center;gap:8px;margin-bottom:10px}
+.eyebrow-pill{font-size:9.5px;font-weight:700;letter-spacing:.16em;text-transform:uppercase;padding:4px 9px;border-radius:99px;background:rgba(255,255,255,.16);backdrop-filter:blur(8px)}
+.hero-title{font-family:Fraunces;font-size:24px;font-weight:600;letter-spacing:-.02em;line-height:1.15;max-width:86%}
+.hero-sub{font-size:12.5px;margin-top:8px;opacity:.85;line-height:1.45;max-width:86%}
+.hero-meta{display:flex;gap:8px;margin-top:14px;flex-wrap:wrap}
+.hm-pill{font-size:10.5px;font-weight:600;padding:5px 10px;border-radius:99px;background:rgba(255,255,255,.16);backdrop-filter:blur(8px)}
+.hero-cta{margin-top:14px;display:flex;gap:8px;align-items:center}
+.hbtn{background:#fff;color:var(--plum);border:none;font-size:12px;font-weight:700;padding:10px 16px;border-radius:99px;cursor:pointer;font-family:inherit;display:inline-flex;align-items:center;gap:5px}
+.hbtn.ghost{background:rgba(255,255,255,.14);color:#fff}
+
+/* SECTION HEADER */
+.shead{display:flex;align-items:center;justify-content:space-between;padding:6px 22px 8px}
+.shead .sl{font-family:Fraunces;font-size:14.5px;font-weight:600;letter-spacing:-.01em;display:flex;align-items:center;gap:8px}
+.shead .phtag{font-size:9px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--lav);padding:2px 7px;border-radius:99px;background:rgba(142,126,184,.12)}
+.shead .sr{font-size:10.5px;color:var(--plum);font-weight:700;background:rgba(74,42,58,.06);padding:4px 9px;border-radius:99px;border:none;cursor:pointer;font-family:inherit}
+
+/* HORIZONTAL SHELVES */
+.shelf{display:flex;gap:10px;padding:2px 18px 14px;overflow-x:auto;scrollbar-width:none}
+.shelf::-webkit-scrollbar{display:none}
+.ccard{flex:0 0 152px;border-radius:18px;background:#fff;border:1px solid var(--line);box-shadow:var(--shadow-sm);overflow:hidden;cursor:pointer;transition:transform .15s}
+.ccard:hover{transform:translateY(-2px)}
+.ccard .cart{height:96px;position:relative;overflow:hidden;display:grid;place-items:center;color:#fff}
+.cart.breath{background:linear-gradient(135deg,#8E7EB8,#5E4E8A)}
+.cart.medit{background:linear-gradient(135deg,#D45E52,#B0483E)}
+.cart.workout{background:linear-gradient(135deg,#D99960,#C98A6B)}
+.cart.mobility{background:linear-gradient(135deg,#7FA68A,#3B6B4E)}
+.cart.sleep{background:linear-gradient(135deg,#2E3556,#4A3F6E)}
+.cart.story{background:linear-gradient(135deg,#6B3E54,#4A2A3A)}
+.cart.read{background:linear-gradient(135deg,#6DB5E0,#4E8FB8)}
+.cart.horoscope{background:linear-gradient(135deg,#1A1522,#4A3F6E)}
+.cart .cicn{font-size:34px;filter:drop-shadow(0 3px 6px rgba(0,0,0,.2))}
+.cart .cph{position:absolute;top:8px;left:8px;font-size:8.5px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;padding:3px 7px;border-radius:99px;background:rgba(255,255,255,.2);backdrop-filter:blur(10px)}
+.cart .cdur{position:absolute;bottom:8px;right:8px;font-size:9.5px;font-weight:700;padding:3px 7px;border-radius:99px;background:rgba(0,0,0,.35);backdrop-filter:blur(10px)}
+.cart .cplay{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:38px;height:38px;border-radius:50%;background:rgba(255,255,255,.9);color:var(--plum);display:grid;place-items:center;opacity:0;transition:opacity .15s}
+.ccard:hover .cplay{opacity:1}
+.ccard .cmeta{padding:10px 12px}
+.ccard .ctitle{font-family:Fraunces;font-size:13px;font-weight:600;line-height:1.25;letter-spacing:-.01em;color:var(--ink);min-height:32px}
+.ccard .crow{display:flex;align-items:center;justify-content:space-between;margin-top:6px;font-size:10px;color:var(--ink-soft);font-weight:600}
+.ccard .crow .lvl{font-size:9px;text-transform:uppercase;letter-spacing:.1em;padding:2px 6px;border-radius:99px;background:rgba(74,42,58,.06);color:var(--plum)}
+
+/* PROGRAM CARDS (bigger) */
+.pgcard{flex:0 0 220px;border-radius:22px;background:#fff;border:1px solid var(--line);box-shadow:var(--shadow-md);overflow:hidden;cursor:pointer}
+.pgcard .part{height:110px;display:flex;align-items:flex-end;padding:14px;color:#fff;position:relative;overflow:hidden}
+.pgcard .part::after{content:"";position:absolute;inset:0;background:radial-gradient(200px 140px at 80% 20%,rgba(255,255,255,.18),transparent 70%);pointer-events:none}
+.part.sleep-pg{background:linear-gradient(135deg,#2E3556,#4A3F6E)}
+.part.pms-pg{background:linear-gradient(135deg,#B0483E,#D45E52)}
+.part.pcos-pg{background:linear-gradient(135deg,#8E7EB8,#5E4E8A)}
+.part.pmdd-pg{background:linear-gradient(135deg,#7A4A5E,#4A2A3A)}
+.part.peri-pg{background:linear-gradient(135deg,#C98A6B,#D99960)}
+.part.stress-pg{background:linear-gradient(135deg,#3B6B4E,#7FA68A)}
+.part.mob-pg{background:linear-gradient(135deg,#D99960,#C98A6B)}
+.part.meno-pg{background:linear-gradient(135deg,#6B3E54,#4A2A3A)}
+.part.pp-pg{background:linear-gradient(135deg,#E89888,#D45E52)}
+.pgcard .plbl{font-family:Fraunces;font-size:16px;font-weight:600;letter-spacing:-.01em;line-height:1.15;z-index:1;position:relative}
+.pgcard .pday{position:absolute;top:10px;left:14px;font-size:9.5px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;padding:3px 8px;border-radius:99px;background:rgba(255,255,255,.2);backdrop-filter:blur(10px);z-index:1}
+.pgcard .ptier{position:absolute;top:10px;right:14px;font-size:9.5px;font-weight:700;padding:3px 8px;border-radius:99px;background:rgba(255,255,255,.2);color:#fff;backdrop-filter:blur(10px);letter-spacing:.04em;z-index:1}
+.pgcard .pmeta{padding:12px 14px}
+.pgcard .psum{font-size:11.5px;color:var(--ink-soft);line-height:1.45;min-height:48px}
+.pgcard .ptags{display:flex;gap:4px;flex-wrap:wrap;margin-top:8px}
+.pgcard .ptag{font-size:9px;font-weight:700;padding:3px 7px;border-radius:99px;background:rgba(74,42,58,.06);color:var(--plum);text-transform:uppercase;letter-spacing:.08em}
+
+/* AUDIO CARDS */
+.acard{flex:0 0 170px;border-radius:18px;background:linear-gradient(165deg,#fff 0%,#FFF2ED 100%);border:1px solid var(--line);box-shadow:var(--shadow-sm);overflow:hidden;cursor:pointer;position:relative}
+.acard .aring{height:96px;display:grid;place-items:center;position:relative;overflow:hidden}
+.acard .aring::before{content:"";position:absolute;inset:0;background:radial-gradient(180px 140px at 30% 30%,rgba(212,94,82,.22),transparent 60%),radial-gradient(160px 140px at 80% 80%,rgba(142,126,184,.22),transparent 60%)}
+.acard .aring svg{width:58px;height:58px;position:relative;z-index:1}
+.acard .aring .wline{stroke:var(--rose-500);stroke-width:2;fill:none;stroke-linecap:round}
+.acard .aring .wline.b{stroke:var(--lav);opacity:.6}
+.acard .aring .wline.c{stroke:var(--plum);opacity:.5}
+.acard .atop{position:absolute;top:8px;left:8px;right:8px;display:flex;justify-content:space-between;align-items:center;z-index:2}
+.acard .ach{font-size:9px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;padding:3px 7px;border-radius:99px;background:rgba(74,42,58,.7);color:#fff;backdrop-filter:blur(6px)}
+.acard .adur{font-size:10px;font-weight:700;padding:3px 7px;border-radius:6px;background:rgba(255,255,255,.85);color:var(--plum);letter-spacing:.02em}
+.acard .ameta{padding:10px 12px 12px}
+.acard .at{font-family:Fraunces;font-size:13px;font-weight:600;line-height:1.25;letter-spacing:-.01em;color:var(--ink);min-height:32px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.acard .arow{display:flex;align-items:center;justify-content:space-between;margin-top:6px;font-size:10px;color:var(--ink-soft);font-weight:600}
+.acard .lvl{font-size:9px;text-transform:uppercase;letter-spacing:.1em;padding:2px 6px;border-radius:99px;background:rgba(74,42,58,.06);color:var(--plum)}
+.acard .aplay{width:26px;height:26px;border-radius:50%;background:var(--rose-500);color:#fff;display:grid;place-items:center;font-size:10px}
+
+/* QUICK SESSION PILL CARDS ≤5min */
+.qshelf{padding:2px 18px 14px;display:flex;gap:8px;overflow-x:auto;scrollbar-width:none}
+.qshelf::-webkit-scrollbar{display:none}
+.qpill{flex:0 0 auto;display:flex;gap:10px;align-items:center;padding:10px 14px 10px 10px;border-radius:99px;background:#fff;border:1px solid var(--line);box-shadow:var(--shadow-sm);cursor:pointer}
+.qpill .qdur{width:36px;height:36px;border-radius:50%;background:linear-gradient(135deg,var(--rose-400),var(--rose-500));color:#fff;display:grid;place-items:center;font-family:Fraunces;font-weight:700;font-size:12px;flex-shrink:0}
+.qpill .qtxt{font-family:Fraunces;font-size:12.5px;font-weight:600;color:var(--ink);line-height:1.15;letter-spacing:-.01em;white-space:nowrap}
+.qpill .qsub{font-size:9.5px;color:var(--ink-soft);font-weight:600;letter-spacing:.08em;text-transform:uppercase;margin-top:1px}
+
+/* NEW THIS WEEK — horoscope/article carousel */
+.nwbar{display:flex;align-items:center;justify-content:space-between;padding:4px 22px 10px;margin-top:2px}
+.nwbar .nw-lbl{font-family:Fraunces;font-size:14.5px;font-weight:600}
+.nwbar .nw-cnt{font-size:10px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--rose-500);background:rgba(212,94,82,.08);padding:4px 9px;border-radius:99px}
+.nwshelf{display:flex;gap:8px;padding:2px 18px 14px;overflow-x:auto;scrollbar-width:none}
+.nwshelf::-webkit-scrollbar{display:none}
+.nwcard{flex:0 0 138px;border-radius:16px;padding:14px 12px;color:#fff;display:flex;flex-direction:column;justify-content:space-between;min-height:120px;cursor:pointer;position:relative;overflow:hidden}
+.nwcard::after{content:"";position:absolute;inset:0;background:radial-gradient(120px 120px at 80% 20%,rgba(255,255,255,.25),transparent 60%)}
+.nwcard .nlbl{font-size:9px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;opacity:.9;position:relative;z-index:1}
+.nwcard .nttl{font-family:Fraunces;font-size:15px;font-weight:600;line-height:1.2;letter-spacing:-.01em;position:relative;z-index:1}
+.nwcard .nfoot{font-size:9.5px;opacity:.85;position:relative;z-index:1;font-weight:500}
+.nwcard.aries{background:linear-gradient(135deg,#B0483E,#D45E52)}
+.nwcard.taurus{background:linear-gradient(135deg,#7FA68A,#3B6B4E)}
+.nwcard.gemini{background:linear-gradient(135deg,#D99960,#C98A6B)}
+.nwcard.cancer{background:linear-gradient(135deg,#6DB5E0,#4E8FB8)}
+.nwcard.leo{background:linear-gradient(135deg,#C9A961,#B0483E)}
+.nwcard.virgo{background:linear-gradient(135deg,#8E7EB8,#5E4E8A)}
+
+/* FORMAT PILLS (second row) */
+.fmtstrip{display:flex;gap:6px;padding:0 18px 12px;overflow-x:auto;scrollbar-width:none}
+.fmtstrip::-webkit-scrollbar{display:none}
+.fchip{flex:0 0 auto;display:inline-flex;align-items:center;gap:5px;padding:6px 11px;border-radius:99px;font-size:11px;font-weight:700;cursor:pointer;color:var(--ink-soft);background:rgba(255,255,255,.7);border:1px solid var(--line);letter-spacing:.02em;font-family:inherit;white-space:nowrap}
+.fchip.on{background:var(--plum);color:#fff;border-color:var(--plum)}
+.fchip .fi{font-size:11px}
+
+/* EYEBROW */
+.eyebrow{padding:14px 22px 0;font-size:10px;font-weight:800;letter-spacing:.2em;color:var(--rose-500);text-transform:uppercase}
+
+/* VIDEO CARDS (wider, 16:9 thumb) */
+.vcard{flex:0 0 220px;border-radius:18px;background:#fff;border:1px solid var(--line);box-shadow:var(--shadow-md);overflow:hidden;cursor:pointer;transition:transform .15s}
+.vcard:hover{transform:translateY(-2px)}
+.vthumb{position:relative;aspect-ratio:16/9;background:#1a1522 center/cover no-repeat;overflow:hidden}
+.vthumb::after{content:"";position:absolute;inset:0;background:linear-gradient(180deg,transparent 40%,rgba(26,21,34,.55) 100%)}
+.vthumb .vplay{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:44px;height:44px;border-radius:50%;background:rgba(255,255,255,.94);color:var(--plum);display:grid;place-items:center;z-index:2;box-shadow:0 6px 14px rgba(0,0,0,.2)}
+.vthumb .vplay svg{width:14px;height:14px;fill:currentColor;margin-left:2px}
+.vthumb .vdur{position:absolute;bottom:8px;right:8px;font-size:10px;font-weight:700;padding:3px 7px;border-radius:6px;background:rgba(0,0,0,.7);color:#fff;letter-spacing:.02em;z-index:2}
+.vthumb .vcat{position:absolute;top:8px;left:8px;font-size:9px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;padding:3px 7px;border-radius:99px;background:rgba(255,255,255,.92);color:var(--plum);z-index:2}
+.vmeta{padding:10px 12px}
+.vmeta .vtitle{font-family:Fraunces;font-size:13px;font-weight:600;line-height:1.25;letter-spacing:-.01em;color:var(--ink);display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;min-height:32px}
+.vmeta .vrow{display:flex;align-items:center;justify-content:space-between;margin-top:6px;font-size:10px;color:var(--ink-soft);font-weight:600}
+.vmeta .vch{display:inline-flex;align-items:center;gap:4px}
+.vmeta .vdot{width:4px;height:4px;border-radius:50%;background:var(--rose-500)}
+
+/* EVENT CARDS */
+.evcard{flex:0 0 240px;border-radius:18px;padding:14px;background:#fff;border:1px solid var(--line);box-shadow:var(--shadow-sm);cursor:pointer;display:flex;flex-direction:column;gap:8px}
+.evcard .eh{display:flex;align-items:center;justify-content:space-between}
+.evcard .edate{width:42px;text-align:center;padding:4px 0;border-radius:10px;background:rgba(74,42,58,.04)}
+.evcard .edate .dm{font-size:8.5px;font-weight:700;color:var(--rose-500);letter-spacing:.1em;text-transform:uppercase}
+.evcard .edate .dn{font-family:Fraunces;font-size:16px;font-weight:600;color:var(--plum);line-height:1;margin-top:2px}
+.evcard .etype{font-size:9.5px;color:var(--ink-soft);font-weight:700;letter-spacing:.12em;text-transform:uppercase;text-align:right;line-height:1.3}
+.evcard .etit{font-family:Fraunces;font-size:14px;font-weight:600;line-height:1.25;letter-spacing:-.01em}
+.evcard .efoot{display:flex;align-items:center;justify-content:space-between;margin-top:auto;font-size:10.5px;color:var(--ink-soft);font-weight:600}
+.evcard .efoot .loc{display:inline-flex;align-items:center;gap:4px}
+.evcard .efoot .pr{font-family:Fraunces;font-weight:600;color:var(--plum)}
+.evcard .efoot .pr.free{color:var(--sage)}
+
+/* ARTICLES / STORIES / HOROSCOPE MIXED ROW */
+.mixrow{padding:2px 18px 14px;display:flex;flex-direction:column;gap:8px}
+.mxcard{display:flex;gap:12px;padding:12px 14px;border-radius:16px;background:#fff;border:1px solid var(--line);cursor:pointer;align-items:center}
+.mxthumb{width:52px;height:52px;border-radius:12px;display:grid;place-items:center;color:#fff;font-size:20px;flex-shrink:0}
+.mx-art{background:linear-gradient(135deg,#6DB5E0,#4E8FB8)}
+.mx-sto{background:linear-gradient(135deg,#6B3E54,#4A2A3A)}
+.mx-hor{background:linear-gradient(135deg,#1A1522,#4A3F6E)}
+.mxbody{flex:1;min-width:0}
+.mxbody .mxt{font-family:Fraunces;font-size:13px;font-weight:600;line-height:1.3;letter-spacing:-.01em;overflow:hidden;text-overflow:ellipsis;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical}
+.mxbody .mxmeta{font-size:10px;color:var(--ink-soft);font-weight:600;margin-top:4px;letter-spacing:.02em}
+.mxbody .mxlbl{font-size:9px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--rose-500)}
+
+/* SAVED / HISTORY STRIP */
+.savebox{margin:0 18px 14px;padding:14px;border-radius:18px;background:rgba(255,255,255,.65);border:1px solid var(--line);backdrop-filter:blur(14px);display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.savecol{display:flex;align-items:center;gap:10px;cursor:pointer}
+.savecol .sti{width:36px;height:36px;border-radius:12px;display:grid;place-items:center;color:#fff;font-size:15px}
+.savecol .sto .sb{font-family:Fraunces;font-size:13px;font-weight:600;line-height:1}
+.savecol .sto .ss{font-size:10px;color:var(--ink-soft);margin-top:2px;font-weight:600}
+.savecol.bm .sti{background:linear-gradient(135deg,var(--lav),#5E4E8A)}
+.savecol.hist .sti{background:linear-gradient(135deg,var(--amber),#C98A6B)}
+
+/* BOTTOM NAV */
+.bnav{position:absolute;left:10px;right:10px;bottom:14px;height:62px;z-index:50;display:flex;justify-content:center;pointer-events:none}
+.bnav-inner{pointer-events:auto;display:grid;grid-template-columns:repeat(5,1fr);gap:2px;
+  background:rgba(255,255,255,.82);backdrop-filter:blur(18px);border:1px solid var(--line);
+  box-shadow:0 -2px 8px rgba(43,30,22,.04),0 24px 60px rgba(43,30,22,.14);border-radius:26px;padding:8px 10px;width:100%}
+.bn{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;padding:6px 2px;border-radius:18px;cursor:pointer;color:var(--ink-mute);background:transparent;border:none;font-family:inherit}
+.bn.active{color:var(--plum);background:rgba(122,74,94,.08)}
+.bn .bni{width:22px;height:22px;display:grid;place-items:center}
+.bn .bni svg{width:22px;height:22px;stroke:currentColor;stroke-width:1.6;fill:none;stroke-linecap:round;stroke-linejoin:round}
+.bn.active .bni svg{stroke-width:2}
+.bn .bnl{font-size:10px;font-weight:500;letter-spacing:.01em}
+.bn.active .bnl{font-weight:600}
+.bn.fab{margin-top:-20px}
+.bn.fab .bni{width:42px;height:42px;background:linear-gradient(135deg,var(--plum),var(--rose-600));border-radius:50%;color:#fff;box-shadow:0 8px 22px rgba(122,74,94,.35)}
+.bn.fab .bni svg{width:20px;height:20px;stroke:#fff;stroke-width:2}
+
+/* SHEETS */
+.sheet-scrim{position:absolute;inset:0;background:rgba(26,10,18,.55);backdrop-filter:blur(8px);opacity:0;pointer-events:none;transition:opacity .25s;z-index:70}
+.sheet-scrim.on{opacity:1;pointer-events:auto}
+.sheet{position:absolute;left:0;right:0;bottom:0;max-height:82%;
+  background:#FFF8F4;border-radius:32px 32px 0 0;box-shadow:0 -20px 60px rgba(74,42,58,.22);
+  transform:translateY(100%);transition:transform .35s cubic-bezier(.2,.8,.2,1);
+  z-index:80;overflow:hidden;display:flex;flex-direction:column}
+.sheet.on{transform:translateY(0)}
+.sheet-handle{width:44px;height:5px;border-radius:99px;background:rgba(74,42,58,.18);margin:10px auto 2px}
+.sheet-head{padding:8px 22px 10px;display:flex;align-items:center;justify-content:space-between}
+.sheet-title{font-family:Fraunces;font-size:21px;font-weight:600;letter-spacing:-.01em}
+.sheet-sub{font-size:11px;color:var(--ink-soft);margin-top:2px}
+.sheet-close{border:none;background:rgba(74,42,58,.08);color:var(--plum);width:32px;height:32px;border-radius:10px;cursor:pointer;font-weight:700}
+.sheet-body{flex:1;overflow-y:auto;padding:4px 22px 40px;scrollbar-width:none}
+.sheet-body::-webkit-scrollbar{display:none}
+.qgroup{padding:14px;border-radius:18px;background:#fff;border:1px solid var(--line);margin-bottom:10px}
+.qgroup .qtitle{font-family:Fraunces;font-size:14.5px;font-weight:600;margin-bottom:10px;letter-spacing:-.01em}
+.qrow{display:flex;gap:6px;flex-wrap:wrap}
+.qchip{padding:8px 12px;border-radius:99px;background:#fff;border:1px solid var(--line);font-size:11.5px;font-weight:600;cursor:pointer;color:var(--ink);transition:all .15s;font-family:inherit}
+.qchip.on{background:var(--rose-500);color:#fff;border-color:var(--rose-500)}
+.ctabtn{width:100%;padding:13px;border-radius:14px;border:none;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit;background:var(--ink);color:#fff;margin-top:8px}
+.ctabtn.soft{background:rgba(74,42,58,.06);color:var(--plum)}
+
+/* PLAYER SHEET */
+.player-hero{margin:-4px -22px 14px;padding:22px 22px 30px;color:#fff;background:linear-gradient(135deg,#2E3556,#6B3E54);border-radius:0 0 24px 24px;position:relative;overflow:hidden}
+.player-hero::after{content:"";position:absolute;right:-40px;top:-40px;width:180px;height:180px;border-radius:50%;background:radial-gradient(circle,rgba(245,230,211,.4),transparent 60%);filter:blur(8px)}
+.ph-type{font-size:9.5px;font-weight:700;letter-spacing:.16em;text-transform:uppercase;opacity:.85;position:relative;z-index:1}
+.ph-title{font-family:Fraunces;font-size:22px;font-weight:600;line-height:1.2;letter-spacing:-.02em;margin-top:8px;position:relative;z-index:1}
+.ph-sum{font-size:12.5px;opacity:.85;margin-top:10px;line-height:1.5;position:relative;z-index:1}
+.ph-meta{display:flex;gap:8px;margin-top:14px;flex-wrap:wrap;position:relative;z-index:1}
+.ph-pill{font-size:10.5px;font-weight:600;padding:5px 10px;border-radius:99px;background:rgba(255,255,255,.18);backdrop-filter:blur(8px)}
+.ph-cta{display:flex;gap:8px;margin-top:16px;position:relative;z-index:1}
+.phbtn{background:#fff;color:var(--plum);border:none;font-size:12.5px;font-weight:700;padding:11px 18px;border-radius:99px;cursor:pointer;font-family:inherit;display:inline-flex;align-items:center;gap:6px}
+.phbtn.ghost{background:rgba(255,255,255,.16);color:#fff}
+
+/* MENU SHEET */
+.menu-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+.mbtn{padding:14px 10px;border-radius:18px;background:#fff;border:1px solid var(--line);display:flex;flex-direction:column;align-items:center;gap:8px;cursor:pointer;text-align:center;font-family:inherit;color:var(--ink)}
+.mbtn .mi{width:40px;height:40px;border-radius:12px;display:grid;place-items:center;font-size:17px;color:#fff}
+.mbtn .ml{font-size:11px;font-weight:600}
+
+/* FILTER SHEET */
+.fs-block{margin-bottom:14px}
+.fs-block h5{font-family:Fraunces;font-size:13px;font-weight:600;color:var(--ink);margin-bottom:8px;letter-spacing:-.01em}
+
+/* DESKTOP SIDE */
+.side{position:sticky;top:24px}
+.side h1{font-family:Fraunces;font-size:40px;font-weight:600;letter-spacing:-.03em;line-height:1.05;margin-bottom:8px}
+.side .hl{color:var(--rose-500)}
+.side .lede{font-size:15.5px;color:var(--ink-soft);line-height:1.55;margin-bottom:22px}
+.card{background:rgba(255,255,255,.75);border:1px solid var(--line);border-radius:22px;padding:20px;margin-bottom:14px;backdrop-filter:blur(14px)}
+.card h3{font-family:Fraunces;font-size:17px;font-weight:600;letter-spacing:-.01em;margin-bottom:8px}
+.card p{font-size:13.5px;color:var(--ink-soft);line-height:1.6}
+.card ul{list-style:none;margin-top:8px;display:flex;flex-direction:column;gap:6px}
+.card ul li{font-size:13px;color:var(--ink-soft);padding-left:18px;position:relative;line-height:1.5}
+.card ul li::before{content:"◆";position:absolute;left:0;color:var(--rose-500);font-size:9px;top:4px}
+.card .kbd{display:inline-block;background:rgba(74,42,58,.06);border:1px solid var(--line);border-radius:6px;padding:2px 6px;font-size:11px;font-family:ui-monospace,Menlo,monospace;color:var(--plum)}
+.entity-tag{display:inline-block;background:rgba(74,42,58,.06);color:var(--plum);font-family:ui-monospace,Menlo,monospace;font-size:11px;font-weight:600;padding:2px 6px;border-radius:5px;margin-right:5px;margin-bottom:4px}
+.keybox{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:8px}
+.keychip{padding:10px 12px;border-radius:14px;background:#fff;border:1px solid var(--line);font-size:12px}
+.keychip b{display:block;font-family:Fraunces;font-weight:600;color:var(--plum);font-size:14px;margin-bottom:2px}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="page-head">
+    <div class="brand">
+      <div class="brand-mark">F</div>
+      <div>
+        <div class="brand-name">FemWell · Explore <span class="live-badge"><i></i> WIRED TO YOUR DATA</span></div>
+        <div class="brand-sub">Discovery tab — programs, practices, videos, audio, events, stories & articles. Replaces the current Explore tab.</div>
+      </div>
+    </div>
+    <div class="head-tabs">
+      <button class="tab on">For you</button>
+      <button class="tab">Practices</button>
+      <button class="tab">Programs</button>
+      <button class="tab">Watch</button>
+      <button class="tab">Events</button>
+      <button class="tab">Read</button>
+    </div>
+  </div>
+
+  <div class="stage">
+
+    <!-- PHONE -->
+    <div class="phone-slot">
+      <div class="phone"><div class="screen">
+
+        <div class="statusbar">
+          <span class="time">9:14</span>
+          <span class="status-icons">5G ▲ 82%</span>
+        </div>
+
+        <div class="scroll">
+
+          <div class="eyebrow">Discovery</div>
+          <div class="p-head">
+            <div>
+              <div class="p-title">Explore</div>
+              <div class="p-sub">Sessions, videos & guides · tuned to ovulatory d17</div>
+            </div>
+            <div class="avatar">H</div>
+          </div>
+
+          <!-- Search -->
+          <div class="searchbar">
+            <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
+            <input placeholder='Search "pms cramps", "breathwork", programs…' />
+            <div class="mic">🎙</div>
+          </div>
+
+          <!-- NEED PILLS — row 1 -->
+          <div class="catstrip">
+            <button class="cchip on">🌙 Sleep</button>
+            <button class="cchip">🩷 PMS</button>
+            <button class="cchip">🫧 Calm</button>
+            <button class="cchip">⚡ Energy</button>
+            <button class="cchip">🤸 Mobility</button>
+            <button class="cchip">🌸 Menopause</button>
+            <button class="cchip">🍼 Postpartum</button>
+            <button class="cchip">😵‍💫 Stress</button>
+            <button class="cchip phase"><span class="ci">🌕</span> Ovulatory</button>
+          </div>
+
+          <!-- FORMAT PILLS — row 2 -->
+          <div class="fmtstrip">
+            <button class="fchip on"><span class="fi">✨</span> All</button>
+            <button class="fchip"><span class="fi">🔖</span> Saved</button>
+            <button class="fchip"><span class="fi">▶</span> Videos</button>
+            <button class="fchip"><span class="fi">🎧</span> Audio</button>
+            <button class="fchip"><span class="fi">💪</span> Fitness</button>
+            <button class="fchip"><span class="fi">🤸</span> Mobility</button>
+            <button class="fchip"><span class="fi">📖</span> Guides</button>
+            <button class="fchip" onclick="openSheet('filter')"><span class="fi">⚙</span> Filters</button>
+          </div>
+
+          <!-- FEATURED HERO -->
+          <div class="hero" onclick="openSheet('player')">
+            <div class="hero-art"></div>
+            <div class="hero-in">
+              <div class="hero-eyebrow">
+                <span class="eyebrow-pill">Featured program</span>
+                <span class="eyebrow-pill" style="background:rgba(245,230,211,.28)">5 days</span>
+              </div>
+              <div class="hero-title">Sleep Reset Blueprint</div>
+              <div class="hero-sub">A calmer 5-day sleep program built from breathwork, wind-down audio, bedtime videos, and short sleep education cards.</div>
+              <div class="hero-meta">
+                <span class="hm-pill">🌙 Sleep · stress · recovery</span>
+                <span class="hm-pill">Beginner</span>
+                <span class="hm-pill">Free</span>
+              </div>
+              <div class="hero-cta">
+                <button class="hbtn">▶ Start today</button>
+                <button class="hbtn ghost">＋ Save</button>
+              </div>
+            </div>
+          </div>
+
+          <!-- QUICK SESSIONS ≤ 5 MIN -->
+          <div class="shead">
+            <span class="sl">Quick sessions <span class="phtag">≤ 5 min</span></span>
+            <button class="sr">See all</button>
+          </div>
+          <div class="qshelf">
+            <button class="qpill" onclick="openSheet('player')"><span class="qdur">5m</span><span><span class="qtxt">Downshift Breathing</span><br><span class="qsub">Breathwork · Beginner</span></span></button>
+            <button class="qpill" onclick="openSheet('player')"><span class="qdur">3m</span><span><span class="qtxt">3-Minute Breathing Space</span><br><span class="qsub">Breathwork · Beginner</span></span></button>
+            <button class="qpill" onclick="openSheet('player')"><span class="qdur">3m</span><span><span class="qtxt">Anxiety Reset</span><br><span class="qsub">Meditation · Beginner</span></span></button>
+            <button class="qpill" onclick="openSheet('player')"><span class="qdur">5m</span><span><span class="qtxt">Focus Sprint</span><br><span class="qsub">Breathwork · Beginner</span></span></button>
+            <button class="qpill" onclick="openSheet('player')"><span class="qdur">5m</span><span><span class="qtxt">Box Breathing</span><br><span class="qsub">Breathwork · Beginner</span></span></button>
+            <button class="qpill" onclick="openSheet('player')"><span class="qdur">5m</span><span><span class="qtxt">4-7-8 Breathing</span><br><span class="qsub">Breathwork · Beginner</span></span></button>
+            <button class="qpill" onclick="openSheet('player')"><span class="qdur">5m</span><span><span class="qtxt">Energising Breath</span><br><span class="qsub">Breathwork · Intermediate</span></span></button>
+          </div>
+
+          <!-- YOUTUBE VIDEOS — multi-day series -->
+          <div class="shead">
+            <span class="sl">▶ YouTube Videos <span class="phtag">curated series</span></span>
+            <button class="sr">See all 27</button>
+          </div>
+          <div class="shelf">
+            <div class="vcard" onclick="openSheet('player')">
+              <div class="vthumb" style="background-image:url('https://i.ytimg.com/vi/v4uk1cD8ar8/hqdefault.jpg')">
+                <span class="vcat">10 Days</span>
+                <span class="vplay"><svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg></span>
+                <span class="vdur">Series</span>
+              </div>
+              <div class="vmeta">
+                <div class="vtitle">Sleep Reset (10 Days)</div>
+                <div class="vrow"><span class="vch"><span class="vdot"></span>YouTube</span><span>Open</span></div>
+              </div>
+            </div>
+            <div class="vcard" onclick="openSheet('player')">
+              <div class="vthumb" style="background-image:url('https://i.ytimg.com/vi/n6RbW2LtdFs/hqdefault.jpg')">
+                <span class="vcat">7 Days</span>
+                <span class="vplay"><svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg></span>
+                <span class="vdur">Series</span>
+              </div>
+              <div class="vmeta">
+                <div class="vtitle">Calm & Anxiety Toolkit (7 Days)</div>
+                <div class="vrow"><span class="vch"><span class="vdot"></span>YouTube</span><span>Open</span></div>
+              </div>
+            </div>
+            <div class="vcard" onclick="openSheet('player')">
+              <div class="vthumb" style="background-image:url('https://i.ytimg.com/vi/4JaCcp39iVI/hqdefault.jpg')">
+                <span class="vcat">7 Days</span>
+                <span class="vplay"><svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg></span>
+                <span class="vdur">Series</span>
+              </div>
+              <div class="vmeta">
+                <div class="vtitle">PMS Relief (7 Days)</div>
+                <div class="vrow"><span class="vch"><span class="vdot"></span>YouTube</span><span>Open</span></div>
+              </div>
+            </div>
+            <div class="vcard" onclick="openSheet('player')">
+              <div class="vthumb" style="background-image:url('https://i.ytimg.com/vi/2aEceax_be4/hqdefault.jpg')">
+                <span class="vcat">14 Days</span>
+                <span class="vplay"><svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg></span>
+                <span class="vdur">Series</span>
+              </div>
+              <div class="vmeta">
+                <div class="vtitle">Postpartum Gentle Return (14 Days)</div>
+                <div class="vrow"><span class="vch"><span class="vdot"></span>YouTube</span><span>Open</span></div>
+              </div>
+            </div>
+            <div class="vcard" onclick="openSheet('player')">
+              <div class="vthumb" style="background-image:url('https://i.ytimg.com/vi/dVYKJ6OwQF8/hqdefault.jpg')">
+                <span class="vcat">14 Days</span>
+                <span class="vplay"><svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg></span>
+                <span class="vdur">Series</span>
+              </div>
+              <div class="vmeta">
+                <div class="vtitle">Menopause Strength & Calm (14 Days)</div>
+                <div class="vrow"><span class="vch"><span class="vdot"></span>YouTube</span><span>Open</span></div>
+              </div>
+            </div>
+            <div class="vcard" onclick="openSheet('player')">
+              <div class="vthumb" style="background-image:url('https://i.ytimg.com/vi/8oWmGJc8NWI/hqdefault.jpg')">
+                <span class="vcat">7 Days</span>
+                <span class="vplay"><svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg></span>
+                <span class="vdur">Series</span>
+              </div>
+              <div class="vmeta">
+                <div class="vtitle">Stress Reset (7 Days)</div>
+                <div class="vrow"><span class="vch"><span class="vdot"></span>YouTube</span><span>Open</span></div>
+              </div>
+            </div>
+            <div class="vcard" onclick="openSheet('player')">
+              <div class="vthumb" style="background-image:url('https://i.ytimg.com/vi/vYZyXCKGFC8/hqdefault.jpg')">
+                <span class="vcat">14 Days</span>
+                <span class="vplay"><svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg></span>
+                <span class="vdur">Series</span>
+              </div>
+              <div class="vmeta">
+                <div class="vtitle">Beginner Fitness Kickstart (14 Days)</div>
+                <div class="vrow"><span class="vch"><span class="vdot"></span>YouTube</span><span>Open</span></div>
+              </div>
+            </div>
+            <div class="vcard" onclick="openSheet('player')">
+              <div class="vthumb" style="background-image:url('https://i.ytimg.com/vi/NOaeKRft-gc/hqdefault.jpg')">
+                <span class="vcat">Guide</span>
+                <span class="vplay"><svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg></span>
+                <span class="vdur">5:08</span>
+              </div>
+              <div class="vmeta">
+                <div class="vtitle">3 things that can cause painful periods</div>
+                <div class="vrow"><span class="vch"><span class="vdot"></span>TED-Ed</span><span>Open</span></div>
+              </div>
+            </div>
+          </div>
+
+          <!-- AUDIO SESSIONS -->
+          <div class="shead">
+            <span class="sl">🎧 Audio Sessions <span class="phtag">breath · wave · glow</span></span>
+            <button class="sr">See all</button>
+          </div>
+          <div class="shelf">
+            <div class="acard" onclick="openSheet('player')">
+              <div class="aring">
+                <div class="atop"><span class="ach">Breathwork</span><span class="adur">5 min</span></div>
+                <svg viewBox="0 0 60 60"><circle cx="30" cy="30" r="22" class="wline"/><circle cx="30" cy="30" r="14" class="wline b"/><circle cx="30" cy="30" r="6" class="wline c"/></svg>
+              </div>
+              <div class="ameta">
+                <div class="at">Downshift Breathing</div>
+                <div class="arow"><span class="lvl">Beginner</span><span class="aplay">▶</span></div>
+              </div>
+            </div>
+            <div class="acard" onclick="openSheet('player')">
+              <div class="aring">
+                <div class="atop"><span class="ach">Breathwork</span><span class="adur">3 min</span></div>
+                <svg viewBox="0 0 60 60"><path d="M4 30 Q15 15, 30 30 T56 30" class="wline"/><path d="M4 34 Q15 19, 30 34 T56 34" class="wline b"/><path d="M4 26 Q15 11, 30 26 T56 26" class="wline c"/></svg>
+              </div>
+              <div class="ameta">
+                <div class="at">3-Minute Breathing Space</div>
+                <div class="arow"><span class="lvl">Beginner</span><span class="aplay">▶</span></div>
+              </div>
+            </div>
+            <div class="acard" onclick="openSheet('player')">
+              <div class="aring">
+                <div class="atop"><span class="ach">Breathwork</span><span class="adur">6 min</span></div>
+                <svg viewBox="0 0 60 60"><circle cx="30" cy="30" r="24" class="wline" stroke-dasharray="6 4"/><circle cx="30" cy="30" r="12" class="wline b"/></svg>
+              </div>
+              <div class="ameta">
+                <div class="at">Alternate Nostril Breathing</div>
+                <div class="arow"><span class="lvl">Intermediate</span><span class="aplay">▶</span></div>
+              </div>
+            </div>
+            <div class="acard" onclick="openSheet('player')">
+              <div class="aring">
+                <div class="atop"><span class="ach">Breathwork</span><span class="adur">5 min</span></div>
+                <svg viewBox="0 0 60 60"><rect x="8" y="8" width="44" height="44" rx="10" class="wline"/><rect x="16" y="16" width="28" height="28" rx="6" class="wline b"/></svg>
+              </div>
+              <div class="ameta">
+                <div class="at">4-7-8 Breathing</div>
+                <div class="arow"><span class="lvl">Beginner</span><span class="aplay">▶</span></div>
+              </div>
+            </div>
+            <div class="acard" onclick="openSheet('player')">
+              <div class="aring">
+                <div class="atop"><span class="ach">Breathwork</span><span class="adur">10 min</span></div>
+                <svg viewBox="0 0 60 60"><path d="M4 30 C15 14, 25 46, 35 14 S55 46, 56 30" class="wline"/><path d="M4 38 C15 22, 25 54, 35 22 S55 54, 56 38" class="wline b"/></svg>
+              </div>
+              <div class="ameta">
+                <div class="at">Coherent Breathing</div>
+                <div class="arow"><span class="lvl">Intermediate</span><span class="aplay">▶</span></div>
+              </div>
+            </div>
+            <div class="acard" onclick="openSheet('player')">
+              <div class="aring">
+                <div class="atop"><span class="ach">Meditation</span><span class="adur">8 min</span></div>
+                <svg viewBox="0 0 60 60"><circle cx="30" cy="30" r="20" class="wline"/><circle cx="30" cy="30" r="10" class="wline c" stroke-dasharray="3 3"/></svg>
+              </div>
+              <div class="ameta">
+                <div class="at">Body Scan Reset</div>
+                <div class="arow"><span class="lvl">Beginner</span><span class="aplay">▶</span></div>
+              </div>
+            </div>
+            <div class="acard" onclick="openSheet('player')">
+              <div class="aring">
+                <div class="atop"><span class="ach">Meditation</span><span class="adur">10 min</span></div>
+                <svg viewBox="0 0 60 60"><path d="M4 30 Q30 8, 56 30 Q30 52, 4 30 Z" class="wline"/><circle cx="30" cy="30" r="8" class="wline b"/></svg>
+              </div>
+              <div class="ameta">
+                <div class="at">Progressive Muscle Relaxation</div>
+                <div class="arow"><span class="lvl">Beginner</span><span class="aplay">▶</span></div>
+              </div>
+            </div>
+            <div class="acard" onclick="openSheet('player')">
+              <div class="aring">
+                <div class="atop"><span class="ach">Meditation</span><span class="adur">20 min</span></div>
+                <svg viewBox="0 0 60 60"><circle cx="30" cy="30" r="22" class="wline" stroke-dasharray="4 4"/><circle cx="30" cy="30" r="14" class="wline b"/><circle cx="30" cy="30" r="6" class="wline c"/></svg>
+              </div>
+              <div class="ameta">
+                <div class="at">Sleep Deep</div>
+                <div class="arow"><span class="lvl">Beginner</span><span class="aplay">▶</span></div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Events shelf -->
+          <div class="shead">
+            <span class="sl">Events near you</span>
+            <button class="sr">See all 42</button>
+          </div>
+          <div class="shelf">
+            <div class="evcard">
+              <div class="eh">
+                <div class="edate"><div class="dm">Apr</div><div class="dn">18</div></div>
+                <div class="etype">Gallery<br/>& Culture</div>
+              </div>
+              <div class="etit">The Beauty of the Earth: Art of May, Jane and William Morris</div>
+              <div class="efoot"><span class="loc">📍 Leeds</span><span class="pr">£12.50</span></div>
+            </div>
+            <div class="evcard">
+              <div class="eh">
+                <div class="edate"><div class="dm">Apr</div><div class="dn">23</div></div>
+                <div class="etype">Culture</div>
+              </div>
+              <div class="etit">Forbidden Worlds Film Festival 2026</div>
+              <div class="efoot"><span class="loc">📍 Bristol</span><span class="pr">£10.00</span></div>
+            </div>
+            <div class="evcard">
+              <div class="eh">
+                <div class="edate"><div class="dm">May</div><div class="dn">01</div></div>
+                <div class="etype">Walking<br/>Social</div>
+              </div>
+              <div class="etit">Bristol Walk Fest 2026</div>
+              <div class="efoot"><span class="loc">📍 Bristol</span><span class="pr free">Free</span></div>
+            </div>
+            <div class="evcard">
+              <div class="eh">
+                <div class="edate"><div class="dm">May</div><div class="dn">07</div></div>
+                <div class="etype">Talks &<br/>Workshops</div>
+              </div>
+              <div class="etit">Tea, Toast and Talk</div>
+              <div class="efoot"><span class="loc">📍 Manchester</span><span class="pr free">Free</span></div>
+            </div>
+            <div class="evcard">
+              <div class="eh">
+                <div class="edate"><div class="dm">May</div><div class="dn">02</div></div>
+                <div class="etype">Virtual<br/>Food</div>
+              </div>
+              <div class="etit">Infamous Port & Cheese Spring Tasting</div>
+              <div class="efoot"><span class="loc">📍 Online</span><span class="pr">£65.00</span></div>
+            </div>
+          </div>
+
+          <!-- Read & listen — articles + stories mixed -->
+          <div class="shead">
+            <span class="sl">📖 Read &amp; listen <span class="phtag">articles · stories</span></span>
+            <button class="sr">Browse</button>
+          </div>
+          <div class="mixrow">
+            <div class="mxcard">
+              <div class="mxthumb mx-art">📰</div>
+              <div class="mxbody">
+                <div class="mxlbl">Article · NEWS</div>
+                <div class="mxt">Why Your Period Pain Should Never Be Normal: The New NHS Framework</div>
+                <div class="mxmeta">3 min read · Apr 16</div>
+              </div>
+            </div>
+            <div class="mxcard">
+              <div class="mxthumb mx-sto">📖</div>
+              <div class="mxbody">
+                <div class="mxlbl">Story · EP 3</div>
+                <div class="mxt">Episode 3 — What Luteal Feels Like</div>
+                <div class="mxmeta">8 min · Daily Story reel</div>
+              </div>
+            </div>
+            <div class="mxcard">
+              <div class="mxthumb mx-art">📰</div>
+              <div class="mxbody">
+                <div class="mxlbl">Article · RESEARCH</div>
+                <div class="mxt">New Research Links Sleep Quality to Cycle Regularity</div>
+                <div class="mxmeta">4 min read · Apr 14</div>
+              </div>
+            </div>
+            <div class="mxcard">
+              <div class="mxthumb mx-art">📰</div>
+              <div class="mxbody">
+                <div class="mxlbl">Article · WORK</div>
+                <div class="mxt">The UK's Menopause Workplace Policy is Finally Changing</div>
+                <div class="mxmeta">5 min read · Apr 12</div>
+              </div>
+            </div>
+            <div class="mxcard">
+              <div class="mxthumb mx-sto">📖</div>
+              <div class="mxbody">
+                <div class="mxlbl">Story · EP 4</div>
+                <div class="mxt">Episode 4 — Why Your Cycle Changes After 35</div>
+                <div class="mxmeta">9 min · Daily Story reel</div>
+              </div>
+            </div>
+            <div class="mxcard">
+              <div class="mxthumb mx-art">📰</div>
+              <div class="mxbody">
+                <div class="mxlbl">Article · SCIENCE</div>
+                <div class="mxt">What We Now Know About Perimenopause Brain Fog (And How To Manage It)</div>
+                <div class="mxmeta">6 min read · Apr 10</div>
+              </div>
+            </div>
+            <div class="mxcard">
+              <div class="mxthumb mx-art">📰</div>
+              <div class="mxbody">
+                <div class="mxlbl">Article · NUTRITION</div>
+                <div class="mxt">The Magnesium & Cycle Connection: What To Take And When</div>
+                <div class="mxmeta">4 min read · Apr 08</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Go deeper — Programs shelf -->
+          <div class="shead">
+            <span class="sl">Go deeper <span class="phtag">ready for a guided journey?</span></span>
+            <button class="sr">Browse 9</button>
+          </div>
+          <div class="shelf">
+            <div class="pgcard">
+              <div class="part sleep-pg">
+                <span class="pday">5 days</span>
+                <span class="ptier">Free</span>
+                <div class="plbl">Sleep Reset<br/>Blueprint</div>
+              </div>
+              <div class="pmeta">
+                <div class="psum">Breathwork + wind-down audio + bedtime videos. Calmer nights in 5 days.</div>
+                <div class="ptags"><span class="ptag">sleep</span><span class="ptag">stress</span><span class="ptag">recovery</span></div>
+              </div>
+            </div>
+            <div class="pgcard">
+              <div class="part pms-pg">
+                <span class="pday">5 days</span>
+                <span class="ptier">Free</span>
+                <div class="plbl">PMS<br/>Relief Path</div>
+              </div>
+              <div class="pmeta">
+                <div class="psum">For cramp days, low-energy days, and emotionally louder cycle days.</div>
+                <div class="ptags"><span class="ptag">pms</span><span class="ptag">cramps</span><span class="ptag">cycle</span></div>
+              </div>
+            </div>
+            <div class="pgcard">
+              <div class="part pcos-pg">
+                <span class="pday">14 days</span>
+                <span class="ptier">Plus</span>
+                <div class="plbl">PCOS Reset<br/>14 Days</div>
+              </div>
+              <div class="pmeta">
+                <div class="psum">Structured plan for blood sugar, cycle support and gentle strength.</div>
+                <div class="ptags"><span class="ptag">pcos</span><span class="ptag">hormones</span></div>
+              </div>
+            </div>
+            <div class="pgcard">
+              <div class="part pmdd-pg">
+                <span class="pday">14 days</span>
+                <span class="ptier">Plus</span>
+                <div class="plbl">PMDD Relief<br/>Path</div>
+              </div>
+              <div class="pmeta">
+                <div class="psum">Targeted 14-day plan for the mood, pain and sensitivity swings of PMDD.</div>
+                <div class="ptags"><span class="ptag">pmdd</span><span class="ptag">mood</span></div>
+              </div>
+            </div>
+            <div class="pgcard">
+              <div class="part peri-pg">
+                <span class="pday">14 days</span>
+                <span class="ptier">Pro</span>
+                <div class="plbl">Perimenopause<br/>Foundations</div>
+              </div>
+              <div class="pmeta">
+                <div class="psum">Build the core habits that carry through peri — sleep, strength, mood, symptoms.</div>
+                <div class="ptags"><span class="ptag">perimenopause</span><span class="ptag">hormones</span></div>
+              </div>
+            </div>
+            <div class="pgcard">
+              <div class="part stress-pg">
+                <span class="pday">5 days</span>
+                <span class="ptier">Free</span>
+                <div class="plbl">Nervous<br/>System Reset</div>
+              </div>
+              <div class="pmeta">
+                <div class="psum">Short breathwork + grounding videos for stress, calm and anxiety.</div>
+                <div class="ptags"><span class="ptag">stress</span><span class="ptag">calm</span><span class="ptag">anxiety</span></div>
+              </div>
+            </div>
+            <div class="pgcard">
+              <div class="part meno-pg">
+                <span class="pday">5 days</span>
+                <span class="ptier">Plus</span>
+                <div class="plbl">Menopause<br/>Strength & Ease</div>
+              </div>
+              <div class="pmeta">
+                <div class="psum">Calmer energy, sleep support, joint-friendly strength for menopause.</div>
+                <div class="ptags"><span class="ptag">menopause</span><span class="ptag">sleep</span><span class="ptag">strength</span></div>
+              </div>
+            </div>
+            <div class="pgcard">
+              <div class="part pp-pg">
+                <span class="pday">5 days</span>
+                <span class="ptier">Free</span>
+                <div class="plbl">Postpartum<br/>Gentle Return</div>
+              </div>
+              <div class="pmeta">
+                <div class="psum">Breath, pelvic floor, recovery movement, practical read-ups.</div>
+                <div class="ptags"><span class="ptag">postpartum</span><span class="ptag">recovery</span></div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Saved / History strip -->
+          <div class="savebox">
+            <div class="savecol bm">
+              <div class="sti">🔖</div>
+              <div class="sto">
+                <div class="sb">Saved · 14</div>
+                <div class="ss">Practices, articles, events</div>
+              </div>
+            </div>
+            <div class="savecol hist">
+              <div class="sti">⟲</div>
+              <div class="sto">
+                <div class="sb">History · 28</div>
+                <div class="ss">Last: Grounding Calm</div>
+              </div>
+            </div>
+          </div>
+
+          <div style="height:160px"></div>
+
+        </div><!-- /.scroll -->
+
+        <!-- BOTTOM NAV -->
+        <div class="bnav">
+          <div class="bnav-inner">
+            <button class="bn"><span class="bni"><svg viewBox="0 0 24 24"><path d="M3 12l9-8 9 8"/><path d="M5 10v10h14V10"/></svg></span><span class="bnl">Today</span></button>
+            <button class="bn"><span class="bni"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8"/><path d="M12 8v4l3 2"/></svg></span><span class="bnl">Lifestyle</span></button>
+            <button class="bn fab"><span class="bni"><svg viewBox="0 0 24 24"><path d="M21 11.5a8.5 8.5 0 1 1-17 0 8.5 8.5 0 0 1 17 0z"/><path d="M8 12h8M8 8h8M8 16h5"/></svg></span><span class="bnl">Jess</span></button>
+            <button class="bn active"><span class="bni"><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg></span><span class="bnl">Explore</span></button>
+            <button class="bn" onclick="openSheet('menu')"><span class="bni"><svg viewBox="0 0 24 24"><path d="M4 6h16M4 12h16M4 18h16"/></svg></span><span class="bnl">Menu</span></button>
+          </div>
+        </div>
+
+        <!-- SCRIM -->
+        <div class="sheet-scrim" id="scrim" onclick="closeAll()"></div>
+
+        <!-- FILTER SHEET -->
+        <div class="sheet" id="sheet-filter">
+          <div class="sheet-handle"></div>
+          <div class="sheet-head">
+            <div>
+              <div class="sheet-title">Filters</div>
+              <div class="sheet-sub">Narrow down what shows up here</div>
+            </div>
+            <button class="sheet-close" onclick="closeAll()">✕</button>
+          </div>
+          <div class="sheet-body">
+            <div class="qgroup">
+              <div class="qtitle">I want to feel</div>
+              <div class="qrow">
+                <button class="qchip on">Calmer</button>
+                <button class="qchip">Energised</button>
+                <button class="qchip">Grounded</button>
+                <button class="qchip">Stronger</button>
+                <button class="qchip">Rested</button>
+                <button class="qchip">Connected</button>
+              </div>
+            </div>
+            <div class="qgroup">
+              <div class="qtitle">Category</div>
+              <div class="qrow">
+                <button class="qchip on">Breathwork</button>
+                <button class="qchip">Meditation</button>
+                <button class="qchip">Workout</button>
+                <button class="qchip">Mobility</button>
+                <button class="qchip">Guide</button>
+                <button class="qchip">Story</button>
+                <button class="qchip">Article</button>
+              </div>
+            </div>
+            <div class="qgroup">
+              <div class="qtitle">Duration</div>
+              <div class="qrow">
+                <button class="qchip on">&lt; 5 min</button>
+                <button class="qchip">5–10 min</button>
+                <button class="qchip">10–20 min</button>
+                <button class="qchip">20+ min</button>
+              </div>
+            </div>
+            <div class="qgroup">
+              <div class="qtitle">Level</div>
+              <div class="qrow">
+                <button class="qchip on">Beginner</button>
+                <button class="qchip">Intermediate</button>
+                <button class="qchip">Advanced</button>
+              </div>
+            </div>
+            <div class="qgroup">
+              <div class="qtitle">Cycle phase</div>
+              <div class="qrow">
+                <button class="qchip">Menstrual</button>
+                <button class="qchip">Follicular</button>
+                <button class="qchip on">Ovulatory</button>
+                <button class="qchip">Luteal</button>
+                <button class="qchip">Any</button>
+              </div>
+            </div>
+            <div class="qgroup">
+              <div class="qtitle">Access</div>
+              <div class="qrow">
+                <button class="qchip on">Free</button>
+                <button class="qchip">Plus</button>
+                <button class="qchip">Pro</button>
+              </div>
+            </div>
+            <button class="ctabtn">Show 34 matches</button>
+            <button class="ctabtn soft">Reset all</button>
+          </div>
+        </div>
+
+        <!-- PLAYER SHEET (quick content preview) -->
+        <div class="sheet" id="sheet-player">
+          <div class="sheet-handle"></div>
+          <div class="sheet-head">
+            <div>
+              <div class="sheet-title">Preview</div>
+              <div class="sheet-sub">ContentItems record · free tier</div>
+            </div>
+            <button class="sheet-close" onclick="closeAll()">✕</button>
+          </div>
+          <div class="sheet-body">
+            <div class="player-hero">
+              <div class="ph-type">Featured Program · 5 days</div>
+              <div class="ph-title">Sleep Reset Blueprint</div>
+              <div class="ph-sum">A calmer 5-day sleep program built from breathwork, wind-down audio, bedtime videos, and short sleep education cards.</div>
+              <div class="ph-meta">
+                <span class="ph-pill">🌙 Sleep · stress · recovery</span>
+                <span class="ph-pill">Beginner</span>
+                <span class="ph-pill">~12 min/day</span>
+              </div>
+              <div class="ph-cta">
+                <button class="phbtn">▶ Start day 1</button>
+                <button class="phbtn ghost">＋ Save</button>
+              </div>
+            </div>
+            <div class="qgroup">
+              <div class="qtitle">What's inside</div>
+              <div style="font-size:12px;color:var(--ink-soft);line-height:1.6">
+                <div>• Day 1 — Grounding Calm · 6 min meditation</div>
+                <div>• Day 2 — Alternate Nostril Breathing · 6 min</div>
+                <div>• Day 3 — Wind-down stretches · 10 min</div>
+                <div>• Day 4 — Sleep audio story</div>
+                <div>• Day 5 — Short read: sleep + cycle</div>
+              </div>
+            </div>
+            <div class="qgroup">
+              <div class="qtitle">Best for</div>
+              <div class="qrow">
+                <button class="qchip">Sleep</button>
+                <button class="qchip">Stress</button>
+                <button class="qchip">Recovery</button>
+                <button class="qchip">Any phase</button>
+              </div>
+            </div>
+            <div class="qgroup">
+              <div class="qtitle">Rate this</div>
+              <div style="font-size:24px;color:var(--amber);letter-spacing:2px">☆ ☆ ☆ ☆ ☆</div>
+              <div style="font-size:11px;color:var(--ink-soft);margin-top:6px">Writes to <code>ContentRatings</code>.</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- MENU SHEET -->
+        <div class="sheet" id="sheet-menu">
+          <div class="sheet-handle"></div>
+          <div class="sheet-head">
+            <div>
+              <div class="sheet-title">Menu</div>
+              <div class="sheet-sub">Everything in FemWell</div>
+            </div>
+            <button class="sheet-close" onclick="closeAll()">✕</button>
+          </div>
+          <div class="sheet-body">
+            <div class="menu-grid">
+              <button class="mbtn"><span class="mi" style="background:linear-gradient(135deg,#D45E52,#B0483E)">☀</span><span class="ml">Today</span></button>
+              <button class="mbtn"><span class="mi" style="background:linear-gradient(135deg,#7FA68A,#3B6B4E)">🥗</span><span class="ml">Nutrition</span></button>
+              <button class="mbtn"><span class="mi" style="background:linear-gradient(135deg,#8E7EB8,#5E4E8A)">📚</span><span class="ml">Programs</span></button>
+              <button class="mbtn"><span class="mi" style="background:linear-gradient(135deg,#C98A6B,#D99960)">📅</span><span class="ml">Planner</span></button>
+              <button class="mbtn"><span class="mi" style="background:linear-gradient(135deg,#4A2A3A,#6B3E54)">🧘</span><span class="ml">Sessions</span></button>
+              <button class="mbtn"><span class="mi" style="background:linear-gradient(135deg,#6DB5E0,#4E8FB8)">🧭</span><span class="ml">Explore</span></button>
+              <button class="mbtn"><span class="mi" style="background:linear-gradient(135deg,#F2B774,#D99960)">🌿</span><span class="ml">Lifestyle</span></button>
+              <button class="mbtn"><span class="mi" style="background:linear-gradient(135deg,#E67F73,#D45E52)">🫶</span><span class="ml">Community</span></button>
+              <button class="mbtn"><span class="mi" style="background:linear-gradient(135deg,#A896D0,#8E7EB8)">📓</span><span class="ml">Journal</span></button>
+              <button class="mbtn"><span class="mi" style="background:linear-gradient(135deg,#B0483E,#8A3530)">📊</span><span class="ml">Pulse</span></button>
+              <button class="mbtn"><span class="mi" style="background:linear-gradient(135deg,#F5C7BE,#E89888)">✨</span><span class="ml">Skin & Hair</span></button>
+              <button class="mbtn"><span class="mi" style="background:linear-gradient(135deg,#7A4A5E,#4A2A3A)">🌸</span><span class="ml">Life Stage</span></button>
+            </div>
+          </div>
+        </div>
+
+      </div></div><!-- /.phone -->
+    </div>
+
+    <!-- SIDE COPY -->
+    <div class="side">
+      <h1>Discovery, <span class="hl">tuned to you.</span></h1>
+      <p class="lede">Explore replaces the current tab end-to-end. Matches the live structure — DISCOVERY header, need + format pill rows, featured hero, Quick sessions ≤ 5 min, real YouTube videos, dedicated Audio sessions, events, a Read &amp; listen shelf of articles + stories, and the Go deeper Programs shelf. Every shelf reads from live FemWell entities. Horoscopes deliberately stay on Lifestyle — no duplication here.</p>
+
+      <div class="card">
+        <h3>Wired to real entities</h3>
+        <p>Every shelf reads from your live FemWell data — titles, durations, levels, tiers, dates, locations all true.</p>
+        <div style="margin-top:10px">
+          <span class="entity-tag">ContentItems</span>
+          <span class="entity-tag">LifestyleItems</span>
+          <span class="entity-tag">Programs</span>
+          <span class="entity-tag">EventsItems</span>
+          <span class="entity-tag">ContentBookmarks</span>
+          <span class="entity-tag">ContentHistory</span>
+          <span class="entity-tag">ContentRatings</span>
+          <span class="entity-tag">SavedItems</span>
+          <span class="entity-tag">UserPrograms</span>
+          <span class="entity-tag">WellnessSessions</span>
+          <span class="entity-tag">StoryItem</span>
+          <span class="entity-tag">StoryPack</span>
+          <span class="entity-tag">DailyStory</span>
+        </div>
+      </div>
+
+      <div class="card">
+        <h3>What the phone shows (top → bottom)</h3>
+        <ul>
+          <li><b>DISCOVERY eyebrow + search</b> — matches the live "Discovery · Sessions, videos & guides" header, queries <span class="kbd">ContentItems.title / tags / summary</span>.</li>
+          <li><b>Need pill row</b> — Sleep · PMS · Calm · Energy · Mobility · Menopause · Postpartum · Stress + phase chip.</li>
+          <li><b>Format pill row</b> — All · Saved · Videos · Audio · Fitness · Mobility · Guides · Filters.</li>
+          <li><b>Featured hero</b> — Sleep Reset Blueprint from Programs (real record, <code>is_featured:true</code>).</li>
+          <li><b>Quick sessions ≤ 5 min</b> — 7 pills: Downshift, 3-Min Space, Anxiety Reset, Focus, Box, 4-7-8, Energising.</li>
+          <li><b>YouTube Videos</b> — real <span class="kbd">LifestyleItems.media_type='VIDEO'</span>, provider YouTube, actual thumbnails: Sleep Reset, Calm &amp; Anxiety, PMS, Postpartum, Menopause, Stress, Beginner Fitness, Period Pain.</li>
+          <li><b>Audio Sessions</b> — 8 cards with custom SVG ring/wave visuals: Downshift · 3-Min Space · Alternate Nostril · 4-7-8 · Coherent · Body Scan · PMR · Sleep Deep. From <span class="kbd">ContentItems.content_type IN (BREATHWORK, MEDITATION)</span>.</li>
+          <li><b>Events near you</b> — next 5 real EventsItems (Leeds, Bristol, Manchester, Online) with date + city + price.</li>
+          <li><b>Read &amp; listen</b> — articles + story episodes in one scannable stack. Reads from <span class="kbd">StoryItem</span>, <span class="kbd">DailyStory</span>, and article content. Horoscopes intentionally omitted — they live on Lifestyle.</li>
+          <li><b>Go deeper</b> — 8 real Programs (Sleep, PMS, PCOS, PMDD, Peri, Stress, Menopause, Postpartum).</li>
+          <li><b>Saved + History</b> — ContentBookmarks count + last ContentHistory entry at a glance.</li>
+        </ul>
+      </div>
+
+      <div class="card">
+        <h3>Filters that actually work</h3>
+        <div class="keybox">
+          <div class="keychip"><b>Feel</b>Calmer · Energised · Grounded · Stronger · Rested · Connected → maps to goal_tags.</div>
+          <div class="keychip"><b>Category</b>ContentItems.content_type enum (BREATHWORK · MEDITATION · WORKOUT · MOBILITY · GUIDE · story · article).</div>
+          <div class="keychip"><b>Duration</b>Filters on <span class="kbd">duration_minutes</span>.</div>
+          <div class="keychip"><b>Level</b>Beginner · Intermediate · Advanced.</div>
+          <div class="keychip"><b>Phase</b>Auto-selects current ovulatory, overridable. Reads <span class="kbd">cycle_phases[]</span>.</div>
+          <div class="keychip"><b>Access</b>Free · Plus · Pro — respects the user's Subscription + Entitlements.</div>
+        </div>
+      </div>
+
+      <div class="card">
+        <h3>Preview sheet</h3>
+        <p>Tapping any card opens a lightweight preview with the full summary, "what's inside," best-for tags and a star-rating tile that writes to <span class="kbd">ContentRatings</span>. ▶ Start day 1 deep-links to the player; ＋ Save writes <span class="kbd">ContentBookmarks</span>.</p>
+      </div>
+
+      <div class="card">
+        <h3>Consistent with Today · Lifestyle · Nutrition · Pulse</h3>
+        <ul>
+          <li>Same rose/plum palette, Fraunces + Inter, radial-gradient backdrop.</li>
+          <li>Bottom nav: Today · Lifestyle · Jess · <b>Explore (active)</b> · Menu.</li>
+          <li>Menu sheet reveals the full 12-page inventory.</li>
+          <li>Replaces the current Explore tab end-to-end. No accumulation.</li>
+        </ul>
+      </div>
+
+      <div class="card">
+        <h3>Ready when you say go</h3>
+        <p>Say <span class="kbd">ship explore to base44</span> and I'll wire this design into the live app — same build-verify-publish loop we used for Today, Lifestyle, Nutrition and Pulse.</p>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<script>
+function openSheet(id){
+  document.querySelectorAll('.sheet.on').forEach(s=>s.classList.remove('on'));
+  document.getElementById('scrim').classList.add('on');
+  const s = document.getElementById('sheet-'+id);
+  if(s) s.classList.add('on');
+}
+function closeAll(){
+  document.querySelectorAll('.sheet.on').forEach(s=>s.classList.remove('on'));
+  document.getElementById('scrim').classList.remove('on');
+}
+document.querySelectorAll('.qgroup .qrow').forEach(row=>{
+  row.querySelectorAll('.qchip').forEach(c=>{
+    c.addEventListener('click', ()=>{
+      row.querySelectorAll('.qchip').forEach(x=>x.classList.remove('on'));
+      c.classList.add('on');
+    });
+  });
+});
+document.querySelectorAll('.catstrip').forEach(row=>{
+  row.querySelectorAll('.cchip').forEach(c=>{
+    c.addEventListener('click', ev=>{
+      if(c.textContent.includes('Filters')) return;
+      row.querySelectorAll('.cchip').forEach(x=>x.classList.remove('on'));
+      c.classList.add('on');
+    });
+  });
+});
+document.querySelectorAll('.head-tabs .tab').forEach(t=>{
+  t.addEventListener('click', ()=>{
+    document.querySelectorAll('.head-tabs .tab').forEach(x=>x.classList.remove('on'));
+    t.classList.add('on');
+  });
+});
+</script>
+</body>
+</html>

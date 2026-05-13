@@ -1,0 +1,821 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>FemWell · Living Wisdom — Echo Wall × Jess flywheel</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,wght@0,400;0,500;0,600;1,400;1,500&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --cream:#FFFAF5; --cream-2:#FFF5EC; --cream-3:#F0E5D8; --cream-4:#EBDFCF;
+    --plum:#4A2A3A; --plum-2:#6B4559; --plum-3:#8A7584; --plum-deep:#32202A;
+    --rose-400:#E67F73; --rose-500:#D45E52; --period:#B84A41;
+    --follicular:#E67F73; --ovulatory:#F2A99A; --luteal:#8A5F74;
+    --gold:#C9A95C; --teal:#5F8A85; --moss:#7D8668; --lav:#B9A4C9;
+    --ink:#2b1e16; --ink-soft:#4a3a30; --ink-mute:#8a7768;
+    --night:#1a1522; --star:#f5e6d3;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:'Inter',-apple-system,BlinkMacSystemFont,sans-serif;background:#F4EDE4;color:var(--plum);padding:44px 20px 80px}
+  .wrap{max-width:1780px;margin:0 auto}
+  .header{max-width:980px;margin:0 auto 28px;text-align:center}
+  .eyebrow{font-size:11px;letter-spacing:.18em;text-transform:uppercase;color:var(--plum-3);font-weight:600}
+  h1.title{font-family:'Fraunces',serif;font-size:42px;font-weight:500;margin:10px 0 12px;letter-spacing:-0.015em}
+  h1.title em{font-style:italic;color:var(--plum-2);font-weight:400}
+  .lede{font-size:15.5px;color:var(--plum-2);max-width:800px;margin:0 auto;line-height:1.62}
+  .lede strong{color:var(--plum);font-weight:600}
+
+  .principle-strip{max-width:1320px;margin:32px auto 40px;display:grid;grid-template-columns:repeat(4,1fr);gap:14px}
+  @media(max-width:900px){.principle-strip{grid-template-columns:1fr 1fr}}
+  .ps-card{background:#FFF;border:1px solid rgba(74,42,58,0.08);border-radius:16px;padding:18px 20px}
+  .ps-eye{font-size:9.5px;letter-spacing:.22em;text-transform:uppercase;color:var(--plum-3);font-weight:700}
+  .ps-title{font-family:'Fraunces',serif;font-size:18px;color:var(--plum);font-weight:500;margin:8px 0 6px;letter-spacing:-0.01em}
+  .ps-body{font-size:12.5px;color:var(--plum-2);line-height:1.55}
+  .ps-body strong{color:var(--plum);font-weight:600}
+
+  .toc{max-width:1180px;margin:0 auto 36px;display:flex;gap:10px;justify-content:center;flex-wrap:wrap}
+  .toc a{font-size:11px;padding:7px 14px;border-radius:16px;background:#FFF;border:1px solid rgba(74,42,58,.1);color:var(--plum);font-weight:600;text-decoration:none;letter-spacing:.06em}
+  .toc a:hover{background:var(--plum);color:var(--cream)}
+
+  .gallery{display:grid;grid-template-columns:repeat(4,1fr);gap:22px;max-width:1780px;margin:0 auto 60px}
+  @media(max-width:1560px){.gallery{grid-template-columns:1fr 1fr}}
+  @media(max-width:860px){.gallery{grid-template-columns:1fr}}
+  .phone-col{display:flex;flex-direction:column;align-items:center}
+  .phone-label{margin-bottom:14px;text-align:center;max-width:400px}
+  .pl-eye{font-size:10px;letter-spacing:.2em;text-transform:uppercase;color:var(--plum-3);font-weight:700}
+  .pl-title{font-family:'Fraunces',serif;font-size:22px;color:var(--plum);font-weight:500;margin-top:4px;letter-spacing:-0.01em}
+  .pl-title em{font-style:italic;color:var(--plum-2)}
+  .pl-sub{font-size:12.5px;color:var(--plum-2);margin-top:4px;line-height:1.5}
+
+  .phone{width:400px;background:#111;border-radius:44px;padding:9px;box-shadow:0 40px 80px rgba(74,42,58,.22),0 0 0 1px rgba(0,0,0,.08)}
+  .phone-inner{background:var(--cream);border-radius:36px;overflow:hidden;position:relative;height:1580px;display:flex;flex-direction:column}
+  .notch{position:absolute;top:0;left:50%;transform:translateX(-50%);width:124px;height:26px;background:#111;border-radius:0 0 16px 16px;z-index:30}
+  .scroll{overflow-y:auto;flex:1;padding:40px 18px 120px;scrollbar-width:none}
+  .scroll::-webkit-scrollbar{display:none}
+
+  /* Status bar */
+  .sbar{position:absolute;top:14px;left:0;right:0;display:flex;justify-content:space-between;padding:0 28px;font-size:11px;color:var(--plum);font-weight:600;z-index:20;letter-spacing:.04em}
+
+  /* Head row */
+  .ph-head{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:4px}
+  .ph-eye{font-size:10px;letter-spacing:.18em;text-transform:uppercase;color:var(--plum-3);font-weight:600}
+  h1.ph-title{font-family:'Fraunces',serif;font-size:30px;font-weight:500;margin:6px 0 4px;letter-spacing:-0.015em;color:var(--plum);line-height:1.08}
+  .ph-sub{font-size:12.5px;color:var(--plum-2);line-height:1.5}
+  .ph-sub strong{color:var(--plum);font-weight:600}
+
+  .phase-chip{font-size:9.5px;letter-spacing:.16em;text-transform:uppercase;color:var(--luteal);font-weight:700;padding:4px 10px;border-radius:12px;background:rgba(138,95,116,.16);display:inline-flex;align-items:center;gap:5px;white-space:nowrap}
+  .phase-chip .dot{width:6px;height:6px;border-radius:50%;background:var(--luteal)}
+
+  /* Journal compose preview */
+  .compose{background:#FFF;border:1px solid rgba(74,42,58,.08);border-radius:16px;padding:16px 16px 14px;margin-top:18px}
+  .comp-top{display:flex;align-items:center;gap:10px;font-size:10.5px;color:var(--plum-3);letter-spacing:.14em;text-transform:uppercase;font-weight:700}
+  .comp-top .mode{color:var(--plum);background:rgba(74,42,58,.07);padding:4px 10px;border-radius:10px}
+  .comp-text{margin-top:10px;font-family:'Fraunces',serif;font-size:17px;line-height:1.45;color:var(--plum-2)}
+  .comp-text .cursor{display:inline-block;width:2px;height:19px;background:var(--plum);vertical-align:middle;margin-left:2px;animation:blink 1.1s infinite}
+  @keyframes blink{50%{opacity:0}}
+  .comp-foot{display:flex;justify-content:space-between;align-items:center;margin-top:12px;font-size:10.5px;color:var(--plum-3);font-weight:600}
+  .comp-foot .save{color:var(--plum);background:rgba(74,42,58,.07);padding:5px 12px;border-radius:10px;letter-spacing:.06em;text-transform:uppercase}
+
+  /* Echo wisdom card — the star of the show */
+  .wisdom{position:relative;margin-top:20px;padding:22px 22px 18px;background:linear-gradient(155deg,rgba(245,238,247,.92),rgba(236,220,228,.72));border:1px solid rgba(138,95,116,.2);border-radius:20px;overflow:hidden}
+  .wisdom::before{content:'';position:absolute;inset:0;pointer-events:none;background:radial-gradient(circle at 85% 15%,rgba(201,169,92,.22),transparent 45%)}
+  .wisdom::after{content:'';position:absolute;left:0;right:0;bottom:0;height:36px;background:linear-gradient(180deg,transparent,rgba(74,42,58,.04));pointer-events:none}
+  .w-eyebrow{font-size:9.5px;letter-spacing:.22em;text-transform:uppercase;color:var(--luteal);font-weight:700;display:flex;align-items:center;gap:8px;position:relative;z-index:1}
+  .w-eyebrow .echo-glyph{width:16px;height:16px;border-radius:50%;background:radial-gradient(circle,var(--luteal),transparent 70%);display:grid;place-items:center}
+  .w-eyebrow .echo-glyph::after{content:'';width:6px;height:6px;border-radius:50%;border:1px solid var(--luteal)}
+  .w-text{font-family:'Fraunces',serif;font-style:italic;font-size:21px;color:var(--plum);line-height:1.38;font-weight:500;margin:14px 0 16px;position:relative;z-index:1;letter-spacing:-0.005em}
+  .w-meta{display:flex;justify-content:space-between;align-items:center;font-size:10.5px;color:var(--plum-3);position:relative;z-index:1}
+  .w-meta .m-left{display:flex;gap:12px;align-items:center}
+  .w-meta .m-left .pill{padding:3px 9px;border-radius:10px;background:rgba(138,95,116,.12);color:var(--plum);font-weight:600;letter-spacing:.04em}
+  .w-meta .m-right{display:flex;gap:14px;align-items:center;font-weight:600}
+  .w-meta .hold{display:inline-flex;align-items:center;gap:5px;color:var(--plum)}
+  .w-meta .hold::before{content:'';width:9px;height:9px;border-radius:50%;background:var(--luteal);opacity:.7}
+  .w-meta .age{color:var(--plum-3)}
+  .w-cta-row{margin-top:14px;display:flex;gap:8px;position:relative;z-index:1;flex-wrap:wrap}
+  .w-cta{font-size:11px;padding:8px 12px;border-radius:12px;background:rgba(255,255,255,.65);border:1px solid rgba(138,95,116,.18);color:var(--plum);font-weight:600;letter-spacing:.04em;display:inline-flex;align-items:center;gap:5px}
+  .w-cta.primary{background:rgba(138,95,116,.16)}
+  .w-footnote{margin-top:16px;font-size:11px;color:var(--plum-3);line-height:1.5;padding-top:12px;border-top:1px dashed rgba(138,95,116,.2);position:relative;z-index:1}
+  .w-footnote em{font-style:italic;color:var(--plum-2)}
+
+  /* Softer "not advice" line */
+  .not-advice{margin-top:12px;font-size:10.5px;color:var(--plum-3);letter-spacing:.03em;text-align:center;font-style:italic}
+
+  /* Phase ribbon */
+  .phase-ribbon{margin-top:22px;background:#FFF;border:1px solid rgba(74,42,58,.08);border-radius:14px;padding:14px 16px}
+  .pr-eye{font-size:9.5px;letter-spacing:.2em;text-transform:uppercase;color:var(--plum-3);font-weight:700;margin-bottom:8px}
+  .pr-row{display:flex;gap:6px;height:34px;align-items:stretch}
+  .pr-seg{flex:1;border-radius:6px;display:flex;align-items:flex-end;padding:4px 6px;font-size:8.5px;color:#FFF;font-weight:700;letter-spacing:.04em;opacity:.78}
+  .pr-seg.active{opacity:1;box-shadow:0 0 0 2px rgba(255,250,245,.95),0 0 0 3px var(--plum)}
+  .pr-day{font-size:10.5px;color:var(--plum-2);margin-top:6px;text-align:center;font-weight:600}
+
+  /* Today morning card (P2) */
+  .today-hero{margin-top:16px;padding:24px 22px 22px;background:linear-gradient(170deg,#FCEFE4 0%,#E9D3E0 55%,#CDB9D0 100%);border-radius:22px;border:1px solid rgba(74,42,58,.06);position:relative;overflow:hidden}
+  .today-hero::before{content:'';position:absolute;top:-20px;right:-16px;width:160px;height:160px;background:radial-gradient(circle,rgba(255,255,255,.35),transparent 60%);border-radius:50%}
+  .th-eye{font-size:9.5px;letter-spacing:.22em;text-transform:uppercase;color:var(--plum-2);font-weight:700;display:flex;align-items:center;gap:8px;position:relative;z-index:1}
+  .th-jess{width:18px;height:18px;border-radius:50%;background:linear-gradient(135deg,var(--gold),var(--rose-400));display:grid;place-items:center;color:#FFF5EC;font-family:'Fraunces',serif;font-size:10px;font-weight:500}
+  .th-quote{font-family:'Fraunces',serif;font-style:italic;font-size:22px;color:var(--plum);line-height:1.38;font-weight:500;margin:14px 0 16px;position:relative;z-index:1}
+  .th-from{font-size:11.5px;color:var(--plum-2);position:relative;z-index:1;line-height:1.5}
+  .th-from strong{color:var(--plum);font-weight:600}
+  .th-row{margin-top:16px;display:flex;gap:8px;position:relative;z-index:1}
+  .th-cta{font-size:11px;padding:9px 14px;border-radius:12px;background:var(--plum);color:var(--cream);font-weight:700;letter-spacing:.04em}
+  .th-cta.ghost{background:rgba(255,255,255,.6);color:var(--plum)}
+
+  /* Section heading */
+  .sect-head{margin:22px 0 8px;font-family:'Fraunces',serif;font-size:17px;color:var(--plum);font-weight:500;display:flex;justify-content:space-between;align-items:baseline}
+  .sect-head .see-all{font-size:10.5px;color:var(--plum-3);font-weight:600;letter-spacing:.04em;text-transform:uppercase;font-family:'Inter',sans-serif}
+
+  /* Jess noticed card — reused pattern */
+  .noticed{background:#FFF;border:1px solid rgba(74,42,58,.08);border-radius:14px;padding:14px 16px;margin-top:14px;display:flex;gap:12px}
+  .noticed .n-glyph{width:22px;height:22px;border-radius:50%;background:linear-gradient(135deg,var(--gold),var(--rose-400));color:#FFF5EC;display:grid;place-items:center;font-family:'Fraunces',serif;font-size:11px;font-weight:500;flex-shrink:0;margin-top:2px}
+  .noticed .n-body{font-size:12.5px;color:var(--plum-2);line-height:1.5}
+  .noticed .n-body strong{color:var(--plum);font-weight:600}
+  .noticed .n-eye{font-size:9.5px;letter-spacing:.18em;text-transform:uppercase;color:var(--plum-3);font-weight:700;margin-bottom:4px}
+
+  /* Mini Echo list */
+  .mini-echoes{margin-top:14px;display:flex;flex-direction:column;gap:10px}
+  .mini-echo{background:rgba(255,255,255,.6);border:1px solid rgba(138,95,116,.16);border-radius:14px;padding:14px 16px;display:flex;flex-direction:column;gap:6px;position:relative}
+  .me-eye{font-size:9px;letter-spacing:.18em;text-transform:uppercase;color:var(--plum-3);font-weight:700;display:flex;justify-content:space-between}
+  .me-eye .faded{color:var(--plum-3);font-weight:500}
+  .me-text{font-family:'Fraunces',serif;font-style:italic;font-size:15px;color:var(--plum);line-height:1.4;font-weight:500}
+  .me-foot{display:flex;justify-content:space-between;align-items:center;font-size:10px;color:var(--plum-3);font-weight:600}
+  .me-foot .h{color:var(--plum)}
+  .mini-echo.dim{opacity:.75}
+  .mini-echo.dim .me-text{font-size:14.5px}
+
+  /* Bottom nav */
+  .bnav{position:absolute;bottom:0;left:0;right:0;background:rgba(255,250,245,.95);backdrop-filter:blur(20px);border-top:1px solid rgba(74,42,58,.08);padding:10px 20px 30px;display:flex;justify-content:space-around;align-items:flex-start;z-index:40}
+  .bnav-item{display:flex;flex-direction:column;align-items:center;gap:3px;font-size:10px;color:var(--plum-3);font-weight:600;letter-spacing:.04em}
+  .bnav-item .dot{width:6px;height:6px;border-radius:50%;background:var(--plum-3);opacity:.3}
+  .bnav-item.active{color:var(--plum)}
+  .bnav-item.active .dot{background:var(--plum);opacity:1}
+  .bnav-fab{width:44px;height:44px;border-radius:50%;background:linear-gradient(135deg,var(--gold),var(--rose-400));color:#FFF5EC;display:grid;place-items:center;font-family:'Fraunces',serif;font-size:17px;font-weight:500;box-shadow:0 6px 16px rgba(74,42,58,.25);margin-top:-10px}
+
+  /* ========= P3 Jess curation rules ========= */
+  .rule-card{background:#FFF;border:1px solid rgba(74,42,58,.08);border-radius:16px;padding:16px 18px;margin-top:14px}
+  .rc-title{font-family:'Fraunces',serif;font-size:16.5px;color:var(--plum);font-weight:500;letter-spacing:-0.005em}
+  .rc-why{font-size:12px;color:var(--plum-2);margin-top:6px;line-height:1.55}
+  .rc-why strong{color:var(--plum);font-weight:600}
+  .rc-row{margin-top:12px;display:flex;flex-wrap:wrap;gap:5px}
+  .rc-chip{font-size:10px;padding:4px 9px;border-radius:10px;background:rgba(74,42,58,.06);color:var(--plum-2);font-weight:600;letter-spacing:.04em}
+  .rc-chip.ok{background:rgba(95,138,133,.16);color:var(--teal)}
+  .rc-chip.off{background:rgba(184,74,65,.1);color:var(--period)}
+  .rc-chip.strong{background:rgba(138,95,116,.16);color:var(--luteal)}
+
+  .never-repeat{margin-top:18px;background:linear-gradient(155deg,#2E1F2A 0%,#1E1320 100%);color:var(--star);border-radius:18px;padding:18px 20px 16px;border:1px solid rgba(201,169,92,.2)}
+  .nr-eye{font-size:9.5px;letter-spacing:.22em;text-transform:uppercase;color:rgba(201,169,92,.85);font-weight:700}
+  .nr-title{font-family:'Fraunces',serif;font-size:19px;color:var(--cream);font-weight:500;margin:8px 0 6px;letter-spacing:-0.01em}
+  .nr-body{font-size:12.5px;color:rgba(245,230,211,.78);line-height:1.55}
+  .nr-body strong{color:var(--cream);font-weight:600}
+  .nr-spec{margin-top:14px;background:rgba(255,255,255,.06);border-radius:12px;padding:10px 14px;font-family:ui-monospace,Menlo,monospace;font-size:10.5px;color:rgba(245,230,211,.85);line-height:1.7;letter-spacing:.02em}
+
+  /* ========= P4 Wisdom index ========= */
+  .index-head{background:linear-gradient(170deg,#FCEFE4,#E9D3E0);border-radius:20px;padding:22px;margin-top:4px}
+  .ih-eye{font-size:10px;letter-spacing:.22em;text-transform:uppercase;color:var(--plum-3);font-weight:700}
+  .ih-title{font-family:'Fraunces',serif;font-size:26px;color:var(--plum);font-weight:500;margin:8px 0 6px;letter-spacing:-0.015em}
+  .ih-sub{font-size:12.5px;color:var(--plum-2);line-height:1.55}
+  .ih-stats{margin-top:14px;display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px}
+  .ih-stat{background:rgba(255,255,255,.6);border-radius:12px;padding:10px 12px;text-align:center}
+  .ih-num{font-family:'Fraunces',serif;font-size:22px;color:var(--plum);font-weight:500;letter-spacing:-0.01em}
+  .ih-lab{font-size:9.5px;color:var(--plum-3);letter-spacing:.14em;text-transform:uppercase;font-weight:700;margin-top:2px}
+
+  .cluster-grid{margin-top:18px;display:grid;grid-template-columns:1fr 1fr;gap:10px}
+  .cluster{background:#FFF;border:1px solid rgba(74,42,58,.08);border-radius:14px;padding:14px 14px 12px;position:relative;overflow:hidden}
+  .cl-phase{font-size:9.5px;letter-spacing:.16em;text-transform:uppercase;font-weight:700;display:inline-flex;align-items:center;gap:5px;padding:4px 8px;border-radius:10px}
+  .cl-phase .dot{width:6px;height:6px;border-radius:50%}
+  .cl-phase.lut{background:rgba(138,95,116,.14);color:var(--luteal)}
+  .cl-phase.lut .dot{background:var(--luteal)}
+  .cl-phase.fol{background:rgba(230,127,115,.14);color:var(--rose-500)}
+  .cl-phase.fol .dot{background:var(--rose-400)}
+  .cl-phase.ovu{background:rgba(242,169,154,.2);color:#C96F5C}
+  .cl-phase.ovu .dot{background:var(--ovulatory)}
+  .cl-phase.per{background:rgba(184,74,65,.12);color:var(--period)}
+  .cl-phase.per .dot{background:var(--period)}
+  .cl-topic{font-family:'Fraunces',serif;font-size:15px;color:var(--plum);font-weight:500;margin:8px 0 4px;letter-spacing:-0.005em}
+  .cl-count{font-size:10.5px;color:var(--plum-3);font-weight:600}
+  .cl-bar{margin-top:10px;height:5px;background:rgba(74,42,58,.08);border-radius:3px;overflow:hidden}
+  .cl-bar .fill{height:100%;background:linear-gradient(90deg,var(--gold),var(--rose-400));border-radius:3px}
+
+  .surface-log{margin-top:20px;background:#FFF;border:1px solid rgba(74,42,58,.08);border-radius:16px;padding:16px 18px}
+  .sl-title{font-family:'Fraunces',serif;font-size:17px;color:var(--plum);font-weight:500;letter-spacing:-0.005em}
+  .sl-sub{font-size:11.5px;color:var(--plum-3);margin-top:4px;line-height:1.5}
+  .sl-item{margin-top:12px;padding-top:12px;border-top:1px dashed rgba(74,42,58,.1);display:flex;gap:10px}
+  .sl-when{font-size:9.5px;color:var(--plum-3);font-weight:700;letter-spacing:.1em;text-transform:uppercase;width:60px;flex-shrink:0;padding-top:2px}
+  .sl-body{flex:1}
+  .sl-line{font-family:'Fraunces',serif;font-style:italic;font-size:13.5px;color:var(--plum);line-height:1.4}
+  .sl-tags{margin-top:4px;font-size:10px;color:var(--plum-3);font-weight:600;letter-spacing:.04em}
+  .sl-tags .sep{margin:0 6px;color:rgba(74,42,58,.2)}
+
+  .soft-foot{margin-top:22px;font-size:11.5px;color:var(--plum-3);text-align:center;line-height:1.55;font-style:italic}
+  .soft-foot strong{color:var(--plum);font-weight:600;font-style:normal}
+
+  /* Engineering spec block */
+  .spec{max-width:1320px;margin:0 auto 60px;background:#FFF;border:1px solid rgba(74,42,58,.08);border-radius:22px;padding:36px 40px}
+  .spec h2{font-family:'Fraunces',serif;font-size:24px;color:var(--plum);font-weight:500;margin-bottom:14px;letter-spacing:-0.01em}
+  .spec h3{font-family:'Fraunces',serif;font-size:18px;color:var(--plum);font-weight:500;margin:22px 0 10px;letter-spacing:-0.005em}
+  .spec p{font-size:13.5px;color:var(--plum-2);line-height:1.65;margin-bottom:10px}
+  .spec p strong{color:var(--plum);font-weight:600}
+  .spec ul{padding-left:20px;margin:8px 0 14px;font-size:13.5px;color:var(--plum-2);line-height:1.65}
+  .spec ul li{margin-bottom:6px}
+  .spec ul li strong{color:var(--plum);font-weight:600}
+  .spec code{font-family:ui-monospace,Menlo,monospace;font-size:12.5px;color:var(--plum);background:rgba(74,42,58,.06);padding:1px 6px;border-radius:5px}
+  .spec pre{background:#221823;color:#f5e6d3;border-radius:14px;padding:18px 20px;font-family:ui-monospace,Menlo,monospace;font-size:11.5px;line-height:1.7;white-space:pre-wrap;margin:10px 0 16px}
+  .spec-grid{display:grid;grid-template-columns:1fr 1fr;gap:20px}
+  @media(max-width:900px){.spec-grid{grid-template-columns:1fr}}
+  .spec-card{background:var(--cream-2);border-radius:14px;padding:18px 22px}
+  .spec-card h4{font-family:'Fraunces',serif;font-size:16px;color:var(--plum);font-weight:500;margin-bottom:8px}
+  .spec-card ul{padding-left:18px;font-size:12.5px;margin:0}
+  .never-list{background:linear-gradient(155deg,#2E1F2A,#1E1320);color:var(--star);border-radius:14px;padding:18px 22px;margin-top:12px}
+  .never-list h4{color:var(--cream);font-family:'Fraunces',serif;font-size:16px;font-weight:500;margin-bottom:10px}
+  .never-list ul{padding-left:18px;color:rgba(245,230,211,.86);font-size:12.5px;margin:0}
+  .never-list ul li::marker{color:var(--gold)}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="header">
+    <div class="eyebrow">App-wide feature · rank 3 of 10 · <em style="font-style:italic">demo</em></div>
+    <h1 class="title">Living Wisdom — <em>Echo Wall</em> × Jess flywheel</h1>
+    <p class="lede">
+      Every Echo on Community is an atomic piece of collective wisdom. Jess surfaces one at the contextually right moment —
+      <strong>as company, not advice</strong>. Luteal d19, writing about sleep, she'll show one faded Echo another
+      luteal-d19 user wrote with 42 holds. No names. No fix. Just "someone is here too."
+      This is the flywheel competitors can't replicate — the more Echoes, the better the surfacing, the more reason to stay.
+    </p>
+  </div>
+
+  <div class="principle-strip">
+    <div class="ps-card">
+      <div class="ps-eye">Principle 1</div>
+      <div class="ps-title">Atomic wisdom, never prescriptive</div>
+      <div class="ps-body">An Echo is <strong>one sentence, same-phase, anonymous</strong>. Jess never wraps it in "try this." She frames it as <em>company</em>: "someone 19 days in wrote this."</div>
+    </div>
+    <div class="ps-card">
+      <div class="ps-eye">Principle 2</div>
+      <div class="ps-title">Phase + topic + hold-weight</div>
+      <div class="ps-body">Surfacing math is <strong>phase-match × topic-match × recency × holds</strong>. Never a trending feed. Held Echoes rise; scrolled-past ones fade.</div>
+    </div>
+    <div class="ps-card">
+      <div class="ps-eye">Principle 3</div>
+      <div class="ps-title">Never-repeat, user-scoped</div>
+      <div class="ps-body">Once Jess has shown you an Echo, she won't show it again <strong>for 90 days</strong>. <code>JessWisdomSurfacings</code> logs every surface so the same line can't re-appear stale.</div>
+    </div>
+    <div class="ps-card">
+      <div class="ps-eye">Principle 4</div>
+      <div class="ps-title">Compounds quietly, never pushed</div>
+      <div class="ps-body">Wisdom surfaces <strong>only inside moments she's already in</strong> — journaling, Today, Panic afterglow. Never a push notification. Never an Explore shelf.</div>
+    </div>
+  </div>
+
+  <div class="toc">
+    <a href="#p1">1 · Journal surfacing</a>
+    <a href="#p2">2 · Today morning surfacing</a>
+    <a href="#p3">3 · Curation rules (transparent)</a>
+    <a href="#p4">4 · Wisdom index + surface log</a>
+    <a href="#spec">Eng spec</a>
+  </div>
+
+  <!-- ==================== GALLERY ==================== -->
+  <div class="gallery" id="gallery">
+
+    <!-- ============ P1 — JOURNAL SURFACING ============ -->
+    <div class="phone-col" id="p1">
+      <div class="phone-label">
+        <div class="pl-eye">Phone 1</div>
+        <div class="pl-title">Journal · <em>Echo appears as she writes</em></div>
+        <div class="pl-sub">She's writing about bad sleep on luteal d19. Jess quietly surfaces a faded same-phase Echo with 42 holds — as company, not advice.</div>
+      </div>
+      <div class="phone">
+        <div class="phone-inner">
+          <div class="notch"></div>
+          <div class="sbar"><span>9:42</span><span>●●●●</span></div>
+          <div class="scroll">
+            <div class="ph-head">
+              <div>
+                <div class="ph-eye">Tuesday · April 21</div>
+                <h1 class="ph-title">Tonight's reflection</h1>
+              </div>
+              <span class="phase-chip"><span class="dot"></span>Luteal · day 19</span>
+            </div>
+            <p class="ph-sub" style="margin-top:10px">You opened Journal <strong>4 minutes ago</strong>. You've written about sleep 3 times this week.</p>
+
+            <div class="compose">
+              <div class="comp-top">
+                <span class="mode">Write</span>
+                <span>· Sealed · private</span>
+              </div>
+              <div class="comp-text">
+                Couldn't sleep last night. Again. It feels heavier than usual and I don't know why this phase always gets me like this<span class="cursor"></span>
+              </div>
+              <div class="comp-foot">
+                <span>184 words · 2:14 writing</span>
+                <span class="save">Save sealed</span>
+              </div>
+            </div>
+
+            <div class="wisdom">
+              <div class="w-eyebrow"><span class="echo-glyph"></span>Jess noticed an echo</div>
+              <div class="w-text">
+                "the sleep thing on day 18 isn't you — it's your body asking. i stopped fighting it and started lighting one candle at 9."
+              </div>
+              <div class="w-meta">
+                <div class="m-left">
+                  <span class="pill">luteal d18</span>
+                  <span class="pill">sleep</span>
+                </div>
+                <div class="m-right">
+                  <span class="hold">42 holds</span>
+                  <span class="age">3 weeks old</span>
+                </div>
+              </div>
+              <div class="w-cta-row">
+                <button class="w-cta primary">Hold this echo</button>
+                <button class="w-cta">Save to my echoes</button>
+                <button class="w-cta">Keep writing</button>
+              </div>
+              <div class="w-footnote">
+                <em>Anonymous. Same phase as you. You won't see it again.</em>
+                Jess is sitting quiet beside you — not suggesting, not fixing.
+              </div>
+            </div>
+
+            <div class="not-advice">· this isn't advice. it's company ·</div>
+
+            <div class="noticed">
+              <div class="n-glyph">j</div>
+              <div class="n-body">
+                <div class="n-eye">Jess noticed</div>
+                This is your <strong>third luteal where sleep gets heavy around day 18–20</strong>. Want me to put a gentle magnesium + earlier bedtime on the next cycle's planner? One tap, revocable.
+              </div>
+            </div>
+
+            <div class="sect-head">more echoes from luteal
+              <span class="see-all">see all →</span>
+            </div>
+
+            <div class="mini-echoes">
+              <div class="mini-echo">
+                <div class="me-eye"><span>luteal · sleep</span><span class="faded">8 weeks old</span></div>
+                <div class="me-text">"i stopped calling it insomnia. now it's 'the phase of soft eyes at 3am.'"</div>
+                <div class="me-foot"><span class="h">28 holds</span><span>held by you? · no</span></div>
+              </div>
+              <div class="mini-echo dim">
+                <div class="me-eye"><span>luteal · sleep</span><span class="faded">6 weeks old</span></div>
+                <div class="me-text">"chamomile + warm flannel + writing down one thing i couldn't do today. sleep came back slowly."</div>
+                <div class="me-foot"><span class="h">19 holds</span><span>held by you? · no</span></div>
+              </div>
+            </div>
+          </div>
+          <div class="bnav">
+            <div class="bnav-item"><div class="dot"></div>today</div>
+            <div class="bnav-item"><div class="dot"></div>lifestyle</div>
+            <div class="bnav-fab">j</div>
+            <div class="bnav-item active"><div class="dot"></div>journal</div>
+            <div class="bnav-item"><div class="dot"></div>menu</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ============ P2 — TODAY MORNING SURFACE ============ -->
+    <div class="phone-col" id="p2">
+      <div class="phone-label">
+        <div class="pl-eye">Phone 2</div>
+        <div class="pl-title">Today · <em>morning wisdom card</em></div>
+        <div class="pl-sub">Jess's morning digest carries one phase-tuned Echo — quietly under the day's plan. Not a feed. One piece.</div>
+      </div>
+      <div class="phone">
+        <div class="phone-inner">
+          <div class="notch"></div>
+          <div class="sbar"><span>7:14</span><span>●●●●</span></div>
+          <div class="scroll">
+            <div class="ph-head">
+              <div>
+                <div class="ph-eye">Tuesday · April 21 · 07:14</div>
+                <h1 class="ph-title">Good morning, Halliburton</h1>
+              </div>
+              <span class="phase-chip"><span class="dot"></span>Luteal · day 19</span>
+            </div>
+            <p class="ph-sub" style="margin-top:10px">Sleep was light. HRV dropped 6%. Jess kept your morning gentle.</p>
+
+            <div class="today-hero">
+              <div class="th-eye"><span class="th-jess">j</span> wisdom from someone in your phase</div>
+              <div class="th-quote">
+                "luteal taught me that not every day gets a 'yes.' today is a 'softly, later.'"
+              </div>
+              <div class="th-from">
+                From <strong>someone anonymous</strong>, luteal day 19, <strong>42 days ago</strong>.
+                <strong>Held by 67 others.</strong> You haven't seen it before.
+              </div>
+              <div class="th-row">
+                <button class="th-cta">Hold this</button>
+                <button class="th-cta ghost">Let it pass</button>
+              </div>
+            </div>
+
+            <div class="sect-head">your day, adapted
+              <span class="see-all">edit →</span>
+            </div>
+
+            <div class="noticed">
+              <div class="n-glyph">j</div>
+              <div class="n-body">
+                <div class="n-eye">gentle plan</div>
+                I moved your 08:00 workout to <strong>walk + stretch at 17:30</strong>, pushed the Kafka review from 10:00 to <strong>14:00</strong>, and held the evening run. You wrote about heavy luteals the last two cycles — this matches.
+              </div>
+            </div>
+
+            <div class="rule-card" style="margin-top:16px">
+              <div class="rc-title">why this Echo, not another?</div>
+              <div class="rc-why">
+                <strong>Matched 4 signals:</strong> your current phase (luteal d19), your recent journal topics (rest, permission), your HRV trend (down), and your historical receptivity (you've held 3 rest-themed Echoes). <strong>Rejected:</strong> the trending luteal Echo (you saw it 38 days ago — breaks the 90-day rule).
+              </div>
+              <div class="rc-row">
+                <span class="rc-chip strong">phase · luteal d19</span>
+                <span class="rc-chip strong">topic · rest</span>
+                <span class="rc-chip ok">held-weight 67</span>
+                <span class="rc-chip ok">never shown to you</span>
+                <span class="rc-chip off">trending · skipped</span>
+              </div>
+            </div>
+
+            <div class="phase-ribbon">
+              <div class="pr-eye">your luteal this month</div>
+              <div class="pr-row">
+                <div class="pr-seg" style="background:var(--luteal)">16</div>
+                <div class="pr-seg" style="background:var(--luteal)">17</div>
+                <div class="pr-seg" style="background:var(--luteal)">18</div>
+                <div class="pr-seg active" style="background:var(--plum)">19</div>
+                <div class="pr-seg" style="background:var(--luteal);opacity:.55">20</div>
+                <div class="pr-seg" style="background:var(--luteal);opacity:.45">21</div>
+                <div class="pr-seg" style="background:var(--luteal);opacity:.35">22</div>
+              </div>
+              <div class="pr-day">most echoes land d18–d21 — the "soft edge"</div>
+            </div>
+
+            <div class="soft-foot">
+              wisdom here is never a push. never a leaderboard.<br>
+              <strong>if it finds you, it was meant to.</strong>
+            </div>
+          </div>
+          <div class="bnav">
+            <div class="bnav-item active"><div class="dot"></div>today</div>
+            <div class="bnav-item"><div class="dot"></div>lifestyle</div>
+            <div class="bnav-fab">j</div>
+            <div class="bnav-item"><div class="dot"></div>journal</div>
+            <div class="bnav-item"><div class="dot"></div>menu</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ============ P3 — CURATION RULES ============ -->
+    <div class="phone-col" id="p3">
+      <div class="phone-label">
+        <div class="pl-eye">Phone 3</div>
+        <div class="pl-title">Settings · <em>how Jess picks</em></div>
+        <div class="pl-sub">The transparency panel. Every rule visible, every rule editable. She can turn off topics, phases, or whole surfaces.</div>
+      </div>
+      <div class="phone">
+        <div class="phone-inner">
+          <div class="notch"></div>
+          <div class="sbar"><span>9:48</span><span>●●●●</span></div>
+          <div class="scroll">
+            <div class="ph-head">
+              <div>
+                <div class="ph-eye">Jess · Living Wisdom</div>
+                <h1 class="ph-title">How Jess<br>chooses an echo</h1>
+              </div>
+            </div>
+            <p class="ph-sub" style="margin-top:10px">Every rule you see is a rule you can turn off. No hidden ranking.</p>
+
+            <div class="rule-card">
+              <div class="rc-title">1 · your phase right now</div>
+              <div class="rc-why">Echoes are <strong>phase-tagged by the writer</strong>. Jess only considers ones that match your current cycle day ±2.</div>
+              <div class="rc-row">
+                <span class="rc-chip strong">must match</span>
+                <span class="rc-chip">± 2 days</span>
+              </div>
+            </div>
+
+            <div class="rule-card">
+              <div class="rc-title">2 · your recent topics</div>
+              <div class="rc-why">What you've journaled about in the last 7 days. Sleep, mood, work, body, relationships, boundaries, rest. <strong>Derived from your own words</strong> — never shared back.</div>
+              <div class="rc-row">
+                <span class="rc-chip strong">weight × 3</span>
+                <span class="rc-chip">7-day window</span>
+                <span class="rc-chip ok">your data only</span>
+              </div>
+            </div>
+
+            <div class="rule-card">
+              <div class="rc-title">3 · hold weight</div>
+              <div class="rc-why">How many other users <strong>held</strong> that Echo (anonymous agree). No likes. No reactions. Held = "this is true for me too." Min threshold: <strong>5 holds</strong>.</div>
+              <div class="rc-row">
+                <span class="rc-chip strong">weight × 2</span>
+                <span class="rc-chip">min 5 holds</span>
+                <span class="rc-chip off">no likes</span>
+              </div>
+            </div>
+
+            <div class="rule-card">
+              <div class="rc-title">4 · recency + decay</div>
+              <div class="rc-why">Echoes fade over <strong>90 days</strong>. A 3-day-old Echo with 12 holds can beat a 60-day-old one with 40 holds. Keeps wisdom current, not ossified.</div>
+              <div class="rc-row">
+                <span class="rc-chip">linear decay</span>
+                <span class="rc-chip">90-day half-life</span>
+              </div>
+            </div>
+
+            <div class="rule-card">
+              <div class="rc-title">5 · never-repeat</div>
+              <div class="rc-why">Once you've seen an Echo (shown, not just scrolled past), Jess won't show it again <strong>for 90 days</strong>. Prevents drift into muzak.</div>
+              <div class="rc-row">
+                <span class="rc-chip ok">90d lockout</span>
+                <span class="rc-chip strong">per user</span>
+              </div>
+            </div>
+
+            <div class="rule-card">
+              <div class="rc-title">6 · what's never shown</div>
+              <div class="rc-why">Echoes flagged by <strong>3-strike witness policy</strong>. Echoes from users you've muted. Echoes about <strong>medical prescribing</strong> (Jess routes those to Care Bridge instead). Anything containing phone numbers, URLs, or identifiable detail.</div>
+              <div class="rc-row">
+                <span class="rc-chip off">flagged</span>
+                <span class="rc-chip off">muted-author</span>
+                <span class="rc-chip off">medical</span>
+                <span class="rc-chip off">identifying</span>
+              </div>
+            </div>
+
+            <div class="never-repeat">
+              <div class="nr-eye">Your control</div>
+              <div class="nr-title">You can turn all of this off</div>
+              <div class="nr-body">
+                One switch in Settings → Jess → Living Wisdom. If it's off, <strong>you'll never see an Echo surface again</strong>. Your contributions stay on the wall for others, unless you mute those too.
+              </div>
+              <div class="nr-spec">
+JessWisdomPolicy {
+  enabled: true,
+  surfaces: ["journal", "today", "panic_afterglow"],
+  topics_off: [],
+  phases_off: [],
+  lockout_days: 90
+}
+              </div>
+            </div>
+
+            <div class="soft-foot" style="margin-top:20px">
+              <strong>The rules are the rules.</strong><br>
+              Jess doesn't A/B test your wisdom feed.
+            </div>
+          </div>
+          <div class="bnav">
+            <div class="bnav-item"><div class="dot"></div>today</div>
+            <div class="bnav-item"><div class="dot"></div>lifestyle</div>
+            <div class="bnav-fab">j</div>
+            <div class="bnav-item"><div class="dot"></div>journal</div>
+            <div class="bnav-item active"><div class="dot"></div>menu</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ============ P4 — WISDOM INDEX + SURFACE LOG ============ -->
+    <div class="phone-col" id="p4">
+      <div class="phone-label">
+        <div class="pl-eye">Phone 4</div>
+        <div class="pl-title">Community · <em>Wisdom index</em></div>
+        <div class="pl-sub">Aggregate, anonymous browse view. Clusters by phase × topic. Plus a log of what Jess has surfaced to you — so nothing is hidden.</div>
+      </div>
+      <div class="phone">
+        <div class="phone-inner">
+          <div class="notch"></div>
+          <div class="sbar"><span>9:51</span><span>●●●●</span></div>
+          <div class="scroll">
+            <div class="ph-head">
+              <div>
+                <div class="ph-eye">Community · wisdom</div>
+                <h1 class="ph-title">What the wall holds</h1>
+              </div>
+            </div>
+            <p class="ph-sub" style="margin-top:10px">No names. No authors. Just patterns of what women in each phase keep saying.</p>
+
+            <div class="index-head">
+              <div class="ih-eye">this month</div>
+              <div class="ih-title">the wall holds <em>2,184</em> echoes</div>
+              <div class="ih-sub">Luteal is where most land. Sleep, permission, and rest are the three keys turning over and over — across all phases.</div>
+              <div class="ih-stats">
+                <div class="ih-stat">
+                  <div class="ih-num">2,184</div>
+                  <div class="ih-lab">live echoes</div>
+                </div>
+                <div class="ih-stat">
+                  <div class="ih-num">12,804</div>
+                  <div class="ih-lab">holds given</div>
+                </div>
+                <div class="ih-stat">
+                  <div class="ih-num">67%</div>
+                  <div class="ih-lab">land luteal</div>
+                </div>
+              </div>
+            </div>
+
+            <div class="sect-head">by phase × topic
+              <span class="see-all">filter →</span>
+            </div>
+
+            <div class="cluster-grid">
+              <div class="cluster">
+                <span class="cl-phase lut"><span class="dot"></span>luteal</span>
+                <div class="cl-topic">sleep gets heavy</div>
+                <div class="cl-count">418 echoes · held 3,120×</div>
+                <div class="cl-bar"><div class="fill" style="width:88%"></div></div>
+              </div>
+              <div class="cluster">
+                <span class="cl-phase lut"><span class="dot"></span>luteal</span>
+                <div class="cl-topic">saying no is hard</div>
+                <div class="cl-count">268 echoes · held 1,980×</div>
+                <div class="cl-bar"><div class="fill" style="width:66%"></div></div>
+              </div>
+              <div class="cluster">
+                <span class="cl-phase fol"><span class="dot"></span>follicular</span>
+                <div class="cl-topic">starting feels easier</div>
+                <div class="cl-count">203 echoes · held 1,240×</div>
+                <div class="cl-bar"><div class="fill" style="width:58%"></div></div>
+              </div>
+              <div class="cluster">
+                <span class="cl-phase ovu"><span class="dot"></span>ovulatory</span>
+                <div class="cl-topic">loud days, brittle edges</div>
+                <div class="cl-count">142 echoes · held 820×</div>
+                <div class="cl-bar"><div class="fill" style="width:42%"></div></div>
+              </div>
+              <div class="cluster">
+                <span class="cl-phase per"><span class="dot"></span>period</span>
+                <div class="cl-topic">letting the day be small</div>
+                <div class="cl-count">196 echoes · held 1,510×</div>
+                <div class="cl-bar"><div class="fill" style="width:54%"></div></div>
+              </div>
+              <div class="cluster">
+                <span class="cl-phase per"><span class="dot"></span>period</span>
+                <div class="cl-topic">cramp company</div>
+                <div class="cl-count">118 echoes · held 780×</div>
+                <div class="cl-bar"><div class="fill" style="width:34%"></div></div>
+              </div>
+            </div>
+
+            <div class="surface-log">
+              <div class="sl-title">what jess has shown you</div>
+              <div class="sl-sub">Audit trail. Full list. You can remove any.</div>
+
+              <div class="sl-item">
+                <div class="sl-when">Today<br>07:14</div>
+                <div class="sl-body">
+                  <div class="sl-line">"luteal taught me that not every day gets a 'yes.' today is a 'softly, later.'"</div>
+                  <div class="sl-tags">today hero <span class="sep">·</span> luteal d19 <span class="sep">·</span> 67 holds</div>
+                </div>
+              </div>
+              <div class="sl-item">
+                <div class="sl-when">Yesterday<br>22:08</div>
+                <div class="sl-body">
+                  <div class="sl-line">"the sleep thing on day 18 isn't you — it's your body asking."</div>
+                  <div class="sl-tags">journal surface <span class="sep">·</span> luteal d18 <span class="sep">·</span> 42 holds</div>
+                </div>
+              </div>
+              <div class="sl-item">
+                <div class="sl-when">Apr 14<br>19:50</div>
+                <div class="sl-body">
+                  <div class="sl-line">"started writing one sentence each luteal. that's enough."</div>
+                  <div class="sl-tags">journal surface <span class="sep">·</span> luteal d15 <span class="sep">·</span> 28 holds</div>
+                </div>
+              </div>
+              <div class="sl-item">
+                <div class="sl-when">Apr 09<br>07:20</div>
+                <div class="sl-body">
+                  <div class="sl-line">"early luteal is when i learn my body didn't sign up for my schedule."</div>
+                  <div class="sl-tags">today hero <span class="sep">·</span> luteal d11 <span class="sep">·</span> 91 holds</div>
+                </div>
+              </div>
+            </div>
+
+            <div class="soft-foot" style="margin-top:20px">
+              No numbers to beat. No wall to climb.<br>
+              <strong>The wisdom moves — you stay.</strong>
+            </div>
+          </div>
+          <div class="bnav">
+            <div class="bnav-item"><div class="dot"></div>today</div>
+            <div class="bnav-item active"><div class="dot"></div>community</div>
+            <div class="bnav-fab">j</div>
+            <div class="bnav-item"><div class="dot"></div>journal</div>
+            <div class="bnav-item"><div class="dot"></div>menu</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==================== ENGINEERING SPEC ==================== -->
+  <section class="spec" id="spec">
+    <h2>Engineering spec — Living Wisdom</h2>
+    <p>Reuses the <code>Echoes</code> + <code>EchoHolds</code> tables already built for Community v2 (Q2 rollout). Adds two thin new ones + a surfacing job. <strong>Zero new user-facing writes.</strong> Wisdom is a surfacing layer on top of existing content.</p>
+
+    <h3>New entities (base44)</h3>
+    <div class="spec-grid">
+      <div class="spec-card">
+        <h4>WisdomIndex</h4>
+        <ul>
+          <li><strong>id</strong> uuid</li>
+          <li><strong>echo_id</strong> fk Echoes</li>
+          <li><strong>phase_band</strong> enum: period / follicular / ovulatory / luteal</li>
+          <li><strong>phase_day</strong> int 1-35 (writer's cycle day at post)</li>
+          <li><strong>topic_tags</strong> string[] (derived: sleep, rest, work, body, mood, boundaries, relationships, self-compassion, anxiety, grief)</li>
+          <li><strong>hold_count_snapshot</strong> int (denormalised for ranking speed, refreshed 6h)</li>
+          <li><strong>age_days</strong> computed from echoes.created_at</li>
+          <li><strong>flag_state</strong> enum: clean / muted / medical / identifying</li>
+          <li><strong>eligible</strong> bool = (flag_state=clean AND hold_count ≥ 5 AND age_days ≤ 180)</li>
+        </ul>
+      </div>
+      <div class="spec-card">
+        <h4>JessWisdomSurfacings</h4>
+        <ul>
+          <li><strong>id</strong> uuid</li>
+          <li><strong>user_id</strong> fk Users</li>
+          <li><strong>echo_id</strong> fk Echoes</li>
+          <li><strong>surface</strong> enum: journal / today / panic_afterglow / jess_drawer</li>
+          <li><strong>shown_at</strong> ts (append-only)</li>
+          <li><strong>matched_on</strong> json (ranking signals — phase/topic/holds/decay — kept for transparency panel)</li>
+          <li><strong>user_action</strong> enum: held / saved / passed / hidden / null (null = not acted on)</li>
+          <li><strong>lockout_until</strong> ts = shown_at + 90 days (the never-repeat horizon)</li>
+          <li><strong>scroll_depth_ignored</strong> bool (true = flush through, doesn't count as "shown")</li>
+        </ul>
+      </div>
+    </div>
+
+    <h3>Ranking function</h3>
+    <pre>score(echo, user) =
+    3.0 × phase_match(echo.phase_band, user.phase_band)     // must be ±2 cycle days
+  + 3.0 × topic_match(echo.topic_tags, user.recent_topics)  // Jaccard over 7-day topic set
+  + 2.0 × hold_weight(echo.hold_count_snapshot)             // log-scaled
+  + 1.0 × recency(echo.age_days)                            // linear decay over 90d
+  - ∞   if has_been_surfaced_within_90d(echo, user)         // never-repeat hard gate
+  - ∞   if echo.flag_state != clean
+  - ∞   if user has muted echo.author_id
+  - ∞   if user has topic or phase disabled in JessWisdomPolicy</pre>
+
+    <h3>Where it surfaces (and where it doesn't)</h3>
+    <div class="spec-grid">
+      <div class="spec-card">
+        <h4>Surfaces where wisdom can appear</h4>
+        <ul>
+          <li><strong>Journal compose</strong> — trigger: 60s of sustained writing + phase/topic match ≥ threshold → one faded wisdom card inline. <strong>Max 1 per writing session.</strong></li>
+          <li><strong>Today morning hero</strong> — trigger: first Today open between 06:00–09:30 + fresh unshown echo available. <strong>Max 1 per day.</strong></li>
+          <li><strong>Panic afterglow</strong> — trigger: Jess-noticed card in afterglow if a relevant held echo exists on "panic + luteal" or matching phase. <strong>Opt-in — off by default after panic.</strong></li>
+          <li><strong>Jess drawer</strong> — "more like this one" when user holds a wisdom card they liked.</li>
+        </ul>
+      </div>
+      <div class="never-list">
+        <h4>Surfaces where wisdom MUST NOT appear</h4>
+        <ul>
+          <li><strong>Push notifications</strong> — never. Wisdom doesn't ring phones.</li>
+          <li><strong>Explore / content shelves</strong> — never. Explore is credentialed content only.</li>
+          <li><strong>Community main feed</strong> — echoes already live there; wisdom is the targeted surface, not a re-shuffle of it.</li>
+          <li><strong>Partner Sync</strong> — partner never sees your wisdom surfaces.</li>
+          <li><strong>Care Bridge clinician portal</strong> — clinicians never see echoes or surfacings.</li>
+          <li><strong>During Panic Mode itself</strong> — panic is not the moment for other voices; only in afterglow if opt-in.</li>
+          <li><strong>Onboarding</strong> — new users get no wisdom for first 14 days. Let their own phase form first.</li>
+        </ul>
+      </div>
+    </div>
+
+    <h3>UK GDPR + DPA 2018 + consent posture</h3>
+    <ul>
+      <li>All ranking is computed <strong>server-side per request</strong>. User topics are derived from journal (never shared), fed as ephemeral signals, not stored on the Echo side.</li>
+      <li><code>JessWisdomSurfacings.matched_on</code> is the audit object the transparency panel reads. Never batch-queried for analytics — per-user only.</li>
+      <li>User can mute: any author, any topic, any phase, any surface, or the whole feature. Muting is instant and propagates to future surfacings within ≤ 15s.</li>
+      <li><strong>Never auto-train on hold data</strong> for content generation. Holds are ranking signals only; the wisdom is user-authored.</li>
+      <li>No model fine-tune on user echoes. No third-party data export. Wisdom stays inside the wall.</li>
+    </ul>
+
+    <h3>Flywheel — why this compounds</h3>
+    <p>Month 1: ~500 echoes → surfacing quality is rough, phase clusters thin. Month 6: ~10,000 echoes with density in every phase × topic cell → surfacing is always <em>there</em>. Month 12: the wall is a living reference of what every phase feels like. <strong>The moat: no new app can launch with this volume of real same-phase wisdom</strong>. It's the product feature that literally cannot be built on day one.</p>
+
+    <h3>Ship order</h3>
+    <ul>
+      <li><strong>Q3 2026</strong> — WisdomIndex + Journal surface only. 1 surface, 1 phase (luteal), observation mode. Hold-counts tracked but no transparency panel yet.</li>
+      <li><strong>Q4 2026</strong> — Today hero surface + full phase coverage + transparency panel (P3).</li>
+      <li><strong>Q1 2027</strong> — Panic-afterglow surface (opt-in) + Wisdom index browse (P4) + per-author/topic/phase mutes.</li>
+      <li><strong>Q2 2027</strong> — Jess drawer "more like this" + cross-phase learning ("you held 3 rest-themed echoes, your next luteal will default to rest-weighted").</li>
+    </ul>
+
+    <h3>What we are <em>not</em> building</h3>
+    <ul>
+      <li><strong>No author profiles.</strong> Echoes are anonymous by foundation; there is no "wisest user" metric.</li>
+      <li><strong>No daily wisdom push.</strong> Wisdom arrives inside moments; it doesn't summon you.</li>
+      <li><strong>No curator-picked wisdom.</strong> FemWell staff do not hand-select echoes. Only hold-rank + never-repeat.</li>
+      <li><strong>No wisdom sharing out.</strong> You cannot screenshot or export an echo surfaced to you. (Respect for the writer.)</li>
+      <li><strong>No advice framing, ever.</strong> Copy is always <em>company</em> — "someone wrote this" — never "try this."</li>
+    </ul>
+  </section>
+</div>
+</body>
+</html>

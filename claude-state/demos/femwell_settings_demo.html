@@ -1,0 +1,357 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>FemWell — Settings redesign</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300..800;1,9..144,300..800&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{--cream:#FFFAF5;--cream-2:#FFF5EC;--cream-3:#F0E5D8;--plum:#4A2A3A;--plum-2:#6B4559;--plum-mute:#8A7584;--rose-400:#E67F73;--rose-500:#D45E52;--period:#B84A41;--follicular:#E67F73;--ovulatory:#F2A99A;--luteal:#8A5F74;--gold:#C9A95C;--teal:#5F8A85;--moss:#7D8668;--lav:#B9A4C9;--night:#1A1522}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--cream);font-family:'Inter',sans-serif;color:var(--plum);line-height:1.5;padding:56px 32px 120px}
+.page-head{max-width:1400px;margin:0 auto 48px;text-align:center}
+.page-head h1{font-family:'Fraunces',serif;font-weight:300;font-size:56px;letter-spacing:-0.02em}
+.page-head h1 em{font-style:italic;color:var(--rose-500)}
+.page-head p{margin-top:14px;color:var(--plum-mute);font-size:15px;max-width:680px;margin-left:auto;margin-right:auto}
+.grid{max-width:1400px;margin:0 auto;display:grid;grid-template-columns:repeat(auto-fit,minmax(400px,1fr));gap:56px 40px;justify-items:center}
+.cap{margin-top:14px;font-size:13px;color:var(--plum-mute);text-align:center;max-width:380px}
+.cap b{color:var(--plum);font-weight:600}
+.phone{width:400px;aspect-ratio:1/2.05;background:var(--cream);border-radius:46px;box-shadow:0 40px 80px -30px rgba(74,42,58,.45),0 0 0 12px #1a1522,0 0 0 13px #3a2a32;overflow:hidden;position:relative}
+.notch{position:absolute;top:8px;left:50%;transform:translateX(-50%);width:120px;height:24px;background:#1a1522;border-radius:14px;z-index:50}
+.status{position:absolute;top:14px;left:28px;right:28px;display:flex;justify-content:space-between;font-size:11px;font-weight:600;color:var(--plum);z-index:40}
+.screen{position:absolute;top:46px;left:0;right:0;bottom:0;overflow-y:auto}
+.screen::-webkit-scrollbar{display:none}
+.hdr{padding:14px 22px 8px;display:flex;justify-content:space-between;align-items:center}
+.hdr .ttl{font-family:'Fraunces',serif;font-size:22px;font-weight:400}
+.hdr .q{color:var(--plum-mute);font-size:14px}
+.sub{padding:0 22px 14px;font-size:12px;color:var(--plum-mute)}
+.sect{padding:16px 22px 6px;display:flex;justify-content:space-between;align-items:baseline}
+.sect h3{font-family:'Fraunces',serif;font-size:16px;font-weight:400}
+.sect .caret{font-size:11px;color:var(--plum-mute)}
+.list{padding:0 18px}
+.li{padding:14px 16px;background:#fff;border:1px solid rgba(74,42,58,.06);border-radius:14px;margin-bottom:6px;display:flex;justify-content:space-between;align-items:center;font-size:12px;gap:10px}
+.li .mn{flex:1;min-width:0}
+.li .t{color:var(--plum);font-size:12px;font-weight:500}
+.li .s{color:var(--plum-mute);font-size:10px;margin-top:2px}
+.li .v{color:var(--plum-mute);font-size:11px;white-space:nowrap}
+.li .v.gold{color:var(--gold);font-weight:600}
+.li .tog{width:36px;height:20px;background:var(--moss);border-radius:99px;position:relative;flex-shrink:0}
+.li .tog::before{content:"";position:absolute;right:2px;top:2px;width:16px;height:16px;background:#fff;border-radius:50%}
+.li .tog.off{background:rgba(74,42,58,.15)}
+.li .tog.off::before{right:auto;left:2px}
+.li.headed{background:transparent;border:none;padding:10px 4px 2px}
+.li.headed .t{font-size:10px;letter-spacing:2px;text-transform:uppercase;color:var(--plum-mute);font-weight:600}
+/* segmented */
+.seg{display:flex;background:var(--cream-2);border-radius:99px;padding:3px;margin-top:6px;font-size:11px}
+.seg span{flex:1;padding:6px 8px;text-align:center;border-radius:99px;color:var(--plum-2)}
+.seg span.on{background:var(--plum);color:var(--cream);font-weight:600}
+/* slider */
+.sld{margin-top:10px}
+.sld-t{display:flex;justify-content:space-between;font-size:10px;color:var(--plum-mute);margin-bottom:4px}
+.sld-bar{height:6px;background:var(--cream-2);border-radius:99px;position:relative}
+.sld-bar .f{position:absolute;top:0;left:0;bottom:0;background:var(--plum);border-radius:99px}
+.sld-bar .k{position:absolute;top:-5px;width:16px;height:16px;background:#fff;border:2px solid var(--plum);border-radius:50%;box-shadow:0 2px 4px rgba(74,42,58,.2)}
+/* jess tool consent card */
+.jtc{margin:0 18px 12px;padding:16px;background:linear-gradient(135deg,#4A2A3A,#8A5F74);color:#f5e6d3;border-radius:20px;position:relative;overflow:hidden}
+.jtc-cap{font-size:10px;letter-spacing:2px;text-transform:uppercase;color:#C9A95C;margin-bottom:4px;position:relative}
+.jtc-h{font-family:'Fraunces',serif;font-size:18px;font-weight:300;margin-bottom:10px;position:relative}
+.jtc-h em{font-style:italic;color:#F2A99A}
+.jtc-tool{padding:10px 12px;background:rgba(245,230,211,.08);border-radius:12px;display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;position:relative}
+.jtc-tool .tt{font-size:11px;font-family:'Inter',sans-serif}
+.jtc-tool .ts{font-size:9px;opacity:.6;margin-top:2px}
+.jtc-tool .sw{padding:3px 8px;background:#C9A95C;color:#1a1522;font-size:9px;border-radius:99px;font-weight:600;letter-spacing:1px;text-transform:uppercase}
+.jtc-tool .sw.off{background:rgba(245,230,211,.15);color:#f5e6d3}
+.jtc-tool .sw.ask{background:#F2A99A;color:#1a1522}
+/* language sample */
+.ls{padding:14px 16px;background:var(--cream-2);border-radius:14px;margin:0 22px 14px}
+.ls-h{font-size:10px;letter-spacing:2px;text-transform:uppercase;color:var(--plum-mute);font-weight:600;margin-bottom:6px}
+.ls-t{font-family:'Fraunces',serif;font-style:italic;font-size:14px;line-height:1.45;color:var(--plum)}
+.ls-t em{color:var(--rose-500)}
+/* safety strip */
+.sf{margin:16px 18px;padding:14px 16px;background:#1a1522;color:#f5e6d3;border-radius:16px}
+.sf h5{font-family:'Fraunces',serif;font-style:italic;font-size:13px;color:#F2A99A;margin-bottom:4px}
+.sf p{font-size:11px;opacity:.75;margin-bottom:8px;line-height:1.4}
+.sf .ttl-row{display:flex;justify-content:space-between;align-items:center}
+.sf-b{display:inline-flex;padding:8px 12px;background:#F2A99A;color:#1a1522;border-radius:99px;font-size:10px;font-weight:600}
+/* search */
+.srch{margin:8px 18px 14px;padding:12px 14px;background:#fff;border:1px solid rgba(74,42,58,.1);border-radius:99px;font-size:12px;color:var(--plum-mute);display:flex;gap:8px;align-items:center}
+.srch::before{content:"⌕";font-size:14px;color:var(--plum-mute)}
+/* appendix */
+.app{max-width:1200px;margin:80px auto 0;padding:36px;background:#fff;border-radius:28px;border:1px solid rgba(74,42,58,.1)}
+.app h2{font-family:'Fraunces',serif;font-weight:300;font-size:30px;margin-bottom:8px}
+.app h2 em{font-style:italic;color:var(--rose-500)}
+.app .lead{color:var(--plum-mute);font-size:13px;margin-bottom:20px}
+.apgrid{display:grid;grid-template-columns:1fr 1fr;gap:30px}
+.apcol h4{font-size:11px;letter-spacing:2px;text-transform:uppercase;color:var(--plum-mute);margin-bottom:10px}
+.apcol li{font-size:13px;color:var(--plum-2);padding:6px 0;border-bottom:1px dotted rgba(74,42,58,.1);list-style:none;display:flex;justify-content:space-between;gap:10px}
+.apcol li b{color:var(--plum);font-weight:500}
+.ftr{max-width:900px;margin:60px auto 0;padding:28px;background:var(--plum);color:var(--cream);border-radius:24px;text-align:center}
+.ftr h3{font-family:'Fraunces',serif;font-style:italic;font-size:24px;font-weight:300;margin-bottom:8px}
+.ftr p{font-size:13px;opacity:.8;max-width:620px;margin:0 auto}
+</style></head><body>
+
+<div class="page-head">
+  <h1>Settings — <em>visible consent</em></h1>
+  <p>Settings is the control panel for behaviour. Profile is who you are. Every toggle here is phrased as a consent, not a feature.</p>
+</div>
+
+<div class="grid">
+
+<!-- P1: Settings home / overview -->
+<div><div class="phone"><div class="notch"></div>
+  <div class="status"><span>10:28</span><span>●●● 54%</span></div>
+  <div class="screen">
+    <div class="hdr"><span class="ttl">Settings</span><span class="q">✕</span></div>
+    <div class="srch">search settings…</div>
+
+    <div class="sect"><h3>Privacy & Jess</h3><span class="caret">›</span></div>
+    <div class="list">
+      <div class="li"><div class="mn"><div class="t">Jess memory</div><div class="s">74 facts remembered · you approved</div></div><span class="v gold">open</span></div>
+      <div class="li"><div class="mn"><div class="t">Sealed Letters keys</div><div class="s">on this device</div></div><span class="v">manage</span></div>
+      <div class="li"><div class="mn"><div class="t">Journal default</div><div class="s">sealed · device-only</div></div><span class="v">sealed</span></div>
+      <div class="li"><div class="mn"><div class="t">Echo anonymisation</div><div class="s">strict · no phase, no city</div></div><span class="v">strict</span></div>
+      <div class="li"><div class="mn"><div class="t">Strict mode (partner borrow)</div><div class="s">hides journal + community</div></div><span class="tog off"></span></div>
+    </div>
+
+    <div class="sect"><h3>Jess's voice</h3><span class="caret">›</span></div>
+    <div class="list">
+      <div class="li"><div class="mn"><div class="t">Default voice</div><div class="s">Yorkshire · UK Warm</div></div><span class="v">Yorkshire</span></div>
+      <div class="li"><div class="mn"><div class="t">Text style</div><div class="s">Fraunces italic for reflection</div></div><span class="v">soft</span></div>
+      <div class="li"><div class="mn"><div class="t">Language accents</div><div class="s">English + regional dialect affirmations</div></div><span class="v">regional</span></div>
+      <div class="li"><div class="mn"><div class="t">Response length</div><div class="s">2-3 sentences · no walls of text</div></div><span class="v">short</span></div>
+    </div>
+
+    <div class="sect"><h3>Notifications</h3><span class="caret">›</span></div>
+    <div class="list">
+      <div class="li"><div class="mn"><div class="t">Cycle-timed (Jess-earned)</div><div class="s">only when pattern says send</div></div><span class="tog"></span></div>
+      <div class="li"><div class="mn"><div class="t">Calendar reminders</div><div class="s">period, ovulation, HRT</div></div><span class="tog"></span></div>
+      <div class="li"><div class="mn"><div class="t">Community holds</div><div class="s">when someone holds your echo</div></div><span class="tog"></span></div>
+      <div class="li"><div class="mn"><div class="t">Quiet hours</div><div class="s">10:30pm → 7am · override for panic</div></div><span class="v">10:30-7</span></div>
+    </div>
+
+    <div class="sect"><h3>Appearance</h3><span class="caret">›</span></div>
+    <div class="list">
+      <div class="li"><div class="mn"><div class="t">Theme</div><div class="s">cream / plum / auto / night</div></div><span class="v">auto</span></div>
+      <div class="li"><div class="mn"><div class="t">Text size</div><div class="s">medium</div></div><span class="v">M</span></div>
+      <div class="li"><div class="mn"><div class="t">Reduce motion</div><div class="s">still the breathing orbs</div></div><span class="tog off"></span></div>
+      <div class="li"><div class="mn"><div class="t">UK visual accents</div><div class="s">ankara weaves in Community</div></div><span class="tog"></span></div>
+    </div>
+
+    <div class="sect"><h3>Life stage</h3><span class="caret">›</span></div>
+    <div class="list">
+      <div class="li"><div class="mn"><div class="t">Current stage</div><div class="s">peri-menopause · yr 2</div></div><span class="v gold">change</span></div>
+    </div>
+
+    <div class="sect"><h3>Subscription</h3><span class="caret">›</span></div>
+    <div class="list">
+      <div class="li"><div class="mn"><div class="t">FemWell Pro</div><div class="s">renews Oct 14 · ₦9,900/mo</div></div><span class="v">manage</span></div>
+    </div>
+
+    <div class="sf">
+      <div class="ttl-row"><h5>In a hard moment?</h5><span class="sf-b">Panic mode</span></div>
+      <p>Panic mode is one tap from anywhere. Trusted contact + quick-dial lives in Profile.</p>
+    </div>
+  </div>
+</div>
+<div class="cap"><b>P1 · Settings home.</b> 7 sections, scannable. "Jess memory" and "Jess's voice" are separate — memory = what she knows, voice = how she sounds. Safety footer persistent.</div></div>
+
+<!-- P2: Jess memory & tool consent -->
+<div><div class="phone"><div class="notch"></div>
+  <div class="status"><span>10:32</span><span>●●● 54%</span></div>
+  <div class="screen">
+    <div class="hdr"><span class="ttl">Jess · memory</span><span class="q">←</span></div>
+    <div class="sub">74 facts remembered. 22 hot (this month). 52 cold (older, auto-summarising).</div>
+
+    <div class="sect"><h3>Memory budget</h3></div>
+    <div class="list">
+      <div class="li" style="flex-direction:column;align-items:stretch;gap:0">
+        <div style="display:flex;justify-content:space-between;width:100%"><div class="mn"><div class="t">What Jess actively remembers</div><div class="s">beyond this, she summarises + forgets</div></div><span class="v">200</span></div>
+        <div class="sld">
+          <div class="sld-t"><span>minimal · 50</span><span>spacious · 500</span></div>
+          <div class="sld-bar"><div class="f" style="width:36%"></div><div class="k" style="left:34%"></div></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="sect"><h3>Memory categories</h3></div>
+    <div class="list">
+      <div class="li"><div class="mn"><div class="t">People (Sam, Dr. Priya Shah, Dr Catherine O'Brien)</div><div class="s">4 people · relational memory</div></div><span class="tog"></span></div>
+      <div class="li"><div class="mn"><div class="t">Rituals & practices</div><div class="s">6 kept this season</div></div><span class="tog"></span></div>
+      <div class="li"><div class="mn"><div class="t">Symptom patterns</div><div class="s">chin breakouts, 2am wakes, …</div></div><span class="tog"></span></div>
+      <div class="li"><div class="mn"><div class="t">Preferences (voice, tone)</div><div class="s">short replies, Fraunces italic</div></div><span class="tog"></span></div>
+      <div class="li"><div class="mn"><div class="t">Journal themes (not content)</div><div class="s">writes most luteal · themes: rest, sister</div></div><span class="tog"></span></div>
+      <div class="li"><div class="mn"><div class="t">Panic triggers</div><div class="s">low sleep + work deadline</div></div><span class="tog"></span></div>
+    </div>
+
+    <div class="sect"><h3>Consolidation rule</h3></div>
+    <div class="list">
+      <div class="li" style="flex-direction:column;align-items:stretch">
+        <div style="display:flex;justify-content:space-between;width:100%"><div class="mn"><div class="t">Fade specifics after</div><div class="s">facts older than this become summaries</div></div></div>
+        <div class="seg"><span>30d</span><span class="on">90d</span><span>180d</span><span>never</span></div>
+      </div>
+    </div>
+
+    <div class="jtc">
+      <div class="jtc-cap">tool use · 22 tools</div>
+      <div class="jtc-h">When can <em>Jess</em> do things without asking?</div>
+      <div class="jtc-tool"><div><div class="tt">jess.digest</div><div class="ts">morning brief</div></div><span class="sw">auto</span></div>
+      <div class="jtc-tool"><div><div class="tt">jess.draft</div><div class="ts">write a reply for you</div></div><span class="sw ask">ask</span></div>
+      <div class="jtc-tool"><div><div class="tt">jess.remember-person</div><div class="ts">add someone to memory</div></div><span class="sw ask">ask</span></div>
+      <div class="jtc-tool"><div><div class="tt">jess.ambient</div><div class="ts">notice out loud · 24h kill</div></div><span class="sw">auto</span></div>
+      <div class="jtc-tool"><div><div class="tt">jess.forget</div><div class="ts">remove from memory</div></div><span class="sw off">never auto</span></div>
+    </div>
+
+    <div class="sect"><h3 style="color:#B84A41">Clear memory</h3></div>
+    <div class="list">
+      <div class="li"><div class="mn"><div class="t" style="color:#B84A41">Forget a single fact</div><div class="s">search + delete</div></div><span class="v">›</span></div>
+      <div class="li"><div class="mn"><div class="t" style="color:#B84A41">Reset all memory</div><div class="s">keeps journal + cycle · only wipes what Jess learned</div></div><span class="v">reset</span></div>
+    </div>
+  </div>
+</div>
+<div class="cap"><b>P2 · Jess memory.</b> Budget slider (50-500 facts). Category toggles. Consolidation rule (fade specifics after 90d — addresses memory-creep risk from pattern notes). Tool consent card with auto/ask/never.</div></div>
+
+<!-- P3: Language & locale -->
+<div><div class="phone"><div class="notch"></div>
+  <div class="status"><span>10:35</span><span>●●● 53%</span></div>
+  <div class="screen">
+    <div class="hdr"><span class="ttl">Language & region</span><span class="q">←</span></div>
+    <div class="sub">Where you are shapes what Jess reaches for.</div>
+
+    <div class="sect"><h3>Interface language</h3></div>
+    <div class="list">
+      <div class="li"><div class="mn"><div class="t">English (UK)</div><div class="s">spellings: favour, colour, metres</div></div><span class="v gold">primary</span></div>
+      <div class="li"><div class="mn"><div class="t">Glasgow accent</div><div class="s">Jess voice variant</div></div><span class="tog"></span></div>
+      <div class="li"><div class="mn"><div class="t">Welsh-English accent</div><div class="s">off</div></div><span class="tog off"></span></div>
+      <div class="li"><div class="mn"><div class="t">Belfast accent</div><div class="s">off</div></div><span class="tog off"></span></div>
+      <div class="li"><div class="mn"><div class="t">Multicultural London</div><div class="s">Jess can switch in casual messages</div></div><span class="tog off"></span></div>
+    </div>
+
+    <div class="ls">
+      <div class="ls-h">sample · what Jess sounds like</div>
+      <div class="ls-t">"Long day, eh. You've been in your head since 4pm — let's slow down a minute.<br/><em>One breath, then we'll sit with the to-do together.</em>"</div>
+    </div>
+
+    <div class="sect"><h3>Content locale</h3></div>
+    <div class="list">
+      <div class="li"><div class="mn"><div class="t">Foods & ingredients</div><div class="s">purple sprouting broccoli, Cornish mackerel, Scottish oats, British Lion eggs</div></div><span class="v">UK</span></div>
+      <div class="li"><div class="mn"><div class="t">Practitioners directory</div><div class="s">London + Manchester · 48 vetted</div></div><span class="v">UK</span></div>
+      <div class="li"><div class="mn"><div class="t">Programs shelf</div><div class="s">UK-first where possible</div></div><span class="tog"></span></div>
+    </div>
+
+    <div class="sect"><h3>Region</h3></div>
+    <div class="list">
+      <div class="li"><div class="mn"><div class="t">Primary city</div><div class="s">London · BST (UTC+1)</div></div><span class="v">edit</span></div>
+      <div class="li"><div class="mn"><div class="t">Measurement system</div><div class="s">kg · cm · °C</div></div><span class="v">metric</span></div>
+      <div class="li"><div class="mn"><div class="t">Currency</div><div class="s">for Programs purchase, Care Bridge fees</div></div><span class="v">₦ NGN</span></div>
+    </div>
+
+    <div class="sect"><h3>If I'm traveling</h3></div>
+    <div class="list">
+      <div class="li"><div class="mn"><div class="t">Auto-adjust time zone</div><div class="s">Jess keeps cycle math local-to-London</div></div><span class="tog"></span></div>
+      <div class="li"><div class="mn"><div class="t">Offline retreat mode</div><div class="s">pre-download 3 programs + week of prompts</div></div><span class="tog off"></span></div>
+    </div>
+  </div>
+</div>
+<div class="cap"><b>P3 · Language & region.</b> UK-first, English default. Language accents toggle regional UK voices separately. Content locale controls food, practitioners, programs.</div></div>
+
+<!-- P4: Accessibility + advanced -->
+<div><div class="phone"><div class="notch"></div>
+  <div class="status"><span>10:38</span><span>●●● 53%</span></div>
+  <div class="screen">
+    <div class="hdr"><span class="ttl">Accessibility</span><span class="q">←</span></div>
+    <div class="sub">If any of these matter for you, everything else adapts.</div>
+
+    <div class="sect"><h3>Vision</h3></div>
+    <div class="list">
+      <div class="li" style="flex-direction:column;align-items:stretch">
+        <div style="display:flex;justify-content:space-between;width:100%"><div class="mn"><div class="t">Text size</div><div class="s">applies across the app</div></div><span class="v">M+</span></div>
+        <div class="seg"><span>S</span><span>M</span><span class="on">M+</span><span>L</span><span>XL</span></div>
+      </div>
+      <div class="li"><div class="mn"><div class="t">Dynamic type</div><div class="s">respects iOS / Android system</div></div><span class="tog"></span></div>
+      <div class="li"><div class="mn"><div class="t">High-contrast mode</div><div class="s">switch plum → near-black</div></div><span class="tog off"></span></div>
+      <div class="li"><div class="mn"><div class="t">Bold text</div><div class="s">thicker Fraunces + Inter</div></div><span class="tog off"></span></div>
+    </div>
+
+    <div class="sect"><h3>Motion</h3></div>
+    <div class="list">
+      <div class="li"><div class="mn"><div class="t">Reduce motion</div><div class="s">breathing orbs still pulse — slowly</div></div><span class="tog off"></span></div>
+      <div class="li"><div class="mn"><div class="t">No auto-play video</div><div class="s">Watch shelf stays still</div></div><span class="tog off"></span></div>
+    </div>
+
+    <div class="sect"><h3>Hearing</h3></div>
+    <div class="list">
+      <div class="li"><div class="mn"><div class="t">Captions on all sessions</div><div class="s">breathwork, meditations, AMA</div></div><span class="tog"></span></div>
+      <div class="li"><div class="mn"><div class="t">Visual breath cues</div><div class="s">orb pulses — no audio required</div></div><span class="tog"></span></div>
+    </div>
+
+    <div class="sect"><h3>Touch & motor</h3></div>
+    <div class="list">
+      <div class="li"><div class="mn"><div class="t">Large tap targets</div><div class="s">min 56dp</div></div><span class="tog off"></span></div>
+      <div class="li"><div class="mn"><div class="t">Long-press = two-tap</div><div class="s">for Sealed Letters unlock</div></div><span class="tog off"></span></div>
+      <div class="li"><div class="mn"><div class="t">Voice-only mode</div><div class="s">Jess speaks, you speak back — no screen</div></div><span class="tog off"></span></div>
+    </div>
+
+    <div class="sect"><h3>Cognitive</h3></div>
+    <div class="list">
+      <div class="li"><div class="mn"><div class="t">Quiet mode (fewer cards)</div><div class="s">Today shrinks to 2 cards max</div></div><span class="tog off"></span></div>
+      <div class="li"><div class="mn"><div class="t">Plain language</div><div class="s">Jess avoids Fraunces italic metaphors</div></div><span class="tog off"></span></div>
+    </div>
+
+    <div class="sect"><h3 style="color:#B84A41">Advanced · danger zone</h3></div>
+    <div class="list">
+      <div class="li"><div class="mn"><div class="t" style="color:#B84A41">Reset cache</div><div class="s">safe · clears local preview content</div></div><span class="v">clear</span></div>
+      <div class="li"><div class="mn"><div class="t" style="color:#B84A41">Force-re-sync wearables</div><div class="s">pulls 30 days fresh</div></div><span class="v">run</span></div>
+      <div class="li"><div class="mn"><div class="t" style="color:#B84A41">Log out everywhere</div><div class="s">all devices</div></div><span class="v">sign out all</span></div>
+    </div>
+
+    <div class="list" style="margin-top:16px;padding:14px 22px;text-align:center;color:var(--plum-mute);font-size:10px;font-style:italic">FemWell v4.2.0  ·  build 2026.04.20  ·  app id 69a989…</div>
+  </div>
+</div>
+<div class="cap"><b>P4 · Accessibility.</b> Vision / motion / hearing / motor / cognitive — each a real toggle, not a box-tick. Voice-only mode is a real feature (screen-off Jess). Plain-language mode for ADHD / neurodivergent users.</div></div>
+
+</div>
+
+<div class="app">
+  <h2>Appendix — <em>Settings</em></h2>
+  <p class="lead">A toggle per consent. No hidden prefs. Every setting maps to a real entity field.</p>
+  <div class="apgrid">
+    <div class="apcol">
+      <h4>IA — 9 sections</h4>
+      <ul>
+        <li><b>Privacy & Jess</b><span>memory, Sealed Letters, journal default, echo anon</span></li>
+        <li><b>Jess's voice</b><span>voice, text style, accents, reply length</span></li>
+        <li><b>Notifications</b><span>Jess-earned vs calendar, quiet hours</span></li>
+        <li><b>Appearance</b><span>theme, size, motion, UK accents</span></li>
+        <li><b>Language & region</b><span>regional UK accents, foods, currency</span></li>
+        <li><b>Life stage</b><span>current + switcher</span></li>
+        <li><b>Subscription</b><span>Pro management</span></li>
+        <li><b>Accessibility</b><span>5 sub-categories</span></li>
+        <li><b>Advanced</b><span>reset cache, force sync, sign out all</span></li>
+      </ul>
+    </div>
+    <div class="apcol">
+      <h4>New entities</h4>
+      <ul>
+        <li><b>UserPreferences</b><span>all toggles</span></li>
+        <li><b>NotificationPolicies</b><span>per-category rules</span></li>
+        <li><b>JessMemoryPolicy</b><span>budget, consolidation rule, category mask</span></li>
+        <li><b>ToolConsents</b><span>per-tool auto/ask/never</span></li>
+        <li><b>LanguageAccents</b><span>Scots, Welsh, Belfast, regional</span></li>
+        <li><b>AccessibilityProfile</b><span>vision/motion/hearing/motor/cognitive</span></li>
+      </ul>
+      <h4 style="margin-top:22px">Consent language rule</h4>
+      <ul>
+        <li><b>Toggle wording</b><span>"Let Jess..." not "Enable..."</span></li>
+        <li><b>Off state</b><span>shows what that means, not just "off"</span></li>
+        <li><b>Danger zone</b><span>red copy, reversible → green; irreversible → warning modal</span></li>
+      </ul>
+    </div>
+  </div>
+</div>
+
+<div class="ftr">
+  <h3>"every setting is a consent, every consent is revocable."</h3>
+  <p>4 phones · 6 new entities. Ship priority: Jess memory + tool consent Q2 (trust foundation). Language accents + UK content locale Q2 (moat). Accessibility Q3. Offline retreat mode Q4.</p>
+</div>
+
+</body></html>

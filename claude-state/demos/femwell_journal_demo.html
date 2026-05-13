@@ -1,0 +1,509 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>FemWell Journal — reflections, phase-aware, private by default</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,wght@0,400;0,500;0,600;1,400;1,500&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --cream: #FFFAF5;
+    --cream-2: #FFF5EC;
+    --cream-3: #F0E5D8;
+    --plum: #4A2A3A;
+    --plum-2: #6B4559;
+    --plum-mute: #8A7584;
+    --rose-400: #E67F73;
+    --rose-500: #D45E52;
+    --period: #B84A41;
+    --follicular: #E67F73;
+    --ovulatory: #F2A99A;
+    --luteal: #8A5F74;
+    --gold: #C9A95C;
+    --teal: #5F8A85;
+    --moss: #7D8668;
+    --lav: #B9A4C9;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif; background: #F4EDE4; color: var(--plum); padding: 40px 20px 80px; display: flex; flex-direction: column; align-items: center; }
+
+  .header { max-width: 880px; margin: 0 auto 32px; text-align: center; }
+  .eyebrow { font-size: 11px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--plum-mute); font-weight: 600; }
+  h1.title { font-family: 'Fraunces', Georgia, serif; font-size: 34px; font-weight: 500; color: var(--plum); margin: 8px 0 12px; letter-spacing: -0.01em; }
+  .lede { font-size: 15px; color: var(--plum-2); max-width: 720px; margin: 0 auto; line-height: 1.55; }
+  .lede strong { color: var(--plum); font-weight: 600; }
+  .meta-row { display: flex; justify-content: center; gap: 22px; margin-top: 18px; font-size: 12px; color: var(--plum-2); flex-wrap: wrap; }
+  .meta-row strong { color: var(--plum); font-weight: 600; }
+
+  /* Phone frame */
+  .phone { width: 420px; background: #111; border-radius: 46px; padding: 10px; box-shadow: 0 40px 80px rgba(74, 42, 58, 0.22), 0 0 0 1px rgba(0,0,0,0.08); margin: 32px 0; }
+  .phone-inner { background: var(--cream); border-radius: 38px; overflow: hidden; position: relative; height: 920px; display: flex; flex-direction: column; }
+  .notch { position: absolute; top: 0; left: 50%; transform: translateX(-50%); width: 130px; height: 28px; background: #111; border-radius: 0 0 16px 16px; z-index: 30; }
+  .scroll { overflow-y: auto; flex: 1; padding: 44px 18px 120px; scrollbar-width: none; }
+  .scroll::-webkit-scrollbar { display: none; }
+
+  /* Page head */
+  .ph-head-row { display: flex; justify-content: space-between; align-items: flex-start; }
+  .ph-eyebrow { font-size: 10px; letter-spacing: 0.18em; text-transform: uppercase; color: var(--plum-mute); font-weight: 600; }
+  h1.ph-title { font-family: 'Fraunces', serif; font-size: 32px; font-weight: 500; margin: 6px 0 4px; letter-spacing: -0.015em; color: var(--plum); }
+  .ph-sub { font-size: 13px; color: var(--plum-2); }
+  .ph-sub strong { color: var(--plum); font-weight: 600; }
+  .lock-pill { font-size: 10px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--plum-mute); font-weight: 700; padding: 5px 10px; border-radius: 12px; background: rgba(74, 42, 58, 0.06); display: flex; align-items: center; gap: 5px; white-space: nowrap; margin-top: 4px; }
+
+  /* Smart prompt card */
+  .prompt-card { position: relative; background: linear-gradient(135deg, rgba(138, 95, 116, 0.16), rgba(201, 169, 92, 0.1)); border: 1px solid rgba(138, 95, 116, 0.22); border-radius: 16px; padding: 18px 18px 16px; margin: 20px 0 10px; overflow: hidden; }
+  .prompt-card::after { content: '“'; position: absolute; top: -10px; right: 22px; font-family: 'Fraunces', serif; font-size: 96px; color: rgba(138, 95, 116, 0.15); line-height: 1; }
+  .pc-eyebrow { font-size: 9px; letter-spacing: 0.18em; text-transform: uppercase; color: var(--plum-mute); font-weight: 700; display: flex; align-items: center; gap: 6px; }
+  .pc-eyebrow .dot-l { width: 6px; height: 6px; border-radius: 50%; background: var(--luteal); }
+  .pc-prompt { font-family: 'Fraunces', serif; font-size: 20px; color: var(--plum); font-weight: 500; font-style: italic; line-height: 1.35; margin: 10px 0 8px; }
+  .pc-sig { font-size: 11px; color: var(--plum-mute); display: flex; align-items: center; gap: 6px; }
+  .pc-sig .jess-mini { width: 18px; height: 18px; border-radius: 50%; background: linear-gradient(135deg, var(--gold), var(--rose-400)); color: #FFF5EC; display: grid; place-items: center; font-family: 'Fraunces', serif; font-size: 9px; font-weight: 500; }
+  .pc-cta-row { display: flex; gap: 8px; margin-top: 14px; }
+  .pc-cta { flex: 1; font-size: 11px; padding: 10px 10px; border-radius: 10px; text-align: center; font-weight: 700; letter-spacing: 0.04em; display: flex; align-items: center; justify-content: center; gap: 6px; }
+  .pc-cta.primary { background: var(--plum); color: var(--cream); }
+  .pc-cta.ghost { background: var(--cream); color: var(--plum); }
+
+  /* Tonight prompts carousel */
+  .prompts-row { display: flex; gap: 10px; overflow-x: auto; margin: 0 -18px; padding: 0 18px 6px; scrollbar-width: none; }
+  .prompts-row::-webkit-scrollbar { display: none; }
+  .prompt-chip { flex-shrink: 0; width: 170px; border-radius: 14px; padding: 14px; background: #FFFFFF; border: 1px solid rgba(74, 42, 58, 0.07); }
+  .pp-eyebrow { font-size: 9px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--plum-mute); font-weight: 700; display: flex; align-items: center; gap: 5px; }
+  .pp-eyebrow .tag-luteal { width: 5px; height: 5px; border-radius: 50%; background: var(--luteal); }
+  .pp-text { font-family: 'Fraunces', serif; font-size: 13px; color: var(--plum); font-weight: 500; font-style: italic; line-height: 1.4; margin-top: 8px; min-height: 54px; }
+  .pp-mode { font-size: 10px; color: var(--plum-mute); margin-top: 10px; letter-spacing: 0.04em; font-weight: 600; }
+
+  /* Compose strip */
+  .compose { background: #FFFFFF; border: 1px solid rgba(74, 42, 58, 0.08); border-radius: 14px; padding: 12px 14px; margin-top: 14px; }
+  .comp-top { display: flex; align-items: center; gap: 10px; }
+  .comp-dot { width: 10px; height: 10px; border-radius: 50%; background: var(--luteal); flex-shrink: 0; }
+  .comp-placeholder { flex: 1; font-size: 13px; color: var(--plum-mute); font-style: italic; }
+  .comp-modes { display: flex; gap: 5px; margin-top: 10px; padding-top: 10px; border-top: 1px solid rgba(74, 42, 58, 0.05); }
+  .comp-mode { flex: 1; font-size: 10px; color: var(--plum-2); padding: 6px 4px; border-radius: 10px; background: var(--cream-2); text-align: center; letter-spacing: 0.04em; font-weight: 600; display: flex; align-items: center; justify-content: center; gap: 4px; }
+  .comp-mode.active { background: rgba(138, 95, 116, 0.14); color: var(--luteal); }
+
+  /* Section divider */
+  .divider { display: flex; align-items: baseline; justify-content: space-between; margin: 24px 0 12px; }
+  .div-title { font-family: 'Fraunces', serif; font-size: 19px; color: var(--plum); font-weight: 500; letter-spacing: -0.01em; }
+  .div-meta { font-size: 10px; color: var(--plum-mute); letter-spacing: 0.1em; text-transform: uppercase; font-weight: 600; }
+
+  /* Threads carousel */
+  .threads { display: flex; gap: 10px; overflow-x: auto; margin: 0 -18px; padding: 0 18px 6px; scrollbar-width: none; }
+  .threads::-webkit-scrollbar { display: none; }
+  .thread { flex-shrink: 0; width: 140px; border-radius: 14px; padding: 14px; position: relative; overflow: hidden; color: #FFF5EC; }
+  .th-work { background: linear-gradient(140deg, var(--plum), #6B4559); }
+  .th-mum { background: linear-gradient(140deg, var(--rose-400), var(--rose-500)); }
+  .th-body { background: linear-gradient(140deg, var(--luteal), #6C4F62); }
+  .th-sleep { background: linear-gradient(140deg, #3A2434, #5E3E50); }
+  .th-money { background: linear-gradient(140deg, var(--gold), #A48740); }
+  .th-hard { background: linear-gradient(140deg, var(--lav), #8E7EB8); }
+  .th-eyebrow { font-size: 9px; letter-spacing: 0.14em; text-transform: uppercase; font-weight: 700; opacity: 0.8; }
+  .th-name { font-family: 'Fraunces', serif; font-size: 15px; font-weight: 500; line-height: 1.2; margin-top: 6px; }
+  .th-meta { font-size: 10px; margin-top: 10px; opacity: 0.82; font-weight: 600; letter-spacing: 0.02em; }
+
+  /* Filter row */
+  .filter-row { display: flex; gap: 6px; overflow-x: auto; margin: 0 -18px; padding: 0 18px 6px; scrollbar-width: none; }
+  .filter-row::-webkit-scrollbar { display: none; }
+  .filter { flex-shrink: 0; font-size: 11px; padding: 6px 12px; border-radius: 14px; background: var(--cream-2); color: var(--plum-2); font-weight: 600; }
+  .filter.active { background: var(--plum); color: var(--cream); }
+
+  /* Entry card */
+  .entry { background: #FFFFFF; border: 1px solid rgba(74, 42, 58, 0.06); border-radius: 14px; padding: 14px; margin-bottom: 10px; position: relative; }
+  .entry-head { display: flex; justify-content: space-between; align-items: flex-start; gap: 10px; margin-bottom: 8px; }
+  .entry-date-col { display: flex; flex-direction: column; gap: 3px; align-items: flex-start; flex-shrink: 0; }
+  .entry-date { font-family: 'Fraunces', serif; font-size: 13px; color: var(--plum); font-weight: 500; }
+  .entry-time { font-size: 10px; color: var(--plum-mute); letter-spacing: 0.04em; font-weight: 600; }
+  .entry-chips { display: flex; gap: 5px; flex-wrap: wrap; justify-content: flex-end; }
+  .phase-chip { font-size: 9px; letter-spacing: 0.08em; padding: 2px 6px; border-radius: 8px; font-weight: 700; text-transform: uppercase; }
+  .phase-chip.luteal { background: rgba(138, 95, 116, 0.14); color: var(--luteal); }
+  .phase-chip.period { background: rgba(184, 74, 65, 0.14); color: var(--period); }
+  .phase-chip.follicular { background: rgba(230, 127, 115, 0.16); color: var(--rose-500); }
+  .phase-chip.ovulatory { background: rgba(242, 169, 154, 0.28); color: var(--rose-500); }
+  .mood-chip { font-size: 9px; letter-spacing: 0.08em; padding: 2px 6px; border-radius: 8px; font-weight: 700; text-transform: uppercase; display: inline-flex; align-items: center; gap: 4px; }
+  .mood-chip .md { width: 5px; height: 5px; border-radius: 50%; }
+  .mood-chip.soft { background: rgba(185, 164, 201, 0.24); color: #7A6B95; }
+  .mood-chip.soft .md { background: var(--lav); }
+  .mood-chip.bright { background: rgba(201, 169, 92, 0.2); color: #8A7740; }
+  .mood-chip.bright .md { background: var(--gold); }
+  .mood-chip.heavy { background: rgba(107, 69, 89, 0.14); color: var(--plum-2); }
+  .mood-chip.heavy .md { background: var(--plum-2); }
+  .mood-chip.steady { background: rgba(95, 138, 133, 0.15); color: var(--teal); }
+  .mood-chip.steady .md { background: var(--teal); }
+  .entry-title { font-family: 'Fraunces', serif; font-size: 15px; color: var(--plum); font-weight: 500; line-height: 1.3; margin-bottom: 4px; }
+  .entry-snippet { font-size: 12.5px; color: var(--plum-2); line-height: 1.5; }
+  .entry-snippet .fade { color: var(--plum-mute); }
+  .entry-foot { display: flex; justify-content: space-between; align-items: center; margin-top: 10px; padding-top: 10px; border-top: 1px solid rgba(74, 42, 58, 0.05); }
+  .entry-meta-left { display: flex; align-items: center; gap: 8px; font-size: 10px; color: var(--plum-mute); font-weight: 600; letter-spacing: 0.04em; }
+  .entry-thread-pill { font-size: 9px; padding: 2px 7px; border-radius: 8px; background: var(--cream-2); color: var(--plum-2); letter-spacing: 0.06em; font-weight: 700; text-transform: uppercase; }
+  .entry-mode { font-size: 10px; color: var(--plum-mute); letter-spacing: 0.06em; font-weight: 600; display: flex; align-items: center; gap: 4px; }
+  .entry-lock { font-size: 11px; color: var(--plum-mute); }
+
+  /* Voice-note bar */
+  .vn-bar { display: flex; align-items: center; gap: 8px; margin: 8px 0 2px; padding: 8px 10px; border-radius: 10px; background: rgba(95, 138, 133, 0.1); }
+  .vn-play { width: 24px; height: 24px; border-radius: 50%; background: var(--teal); color: #FFF5EC; display: grid; place-items: center; font-size: 10px; flex-shrink: 0; }
+  .vn-wave { flex: 1; display: flex; gap: 2px; align-items: center; }
+  .vn-wave span { width: 2px; background: var(--teal); opacity: 0.55; border-radius: 1px; }
+  .vn-len { font-size: 10px; color: var(--teal); font-weight: 700; letter-spacing: 0.04em; }
+
+  /* Pattern card — Jess gentle */
+  .pattern { background: linear-gradient(135deg, rgba(201, 169, 92, 0.14), rgba(184, 74, 65, 0.08)); border: 1px solid rgba(201, 169, 92, 0.2); border-radius: 14px; padding: 14px 16px; margin-bottom: 10px; }
+  .pat-top { display: flex; align-items: flex-start; gap: 10px; }
+  .pat-av { width: 30px; height: 30px; border-radius: 50%; background: linear-gradient(135deg, var(--gold), var(--rose-400)); color: #FFF5EC; display: grid; place-items: center; font-family: 'Fraunces', serif; font-size: 13px; font-weight: 500; flex-shrink: 0; }
+  .pat-body { flex: 1; }
+  .pat-label { font-size: 9px; letter-spacing: 0.18em; text-transform: uppercase; color: var(--plum-mute); font-weight: 700; }
+  .pat-msg { font-family: 'Fraunces', serif; font-size: 14px; color: var(--plum); font-style: italic; line-height: 1.4; margin-top: 3px; }
+  .pat-viz { margin-top: 12px; padding-top: 12px; border-top: 1px solid rgba(74, 42, 58, 0.08); display: grid; grid-template-columns: repeat(28, 1fr); gap: 2px; }
+  .pat-cell { height: 18px; border-radius: 2px; background: rgba(74, 42, 58, 0.06); }
+  .pat-cell.hit { background: var(--luteal); opacity: 0.75; }
+  .pat-cell.hit.strong { opacity: 1; }
+  .pat-legend { display: flex; justify-content: space-between; margin-top: 6px; font-size: 9px; color: var(--plum-mute); letter-spacing: 0.06em; font-weight: 600; }
+
+  /* Tonight reflection — dark */
+  .tonight { background: linear-gradient(140deg, #3A2434, #5E3E50); color: #F5E6D3; border-radius: 16px; padding: 16px; margin: 14px 0 10px; position: relative; overflow: hidden; }
+  .tonight::before { content: '☽'; position: absolute; top: 12px; right: 16px; font-size: 30px; opacity: 0.22; color: #F5E6D3; }
+  .t-eyebrow { font-size: 9px; letter-spacing: 0.22em; text-transform: uppercase; color: rgba(245, 230, 211, 0.68); font-weight: 700; }
+  .t-prompt { font-family: 'Fraunces', serif; font-size: 16px; font-weight: 500; margin: 8px 0 6px; line-height: 1.3; font-style: italic; color: #F5E6D3; max-width: 86%; }
+  .t-sub { font-size: 11px; color: rgba(245, 230, 211, 0.72); line-height: 1.5; max-width: 86%; }
+  .t-cta { display: inline-block; margin-top: 12px; font-size: 11px; color: #F5E6D3; font-weight: 700; background: rgba(245, 230, 211, 0.14); padding: 7px 14px; border-radius: 18px; letter-spacing: 0.04em; }
+
+  /* Plan with Jess */
+  .jess { background: linear-gradient(135deg, rgba(201, 169, 92, 0.14), rgba(184, 74, 65, 0.08)); border: 1px solid rgba(201, 169, 92, 0.2); border-radius: 14px; padding: 14px 16px; display: flex; align-items: center; gap: 12px; margin-bottom: 10px; }
+  .jess-av { width: 40px; height: 40px; border-radius: 50%; background: linear-gradient(135deg, var(--gold), var(--rose-400)); color: #FFF5EC; display: grid; place-items: center; font-family: 'Fraunces', serif; font-size: 18px; font-weight: 500; flex-shrink: 0; }
+  .jess-body { flex: 1; }
+  .jess-name { font-size: 9px; letter-spacing: 0.18em; text-transform: uppercase; color: var(--plum-mute); font-weight: 700; }
+  .jess-msg { font-family: 'Fraunces', serif; font-size: 14px; color: var(--plum); font-style: italic; line-height: 1.35; margin-top: 3px; }
+  .jess-cta { font-size: 18px; color: var(--plum); font-weight: 500; }
+
+  /* Privacy footer */
+  .privacy { background: rgba(74, 42, 58, 0.05); border-radius: 14px; padding: 14px 16px; margin-top: 10px; display: flex; gap: 12px; align-items: flex-start; }
+  .priv-ico { width: 34px; height: 34px; border-radius: 10px; background: rgba(74, 42, 58, 0.08); color: var(--plum); display: grid; place-items: center; font-size: 16px; flex-shrink: 0; }
+  .priv-body { flex: 1; }
+  .priv-title { font-size: 12px; color: var(--plum); font-weight: 700; letter-spacing: 0.04em; }
+  .priv-sub { font-size: 11px; color: var(--plum-2); margin-top: 4px; line-height: 1.5; }
+
+  /* Nav + FAB */
+  .nav { position: absolute; bottom: 0; left: 0; right: 0; background: rgba(255, 250, 245, 0.96); backdrop-filter: blur(12px); border-top: 1px solid rgba(74, 42, 58, 0.08); height: 68px; display: grid; grid-template-columns: repeat(5, 1fr); padding: 10px 0 14px; z-index: 20; }
+  .nav-item { display: flex; flex-direction: column; align-items: center; gap: 5px; font-size: 9px; color: var(--plum-mute); font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; }
+  .nav-item.active { color: var(--plum); }
+  .nav-ico { width: 18px; height: 18px; border-radius: 5px; background: currentColor; opacity: 0.55; }
+  .nav-item.active .nav-ico { opacity: 1; }
+  .fab { position: absolute; bottom: 84px; right: 22px; width: 54px; height: 54px; border-radius: 50%; background: var(--plum); color: var(--cream); display: grid; place-items: center; font-size: 20px; box-shadow: 0 10px 30px rgba(74, 42, 58, 0.32); z-index: 15; font-family: 'Fraunces', serif; }
+
+  .footer { text-align: center; max-width: 820px; margin: 36px auto 0; padding: 22px; background: rgba(74, 42, 58, 0.05); border-radius: 14px; font-size: 13px; color: var(--plum-2); line-height: 1.6; }
+  .footer strong { color: var(--plum); font-weight: 600; }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="eyebrow">FemWell · Journal redesign</div>
+  <h1 class="title">Journal — reflections, phase-aware, private by default</h1>
+  <p class="lede">Same visual language as Planner / Programs / Community. <strong>Jess-picked prompt</strong> at the top adapted to luteal day 19. Tonight's prompts carousel, compose strip with mode chips (write / voice / one-line / guided). Ongoing <strong>threads</strong> group entries by theme. Entry cards carry phase · mood · mode · thread · lock. <strong>Gentle pattern card</strong> shows when a topic is surfacing across a phase. Dark <strong>tonight's reflection</strong>. Privacy footer — locked to you, Jess reads only when invited.</p>
+  <div class="meta-row">
+    <div>phase context · <strong>luteal · day 19</strong></div>
+    <div>entries · <strong>127 total · 6 this cycle</strong></div>
+    <div>threads · <strong>6 ongoing</strong></div>
+    <div>entities · <strong>JournalEntries · Threads · Prompts · Moods</strong></div>
+  </div>
+</div>
+
+<div class="phone">
+  <div class="phone-inner">
+    <div class="notch"></div>
+    <div class="scroll">
+
+      <!-- Page head -->
+      <div class="ph-head-row">
+        <div>
+          <div class="ph-eyebrow">Journal</div>
+          <h1 class="ph-title">Reflections</h1>
+          <div class="ph-sub"><strong>Luteal · day 19</strong> · 127 entries · 6 this cycle</div>
+        </div>
+        <div class="lock-pill">◐ Locked</div>
+      </div>
+
+      <!-- Smart Jess prompt -->
+      <div class="prompt-card">
+        <div class="pc-eyebrow"><span class="dot-l"></span> Jess · tuned to luteal day 19</div>
+        <div class="pc-prompt">"What's one thing you want to soften this week — and who are you being when you try?"</div>
+        <div class="pc-sig"><span class="jess-mini">J</span> A luteal-friendly entry · 3–5 minutes</div>
+        <div class="pc-cta-row">
+          <div class="pc-cta primary">✎ Start writing</div>
+          <div class="pc-cta ghost">◉ Voice note</div>
+        </div>
+      </div>
+
+      <!-- Tonight's prompts -->
+      <div class="divider">
+        <div class="div-title">Tonight's prompts</div>
+        <div class="div-meta">For luteal</div>
+      </div>
+      <div class="prompts-row">
+        <div class="prompt-chip">
+          <div class="pp-eyebrow"><span class="tag-luteal"></span> Body</div>
+          <div class="pp-text">"Where did you feel heaviness today? Not to fix — just to notice."</div>
+          <div class="pp-mode">Guided · 4 prompts</div>
+        </div>
+        <div class="prompt-chip">
+          <div class="pp-eyebrow"><span class="tag-luteal"></span> Boundaries</div>
+          <div class="pp-text">"What's one 'yes' you want to take back before your period?"</div>
+          <div class="pp-mode">One line</div>
+        </div>
+        <div class="prompt-chip">
+          <div class="pp-eyebrow"><span class="tag-luteal"></span> Gratitude</div>
+          <div class="pp-text">"Three small things your body did for you today — even the invisible ones."</div>
+          <div class="pp-mode">List · 3 items</div>
+        </div>
+        <div class="prompt-chip">
+          <div class="pp-eyebrow"><span class="tag-luteal"></span> Surfacing</div>
+          <div class="pp-text">"What thought keeps circling? Name it on the page — it tends to quiet down."</div>
+          <div class="pp-mode">Freewrite</div>
+        </div>
+      </div>
+
+      <!-- Compose -->
+      <div class="compose">
+        <div class="comp-top">
+          <div class="comp-dot"></div>
+          <div class="comp-placeholder">Start writing anything — nobody's watching.</div>
+        </div>
+        <div class="comp-modes">
+          <div class="comp-mode active">✎ Write</div>
+          <div class="comp-mode">◉ Voice</div>
+          <div class="comp-mode">— One line</div>
+          <div class="comp-mode">☽ Guided</div>
+        </div>
+      </div>
+
+      <!-- Threads -->
+      <div class="divider">
+        <div class="div-title">Your threads</div>
+        <div class="div-meta">6 ongoing</div>
+      </div>
+      <div class="threads">
+        <div class="thread th-body">
+          <div class="th-eyebrow">Thread</div>
+          <div class="th-name">Body listening</div>
+          <div class="th-meta">32 entries · today</div>
+        </div>
+        <div class="thread th-work">
+          <div class="th-eyebrow">Thread</div>
+          <div class="th-name">Work &amp; me</div>
+          <div class="th-meta">24 entries · 2d ago</div>
+        </div>
+        <div class="thread th-mum">
+          <div class="th-eyebrow">Thread</div>
+          <div class="th-name">Mum stuff</div>
+          <div class="th-meta">18 entries · 5d ago</div>
+        </div>
+        <div class="thread th-sleep">
+          <div class="th-eyebrow">Thread</div>
+          <div class="th-name">Sleep notes</div>
+          <div class="th-meta">21 entries · today</div>
+        </div>
+        <div class="thread th-hard">
+          <div class="th-eyebrow">Thread</div>
+          <div class="th-name">Hard days</div>
+          <div class="th-meta">15 entries · 1w ago</div>
+        </div>
+        <div class="thread th-money">
+          <div class="th-eyebrow">Thread</div>
+          <div class="th-name">Money thoughts</div>
+          <div class="th-meta">9 entries · 3w ago</div>
+        </div>
+      </div>
+
+      <!-- Recent entries filter -->
+      <div class="divider">
+        <div class="div-title">Recent entries</div>
+        <div class="div-meta">6 this cycle</div>
+      </div>
+      <div class="filter-row">
+        <div class="filter active">All</div>
+        <div class="filter">This phase</div>
+        <div class="filter">Written</div>
+        <div class="filter">Voice</div>
+        <div class="filter">Guided</div>
+        <div class="filter">One-line</div>
+      </div>
+
+      <!-- Entry 1 — written, today luteal -->
+      <div class="entry" style="margin-top: 12px;">
+        <div class="entry-head">
+          <div class="entry-date-col">
+            <div class="entry-date">Today</div>
+            <div class="entry-time">9:42 AM</div>
+          </div>
+          <div class="entry-chips">
+            <span class="phase-chip luteal">● Luteal · d19</span>
+            <span class="mood-chip soft"><span class="md"></span> Soft</span>
+          </div>
+        </div>
+        <div class="entry-title">The coat made of wet sand</div>
+        <div class="entry-snippet">Woke up with that weighted feeling again. Not sad exactly — more like every movement takes two steps to arrive. Reading Ada's post reminded me this is <span class="fade">seasonal, not permanent...</span></div>
+        <div class="entry-foot">
+          <div class="entry-meta-left">
+            <span class="entry-thread-pill">Body listening</span>
+            <span class="entry-mode">✎ 4 min read</span>
+          </div>
+          <div class="entry-lock">◐</div>
+        </div>
+      </div>
+
+      <!-- Entry 2 — voice note, yesterday luteal -->
+      <div class="entry">
+        <div class="entry-head">
+          <div class="entry-date-col">
+            <div class="entry-date">Yesterday</div>
+            <div class="entry-time">10:15 PM</div>
+          </div>
+          <div class="entry-chips">
+            <span class="phase-chip luteal">● Luteal · d18</span>
+            <span class="mood-chip heavy"><span class="md"></span> Heavy</span>
+          </div>
+        </div>
+        <div class="entry-title">Voice note · work spiral</div>
+        <div class="vn-bar">
+          <div class="vn-play">▶</div>
+          <div class="vn-wave">
+            <span style="height:6px"></span><span style="height:10px"></span><span style="height:14px"></span><span style="height:8px"></span><span style="height:18px"></span><span style="height:12px"></span><span style="height:20px"></span><span style="height:10px"></span><span style="height:16px"></span><span style="height:8px"></span><span style="height:14px"></span><span style="height:18px"></span><span style="height:10px"></span><span style="height:6px"></span><span style="height:12px"></span><span style="height:16px"></span><span style="height:8px"></span><span style="height:10px"></span><span style="height:14px"></span><span style="height:6px"></span>
+          </div>
+          <div class="vn-len">2:34</div>
+        </div>
+        <div class="entry-foot">
+          <div class="entry-meta-left">
+            <span class="entry-thread-pill">Work &amp; me</span>
+            <span class="entry-mode">◉ Voice · auto-transcribed</span>
+          </div>
+          <div class="entry-lock">◐</div>
+        </div>
+      </div>
+
+      <!-- Entry 3 — one line, two days ago -->
+      <div class="entry">
+        <div class="entry-head">
+          <div class="entry-date-col">
+            <div class="entry-date">Sat · Apr 18</div>
+            <div class="entry-time">11:08 PM</div>
+          </div>
+          <div class="entry-chips">
+            <span class="phase-chip luteal">● Luteal · d17</span>
+            <span class="mood-chip steady"><span class="md"></span> Steady</span>
+          </div>
+        </div>
+        <div class="entry-title">"I said no to the Sunday thing. And I meant it."</div>
+        <div class="entry-foot">
+          <div class="entry-meta-left">
+            <span class="entry-thread-pill">Body listening</span>
+            <span class="entry-mode">— One-line</span>
+          </div>
+          <div class="entry-lock">◐</div>
+        </div>
+      </div>
+
+      <!-- Pattern card — Jess gentle -->
+      <div class="pattern">
+        <div class="pat-top">
+          <div class="pat-av">J</div>
+          <div class="pat-body">
+            <div class="pat-label">A gentle pattern</div>
+            <div class="pat-msg">"You write about <em>sleep</em> most between cycle day 17 and 22. Not surprising — progesterone is doing a lot in that window."</div>
+          </div>
+        </div>
+        <div class="pat-viz" id="patviz"></div>
+        <div class="pat-legend">
+          <span>d1</span><span>d14</span><span>d28</span>
+        </div>
+      </div>
+
+      <!-- Entry 4 — guided, follicular -->
+      <div class="entry">
+        <div class="entry-head">
+          <div class="entry-date-col">
+            <div class="entry-date">Sun · Apr 12</div>
+            <div class="entry-time">8:32 AM</div>
+          </div>
+          <div class="entry-chips">
+            <span class="phase-chip follicular">● Follicular · d11</span>
+            <span class="mood-chip bright"><span class="md"></span> Bright</span>
+          </div>
+        </div>
+        <div class="entry-title">Guided · new-cycle intentions</div>
+        <div class="entry-snippet">Three things I want to carry through this cycle — (1) stop apologising for slowing down in luteal, (2) call my sister every Sunday, (3) the pitch deck, in 20-min chunks...</div>
+        <div class="entry-foot">
+          <div class="entry-meta-left">
+            <span class="entry-thread-pill">Work &amp; me</span>
+            <span class="entry-mode">☽ Guided · 6 prompts</span>
+          </div>
+          <div class="entry-lock">◐</div>
+        </div>
+      </div>
+
+      <!-- Tonight reflection -->
+      <div class="tonight">
+        <div class="t-eyebrow">Before bed tonight</div>
+        <div class="t-prompt">"One thing your body carried today — name it, thank it, close the book."</div>
+        <div class="t-sub">A 90-second close-out. Your luteal brain sleeps better when the day gets a proper ending.</div>
+        <div class="t-cta">Open tonight's reflection →</div>
+      </div>
+
+      <!-- Plan with Jess -->
+      <div class="jess">
+        <div class="jess-av">J</div>
+        <div class="jess-body">
+          <div class="jess-name">Unpack with Jess</div>
+          <div class="jess-msg">"Something circling you can't quite name? Talk it out with me — still locked, still yours."</div>
+        </div>
+        <div class="jess-cta">›</div>
+      </div>
+
+      <!-- Privacy footer -->
+      <div class="privacy">
+        <div class="priv-ico">◐</div>
+        <div class="priv-body">
+          <div class="priv-title">Locked to you. Always.</div>
+          <div class="priv-sub">Your journal is encrypted on-device. Jess reads an entry only when <em>you</em> hand it to her for a prompt. No training, no sharing, no exports unless you ask.</div>
+        </div>
+      </div>
+
+    </div>
+
+    <div class="fab">✎</div>
+    <div class="nav">
+      <div class="nav-item"><div class="nav-ico"></div>Today</div>
+      <div class="nav-item"><div class="nav-ico"></div>Lifestyle</div>
+      <div class="nav-item active"><div class="nav-ico"></div>Jess</div>
+      <div class="nav-item"><div class="nav-ico"></div>Profile</div>
+      <div class="nav-item"><div class="nav-ico"></div>Menu</div>
+    </div>
+  </div>
+</div>
+
+<div class="footer">
+  <strong>Wired to real base44 entities:</strong> JournalEntries (127 total, 6 this cycle) · Threads (6 ongoing: Body listening, Work &amp; me, Mum stuff, Sleep notes, Hard days, Money thoughts) · Prompts (phase-matched library, luteal-tuned) · Moods (soft / bright / heavy / steady) · PhaseHistory (luteal day 19) · Jess pattern engine.<br>
+  <strong>Design system:</strong> phone frame · rose/plum palette · Fraunces + Inter (ital for prompts &amp; entries) · Jess-picked smart prompt · phase-tuned prompt carousel · 4 compose modes · ongoing threads · phase+mood+mode+thread chips on every entry · gentle pattern heat-strip · dark tonight's reflection · locked-by-default framing.
+</div>
+
+<script>
+  // Pattern heat strip — last 28 days, marking days with sleep-thread entries
+  // Hits concentrated on cycle day 17–22 (luteal), a few scattered elsewhere
+  (function(){
+    var el = document.getElementById('patviz');
+    if(!el) return;
+    // day index in last 28-day window; hits on specific days (simulate cycle days 17–22 = array idx 17,18,19,20,21, 18 prev cycle etc.)
+    var hits = {0: .4, 1: 0, 2: 0, 3: .7, 4: 0, 5: .4, 6: 0, 7: 0, 8: 0, 9: 0, 10: 0, 11: 0, 12: 0, 13: 0, 14: 0, 15: 0, 16: .4, 17: 1, 18: 1, 19: 1, 20: .7, 21: 1, 22: .4, 23: 0, 24: 0, 25: 0, 26: 0, 27: 0};
+    for(var i=0;i<28;i++){
+      var c = document.createElement('div');
+      c.className = 'pat-cell';
+      if(hits[i]){
+        c.classList.add('hit');
+        if(hits[i] >= 1) c.classList.add('strong');
+        c.style.opacity = Math.max(0.35, hits[i]);
+      }
+      el.appendChild(c);
+    }
+  })();
+</script>
+
+</body>
+</html>

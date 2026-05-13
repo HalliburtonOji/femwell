@@ -1,0 +1,804 @@
+<!DOCTYPE html>
+<html lang="en-GB">
+<head>
+<meta charset="UTF-8">
+<title>FemWell · UK-local layer</title>
+<style>
+  :root {
+    --cream: #f7f0e6;
+    --cream-2: #efe5d4;
+    --plum: #4A2A3A;
+    --plum-2: #7a4a5e;
+    --rose: #d4a5a0;
+    --gold: #C9A95C;
+    --luteal: #8A5F74;
+    --moss: #6b7a5a;
+    --night: #1a1522;
+    --ink: #2b1f28;
+    --ink-2: #5a4a55;
+  }
+  * { box-sizing: border-box; }
+  body { margin:0; padding:40px 20px; background: #e7ddce; font-family: 'Inter', system-ui, sans-serif; color: var(--ink); }
+  h1 { font-family: 'Fraunces', Georgia, serif; color: var(--plum); font-weight: 500; margin: 0 0 8px; font-size: 28px; letter-spacing: -0.01em; }
+  h1 em { font-style: italic; color: var(--luteal); }
+  .subtitle { color: var(--ink-2); font-size: 14px; max-width: 900px; margin: 0 auto 32px; line-height: 1.55; }
+  .container { max-width: 1820px; margin: 0 auto; }
+  .top { text-align: center; margin-bottom: 32px; }
+  .top .tag { display: inline-block; background: var(--plum); color: var(--cream); padding: 4px 10px; font-size: 10px; border-radius: 4px; text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 12px; }
+  .phones { display: grid; grid-template-columns: repeat(4, 420px); gap: 24px; justify-content: center; }
+  .phone {
+    width: 420px;
+    height: 1580px;
+    background: #0f0d14;
+    border-radius: 44px;
+    padding: 12px;
+    box-shadow: 0 30px 80px rgba(0,0,0,0.35), 0 0 0 1px rgba(0,0,0,0.3);
+    position: relative;
+  }
+  .phone::before {
+    content: "";
+    position: absolute;
+    top: 18px; left: 50%;
+    transform: translateX(-50%);
+    width: 124px; height: 26px;
+    background: #0a0810;
+    border-radius: 18px;
+    z-index: 99;
+  }
+  .screen {
+    width: 100%; height: 100%;
+    background: var(--cream);
+    border-radius: 32px;
+    overflow: hidden;
+    position: relative;
+    font-size: 14px;
+  }
+  .scroll { height: 100%; overflow: hidden; padding: 62px 20px 90px; }
+  .phone-label { text-align: center; font-family: 'Fraunces', serif; font-style: italic; color: var(--plum); margin-top: 14px; font-size: 15px; }
+  .phone-label small { display: block; font-family: 'Inter'; font-style: normal; font-size: 11px; color: var(--ink-2); margin-top: 2px; }
+
+  /* Generic surfaces */
+  .card { background: #fff; border-radius: 18px; padding: 14px; margin-bottom: 10px; border: 1px solid rgba(74,42,58,0.08); }
+  .card h3 { margin: 0 0 4px; font-size: 14px; font-family: 'Fraunces', serif; color: var(--plum); font-weight: 500; }
+  .card p { margin: 0; font-size: 12px; color: var(--ink-2); line-height: 1.5; }
+  .meta { font-size: 10px; color: var(--ink-2); text-transform: uppercase; letter-spacing: 0.06em; }
+  .pill { display: inline-block; padding: 3px 9px; border-radius: 10px; background: var(--cream-2); color: var(--plum); font-size: 10px; margin-right: 4px; letter-spacing: 0.03em; }
+  .pill.gold { background: var(--gold); color: #fff; }
+  .pill.moss { background: var(--moss); color: #fff; }
+  .pill.rose { background: var(--rose); color: #fff; }
+  .pill.plum { background: var(--plum); color: var(--cream); }
+  .pill.luteal { background: var(--luteal); color: #fff; }
+
+  /* Headers */
+  .page-hero {
+    background: linear-gradient(135deg, var(--plum), var(--luteal));
+    color: var(--cream);
+    padding: 18px 16px 16px;
+    border-radius: 20px;
+    margin-bottom: 14px;
+  }
+  .page-hero small { font-size: 10px; text-transform: uppercase; letter-spacing: 0.1em; opacity: 0.7; }
+  .page-hero h2 { margin: 6px 0 6px; font-family: 'Fraunces', serif; font-style: italic; font-weight: 400; font-size: 22px; line-height: 1.2; }
+  .page-hero p { margin: 0; font-size: 12px; opacity: 0.88; line-height: 1.5; }
+
+  /* Practitioner card */
+  .pract {
+    background: #fff;
+    border-radius: 18px;
+    padding: 14px;
+    margin-bottom: 10px;
+    border: 1px solid rgba(74,42,58,0.1);
+    position: relative;
+  }
+  .pract .row { display: flex; gap: 12px; align-items: flex-start; }
+  .pract .avatar {
+    width: 52px; height: 52px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, var(--rose), var(--gold));
+    flex-shrink: 0;
+    display: flex; align-items: center; justify-content: center;
+    color: #fff; font-family: 'Fraunces', serif; font-size: 18px;
+  }
+  .pract .body { flex: 1; }
+  .pract .name { font-family: 'Fraunces', serif; color: var(--plum); font-weight: 500; font-size: 15px; }
+  .pract .role { color: var(--ink-2); font-size: 11px; margin: 2px 0 6px; }
+  .verify {
+    display: inline-flex; align-items: center; gap: 4px;
+    background: rgba(107,122,90,0.12);
+    color: var(--moss);
+    font-size: 10px; padding: 3px 8px;
+    border-radius: 9px; margin-top: 6px;
+    font-weight: 500;
+  }
+  .verify::before {
+    content: "✓"; font-size: 11px;
+  }
+  .pract .loc { font-size: 11px; color: var(--ink-2); margin-top: 8px; display: flex; align-items: center; gap: 6px; }
+  .pract .loc::before { content: ""; width: 4px; height: 4px; border-radius: 50%; background: var(--moss); display: inline-block; }
+  .pract .cta { margin-top: 10px; display: flex; gap: 8px; }
+  .pract .cta button {
+    flex: 1; padding: 8px 10px; border-radius: 11px; border: none;
+    font-size: 11px; font-weight: 500; cursor: pointer;
+    background: var(--cream-2); color: var(--plum);
+  }
+  .pract .cta button.primary { background: var(--plum); color: var(--cream); }
+
+  /* Filter strip */
+  .filters {
+    display: flex; gap: 6px; overflow-x: auto;
+    padding-bottom: 8px; margin-bottom: 10px;
+  }
+  .filter-chip {
+    background: #fff; border: 1px solid rgba(74,42,58,0.12);
+    border-radius: 18px; padding: 7px 12px;
+    font-size: 11px; color: var(--plum);
+    white-space: nowrap; flex-shrink: 0;
+  }
+  .filter-chip.on { background: var(--plum); color: var(--cream); border-color: var(--plum); }
+
+  /* Foods by phase */
+  .phase-head {
+    background: linear-gradient(135deg, var(--gold), #e4c983);
+    padding: 16px; border-radius: 18px;
+    color: #3a2d1a; margin-bottom: 12px;
+  }
+  .phase-head h3 { margin: 0 0 4px; font-family: 'Fraunces', serif; font-size: 18px; font-weight: 500; }
+  .phase-head p { margin: 0; font-size: 12px; opacity: 0.85; }
+  .food-tile {
+    background: #fff; border-radius: 14px; padding: 12px;
+    margin-bottom: 8px; display: flex; gap: 12px; align-items: center;
+    border: 1px solid rgba(74,42,58,0.08);
+  }
+  .food-tile .thumb {
+    width: 46px; height: 46px; border-radius: 12px;
+    background: var(--cream-2); flex-shrink: 0;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 22px;
+  }
+  .food-tile .info { flex: 1; }
+  .food-tile .title { font-family: 'Fraunces', serif; color: var(--plum); font-size: 13px; }
+  .food-tile .sub { font-size: 10px; color: var(--ink-2); margin-top: 2px; }
+  .food-tile .tags { margin-top: 4px; }
+
+  /* Regional voices */
+  .voice-tile {
+    background: #fff; border-radius: 16px; padding: 14px;
+    margin-bottom: 10px; border: 1px solid rgba(74,42,58,0.08);
+  }
+  .voice-tile .row { display: flex; align-items: center; gap: 12px; }
+  .voice-tile .waveform {
+    width: 72px; height: 32px;
+    background: linear-gradient(90deg,
+      var(--rose) 0% 8%, transparent 8% 12%,
+      var(--plum-2) 12% 22%, transparent 22% 26%,
+      var(--luteal) 26% 40%, transparent 40% 44%,
+      var(--plum) 44% 58%, transparent 58% 62%,
+      var(--luteal) 62% 72%, transparent 72% 76%,
+      var(--plum-2) 76% 88%, transparent 88% 92%,
+      var(--rose) 92% 100%);
+    border-radius: 8px;
+    flex-shrink: 0;
+  }
+  .voice-tile .name { font-family: 'Fraunces', serif; color: var(--plum); font-size: 14px; font-weight: 500; }
+  .voice-tile .region { font-size: 11px; color: var(--ink-2); margin-top: 2px; }
+  .voice-tile .sample { margin-top: 10px; padding-top: 10px; border-top: 1px dashed rgba(74,42,58,0.14); font-size: 12px; color: var(--ink); font-style: italic; font-family: 'Fraunces', serif; }
+  .voice-tile .preview-row { margin-top: 10px; display: flex; align-items: center; gap: 10px; }
+  .voice-tile .preview-btn {
+    flex: 1; background: var(--cream-2); color: var(--plum);
+    padding: 7px 10px; border-radius: 10px;
+    font-size: 11px; text-align: center;
+  }
+  .voice-tile .preview-btn.selected { background: var(--plum); color: var(--cream); }
+
+  /* Wellbeing moments */
+  .moment-card {
+    background: #fff; border-radius: 18px; padding: 16px;
+    margin-bottom: 10px; border: 1px solid rgba(74,42,58,0.08);
+  }
+  .moment-card .row { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; }
+  .moment-card .date {
+    width: 44px; flex-shrink: 0;
+    text-align: center; padding: 6px 4px;
+    background: var(--cream-2); border-radius: 10px;
+  }
+  .moment-card .date .day { font-family: 'Fraunces', serif; color: var(--plum); font-size: 18px; line-height: 1; }
+  .moment-card .date .mon { font-size: 9px; color: var(--ink-2); text-transform: uppercase; letter-spacing: 0.08em; margin-top: 2px; }
+  .moment-card .title { font-family: 'Fraunces', serif; color: var(--plum); font-size: 14px; font-weight: 500; }
+  .moment-card .meta { font-size: 10px; color: var(--ink-2); text-transform: uppercase; letter-spacing: 0.06em; margin-top: 2px; }
+  .moment-card .body { font-size: 12px; color: var(--ink-2); line-height: 1.5; }
+  .moment-card .jess {
+    margin-top: 10px; padding: 10px; background: var(--cream-2);
+    border-radius: 12px; font-family: 'Fraunces', serif;
+    font-style: italic; color: var(--plum); font-size: 12px;
+  }
+
+  /* status rows */
+  .status-line { font-size: 10px; color: var(--ink-2); display: flex; align-items: center; gap: 6px; margin-top: 6px; }
+  .status-line::before { content: ""; width: 6px; height: 6px; border-radius: 50%; background: var(--moss); }
+
+  /* Notes callout */
+  .note {
+    background: rgba(107,122,90,0.1);
+    border-left: 3px solid var(--moss);
+    padding: 10px 12px; border-radius: 10px;
+    font-size: 11px; color: var(--ink); line-height: 1.5;
+    margin-bottom: 10px;
+  }
+
+  .section-title {
+    font-family: 'Fraunces', serif; color: var(--plum);
+    font-size: 15px; margin: 14px 0 8px; font-weight: 500;
+  }
+  .section-title em { font-style: italic; color: var(--luteal); }
+
+  .statusbar { display:flex; justify-content: space-between; padding: 0 20px; height: 40px; align-items: flex-end; padding-bottom: 8px; font-size: 11px; color: var(--plum); }
+  .navbar {
+    position: absolute; bottom: 14px; left: 14px; right: 14px; height: 72px;
+    background: rgba(255,255,255,0.94); backdrop-filter: blur(10px);
+    border-radius: 24px; display: flex; align-items: center;
+    justify-content: space-around; padding: 0 12px;
+    box-shadow: 0 10px 30px rgba(74,42,58,0.1);
+    border: 1px solid rgba(74,42,58,0.06);
+  }
+  .nav-item { font-size: 10px; color: var(--ink-2); text-align: center; }
+  .nav-item.active { color: var(--plum); font-weight: 600; }
+  .nav-fab {
+    width: 52px; height: 52px; border-radius: 50%;
+    background: linear-gradient(135deg, var(--plum), var(--luteal));
+    color: var(--cream); display: flex; align-items: center; justify-content: center;
+    font-family: 'Fraunces', serif; font-size: 18px; font-style: italic;
+    box-shadow: 0 8px 20px rgba(74,42,58,0.3);
+  }
+
+  /* toggle */
+  .toggle-row {
+    display: flex; align-items: center; justify-content: space-between;
+    background: #fff; padding: 14px; border-radius: 14px;
+    margin-bottom: 10px; border: 1px solid rgba(74,42,58,0.08);
+  }
+  .toggle-row .label { font-size: 12px; color: var(--ink); }
+  .toggle-row .label small { display: block; color: var(--ink-2); font-size: 10px; margin-top: 2px; }
+  .toggle {
+    width: 40px; height: 22px; background: var(--moss); border-radius: 12px;
+    position: relative;
+  }
+  .toggle::after {
+    content: ""; width: 18px; height: 18px; background: #fff;
+    border-radius: 50%; position: absolute; top: 2px; right: 2px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+  }
+
+</style>
+</head>
+<body>
+<div class="container">
+  <div class="top">
+    <span class="tag">UK-local layer · Q1/27 ship · replaces former Naija-local slot</span>
+    <h1>FemWell <em>UK-local layer</em></h1>
+    <p class="subtitle">
+      Four pillars: NHS-aligned practitioners (GMC / NMC / HCPC / BDA / BACP verified), phase-adapted seasonal British foods, regional Jess voices (RP, Scouse, Glasgow, Welsh, Northern, Belfast), and quiet wellbeing moments tied to the UK calendar. Same design language as the rest of FemWell — nothing borrowed from wellness-industry stereotypes of "British" content. Built on the Q2/26 entity stack (GPVerified, VoiceProfile, SeasonalFoods, WellbeingMoments).
+    </p>
+  </div>
+
+  <div class="phones">
+
+    <!-- ============== PHONE 1 · PRACTITIONERS DIRECTORY ============== -->
+    <div class="phone">
+      <div class="screen">
+        <div class="statusbar"><span>9:41</span><span>●●●● 4G 87%</span></div>
+        <div class="scroll">
+
+          <div class="page-hero">
+            <small>UK-local · Practitioners</small>
+            <h2>Clinicians <em>verified the quiet way</em></h2>
+            <p>Every name here has a live licence with GMC, NMC, HCPC, BDA or BACP. No paid placements, no rankings. We re-check annually.</p>
+          </div>
+
+          <div class="filters">
+            <div class="filter-chip on">All</div>
+            <div class="filter-chip">GP (GMC)</div>
+            <div class="filter-chip">Gynae</div>
+            <div class="filter-chip">Endo</div>
+            <div class="filter-chip">Peri/Meno</div>
+            <div class="filter-chip">Therapist (BACP)</div>
+            <div class="filter-chip">Dietitian (BDA)</div>
+          </div>
+
+          <div class="filters">
+            <div class="filter-chip on">All UK</div>
+            <div class="filter-chip">London</div>
+            <div class="filter-chip">Manchester</div>
+            <div class="filter-chip">Edinburgh</div>
+            <div class="filter-chip">Cardiff</div>
+            <div class="filter-chip">Belfast</div>
+            <div class="filter-chip">Online only</div>
+          </div>
+
+          <div class="section-title">Near you · <em>South London</em></div>
+
+          <div class="pract">
+            <div class="row">
+              <div class="avatar">AP</div>
+              <div class="body">
+                <div class="name">Dr Aisha Patel</div>
+                <div class="role">Consultant gynaecologist · endometriosis</div>
+                <div class="verify">GMC 7421903 · verified Apr 2026</div>
+                <div class="loc">King's College Hospital · NHS &amp; private</div>
+                <div class="meta" style="margin-top: 8px;">
+                  <span class="pill plum">endo</span><span class="pill">pelvic pain</span><span class="pill">IVF prep</span>
+                </div>
+                <div class="cta">
+                  <button>See availability</button>
+                  <button class="primary">Save</button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="pract">
+            <div class="row">
+              <div class="avatar">RM</div>
+              <div class="body">
+                <div class="name">Ruth McAllister</div>
+                <div class="role">BACP therapist · women's mental health</div>
+                <div class="verify">BACP 00397821 · verified Mar 2026</div>
+                <div class="loc">Clapham &amp; online · Sliding scale</div>
+                <div class="meta" style="margin-top: 8px;">
+                  <span class="pill luteal">PMDD</span><span class="pill">perimenopause</span><span class="pill">trauma-informed</span>
+                </div>
+                <div class="cta">
+                  <button>See availability</button>
+                  <button class="primary">Save</button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="pract">
+            <div class="row">
+              <div class="avatar">SJ</div>
+              <div class="body">
+                <div class="name">Dr Siobhan Jenkins</div>
+                <div class="role">NHS GP · menopause special interest (BMS-accredited)</div>
+                <div class="verify">GMC 6115847 · verified Apr 2026</div>
+                <div class="loc">Stockwell Group Practice · NHS only</div>
+                <div class="meta" style="margin-top: 8px;">
+                  <span class="pill plum">HRT</span><span class="pill">perimenopause</span><span class="pill">NHS</span>
+                </div>
+                <div class="cta">
+                  <button>NHS referral</button>
+                  <button class="primary">Save</button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="section-title">Also verified · <em>further afield</em></div>
+
+          <div class="pract">
+            <div class="row">
+              <div class="avatar">CM</div>
+              <div class="body">
+                <div class="name">Catrin Morgan</div>
+                <div class="role">Registered dietitian · menstrual &amp; perimenopausal health</div>
+                <div class="verify">BDA &amp; HCPC DT43128 · verified Feb 2026</div>
+                <div class="loc">Cardiff &amp; online · Welsh &amp; English</div>
+                <div class="meta" style="margin-top: 8px;">
+                  <span class="pill moss">anti-inflammatory</span><span class="pill">iron recovery</span><span class="pill">Welsh</span>
+                </div>
+                <div class="cta">
+                  <button>Book</button>
+                  <button class="primary">Save</button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="note">
+            <strong>How verification works.</strong> We check each licence against the regulator's live register on sign-up, then annually and after any public register update. Suspensions trigger automatic unlisting within 48 hours. No practitioner has ever paid to be listed.
+          </div>
+
+        </div>
+        <div class="navbar">
+          <div class="nav-item">Today</div>
+          <div class="nav-item active">Lifestyle</div>
+          <div class="nav-fab">j</div>
+          <div class="nav-item">Profile</div>
+          <div class="nav-item">Menu</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ============== PHONE 2 · PHASE-ADAPTED SEASONAL BRITISH FOODS ============== -->
+    <div class="phone">
+      <div class="screen">
+        <div class="statusbar"><span>9:41</span><span>●●●● 4G 86%</span></div>
+        <div class="scroll">
+
+          <div class="phase-head">
+            <small style="font-size:10px; text-transform:uppercase; letter-spacing:0.08em;">Foods by phase · April · late follicular</small>
+            <h3>In season now — <em>and what your body's asking for</em></h3>
+            <p>NHS Eatwell aligned. Seasonal British produce. Phase-tagged, never prescriptive.</p>
+          </div>
+
+          <div class="filters">
+            <div class="filter-chip on">Follicular</div>
+            <div class="filter-chip">Ovulation</div>
+            <div class="filter-chip">Luteal</div>
+            <div class="filter-chip">Menstruation</div>
+          </div>
+
+          <div class="section-title">What's in season · <em>UK, April</em></div>
+
+          <div class="food-tile">
+            <div class="thumb">🌱</div>
+            <div class="info">
+              <div class="title">Purple sprouting broccoli</div>
+              <div class="sub">Folate · vit C · iron · cruciferous oestrogen support</div>
+              <div class="tags">
+                <span class="pill moss">follicular</span><span class="pill">iron recovery</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="food-tile">
+            <div class="thumb">🥬</div>
+            <div class="info">
+              <div class="title">Wild garlic</div>
+              <div class="sub">Short British season · Mar–May · mild sulphur compounds</div>
+              <div class="tags">
+                <span class="pill moss">follicular</span><span class="pill">anti-inflammatory</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="food-tile">
+            <div class="thumb">🐟</div>
+            <div class="info">
+              <div class="title">Cornish mackerel</div>
+              <div class="sub">Omega-3 · vit D · sustainable MSC-rated</div>
+              <div class="tags">
+                <span class="pill moss">follicular</span><span class="pill luteal">luteal</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="food-tile">
+            <div class="thumb">🥚</div>
+            <div class="info">
+              <div class="title">Free-range eggs (British Lion)</div>
+              <div class="sub">Choline · B12 · complete protein</div>
+              <div class="tags">
+                <span class="pill moss">follicular</span><span class="pill">every phase</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="food-tile">
+            <div class="thumb">🥣</div>
+            <div class="info">
+              <div class="title">Scottish oats</div>
+              <div class="sub">Beta-glucan · slow release · blood-sugar steady</div>
+              <div class="tags">
+                <span class="pill moss">follicular</span><span class="pill luteal">luteal</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="section-title">Saved for <em>your luteal window</em></div>
+
+          <div class="food-tile">
+            <div class="thumb">🫘</div>
+            <div class="info">
+              <div class="title">Tinned sardines on toast</div>
+              <div class="sub">Omega-3 + iron · 4-min tea that loves a luteal night</div>
+              <div class="tags">
+                <span class="pill luteal">luteal</span><span class="pill">iron</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="food-tile">
+            <div class="thumb">🍠</div>
+            <div class="info">
+              <div class="title">Baked sweet potato · butter · sea salt</div>
+              <div class="sub">Complex carb + magnesium · the pre-period tea</div>
+              <div class="tags">
+                <span class="pill luteal">luteal</span><span class="pill">pre-period</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="food-tile">
+            <div class="thumb">🍵</div>
+            <div class="info">
+              <div class="title">Ginger &amp; nettle tea</div>
+              <div class="sub">Nettle is a British hedgerow standard · iron support</div>
+              <div class="tags">
+                <span class="pill rose">menstruation</span><span class="pill">iron</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="section-title">A note from <em>Catrin (our dietitian advisor)</em></div>
+
+          <div class="note" style="background: rgba(212,165,160,0.15); border-left-color: var(--rose);">
+            "Nothing here replaces what your GP or dietitian advises. These are gentle nudges toward what's growing in Britain right now, tagged for when your body might thank you for it. Eat what you actually enjoy. That's half the work."
+            <br><br>
+            <span style="font-size:10px; color: var(--ink-2); text-transform: uppercase; letter-spacing: 0.06em;">— Catrin Morgan · BDA &amp; HCPC DT43128</span>
+          </div>
+
+        </div>
+        <div class="navbar">
+          <div class="nav-item">Today</div>
+          <div class="nav-item active">Lifestyle</div>
+          <div class="nav-fab">j</div>
+          <div class="nav-item">Profile</div>
+          <div class="nav-item">Menu</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ============== PHONE 3 · REGIONAL JESS VOICES ============== -->
+    <div class="phone">
+      <div class="screen">
+        <div class="statusbar"><span>9:41</span><span>●●●● WiFi 89%</span></div>
+        <div class="scroll">
+
+          <div class="page-hero" style="background: linear-gradient(135deg, var(--luteal), var(--plum-2));">
+            <small>Settings · Jess · Voice</small>
+            <h2>Regional voices <em>for Jess</em></h2>
+            <p>Six UK voice variants. Same warmth, same care, same boundaries. Different accent, different rhythm. Preview before you pick.</p>
+          </div>
+
+          <div class="note">
+            Voices are trained on consented recordings from UK voice artists paid at Equity day rates. No synthetic clones of real public figures. You can switch back to the default any time.
+          </div>
+
+          <div class="voice-tile">
+            <div class="row">
+              <div class="waveform"></div>
+              <div>
+                <div class="name">Jess · Received Pronunciation</div>
+                <div class="region">Default · clearest for screen-reader pairing</div>
+              </div>
+            </div>
+            <div class="sample">"Day eighteen. Something subtle is shifting. I'll check back in after lunch."</div>
+            <div class="preview-row">
+              <div class="preview-btn selected">▸ Playing · selected</div>
+            </div>
+          </div>
+
+          <div class="voice-tile">
+            <div class="row">
+              <div class="waveform"></div>
+              <div>
+                <div class="name">Jess · Glasgow</div>
+                <div class="region">West Scotland · recorded with Fiona M.</div>
+              </div>
+            </div>
+            <div class="sample">"Day eighteen. Something's shifting, love. I'll check in after lunch."</div>
+            <div class="preview-row">
+              <div class="preview-btn">▸ Preview</div>
+            </div>
+          </div>
+
+          <div class="voice-tile">
+            <div class="row">
+              <div class="waveform"></div>
+              <div>
+                <div class="name">Jess · Scouse</div>
+                <div class="region">Liverpool · recorded with Kelly B.</div>
+              </div>
+            </div>
+            <div class="sample">"Day eighteen, queen. Something's shifting. I'll catch ya after lunch."</div>
+            <div class="preview-row">
+              <div class="preview-btn">▸ Preview</div>
+            </div>
+          </div>
+
+          <div class="voice-tile">
+            <div class="row">
+              <div class="waveform"></div>
+              <div>
+                <div class="name">Jess · Welsh (English)</div>
+                <div class="region">Cardiff · recorded with Elin W.</div>
+              </div>
+            </div>
+            <div class="sample">"Day eighteen, love. There's a shift. I'll come back to you after lunch."</div>
+            <div class="preview-row">
+              <div class="preview-btn">▸ Preview</div>
+            </div>
+          </div>
+
+          <div class="voice-tile">
+            <div class="row">
+              <div class="waveform"></div>
+              <div>
+                <div class="name">Jess · Yorkshire</div>
+                <div class="region">Leeds · recorded with Hannah D.</div>
+              </div>
+            </div>
+            <div class="sample">"Day eighteen. Summat's shifting. I'll check in after lunch."</div>
+            <div class="preview-row">
+              <div class="preview-btn">▸ Preview</div>
+            </div>
+          </div>
+
+          <div class="voice-tile">
+            <div class="row">
+              <div class="waveform"></div>
+              <div>
+                <div class="name">Jess · Belfast</div>
+                <div class="region">Northern Ireland · recorded with Niamh K.</div>
+              </div>
+            </div>
+            <div class="sample">"Day eighteen. Somethin's shiftin', love. I'll come back after lunch."</div>
+            <div class="preview-row">
+              <div class="preview-btn">▸ Preview</div>
+            </div>
+          </div>
+
+          <div class="voice-tile">
+            <div class="row">
+              <div class="waveform"></div>
+              <div>
+                <div class="name">Jess · Multicultural London</div>
+                <div class="region">London · recorded with Amara O.</div>
+              </div>
+            </div>
+            <div class="sample">"Day eighteen, yeah. Something's shifting. Catch you after lunch."</div>
+            <div class="preview-row">
+              <div class="preview-btn">▸ Preview</div>
+            </div>
+          </div>
+
+          <div class="section-title">Cymraeg + Gaelic <em>coming autumn 2027</em></div>
+          <div class="note" style="background: rgba(201,169,92,0.12); border-left-color: var(--gold);">
+            We're working with Welsh-language and Scottish Gaelic voice artists for a full-language option (not just accent). Scoping with S4C and BBC ALBA advisors. Join the waitlist from Settings → Jess → Voice → Notify me.
+          </div>
+
+        </div>
+        <div class="navbar">
+          <div class="nav-item">Today</div>
+          <div class="nav-item">Lifestyle</div>
+          <div class="nav-fab">j</div>
+          <div class="nav-item active">Profile</div>
+          <div class="nav-item">Menu</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ============== PHONE 4 · WELLBEING MOMENTS (UK CALENDAR) ============== -->
+    <div class="phone">
+      <div class="screen">
+        <div class="statusbar"><span>9:41</span><span>●●●● 4G 82%</span></div>
+        <div class="scroll">
+
+          <div class="page-hero" style="background: linear-gradient(135deg, var(--moss), #8a9a75);">
+            <small>UK calendar · Wellbeing moments</small>
+            <h2>Seasons <em>that land differently here</em></h2>
+            <p>Not streaks. Not reminders. Quiet prompts tied to the UK year — when light, routine, or the collective mood shifts.</p>
+          </div>
+
+          <div class="section-title">This month · <em>April</em></div>
+
+          <div class="moment-card">
+            <div class="row">
+              <div class="date"><div class="day">18</div><div class="mon">Apr</div></div>
+              <div>
+                <div class="title">Lighter evenings</div>
+                <div class="meta">Seasonal · first 8pm sunset</div>
+              </div>
+            </div>
+            <div class="body">The UK crossed into 8pm sunsets this week. Sleep often shifts. Some women report luteal-phase insomnia starting earlier in spring — you can tag that in Pulse if it lands for you.</div>
+            <div class="jess">"If last night was broken, the light was probably part of it. We can look at a blackout routine in Rituals, or just sit with it tonight."</div>
+          </div>
+
+          <div class="moment-card">
+            <div class="row">
+              <div class="date"><div class="day">28</div><div class="mon">Apr</div></div>
+              <div>
+                <div class="title">Menstrual Health Day</div>
+                <div class="meta">Awareness · 28 May (advance card)</div>
+              </div>
+            </div>
+            <div class="body">There's a big UK campaign coming up on 28 May. If you've ever wanted to write down what you wish more people knew — we can hold that in a private Journal entry that you can keep, share to Community, or bin.</div>
+            <div class="jess">"No action needed. I'll quietly ask again on the day itself."</div>
+          </div>
+
+          <div class="section-title">On the horizon</div>
+
+          <div class="moment-card">
+            <div class="row">
+              <div class="date"><div class="day">21</div><div class="mon">Jun</div></div>
+              <div>
+                <div class="title">Longest day</div>
+                <div class="meta">Seasonal · summer solstice</div>
+              </div>
+            </div>
+            <div class="body">Peak UK light. For many this is a luteal-friendly month; for some it's the hardest. We'll check in on 21 June — no assumption either way.</div>
+          </div>
+
+          <div class="moment-card">
+            <div class="row">
+              <div class="date"><div class="day">27</div><div class="mon">Oct</div></div>
+              <div>
+                <div class="title">Clocks go back</div>
+                <div class="meta">Seasonal · end BST</div>
+              </div>
+            </div>
+            <div class="body">Historically the week mood often dips app-wide after this. If you want, we'll pre-pack a Rituals shortlist for that week — 4 practices you've told Pulse helped last autumn.</div>
+            <div class="jess">"I'll ask you about this again two weeks before. Not now."</div>
+          </div>
+
+          <div class="moment-card">
+            <div class="row">
+              <div class="date"><div class="day">21</div><div class="mon">Dec</div></div>
+              <div>
+                <div class="title">Shortest day · winter wellbeing</div>
+                <div class="meta">Seasonal · SAD risk month</div>
+              </div>
+            </div>
+            <div class="body">If you've logged low-mood spells in Dec–Jan before, we can surface an NHS Every Mind Matters link and your saved practitioners — quietly, only in Profile.</div>
+          </div>
+
+          <div class="section-title">Gentle off by default · <em>Settings → UK-local</em></div>
+
+          <div class="toggle-row">
+            <div class="label">Seasonal wellbeing prompts<small>Max one card per month on Today · no push</small></div>
+            <div class="toggle"></div>
+          </div>
+
+          <div class="toggle-row">
+            <div class="label">UK awareness days<small>Menstrual Health Day · World Menopause Day · Baby Loss Week</small></div>
+            <div class="toggle"></div>
+          </div>
+
+          <div class="toggle-row">
+            <div class="label">Regional weather tint on Today<small>Off by default · not a nudge, a palette</small></div>
+            <div class="toggle" style="background: #c5bfb4;"><div style="content:''; width:18px;height:18px;background:#fff;border-radius:50%;position:absolute;top:2px;left:2px;box-shadow:0 2px 4px rgba(0,0,0,0.2);"></div></div>
+          </div>
+
+        </div>
+        <div class="navbar">
+          <div class="nav-item active">Today</div>
+          <div class="nav-item">Lifestyle</div>
+          <div class="nav-fab">j</div>
+          <div class="nav-item">Profile</div>
+          <div class="nav-item">Menu</div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <div style="display: grid; grid-template-columns: repeat(4, 420px); gap: 24px; justify-content: center; margin-top: 16px;">
+    <div class="phone-label">P1 · Practitioners<small>NHS + private · GMC/NMC/HCPC/BDA/BACP verified</small></div>
+    <div class="phone-label">P2 · Foods by phase<small>Seasonal British · NHS Eatwell aligned</small></div>
+    <div class="phone-label">P3 · Regional Jess voices<small>6 UK accents · Equity-rate voice artists</small></div>
+    <div class="phone-label">P4 · UK wellbeing moments<small>Seasonal · quiet · off by default</small></div>
+  </div>
+
+  <div style="max-width: 1020px; margin: 60px auto 0; background: #fff; border-radius: 20px; padding: 28px; border: 1px solid rgba(74,42,58,0.08);">
+    <h1 style="font-size: 22px;">Entity + integration notes</h1>
+    <p class="subtitle" style="margin: 12px 0; text-align: left;">
+      <strong>Entities introduced:</strong> <code>PractitionerDirectory</code> (regulator, licence_no, region, specialty, availability, last_verified_at, auto_unlist_on_suspension) · <code>SeasonalFoodLibrary</code> (produce, uk_season_months, nhs_eatwell_mapping, phase_tags, advisor_id) · <code>JessVoiceVariant</code> (region, accent_code, artist_credit, equity_band, sample_lines[]) · <code>WellbeingMoment</code> (date_rule, moment_type, surface_cap, per_user_opt_in).
+    </p>
+    <p class="subtitle" style="margin: 12px 0; text-align: left;">
+      <strong>Regulator integrations (must verify before Q1/27 ship):</strong> GMC live register API, NMC NMC-Online check, HCPC online register, BDA members' directory (manual check + annual), BACP Register. All run nightly batch; suspensions trigger 48h unlist SLA.
+    </p>
+    <p class="subtitle" style="margin: 12px 0; text-align: left;">
+      <strong>What this deliberately isn't:</strong> not a booking platform (we deep-link to NHS e-Referral or practitioner's own booking) · not rated or reviewed by users (no star ratings on practitioners — avoids gaming + protects clinicians) · not a marketing channel (no paid listings, ever) · not a cultural stereotype machine (no "British" wellness clichés, no clichéd regional humour, no tea-and-biscuits as medicine).
+    </p>
+    <p class="subtitle" style="margin: 12px 0; text-align: left;">
+      <strong>Dependency gate:</strong> ships only after (a) Lifestyle v2 live (which hosts Foods-by-phase tab), (b) Jess v2 voice brief signed off (so regional variants inherit same tone guardrails), (c) NHS Digital partner-agreement for deep-links to e-Referral confirmed — this is the long-lead item.
+    </p>
+    <p class="subtitle" style="margin: 12px 0; text-align: left;">
+      <strong>Open questions for you:</strong> (1) Should Scotland/Wales/NI each get their own advisor panel, or one UK-wide clinical board? (2) BACP vs BABCP vs UKCP for the therapist directory — do we verify all three regulators or start with BACP only? (3) Are we happy to ship the voice variants without Welsh-language (accented-English only) at Q1/27, and add true Cymraeg in Q3/27?
+    </p>
+  </div>
+
+</div>
+</body>
+</html>
