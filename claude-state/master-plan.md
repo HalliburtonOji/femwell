@@ -2,10 +2,11 @@
 
 _Authored by Ms Strategy 2026-05-13. **This is a living document** — update on every brainstorm pass, every shipped MP, every memory consolidation, and every time the user has a "crazy idea" worth keeping. Treat the version line below as the contract: bump the date and add a changelog line whenever you touch this file._
 
-**Version:** 2026-05-13 (rev 3)
-**Last updated:** 2026-05-13 — dual-mode Cowork+Code workspace set up; Lifestyle close-out partly shipped; Sessions removal locked; Podcast curation strategy locked.
+**Version:** 2026-05-13 (rev 4)
+**Last updated:** 2026-05-13 — LC-3 shipped by Code (`75507a8`). Pacing Bank locked YES for Planner-B. Care surface captured as new feature §6.9 — top-level `/Care` destination with Nurse Notebook + NHS Pathway Helper + Nurse-led Programmes.
 
 ## Changelog
+- **2026-05-13 rev 4** — LC-3 shipped by Claude Code (`75507a8` — Sessions route + chip removed, Practice rail added, WellnessSessions → LifestyleItems migration function). User decisions: **Pacing Bank YES** (Planner-B widget + Care-A framing); **Nurse section brainstormed** — recommended new top-level `/Care` surface with editorial Nurse Notebook + NHS Pathway Helper + Nurse-led Programmes; never live Q&A / never AI symptom triage. Full brainstorm at `claude-state/research_nurse_section_2026-05-13.md`. New features §6.8 (Pacing Bank) and §6.9 (Care surface) captured. Five Care decisions still open (single nurse vs editorial board / location / naming / launch timing / £15-30k Year 1 budget). Cervical screening row + calendar export deferred to Planner-C / Settings per user.
 - **2026-05-13 rev 3** — Dual-mode workspace built: `CLAUDE.md` at repo root, `.claude/memory/` (40 files), `claude-state/` (planning docs), `claude-handoff/` (cross-Claude comms). Code in VS Code now owns LC-3/4/5; Cowork owns strategy + master plan. LC-1 on main (`7795c90`..`3aa5a04` — PodcastRail + seedPodcasts + bonus Horoscope additions including HoroscopeToast, SectionSkeleton, GlossaryTip, BirthDataSheet Nominatim autocomplete, Compatibility rewrite). LC-2 on main (`ea185fe` — Atelier letter writes published-by-default per D6, banner removed). Publish stalled in Cowork's MCP session; Code will retry from VS Code. Sessions removal locked — user said "shouldnt even be a section in the app." Podcast curation locked at 12 UK podcasts (Maintenance Phase, Adam Buxton, This Is Dating, Modern Love, Sentimental Garbage, You're Wrong About, Esther Perel, On Being, The High Low, Slow Burn, How To Fail, Hilarious World of Depression). Mr Lucha status remains PAUSED (not retired). Hybrid build rule temporarily off for LC-2 through LC-5 (direct repo edits, no MP-paste).
 - **2026-05-13 rev 2** — User answered §12 open questions. Lifted the content-pipeline hard gate (locked 2026-05-06; H2 shipped on top of it anyway and nothing exploded). Planner locked as Phase B priority. Atelier Reading AI-final for now (no human sign-off bottleneck). Sale timeline: 6-month aim, 9-month soft cap. Master-plan-as-living-doc protocol added.
 - **2026-05-13 rev 1** — Initial authoring by Ms Strategy.
@@ -230,6 +231,22 @@ These are the features that ride across multiple surfaces. They are the part of 
 **Concept.** Echoes that earned ≥3 holds get re-surfaced by Jess as quiet company at matching phase-days for other users. Six transparency rules ensure it never becomes a viral mechanic. Surfaces: Today / Journal / Panic afterglow / Jess drawer. **Never** in Explore / Community feed / Partner Sync / Care Bridge / during Panic / Onboarding first 14 days.
 
 **Status.** Designed (`femwell_living_wisdom_demo.html`). Not shipped. Q3-Q4 target. Depends on Echo Wall having ≥30 days of accumulated entries before surfacing makes sense.
+
+### 6.8 Pacing Bank (captured 2026-05-13)
+**Concept.** Energy-budgeting surface borrowed from chronic-illness pacing frameworks (NICE 2021 ME/CFS guidelines, RCGP long COVID pathways). Daily "spoons" counter on Planner. Phase-aware capacity ceiling (luteal ≠ follicular). Logged exertion subtracts from the bank. Plan-with-Jess respects remaining balance. Permissive language only — sidesteps the R9 cycle-syncing strong-claim trap.
+
+**Why locked YES.** Category-original — no mainstream cycle app does chronic-illness-aware pacing. Speaks to PCOS / endometriosis / long COVID users (substantial under-served Venn with cycling women). Brand-fit calm-but-substantive.
+
+**Status.** Locked 2026-05-13. Ships in Planner-B (the widget) + Care-A (the nurse-authored framing). See `claude-state/research_planner_2026-05-13.md` §7 #6 + `claude-state/research_nurse_section_2026-05-13.md`.
+
+### 6.9 Care surface (captured 2026-05-13)
+**Concept.** New top-level destination at `/Care` reached via Menu (not bottom nav). Three components: Nurse Notebook (editorial, named contracted nurse by-line), NHS Pathway Helper (algorithmic routing — never advice), Nurse-led Programmes (uses existing Programs entity, nurse-authored). Pacing Bank's clinical framing lives here.
+
+**Why it matters.** Clinical-credibility moat that turns FemWell from "another cycle app" into "the app your GP would point you at." Differentiator vs Flo (US-centric, no NHS pathway sense) and Clue (German, no UK hooks). Brand-fit: calm, evidence-led, named clinical advisor on the masthead.
+
+**Hard constraint.** Never give 1:1 medical advice. Editorial + routing + programmes only. R3 escalates — adding a Nurse layer forces a contracted clinical advisor (NMC-registered UK nurse on retainer) since nurse credentials are NMC-public and DD-checkable. Budget: ~£15-30k Year 1 (one contracted nurse Path 1 + commissioned content).
+
+**Status.** Designed via `claude-state/research_nurse_section_2026-05-13.md`. Slots between Planner and Profile in Phase B per §10. Five user-decision items in §11 of the research file (single nurse vs editorial board / Care location / naming / launch timing / budget approval).
 
 ---
 
