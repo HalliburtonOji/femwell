@@ -1,4 +1,5 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.20';
+import { stripEmoji } from '../_shared/stripEmoji.ts';
 
 function simpleHash(str) {
   let hash = 0;
@@ -77,13 +78,13 @@ Deno.serve(async (req) => {
             source_id: source.id,
             source_name: source.name,
             source_logo_url: source.logo_url || '',
-            title: item.title.slice(0, 220),
+            title: stripEmoji(item.title).slice(0, 220),
             content_url: item.link,
             embed_url: item.embed_url || item.link,
             content_url_hash: hash,
             image_url: item.image_url,
             category: source.category || 'Lifestyle',
-            summary: item.summary.slice(0, 320),
+            summary: stripEmoji(item.summary).slice(0, 320),
             published_at: (() => { try { return new Date(item.pub_date).toISOString(); } catch { return new Date().toISOString(); } })(),
             ingested_at: new Date().toISOString(),
             status: 'NEEDS_REVIEW',

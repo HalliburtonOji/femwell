@@ -10,6 +10,7 @@
 //   the article's real image instead of a random Unsplash placeholder.
 
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.25';
+import { stripEmoji } from '../_shared/stripEmoji.ts';
 
 const CHROME_UA = 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36';
 
@@ -300,9 +301,9 @@ Deno.serve(async (req) => {
           await base44.asServiceRole.entities.LifestyleItems.create({
             source_id: source.id,
             source_name: source.name,
-            title: item.title.slice(0, 220),
+            title: stripEmoji(item.title).slice(0, 220),
             content_url: item.link,
-            summary: stripHtml(item.description),
+            summary: stripEmoji(stripHtml(item.description)),
             image_url: resolvedImageUrl,
             published_at: (() => { try { return new Date(item.pubDate).toISOString(); } catch { return new Date().toISOString(); } })(),
             category: source.category,

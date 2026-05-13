@@ -4,6 +4,7 @@
 // - Existing TikTok/Instagram items in DB are left in place
 
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.25';
+import { stripEmoji } from '../_shared/stripEmoji.ts';
 
 // ── Inlined helper: structured ingest error log ────────────────────────────
 async function logIngestError(base44, function_name, stage, ctx, err) {
@@ -24,14 +25,6 @@ async function logIngestError(base44, function_name, stage, ctx, err) {
     console.error(`[ingest-error-log-failed] ${function_name} ${stage}`, logErr?.message);
   }
   console.error(`[ingest-error] ${function_name} ${stage}`, err?.message || err);
-}
-
-function stripEmoji(s) {
-  if (!s) return '';
-  return String(s).replace(
-    /[\u{2600}-\u{27BF}\u{1F300}-\u{1FAFF}\u{1F900}-\u{1F9FF}\u{2700}-\u{27BF}\u{1FA70}-\u{1FAFF}\u{1F680}-\u{1F6FF}\u{1F300}-\u{1F5FF}]/gu,
-    '',
-  ).replace(/\s+/g, ' ').trim();
 }
 
 function simpleHash(str) {
@@ -102,13 +95,13 @@ Deno.serve(async (req) => {
             source_id: source.id,
             source_name: source.name,
             source_logo_url: source.logo_url || '',
-            title: stripEmoji((source.name || 'Post')).slice(0, 200),
+            title: stripEmoji(source.name || 'Post').slice(0, 200),
             content_url: postUrl,
             embed_url: postUrl,
             content_url_hash: hash,
             image_url: '',
             category: source.category || 'Lifestyle',
-            summary: `View this post from ${source.name}`,
+            summary: stripEmoji(`View this post from ${source.name}`),
             published_at: new Date().toISOString(),
             ingested_at: new Date().toISOString(),
             status: 'PUBLISHED',

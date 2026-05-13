@@ -14,6 +14,7 @@
 //   instead of hardcoded RSS_SOURCES array. LifestyleSources is now the single source of truth.
 
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.25';
+import { stripEmoji } from '../_shared/stripEmoji.ts';
 
 // ── Inlined helper: structured ingest error log ────────────────────────────
 async function logIngestError(base44, function_name, stage, ctx, err) {
@@ -261,10 +262,10 @@ Deno.serve(async (req) => {
               source_id: sourceId,
               source_name: channel.name,
               source_logo_url: '',
-              channel_name: channel.name,
+              channel_name: stripEmoji(channel.name),
               channel_id: channel.id,
               video_id: v.videoId,
-              title: v.title.slice(0, 220),
+              title: stripEmoji(v.title).slice(0, 220),
               content_url: contentUrl,
               image_url: v.thumbnail,
               content_url_hash: hash,
@@ -383,13 +384,13 @@ Deno.serve(async (req) => {
               source_id: sourceId,
               source_name: source.name,
               source_logo_url: '',
-              title: item.title.slice(0, 220),
+              title: stripEmoji(item.title).slice(0, 220),
               content_url: item.link,
               content_url_hash: hash,
               image_url: item.image_url || '',
-              author_name: item.author || '',
-              lede,
-              summary: lede,
+              author_name: stripEmoji(item.author || ''),
+              lede: stripEmoji(lede),
+              summary: stripEmoji(lede),
               published_at: (() => { try { return new Date(item.pubDate).toISOString(); } catch { return new Date().toISOString(); } })(),
               created_at: new Date().toISOString(),
               ingested_at: new Date().toISOString(),
