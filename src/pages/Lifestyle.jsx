@@ -6,7 +6,7 @@ import ForYouTab from "@/components/lifestyle/foryou/ForYouTab";
 import BrowseTab from "@/components/lifestyle/browse/BrowseTab";
 import ListenTab from "@/components/lifestyle/listen/ListenTab";
 import DailyStoryReader from "@/components/lifestyle/DailyStoryReader";
-import HoroscopeTabImpl from "@/components/lifestyle/horoscope/HoroscopeTab";
+import HoroscopeTabImpl from "@/components/horoscope/HoroscopeTab";
 
 // ── Helpers ──────────────────────────────────────────────────────────────────
 function stripHtml(str) {

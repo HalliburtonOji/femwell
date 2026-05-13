@@ -1,0 +1,226 @@
+import { useMemo, useState } from "react";
+import { Sparkles } from "lucide-react";
+import {
+  getSunSign,
+  getSunDegree,
+  getRulingPlanet,
+  getZodiacGlyph,
+  getMoonPhase,
+} from "@/utils/astrology";
+import { useBirthChart } from "./hooks/useBirthChart";
+import BirthDataSheet from "./BirthDataSheet";
+import TwilightHero from "./sections/TwilightHero";
+import TriadCards from "./sections/TriadCards";
+import TodaysWeather from "./sections/TodaysWeather";
+import CycleMoonDial from "./sections/CycleMoonDial";
+import SkyDiary from "./sections/SkyDiary";
+import RedWhiteMoon from "./sections/RedWhiteMoon";
+import AnnualProfections from "./sections/AnnualProfections";
+import Compatibility from "./sections/Compatibility";
+import AskTheSky from "./sections/AskTheSky";
+import QuietModeToggle from "./sections/QuietModeToggle";
+import ScienceFooter from "./sections/ScienceFooter";
+import PrivacyLine from "./sections/PrivacyLine";
+import GoddessBench from "./sections/GoddessBench";
+import AtelierReading from "./sections/AtelierReading";
+import PaidShelf from "./sections/PaidShelf";
+
+// ─────────────────────────────────────────────────────────────────────────────
+// HoroscopeTab — shell component at src/components/horoscope/HoroscopeTab.jsx.
+//
+// Data is loaded by useBirthChart (hooks/useBirthChart.js). Derived chart facts
+// are memoised here and forwarded to each section component.
+//
+// Sections active in this commit (H2a):
+//   TwilightHero, TriadCards, TodaysWeather, CycleMoonDial, SkyDiary,
+//   Compatibility, AskTheSky
+//
+// Sections stubbed (return null until H2b/c/d):
+//   RedWhiteMoon, AnnualProfections, QuietModeToggle, ScienceFooter,
+//   PrivacyLine, GoddessBench, AtelierReading, PaidShelf
+// ─────────────────────────────────────────────────────────────────────────────
+
+export default function HoroscopeTab(props) {
+  const [sheetOpen, setSheetOpen] = useState(false);
+
+  const {
+    user, astro, reading,
+    userProfile, lifestyleProfile,
+    loading, setAstro, setReading,
+  } = useBirthChart(props.userProfile, props.lifestyleProfile);
+
+  const chart = useMemo(() => deriveChart(astro, userProfile), [astro, userProfile]);
+  const cyclePhase = useMemo(() => derivePhase(userProfile), [userProfile]);
+  const moon = useMemo(() => getMoonPhase(new Date()), []);
+
+  if (loading) {
+    return <div style={loadingStyle}>Reading the sky\u2026</div>;
+  }
+
+  if (!astro) {
+    return (
+      <div>
+        <OnboardingCard onOpen={() => setSheetOpen(true)} />
+        <BirthDataSheet
+          open={sheetOpen}
+          onClose={() => setSheetOpen(false)}
+          userId={user?.id}
+          initial={null}
+          userProfile={userProfile}
+          onSaved={(saved) => setAstro(saved)}
+        />
+      </div>
+    );
+  }
+
+  return (
+    <div>
+      <TwilightHero chart={chart} moon={moon} reading={reading} />
+      <TriadCards
+        chart={chart}
+        astro={astro}
+        reading={reading}
+        onAddBirthTime={() => setSheetOpen(true)}
+      />
+      <TodaysWeather reading={reading} chart={chart} />
+      <CycleMoonDial cyclePhase={cyclePhase} moon={moon} reading={reading} />
+      <SkyDiary reading={reading} />
+      <RedWhiteMoon />
+      <AnnualProfections />
+      <Compatibility userId={user?.id} chart={chart} />
+      <AskTheSky userId={user?.id} />
+      <QuietModeToggle />
+      <ScienceFooter />
+      <PrivacyLine />
+      <AtelierReading />
+      <PaidShelf />
+      <GoddessBench />
+
+      <BirthDataSheet
+        open={sheetOpen}
+        onClose={() => setSheetOpen(false)}
+        userId={user?.id}
+        initial={astro}
+        userProfile={userProfile}
+        onSaved={(saved) => setAstro(saved)}
+      />
+    </div>
+  );
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Helpers
+// ─────────────────────────────────────────────────────────────────────────────
+function deriveChart(astro, userProfile) {
+  const birthday =
+    astro?.birth_date ||
+    userProfile?.birthday ||
+    userProfile?.date_of_birth ||
+    null;
+  const sun = astro?.sun_sign || getSunSign(birthday);
+  const sunDegree = birthday ? getSunDegree(birthday) : null;
+  return {
+    birthday,
+    sun,
+    sunDegree,
+    sunRuler: sun ? getRulingPlanet(sun) : null,
+    sunGlyph: sun ? getZodiacGlyph(sun) : "\u2726",
+    moonSign: astro?.moon_sign || null,
+    risingSign: astro?.rising_sign || null,
+    hasBirthTime: !!astro?.birth_time,
+    place: astro?.birth_place || null,
+    name: userProfile?.preferred_name || userProfile?.first_name || "",
+  };
+}
+
+function derivePhase(userProfile) {
+  if (!userProfile?.last_period_start_date) return null;
+  const last = new Date(userProfile.last_period_start_date);
+  const cycleLen = userProfile.cycle_avg_length || 28;
+  const periodLen = userProfile.period_length || 5;
+  const diffDays = Math.floor((Date.now() - last.getTime()) / 86400000);
+  const day = ((diffDays % cycleLen) + cycleLen) % cycleLen + 1;
+  if (day <= periodLen) return "menstrual";
+  if (day <= 13) return "follicular";
+  if (day <= 16) return "ovulatory";
+  return "luteal";
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Onboarding card — shown when no AstroProfile row exists yet
+// ─────────────────────────────────────────────────────────────────────────────
+function OnboardingCard({ onOpen }) {
+  return (
+    <div style={onboardingStyle}>
+      <div style={onboardingGradientStyle} aria-hidden="true" />
+      <Sparkles size={28} style={{ color: "var(--cream, #FAF4EA)", position: "relative", zIndex: 1 }} />
+      <h2 style={onboardingTitleStyle}>Read me the sky</h2>
+      <p style={onboardingBodyStyle}>
+        FemWell writes you a daily reading based on your chart and your cycle. To start, we need your birth date. Birth time and place unlock your moon and rising too.
+      </p>
+      <button type="button" onClick={onOpen} style={onboardingBtnStyle}>
+        Unlock my chart
+      </button>
+    </div>
+  );
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Styles
+// ─────────────────────────────────────────────────────────────────────────────
+const loadingStyle = {
+  padding: "60px 24px",
+  textAlign: "center",
+  fontFamily: "'Inter', sans-serif",
+  fontSize: 14,
+  color: "var(--plum-mute, #6b4a56)",
+};
+const onboardingStyle = {
+  position: "relative",
+  overflow: "hidden",
+  borderRadius: 22,
+  padding: "40px 28px",
+  textAlign: "center",
+  color: "var(--cream, #FAF4EA)",
+  background: "radial-gradient(circle at 30% 20%, #3a2a4c 0%, #221a2e 60%, #15101e 100%)",
+  boxShadow: "0 2px 4px rgba(43,30,22,0.10), 0 12px 32px rgba(43,30,22,0.18)",
+};
+const onboardingGradientStyle = {
+  position: "absolute", inset: 0,
+  background:
+    "radial-gradient(circle at 85% 15%, rgba(232,196,208,0.22) 0%, rgba(232,196,208,0) 30%)," +
+    "radial-gradient(circle at 10% 80%, rgba(150,120,180,0.20) 0%, rgba(150,120,180,0) 35%)",
+  pointerEvents: "none",
+};
+const onboardingTitleStyle = {
+  position: "relative",
+  fontFamily: "'Fraunces', serif",
+  fontWeight: 300,
+  fontSize: 30,
+  color: "var(--cream, #FAF4EA)",
+  margin: "16px 0 10px",
+  letterSpacing: "-0.01em",
+};
+const onboardingBodyStyle = {
+  position: "relative",
+  fontFamily: "'Inter', sans-serif",
+  fontSize: 14,
+  lineHeight: 1.6,
+  color: "rgba(247,239,225,0.84)",
+  margin: "0 auto 20px",
+  maxWidth: 380,
+};
+const onboardingBtnStyle = {
+  position: "relative",
+  fontFamily: "'Inter', sans-serif",
+  fontWeight: 600,
+  fontSize: 14,
+  color: "var(--cream, #FAF4EA)",
+  background: "var(--rose-primary, #D45E52)",
+  border: "none",
+  borderRadius: 9999,
+  padding: "12px 22px",
+  cursor: "pointer",
+  minHeight: 44,
+  boxShadow: "0 2px 8px rgba(212,94,82,0.30)",
+};
