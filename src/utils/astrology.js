@@ -7,7 +7,7 @@
 //   - getElement(sign)            → "Air"
 //   - getModality(sign)           → "Mutable"
 //   - getRulingPlanet(sign)       → "Mercury"
-//   - getMoonPhase(date)          → { name, pct, illumination, glyph }
+//   - getMoonPhase(date)          → { name, key, pct, illumination }
 //   - sunSignCompatBase(a, b)     → base score 50-90 from element/modality
 //   - prettyDateBritish(date)     → "Wednesday · 12 May · 2026"
 //
@@ -21,19 +21,21 @@
 // math we'd rather offload to GPT than ship an ephemeris.
 
 // ── Sun sign table ──────────────────────────────────────────────────────────
+// No Unicode astrology codepoints — UI maps `name` → Lucide icon via
+// `@/lib/astrology/glyphs`.
 const ZODIAC = [
-  { name: "Capricorn",  glyph: "♑", element: "Earth", modality: "Cardinal", ruler: "Saturn",  start: [12, 22], end: [ 1, 19] },
-  { name: "Aquarius",   glyph: "♒", element: "Air",   modality: "Fixed",    ruler: "Uranus",  start: [ 1, 20], end: [ 2, 18] },
-  { name: "Pisces",     glyph: "♓", element: "Water", modality: "Mutable",  ruler: "Neptune", start: [ 2, 19], end: [ 3, 20] },
-  { name: "Aries",      glyph: "♈", element: "Fire",  modality: "Cardinal", ruler: "Mars",    start: [ 3, 21], end: [ 4, 19] },
-  { name: "Taurus",     glyph: "♉", element: "Earth", modality: "Fixed",    ruler: "Venus",   start: [ 4, 20], end: [ 5, 20] },
-  { name: "Gemini",     glyph: "♊", element: "Air",   modality: "Mutable",  ruler: "Mercury", start: [ 5, 21], end: [ 6, 20] },
-  { name: "Cancer",     glyph: "♋", element: "Water", modality: "Cardinal", ruler: "Moon",    start: [ 6, 21], end: [ 7, 22] },
-  { name: "Leo",        glyph: "♌", element: "Fire",  modality: "Fixed",    ruler: "Sun",     start: [ 7, 23], end: [ 8, 22] },
-  { name: "Virgo",      glyph: "♍", element: "Earth", modality: "Mutable",  ruler: "Mercury", start: [ 8, 23], end: [ 9, 22] },
-  { name: "Libra",      glyph: "♎", element: "Air",   modality: "Cardinal", ruler: "Venus",   start: [ 9, 23], end: [10, 22] },
-  { name: "Scorpio",    glyph: "♏", element: "Water", modality: "Fixed",    ruler: "Pluto",   start: [10, 23], end: [11, 21] },
-  { name: "Sagittarius", glyph: "♐", element: "Fire",  modality: "Mutable",  ruler: "Jupiter", start: [11, 22], end: [12, 21] },
+  { name: "Capricorn",   element: "Earth", modality: "Cardinal", ruler: "Saturn",  start: [12, 22], end: [ 1, 19] },
+  { name: "Aquarius",    element: "Air",   modality: "Fixed",    ruler: "Uranus",  start: [ 1, 20], end: [ 2, 18] },
+  { name: "Pisces",      element: "Water", modality: "Mutable",  ruler: "Neptune", start: [ 2, 19], end: [ 3, 20] },
+  { name: "Aries",       element: "Fire",  modality: "Cardinal", ruler: "Mars",    start: [ 3, 21], end: [ 4, 19] },
+  { name: "Taurus",      element: "Earth", modality: "Fixed",    ruler: "Venus",   start: [ 4, 20], end: [ 5, 20] },
+  { name: "Gemini",      element: "Air",   modality: "Mutable",  ruler: "Mercury", start: [ 5, 21], end: [ 6, 20] },
+  { name: "Cancer",      element: "Water", modality: "Cardinal", ruler: "Moon",    start: [ 6, 21], end: [ 7, 22] },
+  { name: "Leo",         element: "Fire",  modality: "Fixed",    ruler: "Sun",     start: [ 7, 23], end: [ 8, 22] },
+  { name: "Virgo",       element: "Earth", modality: "Mutable",  ruler: "Mercury", start: [ 8, 23], end: [ 9, 22] },
+  { name: "Libra",       element: "Air",   modality: "Cardinal", ruler: "Venus",   start: [ 9, 23], end: [10, 22] },
+  { name: "Scorpio",     element: "Water", modality: "Fixed",    ruler: "Pluto",   start: [10, 23], end: [11, 21] },
+  { name: "Sagittarius", element: "Fire",  modality: "Mutable",  ruler: "Jupiter", start: [11, 22], end: [12, 21] },
 ];
 
 function toDate(input) {
@@ -103,9 +105,14 @@ export function getRulingPlanet(signName) {
   return z?.ruler || null;
 }
 
-export function getZodiacGlyph(signName) {
-  const z = ZODIAC.find((s) => s.name === signName);
-  return z?.glyph || "✦";
+/**
+ * Returns the zodiac sigil glyph for a sign name.
+ * @deprecated UI should use Lucide icons via `@/lib/astrology/glyphs`.
+ *             Returns null so callers don't accidentally render a unicode glyph.
+ */
+// eslint-disable-next-line no-unused-vars
+export function getZodiacGlyph(_signName) {
+  return null;
 }
 
 // ── Moon phase ──────────────────────────────────────────────────────────────
@@ -113,15 +120,15 @@ const SYNODIC_MONTH = 29.530588; // days
 const REF_NEW_MOON = Date.UTC(2000, 0, 6, 18, 14, 0); // known new moon
 
 const PHASE_BUCKETS = [
-  { name: "New",            short: "New",            glyph: "🌑", min: 0.00, max: 0.03 },
-  { name: "Waxing crescent", short: "Waxing crescent", glyph: "🌒", min: 0.03, max: 0.22 },
-  { name: "First quarter",  short: "First quarter",  glyph: "🌓", min: 0.22, max: 0.28 },
-  { name: "Waxing gibbous", short: "Waxing gibbous", glyph: "🌔", min: 0.28, max: 0.47 },
-  { name: "Full",           short: "Full",           glyph: "🌕", min: 0.47, max: 0.53 },
-  { name: "Waning gibbous", short: "Waning gibbous", glyph: "🌖", min: 0.53, max: 0.72 },
-  { name: "Last quarter",   short: "Last quarter",   glyph: "🌗", min: 0.72, max: 0.78 },
-  { name: "Waning crescent", short: "Waning crescent", glyph: "🌘", min: 0.78, max: 0.97 },
-  { name: "New",            short: "New",            glyph: "🌑", min: 0.97, max: 1.01 },
+  { name: "New",             short: "New",             key: "new",             min: 0.00, max: 0.03 },
+  { name: "Waxing crescent", short: "Waxing crescent", key: "waxing_crescent", min: 0.03, max: 0.22 },
+  { name: "First quarter",   short: "First quarter",   key: "first_quarter",   min: 0.22, max: 0.28 },
+  { name: "Waxing gibbous",  short: "Waxing gibbous",  key: "waxing_gibbous",  min: 0.28, max: 0.47 },
+  { name: "Full",            short: "Full",            key: "full",            min: 0.47, max: 0.53 },
+  { name: "Waning gibbous",  short: "Waning gibbous",  key: "waning_gibbous",  min: 0.53, max: 0.72 },
+  { name: "Last quarter",    short: "Last quarter",    key: "last_quarter",    min: 0.72, max: 0.78 },
+  { name: "Waning crescent", short: "Waning crescent", key: "waning_crescent", min: 0.78, max: 0.97 },
+  { name: "New",             short: "New",             key: "new",             min: 0.97, max: 1.01 },
 ];
 
 /** Returns the moon phase for a given date.
@@ -141,7 +148,7 @@ export function getMoonPhase(date) {
   return {
     name: bucket.name,
     short: bucket.short,
-    glyph: bucket.glyph,
+    key: bucket.key,
     position,
     illumination, // 0..100
     waxing: position < 0.5,
@@ -193,11 +200,11 @@ export function prettyDateShortBritish(date) {
   return `${d.getDate()} ${MONTHS_SHORT[d.getMonth()]}`;
 }
 
-/** "Jun 14, 1999" — kicker text (matches demo). */
+/** "14 Jun 1999" — kicker text, en-GB order. */
 export function prettyBirthday(date) {
   const d = toDate(date);
   if (!d || isNaN(d.getTime())) return "";
-  return `${MONTHS_SHORT[d.getMonth()]} ${d.getDate()}, ${d.getFullYear()}`;
+  return `${d.getDate()} ${MONTHS_SHORT[d.getMonth()]} ${d.getFullYear()}`;
 }
 
 // ── Cycle × Moon weave helpers ──────────────────────────────────────────────
@@ -218,6 +225,8 @@ export function cycleMoonHeadline(cyclePhase, moonPhase) {
 }
 
 // Re-export zodiac list for any UI that needs to iterate all 12 signs.
-export const ALL_ZODIAC = ZODIAC.map(({ name, glyph, element, modality, ruler }) => ({
-  name, glyph, element, modality, ruler,
+// `glyph` is intentionally omitted — UI should use Lucide icons via
+// `@/lib/astrology/glyphs` instead of Unicode astrology codepoints.
+export const ALL_ZODIAC = ZODIAC.map(({ name, element, modality, ruler }) => ({
+  name, element, modality, ruler,
 }));

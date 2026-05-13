@@ -1,9 +1,13 @@
+import { Sun, Moon as MoonIcon, Sparkles } from "lucide-react";
 import { getRulingPlanet, getMoonPhase, prettyDateBritish, prettyBirthday } from "@/utils/astrology";
+import { getPlanetIcon, getSignIcon } from "@/lib/astrology/glyphs";
+import MoonPhaseGlyph from "../MoonPhaseGlyph";
 
 // ─────────────────────────────────────────────────────────────────────────────
 // TwilightHero — Section 1.
 // Renders the dark hero card: date · kicker · headline · narrative · pills ·
-// moon visual. Copied 1-for-1 from the original HoroscopeTab Hero function.
+// moon visual. H2a-2 swap: pill glyph strings replaced with Lucide icons;
+// hero moon disc overlays the new SVG MoonPhaseGlyph.
 // ─────────────────────────────────────────────────────────────────────────────
 
 function Pill({ glow, children }) {
@@ -24,6 +28,9 @@ function MoonVisual({ moon }) {
           transform: `translateX(${(isWaxing ? -offset : offset) * 50}%)`,
         }}
       />
+      <div style={moonGlyphOverlayStyle}>
+        <MoonPhaseGlyph phase={moon.key || "new"} size={22} />
+      </div>
     </div>
   );
 }
@@ -37,11 +44,6 @@ function fallbackHeadline(sun, moon) {
 function fallbackNarrative(sun, moon) {
   const ruler = sun ? getRulingPlanet(sun) : "your ruler";
   return `Today's reading is being written. While it arrives, your chart is reporting a ${moon.short.toLowerCase()} sky and ${ruler} doing its quiet work. Move gently. Notice what your body is saying before the day asks for an answer.`;
-}
-
-function rulerGlyph(planet) {
-  const m = { Sun: "☉", Moon: "☽", Mercury: "☿", Venus: "♀", Mars: "♂", Jupiter: "♃", Saturn: "♄", Uranus: "♅", Neptune: "♆", Pluto: "♇" };
-  return m[planet] || "✦";
 }
 
 function renderEm(text) {
@@ -66,6 +68,8 @@ export default function TwilightHero({ chart, moon, reading }) {
 
   const headline = reading?.headline || fallbackHeadline(chart.sun, moon);
   const narrative = reading?.narrative || fallbackNarrative(chart.sun, moon);
+  const SunGlyph = chart.sun ? getSignIcon(chart.sun) : Sun;
+  const RulerGlyph = chart.sunRuler ? getPlanetIcon(chart.sunRuler) : Sparkles;
 
   return (
     <div style={heroShellStyle}>
@@ -77,11 +81,27 @@ export default function TwilightHero({ chart, moon, reading }) {
           <h1 style={heroHeadStyle} dangerouslySetInnerHTML={{ __html: renderEm(headline) }} />
           <p style={heroBodyStyle}>{narrative}</p>
           <div style={heroPillsStyle}>
-            {chart.sun && <Pill glow>&#9737; {chart.sun} sun</Pill>}
-            <Pill>&#9789; {moon.short} · {moon.illumination}%</Pill>
-            {reading?.mercury_pill && <Pill>&#9791; {reading.mercury_pill}</Pill>}
+            {chart.sun && (
+              <Pill glow>
+                <SunGlyph size={12} strokeWidth={1.6} style={pillIconStyle} />
+                {chart.sun} sun
+              </Pill>
+            )}
+            <Pill>
+              <MoonIcon size={12} strokeWidth={1.6} style={pillIconStyle} />
+              {moon.short} · {moon.illumination}%
+            </Pill>
+            {reading?.mercury_pill && (
+              <Pill>
+                <Sparkles size={12} strokeWidth={1.6} style={pillIconStyle} />
+                {reading.mercury_pill}
+              </Pill>
+            )}
             {!reading?.mercury_pill && chart.sunRuler && (
-              <Pill>{rulerGlyph(chart.sunRuler)} {chart.sunRuler}</Pill>
+              <Pill>
+                <RulerGlyph size={12} strokeWidth={1.6} style={pillIconStyle} />
+                {chart.sunRuler}
+              </Pill>
             )}
           </div>
         </div>
@@ -93,6 +113,9 @@ export default function TwilightHero({ chart, moon, reading }) {
     </div>
   );
 }
+
+// Keep import alive
+void getMoonPhase;
 
 const heroShellStyle = {
   position: "relative",
@@ -151,6 +174,7 @@ const heroBodyStyle = {
   margin: "0 0 18px",
 };
 const heroPillsStyle = { display: "flex", flexWrap: "wrap", gap: 8 };
+const pillIconStyle = { marginRight: 6, opacity: 0.88 };
 const heroVisualStyle = {
   flex: "0 0 180px",
   display: "flex", flexDirection: "column", alignItems: "center", gap: 10,
@@ -174,6 +198,18 @@ const moonOverlayStyle = {
   position: "absolute",
   inset: 0,
   background: "linear-gradient(90deg, rgba(15,10,22,0.88) 50%, transparent 50.1%)",
+};
+const moonGlyphOverlayStyle = {
+  position: "absolute",
+  right: 8,
+  bottom: 8,
+  display: "flex",
+  alignItems: "center",
+  justifyContent: "center",
+  background: "rgba(15,10,22,0.55)",
+  border: "1px solid rgba(245,230,211,0.18)",
+  borderRadius: 9999,
+  padding: 3,
 };
 const pillStyle = {
   display: "inline-flex",

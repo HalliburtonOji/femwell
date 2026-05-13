@@ -57,25 +57,25 @@ function getSunSign(dateStr: string): string | null {
 const SYNODIC = 29.530588;
 const REF_NEW_MOON_MS = Date.UTC(2000, 0, 6, 18, 14, 0);
 
-function getMoonPhase(date: Date): { name: string; pct: number; waxing: boolean; glyph: string } {
+function getMoonPhase(date: Date): { name: string; pct: number; waxing: boolean; key: string } {
   const days = (date.getTime() - REF_NEW_MOON_MS) / 86400000;
   const cycles = days / SYNODIC;
   let position = cycles - Math.floor(cycles);
   if (position < 0) position += 1;
   const illumination = Math.round(50 * (1 - Math.cos(2 * Math.PI * position)));
   const buckets = [
-    { name: 'New',             glyph: '🌑', min: 0.00, max: 0.03 },
-    { name: 'Waxing crescent', glyph: '🌒', min: 0.03, max: 0.22 },
-    { name: 'First quarter',   glyph: '🌓', min: 0.22, max: 0.28 },
-    { name: 'Waxing gibbous',  glyph: '🌔', min: 0.28, max: 0.47 },
-    { name: 'Full',            glyph: '🌕', min: 0.47, max: 0.53 },
-    { name: 'Waning gibbous',  glyph: '🌖', min: 0.53, max: 0.72 },
-    { name: 'Last quarter',    glyph: '🌗', min: 0.72, max: 0.78 },
-    { name: 'Waning crescent', glyph: '🌘', min: 0.78, max: 0.97 },
-    { name: 'New',             glyph: '🌑', min: 0.97, max: 1.01 },
+    { name: 'New',             key: 'new',              min: 0.00, max: 0.03 },
+    { name: 'Waxing crescent', key: 'waxing_crescent',  min: 0.03, max: 0.22 },
+    { name: 'First quarter',   key: 'first_quarter',    min: 0.22, max: 0.28 },
+    { name: 'Waxing gibbous',  key: 'waxing_gibbous',   min: 0.28, max: 0.47 },
+    { name: 'Full',            key: 'full',             min: 0.47, max: 0.53 },
+    { name: 'Waning gibbous',  key: 'waning_gibbous',   min: 0.53, max: 0.72 },
+    { name: 'Last quarter',    key: 'last_quarter',     min: 0.72, max: 0.78 },
+    { name: 'Waning crescent', key: 'waning_crescent',  min: 0.78, max: 0.97 },
+    { name: 'New',             key: 'new',              min: 0.97, max: 1.01 },
   ];
   const b = buckets.find((x) => position >= x.min && position < x.max) || buckets[0];
-  return { name: b.name, pct: illumination, waxing: position < 0.5, glyph: b.glyph };
+  return { name: b.name, pct: illumination, waxing: position < 0.5, key: b.key };
 }
 
 function getCyclePhase(profile: any): string | null {
@@ -103,7 +103,7 @@ function inDays(n: number): string {
 }
 
 // ── LLM helpers ─────────────────────────────────────────────────────────────
-const NARRATIVE_SYSTEM = `You are FemWell's astrology voice — warm, literary, present-tense, UK English. Year-9 reading level for the action; literary cadence in description. No emoji, no Markdown headings. Use *word* sparingly to italicise. Never invent statistics. No melodrama. Each card a small, true observation.`;
+const NARRATIVE_SYSTEM = `You are FemWell's astrology voice — warm, literary, present-tense, UK English. Year-9 reading level for the action; literary cadence in description. No emoji, no Markdown headings. Use *word* sparingly to italicise. Never invent statistics. No melodrama. Each card a small, true observation. Never include unicode astrology glyphs (sun, moon, mercury, venus, mars, jupiter, saturn glyphs) or moon-phase emoji in any output.`;
 
 const CHART_SYSTEM = `You estimate the moon sign, rising sign, and Mercury sign at a person's birth from their date, time and place. Return only JSON. If birth_time is missing, return null for moon_sign and rising_sign. Mercury can be estimated from date alone.`;
 
@@ -171,15 +171,28 @@ Deno.serve(async (req) => {
   const astro = aps[0];
   if (!astro) return Response.json({ error: 'No AstroProfile — user has not onboarded.' }, { status: 422 });
 
-  // Idempotency: existing reading
+  // Idempotency: existing reading — but only short-circuit when the chart is
+  // already complete enough that re-running wouldn't add anything new.
+  //
+  // RACE-CONDITION FIX: if the user has a reading row from earlier today but
+  // has since added their birth_time (so moon_sign / rising_sign should now
+  // populate), fall through to estimateChart and PATCH today's row with the
+  // new triad descriptions. Otherwise the user has to wait until tomorrow.
+  let existingToday: any = null;
   if (!force) {
     const existing = await sb.entities.HoroscopeReading.filter(
       { user_id: requestedUserId, reading_date: today },
       '-created_date',
       1,
     ).catch(() => []);
-    if (existing.length > 0) {
-      return Response.json({ ok: true, reading: existing[0], cached: true });
+    existingToday = existing[0] || null;
+    if (existingToday) {
+      const chartComplete = !astro.birth_time ||
+        (astro.moon_sign && astro.rising_sign);
+      if (chartComplete) {
+        return Response.json({ ok: true, reading: existingToday, cached: true });
+      }
+      // else: fall through and re-generate.
     }
   }
 
@@ -241,7 +254,7 @@ Write a daily reading in JSON with exactly these keys:
 - "trouble_body" (35-50 words — the small misread to watch for)
 - "cycle_moon_headline" (8-12 words, names both cycle phase and moon phase, use *word* italics; e.g. "Luteal body under a *waxing gibbous*")
 - "cycle_moon_body" (50-70 words tying cycle phase to moon phase as one instruction)
-- "transits_json" (array of 4 objects: {"when":"YYYY-MM-DD","glyph":"☉|☽|☿|♀|♂|♃|♄","title":"max 6 words","desc":"25-35 words"}; pick 4 plausible transits over the next 7 days; if you don't know exact astronomy, write literary transits with valid future dates)
+- "transits_json" (array of 4 objects: {"when":"YYYY-MM-DD","planet":"sun|moon|mercury|venus|mars|jupiter|saturn","title":"max 6 words","desc":"25-35 words"}; pick 4 plausible transits over the next 7 days; if you don't know exact astronomy, write literary transits with valid future dates; never include unicode astrology glyphs)
 
 Return only valid JSON.`;
 
@@ -281,16 +294,22 @@ Return only valid JSON.`;
   // If LLM returned empty transits, scaffold something so the section isn't empty
   if (reading.transits_json.length === 0) {
     reading.transits_json = [
-      { when: inDays(2), glyph: '☽', title: 'Moon shifts phase', desc: 'The sky changes tone mid-week. Notice your sleep around then.' },
-      { when: inDays(4), glyph: '♀', title: 'Venus moves', desc: 'Relational weather lifts. A small kindness lands better than a big gesture.' },
-      { when: inDays(6), glyph: '☿', title: 'Mercury reports in', desc: 'Your messaging clears. Reply to the thing you have been avoiding.' },
-      { when: inDays(7), glyph: '☉', title: 'Sun at the seam', desc: 'A month ending. Close one open loop before opening another.' },
+      { when: inDays(2), planet: 'moon',    title: 'Moon shifts phase',    desc: 'The sky changes tone mid-week. Notice your sleep around then.' },
+      { when: inDays(4), planet: 'venus',   title: 'Venus moves',          desc: 'Relational weather lifts. A small kindness lands better than a big gesture.' },
+      { when: inDays(6), planet: 'mercury', title: 'Mercury reports in',   desc: 'Your messaging clears. Reply to the thing you have been avoiding.' },
+      { when: inDays(7), planet: 'sun',     title: 'Sun at the seam',      desc: 'A month ending. Close one open loop before opening another.' },
     ];
   }
 
+  // If a row already exists for today (race-fix path), PATCH it with the
+  // fresh moon/rising-aware narrative instead of creating a duplicate.
   let saved;
   try {
-    saved = await sb.entities.HoroscopeReading.create(reading);
+    if (existingToday) {
+      saved = await sb.entities.HoroscopeReading.update(existingToday.id, reading);
+    } else {
+      saved = await sb.entities.HoroscopeReading.create(reading);
+    }
   } catch (err: any) {
     return Response.json({ error: err?.message || 'Save failed' }, { status: 500 });
   }

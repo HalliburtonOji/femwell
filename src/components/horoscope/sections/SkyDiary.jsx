@@ -1,10 +1,15 @@
+import { Sparkles } from "lucide-react";
 import { prettyDateShortBritish } from "@/utils/astrology";
+import { getPlanetIcon, glyphToPlanet } from "@/lib/astrology/glyphs";
 
 // ─────────────────────────────────────────────────────────────────────────────
 // SkyDiary — Section 5.
 // Hosts the current Transits UI (4-card week view) until the Sky Diary
-// experience is built out in H2b. Copied 1-for-1 from the original
-// HoroscopeTab Transits function.
+// experience is built out in H2c.
+//
+// H2a-2: transits now expose a `planet` key (sun/moon/mercury/…) instead of a
+// Unicode glyph string. Stored rows from before today may still carry
+// `transit.glyph` — we accept that and map via glyphToPlanet.
 // ─────────────────────────────────────────────────────────────────────────────
 
 function SectionHead({ title, emphasis, link }) {
@@ -25,9 +30,13 @@ function prettyTransitDate(when) {
 }
 
 function TransitCard({ transit }) {
+  const planet = transit.planet || glyphToPlanet(transit.glyph);
+  const Icon = planet ? getPlanetIcon(planet) : Sparkles;
   return (
     <div style={transitCardStyle}>
-      <div style={transitGlyphStyle}>{transit.glyph || "\u2726"}</div>
+      <div style={transitGlyphStyle}>
+        <Icon size={22} strokeWidth={1.5} />
+      </div>
       <div style={{ flex: 1 }}>
         <p style={transitWhenStyle}>{prettyTransitDate(transit.when) || transit.when_label || ""}</p>
         <p style={transitTitleStyle}>{transit.title || "Transit"}</p>
@@ -46,25 +55,25 @@ function fallbackTransits() {
   };
   return [
     {
-      id: "fb-1", glyph: "\u2609",
+      id: "fb-1", planet: "sun",
       when: inDays(0),
       title: "Your reading is being written",
       desc: "We're generating your transits in the background. They'll appear by the next time you open the app.",
     },
     {
-      id: "fb-2", glyph: "\u263D",
+      id: "fb-2", planet: "moon",
       when: inDays(3),
       title: "Moon shifts phase",
       desc: "The sky's tone changes mid-week. Notice your sleep around then.",
     },
     {
-      id: "fb-3", glyph: "\u2640",
+      id: "fb-3", planet: "venus",
       when: inDays(5),
       title: "Venus moves",
       desc: "Relational weather shifts. Plan a small kindness, not a big gesture.",
     },
     {
-      id: "fb-4", glyph: "\u263F",
+      id: "fb-4", planet: "mercury",
       when: inDays(7),
       title: "Mercury reports in",
       desc: "Your ruler will adjust. Watch your word count for a day.",
@@ -120,11 +129,13 @@ const transitCardStyle = {
   padding: "14px 16px",
 };
 const transitGlyphStyle = {
-  fontFamily: "'Fraunces', serif",
-  fontSize: 26,
-  color: "var(--rose-primary, #D45E52)",
+  display: "inline-flex",
+  alignItems: "center",
+  justifyContent: "center",
   width: 36,
-  textAlign: "center",
+  height: 36,
+  color: "var(--rose-primary, #D45E52)",
+  flexShrink: 0,
 };
 const transitWhenStyle = {
   fontFamily: "'Inter', sans-serif",

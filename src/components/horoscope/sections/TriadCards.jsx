@@ -1,15 +1,19 @@
-import { Plus } from "lucide-react";
+import { Plus, Sun, Moon, Sunrise, Sparkles } from "lucide-react";
+import { getSignIcon } from "@/lib/astrology/glyphs";
 
 // ─────────────────────────────────────────────────────────────────────────────
 // TriadCards — Section 2.
-// Sun / Moon / Rising triad cards. Moon + Rising locked until birth time added.
-// Copied 1-for-1 from the original HoroscopeTab Triad function.
+// Sun / Moon / Rising triad cards. Moon + Rising locked until birth time
+// added. H2a-2 swap: glyph strings replaced with Lucide icons.
 // ─────────────────────────────────────────────────────────────────────────────
 
-function TriadCard({ glyph, label, sign, desc, locked, onUnlock }) {
+function TriadCard({ Icon, label, sign, desc, locked, onUnlock }) {
+  const Glyph = Icon || Sparkles;
   return (
     <div style={{ ...triadCardStyle, opacity: locked ? 0.7 : 1 }}>
-      <div style={triadGlyphStyle}>{glyph}</div>
+      <div style={triadGlyphStyle}>
+        <Glyph size={28} strokeWidth={1.4} />
+      </div>
       <p style={triadLabelStyle}>{label}</p>
       <p style={triadSignStyle}>{sign}</p>
       <p style={triadDescStyle}>{desc}</p>
@@ -57,29 +61,32 @@ export default function TriadCards({ chart, astro, reading, onAddBirthTime }) {
   const risingDesc = reading?.triad_rising_desc;
   const hasBT = !!astro?.birth_time;
 
+  const SunGlyph = chart.sun ? getSignIcon(chart.sun) : Sun;
+  const MoonGlyph = chart.moonSign ? getSignIcon(chart.moonSign) : Moon;
+
   return (
     <div style={{ marginTop: 32 }}>
-      <SectionHead title="Your" emphasis="triad" link={hasBT ? null : "Add birth time & place to unlock all three \u2192"} />
+      <SectionHead title="Your" emphasis="triad" link={hasBT ? null : "Add birth time & place to unlock all three →"} />
       <div style={triadRowStyle}>
         <TriadCard
-          glyph={chart.sunGlyph || "&#9737;"}
+          Icon={SunGlyph}
           label="Sun · self"
-          sign={chart.sun ? `${chart.sun}${chart.sunDegree != null ? ` · ${chart.sunDegree}\u00B0` : ""}` : "\u2014"}
+          sign={chart.sun ? `${chart.sun}${chart.sunDegree != null ? ` · ${chart.sunDegree}°` : ""}` : "—"}
           desc={sunDesc}
           locked={false}
         />
         <TriadCard
-          glyph="&#9789;"
+          Icon={MoonGlyph}
           label="Moon · inner life"
-          sign={chart.moonSign ? chart.moonSign : "\u2014 add time"}
+          sign={chart.moonSign ? chart.moonSign : "— add time"}
           desc={moonDesc || "Your moon sign shows how you feel things, how you soothe yourself, what makes you feel safe."}
           locked={!hasBT || !chart.moonSign}
           onUnlock={onAddBirthTime}
         />
         <TriadCard
-          glyph="&#8599;"
+          Icon={Sunrise}
           label="Rising · mask"
-          sign={chart.risingSign ? chart.risingSign : "\u2014 add time"}
+          sign={chart.risingSign ? chart.risingSign : "— add time"}
           desc={risingDesc || "The self people meet first — how you enter a room. Only your birth time can unlock it."}
           locked={!hasBT || !chart.risingSign}
           onUnlock={onAddBirthTime}
@@ -124,8 +131,11 @@ const triadCardStyle = {
   boxShadow: "0 1px 2px rgba(43,30,22,0.04), 0 4px 12px rgba(43,30,22,0.06)",
 };
 const triadGlyphStyle = {
-  fontFamily: "'Fraunces', serif",
-  fontSize: 30,
+  display: "inline-flex",
+  alignItems: "center",
+  justifyContent: "center",
+  width: 32,
+  height: 32,
   color: "var(--rose-primary, #D45E52)",
   marginBottom: 8,
 };

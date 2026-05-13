@@ -124,7 +124,7 @@ function deriveChart(astro, userProfile) {
     sun,
     sunDegree,
     sunRuler: sun ? getRulingPlanet(sun) : null,
-    sunGlyph: sun ? getZodiacGlyph(sun) : "\u2726",
+    sunGlyph: sun ? getZodiacGlyph(sun) : null,
     moonSign: astro?.moon_sign || null,
     risingSign: astro?.rising_sign || null,
     hasBirthTime: !!astro?.birth_time,
@@ -159,7 +159,7 @@ function OnboardingCard({ onOpen }) {
         FemWell writes you a daily reading based on your chart and your cycle. To start, we need your birth date. Birth time and place unlock your moon and rising too.
       </p>
       <button type="button" onClick={onOpen} style={onboardingBtnStyle}>
-        Unlock my chart
+        Tell us when
       </button>
     </div>
   );

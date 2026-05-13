@@ -168,8 +168,17 @@ Answer in 80-130 words. Be specific to their chart + today's sky + cycle phase. 
       title: String(question).slice(0, 80),
     });
   } catch {
-    // If thread create fails, return the answer anyway — we'd rather the user
-    // get their reading than lose it on a persistence hiccup.
+    // Persist-on-fail: if the thread create blew up, the user still deserves
+    // to see their answer AND the operator deserves to be able to recover
+    // the exchange. Log to IngestErrorLog so a human can replay it later.
+    await sb.entities.IngestErrorLog.create({
+      function_name: 'askStars',
+      source_identifier: 'askStars',
+      stage: 'publish',
+      error_message: 'AdviceThreads.create failed — answer returned to user with thread_id: null',
+      raw_payload: JSON.stringify({ user_id, question: String(question).trim(), answer }),
+      logged_at: new Date().toISOString(),
+    }).catch(() => { /* swallow — answer is more important than the log */ });
     return Response.json({ ok: true, answer, thread_id: null });
   }
 

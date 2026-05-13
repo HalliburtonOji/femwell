@@ -1,7 +1,10 @@
+import MoonPhaseGlyph from "../MoonPhaseGlyph";
+
 // ─────────────────────────────────────────────────────────────────────────────
 // CycleMoonDial — Section 4.
 // Cycle × Moon intersection narrative + paired ring visuals.
-// Copied 1-for-1 from the original HoroscopeTab CycleMoon function.
+// H2a-2: Sky ring now renders the SVG MoonPhaseGlyph instead of moon.glyph
+// (which no longer exists on the getMoonPhase return shape).
 // ─────────────────────────────────────────────────────────────────────────────
 
 function renderEm(text) {
@@ -15,10 +18,10 @@ function renderEm(text) {
     .replace(/\*(.+?)\*/g, '<em style="font-style:italic;">$1</em>');
 }
 
-function RingWrap({ label, glyph }) {
+function RingWrap({ label, children }) {
   return (
     <div style={ringWrapStyle}>
-      <div style={ringStyle}>{glyph}</div>
+      <div style={ringStyle}>{children}</div>
       <p style={ringLabelStyle}>{label}</p>
     </div>
   );
@@ -64,8 +67,14 @@ export default function CycleMoonDial({ cyclePhase, moon, reading }) {
         <p style={intersectBodyStyle}>{body}</p>
       </div>
       <div style={ringsRowStyle} aria-hidden="true">
-        <RingWrap label="Sky" glyph={moon.glyph} />
-        <RingWrap label="Body" glyph={cyclePhaseGlyph(cyclePhase)} />
+        <RingWrap label="Sky">
+          <MoonPhaseGlyph phase={moon.key || "new"} size={36} />
+        </RingWrap>
+        <RingWrap label="Body">
+          <span style={{ fontFamily: "'Fraunces', serif", fontSize: 24 }}>
+            {cyclePhaseGlyph(cyclePhase)}
+          </span>
+        </RingWrap>
       </div>
     </div>
   );
