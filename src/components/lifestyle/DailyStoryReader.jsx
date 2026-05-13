@@ -455,12 +455,44 @@ export default function DailyStoryReader({
   // button or ✕ close. When FictionReader wraps us, this returns to the
   // book cover. Falls back to "exit immersive only" when not provided.
   onExit,
+  // v4d — per-book persistence key. When provided, the reader saves
+  // reading position + bookmarks under fw_reader_pos_{bookId} /
+  // fw_reader_bookmarks_{bookId}. Falls back to no-persistence (Daily
+  // Story tab, where each chapter is its own day).
+  bookId,
 }) {
   const [chapters, setChapters] = useState(providedSource?.items || []);
   const [currentIndex, setCurrentIndex] = useState(providedSource?.currentIndex ?? 0);
   // pageInChapter — measured pagination tracks WHICH page within the current
   // chapter is visible. Resets to 0 on chapter change.
   const [pageInChapter, setPageInChapter] = useState(0);
+  // v4d — bookmarks live in localStorage per book.
+  const bookmarksKey = bookId ? `fw_reader_bookmarks_${bookId}` : null;
+  const posKey = bookId ? `fw_reader_pos_${bookId}` : null;
+  const [bookmarks, setBookmarks] = useState(() => {
+    if (!bookmarksKey) return [];
+    try { return JSON.parse(localStorage.getItem(bookmarksKey) || "[]"); }
+    catch { return []; }
+  });
+  const isCurrentBookmarked = useMemo(() => {
+    return bookmarks.some(
+      (b) => b.chapterIndex === currentIndex && b.pageInChapter === pageInChapter
+    );
+  }, [bookmarks, currentIndex, pageInChapter]);
+  const toggleBookmark = useCallback(() => {
+    if (!bookmarksKey) return;
+    setBookmarks((prev) => {
+      const exists = prev.some(
+        (b) => b.chapterIndex === currentIndex && b.pageInChapter === pageInChapter
+      );
+      const next = exists
+        ? prev.filter((b) => !(b.chapterIndex === currentIndex && b.pageInChapter === pageInChapter))
+        : [...prev, { chapterIndex: currentIndex, pageInChapter, ts: Date.now() }];
+      try { localStorage.setItem(bookmarksKey, JSON.stringify(next)); }
+      catch { /* silent */ }
+      return next;
+    });
+  }, [bookmarksKey, currentIndex, pageInChapter]);
   // chapter id → page count (reported back by ChapterPage's measurement pass)
   const [chapterPageCounts, setChapterPageCounts] = useState({});
   const reportPageCount = useCallback((chapterId, count) => {
@@ -611,8 +643,46 @@ export default function DailyStoryReader({
   const latestRevealed = chapters.length - 1;
   const currentChapterRef = chapters[currentIndex];
   const currentChapterPages = chapterPageCounts[currentChapterRef?.id] || 1;
-  // Reset to page 0 whenever we move to a different chapter.
-  useEffect(() => { setPageInChapter(0); }, [currentIndex]);
+  // Reset to page 0 whenever we move to a different chapter — unless we're
+  // currently restoring a saved position (which sets pageInChapter directly
+  // and shouldn't be stomped). v4d uses pendingPageRef for that.
+  const pendingPageRef = useRef(null);
+  useEffect(() => {
+    if (pendingPageRef.current != null) {
+      setPageInChapter(pendingPageRef.current);
+      pendingPageRef.current = null;
+    } else {
+      setPageInChapter(0);
+    }
+  }, [currentIndex]);
+
+  // v4d — restore reading position once, on first mount with chapters loaded.
+  const positionRestoredRef = useRef(false);
+  useEffect(() => {
+    if (!posKey || positionRestoredRef.current || !chapters.length) return;
+    try {
+      const raw = localStorage.getItem(posKey);
+      if (raw) {
+        const pos = JSON.parse(raw);
+        const chIdx = Math.min(Math.max(0, pos.chapterIndex || 0), chapters.length - 1);
+        pendingPageRef.current = pos.pageInChapter || 0;
+        setCurrentIndex(chIdx);
+      }
+    } catch { /* silent */ }
+    positionRestoredRef.current = true;
+  }, [posKey, chapters.length]);
+
+  // v4d — save reading position whenever it changes (after restore).
+  useEffect(() => {
+    if (!posKey || !positionRestoredRef.current) return;
+    try {
+      localStorage.setItem(posKey, JSON.stringify({
+        chapterIndex: currentIndex,
+        pageInChapter,
+        ts: Date.now(),
+      }));
+    } catch { /* silent */ }
+  }, [posKey, currentIndex, pageInChapter]);
 
   const flipForward = useCallback(() => {
     if (showLocked) return;
@@ -825,12 +895,14 @@ export default function DailyStoryReader({
               </button>
               <button
                 type="button"
-                className="ds-reader-imm-btn ds-reader-bookmark-btn"
-                onClick={() => { /* v4d wires this */ }}
-                aria-label="Bookmark this page"
-                title="Bookmark"
+                className={`ds-reader-imm-btn ds-reader-bookmark-btn ${isCurrentBookmarked ? "is-bookmarked" : ""}`}
+                onClick={toggleBookmark}
+                aria-label={isCurrentBookmarked ? "Remove bookmark" : "Bookmark this page"}
+                aria-pressed={isCurrentBookmarked}
+                title={isCurrentBookmarked ? "Remove bookmark" : "Bookmark"}
+                disabled={!bookmarksKey}
               >
-                <Bookmark size={18} />
+                <Bookmark size={20} />
               </button>
             </div>
           </div>
@@ -1098,8 +1170,12 @@ function ReaderStyles({ reducedMotion }) {
         position: absolute;
         top: 0; left: 0; right: 0;
         margin: 0;
-        padding: 12px 16px;
-        background: linear-gradient(to bottom, var(--paper, #FFFAF5) 0%, rgba(255,250,245,0) 100%);
+        padding: 14px 20px 18px;
+        min-height: 72px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        background: linear-gradient(to bottom, var(--paper, #FFFAF5) 60%, rgba(255,250,245,0) 100%);
         z-index: 4;
         transition: opacity 200ms ease, transform 200ms ease;
       }
@@ -1168,17 +1244,21 @@ function ReaderStyles({ reducedMotion }) {
       .ds-reader-bookmark-btn { color: var(--ink-mute, #8A7E88); }
       .ds-reader-bookmark-btn:hover { color: var(--accent, #D45E52); }
 
-      /* v4c — right-side cluster (Aa + Bookmark) */
-      .ds-reader-imm-right { display: inline-flex; align-items: center; gap: 8px; }
+      /* v4c — right-side cluster (Aa + Bookmark) — gap matches button size */
+      .ds-reader-imm-right { display: inline-flex; align-items: center; gap: 10px; }
       .ds-reader-aa-btn { font-family: 'Fraunces', Georgia, serif; }
       .ds-reader-aa-glyph {
         font-weight: 500;
-        font-size: 18px;
+        font-size: 22px;
         line-height: 1;
-        color: var(--ink, #2A2035);
+        color: currentColor;
         display: inline-block;
       }
-      .ds-reader-aa-glyph::first-letter { font-size: 0.66em; vertical-align: 4px; }
+      .ds-reader-aa-glyph::first-letter { font-size: 0.62em; vertical-align: 6px; }
+      /* The bookmark icon inside the chunky pill follows currentColor too. */
+      .ds-reader-bookmark-btn { color: currentColor; }
+      .ds-reader-bookmark-btn.is-bookmarked { color: var(--accent, #D45E52); }
+      .ds-reader-bookmark-btn.is-bookmarked svg { fill: var(--accent, #D45E52); }
 
       /* v4c — settings drawer (60vh bottom sheet) */
       .ds-reader-scrim {
@@ -1452,17 +1532,43 @@ function ReaderStyles({ reducedMotion }) {
         padding: 12px 4px;
         margin: 0 0 14px;
       }
+      /* v4d — chunky high-contrast pills. Reading-app buttons should never
+         blend into the paper. 48×48 hit target (above WCAG/Apple HIG),
+         solid paper background, ink-coloured border + glyph, soft shadow
+         for lift. Active state scales down for tactile feedback. */
       .ds-reader-imm-btn {
-        width: 38px; height: 38px;
+        width: 48px; height: 48px;
         border-radius: 9999px;
-        border: 1px solid var(--border, rgba(43,30,22,0.10));
-        background: var(--surface, rgba(255,255,255,0.85));
-        color: var(--plum-deep, #2b1e16);
+        border: 1.5px solid var(--ink, #2A2035);
+        background: var(--paper, #FFFAF5);
+        color: var(--ink, #2A2035);
         cursor: pointer;
         display: inline-flex; align-items: center; justify-content: center;
-        backdrop-filter: blur(8px);
+        box-shadow: 0 2px 10px rgba(74,42,58,0.18);
+        transition: background 120ms, color 120ms, transform 120ms, box-shadow 120ms;
       }
-      .ds-reader-imm-btn:hover { background: var(--rose-soft-bg, #fbe9e6); }
+      .ds-reader-imm-btn:hover {
+        background: var(--accent, #D45E52);
+        color: var(--paper, #FFFAF5);
+        border-color: var(--accent, #D45E52);
+        box-shadow: 0 4px 14px rgba(212,94,82,0.30);
+      }
+      .ds-reader-imm-btn:active { transform: scale(0.94); }
+      .ds-reader-imm-btn:focus-visible {
+        outline: 3px solid var(--accent, #D45E52);
+        outline-offset: 2px;
+      }
+      /* Dark theme — flip the chip to ink-on-paper so it pops on plum */
+      .fw-theme-plum .ds-reader-imm-btn {
+        background: var(--ink, #F5E6D3);
+        color: var(--paper, #2B1E26);
+        border-color: var(--ink, #F5E6D3);
+      }
+      .fw-theme-plum .ds-reader-imm-btn:hover {
+        background: var(--accent, #E89289);
+        color: var(--paper, #2B1E26);
+        border-color: var(--accent, #E89289);
+      }
       .ds-reader-vol.is-immersive {
         background: rgba(255,255,255,0.85);
         backdrop-filter: blur(8px);

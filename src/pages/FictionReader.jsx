@@ -237,6 +237,7 @@ export default function FictionReader() {
       onTextSizeChange={handleTextSizeChange}
       defaultImmersive
       onExit={() => setShowReader(false)}
+      bookId={item?.id}
     />
   );
 }
