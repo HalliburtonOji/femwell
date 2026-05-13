@@ -4,7 +4,7 @@ const CHIPS = [
   { id: 'all',      label: 'All' },
   { id: 'videos',   label: 'Videos' },
   { id: 'podcasts', label: 'Podcasts' },
-  { id: 'sessions', label: 'Sessions' },
+  { id: 'practice', label: 'Practice' },
 ];
 
 export default function ListenFilterChips({ activeChip, onChange }) {

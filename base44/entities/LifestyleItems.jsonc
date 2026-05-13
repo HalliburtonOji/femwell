@@ -125,7 +125,8 @@
         "TIKTOK",
         "INSTAGRAM",
         "CLIP",
-        "PODCAST"
+        "PODCAST",
+        "PRACTICE"
       ],
       "default": "ARTICLE"
     },

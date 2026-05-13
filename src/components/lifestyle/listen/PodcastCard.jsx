@@ -40,6 +40,11 @@ function formatRelativeDate(dateStr) {
 }
 
 export default function PodcastCard({ item, saved, hasPhaseTag, onSave, onUntag }) {
+  const isPractice = item.media_type === 'PRACTICE';
+  const pillKind = isPractice ? 'PRACTICE' : 'PODCAST';
+  const pillFallback = isPractice ? 'CLIP' : 'EPISODE';
+  const articleLabel = isPractice ? 'Practice' : 'Podcast';
+
   const handleClick = () => {
     if (item.content_url) {
       window.open(item.content_url, '_blank', 'noopener,noreferrer');
@@ -49,7 +54,7 @@ export default function PodcastCard({ item, saved, hasPhaseTag, onSave, onUntag 
   return (
     <div
       role="article"
-      aria-label={`Podcast: ${item.title || ''}`}
+      aria-label={`${articleLabel}: ${item.title || ''}`}
       style={{
         borderRadius: 14,
         boxShadow: 'var(--shadow-card)',
@@ -97,7 +102,7 @@ export default function PodcastCard({ item, saved, hasPhaseTag, onSave, onUntag 
           fontFamily: "'Inter', sans-serif",
           pointerEvents: 'none',
         }}>
-          {`PODCAST${item.duration_label ? ' · ' + item.duration_label : ' · EPISODE'}`}
+          {`${pillKind}${item.duration_label ? ' · ' + item.duration_label : ' · ' + pillFallback}`}
         </div>
 
         {/* Top-right: Save heart */}

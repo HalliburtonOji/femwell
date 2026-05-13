@@ -1,25 +1,23 @@
 import { useState, useEffect, useCallback } from 'react';
 import { base44 } from '@/api/base44Client';
-import { getCurrentCyclePhase } from '@/utils/cyclePhase';
 import ListenFilterChips from './ListenFilterChips';
 import TikTokRail from './TikTokRail';
 import PodcastRail from './PodcastRail';
+import PracticeRail from './PracticeRail';
 import ListenGrid from './ListenGrid';
 import Toast from '@/components/lifestyle/foryou/Toast';
 
 async function fetchGridItems(chip, lifestyleProfile) {
-  if (chip === 'sessions') {
-    return await base44.entities.ContentItems.filter({}, '-created_date', 24).catch(() => []);
-  }
-
   const baseFilter = { status: 'PUBLISHED' };
   let mediaFilter;
   if (chip === 'all') {
-    mediaFilter = { media_type: { $in: ['VIDEO', 'PODCAST'] } };
+    mediaFilter = { media_type: { $in: ['VIDEO', 'PODCAST', 'PRACTICE'] } };
   } else if (chip === 'videos') {
     mediaFilter = { media_type: 'VIDEO' };
   } else if (chip === 'podcasts') {
     mediaFilter = { media_type: 'PODCAST' };
+  } else if (chip === 'practice') {
+    mediaFilter = { media_type: 'PRACTICE' };
   } else {
     return [];
   }
@@ -35,27 +33,10 @@ async function fetchGridItems(chip, lifestyleProfile) {
   return (items || []).filter(it => !hidden.has(it.id) && !blocked.has(it.category));
 }
 
-async function fetchAllChip(lifestyleProfile) {
-  const [media, sessions] = await Promise.all([
-    fetchGridItems('all', lifestyleProfile),
-    base44.entities.ContentItems.filter({}, '-created_date', 8).catch(() => []),
-  ]);
-  const merged = [
-    ...(media || []),
-    ...(sessions || []).map(s => ({ ...s, _isSession: true })),
-  ];
-  merged.sort((a, b) => {
-    const aDate = a.published_at || a.created_date || '';
-    const bDate = b.published_at || b.created_date || '';
-    return bDate.localeCompare(aDate);
-  });
-  return merged.slice(0, 24);
-}
-
 export default function ListenTab({ categoryFilter }) {
   const initChip = () => {
     const p = new URLSearchParams(window.location.search).get('filter');
-    const valid = ['all', 'videos', 'podcasts', 'sessions'];
+    const valid = ['all', 'videos', 'podcasts', 'practice'];
     return valid.includes(p) ? p : 'all';
   };
 
@@ -63,6 +44,7 @@ export default function ListenTab({ categoryFilter }) {
   const [gridItems, setGridItems] = useState([]);
   const [tikTokItems, setTikTokItems] = useState([]);
   const [podcastItems, setPodcastItems] = useState([]);
+  const [practiceItems, setPracticeItems] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
 
@@ -96,11 +78,11 @@ export default function ListenTab({ categoryFilter }) {
     return () => { cancelled = true; };
   }, []);
 
-  // On mount: fetch TikTok rail + podcast rail in parallel
+  // On mount: fetch TikTok rail + podcast rail + practice rail in parallel
   useEffect(() => {
     let cancelled = false;
     (async () => {
-      const [tiktoks, podcasts] = await Promise.all([
+      const [tiktoks, podcasts, practice] = await Promise.all([
         base44.entities.LifestyleItems.filter(
           { media_type: 'TIKTOK', is_embeddable: true, status: 'PUBLISHED' },
           '-published_at',
@@ -111,10 +93,16 @@ export default function ListenTab({ categoryFilter }) {
           '-published_at',
           12
         ).catch(() => []),
+        base44.entities.LifestyleItems.filter(
+          { media_type: 'PRACTICE', status: 'PUBLISHED' },
+          '-published_at',
+          12
+        ).catch(() => []),
       ]);
       if (!cancelled) {
         setTikTokItems(tiktoks || []);
         setPodcastItems(podcasts || []);
+        setPracticeItems(practice || []);
       }
     })();
     return () => { cancelled = true; };
@@ -133,9 +121,7 @@ export default function ListenTab({ categoryFilter }) {
 
     (async () => {
       try {
-        const data = activeChip === 'all'
-          ? await fetchAllChip(lifestyleProfile)
-          : await fetchGridItems(activeChip, lifestyleProfile);
+        const data = await fetchGridItems(activeChip, lifestyleProfile);
         if (!cancelled) setGridItems(data || []);
       } catch {
         if (!cancelled) setError(true);
@@ -220,9 +206,7 @@ export default function ListenTab({ categoryFilter }) {
     setLoading(true);
     (async () => {
       try {
-        const data = activeChip === 'all'
-          ? await fetchAllChip(lifestyleProfile)
-          : await fetchGridItems(activeChip, lifestyleProfile);
+        const data = await fetchGridItems(activeChip, lifestyleProfile);
         setGridItems(data || []);
       } catch {
         setError(true);
@@ -239,6 +223,14 @@ export default function ListenTab({ categoryFilter }) {
       <div style={{ marginTop: 16 }}>
         <PodcastRail
           items={podcastItems}
+          savedSet={savedSet}
+          savedPhases={savedPhases}
+          onSave={handleSave}
+          onUntag={handleUntag}
+        />
+
+        <PracticeRail
+          items={practiceItems}
           savedSet={savedSet}
           savedPhases={savedPhases}
           onSave={handleSave}

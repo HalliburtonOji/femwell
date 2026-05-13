@@ -23,7 +23,6 @@ import PartnerSettings from './pages/PartnerSettings';
 import PartnerView from './pages/PartnerView';
 import Community from './pages/Community';
 import CommunityMP8 from './pages/CommunityMP8';
-import Sessions from './pages/Sessions';
 import Settings from './pages/Settings';
 import Terms from './pages/Terms';
 import Privacy from './pages/Privacy';
@@ -132,7 +131,6 @@ const AuthenticatedApp = () => {
           <Route path="/PartnerView" element={<PartnerView />} />
           <Route path="/Community" element={<LayoutWrapper currentPageName="Community"><CommunityMP8 /></LayoutWrapper>} />
           <Route path="/CommunityLegacy" element={<LayoutWrapper currentPageName="Community"><Community /></LayoutWrapper>} />
-          <Route path="/Sessions" element={<LayoutWrapper currentPageName="Sessions"><Sessions /></LayoutWrapper>} />
           <Route path="/Settings" element={<LayoutWrapper currentPageName="Settings"><Settings /></LayoutWrapper>} />
           <Route path="/terms" element={<LayoutWrapper currentPageName="Terms"><Terms /></LayoutWrapper>} />
           <Route path="/privacy" element={<LayoutWrapper currentPageName="Privacy"><Privacy /></LayoutWrapper>} />

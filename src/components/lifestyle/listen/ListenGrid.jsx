@@ -2,7 +2,6 @@ import { Play } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { createPageUrl } from '@/utils';
 import PodcastCard from './PodcastCard';
-import SessionCard from './SessionCard';
 import SaveHeartButton from '@/components/lifestyle/foryou/SaveHeartButton';
 import { getCategoryGradient, attachFallbackOverlay } from '@/utils/imageFallback';
 
@@ -48,7 +47,7 @@ const EMPTY_STATES = {
   all:      { title: 'Nothing to play just yet',   body: 'New audio and video lands here weekly. Pop back soon.' },
   videos:   { title: 'No videos here yet',          body: 'Short reels and longer pieces will arrive in this lane.' },
   podcasts: { title: 'No podcasts here yet',        body: 'We add a few episodes a week. They\'ll appear here.' },
-  sessions: { title: 'No sessions here yet',        body: 'Meditations and breathwork will appear here as we add them.' },
+  practice: { title: 'No practice here yet',        body: 'Meditations and breathwork will appear here as we add them.' },
 };
 
 const fallbackGradient = 'linear-gradient(135deg, var(--rose-soft-bg) 0%, var(--cream-2) 100%)';
@@ -248,17 +247,7 @@ export default function ListenGrid({ items, activeChip, onSave, onUntag, savedSe
       `}</style>
       <div className="lg-grid" style={gridStyle}>
         {items.map(item => {
-          if (item._isSession || (!item.media_type && item.content_type)) {
-            return (
-              <SessionCard
-                key={item.id}
-                item={item}
-                saved={savedSet?.has(item.id)}
-                onSave={onSave}
-              />
-            );
-          }
-          if (item.media_type === 'PODCAST') {
+          if (item.media_type === 'PODCAST' || item.media_type === 'PRACTICE') {
             return (
               <PodcastCard
                 key={item.id}

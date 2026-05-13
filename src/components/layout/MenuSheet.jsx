@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import {
   Sun, Utensils, BookOpen, Book, Sparkles, Activity, HeartPulse,
-  CalendarDays, LayoutGrid, Users, Headphones, Compass, Search,
+  CalendarDays, LayoutGrid, Users, Compass, Search,
   Settings, Stethoscope, UsersRound, LogOut, ChevronRight,
 } from "lucide-react";
 import { base44 } from "@/api/base44Client";
@@ -12,7 +12,7 @@ import { toast } from "sonner";
 // Routes that exist in App.jsx — anything else warns and routes to "/"
 const KNOWN_ROUTES = new Set([
   "/", "/Today", "/Lifestyle", "/Profile", "/Nutrition", "/Journal",
-  "/Pulse", "/Planner", "/ProgramsHub", "/Sessions", "/SkinHair",
+  "/Pulse", "/Planner", "/ProgramsHub", "/SkinHair",
   "/LifeStageCare", "/Community", "/Saved", "/Deals", "/Events",
   "/Settings", "/DoctorExport", "/PartnerSettings", "/Explore",
   "/Track", "/Onboarding", "/CycleSettings", "/Upgrade",
@@ -42,7 +42,6 @@ const PILLARS = [
 const COMMUNITY_ROWS = [
   { label: "Community",   icon: Users,      route: "/Community" },
   { label: "Journal",     icon: BookOpen,   route: "/Journal" },
-  { label: "Sessions",    icon: Headphones, route: "/Sessions" },
   { label: "Skin & Hair", icon: Sparkles,   route: "/SkinHair" },
   { label: "Life Stage",  icon: Compass,    route: "/LifeStageCare" },
   { label: "Explore",     icon: Search,     route: "/Explore" },
