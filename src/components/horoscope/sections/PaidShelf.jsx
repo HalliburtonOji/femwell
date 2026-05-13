@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { base44 } from "@/api/base44Client";
+import SectionWrap from "../SectionWrap";
 
 // ─────────────────────────────────────────────────────────────────────────────
 // PaidShelf — Section 7.5. Three one-shot product cards in a horizontal
@@ -94,7 +95,8 @@ export default function PaidShelf() {
   };
 
   return (
-    <section style={sectionStyle} aria-label="Paid Shelf">
+    <SectionWrap>
+      <section style={sectionStyle} aria-label="Paid Shelf">
       <h3 style={sectionTitleStyle}>From the Atelier</h3>
       <p style={sectionSubStyle}>
         Three commissions, signed by Astra. Pay once, keep forever.
@@ -123,7 +125,8 @@ export default function PaidShelf() {
           </article>
         ))}
       </div>
-    </section>
+      </section>
+    </SectionWrap>
   );
 }
 
@@ -138,7 +141,8 @@ const sectionTitleStyle = {
   fontFamily: "'Fraunces', serif",
   fontSize: 17,
   fontWeight: 400,
-  color: "var(--plum-deep, #2b1e16)",
+  // H2-fix1: inside Plum Night SectionWrap — cream-on-night.
+  color: "rgba(245,230,211,0.92)",
   margin: "0 0 4px",
 };
 const sectionSubStyle = {
@@ -146,7 +150,8 @@ const sectionSubStyle = {
   fontStyle: "italic",
   fontSize: 12.5,
   lineHeight: 1.5,
-  color: "var(--plum-mute, #6b4a56)",
+  // H2-fix1: inside Plum Night SectionWrap — cream-on-night.
+  color: "rgba(245,230,211,0.70)",
   margin: "0 0 14px",
 };
 const shelfStyle = {

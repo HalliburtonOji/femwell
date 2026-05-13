@@ -7,6 +7,7 @@ import useAsteroids from "../hooks/useAsteroids";
 import {
   INK_NIGHT, ACCENT_NIGHT, RULE_NIGHT,
 } from "../styles/tokens.jsx";
+import SectionWrap from "../SectionWrap";
 
 // ─────────────────────────────────────────────────────────────────────────────
 // GoddessBench — Section §2.5 (per demo §2.5).
@@ -121,7 +122,7 @@ export default function GoddessBench({ astro, userProfile, reading }) {
   if (!hasBirth) return null;
 
   return (
-    <div style={{ marginTop: 22 }}>
+    <SectionWrap>
       <div style={cardStyle}>
         <div style={headStyle}>
           <span style={titleStyle}>
@@ -173,7 +174,7 @@ export default function GoddessBench({ astro, userProfile, reading }) {
           dangerouslySetInnerHTML={{ __html: `"${renderEm(goddessRead)}"` }}
         />
       </div>
-    </div>
+    </SectionWrap>
   );
 }
 

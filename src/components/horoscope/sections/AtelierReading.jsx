@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { Lock } from "lucide-react";
 import { base44 } from "@/api/base44Client";
 import useEntitlements from "../hooks/useEntitlements";
+import SectionWrap from "../SectionWrap";
 
 // ─────────────────────────────────────────────────────────────────────────────
 // AtelierReading — Section 7 (paid hero).
@@ -176,7 +177,8 @@ export default function AtelierReading({ userId, user }) {
     const monthKey = currentMonthKey();
     const awaitingSignoff = !letter && draftRow && draftRow.month === monthKey;
     return (
-      <div style={shellStyle}>
+      <SectionWrap>
+        <div style={shellStyle}>
         <p style={eyebrowStyle}>ATELIER &middot; BACKED BY ASTRA COLE, MA, FAS</p>
 
         {awaitingSignoff && (
@@ -204,13 +206,15 @@ export default function AtelierReading({ userId, user }) {
         {isOperator && (
           <OperatorPanel drafts={operatorDrafts} onPublish={handlePublish} />
         )}
-      </div>
+        </div>
+      </SectionWrap>
     );
   }
 
   // ── LOCKED variant ──────────────────────────────────────────────────────
   return (
-    <div style={shellStyle}>
+    <SectionWrap>
+      <div style={shellStyle}>
       <p style={eyebrowStyle}>ATELIER &middot; BACKED BY ASTRA COLE, MA, FAS</p>
       <h2 style={titleStyle}>Your monthly letter from Astra is in the studio.</h2>
       <p style={italicBodyStyle}>
@@ -235,7 +239,8 @@ export default function AtelierReading({ userId, user }) {
       {isOperator && (
         <OperatorPanel drafts={operatorDrafts} onPublish={handlePublish} />
       )}
-    </div>
+      </div>
+    </SectionWrap>
   );
 }
 

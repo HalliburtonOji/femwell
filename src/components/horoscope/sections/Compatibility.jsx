@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { base44 } from "@/api/base44Client";
 import { prettyBirthday } from "@/utils/astrology";
+import SectionWrap from "../SectionWrap";
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Compatibility — Section 8.
@@ -125,7 +126,7 @@ export default function Compatibility({ userId, chart, userProfile }) {
   };
 
   return (
-    <div style={{ marginTop: 32 }}>
+    <SectionWrap>
       <div style={compatHeadStyle}>
         <div>
           <h3 style={sectionTitleStyle}>
@@ -230,7 +231,7 @@ export default function Compatibility({ userId, chart, userProfile }) {
           </div>
         </div>
       )}
-    </div>
+    </SectionWrap>
   );
 }
 
@@ -238,7 +239,8 @@ const sectionTitleStyle = {
   fontFamily: "'Fraunces', serif",
   fontWeight: 400,
   fontSize: 22,
-  color: "var(--plum-deep, #2b1e16)",
+  // H2-fix1: cream-on-night now that we sit inside a Plum Night SectionWrap.
+  color: "rgba(245,230,211,0.92)",
   margin: 0,
 };
 const compatHeadStyle = {
@@ -252,7 +254,8 @@ const compatHeadStyle = {
 const compatSubStyle = {
   fontFamily: "'Inter', sans-serif",
   fontSize: 13,
-  color: "var(--plum-mute, #6b4a56)",
+  // H2-fix1: cream-on-night now that we sit inside a Plum Night SectionWrap.
+  color: "rgba(245,230,211,0.70)",
   margin: "6px 0 0",
   lineHeight: 1.5,
 };
@@ -291,7 +294,8 @@ const compatLabelStyle = {
   fontSize: 11,
   fontWeight: 600,
   letterSpacing: "0.04em",
-  color: "var(--plum-deep, #2b1e16)",
+  // H2-fix1: cream-on-night inside Plum Night SectionWrap.
+  color: "rgba(245,230,211,0.86)",
   marginBottom: 5,
 };
 const compatInputStyle = {

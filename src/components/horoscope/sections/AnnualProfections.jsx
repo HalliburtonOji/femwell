@@ -1,5 +1,6 @@
 import useProfections from "../hooks/useProfections";
 import { houseOrdinal } from "@/lib/astrology/profections";
+import SectionWrap from "../SectionWrap";
 
 // ─────────────────────────────────────────────────────────────────────────────
 // AnnualProfections — Section 6.5.
@@ -101,7 +102,7 @@ export default function AnnualProfections({ astro, userProfile }) {
     profection.age >= 27 && profection.age <= 30 && !!saturn;
 
   return (
-    <div style={{ marginTop: 32 }}>
+    <SectionWrap>
       {inSaturnReturnWindow && (
         <SaturnReturnLetter
           age={profection.age}
@@ -111,7 +112,7 @@ export default function AnnualProfections({ astro, userProfile }) {
         />
       )}
       <ProfectionCard {...profection} />
-    </div>
+    </SectionWrap>
   );
 }
 

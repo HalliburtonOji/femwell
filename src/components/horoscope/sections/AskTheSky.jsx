@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { base44 } from "@/api/base44Client";
+import SectionWrap from "../SectionWrap";
 
 // ─────────────────────────────────────────────────────────────────────────────
 // AskTheSky — Section 9.
@@ -92,7 +93,8 @@ export default function AskTheSky({ userId }) {
   };
 
   return (
-    <div style={askShellStyle}>
+    <SectionWrap>
+      <div style={askShellStyle}>
       <div style={askHeadStyle}>
         <p style={askEyebrowStyle}>
           Ask the <em style={askEmStyle}>sky</em>
@@ -160,7 +162,8 @@ export default function AskTheSky({ userId }) {
           </div>
         </div>
       )}
-    </div>
+      </div>
+    </SectionWrap>
   );
 }
 

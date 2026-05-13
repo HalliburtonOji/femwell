@@ -1,6 +1,7 @@
 import { useMemo } from "react";
 import { getMoonPhase } from "@/utils/astrology";
 import useSkyDiary from "../hooks/useSkyDiary";
+import SectionWrap from "../SectionWrap";
 
 // ─────────────────────────────────────────────────────────────────────────────
 // SkyDiary — Section 5.
@@ -240,7 +241,7 @@ export default function SkyDiary({ reading, userId, userProfile }) {
   const voc = useMemo(() => computeVoidOfCourse(new Date()), []);
 
   return (
-    <div style={{ marginTop: 32, marginBottom: 24 }}>
+    <SectionWrap>
       <SectionHead title="Sky" emphasis="diary" link="12 cycles overlaid with the transits that shaped them" />
 
       <div style={diaryCardStyle}>
@@ -290,7 +291,7 @@ export default function SkyDiary({ reading, userId, userProfile }) {
           </div>
         )}
       </div>
-    </div>
+    </SectionWrap>
   );
 }
 

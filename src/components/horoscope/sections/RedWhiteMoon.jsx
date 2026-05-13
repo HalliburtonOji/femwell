@@ -1,4 +1,5 @@
 import useRedWhiteMoon from "../hooks/useRedWhiteMoon";
+import SectionWrap from "../SectionWrap";
 
 // ─────────────────────────────────────────────────────────────────────────────
 // RedWhiteMoon — Section 6.
@@ -45,15 +46,17 @@ export default function RedWhiteMoon({ userId }) {
 
   if (archetype === "insufficient_data") {
     return (
-      <div style={shellStyle} aria-label="Red and white moon archetype — empty state">
-        <div style={{ ...moonGlyphStyle, background: ARCHETYPE_GRADIENTS.mixed, opacity: 0.45 }} />
-        <div style={bodyStyle}>
-          <p style={eyebrowStyle}>Your archetype</p>
-          <p style={emptyStateStyle}>
-            Log a few more cycles and the moon will tell us your archetype.
-          </p>
+      <SectionWrap>
+        <div style={shellStyle} aria-label="Red and white moon archetype — empty state">
+          <div style={{ ...moonGlyphStyle, background: ARCHETYPE_GRADIENTS.mixed, opacity: 0.45 }} />
+          <div style={bodyStyle}>
+            <p style={eyebrowStyle}>Your archetype</p>
+            <p style={emptyStateStyle}>
+              Log a few more cycles and the moon will tell us your archetype.
+            </p>
+          </div>
         </div>
-      </div>
+      </SectionWrap>
     );
   }
 
@@ -61,14 +64,16 @@ export default function RedWhiteMoon({ userId }) {
   const gradient = ARCHETYPE_GRADIENTS[archetype] || ARCHETYPE_GRADIENTS.mixed;
 
   return (
-    <div style={shellStyle}>
-      <div style={{ ...moonGlyphStyle, background: gradient }} />
-      <div style={bodyStyle}>
-        <p style={eyebrowStyle}>Your archetype</p>
-        <p style={nameStyle}>{meta.name}</p>
-        <p style={descStyle}>{meta.body}</p>
+    <SectionWrap>
+      <div style={shellStyle}>
+        <div style={{ ...moonGlyphStyle, background: gradient }} />
+        <div style={bodyStyle}>
+          <p style={eyebrowStyle}>Your archetype</p>
+          <p style={nameStyle}>{meta.name}</p>
+          <p style={descStyle}>{meta.body}</p>
+        </div>
       </div>
-    </div>
+    </SectionWrap>
   );
 }
 

@@ -78,7 +78,7 @@ export default function HoroscopeTab(props) {
   }
 
   return (
-    <div>
+    <div style={tabShellStyle}>
       <TwilightHero
         chart={chart}
         moon={moon}
@@ -187,6 +187,13 @@ function OnboardingCard({ onOpen }) {
 // ─────────────────────────────────────────────────────────────────────────────
 // Styles
 // ─────────────────────────────────────────────────────────────────────────────
+// Page-level wrap. TwilightHero uses margin: 0 -18px to bleed back to the
+// Lifestyle page edges, so this padding only gates the rest of the sections.
+// paddingBottom keeps the last paid card clear of the bottom nav.
+const tabShellStyle = {
+  padding: "0 18px",
+  paddingBottom: 100,
+};
 const loadingStyle = {
   padding: "60px 24px",
   textAlign: "center",

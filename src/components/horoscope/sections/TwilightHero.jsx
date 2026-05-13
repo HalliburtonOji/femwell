@@ -109,6 +109,10 @@ const heroShellStyle = {
   position: "relative",
   margin: "0 -18px 0",
   padding: "32px 22px 28px",
+  // H2-fix1: enforce a minimum height so the hero never collapses to chip-row
+  // when reading.headline + chart.name + moon are all null. Gradient + 7-star
+  // canopy + headline + sub + chips need ~240px to read as a hero.
+  minHeight: 240,
   background: `linear-gradient(180deg, ${TW_TOP} 0%, ${TW_MID} 60%, ${TW_BOT} 100%)`,
   color: INK_NIGHT,
   overflow: "hidden",

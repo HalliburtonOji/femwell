@@ -3,6 +3,7 @@ import {
   INK_NIGHT, INK_NIGHT_MUTE, ACCENT_NIGHT, RULE_NIGHT,
   PERIOD, FOLLICULAR, OVULATORY, LUTEAL,
 } from "../styles/tokens.jsx";
+import SectionWrap from "../SectionWrap";
 
 // ─────────────────────────────────────────────────────────────────────────────
 // CycleMoonDial — Section §4 (per demo §4).
@@ -105,7 +106,7 @@ export default function CycleMoonDial({
   })();
 
   return (
-    <div style={{ marginTop: 22 }}>
+    <SectionWrap>
       <div style={dialHeadStyle}>
         <h2 style={dialTitleStyle}>
           Cycle <em style={{ fontStyle: "italic", color: ACCENT_NIGHT }}>× Moon</em>
@@ -198,7 +199,7 @@ export default function CycleMoonDial({
           />
         </div>
       </div>
-    </div>
+    </SectionWrap>
   );
 }
 

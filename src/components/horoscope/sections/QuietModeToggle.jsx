@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { base44 } from "@/api/base44Client";
+import SectionWrap from "../SectionWrap";
 
 // ─────────────────────────────────────────────────────────────────────────────
 // QuietModeToggle — Section 10.
@@ -109,7 +110,8 @@ export default function QuietModeToggle({ userId }) {
   if (!loaded) return null;
 
   return (
-    <div style={shellStyle}>
+    <SectionWrap>
+      <div style={shellStyle}>
       <div style={rowStyle}>
         <div style={textStyle}>
           <span style={nameStyle}>Quiet Mode</span>
@@ -129,7 +131,8 @@ export default function QuietModeToggle({ userId }) {
         </div>
         <Toggle on={soft} onChange={handleSoft} disabled={!quiet} />
       </div>
-    </div>
+      </div>
+    </SectionWrap>
   );
 }
 

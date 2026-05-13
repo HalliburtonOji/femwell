@@ -3,6 +3,7 @@ import { Sun, Moon, Sunrise } from "lucide-react";
 import {
   INK_NIGHT, ACCENT_NIGHT, RULE_NIGHT,
 } from "../styles/tokens.jsx";
+import SectionWrap from "../SectionWrap";
 
 // ─────────────────────────────────────────────────────────────────────────────
 // TriadCards — Section §2 (per demo §2).
@@ -120,7 +121,7 @@ export default function TriadCards({ chart, astro, reading, onAddBirthTime }) {
   const risingLocked = !hasBT || !chart?.risingSign;
 
   return (
-    <div style={{ marginTop: 22 }}>
+    <SectionWrap>
       <SectionHead
         title="Your"
         emphasis="triad"
@@ -154,7 +155,7 @@ export default function TriadCards({ chart, astro, reading, onAddBirthTime }) {
           onUnlock={onAddBirthTime}
         />
       </div>
-    </div>
+    </SectionWrap>
   );
 }
 

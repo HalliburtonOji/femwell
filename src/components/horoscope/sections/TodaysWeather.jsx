@@ -2,6 +2,7 @@ import { Wind, CloudDrizzle } from "lucide-react";
 import {
   INK_NIGHT, ACCENT_NIGHT, RULE_NIGHT,
 } from "../styles/tokens.jsx";
+import SectionWrap from "../SectionWrap";
 
 // ─────────────────────────────────────────────────────────────────────────────
 // TodaysWeather — Section §3 (per demo §3).
@@ -92,7 +93,7 @@ export default function TodaysWeather({ reading, chart }) {
     : fallbackTrouble();
 
   return (
-    <div style={{ marginTop: 22 }}>
+    <SectionWrap>
       <div style={mainCardStyle}>
         <div style={eyebrowStyle}>Today's sky · signed by Astra</div>
         <p style={weatherLineStyle}>
@@ -132,7 +133,7 @@ export default function TodaysWeather({ reading, chart }) {
           body={trouble.body}
         />
       </div>
-    </div>
+    </SectionWrap>
   );
 }
 
