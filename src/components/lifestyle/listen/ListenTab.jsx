@@ -3,6 +3,7 @@ import { base44 } from '@/api/base44Client';
 import { getCurrentCyclePhase } from '@/utils/cyclePhase';
 import ListenFilterChips from './ListenFilterChips';
 import TikTokRail from './TikTokRail';
+import PodcastRail from './PodcastRail';
 import ListenGrid from './ListenGrid';
 import Toast from '@/components/lifestyle/foryou/Toast';
 
@@ -61,6 +62,7 @@ export default function ListenTab({ categoryFilter }) {
   const [activeChip, setActiveChip] = useState(initChip);
   const [gridItems, setGridItems] = useState([]);
   const [tikTokItems, setTikTokItems] = useState([]);
+  const [podcastItems, setPodcastItems] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
 
@@ -94,18 +96,26 @@ export default function ListenTab({ categoryFilter }) {
     return () => { cancelled = true; };
   }, []);
 
-  // On mount: fetch TikTok rail + initial grid in parallel
+  // On mount: fetch TikTok rail + podcast rail in parallel
   useEffect(() => {
     let cancelled = false;
     (async () => {
-      const [tiktoks] = await Promise.all([
+      const [tiktoks, podcasts] = await Promise.all([
         base44.entities.LifestyleItems.filter(
           { media_type: 'TIKTOK', is_embeddable: true, status: 'PUBLISHED' },
           '-published_at',
           12
         ).catch(() => []),
+        base44.entities.LifestyleItems.filter(
+          { media_type: 'PODCAST', status: 'PUBLISHED' },
+          '-published_at',
+          12
+        ).catch(() => []),
       ]);
-      if (!cancelled) setTikTokItems(tiktoks || []);
+      if (!cancelled) {
+        setTikTokItems(tiktoks || []);
+        setPodcastItems(podcasts || []);
+      }
     })();
     return () => { cancelled = true; };
   }, []);
@@ -227,6 +237,14 @@ export default function ListenTab({ categoryFilter }) {
       <ListenFilterChips activeChip={activeChip} onChange={setActiveChip} />
 
       <div style={{ marginTop: 16 }}>
+        <PodcastRail
+          items={podcastItems}
+          savedSet={savedSet}
+          savedPhases={savedPhases}
+          onSave={handleSave}
+          onUntag={handleUntag}
+        />
+
         <TikTokRail
           items={tikTokItems}
           savedSet={savedSet}

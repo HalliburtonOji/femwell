@@ -13,7 +13,8 @@
         "NEWS",
         "YOUTUBE_CHANNEL",
         "TIKTOK",
-        "INSTAGRAM"
+        "INSTAGRAM",
+        "PODCAST"
       ],
       "default": "RSS"
     },
@@ -69,6 +70,7 @@
         "YOUTUBE_CHANNEL",
         "TIKTOK",
         "INSTAGRAM",
+        "PODCAST",
         "MANUAL"
       ],
       "default": "RSS"

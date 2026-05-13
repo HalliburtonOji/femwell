@@ -27,6 +27,14 @@
     "image_url": {
       "type": "string"
     },
+    "audio_url": {
+      "type": "string",
+      "description": "Direct media URL for podcast/audio playback (RSS <enclosure>). Optional."
+    },
+    "episode_url": {
+      "type": "string",
+      "description": "Canonical web URL for the episode (podcast item <link>). Optional."
+    },
     "category": {
       "type": "string",
       "enum": [
