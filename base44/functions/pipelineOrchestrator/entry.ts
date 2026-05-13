@@ -662,8 +662,33 @@ Deno.serve(async (req) => {
     'backfillTikTokEmoji',
   ]);
 
+  // ── First-run bootstrap ────────────────────────────────────────────────────
+  // Per feedback_orchestrator_first_run_bootstrap.md and the user 2026-05-13:
+  // "this should be done to run straight away after every build, we also talked
+  // about this before". When a new phase ships, we should NOT make the operator
+  // wait until Sunday (weekly) or the 1st (monthly) for its first successful
+  // run. Read the IngestErrorLog for any prior `phase:<name>:ok` row — if none
+  // exists, the phase has never succeeded and we fire it now, regardless of
+  // cadence gate. After the first successful run logs, the normal weekly/monthly
+  // gate takes over.
+  const recentLogs = await base44.asServiceRole.entities.IngestErrorLog
+    .filter({ function_name: 'pipelineOrchestrator' }, '-logged_at', 300)
+    .catch(() => []);
+  const phaseHasRunOk = new Set();
+  for (const row of (recentLogs || [])) {
+    const s = row?.stage || '';
+    if (s.startsWith('phase:') && s.endsWith(':ok')) {
+      phaseHasRunOk.add(s.slice('phase:'.length, -':ok'.length));
+    }
+  }
+
   const wantsPhase = (name) => {
     if (runPhaseParam) return runPhaseParam === name;
+    // First-run bootstrap: a phase that has never logged a successful run
+    // fires regardless of cadence. This means a fresh deploy with new phases
+    // populates the user-visible state on the next daily cron, not the next
+    // Sunday/1st.
+    if (!phaseHasRunOk.has(name)) return true;
     if (MONTHLY_PHASES.has(name)) return isFirstOfMonth;
     if (WEEKLY_PHASES.has(name)) return isSunday;
     return true;
