@@ -209,18 +209,23 @@ const subStyle = {
 };
 const rowStyle = {
   display: "grid",
-  gridTemplateColumns: "repeat(6, 1fr)",
-  gap: 6,
+  // minmax(0, 1fr) lets all 6 orbs shrink to fit the card instead of
+  // pushing Lilith past the right edge. Gap is tighter to give each cell
+  // a bit more room for the role + sign label.
+  gridTemplateColumns: "repeat(6, minmax(0, 1fr))",
+  gap: 4,
 };
 const stoneStyle = {
   textAlign: "center",
-  padding: "6px 2px",
+  padding: "6px 0",
   borderRadius: 10,
   border: "none",
   cursor: "pointer",
   font: "inherit",
   color: "inherit",
   transition: "background 180ms cubic-bezier(0.32,0.72,0.24,1)",
+  minWidth: 0, // critical with the minmax(0,1fr) so flex/grid don't expand to content
+  overflow: "hidden",
 };
 const orbStyle = {
   display: "block",

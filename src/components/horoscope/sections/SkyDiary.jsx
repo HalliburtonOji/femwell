@@ -324,13 +324,17 @@ const diaryCardStyle = {
   background: "var(--cream, #FAF4EA)",
   border: "1px solid var(--ink-line, rgba(43,30,22,0.10))",
   borderRadius: 18,
-  padding: "18px 16px 16px",
+  padding: "18px 12px 16px",
   boxShadow: "0 1px 2px rgba(43,30,22,0.04), 0 6px 18px rgba(43,30,22,0.06)",
+  overflow: "hidden", // belt-and-braces: clip any 12-col overflow at narrow widths
 };
 const diaryTimelineStyle = {
   display: "grid",
-  gridTemplateColumns: "repeat(12, 1fr)",
-  gap: 4,
+  // minmax(0, 1fr) lets cells shrink to fit so the 12-column timeline never
+  // overflows the card (previously the "today" bar + MAR/APR/MAY labels
+  // pushed past the right edge on narrow viewports).
+  gridTemplateColumns: "repeat(12, minmax(0, 1fr))",
+  gap: 3,
   height: 72,
   marginBottom: 6,
 };
@@ -353,18 +357,21 @@ const transitDotStyle = {
 };
 const diaryMonthRowStyle = {
   display: "grid",
-  gridTemplateColumns: "repeat(12, 1fr)",
-  gap: 4,
+  gridTemplateColumns: "repeat(12, minmax(0, 1fr))",
+  gap: 3,
   marginBottom: 14,
 };
 const diaryMonthCellStyle = {
   fontFamily: "'Inter', sans-serif",
-  fontSize: 9,
+  fontSize: 8,
   fontWeight: 600,
-  letterSpacing: "0.06em",
+  letterSpacing: "0.02em",
   textTransform: "uppercase",
   color: "var(--plum-mute, #6b4a56)",
   textAlign: "center",
+  // Don't let "SEP" or "MAR" push past the cell — clip if needed.
+  overflow: "hidden",
+  whiteSpace: "nowrap",
 };
 const rightNowCardStyle = {
   background: "rgba(43,30,22,0.04)",

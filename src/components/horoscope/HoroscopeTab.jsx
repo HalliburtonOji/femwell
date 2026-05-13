@@ -193,11 +193,13 @@ function OnboardingCard({ onOpen }) {
 // + margin auto keeps the column readable at tablet/desktop per the
 // FemWell one-unified-bottom-nav contract (feedback_femwell_multiplatform.md).
 // paddingBottom keeps the last paid card clear of the bottom nav.
+// Width is inherited from the Lifestyle page wrapper (which already
+// width-constrains per `feedback_femwell_multiplatform.md`). Adding our own
+// maxWidth here squished the cards inside an already-constrained column on
+// tablet/desktop. Just give the sections page padding and bottom-nav clearance.
 const tabShellStyle = {
-  maxWidth: 480,
-  margin: "0 auto",
-  padding: "0 18px",
-  paddingBottom: 100,
+  padding: "0 16px",
+  paddingBottom: 96,
 };
 const loadingStyle = {
   padding: "60px 24px",
