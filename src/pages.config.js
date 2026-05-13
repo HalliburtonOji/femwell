@@ -79,6 +79,7 @@ import Track from './pages/Track';
 import Community from './pages/Community';
 import Planner from './pages/Planner';
 import Insights from './pages/Insights.jsx';
+import OneShotThankYou from './pages/OneShotThankYou';
 import __Layout from './Layout.jsx';
 
 
@@ -114,6 +115,7 @@ export const PAGES = {
     "Community": Community,
     "Planner": Planner,
     "Insights": Insights,
+    "OneShotThankYou": OneShotThankYou,
 }
 
 export const pagesConfig = {
