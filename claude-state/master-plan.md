@@ -380,6 +380,8 @@ The cross-cutting features that aren't shipped yet, in dependency order:
 
 **R8 — Single-app concentration on base44.** base44 was acquired by Wix in June 2025 for $80M. If Wix sunsets base44 or changes the pricing model, FemWell would face a code-portability migration. The repo at `github.com/HalliburtonOji/femwell.git` mitigates this somewhat (the React/Vite frontend is portable; the base44 SDK and entity schema would need replacing). Worth a paragraph in the DD pack.
 
+**R9 — Cycle-syncing strong-claim trap (captured 2026-05-13, surfaced by Ms Deep Search in Planner research).** Building the Planner (or any cycle-aware copy across the app) as a *prescriptive* physiology claim — "luteal = rest, follicular = brainstorm, ovulation = pitch, period = retreat" — is indefensible at DD. The 2020 McNulty meta-analysis found trivial effect sizes across cycle phases and explicitly stated *"general recommendations could and should not be made."* The 2025 Pfender critical-feminist analysis showed TikTok cycle-syncing content rarely cites evidence. A clinician on the buyer's side will flag this in five minutes. **Mitigation (binding):** ship the *soft version* — phase-aware as a permissive lens, not a prescriptive rule. Every Planner copy line that touches phase must pass a permissiveness audit (invitations not imperatives, probabilistic not deterministic claims, the user's own data leading not population averages). Apply this rule to the Planner build, Today phase strip, Lifestyle For You phase chooser, Horoscope, Smart Nudges, Rituals — everywhere phase informs language. See `claude-state/research_planner_2026-05-13.md` §8.
+
 ---
 
 ## 12. Open Questions — answered 2026-05-13
