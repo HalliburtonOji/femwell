@@ -1,94 +1,156 @@
-import { Plus, Sun, Moon, Sunrise, Sparkles } from "lucide-react";
-import { getSignIcon } from "@/lib/astrology/glyphs";
+import { useState } from "react";
+import { Sun, Moon, Sunrise } from "lucide-react";
+import {
+  INK_NIGHT, ACCENT_NIGHT, RULE_NIGHT,
+} from "../styles/tokens.jsx";
 
 // ─────────────────────────────────────────────────────────────────────────────
-// TriadCards — Section 2.
-// Sun / Moon / Rising triad cards. Moon + Rising locked until birth time
-// added. H2a-2 swap: glyph strings replaced with Lucide icons.
+// TriadCards — Section §2 (per demo §2).
+//
+// Three cream-on-Plum-Night cards in a 3-col grid. Sun / Moon / Rising slots
+// always render with their specific Lucide icons (Sun / Moon / Sunrise) per
+// the locked v2.1 demo — the sign itself is named below the icon.
+//
+// Tap to expand: shows the 80-120 word reading from reading.triad_*_desc.
+// Locked moon/rising (no birth_time) show a soft body line + a text-link
+// "+ Add birth time" (no dashed pill — per H2b-1 spec).
 // ─────────────────────────────────────────────────────────────────────────────
 
-function TriadCard({ Icon, label, sign, desc, locked, onUnlock }) {
-  const Glyph = Icon || Sparkles;
-  return (
-    <div style={{ ...triadCardStyle, opacity: locked ? 0.7 : 1 }}>
-      <div style={triadGlyphStyle}>
-        <Glyph size={28} strokeWidth={1.4} />
-      </div>
-      <p style={triadLabelStyle}>{label}</p>
-      <p style={triadSignStyle}>{sign}</p>
-      <p style={triadDescStyle}>{desc}</p>
-      {locked && (
-        <button type="button" onClick={onUnlock} style={triadUnlockBtnStyle}>
-          <Plus size={12} /> Add birth time
-        </button>
-      )}
-    </div>
-  );
+// SIGN_TRAITS — italic one-liner trait per sign. Used below the sign name on
+// each triad card. Kept local to this file so we don't bloat astrology.js.
+const SIGN_TRAITS = {
+  Aries:       "first in, fully lit",
+  Taurus:      "slow, sensual, durable",
+  Gemini:      "curious, two-minded",
+  Cancer:      "soft shell, sharp memory",
+  Leo:         "warm, sovereign",
+  Virgo:       "patterns, ratios, repair",
+  Libra:       "measured, warm",
+  Scorpio:     "deep water, no shallows",
+  Sagittarius: "long view, far reach",
+  Capricorn:   "slow ladder, real climb",
+  Aquarius:    "considered, independent",
+  Pisces:      "tender, intuitive",
+};
+
+function traitFor(sign) {
+  if (!sign) return "";
+  return SIGN_TRAITS[sign] || "";
 }
 
 function SectionHead({ title, emphasis, link }) {
   return (
     <div style={sectionHeadStyle}>
       <h2 style={sectionTitleStyle}>
-        {title} <em style={{ fontStyle: "italic", color: "var(--rose-primary, #D45E52)" }}>{emphasis}</em>
+        {title} <em style={{ fontStyle: "italic", color: ACCENT_NIGHT }}>{emphasis}</em>
       </h2>
       {link && <span style={sectionLinkStyle}>{link}</span>}
     </div>
   );
 }
 
-function fallbackTriadSunDesc(sun) {
-  const m = {
-    Aries: "First in. The match that lights the room — and the one that needs to be the lit one.",
-    Taurus: "Slow on purpose. You build pleasure into the spine of the day.",
-    Gemini: "Curious, double-minded. You speak yourself into knowing what you think.",
-    Cancer: "You feel the room before anyone speaks. Your shell is also your softest skin.",
-    Leo: "Warm sovereign. You expand others by simply being seen.",
-    Virgo: "Patterns, ratios, repair. You love by tidying the edges of someone's life.",
-    Libra: "Air with manners. You compose rooms — and yourself — in pairs.",
-    Scorpio: "All depth. You don't waste your attention on shallow tide-pools.",
-    Sagittarius: "Long view. You're the friend who buys the flight before booking the room.",
-    Capricorn: "Slow ladder. The mountain you climb is real and it is also yours.",
-    Aquarius: "Future-tense. You see the system before the people inside it.",
-    Pisces: "Tide. Whatever you feel today will move, and you with it.",
+const ICON_FOR = { sun: Sun, moon: Moon, rising: Sunrise };
+
+function TriadCard({ slot, eyebrow, sign, trait, desc, locked, onUnlock }) {
+  const [open, setOpen] = useState(false);
+  const Icon = ICON_FOR[slot];
+
+  const handleClick = () => {
+    if (locked) return;
+    if (desc) setOpen((v) => !v);
   };
-  return m[sun] || "Your sun sign will whisper here once your chart is loaded.";
+
+  return (
+    <div
+      role={desc && !locked ? "button" : undefined}
+      tabIndex={desc && !locked ? 0 : undefined}
+      onClick={handleClick}
+      onKeyDown={(e) => {
+        if (locked || !desc) return;
+        if (e.key === "Enter" || e.key === " ") {
+          e.preventDefault();
+          setOpen((v) => !v);
+        }
+      }}
+      style={{
+        ...cardStyle,
+        opacity: locked ? 0.78 : 1,
+        cursor: !locked && desc ? "pointer" : "default",
+      }}
+    >
+      <div style={iconStyle} aria-hidden="true">
+        <Icon size={28} strokeWidth={1.5} />
+      </div>
+      <p style={eyebrowStyle}>{eyebrow}</p>
+      <p style={signStyle}>{sign}</p>
+      {trait && <p style={traitStyle}>{trait}</p>}
+
+      {locked && (
+        <>
+          <p style={lockedBodyStyle}>
+            Birth time unlocks your {slot === "rising" ? "rising" : "moon"}. We need the minute,
+            not the second.
+          </p>
+          <button type="button" onClick={onUnlock} style={addBtnStyle}>
+            + Add birth time
+          </button>
+        </>
+      )}
+
+      <div
+        style={{
+          ...expandWrapStyle,
+          maxHeight: open ? 360 : 0,
+          opacity: open ? 1 : 0,
+        }}
+      >
+        {desc && <p style={expandBodyStyle}>{desc}</p>}
+      </div>
+    </div>
+  );
 }
 
 export default function TriadCards({ chart, astro, reading, onAddBirthTime }) {
-  const sunDesc = reading?.triad_sun_desc || fallbackTriadSunDesc(chart.sun);
+  const sunDesc = reading?.triad_sun_desc;
   const moonDesc = reading?.triad_moon_desc;
   const risingDesc = reading?.triad_rising_desc;
   const hasBT = !!astro?.birth_time;
 
-  const SunGlyph = chart.sun ? getSignIcon(chart.sun) : Sun;
-  const MoonGlyph = chart.moonSign ? getSignIcon(chart.moonSign) : Moon;
+  const moonLocked = !hasBT || !chart?.moonSign;
+  const risingLocked = !hasBT || !chart?.risingSign;
 
   return (
-    <div style={{ marginTop: 32 }}>
-      <SectionHead title="Your" emphasis="triad" link={hasBT ? null : "Add birth time & place to unlock all three →"} />
-      <div style={triadRowStyle}>
+    <div style={{ marginTop: 22 }}>
+      <SectionHead
+        title="Your"
+        emphasis="triad"
+        link={hasBT ? null : "Birth time unlocks moon + rising →"}
+      />
+      <div style={rowStyle}>
         <TriadCard
-          Icon={SunGlyph}
-          label="Sun · self"
-          sign={chart.sun ? `${chart.sun}${chart.sunDegree != null ? ` · ${chart.sunDegree}°` : ""}` : "—"}
+          slot="sun"
+          eyebrow="Sun"
+          sign={chart?.sun || "—"}
+          trait={traitFor(chart?.sun)}
           desc={sunDesc}
           locked={false}
         />
         <TriadCard
-          Icon={MoonGlyph}
-          label="Moon · inner life"
-          sign={chart.moonSign ? chart.moonSign : "— add time"}
-          desc={moonDesc || "Your moon sign shows how you feel things, how you soothe yourself, what makes you feel safe."}
-          locked={!hasBT || !chart.moonSign}
+          slot="moon"
+          eyebrow="Moon"
+          sign={chart?.moonSign || "—"}
+          trait={traitFor(chart?.moonSign)}
+          desc={moonDesc}
+          locked={moonLocked}
           onUnlock={onAddBirthTime}
         />
         <TriadCard
-          Icon={Sunrise}
-          label="Rising · mask"
-          sign={chart.risingSign ? chart.risingSign : "— add time"}
-          desc={risingDesc || "The self people meet first — how you enter a room. Only your birth time can unlock it."}
-          locked={!hasBT || !chart.risingSign}
+          slot="rising"
+          eyebrow="Rising"
+          sign={chart?.risingSign || "—"}
+          trait={traitFor(chart?.risingSign)}
+          desc={risingDesc}
+          locked={risingLocked}
           onUnlock={onAddBirthTime}
         />
       </div>
@@ -96,6 +158,7 @@ export default function TriadCards({ chart, astro, reading, onAddBirthTime }) {
   );
 }
 
+// ── Styles ─────────────────────────────────────────────────────────────────
 const sectionHeadStyle = {
   display: "flex",
   alignItems: "baseline",
@@ -108,68 +171,91 @@ const sectionTitleStyle = {
   fontFamily: "'Fraunces', serif",
   fontWeight: 400,
   fontSize: 22,
-  color: "var(--plum-deep, #2b1e16)",
+  color: INK_NIGHT,
   margin: 0,
 };
 const sectionLinkStyle = {
   fontFamily: "'Inter', sans-serif",
-  fontSize: 12,
+  fontSize: 11,
   fontWeight: 500,
-  color: "var(--plum-mute, #6b4a56)",
+  color: ACCENT_NIGHT,
 };
-const triadRowStyle = {
+const rowStyle = {
   display: "grid",
-  gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))",
-  gap: 12,
+  gridTemplateColumns: "repeat(3, 1fr)",
+  gap: 8,
 };
-const triadCardStyle = {
-  position: "relative",
-  background: "var(--cream, #FAF4EA)",
-  border: "1px solid var(--ink-line, rgba(43,30,22,0.10))",
-  borderRadius: 18,
-  padding: "20px 18px 22px",
-  boxShadow: "0 1px 2px rgba(43,30,22,0.04), 0 4px 12px rgba(43,30,22,0.06)",
+const cardStyle = {
+  background: "rgba(245,230,211,0.04)",
+  border: `1px solid ${RULE_NIGHT}`,
+  borderRadius: 14,
+  padding: "14px 8px",
+  textAlign: "center",
+  transition: "background 200ms cubic-bezier(0.32,0.72,0.24,1)",
 };
-const triadGlyphStyle = {
-  display: "inline-flex",
+const iconStyle = {
+  width: 28,
+  height: 28,
+  margin: "0 auto 8px",
+  color: ACCENT_NIGHT,
+  display: "flex",
   alignItems: "center",
   justifyContent: "center",
-  width: 32,
-  height: 32,
-  color: "var(--rose-primary, #D45E52)",
-  marginBottom: 8,
 };
-const triadLabelStyle = {
+const eyebrowStyle = {
   fontFamily: "'Inter', sans-serif",
-  fontSize: 11, fontWeight: 700,
-  letterSpacing: "0.12em",
+  fontSize: 9,
+  letterSpacing: "0.16em",
   textTransform: "uppercase",
-  color: "var(--plum-mute, #6b4a56)",
-  margin: "0 0 4px",
-};
-const triadSignStyle = {
-  fontFamily: "'Fraunces', serif",
-  fontSize: 18,
-  fontWeight: 500,
-  color: "var(--plum-deep, #2b1e16)",
-  margin: "0 0 8px",
-};
-const triadDescStyle = {
-  fontFamily: "'Inter', sans-serif",
-  fontSize: 13,
-  lineHeight: 1.55,
-  color: "var(--plum-mute, #6b4a56)",
+  color: "rgba(245,230,211,0.55)",
+  fontWeight: 700,
   margin: 0,
 };
-const triadUnlockBtnStyle = {
-  display: "inline-flex", alignItems: "center", gap: 6,
+const signStyle = {
+  fontFamily: "'Fraunces', serif",
+  fontSize: 17,
+  fontWeight: 500,
+  color: INK_NIGHT,
+  margin: "4px 0 4px",
+};
+const traitStyle = {
   fontFamily: "'Inter', sans-serif",
-  fontSize: 12, fontWeight: 600,
-  color: "var(--rose-primary, #D45E52)",
+  fontSize: 10,
+  fontStyle: "italic",
+  color: "rgba(245,230,211,0.70)",
+  lineHeight: 1.35,
+  margin: 0,
+};
+const lockedBodyStyle = {
+  fontFamily: "'Inter', sans-serif",
+  fontSize: 10,
+  color: "rgba(245,230,211,0.60)",
+  lineHeight: 1.4,
+  margin: "8px 0 6px",
+};
+const addBtnStyle = {
+  display: "inline-block",
+  fontFamily: "'Inter', sans-serif",
+  fontSize: 11,
+  fontWeight: 600,
+  color: ACCENT_NIGHT,
   background: "transparent",
-  border: "1px dashed var(--rose-primary, #D45E52)",
-  borderRadius: 9999,
-  padding: "6px 12px",
-  marginTop: 12,
+  border: "none",
+  padding: 0,
   cursor: "pointer",
+  textDecoration: "none",
+};
+const expandWrapStyle = {
+  overflow: "hidden",
+  transition: "max-height 200ms cubic-bezier(0.32,0.72,0.24,1), opacity 200ms cubic-bezier(0.32,0.72,0.24,1)",
+};
+const expandBodyStyle = {
+  marginTop: 10,
+  paddingTop: 10,
+  borderTop: `1px dashed ${RULE_NIGHT}`,
+  fontFamily: "'Inter', sans-serif",
+  fontSize: 12,
+  lineHeight: 1.55,
+  color: "rgba(245,230,211,0.86)",
+  textAlign: "left",
 };

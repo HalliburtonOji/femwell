@@ -1,125 +1,251 @@
+import { Wind, CloudDrizzle } from "lucide-react";
+import {
+  INK_NIGHT, ACCENT_NIGHT, RULE_NIGHT,
+} from "../styles/tokens.jsx";
+
 // ─────────────────────────────────────────────────────────────────────────────
-// TodaysWeather — Section 3.
-// Power / Pressure / Trouble energy cards.
-// Copied 1-for-1 from the original HoroscopeTab Weather function.
+// TodaysWeather — Section §3 (per demo §3).
+//
+// Single rounded Plum Night card signed by Astra + a Spotify "sound for today"
+// deep link (A5 from H2_DECISIONS). The legacy Pressure / Trouble cards from
+// H2a persist BELOW the main card as a "Notice / Watch for" row — additive
+// only, no functionality dropped.
+//
+// Energy + Mood fields read from the LLM (reading.weather_energy /
+// reading.weather_mood) when present (H2b-2 backend ships those); otherwise
+// fall through to the H2b-1 placeholders ("7/10" / "Open, decisive").
 // ─────────────────────────────────────────────────────────────────────────────
 
-function SectionHead({ title, emphasis }) {
-  return (
-    <div style={sectionHeadStyle}>
-      <h2 style={sectionTitleStyle}>
-        {title} <em style={{ fontStyle: "italic", color: "var(--rose-primary, #D45E52)" }}>{emphasis}</em>
-      </h2>
-    </div>
-  );
-}
-
-const WEATHER_META = {
-  power:    { glyph: "\u2726", label: "Power",    color: "var(--rose-primary, #D45E52)" },
-  pressure: { glyph: "\u25D1", label: "Pressure", color: "var(--gold, #B89E6A)" },
-  trouble:  { glyph: "\u25C9", label: "Trouble",  color: "var(--plum-deep, #4A2D40)" },
+// MOON_SIGN_PLAYLIST — static map of moon sign → curated Spotify URL.
+// Placeholder Spotify URIs per H2b-1.md; operator will swap in the real
+// Astra-curated playlists later.
+const MOON_SIGN_PLAYLIST = {
+  aries:       "https://open.spotify.com/playlist/37i9dQZF1DX0XUsuxWHRQd",
+  taurus:      "https://open.spotify.com/playlist/37i9dQZF1DXcBWIGoYBM5M",
+  gemini:      "https://open.spotify.com/playlist/37i9dQZF1DXdPec7aLusmQ",
+  cancer:      "https://open.spotify.com/playlist/37i9dQZF1DX4sWSpwq3LiO",
+  leo:         "https://open.spotify.com/playlist/37i9dQZF1DXdSjVZQzv2tl",
+  virgo:       "https://open.spotify.com/playlist/37i9dQZF1DX1s9knjP51Oa",
+  libra:       "https://open.spotify.com/playlist/37i9dQZF1DX2sUQwD7tbmL",
+  scorpio:     "https://open.spotify.com/playlist/37i9dQZF1DWZqd5JICZI0u",
+  sagittarius: "https://open.spotify.com/playlist/37i9dQZF1DX4dyzvuaRJ0n",
+  capricorn:   "https://open.spotify.com/playlist/37i9dQZF1DX9XIFQuFvzM4",
+  aquarius:    "https://open.spotify.com/playlist/37i9dQZF1DXcF6B6QPhFDv",
+  pisces:      "https://open.spotify.com/playlist/37i9dQZF1DWXLeA8Omikj7",
 };
 
-function WeatherCard({ kind, title, body }) {
-  const meta = WEATHER_META[kind];
-  return (
-    <div style={{ ...weatherCardStyle, borderTopColor: meta.color }}>
-      <p style={{ ...weatherLabelStyle, color: meta.color }}>{meta.glyph} {meta.label}</p>
-      <p style={weatherTitleStyle}>{title}</p>
-      <p style={weatherBodyStyle}>{body}</p>
-    </div>
-  );
+function fallbackWeatherLine(chart) {
+  const sun = chart?.sun ? chart.sun : "the day";
+  return `A steady ${sun} day under a quiet sky — start the thing you've been thinking about.`;
 }
 
-function fallbackWeatherCard(kind, chart) {
-  const sun = chart?.sun || "your sun";
-  const m = {
-    power: {
-      title: "One clear sentence",
-      body: `Your reading is being written. While you wait, ask yourself what ${sun} would say plainly today.`,
-    },
-    pressure: {
-      title: "Don't over-explain",
-      body: "Today is fine if you respond with fewer words than feels safe.",
-    },
-    trouble: {
-      title: "Small slights, big stories",
-      body: "A two-line message will feel like a novel. Let it sit for twenty minutes before you answer.",
-    },
+function fallbackBestFor(reading) {
+  if (reading?.power_title) {
+    // Lower-case the LLM's title for "Best for" inline display
+    return reading.power_title
+      .replace(/[.!?]+$/, "")
+      .toLowerCase();
+  }
+  return "initiating, naming";
+}
+
+function fallbackPressure(chart) {
+  const sun = chart?.sun ? chart.sun.toLowerCase() : "today";
+  return {
+    title: "Don't over-explain",
+    body: `Today is fine if you respond with fewer words than feels safe. Let ${sun} speak plainly.`,
   };
-  return m[kind];
+}
+
+function fallbackTrouble() {
+  return {
+    title: "Small slights, big stories",
+    body: "A two-line message will feel like a novel. Let it sit for twenty minutes before you answer.",
+  };
+}
+
+function spotifyHref(moonSign) {
+  if (!moonSign) return null;
+  return MOON_SIGN_PLAYLIST[String(moonSign).toLowerCase()] || null;
 }
 
 export default function TodaysWeather({ reading, chart }) {
-  const power = reading?.power_title
-    ? { title: reading.power_title, body: reading.power_body }
-    : fallbackWeatherCard("power", chart);
+  const weatherLine = reading?.power_title || fallbackWeatherLine(chart);
+  const tail = reading?.power_body || "";
+
+  // H2b-2 LLM-driven Energy/Mood. Falls back to H2b-1 hardcoded placeholders.
+  const energy = (typeof reading?.weather_energy === "number")
+    ? `${reading.weather_energy}/10`
+    : "7/10";
+  const mood = reading?.weather_mood || "Open, decisive";
+  const bestFor = fallbackBestFor(reading);
+
+  // Spotify deep link — keyed by user's moon sign (if known), else sun sign.
+  const moonSignKey = chart?.moonSign || chart?.sun;
+  const spotifyUrl = spotifyHref(moonSignKey);
+
   const pressure = reading?.pressure_title
     ? { title: reading.pressure_title, body: reading.pressure_body }
-    : fallbackWeatherCard("pressure", chart);
+    : fallbackPressure(chart);
   const trouble = reading?.trouble_title
     ? { title: reading.trouble_title, body: reading.trouble_body }
-    : fallbackWeatherCard("trouble", chart);
+    : fallbackTrouble();
 
   return (
-    <div style={{ marginTop: 32 }}>
-      <SectionHead title="Today's" emphasis="weather" />
-      <div style={weatherRowStyle}>
-        <WeatherCard kind="power" title={power.title} body={power.body} />
-        <WeatherCard kind="pressure" title={pressure.title} body={pressure.body} />
-        <WeatherCard kind="trouble" title={trouble.title} body={trouble.body} />
+    <div style={{ marginTop: 22 }}>
+      <div style={mainCardStyle}>
+        <div style={eyebrowStyle}>Today's sky · signed by Astra</div>
+        <p style={weatherLineStyle}>
+          “{weatherLine}{tail ? "" : ""}”
+        </p>
+        {tail && <p style={tailStyle}>{tail}</p>}
+        <div style={statRowStyle}>
+          <span style={statStyle}><strong style={statStrong}>Energy</strong> {energy}</span>
+          <span style={statStyle}><strong style={statStrong}>Mood</strong> {mood}</span>
+          <span style={statStyle}><strong style={statStrong}>Best for</strong> {bestFor}</span>
+        </div>
+        {spotifyUrl && (
+          <a
+            href={spotifyUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            style={spotifyLinkStyle}
+            onMouseEnter={(e) => { e.currentTarget.style.textDecoration = "underline"; }}
+            onMouseLeave={(e) => { e.currentTarget.style.textDecoration = "none"; }}
+          >
+            Astra's sound for today →
+          </a>
+        )}
+      </div>
+
+      <div style={noticeRowStyle}>
+        <NoticeCard
+          icon={Wind}
+          eyebrow="Notice"
+          title={pressure.title}
+          body={pressure.body}
+        />
+        <NoticeCard
+          icon={CloudDrizzle}
+          eyebrow="Watch for"
+          title={trouble.title}
+          body={trouble.body}
+        />
       </div>
     </div>
   );
 }
 
-const sectionHeadStyle = {
-  display: "flex",
-  alignItems: "baseline",
-  justifyContent: "space-between",
-  margin: "0 0 12px",
-  flexWrap: "wrap",
-  gap: 8,
-};
-const sectionTitleStyle = {
-  fontFamily: "'Fraunces', serif",
-  fontWeight: 400,
-  fontSize: 22,
-  color: "var(--plum-deep, #2b1e16)",
-  margin: 0,
-};
-const weatherRowStyle = {
-  display: "grid",
-  gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))",
-  gap: 12,
-};
-const weatherCardStyle = {
-  background: "var(--cream, #FAF4EA)",
-  border: "1px solid var(--ink-line, rgba(43,30,22,0.10))",
-  borderTop: "3px solid var(--rose-primary, #D45E52)",
+function NoticeCard({ icon: Icon, eyebrow, title, body }) {
+  return (
+    <div style={noticeCardStyle}>
+      <div style={noticeHeadStyle}>
+        <Icon size={14} strokeWidth={1.6} style={{ color: ACCENT_NIGHT }} />
+        <span style={noticeEyebrowStyle}>{eyebrow}</span>
+      </div>
+      <p style={noticeTitleStyle}>{title}</p>
+      <p style={noticeBodyStyle}>{body}</p>
+    </div>
+  );
+}
+
+// ── Styles ─────────────────────────────────────────────────────────────────
+const mainCardStyle = {
+  background: "rgba(245,230,211,0.04)",
+  border: `1px solid ${RULE_NIGHT}`,
   borderRadius: 16,
-  padding: "16px 18px 18px",
-  boxShadow: "0 1px 2px rgba(43,30,22,0.04)",
+  padding: "18px 18px 16px",
 };
-const weatherLabelStyle = {
+const eyebrowStyle = {
   fontFamily: "'Inter', sans-serif",
-  fontSize: 11, fontWeight: 700,
-  letterSpacing: "0.12em",
+  fontSize: 9,
+  letterSpacing: "0.16em",
   textTransform: "uppercase",
-  margin: "0 0 8px",
+  color: "rgba(245,230,211,0.55)",
+  fontWeight: 700,
+  marginBottom: 6,
 };
-const weatherTitleStyle = {
+const weatherLineStyle = {
   fontFamily: "'Fraunces', serif",
   fontStyle: "italic",
+  fontSize: 18,
   fontWeight: 400,
-  fontSize: 17,
-  color: "var(--plum-deep, #2b1e16)",
-  margin: "0 0 6px",
+  color: INK_NIGHT,
+  lineHeight: 1.4,
+  margin: "0 0 8px",
 };
-const weatherBodyStyle = {
+const tailStyle = {
   fontFamily: "'Inter', sans-serif",
+  fontSize: 12,
+  color: "rgba(245,230,211,0.72)",
+  lineHeight: 1.5,
+  margin: "0 0 12px",
+};
+const statRowStyle = {
+  display: "flex",
+  gap: 14,
+  flexWrap: "wrap",
+  fontSize: 11,
+  color: "rgba(245,230,211,0.78)",
+  fontFamily: "'Inter', sans-serif",
+};
+const statStyle = {
+  display: "inline-flex",
+  alignItems: "baseline",
+  gap: 5,
+};
+const statStrong = {
+  color: ACCENT_NIGHT,
+  fontWeight: 600,
+};
+const spotifyLinkStyle = {
+  display: "inline-block",
+  marginTop: 12,
+  fontFamily: "'Inter', sans-serif",
+  fontSize: 12,
+  fontWeight: 500,
+  color: ACCENT_NIGHT,
+  textDecoration: "none",
+  letterSpacing: "0.01em",
+};
+const noticeRowStyle = {
+  display: "grid",
+  gridTemplateColumns: "1fr 1fr",
+  gap: 8,
+  marginTop: 10,
+};
+const noticeCardStyle = {
+  background: "rgba(245,230,211,0.04)",
+  border: `1px solid ${RULE_NIGHT}`,
+  borderRadius: 12,
+  padding: "10px 12px",
+};
+const noticeHeadStyle = {
+  display: "flex",
+  alignItems: "center",
+  gap: 6,
+  marginBottom: 4,
+};
+const noticeEyebrowStyle = {
+  fontFamily: "'Inter', sans-serif",
+  fontSize: 9,
+  letterSpacing: "0.14em",
+  textTransform: "uppercase",
+  fontWeight: 700,
+  color: "rgba(245,230,211,0.55)",
+};
+const noticeTitleStyle = {
+  fontFamily: "'Fraunces', serif",
+  fontStyle: "italic",
   fontSize: 13,
-  lineHeight: 1.55,
-  color: "var(--plum-mute, #6b4a56)",
+  color: INK_NIGHT,
+  lineHeight: 1.4,
+  margin: "0 0 4px",
+};
+const noticeBodyStyle = {
+  fontFamily: "'Inter', sans-serif",
+  fontSize: 11,
+  color: "rgba(245,230,211,0.70)",
+  lineHeight: 1.5,
   margin: 0,
 };

@@ -1,51 +1,33 @@
-import { Sun, Moon as MoonIcon, Sparkles } from "lucide-react";
-import { getRulingPlanet, getMoonPhase, prettyDateBritish, prettyBirthday } from "@/utils/astrology";
-import { getPlanetIcon, getSignIcon } from "@/lib/astrology/glyphs";
-import MoonPhaseGlyph from "../MoonPhaseGlyph";
+import { useMemo } from "react";
+import { prettyDateBritish } from "@/utils/astrology";
+import {
+  TW_TOP, TW_MID, TW_BOT,
+  INK_NIGHT, ACCENT_NIGHT,
+} from "../styles/tokens.jsx";
 
 // ─────────────────────────────────────────────────────────────────────────────
-// TwilightHero — Section 1.
-// Renders the dark hero card: date · kicker · headline · narrative · pills ·
-// moon visual. H2a-2 swap: pill glyph strings replaced with Lucide icons;
-// hero moon disc overlays the new SVG MoonPhaseGlyph.
+// TwilightHero — Section §1 (per demo §1).
+//
+// Full-bleed Twilight gradient hero. 7 dot-stars at the demo's coordinates,
+// eyebrow + Fraunces headline (with italic emphasis) + sub-line + 3 chips.
+// Text-only over Twilight — the moon visual lives in CycleMoonDial.
+//
+// Hero margins: bleeds left/right inside the page container (margin: 0 -18px)
+// so it touches the edges of the horoscope tab.
 // ─────────────────────────────────────────────────────────────────────────────
 
-function Pill({ glow, children }) {
-  return (
-    <span style={{ ...pillStyle, ...(glow ? pillGlowStyle : {}) }}>{children}</span>
-  );
-}
+// Dot-star coordinates lifted from the v2.1 demo (mnt/femwell/femwell_horoscope_v2_demo.html L794-800).
+const STARS = [
+  { top: "12%", left: "18%" },
+  { top:  "8%", left: "62%" },
+  { top: "22%", left: "84%" },
+  { top: "34%", left: "34%" },
+  { top: "46%", left: "72%" },
+  { top: "18%", left: "48%" },
+  { top: "28%", left: "14%" },
+];
 
-function MoonVisual({ moon }) {
-  const phase = moon.position;
-  const offset = Math.cos(2 * Math.PI * phase);
-  const isWaxing = moon.waxing;
-  return (
-    <div style={moonDiscStyle}>
-      <div
-        style={{
-          ...moonOverlayStyle,
-          transform: `translateX(${(isWaxing ? -offset : offset) * 50}%)`,
-        }}
-      />
-      <div style={moonGlyphOverlayStyle}>
-        <MoonPhaseGlyph phase={moon.key || "new"} size={22} />
-      </div>
-    </div>
-  );
-}
-
-function fallbackHeadline(sun, moon) {
-  if (!sun) return `The <em>moon</em> is ${moon.short.toLowerCase()}, the day is yours`;
-  const ruler = getRulingPlanet(sun);
-  return `${ruler} <em>steadies</em>, the moon <em>listens</em>`;
-}
-
-function fallbackNarrative(sun, moon) {
-  const ruler = sun ? getRulingPlanet(sun) : "your ruler";
-  return `Today's reading is being written. While it arrives, your chart is reporting a ${moon.short.toLowerCase()} sky and ${ruler} doing its quiet work. Move gently. Notice what your body is saying before the day asks for an answer.`;
-}
-
+// Light italic-emphasis renderer — same contract as TriadCards / CycleMoonDial.
 function renderEm(text) {
   if (!text) return "";
   const escaped = String(text)
@@ -53,180 +35,145 @@ function renderEm(text) {
     .replace(/</g, "&lt;")
     .replace(/>/g, "&gt;");
   return escaped
-    .replace(/&lt;em&gt;(.*?)&lt;\/em&gt;/g, '<em style="font-style:italic;">$1</em>')
-    .replace(/\*(.+?)\*/g, '<em style="font-style:italic;">$1</em>');
+    .replace(/&lt;em&gt;(.*?)&lt;\/em&gt;/g, '<em style="font-style:italic;color:#E89289;">$1</em>')
+    .replace(/\*(.+?)\*/g, '<em style="font-style:italic;color:#E89289;">$1</em>');
 }
 
-export default function TwilightHero({ chart, moon, reading }) {
-  const kicker = (() => {
-    const parts = [];
-    if (chart.name) parts.push(`For ${chart.name}`);
-    if (chart.birthday) parts.push(`born ${prettyBirthday(chart.birthday)}`);
-    if (chart.place) parts.push(chart.place);
-    return parts.join(" · ") || "Your chart";
-  })();
+function cyclePhaseLabel(phase, day) {
+  if (!phase) return null;
+  const cap = phase.charAt(0).toUpperCase() + phase.slice(1);
+  if (day) return `${cap} · Day ${day}`;
+  return cap;
+}
 
-  const headline = reading?.headline || fallbackHeadline(chart.sun, moon);
-  const narrative = reading?.narrative || fallbackNarrative(chart.sun, moon);
-  const SunGlyph = chart.sun ? getSignIcon(chart.sun) : Sun;
-  const RulerGlyph = chart.sunRuler ? getPlanetIcon(chart.sunRuler) : Sparkles;
+function fallbackHeadline(name, moon) {
+  const phrase = moon?.waxing ? "*climbing*" : "*releasing*";
+  if (name) return `A steady day, ${name}. The moon is ${phrase}.`;
+  return `A steady day. The moon is ${phrase}.`;
+}
+
+function fallbackSub(chart, cyclePhase, cycleDay, moon) {
+  const cyc = cycleDay ? `Day ${cycleDay} of your cycle` : "Your cycle";
+  const moonShort = moon?.short ? moon.short.toLowerCase() : "moon";
+  const sun = chart?.sun ? ` in ${chart.sun}` : "";
+  const cue = moon?.waxing
+    ? "energy that asks for follow-through, not new beginnings."
+    : "energy that asks for release, not new starts.";
+  return `${cyc}. A ${moonShort}${sun} — ${cue}`;
+}
+
+export default function TwilightHero({ chart, moon, reading, cyclePhase, cycleDay }) {
+  const date = useMemo(() => prettyDateBritish(new Date()), []);
+  const headline = reading?.headline || fallbackHeadline(chart?.name, moon);
+  const sub = reading?.narrative || fallbackSub(chart, cyclePhase, cycleDay, moon);
+  const phaseChip = cyclePhaseLabel(cyclePhase, cycleDay);
+
+  // Short date for chip — "Tuesday 13 May"
+  const chipDate = useMemo(() => {
+    const d = new Date();
+    return d.toLocaleDateString("en-GB", { weekday: "long", day: "numeric", month: "long" });
+  }, []);
 
   return (
     <div style={heroShellStyle}>
-      <div style={heroOverlayStyle} />
-      <div style={heroContentStyle}>
-        <div style={heroLeftStyle}>
-          <p style={heroDateStyle}>{prettyDateBritish(new Date())}</p>
-          <p style={heroKickerStyle}>{kicker}</p>
-          <h1 style={heroHeadStyle} dangerouslySetInnerHTML={{ __html: renderEm(headline) }} />
-          <p style={heroBodyStyle}>{narrative}</p>
-          <div style={heroPillsStyle}>
-            {chart.sun && (
-              <Pill glow>
-                <SunGlyph size={12} strokeWidth={1.6} style={pillIconStyle} />
-                {chart.sun} sun
-              </Pill>
-            )}
-            <Pill>
-              <MoonIcon size={12} strokeWidth={1.6} style={pillIconStyle} />
-              {moon.short} · {moon.illumination}%
-            </Pill>
-            {reading?.mercury_pill && (
-              <Pill>
-                <Sparkles size={12} strokeWidth={1.6} style={pillIconStyle} />
-                {reading.mercury_pill}
-              </Pill>
-            )}
-            {!reading?.mercury_pill && chart.sunRuler && (
-              <Pill>
-                <RulerGlyph size={12} strokeWidth={1.6} style={pillIconStyle} />
-                {chart.sunRuler}
-              </Pill>
-            )}
-          </div>
-        </div>
-        <div style={heroVisualStyle} aria-hidden="true">
-          <MoonVisual moon={moon} />
-          <p style={moonLabelStyle}>{moon.short} — {moon.waxing ? "becoming" : "releasing"}</p>
+      <div style={starsLayerStyle} aria-hidden="true">
+        {STARS.map((s, i) => (
+          <span key={i} style={{ ...dotStarStyle, top: s.top, left: s.left }} />
+        ))}
+      </div>
+      <div style={heroBodyStyle}>
+        <div style={eyebrowStyle}>Discover · Horoscope</div>
+        <h1
+          style={headlineStyle}
+          dangerouslySetInnerHTML={{ __html: renderEm(headline) }}
+        />
+        <p style={subStyle}>{sub}</p>
+        <div style={chipRowStyle}>
+          <span style={chipStyle}>{chipDate}</span>
+          {phaseChip && <span style={{ ...chipStyle, ...chipPhaseStyle }}>{phaseChip}</span>}
+          {moon?.short && (
+            <span style={chipStyle}>
+              {moon.short}
+              {typeof moon.illumination === "number" ? ` · ${moon.illumination}%` : ""}
+            </span>
+          )}
+          {!moon?.short && date && <span style={chipStyle}>{date}</span>}
         </div>
       </div>
     </div>
   );
 }
 
-// Keep import alive
-void getMoonPhase;
-
+// ── Styles ─────────────────────────────────────────────────────────────────
 const heroShellStyle = {
   position: "relative",
-  borderRadius: 22,
+  margin: "0 -18px 0",
+  padding: "32px 22px 28px",
+  background: `linear-gradient(180deg, ${TW_TOP} 0%, ${TW_MID} 60%, ${TW_BOT} 100%)`,
+  color: INK_NIGHT,
   overflow: "hidden",
-  padding: "32px 28px",
-  background: "radial-gradient(circle at 20% 30%, #3a2a4c 0%, #221a2e 55%, #15101e 100%)",
-  color: "var(--cream, #FAF4EA)",
-  boxShadow: "0 2px 4px rgba(43,30,22,0.10), 0 12px 32px rgba(43,30,22,0.18)",
-  marginBottom: 8,
 };
-const heroOverlayStyle = {
-  position: "absolute", inset: 0,
-  background:
-    "radial-gradient(circle at 80% 18%, rgba(232,196,208,0.18) 0%, rgba(232,196,208,0) 30%)," +
-    "radial-gradient(circle at 12% 72%, rgba(150,120,180,0.18) 0%, rgba(150,120,180,0) 35%)",
-  pointerEvents: "none",
-};
-const heroContentStyle = {
-  position: "relative",
-  display: "flex",
-  gap: 24,
-  flexWrap: "wrap",
-  alignItems: "flex-start",
-};
-const heroLeftStyle = { flex: "1 1 280px", minWidth: 260 };
-const heroDateStyle = {
-  fontFamily: "'Inter', sans-serif",
-  fontSize: 11, fontWeight: 700,
-  letterSpacing: "0.14em",
-  textTransform: "uppercase",
-  color: "rgba(247,239,225,0.72)",
-  margin: "0 0 6px",
-};
-const heroKickerStyle = {
-  fontFamily: "'Inter', sans-serif",
-  fontSize: 12, fontWeight: 500,
-  color: "rgba(247,239,225,0.66)",
-  margin: "0 0 14px",
-  letterSpacing: "0.02em",
-};
-const heroHeadStyle = {
-  fontFamily: "'Fraunces', serif",
-  fontWeight: 300,
-  fontSize: "clamp(28px, 5vw, 38px)",
-  lineHeight: 1.1,
-  letterSpacing: "-0.015em",
-  color: "var(--cream, #FAF4EA)",
-  margin: "0 0 14px",
-};
-const heroBodyStyle = {
-  fontFamily: "'Inter', sans-serif",
-  fontSize: 14,
-  lineHeight: 1.6,
-  color: "rgba(247,239,225,0.88)",
-  margin: "0 0 18px",
-};
-const heroPillsStyle = { display: "flex", flexWrap: "wrap", gap: 8 };
-const pillIconStyle = { marginRight: 6, opacity: 0.88 };
-const heroVisualStyle = {
-  flex: "0 0 180px",
-  display: "flex", flexDirection: "column", alignItems: "center", gap: 10,
-};
-const moonLabelStyle = {
-  fontFamily: "'Fraunces', serif",
-  fontStyle: "italic",
-  fontSize: 12,
-  color: "rgba(247,239,225,0.72)",
-  margin: 0,
-};
-const moonDiscStyle = {
-  position: "relative",
-  width: 130, height: 130,
-  borderRadius: "50%",
-  background: "radial-gradient(circle at 35% 30%, #F0E6D2 0%, #C9B79E 55%, #6B5B47 100%)",
-  overflow: "hidden",
-  boxShadow: "0 0 30px rgba(232,196,208,0.18), inset 0 0 20px rgba(0,0,0,0.18)",
-};
-const moonOverlayStyle = {
+const starsLayerStyle = {
   position: "absolute",
   inset: 0,
-  background: "linear-gradient(90deg, rgba(15,10,22,0.88) 50%, transparent 50.1%)",
+  pointerEvents: "none",
+  opacity: 0.35,
 };
-const moonGlyphOverlayStyle = {
+const dotStarStyle = {
   position: "absolute",
-  right: 8,
-  bottom: 8,
-  display: "flex",
-  alignItems: "center",
-  justifyContent: "center",
-  background: "rgba(15,10,22,0.55)",
-  border: "1px solid rgba(245,230,211,0.18)",
-  borderRadius: 9999,
-  padding: 3,
+  width: 2,
+  height: 2,
+  background: INK_NIGHT,
+  borderRadius: "50%",
 };
-const pillStyle = {
-  display: "inline-flex",
-  alignItems: "center",
+const heroBodyStyle = {
+  position: "relative",
+};
+const eyebrowStyle = {
   fontFamily: "'Inter', sans-serif",
-  fontSize: 11, fontWeight: 600,
-  letterSpacing: "0.06em",
+  fontSize: 9,
+  letterSpacing: "0.22em",
   textTransform: "uppercase",
-  color: "rgba(247,239,225,0.88)",
-  background: "rgba(247,239,225,0.10)",
-  border: "1px solid rgba(247,239,225,0.18)",
-  padding: "5px 10px",
-  borderRadius: 9999,
+  color: "rgba(245,230,211,0.66)",
+  fontWeight: 700,
 };
-const pillGlowStyle = {
-  background: "rgba(232,196,208,0.22)",
-  borderColor: "rgba(232,196,208,0.40)",
-  color: "var(--cream, #FAF4EA)",
-  boxShadow: "0 0 14px rgba(232,196,208,0.30)",
+const headlineStyle = {
+  fontFamily: "'Fraunces', serif",
+  fontSize: 28,
+  fontWeight: 400,
+  lineHeight: 1.22,
+  letterSpacing: "-0.01em",
+  color: INK_NIGHT,
+  margin: "8px 0 14px",
+};
+const subStyle = {
+  fontFamily: "'Inter', sans-serif",
+  fontSize: 12,
+  lineHeight: 1.5,
+  color: "rgba(245,230,211,0.78)",
+  maxWidth: 300,
+  margin: 0,
+};
+const chipRowStyle = {
+  marginTop: 16,
+  display: "flex",
+  gap: 10,
+  flexWrap: "wrap",
+};
+const chipStyle = {
+  fontFamily: "'Inter', sans-serif",
+  fontSize: 9,
+  letterSpacing: "0.10em",
+  textTransform: "uppercase",
+  fontWeight: 700,
+  padding: "4px 10px",
+  borderRadius: 9999,
+  background: "rgba(245,230,211,0.08)",
+  color: "rgba(245,230,211,0.86)",
+  border: "1px solid rgba(245,230,211,0.14)",
+};
+const chipPhaseStyle = {
+  background: "rgba(232,146,137,0.16)",
+  color: ACCENT_NIGHT,
+  borderColor: "rgba(232,146,137,0.30)",
 };

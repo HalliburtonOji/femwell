@@ -50,7 +50,10 @@ export default function HoroscopeTab(props) {
   } = useBirthChart(props.userProfile, props.lifestyleProfile);
 
   const chart = useMemo(() => deriveChart(astro, userProfile), [astro, userProfile]);
-  const cyclePhase = useMemo(() => derivePhase(userProfile), [userProfile]);
+  const cycleInfo = useMemo(() => derivePhaseInfo(userProfile), [userProfile]);
+  const cyclePhase = cycleInfo.phase;
+  const cycleDay = cycleInfo.day;
+  const cycleLength = cycleInfo.length;
   const moon = useMemo(() => getMoonPhase(new Date()), []);
 
   if (loading) {
@@ -75,7 +78,13 @@ export default function HoroscopeTab(props) {
 
   return (
     <div>
-      <TwilightHero chart={chart} moon={moon} reading={reading} />
+      <TwilightHero
+        chart={chart}
+        moon={moon}
+        reading={reading}
+        cyclePhase={cyclePhase}
+        cycleDay={cycleDay}
+      />
       <TriadCards
         chart={chart}
         astro={astro}
@@ -83,7 +92,13 @@ export default function HoroscopeTab(props) {
         onAddBirthTime={() => setSheetOpen(true)}
       />
       <TodaysWeather reading={reading} chart={chart} />
-      <CycleMoonDial cyclePhase={cyclePhase} moon={moon} reading={reading} />
+      <CycleMoonDial
+        cyclePhase={cyclePhase}
+        cycleDay={cycleDay}
+        cycleLength={cycleLength}
+        moon={moon}
+        reading={reading}
+      />
       <SkyDiary reading={reading} />
       <RedWhiteMoon />
       <AnnualProfections />
@@ -133,17 +148,20 @@ function deriveChart(astro, userProfile) {
   };
 }
 
-function derivePhase(userProfile) {
-  if (!userProfile?.last_period_start_date) return null;
+function derivePhaseInfo(userProfile) {
+  if (!userProfile?.last_period_start_date) {
+    return { phase: null, day: null, length: 28 };
+  }
   const last = new Date(userProfile.last_period_start_date);
   const cycleLen = userProfile.cycle_avg_length || 28;
   const periodLen = userProfile.period_length || 5;
   const diffDays = Math.floor((Date.now() - last.getTime()) / 86400000);
   const day = ((diffDays % cycleLen) + cycleLen) % cycleLen + 1;
-  if (day <= periodLen) return "menstrual";
-  if (day <= 13) return "follicular";
-  if (day <= 16) return "ovulatory";
-  return "luteal";
+  let phase = "luteal";
+  if (day <= periodLen) phase = "menstrual";
+  else if (day <= 13) phase = "follicular";
+  else if (day <= 16) phase = "ovulatory";
+  return { phase, day, length: cycleLen };
 }
 
 // ─────────────────────────────────────────────────────────────────────────────

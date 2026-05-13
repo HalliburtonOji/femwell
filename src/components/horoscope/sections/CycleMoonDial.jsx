@@ -1,11 +1,30 @@
-import MoonPhaseGlyph from "../MoonPhaseGlyph";
+import { useMemo } from "react";
+import {
+  INK_NIGHT, INK_NIGHT_MUTE, ACCENT_NIGHT, RULE_NIGHT,
+  PERIOD, FOLLICULAR, OVULATORY, LUTEAL,
+} from "../styles/tokens.jsx";
 
 // ─────────────────────────────────────────────────────────────────────────────
-// CycleMoonDial — Section 4.
-// Cycle × Moon intersection narrative + paired ring visuals.
-// H2a-2: Sky ring now renders the SVG MoonPhaseGlyph instead of moon.glyph
-// (which no longer exists on the getMoonPhase return shape).
+// CycleMoonDial — Section §4 (per demo §4).
+//
+// Composite SVG dial:
+//   - Outer ring = lunar 29.5-day synodic cycle. Dashed fill to today's phase.
+//   - Inner ring = menstrual 28-day cycle. Stroke colour by phase token.
+//   - Two discs at today's positions (lunar = cream, cycle = accent).
+//   - Centre label "Today / TUE 13 MAY" (UK format, en-GB).
+//   - Right legend: two coloured rows + italic reading.cycle_moon_body line.
+//
+// Replaces the old RingWrap two-circle stub from H2a.
 // ─────────────────────────────────────────────────────────────────────────────
+
+const LUNAR_DAYS = 29.5;
+const CYCLE_DAYS_DEFAULT = 28;
+const PHASE_STROKE = {
+  menstrual:  PERIOD,
+  follicular: FOLLICULAR,
+  ovulatory:  OVULATORY,
+  luteal:     LUTEAL,
+};
 
 function renderEm(text) {
   if (!text) return "";
@@ -14,123 +33,242 @@ function renderEm(text) {
     .replace(/</g, "&lt;")
     .replace(/>/g, "&gt;");
   return escaped
-    .replace(/&lt;em&gt;(.*?)&lt;\/em&gt;/g, '<em style="font-style:italic;">$1</em>')
-    .replace(/\*(.+?)\*/g, '<em style="font-style:italic;">$1</em>');
+    .replace(/&lt;em&gt;(.*?)&lt;\/em&gt;/g, '<em style="font-style:italic;color:#E89289;">$1</em>')
+    .replace(/\*(.+?)\*/g, '<em style="font-style:italic;color:#E89289;">$1</em>');
 }
 
-function RingWrap({ label, children }) {
+function ukShortDate(d) {
+  // "TUE 13 MAY"
+  return d
+    .toLocaleDateString("en-GB", { weekday: "short", day: "numeric", month: "short" })
+    .toUpperCase()
+    .replace(",", "");
+}
+
+function defaultCycleMoonBody(cyclePhase, moon, cycleDay) {
+  if (!cyclePhase) {
+    return `The moon is ${moon?.short?.toLowerCase() || "moving"}. Log a cycle in Track and the sky starts speaking to your body.`;
+  }
+  const verb = moon?.waxing ? "ahead" : "settling";
+  const half = cycleDay && cycleDay > 14 ? "half-way through" : "still rising";
+  return `The moon is ${verb}. Your cycle is ${half}.`;
+}
+
+export default function CycleMoonDial({
+  cyclePhase,
+  cycleDay,
+  cycleLength,
+  moon,
+  reading,
+}) {
+  const now = useMemo(() => new Date(), []);
+  const dateLabel = useMemo(() => ukShortDate(now), [now]);
+  const cycleTotal = cycleLength || CYCLE_DAYS_DEFAULT;
+
+  // Lunar position 0..1 from moon.position (computed upstream).
+  const lunarPos = (typeof moon?.position === "number")
+    ? Math.min(0.999, Math.max(0, moon.position))
+    : 0.3;
+  const lunarDay = Math.max(0, Math.min(LUNAR_DAYS, lunarPos * LUNAR_DAYS));
+
+  // Cycle position — derive from cycleDay if available, else neutral.
+  const cyclePos = cycleDay
+    ? Math.min(0.999, Math.max(0, (cycleDay - 1) / cycleTotal))
+    : 0.5;
+
+  // Stroke dashes — circumference for each ring.
+  const outerR = 58;
+  const innerR = 42;
+  const outerC = 2 * Math.PI * outerR;
+  const innerC = 2 * Math.PI * innerR;
+  const outerFill = outerC * lunarPos;
+  const innerFill = innerC * cyclePos;
+
+  // Disc positions — angle in degrees from 12 o'clock, clockwise.
+  const outerAngle = lunarPos * 360;
+  const innerAngle = cyclePos * 360;
+
+  const cycleStroke = PHASE_STROKE[cyclePhase] || LUTEAL;
+  const body = reading?.cycle_moon_body || defaultCycleMoonBody(cyclePhase, moon, cycleDay);
+
+  const moonLabel = moon?.short
+    ? `${moon.short}${moon.illumination != null ? ` · ${moon.illumination}%` : ""}`
+    : "Lunar";
+  const cycleLabel = (() => {
+    if (!cyclePhase) return "Log a cycle in Track to enable";
+    const cap = cyclePhase.charAt(0).toUpperCase() + cyclePhase.slice(1);
+    if (cycleDay) {
+      const toNext = Math.max(0, cycleTotal - cycleDay);
+      return `${cap} · ${toNext} days to next period`;
+    }
+    return cap;
+  })();
+
   return (
-    <div style={ringWrapStyle}>
-      <div style={ringStyle}>{children}</div>
-      <p style={ringLabelStyle}>{label}</p>
+    <div style={{ marginTop: 22 }}>
+      <div style={dialHeadStyle}>
+        <h2 style={dialTitleStyle}>
+          Cycle <em style={{ fontStyle: "italic", color: ACCENT_NIGHT }}>× Moon</em>
+        </h2>
+        <span style={dialMetaStyle}>
+          {cycleDay ? `Day ${cycleDay} of ${cycleTotal}` : "Cycle not tracked"}
+          {` · Lunar ${lunarDay.toFixed(1).replace(/\.0$/, "")} of ${LUNAR_DAYS}`}
+        </span>
+      </div>
+      <div style={dialWrapStyle}>
+        <svg viewBox="0 0 130 130" style={dialSvgStyle} aria-hidden="true">
+          {/* Outer ring (lunar 29.5d) — background */}
+          <circle
+            cx="65" cy="65" r={outerR}
+            fill="none"
+            stroke="rgba(245,230,211,0.10)"
+            strokeWidth="6"
+          />
+          {/* Outer ring — filled to phase, dashed */}
+          <circle
+            cx="65" cy="65" r={outerR}
+            fill="none"
+            stroke={INK_NIGHT_MUTE}
+            strokeWidth="6"
+            strokeDasharray={`${outerFill} ${outerC}`}
+            strokeLinecap="butt"
+            transform="rotate(-90 65 65)"
+          />
+          {/* Outer disc — today's moon position */}
+          <g transform={`rotate(${outerAngle} 65 65)`}>
+            <circle cx="65" cy={65 - outerR} r="5" fill={INK_NIGHT} />
+          </g>
+
+          {/* Inner ring (menstrual 28d) — background */}
+          <circle
+            cx="65" cy="65" r={innerR}
+            fill="none"
+            stroke="rgba(245,230,211,0.10)"
+            strokeWidth="6"
+          />
+          {/* Inner ring — filled to phase, coloured by phase */}
+          <circle
+            cx="65" cy="65" r={innerR}
+            fill="none"
+            stroke={cycleStroke}
+            strokeWidth="6"
+            strokeDasharray={`${innerFill} ${innerC}`}
+            strokeLinecap="butt"
+            transform="rotate(-90 65 65)"
+          />
+          {/* Inner disc — today's cycle position */}
+          <g transform={`rotate(${innerAngle} 65 65)`}>
+            <circle cx="65" cy={65 - innerR} r="5" fill={ACCENT_NIGHT} />
+          </g>
+
+          {/* Centre label */}
+          <text
+            x="65" y="62"
+            textAnchor="middle"
+            fill={INK_NIGHT}
+            fontFamily="Fraunces, serif"
+            fontSize="20"
+            fontWeight="500"
+          >Today</text>
+          <text
+            x="65" y="78"
+            textAnchor="middle"
+            fill="rgba(245,230,211,0.55)"
+            fontFamily="Inter, sans-serif"
+            fontSize="9"
+            letterSpacing="1.5"
+          >{dateLabel}</text>
+        </svg>
+        <div style={legendStyle}>
+          <div style={legendRowStyle}>
+            <span style={{ ...legendDotStyle, background: INK_NIGHT }} />
+            <span>
+              <strong style={legendStrongStyle}>Lunar</strong> · {moonLabel}
+            </span>
+          </div>
+          <div style={legendRowStyle}>
+            <span style={{ ...legendDotStyle, background: ACCENT_NIGHT }} />
+            <span>
+              <strong style={legendStrongStyle}>Cycle</strong> · {cycleLabel}
+            </span>
+          </div>
+          <div
+            style={legendBodyStyle}
+            dangerouslySetInnerHTML={{ __html: `"${renderEm(body)}"` }}
+          />
+        </div>
+      </div>
     </div>
   );
 }
 
-function cyclePhaseGlyph(phase) {
-  switch (phase) {
-    case "menstrual": return "\u25D0";
-    case "follicular": return "\u25D4";
-    case "ovulatory": return "\u25CB";
-    case "luteal": return "\u25D5";
-    default: return "\u00B7";
-  }
-}
-
-function defaultCycleMoonHeadline(cycle, moon) {
-  if (!cycle) return `A <em>${moon.short.toLowerCase()}</em> over the city`;
-  const c = cycle.charAt(0).toUpperCase() + cycle.slice(1);
-  return `${c} body under a <em>${moon.short.toLowerCase()}</em>`;
-}
-
-function defaultCycleMoonBody(cycle, moon) {
-  if (!cycle) {
-    return `The moon is ${moon.short.toLowerCase()} and your cycle phase isn't tracked here yet — log a cycle in Track and the sky will start speaking to your body.`;
-  }
-  const phaseText = {
-    menstrual: "Your body is shedding. A bright moon will feel louder than usual.",
-    follicular: "Your body is rising. Sky and skin both want gentle action.",
-    ovulatory: "Your body is peaking. Conversation will move faster than thought.",
-    luteal: "Your body is settling. Edit, refine, finish — don't start.",
-  }[cycle];
-  return `${phaseText} The ${moon.short.toLowerCase()} sky says: ${moon.waxing ? "build" : "release"}. Match your day to that small instruction and the rest looks after itself.`;
-}
-
-export default function CycleMoonDial({ cyclePhase, moon, reading }) {
-  const headline = reading?.cycle_moon_headline || defaultCycleMoonHeadline(cyclePhase, moon);
-  const body = reading?.cycle_moon_body || defaultCycleMoonBody(cyclePhase, moon);
-  return (
-    <div style={intersectShellStyle}>
-      <div style={{ flex: "1 1 320px" }}>
-        <p style={intersectEyebrowStyle}>Your cycle · meeting the sky</p>
-        <h3 style={intersectHeadStyle} dangerouslySetInnerHTML={{ __html: renderEm(headline) }} />
-        <p style={intersectBodyStyle}>{body}</p>
-      </div>
-      <div style={ringsRowStyle} aria-hidden="true">
-        <RingWrap label="Sky">
-          <MoonPhaseGlyph phase={moon.key || "new"} size={36} />
-        </RingWrap>
-        <RingWrap label="Body">
-          <span style={{ fontFamily: "'Fraunces', serif", fontSize: 24 }}>
-            {cyclePhaseGlyph(cyclePhase)}
-          </span>
-        </RingWrap>
-      </div>
-    </div>
-  );
-}
-
-const intersectShellStyle = {
+// ── Styles ─────────────────────────────────────────────────────────────────
+const dialHeadStyle = {
   display: "flex",
-  alignItems: "center",
-  gap: 24,
+  justifyContent: "space-between",
+  alignItems: "baseline",
+  marginBottom: 8,
   flexWrap: "wrap",
-  background: "linear-gradient(135deg, rgba(232,196,208,0.20), rgba(199,176,222,0.16))",
-  border: "1px solid var(--ink-line, rgba(43,30,22,0.08))",
-  borderRadius: 22,
-  padding: "22px 22px",
-  marginTop: 32,
+  gap: 6,
 };
-const intersectEyebrowStyle = {
-  fontFamily: "'Inter', sans-serif",
-  fontSize: 11, fontWeight: 700,
-  letterSpacing: "0.14em",
-  textTransform: "uppercase",
-  color: "var(--rose-primary, #D45E52)",
-  margin: "0 0 6px",
-};
-const intersectHeadStyle = {
+const dialTitleStyle = {
   fontFamily: "'Fraunces', serif",
-  fontWeight: 400,
   fontSize: 22,
-  color: "var(--plum-deep, #2b1e16)",
-  margin: "0 0 8px",
-  letterSpacing: "-0.01em",
-};
-const intersectBodyStyle = {
-  fontFamily: "'Inter', sans-serif",
-  fontSize: 14,
-  lineHeight: 1.55,
-  color: "var(--plum-mute, #6b4a56)",
+  fontWeight: 400,
+  color: INK_NIGHT,
   margin: 0,
 };
-const ringsRowStyle = { display: "flex", gap: 12, alignItems: "center" };
-const ringWrapStyle = { display: "flex", flexDirection: "column", alignItems: "center", gap: 6 };
-const ringStyle = {
-  width: 64, height: 64,
-  borderRadius: "50%",
-  border: "1.5px solid var(--plum-mute, #6b4a56)",
-  display: "flex", alignItems: "center", justifyContent: "center",
-  fontFamily: "'Fraunces', serif",
-  fontSize: 24,
-  color: "var(--plum-deep, #2b1e16)",
-  background: "rgba(255,255,255,0.32)",
-};
-const ringLabelStyle = {
-  fontFamily: "'Inter', sans-serif",
-  fontSize: 10, fontWeight: 700,
+const dialMetaStyle = {
+  fontSize: 9,
   letterSpacing: "0.10em",
   textTransform: "uppercase",
-  color: "var(--plum-mute, #6b4a56)",
-  margin: 0,
+  fontWeight: 700,
+  color: "rgba(245,230,211,0.55)",
+  fontFamily: "'Inter', sans-serif",
+};
+const dialWrapStyle = {
+  background: "rgba(245,230,211,0.04)",
+  border: `1px solid ${RULE_NIGHT}`,
+  borderRadius: 16,
+  padding: 14,
+  display: "flex",
+  gap: 14,
+  alignItems: "center",
+  flexWrap: "wrap",
+};
+const dialSvgStyle = {
+  width: 130,
+  height: 130,
+  flexShrink: 0,
+};
+const legendStyle = {
+  flex: 1,
+  fontFamily: "'Inter', sans-serif",
+  fontSize: 11,
+  color: "rgba(245,230,211,0.78)",
+  lineHeight: 1.55,
+  minWidth: 160,
+};
+const legendRowStyle = {
+  display: "flex",
+  alignItems: "center",
+  gap: 8,
+  marginBottom: 6,
+};
+const legendDotStyle = {
+  width: 8,
+  height: 8,
+  borderRadius: "50%",
+  flexShrink: 0,
+};
+const legendStrongStyle = {
+  color: INK_NIGHT,
+  fontWeight: 600,
+};
+const legendBodyStyle = {
+  marginTop: 8,
+  color: "rgba(245,230,211,0.55)",
+  fontSize: 10,
+  fontStyle: "italic",
+  fontFamily: "'Fraunces', serif",
 };
