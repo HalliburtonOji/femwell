@@ -243,7 +243,7 @@ export default function Profile() {
           <p style={sLabel}>Your account</p>
           <h1 style={{
             fontSize: "26px", fontWeight: 700, lineHeight: 1.1,
-            fontFamily: "'Playfair Display', serif",
+            fontFamily: "'Fraunces', serif",
             color: "var(--plum)", letterSpacing: "-0.02em", marginTop: "4px"
           }}>Profile</h1>
         </div>
@@ -266,7 +266,7 @@ export default function Profile() {
                 {profile?.avatar_url ? (
                   <img src={profile.avatar_url} alt="" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
                 ) : (
-                  <span style={{ fontFamily: "'Playfair Display', serif", fontSize: 26, fontWeight: 700, color: "white" }}>
+                  <span style={{ fontFamily: "'Fraunces', serif", fontSize: 26, fontWeight: 700, color: "white" }}>
                     {user?.full_name?.[0]?.toUpperCase() || "?"}
                   </span>
                 )}
@@ -312,7 +312,7 @@ export default function Profile() {
                   borderRadius: 12, padding: "10px 14px", textAlign: "center",
                 }}>
                   <p style={{ fontSize: 10, fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.08em", color: "var(--rose-dust-light)", fontFamily: "'Inter', sans-serif", marginBottom: 3 }}>{chip.label}</p>
-                  <p style={{ fontSize: 14, fontWeight: 600, color: "white", fontFamily: "'Playfair Display', serif" }}>{chip.value}</p>
+                  <p style={{ fontSize: 14, fontWeight: 600, color: "white", fontFamily: "'Fraunces', serif" }}>{chip.value}</p>
                 </div>
               ))}
             </div>
@@ -327,7 +327,7 @@ export default function Profile() {
             { label: "Streak", value: `${checkinStreak}d` },
           ].map(s => (
             <div key={s.label} style={{ flex: 1, ...card, padding: "12px 8px", textAlign: "center" }}>
-              <p style={{ fontSize: 20, fontWeight: 700, color: "var(--plum)", fontFamily: "'Playfair Display', serif" }}>{s.value}</p>
+              <p style={{ fontSize: 20, fontWeight: 700, color: "var(--plum)", fontFamily: "'Fraunces', serif" }}>{s.value}</p>
               <p style={{ ...sLabel, marginTop: 2 }}>{s.label}</p>
             </div>
           ))}
