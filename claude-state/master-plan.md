@@ -2,10 +2,11 @@
 
 _Authored by Ms Strategy 2026-05-13. **This is a living document** — update on every brainstorm pass, every shipped MP, every memory consolidation, and every time the user has a "crazy idea" worth keeping. Treat the version line below as the contract: bump the date and add a changelog line whenever you touch this file._
 
-**Version:** 2026-05-13 (rev 2)
-**Last updated:** 2026-05-13 — user pivoted on three open questions, locked Planner as next, lifted the pipeline gate, set the sale timeline aim at 6 months with a 9-month soft cap.
+**Version:** 2026-05-13 (rev 3)
+**Last updated:** 2026-05-13 — dual-mode Cowork+Code workspace set up; Lifestyle close-out partly shipped; Sessions removal locked; Podcast curation strategy locked.
 
 ## Changelog
+- **2026-05-13 rev 3** — Dual-mode workspace built: `CLAUDE.md` at repo root, `.claude/memory/` (40 files), `claude-state/` (planning docs), `claude-handoff/` (cross-Claude comms). Code in VS Code now owns LC-3/4/5; Cowork owns strategy + master plan. LC-1 on main (`7795c90`..`3aa5a04` — PodcastRail + seedPodcasts + bonus Horoscope additions including HoroscopeToast, SectionSkeleton, GlossaryTip, BirthDataSheet Nominatim autocomplete, Compatibility rewrite). LC-2 on main (`ea185fe` — Atelier letter writes published-by-default per D6, banner removed). Publish stalled in Cowork's MCP session; Code will retry from VS Code. Sessions removal locked — user said "shouldnt even be a section in the app." Podcast curation locked at 12 UK podcasts (Maintenance Phase, Adam Buxton, This Is Dating, Modern Love, Sentimental Garbage, You're Wrong About, Esther Perel, On Being, The High Low, Slow Burn, How To Fail, Hilarious World of Depression). Mr Lucha status remains PAUSED (not retired). Hybrid build rule temporarily off for LC-2 through LC-5 (direct repo edits, no MP-paste).
 - **2026-05-13 rev 2** — User answered §12 open questions. Lifted the content-pipeline hard gate (locked 2026-05-06; H2 shipped on top of it anyway and nothing exploded). Planner locked as Phase B priority. Atelier Reading AI-final for now (no human sign-off bottleneck). Sale timeline: 6-month aim, 9-month soft cap. Master-plan-as-living-doc protocol added.
 - **2026-05-13 rev 1** — Initial authoring by Ms Strategy.
 
