@@ -96,6 +96,59 @@ function todayISO(): string {
   return new Date().toISOString().split('T')[0];
 }
 
+// ── Goddess Bench — deterministic asteroid placements ──────────────────────
+// Port of src/lib/astrology/asteroids.js → estimateAsteroidsFromBirth.
+// APPROXIMATE — VSOP87-equivalent mean-longitude estimates. Lilith here is
+// Black Moon Lilith (lunar apogee, 8.85y precession), NOT asteroid #1181 —
+// see H2_DECISIONS.md D3. Upgrade to Swiss Ephemeris in H3.
+//
+// IMPORTANT: keep this in sync with the frontend asteroids.js port.
+const ZODIAC_NAMES = [
+  'Aries', 'Taurus', 'Gemini', 'Cancer', 'Leo', 'Virgo',
+  'Libra', 'Scorpio', 'Sagittarius', 'Capricorn', 'Aquarius', 'Pisces',
+];
+const ASTEROID_PARAMS: Record<string, { L0: number; periodYrs: number }> = {
+  ceres:   { L0: 145, periodYrs: 4.6 },
+  pallas:  { L0: 268, periodYrs: 4.62 },
+  juno:    { L0: 134, periodYrs: 4.36 },
+  vesta:   { L0:  17, periodYrs: 3.63 },
+  chiron:  { L0: 252, periodYrs: 50.4 },
+  lilith:  { L0:  41, periodYrs: 8.85 },
+};
+const MS_PER_YEAR = 365.25 * 86400000;
+const J2000_MS = Date.UTC(2000, 0, 1, 12, 0, 0);
+
+function signFromLongitude(lon: number): string | null {
+  if (lon == null || isNaN(lon)) return null;
+  const idx = Math.floor((((lon % 360) + 360) % 360) / 30);
+  return ZODIAC_NAMES[idx] || null;
+}
+
+function estimateAsteroidsFromBirth(birthDate: string): Record<string, string | null> {
+  const out: Record<string, string | null> = {
+    ceres: null, pallas: null, juno: null,
+    vesta: null, chiron: null, lilith: null,
+  };
+  const t = new Date(birthDate);
+  if (isNaN(t.getTime())) return out;
+  const yearsSince = (t.getTime() - J2000_MS) / MS_PER_YEAR;
+  for (const name of Object.keys(ASTEROID_PARAMS)) {
+    const p = ASTEROID_PARAMS[name];
+    const advance = (360 / p.periodYrs) * yearsSince;
+    let lon = (p.L0 + advance) % 360;
+    if (lon < 0) lon += 360;
+    out[name] = signFromLongitude(lon);
+  }
+  return out;
+}
+
+function ukSignoff(): string {
+  const d = new Date();
+  const day = d.toLocaleDateString('en-GB', { day: 'numeric' });
+  const month = d.toLocaleDateString('en-GB', { month: 'short' });
+  return `Astra · ${day} ${month}`;
+}
+
 function inDays(n: number): string {
   const d = new Date();
   d.setDate(d.getDate() + n);
@@ -227,17 +280,45 @@ Deno.serve(async (req) => {
     }
   }
 
+  // Goddess Bench — compute + persist asteroid_signs once per profile.
+  // Deterministic; does not require the LLM. See H2_DECISIONS.md D3:
+  // Lilith = Black Moon Lilith (lunar apogee), not asteroid #1181.
+  if (!astroUpdated.asteroid_signs && astroUpdated.birth_date) {
+    const asteroidSigns = estimateAsteroidsFromBirth(astroUpdated.birth_date);
+    const hasAny = Object.values(asteroidSigns).some((v) => !!v);
+    if (hasAny) {
+      try {
+        astroUpdated = await sb.entities.AstroProfile.update(astroUpdated.id, {
+          asteroid_signs: asteroidSigns,
+          asteroids_computed_at: new Date().toISOString(),
+        });
+      } catch {
+        astroUpdated = { ...astroUpdated, asteroid_signs: asteroidSigns };
+      }
+    }
+  }
+
   // Build narrative prompt
   const datePretty = new Date().toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
   const moonLine = `${moon.name} at ${moon.pct}% illumination, ${moon.waxing ? 'waxing' : 'waning'}`;
-  const chartLine = [
+  const chartLineParts = [
     sunSign && `Sun in ${sunSign}`,
     astroUpdated.moon_sign && `Moon in ${astroUpdated.moon_sign}`,
     astroUpdated.rising_sign && `Rising in ${astroUpdated.rising_sign}`,
     astroUpdated.mercury_sign && `Mercury in ${astroUpdated.mercury_sign}`,
-  ].filter(Boolean).join(', ');
+  ].filter(Boolean);
+  const chartLine = chartLineParts.join(', ');
 
-  const narrPrompt = `The reader is ${name || 'a FemWell user'}. ${chartLine}. Today is ${datePretty}. Their cycle phase is ${cyclePhase || 'unknown'}. The moon is ${moonLine}.
+  // Asteroid line for the prompt — only include if we have placements.
+  const a = astroUpdated.asteroid_signs || {};
+  const asteroidParts = ['ceres', 'pallas', 'juno', 'vesta', 'chiron', 'lilith']
+    .filter((k) => a[k])
+    .map((k) => `${k.charAt(0).toUpperCase() + k.slice(1)} in ${a[k]}`);
+  const asteroidLine = asteroidParts.length
+    ? `\nGoddess Bench (asteroid placements — Lilith here is Black Moon Lilith, the lunar apogee): ${asteroidParts.join(', ')}.`
+    : '';
+
+  const narrPrompt = `The reader is ${name || 'a FemWell user'}. ${chartLine}. Today is ${datePretty}. Their cycle phase is ${cyclePhase || 'unknown'}. The moon is ${moonLine}.${asteroidLine}
 
 Write a daily reading in JSON with exactly these keys:
 - "headline" (max 9 words, use *word* italics for 1-2 words, e.g. "Mercury *steadies*, the moon *listens*")
@@ -255,6 +336,9 @@ Write a daily reading in JSON with exactly these keys:
 - "cycle_moon_headline" (8-12 words, names both cycle phase and moon phase, use *word* italics; e.g. "Luteal body under a *waxing gibbous*")
 - "cycle_moon_body" (50-70 words tying cycle phase to moon phase as one instruction)
 - "transits_json" (array of 4 objects: {"when":"YYYY-MM-DD","planet":"sun|moon|mercury|venus|mars|jupiter|saturn","title":"max 6 words","desc":"25-35 words"}; pick 4 plausible transits over the next 7 days; if you don't know exact astronomy, write literary transits with valid future dates; never include unicode astrology glyphs)
+- "goddess_read" (${asteroidParts.length ? '1-2 italic sentences naming TWO of the Goddess Bench placements above (asteroid + sign) and the tension between them; UK English; no emoji; you may use **word** for the asteroid+sign phrase, and *word* for italicised emphasis' : 'empty string — no asteroid placements available'})
+- "weather_energy" (integer 0-10 — today's overall energy, calibrated to the cycle phase and moon phase you described)
+- "weather_mood" (two short adjectives, comma-separated, e.g. "Open, decisive" — matches the body of the day)
 
 Return only valid JSON.`;
 
@@ -288,6 +372,14 @@ Return only valid JSON.`;
     cycle_moon_body: narrative.cycle_moon_body || '',
     cycle_phase: cyclePhase || '',
     transits_json: Array.isArray(narrative.transits_json) ? narrative.transits_json.slice(0, 4) : [],
+    goddess_read: typeof narrative.goddess_read === 'string' ? narrative.goddess_read : '',
+    astra_signoff: ukSignoff(),
+    weather_energy: (typeof narrative.weather_energy === 'number')
+      ? Math.max(0, Math.min(10, Math.round(narrative.weather_energy)))
+      : 7,
+    weather_mood: typeof narrative.weather_mood === 'string' && narrative.weather_mood
+      ? narrative.weather_mood
+      : 'Open, decisive',
     created_at: new Date().toISOString(),
   };
 

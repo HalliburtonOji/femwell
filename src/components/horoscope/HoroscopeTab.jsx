@@ -91,6 +91,7 @@ export default function HoroscopeTab(props) {
         reading={reading}
         onAddBirthTime={() => setSheetOpen(true)}
       />
+      <GoddessBench astro={astro} userProfile={userProfile} reading={reading} />
       <TodaysWeather reading={reading} chart={chart} />
       <CycleMoonDial
         cyclePhase={cyclePhase}
@@ -109,7 +110,6 @@ export default function HoroscopeTab(props) {
       <PrivacyLine />
       <AtelierReading />
       <PaidShelf />
-      <GoddessBench />
 
       <BirthDataSheet
         open={sheetOpen}

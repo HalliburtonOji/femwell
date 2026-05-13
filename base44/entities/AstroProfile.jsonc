@@ -39,6 +39,23 @@
       "type": "string",
       "description": "Mercury sign at birth (LLM)."
     },
+    "asteroid_signs": {
+      "type": "object",
+      "description": "Goddess Bench placements at birth: { ceres, pallas, juno, vesta, chiron, lilith }. Each value is a zodiac name string. Lilith here is Black Moon Lilith (lunar apogee, NOT asteroid #1181) — see H2_DECISIONS.md D3. Computed deterministically by generateHoroscopeReading on first call.",
+      "properties": {
+        "ceres":  { "type": "string" },
+        "pallas": { "type": "string" },
+        "juno":   { "type": "string" },
+        "vesta":  { "type": "string" },
+        "chiron": { "type": "string" },
+        "lilith": { "type": "string" }
+      }
+    },
+    "asteroids_computed_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "When asteroid_signs was last computed."
+    },
     "created_at": {
       "type": "string",
       "format": "date-time"
