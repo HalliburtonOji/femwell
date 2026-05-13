@@ -188,9 +188,14 @@ function OnboardingCard({ onOpen }) {
 // Styles
 // ─────────────────────────────────────────────────────────────────────────────
 // Page-level wrap. TwilightHero uses margin: 0 -18px to bleed back to the
-// Lifestyle page edges, so this padding only gates the rest of the sections.
+// shell edges (within this 480px container), so the gradient hero is full
+// width of the shell but bounded by maxWidth on tablet/desktop. maxWidth
+// + margin auto keeps the column readable at tablet/desktop per the
+// FemWell one-unified-bottom-nav contract (feedback_femwell_multiplatform.md).
 // paddingBottom keeps the last paid card clear of the bottom nav.
 const tabShellStyle = {
+  maxWidth: 480,
+  margin: "0 auto",
   padding: "0 18px",
   paddingBottom: 100,
 };
