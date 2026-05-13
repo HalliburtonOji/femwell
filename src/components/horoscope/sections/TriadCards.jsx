@@ -4,6 +4,7 @@ import {
   INK_NIGHT, ACCENT_NIGHT, RULE_NIGHT,
 } from "../styles/tokens.jsx";
 import SectionWrap from "../SectionWrap";
+import GlossaryTip from "@/components/horoscope/GlossaryTip";
 
 // ─────────────────────────────────────────────────────────────────────────────
 // TriadCards — Section §2 (per demo §2).
@@ -122,11 +123,12 @@ export default function TriadCards({ chart, astro, reading, onAddBirthTime }) {
 
   return (
     <SectionWrap>
-      <SectionHead
-        title="Your"
-        emphasis="triad"
-        link={hasBT ? null : "Birth time unlocks moon + rising →"}
-      />
+      <div style={{ display: "flex", alignItems: "baseline", justifyContent: "space-between", margin: "0 0 12px", flexWrap: "wrap", gap: 8 }}>
+        <h2 style={{ fontFamily: "'Fraunces', serif", fontWeight: 400, fontSize: 22, color: INK_NIGHT, margin: 0 }}>
+          Your <GlossaryTip term="natal chart"><em style={{ fontStyle: "italic", color: ACCENT_NIGHT }}>triad</em></GlossaryTip>
+        </h2>
+        {!hasBT && <span style={{ fontFamily: "'Inter', sans-serif", fontSize: 11, fontWeight: 500, color: ACCENT_NIGHT }}>Birth time unlocks moon + rising →</span>}
+      </div>
       <div style={rowStyle}>
         <TriadCard
           slot="sun"

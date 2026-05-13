@@ -1,8 +1,9 @@
-import { useMemo } from "react";
+import { useMemo, useState, useRef } from "react";
 import { getMoonPhase } from "@/utils/astrology";
 import useSkyDiary from "../hooks/useSkyDiary";
 import SectionWrap from "../SectionWrap";
 import { INK_NIGHT, ACCENT_NIGHT } from "../styles/tokens.jsx";
+import GlossaryTip from "@/components/horoscope/GlossaryTip";
 
 // ─────────────────────────────────────────────────────────────────────────────
 // SkyDiary — Section 5.
@@ -102,7 +103,7 @@ function placeTransitsInWindow(transits, win) {
     if (when < win.start || when > win.end) continue;
     const left = Math.max(8, Math.min(92, ((when.getTime() - win.start.getTime()) / span) * 100));
     const planet = (t.planet || "").toLowerCase();
-    hits.push({ left, planet });
+    hits.push({ left, planet, when: t.when });
     if (hits.length >= 2) break;
   }
   return hits;
@@ -198,6 +199,83 @@ function ukBst(d) {
   }).format(d);
 }
 
+// ── Transit dot tooltip ──────────────────────────────────────────────────────
+function TransitDot({ planet, when, left }) {
+  const [open, setOpen] = useState(false);
+  const timerRef = useRef(null);
+  const color = PLANET_COLOURS[planet] || PLANET_COLOURS.default;
+
+  const dateLabel = when
+    ? new Date(when).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" })
+    : null;
+
+  const dismiss = () => { clearTimeout(timerRef.current); timerRef.current = setTimeout(() => setOpen(false), 200); };
+  const show = () => { clearTimeout(timerRef.current); setOpen(true); };
+
+  return (
+    <span style={{ position: "absolute", left: `${left}%`, top: "50%", transform: "translate(-50%, -50%)", zIndex: open ? 10 : 1 }}>
+      <span
+        role="button"
+        aria-label={`${planet} transit${dateLabel ? ` on ${dateLabel}` : ""}`}
+        onClick={(e) => { e.stopPropagation(); setOpen((v) => !v); }}
+        onMouseEnter={show}
+        onMouseLeave={dismiss}
+        style={{
+          display: "block",
+          width: 9,
+          height: 9,
+          borderRadius: 999,
+          background: color,
+          boxShadow: `0 0 0 1.5px rgba(255,255,255,0.92)${open ? `, 0 0 0 3px ${color}44` : ""}`,
+          cursor: "pointer",
+          transition: "box-shadow 0.15s",
+        }}
+      />
+      {open && (
+        <span style={transitTipStyle} onMouseEnter={() => clearTimeout(timerRef.current)} onMouseLeave={dismiss}>
+          <span style={{ ...transitTipDotStyle, background: color }} />
+          <span style={transitTipBodyStyle}>
+            <span style={transitTipPlanetStyle}>{planet.charAt(0).toUpperCase() + planet.slice(1)}</span>
+            {dateLabel && <span style={transitTipDateStyle}>{dateLabel}</span>}
+          </span>
+        </span>
+      )}
+    </span>
+  );
+}
+
+const transitTipStyle = {
+  position: "absolute",
+  bottom: "calc(100% + 8px)",
+  left: "50%",
+  transform: "translateX(-50%)",
+  zIndex: 20,
+  background: "#1A1320",
+  border: "1px solid rgba(245,230,211,0.18)",
+  borderRadius: 8,
+  padding: "6px 10px",
+  whiteSpace: "nowrap",
+  boxShadow: "0 4px 16px rgba(0,0,0,0.40)",
+  display: "flex",
+  alignItems: "center",
+  gap: 6,
+  pointerEvents: "auto",
+};
+const transitTipDotStyle = { width: 7, height: 7, borderRadius: "50%", flexShrink: 0 };
+const transitTipBodyStyle = { display: "flex", flexDirection: "column", gap: 1 };
+const transitTipPlanetStyle = {
+  fontFamily: "'Fraunces', serif",
+  fontSize: 12,
+  color: "rgba(245,230,211,0.92)",
+  fontWeight: 500,
+};
+const transitTipDateStyle = {
+  fontFamily: "'Inter', sans-serif",
+  fontSize: 9,
+  color: "rgba(245,230,211,0.55)",
+  letterSpacing: "0.04em",
+};
+
 // ── Main ────────────────────────────────────────────────────────────────────
 function inferCyclePhaseFromIndex(idx, total) {
   // Deterministic phase tag for the bar tint when we don't have per-cycle data.
@@ -261,13 +339,11 @@ export default function SkyDiary({ reading, userId, userProfile }) {
                 }}
               >
                 {transits.map((t, ti) => (
-                  <span
+                  <TransitDot
                     key={ti}
-                    style={{
-                      ...transitDotStyle,
-                      left: `${t.left}%`,
-                      background: PLANET_COLOURS[t.planet] || PLANET_COLOURS.default,
-                    }}
+                    planet={t.planet}
+                    when={t.when}
+                    left={t.left}
                   />
                 ))}
               </div>
@@ -288,7 +364,7 @@ export default function SkyDiary({ reading, userId, userProfile }) {
         {voc && (
           <div style={vocPipStyle} role="note" aria-label="Void of course Moon">
             <span style={vocDotStyle} aria-hidden="true" />
-            Void-of-Course · {ukBst(voc.start)}-{ukBst(voc.end)} BST · best not to lock plans
+            <GlossaryTip term="void-of-course">Void-of-Course</GlossaryTip> · {ukBst(voc.start)}-{ukBst(voc.end)} BST · best not to lock plans
           </div>
         )}
       </div>

@@ -2,6 +2,7 @@ import useProfections from "../hooks/useProfections";
 import { houseOrdinal } from "@/lib/astrology/profections";
 import SectionWrap from "../SectionWrap";
 import { INK_NIGHT } from "../styles/tokens.jsx";
+import GlossaryTip from "@/components/horoscope/GlossaryTip";
 
 // ─────────────────────────────────────────────────────────────────────────────
 // AnnualProfections — Section 6.5.
@@ -50,7 +51,7 @@ function SaturnReturnLetter({ age, started, exact, ends }) {
     `You don't have to know yet which is which. Just notice what you keep returning to when no one's watching.`;
   return (
     <div style={saturnShellStyle}>
-      <p style={saturnEyeStyle}>Your Saturn Return · Year {returnYear} of 3</p>
+      <p style={saturnEyeStyle}>Your <GlossaryTip term="saturn return">Saturn Return</GlossaryTip> · Year {returnYear} of 3</p>
       <h3 style={saturnTitleStyle}>
         A <em style={saturnEmStyle}>structural year</em>. Saturn is rebuilding the foundation.
       </h3>
@@ -71,7 +72,7 @@ function ProfectionCard({ age, house, time_lord, lit_house_copy, time_lord_copy,
   const planetText = time_lord ? `${time_lord} year` : "profected year";
   return (
     <div style={profectionShellStyle}>
-      <p style={profectionEyeStyle}>Year {age} · Annual Profection</p>
+      <p style={profectionEyeStyle}>Year {age} · <GlossaryTip term="annual profection">Annual Profection</GlossaryTip></p>
       <h3 style={profectionTitleStyle}>
         A <em style={profectionEmStyle}>{planetText}</em> — the {ord} house is lit.
       </h3>
@@ -83,7 +84,7 @@ function ProfectionCard({ age, house, time_lord, lit_house_copy, time_lord_copy,
       )}
       <div style={profectionMetaRowStyle}>
         <span style={profectionMetaItemStyle}>
-          <span style={profectionMetaLabelStyle}>Time-lord</span> {time_lord || "—"}
+          <span style={profectionMetaLabelStyle}><GlossaryTip term="time-lord">Time-lord</GlossaryTip></span> {time_lord || "—"}
         </span>
         <span style={profectionMetaItemStyle}>
           <span style={profectionMetaLabelStyle}>Active house</span> {ord}

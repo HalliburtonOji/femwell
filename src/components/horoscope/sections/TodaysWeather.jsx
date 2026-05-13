@@ -3,6 +3,7 @@ import {
   INK_NIGHT, ACCENT_NIGHT, RULE_NIGHT,
 } from "../styles/tokens.jsx";
 import SectionWrap from "../SectionWrap";
+import GlossaryTip from "@/components/horoscope/GlossaryTip";
 
 // ─────────────────────────────────────────────────────────────────────────────
 // TodaysWeather — Section §3 (per demo §3).
@@ -95,7 +96,7 @@ export default function TodaysWeather({ reading, chart }) {
   return (
     <SectionWrap>
       <div style={mainCardStyle}>
-        <div style={eyebrowStyle}>Today's sky · signed by Astra</div>
+        <div style={eyebrowStyle}>Today's sky &middot; signed by Astra</div>
         <p style={weatherLineStyle}>
           “{weatherLine}{tail ? "" : ""}”
         </p>
@@ -104,6 +105,9 @@ export default function TodaysWeather({ reading, chart }) {
           <span style={statStyle}><strong style={statStrong}>Energy</strong> {energy}</span>
           <span style={statStyle}><strong style={statStrong}>Mood</strong> {mood}</span>
           <span style={statStyle}><strong style={statStrong}>Best for</strong> {bestFor}</span>
+        </div>
+        <div style={statRowStyle} aria-hidden>
+          <span style={statStyle}><strong style={statStrong}>Transit note</strong> <GlossaryTip term="transit">What is a transit?</GlossaryTip></span>
         </div>
         {spotifyUrl && (
           <a
