@@ -1,10 +1,16 @@
-# Planner Phase 2 — spec v2 (best-in-market 2026)
+# Planner Phase 2 — spec v2 (best-in-market 2026 · two-tab)
 
-**Supersedes:** `spec.md` from 2026-05-14 morning. Spec v1 covered 3 surfaces (Smart View 4-state, Forecast strip, Week Ahead). After Halli pushed for "the best the market has to offer", a fresh deep-research drop landed at `claude-state/research_planner_best_in_market_2026-05-14.md`. This spec v2 absorbs spec v1's three surfaces and adds six more under MP-A1/A2/A3.
+**Supersedes:** `spec.md` from 2026-05-14 morning. Spec v1 covered 3 surfaces (Smart View 4-state, Forecast strip, Week Ahead). After Halli pushed for "the best the market has to offer", a fresh deep-research drop landed at `claude-state/research_planner_best_in_market_2026-05-14.md`. This spec v2 absorbs spec v1's three surfaces and adds six more under MP-A1/A2/A3. **Halli then flagged decision fatigue on the single-scroll demo**, so the surfaces are split across a **two-tab segmented control: Today + Cycle**. Build path adds MP-A0 (tab shell + routing) at the top of the sequence.
 
-**Canvas:** `mnt/femwell/femwell_planner_final.html` (signed-off Planner composition — Shape C month ribbon + Smart View + good-for chips + morning/evening stacks + program card + meals + tonight's window + ritual bundles carousel + gentle streaks + Plan-with-Jess). All Phase-1 sections stay in place.
+**Canvas:** `mnt/femwell/femwell_planner_final.html` (signed-off Planner composition). All Phase-1 sections stay in place — they just now live on the tab that matches their time horizon.
 
-**Phase 2 visual target:** `mnt/femwell/femwell_planner_phase2_demo.html` — same canvas, nine new mechanics layered as inline `ⓟ2 NEW` deltas. Vertical order is locked.
+**Phase 2 visual target:** `mnt/femwell/femwell_planner_phase2_demo.html` — two phone frames side-by-side, one Today, one Cycle. Segmented control at top of each. Cross-tab links wired.
+
+**Tab split (locked):**
+- **Today tab** — Fresh-Start banner · Smart View "right now" + state chips · Good-for chips · Morning stack · Programme · Meals · Tonight's Window (HRT row + Doctor link) · Evening stack · Shutdown ritual · Plan-with-Jess (today)
+- **Cycle tab** — Month ribbon (Shape C) · Capacity Tax bar · Quiet Mode banner · Week Ahead card · What's Unfinished · Saved rhythms (incl. Pacing Bank) · 28-day consistency · Cycle Mirror Sunday tile · Doctor-Ready Diary · Astra Cole sidecar · Plan-my-next-cycle
+
+**URL state:** `?view=today` (default) | `?view=cycle`. Persist last-viewed in localStorage. Cross-tab deep links pass `?view=cycle&scrollTo=doctor` and `?view=today` (with retarget date).
 
 **Brand-voice guardrails (binding):** permissive language ("often", "tends to") not prescriptive ("should", "must"); lead with user's own data, not population averages; no body-negative framing ("softer day" not "low day"); invitations not imperatives; confidence-honest predictions. Research source: `research_planner_2026-05-13.md` §8 (cycle-syncing trap).
 
@@ -26,15 +32,16 @@
 
 ---
 
-## Commit boundaries (Planner-A · C1–C9)
+## Commit boundaries (Planner-A · C0–C9)
 
 Each row = one tombstone-able commit. Build clean, drop tombstone in `claude-state/STATUS.md`, then Cowork publishes + verifies.
 
 | # | What | Acceptance |
 |---|---|---|
+| **C0** | **MP-A0 tab shell + routing** — `PlannerTabs` segmented-control component at top of `/planner`. URL state via `?view=today\|cycle` with `useSearchParams`. Default `today`; persist last view to `localStorage.fw_planner_view`. New `PlannerTodayView` (existing sections move into it) + `PlannerCycleView` (empty shell + month ribbon moved here). Cross-tab links: Tonight's "Share with my GP" passes `?view=cycle&scrollTo=doctor`; Capacity Tax "Defer N" passes `?view=today&toast=deferred:N`. | Two routes render. Tab switch persists across reload. Cross-tab anchor scroll works. 3-viewport walk both tabs. |
 | **C1** | **MP-A1 schema** — `CycleConfidenceCache` entity (or extend `UserProfile.cycle_prediction_meta` JSON); `CapacityTaxLog` entity for week-grain rolling history. Migration script populates first run. | Schema lint green. `cycle_confidence_pct` + `cycles_observed` readable from FE. |
-| **C2** | **MP-A1 confidence pill** — render under `.ph-sub`. Pulls from `cycle_prediction_meta`. Show 4-cycle minimum threshold; if below, render "still learning · 1 of 4 cycles". | Pill renders on `/planner` + `/today` at 3 viewports. Permissive copy. |
-| **C3** | **MP-A1 Capacity Tax bar** — inserted between month ribbon and Smart View. Computes: `predictedLoad = sum(PersonalTask.estimated_effort * phase_modifier) + sum(active habits * 1) + sum(active programmes * 1.5)`. `capacityForPhase = baseline × phase_multiplier (menstrual 0.55, follicular 1.1, ovulatory 1.2, luteal 0.85)`. Shows percent + 1-tap Defer pill (filters reschedulable PersonalTasks to follicular). | Bar renders + Defer pill moves N tasks + acceptance toast. Keyboard nav on Defer button. |
+| **C2** | **MP-A1 confidence pill** — render under `.ph-sub` on BOTH tabs (Today shows "luteal · day 18", Cycle shows "April · 5 weeks"). Pulls from `cycle_prediction_meta`. Show 4-cycle minimum threshold; if below, render "still learning · 1 of 4 cycles". | Pill renders on both tabs + `/today` at 3 viewports. Permissive copy. |
+| **C3** | **MP-A1 Capacity Tax bar** — mounted on **Cycle tab**, inserted between month ribbon and Week Ahead. Computes: `predictedLoad = sum(PersonalTask.estimated_effort * phase_modifier) + sum(active habits * 1) + sum(active programmes * 1.5)`. `capacityForPhase = baseline × phase_multiplier (menstrual 0.55, follicular 1.1, ovulatory 1.2, luteal 0.85)`. Shows percent + 1-tap Defer pill (filters reschedulable PersonalTasks to follicular). | Bar renders + Defer pill moves N tasks + acceptance toast. Keyboard nav on Defer button. |
 | **C4** | **MP-A1 Doctor-Ready Diary v1** — backend function `generateDoctorReadyDiary(userId, weeks=6)` returns PDF buffer. Pulls from CycleEvents + HabitLogs + MoodLogs + UserProfile.hrt_regimen. Layout: bleed grid · symptom heatmap · HRT timeline · 3-bullet summary. NICE-NG23 field naming. | PDF downloads; opens in mobile Safari preview; renders correctly at A4. |
 | **C5** | **MP-A1 Smart View shell** — extract `SmartViewCard` component with `state` prop (`idle\|streaky\|stuck\|drifting\|quiet`). State chip row visible. State 3 fixed for C5 (3 states wired). Good-for chips drive from capacity composite. | 3 states render with `?_smartView=` dev param. Chip row above card. |
 | **C6** | **MP-A2 Quiet Mode auto-pull-back** — server-side gate: if `captax.pct > 120` 3 days running OR `mood < 3 && energy < 3` for 2 days, set `UserProfile.quiet_mode_until = now()+72h`. FE renders banner. Pulls non-anchor tasks. Undo button restores. | Test fixture flips flag; banner renders; tasks hidden; undo restores. Toggleable in dev. |
