@@ -1,4 +1,4 @@
-import { Wind, CloudDrizzle } from "lucide-react";
+import { Wind, CloudDrizzle, Headphones, Play } from "lucide-react";
 import {
   INK_NIGHT, ACCENT_NIGHT, RULE_NIGHT,
 } from "../styles/tokens.jsx";
@@ -86,6 +86,11 @@ function spotifyHref(moonSign) {
   return MOON_SIGN_PLAYLIST[String(moonSign).toLowerCase()] || null;
 }
 
+function capitalize(s) {
+  if (!s || typeof s !== "string") return "";
+  return s.charAt(0).toUpperCase() + s.slice(1).toLowerCase();
+}
+
 export default function TodaysWeather({ reading, chart }) {
   const weatherLine = reading?.power_title || fallbackWeatherLine(chart);
   const tail = reading?.power_body || "";
@@ -129,11 +134,27 @@ export default function TodaysWeather({ reading, chart }) {
             href={spotifyUrl}
             target="_blank"
             rel="noopener noreferrer"
-            style={spotifyLinkStyle}
-            onMouseEnter={(e) => { e.currentTarget.style.textDecoration = "underline"; }}
-            onMouseLeave={(e) => { e.currentTarget.style.textDecoration = "none"; }}
+            aria-label={`Open today's matching Spotify playlist for your ${moonSignKey || ""} moon sign in a new tab`}
+            style={spotifyChipStyle}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.transform = "translateY(-1px)";
+              e.currentTarget.style.boxShadow = "0 10px 24px -8px rgba(29,185,84,0.7)";
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.transform = "translateY(0)";
+              e.currentTarget.style.boxShadow = "0 6px 20px -8px rgba(29,185,84,0.55)";
+            }}
           >
-            Astra's sound for today →
+            <span data-play-dot style={spotifyPlayDotStyle}>
+              <Play data-play-icon size={9} strokeWidth={0} fill="#1DB954" style={spotifyPlayIconStyle} />
+            </span>
+            <Headphones size={14} strokeWidth={1.8} aria-hidden style={{ flexShrink: 0 }} />
+            <span style={spotifyChipLabelStyle}>
+              <span style={spotifyChipLeadStyle}>Play Astra's sound</span>
+              <span style={spotifyChipMetaStyle}>
+                Spotify · {moonSignKey ? `${capitalize(moonSignKey)} moon` : "today's mood"}
+              </span>
+            </span>
           </a>
         )}
       </div>
@@ -218,15 +239,58 @@ const statStrong = {
   color: ACCENT_NIGHT,
   fontWeight: 600,
 };
-const spotifyLinkStyle = {
-  display: "inline-block",
-  marginTop: 12,
+// Spotify brand green for the matching-sound chip. Used sparingly — only on
+// this single CTA — so it reads as "this is a music thing, tap to play" at
+// a glance without clashing with the Plum Night palette.
+const SPOTIFY_GREEN = "#1DB954";
+const spotifyChipStyle = {
+  display: "inline-flex",
+  alignItems: "center",
+  gap: 10,
+  marginTop: 14,
+  padding: "10px 14px 10px 10px",
+  borderRadius: 999,
+  background: SPOTIFY_GREEN,
+  border: `1px solid ${SPOTIFY_GREEN}`,
+  color: "#0a0a0a",
   fontFamily: "'Inter', sans-serif",
-  fontSize: 12,
-  fontWeight: 500,
-  color: ACCENT_NIGHT,
   textDecoration: "none",
-  letterSpacing: "0.01em",
+  transition: "transform 120ms ease, box-shadow 120ms ease",
+  boxShadow: "0 6px 20px -8px rgba(29,185,84,0.55)",
+  cursor: "pointer",
+};
+const spotifyPlayDotStyle = {
+  width: 22,
+  height: 22,
+  borderRadius: 999,
+  background: "#0a0a0a",
+  display: "inline-flex",
+  alignItems: "center",
+  justifyContent: "center",
+  flexShrink: 0,
+};
+const spotifyPlayIconStyle = {
+  color: SPOTIFY_GREEN,
+  marginLeft: 1,  // visual offset so the triangle reads as centered
+};
+const spotifyChipLabelStyle = {
+  display: "inline-flex",
+  flexDirection: "column",
+  alignItems: "flex-start",
+  lineHeight: 1.1,
+};
+const spotifyChipLeadStyle = {
+  fontSize: 13,
+  fontWeight: 700,
+  letterSpacing: "-0.005em",
+};
+const spotifyChipMetaStyle = {
+  fontSize: 10,
+  fontWeight: 600,
+  letterSpacing: "0.04em",
+  textTransform: "uppercase",
+  opacity: 0.78,
+  marginTop: 2,
 };
 const noticeRowStyle = {
   display: "grid",
