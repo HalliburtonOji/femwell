@@ -10,6 +10,7 @@
 
 | Commit | Author | What it did |
 |---|---|---|
+| `30a645f` | Cowork | Introduced `claude-state/STATUS.md` (this file) as the shared baton between Cowork and Code. CLAUDE.md now makes reading + updating it binding on session start and after every commit. |
 | `bbc60e1` | Cowork | `ONE_SHOT_PHASES` in orchestrator — migrations fire once on next daily cron, lock closed after. Wires `migrateSessionsToPractice`. Halli no longer needs to manually invoke base44 Functions for migrations. |
 | `88c28f0` | Cowork | Spotify CTA on Horoscope page redesigned as obvious green play-chip (Play+Headphones icons, "SPOTIFY · {SIGN} MOON" meta) — was a tiny text link before. |
 | `9225b2e` | Cowork | Curated 12 zodiac Spotify URLs in `TodaysWeather.jsx`. 7 Spotify-official zodiac playlists + 5 vibe-matched editorial mood playlists (Soft Pop Hits / Acoustic Hits / Deep Focus / mint / Dreampop). |
@@ -98,3 +99,4 @@ Pick one. Default if nothing chosen: option 1.
 ## Recent edits to this file
 
 - 2026-05-14 — Cowork: created the file. Captured today's 9 commits + current in-flight queue.
+- 2026-05-14 — Cowork: added `30a645f` row (the commit that introduced this file).
