@@ -128,14 +128,27 @@ In Claude Code: you do the walk in your own browser. In Cowork: it's MCP-driven 
 
 ## How to start a Claude Code session in this repo
 
-1. Read `claude-state/master-plan.md` first — version + changelog tell you what shipped most recently.
-2. Read `.claude/memory/MEMORY.md` — the index. Skim each entry's one-line hook.
-3. Check `claude-handoff/` for the latest `from-cowork-to-code-*.md` or `from-code-to-cowork-*.md` — if there's a fresh one addressed to you, that's the baton.
-4. `git log --oneline -10` to see the last 10 commits — confirm where the repo is.
-5. Then propose the next step before touching anything.
+1. **Read `claude-state/STATUS.md` first.** This is the shared baton between Cowork and Code — current commits, who owns what, what's next. Halli should never have to relay status between the two Claudes; this file is the source of truth.
+2. Read `claude-state/master-plan.md` — version + changelog tell you the strategic direction.
+3. Read `.claude/memory/MEMORY.md` — the rolling memory index. Skim each entry's one-line hook.
+4. Check `claude-handoff/` for the latest `from-cowork-to-code-*.md` or `from-code-to-cowork-*.md` — these are point-in-time messages between Claudes (decisions, blockers, hot questions). STATUS.md is the rolling state; handoff files are the diff.
+5. `git log --oneline -10` to confirm the repo position matches STATUS.md's "Just shipped" table.
+6. Then propose the next step before touching anything.
 
 If the user gives you an explicit task that doesn't match any pending handoff, just do that — the orientation above is for context, not a forced sequence.
 
 ---
 
-_Last updated 2026-05-13 by Cowork. If this file is more than two weeks old at read time, surface that to the user — direction docs decay fast on a 6-month sale runway._
+## The STATUS.md contract (binding for both Claudes)
+
+`claude-state/STATUS.md` is the rolling state file both Claudes maintain. Three rules:
+
+1. **After every commit you push,** add a row to the top of "Just shipped" in STATUS.md with commit hash, author (Cowork / Code), and a one-line description. Commit STATUS.md in the same push or a tight follow-up — never let main land a commit that's not reflected in STATUS.md.
+2. **When you pick up, finish, or hand off a task,** update "In flight" — move items between owners, add new ones, strike finished ones.
+3. **Bump the "Last updated" line** at the top + add a one-line note under "Recent edits to this file" at the bottom whenever you change the file.
+
+This means Halli never has to copy status from chat to chat. When either Claude says "what's next?" or "where are we?", the answer is in STATUS.md — both sides read the same file.
+
+---
+
+_Last updated 2026-05-14 by Cowork. If this file is more than two weeks old at read time, surface that to the user — direction docs decay fast on a 6-month sale runway._
