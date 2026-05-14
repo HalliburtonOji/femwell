@@ -1,20 +1,29 @@
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useMemo, useRef } from "react";
+import { useLocation, useNavigate } from "react-router-dom";
 import { base44 } from "@/api/base44Client";
 import { Calendar, Plus, Clock, Trash2, Check, ChevronLeft, ChevronRight, X, Sparkles } from "lucide-react";
+import PlannerTabs, { readInitialView, writeStoredView, resolveViewId } from "@/components/planner/PlannerTabs";
 
 // ─────────────────────────────────────────────────────────────────────────────
-// Planner — Phase 1 (unify + brand sweep)
+// Planner — Phase 2 C0 (tab shell + routing)
 //
-// Pulls the data FemWell already generates and displays it as the day's
-// rhythm: today's intention (DailyPlan), active program (UserPrograms),
-// morning ritual stack (HabitLogs), meals (MealPlans), commitments
-// (PlannerItems + PersonalTasks).
+// Phase 1 surfaces (DailyPlan, active programme, morning stack, meals,
+// commitments) all stay — they now live inside the "Today" tab. Phase 2 v2
+// spec splits the page across two tabs accessed via a segmented control at
+// the top: Today (next 24h) + Cycle (the wider arc). The Cycle tab is an
+// empty shell for C0; C1+ commits will populate month ribbon, Capacity Tax
+// bar, Week Ahead card, etc.
 //
-// Phase 2 (later): month-ribbon hero, ritual bundles carousel, "what this
-// day is good for" card, gentle streaks. Phase 3: tonight's window,
-// Plan-with-Jess, voice quick-add.
+// URL state: `?view=today|cycle` (default `today`). Persisted to
+// `localStorage.fw_planner_view` so a return visit lands on the same tab.
+// Cross-tab anchor links: `?view=cycle&scrollTo=<id>` scrolls to the named
+// section after switch; `?view=today&toast=<msg>` surfaces a transient
+// banner. Both are no-ops on C0 (Cycle anchors exist only as empty stubs)
+// but the plumbing is in place so C3 Capacity Tax + C4 Doctor link can wire
+// in without a routing rewrite.
 //
-// Reference demo: workspace/femwell_planner_final.html (sign-off, April).
+// Spec ref: claude-state/base44_mps/2026-05-14_planner_phase2/spec_v2.md §C0.
+// Phase 1 reference demo: workspace/femwell_planner_final.html.
 // ─────────────────────────────────────────────────────────────────────────────
 
 const CATEGORY_COLORS = {
@@ -98,6 +107,63 @@ const DAY_LABELS = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
 export default function Planner() {
   const today = new Date();
   today.setHours(0, 0, 0, 0);
+
+  const location = useLocation();
+  const navigate = useNavigate();
+
+  // ── Tab routing (Phase 2 C0) ───────────────────────────────────────────────
+  // Initial view comes from `?view=` → localStorage → default `today`. Kept in
+  // sync with the URL so back/forward buttons + deep-link entries behave.
+  const [view, setView] = useState(() => readInitialView());
+  const [toastMsg, setToastMsg] = useState(null);
+  const cycleSectionRefs = useRef({});
+
+  // URL → state sync (handles browser nav + deep link entry)
+  useEffect(() => {
+    const params = new URLSearchParams(location.search);
+    const rawView = params.get("view");
+    const nextView = resolveViewId(rawView);
+    setView((prev) => (prev === nextView ? prev : nextView));
+
+    // Cross-tab toast: ?toast=deferred:N — surface a small banner for a few seconds.
+    const toast = params.get("toast");
+    if (toast) {
+      setToastMsg(toast);
+      // Strip toast param so a refresh doesn't re-fire it.
+      params.delete("toast");
+      const next = params.toString();
+      navigate({ pathname: location.pathname, search: next ? `?${next}` : "" }, { replace: true });
+      const timer = setTimeout(() => setToastMsg(null), 3200);
+      return () => clearTimeout(timer);
+    }
+  }, [location.search, location.pathname, navigate]);
+
+  // Anchor scroll after a cross-tab nav lands on Cycle (?view=cycle&scrollTo=doctor)
+  useEffect(() => {
+    if (view !== "cycle") return;
+    const params = new URLSearchParams(location.search);
+    const target = params.get("scrollTo");
+    if (!target) return;
+    // Wait one frame so the section has mounted.
+    const t = requestAnimationFrame(() => {
+      const el = cycleSectionRefs.current[target];
+      if (el?.scrollIntoView) el.scrollIntoView({ behavior: "smooth", block: "start" });
+    });
+    return () => cancelAnimationFrame(t);
+  }, [view, location.search]);
+
+  const changeView = (next) => {
+    const nextView = resolveViewId(next);
+    setView(nextView);
+    writeStoredView(nextView);
+    const params = new URLSearchParams(location.search);
+    if (nextView === "today") params.delete("view");
+    else params.set("view", nextView);
+    // Anchor params only apply to the destination tab — strip on manual switch.
+    params.delete("scrollTo");
+    const search = params.toString();
+    navigate({ pathname: location.pathname, search: search ? `?${search}` : "" }, { replace: false });
+  };
 
   const [user, setUser] = useState(null);
   const [profile, setProfile] = useState(null);
@@ -307,52 +373,97 @@ export default function Planner() {
 
   return (
     <div className="min-h-screen pb-28" style={{ backgroundColor: "var(--ivory, #FFFAF5)" }}>
-      {/* ── Sticky header: week strip with phase dots ─────────────────────── */}
+      {/* ── Sticky header: brand · tabs · (Today-only) week strip ──────────── */}
       <div className="sticky top-0 z-30 px-4 pt-10 pb-3" style={{ backgroundColor: "rgba(255,250,245,0.97)", backdropFilter: "blur(20px)", borderBottom: "1px solid var(--border, rgba(74,42,58,0.08))" }}>
         <div className="max-w-xl mx-auto">
-          <p style={{ fontSize: "0.6rem", fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.14em", color: "var(--plum-mute, #8A7584)", fontFamily: "'Inter', sans-serif" }}>Your week</p>
+          <p style={{ fontSize: "0.6rem", fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.14em", color: "var(--plum-mute, #8A7584)", fontFamily: "'Inter', sans-serif" }}>{view === "cycle" ? "Your cycle" : "Your week"}</p>
           <h1 style={{ fontSize: 28, fontWeight: 500, fontFamily: "'Fraunces', Georgia, serif", color: "var(--plum, #4A2A3A)", letterSpacing: "-0.015em", margin: "4px 0 4px" }}>Planner</h1>
           {selectedPhase && selectedCycleDay && (
-            <p style={{ fontSize: 12, color: "var(--plum-2, #6B4559)", fontFamily: "'Inter', sans-serif", marginBottom: 12 }}>
+            <p style={{ fontSize: 12, color: "var(--plum-2, #6B4559)", fontFamily: "'Inter', sans-serif", marginBottom: 8 }}>
               Day {selectedCycleDay} · <span style={{ color: PHASE_COLORS[selectedPhase], fontWeight: 600 }}>{phaseLabelOf(selectedPhase)}</span>
             </p>
           )}
 
-          <div className="flex items-center gap-2">
-            <button onClick={prevWeek} aria-label="Previous week" style={navBtnStyle}>
-              <ChevronLeft className="w-4 h-4" style={{ color: "var(--plum-mute, #8A7584)" }} />
-            </button>
-            <div className="flex gap-1 flex-1 justify-between">
-              {weekDays.map((d, i) => {
-                const sel = isSelected(d);
-                const tod = isTodayDate(d);
-                const phase = phaseForDate(profile, d);
-                return (
-                  <button key={i} onClick={() => setSelectedDay(d)} style={{
-                    display: "flex", flexDirection: "column", alignItems: "center", gap: 2,
-                    padding: "8px 4px", borderRadius: 12, flex: 1, border: "none", cursor: "pointer",
-                    backgroundColor: sel ? "var(--plum, #4A2A3A)" : tod ? "rgba(212,94,82,0.10)" : "transparent",
-                    transition: "background 120ms",
-                  }}>
-                    <span style={{ fontSize: 9, fontWeight: 600, color: sel ? "var(--cream, #FFFAF5)" : "var(--plum-mute, #8A7584)", fontFamily: "'Inter', sans-serif", textTransform: "uppercase", letterSpacing: "0.06em" }}>{DAY_LABELS[i]}</span>
-                    <span style={{ fontSize: 15, fontWeight: 600, color: sel ? "var(--cream, #FFFAF5)" : tod ? "var(--rose-primary, #D45E52)" : "var(--plum, #4A2A3A)", fontFamily: "'Fraunces', Georgia, serif" }}>{d.getDate()}</span>
-                    <span style={{
-                      width: 5, height: 5, borderRadius: 9999,
-                      background: phase ? PHASE_COLORS[phase] : "transparent",
-                      opacity: sel ? 1 : 0.85,
-                    }} aria-hidden="true" />
-                  </button>
-                );
-              })}
+          <PlannerTabs view={view} onChange={changeView} />
+
+          {view === "today" && (
+            <div className="flex items-center gap-2" style={{ marginTop: 14 }}>
+              <button onClick={prevWeek} aria-label="Previous week" style={navBtnStyle}>
+                <ChevronLeft className="w-4 h-4" style={{ color: "var(--plum-mute, #8A7584)" }} />
+              </button>
+              <div className="flex gap-1 flex-1 justify-between">
+                {weekDays.map((d, i) => {
+                  const sel = isSelected(d);
+                  const tod = isTodayDate(d);
+                  const phase = phaseForDate(profile, d);
+                  return (
+                    <button key={i} onClick={() => setSelectedDay(d)} style={{
+                      display: "flex", flexDirection: "column", alignItems: "center", gap: 2,
+                      padding: "8px 4px", borderRadius: 12, flex: 1, border: "none", cursor: "pointer",
+                      backgroundColor: sel ? "var(--plum, #4A2A3A)" : tod ? "rgba(212,94,82,0.10)" : "transparent",
+                      transition: "background 120ms",
+                    }}>
+                      <span style={{ fontSize: 9, fontWeight: 600, color: sel ? "var(--cream, #FFFAF5)" : "var(--plum-mute, #8A7584)", fontFamily: "'Inter', sans-serif", textTransform: "uppercase", letterSpacing: "0.06em" }}>{DAY_LABELS[i]}</span>
+                      <span style={{ fontSize: 15, fontWeight: 600, color: sel ? "var(--cream, #FFFAF5)" : tod ? "var(--rose-primary, #D45E52)" : "var(--plum, #4A2A3A)", fontFamily: "'Fraunces', Georgia, serif" }}>{d.getDate()}</span>
+                      <span style={{
+                        width: 5, height: 5, borderRadius: 9999,
+                        background: phase ? PHASE_COLORS[phase] : "transparent",
+                        opacity: sel ? 1 : 0.85,
+                      }} aria-hidden="true" />
+                    </button>
+                  );
+                })}
+              </div>
+              <button onClick={nextWeek} aria-label="Next week" style={navBtnStyle}>
+                <ChevronRight className="w-4 h-4" style={{ color: "var(--plum-mute, #8A7584)" }} />
+              </button>
             </div>
-            <button onClick={nextWeek} aria-label="Next week" style={navBtnStyle}>
-              <ChevronRight className="w-4 h-4" style={{ color: "var(--plum-mute, #8A7584)" }} />
-            </button>
-          </div>
+          )}
         </div>
       </div>
 
-      <div className="max-w-xl mx-auto px-4 pt-5">
+      {/* ── Cross-tab toast (transient) ───────────────────────────────────── */}
+      {toastMsg && (
+        <div role="status" aria-live="polite" style={toastStyle}>
+          {toastMsg.startsWith("deferred:") ? `Deferred ${toastMsg.split(":")[1]} to a steadier window.` : toastMsg}
+        </div>
+      )}
+
+      {/* ── Cycle view (C0 stub — C1+ populates the surfaces) ─────────────── */}
+      {view === "cycle" && (
+        <div
+          id="planner-panel-cycle"
+          role="tabpanel"
+          aria-labelledby="planner-tab-cycle"
+          className="max-w-xl mx-auto px-4 pt-5"
+        >
+          <div ref={(el) => { cycleSectionRefs.current.ribbon = el; }} style={cycleStubStyle}>
+            <p style={cycleStubTitleStyle}>Month ribbon</p>
+            <p style={cycleStubBodyStyle}>The wider arc of your cycle will live here. Coming soon.</p>
+          </div>
+          <div ref={(el) => { cycleSectionRefs.current.captax = el; }} style={cycleStubStyle}>
+            <p style={cycleStubTitleStyle}>Capacity Tax</p>
+            <p style={cycleStubBodyStyle}>Predicted load vs available capacity. Coming soon.</p>
+          </div>
+          <div ref={(el) => { cycleSectionRefs.current.weekAhead = el; }} style={cycleStubStyle}>
+            <p style={cycleStubTitleStyle}>Week Ahead</p>
+            <p style={cycleStubBodyStyle}>A gentle look at what's coming. Coming soon.</p>
+          </div>
+          <div ref={(el) => { cycleSectionRefs.current.doctor = el; }} style={cycleStubStyle}>
+            <p style={cycleStubTitleStyle}>Doctor-Ready Diary</p>
+            <p style={cycleStubBodyStyle}>A PDF your GP is trained to read. Coming soon.</p>
+          </div>
+        </div>
+      )}
+
+      {/* ── Today view (Phase 1 surfaces, unchanged) ──────────────────────── */}
+      {view === "today" && (
+      <div
+        id="planner-panel-today"
+        role="tabpanel"
+        aria-labelledby="planner-tab-today"
+        className="max-w-xl mx-auto px-4 pt-5"
+      >
         <p style={{ fontSize: 13, fontWeight: 600, color: "var(--plum, #4A2A3A)", fontFamily: "'Inter', sans-serif", marginBottom: 14 }}>
           {selectedDay.toLocaleDateString("en-GB", { weekday: "long", day: "numeric", month: "long" })}
         </p>
@@ -500,15 +611,18 @@ export default function Planner() {
           </>
         )}
       </div>
+      )}
 
-      {/* FAB */}
-      <button
-        onClick={() => setShowAdd(true)}
-        aria-label="Add to planner"
-        style={{ position: "fixed", bottom: 96, right: 20, width: 52, height: 52, borderRadius: 9999, backgroundColor: "var(--rose-primary, #D45E52)", color: "white", border: "none", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", boxShadow: "0 6px 20px rgba(212,94,82,0.36)", zIndex: 30 }}
-      >
-        <Plus className="w-6 h-6" />
-      </button>
+      {/* FAB — Today view only; Cycle view is read-only on C0. */}
+      {view === "today" && (
+        <button
+          onClick={() => setShowAdd(true)}
+          aria-label="Add to planner"
+          style={{ position: "fixed", bottom: 96, right: 20, width: 52, height: 52, borderRadius: 9999, backgroundColor: "var(--rose-primary, #D45E52)", color: "white", border: "none", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", boxShadow: "0 6px 20px rgba(212,94,82,0.36)", zIndex: 30 }}
+        >
+          <Plus className="w-6 h-6" />
+        </button>
+      )}
 
       {/* Add item bottom sheet (unchanged structure, restyled) */}
       {showAdd && (
@@ -619,3 +733,24 @@ const checkBtnStyle = { width: 22, height: 22, borderRadius: 9999, border: "2px 
 
 const inputStyle = { width: "100%", border: "1.5px solid var(--border, rgba(74,42,58,0.16))", borderRadius: 12, padding: "11px 14px", fontSize: 14, fontFamily: "'Inter', sans-serif", color: "var(--plum, #4A2A3A)", backgroundColor: "var(--cream, #FFFAF5)", outline: "none", boxSizing: "border-box" };
 const fieldLabelStyle = { fontSize: 11, fontWeight: 600, color: "var(--plum-mute, #8A7584)", textTransform: "uppercase", letterSpacing: "0.10em", fontFamily: "'Inter', sans-serif", marginBottom: 8 };
+
+// ── Cycle-view stubs (C0 placeholders; C1+ populates each section) ──────────
+const cycleStubStyle = { background: "#FFFFFF", border: "1px solid rgba(74,42,58,0.08)", borderRadius: 16, padding: "16px 16px 14px", marginBottom: 12, boxShadow: "0 2px 8px rgba(74,42,58,0.04)" };
+const cycleStubTitleStyle = { fontFamily: "'Fraunces', Georgia, serif", fontSize: 16, fontWeight: 500, color: "var(--plum, #4A2A3A)", margin: "0 0 4px" };
+const cycleStubBodyStyle = { fontSize: 13, color: "var(--plum-2, #6B4559)", fontFamily: "'Inter', sans-serif", lineHeight: 1.5, margin: 0 };
+
+// ── Cross-tab toast banner ──────────────────────────────────────────────────
+const toastStyle = {
+  margin: "10px auto 0",
+  maxWidth: 560,
+  padding: "10px 14px",
+  borderRadius: 12,
+  background: "rgba(74,42,58,0.92)",
+  color: "var(--cream, #FFFAF5)",
+  fontFamily: "'Inter', sans-serif",
+  fontSize: 12,
+  fontWeight: 600,
+  letterSpacing: "0.01em",
+  textAlign: "center",
+  boxShadow: "0 8px 24px rgba(74,42,58,0.18)",
+};
