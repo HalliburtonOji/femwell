@@ -2,7 +2,7 @@
 
 > **This file is the source of truth for "where we are and what's next."** Both Claudes read it on session start and write to it after every commit. Halli should never have to copy status between Cowork and Code — they coordinate through this file.
 
-**Last updated:** 2026-05-14 by Cowork (after publish of `0ec5402`)
+**Last updated:** 2026-05-14 by Cowork (after research drop `82c9320`)
 
 ---
 
@@ -10,6 +10,8 @@
 
 | Commit | Author | What it did |
 |---|---|---|
+| `82c9320` | Cowork | **Research drop:** `claude-state/research_podcast_strategy_2026-05-14.md` — 5,360 words on podcast link-outs (Spotify / Apple / Pocket Casts) + in-app player (legal, stack, MVP feature set, Podcasting 2.0). Phase 1 ship recommended. 7 open questions for Halli. |
+| `dd908fe` | Cowork | docs(state): sync STATUS.md after Code's 3 commits + publish. |
 | `0ec5402` | Code | Handoff: 4 items queued for next publish + Code's post-publish invoke plan. **Now PUBLISHED on femwells.com.** Podcasts rail visible on `/Lifestyle?tab=listen`. Practice rail visible (9 rows from Code's earlier `migrateSessionsToPractice` invoke). |
 | `cde30a7` | Code | `seedPodcasts` fix — browser User-Agent + relaxed image-skip. Replaces episodes that lack `<itunes:image>` with channel-level artwork instead of skipping. Code also unlocked autonomous function invocation via `npx base44 exec` + `scripts/base44-cli.mjs`. |
 | `59fa0b8` | Code | New `scripts/base44-cli.mjs` — read-only diagnostics CLI for both Claudes. Wraps `@base44/sdk` around Halli's admin api_key (stored gitignored in `.env.local`). Commands: `whoami`, `count`, `list`, `logs`, `orchestrator-phases`. |
@@ -72,11 +74,12 @@ Next daily tick will fire (via first-run self-bootstrap if Code hasn't already i
 
 Pick one. Default if nothing chosen: option 1.
 
-1. **Switch to Code for the post-publish invokes** — three CLI invokes (`seedPodcasts`, `backfillTikTokEmoji`, `backfillYouTubeEmbeddability`) take ~30 seconds each. Code drops a tombstone with counts, then Cowork does the visual walk.
-2. **Cowork does the visual walk now** — Podcasts rail is already populated (just looked). Cowork can do the 3-viewport screenshot pass even without the other two invokes. Captures progress, even if TikTok emoji + YT embeddability won't reflect yet.
-3. **Code builds `backfillLongreadsImages`** while you're in VS Code anyway. Adds it to ONE_SHOT_PHASES, then `npx base44 exec` once. ~15 minutes.
-4. **Planner Phase 2 spec.** Task #193, #194 — Mr Lead Manager spec + Ms Atelier craft review. Last touched 2026-05-13.
-5. **Care surface scoping decisions.** Multi-stage research has 5 open scoping questions in §5.6.
+1. **Decide on the 7 podcast-strategy open questions** in `claude-state/research_podcast_strategy_2026-05-14.md` (bottom of file). Halli's input unlocks Phase 1 ship spec (Spotify/Apple/Pocket Casts deep-links on PodcastCard) — Cowork can draft an MP-spec next, Code can ship.
+2. **Switch to Code for the post-publish invokes** — three CLI invokes (`seedPodcasts`, `backfillTikTokEmoji`, `backfillYouTubeEmbeddability`). Code drops tombstone with counts. Cowork visual-walks after.
+3. **Cowork does the visual walk now** — Podcasts rail already populated. Can do 3-viewport screenshot pass for the parts that are live.
+4. **Code builds `backfillLongreadsImages`** while in VS Code. ~15 minutes.
+5. **Planner Phase 2 spec.** Task #193, #194 — Mr Lead Manager spec + Ms Atelier craft review.
+6. **Care surface scoping decisions.** Multi-stage research has 5 open scoping questions in §5.6.
 
 ---
 
@@ -111,3 +114,4 @@ Pick one. Default if nothing chosen: option 1.
 - 2026-05-14 — Cowork: created the file. Captured today's 9 commits + current in-flight queue.
 - 2026-05-14 — Cowork: added `30a645f` row (the commit that introduced this file).
 - 2026-05-14 — Cowork: published Code's bundle (`cde30a7` + `59fa0b8` + `0ec5402`). Updated "Just shipped" with Code's 3 new commits. Rewrote "In flight" to reflect Code's autonomous-invoke capability + already-completed `migrateSessionsToPractice` (9 PRACTICE rows). Confirmed Podcasts rail live on `/Lifestyle?tab=listen`.
+- 2026-05-14 — Cowork: added `82c9320` row for the podcast strategy research drop. Added new "decide podcast strategy open questions" as the new #1 candidate next move.
