@@ -1,0 +1,898 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>FemWell Planner — Phase 2 demo · Today + Cycle (two-tab to reduce decision fatigue)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:wght@400;500;600&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --cream: #FFFAF5;
+    --cream-2: #FFF5EC;
+    --cream-3: #F0E5D8;
+    --plum: #4A2A3A;
+    --plum-2: #6B4559;
+    --plum-mute: #8A7584;
+    --rose-400: #E67F73;
+    --rose-500: #D45E52;
+    --period: #B84A41;
+    --follicular: #E67F73;
+    --ovulatory: #F2A99A;
+    --luteal: #8A5F74;
+    --gold: #C9A95C;
+    --teal: #5F8A85;
+    --moss: #7D8668;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif; background: #F4EDE4; color: var(--plum); padding: 40px 20px 80px; display: flex; flex-direction: column; align-items: center; }
+
+  .header { max-width: 980px; margin: 0 auto 24px; text-align: center; }
+  .eyebrow { font-size: 11px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--plum-mute); font-weight: 600; }
+  h1.title { font-family: 'Fraunces', Georgia, serif; font-size: 34px; font-weight: 500; color: var(--plum); margin: 8px 0 12px; letter-spacing: -0.01em; }
+  .lede { font-size: 15px; color: var(--plum-2); max-width: 800px; margin: 0 auto; line-height: 1.55; }
+  .lede strong { color: var(--plum); font-weight: 600; }
+  .meta-row { display: flex; justify-content: center; gap: 22px; margin-top: 18px; font-size: 12px; color: var(--plum-2); flex-wrap: wrap; }
+  .meta-row strong { color: var(--plum); font-weight: 600; }
+
+  /* Two-phone stage */
+  .stage { display: flex; gap: 30px; flex-wrap: wrap; justify-content: center; margin: 28px 0; }
+  .stage-cap { text-align: center; max-width: 420px; margin: 0 auto 6px; }
+  .stage-cap .label { font-size: 11px; letter-spacing: 0.18em; text-transform: uppercase; color: var(--plum-mute); font-weight: 700; }
+  .stage-cap .desc { font-size: 12px; color: var(--plum-2); margin-top: 4px; line-height: 1.4; }
+  .phone-wrap { display: flex; flex-direction: column; }
+
+  /* Phone frame */
+  .phone { width: 420px; background: #111; border-radius: 46px; padding: 10px; box-shadow: 0 40px 80px rgba(74, 42, 58, 0.22), 0 0 0 1px rgba(0,0,0,0.08); margin: 12px 0 0; }
+  .phone-inner { background: var(--cream); border-radius: 38px; overflow: hidden; position: relative; height: 920px; display: flex; flex-direction: column; }
+  .notch { position: absolute; top: 0; left: 50%; transform: translateX(-50%); width: 130px; height: 28px; background: #111; border-radius: 0 0 16px 16px; z-index: 30; }
+  .scroll { overflow-y: auto; flex: 1; padding: 44px 18px 120px; scrollbar-width: none; }
+  .scroll::-webkit-scrollbar { display: none; }
+
+  /* SEGMENTED CONTROL — the two-tab switcher (sticky inside scroll header band) */
+  .segctrl-wrap { padding: 0 0 8px; position: sticky; top: 0; background: linear-gradient(to bottom, var(--cream) 0%, var(--cream) 88%, rgba(255,250,245,0)); z-index: 10; margin: 0 0 4px; padding-bottom: 14px; }
+  .segctrl { display: flex; gap: 4px; padding: 4px; background: rgba(74, 42, 58, 0.07); border-radius: 9999px; }
+  .segctrl-item { flex: 1; text-align: center; padding: 8px 0; border-radius: 9999px; font-size: 11.5px; letter-spacing: 0.06em; font-weight: 700; color: var(--plum-mute); cursor: pointer; text-transform: uppercase; }
+  .segctrl-item.active { background: var(--cream); color: var(--plum); box-shadow: 0 1px 3px rgba(74,42,58,0.12); }
+
+  /* Page head */
+  .ph-eyebrow { font-size: 10px; letter-spacing: 0.18em; text-transform: uppercase; color: var(--plum-mute); font-weight: 600; }
+  h1.ph-title { font-family: 'Fraunces', serif; font-size: 32px; font-weight: 500; margin: 6px 0 4px; letter-spacing: -0.015em; color: var(--plum); }
+  .ph-sub { font-size: 13px; color: var(--plum-2); display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+  .conf-pill { font-size: 10px; background: rgba(95,138,133,0.14); color: var(--teal); padding: 2px 8px; border-radius: 9999px; letter-spacing: 0.04em; font-weight: 700; }
+  .selected-crumb { display: flex; align-items: center; gap: 6px; font-size: 11px; color: var(--plum-mute); margin-top: 6px; letter-spacing: 0.04em; }
+  .selected-crumb strong { color: var(--plum); font-weight: 600; }
+
+  /* Month header */
+  .month-head { display: flex; justify-content: space-between; align-items: center; margin: 22px 0 10px; }
+  .mh-title { font-family: 'Fraunces', serif; font-size: 22px; font-weight: 500; color: var(--plum); }
+  .mh-meta { font-size: 10px; color: var(--plum-mute); letter-spacing: 0.04em; margin-top: 2px; }
+  .mh-chev { font-size: 14px; color: var(--plum-mute); padding: 0 6px; cursor: pointer; }
+
+  .weekday-row { display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; margin-bottom: 6px; padding: 0 2px; }
+  .wd { font-size: 9px; color: var(--plum-mute); text-align: center; letter-spacing: 0.14em; font-weight: 600; text-transform: uppercase; }
+
+  /* Ribbons (Shape C) */
+  .ribbons { display: flex; flex-direction: column; gap: 10px; }
+  .ribbon { position: relative; border-radius: 14px; padding: 8px 6px; display: grid; grid-template-columns: repeat(7, 1fr); gap: 2px; min-height: 72px; overflow: hidden; }
+  .ribbon.w1 { background: linear-gradient(to right, var(--cream-3) 0%, var(--cream-3) 20%, var(--luteal) 34%, var(--period) 48%, var(--period) 100%); }
+  .ribbon.w2 { background: linear-gradient(to right, var(--period) 0%, var(--follicular) 15%, var(--follicular) 100%); }
+  .ribbon.w3 { background: linear-gradient(to right, var(--follicular) 0%, var(--follicular) 14%, var(--ovulatory) 28%, var(--ovulatory) 42%, var(--luteal) 60%, var(--luteal) 100%); }
+  .ribbon.w4 { background: linear-gradient(to right, var(--luteal) 0%, var(--luteal) 100%); }
+  .ribbon.w5 { background: linear-gradient(to right, var(--period) 0%, var(--period) 55%, var(--cream-3) 65%, var(--cream-3) 100%); }
+
+  .rcell { position: relative; display: flex; flex-direction: column; justify-content: space-between; padding: 4px 5px 5px; border-radius: 7px; min-height: 56px; }
+  .rcell .rday { font-weight: 700; font-size: 13px; line-height: 1; color: #FFF5EC; }
+  .rcell.off .rday { color: var(--plum-2); opacity: 0.35; }
+  .rcell.ov-txt .rday { color: var(--plum); }
+  .rcell .rbar { height: 3px; border-radius: 2px; background: currentColor; opacity: 0.55; width: 55%; }
+  .rcell .rbar.b2 { width: 75%; }
+  .rcell .rbar.b3 { width: 95%; }
+  .rcell.is-today::before { content: ''; position: absolute; top: 4px; right: 4px; width: 5px; height: 5px; border-radius: 50%; background: var(--plum); z-index: 3; }
+  .rcell.sel-today { outline: 2px solid var(--plum); outline-offset: -1px; background: rgba(255, 250, 245, 0.55); }
+  .rcell.sel-today .rday { color: var(--plum); }
+
+  /* Smart-view card */
+  .smart-eyebrow { font-size: 10px; letter-spacing: 0.18em; text-transform: uppercase; color: var(--plum-mute); font-weight: 600; margin: 20px 0 8px; display: flex; justify-content: space-between; align-items: center; }
+  .smart-eyebrow .tense { font-weight: 700; color: var(--plum); letter-spacing: 0.15em; }
+  .smart-card { background: #FFFFFF; border: 1px solid rgba(74, 42, 58, 0.08); border-radius: 14px; padding: 14px 14px 13px; margin-bottom: 10px; box-shadow: 0 2px 8px rgba(74, 42, 58, 0.03); }
+  .sc-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; gap: 8px; }
+  .sc-label { font-size: 9px; letter-spacing: 0.15em; text-transform: uppercase; color: var(--plum-mute); font-weight: 700; }
+  .sc-main { font-family: 'Fraunces', serif; font-size: 17px; color: var(--plum); line-height: 1.3; font-weight: 500; margin-bottom: 6px; }
+  .sc-sub { font-size: 12px; color: var(--plum-2); line-height: 1.5; }
+  .sc-sig { font-size: 11px; color: var(--plum-mute); margin-top: 8px; font-style: italic; }
+
+  .chip { font-size: 9px; padding: 3px 8px; border-radius: 10px; background: var(--cream-2); color: var(--plum-2); letter-spacing: 0.08em; text-transform: uppercase; font-weight: 600; }
+  .chip.luteal { background: rgba(138, 95, 116, 0.14); color: var(--luteal); }
+  .chip.ovulatory { background: rgba(242, 169, 154, 0.28); color: var(--rose-500); }
+  .chip.period { background: rgba(184, 74, 65, 0.14); color: var(--period); }
+  .chip.today { background: var(--plum); color: var(--cream); }
+
+  .stuck { display: flex; justify-content: space-between; align-items: center; padding: 9px 11px; border-radius: 10px; background: rgba(201, 169, 92, 0.11); }
+  .stuck-txt { font-size: 12px; color: var(--plum-2); }
+  .stuck-cta { font-size: 11px; color: var(--plum); font-weight: 700; letter-spacing: 0.04em; }
+  .ahead-row { display: flex; gap: 6px; margin-top: 8px; }
+  .ahead-chip { flex: 1; background: var(--cream-2); border-radius: 8px; padding: 6px 4px; text-align: center; }
+  .ahead-chip .ac-day { font-size: 9px; color: var(--plum-mute); letter-spacing: 0.08em; text-transform: uppercase; font-weight: 700; }
+  .ahead-chip .ac-num { font-family: 'Fraunces', serif; font-size: 14px; color: var(--plum); font-weight: 500; margin-top: 2px; }
+  .ahead-chip .ac-phase { width: 5px; height: 5px; border-radius: 50%; margin: 4px auto 0; }
+  .ac-phase.p { background: var(--period); }
+  .ac-phase.l { background: var(--luteal); }
+  .ac-phase.f { background: var(--follicular); }
+  .ac-phase.o { background: var(--ovulatory); }
+
+  /* Section divider */
+  .divider { display: flex; align-items: baseline; justify-content: space-between; margin: 24px 0 12px; }
+  .div-title { font-family: 'Fraunces', serif; font-size: 20px; color: var(--plum); font-weight: 500; letter-spacing: -0.01em; }
+  .div-meta { font-size: 10px; color: var(--plum-mute); letter-spacing: 0.12em; text-transform: uppercase; font-weight: 600; }
+
+  /* Good-for strengths */
+  .goodfor-card { background: rgba(138, 95, 116, 0.08); border-radius: 14px; padding: 14px 14px 12px; margin-bottom: 14px; }
+  .gf-title { font-family: 'Fraunces', serif; font-size: 15px; color: var(--plum); font-weight: 500; margin-bottom: 10px; font-style: italic; }
+  .gf-chips { display: flex; flex-wrap: wrap; gap: 6px; }
+  .gf-chip { font-size: 11px; padding: 5px 10px; border-radius: 12px; background: rgba(255, 255, 255, 0.7); color: var(--plum-2); display: flex; gap: 5px; align-items: center; }
+  .gf-chip .dot { width: 4px; height: 4px; border-radius: 50%; background: var(--luteal); }
+
+  /* Stack card (morning / evening) */
+  .stack { background: #FFFFFF; border: 1px solid rgba(74, 42, 58, 0.08); border-radius: 14px; padding: 14px 16px 14px; margin-bottom: 10px; }
+  .stack-head { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 12px; }
+  .stack-title { display: flex; align-items: baseline; gap: 8px; }
+  .stack-h { font-family: 'Fraunces', serif; font-size: 16px; color: var(--plum); font-weight: 500; }
+  .stack-sub { font-size: 11px; color: var(--plum-mute); letter-spacing: 0.04em; }
+  .stack-count { font-size: 10px; color: var(--plum-mute); letter-spacing: 0.14em; text-transform: uppercase; font-weight: 700; }
+  .ritual { display: flex; align-items: center; gap: 12px; padding: 8px 0; border-top: 1px solid rgba(74, 42, 58, 0.06); }
+  .ritual:first-of-type { border-top: none; padding-top: 2px; }
+  .ritual-icon { width: 32px; height: 32px; border-radius: 50%; display: grid; place-items: center; font-size: 14px; flex-shrink: 0; }
+  .ri-walk { background: rgba(138, 95, 116, 0.14); color: var(--luteal); }
+  .ri-water { background: rgba(95, 138, 133, 0.15); color: var(--teal); }
+  .ri-read { background: rgba(201, 169, 92, 0.15); color: var(--gold); }
+  .ri-breath { background: rgba(184, 74, 65, 0.1); color: var(--period); }
+  .ri-stretch { background: rgba(125, 134, 104, 0.18); color: var(--moss); }
+  .ri-dim { background: rgba(74, 42, 58, 0.08); color: var(--plum-2); }
+  .ritual-body { flex: 1; min-width: 0; }
+  .ritual-name { font-size: 13px; color: var(--plum); font-weight: 600; line-height: 1.2; }
+  .ritual-meta { font-size: 11px; color: var(--plum-mute); margin-top: 2px; }
+  .ritual-check { width: 24px; height: 24px; border-radius: 50%; border: 1.5px solid rgba(74, 42, 58, 0.2); display: grid; place-items: center; font-size: 11px; color: transparent; flex-shrink: 0; }
+  .ritual-check.done { background: var(--teal); border-color: var(--teal); color: #FFF5EC; font-weight: 700; }
+  .ritual.done .ritual-name { color: var(--plum-2); text-decoration: line-through; text-decoration-color: rgba(74, 42, 58, 0.2); }
+
+  /* Program card */
+  .program { position: relative; background: linear-gradient(135deg, rgba(138, 95, 116, 0.15), rgba(201, 169, 92, 0.1)); border: 1px solid rgba(138, 95, 116, 0.18); border-radius: 14px; padding: 14px 16px; margin-bottom: 10px; overflow: hidden; }
+  .program-eyebrow { font-size: 9px; letter-spacing: 0.18em; text-transform: uppercase; color: var(--plum-mute); font-weight: 700; margin-bottom: 6px; }
+  .program-row { display: flex; justify-content: space-between; align-items: center; }
+  .program-left { flex: 1; min-width: 0; }
+  .program-name { font-family: 'Fraunces', serif; font-size: 17px; font-weight: 500; color: var(--plum); line-height: 1.2; }
+  .program-day { font-size: 12px; color: var(--plum-2); margin-top: 4px; }
+  .program-progress { height: 4px; background: rgba(255, 250, 245, 0.6); border-radius: 4px; margin-top: 10px; overflow: hidden; }
+  .program-progress .fill { height: 100%; width: 14%; background: var(--plum); border-radius: 4px; }
+  .program-cta { font-size: 12px; color: var(--plum); font-weight: 700; background: var(--cream); padding: 7px 14px; border-radius: 20px; flex-shrink: 0; margin-left: 12px; }
+
+  /* Meals */
+  .meals-row { display: flex; flex-direction: column; gap: 8px; }
+  .meal { display: flex; gap: 12px; align-items: center; background: #FFFFFF; border: 1px solid rgba(74, 42, 58, 0.06); border-radius: 12px; padding: 10px 12px; }
+  .meal-time { font-family: 'Fraunces', serif; font-size: 10px; color: var(--plum-mute); letter-spacing: 0.14em; text-transform: uppercase; font-weight: 700; min-width: 54px; }
+  .meal-thumb { width: 42px; height: 42px; border-radius: 10px; display: grid; place-items: center; font-size: 20px; flex-shrink: 0; }
+  .meal-thumb.bf { background: rgba(201, 169, 92, 0.18); }
+  .meal-thumb.ln { background: rgba(184, 74, 65, 0.12); }
+  .meal-thumb.dn { background: rgba(125, 134, 104, 0.18); }
+  .meal-body { flex: 1; min-width: 0; }
+  .meal-name { font-size: 13px; color: var(--plum); font-weight: 600; line-height: 1.2; }
+  .meal-meta { font-size: 11px; color: var(--plum-mute); margin-top: 2px; }
+
+  /* Tonight's window */
+  .tonight { background: linear-gradient(140deg, #3A2434, #5E3E50); color: #F5E6D3; border-radius: 16px; padding: 16px; margin: 10px 0; position: relative; overflow: hidden; }
+  .tonight::before { content: '☽'; position: absolute; top: 12px; right: 16px; font-size: 34px; opacity: 0.28; color: #F5E6D3; }
+  .tonight .eyebrow-t { font-size: 9px; letter-spacing: 0.22em; text-transform: uppercase; color: rgba(245, 230, 211, 0.68); font-weight: 700; }
+  .tonight .t-main { font-family: 'Fraunces', serif; font-size: 18px; font-weight: 500; margin: 8px 0 6px; line-height: 1.25; }
+  .tonight .t-sub { font-size: 12px; color: rgba(245, 230, 211, 0.78); line-height: 1.5; max-width: 84%; }
+  .tonight .t-target { display: flex; align-items: center; gap: 10px; margin-top: 12px; padding: 8px 12px; background: rgba(245, 230, 211, 0.1); border-radius: 10px; }
+  .tonight .tt-label { font-size: 10px; letter-spacing: 0.14em; color: rgba(245, 230, 211, 0.65); font-weight: 700; text-transform: uppercase; }
+  .tonight .tt-val { font-family: 'Fraunces', serif; font-size: 14px; color: #F5E6D3; font-weight: 500; margin-left: auto; }
+
+  /* Ritual bundles carousel */
+  .bundles { display: flex; gap: 10px; overflow-x: auto; margin: 0 -18px; padding: 0 18px 6px; scrollbar-width: none; }
+  .bundles::-webkit-scrollbar { display: none; }
+  .bundle { flex-shrink: 0; width: 165px; border-radius: 14px; padding: 14px 14px 14px; position: relative; overflow: hidden; }
+  .bundle-eyebrow { font-size: 9px; letter-spacing: 0.14em; text-transform: uppercase; font-weight: 700; opacity: 0.75; }
+  .bundle-name { font-family: 'Fraunces', serif; font-size: 16px; font-weight: 500; line-height: 1.2; margin-top: 6px; }
+  .bundle-count { font-size: 11px; margin-top: 6px; opacity: 0.8; }
+  .bundle.luteal { background: linear-gradient(140deg, var(--luteal), #6C4F62); color: #FFF5EC; }
+  .bundle.period { background: linear-gradient(140deg, var(--period), #9B3E37); color: #FFF5EC; }
+  .bundle.follicular { background: linear-gradient(140deg, var(--follicular), #C96557); color: #FFF5EC; }
+  .bundle.ovulatory { background: linear-gradient(140deg, var(--ovulatory), #DF8978); color: var(--plum); }
+  .bundle.workday { background: linear-gradient(140deg, #C9A95C, #A48740); color: #FFF5EC; }
+  .bundle.pacing { background: linear-gradient(140deg, #5F8A85, #3F6864); color: #FFF5EC; }
+  .bundle .bundle-cta { display: inline-block; margin-top: 8px; font-size: 10px; padding: 4px 9px; border-radius: 9999px; background: rgba(255, 250, 245, 0.92); color: var(--plum); font-weight: 700; letter-spacing: 0.04em; }
+
+  /* Rhythm / streaks */
+  .rhythm { background: rgba(255, 255, 255, 0.7); border: 1px solid rgba(74, 42, 58, 0.07); border-radius: 14px; padding: 14px 16px; margin-bottom: 10px; }
+  .rhythm-head { font-family: 'Fraunces', serif; font-size: 16px; color: var(--plum); font-weight: 500; margin-bottom: 10px; }
+  .rhythm-row { display: flex; justify-content: space-between; gap: 6px; }
+  .rh-item { flex: 1; text-align: center; background: var(--cream-2); border-radius: 10px; padding: 9px 6px; }
+  .rh-num { font-family: 'Fraunces', serif; font-size: 20px; color: var(--plum); font-weight: 500; }
+  .rh-label { font-size: 10px; color: var(--plum-mute); letter-spacing: 0.06em; text-transform: uppercase; font-weight: 700; margin-top: 3px; line-height: 1.2; }
+  .rhythm-foot { font-size: 11px; color: var(--plum-mute); font-style: italic; margin-top: 10px; text-align: center; }
+
+  /* Plan with Jess */
+  .jess { background: linear-gradient(135deg, rgba(201, 169, 92, 0.14), rgba(184, 74, 65, 0.08)); border: 1px solid rgba(201, 169, 92, 0.2); border-radius: 14px; padding: 14px 16px; display: flex; align-items: center; gap: 12px; margin-bottom: 10px; }
+  .jess-av { width: 40px; height: 40px; border-radius: 50%; background: linear-gradient(135deg, var(--gold), var(--rose-400)); color: #FFF5EC; display: grid; place-items: center; font-family: 'Fraunces', serif; font-size: 18px; font-weight: 500; flex-shrink: 0; }
+  .jess-body { flex: 1; }
+  .jess-name { font-size: 9px; letter-spacing: 0.18em; text-transform: uppercase; color: var(--plum-mute); font-weight: 700; }
+  .jess-msg { font-family: 'Fraunces', serif; font-size: 14px; color: var(--plum); font-style: italic; line-height: 1.35; margin-top: 3px; }
+  .jess-cta { font-size: 18px; color: var(--plum); font-weight: 500; }
+
+  /* Nav + FAB */
+  .nav { position: absolute; bottom: 0; left: 0; right: 0; background: rgba(255, 250, 245, 0.96); backdrop-filter: blur(12px); border-top: 1px solid rgba(74, 42, 58, 0.08); height: 68px; display: grid; grid-template-columns: repeat(5, 1fr); padding: 10px 0 14px; z-index: 20; }
+  .nav-item { display: flex; flex-direction: column; align-items: center; gap: 5px; font-size: 9px; color: var(--plum-mute); font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; }
+  .nav-item.active { color: var(--plum); }
+  .nav-ico { width: 18px; height: 18px; border-radius: 5px; background: currentColor; opacity: 0.55; }
+  .nav-item.active .nav-ico { opacity: 1; }
+  .fab { position: absolute; bottom: 84px; right: 22px; width: 54px; height: 54px; border-radius: 50%; background: var(--plum); color: var(--cream); display: grid; place-items: center; font-size: 26px; box-shadow: 0 10px 30px rgba(74, 42, 58, 0.32); z-index: 15; }
+
+  .footer { text-align: center; max-width: 960px; margin: 36px auto 0; padding: 22px 28px; background: rgba(74, 42, 58, 0.05); border-radius: 14px; font-size: 13px; color: var(--plum-2); line-height: 1.6; text-align: left; }
+  .footer h3 { font-family: 'Fraunces', serif; font-size: 17px; color: var(--plum); font-weight: 500; margin-bottom: 8px; }
+  .footer strong { color: var(--plum); font-weight: 600; }
+  .footer table { width: 100%; border-collapse: collapse; margin: 12px 0; font-size: 12px; }
+  .footer th, .footer td { padding: 8px 10px; border-bottom: 1px solid rgba(74, 42, 58, 0.08); text-align: left; vertical-align: top; }
+  .footer th { background: rgba(74, 42, 58, 0.04); font-weight: 600; color: var(--plum); letter-spacing: 0.04em; }
+
+  /* ======== PHASE 2 NEW COMPONENTS ======== */
+
+  .p2-mark { display: inline-flex; align-items: center; gap: 4px; font-size: 8.5px; letter-spacing: 0.14em; text-transform: uppercase; font-weight: 700; padding: 2px 6px; border-radius: 6px; background: rgba(184, 74, 65, 0.1); color: var(--period); margin-left: 6px; }
+  .p2-mark.subtle { background: rgba(95, 138, 133, 0.12); color: var(--teal); }
+
+  .fresh-start { display: flex; align-items: center; gap: 10px; background: linear-gradient(120deg, rgba(201, 169, 92, 0.18), rgba(230, 127, 115, 0.12)); border: 1px solid rgba(201, 169, 92, 0.32); border-radius: 12px; padding: 10px 13px; margin: 14px 0 4px; }
+  .fs-icon { width: 28px; height: 28px; border-radius: 50%; background: var(--gold); color: #FFF5EC; display: grid; place-items: center; font-family: 'Fraunces', serif; font-weight: 500; font-size: 14px; flex-shrink: 0; }
+  .fs-body { flex: 1; min-width: 0; }
+  .fs-eyebrow { font-size: 8.5px; letter-spacing: 0.16em; text-transform: uppercase; color: var(--plum-mute); font-weight: 700; }
+  .fs-msg { font-family: 'Fraunces', serif; font-size: 13px; color: var(--plum); font-weight: 500; line-height: 1.3; margin-top: 1px; }
+  .fs-cta { font-size: 11px; color: var(--plum); font-weight: 700; padding: 5px 10px; border-radius: 9999px; background: rgba(255, 255, 255, 0.7); flex-shrink: 0; }
+
+  .captax { background: #FFFFFF; border: 1px solid rgba(74, 42, 58, 0.08); border-radius: 14px; padding: 13px 14px; margin: 14px 0 6px; box-shadow: 0 2px 8px rgba(74, 42, 58, 0.04); }
+  .ct-head { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 8px; }
+  .ct-title { font-family: 'Fraunces', serif; font-size: 14px; color: var(--plum); font-weight: 500; display: flex; align-items: center; }
+  .ct-pct { font-family: 'Fraunces', serif; font-size: 19px; color: var(--period); font-weight: 500; letter-spacing: -0.01em; }
+  .ct-bar-wrap { position: relative; height: 14px; background: rgba(74, 42, 58, 0.06); border-radius: 7px; overflow: hidden; }
+  .ct-bar-cap { position: absolute; top: 0; left: 0; height: 100%; width: 100%; background: rgba(125, 134, 104, 0.18); border-radius: 7px; }
+  .ct-bar-load { position: absolute; top: 0; left: 0; height: 100%; width: 122%; background: linear-gradient(90deg, var(--moss) 0%, var(--gold) 55%, var(--period) 82%); border-radius: 7px; }
+  .ct-bar-line { position: absolute; top: -3px; bottom: -3px; left: 100%; width: 2px; background: var(--plum); border-radius: 1px; }
+  .ct-bar-line::after { content: 'capacity'; position: absolute; top: -13px; left: 50%; transform: translateX(-50%); font-size: 8px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--plum-mute); white-space: nowrap; }
+  .ct-meta { display: flex; justify-content: space-between; align-items: center; margin-top: 11px; gap: 8px; }
+  .ct-msg { font-size: 11px; color: var(--plum-2); line-height: 1.4; flex: 1; }
+  .ct-msg strong { color: var(--plum); font-weight: 600; }
+  .ct-defer { font-size: 10px; padding: 5px 10px; border-radius: 9999px; background: var(--cream-2); color: var(--plum); font-weight: 700; letter-spacing: 0.04em; flex-shrink: 0; }
+
+  .sv-states { display: flex; gap: 5px; margin-bottom: 9px; padding: 2px 0 4px; overflow-x: auto; scrollbar-width: none; }
+  .sv-states::-webkit-scrollbar { display: none; }
+  .sv-chip { flex-shrink: 0; font-size: 8.5px; padding: 3px 7px; border-radius: 6px; background: var(--cream-2); color: var(--plum-mute); letter-spacing: 0.1em; text-transform: uppercase; font-weight: 700; }
+  .sv-chip.active { background: var(--plum); color: var(--cream); }
+  .sv-cue { font-size: 9.5px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--plum-mute); font-weight: 700; }
+
+  .gf-info { display: inline-flex; align-items: center; justify-content: center; width: 14px; height: 14px; border-radius: 50%; background: rgba(74, 42, 58, 0.08); color: var(--plum-mute); font-size: 9px; margin-left: 6px; font-style: normal; cursor: help; font-weight: 700; }
+
+  .reframe-shim { font-size: 10px; color: var(--gold); margin-top: 3px; font-style: italic; letter-spacing: 0.02em; }
+
+  .t-hrt { display: flex; justify-content: space-between; align-items: center; margin-top: 10px; padding: 7px 12px; background: rgba(245, 230, 211, 0.1); border-radius: 10px; }
+  .t-hrt-l { font-size: 11px; color: rgba(245, 230, 211, 0.78); display: flex; gap: 8px; align-items: center; }
+  .t-hrt-l .dot { width: 6px; height: 6px; border-radius: 50%; background: var(--gold); }
+  .t-hrt-r { font-size: 10px; letter-spacing: 0.12em; text-transform: uppercase; color: rgba(245, 230, 211, 0.75); font-weight: 700; }
+  .t-doctor { display: block; margin-top: 10px; font-size: 11px; color: rgba(245, 230, 211, 0.9); text-align: center; padding: 6px 10px; border: 1px solid rgba(245, 230, 211, 0.22); border-radius: 9999px; font-weight: 600; letter-spacing: 0.04em; }
+
+  .shutdown { background: rgba(74, 42, 58, 0.05); border-radius: 12px; padding: 11px 14px; margin-bottom: 10px; display: flex; align-items: center; gap: 10px; }
+  .sd-icon { width: 26px; height: 26px; border-radius: 50%; background: var(--plum); color: var(--cream); display: grid; place-items: center; font-size: 12px; flex-shrink: 0; }
+  .sd-body { flex: 1; }
+  .sd-title { font-size: 12px; color: var(--plum); font-weight: 600; }
+  .sd-sub { font-size: 10.5px; color: var(--plum-mute); margin-top: 1px; }
+  .sd-toggle { font-size: 10px; color: var(--plum-2); }
+
+  .cmirror { background: linear-gradient(140deg, rgba(74, 42, 58, 0.05), rgba(138, 95, 116, 0.08)); border: 1px solid rgba(138, 95, 116, 0.18); border-radius: 14px; padding: 14px 16px; margin-bottom: 10px; }
+  .cm-eyebrow { font-size: 9px; letter-spacing: 0.18em; text-transform: uppercase; color: var(--plum-mute); font-weight: 700; }
+  .cm-title { font-family: 'Fraunces', serif; font-size: 16px; color: var(--plum); font-weight: 500; margin-top: 4px; line-height: 1.25; }
+  .cm-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin: 10px 0 4px; }
+  .cm-cell { background: #FFFFFF; border-radius: 10px; padding: 9px 10px; }
+  .cm-label { font-size: 9px; color: var(--plum-mute); letter-spacing: 0.12em; text-transform: uppercase; font-weight: 700; }
+  .cm-value { font-family: 'Fraunces', serif; font-size: 14px; color: var(--plum); font-weight: 500; margin-top: 2px; }
+  .cm-foot { font-size: 11px; color: var(--plum-2); font-style: italic; margin-top: 6px; line-height: 1.4; }
+
+  .dr-diary { background: linear-gradient(135deg, rgba(95, 138, 133, 0.15), rgba(125, 134, 104, 0.1)); border: 1px solid rgba(95, 138, 133, 0.2); border-radius: 14px; padding: 14px 16px; margin-bottom: 10px; }
+  .dr-eyebrow { font-size: 9px; letter-spacing: 0.18em; text-transform: uppercase; color: var(--teal); font-weight: 700; }
+  .dr-title { font-family: 'Fraunces', serif; font-size: 16px; color: var(--plum); font-weight: 500; margin-top: 4px; line-height: 1.25; }
+  .dr-sub { font-size: 12px; color: var(--plum-2); margin-top: 5px; line-height: 1.45; }
+  .dr-row { display: flex; justify-content: space-between; align-items: center; margin-top: 10px; gap: 10px; }
+  .dr-tags { display: flex; gap: 5px; flex-wrap: wrap; }
+  .dr-tag { font-size: 9px; padding: 3px 7px; border-radius: 6px; background: rgba(255, 255, 255, 0.6); color: var(--teal); letter-spacing: 0.06em; text-transform: uppercase; font-weight: 700; }
+  .dr-cta { font-size: 11px; padding: 6px 12px; border-radius: 9999px; background: var(--teal); color: #FFF5EC; font-weight: 700; letter-spacing: 0.04em; flex-shrink: 0; }
+
+  .astra { background: linear-gradient(135deg, #2D1F3A, #4A2A3A); color: #F5E6D3; border-radius: 14px; padding: 13px 14px; margin-bottom: 10px; display: flex; gap: 12px; align-items: center; position: relative; overflow: hidden; }
+  .astra::before { content: ''; position: absolute; top: -16px; right: -10px; width: 70px; height: 70px; background: radial-gradient(circle at 30% 30%, rgba(201, 169, 92, 0.32), transparent 65%); }
+  .astra-mark { width: 30px; height: 30px; border-radius: 50%; background: var(--gold); color: var(--plum); display: grid; place-items: center; font-family: 'Fraunces', serif; font-size: 14px; font-weight: 500; flex-shrink: 0; }
+  .astra-body { flex: 1; min-width: 0; position: relative; z-index: 1; }
+  .astra-eyebrow { font-size: 8.5px; letter-spacing: 0.18em; text-transform: uppercase; color: rgba(245, 230, 211, 0.65); font-weight: 700; }
+  .astra-line { font-family: 'Fraunces', serif; font-size: 13px; font-weight: 500; line-height: 1.35; margin-top: 3px; font-style: italic; color: #F5E6D3; }
+  .astra-cta { font-size: 16px; color: rgba(245, 230, 211, 0.7); }
+
+  .quietmode { background: rgba(74, 42, 58, 0.06); border: 1px dashed rgba(74, 42, 58, 0.18); border-radius: 12px; padding: 10px 13px; margin: 8px 0; display: flex; align-items: center; gap: 10px; }
+  .qm-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--plum-mute); flex-shrink: 0; }
+  .qm-body { flex: 1; font-size: 11.5px; color: var(--plum-2); line-height: 1.4; }
+  .qm-body strong { color: var(--plum); font-weight: 600; }
+  .qm-undo { font-size: 10px; color: var(--plum); font-weight: 700; letter-spacing: 0.06em; }
+
+  .glyph { width: 22px; height: 22px; }
+  .glyph svg { width: 100%; height: 100%; stroke: currentColor; fill: none; stroke-width: 1.5; stroke-linecap: round; stroke-linejoin: round; }
+  .meal-thumb.bf .glyph { color: var(--gold); }
+  .meal-thumb.ln .glyph { color: var(--period); }
+  .meal-thumb.dn .glyph { color: var(--moss); }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="eyebrow">PLANNER PHASE 2 · TWO-TAB · DECISION-FATIGUE FIX · BUILT ON SIGNED-OFF CANVAS</div>
+  <h1 class="title">Planner — Today + Cycle</h1>
+  <p class="lede">Halli flagged the single-scroll Phase 2 demo as decision-fatigue territory. This rebuilds the Planner as a <strong>two-tab segmented control</strong> at the top of the page — <strong>Today</strong> (the next 24 hours: what to do, eat, when to sleep) and <strong>Cycle</strong> (the bigger arc: month ribbon, capacity, week ahead, doctor-ready diary, reflection). Every Phase-1 + Phase-2 mechanic still ships — they just live on the tab that matches their time horizon. The split is by <em>cognitive scope</em>, not by data type.</p>
+  <div class="meta-row">
+    <div><strong>Canvas (locked):</strong> <code>femwell_planner_final.html</code></div>
+    <div><strong>Research:</strong> <code>research_planner_best_in_market_2026-05-14.md</code></div>
+    <div><strong>Spec v2:</strong> <code>base44_mps/2026-05-14_planner_phase2/spec_v2.md</code></div>
+  </div>
+  <div class="meta-row" style="margin-top:8px;">
+    <div style="background:rgba(184,74,65,0.08);padding:6px 12px;border-radius:8px;color:var(--period);font-weight:600;font-size:11px;letter-spacing:0.08em;">ⓟ2 NEW = added in Phase 2 · marked inline · everything else is in the canvas</div>
+  </div>
+</div>
+
+<div class="stage">
+
+  <!-- =========================== PHONE 1: TODAY TAB =========================== -->
+  <div class="phone-wrap">
+    <div class="stage-cap">
+      <div class="label">Phone 1 · Today tab (default landing)</div>
+      <div class="desc">The next 24 hours. Action, not pattern. Scoped to one cycle day.</div>
+    </div>
+    <div class="phone">
+      <div class="phone-inner">
+        <div class="notch"></div>
+        <div class="scroll">
+
+          <!-- ⓟ2 NEW · Segmented control (the headline UX change) -->
+          <div class="segctrl-wrap">
+            <div class="segctrl">
+              <div class="segctrl-item active">Today</div>
+              <div class="segctrl-item">Cycle</div>
+            </div>
+          </div>
+
+          <!-- PAGE HEAD -->
+          <div class="ph-eyebrow">SUNDAY APR 19</div>
+          <h1 class="ph-title">Today</h1>
+          <div class="ph-sub">
+            <span>luteal · day 18 · 8 days until your period</span>
+            <span class="conf-pill">ⓅHASE 2 · 84% · 4 cycles</span>
+          </div>
+          <div class="selected-crumb">Quiet morning · steady afternoon · earlier bedtime tonight</div>
+
+          <!-- Fresh-Start banner -->
+          <div class="fresh-start">
+            <div class="fs-icon">✶</div>
+            <div class="fs-body">
+              <div class="fs-eyebrow">FRESH START · NEW WEEK <span class="p2-mark">ⓟ2 NEW</span></div>
+              <div class="fs-msg">A soft Sunday reset — pick one thing to begin again.</div>
+            </div>
+            <div class="fs-cta">Reset →</div>
+          </div>
+
+          <!-- Smart View (RIGHT NOW, single adaptive card) -->
+          <div class="smart-eyebrow"><span>SMART VIEW</span><span class="tense">RIGHT NOW · ADAPTIVE</span></div>
+          <div class="sv-states">
+            <div class="sv-chip">IDLE</div>
+            <div class="sv-chip active">STREAKY</div>
+            <div class="sv-chip">STUCK</div>
+            <div class="sv-chip">DRIFTING</div>
+            <div class="sv-chip">QUIET</div>
+          </div>
+          <div class="smart-card">
+            <div class="sc-head">
+              <div class="sc-label">LUTEAL · DAY 18</div>
+              <div class="chip today">TODAY</div>
+            </div>
+            <div class="sc-main">Steady and consistent — your body's asking for rhythm, not effort.</div>
+            <div class="sc-sub">Morning walk done (5-day run). Sleep Reset Day 1 waiting. Warming stew tonight.</div>
+            <div class="sc-sig">— Jess, from your Daily Plan</div>
+          </div>
+
+          <!-- Good-for chips -->
+          <div class="goodfor-card">
+            <div class="gf-title">Today is good for…<i class="gf-info" title="Driven by cycle phase × this week's Capacity Tax × historical hits">i</i><span class="p2-mark" style="vertical-align:middle;">ⓟ2</span></div>
+            <div class="gf-chips">
+              <div class="gf-chip"><span class="dot"></span>reflection</div>
+              <div class="gf-chip"><span class="dot"></span>steady strength</div>
+              <div class="gf-chip"><span class="dot"></span>slow social</div>
+              <div class="gf-chip"><span class="dot"></span>deep writing</div>
+              <div class="gf-chip"><span class="dot"></span>warming meals</div>
+            </div>
+          </div>
+
+          <!-- Morning stack -->
+          <div class="stack">
+            <div class="stack-head">
+              <div class="stack-title">
+                <div class="stack-h">Morning stack</div>
+                <div class="stack-sub">before 10am</div>
+              </div>
+              <div class="stack-count">2 OF 3 DONE</div>
+            </div>
+            <div class="ritual done">
+              <div class="ritual-icon ri-walk">◐</div>
+              <div class="ritual-body">
+                <div class="ritual-name">Morning walk <span class="p2-mark" style="font-size:7.5px;padding:1px 5px;background:rgba(74,42,58,0.07);color:var(--plum-2);">ⓟ2 ANCHOR</span></div>
+                <div class="ritual-meta">25 min · logged 7:42 am</div>
+              </div>
+              <div class="ritual-check done">✓</div>
+            </div>
+            <div class="ritual done">
+              <div class="ritual-icon ri-water">◯</div>
+              <div class="ritual-body">
+                <div class="ritual-name">Drink water</div>
+                <div class="ritual-meta">500 ml · logged 9:10 am</div>
+              </div>
+              <div class="ritual-check done">✓</div>
+            </div>
+            <div class="ritual">
+              <div class="ritual-icon ri-read">◇</div>
+              <div class="ritual-body">
+                <div class="ritual-name">5-minute reading <span class="p2-mark" style="font-size:7.5px;padding:1px 5px;background:rgba(201,169,92,0.18);color:var(--gold);">ⓟ2 SOFTEN</span></div>
+                <div class="ritual-meta">from Sleep Reset · queued</div>
+                <div class="reframe-shim">⟢ Just 2 minutes if 5 feels long today.</div>
+              </div>
+              <div class="ritual-check"></div>
+            </div>
+          </div>
+
+          <!-- Programme card (today's session) -->
+          <div class="program">
+            <div class="program-eyebrow">YOUR PROGRAMME · IN PROGRESS</div>
+            <div class="program-row">
+              <div class="program-left">
+                <div class="program-name">Sleep Reset</div>
+                <div class="program-day">Day 1 of 7 · unlock better sleep in luteal</div>
+                <div class="program-progress"><div class="fill"></div></div>
+              </div>
+              <div class="program-cta">Continue →</div>
+            </div>
+          </div>
+
+          <!-- Today's meals -->
+          <div class="divider">
+            <div class="div-title">Today's meals</div>
+            <div class="div-meta">FROM YOUR MEAL PLAN</div>
+          </div>
+          <div class="meals-row">
+            <div class="meal">
+              <div class="meal-time">7:30 am</div>
+              <div class="meal-thumb bf"><div class="glyph"><svg viewBox="0 0 24 24"><path d="M3 14c0-1 .5-3 3-3h12c2.5 0 3 2 3 3v1H3v-1z"/><path d="M5 15v3a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-3"/><path d="M9 7v2M12 6v3M15 7v2"/></svg></div></div>
+              <div class="meal-body">
+                <div class="meal-name">Porridge oats with seeds + berries</div>
+                <div class="meal-meta">breakfast · 320 kcal · slow carbs</div>
+              </div>
+            </div>
+            <div class="meal">
+              <div class="meal-time">12:30 pm</div>
+              <div class="meal-thumb ln"><div class="glyph"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 3a6 6 0 0 0 0 12 6 6 0 0 0 0-12z"/><path d="M8 10h8M8 14h8"/></svg></div></div>
+              <div class="meal-body">
+                <div class="meal-name">Lentil & chicken stew with brown rice</div>
+                <div class="meal-meta">lunch · 540 kcal · iron-rich</div>
+              </div>
+            </div>
+            <div class="meal">
+              <div class="meal-time">7:00 pm</div>
+              <div class="meal-thumb dn"><div class="glyph"><svg viewBox="0 0 24 24"><path d="M12 4c-2 4-6 5-6 9a6 6 0 0 0 12 0c0-4-4-5-6-9z"/><path d="M12 11v6M10 14h4"/></svg></div></div>
+              <div class="meal-body">
+                <div class="meal-name">Roasted salmon + greens + sweet potato</div>
+                <div class="meal-meta">dinner · 480 kcal · omega-3 + warming</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Tonight's window -->
+          <div class="divider">
+            <div class="div-title">Tonight's window</div>
+            <div class="div-meta">WIND DOWN BY 9:30</div>
+          </div>
+          <div class="tonight">
+            <div class="eyebrow-t">PROGESTERONE RISING</div>
+            <div class="t-main">Your body often wants earlier sleep this week.</div>
+            <div class="t-sub">Luteal sleep tends to run lighter — protect the runway. Cool room, dim screens, early dinner.</div>
+            <div class="t-target">
+              <div class="tt-label">BED BY</div>
+              <div class="tt-val">10:30 pm</div>
+            </div>
+            <div class="t-hrt">
+              <div class="t-hrt-l"><span class="dot"></span>HRT · evening estradiol patch</div>
+              <div class="t-hrt-r">9:00 PM <span class="p2-mark" style="margin-left:6px;background:rgba(245,230,211,0.18);color:#F5E6D3;">ⓟ2</span></div>
+            </div>
+            <div class="t-doctor">Share this week with my GP → Doctor-Ready Diary (Cycle tab)</div>
+          </div>
+
+          <!-- Evening stack -->
+          <div class="stack">
+            <div class="stack-head">
+              <div class="stack-title">
+                <div class="stack-h">Evening stack</div>
+                <div class="stack-sub">after 8pm</div>
+              </div>
+              <div class="stack-count">0 OF 3</div>
+            </div>
+            <div class="ritual">
+              <div class="ritual-icon ri-stretch">⟔</div>
+              <div class="ritual-body">
+                <div class="ritual-name">10-minute stretch <span class="p2-mark" style="font-size:7.5px;padding:1px 5px;background:rgba(74,42,58,0.07);color:var(--plum-2);">ⓟ2 ANCHOR</span></div>
+                <div class="ritual-meta">hips + lower back</div>
+              </div>
+              <div class="ritual-check"></div>
+            </div>
+            <div class="ritual">
+              <div class="ritual-icon ri-breath">◉</div>
+              <div class="ritual-body">
+                <div class="ritual-name">Box breathing</div>
+                <div class="ritual-meta">4 cycles · calms luteal nervous system</div>
+              </div>
+              <div class="ritual-check"></div>
+            </div>
+            <div class="ritual">
+              <div class="ritual-icon ri-dim">☾</div>
+              <div class="ritual-body">
+                <div class="ritual-name">Screens off</div>
+                <div class="ritual-meta">by 9:45 pm</div>
+              </div>
+              <div class="ritual-check"></div>
+            </div>
+          </div>
+
+          <!-- Shutdown ritual -->
+          <div class="shutdown">
+            <div class="sd-icon">↧</div>
+            <div class="sd-body">
+              <div class="sd-title">Shutdown · close today's loop <span class="p2-mark" style="margin-left:6px;">ⓟ2 NEW</span></div>
+              <div class="sd-sub">3-line check: what I did · what I'll let go · tomorrow's anchor</div>
+            </div>
+            <div class="sd-toggle">Open ↓</div>
+          </div>
+
+          <!-- Plan with Jess (today-focused) -->
+          <div class="jess">
+            <div class="jess-av">J</div>
+            <div class="jess-body">
+              <div class="jess-name">JESS · YOUR COACH</div>
+              <div class="jess-msg">"Want me to build tomorrow's rhythm around an earlier bedtime?"</div>
+            </div>
+            <div class="jess-cta">→</div>
+          </div>
+
+        </div>
+
+        <div class="fab">+</div>
+        <div class="nav">
+          <div class="nav-item"><div class="nav-ico"></div>Today</div>
+          <div class="nav-item active"><div class="nav-ico"></div>Planner</div>
+          <div class="nav-item"><div class="nav-ico"></div>Lifestyle</div>
+          <div class="nav-item"><div class="nav-ico"></div>Jess</div>
+          <div class="nav-item"><div class="nav-ico"></div>Me</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- =========================== PHONE 2: CYCLE TAB =========================== -->
+  <div class="phone-wrap">
+    <div class="stage-cap">
+      <div class="label">Phone 2 · Cycle tab (the bigger arc)</div>
+      <div class="desc">Month ribbon, capacity, week ahead, reflection. Pattern, not action.</div>
+    </div>
+    <div class="phone">
+      <div class="phone-inner">
+        <div class="notch"></div>
+        <div class="scroll">
+
+          <!-- ⓟ2 NEW · Segmented control (Cycle active) -->
+          <div class="segctrl-wrap">
+            <div class="segctrl">
+              <div class="segctrl-item">Today</div>
+              <div class="segctrl-item active">Cycle</div>
+            </div>
+          </div>
+
+          <!-- PAGE HEAD -->
+          <div class="ph-eyebrow">YOUR CYCLE</div>
+          <h1 class="ph-title">Cycle</h1>
+          <div class="ph-sub">
+            <span>April · 5 weeks · next period week of 27</span>
+            <span class="conf-pill">ⓅHASE 2 · 84% · 4 cycles</span>
+          </div>
+          <div class="selected-crumb">Viewing <strong>April</strong> · tap a day to retarget Today</div>
+
+          <!-- Month ribbon (Shape C) -->
+          <div class="month-head">
+            <div>
+              <div class="mh-title">April 2026</div>
+              <div class="mh-meta">luteal week · period week of 27</div>
+            </div>
+            <div>
+              <span class="mh-chev">‹</span><span class="mh-chev">›</span>
+            </div>
+          </div>
+          <div class="weekday-row">
+            <div class="wd">M</div><div class="wd">T</div><div class="wd">W</div><div class="wd">T</div><div class="wd">F</div><div class="wd">S</div><div class="wd">S</div>
+          </div>
+          <div class="ribbons">
+            <div class="ribbon w1">
+              <div class="rcell off"><div class="rday">30</div></div>
+              <div class="rcell off"><div class="rday">31</div></div>
+              <div class="rcell"><div class="rday">1</div><div class="rbar"></div></div>
+              <div class="rcell"><div class="rday">2</div><div class="rbar b2"></div></div>
+              <div class="rcell"><div class="rday">3</div><div class="rbar"></div></div>
+              <div class="rcell"><div class="rday">4</div></div>
+              <div class="rcell"><div class="rday">5</div><div class="rbar"></div></div>
+            </div>
+            <div class="ribbon w2">
+              <div class="rcell"><div class="rday">6</div></div>
+              <div class="rcell"><div class="rday">7</div><div class="rbar b2"></div></div>
+              <div class="rcell"><div class="rday">8</div><div class="rbar"></div></div>
+              <div class="rcell"><div class="rday">9</div><div class="rbar b2"></div></div>
+              <div class="rcell"><div class="rday">10</div><div class="rbar b3"></div></div>
+              <div class="rcell"><div class="rday">11</div><div class="rbar"></div></div>
+              <div class="rcell"><div class="rday">12</div></div>
+            </div>
+            <div class="ribbon w3">
+              <div class="rcell"><div class="rday">13</div><div class="rbar b2"></div></div>
+              <div class="rcell ov-txt"><div class="rday">14</div><div class="rbar b3"></div></div>
+              <div class="rcell ov-txt"><div class="rday">15</div><div class="rbar b2"></div></div>
+              <div class="rcell ov-txt"><div class="rday">16</div><div class="rbar b2"></div></div>
+              <div class="rcell"><div class="rday">17</div><div class="rbar"></div></div>
+              <div class="rcell"><div class="rday">18</div><div class="rbar"></div></div>
+              <div class="rcell is-today sel-today"><div class="rday">19</div><div class="rbar b3"></div></div>
+            </div>
+            <div class="ribbon w4">
+              <div class="rcell"><div class="rday">20</div><div class="rbar b2"></div></div>
+              <div class="rcell"><div class="rday">21</div><div class="rbar b2"></div></div>
+              <div class="rcell"><div class="rday">22</div><div class="rbar"></div></div>
+              <div class="rcell"><div class="rday">23</div><div class="rbar b2"></div></div>
+              <div class="rcell"><div class="rday">24</div></div>
+              <div class="rcell"><div class="rday">25</div></div>
+              <div class="rcell"><div class="rday">26</div><div class="rbar"></div></div>
+            </div>
+            <div class="ribbon w5">
+              <div class="rcell"><div class="rday">27</div><div class="rbar b2"></div></div>
+              <div class="rcell"><div class="rday">28</div></div>
+              <div class="rcell"><div class="rday">29</div></div>
+              <div class="rcell"><div class="rday">30</div></div>
+              <div class="rcell off"><div class="rday">1</div></div>
+              <div class="rcell off"><div class="rday">2</div></div>
+              <div class="rcell off"><div class="rday">3</div></div>
+            </div>
+          </div>
+
+          <!-- Capacity Tax bar -->
+          <div class="captax">
+            <div class="ct-head">
+              <div class="ct-title">Capacity this week <span class="p2-mark">ⓟ2 NEW · MP-A1</span></div>
+              <div class="ct-pct">122%</div>
+            </div>
+            <div class="ct-bar-wrap">
+              <div class="ct-bar-cap"></div>
+              <div class="ct-bar-load"></div>
+              <div class="ct-bar-line"></div>
+            </div>
+            <div class="ct-meta">
+              <div class="ct-msg">Your <strong>predicted load</strong> is 22% above what luteal usually gives you. Three items can shift to follicular.</div>
+              <div class="ct-defer">Defer 3 →</div>
+            </div>
+          </div>
+
+          <!-- Quiet Mode banner -->
+          <div class="quietmode">
+            <div class="qm-dot"></div>
+            <div class="qm-body"><strong>Quiet Mode is on.</strong> Today shows morning rituals only; non-anchor tasks deferred 48h. <span class="p2-mark subtle" style="margin-left:0;">ⓟ2 · MP-A2</span></div>
+            <div class="qm-undo">Undo</div>
+          </div>
+
+          <!-- Week Ahead card -->
+          <div class="smart-eyebrow"><span>WEEK AHEAD</span><span class="tense">7-DAY FORECAST</span></div>
+          <div class="smart-card">
+            <div class="sc-head">
+              <div class="sc-label">APR 20 – APR 26 <span class="p2-mark subtle">ⓟ2 · MP-A3</span></div>
+              <div class="chip luteal">SOFTER DAYS</div>
+            </div>
+            <div class="sc-main">8 days until your period.</div>
+            <div class="sc-sub">Luteal all week. Energy often trends inward in this window — your last 3 cycles showed the same pattern.</div>
+            <div class="ahead-row">
+              <div class="ahead-chip"><div class="ac-day">MON</div><div class="ac-num">20</div><div class="ac-phase l"></div></div>
+              <div class="ahead-chip"><div class="ac-day">TUE</div><div class="ac-num">21</div><div class="ac-phase l"></div></div>
+              <div class="ahead-chip"><div class="ac-day">WED</div><div class="ac-num">22</div><div class="ac-phase l"></div></div>
+              <div class="ahead-chip"><div class="ac-day">THU</div><div class="ac-num">23</div><div class="ac-phase l"></div></div>
+              <div class="ahead-chip"><div class="ac-day">MON</div><div class="ac-num">27</div><div class="ac-phase p"></div></div>
+            </div>
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-top:9px;padding-top:9px;border-top:1px solid rgba(74,42,58,0.06);">
+              <div style="font-size:10px;color:var(--plum-mute);letter-spacing:0.04em;">Period ETA <strong style="color:var(--plum);">Mon 27</strong> · ± 1 day · 84% confident</div>
+              <div style="font-size:10.5px;padding:5px 11px;border-radius:9999px;background:var(--plum);color:var(--cream);font-weight:700;letter-spacing:0.04em;">Plan with Jess →</div>
+            </div>
+          </div>
+
+          <!-- What's Unfinished -->
+          <div class="smart-card">
+            <div class="sc-head">
+              <div class="sc-label">WHAT'S UNFINISHED</div>
+            </div>
+            <div class="stuck">
+              <div class="stuck-txt">Sleep Reset · Day 1 · 3 days paused</div>
+              <div class="stuck-cta">Restart →</div>
+            </div>
+            <div class="reframe-shim">⟢ Three days paused isn't failure — it's data. Want a smaller version?</div>
+          </div>
+
+          <!-- Saved rhythms / bundles -->
+          <div class="divider">
+            <div class="div-title">Saved rhythms</div>
+            <div class="div-meta">SWIPE →</div>
+          </div>
+          <div class="bundles">
+            <div class="bundle luteal">
+              <div class="bundle-eyebrow">YOURS · ACTIVE</div>
+              <div class="bundle-name">Luteal Softness</div>
+              <div class="bundle-count">6 rituals · day 18</div>
+              <span class="bundle-cta">Build into week →</span>
+            </div>
+            <div class="bundle pacing">
+              <div class="bundle-eyebrow">ⓟ2 PACING BANK</div>
+              <div class="bundle-name">Low Spoons day</div>
+              <div class="bundle-count">2 anchors · rest deferred</div>
+              <span class="bundle-cta">Use today →</span>
+            </div>
+            <div class="bundle period">
+              <div class="bundle-eyebrow">UP NEXT · DAY 27</div>
+              <div class="bundle-name">Period Rest Day</div>
+              <div class="bundle-count">4 rituals · warming</div>
+              <span class="bundle-cta">Build into week →</span>
+            </div>
+            <div class="bundle follicular">
+              <div class="bundle-eyebrow">SAVED</div>
+              <div class="bundle-name">Follicular Focus</div>
+              <div class="bundle-count">5 rituals · deep work</div>
+              <span class="bundle-cta">Build into week →</span>
+            </div>
+            <div class="bundle ovulatory">
+              <div class="bundle-eyebrow">SAVED</div>
+              <div class="bundle-name">Ovulation Power</div>
+              <div class="bundle-count">5 rituals · peak days</div>
+              <span class="bundle-cta">Build into week →</span>
+            </div>
+          </div>
+
+          <!-- This week's rhythm -->
+          <div class="divider">
+            <div class="div-title">This week's rhythm</div>
+            <div class="div-meta">CONSISTENCY OVER 28 DAYS</div>
+          </div>
+          <div class="rhythm">
+            <div class="rhythm-row">
+              <div class="rh-item"><div class="rh-num">3</div><div class="rh-label">walks</div></div>
+              <div class="rh-item"><div class="rh-num">5</div><div class="rh-label">waters</div></div>
+              <div class="rh-item"><div class="rh-num">2</div><div class="rh-label">stretches</div></div>
+              <div class="rh-item"><div class="rh-num">1</div><div class="rh-label">reading</div></div>
+            </div>
+            <div class="rhythm-foot" style="margin-top:12px;text-align:left;font-style:normal;font-size:11px;line-height:1.5;color:var(--plum-2);">
+              <strong style="color:var(--plum);">Consistency, not streaks.</strong> Period week auto-freezes — your rhythm holds for cycles, not days. <span class="p2-mark subtle">ⓟ2 · MP-A2</span>
+            </div>
+          </div>
+
+          <!-- Cycle Mirror -->
+          <div class="cmirror">
+            <div class="cm-eyebrow">CYCLE MIRROR · SUNDAYS ONLY <span class="p2-mark">ⓟ2 NEW · MP-A2</span></div>
+            <div class="cm-title">Across your last 4 luteal weeks…</div>
+            <div class="cm-grid">
+              <div class="cm-cell">
+                <div class="cm-label">PATTERN</div>
+                <div class="cm-value">Bed by 10:30 only 38% of nights</div>
+              </div>
+              <div class="cm-cell">
+                <div class="cm-label">STRONGEST</div>
+                <div class="cm-value">Walks held 4 / 4 cycles</div>
+              </div>
+            </div>
+            <div class="cm-foot">A pattern, not a verdict. One luteal anchor next cycle could shift sleep — want to choose one?</div>
+          </div>
+
+          <!-- Doctor-Ready Diary -->
+          <div class="dr-diary">
+            <div class="dr-eyebrow">DOCTOR-READY DIARY <span class="p2-mark subtle">ⓟ2 NEW · MP-A1</span></div>
+            <div class="dr-title">Bring 6 weeks of your data to your next GP visit.</div>
+            <div class="dr-sub">A PDF aligned to <strong>NICE NG23</strong> — bleed pattern, mood, sleep, HRT, symptom flags. The diary GPs are trained to read.</div>
+            <div class="dr-row">
+              <div class="dr-tags">
+                <div class="dr-tag">NG23-ready</div>
+                <div class="dr-tag">PDF · 4 pages</div>
+                <div class="dr-tag">last 6 weeks</div>
+              </div>
+              <div class="dr-cta">Generate →</div>
+            </div>
+          </div>
+
+          <!-- Astra Cole horoscope sidecar -->
+          <div class="astra">
+            <div class="astra-mark">A</div>
+            <div class="astra-body">
+              <div class="astra-eyebrow">ASTRA COLE · YOUR SKY THIS WEEK <span class="p2-mark" style="background:rgba(201,169,92,0.2);color:var(--gold);">ⓟ2</span></div>
+              <div class="astra-line">"A softer week is asking you to listen, not push. Mercury aligns Thursday — say the thing."</div>
+            </div>
+            <div class="astra-cta">›</div>
+          </div>
+
+          <!-- Plan with Jess (cycle-focused) -->
+          <div class="jess">
+            <div class="jess-av">J</div>
+            <div class="jess-body">
+              <div class="jess-name">JESS · YOUR COACH</div>
+              <div class="jess-msg">"Want to plan your next cycle around one new luteal anchor?"</div>
+              <div style="display:inline-block;margin-top:6px;font-size:10.5px;padding:4px 10px;border-radius:9999px;background:rgba(74,42,58,0.08);color:var(--plum);font-weight:700;letter-spacing:0.04em;">+ Plan my next cycle <span class="p2-mark" style="margin-left:4px;font-size:7px;padding:1px 4px;">ⓟ2</span></div>
+            </div>
+            <div class="jess-cta">→</div>
+          </div>
+
+        </div>
+
+        <div class="fab">+</div>
+        <div class="nav">
+          <div class="nav-item"><div class="nav-ico"></div>Today</div>
+          <div class="nav-item active"><div class="nav-ico"></div>Planner</div>
+          <div class="nav-item"><div class="nav-ico"></div>Lifestyle</div>
+          <div class="nav-item"><div class="nav-ico"></div>Jess</div>
+          <div class="nav-item"><div class="nav-ico"></div>Me</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<div class="footer">
+  <h3>Why two tabs · the split logic</h3>
+  <p>The single-scroll Phase 2 demo carried 9 new Phase-2 mechanics + the full canvas on one screen — easily 14+ vertical sections. Decision fatigue. Two tabs by <strong>time horizon</strong> resolves it without removing any content. Today = the next 24 hours, what to do and when. Cycle = the bigger arc, where I am and where I'm headed.</p>
+
+  <table>
+    <thead>
+      <tr><th>Section</th><th>Lives on</th><th>Why</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>Fresh-Start banner</td><td><strong>Today</strong></td><td>Triggered by today's event (cycle day 1, fresh Monday) — invitation to act now.</td></tr>
+      <tr><td>Smart View "right now" + state chips</td><td><strong>Today</strong></td><td>The card adapts to today's state. Cycle has its own forecast card.</td></tr>
+      <tr><td>Good-for chips</td><td><strong>Today</strong></td><td>Capacity-composite, scoped to this day.</td></tr>
+      <tr><td>Morning / Evening stacks · Programme · Meals · Tonight · Shutdown</td><td><strong>Today</strong></td><td>All action items within 24 hours.</td></tr>
+      <tr><td>Plan-with-Jess (today)</td><td><strong>Today</strong></td><td>"What about tomorrow's bedtime?" lives on the day-scope tab.</td></tr>
+      <tr><td>Month ribbon (Shape C)</td><td><strong>Cycle</strong></td><td>The hero of the bigger arc. Tapping a day retargets the Today tab.</td></tr>
+      <tr><td>Capacity Tax bar</td><td><strong>Cycle</strong></td><td>Weekly load — Defer pill moves tasks across the week, not today.</td></tr>
+      <tr><td>Quiet Mode banner</td><td><strong>Cycle</strong></td><td>State of the cycle; affects the Today view (which hides non-anchors).</td></tr>
+      <tr><td>Week Ahead + What's Unfinished</td><td><strong>Cycle</strong></td><td>7-day forecast — by definition pattern, not day.</td></tr>
+      <tr><td>Saved rhythms (incl. Pacing Bank)</td><td><strong>Cycle</strong></td><td>Library of bundles to apply across days.</td></tr>
+      <tr><td>This week's rhythm (28-day consistency)</td><td><strong>Cycle</strong></td><td>Pattern view across the cycle.</td></tr>
+      <tr><td>Cycle Mirror Sunday tile</td><td><strong>Cycle</strong></td><td>Backward-looks at 4 cycles — definitionally Cycle scope.</td></tr>
+      <tr><td>Doctor-Ready Diary export</td><td><strong>Cycle</strong></td><td>6-week PDF — historical artefact, belongs in the arc view.</td></tr>
+      <tr><td>Astra Cole sidecar</td><td><strong>Cycle</strong></td><td>Weekly horoscope — pattern, deep-links to Lifestyle.</td></tr>
+      <tr><td>Plan-with-Jess ("plan my next cycle")</td><td><strong>Cycle</strong></td><td>Forward arc planning, not today's action.</td></tr>
+    </tbody>
+  </table>
+
+  <h3>Cross-tab links (so the split doesn't strand the user)</h3>
+  <p>Two affordances stitch the tabs together so nothing feels orphaned:</p>
+  <ul style="margin: 6px 0 0 18px;">
+    <li><strong>From Today → Cycle:</strong> Tonight's Window's "Share this week with my GP" deep-links to the Doctor-Ready Diary on Cycle.</li>
+    <li><strong>From Cycle → Today:</strong> Tapping any day in the Month ribbon re-targets the Today tab and switches view. The Capacity Tax "Defer 3" pill returns the user to Today with a "3 items moved" toast.</li>
+  </ul>
+
+  <h3>MP impact</h3>
+  <p>The two-tab split is <strong>scope-light, layout-heavy</strong>. The 9 Phase-2 mechanics + 9-commit Planner-A sequence in <code>spec_v2.md</code> still apply — each commit ships the same surface to the same tab. One small commit added to the top of the queue:</p>
+  <ul style="margin: 6px 0 0 18px;">
+    <li><strong>MP-A0 · Tab shell + routing.</strong> Segmented control component, sticky at top of <code>/planner</code>. URL state: <code>?view=today</code> (default) | <code>?view=cycle</code>. Today's view ID maps to existing Planner page; new <code>PlannerCycleView</code> component mounts the Cycle-tab sections. Cross-tab deep links pass <code>?view=cycle&scrollTo=doctor</code> or <code>?view=today</code>. Persist last-viewed tab in localStorage so the user lands where they left.</li>
+  </ul>
+  <p>C1-C9 build under MP-A0, but each commit knows which tab its surface belongs to. Acceptance: 3-viewport walk on both tabs after each commit.</p>
+</div>
+
+</body>
+</html>

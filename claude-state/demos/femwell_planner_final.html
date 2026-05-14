@@ -1,0 +1,570 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>FemWell Planner — Final demo (Shape C + retargeting, all sections)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:wght@400;500;600&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --cream: #FFFAF5;
+    --cream-2: #FFF5EC;
+    --cream-3: #F0E5D8;
+    --plum: #4A2A3A;
+    --plum-2: #6B4559;
+    --plum-mute: #8A7584;
+    --rose-400: #E67F73;
+    --rose-500: #D45E52;
+    --period: #B84A41;
+    --follicular: #E67F73;
+    --ovulatory: #F2A99A;
+    --luteal: #8A5F74;
+    --gold: #C9A95C;
+    --teal: #5F8A85;
+    --moss: #7D8668;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif; background: #F4EDE4; color: var(--plum); padding: 40px 20px 80px; display: flex; flex-direction: column; align-items: center; }
+
+  .header { max-width: 880px; margin: 0 auto 32px; text-align: center; }
+  .eyebrow { font-size: 11px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--plum-mute); font-weight: 600; }
+  h1.title { font-family: 'Fraunces', Georgia, serif; font-size: 34px; font-weight: 500; color: var(--plum); margin: 8px 0 12px; letter-spacing: -0.01em; }
+  .lede { font-size: 15px; color: var(--plum-2); max-width: 720px; margin: 0 auto; line-height: 1.55; }
+  .lede strong { color: var(--plum); font-weight: 600; }
+  .meta-row { display: flex; justify-content: center; gap: 22px; margin-top: 18px; font-size: 12px; color: var(--plum-2); flex-wrap: wrap; }
+  .meta-row strong { color: var(--plum); font-weight: 600; }
+
+  /* Phone frame */
+  .phone { width: 420px; background: #111; border-radius: 46px; padding: 10px; box-shadow: 0 40px 80px rgba(74, 42, 58, 0.22), 0 0 0 1px rgba(0,0,0,0.08); margin: 32px 0; }
+  .phone-inner { background: var(--cream); border-radius: 38px; overflow: hidden; position: relative; height: 920px; display: flex; flex-direction: column; }
+  .notch { position: absolute; top: 0; left: 50%; transform: translateX(-50%); width: 130px; height: 28px; background: #111; border-radius: 0 0 16px 16px; z-index: 30; }
+  .scroll { overflow-y: auto; flex: 1; padding: 44px 18px 120px; scrollbar-width: none; }
+  .scroll::-webkit-scrollbar { display: none; }
+
+  /* Page head */
+  .ph-eyebrow { font-size: 10px; letter-spacing: 0.18em; text-transform: uppercase; color: var(--plum-mute); font-weight: 600; }
+  h1.ph-title { font-family: 'Fraunces', serif; font-size: 32px; font-weight: 500; margin: 6px 0 4px; letter-spacing: -0.015em; color: var(--plum); }
+  .ph-sub { font-size: 13px; color: var(--plum-2); }
+  .selected-crumb { display: flex; align-items: center; gap: 6px; font-size: 11px; color: var(--plum-mute); margin-top: 6px; letter-spacing: 0.04em; }
+  .selected-crumb strong { color: var(--plum); font-weight: 600; }
+
+  /* Month header */
+  .month-head { display: flex; justify-content: space-between; align-items: center; margin: 22px 0 10px; }
+  .mh-title { font-family: 'Fraunces', serif; font-size: 22px; font-weight: 500; color: var(--plum); }
+  .mh-meta { font-size: 10px; color: var(--plum-mute); letter-spacing: 0.04em; margin-top: 2px; }
+  .mh-chev { font-size: 14px; color: var(--plum-mute); padding: 0 6px; cursor: pointer; }
+
+  .weekday-row { display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; margin-bottom: 6px; padding: 0 2px; }
+  .wd { font-size: 9px; color: var(--plum-mute); text-align: center; letter-spacing: 0.14em; font-weight: 600; text-transform: uppercase; }
+
+  /* Ribbons (Shape C) */
+  .ribbons { display: flex; flex-direction: column; gap: 10px; }
+  .ribbon { position: relative; border-radius: 14px; padding: 8px 6px; display: grid; grid-template-columns: repeat(7, 1fr); gap: 2px; min-height: 72px; overflow: hidden; }
+  .ribbon.w1 { background: linear-gradient(to right, var(--cream-3) 0%, var(--cream-3) 20%, var(--luteal) 34%, var(--period) 48%, var(--period) 100%); }
+  .ribbon.w2 { background: linear-gradient(to right, var(--period) 0%, var(--follicular) 15%, var(--follicular) 100%); }
+  .ribbon.w3 { background: linear-gradient(to right, var(--follicular) 0%, var(--follicular) 14%, var(--ovulatory) 28%, var(--ovulatory) 42%, var(--luteal) 60%, var(--luteal) 100%); }
+  .ribbon.w4 { background: linear-gradient(to right, var(--luteal) 0%, var(--luteal) 100%); }
+  .ribbon.w5 { background: linear-gradient(to right, var(--period) 0%, var(--period) 55%, var(--cream-3) 65%, var(--cream-3) 100%); }
+
+  .rcell { position: relative; display: flex; flex-direction: column; justify-content: space-between; padding: 4px 5px 5px; border-radius: 7px; min-height: 56px; }
+  .rcell .rday { font-weight: 700; font-size: 13px; line-height: 1; color: #FFF5EC; }
+  .rcell.off .rday { color: var(--plum-2); opacity: 0.35; }
+  .rcell.ov-txt .rday { color: var(--plum); }
+  .rcell .rbar { height: 3px; border-radius: 2px; background: currentColor; opacity: 0.55; width: 55%; }
+  .rcell .rbar.b2 { width: 75%; }
+  .rcell .rbar.b3 { width: 95%; }
+  .rcell.is-today::before { content: ''; position: absolute; top: 4px; right: 4px; width: 5px; height: 5px; border-radius: 50%; background: var(--plum); z-index: 3; }
+  .rcell.sel-today { outline: 2px solid var(--plum); outline-offset: -1px; background: rgba(255, 250, 245, 0.55); }
+  .rcell.sel-today .rday { color: var(--plum); }
+
+  /* Smart view */
+  .smart-eyebrow { font-size: 10px; letter-spacing: 0.18em; text-transform: uppercase; color: var(--plum-mute); font-weight: 600; margin: 24px 0 8px; display: flex; justify-content: space-between; align-items: center; }
+  .smart-eyebrow .tense { font-weight: 700; color: var(--plum); letter-spacing: 0.15em; }
+  .smart-card { background: #FFFFFF; border: 1px solid rgba(74, 42, 58, 0.08); border-radius: 14px; padding: 14px 14px 13px; margin-bottom: 10px; box-shadow: 0 2px 8px rgba(74, 42, 58, 0.03); }
+  .sc-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; gap: 8px; }
+  .sc-label { font-size: 9px; letter-spacing: 0.15em; text-transform: uppercase; color: var(--plum-mute); font-weight: 700; }
+  .sc-main { font-family: 'Fraunces', serif; font-size: 17px; color: var(--plum); line-height: 1.3; font-weight: 500; margin-bottom: 6px; }
+  .sc-sub { font-size: 12px; color: var(--plum-2); line-height: 1.5; }
+  .sc-sig { font-size: 11px; color: var(--plum-mute); margin-top: 8px; font-style: italic; }
+
+  .chip { font-size: 9px; padding: 3px 8px; border-radius: 10px; background: var(--cream-2); color: var(--plum-2); letter-spacing: 0.08em; text-transform: uppercase; font-weight: 600; }
+  .chip.luteal { background: rgba(138, 95, 116, 0.14); color: var(--luteal); }
+  .chip.ovulatory { background: rgba(242, 169, 154, 0.28); color: var(--rose-500); }
+  .chip.period { background: rgba(184, 74, 65, 0.14); color: var(--period); }
+  .chip.today { background: var(--plum); color: var(--cream); }
+
+  .stuck { display: flex; justify-content: space-between; align-items: center; padding: 9px 11px; border-radius: 10px; background: rgba(201, 169, 92, 0.11); }
+  .stuck-txt { font-size: 12px; color: var(--plum-2); }
+  .stuck-cta { font-size: 11px; color: var(--plum); font-weight: 700; letter-spacing: 0.04em; }
+  .ahead-row { display: flex; gap: 6px; margin-top: 8px; }
+  .ahead-chip { flex: 1; background: var(--cream-2); border-radius: 8px; padding: 6px 4px; text-align: center; }
+  .ahead-chip .ac-day { font-size: 9px; color: var(--plum-mute); letter-spacing: 0.08em; text-transform: uppercase; font-weight: 700; }
+  .ahead-chip .ac-num { font-family: 'Fraunces', serif; font-size: 14px; color: var(--plum); font-weight: 500; margin-top: 2px; }
+  .ahead-chip .ac-phase { width: 5px; height: 5px; border-radius: 50%; margin: 4px auto 0; }
+  .ac-phase.p { background: var(--period); }
+  .ac-phase.l { background: var(--luteal); }
+  .ac-phase.f { background: var(--follicular); }
+  .ac-phase.o { background: var(--ovulatory); }
+
+  /* Section divider */
+  .divider { display: flex; align-items: baseline; justify-content: space-between; margin: 28px 0 12px; }
+  .div-title { font-family: 'Fraunces', serif; font-size: 20px; color: var(--plum); font-weight: 500; letter-spacing: -0.01em; }
+  .div-meta { font-size: 10px; color: var(--plum-mute); letter-spacing: 0.12em; text-transform: uppercase; font-weight: 600; }
+
+  /* Good-for strengths */
+  .goodfor-card { background: rgba(138, 95, 116, 0.08); border-radius: 14px; padding: 14px 14px 12px; margin-bottom: 14px; }
+  .gf-title { font-family: 'Fraunces', serif; font-size: 15px; color: var(--plum); font-weight: 500; margin-bottom: 10px; font-style: italic; }
+  .gf-chips { display: flex; flex-wrap: wrap; gap: 6px; }
+  .gf-chip { font-size: 11px; padding: 5px 10px; border-radius: 12px; background: rgba(255, 255, 255, 0.7); color: var(--plum-2); display: flex; gap: 5px; align-items: center; }
+  .gf-chip .dot { width: 4px; height: 4px; border-radius: 50%; background: var(--luteal); }
+
+  /* Stack card (morning / evening) */
+  .stack { background: #FFFFFF; border: 1px solid rgba(74, 42, 58, 0.08); border-radius: 14px; padding: 14px 16px 14px; margin-bottom: 10px; }
+  .stack-head { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 12px; }
+  .stack-title { display: flex; align-items: baseline; gap: 8px; }
+  .stack-h { font-family: 'Fraunces', serif; font-size: 16px; color: var(--plum); font-weight: 500; }
+  .stack-sub { font-size: 11px; color: var(--plum-mute); letter-spacing: 0.04em; }
+  .stack-count { font-size: 10px; color: var(--plum-mute); letter-spacing: 0.14em; text-transform: uppercase; font-weight: 700; }
+  .ritual { display: flex; align-items: center; gap: 12px; padding: 8px 0; border-top: 1px solid rgba(74, 42, 58, 0.06); }
+  .ritual:first-of-type { border-top: none; padding-top: 2px; }
+  .ritual-icon { width: 32px; height: 32px; border-radius: 50%; display: grid; place-items: center; font-size: 14px; flex-shrink: 0; }
+  .ri-walk { background: rgba(138, 95, 116, 0.14); color: var(--luteal); }
+  .ri-water { background: rgba(95, 138, 133, 0.15); color: var(--teal); }
+  .ri-read { background: rgba(201, 169, 92, 0.15); color: var(--gold); }
+  .ri-breath { background: rgba(184, 74, 65, 0.1); color: var(--period); }
+  .ri-stretch { background: rgba(125, 134, 104, 0.18); color: var(--moss); }
+  .ri-dim { background: rgba(74, 42, 58, 0.08); color: var(--plum-2); }
+  .ritual-body { flex: 1; min-width: 0; }
+  .ritual-name { font-size: 13px; color: var(--plum); font-weight: 600; line-height: 1.2; }
+  .ritual-meta { font-size: 11px; color: var(--plum-mute); margin-top: 2px; }
+  .ritual-check { width: 24px; height: 24px; border-radius: 50%; border: 1.5px solid rgba(74, 42, 58, 0.2); display: grid; place-items: center; font-size: 11px; color: transparent; flex-shrink: 0; }
+  .ritual-check.done { background: var(--teal); border-color: var(--teal); color: #FFF5EC; font-weight: 700; }
+  .ritual.done .ritual-name { color: var(--plum-2); text-decoration: line-through; text-decoration-color: rgba(74, 42, 58, 0.2); }
+
+  /* Program card */
+  .program { position: relative; background: linear-gradient(135deg, rgba(138, 95, 116, 0.15), rgba(201, 169, 92, 0.1)); border: 1px solid rgba(138, 95, 116, 0.18); border-radius: 14px; padding: 14px 16px; margin-bottom: 10px; overflow: hidden; }
+  .program-eyebrow { font-size: 9px; letter-spacing: 0.18em; text-transform: uppercase; color: var(--plum-mute); font-weight: 700; margin-bottom: 6px; }
+  .program-row { display: flex; justify-content: space-between; align-items: center; }
+  .program-left { flex: 1; min-width: 0; }
+  .program-name { font-family: 'Fraunces', serif; font-size: 17px; font-weight: 500; color: var(--plum); line-height: 1.2; }
+  .program-day { font-size: 12px; color: var(--plum-2); margin-top: 4px; }
+  .program-progress { height: 4px; background: rgba(255, 250, 245, 0.6); border-radius: 4px; margin-top: 10px; overflow: hidden; }
+  .program-progress .fill { height: 100%; width: 14%; background: var(--plum); border-radius: 4px; }
+  .program-cta { font-size: 12px; color: var(--plum); font-weight: 700; background: var(--cream); padding: 7px 14px; border-radius: 20px; flex-shrink: 0; margin-left: 12px; }
+
+  /* Meals */
+  .meals-row { display: flex; flex-direction: column; gap: 8px; }
+  .meal { display: flex; gap: 12px; align-items: center; background: #FFFFFF; border: 1px solid rgba(74, 42, 58, 0.06); border-radius: 12px; padding: 10px 12px; }
+  .meal-time { font-family: 'Fraunces', serif; font-size: 10px; color: var(--plum-mute); letter-spacing: 0.14em; text-transform: uppercase; font-weight: 700; min-width: 54px; }
+  .meal-thumb { width: 42px; height: 42px; border-radius: 10px; display: grid; place-items: center; font-size: 20px; flex-shrink: 0; }
+  .meal-thumb.bf { background: rgba(201, 169, 92, 0.18); }
+  .meal-thumb.ln { background: rgba(184, 74, 65, 0.12); }
+  .meal-thumb.dn { background: rgba(125, 134, 104, 0.18); }
+  .meal-body { flex: 1; min-width: 0; }
+  .meal-name { font-size: 13px; color: var(--plum); font-weight: 600; line-height: 1.2; }
+  .meal-meta { font-size: 11px; color: var(--plum-mute); margin-top: 2px; }
+
+  /* Tonight's window */
+  .tonight { background: linear-gradient(140deg, #3A2434, #5E3E50); color: #F5E6D3; border-radius: 16px; padding: 16px; margin: 10px 0; position: relative; overflow: hidden; }
+  .tonight::before { content: '☽'; position: absolute; top: 12px; right: 16px; font-size: 34px; opacity: 0.28; color: #F5E6D3; }
+  .tonight .eyebrow-t { font-size: 9px; letter-spacing: 0.22em; text-transform: uppercase; color: rgba(245, 230, 211, 0.68); font-weight: 700; }
+  .tonight .t-main { font-family: 'Fraunces', serif; font-size: 18px; font-weight: 500; margin: 8px 0 6px; line-height: 1.25; }
+  .tonight .t-sub { font-size: 12px; color: rgba(245, 230, 211, 0.78); line-height: 1.5; max-width: 84%; }
+  .tonight .t-target { display: flex; align-items: center; gap: 10px; margin-top: 12px; padding: 8px 12px; background: rgba(245, 230, 211, 0.1); border-radius: 10px; }
+  .tonight .tt-label { font-size: 10px; letter-spacing: 0.14em; color: rgba(245, 230, 211, 0.65); font-weight: 700; text-transform: uppercase; }
+  .tonight .tt-val { font-family: 'Fraunces', serif; font-size: 14px; color: #F5E6D3; font-weight: 500; margin-left: auto; }
+
+  /* Ritual bundles carousel */
+  .bundles { display: flex; gap: 10px; overflow-x: auto; margin: 0 -18px; padding: 0 18px 6px; scrollbar-width: none; }
+  .bundles::-webkit-scrollbar { display: none; }
+  .bundle { flex-shrink: 0; width: 165px; border-radius: 14px; padding: 14px 14px 14px; position: relative; overflow: hidden; }
+  .bundle-eyebrow { font-size: 9px; letter-spacing: 0.14em; text-transform: uppercase; font-weight: 700; opacity: 0.75; }
+  .bundle-name { font-family: 'Fraunces', serif; font-size: 16px; font-weight: 500; line-height: 1.2; margin-top: 6px; }
+  .bundle-count { font-size: 11px; margin-top: 6px; opacity: 0.8; }
+  .bundle.luteal { background: linear-gradient(140deg, var(--luteal), #6C4F62); color: #FFF5EC; }
+  .bundle.period { background: linear-gradient(140deg, var(--period), #9B3E37); color: #FFF5EC; }
+  .bundle.follicular { background: linear-gradient(140deg, var(--follicular), #C96557); color: #FFF5EC; }
+  .bundle.ovulatory { background: linear-gradient(140deg, var(--ovulatory), #DF8978); color: var(--plum); }
+  .bundle.workday { background: linear-gradient(140deg, #C9A95C, #A48740); color: #FFF5EC; }
+
+  /* Rhythm / streaks */
+  .rhythm { background: rgba(255, 255, 255, 0.7); border: 1px solid rgba(74, 42, 58, 0.07); border-radius: 14px; padding: 14px 16px; margin-bottom: 10px; }
+  .rhythm-head { font-family: 'Fraunces', serif; font-size: 16px; color: var(--plum); font-weight: 500; margin-bottom: 10px; }
+  .rhythm-row { display: flex; justify-content: space-between; gap: 6px; }
+  .rh-item { flex: 1; text-align: center; background: var(--cream-2); border-radius: 10px; padding: 9px 6px; }
+  .rh-num { font-family: 'Fraunces', serif; font-size: 20px; color: var(--plum); font-weight: 500; }
+  .rh-label { font-size: 10px; color: var(--plum-mute); letter-spacing: 0.06em; text-transform: uppercase; font-weight: 700; margin-top: 3px; line-height: 1.2; }
+  .rhythm-foot { font-size: 11px; color: var(--plum-mute); font-style: italic; margin-top: 10px; text-align: center; }
+
+  /* Plan with Jess */
+  .jess { background: linear-gradient(135deg, rgba(201, 169, 92, 0.14), rgba(184, 74, 65, 0.08)); border: 1px solid rgba(201, 169, 92, 0.2); border-radius: 14px; padding: 14px 16px; display: flex; align-items: center; gap: 12px; margin-bottom: 10px; }
+  .jess-av { width: 40px; height: 40px; border-radius: 50%; background: linear-gradient(135deg, var(--gold), var(--rose-400)); color: #FFF5EC; display: grid; place-items: center; font-family: 'Fraunces', serif; font-size: 18px; font-weight: 500; flex-shrink: 0; }
+  .jess-body { flex: 1; }
+  .jess-name { font-size: 9px; letter-spacing: 0.18em; text-transform: uppercase; color: var(--plum-mute); font-weight: 700; }
+  .jess-msg { font-family: 'Fraunces', serif; font-size: 14px; color: var(--plum); font-style: italic; line-height: 1.35; margin-top: 3px; }
+  .jess-cta { font-size: 18px; color: var(--plum); font-weight: 500; }
+
+  /* Nav + FAB */
+  .nav { position: absolute; bottom: 0; left: 0; right: 0; background: rgba(255, 250, 245, 0.96); backdrop-filter: blur(12px); border-top: 1px solid rgba(74, 42, 58, 0.08); height: 68px; display: grid; grid-template-columns: repeat(5, 1fr); padding: 10px 0 14px; z-index: 20; }
+  .nav-item { display: flex; flex-direction: column; align-items: center; gap: 5px; font-size: 9px; color: var(--plum-mute); font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; }
+  .nav-item.active { color: var(--plum); }
+  .nav-ico { width: 18px; height: 18px; border-radius: 5px; background: currentColor; opacity: 0.55; }
+  .nav-item.active .nav-ico { opacity: 1; }
+  .fab { position: absolute; bottom: 84px; right: 22px; width: 54px; height: 54px; border-radius: 50%; background: var(--plum); color: var(--cream); display: grid; place-items: center; font-size: 26px; box-shadow: 0 10px 30px rgba(74, 42, 58, 0.32); z-index: 15; }
+
+  .footer { text-align: center; max-width: 820px; margin: 36px auto 0; padding: 22px; background: rgba(74, 42, 58, 0.05); border-radius: 14px; font-size: 13px; color: var(--plum-2); line-height: 1.6; }
+  .footer strong { color: var(--plum); font-weight: 600; }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="eyebrow">LD REVIEW · PLANNER · END-TO-END DEMO</div>
+  <h1 class="title">Planner — full rhythm, signed off</h1>
+  <p class="lede">Shape C month ribbon as hero. Adaptive smart view as the intelligence layer. Then the full day's rhythm — morning stack, program, meals, tonight's window, evening stack, bundles, streaks, Jess. All wired to real entities; all tuned for <strong>Oji, cycle day 18 luteal, Sun Apr 19 2026</strong>.</p>
+  <div class="meta-row">
+    <div><strong>Data sources:</strong> CycleEvents · PhaseHistory · DailyPlan · HabitLogs · UserPrograms · MealPlans · PersonalTasks</div>
+  </div>
+</div>
+
+<div class="phone">
+  <div class="phone-inner">
+    <div class="notch"></div>
+    <div class="scroll">
+
+      <!-- ========== PAGE HEAD ========== -->
+      <div class="ph-eyebrow">YOUR MONTH</div>
+      <h1 class="ph-title">Planner</h1>
+      <div class="ph-sub">April · luteal · day 18 of 25</div>
+      <div class="selected-crumb">Viewing <strong>today</strong> · Sun Apr 19 · 8 days until your period</div>
+
+      <!-- ========== MONTH RIBBON (SHAPE C) ========== -->
+      <div class="month-head">
+        <div>
+          <div class="mh-title">April 2026</div>
+          <div class="mh-meta">5 weeks · next period week of 27</div>
+        </div>
+        <div>
+          <span class="mh-chev">‹</span><span class="mh-chev">›</span>
+        </div>
+      </div>
+
+      <div class="weekday-row">
+        <div class="wd">M</div><div class="wd">T</div><div class="wd">W</div><div class="wd">T</div><div class="wd">F</div><div class="wd">S</div><div class="wd">S</div>
+      </div>
+
+      <div class="ribbons">
+        <div class="ribbon w1">
+          <div class="rcell off"><div class="rday">30</div></div>
+          <div class="rcell off"><div class="rday">31</div></div>
+          <div class="rcell"><div class="rday">1</div><div class="rbar"></div></div>
+          <div class="rcell"><div class="rday">2</div><div class="rbar b2"></div></div>
+          <div class="rcell"><div class="rday">3</div><div class="rbar"></div></div>
+          <div class="rcell"><div class="rday">4</div></div>
+          <div class="rcell"><div class="rday">5</div><div class="rbar"></div></div>
+        </div>
+        <div class="ribbon w2">
+          <div class="rcell"><div class="rday">6</div></div>
+          <div class="rcell"><div class="rday">7</div><div class="rbar b2"></div></div>
+          <div class="rcell"><div class="rday">8</div><div class="rbar"></div></div>
+          <div class="rcell"><div class="rday">9</div><div class="rbar b2"></div></div>
+          <div class="rcell"><div class="rday">10</div><div class="rbar b3"></div></div>
+          <div class="rcell"><div class="rday">11</div><div class="rbar"></div></div>
+          <div class="rcell"><div class="rday">12</div></div>
+        </div>
+        <div class="ribbon w3">
+          <div class="rcell"><div class="rday">13</div><div class="rbar b2"></div></div>
+          <div class="rcell ov-txt"><div class="rday">14</div><div class="rbar b3"></div></div>
+          <div class="rcell ov-txt"><div class="rday">15</div><div class="rbar b2"></div></div>
+          <div class="rcell ov-txt"><div class="rday">16</div><div class="rbar b2"></div></div>
+          <div class="rcell"><div class="rday">17</div><div class="rbar"></div></div>
+          <div class="rcell"><div class="rday">18</div><div class="rbar"></div></div>
+          <div class="rcell is-today sel-today"><div class="rday">19</div><div class="rbar b3"></div></div>
+        </div>
+        <div class="ribbon w4">
+          <div class="rcell"><div class="rday">20</div><div class="rbar b2"></div></div>
+          <div class="rcell"><div class="rday">21</div><div class="rbar b2"></div></div>
+          <div class="rcell"><div class="rday">22</div><div class="rbar"></div></div>
+          <div class="rcell"><div class="rday">23</div><div class="rbar b2"></div></div>
+          <div class="rcell"><div class="rday">24</div></div>
+          <div class="rcell"><div class="rday">25</div></div>
+          <div class="rcell"><div class="rday">26</div><div class="rbar"></div></div>
+        </div>
+        <div class="ribbon w5">
+          <div class="rcell"><div class="rday">27</div><div class="rbar b2"></div></div>
+          <div class="rcell"><div class="rday">28</div></div>
+          <div class="rcell"><div class="rday">29</div></div>
+          <div class="rcell"><div class="rday">30</div></div>
+          <div class="rcell off"><div class="rday">1</div></div>
+          <div class="rcell off"><div class="rday">2</div></div>
+          <div class="rcell off"><div class="rday">3</div></div>
+        </div>
+      </div>
+
+      <!-- ========== SMART VIEW (NOW STATE) ========== -->
+      <div class="smart-eyebrow"><span>SMART VIEW</span><span class="tense">NOW</span></div>
+
+      <div class="smart-card">
+        <div class="sc-head">
+          <div class="sc-label">RIGHT NOW · LUTEAL · DAY 18</div>
+          <div class="chip today">TODAY</div>
+        </div>
+        <div class="sc-main">Steady and consistent — your body's asking for rhythm, not effort.</div>
+        <div class="sc-sub">Morning walk done. Sleep Reset Day 1 waiting. Jollof tonight.</div>
+        <div class="sc-sig">— Jess, from your Daily Plan</div>
+      </div>
+
+      <div class="smart-card">
+        <div class="sc-head">
+          <div class="sc-label">WEEK AHEAD</div>
+          <div class="chip luteal">SOFTER DAYS</div>
+        </div>
+        <div class="sc-main">8 days until your period.</div>
+        <div class="sc-sub">Luteal all week. Energy trending down — expect more inward, less output.</div>
+        <div class="ahead-row">
+          <div class="ahead-chip"><div class="ac-day">MON</div><div class="ac-num">20</div><div class="ac-phase l"></div></div>
+          <div class="ahead-chip"><div class="ac-day">TUE</div><div class="ac-num">21</div><div class="ac-phase l"></div></div>
+          <div class="ahead-chip"><div class="ac-day">WED</div><div class="ac-num">22</div><div class="ac-phase l"></div></div>
+          <div class="ahead-chip"><div class="ac-day">THU</div><div class="ac-num">23</div><div class="ac-phase l"></div></div>
+          <div class="ahead-chip"><div class="ac-day">MON</div><div class="ac-num">27</div><div class="ac-phase p"></div></div>
+        </div>
+      </div>
+
+      <div class="smart-card">
+        <div class="sc-head">
+          <div class="sc-label">WHAT'S UNFINISHED</div>
+        </div>
+        <div class="stuck">
+          <div class="stuck-txt">Sleep Reset · Day 1 · 3 days stuck</div>
+          <div class="stuck-cta">Restart →</div>
+        </div>
+      </div>
+
+      <!-- ========== DIVIDER: TODAY'S RHYTHM ========== -->
+      <div class="divider">
+        <div class="div-title">Today's rhythm</div>
+        <div class="div-meta">SUN · APR 19</div>
+      </div>
+
+      <!-- What this day is good for -->
+      <div class="goodfor-card">
+        <div class="gf-title">Luteal day 18 is good for…</div>
+        <div class="gf-chips">
+          <div class="gf-chip"><span class="dot"></span>reflection</div>
+          <div class="gf-chip"><span class="dot"></span>steady strength</div>
+          <div class="gf-chip"><span class="dot"></span>slow social</div>
+          <div class="gf-chip"><span class="dot"></span>deep writing</div>
+          <div class="gf-chip"><span class="dot"></span>warm foods</div>
+        </div>
+      </div>
+
+      <!-- Morning stack -->
+      <div class="stack">
+        <div class="stack-head">
+          <div class="stack-title">
+            <div class="stack-h">Morning stack</div>
+            <div class="stack-sub">before 10am</div>
+          </div>
+          <div class="stack-count">2 OF 3 DONE</div>
+        </div>
+        <div class="ritual done">
+          <div class="ritual-icon ri-walk">◐</div>
+          <div class="ritual-body">
+            <div class="ritual-name">Morning walk</div>
+            <div class="ritual-meta">25 min · logged 7:42 am</div>
+          </div>
+          <div class="ritual-check done">✓</div>
+        </div>
+        <div class="ritual done">
+          <div class="ritual-icon ri-water">◯</div>
+          <div class="ritual-body">
+            <div class="ritual-name">Drink water</div>
+            <div class="ritual-meta">500 ml · logged 9:10 am</div>
+          </div>
+          <div class="ritual-check done">✓</div>
+        </div>
+        <div class="ritual">
+          <div class="ritual-icon ri-read">◇</div>
+          <div class="ritual-body">
+            <div class="ritual-name">5-minute reading</div>
+            <div class="ritual-meta">from Sleep Reset · queued</div>
+          </div>
+          <div class="ritual-check"></div>
+        </div>
+      </div>
+
+      <!-- Your program today -->
+      <div class="program">
+        <div class="program-eyebrow">YOUR PROGRAM · IN PROGRESS</div>
+        <div class="program-row">
+          <div class="program-left">
+            <div class="program-name">Sleep Reset</div>
+            <div class="program-day">Day 1 of 7 · unlock better sleep in luteal</div>
+            <div class="program-progress"><div class="fill"></div></div>
+          </div>
+          <div class="program-cta">Continue →</div>
+        </div>
+      </div>
+
+      <!-- Today's meals -->
+      <div class="divider" style="margin-top: 22px;">
+        <div class="div-title">Today's meals</div>
+        <div class="div-meta">FROM YOUR MEAL PLAN</div>
+      </div>
+      <div class="meals-row">
+        <div class="meal">
+          <div class="meal-time">7:30 am</div>
+          <div class="meal-thumb bf">🥮</div>
+          <div class="meal-body">
+            <div class="meal-name">Puff Puff + fruit</div>
+            <div class="meal-meta">breakfast · 320 kcal</div>
+          </div>
+        </div>
+        <div class="meal">
+          <div class="meal-time">12:30 pm</div>
+          <div class="meal-thumb ln">🍛</div>
+          <div class="meal-body">
+            <div class="meal-name">Jollof Rice + grilled chicken</div>
+            <div class="meal-meta">lunch · 540 kcal · iron-rich for luteal</div>
+          </div>
+        </div>
+        <div class="meal">
+          <div class="meal-time">7:00 pm</div>
+          <div class="meal-thumb dn">🥬</div>
+          <div class="meal-body">
+            <div class="meal-name">Ginger stir-fry with tofu</div>
+            <div class="meal-meta">dinner · 420 kcal · warming</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Tonight's window -->
+      <div class="divider" style="margin-top: 22px;">
+        <div class="div-title">Tonight's window</div>
+        <div class="div-meta">WIND DOWN BY 9:30</div>
+      </div>
+      <div class="tonight">
+        <div class="eyebrow-t">PROGESTERONE RISING</div>
+        <div class="t-main">Your body wants earlier sleep than usual this week.</div>
+        <div class="t-sub">Luteal sleep is lighter — protect the runway, and tomorrow thanks you. Cool room, dim screens, early dinner.</div>
+        <div class="t-target">
+          <div class="tt-label">BED BY</div>
+          <div class="tt-val">10:30 pm</div>
+        </div>
+      </div>
+
+      <!-- Evening stack -->
+      <div class="stack">
+        <div class="stack-head">
+          <div class="stack-title">
+            <div class="stack-h">Evening stack</div>
+            <div class="stack-sub">after 8pm</div>
+          </div>
+          <div class="stack-count">0 OF 3</div>
+        </div>
+        <div class="ritual">
+          <div class="ritual-icon ri-stretch">⟔</div>
+          <div class="ritual-body">
+            <div class="ritual-name">10-minute stretch</div>
+            <div class="ritual-meta">hips + lower back</div>
+          </div>
+          <div class="ritual-check"></div>
+        </div>
+        <div class="ritual">
+          <div class="ritual-icon ri-breath">◉</div>
+          <div class="ritual-body">
+            <div class="ritual-name">Box breathing</div>
+            <div class="ritual-meta">4 cycles · calms luteal nervous system</div>
+          </div>
+          <div class="ritual-check"></div>
+        </div>
+        <div class="ritual">
+          <div class="ritual-icon ri-dim">☾</div>
+          <div class="ritual-body">
+            <div class="ritual-name">Screens off</div>
+            <div class="ritual-meta">by 9:45 pm</div>
+          </div>
+          <div class="ritual-check"></div>
+        </div>
+      </div>
+
+      <!-- Ritual bundles carousel -->
+      <div class="divider" style="margin-top: 22px;">
+        <div class="div-title">Saved rhythms</div>
+        <div class="div-meta">SWIPE →</div>
+      </div>
+      <div class="bundles">
+        <div class="bundle luteal">
+          <div class="bundle-eyebrow">YOURS · ACTIVE</div>
+          <div class="bundle-name">Luteal Softness</div>
+          <div class="bundle-count">6 rituals · day 18</div>
+        </div>
+        <div class="bundle period">
+          <div class="bundle-eyebrow">UP NEXT · DAY 27</div>
+          <div class="bundle-name">Period Rest Day</div>
+          <div class="bundle-count">4 rituals · warming</div>
+        </div>
+        <div class="bundle follicular">
+          <div class="bundle-eyebrow">SAVED</div>
+          <div class="bundle-name">Follicular Focus</div>
+          <div class="bundle-count">5 rituals · deep work</div>
+        </div>
+        <div class="bundle ovulatory">
+          <div class="bundle-eyebrow">SAVED</div>
+          <div class="bundle-name">Ovulation Power</div>
+          <div class="bundle-count">5 rituals · peak days</div>
+        </div>
+        <div class="bundle workday">
+          <div class="bundle-eyebrow">SAVED</div>
+          <div class="bundle-name">Workday Stack</div>
+          <div class="bundle-count">4 rituals · any phase</div>
+        </div>
+      </div>
+
+      <!-- Rhythm / gentle streaks -->
+      <div class="divider" style="margin-top: 22px;">
+        <div class="div-title">This week's rhythm</div>
+        <div class="div-meta">GENTLE, NOT PUNISHING</div>
+      </div>
+      <div class="rhythm">
+        <div class="rhythm-row">
+          <div class="rh-item"><div class="rh-num">3</div><div class="rh-label">walks</div></div>
+          <div class="rh-item"><div class="rh-num">5</div><div class="rh-label">waters</div></div>
+          <div class="rh-item"><div class="rh-num">2</div><div class="rh-label">stretches</div></div>
+          <div class="rh-item"><div class="rh-num">1</div><div class="rh-label">reading</div></div>
+        </div>
+        <div class="rhythm-foot">No streak pressure here — every day counts on its own.</div>
+      </div>
+
+      <!-- Plan with Jess -->
+      <div class="jess">
+        <div class="jess-av">J</div>
+        <div class="jess-body">
+          <div class="jess-name">JESS · YOUR COACH</div>
+          <div class="jess-msg">"Want me to build tomorrow's rhythm around an earlier bedtime?"</div>
+        </div>
+        <div class="jess-cta">→</div>
+      </div>
+
+    </div>
+
+    <div class="fab">+</div>
+    <div class="nav">
+      <div class="nav-item"><div class="nav-ico"></div>Today</div>
+      <div class="nav-item active"><div class="nav-ico"></div>Planner</div>
+      <div class="nav-item"><div class="nav-ico"></div>Sessions</div>
+      <div class="nav-item"><div class="nav-ico"></div>Jess</div>
+      <div class="nav-item"><div class="nav-ico"></div>Me</div>
+    </div>
+  </div>
+</div>
+
+<div class="footer">
+  <strong>Full Planner, end-to-end.</strong> Every section wired to a real entity: CycleEvents feeds the ribbon, DailyPlan seeds the smart view, HabitLogs power the stacks, UserPrograms drives the program card, MealPlans populates meals, the tonight panel reads from CycleEvents + phase, and bundles pull from saved rituals.
+  <br><br>
+  <strong>When points reset:</strong> ship this pattern to base44 as the new Planner page. Suggested order: (1) add the month ribbon component, (2) wire the smart view as a 3-card slot below it, (3) migrate existing Planner list content into the rhythm sections below, (4) test retargeting by tapping ribbon cells.
+</div>
+
+</body>
+</html>
