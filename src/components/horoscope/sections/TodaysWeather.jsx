@@ -19,21 +19,36 @@ import GlossaryTip from "@/components/horoscope/GlossaryTip";
 // ─────────────────────────────────────────────────────────────────────────────
 
 // MOON_SIGN_PLAYLIST — static map of moon sign → curated Spotify URL.
-// Placeholder Spotify URIs per H2b-1.md; operator will swap in the real
-// Astra-curated playlists later.
+// Curated 2026-05-14: Each playlist is Spotify-editorial ("By Spotify").
+// Seven signs have Spotify-official zodiac playlists (Aries → Scorpio).
+// Cancer, Sagittarius, Capricorn, Aquarius, Pisces lacked active Spotify-
+// official zodiac mixes at curation time, so they fall back to vibe-matched
+// Spotify-editorial mood playlists that suit the archetype.
 const MOON_SIGN_PLAYLIST = {
-  aries:       "https://open.spotify.com/playlist/37i9dQZF1DX0XUsuxWHRQd",
-  taurus:      "https://open.spotify.com/playlist/37i9dQZF1DXcBWIGoYBM5M",
-  gemini:      "https://open.spotify.com/playlist/37i9dQZF1DXdPec7aLusmQ",
-  cancer:      "https://open.spotify.com/playlist/37i9dQZF1DX4sWSpwq3LiO",
-  leo:         "https://open.spotify.com/playlist/37i9dQZF1DXdSjVZQzv2tl",
-  virgo:       "https://open.spotify.com/playlist/37i9dQZF1DX1s9knjP51Oa",
-  libra:       "https://open.spotify.com/playlist/37i9dQZF1DX2sUQwD7tbmL",
-  scorpio:     "https://open.spotify.com/playlist/37i9dQZF1DWZqd5JICZI0u",
-  sagittarius: "https://open.spotify.com/playlist/37i9dQZF1DX4dyzvuaRJ0n",
-  capricorn:   "https://open.spotify.com/playlist/37i9dQZF1DX9XIFQuFvzM4",
-  aquarius:    "https://open.spotify.com/playlist/37i9dQZF1DXcF6B6QPhFDv",
-  pisces:      "https://open.spotify.com/playlist/37i9dQZF1DWXLeA8Omikj7",
+  // Bold, energetic, leader — Spotify-official Aries
+  aries:       "https://open.spotify.com/playlist/37i9dQZF1DX2DC3Q7JOmYe",
+  // Sensual, grounded, indulgent — Spotify-official Taurus
+  taurus:      "https://open.spotify.com/playlist/37i9dQZF1DXbCgDGG5xQtb",
+  // Curious, eclectic, social — Spotify-official Gemini
+  gemini:      "https://open.spotify.com/playlist/37i9dQZF1DWWVULl5wUsL9",
+  // Tender, nurturing, water — Soft Pop Hits (vibe match, Spotify-editorial)
+  cancer:      "https://open.spotify.com/playlist/37i9dQZF1DWTwnEm1IYyoj",
+  // Dramatic, performer, anthemic — Spotify-official Leo
+  leo:         "https://open.spotify.com/playlist/37i9dQZF1DX7cvHpkIJFt2",
+  // Analytical, precise, focused — Spotify-official Virgo
+  virgo:       "https://open.spotify.com/playlist/37i9dQZF1DX6PdsVYbP4rI",
+  // Aesthetic, balanced, refined — Spotify-official Libra
+  libra:       "https://open.spotify.com/playlist/37i9dQZF1DXco4NYQOMLiT",
+  // Intense, mysterious, deep — Spotify-official Scorpio
+  scorpio:     "https://open.spotify.com/playlist/37i9dQZF1DX0YZgrwmizcR",
+  // Adventurous, wanderlust, free — Acoustic Hits (vibe match, Spotify-editorial)
+  sagittarius: "https://open.spotify.com/playlist/37i9dQZF1DX4VvfRBFClxm",
+  // Disciplined, serious, focused — Deep Focus (vibe match, Spotify-editorial)
+  capricorn:   "https://open.spotify.com/playlist/37i9dQZF1DWZeKCadgRdKQ",
+  // Innovative, eccentric, electronic — mint (vibe match, Spotify-editorial)
+  aquarius:    "https://open.spotify.com/playlist/37i9dQZF1DX4dyzvuaRJ0n",
+  // Dreamy, ethereal, fluid — Dreampop (vibe match, Spotify-editorial)
+  pisces:      "https://open.spotify.com/playlist/37i9dQZF1DX6uhsAfngvaD",
 };
 
 function fallbackWeatherLine(chart) {
