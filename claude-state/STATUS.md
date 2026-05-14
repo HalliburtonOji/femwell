@@ -10,7 +10,7 @@
 
 | Commit | Author | What it did |
 |---|---|---|
-| (pending) | Cowork | **Podcast build spec authored** — Phase 1 (link-out sheet) + Phase 2 (in-app player) in `claude-state/base44_mps/2026-05-14_podcast/spec.md`. Decision record in `claude-state/decisions/2026-05-14_podcast_strategy.md`. Capacitor + Apple paywall constraint logged in memory. Halli's 4 decisions: all 3 destinations (Spotify + Apple + Pocket Casts), no Spotify dev app yet (pod.link fallback), both phases in parallel, Capacitor flagged for future. |
+| `1b1299f` | Cowork | **Podcast build spec authored** — Phase 1 (link-out sheet) + Phase 2 (in-app player) in `claude-state/base44_mps/2026-05-14_podcast/spec.md`. Decision record in `claude-state/decisions/2026-05-14_podcast_strategy.md`. Capacitor + Apple paywall constraint logged in memory. Halli's 4 decisions: all 3 destinations (Spotify + Apple + Pocket Casts), no Spotify dev app yet (pod.link fallback), both phases in parallel, Capacitor flagged for future. Handoff to Code at `claude-handoff/from-cowork-to-code-2026-05-14-podcast-spec.md`. |
 | `82c9320` | Cowork | **Research drop:** `claude-state/research_podcast_strategy_2026-05-14.md` — 5,360 words on podcast link-outs (Spotify / Apple / Pocket Casts) + in-app player (legal, stack, MVP feature set, Podcasting 2.0). Phase 1 ship recommended. 7 open questions for Halli. |
 | `dd908fe` | Cowork | docs(state): sync STATUS.md after Code's 3 commits + publish. |
 | `0ec5402` | Code | Handoff: 4 items queued for next publish + Code's post-publish invoke plan. **Now PUBLISHED on femwells.com.** Podcasts rail visible on `/Lifestyle?tab=listen`. Practice rail visible (9 rows from Code's earlier `migrateSessionsToPractice` invoke). |
