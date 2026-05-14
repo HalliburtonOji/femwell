@@ -2,7 +2,6 @@ import { useState, useEffect, useCallback } from 'react';
 import { base44 } from '@/api/base44Client';
 import { getCurrentCyclePhase } from '@/utils/cyclePhase';
 import { mapLegacyCategory } from '@/utils/contentCategory';
-import BrowseFilterChips from './BrowseFilterChips';
 import BrowseSearch from './BrowseSearch';
 import BrowseGrid from './BrowseGrid';
 import BooksGrid from './BooksGrid';
@@ -158,17 +157,11 @@ async function fetchItems(chip, categorySlug, lifestyleProfile) {
     .slice(0, 24);
 }
 
-export default function BrowseTab({ categoryFilter = 'all' }) {
-  // Read initial chip from URL. Legacy ?filter=fiction redirects to ?filter=books
-  // since the Fiction tab has been collapsed into Books.
-  const initChip = () => {
-    const p = new URLSearchParams(window.location.search).get('filter');
-    if (p === 'fiction') return 'books';
-    const valid = ['all', 'articles', 'stories', 'books', 'guides'];
-    return valid.includes(p) ? p : 'all';
-  };
-
-  const [activeChip, setActiveChip] = useState(initChip);
+export default function BrowseTab({ categoryFilter = 'all', activeChip = 'all' }) {
+  // activeChip now flows in from Lifestyle.jsx (sticky-header chip row). The
+  // valid chips are still { all, articles, stories, books, guides }. We accept
+  // a legacy 'fiction' value defensively in case any stored state lingers.
+  const normalisedChip = activeChip === 'fiction' ? 'books' : activeChip;
   const [searchQuery, setSearchQuery] = useState('');
   const [items, setItems] = useState([]);
   const [books, setBooks] = useState([]);
@@ -215,20 +208,16 @@ export default function BrowseTab({ categoryFilter = 'all' }) {
     setError(false);
     setSearchQuery('');
 
-    // Update URL with type chip (and ensure tab=browse is set so back-stack
-    // restores Browse > Books rather than the default For-You).
-    const url = new URL(window.location.href);
-    url.searchParams.set('tab', 'browse');
-    url.searchParams.set('filter', activeChip);
-    window.history.replaceState({}, '', url.toString());
+    // URL sync now lives in Lifestyle.jsx (sets ?tab=read and ?filter=...
+    // when the user picks a tab or chip in the sticky header).
 
     (async () => {
       try {
-        if (activeChip === 'books') {
+        if (normalisedChip === 'books') {
           const b = await fetchBooks(categoryFilter);
           if (!cancelled) setBooks(b);
         } else {
-          const data = await fetchItems(activeChip, categoryFilter, lifestyleProfile);
+          const data = await fetchItems(normalisedChip, categoryFilter, lifestyleProfile);
           if (!cancelled) setItems(data);
         }
       } catch {
@@ -239,7 +228,7 @@ export default function BrowseTab({ categoryFilter = 'all' }) {
     })();
     return () => { cancelled = true; };
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [activeChip, categoryFilter]);
+  }, [normalisedChip, categoryFilter]);
 
   // Persist save to UserProfile
   const persist = useCallback(async (nextIds, nextPhases) => {
@@ -323,10 +312,10 @@ export default function BrowseTab({ categoryFilter = 'all' }) {
     setLoading(true);
     (async () => {
       try {
-        if (activeChip === 'books') {
+        if (normalisedChip === 'books') {
           setBooks(await fetchBooks(categoryFilter));
         } else {
-          setItems(await fetchItems(activeChip, categoryFilter, lifestyleProfile));
+          setItems(await fetchItems(normalisedChip, categoryFilter, lifestyleProfile));
         }
       } catch {
         setError(true);
@@ -338,11 +327,10 @@ export default function BrowseTab({ categoryFilter = 'all' }) {
 
   return (
     <div style={{ paddingBottom: 32 }}>
-      <BrowseFilterChips activeChip={activeChip} onChange={setActiveChip} />
       <BrowseSearch value={searchQuery} onChange={setSearchQuery} />
 
       <div style={{ marginTop: 16 }}>
-        {activeChip === 'books' ? (
+        {normalisedChip === 'books' ? (
           <BooksGrid
             books={books}
             loading={loading}
@@ -355,7 +343,7 @@ export default function BrowseTab({ categoryFilter = 'all' }) {
             loading={loading}
             error={error}
             onRetry={handleRetry}
-            activeChip={activeChip}
+            activeChip={normalisedChip}
             searchQuery={searchQuery}
             savedSet={savedSet}
             savedPhases={savedPhases}

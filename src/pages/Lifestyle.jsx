@@ -329,19 +329,108 @@ function EmptyState({ text }) {
 }
 
 // ── Tab config ────────────────────────────────────────────────────────────────
+// 2026-05-14: renamed "Browse" → "Read" per Halli. ID also changed to "read"
+// so URLs reflect the new label. Old ?tab=browse URLs auto-redirect to ?tab=read
+// via the resolveTab helper below.
 const TABS = [
   { id: "for_you",     label: "For You" },
-  { id: "browse",      label: "Browse" },
+  { id: "read",        label: "Read" },
   { id: "listen",      label: "Listen" },
   { id: "daily_story", label: "Daily Story" },
   { id: "horoscope",   label: "Horoscope" },
 ];
 
+// Map legacy tab IDs from old URLs to current ones. Keep stable forever — users
+// have bookmarks + emails with old links.
+const LEGACY_TAB_REDIRECTS = { browse: "read" };
+
+// Content-type chips per tab. Read tab = Articles / Stories / Books / Guides;
+// Listen tab = Videos / Podcasts. (Practice removed 2026-05-14 — feature was
+// stale, no destination to play migrated practice rows.)
+const TAB_CHIPS = {
+  read: [
+    { id: "all",      label: "All" },
+    { id: "articles", label: "Articles" },
+    { id: "stories",  label: "Stories" },
+    { id: "books",    label: "Books" },
+    { id: "guides",   label: "Guides" },
+  ],
+  listen: [
+    { id: "all",      label: "All" },
+    { id: "videos",   label: "Videos" },
+    { id: "podcasts", label: "Podcasts" },
+  ],
+};
+
+// Horizontal-scroll chip row that lives in the Lifestyle sticky header on the
+// same line as the Filter dropdown. Highlights the active chip, scrolls it to
+// view-centre on tap. Tab-aware via the `tab` prop.
+function InlineChipRow({ tab, activeChip, onChange }) {
+  const ref = useRef(null);
+  const chips = TAB_CHIPS[tab] || [];
+  if (chips.length === 0) return null;
+  const handle = (id) => {
+    onChange(id);
+    const btn = ref.current?.querySelector(`[data-chip="${id}"]`);
+    if (btn) btn.scrollIntoView({ behavior: "smooth", block: "nearest", inline: "center" });
+  };
+  return (
+    <div
+      ref={ref}
+      role="group"
+      aria-label={`${tab === "read" ? "Read" : "Listen"} content filters`}
+      className="lf-scroll"
+      style={{
+        display: "flex",
+        gap: 6,
+        flex: 1,
+        minWidth: 0,
+        overflowX: "auto",
+        scrollbarWidth: "none",
+        msOverflowStyle: "none",
+      }}
+    >
+      <style>{`.lf-scroll::-webkit-scrollbar{display:none}`}</style>
+      {chips.map(chip => {
+        const active = chip.id === activeChip;
+        return (
+          <button
+            key={chip.id}
+            data-chip={chip.id}
+            type="button"
+            onClick={() => handle(chip.id)}
+            aria-pressed={active}
+            style={{
+              flexShrink: 0,
+              padding: "8px 14px",
+              borderRadius: 9999,
+              fontSize: 12,
+              fontWeight: active ? 600 : 500,
+              cursor: "pointer",
+              border: active ? "1px solid var(--rose-primary)" : "1px solid var(--border)",
+              fontFamily: "'Inter', sans-serif",
+              whiteSpace: "nowrap",
+              minHeight: 36,
+              display: "inline-flex",
+              alignItems: "center",
+              backgroundColor: active ? "var(--rose-primary)" : "var(--cream)",
+              color: active ? "white" : "var(--plum-deep)",
+              transition: "all 0.15s",
+            }}
+          >
+            {chip.label}
+          </button>
+        );
+      })}
+    </div>
+  );
+}
+
 // ── Category filter dropdown — Option B from Atelier review ───────────────────
 // Single right-aligned filter-icon button. Click opens a popover with category
 // checkboxes (multi-select). Active count appears as a badge on the icon.
 // `selected` is an array of category slugs (empty = "all").
-function CategoryFilterDropdown({ selected, onChange, followedCategories = [] }) {
+function CategoryFilterDropdown({ selected, onChange, followedCategories = [], inline = false }) {
   const [open, setOpen] = useState(false);
   const popoverRef = useRef(null);
   const buttonRef = useRef(null);
@@ -379,7 +468,7 @@ function CategoryFilterDropdown({ selected, onChange, followedCategories = [] })
   const clear = () => onChange([]);
 
   return (
-    <div style={{ position: "relative", display: "flex", justifyContent: "flex-end", marginTop: 8 }}>
+    <div style={{ position: "relative", display: "flex", justifyContent: "flex-end", marginTop: inline ? 0 : 8, flexShrink: 0 }}>
       <button
         ref={buttonRef}
         type="button"
@@ -389,7 +478,8 @@ function CategoryFilterDropdown({ selected, onChange, followedCategories = [] })
         aria-label={count ? `Filter — ${count} selected` : "Filter by category"}
         style={{
           display: "inline-flex", alignItems: "center", gap: 6,
-          padding: "8px 14px", borderRadius: 9999,
+          padding: inline ? "8px 12px" : "8px 14px",
+          borderRadius: 9999,
           fontFamily: "'Inter', sans-serif", fontSize: 12, fontWeight: 600,
           minHeight: 36, cursor: "pointer",
           border: "1px solid var(--border)",
@@ -399,7 +489,7 @@ function CategoryFilterDropdown({ selected, onChange, followedCategories = [] })
         }}
       >
         <SlidersHorizontal style={{ width: 14, height: 14 }} />
-        <span>Filter</span>
+        {!inline && <span>Filter</span>}
         {count > 0 && (
           <span
             aria-hidden="true"
@@ -503,11 +593,29 @@ function CategoryFilterDropdown({ selected, onChange, followedCategories = [] })
   );
 }
 
+// Resolve a URL tab param to a canonical tab ID. Honours LEGACY_TAB_REDIRECTS
+// so old `?tab=browse` URLs (bookmarks, emails) redirect to the new id.
+function resolveTabId(raw) {
+  if (!raw) return "for_you";
+  const redirected = LEGACY_TAB_REDIRECTS[raw] || raw;
+  return TABS.some(t => t.id === redirected) ? redirected : "for_you";
+}
+
 // ── Main page ─────────────────────────────────────────────────────────────────
 export default function Lifestyle() {
   const [tab, setTabState] = useState(() => {
     const p = new URLSearchParams(window.location.search).get("tab");
-    return TABS.some(t => t.id === p) ? p : "for_you";
+    const resolved = resolveTabId(p);
+    // If the URL had a legacy id (`?tab=browse`), repair it on first paint so
+    // share + bookmark behaviour matches the current ID forever.
+    if (p && p !== resolved) {
+      try {
+        const url = new URL(window.location.href);
+        url.searchParams.set("tab", resolved);
+        window.history.replaceState({}, "", url.toString());
+      } catch { /* silent */ }
+    }
+    return resolved;
   });
   // setTab also writes ?tab=... to the URL so the browser back-stack remembers
   // which tab the user was on when they opened a reader. Without this, hitting
@@ -524,15 +632,36 @@ export default function Lifestyle() {
     } catch { /* silent — URL sync is non-critical */ }
   };
 
-  // Honour browser back/forward between tabs.
+  // Honour browser back/forward between tabs (with legacy redirect).
   useEffect(() => {
     const onPop = () => {
       const p = new URLSearchParams(window.location.search).get("tab");
-      setTabState(TABS.some(t => t.id === p) ? p : "for_you");
+      setTabState(resolveTabId(p));
     };
     window.addEventListener("popstate", onPop);
     return () => window.removeEventListener("popstate", onPop);
   }, []);
+
+  // Active filter chip — shared across Read + Listen tabs. URL-synced via
+  // ?filter=. Each tab body honours the chip independently; we just live the
+  // state up so the chips can render in the sticky header alongside the
+  // category filter button.
+  const [activeChip, setActiveChipState] = useState(() => {
+    const p = new URLSearchParams(window.location.search).get("filter");
+    return p || "all";
+  });
+  const setActiveChip = (next) => {
+    setActiveChipState(next);
+    try {
+      const url = new URL(window.location.href);
+      if (next === "all") url.searchParams.delete("filter");
+      else url.searchParams.set("filter", next);
+      window.history.replaceState({}, "", url.toString());
+    } catch { /* silent */ }
+  };
+  // Whenever the tab changes, reset chip to "all" — Read and Listen have
+  // different chip sets, so a Listen `practice` choice shouldn't leak to Read.
+  useEffect(() => { setActiveChipState("all"); }, [tab]);
 
   // Option B (Atelier review): multi-select category filter as array of slugs.
   // Empty array = "all". Downstream tabs accept array OR legacy single string.
@@ -576,17 +705,31 @@ export default function Lifestyle() {
               </button>
             ))}
           </div>
-          {/* Filter only applies to feed tabs. Daily Story is a single arc
-              and Horoscope is personalised by chart — neither honours the
-              category filter, so we hide the icon there to avoid a dead
-              affordance. */}
-          {tab !== "daily_story" && tab !== "horoscope" && (
+          {/* Filter row — Read and Listen render their content-type chips on
+              the SAME horizontal line as the category filter dropdown, all
+              sticky under the tabs. Other tabs (For You, Daily Story, Horoscope)
+              only show the category filter, or nothing if it doesn't apply. */}
+          {(tab === "read" || tab === "listen") ? (
+            <div style={{ display: "flex", alignItems: "center", gap: 8, marginTop: 12 }}>
+              <InlineChipRow
+                tab={tab}
+                activeChip={activeChip}
+                onChange={setActiveChip}
+              />
+              <CategoryFilterDropdown
+                selected={categoryFilter}
+                onChange={setCategoryFilter}
+                followedCategories={followedCategories}
+                inline
+              />
+            </div>
+          ) : tab !== "daily_story" && tab !== "horoscope" ? (
             <CategoryFilterDropdown
               selected={categoryFilter}
               onChange={setCategoryFilter}
               followedCategories={followedCategories}
             />
-          )}
+          ) : null}
         </div>
       </div>
 
@@ -607,8 +750,8 @@ export default function Lifestyle() {
         </div>
       ) : (
         <div className="max-w-xl mx-auto px-4 pt-5">
-          {tab === "browse"      && <BrowseTab categoryFilter={categoryFilter} />}
-          {tab === "listen"      && <ListenTab categoryFilter={categoryFilter} />}
+          {tab === "read"        && <BrowseTab categoryFilter={categoryFilter} activeChip={activeChip} />}
+          {tab === "listen"      && <ListenTab categoryFilter={categoryFilter} activeChip={activeChip} />}
           {tab === "daily_story" && <DailyStoryTab />}
         </div>
       )}

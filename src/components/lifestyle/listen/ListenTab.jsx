@@ -1,23 +1,22 @@
 import { useState, useEffect, useCallback } from 'react';
 import { base44 } from '@/api/base44Client';
-import ListenFilterChips from './ListenFilterChips';
 import TikTokRail from './TikTokRail';
 import PodcastRail from './PodcastRail';
-import PracticeRail from './PracticeRail';
 import ListenGrid from './ListenGrid';
 import Toast from '@/components/lifestyle/foryou/Toast';
 
+// 2026-05-14: Practice removed from Listen tab. Filter chips moved up to the
+// Lifestyle sticky header so chip + category filter share a single row.
+// activeChip now arrives as a prop from Lifestyle.jsx.
 async function fetchGridItems(chip, lifestyleProfile) {
   const baseFilter = { status: 'PUBLISHED' };
   let mediaFilter;
   if (chip === 'all') {
-    mediaFilter = { media_type: { $in: ['VIDEO', 'PODCAST', 'PRACTICE'] } };
+    mediaFilter = { media_type: { $in: ['VIDEO', 'PODCAST'] } };
   } else if (chip === 'videos') {
     mediaFilter = { media_type: 'VIDEO' };
   } else if (chip === 'podcasts') {
     mediaFilter = { media_type: 'PODCAST' };
-  } else if (chip === 'practice') {
-    mediaFilter = { media_type: 'PRACTICE' };
   } else {
     return [];
   }
@@ -33,18 +32,10 @@ async function fetchGridItems(chip, lifestyleProfile) {
   return (items || []).filter(it => !hidden.has(it.id) && !blocked.has(it.category));
 }
 
-export default function ListenTab({ categoryFilter }) {
-  const initChip = () => {
-    const p = new URLSearchParams(window.location.search).get('filter');
-    const valid = ['all', 'videos', 'podcasts', 'practice'];
-    return valid.includes(p) ? p : 'all';
-  };
-
-  const [activeChip, setActiveChip] = useState(initChip);
+export default function ListenTab({ categoryFilter, activeChip = 'all' }) {
   const [gridItems, setGridItems] = useState([]);
   const [tikTokItems, setTikTokItems] = useState([]);
   const [podcastItems, setPodcastItems] = useState([]);
-  const [practiceItems, setPracticeItems] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
 
@@ -78,11 +69,11 @@ export default function ListenTab({ categoryFilter }) {
     return () => { cancelled = true; };
   }, []);
 
-  // On mount: fetch TikTok rail + podcast rail + practice rail in parallel
+  // On mount: fetch TikTok rail + podcast rail in parallel
   useEffect(() => {
     let cancelled = false;
     (async () => {
-      const [tiktoks, podcasts, practice] = await Promise.all([
+      const [tiktoks, podcasts] = await Promise.all([
         base44.entities.LifestyleItems.filter(
           { media_type: 'TIKTOK', is_embeddable: true, status: 'PUBLISHED' },
           '-published_at',
@@ -93,31 +84,21 @@ export default function ListenTab({ categoryFilter }) {
           '-published_at',
           12
         ).catch(() => []),
-        base44.entities.LifestyleItems.filter(
-          { media_type: 'PRACTICE', status: 'PUBLISHED' },
-          '-published_at',
-          12
-        ).catch(() => []),
       ]);
       if (!cancelled) {
         setTikTokItems(tiktoks || []);
         setPodcastItems(podcasts || []);
-        setPracticeItems(practice || []);
       }
     })();
     return () => { cancelled = true; };
   }, []);
 
-  // Fetch grid when chip changes
+  // Fetch grid when chip changes. URL sync now lives in Lifestyle.jsx
+  // (setActiveChip there writes ?filter=...).
   useEffect(() => {
     let cancelled = false;
     setLoading(true);
     setError(false);
-
-    // Update URL
-    const url = new URL(window.location.href);
-    url.searchParams.set('filter', activeChip);
-    window.history.replaceState({}, '', url.toString());
 
     (async () => {
       try {
@@ -218,19 +199,9 @@ export default function ListenTab({ categoryFilter }) {
 
   return (
     <div style={{ paddingBottom: 32 }}>
-      <ListenFilterChips activeChip={activeChip} onChange={setActiveChip} />
-
       <div style={{ marginTop: 16 }}>
         <PodcastRail
           items={podcastItems}
-          savedSet={savedSet}
-          savedPhases={savedPhases}
-          onSave={handleSave}
-          onUntag={handleUntag}
-        />
-
-        <PracticeRail
-          items={practiceItems}
           savedSet={savedSet}
           savedPhases={savedPhases}
           onSave={handleSave}
