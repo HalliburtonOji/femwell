@@ -260,6 +260,68 @@
       "type": "boolean",
       "default": false
     },
+    "cycle_prediction_meta": {
+      "type": "object",
+      "description": "Planner Phase 2 (spec_v2 §C1). Confidence + provenance for cycle predictions used by the Today/Cycle headers' confidence pill and Doctor-Ready Diary. Populated by migratePlannerPhase2 (one-shot) for any user with prior cycle data; refreshed on subsequent CycleEvents writes.",
+      "properties": {
+        "confidence_pct": {
+          "type": "number",
+          "description": "0-100. 4-cycle minimum before this is meaningful — below threshold the FE renders 'still learning · N of 4 cycles'."
+        },
+        "cycles_observed": {
+          "type": "integer",
+          "description": "Count of full cycles inferred from period start dates."
+        },
+        "next_period_eta": {
+          "type": "string",
+          "format": "date",
+          "description": "Predicted next period start (ISO date)."
+        },
+        "eta_window_days": {
+          "type": "integer",
+          "description": "± window in days around next_period_eta. Wider for fewer observed cycles."
+        }
+      }
+    },
+    "hrt_regimen": {
+      "type": "object",
+      "description": "Planner Phase 2 (spec_v2 §C1 + §C9). Surfaces the HRT row in Tonight's Window only when active=true. Spec default visibility: show whenever active && method != 'none'.",
+      "properties": {
+        "active": {
+          "type": "boolean",
+          "default": false
+        },
+        "method": {
+          "type": "string",
+          "enum": [
+            "patch",
+            "gel",
+            "tablet",
+            "implant",
+            "none"
+          ],
+          "default": "none"
+        },
+        "evening_dose": {
+          "type": "string",
+          "description": "Optional dose label for the Tonight row, e.g. '1 sachet' or '50 mcg'."
+        },
+        "reminder_time": {
+          "type": "string",
+          "description": "HH:MM 24h. Optional — drives the evening reminder when set."
+        }
+      }
+    },
+    "quiet_mode_until": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Planner Phase 2 (spec_v2 §C6). Auto-set by Quiet Mode when capacity > 120% for 3 days running OR mood < 3 && energy < 3 for 2 days. While now() < quiet_mode_until, the Planner FE pulls back non-anchor tasks. Null otherwise. Always one-tap undoable."
+    },
+    "pacing_bank_opt_in": {
+      "type": "boolean",
+      "default": false,
+      "description": "Planner Phase 2 (spec_v2 §C9). Per spec default: opt-IN. Spoon theory framing is loved by some users (chronic illness / ME-CFS / long-COVID) and feels infantilising to others — so the Pacing Bank Low-Spoons bundle only renders when this is true."
+    },
     "created_at": {
       "type": "string"
     },

@@ -670,6 +670,7 @@ Deno.serve(async (req) => {
   const ONE_SHOT_PHASES = new Set([
     'migrateSessionsToPractice',
     'resolveApplePodcastId',
+    'migratePlannerPhase2',
   ]);
 
   // ── First-run bootstrap ────────────────────────────────────────────────────
@@ -815,6 +816,15 @@ Deno.serve(async (req) => {
   // rows get backfilled without waiting until Sunday.
   if (wantsPhase('backfillLongreadsImages')) {
     phases.push({ name: 'backfillLongreadsImages', ...(await runPhase(base44, 'backfillLongreadsImages', 'backfillLongreadsImages')) });
+  }
+
+  // Phase 16 (one-shot): Planner Phase 2 §C1 schema migration. Populates each
+  // UserProfile.cycle_prediction_meta from existing CycleEvents PeriodStart
+  // rows + the profile's last_period_start_date / cycle_avg_length. Idempotent —
+  // skips profiles whose meta is already set. Gated by ONE_SHOT_PHASES so it
+  // fires once on the next daily cron after deploy, then locks closed.
+  if (wantsPhase('migratePlannerPhase2')) {
+    phases.push({ name: 'migratePlannerPhase2', ...(await runPhase(base44, 'migratePlannerPhase2', 'migratePlannerPhase2')) });
   }
 
   const finishedAt = new Date().toISOString();
