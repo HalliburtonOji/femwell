@@ -660,6 +660,7 @@ Deno.serve(async (req) => {
     'seedPodcasts',
     'backfillYouTubeEmbeddability',
     'backfillTikTokEmoji',
+    'backfillLongreadsImages',
   ]);
   // One-shot phases: data migrations that should run exactly ONCE across the
   // dataset, then never again. After the first successful `phase:<name>:ok`
@@ -804,6 +805,16 @@ Deno.serve(async (req) => {
   // sources so we don't wait a day for future ingests.
   if (wantsPhase('resolveApplePodcastId')) {
     phases.push({ name: 'resolveApplePodcastId', ...(await runPhase(base44, 'resolveApplePodcastId', 'resolveApplePodcastId')) });
+  }
+
+  // Phase 15 (weekly): LC-5C — backfill missing image_url on ARTICLE rows.
+  // Fetches the content_url, parses og:image / twitter:image / first
+  // <article> <img>, persists onto image_url. Idempotent — skips rows that
+  // already have a usable image. Sunday cadence; first-run bootstrap fires
+  // it on the next daily cron after deploy so the existing ~80 image-less
+  // rows get backfilled without waiting until Sunday.
+  if (wantsPhase('backfillLongreadsImages')) {
+    phases.push({ name: 'backfillLongreadsImages', ...(await runPhase(base44, 'backfillLongreadsImages', 'backfillLongreadsImages')) });
   }
 
   const finishedAt = new Date().toISOString();
