@@ -26,7 +26,7 @@ const SEED_PODCASTS = [
   { name: "You're Wrong About",                       feed_url: 'https://feeds.buzzsprout.com/1112270.rss',                                       category: 'Culture' },
   { name: 'Where Should We Begin? with Esther Perel', feed_url: 'https://feeds.megaphone.fm/ep-wswb',                                             category: 'Relationships' },
   { name: 'The Hilarious World of Depression',        feed_url: 'https://feeds.publicradio.org/public_feeds/the-hilarious-world-of-depression',  category: 'Mental Wellness' },
-  { name: 'On Being with Krista Tippett',             feed_url: 'https://onbeing.org/series/podcast/feed/',                                       category: 'Mindfulness' },
+  { name: 'On Being with Krista Tippett',             feed_url: 'https://feeds.simplecast.com/AuAxH_Bf',                                          category: 'Mindfulness' },
   { name: 'The High Low',                             feed_url: 'https://feeds.acast.com/public/shows/the-high-low',                              category: 'Culture' },
   { name: 'Slow Burn',                                feed_url: 'https://feeds.acast.com/public/shows/6965759d79fe7d554545528a',                  category: 'Culture' },
   { name: 'How To Fail With Elizabeth Day',           feed_url: 'https://rss.pdrl.fm/e402a9/feeds.megaphone.fm/howtofail',                        category: 'Lifestyle' },
@@ -79,20 +79,40 @@ function parseChannelImage(xml) {
   return '';
 }
 
+// CDATA wrappers slip into <link> / <guid> on Buzzsprout, Megaphone,
+// Public Radio + a few other RSS hosts. Strip them before they pollute
+// the URL fields downstream.
+function stripCdata(s) {
+  return String(s || '').replace(/<!\[CDATA\[|\]\]>/g, '').trim();
+}
+
 function parsePodcastItems(xml) {
   const items = [];
   const itemRe = /<item>([\s\S]*?)<\/item>/gi;
   let m;
   while ((m = itemRe.exec(xml))) {
     const block = m[1];
-    const title = (block.match(/<title>([\s\S]*?)<\/title>/i)?.[1] || '').replace(/<!\[CDATA\[|\]\]>/g, '').trim();
-    const link = (block.match(/<link>([\s\S]*?)<\/link>/i)?.[1] || '').trim();
-    const desc = (block.match(/<description>([\s\S]*?)<\/description>/i)?.[1] || '').replace(/<!\[CDATA\[|\]\]>/g, '').trim();
-    const pubDate = (block.match(/<pubDate>([\s\S]*?)<\/pubDate>/i)?.[1] || '').trim();
+    const title = stripCdata(block.match(/<title>([\s\S]*?)<\/title>/i)?.[1]);
+    // Link can come from several places depending on host:
+    //   - <link>https://…</link>            (Acast, classic RSS)
+    //   - <link href="…" rel="alternate"/>  (Atom-style; some hybrid feeds)
+    //   - <enclosure url="…">               (audio file — fallback when no
+    //                                        web link exists, e.g. Buzzsprout)
+    //   - <guid>https://…</guid>            (often a URL on Megaphone)
+    // Buzzsprout / Megaphone / Public Radio feeds frequently omit <link>
+    // entirely, so without this chain ~half of the seed feeds silently
+    // ingested zero episodes (every item rejected by the
+    // `if (!title || !link)` guard).
+    const linkEl = stripCdata(block.match(/<link>([\s\S]*?)<\/link>/i)?.[1]);
+    const linkAttr = (block.match(/<link[^>]+href=["']([^"']+)["']/i)?.[1] || '').trim();
     const enclosure = block.match(/<enclosure[^>]*url=["']([^"']+)["']/i)?.[1] || '';
+    const rawGuid = stripCdata(block.match(/<guid[^>]*>([\s\S]*?)<\/guid>/i)?.[1]);
+    const link = linkEl || linkAttr || enclosure || rawGuid;
+    const desc = stripCdata(block.match(/<description>([\s\S]*?)<\/description>/i)?.[1]);
+    const pubDate = (block.match(/<pubDate>([\s\S]*?)<\/pubDate>/i)?.[1] || '').trim();
     const itunesImage = block.match(/<itunes:image[^>]*href=["']([^"']+)["']/i)?.[1] || '';
     const itunesDuration = (block.match(/<itunes:duration>([\s\S]*?)<\/itunes:duration>/i)?.[1] || '').trim();
-    const guid = (block.match(/<guid[^>]*>([\s\S]*?)<\/guid>/i)?.[1] || link || title).trim();
+    const guid = rawGuid || link || title;
     if (!title || !link) continue;
     items.push({ title, link, desc, pubDate, enclosure, image: itunesImage, durationLabel: itunesDuration, guid });
   }
