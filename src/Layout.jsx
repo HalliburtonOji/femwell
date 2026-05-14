@@ -9,6 +9,8 @@ import ErrorBoundary from "./components/common/ErrorBoundary";
 
 import { MilestoneEventListener } from "./components/programs/MilestoneCelebrationModal";
 import { PodcastPlayerProvider } from "./components/lifestyle/listen/PodcastPlayerProvider";
+import MiniPlayer from "./components/lifestyle/listen/MiniPlayer";
+import ExpandedPlayer from "./components/lifestyle/listen/ExpandedPlayer";
 
 const HIDE_NAV = ["Onboarding", "ContentPlayer", "CycleSettings"];
 const LITE_NAV = ["ProgramDay", "ProgramDetail"];
@@ -98,6 +100,8 @@ export default function Layout({ children, currentPageName }) {
           initialTab={quickLogTab}
         />
       )}
+      <MiniPlayer />
+      <ExpandedPlayer />
     </div>
     </PodcastPlayerProvider>
   );

@@ -1,11 +1,8 @@
 import { useState } from 'react';
-import { Play, MoreHorizontal } from 'lucide-react';
+import { Play, ExternalLink } from 'lucide-react';
 import SaveHeartButton from '@/components/lifestyle/foryou/SaveHeartButton';
 import { getCategoryGradient, attachFallbackOverlay } from '@/utils/imageFallback';
-import {
-  derivePodcastLinks,
-  getPreferredPodcastApp,
-} from '@/utils/podcastLinks';
+import { usePodcastPlayer } from '@/hooks/usePodcastPlayer';
 import PodcastListenSheet from './PodcastListenSheet';
 
 function PlayIndicator() {
@@ -52,17 +49,20 @@ export default function PodcastCard({ item, saved, hasPhaseTag, onSave, onUntag 
   const articleLabel = isPractice ? 'Practice' : 'Podcast';
 
   const [sheetOpen, setSheetOpen] = useState(false);
+  const player = usePodcastPlayer();
 
-  // Phase 1 podcast tap behaviour (spec §1.5):
-  //   - First tap (no localStorage preference): open the listen sheet.
-  //   - Subsequent tap with preference set: deep-link straight to the
-  //     preferred app, bypass the sheet.
-  //   - Bottom-right "..." affordance always opens the sheet so the user
-  //     can change which app they prefer.
-  // Practice rail rows fall through to the legacy content_url path (the
+  // Phase 2 tap behaviour (spec §2.5):
+  //   - Primary tap on card body → play episode in-app via PodcastPlayer.
+  //     Mini-player appears at bottom of viewport, ExpandedPlayer one
+  //     more tap away.
+  //   - Falls back to opening the link-out sheet if (a) the audio_url is
+  //     missing or (b) the PodcastPlayerProvider isn't mounted (e.g.
+  //     rendered outside Layout).
+  //   - Bottom-right ExternalLink "↗" button always opens the link-out
+  //     sheet — the Phase 1 link-out flow is now a secondary affordance.
+  // Practice rows fall through to the legacy content_url path. The
   // PRACTICE feature was removed from Listen in Cowork's 8fa3e6f, so this
-  // branch is dead in main but kept for symmetry — PodcastCard is only
-  // mounted from the Podcasts shelf today).
+  // branch is effectively dead in main but kept for safety.
   const handleClick = () => {
     if (isPractice) {
       if (item.content_url) {
@@ -70,24 +70,15 @@ export default function PodcastCard({ item, saved, hasPhaseTag, onSave, onUntag 
       }
       return;
     }
-    const preferred = getPreferredPodcastApp();
-    if (preferred) {
-      const links = derivePodcastLinks({
-        feedUrl: item?.feed_url || '',
-        applePodcastsCollectionId: item?.apple_collection_id || '',
-      });
-      const url = links[preferred];
-      if (url) {
-        window.open(url, '_blank', 'noopener,noreferrer');
-        return;
-      }
-      // Preferred app not available for this show — fall through to sheet
-      // so the user can pick an alternative.
+    if (player && item.audio_url) {
+      player.play(item);
+      return;
     }
+    // No in-app player available → graceful fallback to link-out sheet.
     setSheetOpen(true);
   };
 
-  const handleChangeApp = (e) => {
+  const handleOpenInApp = (e) => {
     e.stopPropagation();
     setSheetOpen(true);
   };
@@ -196,14 +187,15 @@ export default function PodcastCard({ item, saved, hasPhaseTag, onSave, onUntag 
           {[item.source_name, formatRelativeDate(item.published_at)].filter(Boolean).join(' · ')}
         </p>
 
-        {/* Change-app affordance — small horizontal-dots icon top-right of
-            body. Always opens the sheet (lets the user override the saved
-            preference). Stops propagation so card-click doesn't fire too. */}
+        {/* "Open in your app" affordance — top-right of body. Always
+            opens the Phase 1 listen sheet for Spotify / Apple / Pocket
+            Casts. In Phase 2, primary tap plays in-app; this is the
+            secondary CTA per spec §2.5. */}
         {showListenSheet && (
           <button
             type="button"
-            onClick={handleChangeApp}
-            aria-label="Choose which app to open in"
+            onClick={handleOpenInApp}
+            aria-label="Open in your podcast app"
             style={{
               position: 'absolute',
               top: 12,
@@ -220,7 +212,7 @@ export default function PodcastCard({ item, saved, hasPhaseTag, onSave, onUntag 
               color: 'var(--plum-mute, #8a7768)',
             }}
           >
-            <MoreHorizontal size={18} aria-hidden="true" />
+            <ExternalLink size={16} aria-hidden="true" />
           </button>
         )}
       </div>
