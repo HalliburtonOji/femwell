@@ -50,6 +50,13 @@ if (!APP_ID || !API_KEY) {
 
 // ── SDK client ─────────────────────────────────────────────────────────────
 const { createClient } = await import('@base44/sdk');
+// Auth shape: api_key header only. Entity reads + auth.me() work.
+// Function invocation does NOT (base44 returns 500 "must be logged in"
+// for function endpoints — they require a different auth audience).
+// For function invokes, use `npx base44 exec` after one `base44 login`.
+// Do NOT auto-load ~/.base44/auth/auth.json as `token` — that platform-
+// scoped JWT is rejected at entity endpoints, breaking the reads this
+// script exists for.
 const base44 = createClient({
   appId: APP_ID,
   headers: { api_key: API_KEY },

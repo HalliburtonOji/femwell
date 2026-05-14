@@ -165,10 +165,16 @@ Deno.serve(async (req) => {
       }
 
       // 2. Fetch the feed
+      // Use a browser-like User-Agent — Acast/Simplecast/Megaphone reject
+      // bare "FemWell/1.0" with 403 or 406. The Accept header advertises
+      // RSS/Atom + XML fallback. Mirrors ingestRSS's CHROME_UA approach.
       let xml = '';
       try {
         const res = await fetch(seed.feed_url, {
-          headers: { 'User-Agent': 'FemWell/1.0 (+https://femwells.com)' },
+          headers: {
+            'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36',
+            'Accept': 'application/rss+xml, application/atom+xml, application/xml, text/xml, */*',
+          },
           signal: AbortSignal.timeout(20000),
         });
         if (!res.ok) throw new Error(`HTTP ${res.status}`);
@@ -191,13 +197,16 @@ Deno.serve(async (req) => {
           ).catch(() => []);
           if (dupe.length > 0) { episodesSkipped += 1; continue; }
 
-          const image = ep.image || channelImage;
+          // Image is optional. PodcastCard's getCategoryGradient renders a
+          // tasteful fallback when image_url is empty, so a missing
+          // <itunes:image> should NOT throw the row away. (Previously this
+          // block was a hard skip — that meant a single under-tagged feed
+          // could yield zero episodes ingested and the rail rendered nothing.)
+          const image = ep.image || channelImage || '';
           if (!image) {
             await logIngestError(base44, 'image_missing',
               { source_identifier: seed.name, item_id: ep.guid, raw_payload: { title: ep.title } },
-              new Error('No image_url for episode and no channel artwork'));
-            episodesSkipped += 1;
-            continue;
+              new Error('No image_url for episode and no channel artwork (writing row with empty image)'));
           }
 
           const seconds = durationToSeconds(ep.durationLabel);
