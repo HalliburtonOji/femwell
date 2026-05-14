@@ -10,19 +10,26 @@
 
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.25';
 
+// Seed feed URLs verified via iTunes Search API + manual HTTP check
+// 2026-05-14. First seedPodcasts run only landed The High Low — 8 of 12
+// hardcoded URLs were 404 because Acast / Simplecast / Megaphone had
+// rotated slugs since the original seeds were authored. Canonical URLs
+// below are from iTunes Search API results matched on trackName; all 12
+// verified 200 + valid RSS body from base44 edge before commit. If a
+// feed dies again, re-run an iTunes Search lookup for the new URL.
 const SEED_PODCASTS = [
-  { name: 'Maintenance Phase',                        feed_url: 'https://feeds.buzzsprout.com/1411126.rss',                         category: 'Lifestyle' },
-  { name: 'Adam Buxton',                              feed_url: 'https://feeds.acast.com/public/shows/adam-buxton',                 category: 'Culture' },
-  { name: 'This Is Dating',                           feed_url: 'https://feeds.simplecast.com/8C7CExJP',                             category: 'Relationships' },
-  { name: 'Modern Love',                              feed_url: 'https://feeds.simplecast.com/9LNwlcLU',                             category: 'Relationships' },
-  { name: 'Sentimental Garbage',                      feed_url: 'https://feeds.acast.com/public/shows/sentimental-garbage',         category: 'Culture' },
-  { name: "You're Wrong About",                       feed_url: 'https://feeds.buzzsprout.com/1112270.rss',                         category: 'Culture' },
-  { name: 'Where Should We Begin? with Esther Perel', feed_url: 'https://feeds.simplecast.com/RZeyV7Lr',                             category: 'Relationships' },
-  { name: 'The Hilarious World of Depression',        feed_url: 'https://feeds.megaphone.fm/APMG6873489274',                        category: 'Mental Wellness' },
-  { name: 'On Being with Krista Tippett',             feed_url: 'https://onbeing.org/series/podcast/feed/',                         category: 'Mindfulness' },
-  { name: 'The High Low',                             feed_url: 'https://feeds.acast.com/public/shows/the-high-low',                category: 'Culture' },
-  { name: 'Slow Burn',                                feed_url: 'https://feeds.megaphone.fm/slowburn',                              category: 'Culture' },
-  { name: 'How To Fail With Elizabeth Day',           feed_url: 'https://feeds.acast.com/public/shows/howtofail',                   category: 'Lifestyle' },
+  { name: 'Maintenance Phase',                        feed_url: 'https://feeds.buzzsprout.com/1411126.rss',                                       category: 'Lifestyle' },
+  { name: 'Adam Buxton',                              feed_url: 'https://feeds.acast.com/public/shows/18dcd5db-f898-42c6-ab31-3a1853c1a645',      category: 'Culture' },
+  { name: 'This Is Dating',                           feed_url: 'https://feeds.simplecast.com/xBrAtG6E',                                          category: 'Relationships' },
+  { name: 'Modern Love',                              feed_url: 'https://feeds.simplecast.com/eHEJ08b1',                                          category: 'Relationships' },
+  { name: 'Sentimental Garbage',                      feed_url: 'https://feeds.acast.com/public/shows/edd6bde5-221e-4c07-bde8-2a0241ccc6e0',      category: 'Culture' },
+  { name: "You're Wrong About",                       feed_url: 'https://feeds.buzzsprout.com/1112270.rss',                                       category: 'Culture' },
+  { name: 'Where Should We Begin? with Esther Perel', feed_url: 'https://feeds.megaphone.fm/ep-wswb',                                             category: 'Relationships' },
+  { name: 'The Hilarious World of Depression',        feed_url: 'https://feeds.publicradio.org/public_feeds/the-hilarious-world-of-depression',  category: 'Mental Wellness' },
+  { name: 'On Being with Krista Tippett',             feed_url: 'https://onbeing.org/series/podcast/feed/',                                       category: 'Mindfulness' },
+  { name: 'The High Low',                             feed_url: 'https://feeds.acast.com/public/shows/the-high-low',                              category: 'Culture' },
+  { name: 'Slow Burn',                                feed_url: 'https://feeds.acast.com/public/shows/6965759d79fe7d554545528a',                  category: 'Culture' },
+  { name: 'How To Fail With Elizabeth Day',           feed_url: 'https://rss.pdrl.fm/e402a9/feeds.megaphone.fm/howtofail',                        category: 'Lifestyle' },
 ];
 
 async function logIngestError(base44, stage, ctx, err) {
@@ -162,12 +169,23 @@ Deno.serve(async (req) => {
         }
       } else {
         sourcesExisting += 1;
+        // Heal any drift between the seed config and the DB row:
+        //   - source_type may not be PODCAST yet
+        //   - feed_url may be stale (we rotated 8 URLs on 2026-05-14
+        //     after Acast/Simplecast/Megaphone changed slugs)
+        const patch = {};
         if (sourceRow.source_type !== 'PODCAST') {
+          patch.source_type = 'PODCAST';
+          patch.tags = Array.from(new Set([...(sourceRow.tags || []), 'podcast']));
+        }
+        if (sourceRow.feed_url !== seed.feed_url) {
+          patch.feed_url = seed.feed_url;
+          patch.url = seed.feed_url;
+        }
+        if (Object.keys(patch).length > 0) {
           try {
-            await sb.entities.LifestyleSources.update(sourceRow.id, {
-              source_type: 'PODCAST',
-              tags: Array.from(new Set([...(sourceRow.tags || []), 'podcast'])),
-            });
+            await sb.entities.LifestyleSources.update(sourceRow.id, patch);
+            sourceRow = { ...sourceRow, ...patch };
           } catch { /* non-fatal */ }
         }
       }
