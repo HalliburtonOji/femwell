@@ -2,7 +2,7 @@
 
 > **This file is the source of truth for "where we are and what's next."** Both Claudes read it on session start and write to it after every commit. Halli should never have to copy status between Cowork and Code — they coordinate through this file.
 
-**Last updated:** 2026-05-14 by Code (acknowledging Cowork handoff + flagging Cloudflare 403 on CLI reads + re-prioritising queue to podcast Phase 1)
+**Last updated:** 2026-05-14 by Cowork (after `8fa3e6f` Lifestyle Read+sticky-filter+Practice-removal)
 
 ---
 
@@ -10,7 +10,8 @@
 
 | Commit | Author | What it did |
 |---|---|---|
-| (pending) | Code | **STATUS.md hygiene fix.** Read podcast-spec handoff. Reordered queue to put Podcast Phase 1 + Phase 2 at top. Flagged: Cloudflare 403 hit my CLI read commands after the burst of invokes earlier — Cowork's `dd908fe` row noting "Podcasts rail visible" was visual; my CLI count for `media_type=PODCAST` was `0` (seedPodcasts hasn't been re-invoked since publish landed the UA fix). |
+| `8fa3e6f` | Cowork | **Lifestyle refactor per Halli's screenshots:** (1) Filter chips + Filter dropdown now share a single sticky row in the page header (was two rows); chips scroll horizontally with auto-centring on tap, Filter button collapses to icon-only inline. (2) Rename "Browse" tab → "Read"; URL id changes too (`?tab=read`). Legacy `?tab=browse` URLs auto-redirect via `LEGACY_TAB_REDIRECTS`. (3) Remove Practice entirely from Listen tab — chip, `PracticeRail` component, `media_type='PRACTICE'` filter all gone. The 9 PRACTICE rows in `LifestyleItems` are orphaned (no destination/surface); Code can delete them via `npx base44-cli delete` when convenient. activeChip state lifted from individual tab bodies up to `Lifestyle.jsx` so it lives in same scope as tab + sticky header. |
+| `f0fbad9` | Code | **STATUS.md hygiene fix.** Read podcast-spec handoff. Reordered queue to put Podcast Phase 1 + Phase 2 at top. Flagged: Cloudflare 403 hit my CLI read commands after the burst of invokes earlier — Cowork's `dd908fe` row noting "Podcasts rail visible" was visual; my CLI count for `media_type=PODCAST` was `0` (seedPodcasts hasn't been re-invoked since publish landed the UA fix). |
 | `1b1299f` | Cowork | **Podcast build spec authored** — Phase 1 (link-out sheet) + Phase 2 (in-app player) in `claude-state/base44_mps/2026-05-14_podcast/spec.md`. Decision record in `claude-state/decisions/2026-05-14_podcast_strategy.md`. Capacitor + Apple paywall constraint logged in memory. Halli's 4 decisions: all 3 destinations (Spotify + Apple + Pocket Casts), no Spotify dev app yet (pod.link fallback), both phases in parallel, Capacitor flagged for future. Handoff to Code at `claude-handoff/from-cowork-to-code-2026-05-14-podcast-spec.md`. |
 | `82c9320` | Cowork | **Research drop:** `claude-state/research_podcast_strategy_2026-05-14.md` — 5,360 words on podcast link-outs (Spotify / Apple / Pocket Casts) + in-app player (legal, stack, MVP feature set, Podcasting 2.0). Phase 1 ship recommended. 7 open questions for Halli. |
 | `dd908fe` | Cowork | docs(state): sync STATUS.md after Code's 3 commits + publish. |
