@@ -122,7 +122,7 @@ export default function QuickSwitchOverlay({ currentPageName, openQuickLog }) {
                     <p className="text-xs font-semibold uppercase tracking-widest mb-1" style={{ color: "var(--mauve)", fontFamily: "'Inter', sans-serif" }}>
                       Always available
                     </p>
-                    <h2 className="text-lg font-semibold" style={{ color: "var(--plum)", fontFamily: "'Playfair Display', serif" }}>
+                    <h2 className="text-lg font-semibold" style={{ color: "var(--plum)", fontFamily: "'Fraunces', serif" }}>
                       Quick Switch
                     </h2>
                   </div>

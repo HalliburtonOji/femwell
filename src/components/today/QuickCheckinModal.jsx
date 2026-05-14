@@ -151,7 +151,7 @@ export default function QuickCheckinModal({ existing, onClose, onSave, userId, d
           <div style={{ width: 32, height: 4, borderRadius: 9999, backgroundColor: "var(--border)", margin: "0 auto 14px" }} />
           <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 10 }}>
             <div>
-              <h2 style={{ fontFamily: "'Playfair Display', serif", fontSize: 18, color: "var(--plum)", fontWeight: 600, margin: 0 }}>
+              <h2 style={{ fontFamily: "'Fraunces', serif", fontSize: 18, color: "var(--plum)", fontWeight: 600, margin: 0 }}>
                 How are you today?
               </h2>
               {completionStatus && (

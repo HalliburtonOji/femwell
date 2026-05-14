@@ -78,7 +78,7 @@ export default function PregnancyWeekCard({ profile }) {
     <div style={{ background: "linear-gradient(135deg, var(--rose-dust-subtle) 0%, var(--mauve-subtle) 100%)", border: "1px solid var(--rose-dust-light)", borderRadius: 20, padding: 20, marginBottom: 14 }}>
       <p style={sLabel}>Your pregnancy</p>
       <div style={{ display: "flex", alignItems: "flex-end", gap: 8, marginTop: 8, marginBottom: 4 }}>
-        <p style={{ fontFamily: "'Playfair Display', serif", fontSize: 32, fontWeight: 700, color: "var(--plum)", lineHeight: 1 }}>Week {week}</p>
+        <p style={{ fontFamily: "'Fraunces', serif", fontSize: 32, fontWeight: 700, color: "var(--plum)", lineHeight: 1 }}>Week {week}</p>
         <p style={{ fontSize: 14, color: "var(--mauve)", fontFamily: "'Inter', sans-serif", marginBottom: 4 }}>of 40</p>
       </div>
       <div style={{ height: 6, backgroundColor: "rgba(196,132,154,0.2)", borderRadius: 3, overflow: "hidden", marginBottom: 14 }}>

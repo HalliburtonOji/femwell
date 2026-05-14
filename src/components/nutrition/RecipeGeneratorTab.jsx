@@ -101,7 +101,7 @@ function RecipeCard({ recipe, onSaveAsTemplate }) {
       <div className="p-5" style={{ backgroundColor: "var(--plum)" }}>
         <div className="flex items-start justify-between gap-2 mb-3">
           <div>
-            <p className="font-bold text-base leading-snug" style={{ color: "white", fontFamily: "'Playfair Display', serif" }}>
+            <p className="font-bold text-base leading-snug" style={{ color: "white", fontFamily: "'Fraunces', serif" }}>
               {recipe.recipe_name}
             </p>
             {recipe.tagline && <p className="text-xs mt-0.5" style={{ color: "rgba(255,255,255,0.65)" }}>{recipe.tagline}</p>}
@@ -302,7 +302,7 @@ export default function RecipeGeneratorTab({ user }) {
             <ChefHat className="w-5 h-5 text-white" />
           </div>
           <div>
-            <p className="font-semibold" style={{ color: "var(--plum)", fontFamily: "'Playfair Display', serif" }}>Recipe Generator</p>
+            <p className="font-semibold" style={{ color: "var(--plum)", fontFamily: "'Fraunces', serif" }}>Recipe Generator</p>
             <p className="text-xs" style={{ color: "var(--mauve)" }}>AI-crafted recipes tailored to you</p>
           </div>
         </div>

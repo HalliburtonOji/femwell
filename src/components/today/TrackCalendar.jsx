@@ -106,7 +106,7 @@ export default function TrackCalendar({ user, profile, onSelectDate, selectedDat
         >
           <ChevronLeft style={{ width: 16, height: 16, color: "var(--plum)" }} />
         </button>
-        <p style={{ fontSize: 16, fontWeight: 600, color: "var(--plum)", fontFamily: "'Playfair Display', serif" }}>
+        <p style={{ fontSize: 16, fontWeight: 600, color: "var(--plum)", fontFamily: "'Fraunces', serif" }}>
           {format(currentMonthDate, "MMMM yyyy")}
         </p>
         <button

@@ -41,7 +41,7 @@ export default function PeriodCountdownCard({ profile }) {
         </p>
         <p style={{
           fontSize: 20, fontWeight: 700,
-          fontFamily: "'Playfair Display', serif",
+          fontFamily: "'Fraunces', serif",
           color: "var(--plum)", lineHeight: 1.1,
         }}>
           🌹 Period in {pred.daysUntil} day{pred.daysUntil !== 1 ? "s" : ""}
@@ -60,7 +60,7 @@ export default function PeriodCountdownCard({ profile }) {
         backgroundColor: urgency + "20",
         border: `1px solid ${urgency}40`,
         display: "flex", alignItems: "center", justifyContent: "center",
-        fontFamily: "'Playfair Display', serif",
+        fontFamily: "'Fraunces', serif",
         fontSize: 22, fontWeight: 700, color: urgency,
       }}>
         {pred.daysUntil}

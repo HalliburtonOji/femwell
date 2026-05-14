@@ -50,7 +50,7 @@ export default function DailyPromptCard({ user }) {
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 12 }}>
         <div>
           <p style={{ fontSize: "0.6rem", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.12em", color: "var(--mauve)", fontFamily: "'Inter', sans-serif", marginBottom: 3 }}>Morning check-in</p>
-          <p style={{ fontSize: 15, fontWeight: 700, color: "var(--plum)", fontFamily: "'Playfair Display', serif" }}>How are you starting today?</p>
+          <p style={{ fontSize: 15, fontWeight: 700, color: "var(--plum)", fontFamily: "'Fraunces', serif" }}>How are you starting today?</p>
         </div>
         <button onClick={dismiss} style={{ background: "none", border: "none", cursor: "pointer", color: "var(--mauve)", padding: 2, flexShrink: 0 }}>
           <span style={{ fontSize: 16 }}>x</span>

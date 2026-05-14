@@ -20,7 +20,7 @@ export default function ActiveProgramCard({ activeProgramEntry, activeProgram })
       <div className="flex items-start justify-between gap-3 mb-4">
         <div>
           <p className="mb-1" style={label}>Active Program</p>
-          <h3 className="text-lg font-semibold leading-tight" style={{ color: "var(--plum)", fontFamily: "'Playfair Display', serif" }}>{activeProgram.title}</h3>
+          <h3 className="text-lg font-semibold leading-tight" style={{ color: "var(--plum)", fontFamily: "'Fraunces', serif" }}>{activeProgram.title}</h3>
           <p className="text-xs mt-1" style={{ color: "var(--mauve)", fontFamily: "'Inter', sans-serif" }}>Day {activeProgramEntry.current_day || 1} · pick up where you left off</p>
         </div>
         {activeProgramEntry.streak_count > 0 && (

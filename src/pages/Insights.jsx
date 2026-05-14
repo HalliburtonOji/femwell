@@ -275,7 +275,7 @@ export default function Insights() {
             </Link>
             <div>
               <p style={{ fontSize: "0.6rem", fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.12em", color: "var(--slate-500, #64748B)", fontFamily: "'Inter', sans-serif" }}>Discover patterns</p>
-              <h1 style={{ fontSize: 22, fontWeight: 700, fontFamily: "'Playfair Display', serif", color: "var(--plum)", letterSpacing: "-0.02em" }}>
+              <h1 style={{ fontSize: 22, fontWeight: 700, fontFamily: "'Fraunces', serif", color: "var(--plum)", letterSpacing: "-0.02em" }}>
                 Insights
               </h1>
             </div>

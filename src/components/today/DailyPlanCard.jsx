@@ -55,7 +55,7 @@ export default function DailyPlanCard({ user }) {
       </div>
       {p.focus_for_today && (
         <div style={{ backgroundColor: "var(--rose-dust-subtle)", borderRadius: 12, padding: "10px 14px", marginBottom: 12 }}>
-          <p style={{ fontSize: 14, fontWeight: 600, color: "var(--plum)", fontFamily: "'Playfair Display', serif", lineHeight: 1.3 }}>{p.focus_for_today}</p>
+          <p style={{ fontSize: 14, fontWeight: 600, color: "var(--plum)", fontFamily: "'Fraunces', serif", lineHeight: 1.3 }}>{p.focus_for_today}</p>
         </div>
       )}
       <div style={{ display: "flex", flexDirection: "column", gap: 7 }}>

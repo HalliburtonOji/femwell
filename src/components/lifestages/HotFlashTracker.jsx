@@ -72,11 +72,11 @@ export default function HotFlashTracker({ user }) {
         <p style={sLabel}>Hot Flash Tracker</p>
         <div style={{ display: "flex", gap: 16, marginTop: 10, marginBottom: 14 }}>
           <div style={{ flex: 1, textAlign: "center", backgroundColor: "var(--rose-dust-subtle)", borderRadius: 14, padding: "10px 6px" }}>
-            <p style={{ fontSize: 22, fontWeight: 700, color: "var(--rose-dust)", fontFamily: "'Playfair Display', serif" }}>{todayCount}</p>
+            <p style={{ fontSize: 22, fontWeight: 700, color: "var(--rose-dust)", fontFamily: "'Fraunces', serif" }}>{todayCount}</p>
             <p style={{ fontSize: 11, color: "var(--mauve)", fontFamily: "'Inter', sans-serif" }}>Today</p>
           </div>
           <div style={{ flex: 1, textAlign: "center", backgroundColor: "var(--ivory-dark)", borderRadius: 14, padding: "10px 6px" }}>
-            <p style={{ fontSize: 22, fontWeight: 700, color: "var(--plum)", fontFamily: "'Playfair Display', serif" }}>{thisWeekCount}</p>
+            <p style={{ fontSize: 22, fontWeight: 700, color: "var(--plum)", fontFamily: "'Fraunces', serif" }}>{thisWeekCount}</p>
             <p style={{ fontSize: 11, color: "var(--mauve)", fontFamily: "'Inter', sans-serif" }}>This week</p>
           </div>
           {topTrigger && (
@@ -97,7 +97,7 @@ export default function HotFlashTracker({ user }) {
         <div style={{ position: "fixed", inset: 0, zIndex: 50 }}>
           <div onClick={() => setShowForm(false)} style={{ position: "absolute", inset: 0, backgroundColor: "rgba(42,32,53,0.4)", backdropFilter: "blur(4px)" }} />
           <div style={{ position: "absolute", bottom: 0, left: 0, right: 0, backgroundColor: "var(--surface)", borderRadius: "28px 28px 0 0", padding: 24, maxHeight: "70vh", overflowY: "auto" }}>
-            <h3 style={{ fontFamily: "'Playfair Display', serif", fontSize: 18, color: "var(--plum)", marginBottom: 16 }}>Log hot flash</h3>
+            <h3 style={{ fontFamily: "'Fraunces', serif", fontSize: 18, color: "var(--plum)", marginBottom: 16 }}>Log hot flash</h3>
             <p style={{ ...sLabel, marginBottom: 8 }}>Severity</p>
             <div style={{ display: "flex", gap: 8, marginBottom: 16 }}>
               {SEVERITIES.map(s => (

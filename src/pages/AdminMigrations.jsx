@@ -184,7 +184,7 @@ export default function AdminMigrations() {
   return (
     <div className="min-h-screen px-6 py-16" style={{ backgroundColor: "var(--ivory)" }}>
       <div className="max-w-lg mx-auto">
-        <h1 className="text-2xl font-bold mb-2" style={{ fontFamily: "'Playfair Display', serif", color: "var(--plum)" }}>Admin · Data Migrations</h1>
+        <h1 className="text-2xl font-bold mb-2" style={{ fontFamily: "'Fraunces', serif", color: "var(--plum)" }}>Admin · Data Migrations</h1>
         <p className="text-sm mb-10" style={{ color: "var(--mauve)", fontFamily: "'Inter', sans-serif" }}>One-time data fixes. Run carefully — each is idempotent.</p>
 
         <MigrationCard

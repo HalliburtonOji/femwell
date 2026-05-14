@@ -13,7 +13,7 @@ export default function ProgramReflectionCard({ prompt, value, onChange, onSave,
     <div className="rounded-[24px] p-5 md:p-6" style={card}>
       <div className="mb-4">
         <p style={sLabel} className="mb-1.5">Day reflection</p>
-        <p className="text-sm font-semibold" style={{ color: "var(--plum)", fontFamily: "'Playfair Display', serif" }}>
+        <p className="text-sm font-semibold" style={{ color: "var(--plum)", fontFamily: "'Fraunces', serif" }}>
           How did today feel?
         </p>
         <p className="text-xs mt-1" style={{ color: "var(--mauve)", fontFamily: "'Inter', sans-serif" }}>

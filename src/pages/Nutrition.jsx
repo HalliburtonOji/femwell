@@ -106,7 +106,7 @@ export default function Nutrition() {
           <div>
             <p style={sLabel} className="mb-1.5">Wellness Studio</p>
             <h1 className="text-2xl md:text-3xl font-bold leading-tight"
-              style={{ fontFamily: "'Playfair Display', serif", color: "var(--plum)", letterSpacing: "-0.02em" }}>
+              style={{ fontFamily: "'Fraunces', serif", color: "var(--plum)", letterSpacing: "-0.02em" }}>
               Nutrition
             </h1>
             <p className="text-sm mt-1" style={{ color: "var(--mauve)", fontFamily: "'Inter', sans-serif" }}>

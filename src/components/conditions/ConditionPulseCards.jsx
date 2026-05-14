@@ -117,7 +117,7 @@ function PerimenopauseScore({ userId }) {
   return (
     <div style={{ ...card, backgroundColor: "var(--ivory-dark)", borderColor: "var(--border-subtle)" }}>
       <p style={{ ...sLabel, marginBottom: 8 }}>Perimenopause index</p>
-      <p style={{ fontSize: 26, fontWeight: 700, color: "var(--plum)", fontFamily: "'Playfair Display', serif" }}>{score} <span style={{ fontSize: 13, fontWeight: 400, color: "var(--mauve)", fontFamily: "'Inter', sans-serif" }}>/ 10</span></p>
+      <p style={{ fontSize: 26, fontWeight: 700, color: "var(--plum)", fontFamily: "'Fraunces', serif" }}>{score} <span style={{ fontSize: 13, fontWeight: 400, color: "var(--mauve)", fontFamily: "'Inter', sans-serif" }}>/ 10</span></p>
       <p style={{ fontSize: 12, color: "var(--mauve)", fontFamily: "'Inter', sans-serif", marginTop: 4 }}>Average symptom severity across last 30 days of logged perimenopausal symptoms.</p>
     </div>
   );
@@ -256,13 +256,13 @@ function CyclePatternsCard({ userId, profile, cycleEvents }) {
         {minLen && maxLen && (
           <div style={{ backgroundColor: "var(--ivory-dark)", borderRadius: 12, padding: "10px 14px" }}>
             <p style={{ fontSize: 10, color: "var(--mauve)", fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.1em", fontFamily: "'Inter', sans-serif" }}>Range (6 months)</p>
-            <p style={{ fontSize: 18, fontWeight: 700, color: "var(--plum)", fontFamily: "'Playfair Display', serif", marginTop: 2 }}>{minLen}–{maxLen}d</p>
+            <p style={{ fontSize: 18, fontWeight: 700, color: "var(--plum)", fontFamily: "'Fraunces', serif", marginTop: 2 }}>{minLen}–{maxLen}d</p>
           </div>
         )}
         {avgLen && (
           <div style={{ backgroundColor: "var(--ivory-dark)", borderRadius: 12, padding: "10px 14px" }}>
             <p style={{ fontSize: 10, color: "var(--mauve)", fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.1em", fontFamily: "'Inter', sans-serif" }}>Average</p>
-            <p style={{ fontSize: 18, fontWeight: 700, color: "var(--plum)", fontFamily: "'Playfair Display', serif", marginTop: 2 }}>{avgLen}d</p>
+            <p style={{ fontSize: 18, fontWeight: 700, color: "var(--plum)", fontFamily: "'Fraunces', serif", marginTop: 2 }}>{avgLen}d</p>
           </div>
         )}
         {nextDateStr && (

@@ -106,7 +106,7 @@ function QuickCheckCard({ analysis, onDismiss }) {
         <X className="w-4 h-4" />
       </button>
       {insight?.headline && (
-        <p className="text-sm font-semibold mb-1.5" style={{ color: "#1A6645", fontFamily: "'Playfair Display', serif" }}>
+        <p className="text-sm font-semibold mb-1.5" style={{ color: "#1A6645", fontFamily: "'Fraunces', serif" }}>
           {insight.headline}
         </p>
       )}
@@ -531,7 +531,7 @@ export default function NutritionTodayTab({ user, profile, nutritionProfile, day
           <div style={{ display: "flex", justifyContent: "center", marginBottom: 16 }}>
             <div style={{ width: 32, height: 4, borderRadius: 9999, backgroundColor: "var(--border)" }} />
           </div>
-          <p style={{ fontFamily: "'Playfair Display', serif", fontSize: 17, fontWeight: 600, color: "var(--plum)", marginBottom: 20 }}>Log {drinkModal.label}</p>
+          <p style={{ fontFamily: "'Fraunces', serif", fontSize: 17, fontWeight: 600, color: "var(--plum)", marginBottom: 20 }}>Log {drinkModal.label}</p>
           {CUSTOM_NAME_META[drinkModal.typeId] && (
             <div style={{ marginBottom: 16 }}>
               <p style={{ fontSize: 11, fontWeight: 600, color: "var(--mauve)", fontFamily: "'Inter', sans-serif", marginBottom: 6 }}>{CUSTOM_NAME_META[drinkModal.typeId].label}</p>

@@ -62,7 +62,7 @@ export default function CycleBasicsStep({
     <div className="w-full space-y-5">
       <div>
         <p style={sLabel}>Cycle basics</p>
-        <h2 style={{ fontSize: "22px", fontWeight: 700, color: "var(--plum)", fontFamily: "'Playfair Display', serif", marginTop: "4px", lineHeight: 1.2 }}>
+        <h2 style={{ fontSize: "22px", fontWeight: 700, color: "var(--plum)", fontFamily: "'Fraunces', serif", marginTop: "4px", lineHeight: 1.2 }}>
           Let's personalize your experience
         </h2>
         <p style={{ fontSize: "13px", color: "var(--mauve)", fontFamily: "'Inter', sans-serif", marginTop: "6px" }}>

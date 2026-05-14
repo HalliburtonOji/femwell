@@ -85,7 +85,7 @@ export default function NotificationSheet({ open, onClose, userId, onRead }) {
             {/* Header */}
             <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "12px 18px 10px", borderBottom: "1px solid var(--border-subtle)", flexShrink: 0 }}>
               <div>
-                <p style={{ fontSize: 16, fontWeight: 700, color: "var(--plum)", fontFamily: "'Playfair Display', serif" }}>Notifications</p>
+                <p style={{ fontSize: 16, fontWeight: 700, color: "var(--plum)", fontFamily: "'Fraunces', serif" }}>Notifications</p>
               </div>
               <button onClick={onClose} style={{ width: 30, height: 30, borderRadius: 9999, border: "none", backgroundColor: "var(--ivory-dark)", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center" }}>
                 <X className="w-3.5 h-3.5" style={{ color: "var(--mauve)" }} />

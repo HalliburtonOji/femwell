@@ -180,7 +180,7 @@ export default function DoctorExport() {
             <ArrowLeft className="w-4 h-4" style={{ color: "var(--plum)" }} />
           </button>
           <div>
-            <h1 style={{ fontSize: 22, fontWeight: 700, color: "var(--plum)", fontFamily: "'Playfair Display', serif" }}>Health Summary</h1>
+            <h1 style={{ fontSize: 22, fontWeight: 700, color: "var(--plum)", fontFamily: "'Fraunces', serif" }}>Health Summary</h1>
             <p style={{ fontSize: 12, color: "var(--mauve)", fontFamily: "'Inter', sans-serif" }}>Share with your doctor · {exportDate}</p>
           </div>
         </div>
@@ -251,7 +251,7 @@ export default function DoctorExport() {
                   { label: "Stress", value: m.stress, max: 5 },
                 ].map(metric => (
                   <div key={metric.label} style={{ textAlign: "center" }}>
-                    <p style={{ fontSize: 16, fontWeight: 700, color: "var(--plum)", fontFamily: "'Playfair Display', serif" }}>
+                    <p style={{ fontSize: 16, fontWeight: 700, color: "var(--plum)", fontFamily: "'Fraunces', serif" }}>
                       {metric.value != null ? `${metric.value}${metric.unit || (metric.max ? `/${metric.max}` : '')}` : "—"}
                     </p>
                     <p style={{ fontSize: 10, color: "var(--mauve)", fontFamily: "'Inter', sans-serif" }}>{metric.label}</p>
@@ -281,11 +281,11 @@ export default function DoctorExport() {
           <p style={sLabel}>Exercise (90 days)</p>
           <div className="flex gap-6">
             <div>
-              <p style={{ fontSize: 24, fontWeight: 700, color: "var(--plum)", fontFamily: "'Playfair Display', serif" }}>{exerciseDaysPerWeek}</p>
+              <p style={{ fontSize: 24, fontWeight: 700, color: "var(--plum)", fontFamily: "'Fraunces', serif" }}>{exerciseDaysPerWeek}</p>
               <p style={{ fontSize: 12, color: "var(--mauve)", fontFamily: "'Inter', sans-serif" }}>days/week avg</p>
             </div>
             <div>
-              <p style={{ fontSize: 24, fontWeight: 700, color: "var(--plum)", fontFamily: "'Playfair Display', serif" }}>{exerciseDays.length}</p>
+              <p style={{ fontSize: 24, fontWeight: 700, color: "var(--plum)", fontFamily: "'Fraunces', serif" }}>{exerciseDays.length}</p>
               <p style={{ fontSize: 12, color: "var(--mauve)", fontFamily: "'Inter', sans-serif" }}>total days</p>
             </div>
           </div>

@@ -86,7 +86,7 @@ export default function KickTrackerSection({ user }) {
           <>
             <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 24, marginBottom: 16 }}>
               <div>
-                <p style={{ fontSize: 52, fontWeight: 700, color: "var(--plum)", fontFamily: "'Playfair Display', serif", lineHeight: 1 }}>{kicks}</p>
+                <p style={{ fontSize: 52, fontWeight: 700, color: "var(--plum)", fontFamily: "'Fraunces', serif", lineHeight: 1 }}>{kicks}</p>
                 <p style={{ fontSize: 10, color: "var(--mauve)" }}>kicks</p>
               </div>
               <div>
@@ -124,11 +124,11 @@ export default function KickTrackerSection({ user }) {
           <p style={{ fontSize: 13, fontWeight: 700, color: "var(--plum)", marginBottom: 12 }}>This week</p>
           <div style={{ display: "flex", gap: 12, marginBottom: 14 }}>
             <div style={{ textAlign: "center", flex: 1, backgroundColor: "var(--rose-dust-subtle)", borderRadius: 10, padding: 10 }}>
-              <p style={{ fontSize: 24, fontWeight: 700, color: "var(--rose-dust)", fontFamily: "'Playfair Display', serif" }}>{weeklySessions.length}</p>
+              <p style={{ fontSize: 24, fontWeight: 700, color: "var(--rose-dust)", fontFamily: "'Fraunces', serif" }}>{weeklySessions.length}</p>
               <p style={{ fontSize: 10, color: "var(--mauve)" }}>sessions</p>
             </div>
             <div style={{ textAlign: "center", flex: 1, backgroundColor: "var(--sage-subtle)", borderRadius: 10, padding: 10 }}>
-              <p style={{ fontSize: 24, fontWeight: 700, color: "var(--sage)", fontFamily: "'Playfair Display', serif" }}>{avgKicks}</p>
+              <p style={{ fontSize: 24, fontWeight: 700, color: "var(--sage)", fontFamily: "'Fraunces', serif" }}>{avgKicks}</p>
               <p style={{ fontSize: 10, color: "var(--mauve)" }}>avg kicks</p>
             </div>
           </div>

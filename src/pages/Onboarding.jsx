@@ -298,10 +298,10 @@ export default function Onboarding() {
               display: "flex", alignItems: "center", justifyContent: "center",
               backgroundColor: "var(--rose-dust-subtle)", border: "1px solid var(--rose-dust-light)"
             }}>
-              <span style={{ fontSize: "36px", fontWeight: 700, fontFamily: "'Playfair Display', serif", color: "var(--rose-dust)" }}>F</span>
+              <span style={{ fontSize: "36px", fontWeight: 700, fontFamily: "'Fraunces', serif", color: "var(--rose-dust)" }}>F</span>
             </div>
             <div>
-              <h1 style={{ fontSize: "28px", fontWeight: 700, lineHeight: 1.1, fontFamily: "'Playfair Display', serif", color: "var(--plum)", letterSpacing: "-0.02em" }}>
+              <h1 style={{ fontSize: "28px", fontWeight: 700, lineHeight: 1.1, fontFamily: "'Fraunces', serif", color: "var(--plum)", letterSpacing: "-0.02em" }}>
                 Welcome to FemWell
               </h1>
               <p style={{ fontSize: "15px", lineHeight: 1.6, color: "var(--mauve)", fontFamily: "'Inter', sans-serif", marginTop: "8px" }}>
@@ -337,7 +337,7 @@ export default function Onboarding() {
         {current === "display_name" && (
           <div className="w-full space-y-6">
             <div>
-              <h2 style={{ fontSize: "22px", fontWeight: 700, color: "var(--plum)", fontFamily: "'Playfair Display', serif", marginTop: "4px", lineHeight: 1.2 }}>
+              <h2 style={{ fontSize: "22px", fontWeight: 700, color: "var(--plum)", fontFamily: "'Fraunces', serif", marginTop: "4px", lineHeight: 1.2 }}>
                 What should we call you?
               </h2>
               <p style={{ fontSize: "13px", color: "var(--mauve)", fontFamily: "'Inter', sans-serif", marginTop: "6px" }}>
@@ -367,7 +367,7 @@ export default function Onboarding() {
           <div className="w-full space-y-6">
             <div>
               <p style={sLabel}>Step 1 of 6</p>
-              <h2 style={{ fontSize: "22px", fontWeight: 700, color: "var(--plum)", fontFamily: "'Playfair Display', serif", marginTop: "4px", lineHeight: 1.2 }}>
+              <h2 style={{ fontSize: "22px", fontWeight: 700, color: "var(--plum)", fontFamily: "'Fraunces', serif", marginTop: "4px", lineHeight: 1.2 }}>
                 What do you want more of?
               </h2>
               <p style={{ fontSize: "13px", color: "var(--mauve)", fontFamily: "'Inter', sans-serif", marginTop: "6px" }}>
@@ -396,7 +396,7 @@ export default function Onboarding() {
           <div className="w-full space-y-6">
             <div>
               <p style={sLabel}>Step 2 of 6</p>
-              <h2 style={{ fontSize: "22px", fontWeight: 700, color: "var(--plum)", fontFamily: "'Playfair Display', serif", marginTop: "4px", lineHeight: 1.2 }}>
+              <h2 style={{ fontSize: "22px", fontWeight: 700, color: "var(--plum)", fontFamily: "'Fraunces', serif", marginTop: "4px", lineHeight: 1.2 }}>
                 Where are you based?
               </h2>
               <p style={{ fontSize: "13px", color: "var(--mauve)", fontFamily: "'Inter', sans-serif", marginTop: "6px" }}>
@@ -443,7 +443,7 @@ export default function Onboarding() {
           <div className="w-full space-y-6">
             <div>
               <p style={sLabel}>Step 2 of 5</p>
-              <h2 style={{ fontSize: "22px", fontWeight: 700, color: "var(--plum)", fontFamily: "'Playfair Display', serif", marginTop: "4px", lineHeight: 1.2 }}>
+              <h2 style={{ fontSize: "22px", fontWeight: 700, color: "var(--plum)", fontFamily: "'Fraunces', serif", marginTop: "4px", lineHeight: 1.2 }}>
                 Your lifestyle interests
               </h2>
               <p style={{ fontSize: "13px", color: "var(--mauve)", fontFamily: "'Inter', sans-serif", marginTop: "6px" }}>
@@ -472,7 +472,7 @@ export default function Onboarding() {
           <div className="w-full space-y-6">
             <div>
               <p style={sLabel}>Step 3 of 5</p>
-              <h2 style={{ fontSize: "22px", fontWeight: 700, color: "var(--plum)", fontFamily: "'Playfair Display', serif", marginTop: "4px", lineHeight: 1.2 }}>
+              <h2 style={{ fontSize: "22px", fontWeight: 700, color: "var(--plum)", fontFamily: "'Fraunces', serif", marginTop: "4px", lineHeight: 1.2 }}>
                 How should FemWell show up?
               </h2>
               <p style={{ fontSize: "13px", color: "var(--mauve)", fontFamily: "'Inter', sans-serif", marginTop: "6px" }}>
@@ -535,7 +535,7 @@ export default function Onboarding() {
           <div className="w-full space-y-6">
             <div>
               <p style={sLabel}>Step 4 of 5</p>
-              <h2 style={{ fontSize: "22px", fontWeight: 700, color: "var(--plum)", fontFamily: "'Playfair Display', serif", marginTop: "4px", lineHeight: 1.2 }}>
+              <h2 style={{ fontSize: "22px", fontWeight: 700, color: "var(--plum)", fontFamily: "'Fraunces', serif", marginTop: "4px", lineHeight: 1.2 }}>
                 A few more details
               </h2>
             </div>
@@ -601,7 +601,7 @@ export default function Onboarding() {
           <div className="w-full space-y-6">
             <div>
               {(() => { const n = PROGRESS_STEPS.indexOf(current) + 1; return n > 0 && <p style={sLabel}>Step {n} of {PROGRESS_STEPS.length}</p>; })()}
-              <h2 style={{ fontSize: "22px", fontWeight: 700, color: "var(--plum)", fontFamily: "'Playfair Display', serif", marginTop: "4px", lineHeight: 1.2 }}>
+              <h2 style={{ fontSize: "22px", fontWeight: 700, color: "var(--plum)", fontFamily: "'Fraunces', serif", marginTop: "4px", lineHeight: 1.2 }}>
                 What is your skin type?
               </h2>
               <p style={{ fontSize: "13px", color: "var(--mauve)", fontFamily: "'Inter', sans-serif", marginTop: "6px" }}>
@@ -629,7 +629,7 @@ export default function Onboarding() {
           <div className="w-full space-y-6">
             <div>
               {(() => { const n = PROGRESS_STEPS.indexOf(current) + 1; return n > 0 && <p style={sLabel}>Step {n} of {PROGRESS_STEPS.length}</p>; })()}
-              <h2 style={{ fontSize: "22px", fontWeight: 700, color: "var(--plum)", fontFamily: "'Playfair Display', serif", marginTop: "4px", lineHeight: 1.2 }}>
+              <h2 style={{ fontSize: "22px", fontWeight: 700, color: "var(--plum)", fontFamily: "'Fraunces', serif", marginTop: "4px", lineHeight: 1.2 }}>
                 Are you in a life stage we should know about?
               </h2>
               <p style={{ fontSize: "13px", color: "var(--mauve)", fontFamily: "'Inter', sans-serif", marginTop: "6px" }}>Helps personalise care, logging, and recommendations.</p>
@@ -718,10 +718,10 @@ export default function Onboarding() {
             {!showVoice && (
               <>
                 <div style={{ width: 72, height: 72, borderRadius: 9999, margin: "0 auto", backgroundColor: "var(--rose-dust-subtle)", border: "1px solid var(--rose-dust-light)", display: "flex", alignItems: "center", justifyContent: "center" }}>
-                  <span style={{ fontSize: 28, fontWeight: 700, fontFamily: "'Playfair Display', serif", color: "var(--rose-dust)" }}>{(assistantName || "G")[0].toUpperCase()}</span>
+                  <span style={{ fontSize: 28, fontWeight: 700, fontFamily: "'Fraunces', serif", color: "var(--rose-dust)" }}>{(assistantName || "G")[0].toUpperCase()}</span>
                 </div>
                 <div>
-                  <h2 style={{ fontSize: "22px", fontWeight: 700, color: "var(--plum)", fontFamily: "'Playfair Display', serif", lineHeight: 1.2 }}>Meet {assistantName || "your assistant"}</h2>
+                  <h2 style={{ fontSize: "22px", fontWeight: 700, color: "var(--plum)", fontFamily: "'Fraunces', serif", lineHeight: 1.2 }}>Meet {assistantName || "your assistant"}</h2>
                   <p style={{ fontSize: "14px", color: "var(--mauve)", fontFamily: "'Inter', sans-serif", marginTop: 8, lineHeight: 1.6 }}>Turn your volume up. We will do a short one minute check-in.</p>
                 </div>
                 {micDenied && (
@@ -764,10 +764,10 @@ export default function Onboarding() {
         {current === "done" && (
           <div className="space-y-6 text-center w-full">
             <div style={{ width: 72, height: 72, borderRadius: 9999, margin: "0 auto", backgroundColor: "var(--rose-dust-subtle)", border: "1px solid var(--rose-dust-light)", display: "flex", alignItems: "center", justifyContent: "center" }}>
-              <span style={{ fontSize: 28, fontWeight: 700, fontFamily: "'Playfair Display', serif", color: "var(--rose-dust)" }}>F</span>
+              <span style={{ fontSize: 28, fontWeight: 700, fontFamily: "'Fraunces', serif", color: "var(--rose-dust)" }}>F</span>
             </div>
             <div>
-              <h2 style={{ fontSize: "26px", fontWeight: 700, fontFamily: "'Playfair Display', serif", color: "var(--plum)", lineHeight: 1.1 }}>You're all set</h2>
+              <h2 style={{ fontSize: "26px", fontWeight: 700, fontFamily: "'Fraunces', serif", color: "var(--plum)", lineHeight: 1.1 }}>You're all set</h2>
               <p style={{ fontSize: "14px", color: "var(--mauve)", fontFamily: "'Inter', sans-serif", marginTop: 8, lineHeight: 1.6 }}>
                 {assistantName || "Guide"} is ready to support you. Your feed, guidance, and daily rhythm are now tuned to you.
               </p>

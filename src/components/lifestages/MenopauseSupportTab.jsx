@@ -215,7 +215,7 @@ export default function MenopauseSupportTab({ user, profile, setProfile, logs, s
       {/* Hero */}
       <div style={{ backgroundColor: stageInfo.bg, border: `1px solid ${stageInfo.color}30`, borderRadius: 16, padding: "16px 20px" }}>
         <p style={{ fontSize: "0.55rem", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.14em", color: stageInfo.color, marginBottom: 4, fontFamily: "'Inter', sans-serif" }}>Your stage</p>
-        <p style={{ fontSize: 20, fontWeight: 700, color: "var(--plum)", fontFamily: "'Playfair Display', serif" }}>{stageInfo.label}</p>
+        <p style={{ fontSize: 20, fontWeight: 700, color: "var(--plum)", fontFamily: "'Fraunces', serif" }}>{stageInfo.label}</p>
         <p style={{ fontSize: 12, color: "var(--mauve)", marginTop: 4, lineHeight: 1.6 }}>{stageInfo.description}</p>
       </div>
 
@@ -227,7 +227,7 @@ export default function MenopauseSupportTab({ user, profile, setProfile, logs, s
           { label: "This week", value: `${logs.filter(l => l.date >= new Date(Date.now() - 7 * 86400000).toISOString().split("T")[0]).length}`, color: "#B89E6A" },
         ].map(s => (
           <div key={s.label} style={{ backgroundColor: "var(--surface)", border: "1px solid var(--border)", borderRadius: 14, padding: 12, textAlign: "center" }}>
-            <p style={{ fontSize: 24, fontWeight: 700, color: s.color, fontFamily: "'Playfair Display', serif" }}>{s.value}</p>
+            <p style={{ fontSize: 24, fontWeight: 700, color: s.color, fontFamily: "'Fraunces', serif" }}>{s.value}</p>
             <p style={{ fontSize: 10, color: "var(--mauve)", textTransform: "uppercase", letterSpacing: "0.08em" }}>{s.label}</p>
           </div>
         ))}

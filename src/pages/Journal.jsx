@@ -144,7 +144,7 @@ export default function Journal() {
           <div className="flex items-start justify-between">
             <div>
               <div className="flex items-center gap-2 mb-1">
-                <h1 style={{ fontFamily: "'Playfair Display', serif", color: "var(--plum)", fontSize: 26, fontWeight: 700, letterSpacing: "-0.02em", margin: 0 }}>
+                <h1 style={{ fontFamily: "'Fraunces', serif", color: "var(--plum)", fontSize: 26, fontWeight: 700, letterSpacing: "-0.02em", margin: 0 }}>
                   Journal
                 </h1>
               </div>
@@ -229,7 +229,7 @@ export default function Journal() {
                 <div style={{ width: 56, height: 56, borderRadius: 18, backgroundColor: "var(--rose-dust-subtle)", display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 16px" }}>
                   <PenLine style={{ width: 24, height: 24, color: "var(--rose-dust)" }} />
                 </div>
-                <h2 style={{ fontFamily: "'Playfair Display', serif", fontSize: 22, color: "var(--plum)", marginBottom: 8 }}>
+                <h2 style={{ fontFamily: "'Fraunces', serif", fontSize: 22, color: "var(--plum)", marginBottom: 8 }}>
                   Your journal is waiting
                 </h2>
                 <p style={{ fontSize: 14, color: "var(--mauve)", fontFamily: "'Inter', sans-serif", marginBottom: 28 }}>

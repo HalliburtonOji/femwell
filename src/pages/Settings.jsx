@@ -421,7 +421,7 @@ function PrivacySection({ user, profile, onProfileChange, onDownloadData }) {
           <div role="dialog" aria-label="Delete account"
             style={{ position: "fixed", left: "50%", top: "50%", transform: "translate(-50%,-50%)", zIndex: 50, width: "min(90vw, 420px)", backgroundColor: "white", borderRadius: 20, padding: "22px 22px 20px", boxShadow: "var(--shadow-lg)" }}>
             <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 10 }}>
-              <h3 style={{ fontFamily: "'Playfair Display', serif", fontSize: 18, fontWeight: 700, color: "var(--plum)", margin: 0 }}>Delete your account</h3>
+              <h3 style={{ fontFamily: "'Fraunces', serif", fontSize: 18, fontWeight: 700, color: "var(--plum)", margin: 0 }}>Delete your account</h3>
               <button onClick={() => setShowDelete(false)} aria-label="Close"
                 style={{ width: 30, height: 30, borderRadius: 9999, backgroundColor: "#FFF1F2", border: "none", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center" }}>
                 <X className="w-4 h-4" style={{ color: "#E11D48" }} />
@@ -646,7 +646,7 @@ export default function Settings() {
           <p style={{ fontSize: "0.6rem", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.14em", color: "#E11D48", fontFamily: "'Inter', sans-serif" }}>
             Your account
           </p>
-          <h1 style={{ fontSize: 22, fontWeight: 700, fontFamily: "'Playfair Display', serif", color: "var(--plum)", letterSpacing: "-0.02em", marginTop: 2 }}>
+          <h1 style={{ fontSize: 22, fontWeight: 700, fontFamily: "'Fraunces', serif", color: "var(--plum)", letterSpacing: "-0.02em", marginTop: 2 }}>
             Settings
           </h1>
         </div>

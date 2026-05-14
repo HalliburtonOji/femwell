@@ -110,7 +110,7 @@ export default function PanicModeModal({ userId, onClose }) {
           <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 20 }}>
             <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
               <AlertCircle className="w-5 h-5" style={{ color: "var(--rose-dust)" }} />
-              <h2 style={{ fontSize: 18, fontWeight: 700, color: "var(--plum)", fontFamily: "'Playfair Display', serif", margin: 0 }}>Panic mode</h2>
+              <h2 style={{ fontSize: 18, fontWeight: 700, color: "var(--plum)", fontFamily: "'Fraunces', serif", margin: 0 }}>Panic mode</h2>
             </div>
             <button onClick={onClose} aria-label="Close panic mode" style={{ width: 44, height: 44, borderRadius: 9999, backgroundColor: "var(--ivory-dark)", border: "none", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center" }}>
               <X className="w-4 h-4" style={{ color: "var(--mauve)" }} aria-hidden="true" />
@@ -166,7 +166,7 @@ export default function PanicModeModal({ userId, onClose }) {
           {step === "offer" && (
             <div style={{ textAlign: "center" }}>
               <div style={{ fontSize: 48, marginBottom: 16 }}>🌿</div>
-              <h3 style={{ fontSize: 20, fontWeight: 700, color: "var(--plum)", fontFamily: "'Playfair Display', serif", marginBottom: 10 }}>Would you like a moment?</h3>
+              <h3 style={{ fontSize: 20, fontWeight: 700, color: "var(--plum)", fontFamily: "'Fraunces', serif", marginBottom: 10 }}>Would you like a moment?</h3>
               <p style={{ fontSize: 14, color: "var(--mauve)", lineHeight: 1.65, fontFamily: "'Inter', sans-serif", marginBottom: 28 }}>
                 The Calm Cards guide you through grounding, breathwork, and a gentle reframe — usually about 5 minutes.
               </p>
@@ -241,7 +241,7 @@ export default function PanicModeModal({ userId, onClose }) {
 
           {step === "followup" && (
             <>
-              <p style={{ fontSize: 16, fontWeight: 700, color: "var(--plum)", fontFamily: "'Playfair Display', serif", marginBottom: 8 }}>How are you feeling now?</p>
+              <p style={{ fontSize: 16, fontWeight: 700, color: "var(--plum)", fontFamily: "'Fraunces', serif", marginBottom: 8 }}>How are you feeling now?</p>
               <p style={{ fontSize: 13, color: "var(--mauve)", fontFamily: "'Inter', sans-serif", marginBottom: 20 }}>Take a moment to check in with yourself.</p>
               <div style={{ display: "flex", gap: 8, marginBottom: 20 }}>
                 {[1, 2, 3, 4, 5].map(n => (

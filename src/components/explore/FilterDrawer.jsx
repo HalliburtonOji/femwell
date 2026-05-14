@@ -19,7 +19,7 @@ export default function FilterDrawer({ filters, onApply, onClose }) {
         <div className="w-8 h-1 rounded-full mx-auto -mt-1 mb-2" style={{ backgroundColor: "var(--border)" }} />
 
         <div className="flex items-center justify-between">
-          <p className="font-semibold" style={{ color: "var(--plum)", fontFamily: "'Playfair Display', serif" }}>Filter sessions</p>
+          <p className="font-semibold" style={{ color: "var(--plum)", fontFamily: "'Fraunces', serif" }}>Filter sessions</p>
           <button onClick={onClose}
             className="w-8 h-8 rounded-full flex items-center justify-center transition-colors"
             style={{ backgroundColor: "var(--ivory-dark)", color: "var(--mauve)" }}>

@@ -129,7 +129,7 @@ export default function JournalComposer({ user, onSaved }) {
       {!loadingPrompt && dailyPrompt && (
         <div style={{ backgroundColor: "var(--rose-dust-subtle)", border: "1px solid var(--rose-dust-light)", borderRadius: 16, padding: "14px 16px" }}>
           <p style={{ fontSize: 10, fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.12em", color: "var(--rose-dust)", fontFamily: "'Inter', sans-serif", marginBottom: 6 }}>Today's prompt</p>
-          <p style={{ fontSize: 14, fontFamily: "'Playfair Display', serif", color: "var(--plum)", fontStyle: "italic", lineHeight: 1.5, marginBottom: 8 }}>{dailyPrompt}</p>
+          <p style={{ fontSize: 14, fontFamily: "'Fraunces', serif", color: "var(--plum)", fontStyle: "italic", lineHeight: 1.5, marginBottom: 8 }}>{dailyPrompt}</p>
           <button
             onClick={() => setText(t => t ? t : dailyPrompt + ' ')}
             style={{ background: "transparent", border: "none", color: "var(--rose-dust)", fontSize: 12, fontWeight: 600, cursor: "pointer", fontFamily: "'Inter', sans-serif", padding: 0 }}>

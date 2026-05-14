@@ -169,7 +169,7 @@ function ReframeCard() {
     <CardShell accent="#F472B6">
       <CardLabel>A Gentle Reframe</CardLabel>
       <div style={{ fontSize: 36, textAlign: "center", marginBottom: 20 }}>💜</div>
-      <blockquote style={{ fontSize: 19, fontWeight: 600, color: "#2A2035", fontFamily: "'Playfair Display', serif", lineHeight: 1.6, textAlign: "center", margin: 0 }}>
+      <blockquote style={{ fontSize: 19, fontWeight: 600, color: "#2A2035", fontFamily: "'Fraunces', serif", lineHeight: 1.6, textAlign: "center", margin: 0 }}>
         "This feeling is real.<br />It is also temporary.<br /><br />My body is trying to protect me,<br />and I am safe right now."
       </blockquote>
     </CardShell>
@@ -181,7 +181,7 @@ function AffirmationCard({ text }) {
     <CardShell accent="#EC4899">
       <CardLabel>Affirmation</CardLabel>
       <div style={{ fontSize: 36, textAlign: "center", marginBottom: 24 }}>✨</div>
-      <blockquote style={{ fontSize: 22, fontWeight: 700, color: "#2A2035", fontFamily: "'Playfair Display', serif", lineHeight: 1.6, textAlign: "center", margin: 0, padding: "0 8px" }}>
+      <blockquote style={{ fontSize: 22, fontWeight: 700, color: "#2A2035", fontFamily: "'Fraunces', serif", lineHeight: 1.6, textAlign: "center", margin: 0, padding: "0 8px" }}>
         "{text}"
       </blockquote>
     </CardShell>
@@ -265,7 +265,7 @@ function ClosingCard({ onRate, onClose }) {
       </div>
       {rating && (
         <>
-          <blockquote style={{ fontSize: 16, color: "#2A2035", fontFamily: "'Playfair Display', serif", lineHeight: 1.6, textAlign: "center", marginBottom: 24, fontStyle: "italic" }}>
+          <blockquote style={{ fontSize: 16, color: "#2A2035", fontFamily: "'Fraunces', serif", lineHeight: 1.6, textAlign: "center", marginBottom: 24, fontStyle: "italic" }}>
             "You came back to yourself.<br />That's the whole thing."
           </blockquote>
           <PillButton onClick={() => { onRate(rating); onClose(); }}>
@@ -299,7 +299,7 @@ function CardLabel({ children }) {
 
 function CardTitle({ children, style }) {
   return (
-    <h2 style={{ fontSize: 24, fontWeight: 700, color: "#2A2035", fontFamily: "'Playfair Display', serif", lineHeight: 1.35, textAlign: "center", margin: "0 0 12px", ...style }}>
+    <h2 style={{ fontSize: 24, fontWeight: 700, color: "#2A2035", fontFamily: "'Fraunces', serif", lineHeight: 1.35, textAlign: "center", margin: "0 0 12px", ...style }}>
       {children}
     </h2>
   );

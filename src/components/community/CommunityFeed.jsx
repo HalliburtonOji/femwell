@@ -150,7 +150,7 @@ function ComposeModal({ onClose, onSubmit, currentPhase }) {
           <div style={{ width: 32, height: 4, borderRadius: 9999, backgroundColor: "var(--border)" }} />
         </div>
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 16 }}>
-          <h3 style={{ fontFamily: "'Playfair Display', serif", fontSize: 18, color: "var(--plum)", fontWeight: 600 }}>New post</h3>
+          <h3 style={{ fontFamily: "'Fraunces', serif", fontSize: 18, color: "var(--plum)", fontWeight: 600 }}>New post</h3>
           <button onClick={onClose} style={{ background: "none", border: "none", cursor: "pointer", color: "var(--mauve)" }}><X style={{ width: 20, height: 20 }} /></button>
         </div>
 
@@ -269,7 +269,7 @@ export default function CommunityFeed({ user, profile }) {
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 6 }}>
           <div>
             <p style={{ fontSize: "0.6rem", fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.12em", color: "var(--mauve)", fontFamily: "'Inter', sans-serif" }}>Community</p>
-            <h1 style={{ fontFamily: "'Playfair Display', serif", fontSize: 22, fontWeight: 700, color: "var(--plum)", letterSpacing: "-0.02em", marginTop: 2 }}>Feed</h1>
+            <h1 style={{ fontFamily: "'Fraunces', serif", fontSize: 22, fontWeight: 700, color: "var(--plum)", letterSpacing: "-0.02em", marginTop: 2 }}>Feed</h1>
           </div>
           <button onClick={() => setShowCompose(true)} style={{ width: 38, height: 38, borderRadius: "50%", backgroundColor: "var(--plum)", border: "none", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center" }}>
             <Plus style={{ width: 18, height: 18, color: "white" }} />

@@ -80,7 +80,7 @@ export default function GuideThreadSidebar({
         {!collapsed && (
           <div>
             <p style={sLabel} className="mb-0.5">Conversations</p>
-            <p className="text-sm font-semibold" style={{ color: "var(--plum)", fontFamily: "'Playfair Display', serif" }}>Guide history</p>
+            <p className="text-sm font-semibold" style={{ color: "var(--plum)", fontFamily: "'Fraunces', serif" }}>Guide history</p>
           </div>
         )}
         <button

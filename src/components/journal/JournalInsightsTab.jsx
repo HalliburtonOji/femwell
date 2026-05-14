@@ -199,15 +199,15 @@ Return as plain text, no markdown.`,
 
         <div className="flex gap-5 mt-4 pt-4" style={{ borderTop: "1px solid var(--border-subtle)" }}>
           <div>
-            <p className="text-xl font-bold" style={{ color: "var(--plum)", fontFamily: "'Playfair Display', serif" }}>{streak}</p>
+            <p className="text-xl font-bold" style={{ color: "var(--plum)", fontFamily: "'Fraunces', serif" }}>{streak}</p>
             <p style={sLabel}>day streak</p>
           </div>
           <div>
-            <p className="text-xl font-bold" style={{ color: "var(--plum)", fontFamily: "'Playfair Display', serif" }}>{last7.length}</p>
+            <p className="text-xl font-bold" style={{ color: "var(--plum)", fontFamily: "'Fraunces', serif" }}>{last7.length}</p>
             <p style={sLabel}>this week</p>
           </div>
           <div>
-            <p className="text-xl font-bold" style={{ color: "var(--plum)", fontFamily: "'Playfair Display', serif" }}>{entries.length}</p>
+            <p className="text-xl font-bold" style={{ color: "var(--plum)", fontFamily: "'Fraunces', serif" }}>{entries.length}</p>
             <p style={sLabel}>total entries</p>
           </div>
         </div>

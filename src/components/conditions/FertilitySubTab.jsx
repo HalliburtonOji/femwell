@@ -105,7 +105,7 @@ export default function FertilitySubTab({ user, profile, selectedDate, units }) 
       {cDay && (
         <div style={{ ...card, backgroundColor: "var(--rose-dust-subtle)", borderColor: "var(--rose-dust-light)" }}>
           <p style={sLabel}>Cycle day</p>
-          <p style={{ fontSize: 22, fontWeight: 700, color: "var(--plum)", fontFamily: "'Playfair Display', serif", marginTop: 4 }}>Day {cDay}</p>
+          <p style={{ fontSize: 22, fontWeight: 700, color: "var(--plum)", fontFamily: "'Fraunces', serif", marginTop: 4 }}>Day {cDay}</p>
           {showPregnancyTest && (
             <p style={{ fontSize: 12, color: "var(--rose-dust)", fontFamily: "'Inter', sans-serif", marginTop: 4 }}>Pregnancy test window — day 25+</p>
           )}

@@ -90,7 +90,7 @@ function MealPlanCard({ mealPlan, onSaveToPlan, saving }) {
   return (
     <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} className="rounded-[24px] overflow-hidden" style={card}>
       <div className="p-5" style={{ backgroundColor: "var(--plum)" }}>
-        <p className="font-bold text-base" style={{ color: "white", fontFamily: "'Playfair Display', serif" }}>{mealPlan.plan_name}</p>
+        <p className="font-bold text-base" style={{ color: "white", fontFamily: "'Fraunces', serif" }}>{mealPlan.plan_name}</p>
         {mealPlan.wellness_focus && (
           <p className="text-xs mt-0.5" style={{ color: "rgba(255,255,255,0.65)" }}>Focus: {mealPlan.wellness_focus}</p>
         )}
@@ -323,7 +323,7 @@ Return JSON: {"items": [{"ingredient": "name", "category": "CategoryName", "quan
             <CalendarDays className="w-5 h-5 text-white" />
           </div>
           <div>
-            <p className="font-semibold" style={{ color: "var(--plum)", fontFamily: "'Playfair Display', serif" }}>Meal Plan Generator</p>
+            <p className="font-semibold" style={{ color: "var(--plum)", fontFamily: "'Fraunces', serif" }}>Meal Plan Generator</p>
             <p className="text-xs" style={{ color: "var(--mauve)" }}>Your personalised weekly eating plan</p>
           </div>
         </div>

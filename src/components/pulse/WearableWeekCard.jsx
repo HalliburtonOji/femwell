@@ -70,7 +70,7 @@ export default function WearableWeekCard({ userId }) {
         {displayMetrics.map(m => (
           <div key={m.label} style={{ backgroundColor: "var(--ivory)", borderRadius: 12, padding: "10px 12px" }}>
             <p style={{ fontSize: 10, color: "var(--mauve)", fontFamily: "'Inter', sans-serif", marginBottom: 2 }}>{m.label}</p>
-            <p style={{ fontSize: 18, fontWeight: 700, color: "var(--plum)", fontFamily: "'Playfair Display', serif" }}>
+            <p style={{ fontSize: 18, fontWeight: 700, color: "var(--plum)", fontFamily: "'Fraunces', serif" }}>
               {m.value}<span style={{ fontSize: 11, color: "var(--mauve)", fontWeight: 400, marginLeft: 2 }}>{m.unit}</span>
             </p>
           </div>

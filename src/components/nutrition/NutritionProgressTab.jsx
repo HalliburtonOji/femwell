@@ -149,7 +149,7 @@ export default function NutritionProgressTab({ user, nutritionProfile, onProfile
       {/* Goal card */}
       {showGoalPicker ? (
         <div className="rounded-[24px] p-5" style={card}>
-          <p className="font-semibold mb-1" style={{ color: "var(--plum)", fontFamily: "'Playfair Display', serif" }}>What's your goal?</p>
+          <p className="font-semibold mb-1" style={{ color: "var(--plum)", fontFamily: "'Fraunces', serif" }}>What's your goal?</p>
           <p className="text-xs mb-5" style={{ color: "var(--mauve)" }}>Choose what feels right for you right now. You can change this any time.</p>
           <div className="space-y-2 mb-5">
             {GOAL_MODES.map((g) => (
@@ -240,7 +240,7 @@ export default function NutritionProgressTab({ user, nutritionProfile, onProfile
               { label: "H\u2082O",  value: nutritionProfile?.hydration_target_ml || 2000, unit: "ml" },
             ].map(({ label, value, unit }) => (
               <div key={label} style={{ textAlign: "center", backgroundColor: "var(--ivory)", borderRadius: 12, padding: "10px 4px" }}>
-                <p style={{ fontSize: 13, fontWeight: 700, color: "var(--plum)", fontFamily: "'Playfair Display', serif" }}>{value}</p>
+                <p style={{ fontSize: 13, fontWeight: 700, color: "var(--plum)", fontFamily: "'Fraunces', serif" }}>{value}</p>
                 <p style={{ fontSize: 9, color: "var(--mauve)", fontFamily: "'Inter', sans-serif", marginTop: 1, textTransform: "uppercase", letterSpacing: "0.06em" }}>{label}</p>
                 <p style={{ fontSize: 9, color: "var(--mauve)", fontFamily: "'Inter', sans-serif", opacity: 0.7 }}>{unit}</p>
               </div>
@@ -256,7 +256,7 @@ export default function NutritionProgressTab({ user, nutritionProfile, onProfile
             style={{ backgroundColor: "var(--rose-dust-subtle)" }}>
             <Flame className="w-4 h-4" style={{ color: "var(--rose-dust)" }} />
           </div>
-          <p className="text-2xl font-bold" style={{ color: "var(--rose-dust)", fontFamily: "'Playfair Display', serif" }}>{mealStreak}</p>
+          <p className="text-2xl font-bold" style={{ color: "var(--rose-dust)", fontFamily: "'Fraunces', serif" }}>{mealStreak}</p>
           <p className="text-xs mt-1" style={{ color: "var(--mauve)" }}>Days logging meals</p>
         </div>
         <div className="rounded-[24px] p-5 text-center" style={card}>
@@ -264,7 +264,7 @@ export default function NutritionProgressTab({ user, nutritionProfile, onProfile
             style={{ backgroundColor: "var(--sage-subtle)" }}>
             <Droplets className="w-4 h-4" style={{ color: "var(--sage)" }} />
           </div>
-          <p className="text-2xl font-bold" style={{ color: "var(--sage)", fontFamily: "'Playfair Display', serif" }}>{hydrationStreak}</p>
+          <p className="text-2xl font-bold" style={{ color: "var(--sage)", fontFamily: "'Fraunces', serif" }}>{hydrationStreak}</p>
           <p className="text-xs mt-1" style={{ color: "var(--mauve)" }}>Days hitting water goal</p>
         </div>
       </div>

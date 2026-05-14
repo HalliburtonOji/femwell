@@ -734,7 +734,7 @@ export default function SkinHair() {
         <div className="flex items-center justify-between gap-3">
           <h1
             style={{
-              fontFamily: "'Playfair Display', serif",
+              fontFamily: "'Fraunces', serif",
               color: "var(--plum)",
               fontSize: "22px",
               fontWeight: 700,
@@ -814,7 +814,7 @@ export default function SkinHair() {
                 <div style={{ width: 32, height: 4, borderRadius: 9999, backgroundColor: "var(--border)" }} />
               </div>
               <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", paddingLeft: 20, paddingRight: 20, marginBottom: 20 }}>
-                <h2 style={{ fontFamily: "'Playfair Display', serif", fontSize: 18, fontWeight: 600, color: "var(--plum)", margin: 0 }}>Try a new look</h2>
+                <h2 style={{ fontFamily: "'Fraunces', serif", fontSize: 18, fontWeight: 600, color: "var(--plum)", margin: 0 }}>Try a new look</h2>
                 <button
                   onClick={() => { setTryOnOpen(false); setTryOnPhoto(null); setTryOnResult(null); setTryOnError(null); }}
                   style={{ width: 28, height: 28, borderRadius: 9999, backgroundColor: "var(--ivory-dark)", color: "var(--mauve)", border: "none", cursor: "pointer", fontSize: 16, display: "flex", alignItems: "center", justifyContent: "center" }}
@@ -939,7 +939,7 @@ export default function SkinHair() {
               <p style={sLabel} className="mb-1">{stat.label}</p>
               <p
                 style={{
-                  fontFamily: "'Playfair Display', serif",
+                  fontFamily: "'Fraunces', serif",
                   fontSize: "15px",
                   fontWeight: 700,
                   color: "var(--plum)",
@@ -998,7 +998,7 @@ export default function SkinHair() {
             </div>
             <h3
               style={{
-                fontFamily: "'Playfair Display', serif",
+                fontFamily: "'Fraunces', serif",
                 fontSize: "18px",
                 color: "var(--plum)",
                 fontWeight: 700,

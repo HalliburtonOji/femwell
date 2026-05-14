@@ -72,7 +72,7 @@ export default function StoryViewer({ items: rawItems, initialIndex, onClose }) 
         <p style={{ fontSize: 11, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.14em", color: "rgba(255,255,255,0.6)", fontFamily: "'Inter', sans-serif", marginBottom: 10 }}>
           {item.theme}
         </p>
-        <h2 style={{ fontSize: 26, fontWeight: 700, color: "white", fontFamily: "'Playfair Display', serif", lineHeight: 1.15, marginBottom: 12 }}>
+        <h2 style={{ fontSize: 26, fontWeight: 700, color: "white", fontFamily: "'Fraunces', serif", lineHeight: 1.15, marginBottom: 12 }}>
           {item.title}
         </h2>
         {item.body_line_1 && (

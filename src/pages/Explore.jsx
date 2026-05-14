@@ -383,7 +383,7 @@ export default function Explore() {
         <div className="flex items-center justify-between">
           <div>
             <p style={{ fontSize: "0.6rem", fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.12em", color: "var(--mauve)", fontFamily: "'Inter', sans-serif" }}>Discovery</p>
-            <h1 className="text-xl font-bold leading-tight" style={{ fontFamily: "'Playfair Display', serif", color: "var(--plum)", letterSpacing: "-0.02em" }}>Explore</h1>
+            <h1 className="text-xl font-bold leading-tight" style={{ fontFamily: "'Fraunces', serif", color: "var(--plum)", letterSpacing: "-0.02em" }}>Explore</h1>
           </div>
           <p className="text-xs" style={{ color: "var(--mauve)", fontFamily: "'Inter', sans-serif" }}>Sessions, videos &amp; guides</p>
         </div>
@@ -657,7 +657,7 @@ export default function Explore() {
                 <div className="rounded-[24px] p-5 md:p-6"
                   style={{ backgroundColor: "var(--plum)" }}>
                   <p style={{ fontSize: "0.6rem", fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.12em", color: "rgba(255,255,255,0.55)", fontFamily: "'Inter', sans-serif", marginBottom: "6px" }}>Go deeper</p>
-                  <h3 className="text-lg font-bold leading-snug mb-1.5" style={{ color: "white", fontFamily: "'Playfair Display', serif" }}>Ready for a guided journey?</h3>
+                  <h3 className="text-lg font-bold leading-snug mb-1.5" style={{ color: "white", fontFamily: "'Fraunces', serif" }}>Ready for a guided journey?</h3>
                   <p className="text-sm mb-4 leading-relaxed" style={{ color: "rgba(255,255,255,0.72)", fontFamily: "'Inter', sans-serif" }}>
                     Single sessions are great. Programs go further — day-by-day structure, built-in progress, and real consistency.
                   </p>

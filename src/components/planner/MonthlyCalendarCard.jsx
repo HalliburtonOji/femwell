@@ -62,7 +62,7 @@ function MonthView({ month, today, data, profile, onDayPress }) {
 
       <div style={{ position: "relative", zIndex: 2, padding: "22px 14px 20px" }}>
         <div style={{ textAlign: "center", marginBottom: 18 }}>
-          <p style={{ fontSize: 28, fontWeight: 700, color: "white", fontFamily: "'Playfair Display', serif", letterSpacing: "-0.02em", lineHeight: 1 }}>
+          <p style={{ fontSize: 28, fontWeight: 700, color: "white", fontFamily: "'Fraunces', serif", letterSpacing: "-0.02em", lineHeight: 1 }}>
             {format(month, "MMMM")}
           </p>
           <p style={{ fontSize: 12, color: "rgba(255,255,255,0.5)", fontFamily: "'Inter', sans-serif", marginTop: 3 }}>

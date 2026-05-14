@@ -105,7 +105,7 @@ export default function MacroDashboard({ meals, hydrationLogs, drinkLogs = [], n
           </div>
         </div>
         <div className="flex-1 min-w-0">
-          <p className="text-2xl font-bold" style={{ color: "var(--plum)", fontFamily: "'Playfair Display', serif" }}>
+          <p className="text-2xl font-bold" style={{ color: "var(--plum)", fontFamily: "'Fraunces', serif" }}>
             {displayCalories}
             <span className="text-sm font-normal ml-1" style={{ color: "var(--mauve)" }}>kcal</span>
           </p>

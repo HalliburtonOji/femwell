@@ -55,7 +55,7 @@ export default function Upgrade() {
           <div className="w-14 h-14 rounded-2xl mx-auto mb-5 flex items-center justify-center" style={{ backgroundColor: "var(--rose-dust-subtle)", border: "1px solid var(--rose-dust-light)" }}>
             <Sparkles className="w-6 h-6" style={{ color: "var(--rose-dust)" }} />
           </div>
-          <h1 style={{ fontFamily: "'Playfair Display', serif", fontSize: 32, fontWeight: 700, color: "var(--plum)", letterSpacing: "-0.02em", lineHeight: 1.1 }}>FemWell Plus</h1>
+          <h1 style={{ fontFamily: "'Fraunces', serif", fontSize: 32, fontWeight: 700, color: "var(--plum)", letterSpacing: "-0.02em", lineHeight: 1.1 }}>FemWell Plus</h1>
           <p style={{ fontSize: 15, color: "var(--mauve)", fontFamily: "'Inter', sans-serif", marginTop: 8 }}>Unlock the full picture of your health.</p>
         </div>
 
@@ -64,7 +64,7 @@ export default function Upgrade() {
 
           {/* Free */}
           <div style={{ backgroundColor: "var(--surface)", border: "1px solid var(--border)", borderRadius: 20, padding: 20 }}>
-            <p style={{ fontSize: 16, fontWeight: 700, color: "var(--plum)", fontFamily: "'Playfair Display', serif", marginBottom: 4 }}>Free</p>
+            <p style={{ fontSize: 16, fontWeight: 700, color: "var(--plum)", fontFamily: "'Fraunces', serif", marginBottom: 4 }}>Free</p>
             <p style={{ fontSize: 12, color: "var(--mauve)", fontFamily: "'Inter', sans-serif", marginBottom: 16 }}>Always free</p>
             <ul className="space-y-2">
               {["Cycle tracking", "Basic check-in", "2 programs", "5 AI messages/month"].map(f => (
@@ -81,7 +81,7 @@ export default function Upgrade() {
             <div style={{ position: "absolute", top: -10, left: "50%", transform: "translateX(-50%)", backgroundColor: "var(--rose-dust)", color: "white", borderRadius: 9999, padding: "2px 12px", fontSize: 10, fontWeight: 700, fontFamily: "'Inter', sans-serif", whiteSpace: "nowrap" }}>
               Most popular
             </div>
-            <p style={{ fontSize: 16, fontWeight: 700, color: "white", fontFamily: "'Playfair Display', serif", marginBottom: 2 }}>Plus</p>
+            <p style={{ fontSize: 16, fontWeight: 700, color: "white", fontFamily: "'Fraunces', serif", marginBottom: 2 }}>Plus</p>
             <p style={{ fontSize: 13, fontWeight: 700, color: "var(--rose-dust-light)", fontFamily: "'Inter', sans-serif", marginBottom: 2 }}>£6.99/month</p>
             <p style={{ fontSize: 11, color: "rgba(255,255,255,0.5)", fontFamily: "'Inter', sans-serif", marginBottom: 16 }}>or £49.99/year</p>
             <ul className="space-y-2">
@@ -97,7 +97,7 @@ export default function Upgrade() {
           {/* Pro — coming soon */}
           <div style={{ backgroundColor: "var(--surface)", border: "1px solid var(--border)", borderRadius: 20, padding: 20, opacity: 0.6 }}>
             <div className="flex items-center gap-2 mb-1">
-              <p style={{ fontSize: 16, fontWeight: 700, color: "var(--plum)", fontFamily: "'Playfair Display', serif" }}>Pro</p>
+              <p style={{ fontSize: 16, fontWeight: 700, color: "var(--plum)", fontFamily: "'Fraunces', serif" }}>Pro</p>
               <span style={{ fontSize: 9, fontWeight: 700, color: "var(--mauve)", backgroundColor: "var(--ivory-dark)", borderRadius: 9999, padding: "2px 8px", fontFamily: "'Inter', sans-serif" }}>COMING SOON</span>
             </div>
             <p style={{ fontSize: 12, color: "var(--mauve)", fontFamily: "'Inter', sans-serif", marginBottom: 16 }}>£12.99/month</p>
@@ -171,7 +171,7 @@ export default function Upgrade() {
             </div>
             {joinedWaitlist ? (
               <>
-                <h3 style={{ fontFamily: "'Playfair Display', serif", fontSize: 20, fontWeight: 700, color: "var(--plum)", textAlign: "center", marginBottom: 8 }}>You're on the list!</h3>
+                <h3 style={{ fontFamily: "'Fraunces', serif", fontSize: 20, fontWeight: 700, color: "var(--plum)", textAlign: "center", marginBottom: 8 }}>You're on the list!</h3>
                 <p style={{ fontSize: 14, color: "var(--mauve)", fontFamily: "'Inter', sans-serif", textAlign: "center", lineHeight: 1.65, marginBottom: 24 }}>
                   We'll notify you the moment Plus launches. Early members get a special discount.
                 </p>
@@ -181,7 +181,7 @@ export default function Upgrade() {
               </>
             ) : (
               <>
-                <h3 style={{ fontFamily: "'Playfair Display', serif", fontSize: 20, fontWeight: 700, color: "var(--plum)", textAlign: "center", marginBottom: 8 }}>Plus is launching soon</h3>
+                <h3 style={{ fontFamily: "'Fraunces', serif", fontSize: 20, fontWeight: 700, color: "var(--plum)", textAlign: "center", marginBottom: 8 }}>Plus is launching soon</h3>
                 <p style={{ fontSize: 14, color: "var(--mauve)", fontFamily: "'Inter', sans-serif", textAlign: "center", lineHeight: 1.65, marginBottom: 20 }}>
                   Join the waitlist and we'll notify you first. Early members get a special discount.
                 </p>

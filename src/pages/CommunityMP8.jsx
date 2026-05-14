@@ -102,7 +102,7 @@ export default function CommunityMP8() {
           <p style={{ fontSize: "0.6rem", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.14em", color: "#E11D48", fontFamily: "'Inter', sans-serif" }}>
             FemWell Community
           </p>
-          <h1 style={{ fontSize: 22, fontWeight: 700, fontFamily: "'Playfair Display', serif", color: "var(--plum)", letterSpacing: "-0.02em", marginTop: 2, marginBottom: 2 }}>
+          <h1 style={{ fontSize: 22, fontWeight: 700, fontFamily: "'Fraunces', serif", color: "var(--plum)", letterSpacing: "-0.02em", marginTop: 2, marginBottom: 2 }}>
             your circle of support
           </h1>
           <p style={{ fontSize: 12, color: "var(--mauve)", fontFamily: "'Inter', sans-serif", marginBottom: 12 }}>
@@ -183,7 +183,7 @@ export default function CommunityMP8() {
 
                   {/* Title */}
                   <h3 style={{
-                    fontFamily: "'Playfair Display', serif",
+                    fontFamily: "'Fraunces', serif",
                     fontSize: 16, fontWeight: 700, color: "var(--plum)",
                     lineHeight: 1.35, marginBottom: 6,
                   }}>
@@ -264,7 +264,7 @@ export default function CommunityMP8() {
             }}
           >
             <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 14 }}>
-              <h2 style={{ fontFamily: "'Playfair Display', serif", fontSize: 18, fontWeight: 700, color: "var(--plum)", margin: 0 }}>
+              <h2 style={{ fontFamily: "'Fraunces', serif", fontSize: 18, fontWeight: 700, color: "var(--plum)", margin: 0 }}>
                 New post
               </h2>
               <button

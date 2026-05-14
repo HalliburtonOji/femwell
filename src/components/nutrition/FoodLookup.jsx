@@ -115,7 +115,7 @@ export default function FoodLookup({ onSelect, onClose }) {
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "0 20px 14px" }}>
           <div>
             <p style={{ fontSize: 10, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.12em", color: "var(--mauve)", fontFamily: "'Inter', sans-serif" }}>Food Library</p>
-            <h3 style={{ fontFamily: "'Playfair Display', serif", fontSize: 20, fontWeight: 700, color: "var(--plum)", marginTop: 2 }}>Pick a food</h3>
+            <h3 style={{ fontFamily: "'Fraunces', serif", fontSize: 20, fontWeight: 700, color: "var(--plum)", marginTop: 2 }}>Pick a food</h3>
           </div>
           <button onClick={onClose} style={{ width: 32, height: 32, borderRadius: 9999, backgroundColor: "var(--ivory-dark)", border: "none", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center" }}>
             <X style={{ width: 14, height: 14, color: "var(--mauve)" }} />
@@ -181,11 +181,11 @@ export default function FoodLookup({ onSelect, onClose }) {
                     <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", marginBottom: 16 }}>
                       <div>
                         <span style={{ fontSize: 28, lineHeight: 1, display: "block", marginBottom: 6 }}>{currentFood.emoji}</span>
-                        <h4 style={{ fontFamily: "'Playfair Display', serif", fontSize: 17, fontWeight: 700, color: "var(--plum)", lineHeight: 1.3, maxWidth: 220 }}>{currentFood.name}</h4>
+                        <h4 style={{ fontFamily: "'Fraunces', serif", fontSize: 17, fontWeight: 700, color: "var(--plum)", lineHeight: 1.3, maxWidth: 220 }}>{currentFood.name}</h4>
                         <p style={{ fontSize: 11, color: "var(--mauve)", fontFamily: "'Inter', sans-serif", marginTop: 3 }}>{currentFood.portion}</p>
                       </div>
                       <div style={{ textAlign: "center", backgroundColor: "var(--rose-dust-subtle)", borderRadius: 14, padding: "10px 14px" }}>
-                        <p style={{ fontSize: 22, fontWeight: 700, color: "var(--plum)", fontFamily: "'Playfair Display', serif", lineHeight: 1 }}>{macros.cal}</p>
+                        <p style={{ fontSize: 22, fontWeight: 700, color: "var(--plum)", fontFamily: "'Fraunces', serif", lineHeight: 1 }}>{macros.cal}</p>
                         <p style={{ fontSize: 10, color: "var(--mauve)", fontFamily: "'Inter', sans-serif" }}>kcal</p>
                       </div>
                     </div>

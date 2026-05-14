@@ -82,7 +82,7 @@ export default function GuideSettingsSheet({ user, onClose, onSaved }) {
         <div className="w-8 h-1 rounded-full mx-auto mb-5" style={{ backgroundColor: "var(--border)" }} />
 
         <div className="flex items-center justify-between mb-6">
-          <p className="font-semibold" style={{ color: "var(--plum)", fontFamily: "'Playfair Display', serif", fontSize: "1.05rem" }}>
+          <p className="font-semibold" style={{ color: "var(--plum)", fontFamily: "'Fraunces', serif", fontSize: "1.05rem" }}>
             Guide settings
           </p>
           <button onClick={onClose}

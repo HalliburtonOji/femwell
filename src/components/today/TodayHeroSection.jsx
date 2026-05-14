@@ -191,7 +191,7 @@ export default function TodayHeroSection({
             <h1
               className="text-3xl md:text-4xl leading-tight"
               style={{
-                fontFamily: "'Playfair Display', serif",
+                fontFamily: "'Fraunces', serif",
                 color: "var(--plum)",
                 letterSpacing: "-0.02em",
                 fontWeight: 600,
@@ -218,7 +218,7 @@ export default function TodayHeroSection({
                 backgroundColor: phaseMeta?.subtle || "var(--rose-dust-subtle)",
                 color: phaseMeta?.accent || "var(--rose-dust)",
                 border: `1.5px solid ${phaseMeta?.accent || "var(--rose-dust-light)"}40`,
-                fontFamily: "'Playfair Display', serif",
+                fontFamily: "'Fraunces', serif",
                 fontSize: "1.1rem",
                 cursor: "pointer",
                 transition: "opacity 0.15s",
@@ -319,7 +319,7 @@ export default function TodayHeroSection({
                 <div key={m.label} className="text-center">
                   <p
                     className="text-xl font-semibold leading-none"
-                    style={{ color: "var(--plum)", fontFamily: "'Playfair Display', serif" }}
+                    style={{ color: "var(--plum)", fontFamily: "'Fraunces', serif" }}
                   >
                     {m.value ?? "—"}
                     <span className="text-xs font-normal" style={{ color: "var(--mauve)" }}>{m.unit}</span>

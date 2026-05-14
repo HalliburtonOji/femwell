@@ -44,7 +44,7 @@ export default function StreakMilestoneToast({ streak, habitName, onDismiss }) {
         }}>
         <div className="w-10 h-10 rounded-2xl flex items-center justify-center flex-shrink-0"
           style={{ backgroundColor: "var(--sage-subtle)", color: "var(--sage)" }}>
-          <span className="text-sm font-bold" style={{ fontFamily: "'Playfair Display', serif" }}>
+          <span className="text-sm font-bold" style={{ fontFamily: "'Fraunces', serif" }}>
             {streak}
           </span>
         </div>

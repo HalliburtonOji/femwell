@@ -91,7 +91,7 @@ export default function PartnerSettings() {
             <ArrowLeft className="w-4 h-4" style={{ color: "var(--plum)" }} />
           </button>
           <div>
-            <h1 style={{ fontSize: 22, fontWeight: 700, color: "var(--plum)", fontFamily: "'Playfair Display', serif" }}>Partner Access</h1>
+            <h1 style={{ fontSize: 22, fontWeight: 700, color: "var(--plum)", fontFamily: "'Fraunces', serif" }}>Partner Access</h1>
             <p style={{ fontSize: 12, color: "var(--mauve)", fontFamily: "'Inter', sans-serif" }}>Share a read-only view with someone you trust</p>
           </div>
         </div>
@@ -203,7 +203,7 @@ export default function PartnerSettings() {
         {accesses.length === 0 && !showForm && (
           <div style={{ textAlign: "center", padding: "40px 20px" }}>
             <span style={{ fontSize: 40 }}>💜</span>
-            <p style={{ fontSize: 15, fontWeight: 600, color: "var(--plum)", fontFamily: "'Playfair Display', serif", marginTop: 12, marginBottom: 6 }}>No partner links yet</p>
+            <p style={{ fontSize: 15, fontWeight: 600, color: "var(--plum)", fontFamily: "'Fraunces', serif", marginTop: 12, marginBottom: 6 }}>No partner links yet</p>
             <p style={{ fontSize: 13, color: "var(--mauve)", fontFamily: "'Inter', sans-serif", lineHeight: 1.6 }}>Share a read-only view with a partner, family member, or friend who supports you.</p>
           </div>
         )}

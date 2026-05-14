@@ -86,7 +86,7 @@ export default function DailyPhaseBrief({ profile }) {
             Day {info.dayOfCycle} · {info.phase.charAt(0).toUpperCase() + info.phase.slice(1)} phase
           </p>
           
-          <p style={{ fontSize: 15, fontWeight: 700, color: "var(--plum)", fontFamily: "'Playfair Display', serif", marginTop: 1 }}>
+          <p style={{ fontSize: 15, fontWeight: 700, color: "var(--plum)", fontFamily: "'Fraunces', serif", marginTop: 1 }}>
             {content.headline}
           </p>
         </div>

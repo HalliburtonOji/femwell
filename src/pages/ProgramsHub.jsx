@@ -203,7 +203,7 @@ export default function ProgramsHub() {
         <div className="mx-auto max-w-6xl px-4 pb-6 pt-10 md:px-6">
           <p style={sLabel} className="mb-1.5">Guided journeys</p>
           <h1 className="text-3xl font-bold leading-tight md:text-4xl"
-            style={{ fontFamily: "'Playfair Display', serif", color: "var(--plum)", letterSpacing: "-0.02em" }}>
+            style={{ fontFamily: "'Fraunces', serif", color: "var(--plum)", letterSpacing: "-0.02em" }}>
             Programs
           </h1>
           <p className="mt-1.5 text-sm md:text-base" style={{ color: "var(--mauve)", fontFamily: "'Inter', sans-serif" }}>
@@ -410,7 +410,7 @@ function ContinueCard({ program, userProgram, meta, thumb, locked, progress }) {
           </div>
           <div className="absolute bottom-5 left-5 right-5 text-white">
             <p style={{ fontSize: "0.6rem", fontWeight: 600, letterSpacing: "0.12em", textTransform: "uppercase", opacity: 0.7 }}>Continue</p>
-            <h3 className="mt-1 text-2xl font-bold leading-tight" style={{ fontFamily: "'Playfair Display', serif" }}>{program.title}</h3>
+            <h3 className="mt-1 text-2xl font-bold leading-tight" style={{ fontFamily: "'Fraunces', serif" }}>{program.title}</h3>
           </div>
         </div>
 
@@ -475,7 +475,7 @@ function ActiveMiniCard({ program, userProgram, meta, progress }) {
       <div className="flex items-start justify-between gap-2 mb-3">
         <div className="flex-1 min-w-0">
           <p style={sLabel} className="mb-1">Active</p>
-          <h3 className="font-semibold leading-tight" style={{ color: "var(--plum)", fontFamily: "'Playfair Display', serif" }}>{program.title}</h3>
+          <h3 className="font-semibold leading-tight" style={{ color: "var(--plum)", fontFamily: "'Fraunces', serif" }}>{program.title}</h3>
           <p className="text-xs mt-1" style={{ color: "var(--mauve)", fontFamily: "'Inter', sans-serif" }}>
             Day {userProgram.current_day} of {totalDays}
           </p>
@@ -523,7 +523,7 @@ function FeaturedCard({ program, userProgram, locked, thumb, meta, progress }) {
             <p style={{ fontSize: "0.6rem", fontWeight: 600, letterSpacing: "0.12em", textTransform: "uppercase", opacity: 0.7 }}>
               {program.is_featured ? "Featured journey" : "Guided journey"}
             </p>
-            <h3 className="mt-1 text-2xl font-bold leading-tight" style={{ fontFamily: "'Playfair Display', serif" }}>{program.title}</h3>
+            <h3 className="mt-1 text-2xl font-bold leading-tight" style={{ fontFamily: "'Fraunces', serif" }}>{program.title}</h3>
             <p className="mt-2 text-sm leading-relaxed" style={{ color: "rgba(255,255,255,0.8)" }}>{program.summary || program.description}</p>
           </div>
         </div>
@@ -628,7 +628,7 @@ function ProgramCard({ program, userProgram, locked, thumb, meta, progress }) {
             </span>
             {program.level && <span className="text-[10px] capitalize" style={{ color: "var(--mauve)", fontFamily: "'Inter', sans-serif" }}>{program.level}</span>}
           </div>
-          <h3 className="font-semibold leading-tight" style={{ color: "var(--plum)", fontFamily: "'Playfair Display', serif" }}>{program.title}</h3>
+          <h3 className="font-semibold leading-tight" style={{ color: "var(--plum)", fontFamily: "'Fraunces', serif" }}>{program.title}</h3>
           <p className="mt-1.5 text-xs leading-relaxed line-clamp-2" style={{ color: "var(--mauve)", fontFamily: "'Inter', sans-serif" }}>{program.summary || program.description}</p>
         </div>
 

@@ -219,7 +219,7 @@ export default function Events() {
 
         <div style={{ backgroundColor: "var(--surface)", border: "1px solid var(--border)", borderRadius: 20, boxShadow: "var(--shadow-sm)", padding: 20, marginBottom: 16 }}>
           <p style={{ ...sLabel, marginBottom: 8 }}>Community</p>
-          <h1 style={{ fontSize: 26, fontWeight: 700, fontFamily: "'Playfair Display', serif", color: "var(--plum)", letterSpacing: "-0.02em" }}>
+          <h1 style={{ fontSize: 26, fontWeight: 700, fontFamily: "'Fraunces', serif", color: "var(--plum)", letterSpacing: "-0.02em" }}>
             Events
           </h1>
           <p style={{ fontSize: 13, color: "var(--mauve)", fontFamily: "'Inter', sans-serif", marginTop: 6 }}>

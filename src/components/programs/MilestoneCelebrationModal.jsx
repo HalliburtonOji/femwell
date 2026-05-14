@@ -96,7 +96,7 @@ export default function MilestoneCelebrationModal({ userProgram, programTitle, o
       <div style={{ position: "fixed", inset: 0, zIndex: 200, backgroundColor: "rgba(42,32,53,0.55)", backdropFilter: "blur(6px)", display: "flex", alignItems: "center", justifyContent: "center", padding: "24px" }}>
         <div className="ms-card" style={{ backgroundColor: "var(--surface)", borderRadius: 28, padding: "32px 28px", maxWidth: 360, width: "100%", textAlign: "center", boxShadow: "var(--shadow-lg)", border: "1px solid var(--border)" }}>
           <div style={{ fontSize: 64, marginBottom: 16 }}>{m.emoji}</div>
-          <h2 style={{ fontFamily: "'Playfair Display', serif", fontSize: 24, fontWeight: 700, color: "var(--plum)", margin: "0 0 8px" }}>{m.headline}</h2>
+          <h2 style={{ fontFamily: "'Fraunces', serif", fontSize: 24, fontWeight: 700, color: "var(--plum)", margin: "0 0 8px" }}>{m.headline}</h2>
           <p style={{ fontSize: 15, color: "var(--mauve)", fontFamily: "'Inter', sans-serif", lineHeight: 1.6, marginBottom: 24 }}>{sub}</p>
           <div style={{ display: "flex", gap: 10 }}>
             <button onClick={handleClose} disabled={dismissing}

@@ -122,7 +122,7 @@ export default function NewEntrySheet({ user, phase, onClose, onSaved, editEntry
 
         {/* Header */}
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "8px 20px 16px" }}>
-          <h2 style={{ fontFamily: "'Playfair Display', serif", fontSize: 19, fontWeight: 700, color: "#2A2035", margin: 0 }}>
+          <h2 style={{ fontFamily: "'Fraunces', serif", fontSize: 19, fontWeight: 700, color: "#2A2035", margin: 0 }}>
             {step === "type" ? "New entry" : editEntry ? "Edit entry" : CARD_TYPES.find(t => t.id === cardType)?.icon + " " + CARD_TYPES.find(t => t.id === cardType)?.label}
           </h2>
           <button onClick={onClose} style={{ background: "rgba(255,255,255,0.5)", border: "none", borderRadius: "50%", width: 30, height: 30, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center" }}>

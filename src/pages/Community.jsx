@@ -145,7 +145,7 @@ export default function Community() {
       <div className="sticky top-0 z-30 px-4 pt-10 pb-3" style={{ backgroundColor: "rgba(250,248,245,0.97)", backdropFilter: "blur(20px)", borderBottom: "1px solid var(--border)" }}>
         <div className="max-w-xl mx-auto">
           <p style={{ fontSize: "0.6rem", fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.12em", color: "var(--mauve)", fontFamily: "'Inter', sans-serif" }}>Safe space</p>
-          <h1 style={{ fontSize: 24, fontWeight: 700, fontFamily: "'Playfair Display', serif", color: "var(--plum)", letterSpacing: "-0.02em", marginBottom: 12 }}>Community</h1>
+          <h1 style={{ fontSize: 24, fontWeight: 700, fontFamily: "'Fraunces', serif", color: "var(--plum)", letterSpacing: "-0.02em", marginBottom: 12 }}>Community</h1>
           {/* Category filter pills */}
           <div style={{ display: "flex", gap: 6, overflowX: "auto", paddingBottom: 4 }} className="lf-scroll">
             <style>{`.lf-scroll::-webkit-scrollbar{display:none}`}</style>
@@ -169,7 +169,7 @@ export default function Community() {
         ) : posts.length === 0 ? (
           <div style={{ textAlign: "center", padding: "60px 24px" }}>
             <MessageCircle className="w-10 h-10 mx-auto mb-4" style={{ color: "var(--rose-dust)", opacity: 0.4 }} />
-            <p style={{ fontSize: 16, fontWeight: 600, color: "var(--plum)", fontFamily: "'Playfair Display', serif", marginBottom: 6 }}>No posts yet</p>
+            <p style={{ fontSize: 16, fontWeight: 600, color: "var(--plum)", fontFamily: "'Fraunces', serif", marginBottom: 6 }}>No posts yet</p>
             <p style={{ fontSize: 13, color: "var(--mauve)", fontFamily: "'Inter', sans-serif" }}>Be the first to share something.</p>
           </div>
         ) : (
@@ -250,7 +250,7 @@ export default function Community() {
           <div onClick={() => setShowNew(false)} style={{ position: "fixed", inset: 0, zIndex: 40, backgroundColor: "rgba(42,32,53,0.4)", backdropFilter: "blur(4px)" }} />
           <div style={{ position: "fixed", bottom: 0, left: 0, right: 0, zIndex: 50, backgroundColor: "var(--surface)", borderRadius: "24px 24px 0 0", padding: "20px 20px 40px", maxHeight: "82vh", overflowY: "auto" }}>
             <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 16 }}>
-              <h2 style={{ fontFamily: "'Playfair Display', serif", fontSize: 18, fontWeight: 700, color: "var(--plum)", margin: 0 }}>Share with the community</h2>
+              <h2 style={{ fontFamily: "'Fraunces', serif", fontSize: 18, fontWeight: 700, color: "var(--plum)", margin: 0 }}>Share with the community</h2>
               <button onClick={() => setShowNew(false)} style={{ width: 30, height: 30, borderRadius: 9999, backgroundColor: "var(--ivory-dark)", border: "none", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center" }}>
                 <X className="w-4 h-4" style={{ color: "var(--mauve)" }} />
               </button>

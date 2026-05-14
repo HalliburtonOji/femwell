@@ -474,7 +474,7 @@ export default function AICoachTab({ user }) {
             <div>
               <p style={sLabel} className="mb-0">Private</p>
               <h1 className="text-xl font-bold leading-tight"
-                style={{ fontFamily: "'Playfair Display', serif", color: "var(--plum)", letterSpacing: "-0.02em" }}>
+                style={{ fontFamily: "'Fraunces', serif", color: "var(--plum)", letterSpacing: "-0.02em" }}>
                 {guideName}
               </h1>
             </div>

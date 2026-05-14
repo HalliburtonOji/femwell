@@ -160,7 +160,7 @@ export default function PredictiveAnalysisCard({ profile, checkins }) {
     return (
       <div style={{ ...card, padding: "20px", marginBottom: "24px" }}>
         <p style={{ ...sLabel, marginBottom: "8px" }}>Predictive analysis</p>
-        <p style={{ fontSize: "14px", color: "var(--plum)", fontFamily: "'Playfair Display', serif", marginBottom: "6px", fontWeight: 600 }}>
+        <p style={{ fontSize: "14px", color: "var(--plum)", fontFamily: "'Fraunces', serif", marginBottom: "6px", fontWeight: 600 }}>
           No cycle data yet
         </p>
         <p style={{ fontSize: "13px", color: "var(--mauve)", fontFamily: "'Inter', sans-serif", lineHeight: 1.6 }}>
@@ -257,7 +257,7 @@ export default function PredictiveAnalysisCard({ profile, checkins }) {
               In {nextTransition.daysUntil} day{nextTransition.daysUntil !== 1 ? "s" : ""} — {transitionInfo.label}
             </p>
           </div>
-          <p style={{ fontSize: "13px", color: "var(--plum)", fontFamily: "'Playfair Display', serif", fontWeight: 600, marginBottom: "8px" }}>
+          <p style={{ fontSize: "13px", color: "var(--plum)", fontFamily: "'Fraunces', serif", fontWeight: 600, marginBottom: "8px" }}>
             Watch for: {transitionInfo.symptoms.slice(0, 2).join(" · ")}
           </p>
           {transitionInfo.symptoms.length > 2 && (

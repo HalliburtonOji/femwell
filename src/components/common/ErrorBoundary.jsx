@@ -72,7 +72,7 @@ export default class ErrorBoundary extends React.Component {
           </div>
           <h2
             style={{
-              fontFamily: "'Playfair Display', serif",
+              fontFamily: "'Fraunces', serif",
               fontSize: 22,
               fontWeight: 700,
               color: "var(--plum, #2A2035)",

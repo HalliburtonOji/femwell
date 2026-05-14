@@ -340,7 +340,7 @@ export default function CheckinModal({ existing, onClose, onSave, userId, dateSt
           <div style={{ width: 32, height: 4, borderRadius: 9999, backgroundColor: "var(--border)", margin: "0 auto 16px" }} />
           <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", marginBottom: "14px" }}>
             <div>
-              <h2 style={{ fontFamily: "'Playfair Display', serif", fontSize: "18px", color: "var(--plum)", fontWeight: 600, margin: 0 }}>Log your day</h2>
+              <h2 style={{ fontFamily: "'Fraunces', serif", fontSize: "18px", color: "var(--plum)", fontWeight: 600, margin: 0 }}>Log your day</h2>
               <p style={{ fontFamily: "'Inter', sans-serif", fontSize: "12px", color: "var(--mauve)", marginTop: 4 }}>Tap a section to log.</p>
             </div>
             <button onClick={onClose} style={{ width: 28, height: 28, borderRadius: 9999, border: "none", backgroundColor: "var(--ivory-dark)", color: "var(--mauve)", fontSize: "18px", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>x</button>

@@ -10,7 +10,7 @@ export default function ProfileDataModals({ showExport, showDelete, onCloseExpor
         <div style={{ position: "fixed", inset: 0, zIndex: 60, display: "flex", alignItems: "flex-end" }}>
           <div onClick={onCloseExport} style={{ position: "absolute", inset: 0, backgroundColor: "rgba(42,32,53,0.5)", backdropFilter: "blur(6px)" }} />
           <div style={{ position: "relative", width: "100%", backgroundColor: "var(--surface)", borderRadius: "28px 28px 0 0", padding: 24, zIndex: 1 }}>
-            <h3 style={{ fontFamily: "'Playfair Display', serif", fontSize: 18, color: "var(--plum)", fontWeight: 600, marginBottom: 10 }}>Data export</h3>
+            <h3 style={{ fontFamily: "'Fraunces', serif", fontSize: 18, color: "var(--plum)", fontWeight: 600, marginBottom: 10 }}>Data export</h3>
             <p style={{ fontSize: 14, color: "var(--mauve)", fontFamily: "'Inter', sans-serif", lineHeight: 1.65, marginBottom: 16 }}>
               Your full data export will be available in a future update. For now, you can use Doctor Export to download a health summary.
             </p>
@@ -32,7 +32,7 @@ export default function ProfileDataModals({ showExport, showDelete, onCloseExpor
           <div style={{ position: "relative", width: "100%", backgroundColor: "var(--surface)", borderRadius: "28px 28px 0 0", padding: 24, zIndex: 1 }}>
             {dataDeletionRequested ? (
               <>
-                <h3 style={{ fontFamily: "'Playfair Display', serif", fontSize: 18, color: "var(--plum)", fontWeight: 600, marginBottom: 10 }}>Request received</h3>
+                <h3 style={{ fontFamily: "'Fraunces', serif", fontSize: 18, color: "var(--plum)", fontWeight: 600, marginBottom: 10 }}>Request received</h3>
                 <p style={{ fontSize: 14, color: "var(--mauve)", fontFamily: "'Inter', sans-serif", lineHeight: 1.65, marginBottom: 20 }}>
                   Your deletion request has been received. We will process it within 7 days and notify you by email.
                 </p>
@@ -43,7 +43,7 @@ export default function ProfileDataModals({ showExport, showDelete, onCloseExpor
               </>
             ) : (
               <>
-                <h3 style={{ fontFamily: "'Playfair Display', serif", fontSize: 18, color: "#D94F4F", fontWeight: 600, marginBottom: 10 }}>Delete my data</h3>
+                <h3 style={{ fontFamily: "'Fraunces', serif", fontSize: 18, color: "#D94F4F", fontWeight: 600, marginBottom: 10 }}>Delete my data</h3>
                 <p style={{ fontSize: 14, color: "var(--mauve)", fontFamily: "'Inter', sans-serif", lineHeight: 1.65, marginBottom: 20 }}>
                   This will permanently delete all your tracked data. This cannot be undone.
                 </p>

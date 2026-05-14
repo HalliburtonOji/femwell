@@ -37,7 +37,7 @@ export default function PartnerView() {
   if (error) return (
     <div className="min-h-screen flex flex-col items-center justify-center px-6 text-center" style={{ backgroundColor: "var(--ivory)" }}>
       <span style={{ fontSize: 48 }}>💜</span>
-      <p style={{ fontSize: 18, fontWeight: 700, color: "var(--plum)", fontFamily: "'Playfair Display', serif", marginTop: 16, marginBottom: 8 }}>Link unavailable</p>
+      <p style={{ fontSize: 18, fontWeight: 700, color: "var(--plum)", fontFamily: "'Fraunces', serif", marginTop: 16, marginBottom: 8 }}>Link unavailable</p>
       <p style={{ fontSize: 14, color: "var(--mauve)", fontFamily: "'Inter', sans-serif", lineHeight: 1.6 }}>{error}</p>
     </div>
   );
@@ -64,7 +64,7 @@ export default function PartnerView() {
               <span style={{ fontSize: 28 }}>{data.phase_info.emoji}</span>
               <div>
                 <p style={{ fontSize: 11, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.12em", color: "rgba(255,255,255,0.7)", fontFamily: "'Inter', sans-serif" }}>Right now</p>
-                <p style={{ fontSize: 18, fontWeight: 700, color: "white", fontFamily: "'Playfair Display', serif" }}>{data.phase_info.label}</p>
+                <p style={{ fontSize: 18, fontWeight: 700, color: "white", fontFamily: "'Fraunces', serif" }}>{data.phase_info.label}</p>
               </div>
             </div>
             <p style={{ fontSize: 14, color: "rgba(255,255,255,0.9)", fontFamily: "'Inter', sans-serif", lineHeight: 1.7 }}>
@@ -95,7 +95,7 @@ export default function PartnerView() {
         {data.active_program && (
           <div className="rounded-[24px] p-5 mb-4" style={{ backgroundColor: "var(--surface)", border: "1px solid var(--border)", boxShadow: "var(--shadow-sm)" }}>
             <p style={{ fontSize: 11, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.12em", color: "var(--mauve)", fontFamily: "'Inter', sans-serif", marginBottom: 8 }}>Active program</p>
-            <p style={{ fontSize: 16, fontWeight: 700, color: "var(--plum)", fontFamily: "'Playfair Display', serif", marginBottom: 4 }}>{data.active_program.title}</p>
+            <p style={{ fontSize: 16, fontWeight: 700, color: "var(--plum)", fontFamily: "'Fraunces', serif", marginBottom: 4 }}>{data.active_program.title}</p>
             <p style={{ fontSize: 13, color: "var(--mauve)", fontFamily: "'Inter', sans-serif", marginBottom: 12 }}>
               Day {data.active_program.current_day} of {data.active_program.duration_days}
               {data.active_program.streak > 0 ? ` · 🔥 ${data.active_program.streak}-day streak` : ""}

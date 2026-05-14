@@ -43,7 +43,7 @@ function DesktopSidebar({ currentPageName }) {
         </div>
         <h2
           className="text-xl font-bold leading-tight"
-          style={{ fontFamily: "'Playfair Display', serif", color: "var(--plum)", letterSpacing: "-0.02em" }}
+          style={{ fontFamily: "'Fraunces', serif", color: "var(--plum)", letterSpacing: "-0.02em" }}
         >
           FemWell
         </h2>

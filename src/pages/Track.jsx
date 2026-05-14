@@ -264,7 +264,7 @@ export default function Track() {
         <div className="pt-10 pb-5">
           <p style={sLabel} className="mb-1.5">Daily Log</p>
           <h1 className="text-2xl font-bold leading-tight"
-            style={{ fontFamily: "'Playfair Display', serif", color: "var(--plum)", letterSpacing: "-0.02em" }}>
+            style={{ fontFamily: "'Fraunces', serif", color: "var(--plum)", letterSpacing: "-0.02em" }}>
             Track
           </h1>
           <p className="text-sm mt-1" style={{ color: "var(--mauve)", fontFamily: "'Inter', sans-serif" }}>
@@ -356,7 +356,7 @@ export default function Track() {
 
             {addingCycleEvent ? (
               <div className="rounded-[24px] p-5 space-y-4" style={card}>
-                <p className="font-semibold text-sm" style={{ color: "var(--plum)", fontFamily: "'Playfair Display', serif" }}>Log Cycle Event</p>
+                <p className="font-semibold text-sm" style={{ color: "var(--plum)", fontFamily: "'Fraunces', serif" }}>Log Cycle Event</p>
 
                 <div>
                   <p style={sLabel} className="mb-2">Event type</p>
@@ -444,7 +444,7 @@ export default function Track() {
 
             {addingSymptom ? (
               <div className="rounded-[24px] p-5 space-y-4" style={card}>
-                <p className="font-semibold text-sm" style={{ color: "var(--plum)", fontFamily: "'Playfair Display', serif" }}>Log a Symptom</p>
+                <p className="font-semibold text-sm" style={{ color: "var(--plum)", fontFamily: "'Fraunces', serif" }}>Log a Symptom</p>
 
                 <div>
                   <p style={sLabel} className="mb-2.5">Common symptoms</p>
@@ -525,7 +525,7 @@ export default function Track() {
 
             {addingHabit ? (
               <div className="rounded-[24px] p-5 space-y-3.5" style={card}>
-                <p className="font-semibold text-sm" style={{ color: "var(--plum)", fontFamily: "'Playfair Display', serif" }}>New Habit</p>
+                <p className="font-semibold text-sm" style={{ color: "var(--plum)", fontFamily: "'Fraunces', serif" }}>New Habit</p>
                 <input type="text" placeholder="Name your habit…" value={newHabitName}
                   onChange={(e) => setNewHabitName(e.target.value)}
                   onKeyDown={(e) => e.key === "Enter" && handleAddHabit()}

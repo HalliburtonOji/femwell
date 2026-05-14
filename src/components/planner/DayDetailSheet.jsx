@@ -48,7 +48,7 @@ function SummaryTab({ dayData }) {
           <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 6 }}>
             {[["Mood", checkin.mood, "/5"], ["Energy", checkin.energy, "/5"], ["Stress", checkin.stress, "/5"], ["Sleep", checkin.sleep_hours, "h"]].map(([l, v, u]) => (
               <div key={l} style={{ textAlign: "center" }}>
-                <p style={{ fontSize: 18, fontWeight: 700, color: "var(--plum)", fontFamily: "'Playfair Display', serif", lineHeight: 1 }}>{v ?? "—"}<span style={{ fontSize: 10, color: "var(--mauve)" }}>{u}</span></p>
+                <p style={{ fontSize: 18, fontWeight: 700, color: "var(--plum)", fontFamily: "'Fraunces', serif", lineHeight: 1 }}>{v ?? "—"}<span style={{ fontSize: 10, color: "var(--mauve)" }}>{u}</span></p>
                 <p style={{ fontSize: 10, color: "var(--mauve)", marginTop: 2, fontFamily: "'Inter', sans-serif" }}>{l}</p>
               </div>
             ))}
@@ -559,7 +559,7 @@ export default function DayDetailSheet({ date, dayData: initialDayData, userId, 
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "0 20px 14px", flexShrink: 0 }}>
           <div>
             <p style={{ fontSize: 10, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.12em", color: "var(--mauve)", fontFamily: "'Inter', sans-serif" }}>Day Log</p>
-            <h3 style={{ fontSize: 20, fontWeight: 700, color: "var(--plum)", fontFamily: "'Playfair Display', serif", marginTop: 2 }}>{dateDisplay}</h3>
+            <h3 style={{ fontSize: 20, fontWeight: 700, color: "var(--plum)", fontFamily: "'Fraunces', serif", marginTop: 2 }}>{dateDisplay}</h3>
           </div>
           <button onClick={onClose} style={{ width: 32, height: 32, borderRadius: 9999, backgroundColor: "var(--ivory-dark)", border: "none", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center" }}>
             <X style={{ width: 14, height: 14, color: "var(--mauve)" }} />

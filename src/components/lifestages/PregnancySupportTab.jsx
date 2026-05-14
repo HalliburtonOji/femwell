@@ -88,7 +88,7 @@ function KickCounter() {
       <p style={{ fontSize: 12, color: "var(--mauve)", marginBottom: 12, fontFamily: "'Inter', sans-serif" }}>Goal: {KICK_COUNTER_GOAL} kicks. Tap for each movement.</p>
       <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 20, marginBottom: 14 }}>
         <div style={{ textAlign: "center" }}>
-          <p style={{ fontSize: 42, fontWeight: 700, color: "var(--plum)", fontFamily: "'Playfair Display', serif", lineHeight: 1 }}>{kicks}</p>
+          <p style={{ fontSize: 42, fontWeight: 700, color: "var(--plum)", fontFamily: "'Fraunces', serif", lineHeight: 1 }}>{kicks}</p>
           <p style={{ fontSize: 10, color: "var(--mauve)" }}>kicks</p>
         </div>
         {startTime && (
@@ -216,7 +216,7 @@ export default function PregnancySupportTab({ user, profile, setProfile, logs, s
           { label: "Baby size", value: babySize ? babySize.emoji : "🤰", color: "var(--mauve)", bg: "var(--mauve-subtle)" },
         ].map(s => (
           <div key={s.label} style={{ backgroundColor: s.bg, border: `1px solid ${s.color}30`, borderRadius: 16, padding: "14px", textAlign: "center" }}>
-            <p style={{ fontSize: 22, fontWeight: 700, color: s.color, fontFamily: "'Playfair Display', serif" }}>{s.value}</p>
+            <p style={{ fontSize: 22, fontWeight: 700, color: s.color, fontFamily: "'Fraunces', serif" }}>{s.value}</p>
             <p style={{ fontSize: 10, color: s.color, opacity: 0.7, textTransform: "uppercase", letterSpacing: "0.1em", fontFamily: "'Inter', sans-serif" }}>{s.label}</p>
           </div>
         ))}
@@ -227,7 +227,7 @@ export default function PregnancySupportTab({ user, profile, setProfile, logs, s
         <div style={{ backgroundColor: "var(--rose-dust-subtle)", border: "1px solid var(--rose-dust-light)", borderRadius: 16, padding: "16px 20px", display: "flex", alignItems: "center", gap: 16 }}>
           <span style={{ fontSize: 42 }}>{babySize.emoji}</span>
           <div>
-            <p style={{ fontSize: 15, fontWeight: 700, color: "var(--plum)", fontFamily: "'Playfair Display', serif" }}>Your baby is the size of a {babySize.fruit}</p>
+            <p style={{ fontSize: 15, fontWeight: 700, color: "var(--plum)", fontFamily: "'Fraunces', serif" }}>Your baby is the size of a {babySize.fruit}</p>
             <p style={{ fontSize: 12, color: "var(--mauve)", marginTop: 2 }}>About {babySize.size} — Week {week}</p>
             <p style={{ fontSize: 12, color: "var(--rose-dust)", marginTop: 4 }}>{triInfo.tip}</p>
           </div>

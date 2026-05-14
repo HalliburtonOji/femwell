@@ -18,7 +18,7 @@ export default function SettingsCard({ title, description, children, footer }) {
       >
         <h2
           style={{
-            fontFamily: "'Playfair Display', serif",
+            fontFamily: "'Fraunces', serif",
             fontSize: 18,
             fontWeight: 700,
             color: "var(--plum)",

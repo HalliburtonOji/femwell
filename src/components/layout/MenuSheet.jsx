@@ -248,7 +248,7 @@ export default function MenuSheet({ open, onClose, returnFocusRef }) {
         </div>
 
         <h2 style={{
-          fontFamily: "'Fraunces', 'Playfair Display', serif",
+          fontFamily: "'Fraunces', serif",
           fontWeight: 300, fontSize: 28, color: "var(--plum-deep)",
           margin: "16px 0 12px",
         }}>

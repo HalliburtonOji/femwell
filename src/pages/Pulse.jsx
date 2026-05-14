@@ -276,7 +276,7 @@ export default function Pulse() {
             </p>
             <h1 style={{
               fontSize: "28px", fontWeight: 700, lineHeight: 1.1,
-              fontFamily: "'Playfair Display', serif",
+              fontFamily: "'Fraunces', serif",
               color: "var(--plum)", letterSpacing: "-0.02em", marginTop: "4px"
             }}>
               Pulse
@@ -300,7 +300,7 @@ export default function Pulse() {
         {checkins.length < 3 && (
           <div style={{ marginTop: 32, backgroundColor: "var(--surface)", border: "1px solid var(--border)", borderRadius: 24, padding: "36px 24px", textAlign: "center", boxShadow: "var(--shadow-sm)" }}>
             <div style={{ width: 48, height: 48, borderRadius: 16, backgroundColor: "var(--rose-dust-subtle)", display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 14px" }}><Activity style={{ width: 22, height: 22, color: "var(--rose-dust)" }} /></div>
-            <h3 style={{ fontFamily: "'Playfair Display', serif", fontSize: 20, fontWeight: 700, color: "var(--plum)", marginBottom: 8 }}>Check in daily to unlock insights</h3>
+            <h3 style={{ fontFamily: "'Fraunces', serif", fontSize: 20, fontWeight: 700, color: "var(--plum)", marginBottom: 8 }}>Check in daily to unlock insights</h3>
             <p style={{ fontSize: 14, color: "var(--mauve)", fontFamily: "'Inter', sans-serif", lineHeight: 1.6, marginBottom: 20 }}>After a few check-ins, you'll see patterns in your mood, energy and sleep</p>
             <a href="/Today?open_log=1" style={{ backgroundColor: "var(--plum)", color: "white", borderRadius: 9999, padding: "12px 28px", fontSize: 14, fontWeight: 600, fontFamily: "'Inter', sans-serif", textDecoration: "none", display: "inline-block" }}>
               Do today's check-in
@@ -404,7 +404,7 @@ export default function Pulse() {
                   fontSize: currentWeeklyItem?.summary_type === 'monthly' ? "18px" : "13px",
                   fontWeight: 600,
                   color: "var(--plum)",
-                  fontFamily: currentWeeklyItem?.summary_type === 'monthly' ? "'Playfair Display', serif" : "'Inter', sans-serif",
+                  fontFamily: currentWeeklyItem?.summary_type === 'monthly' ? "'Fraunces', serif" : "'Inter', sans-serif",
                 }}>{weeklyPeriodLabel}</p>
               </div>
               <button
@@ -462,21 +462,21 @@ export default function Pulse() {
                   {weekStats.journalCount > 0 && (
                     <div style={{ backgroundColor: "var(--ivory-dark)", borderRadius: "12px", padding: "10px 14px" }}>
                       <p style={{ fontSize: "10px", color: "var(--mauve)", fontWeight: 700, letterSpacing: "0.1em", fontFamily: "'Inter', sans-serif" }}>JOURNAL</p>
-                      <p style={{ fontSize: "20px", color: "var(--plum)", fontWeight: 700, fontFamily: "'Playfair Display', serif", marginTop: "2px" }}>{weekStats.journalCount}</p>
+                      <p style={{ fontSize: "20px", color: "var(--plum)", fontWeight: 700, fontFamily: "'Fraunces', serif", marginTop: "2px" }}>{weekStats.journalCount}</p>
                       <p style={{ fontSize: "10px", color: "var(--mauve)", fontFamily: "'Inter', sans-serif" }}>entries</p>
                     </div>
                   )}
                   {weekStats.habitCount > 0 && (
                     <div style={{ backgroundColor: "var(--ivory-dark)", borderRadius: "12px", padding: "10px 14px" }}>
                       <p style={{ fontSize: "10px", color: "var(--mauve)", fontWeight: 700, letterSpacing: "0.1em", fontFamily: "'Inter', sans-serif" }}>HABITS</p>
-                      <p style={{ fontSize: "20px", color: "var(--plum)", fontWeight: 700, fontFamily: "'Playfair Display', serif", marginTop: "2px" }}>{weekStats.habitCount}</p>
+                      <p style={{ fontSize: "20px", color: "var(--plum)", fontWeight: 700, fontFamily: "'Fraunces', serif", marginTop: "2px" }}>{weekStats.habitCount}</p>
                       <p style={{ fontSize: "10px", color: "var(--mauve)", fontFamily: "'Inter', sans-serif" }}>completed</p>
                     </div>
                   )}
                   {weekStats.mealCount > 0 && (
                     <div style={{ backgroundColor: "var(--ivory-dark)", borderRadius: "12px", padding: "10px 14px" }}>
                       <p style={{ fontSize: "10px", color: "var(--mauve)", fontWeight: 700, letterSpacing: "0.1em", fontFamily: "'Inter', sans-serif" }}>MEALS</p>
-                      <p style={{ fontSize: "20px", color: "var(--plum)", fontWeight: 700, fontFamily: "'Playfair Display', serif", marginTop: "2px" }}>{weekStats.mealCount}</p>
+                      <p style={{ fontSize: "20px", color: "var(--plum)", fontWeight: 700, fontFamily: "'Fraunces', serif", marginTop: "2px" }}>{weekStats.mealCount}</p>
                       <p style={{ fontSize: "10px", color: "var(--mauve)", fontFamily: "'Inter', sans-serif" }}>logged</p>
                     </div>
                   )}
@@ -503,7 +503,7 @@ export default function Pulse() {
             borderRadius: "20px", padding: "20px", marginBottom: "20px",
             boxShadow: "var(--shadow-sm)"
           }}>
-            <p style={{ fontFamily: "'Playfair Display', serif", fontSize: "16px", fontWeight: 600, color: "var(--plum)", marginBottom: "10px" }}>This week, try</p>
+            <p style={{ fontFamily: "'Fraunces', serif", fontSize: "16px", fontWeight: 600, color: "var(--plum)", marginBottom: "10px" }}>This week, try</p>
             <p style={{ fontSize: "14px", color: "var(--plum)", lineHeight: 1.6, fontFamily: "'Inter', sans-serif", marginBottom: "14px" }}>{currentWeeklyItem.ai_suggestion}</p>
             <div className="flex flex-wrap gap-2">
               {[

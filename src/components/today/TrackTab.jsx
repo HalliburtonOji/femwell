@@ -170,12 +170,12 @@ function CycleSubTab({ user, profile, selectedDate }) {
           <p style={sLabel}>Current cycle status</p>
           <div className="flex items-center gap-3 mt-3">
             <div style={{ flex: 1 }}>
-              <p style={{ fontSize: 22, fontWeight: 700, color: "var(--plum)", fontFamily: "'Playfair Display', serif" }}>Day {cycleInfo.cycleDay}</p>
+              <p style={{ fontSize: 22, fontWeight: 700, color: "var(--plum)", fontFamily: "'Fraunces', serif" }}>Day {cycleInfo.cycleDay}</p>
               <p style={{ fontSize: 13, fontWeight: 600, color: cycleInfo.phaseColor, fontFamily: "'Inter', sans-serif", marginTop: 2 }}>{cycleInfo.phase} Phase</p>
             </div>
             <div style={{ textAlign: "right" }}>
               <p style={{ fontSize: 12, color: "var(--mauve)", fontFamily: "'Inter', sans-serif" }}>Next period in</p>
-              <p style={{ fontSize: 20, fontWeight: 700, color: "var(--plum)", fontFamily: "'Playfair Display', serif" }}>{cycleInfo.nextPeriod}d</p>
+              <p style={{ fontSize: 20, fontWeight: 700, color: "var(--plum)", fontFamily: "'Fraunces', serif" }}>{cycleInfo.nextPeriod}d</p>
             </div>
           </div>
         </div>
@@ -512,7 +512,7 @@ function HabitsSubTab({ user, profile, selectedDate }) {
         <div style={{ ...card, padding: "14px 20px" }}>
           <p style={sLabel}>Hydration</p>
           <div style={{ display: "flex", alignItems: "flex-end", gap: 6, marginTop: 6 }}>
-            <p style={{ fontSize: 20, fontWeight: 700, color: "var(--sage)", fontFamily: "'Playfair Display', serif" }}>{hydrationTotal} ml</p>
+            <p style={{ fontSize: 20, fontWeight: 700, color: "var(--sage)", fontFamily: "'Fraunces', serif" }}>{hydrationTotal} ml</p>
             <p style={{ fontSize: 13, color: "var(--mauve)", fontFamily: "'Inter', sans-serif", marginBottom: 2 }}>/ {hydrationTarget} ml goal</p>
           </div>
           <div style={{ height: 6, backgroundColor: "var(--ivory-dark)", borderRadius: 3, overflow: "hidden", marginTop: 8 }}>
