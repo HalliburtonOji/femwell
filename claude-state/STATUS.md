@@ -2,7 +2,7 @@
 
 > **This file is the source of truth for "where we are and what's next."** Both Claudes read it on session start and write to it after every commit. Halli should never have to copy status between Cowork and Code — they coordinate through this file.
 
-**Last updated:** 2026-05-14 by Cowork (after research drop `82c9320`)
+**Last updated:** 2026-05-14 by Cowork (podcast spec authored — Halli decisions locked)
 
 ---
 
@@ -10,6 +10,7 @@
 
 | Commit | Author | What it did |
 |---|---|---|
+| (pending) | Cowork | **Podcast build spec authored** — Phase 1 (link-out sheet) + Phase 2 (in-app player) in `claude-state/base44_mps/2026-05-14_podcast/spec.md`. Decision record in `claude-state/decisions/2026-05-14_podcast_strategy.md`. Capacitor + Apple paywall constraint logged in memory. Halli's 4 decisions: all 3 destinations (Spotify + Apple + Pocket Casts), no Spotify dev app yet (pod.link fallback), both phases in parallel, Capacitor flagged for future. |
 | `82c9320` | Cowork | **Research drop:** `claude-state/research_podcast_strategy_2026-05-14.md` — 5,360 words on podcast link-outs (Spotify / Apple / Pocket Casts) + in-app player (legal, stack, MVP feature set, Podcasting 2.0). Phase 1 ship recommended. 7 open questions for Halli. |
 | `dd908fe` | Cowork | docs(state): sync STATUS.md after Code's 3 commits + publish. |
 | `0ec5402` | Code | Handoff: 4 items queued for next publish + Code's post-publish invoke plan. **Now PUBLISHED on femwells.com.** Podcasts rail visible on `/Lifestyle?tab=listen`. Practice rail visible (9 rows from Code's earlier `migrateSessionsToPractice` invoke). |
@@ -35,19 +36,22 @@ All live on **femwells.com**.
 
 ### On **Code** (VS Code Claude)
 
-Code now has autonomous function-invocation via `npx base44 exec` + `scripts/base44-cli.mjs` for reads. Halli ran `base44 login` once + Deno installed; Code can invoke any deployed admin function without UI.
+Code has autonomous function-invocation via `npx base44 exec` + `scripts/base44-cli.mjs` for reads.
 
 **Already done this session by Code (post-publish):**
-- ✅ `migrateSessionsToPractice {}` invoked → 9 PRACTICE rows in `LifestyleItems`. Practice rail visible on `/Lifestyle?tab=listen`.
+- ✅ `migrateSessionsToPractice {}` invoked → 9 PRACTICE rows. Practice rail visible.
 
-**Queued for Code's next session (post-publish of `cde30a7`):**
-1. **Invoke `seedPodcasts {}`** via `npx base44 exec` — expects 12-60 podcast rows now that UA + image-skip relax + cascade-fallback are live. Drop tombstone with counts.
-2. **Invoke `backfillTikTokEmoji {}`** — expects ~24 emoji-dirty rows cleaned.
-3. **Invoke `backfillYouTubeEmbeddability {}`** — expects 5–10 unembeddable YT rows marked.
-4. **Build `backfillLongreadsImages`** (LC-5 part C, green-lit) — server-side function mirroring LC-4 pattern. Wire into `WEEKLY_PHASES`. Then invoke once via CLI.
+**Queued — in priority order:**
 
-**Lower priority (still green-lit, lower priority than the invokes above):**
-5. **Playfair → Fraunces sweep** — 165 inline JSX `fontFamily` + 3 `src/index.css` refs. Single chore commit.
+1. **🔥 Podcast Phase 1 (link-out sheet)** — spec at `claude-state/base44_mps/2026-05-14_podcast/spec.md`. ~2 days work. Schema additions (apple_collection_id on LifestyleSources), new `resolveApplePodcastId` function via free iTunes Search API, `derivePodcastLinks` util (Spotify via pod.link fallback, Pocket Casts via `pktc://` direct), `PodcastListenSheet` bottom sheet component, wire into PodcastCard, localStorage choice persistence. Acceptance criteria §1.6 in spec.
+2. **🔥 Podcast Phase 2 (in-app player)** — spec same file. Parallel with Phase 1 per Halli's decision. ~1-2 weeks. New `PodcastListens` entity, `usePodcastPlayer` hook, MiniPlayer in Layout, MediaSession API, MVP feature set. Acceptance criteria §2.6.
+3. **Invoke `seedPodcasts {}`** via `npx base44 exec` — expects 12-60 podcast rows now that UA + image-skip relax are live.
+4. **Invoke `backfillTikTokEmoji {}`** — expects ~24 emoji-dirty rows cleaned.
+5. **Invoke `backfillYouTubeEmbeddability {}`** — expects 5-10 unembeddable YT rows marked.
+6. **Build `backfillLongreadsImages`** (LC-5 part C) — mirror LC-4 pattern.
+
+**Lower priority:**
+7. **Playfair → Fraunces sweep** — 165 inline JSX `fontFamily` + 3 `src/index.css` refs.
 
 ### On **Cowork** (web Claude)
 
@@ -115,3 +119,4 @@ Pick one. Default if nothing chosen: option 1.
 - 2026-05-14 — Cowork: added `30a645f` row (the commit that introduced this file).
 - 2026-05-14 — Cowork: published Code's bundle (`cde30a7` + `59fa0b8` + `0ec5402`). Updated "Just shipped" with Code's 3 new commits. Rewrote "In flight" to reflect Code's autonomous-invoke capability + already-completed `migrateSessionsToPractice` (9 PRACTICE rows). Confirmed Podcasts rail live on `/Lifestyle?tab=listen`.
 - 2026-05-14 — Cowork: added `82c9320` row for the podcast strategy research drop. Added new "decide podcast strategy open questions" as the new #1 candidate next move.
+- 2026-05-14 — Cowork: Halli decided all 4 podcast questions. Authored Phase 1 + Phase 2 build spec at `claude-state/base44_mps/2026-05-14_podcast/spec.md`. Decision record at `claude-state/decisions/2026-05-14_podcast_strategy.md`. Capacitor + Stripe paywall constraint logged in memory (`project_capacitor_stripe_paywall.md`). Reordered Code's queue — podcast Phase 1 + Phase 2 are now top priority.
