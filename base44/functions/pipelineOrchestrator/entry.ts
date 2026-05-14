@@ -661,6 +661,14 @@ Deno.serve(async (req) => {
     'backfillYouTubeEmbeddability',
     'backfillTikTokEmoji',
   ]);
+  // One-shot phases: data migrations that should run exactly ONCE across the
+  // dataset, then never again. After the first successful `phase:<name>:ok`
+  // log, the gate locks closed forever. Used for LC-3 Sessions→Practice and
+  // similar entity-shape migrations. Halli can't invoke base44 Functions
+  // manually, so migrations must self-fire via the orchestrator too.
+  const ONE_SHOT_PHASES = new Set([
+    'migrateSessionsToPractice',
+  ]);
 
   // ── First-run bootstrap ────────────────────────────────────────────────────
   // Per feedback_orchestrator_first_run_bootstrap.md and the user 2026-05-13:
@@ -684,10 +692,14 @@ Deno.serve(async (req) => {
 
   const wantsPhase = (name) => {
     if (runPhaseParam) return runPhaseParam === name;
-    // First-run bootstrap: a phase that has never logged a successful run
-    // fires regardless of cadence. This means a fresh deploy with new phases
-    // populates the user-visible state on the next daily cron, not the next
-    // Sunday/1st.
+    // One-shot phases: data migrations that should run exactly once across
+    // the dataset. After the first `:ok` log, the gate locks closed forever.
+    // Halli can't invoke base44 Functions manually, so migrations must
+    // self-fire via the orchestrator too.
+    if (ONE_SHOT_PHASES.has(name)) return !phaseHasRunOk.has(name);
+    // First-run bootstrap: any other phase that has never logged a successful
+    // run fires regardless of cadence. Fresh deploys populate user-visible
+    // state on the next daily cron, not the next Sunday/1st.
     if (!phaseHasRunOk.has(name)) return true;
     if (MONTHLY_PHASES.has(name)) return isFirstOfMonth;
     if (WEEKLY_PHASES.has(name)) return isSunday;
@@ -773,6 +785,14 @@ Deno.serve(async (req) => {
   // rows whose title still matches the emoji regex.
   if (wantsPhase('backfillTikTokEmoji')) {
     phases.push({ name: 'backfillTikTokEmoji', ...(await runPhase(base44, 'backfillTikTokEmoji', 'backfillTikTokEmoji')) });
+  }
+
+  // Phase 13 (one-shot): LC-3 Sessions → Practice migration. Moves any
+  // legacy `Sessions` rows that still hold valid audio content onto the
+  // Practice rail, then leaves them alone. Gated by ONE_SHOT_PHASES — fires
+  // exactly once on the next daily cron after deploy, then never again.
+  if (wantsPhase('migrateSessionsToPractice')) {
+    phases.push({ name: 'migrateSessionsToPractice', ...(await runPhase(base44, 'migrateSessionsToPractice', 'migrateSessionsToPractice')) });
   }
 
   const finishedAt = new Date().toISOString();
