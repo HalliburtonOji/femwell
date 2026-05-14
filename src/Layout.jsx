@@ -8,6 +8,7 @@ import CheckinModal from "./components/today/CheckinModal";
 import ErrorBoundary from "./components/common/ErrorBoundary";
 
 import { MilestoneEventListener } from "./components/programs/MilestoneCelebrationModal";
+import { PodcastPlayerProvider } from "./components/lifestyle/listen/PodcastPlayerProvider";
 
 const HIDE_NAV = ["Onboarding", "ContentPlayer", "CycleSettings"];
 const LITE_NAV = ["ProgramDay", "ProgramDetail"];
@@ -47,6 +48,7 @@ export default function Layout({ children, currentPageName }) {
   };
 
   return (
+    <PodcastPlayerProvider>
     <div className="min-h-screen" style={{ backgroundColor: "var(--ivory)" }}>
       <style>{`@media print { .no-print { display: none !important; } .print-only { display: block !important; } }`}</style>
       {showNav && <FloatingSidebar currentPageName={currentPageName} mode={navMode} openQuickLog={openQuickLog} />}
@@ -97,5 +99,6 @@ export default function Layout({ children, currentPageName }) {
         />
       )}
     </div>
+    </PodcastPlayerProvider>
   );
 }

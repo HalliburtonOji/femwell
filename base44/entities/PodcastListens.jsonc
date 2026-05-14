@@ -1,0 +1,43 @@
+{
+  "name": "PodcastListens",
+  "type": "object",
+  "description": "Per-user resume position + completion state for podcast episodes played in-app. Single row per (user_id, lifestyle_item_id). usePodcastPlayer upserts position every ~5s while playback continues.",
+  "properties": {
+    "user_id": {
+      "type": "string"
+    },
+    "lifestyle_item_id": {
+      "type": "string",
+      "description": "FK to LifestyleItems where media_type=PODCAST."
+    },
+    "position_sec": {
+      "type": "number",
+      "default": 0,
+      "description": "Resume position in seconds. Used by the player to seek to last-known-position on episode load."
+    },
+    "duration_sec": {
+      "type": "number",
+      "default": 0,
+      "description": "Total episode duration in seconds. Captured once metadata loads so we can render % progress without re-reading metadata."
+    },
+    "completed": {
+      "type": "boolean",
+      "default": false,
+      "description": "Set when position_sec reaches >=95% of duration_sec, signalling the user finished the episode."
+    },
+    "last_played_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "created_at": {
+      "type": "string"
+    },
+    "updated_at": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "user_id",
+    "lifestyle_item_id"
+  ]
+}
