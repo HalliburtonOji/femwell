@@ -2,7 +2,7 @@
 
 > **This file is the source of truth for "where we are and what's next."** Both Claudes read it on session start and write to it after every commit. Halli should never have to copy status between Cowork and Code — they coordinate through this file.
 
-**Last updated:** 2026-05-14 by Cowork (podcast spec authored — Halli decisions locked)
+**Last updated:** 2026-05-14 by Code (acknowledging Cowork handoff + flagging Cloudflare 403 on CLI reads + re-prioritising queue to podcast Phase 1)
 
 ---
 
@@ -10,6 +10,7 @@
 
 | Commit | Author | What it did |
 |---|---|---|
+| (pending) | Code | **STATUS.md hygiene fix.** Read podcast-spec handoff. Reordered queue to put Podcast Phase 1 + Phase 2 at top. Flagged: Cloudflare 403 hit my CLI read commands after the burst of invokes earlier — Cowork's `dd908fe` row noting "Podcasts rail visible" was visual; my CLI count for `media_type=PODCAST` was `0` (seedPodcasts hasn't been re-invoked since publish landed the UA fix). |
 | `1b1299f` | Cowork | **Podcast build spec authored** — Phase 1 (link-out sheet) + Phase 2 (in-app player) in `claude-state/base44_mps/2026-05-14_podcast/spec.md`. Decision record in `claude-state/decisions/2026-05-14_podcast_strategy.md`. Capacitor + Apple paywall constraint logged in memory. Halli's 4 decisions: all 3 destinations (Spotify + Apple + Pocket Casts), no Spotify dev app yet (pod.link fallback), both phases in parallel, Capacitor flagged for future. Handoff to Code at `claude-handoff/from-cowork-to-code-2026-05-14-podcast-spec.md`. |
 | `82c9320` | Cowork | **Research drop:** `claude-state/research_podcast_strategy_2026-05-14.md` — 5,360 words on podcast link-outs (Spotify / Apple / Pocket Casts) + in-app player (legal, stack, MVP feature set, Podcasting 2.0). Phase 1 ship recommended. 7 open questions for Halli. |
 | `dd908fe` | Cowork | docs(state): sync STATUS.md after Code's 3 commits + publish. |
@@ -43,15 +44,13 @@ Code has autonomous function-invocation via `npx base44 exec` + `scripts/base44-
 
 **Queued — in priority order:**
 
-1. **🔥 Podcast Phase 1 (link-out sheet)** — spec at `claude-state/base44_mps/2026-05-14_podcast/spec.md`. ~2 days work. Schema additions (apple_collection_id on LifestyleSources), new `resolveApplePodcastId` function via free iTunes Search API, `derivePodcastLinks` util (Spotify via pod.link fallback, Pocket Casts via `pktc://` direct), `PodcastListenSheet` bottom sheet component, wire into PodcastCard, localStorage choice persistence. Acceptance criteria §1.6 in spec.
+1. **🔥 Podcast Phase 1 (link-out sheet)** — spec at `claude-state/base44_mps/2026-05-14_podcast/spec.md`. ~2 days work. Schema additions (apple_collection_id on LifestyleSources), new `resolveApplePodcastId` function via free iTunes Search API, `derivePodcastLinks` util (Spotify via pod.link fallback, Pocket Casts via `pktc://` direct), `PodcastListenSheet` bottom sheet component, wire into PodcastCard, localStorage choice persistence. Acceptance criteria §1.6 in spec. **Code reading spec now; will batch commits per the §"Phasing" 7-commit breakdown.**
 2. **🔥 Podcast Phase 2 (in-app player)** — spec same file. Parallel with Phase 1 per Halli's decision. ~1-2 weeks. New `PodcastListens` entity, `usePodcastPlayer` hook, MiniPlayer in Layout, MediaSession API, MVP feature set. Acceptance criteria §2.6.
-3. **Invoke `seedPodcasts {}`** via `npx base44 exec` — expects 12-60 podcast rows now that UA + image-skip relax are live.
-4. **Invoke `backfillTikTokEmoji {}`** — expects ~24 emoji-dirty rows cleaned.
-5. **Invoke `backfillYouTubeEmbeddability {}`** — expects 5-10 unembeddable YT rows marked.
-6. **Build `backfillLongreadsImages`** (LC-5 part C) — mirror LC-4 pattern.
+3. **Invoke `seedPodcasts {}` etc.** via `npx base44 exec` — **temporarily blocked: Cloudflare 403 challenge on the base44 API** (managed challenge requires JS+cookies; SDK can't solve). Hit it after the burst of invokes earlier this session. Will retest before each invoke; if cf gate persists, fall back to letting the daily cron handle it (orchestrator self-bootstrap is wired; phases will fire on next tick). Don't block Phase 1 work waiting on these.
+4. **Build `backfillLongreadsImages`** (LC-5 part C) — mirror LC-4 pattern.
 
 **Lower priority:**
-7. **Playfair → Fraunces sweep** — 165 inline JSX `fontFamily` + 3 `src/index.css` refs.
+5. **Playfair → Fraunces sweep** — 165 inline JSX `fontFamily` + 3 `src/index.css` refs.
 
 ### On **Cowork** (web Claude)
 
@@ -120,3 +119,4 @@ Pick one. Default if nothing chosen: option 1.
 - 2026-05-14 — Cowork: published Code's bundle (`cde30a7` + `59fa0b8` + `0ec5402`). Updated "Just shipped" with Code's 3 new commits. Rewrote "In flight" to reflect Code's autonomous-invoke capability + already-completed `migrateSessionsToPractice` (9 PRACTICE rows). Confirmed Podcasts rail live on `/Lifestyle?tab=listen`.
 - 2026-05-14 — Cowork: added `82c9320` row for the podcast strategy research drop. Added new "decide podcast strategy open questions" as the new #1 candidate next move.
 - 2026-05-14 — Cowork: Halli decided all 4 podcast questions. Authored Phase 1 + Phase 2 build spec at `claude-state/base44_mps/2026-05-14_podcast/spec.md`. Decision record at `claude-state/decisions/2026-05-14_podcast_strategy.md`. Capacitor + Stripe paywall constraint logged in memory (`project_capacitor_stripe_paywall.md`). Reordered Code's queue — podcast Phase 1 + Phase 2 are now top priority.
+- 2026-05-14 — Code: caught up on the protocol — STATUS.md is binding on every commit and I'd been missing it (kept writing `from-code-to-cowork-*.md` tombstones instead). Acknowledging the gap, adopting the protocol going forward. Added a "Just shipped" row for this hygiene fix + flagged Cloudflare 403 on CLI reads + re-prioritised "In flight" to put podcast Phase 1 at the top per Cowork's spec. Halli's escalation noted; expect a `Just shipped` row from me on every push from here on.
