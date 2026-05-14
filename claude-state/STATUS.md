@@ -2,7 +2,7 @@
 
 > **This file is the source of truth for "where we are and what's next."** Both Claudes read it on session start and write to it after every commit. Halli should never have to copy status between Cowork and Code — they coordinate through this file.
 
-**Last updated:** 2026-05-14 by Cowork
+**Last updated:** 2026-05-14 by Cowork (after publish of `0ec5402`)
 
 ---
 
@@ -10,6 +10,10 @@
 
 | Commit | Author | What it did |
 |---|---|---|
+| `0ec5402` | Code | Handoff: 4 items queued for next publish + Code's post-publish invoke plan. **Now PUBLISHED on femwells.com.** Podcasts rail visible on `/Lifestyle?tab=listen`. Practice rail visible (9 rows from Code's earlier `migrateSessionsToPractice` invoke). |
+| `cde30a7` | Code | `seedPodcasts` fix — browser User-Agent + relaxed image-skip. Replaces episodes that lack `<itunes:image>` with channel-level artwork instead of skipping. Code also unlocked autonomous function invocation via `npx base44 exec` + `scripts/base44-cli.mjs`. |
+| `59fa0b8` | Code | New `scripts/base44-cli.mjs` — read-only diagnostics CLI for both Claudes. Wraps `@base44/sdk` around Halli's admin api_key (stored gitignored in `.env.local`). Commands: `whoami`, `count`, `list`, `logs`, `orchestrator-phases`. |
+| `33fc578` | Cowork | docs(state): update STATUS with `30a645f` row + recent edits note. |
 | `30a645f` | Cowork | Introduced `claude-state/STATUS.md` (this file) as the shared baton between Cowork and Code. CLAUDE.md now makes reading + updating it binding on session start and after every commit. |
 | `bbc60e1` | Cowork | `ONE_SHOT_PHASES` in orchestrator — migrations fire once on next daily cron, lock closed after. Wires `migrateSessionsToPractice`. Halli no longer needs to manually invoke base44 Functions for migrations. |
 | `88c28f0` | Cowork | Spotify CTA on Horoscope page redesigned as obvious green play-chip (Play+Headphones icons, "SPOTIFY · {SIGN} MOON" meta) — was a tiny text link before. |
@@ -29,33 +33,38 @@ All live on **femwells.com**.
 
 ### On **Code** (VS Code Claude)
 
-Three commits queued, all green-lit by Cowork at `b344c1e`:
+Code now has autonomous function-invocation via `npx base44 exec` + `scripts/base44-cli.mjs` for reads. Halli ran `base44 login` once + Deno installed; Code can invoke any deployed admin function without UI.
 
-1. **Playfair Display → Fraunces sweep.** 165 inline JSX `fontFamily` declarations + 3 `src/index.css` refs (Google Fonts import line 1, `--font-serif-heading` token line 33, raw `font-family` line 163). Single chore commit. Per `CLAUDE.md §2`.
-2. **`seedPodcasts` image-resolution cascade.** Replace the naive skip-if-no-itunes-image with: episode itunes:image → episode media:content → episode media:thumbnail → channel itunes:image → channel image.url → placeholder. Never skip. Separate commit from #1.
-3. **`backfillLongreadsImages` server-side function.** Mirror LC-4 / `backfillYouTubeEmbeddability` / `backfillTikTokEmoji` pattern. Sweep `LifestyleItems` where `content_type='longread'` AND `image_url` is null/empty. Resolve via og:image / twitter:image / first article img. Idempotent. Add to `WEEKLY_PHASES` set in `pipelineOrchestrator/entry.ts`. Will auto-bootstrap on first daily cron.
+**Already done this session by Code (post-publish):**
+- ✅ `migrateSessionsToPractice {}` invoked → 9 PRACTICE rows in `LifestyleItems`. Practice rail visible on `/Lifestyle?tab=listen`.
+
+**Queued for Code's next session (post-publish of `cde30a7`):**
+1. **Invoke `seedPodcasts {}`** via `npx base44 exec` — expects 12-60 podcast rows now that UA + image-skip relax + cascade-fallback are live. Drop tombstone with counts.
+2. **Invoke `backfillTikTokEmoji {}`** — expects ~24 emoji-dirty rows cleaned.
+3. **Invoke `backfillYouTubeEmbeddability {}`** — expects 5–10 unembeddable YT rows marked.
+4. **Build `backfillLongreadsImages`** (LC-5 part C, green-lit) — server-side function mirroring LC-4 pattern. Wire into `WEEKLY_PHASES`. Then invoke once via CLI.
+
+**Lower priority (still green-lit, lower priority than the invokes above):**
+5. **Playfair → Fraunces sweep** — 165 inline JSX `fontFamily` + 3 `src/index.css` refs. Single chore commit.
 
 ### On **Cowork** (web Claude)
 
-Passive waits:
-- **After next daily cron tick:** verify `migrateSessionsToPractice :ok` row in `IngestErrorLog`, confirm Practice rail populates on Listen tab.
-- **Same tick:** auto-fire of `seedPodcasts` + `backfillYouTubeEmbeddability` + `backfillTikTokEmoji` from yesterday's self-bootstrap commit. Verify each `:ok` lands and the corresponding UI surface fills.
-- **After Code's Playfair sweep ships:** 3-viewport walk across `Onboarding`, `Privacy`, `Terms`, `Upgrade`, `Pulse`, `ProgramsHub`. Confirm no heading falls back to system serif.
-- **LC-5A:** 7 pending Lifestyle phase verifications (tasks #147, #151, #156–158, #161, #162 in conversation TaskList — these are post-build verifies for Phase 4-A/4-B/5-A/5-B1/5-B2/6/Listen tab).
+- ✅ Publish bundle landed on femwells.com (this session). Verified: Podcasts rail visible on `/Lifestyle?tab=listen`, Practice rail visible.
+- **After Code's invoke tombstones:** 3-viewport visual walk across `/Lifestyle?tab=listen` (Podcasts cards + thumbnails + emoji-clean TikTok titles) + `/Profile` (CHECK-INS / STREAK render as numbers, not "o" / "od").
+- **After Code's Playfair sweep ships:** 3-viewport walk across `Onboarding`, `Privacy`, `Terms`, `Upgrade`, `Pulse`, `ProgramsHub`.
+- **LC-5A:** 7 pending Lifestyle phase verifications (Phase 4-A/4-B/5-A/5-B1/5-B2/6/Listen tab) — pending Cowork live walk.
 
 ### On **Halli** (you)
 
-**Nothing pending in base44.** All manual-invoke obligations have been wired into the orchestrator. Going forward, if Cowork or Code says "Halli, run X in the Functions panel," call it out — that work should be in ONE_SHOT_PHASES instead.
+**Nothing pending.** Code's CLI plus my publish pipeline = no manual base44 Functions work for you. If either Claude asks you to run something in the base44 UI, push back — it should be either Code's `npx base44 exec` or a ONE_SHOT_PHASES entry.
 
 ### On **the cron** (passive)
 
-Next daily orchestrator tick will fire (via first-run self-bootstrap):
-- `seedPodcasts` — populates Podcasts shelf on Listen tab
-- `backfillYouTubeEmbeddability` — marks existing YT rows true/false for is_embeddable
-- `backfillTikTokEmoji` — strips emoji from existing TikTok titles
-- `migrateSessionsToPractice` — one-shot LC-3 migration
-
-After they log `:ok`, the weekly cadence kicks in (except migrate which locks closed).
+Next daily tick will fire (via first-run self-bootstrap if Code hasn't already invoked):
+- `seedPodcasts` (Code will invoke first — but if not, cron picks it up)
+- `backfillYouTubeEmbeddability` (same)
+- `backfillTikTokEmoji` (same)
+- `migrateSessionsToPractice` → **WON'T fire because Code already invoked it (:ok row exists, gate locked)**
 
 ---
 
@@ -63,10 +72,11 @@ After they log `:ok`, the weekly cadence kicks in (except migrate which locks cl
 
 Pick one. Default if nothing chosen: option 1.
 
-1. **Let the cron tick + verify tomorrow.** Tomorrow's app state will look very different — Podcasts shelf populated, Practice rail with migrated audio, fewer Error-153 YT rows, no TikTok emoji. Cowork does a 3-viewport walk after the tick and reports.
-2. **Hand to Code** to ship the Playfair sweep + seedPodcasts cascade + backfillLongreadsImages. Cowork verifies after each commit publishes.
-3. **Planner Phase 2 spec.** Task #193, #194 still pending — Mr Lead Manager spec + Ms Atelier craft review for Planner's second phase. Last touched 2026-05-13.
-4. **Care surface scoping decisions.** Multi-stage research from 2026-05-13 (`claude-state/research_care_multi_stage_2026-05-13.md`) has 5 open scoping questions in §5.6. Need decisions before building.
+1. **Switch to Code for the post-publish invokes** — three CLI invokes (`seedPodcasts`, `backfillTikTokEmoji`, `backfillYouTubeEmbeddability`) take ~30 seconds each. Code drops a tombstone with counts, then Cowork does the visual walk.
+2. **Cowork does the visual walk now** — Podcasts rail is already populated (just looked). Cowork can do the 3-viewport screenshot pass even without the other two invokes. Captures progress, even if TikTok emoji + YT embeddability won't reflect yet.
+3. **Code builds `backfillLongreadsImages`** while you're in VS Code anyway. Adds it to ONE_SHOT_PHASES, then `npx base44 exec` once. ~15 minutes.
+4. **Planner Phase 2 spec.** Task #193, #194 — Mr Lead Manager spec + Ms Atelier craft review. Last touched 2026-05-13.
+5. **Care surface scoping decisions.** Multi-stage research has 5 open scoping questions in §5.6.
 
 ---
 
@@ -100,3 +110,4 @@ Pick one. Default if nothing chosen: option 1.
 
 - 2026-05-14 — Cowork: created the file. Captured today's 9 commits + current in-flight queue.
 - 2026-05-14 — Cowork: added `30a645f` row (the commit that introduced this file).
+- 2026-05-14 — Cowork: published Code's bundle (`cde30a7` + `59fa0b8` + `0ec5402`). Updated "Just shipped" with Code's 3 new commits. Rewrote "In flight" to reflect Code's autonomous-invoke capability + already-completed `migrateSessionsToPractice` (9 PRACTICE rows). Confirmed Podcasts rail live on `/Lifestyle?tab=listen`.
