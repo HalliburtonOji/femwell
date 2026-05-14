@@ -146,6 +146,14 @@ Deno.serve(async (req) => {
             created_at: now,
           });
           sourcesCreated += 1;
+          // Resolve Apple Podcasts collectionId inline for the brand-new
+          // source. Non-fatal — if iTunes Search misses, ONE_SHOT_PHASES
+          // backfill will pick it up on the next daily cron, and even if
+          // that also misses, derivePodcastLinks() returns null for apple
+          // so the listen sheet just hides the Apple button.
+          try {
+            await base44.functions.invoke('resolveApplePodcastId', { source_id: sourceRow.id });
+          } catch { /* non-fatal */ }
         } catch (err) {
           await logIngestError(base44, 'source_create',
             { source_identifier: seed.name, raw_payload: seed }, err);

@@ -668,6 +668,7 @@ Deno.serve(async (req) => {
   // manually, so migrations must self-fire via the orchestrator too.
   const ONE_SHOT_PHASES = new Set([
     'migrateSessionsToPractice',
+    'resolveApplePodcastId',
   ]);
 
   // ── First-run bootstrap ────────────────────────────────────────────────────
@@ -793,6 +794,16 @@ Deno.serve(async (req) => {
   // exactly once on the next daily cron after deploy, then never again.
   if (wantsPhase('migrateSessionsToPractice')) {
     phases.push({ name: 'migrateSessionsToPractice', ...(await runPhase(base44, 'migrateSessionsToPractice', 'migrateSessionsToPractice')) });
+  }
+
+  // Phase 14 (one-shot): Podcast Phase 1 — resolve Apple Podcasts collectionId
+  // for the 12 curated PODCAST LifestyleSources. Backfill mode scans for any
+  // unresolved row, hits iTunes Search API, persists apple_collection_id +
+  // apple_collection_url. Gated by ONE_SHOT_PHASES; fires once on the next
+  // daily cron after deploy. seedPodcasts also calls this inline for new
+  // sources so we don't wait a day for future ingests.
+  if (wantsPhase('resolveApplePodcastId')) {
+    phases.push({ name: 'resolveApplePodcastId', ...(await runPhase(base44, 'resolveApplePodcastId', 'resolveApplePodcastId')) });
   }
 
   const finishedAt = new Date().toISOString();

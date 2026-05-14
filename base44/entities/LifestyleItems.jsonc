@@ -35,6 +35,14 @@
       "type": "string",
       "description": "Canonical web URL for the episode (podcast item <link>). Optional."
     },
+    "apple_collection_id": {
+      "type": "string",
+      "description": "Denormalised from LifestyleSources for fast render on PODCAST rows. Optional."
+    },
+    "feed_url": {
+      "type": "string",
+      "description": "RSS feed URL for the parent show. Used by derivePodcastLinks to build pod.link + Pocket Casts subscribe URLs at render time."
+    },
     "category": {
       "type": "string",
       "enum": [
