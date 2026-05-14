@@ -1,5 +1,5 @@
-import { useEffect, useRef } from 'react';
-import { X, Play, Pause, SkipBack, SkipForward, ExternalLink } from 'lucide-react';
+import { useEffect, useRef, useState } from 'react';
+import { X, Play, Pause, SkipBack, SkipForward, ExternalLink, Gauge, Moon } from 'lucide-react';
 import { usePodcastPlayer } from '@/hooks/usePodcastPlayer';
 
 // Full-screen modal version of the podcast player. Opens when the user
@@ -48,6 +48,8 @@ export default function ExpandedPlayer() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [player?.isExpanded]);
 
+  const [sleepMenuOpen, setSleepMenuOpen] = useState(false);
+
   if (!player || !player.isExpanded || !player.currentEpisode) return null;
 
   const {
@@ -60,7 +62,16 @@ export default function ExpandedPlayer() {
     seekBy,
     collapse,
     error,
+    playbackRate,
+    cyclePlaybackRate,
+    sleepRemainingSec,
+    sleepTimerMin,
+    setSleepTimer,
   } = player;
+
+  const sleepLabel = sleepTimerMin
+    ? `${Math.floor(sleepRemainingSec / 60)}:${String(sleepRemainingSec % 60).padStart(2, '0')}`
+    : 'Sleep';
 
   const handleScrub = (e) => {
     const next = Number(e.target.value);
@@ -251,17 +262,86 @@ export default function ExpandedPlayer() {
         </button>
       </div>
 
-      {/* C6 placeholder row: speed + sleep timer + open-in-your-app affordance */}
+      {/* Speed + sleep + open-in-your-app row. */}
       <div
         style={{
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
-          gap: 12,
-          marginTop: 8,
+          gap: 10,
+          marginTop: 12,
           flexWrap: 'wrap',
         }}
       >
+        {/* Speed pill — cycles through 0.8x → 2.0x */}
+        <button
+          type="button"
+          onClick={cyclePlaybackRate}
+          aria-label={`Playback speed (currently ${playbackRate}x)`}
+          style={pillButton}
+        >
+          <Gauge size={14} aria-hidden="true" />
+          <span>{playbackRate}x</span>
+        </button>
+
+        {/* Sleep timer — opens a sub-menu with preset durations */}
+        <div style={{ position: 'relative' }}>
+          <button
+            type="button"
+            onClick={() => setSleepMenuOpen((v) => !v)}
+            aria-label={sleepTimerMin ? `Sleep in ${sleepLabel}` : 'Set sleep timer'}
+            aria-expanded={sleepMenuOpen}
+            style={{ ...pillButton, ...(sleepTimerMin ? activePill : null) }}
+          >
+            <Moon size={14} aria-hidden="true" />
+            <span>{sleepLabel}</span>
+          </button>
+          {sleepMenuOpen && (
+            <div
+              role="menu"
+              aria-label="Sleep timer options"
+              style={{
+                position: 'absolute',
+                bottom: '100%',
+                left: '50%',
+                transform: 'translate(-50%, -8px)',
+                background: 'var(--cream, #f7f0e6)',
+                border: '1px solid var(--ink-line, #d8cfc4)',
+                borderRadius: 12,
+                padding: 8,
+                display: 'flex',
+                flexDirection: 'column',
+                gap: 4,
+                minWidth: 140,
+                boxShadow: '0 12px 24px -10px rgba(43,30,22,0.2)',
+                zIndex: 10,
+              }}
+            >
+              {[5, 15, 30, 45, 60].map((min) => (
+                <button
+                  key={min}
+                  type="button"
+                  role="menuitem"
+                  onClick={() => { setSleepTimer(min); setSleepMenuOpen(false); }}
+                  style={menuItem}
+                >
+                  {min} min
+                </button>
+              ))}
+              {sleepTimerMin && (
+                <button
+                  type="button"
+                  role="menuitem"
+                  onClick={() => { setSleepTimer(null); setSleepMenuOpen(false); }}
+                  style={{ ...menuItem, color: 'var(--rose-primary, #D45E52)' }}
+                >
+                  Cancel timer
+                </button>
+              )}
+            </div>
+          )}
+        </div>
+
         <a
           href={ep.content_url || ep.episode_url || '#'}
           target="_blank"
@@ -274,6 +354,7 @@ export default function ExpandedPlayer() {
             fontWeight: 500,
             color: 'var(--plum-mute, #8a7768)',
             textDecoration: 'none',
+            padding: '6px 10px',
           }}
         >
           <ExternalLink size={14} aria-hidden="true" />
@@ -324,4 +405,40 @@ const ctrlLabel = {
   padding: '1px 4px',
   borderRadius: 4,
   pointerEvents: 'none',
+};
+
+const pillButton = {
+  display: 'inline-flex',
+  alignItems: 'center',
+  gap: 6,
+  padding: '8px 14px',
+  borderRadius: 9999,
+  background: 'var(--cream-2, #ede2d4)',
+  color: 'var(--plum-deep, #2b1e16)',
+  border: 'none',
+  cursor: 'pointer',
+  fontSize: 12,
+  fontWeight: 600,
+  fontFamily: "'Inter', sans-serif",
+  minHeight: 36,
+};
+
+const activePill = {
+  background: 'var(--plum-deep, #2b1e16)',
+  color: 'var(--cream, #f7f0e6)',
+};
+
+const menuItem = {
+  display: 'block',
+  width: '100%',
+  padding: '8px 10px',
+  background: 'transparent',
+  border: 'none',
+  textAlign: 'left',
+  fontFamily: "'Inter', sans-serif",
+  fontSize: 13,
+  fontWeight: 500,
+  color: 'var(--plum-deep, #2b1e16)',
+  cursor: 'pointer',
+  borderRadius: 8,
 };
