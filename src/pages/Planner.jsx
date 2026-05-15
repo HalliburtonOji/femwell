@@ -11,6 +11,8 @@ import DoctorReadyDiaryCard from "@/components/planner/cycle/DoctorReadyDiaryCar
 import QuietModeBanner from "@/components/planner/cycle/QuietModeBanner";
 import RitualReframeShimmer from "@/components/planner/today/RitualReframeShimmer";
 import SmartViewCard from "@/components/planner/today/SmartViewCard";
+import { TonightCard, ShutdownRitualCard, PacingBankCard } from "@/components/planner/today/WarmthBundleToday";
+import { WeekAheadCard, AstraSidecar, PlanMyNextCycleCTA } from "@/components/planner/cycle/WarmthBundleCycle";
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Planner — Phase 2 C0 (tab shell + routing)
@@ -171,6 +173,17 @@ export default function Planner() {
     params.delete("scrollTo");
     const search = params.toString();
     navigate({ pathname: location.pathname, search: search ? `?${search}` : "" }, { replace: false });
+  };
+
+  // Cross-tab nudge from Tonight HRT row → Cycle tab, scroll to Doctor-Ready
+  // Diary anchor. Same plumbing as C0 `?view=cycle&scrollTo=doctor`.
+  const goToDoctorDiary = () => {
+    setView("cycle");
+    writeStoredView("cycle");
+    const params = new URLSearchParams(location.search);
+    params.set("view", "cycle");
+    params.set("scrollTo", "doctor");
+    navigate({ pathname: location.pathname, search: `?${params.toString()}` }, { replace: false });
   };
 
   const [user, setUser] = useState(null);
@@ -539,13 +552,18 @@ export default function Planner() {
             phase={selectedPhase}
             cycleDay={selectedCycleDay}
           />
-          <div ref={(el) => { cycleSectionRefs.current.weekAhead = el; }} style={cycleStubStyle}>
-            <p style={cycleStubTitleStyle}>Week Ahead</p>
-            <p style={cycleStubBodyStyle}>A gentle look at what's coming. Coming soon.</p>
+          <div ref={(el) => { cycleSectionRefs.current.weekAhead = el; }}>
+            <WeekAheadCard
+              phase={selectedPhase}
+              nextPeriodEta={profile?.cycle_prediction_meta?.next_period_eta || null}
+              etaWindowDays={profile?.cycle_prediction_meta?.eta_window_days || null}
+            />
           </div>
           <div ref={(el) => { cycleSectionRefs.current.doctor = el; }}>
             <DoctorReadyDiaryCard user={user} />
           </div>
+          <AstraSidecar />
+          <PlanMyNextCycleCTA />
         </div>
       )}
 
@@ -726,6 +744,11 @@ export default function Planner() {
                 <p style={{ fontSize: 12, color: "var(--plum-mute, #8A7584)", fontFamily: "'Inter', sans-serif" }}>Tap + to add anything you want to make space for.</p>
               </div>
             )}
+
+            {/* ── Warmth bundle Today surfaces (Phase 2 C9) ──────────────── */}
+            <TonightCard profile={profile} onGoToDiary={goToDoctorDiary} />
+            <ShutdownRitualCard />
+            <PacingBankCard profile={profile} />
           </>
         )}
       </div>
