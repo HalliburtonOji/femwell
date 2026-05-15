@@ -5,6 +5,7 @@ import { Calendar, Plus, Clock, Trash2, Check, ChevronLeft, ChevronRight, X, Spa
 import PlannerTabs, { readInitialView, writeStoredView, resolveViewId } from "@/components/planner/PlannerTabs";
 import ConfidencePill from "@/components/planner/ConfidencePill";
 import CapacityTaxBar from "@/components/planner/cycle/CapacityTaxBar";
+import DoctorReadyDiaryCard from "@/components/planner/cycle/DoctorReadyDiaryCard";
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Planner — Phase 2 C0 (tab shell + routing)
@@ -505,9 +506,8 @@ export default function Planner() {
             <p style={cycleStubTitleStyle}>Week Ahead</p>
             <p style={cycleStubBodyStyle}>A gentle look at what's coming. Coming soon.</p>
           </div>
-          <div ref={(el) => { cycleSectionRefs.current.doctor = el; }} style={cycleStubStyle}>
-            <p style={cycleStubTitleStyle}>Doctor-Ready Diary</p>
-            <p style={cycleStubBodyStyle}>A PDF your GP is trained to read. Coming soon.</p>
+          <div ref={(el) => { cycleSectionRefs.current.doctor = el; }}>
+            <DoctorReadyDiaryCard user={user} />
           </div>
         </div>
       )}
