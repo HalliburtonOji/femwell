@@ -6,6 +6,7 @@ import PlannerTabs, { readInitialView, writeStoredView, resolveViewId } from "@/
 import ConfidencePill from "@/components/planner/ConfidencePill";
 import CapacityTaxBar, { deriveCapacity, derivePredictedLoad } from "@/components/planner/cycle/CapacityTaxBar";
 import ConsistencyCard from "@/components/planner/cycle/ConsistencyCard";
+import { habitNameOf, habitCompletedOf } from "@/components/planner/cycle/habitLogNormalise";
 import CycleMirrorSundayTile from "@/components/planner/cycle/CycleMirrorSundayTile";
 import DoctorReadyDiaryCard from "@/components/planner/cycle/DoctorReadyDiaryCard";
 import MonthRibbon from "@/components/planner/cycle/MonthRibbon";
@@ -273,10 +274,13 @@ export default function Planner() {
       if (cancelled) return;
       setDailyPlan(plans[0] || null);
       setMealPlan(meals[0] || null);
-      // habit_name → completed boolean, used to check the ritual rows
+      // ritual-name → completed boolean, used to check the ritual rows.
+      // Accepts both writer shapes via habitLogNormalise (Planner.jsx writes
+      // habit_name+is_completed; Track.jsx writes habit_type+completed).
       const map = {};
       for (const h of todayHabits) {
-        if (h?.habit_name) map[h.habit_name] = h.is_completed !== false;
+        const name = habitNameOf(h);
+        if (name) map[name] = habitCompletedOf(h);
       }
       setTodayHabitLogs(map);
     })();
@@ -284,11 +288,14 @@ export default function Planner() {
   }, [user?.id, selectedStr]);
 
   // Top 3 recurring habits — derived from the last 60 HabitLogs.
+  // Use habitLogNormalise so Track.jsx writers (habit_type) AND Planner.jsx
+  // writers (habit_name) both feed Morning/Evening stack rendering.
   const ritualHabits = useMemo(() => {
     const counts = {};
     for (const h of habitLogs) {
-      if (!h?.habit_name) continue;
-      counts[h.habit_name] = (counts[h.habit_name] || 0) + 1;
+      const name = habitNameOf(h);
+      if (!name) continue;
+      counts[name] = (counts[name] || 0) + 1;
     }
     return Object.entries(counts)
       .filter(([, n]) => n >= 2)
