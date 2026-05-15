@@ -8,6 +8,7 @@ import CapacityTaxBar, { deriveCapacity, derivePredictedLoad } from "@/component
 import ConsistencyCard from "@/components/planner/cycle/ConsistencyCard";
 import CycleMirrorSundayTile from "@/components/planner/cycle/CycleMirrorSundayTile";
 import DoctorReadyDiaryCard from "@/components/planner/cycle/DoctorReadyDiaryCard";
+import MonthRibbon from "@/components/planner/cycle/MonthRibbon";
 import QuietModeBanner from "@/components/planner/cycle/QuietModeBanner";
 import RitualReframeShimmer from "@/components/planner/today/RitualReframeShimmer";
 import SmartViewCard from "@/components/planner/today/SmartViewCard";
@@ -184,6 +185,28 @@ export default function Planner() {
     params.set("view", "cycle");
     params.set("scrollTo", "doctor");
     navigate({ pathname: location.pathname, search: `?${params.toString()}` }, { replace: false });
+  };
+
+  // Cross-tab navigate from Cycle ribbon → Today tab + retarget selected day.
+  // Used by MonthRibbon day-cell taps (A2-1). The actual day-retargeting is
+  // handled by setting `selectedDay` locally + switching the view.
+  const navigateToToday = (dateISO) => {
+    if (!dateISO) return;
+    try {
+      const d = new Date(dateISO);
+      if (!Number.isNaN(d.getTime())) {
+        d.setHours(0, 0, 0, 0);
+        setSelectedDay(d);
+        setMonday(getMondayOfWeek(d));
+      }
+    } catch { /* leave selection unchanged */ }
+    setView("today");
+    writeStoredView("today");
+    const params = new URLSearchParams(location.search);
+    params.delete("view");
+    params.delete("scrollTo");
+    const search = params.toString();
+    navigate({ pathname: location.pathname, search: search ? `?${search}` : "" }, { replace: false });
   };
 
   const [user, setUser] = useState(null);
@@ -568,9 +591,13 @@ export default function Planner() {
             profile={profile}
             onCleared={() => setProfile(p => p ? { ...p, quiet_mode_until: null } : p)}
           />
-          <div ref={(el) => { cycleSectionRefs.current.ribbon = el; }} style={cycleStubStyle}>
-            <p style={cycleStubTitleStyle}>Month ribbon</p>
-            <p style={cycleStubBodyStyle}>The wider arc of your cycle will live here. Coming soon.</p>
+          <div ref={(el) => { cycleSectionRefs.current.ribbon = el; }}>
+            <MonthRibbon
+              profile={profile}
+              habitLogs={habitLogs}
+              today={today}
+              onNavigateToToday={navigateToToday}
+            />
           </div>
           <div ref={(el) => { cycleSectionRefs.current.captax = el; }}>
             <CapacityTaxBar
