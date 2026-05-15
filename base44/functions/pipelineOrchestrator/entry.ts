@@ -851,6 +851,17 @@ Deno.serve(async (req) => {
     phases.push({ name: 'backfillPodcastFields', ...(await runPhase(base44, 'backfillPodcastFields', 'backfillPodcastFields')) });
   }
 
+  // Phase 19 (daily): Planner Phase 2 C3.5 — CapacityTaxLog persistence. Each
+  // tick snapshots every UserProfile's predicted-load vs phase-capacity into
+  // a row keyed by (user_id, ISO Monday week_start). Upserts in place so the
+  // current-week row always reflects today's data, while Quiet Mode's Gate A
+  // (`captax.pct > 120` on 3 days running) gets the rolling history it needs
+  // to evaluate. Without this Gate A is silently inert. Daily cadence; first
+  // run fires on next cron after deploy via the bootstrap path.
+  if (wantsPhase('computeCapacityTax')) {
+    phases.push({ name: 'computeCapacityTax', ...(await runPhase(base44, 'computeCapacityTax', 'computeCapacityTax')) });
+  }
+
   const finishedAt = new Date().toISOString();
   return Response.json({
     started_at: startedAt,
