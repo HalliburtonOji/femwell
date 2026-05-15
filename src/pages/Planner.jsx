@@ -598,7 +598,7 @@ export default function Planner() {
           <div ref={(el) => { cycleSectionRefs.current.doctor = el; }}>
             <DoctorReadyDiaryCard user={user} />
           </div>
-          <AstraSidecar />
+          <AstraSidecar profile={profile} />
           <PlanMyNextCycleCTA />
         </div>
       )}

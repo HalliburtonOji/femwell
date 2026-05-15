@@ -57,7 +57,14 @@ export function WeekAheadCard({ phase, nextPeriodEta, etaWindowDays }) {
   );
 }
 
-export function AstraSidecar() {
+export function AstraSidecar({ profile }) {
+  // Spec default #7: only render when the user has set a zodiac sign / birthday
+  // — otherwise the "Open today's reading" CTA lands them on a horoscope tab
+  // that's empty for them. Sun-sign is derived from `profile.birthday` (see
+  // HoroscopeTab `getSunSign(birthday)`).
+  const hasZodiac = !!profile?.birthday;
+  if (!hasZodiac) return null;
+
   return (
     <section aria-label="Astra Cole sidecar" style={astraCardStyle}>
       <div style={headRowStyle}>

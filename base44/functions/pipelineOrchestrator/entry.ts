@@ -671,6 +671,7 @@ Deno.serve(async (req) => {
     'migrateSessionsToPractice',
     'resolveApplePodcastId',
     'migratePlannerPhase2',
+    'backfillPodcastFields',
   ]);
 
   // ── First-run bootstrap ────────────────────────────────────────────────────
@@ -835,6 +836,19 @@ Deno.serve(async (req) => {
   // run fires on next cron after deploy via the bootstrap path.
   if (wantsPhase('evaluateQuietMode')) {
     phases.push({ name: 'evaluateQuietMode', ...(await runPhase(base44, 'evaluateQuietMode', 'evaluateQuietMode')) });
+  }
+
+  // Phase 18 (one-shot): podcast post-publish backfill. Earlier seedPodcasts
+  // didn't write feed_url + apple_collection_id onto each LifestyleItems row
+  // (only onto LifestyleSources), so the FE listen sheet built no deep links
+  // — every destination showed "Not available for this show". This pass
+  // patches the missing fields by joining each PODCAST item to its source
+  // row. It also DELETES the legacy Buzzsprout-shape broken rows (image_url
+  // pointing at the .mp3, audio_url empty, content_url like 'Buzzsprout-N')
+  // so the next seedPodcasts tick writes fresh well-shaped rows. Gated by
+  // ONE_SHOT_PHASES — locks closed after first :ok log.
+  if (wantsPhase('backfillPodcastFields')) {
+    phases.push({ name: 'backfillPodcastFields', ...(await runPhase(base44, 'backfillPodcastFields', 'backfillPodcastFields')) });
   }
 
   const finishedAt = new Date().toISOString();

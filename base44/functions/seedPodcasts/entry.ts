@@ -279,6 +279,13 @@ Deno.serve(async (req) => {
             status: 'PUBLISHED',
             tags: ['podcast'],
             created_at: now,
+            // Phase 1 podcast deep-link fields — FE's PodcastListenSheet
+            // reads these off the LifestyleItems row to build Spotify
+            // (via pod.link) + Apple + Pocket Casts URLs without joining
+            // back to LifestyleSources. Without these the sheet shows
+            // "Not available for this show" for every destination.
+            feed_url: sourceRow.feed_url || seed.feed_url || '',
+            apple_collection_id: sourceRow.apple_collection_id || '',
           });
           episodesIngested += 1;
         } catch (err) {
