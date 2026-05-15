@@ -24,7 +24,9 @@ import FriendFrom6MonthsAgoCard from "@/components/today/FriendFrom6MonthsAgoCar
 import UnsealedLetterCard from "@/components/today/UnsealedLetterCard";
 import TrackTab from "../components/today/TrackTab";
 import TodayFertilityBanner from "../components/conditions/TodayFertilityBanner";
-import DailyPhaseBrief from "../components/today/DailyPhaseBrief";
+// DailyPhaseBrief replaced by JessNarrativeHero per Today-A T-A2 (component
+// file kept under components/today for now; can be removed in a follow-up).
+import JessNarrativeHero from "../components/today/JessNarrativeHero";
 import PillarsDeck from "../components/today/PillarsDeck";
 import RecommendedForYouSection from "../components/today/RecommendedForYouSection";
 import QuickMealLog from "../components/today/QuickMealLog";
@@ -457,7 +459,11 @@ export default function Today() {
               <TodayHeroSection user={user} profile={profile} cycleInfo={cycleInfo} todayCheckin={todayCheckin}
                 onOpenCheckin={() => setShowCheckin(true)} onOpenCalendar={() => setMainTab("track")} extractDisplayName={extractDisplayName} />
             )}
-            {profile && <DailyPhaseBrief profile={profile} />}
+            {/* Jess narrative hero (Today-A T-A2) — replaces DailyPhaseBrief
+                as the warm-first reflection at top of Today. Phase-tinted
+                gradient, Fraunces headline + Inter body, LLM-generated
+                weekly with a 32-line phase-keyed fallback bank. */}
+            {profile && <JessNarrativeHero profile={profile} cycleInfo={cycleInfo} />}
 
             <CompleteProfileBanner
               shouldShow={!!profile && (!profile.last_period_start_date || profile.onboarding_complete !== true)}
