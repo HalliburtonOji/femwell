@@ -13,6 +13,7 @@ import MonthRibbon from "@/components/planner/cycle/MonthRibbon";
 import QuietModeBanner from "@/components/planner/cycle/QuietModeBanner";
 import SavedRhythmsCarousel from "@/components/planner/cycle/SavedRhythmsCarousel";
 import WhatsUnfinishedCard from "@/components/planner/cycle/WhatsUnfinishedCard";
+import FreshStartBanner from "@/components/planner/today/FreshStartBanner";
 import RitualReframeShimmer from "@/components/planner/today/RitualReframeShimmer";
 import SmartViewCard from "@/components/planner/today/SmartViewCard";
 import { TonightCard, ShutdownRitualCard } from "@/components/planner/today/WarmthBundleToday";
@@ -686,6 +687,15 @@ export default function Planner() {
           </div>
         ) : (
           <>
+            {/* ── Fresh-Start banner (Phase 2 B1) — soft reset on inflection ── */}
+            <FreshStartBanner
+              profile={profile}
+              habitLogs={habitLogs}
+              today={today}
+              onAddAnchor={() => setShowAdd(true)}
+              onPlanWithJess={() => navigate("/Planner?_smartView=streaky")}
+            />
+
             {/* ── Quiet Mode banner (Phase 2 C6) — also surfaces on Today ── */}
             <QuietModeBanner
               profile={profile}
