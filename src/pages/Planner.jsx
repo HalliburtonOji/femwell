@@ -4,6 +4,7 @@ import { base44 } from "@/api/base44Client";
 import { Calendar, Plus, Clock, Trash2, Check, ChevronLeft, ChevronRight, X, Sparkles } from "lucide-react";
 import PlannerTabs, { readInitialView, writeStoredView, resolveViewId } from "@/components/planner/PlannerTabs";
 import ConfidencePill from "@/components/planner/ConfidencePill";
+import CapacityTaxBar from "@/components/planner/cycle/CapacityTaxBar";
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Planner — Phase 2 C0 (tab shell + routing)
@@ -286,6 +287,54 @@ export default function Planner() {
   const isSelectedToday = toDateStr(selectedDay) === toDateStr(today);
 
   // ── Handlers ──────────────────────────────────────────────────────────────
+
+  // Defer N non-anchor, non-completed PersonalTasks from today to a steadier
+  // window (+3 days, follicular-leaning proxy per spec_v2 §C3). Anchor tasks
+  // never move. Updates are optimistic + persisted; on failure we revert the
+  // single failing row and the rest stay deferred. Navigates the user back to
+  // the Today tab with a transient toast (`?toast=deferred:N`).
+  const handleDeferTasks = async () => {
+    const deferrable = (personalTasks || []).filter(
+      (t) => t && !t.completed && t.is_anchor !== true
+    );
+    if (deferrable.length === 0) return;
+
+    const target = new Date(selectedDay);
+    target.setDate(target.getDate() + 3);
+    const newDateStr = toDateStr(target);
+
+    const ids = new Set(deferrable.map((t) => t.id));
+    setPersonalTasks((prev) =>
+      prev.map((t) => (ids.has(t.id) ? { ...t, date: newDateStr } : t))
+    );
+
+    await Promise.allSettled(
+      deferrable.map((t) =>
+        base44.entities.PersonalTasks.update(t.id, { date: newDateStr }).catch((err) => {
+          // Revert that row on failure; surface nothing — the cap-tax bar will
+          // recompute on next phase tick and the user can retry from Cycle tab.
+          setPersonalTasks((prev) =>
+            prev.map((row) => (row.id === t.id ? { ...row, date: t.date } : row))
+          );
+          // eslint-disable-next-line no-console
+          console.warn("[planner] defer failed for task", t.id, err);
+        })
+      )
+    );
+
+    // Route to Today with toast — same plumbing C0 wired for cross-tab nudges.
+    const params = new URLSearchParams(location.search);
+    params.delete("view");
+    params.delete("scrollTo");
+    params.set("toast", `deferred:${deferrable.length}`);
+    setView("today");
+    writeStoredView("today");
+    navigate(
+      { pathname: location.pathname, search: `?${params.toString()}` },
+      { replace: false }
+    );
+  };
+
   const handleAdd = async () => {
     if (!newItem.title.trim()) return;
     setSaving(true);
@@ -443,9 +492,14 @@ export default function Planner() {
             <p style={cycleStubTitleStyle}>Month ribbon</p>
             <p style={cycleStubBodyStyle}>The wider arc of your cycle will live here. Coming soon.</p>
           </div>
-          <div ref={(el) => { cycleSectionRefs.current.captax = el; }} style={cycleStubStyle}>
-            <p style={cycleStubTitleStyle}>Capacity Tax</p>
-            <p style={cycleStubBodyStyle}>Predicted load vs available capacity. Coming soon.</p>
+          <div ref={(el) => { cycleSectionRefs.current.captax = el; }}>
+            <CapacityTaxBar
+              phase={selectedPhase}
+              personalTasks={personalTasks}
+              activeProgram={activeProgram}
+              ritualHabits={ritualHabits}
+              onDefer={handleDeferTasks}
+            />
           </div>
           <div ref={(el) => { cycleSectionRefs.current.weekAhead = el; }} style={cycleStubStyle}>
             <p style={cycleStubTitleStyle}>Week Ahead</p>
