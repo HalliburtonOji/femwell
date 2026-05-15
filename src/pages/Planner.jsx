@@ -10,9 +10,10 @@ import CycleMirrorSundayTile from "@/components/planner/cycle/CycleMirrorSundayT
 import DoctorReadyDiaryCard from "@/components/planner/cycle/DoctorReadyDiaryCard";
 import MonthRibbon from "@/components/planner/cycle/MonthRibbon";
 import QuietModeBanner from "@/components/planner/cycle/QuietModeBanner";
+import SavedRhythmsCarousel from "@/components/planner/cycle/SavedRhythmsCarousel";
 import RitualReframeShimmer from "@/components/planner/today/RitualReframeShimmer";
 import SmartViewCard from "@/components/planner/today/SmartViewCard";
-import { TonightCard, ShutdownRitualCard, PacingBankCard } from "@/components/planner/today/WarmthBundleToday";
+import { TonightCard, ShutdownRitualCard } from "@/components/planner/today/WarmthBundleToday";
 import { WeekAheadCard, AstraSidecar, PlanMyNextCycleCTA } from "@/components/planner/cycle/WarmthBundleCycle";
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -609,6 +610,11 @@ export default function Planner() {
             />
           </div>
           <ConsistencyCard habitLogs={habitLogs} phase={selectedPhase} />
+          <SavedRhythmsCarousel
+            profile={profile}
+            currentPhase={selectedPhase}
+            currentCycleDay={selectedCycleDay}
+          />
           <CycleMirrorSundayTile
             profile={profile}
             habitLogs={habitLogs}
@@ -812,9 +818,9 @@ export default function Planner() {
             )}
 
             {/* ── Warmth bundle Today surfaces (Phase 2 C9) ──────────────── */}
+            {/* PacingBankCard moved to Cycle tab SavedRhythmsCarousel in A2-3. */}
             <TonightCard profile={profile} onGoToDiary={goToDoctorDiary} />
             <ShutdownRitualCard />
-            <PacingBankCard profile={profile} />
           </>
         )}
       </div>
