@@ -11,10 +11,12 @@ import DoctorReadyDiaryCard from "@/components/planner/cycle/DoctorReadyDiaryCar
 import MonthRibbon from "@/components/planner/cycle/MonthRibbon";
 import QuietModeBanner from "@/components/planner/cycle/QuietModeBanner";
 import SavedRhythmsCarousel from "@/components/planner/cycle/SavedRhythmsCarousel";
+import WhatsUnfinishedCard from "@/components/planner/cycle/WhatsUnfinishedCard";
 import RitualReframeShimmer from "@/components/planner/today/RitualReframeShimmer";
 import SmartViewCard from "@/components/planner/today/SmartViewCard";
 import { TonightCard, ShutdownRitualCard } from "@/components/planner/today/WarmthBundleToday";
 import { WeekAheadCard, AstraSidecar, PlanMyNextCycleCTA } from "@/components/planner/cycle/WarmthBundleCycle";
+import { selectedCrumbToday, selectedCrumbCycle } from "@/components/planner/selectedCrumb";
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Planner — Phase 2 C0 (tab shell + routing)
@@ -526,14 +528,30 @@ export default function Planner() {
       {/* ── Sticky header: brand · tabs · (Today-only) week strip ──────────── */}
       <div className="sticky top-0 z-30 px-4 pt-10 pb-3" style={{ backgroundColor: "rgba(255,250,245,0.97)", backdropFilter: "blur(20px)", borderBottom: "1px solid var(--border, rgba(74,42,58,0.08))" }}>
         <div className="max-w-xl mx-auto">
-          <p style={{ fontSize: "0.6rem", fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.14em", color: "var(--plum-mute, #8A7584)", fontFamily: "'Inter', sans-serif" }}>{view === "cycle" ? "Your cycle" : "Your week"}</p>
-          <h1 style={{ fontSize: 28, fontWeight: 500, fontFamily: "'Fraunces', Georgia, serif", color: "var(--plum, #4A2A3A)", letterSpacing: "-0.015em", margin: "4px 0 4px" }}>Planner</h1>
+          {/* A2-4 (1+2+3): tab-specific page title + date-stamped Today eyebrow */}
+          <p style={{ fontSize: "0.6rem", fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.14em", color: "var(--plum-mute, #8A7584)", fontFamily: "'Inter', sans-serif" }}>
+            {view === "cycle"
+              ? "Your cycle"
+              : `Today · ${today.toLocaleDateString("en-GB", { weekday: "long", day: "numeric", month: "long" }).toUpperCase()}`}
+          </p>
+          <div style={{ display: "flex", alignItems: "baseline", gap: 10, flexWrap: "wrap", margin: "4px 0 4px" }}>
+            <h1 style={{ fontSize: 28, fontWeight: 500, fontFamily: "'Fraunces', Georgia, serif", color: "var(--plum, #4A2A3A)", letterSpacing: "-0.015em", margin: 0 }}>
+              {view === "cycle" ? "Cycle" : "Today"}
+            </h1>
+            {/* A2-4 (4): confidence pill lifted out of .ph-sub — always renders */}
+            <ConfidencePill meta={profile?.cycle_prediction_meta} />
+          </div>
           {selectedPhase && selectedCycleDay && (
-            <p style={{ fontSize: 12, color: "var(--plum-2, #6B4559)", fontFamily: "'Inter', sans-serif", marginBottom: 8 }}>
+            <p style={{ fontSize: 12, color: "var(--plum-2, #6B4559)", fontFamily: "'Inter', sans-serif", marginBottom: 4 }}>
               Day {selectedCycleDay} · <span style={{ color: PHASE_COLORS[selectedPhase], fontWeight: 600 }}>{phaseLabelOf(selectedPhase)}</span>
-              <ConfidencePill meta={profile?.cycle_prediction_meta} />
             </p>
           )}
+          {/* A2-4 (5): selected-crumb subtitle — italic plum-mute */}
+          <p style={{ fontSize: 11.5, fontStyle: "italic", color: "var(--plum-mute, #8A7584)", fontFamily: "'Inter', sans-serif", marginBottom: 8, lineHeight: 1.45 }}>
+            {view === "cycle"
+              ? selectedCrumbCycle({ date: today })
+              : selectedCrumbToday({ dailyPlan, phase: selectedPhase, date: today })}
+          </p>
 
           <PlannerTabs view={view} onChange={changeView} />
 
@@ -614,6 +632,10 @@ export default function Planner() {
             profile={profile}
             currentPhase={selectedPhase}
             currentCycleDay={selectedCycleDay}
+          />
+          <WhatsUnfinishedCard
+            stuckDaysByHabit={stuckDaysByHabit}
+            phase={selectedPhase}
           />
           <CycleMirrorSundayTile
             profile={profile}
