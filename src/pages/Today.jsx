@@ -25,6 +25,7 @@ import UnsealedLetterCard from "@/components/today/UnsealedLetterCard";
 import TrackTab from "../components/today/TrackTab";
 import TodayFertilityBanner from "../components/conditions/TodayFertilityBanner";
 import DailyPhaseBrief from "../components/today/DailyPhaseBrief";
+import PillarsDeck from "../components/today/PillarsDeck";
 import RecommendedForYouSection from "../components/today/RecommendedForYouSection";
 import QuickMealLog from "../components/today/QuickMealLog";
 import ActiveProgramCard from "../components/today/ActiveProgramCard";
@@ -479,6 +480,9 @@ export default function Today() {
                 <p style={{ fontSize: 13, color: "var(--plum)", fontFamily: "'Inter', sans-serif", lineHeight: 1.55 }}>{PHASE_INFO[cycleInfo.phase].tip}</p>
               </div>
             )}
+
+            {/* Pillars Deck (Today-A T-A1) — body summary at a glance */}
+            <PillarsDeck profile={profile} today={new Date()} />
 
             {/* Calm Cards + Panic pills */}
             <div className="flex items-center justify-between gap-2">

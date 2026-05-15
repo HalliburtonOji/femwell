@@ -14,7 +14,6 @@ import QuietModeBanner from "@/components/planner/cycle/QuietModeBanner";
 import SavedRhythmsCarousel from "@/components/planner/cycle/SavedRhythmsCarousel";
 import WhatsUnfinishedCard from "@/components/planner/cycle/WhatsUnfinishedCard";
 import FreshStartBanner from "@/components/planner/today/FreshStartBanner";
-import PillarsDeck from "@/components/planner/today/PillarsDeck";
 import RitualReframeShimmer from "@/components/planner/today/RitualReframeShimmer";
 import SmartViewCard from "@/components/planner/today/SmartViewCard";
 import { TonightCard, ShutdownRitualCard } from "@/components/planner/today/WarmthBundleToday";
@@ -714,9 +713,6 @@ export default function Planner() {
               todayHabitLogs={todayHabitLogs}
               quietModeActive={quietModeActive}
             />
-
-            {/* ── Pillars Deck (Today-A T-A1) — body summary at a glance ── */}
-            <PillarsDeck profile={profile} today={today} />
 
             {/* ── Smart card 1: Today's intention (DailyPlan) ──────────── */}
             {dailyPlan && (
