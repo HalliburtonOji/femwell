@@ -190,18 +190,23 @@ export default function PodcastCard({ item, saved, hasPhaseTag, onSave, onUntag 
         {/* "Open in your app" affordance — top-right of body. Always
             opens the Phase 1 listen sheet for Spotify / Apple / Pocket
             Casts. In Phase 2, primary tap plays in-app; this is the
-            secondary CTA per spec §2.5. */}
+            secondary CTA per spec §2.5. B2 (MP-B) bumps the tap target to
+            ≥40×40 (WCAG) and broadens the aria-label so screen readers
+            announce the three destinations. The visible glyph stays at
+            16px — the larger hit area is invisible and centred on the
+            icon via padding. */}
         {showListenSheet && (
           <button
             type="button"
             onClick={handleOpenInApp}
-            aria-label="Open in your podcast app"
+            aria-label="Open in your app — Spotify, Apple Podcasts, Pocket Casts"
+            title="Open in your podcast app"
             style={{
               position: 'absolute',
-              top: 12,
-              right: 10,
-              width: 28,
-              height: 28,
+              top: 4,
+              right: 2,
+              width: 40,
+              height: 40,
               borderRadius: 9999,
               background: 'transparent',
               border: 'none',
