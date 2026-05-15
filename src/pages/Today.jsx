@@ -28,6 +28,7 @@ import TodayFertilityBanner from "../components/conditions/TodayFertilityBanner"
 // file kept under components/today for now; can be removed in a follow-up).
 import JessNarrativeHero from "../components/today/JessNarrativeHero";
 import PillarsDeck from "../components/today/PillarsDeck";
+import DailyStoryReel from "../components/today/DailyStoryReel";
 import RecommendedForYouSection from "../components/today/RecommendedForYouSection";
 import QuickMealLog from "../components/today/QuickMealLog";
 import ActiveProgramCard from "../components/today/ActiveProgramCard";
@@ -489,6 +490,11 @@ export default function Today() {
 
             {/* Pillars Deck (Today-A T-A1) — body summary at a glance */}
             <PillarsDeck profile={profile} today={new Date()} />
+
+            {/* Daily Story reel (Today-A T-A3) — horizontal carousel of
+                today's Daily Story segment + 3-5 phase-tagged Lifestyle
+                items the user hasn't read yet. */}
+            <DailyStoryReel profile={profile} cycleInfo={cycleInfo} />
 
             {/* Calm Cards + Panic pills */}
             <div className="flex items-center justify-between gap-2">
