@@ -5,8 +5,10 @@ import { Calendar, Plus, Clock, Trash2, Check, ChevronLeft, ChevronRight, X, Spa
 import PlannerTabs, { readInitialView, writeStoredView, resolveViewId } from "@/components/planner/PlannerTabs";
 import ConfidencePill from "@/components/planner/ConfidencePill";
 import CapacityTaxBar, { deriveCapacity, derivePredictedLoad } from "@/components/planner/cycle/CapacityTaxBar";
+import ConsistencyCard from "@/components/planner/cycle/ConsistencyCard";
 import DoctorReadyDiaryCard from "@/components/planner/cycle/DoctorReadyDiaryCard";
 import QuietModeBanner from "@/components/planner/cycle/QuietModeBanner";
+import RitualReframeShimmer from "@/components/planner/today/RitualReframeShimmer";
 import SmartViewCard from "@/components/planner/today/SmartViewCard";
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -529,6 +531,7 @@ export default function Planner() {
               onDefer={handleDeferTasks}
             />
           </div>
+          <ConsistencyCard habitLogs={habitLogs} phase={selectedPhase} />
           <div ref={(el) => { cycleSectionRefs.current.weekAhead = el; }} style={cycleStubStyle}>
             <p style={cycleStubTitleStyle}>Week Ahead</p>
             <p style={cycleStubBodyStyle}>A gentle look at what's coming. Coming soon.</p>
@@ -630,14 +633,21 @@ export default function Planner() {
                 {ritualHabits.map((name, i) => {
                   const done = !!todayHabitLogs[name];
                   return (
-                    <button key={i} onClick={() => toggleHabit(name)} style={{ ...ritualRowStyle, borderTop: i === 0 ? "none" : "1px solid rgba(74,42,58,0.06)" }}>
-                      <div style={{ ...ritualCheckStyle, background: done ? "var(--rose-primary, #D45E52)" : "transparent", borderColor: done ? "var(--rose-primary, #D45E52)" : "rgba(74,42,58,0.20)" }}>
-                        {done && <Check size={12} style={{ color: "white" }} />}
-                      </div>
-                      <div style={{ flex: 1, textAlign: "left" }}>
-                        <p style={{ ...ritualNameStyle, textDecoration: done ? "line-through" : "none", color: done ? "var(--plum-2, #6B4559)" : "var(--plum, #4A2A3A)" }}>{name}</p>
-                      </div>
-                    </button>
+                    <div key={i} style={{ borderTop: i === 0 ? "none" : "1px solid rgba(74,42,58,0.06)" }}>
+                      <button onClick={() => toggleHabit(name)} style={{ ...ritualRowStyle, borderTop: "none" }}>
+                        <div style={{ ...ritualCheckStyle, background: done ? "var(--rose-primary, #D45E52)" : "transparent", borderColor: done ? "var(--rose-primary, #D45E52)" : "rgba(74,42,58,0.20)" }}>
+                          {done && <Check size={12} style={{ color: "white" }} />}
+                        </div>
+                        <div style={{ flex: 1, textAlign: "left" }}>
+                          <p style={{ ...ritualNameStyle, textDecoration: done ? "line-through" : "none", color: done ? "var(--plum-2, #6B4559)" : "var(--plum, #4A2A3A)" }}>{name}</p>
+                        </div>
+                      </button>
+                      {!done && !quietModeActive && (
+                        <div style={{ padding: "0 8px 8px 38px" }}>
+                          <RitualReframeShimmer ritualName={name} phase={selectedPhase} state="stuck" />
+                        </div>
+                      )}
+                    </div>
                   );
                 })}
               </div>
