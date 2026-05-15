@@ -23,21 +23,21 @@ import { useMemo } from "react";
 // Spec ref: claude-state/base44_mps/2026-05-14_planner_phase2/spec_v2.md §C3.
 // ─────────────────────────────────────────────────────────────────────────────
 
-const PHASE_MULTIPLIERS = {
+export const PHASE_MULTIPLIERS = {
   menstrual: 0.55,
   follicular: 1.10,
   ovulatory: 1.20,
   luteal: 0.85,
 };
 
-const BASELINE_CAPACITY = 10;
+export const BASELINE_CAPACITY = 10;
 
-function deriveCapacity(phase, baseline = BASELINE_CAPACITY) {
+export function deriveCapacity(phase, baseline = BASELINE_CAPACITY) {
   const mult = PHASE_MULTIPLIERS[phase] || 1.0;
   return Math.max(1, Math.round(baseline * mult * 10) / 10);
 }
 
-function derivePredictedLoad({ personalTasks = [], activeProgram, ritualHabits = [] }) {
+export function derivePredictedLoad({ personalTasks = [], activeProgram, ritualHabits = [] }) {
   let load = 0;
   for (const t of personalTasks) {
     if (!t) continue;

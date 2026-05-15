@@ -4,8 +4,9 @@ import { base44 } from "@/api/base44Client";
 import { Calendar, Plus, Clock, Trash2, Check, ChevronLeft, ChevronRight, X, Sparkles } from "lucide-react";
 import PlannerTabs, { readInitialView, writeStoredView, resolveViewId } from "@/components/planner/PlannerTabs";
 import ConfidencePill from "@/components/planner/ConfidencePill";
-import CapacityTaxBar from "@/components/planner/cycle/CapacityTaxBar";
+import CapacityTaxBar, { deriveCapacity, derivePredictedLoad } from "@/components/planner/cycle/CapacityTaxBar";
 import DoctorReadyDiaryCard from "@/components/planner/cycle/DoctorReadyDiaryCard";
+import SmartViewCard from "@/components/planner/today/SmartViewCard";
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Planner — Phase 2 C0 (tab shell + routing)
@@ -287,6 +288,16 @@ export default function Planner() {
   const selectedCycleDay = dayOfCycle(profile, selectedDay);
   const isSelectedToday = toDateStr(selectedDay) === toDateStr(today);
 
+  // Capacity composite — phase-aware capacity vs predicted load. Both the
+  // Cycle-tab Capacity Tax bar AND the Today-tab Smart View good-for chips
+  // read from this single source of truth (spec §C5: good-for chips drive
+  // from capacity composite, not phase alone).
+  const capacityPct = useMemo(() => {
+    const cap = deriveCapacity(selectedPhase);
+    const load = derivePredictedLoad({ personalTasks, activeProgram, ritualHabits });
+    return cap > 0 ? Math.round((load / cap) * 100) : 0;
+  }, [selectedPhase, personalTasks, activeProgram, ritualHabits]);
+
   // ── Handlers ──────────────────────────────────────────────────────────────
 
   // Defer N non-anchor, non-completed PersonalTasks from today to a steadier
@@ -530,6 +541,17 @@ export default function Planner() {
           </div>
         ) : (
           <>
+            {/* ── Smart View (Phase 2 C5) — adaptive "right now" card ──── */}
+            <SmartViewCard
+              phase={selectedPhase}
+              cycleDay={selectedCycleDay}
+              capacityPct={capacityPct}
+              dailyPlan={dailyPlan}
+              activeProgram={activeProgram}
+              ritualHabits={ritualHabits}
+              todayHabitLogs={todayHabitLogs}
+            />
+
             {/* ── Smart card 1: Today's intention (DailyPlan) ──────────── */}
             {dailyPlan && (
               <div style={intentionCardStyle}>
