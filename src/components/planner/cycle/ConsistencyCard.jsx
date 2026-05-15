@@ -1,4 +1,5 @@
 import { useMemo } from "react";
+import { habitNameOf, habitCompletedOf } from "@/components/planner/cycle/habitLogNormalise";
 
 // ─────────────────────────────────────────────────────────────────────────────
 // ConsistencyCard — Planner Phase 2 C7 (MP-A2).
@@ -30,18 +31,21 @@ export default function ConsistencyCard({ habitLogs = [], phase = null }) {
   const toStr = useMemo(() => toDateStr(new Date()), []);
 
   // Group habit logs into per-habit { total, completed } over the window.
-  // habitLogs here is the same flat array Planner.jsx already loads — each
-  // row has { habit_type, date, completed }. We count one row per habit per
-  // day; multiple rows for the same habit/day collapse to "any completed".
+  // habitLogs here is the same flat array Planner.jsx already loads. The
+  // codebase has two writers (Planner.jsx writes habit_name + is_completed;
+  // Track.jsx writes habit_type + completed) so we use the shared normalisers
+  // to read both shapes transparently. We count one row per habit per day;
+  // multiple rows for the same habit/day collapse to "any completed".
   const perHabit = useMemo(() => {
     const inWindow = (habitLogs || []).filter((h) => h?.date && h.date >= fromStr && h.date <= toStr);
     const byKey = new Map();
     for (const h of inWindow) {
-      const name = h.habit_type || "Untitled habit";
+      const name = habitNameOf(h) || "Untitled habit";
+      const completed = habitCompletedOf(h);
       const key = `${name}|${h.date}`;
       const prev = byKey.get(key);
       // Roll-up by (habit, date) — completed if any row says completed.
-      byKey.set(key, prev ? { name, date: h.date, completed: prev.completed || !!h.completed } : { name, date: h.date, completed: !!h.completed });
+      byKey.set(key, prev ? { name, date: h.date, completed: prev.completed || completed } : { name, date: h.date, completed });
     }
     const out = new Map();
     for (const entry of byKey.values()) {

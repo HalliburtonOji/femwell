@@ -168,12 +168,21 @@ Deno.serve(async (req) => {
     // Pull all relevant rows in parallel. Each entity is owner-scoped via RLS
     // when called through the user client; we use service-role + explicit
     // user_id filter for consistency with other Phase 2 functions.
-    const [profiles, cycleEvents, checkins, habitLogs] = await Promise.all([
-      sb.entity('UserProfile').filter({ user_id: userId }, null, 1).catch(() => []),
-      sb.entity('CycleEvents').filter({ user_id: userId, date_gte: fromStr, date_lte: toStr }, '-date', 500).catch(() => []),
-      sb.entity('DailyCheckins').filter({ user_id: userId, date_gte: fromStr, date_lte: toStr }, '-date', 500).catch(() => []),
-      sb.entity('HabitLogs').filter({ user_id: userId, date_gte: fromStr, date_lte: toStr }, '-date', 1000).catch(() => []),
+    //
+    // Base44 SDK doesn't support `_gte / _lte` filter operators — we fetch
+    // most-recent rows and filter to the window in-memory (same pattern as
+    // checkSymptomPatterns / computeCorrelations / generateWeeklyInsights).
+    const inWindow = (rows) => (rows || []).filter((r) => r?.date && r.date >= fromStr && r.date <= toStr);
+    const [profilesRaw, cycleEventsRaw, checkinsRaw, habitLogsRaw] = await Promise.all([
+      sb.entities.UserProfile.filter({ user_id: userId }, null, 1).catch(() => []),
+      sb.entities.CycleEvents.filter({ user_id: userId }, '-date', 500).catch(() => []),
+      sb.entities.DailyCheckins.filter({ user_id: userId }, '-date', 500).catch(() => []),
+      sb.entities.HabitLogs.filter({ user_id: userId }, '-date', 1000).catch(() => []),
     ]);
+    const profiles = profilesRaw;
+    const cycleEvents = inWindow(cycleEventsRaw);
+    const checkins = inWindow(checkinsRaw);
+    const habitLogs = inWindow(habitLogsRaw);
 
     const profile = Array.isArray(profiles) && profiles.length ? profiles[0] : null;
     const hrt = profile?.hrt_regimen || null;
@@ -187,9 +196,12 @@ Deno.serve(async (req) => {
     const habitByCat = {};
     for (const h of habitLogs || []) {
       const cat = h.habit_category || 'other';
+      // Tolerant of legacy + Planner shapes — Planner.jsx writes `is_completed`
+      // while Track.jsx writes `completed`; we accept either.
+      const isCompleted = h.completed ?? h.is_completed ?? false;
       habitByCat[cat] = habitByCat[cat] || { total: 0, completed: 0 };
       habitByCat[cat].total += 1;
-      if (h.completed) habitByCat[cat].completed += 1;
+      if (isCompleted) habitByCat[cat].completed += 1;
     }
 
     return Response.json({

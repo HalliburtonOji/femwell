@@ -38,6 +38,14 @@ export function deriveCapacity(phase, baseline = BASELINE_CAPACITY) {
 }
 
 export function derivePredictedLoad({ personalTasks = [], activeProgram, ritualHabits = [] }) {
+  // v1 deviation from spec §C3: spec specifies
+  //   predictedLoad = sum(PersonalTask.estimated_effort * phase_modifier)
+  //                 + sum(active habits * 1) + sum(active programmes * 1.5)
+  // We omit per-task `phase_modifier` because (a) `estimated_effort` isn't in
+  // the PersonalTasks schema yet (no UI to set it; effort defaults to 1) and
+  // (b) phase_modifier is already applied to capacity in `deriveCapacity`,
+  // which produces a phase-aware pct without double-counting. When the schema
+  // adds `estimated_effort` + UI lands, the multiplication can be reinstated.
   let load = 0;
   for (const t of personalTasks) {
     if (!t) continue;
@@ -113,7 +121,7 @@ export default function CapacityTaxBar({
         marginBottom: 16,
       }}
     >
-      <div style={{ display: "flex", alignItems: "baseline", justifyContent: "space-between", gap: 8, marginBottom: 8 }}>
+      <div style={{ display: "flex", alignItems: "baseline", justifyContent: "space-between", gap: 8, marginBottom: 8, flexWrap: "wrap" }}>
         <p
           style={{
             fontSize: 11,

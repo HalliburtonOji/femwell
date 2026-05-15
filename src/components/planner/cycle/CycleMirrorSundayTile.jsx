@@ -1,4 +1,5 @@
 import { useMemo } from "react";
+import { habitNameOf, habitCompletedOf } from "@/components/planner/cycle/habitLogNormalise";
 
 // ─────────────────────────────────────────────────────────────────────────────
 // CycleMirrorSundayTile — Planner Phase 2 C8 (MP-A2).
@@ -34,14 +35,16 @@ function isSunday(date = new Date()) {
 }
 
 function bucketHabitsByDay(habitLogs) {
-  // Roll up {date → habit_type → completed}. Multiple rows per (date, habit)
-  // collapse to "any completed".
+  // Roll up {date → habit-name → completed}. Multiple rows per (date, habit)
+  // collapse to "any completed". Accepts both writer shapes via shared
+  // normalisers (Planner.jsx and Track.jsx write to different fields).
   const m = new Map();
   for (const h of habitLogs || []) {
-    if (!h?.date || !h?.habit_type) continue;
+    const name = habitNameOf(h);
+    if (!h?.date || !name) continue;
     const dayMap = m.get(h.date) || new Map();
-    const prev = dayMap.get(h.habit_type) || false;
-    dayMap.set(h.habit_type, prev || !!h.completed);
+    const prev = dayMap.get(name) || false;
+    dayMap.set(name, prev || habitCompletedOf(h));
     m.set(h.date, dayMap);
   }
   return m;

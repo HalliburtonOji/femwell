@@ -98,4 +98,25 @@ Per the shared-baton protocol, every commit added a row to "Just shipped (most r
 4. Plan-with-Jess proper surface (currently soft-fallback to `/Planner?_smartView=streaky`)
 5. Mobile / tablet visual polish if the verification subagent flagged any breakages
 
+## Post-audit fixes (commit after this tombstone)
+
+A code-only verification subagent audited C0–C8 in parallel with the C9 build. It returned **2 critical + 5 high + 7 medium + 5 low** findings. All criticals and the highest-leverage highs were fixed in a follow-up commit *after* this tombstone landed:
+
+- ✅ **CRITICAL** — Base44 SDK doesn't support `_gte/_lte` filter operators (the rest of the codebase uses fetch-most-recent + in-memory filter). Both `evaluateQuietMode` (Gates A + B) and `generateDoctorReadyDiary` (parallel data pull) switched to in-memory date filter.
+- ✅ **CRITICAL** — HabitLogs field-name mismatch (Planner.jsx writes `habit_name` + `is_completed`; Track.jsx writes `habit_type` + `completed`). New shared util `src/components/planner/cycle/habitLogNormalise.js` reads both shapes; wired into ConsistencyCard, CycleMirrorSundayTile, and diary function.
+- ✅ **HIGH** — RitualReframeShimmer was firing on every not-done morning ritual (cost blowout ~$3.5k/yr vs spec's £60–80/mo). New `stuckDaysByHabit` map in Planner.jsx; shimmer only renders when ritual has been stuck ≥ 3 days running.
+- ✅ **HIGH** — SmartView chip row stripped of misleading `role="tab"` / `role="tablist"` (chips were non-interactive spans). Replaced with `aria-current="true"` on active chip + `aria-label` describing the state.
+- ✅ **HIGH** — RitualReframeShimmer left padding aligned 38→34px with ritual name column.
+- ✅ **MEDIUM** — `sb.entity('X')` → `sb.entities.X` across both new Deno functions for SDK consistency.
+- ✅ **MEDIUM** — CapacityTaxBar header gained `flexWrap: "wrap"` so the headline doesn't truncate against the kicker under ~340px viewports.
+- ✅ **HIGH (doc-only)** — Documented v1 deviation from spec C3 capacity formula in the `derivePredictedLoad` comment (no per-task `phase_modifier` until `estimated_effort` schema + UI lands).
+
+Known feature gaps the audit flagged that I did NOT fix (require schema + UI work):
+
+- **HIGH #3** — `is_anchor` on PersonalTasks is read by Quiet Mode (`dayItems` filter) + Defer N (`handleDeferTasks`) but never written. No UI to set it. Schema entry doesn't exist. Result: Quiet Mode currently hides ALL non-completed PersonalTasks, and Defer N moves all of them. Worth a focused commit when an anchor toggle ships.
+- **HIGH #4 (root cause)** — `estimated_effort` on PersonalTasks is read by CapacityTaxBar but never written. Same shape: schema + UI follow-up.
+- **MEDIUM #10** — Timezone fragility in date-window math (UTC midnight ≠ local midnight). Project-wide concern, not Planner-specific.
+
+The 5 LOW findings (`⟢` glyph, `→` glyph, GPT model deviation from spec's `personal_assistant`, plus the existing-cosmetic `cycle_prediction_meta` null fallback + C8 today-vs-selected-day cosmetic mismatch) are documented but not blocked.
+
 — Code

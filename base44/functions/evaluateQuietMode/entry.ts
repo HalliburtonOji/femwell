@@ -54,10 +54,15 @@ async function evalGateA_Capacity(sb, userId) {
   // Last CAPACITY_GATE_DAYS days of CapacityTaxLog. If we don't have enough
   // rows yet (C3.5 persistence is the follow-up), gate silently skips — we
   // don't want a false-positive trigger from absence of data.
+  //
+  // Base44 SDK doesn't support `_gte / _lte` filter operators — codebase
+  // pattern is fetch-most-recent + in-memory filter (see checkSymptomPatterns,
+  // computeCorrelations, generateWeeklyInsights for the same shape).
   const fromStr = toDateStr(daysAgo(CAPACITY_GATE_DAYS + 1));
-  const rows = await sb.entity('CapacityTaxLog')
-    .filter({ user_id: userId, week_start_gte: fromStr }, '-week_start', CAPACITY_GATE_DAYS * 2)
+  const fetched = await sb.entities.CapacityTaxLog
+    .filter({ user_id: userId }, '-week_start', 60)
     .catch(() => []);
+  const rows = (fetched || []).filter((r) => r?.week_start && r.week_start >= fromStr);
   if (!Array.isArray(rows) || rows.length < CAPACITY_GATE_DAYS) return false;
   // Take the most recent N rows; require ALL to be over the threshold.
   const recent = rows.slice(0, CAPACITY_GATE_DAYS);
@@ -66,12 +71,14 @@ async function evalGateA_Capacity(sb, userId) {
 
 async function evalGateB_Mood(sb, userId) {
   // Last MOOD_GATE_DAYS+1 days of DailyCheckins. Require MOOD_GATE_DAYS
-  // consecutive low-mood + low-energy days.
+  // consecutive low-mood + low-energy days. In-memory date filter, same
+  // reason as Gate A.
   const fromStr = toDateStr(daysAgo(MOOD_GATE_DAYS + 1));
   const toStr = toDateStr(new Date());
-  const rows = await sb.entity('DailyCheckins')
-    .filter({ user_id: userId, date_gte: fromStr, date_lte: toStr }, '-date', MOOD_GATE_DAYS * 2)
+  const fetched = await sb.entities.DailyCheckins
+    .filter({ user_id: userId }, '-date', 60)
     .catch(() => []);
+  const rows = (fetched || []).filter((c) => c?.date && c.date >= fromStr && c.date <= toStr);
   if (!Array.isArray(rows) || rows.length < MOOD_GATE_DAYS) return false;
   const recent = rows.slice(0, MOOD_GATE_DAYS);
   return recent.every((c) => {
@@ -94,11 +101,11 @@ Deno.serve(async (req) => {
       }
       const sb = base44.asServiceRole;
       const targetId = String(body.force_user_id);
-      const profiles = await sb.entity('UserProfile').filter({ user_id: targetId }, null, 1).catch(() => []);
+      const profiles = await sb.entities.UserProfile.filter({ user_id: targetId }, null, 1).catch(() => []);
       const profile = Array.isArray(profiles) && profiles.length ? profiles[0] : null;
       if (!profile) return Response.json({ error: 'No UserProfile for that user_id' }, { status: 404 });
       const until = plusHoursIso(QUIET_MODE_HOURS);
-      await sb.entity('UserProfile').update(profile.id, { quiet_mode_until: until }).catch(() => null);
+      await sb.entities.UserProfile.update(profile.id, { quiet_mode_until: until }).catch(() => null);
       return Response.json({ ok: true, force: true, user_id: targetId, quiet_mode_until: until });
     }
 
@@ -117,7 +124,7 @@ Deno.serve(async (req) => {
     const errors = [];
 
     const filter = targetUserId ? { user_id: targetUserId } : {};
-    const profiles = await sb.entity('UserProfile').filter(filter, null, 500).catch(() => []);
+    const profiles = await sb.entities.UserProfile.filter(filter, null, 500).catch(() => []);
 
     for (const p of profiles || []) {
       scanned += 1;
@@ -133,7 +140,7 @@ Deno.serve(async (req) => {
 
         if (!dryRun) {
           const until = plusHoursIso(QUIET_MODE_HOURS);
-          await sb.entity('UserProfile').update(p.id, { quiet_mode_until: until });
+          await sb.entities.UserProfile.update(p.id, { quiet_mode_until: until });
         }
         triggered += 1;
       } catch (err) {

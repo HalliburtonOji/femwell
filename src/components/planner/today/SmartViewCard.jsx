@@ -171,17 +171,19 @@ export default function SmartViewCard({
         <span style={tenseStyle}>Right now · adaptive</span>
       </div>
 
-      {/* State chip row */}
-      <div role="tablist" aria-label="Smart view state" style={chipRowStyle}>
+      {/* State chip row — status indicators, NOT interactive tabs (the
+          state derives from heuristics + quiet-mode + dev override; users
+          don't switch states by tapping). aria-label on the active chip
+          announces the current state. */}
+      <div aria-label="Smart view state" style={chipRowStyle}>
         {SMART_STATES.map((s) => {
           const active = s === state;
           const live = ACTIVE_SMART_STATES.has(s);
           return (
             <span
               key={s}
-              role="tab"
-              aria-selected={active}
-              aria-disabled={!live}
+              aria-current={active ? "true" : undefined}
+              aria-label={active ? `Current state: ${STATE_LABEL[s]}` : STATE_LABEL[s]}
               style={{
                 ...chipStyle,
                 background: active

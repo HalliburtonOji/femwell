@@ -326,6 +326,42 @@ export default function Planner() {
     return cap > 0 ? Math.round((load / cap) * 100) : 0;
   }, [selectedPhase, personalTasks, activeProgram, ritualHabits]);
 
+  // Stuck-days map — per ritual, how many consecutive days from today
+  // backwards the user has NOT completed it. Used to gate the C7 reframe
+  // shimmer (spec §C7 + cost gate in spec_v2.md §LLM cost estimates: only
+  // fire on stuck items, not every not-done morning ritual). Threshold:
+  // STUCK_DAYS_THRESHOLD = 3 days running without a completion.
+  const STUCK_DAYS_THRESHOLD = 3;
+  const stuckDaysByHabit = useMemo(() => {
+    const out = {};
+    const today0 = new Date();
+    today0.setHours(0, 0, 0, 0);
+    for (const name of ritualHabits || []) {
+      // Build a date-keyed map of (this habit's) completions across loaded
+      // logs. Accepts both writer shapes (Planner: habit_name+is_completed,
+      // Track: habit_type+completed).
+      const completedByDate = new Map();
+      for (const h of habitLogs || []) {
+        const hName = h?.habit_type || h?.habit_name;
+        if (hName !== name) continue;
+        if (!h?.date) continue;
+        const prev = completedByDate.get(h.date) || false;
+        const done = (typeof h.completed === "boolean") ? h.completed : (h.is_completed !== false);
+        completedByDate.set(h.date, prev || done);
+      }
+      let stuck = 0;
+      for (let i = 1; i <= 10; i += 1) {
+        const d = new Date(today0);
+        d.setDate(d.getDate() - i);
+        const k = toDateStr(d);
+        if (completedByDate.get(k) === true) break;
+        stuck += 1;
+      }
+      out[name] = stuck;
+    }
+    return out;
+  }, [ritualHabits, habitLogs]);
+
   // ── Handlers ──────────────────────────────────────────────────────────────
 
   // Defer N non-anchor, non-completed PersonalTasks from today to a steadier
@@ -667,8 +703,8 @@ export default function Planner() {
                           <p style={{ ...ritualNameStyle, textDecoration: done ? "line-through" : "none", color: done ? "var(--plum-2, #6B4559)" : "var(--plum, #4A2A3A)" }}>{name}</p>
                         </div>
                       </button>
-                      {!done && !quietModeActive && (
-                        <div style={{ padding: "0 8px 8px 38px" }}>
+                      {!done && !quietModeActive && (stuckDaysByHabit[name] || 0) >= STUCK_DAYS_THRESHOLD && (
+                        <div style={{ padding: "0 8px 8px 34px" }}>
                           <RitualReframeShimmer ritualName={name} phase={selectedPhase} state="stuck" />
                         </div>
                       )}
