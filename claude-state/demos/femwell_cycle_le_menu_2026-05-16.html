@@ -1,0 +1,709 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>FemWell Cycle — Le Menu, with the sun</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,wght@0,400;0,500;0,600;1,400;1,500&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --paper:   #F2E9D9;
+    --paper-2: #EADFC6;
+    --paper-3: #DBCFB4;
+    --ink:     #2A1810;
+    --ink-2:   #5A3F30;
+    --ink-3:   #8A7459;
+    --rust:    #9C4A2C;
+    --rust-2:  #B85D38;
+    --gold:    #A88444;
+    --gold-2:  #C49F58;
+    --sage:    #5C6E4F;
+    --plum:    #4A2A3A;
+    --period:  #B83C2A;
+    --foll:    #D88E4A;
+    --ov:      #E2C76C;
+    --luteal:  #8A5F74;
+  }
+  *,*::before,*::after { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    background: linear-gradient(180deg, #E6DAC4 0%, #DCCEB1 100%);
+    color: var(--ink);
+    font-family: 'Fraunces', Georgia, 'Times New Roman', serif;
+    padding: 42px 18px 60px;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .lab-head { max-width: 760px; text-align: center; margin-bottom: 32px; }
+  .lab-eye { font-family: 'Inter', sans-serif; font-size: 11px; letter-spacing: .38em; text-transform: uppercase; color: var(--gold); font-weight: 600; }
+  .lab-title { font-family: 'Fraunces', serif; font-size: 32px; font-weight: 500; color: var(--ink); margin: 10px 0 12px; letter-spacing: -.005em; }
+  .lab-sub { font-family: 'Fraunces', serif; font-style: italic; font-size: 14px; color: var(--ink-2); max-width: 540px; margin: 0 auto; line-height: 1.55; }
+  .lab-tag-row { display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; margin-top: 18px; }
+  .lab-tag { font-family: 'Inter', sans-serif; font-size: 10px; letter-spacing: .22em; text-transform: uppercase; color: var(--ink-2); font-weight: 600; padding: 4px 10px; border: 1px solid rgba(42,24,16,.18); border-radius: 9999px; background: rgba(255,250,240,.4); }
+
+  /* Phone frame — same shape as femwell_planner_phase2_demo.html */
+  .phone {
+    width: 420px;
+    background: #111;
+    border-radius: 46px;
+    padding: 10px;
+    box-shadow: 0 40px 80px rgba(42,24,16,.32), 0 0 0 1px rgba(0,0,0,.08);
+    margin: 0 0 24px;
+  }
+  .phone-inner {
+    background: var(--paper);
+    border-radius: 38px;
+    overflow: hidden;
+    position: relative;
+    height: 880px;
+    display: flex;
+    flex-direction: column;
+  }
+  .notch {
+    position: absolute; top: 0; left: 50%; transform: translateX(-50%);
+    width: 130px; height: 28px;
+    background: #111; border-radius: 0 0 16px 16px; z-index: 30;
+  }
+  .scroll {
+    overflow-y: auto; flex: 1;
+    padding: 44px 0 80px;
+    scrollbar-width: none;
+  }
+  .scroll::-webkit-scrollbar { display: none; }
+  .gutter { padding: 0 22px; }
+
+  /* Top ornament */
+  .orna { text-align: center; font-size: 14px; color: var(--gold); letter-spacing: .5em; margin: 6px 0 12px; }
+
+  /* Sun on a horizon — the headline visual */
+  .sun-band {
+    position: relative;
+    height: 84px;
+    border-radius: 12px;
+    overflow: hidden;
+    background:
+      linear-gradient(180deg, rgba(255,255,255,.18) 0%, transparent 30%, transparent 70%, rgba(0,0,0,.20) 100%),
+      linear-gradient(90deg, var(--period) 0%, var(--foll) 24%, var(--ov) 42%, var(--luteal) 64%, #3D2030 100%);
+    box-shadow: inset 0 0 22px rgba(0,0,0,.18), 0 8px 20px rgba(42,24,16,.10);
+  }
+  .sun {
+    position: absolute;
+    top: 18px; left: calc(75% - 16px);  /* day 22 of 28 ≈ 78% across */
+    width: 32px; height: 32px;
+    border-radius: 9999px;
+    background:
+      radial-gradient(circle at 32% 32%, #FFF7E2 0%, #F8D38B 45%, #DB9D52 100%);
+    box-shadow:
+      0 0 26px rgba(248,211,139,.95),
+      0 0 8px rgba(255,255,255,.7),
+      0 0 0 1.5px rgba(255,255,255,.4);
+    z-index: 2;
+  }
+  .horizon-tick {
+    position: absolute; bottom: 8px;
+    font-family: 'Inter', sans-serif; font-size: 9px; color: rgba(255,255,255,.78);
+    letter-spacing: .18em; font-weight: 700; transform: translateX(-50%);
+    text-shadow: 0 1px 2px rgba(0,0,0,.3);
+  }
+  .horizon-cap {
+    display: flex; justify-content: space-between; align-items: baseline;
+    margin: 12px 2px 0;
+  }
+  .horizon-cap .left {
+    font-family: 'Inter', sans-serif; font-size: 9.5px; letter-spacing: .22em;
+    color: var(--ink-3); font-weight: 600; text-transform: uppercase;
+  }
+  .horizon-cap .right {
+    font-family: 'Fraunces', serif; font-style: italic; font-size: 13px;
+    color: var(--rust); font-weight: 500;
+  }
+
+  /* Title block — restaurant menu hero */
+  .menu-hero { padding: 18px 0 14px; text-align: center; border-bottom: 1px dashed rgba(42,24,16,.20); margin-bottom: 14px; }
+  .menu-hero .date {
+    font-family: 'Inter', sans-serif; font-size: 10px; letter-spacing: .42em;
+    text-transform: uppercase; color: var(--ink-2); font-weight: 600;
+  }
+  .menu-hero h1 {
+    font-family: 'Fraunces', serif; font-size: 30px; color: var(--ink);
+    margin: 8px 0 4px; font-weight: 500; letter-spacing: -.005em;
+  }
+  .menu-hero .lede {
+    font-family: 'Fraunces', serif; font-style: italic; font-size: 13px;
+    color: var(--ink-2); line-height: 1.55; margin: 6px 18px 0;
+  }
+  .menu-hero .day-pill {
+    display: inline-flex; gap: 8px; align-items: baseline;
+    margin-top: 12px;
+    padding: 5px 12px; border-radius: 9999px;
+    background: rgba(184,93,56,.10);
+    border: 1px solid rgba(184,93,56,.30);
+  }
+  .menu-hero .day-pill .num {
+    font-family: 'Fraunces', serif; font-style: italic; font-size: 15px; color: var(--rust); font-weight: 600;
+  }
+  .menu-hero .day-pill .lbl {
+    font-family: 'Inter', sans-serif; font-size: 10px; letter-spacing: .24em; text-transform: uppercase; color: var(--rust); font-weight: 700;
+  }
+
+  /* Course row — the collapsible primary list */
+  .courses { list-style: none; padding: 0; margin: 0 0 18px; }
+  details.course {
+    border-bottom: 1px solid rgba(42,24,16,.10);
+    background: transparent;
+  }
+  details.course[open] {
+    background: linear-gradient(180deg, rgba(168,132,68,.07) 0%, rgba(168,132,68,.02) 100%);
+  }
+  details.course summary {
+    display: grid;
+    grid-template-columns: 40px 1fr auto;
+    align-items: baseline;
+    gap: 14px;
+    padding: 16px 22px;
+    cursor: pointer;
+    list-style: none;
+    position: relative;
+  }
+  details.course summary::-webkit-details-marker { display: none; }
+  .roman {
+    font-family: 'Fraunces', serif; font-style: italic; font-size: 20px;
+    color: var(--gold); font-weight: 500; line-height: 1;
+  }
+  details.course[open] .roman { color: var(--rust); }
+  .course-body { line-height: 1.3; }
+  .course-label {
+    font-family: 'Inter', sans-serif; font-size: 9.5px; letter-spacing: .34em;
+    text-transform: uppercase; color: var(--ink-2); font-weight: 600;
+  }
+  .course-name {
+    font-family: 'Fraunces', serif; font-size: 22px; color: var(--ink);
+    margin: 3px 0 2px; font-weight: 500;
+  }
+  .course-preview {
+    font-family: 'Fraunces', serif; font-style: italic; font-size: 12.5px;
+    color: var(--ink-2); line-height: 1.45;
+  }
+  .course-chev {
+    align-self: center;
+    width: 24px; height: 24px;
+    display: flex; align-items: center; justify-content: center;
+    color: var(--gold); font-size: 18px;
+    transition: transform 240ms ease;
+  }
+  details.course[open] .course-chev { transform: rotate(90deg); color: var(--rust); }
+  .here-now {
+    font-family: 'Inter', sans-serif; font-size: 9px; letter-spacing: .3em;
+    text-transform: uppercase; color: var(--rust); font-weight: 700;
+    display: inline-block; margin-top: 4px;
+  }
+  .here-now::before { content: "· "; opacity: .7; }
+  .here-now::after { content: " ·"; opacity: .7; }
+
+  /* Course content — what shows when expanded */
+  .course-content {
+    padding: 0 22px 20px;
+    animation: open 280ms ease;
+  }
+  @keyframes open {
+    from { opacity: 0; transform: translateY(-4px); }
+    to   { opacity: 1; transform: none; }
+  }
+  .pairing {
+    display: grid; grid-template-columns: 8ch 1fr; gap: 8px 14px;
+    font-family: 'Fraunces', serif; font-size: 13px; line-height: 1.6;
+    color: var(--ink); margin: 4px 0 12px;
+  }
+  .pairing dt {
+    font-family: 'Inter', sans-serif; font-size: 9.5px; letter-spacing: .22em;
+    text-transform: uppercase; color: var(--ink-3); font-weight: 600;
+    padding-top: 3px;
+  }
+  .pairing dd { font-style: italic; color: var(--ink-2); }
+  .ritual-row {
+    display: flex; gap: 6px; flex-wrap: wrap; margin: 8px 0 4px;
+  }
+  .ritual-tag {
+    font-family: 'Inter', sans-serif; font-size: 10px; letter-spacing: .16em;
+    text-transform: uppercase; color: var(--ink); font-weight: 600;
+    padding: 5px 10px; border: 1px solid rgba(168,132,68,.45);
+    background: rgba(255,250,240,.65);
+  }
+  .course-foot {
+    display: flex; justify-content: space-between; align-items: baseline;
+    margin-top: 14px; padding-top: 10px;
+    border-top: 1px dashed rgba(42,24,16,.18);
+  }
+  .course-foot .l {
+    font-family: 'Inter', sans-serif; font-size: 10px; letter-spacing: .22em;
+    text-transform: uppercase; color: var(--ink-3); font-weight: 600;
+  }
+  .course-foot .cta {
+    font-family: 'Inter', sans-serif; font-size: 11px; letter-spacing: .22em;
+    text-transform: uppercase; color: var(--rust); font-weight: 700;
+    text-decoration: none;
+  }
+  .course-foot .cta::after { content: " →"; }
+
+  /* Divider title — between phase courses and dishes-of-the-week */
+  .sect-divider {
+    display: flex; align-items: baseline; gap: 14px;
+    margin: 22px 22px 6px;
+  }
+  .sect-divider .line { flex: 1; height: 1px; background: rgba(42,24,16,.18); }
+  .sect-divider .word {
+    font-family: 'Inter', sans-serif; font-size: 10px; letter-spacing: .42em;
+    text-transform: uppercase; color: var(--gold); font-weight: 700;
+  }
+
+  /* Capacity meter — quiet line of dishes */
+  .cap-meter {
+    display: flex; align-items: center; gap: 10px;
+    padding: 0 22px;
+  }
+  .cap-bar {
+    flex: 1; height: 4px; border-radius: 2px;
+    background: rgba(42,24,16,.10);
+    position: relative; overflow: hidden;
+  }
+  .cap-fill {
+    position: absolute; left: 0; top: 0; height: 100%;
+    width: 67%;
+    background: linear-gradient(90deg, var(--sage) 0%, var(--gold) 100%);
+    border-radius: 2px;
+  }
+  .cap-pct {
+    font-family: 'Fraunces', serif; font-style: italic; font-size: 14px;
+    color: var(--ink); font-weight: 500;
+  }
+
+  /* Days ahead — small grid of chip-plates */
+  .ahead-grid {
+    display: grid; grid-template-columns: repeat(5, 1fr); gap: 8px;
+    margin: 8px 0 14px;
+  }
+  .ahead-plate {
+    background: rgba(255,250,240,.5);
+    border: 1px solid rgba(168,132,68,.30);
+    padding: 8px 0 9px;
+    text-align: center;
+    border-radius: 4px;
+  }
+  .ahead-plate .day {
+    font-family: 'Inter', sans-serif; font-size: 9px; letter-spacing: .18em;
+    color: var(--ink-2); font-weight: 700;
+  }
+  .ahead-plate .n {
+    font-family: 'Fraunces', serif; font-style: italic; font-size: 20px;
+    color: var(--ink); font-weight: 500; margin-top: 2px;
+  }
+  .ahead-plate .dot {
+    display: inline-block; width: 6px; height: 6px; border-radius: 9999px;
+    margin-top: 4px;
+  }
+  .ahead-plate.is-period { background: rgba(184,60,42,.10); border-color: rgba(184,60,42,.4); }
+  .ahead-plate.is-period .day, .ahead-plate.is-period .n { color: var(--period); }
+  .ahead-eta {
+    font-family: 'Fraunces', serif; font-style: italic; font-size: 13px;
+    color: var(--ink-2); text-align: center; line-height: 1.5;
+    margin: 6px 0 6px;
+  }
+  .ahead-eta strong { color: var(--rust); font-weight: 600; font-style: normal; }
+
+  /* Footer ornament + page-foot */
+  .demo-foot {
+    text-align: center; padding: 24px 0 8px;
+  }
+  .demo-foot .stamp {
+    font-family: 'Inter', sans-serif; font-size: 9px; letter-spacing: .5em;
+    text-transform: uppercase; color: var(--gold); font-weight: 700;
+  }
+  .demo-foot .pad { color: var(--gold); letter-spacing: .5em; font-size: 13px; margin-bottom: 8px; }
+
+  /* Notes column — design rationale beside the phone */
+  .notes {
+    max-width: 760px;
+    margin: 18px 0 0;
+    padding: 24px 28px;
+    background: rgba(255,250,240,.55);
+    border: 1px solid rgba(168,132,68,.30);
+    border-radius: 14px;
+  }
+  .notes h3 {
+    font-family: 'Inter', sans-serif; font-size: 10px; letter-spacing: .42em;
+    text-transform: uppercase; color: var(--gold); font-weight: 700;
+    margin-bottom: 14px;
+  }
+  .notes h4 {
+    font-family: 'Fraunces', serif; font-size: 16px; font-weight: 600;
+    color: var(--ink); margin: 14px 0 6px;
+  }
+  .notes p { font-family: 'Fraunces', serif; font-size: 14px; line-height: 1.6; color: var(--ink-2); margin-bottom: 8px; }
+  .notes p strong { color: var(--ink); font-weight: 600; }
+  .notes ul { font-family: 'Fraunces', serif; font-size: 13.5px; line-height: 1.65; color: var(--ink-2); padding-left: 18px; }
+  .notes ul li { margin-bottom: 4px; }
+  .notes ul li strong { color: var(--ink); font-weight: 600; }
+</style>
+</head>
+<body>
+
+<header class="lab-head">
+  <p class="lab-eye">FemWell · Cycle redesign · v2</p>
+  <h1 class="lab-title">Le Menu, with the sun</h1>
+  <p class="lab-sub">Halli's pick (Le Menu) deepened with the sun-on-horizon from Aurora and a strict collapse-by-default hierarchy. The page is now a short menu — most of it folded — until you tap a course to open its plate.</p>
+  <div class="lab-tag-row">
+    <span class="lab-tag">Noma menu</span>
+    <span class="lab-tag">Aesop print</span>
+    <span class="lab-tag">Diptyque numbered editions</span>
+    <span class="lab-tag">Mercury Weather sun arc</span>
+    <span class="lab-tag">iOS Health expandable cards</span>
+    <span class="lab-tag">Linear collapsible groups</span>
+  </div>
+</header>
+
+<div class="phone">
+  <div class="phone-inner">
+    <div class="notch"></div>
+    <div class="scroll">
+
+      <!-- ── SUN ON A HORIZON — always visible, sets the day ── -->
+      <div class="gutter">
+        <p class="orna">· · ·</p>
+        <div class="sun-band" role="img" aria-label="Cycle horizon. Day 22 of 28. Luteal phase. Sun positioned at three-quarters across the month.">
+          <div class="sun"></div>
+          <span class="horizon-tick" style="left: 1.5%;">1</span>
+          <span class="horizon-tick" style="left: 25%;">7</span>
+          <span class="horizon-tick" style="left: 50%;">14</span>
+          <span class="horizon-tick" style="left: 75%;">21</span>
+          <span class="horizon-tick" style="left: 98.5%; transform: translateX(-100%);">28</span>
+        </div>
+        <div class="horizon-cap">
+          <span class="left">Cycle · Day 22 of 28</span>
+          <span class="right">tipping toward the next dawn</span>
+        </div>
+      </div>
+
+      <!-- ── HERO — restaurant title block ── -->
+      <div class="gutter">
+        <div class="menu-hero">
+          <p class="date">FRIDAY 15 MAY · TODAY</p>
+          <h1>The luteal table</h1>
+          <p class="lede">A four-course menu for the inward half of the cycle. Most of it is folded away. Tap a course to open the day's plate.</p>
+          <span class="day-pill">
+            <span class="lbl">Course</span>
+            <span class="num">IV. Digestif</span>
+          </span>
+        </div>
+      </div>
+
+      <!-- ── THE FOUR COURSES — collapsible ── -->
+      <ol class="courses" id="courses">
+        <li>
+          <details class="course">
+            <summary>
+              <span class="roman">I.</span>
+              <div class="course-body">
+                <p class="course-label">Amuse · the rest week</p>
+                <p class="course-name">Period</p>
+                <p class="course-preview">next in five days · 20 May · ±3</p>
+              </div>
+              <span class="course-chev">›</span>
+            </summary>
+            <div class="course-content">
+              <dl class="pairing">
+                <dt>Warmth</dt><dd>warm broths, slow mornings, a hot water bottle</dd>
+                <dt>Body</dt><dd>rest is the work — period-week days don't count against your streak</dd>
+                <dt>Pacing</dt><dd>this is the week for hot tea, not new projects</dd>
+              </dl>
+              <div class="ritual-row">
+                <span class="ritual-tag">soft mornings</span>
+                <span class="ritual-tag">cocoa</span>
+                <span class="ritual-tag">early nights</span>
+              </div>
+              <div class="course-foot">
+                <span class="l">Last cycle · 5 days · steady</span>
+                <a href="#" class="cta">Build into next month</a>
+              </div>
+            </div>
+          </details>
+        </li>
+
+        <li>
+          <details class="course">
+            <summary>
+              <span class="roman">II.</span>
+              <div class="course-body">
+                <p class="course-label">Entrée · the opening days</p>
+                <p class="course-name">Follicular</p>
+                <p class="course-preview">after the rest week · days 6 – 12</p>
+              </div>
+              <span class="course-chev">›</span>
+            </summary>
+            <div class="course-content">
+              <dl class="pairing">
+                <dt>Lift</dt><dd>energy quietly returning — a good window to begin one new thing</dd>
+                <dt>Body</dt><dd>fresh greens, seeded breads, longer walks</dd>
+                <dt>Pacing</dt><dd>one yes is enough; the cycle has more weeks coming</dd>
+              </dl>
+              <div class="ritual-row">
+                <span class="ritual-tag">deep writing</span>
+                <span class="ritual-tag">cold mornings</span>
+                <span class="ritual-tag">make a list</span>
+              </div>
+              <div class="course-foot">
+                <span class="l">Last cycle · 78% steady</span>
+                <a href="#" class="cta">Plan with Jess</a>
+              </div>
+            </div>
+          </details>
+        </li>
+
+        <li>
+          <details class="course">
+            <summary>
+              <span class="roman">III.</span>
+              <div class="course-body">
+                <p class="course-label">Plat · the bright stretch</p>
+                <p class="course-name">Ovulatory</p>
+                <p class="course-preview">around day 14 · the longest conversation</p>
+              </div>
+              <span class="course-chev">›</span>
+            </summary>
+            <div class="course-content">
+              <dl class="pairing">
+                <dt>Energy</dt><dd>most expansive window — sociable, confident, bright</dd>
+                <dt>Body</dt><dd>sun-warmed tomatoes, linen on a terrace, a real laugh</dd>
+                <dt>Pacing</dt><dd>two days of bigness usually wears better than five of pushing</dd>
+              </dl>
+              <div class="ritual-row">
+                <span class="ritual-tag">long talks</span>
+                <span class="ritual-tag">sun walks</span>
+                <span class="ritual-tag">decisions</span>
+              </div>
+              <div class="course-foot">
+                <span class="l">Last cycle · 92% steady</span>
+                <a href="#" class="cta">Build into next month</a>
+              </div>
+            </div>
+          </details>
+        </li>
+
+        <li>
+          <details class="course" open>
+            <summary>
+              <span class="roman">IV.</span>
+              <div class="course-body">
+                <p class="course-label">Digestif · the inward half</p>
+                <p class="course-name">Luteal</p>
+                <p class="here-now">here today · day 22 of 28</p>
+              </div>
+              <span class="course-chev">›</span>
+            </summary>
+            <div class="course-content">
+              <dl class="pairing">
+                <dt>Tempo</dt><dd>the body is metering itself — depth over breadth, careful over many</dd>
+                <dt>Body</dt><dd>roasted root, slow stew, early candles, saying no</dd>
+                <dt>Pacing</dt><dd>finishing one thing usually beats juggling four — close the loops</dd>
+              </dl>
+              <div class="ritual-row">
+                <span class="ritual-tag">warm meals</span>
+                <span class="ritual-tag">slow walks</span>
+                <span class="ritual-tag">reading</span>
+                <span class="ritual-tag">saying no</span>
+                <span class="ritual-tag">journaling</span>
+                <span class="ritual-tag">early nights</span>
+              </div>
+              <div class="course-foot">
+                <span class="l">This week · 67% steady · still warming</span>
+                <a href="#" class="cta">Build into next week</a>
+              </div>
+            </div>
+          </details>
+        </li>
+      </ol>
+
+      <!-- ── SIDE DISHES — capacity, rhythms, ahead, doctor diary ── -->
+      <div class="sect-divider">
+        <span class="line"></span>
+        <span class="word">Sides</span>
+        <span class="line"></span>
+      </div>
+
+      <ol class="courses">
+        <li>
+          <details class="course">
+            <summary>
+              <span class="roman">·</span>
+              <div class="course-body">
+                <p class="course-label">À la carte</p>
+                <p class="course-name">Capacity · this week</p>
+                <p class="course-preview">67% steady · still warming</p>
+              </div>
+              <span class="course-chev">›</span>
+            </summary>
+            <div class="course-content">
+              <p style="font-family:'Fraunces',serif;font-style:italic;font-size:13.5px;line-height:1.55;color:var(--ink-2);margin-bottom:12px;">A gentle read on how the week is sitting in your body — phase-aware, no judgement.</p>
+              <div class="cap-meter">
+                <div class="cap-bar"><div class="cap-fill"></div></div>
+                <span class="cap-pct">67%</span>
+              </div>
+              <div class="course-foot">
+                <span class="l">Steadier than last week · +12%</span>
+                <a href="#" class="cta">Open week view</a>
+              </div>
+            </div>
+          </details>
+        </li>
+
+        <li>
+          <details class="course">
+            <summary>
+              <span class="roman">·</span>
+              <div class="course-body">
+                <p class="course-label">House rhythms</p>
+                <p class="course-name">Saved rhythms</p>
+                <p class="course-preview">Luteal Softness · active · 6 rituals</p>
+              </div>
+              <span class="course-chev">›</span>
+            </summary>
+            <div class="course-content">
+              <dl class="pairing">
+                <dt>Yours</dt><dd>Luteal Softness — six rituals, prepared for the inward half</dd>
+                <dt>Up next</dt><dd>Period Rest Day — four rituals, warming</dd>
+                <dt>Saved</dt><dd>Follicular Focus · Ovulation Power · Workday Stack</dd>
+              </dl>
+              <div class="course-foot">
+                <span class="l">5 rhythms saved</span>
+                <a href="#" class="cta">Browse all</a>
+              </div>
+            </div>
+          </details>
+        </li>
+
+        <li>
+          <details class="course">
+            <summary>
+              <span class="roman">·</span>
+              <div class="course-body">
+                <p class="course-label">Tomorrow's table</p>
+                <p class="course-name">Days ahead</p>
+                <p class="course-preview">next period · Wed 20 May · ±3d</p>
+              </div>
+              <span class="course-chev">›</span>
+            </summary>
+            <div class="course-content">
+              <div class="ahead-grid">
+                <div class="ahead-plate"><div class="day">SAT</div><div class="n">16</div></div>
+                <div class="ahead-plate"><div class="day">SUN</div><div class="n">17</div></div>
+                <div class="ahead-plate"><div class="day">MON</div><div class="n">18</div></div>
+                <div class="ahead-plate"><div class="day">TUE</div><div class="n">19</div></div>
+                <div class="ahead-plate is-period"><div class="day">WED</div><div class="n">20</div></div>
+              </div>
+              <p class="ahead-eta">Period gently expected <strong>Wed 20 May</strong>, give or take 3 days. 84% sure — we've sat at this table 4 times together.</p>
+              <div class="course-foot">
+                <span class="l">Confidence · 84%</span>
+                <a href="#" class="cta">Plan with Jess</a>
+              </div>
+            </div>
+          </details>
+        </li>
+
+        <li>
+          <details class="course">
+            <summary>
+              <span class="roman">·</span>
+              <div class="course-body">
+                <p class="course-label">Wine pairings</p>
+                <p class="course-name">Doctor-ready diary</p>
+                <p class="course-preview">build a 6-week export for your GP</p>
+              </div>
+              <span class="course-chev">›</span>
+            </summary>
+            <div class="course-content">
+              <dl class="pairing">
+                <dt>Length</dt><dd>4 · 6 · 8 · 12 weeks — your choice</dd>
+                <dt>Format</dt><dd>NICE NG23-aligned PDF, plum on cream, A4</dd>
+                <dt>What's in</dt><dd>cycle pattern, bleeding episodes, symptom load, HRT</dd>
+              </dl>
+              <div class="course-foot">
+                <span class="l">Last built · 3 weeks ago</span>
+                <a href="#" class="cta">Build diary</a>
+              </div>
+            </div>
+          </details>
+        </li>
+      </ol>
+
+      <!-- ── Footer signature ── -->
+      <div class="demo-foot">
+        <p class="pad">· · ·</p>
+        <p class="stamp">F · W · 2026</p>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<!-- Design rationale beside the phone -->
+<aside class="notes">
+  <h3>Design notes · what's in here, why</h3>
+
+  <h4>1. The sun on a horizon — the headline visual</h4>
+  <p>One slim band at the top. The whole cycle is shown as a horizontal horizon: a smooth gradient from period crimson → follicular peach → ovulatory amber → luteal mauve → next-dawn plum. A small sun-disc is positioned at today's spot on the band, with a soft halo. Five tick marks (days 1, 7, 14, 21, 28) sit at the bottom. Below: a one-line caption in italic — <em>"tipping toward the next dawn."</em></p>
+  <p>This replaces the wall-of-beige grid with one strong, immediately legible visual. You see where you are in the cycle in less than a second. It also makes the page feel atmospheric instead of clinical.</p>
+
+  <h4>2. Le Menu typography deepened</h4>
+  <p>Fraunces (italic + roman) throughout for editorial weight; Inter only for small uppercase labels. Dashed dividers instead of solid lines (felt softer, like an inked rule on paper). Hairline borders, generous letterspacing on the labels (.32em–.42em), and the "· · ·" ornament between major sections to break up the page without adding chrome.</p>
+
+  <h4>3. Collapse-by-default — the page is finally short</h4>
+  <p>Every section below the hero is folded away. The user sees:</p>
+  <ul>
+    <li><strong>The sun + horizon</strong> — where you are in the cycle</li>
+    <li><strong>The hero</strong> — "The luteal table", with today's plate visible</li>
+    <li><strong>Four courses</strong> — period · follicular · ovulatory · luteal — folded, with a one-line preview each</li>
+    <li><strong>Four sides</strong> — capacity, saved rhythms, days ahead, doctor diary — also folded</li>
+  </ul>
+  <p>Today's course (Luteal) opens automatically because <em>this is the user's current phase</em>. Everything else is one tap to open. <strong>Total page weight before tapping: about a third of what we had.</strong></p>
+
+  <h4>4. The collapsed previews carry their job</h4>
+  <p>Each folded course has a one-line preview that earns its row: "next in five days · 20 May · ±3" tells you what you'd otherwise have to open. The previews use italic Fraunces so they read as <em>commentary</em>, not as data fields. You can scan the whole page and know roughly where you stand without expanding anything.</p>
+
+  <h4>5. Inside an open section — restaurant pairing card</h4>
+  <p>Each course's open state uses a definition list — <strong>Tempo / Body / Pacing</strong> — borrowed from how a sommelier-style menu pairs notes to a course. The ritual tags below are the actual habit list, dressed as menu garnishes. Bottom of each: a small dashed-rule footer with last-cycle stat on the left and one quiet CTA on the right.</p>
+
+  <h4>6. The sides — same shape, smaller voice</h4>
+  <p>Capacity, Saved rhythms, Days ahead, and Doctor diary all share the course-row pattern but with a "·" instead of a roman numeral, and softer label headers (À la carte / House rhythms / Tomorrow's table / Wine pairings). They feel like a single menu, not a stack of disparate cards.</p>
+
+  <h4>7. Real expand-collapse using &lt;details&gt;</h4>
+  <p>This is interactive in your phone browser. Tap any course or side to open. The chevron animates 90°. Multiple sections can be open at once. State is local — no JS framework needed.</p>
+
+  <h4>What's gone from the previous page</h4>
+  <ul>
+    <li>The 5-row beige ribbon grid — replaced by the single sun-on-horizon strip</li>
+    <li>Every card's individual cream-on-cream surface — replaced by a single menu hierarchy</li>
+    <li>The four-tile legend, the phase chip dots, the carousel CTAs — all consolidated into the menu form</li>
+    <li>Most of the visual noise. The page now reads as one document, not eight cards</li>
+  </ul>
+</aside>
+
+<script>
+  // Tap any course row to expand. Native <details> handles most of this;
+  // we just smooth the scroll-into-view for opened items so the new
+  // content doesn't jump.
+  document.querySelectorAll('details.course').forEach(d => {
+    d.addEventListener('toggle', () => {
+      if (d.open) {
+        setTimeout(() => {
+          d.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        }, 60);
+      }
+    });
+  });
+</script>
+
+</body>
+</html>
