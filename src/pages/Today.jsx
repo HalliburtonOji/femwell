@@ -24,11 +24,7 @@ import FriendFrom6MonthsAgoCard from "@/components/today/FriendFrom6MonthsAgoCar
 import UnsealedLetterCard from "@/components/today/UnsealedLetterCard";
 import TrackTab from "../components/today/TrackTab";
 import TodayFertilityBanner from "../components/conditions/TodayFertilityBanner";
-// DailyPhaseBrief replaced by JessNarrativeHero per Today-A T-A2 (component
-// file kept under components/today for now; can be removed in a follow-up).
-import JessNarrativeHero from "../components/today/JessNarrativeHero";
-import PillarsDeck from "../components/today/PillarsDeck";
-import DailyStoryReel from "../components/today/DailyStoryReel";
+import DailyPhaseBrief from "../components/today/DailyPhaseBrief";
 import RecommendedForYouSection from "../components/today/RecommendedForYouSection";
 import QuickMealLog from "../components/today/QuickMealLog";
 import ActiveProgramCard from "../components/today/ActiveProgramCard";
@@ -460,11 +456,7 @@ export default function Today() {
               <TodayHeroSection user={user} profile={profile} cycleInfo={cycleInfo} todayCheckin={todayCheckin}
                 onOpenCheckin={() => setShowCheckin(true)} onOpenCalendar={() => setMainTab("track")} extractDisplayName={extractDisplayName} />
             )}
-            {/* Jess narrative hero (Today-A T-A2) — replaces DailyPhaseBrief
-                as the warm-first reflection at top of Today. Phase-tinted
-                gradient, Fraunces headline + Inter body, LLM-generated
-                weekly with a 32-line phase-keyed fallback bank. */}
-            {profile && <JessNarrativeHero profile={profile} cycleInfo={cycleInfo} />}
+            {profile && <DailyPhaseBrief profile={profile} />}
 
             <CompleteProfileBanner
               shouldShow={!!profile && (!profile.last_period_start_date || profile.onboarding_complete !== true)}
@@ -487,14 +479,6 @@ export default function Today() {
                 <p style={{ fontSize: 13, color: "var(--plum)", fontFamily: "'Inter', sans-serif", lineHeight: 1.55 }}>{PHASE_INFO[cycleInfo.phase].tip}</p>
               </div>
             )}
-
-            {/* Pillars Deck (Today-A T-A1) — body summary at a glance */}
-            <PillarsDeck profile={profile} today={new Date()} />
-
-            {/* Daily Story reel (Today-A T-A3) — horizontal carousel of
-                today's Daily Story segment + 3-5 phase-tagged Lifestyle
-                items the user hasn't read yet. */}
-            <DailyStoryReel profile={profile} cycleInfo={cycleInfo} />
 
             {/* Calm Cards + Panic pills */}
             <div className="flex items-center justify-between gap-2">

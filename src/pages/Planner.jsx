@@ -13,7 +13,10 @@ import MonthRibbon from "@/components/planner/cycle/MonthRibbon";
 import QuietModeBanner from "@/components/planner/cycle/QuietModeBanner";
 import SavedRhythmsCarousel from "@/components/planner/cycle/SavedRhythmsCarousel";
 import WhatsUnfinishedCard from "@/components/planner/cycle/WhatsUnfinishedCard";
+import DailyStoryReel from "@/components/planner/today/DailyStoryReel";
 import FreshStartBanner from "@/components/planner/today/FreshStartBanner";
+import JessNarrativeHero from "@/components/planner/today/JessNarrativeHero";
+import PillarsDeck from "@/components/planner/today/PillarsDeck";
 import RitualReframeShimmer from "@/components/planner/today/RitualReframeShimmer";
 import SmartViewCard from "@/components/planner/today/SmartViewCard";
 import { TonightCard, ShutdownRitualCard } from "@/components/planner/today/WarmthBundleToday";
@@ -687,6 +690,14 @@ export default function Planner() {
           </div>
         ) : (
           <>
+            {/* ── Jess narrative hero (Today-A T-A2) — weekly phase-aware
+                top-of-Today hero, gpt_5_mini cached 7d in localStorage with
+                a 32-line phase-keyed fallback bank. ──────────────────── */}
+            <JessNarrativeHero
+              profile={profile}
+              cycleInfo={selectedPhase ? { phase: selectedPhase, day: selectedCycleDay } : null}
+            />
+
             {/* ── Fresh-Start banner (Phase 2 B1) — soft reset on inflection ── */}
             <FreshStartBanner
               profile={profile}
@@ -712,6 +723,17 @@ export default function Planner() {
               ritualHabits={ritualHabits}
               todayHabitLogs={todayHabitLogs}
               quietModeActive={quietModeActive}
+            />
+
+            {/* ── Pillars Deck (Today-A T-A1) — 6-tile body summary ──── */}
+            <PillarsDeck profile={profile} today={today} />
+
+            {/* ── Daily Story Reel (Today-A T-A3) — horizontal carousel
+                of today's DailyStory segment + 3-5 phase-tagged unread
+                LifestyleItems. ─────────────────────────────────────── */}
+            <DailyStoryReel
+              profile={profile}
+              cycleInfo={selectedPhase ? { phase: selectedPhase, day: selectedCycleDay } : null}
             />
 
             {/* ── Smart card 1: Today's intention (DailyPlan) ──────────── */}
