@@ -1,0 +1,620 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>FemWell Plus — paywall demo · Doctor-Ready Diary as headline conversion</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:wght@400;500;600&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --cream: #FFFAF5;
+    --cream-2: #FFF5EC;
+    --cream-3: #F0E5D8;
+    --plum: #4A2A3A;
+    --plum-2: #6B4559;
+    --plum-mute: #8A7584;
+    --rose-400: #E67F73;
+    --rose-500: #D45E52;
+    --period: #B84A41;
+    --follicular: #E67F73;
+    --ovulatory: #F2A99A;
+    --luteal: #8A5F74;
+    --gold: #C9A95C;
+    --gold-deep: #A48740;
+    --teal: #5F8A85;
+    --teal-deep: #3F6864;
+    --moss: #7D8668;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif; background: #F4EDE4; color: var(--plum); padding: 40px 20px 80px; display: flex; flex-direction: column; align-items: center; }
+
+  .header { max-width: 1100px; margin: 0 auto 24px; text-align: center; }
+  .eyebrow { font-size: 11px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--plum-mute); font-weight: 600; }
+  h1.title { font-family: 'Fraunces', Georgia, serif; font-size: 34px; font-weight: 500; color: var(--plum); margin: 8px 0 12px; letter-spacing: -0.01em; }
+  .lede { font-size: 15px; color: var(--plum-2); max-width: 820px; margin: 0 auto; line-height: 1.55; }
+  .lede strong { color: var(--plum); font-weight: 600; }
+  .meta-row { display: flex; justify-content: center; gap: 22px; margin-top: 18px; font-size: 12px; color: var(--plum-2); flex-wrap: wrap; }
+
+  .stage { display: flex; gap: 30px; flex-wrap: wrap; justify-content: center; margin: 28px 0; }
+  .stage-cap { text-align: center; max-width: 420px; margin: 0 auto 6px; }
+  .stage-cap .label { font-size: 11px; letter-spacing: 0.18em; text-transform: uppercase; color: var(--plum-mute); font-weight: 700; }
+  .stage-cap .desc { font-size: 12px; color: var(--plum-2); margin-top: 4px; line-height: 1.4; }
+  .phone-wrap { display: flex; flex-direction: column; }
+
+  .phone { width: 420px; background: #111; border-radius: 46px; padding: 10px; box-shadow: 0 40px 80px rgba(74, 42, 58, 0.22), 0 0 0 1px rgba(0,0,0,0.08); margin: 12px 0 0; }
+  .phone-inner { background: var(--cream); border-radius: 38px; overflow: hidden; position: relative; height: 920px; display: flex; flex-direction: column; }
+  .notch { position: absolute; top: 0; left: 50%; transform: translateX(-50%); width: 130px; height: 28px; background: #111; border-radius: 0 0 16px 16px; z-index: 30; }
+  .scroll { overflow-y: auto; flex: 1; padding: 44px 18px 120px; scrollbar-width: none; }
+  .scroll::-webkit-scrollbar { display: none; }
+
+  /* Page head */
+  .ph-eyebrow { font-size: 10px; letter-spacing: 0.18em; text-transform: uppercase; color: var(--plum-mute); font-weight: 600; }
+  h1.ph-title { font-family: 'Fraunces', serif; font-size: 30px; font-weight: 500; margin: 6px 0 4px; letter-spacing: -0.015em; color: var(--plum); }
+  .ph-sub { font-size: 13px; color: var(--plum-2); }
+
+  .divider { display: flex; align-items: baseline; justify-content: space-between; margin: 22px 0 12px; }
+  .div-title { font-family: 'Fraunces', serif; font-size: 19px; color: var(--plum); font-weight: 500; }
+  .div-meta { font-size: 10px; color: var(--plum-mute); letter-spacing: 0.12em; text-transform: uppercase; font-weight: 600; }
+
+  /* Diary card eyebrow + title */
+  .dr-card { background: linear-gradient(135deg, rgba(95, 138, 133, 0.15), rgba(125, 134, 104, 0.1)); border: 1px solid rgba(95, 138, 133, 0.2); border-radius: 14px; padding: 14px 16px; margin-bottom: 10px; }
+  .dr-eyebrow { font-size: 9px; letter-spacing: 0.18em; text-transform: uppercase; color: var(--teal); font-weight: 700; }
+  .dr-title { font-family: 'Fraunces', serif; font-size: 16px; color: var(--plum); font-weight: 500; margin-top: 4px; line-height: 1.25; }
+  .dr-sub { font-size: 12px; color: var(--plum-2); margin-top: 5px; line-height: 1.45; }
+  .dr-tags { display: flex; gap: 5px; flex-wrap: wrap; margin-top: 10px; }
+  .dr-tag { font-size: 9px; padding: 3px 7px; border-radius: 6px; background: rgba(255, 255, 255, 0.6); color: var(--teal); letter-spacing: 0.06em; text-transform: uppercase; font-weight: 700; }
+
+  /* PDF page preview */
+  .pdf-stage { position: relative; background: #FFFFFF; border-radius: 8px; padding: 16px 14px; margin-top: 12px; box-shadow: 0 4px 14px rgba(74, 42, 58, 0.08); border: 1px solid rgba(74, 42, 58, 0.06); }
+  .pdf-stage::after {
+    content: 'Preview · FemWell Plus required to share';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%) rotate(-22deg);
+    font-family: 'Fraunces', serif;
+    font-size: 17px;
+    font-style: italic;
+    color: rgba(95, 138, 133, 0.32);
+    letter-spacing: 0.06em;
+    white-space: nowrap;
+    pointer-events: none;
+    text-align: center;
+    z-index: 5;
+    font-weight: 500;
+  }
+  .pdf-stage.unlocked::after { content: ''; }
+  .pdf-h { font-family: 'Fraunces', serif; font-size: 13px; color: var(--plum); font-weight: 600; }
+  .pdf-meta { font-size: 9.5px; color: var(--plum-mute); letter-spacing: 0.04em; margin-top: 3px; }
+  .pdf-bleed-row { display: grid; grid-template-columns: repeat(7, 1fr); gap: 2px; margin: 10px 0 4px; }
+  .pdf-bleed-cell { aspect-ratio: 1 / 1.1; border-radius: 3px; display: flex; align-items: end; justify-content: center; font-size: 7.5px; color: var(--plum-2); padding: 1px; opacity: 0.85; }
+  .pdf-bleed-cell.p { background: rgba(184, 74, 65, 0.7); color: #FFF5EC; }
+  .pdf-bleed-cell.s { background: rgba(184, 74, 65, 0.3); color: var(--plum); }
+  .pdf-bleed-cell.n { background: rgba(74, 42, 58, 0.05); color: var(--plum-mute); }
+  .pdf-bleed-cell.f { background: rgba(230, 127, 115, 0.4); color: var(--plum); }
+  .pdf-legend { display: flex; gap: 7px; font-size: 8px; color: var(--plum-mute); margin-top: 4px; letter-spacing: 0.04em; }
+  .pdf-legend .lg-dot { width: 6px; height: 6px; border-radius: 50%; display: inline-block; margin-right: 3px; vertical-align: middle; }
+  .pdf-row { display: flex; justify-content: space-between; align-items: baseline; padding: 6px 0; border-bottom: 1px solid rgba(74, 42, 58, 0.05); }
+  .pdf-row:last-child { border-bottom: none; }
+  .pdf-row-l { font-size: 10.5px; color: var(--plum-2); }
+  .pdf-row-r { font-family: 'Fraunces', serif; font-size: 11px; color: var(--plum); font-weight: 500; }
+  .pdf-meta-row { display: flex; justify-content: space-between; align-items: center; margin: 10px 0 6px; padding-top: 8px; border-top: 1px solid rgba(74, 42, 58, 0.08); }
+  .pdf-page-marker { font-size: 8.5px; color: var(--plum-mute); letter-spacing: 0.14em; text-transform: uppercase; font-weight: 700; }
+
+  /* Locked pages strip */
+  .locked-strip { margin-top: 10px; display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; }
+  .locked-thumb { aspect-ratio: 1 / 1.32; background: rgba(74, 42, 58, 0.06); border-radius: 8px; padding: 9px 8px; position: relative; overflow: hidden; }
+  .locked-thumb::before { content: ''; position: absolute; inset: 0; backdrop-filter: blur(2px); background: rgba(74, 42, 58, 0.05); }
+  .locked-thumb .lt-lock { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); font-size: 14px; color: var(--plum); z-index: 2; }
+  .locked-thumb .lt-name { position: absolute; bottom: 6px; left: 8px; right: 8px; font-size: 8.5px; color: var(--plum-2); text-align: center; letter-spacing: 0.04em; z-index: 2; font-weight: 600; }
+
+  /* Inline upgrade card (in preview state) */
+  .upgrade-inline { margin-top: 14px; background: linear-gradient(135deg, #2D1F3A 0%, #4A2A3A 100%); color: #F5E6D3; border-radius: 14px; padding: 14px 16px; position: relative; overflow: hidden; }
+  .upgrade-inline::before { content: ''; position: absolute; top: -20px; right: -20px; width: 100px; height: 100px; background: radial-gradient(circle, rgba(201, 169, 92, 0.32), transparent 65%); }
+  .ui-eyebrow { font-size: 9px; letter-spacing: 0.22em; text-transform: uppercase; color: rgba(245, 230, 211, 0.65); font-weight: 700; position: relative; z-index: 2; }
+  .ui-title { font-family: 'Fraunces', serif; font-size: 18px; color: #F5E6D3; font-weight: 500; line-height: 1.25; margin-top: 4px; position: relative; z-index: 2; }
+  .ui-sub { font-size: 11.5px; color: rgba(245, 230, 211, 0.78); margin-top: 6px; line-height: 1.5; position: relative; z-index: 2; }
+  .ui-cta { display: inline-block; margin-top: 10px; padding: 9px 16px; border-radius: 9999px; background: var(--gold); color: var(--plum); font-size: 12px; font-weight: 700; letter-spacing: 0.04em; position: relative; z-index: 2; }
+  .ui-price { display: flex; gap: 8px; align-items: baseline; margin-top: 10px; position: relative; z-index: 2; }
+  .ui-price-main { font-family: 'Fraunces', serif; font-size: 19px; color: #F5E6D3; font-weight: 500; }
+  .ui-price-mute { font-size: 10.5px; color: rgba(245, 230, 211, 0.6); }
+
+  /* Plus check icons in feature list */
+  .ck-item { display: flex; gap: 10px; align-items: flex-start; padding: 9px 0; border-bottom: 1px solid rgba(74, 42, 58, 0.06); }
+  .ck-item:last-child { border-bottom: none; }
+  .ck-icon { width: 22px; height: 22px; border-radius: 50%; background: rgba(95, 138, 133, 0.18); color: var(--teal); flex-shrink: 0; display: grid; place-items: center; font-size: 11px; font-weight: 700; }
+  .ck-body { flex: 1; min-width: 0; }
+  .ck-title { font-size: 12.5px; color: var(--plum); font-weight: 600; line-height: 1.3; }
+  .ck-sub { font-size: 11px; color: var(--plum-mute); margin-top: 2px; line-height: 1.35; }
+
+  /* Pricing toggle */
+  .price-toggle { display: flex; gap: 6px; padding: 5px; background: rgba(74, 42, 58, 0.06); border-radius: 9999px; margin-top: 14px; }
+  .price-item { flex: 1; text-align: center; padding: 10px 8px; border-radius: 9999px; cursor: pointer; transition: background 0.2s; position: relative; }
+  .price-item.active { background: var(--cream); box-shadow: 0 2px 6px rgba(74, 42, 58, 0.1); }
+  .price-tier { font-size: 10.5px; color: var(--plum-mute); letter-spacing: 0.08em; text-transform: uppercase; font-weight: 700; }
+  .price-item.active .price-tier { color: var(--plum); }
+  .price-val { font-family: 'Fraunces', serif; font-size: 17px; color: var(--plum); font-weight: 500; margin-top: 2px; }
+  .price-save { position: absolute; top: -8px; right: -2px; background: var(--gold); color: var(--plum); font-size: 8px; padding: 2px 6px; border-radius: 6px; font-weight: 700; letter-spacing: 0.04em; text-transform: uppercase; }
+
+  /* Upgrade sheet CTA */
+  .big-cta { width: 100%; margin-top: 16px; padding: 16px; border-radius: 14px; background: var(--gold); color: var(--plum); font-family: 'Fraunces', serif; font-size: 16px; font-weight: 500; letter-spacing: -0.01em; text-align: center; border: none; cursor: pointer; box-shadow: 0 6px 16px rgba(201, 169, 92, 0.32); }
+  .cta-tiny { font-size: 10.5px; color: var(--plum-mute); text-align: center; margin-top: 8px; line-height: 1.4; }
+  .cta-microcopy { font-size: 9.5px; color: var(--plum-mute); text-align: center; margin-top: 5px; letter-spacing: 0.02em; opacity: 0.8; }
+  .cta-footer-row { display: flex; justify-content: center; gap: 16px; margin-top: 14px; padding-top: 14px; border-top: 1px solid rgba(74, 42, 58, 0.06); font-size: 10.5px; color: var(--plum-mute); }
+  .cta-footer-row a { color: var(--plum); font-weight: 600; text-decoration: none; }
+
+  /* Plus-active banner (phone 3) */
+  .plus-active { background: linear-gradient(135deg, var(--gold), var(--gold-deep)); color: #FFF5EC; border-radius: 12px; padding: 11px 14px; display: flex; align-items: center; gap: 10px; margin: 14px 0; }
+  .pa-icon { width: 26px; height: 26px; border-radius: 50%; background: rgba(255, 245, 236, 0.22); color: #FFF5EC; display: grid; place-items: center; font-family: 'Fraunces', serif; font-size: 14px; flex-shrink: 0; }
+  .pa-body { flex: 1; }
+  .pa-title { font-size: 11.5px; font-weight: 700; letter-spacing: 0.04em; }
+  .pa-sub { font-size: 10px; opacity: 0.86; margin-top: 1px; }
+
+  .unlocked-cta { width: 100%; margin-top: 12px; padding: 14px; border-radius: 12px; background: var(--teal); color: #FFF5EC; font-size: 13px; font-weight: 700; letter-spacing: 0.04em; text-align: center; }
+
+  /* Nav + FAB */
+  .nav { position: absolute; bottom: 0; left: 0; right: 0; background: rgba(255, 250, 245, 0.96); backdrop-filter: blur(12px); border-top: 1px solid rgba(74, 42, 58, 0.08); height: 68px; display: grid; grid-template-columns: repeat(5, 1fr); padding: 10px 0 14px; z-index: 20; }
+  .nav-item { display: flex; flex-direction: column; align-items: center; gap: 5px; font-size: 9px; color: var(--plum-mute); font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; }
+  .nav-item.active { color: var(--plum); }
+  .nav-ico { width: 18px; height: 18px; border-radius: 5px; background: currentColor; opacity: 0.55; }
+  .nav-item.active .nav-ico { opacity: 1; }
+
+  /* Phone 2 — upgrade sheet (slide-up modal) */
+  .sheet-backdrop { position: absolute; inset: 0; background: rgba(74, 42, 58, 0.42); backdrop-filter: blur(4px); }
+  .sheet { position: absolute; bottom: 0; left: 0; right: 0; background: var(--cream); border-radius: 26px 26px 0 0; padding: 20px 22px 28px; max-height: 86%; overflow-y: auto; box-shadow: 0 -10px 40px rgba(74, 42, 58, 0.2); }
+  .sheet-handle { width: 36px; height: 4px; background: rgba(74, 42, 58, 0.18); border-radius: 9999px; margin: 0 auto 14px; }
+  .sheet-eyebrow { font-size: 10px; letter-spacing: 0.22em; text-transform: uppercase; color: var(--teal); font-weight: 700; text-align: center; }
+  .sheet-title { font-family: 'Fraunces', serif; font-size: 24px; color: var(--plum); font-weight: 500; line-height: 1.18; text-align: center; margin-top: 4px; letter-spacing: -0.01em; }
+  .sheet-sub { font-size: 12.5px; color: var(--plum-2); text-align: center; margin-top: 6px; line-height: 1.5; padding: 0 6px; }
+
+  .footer { text-align: center; max-width: 1100px; margin: 36px auto 0; padding: 22px 28px; background: rgba(74, 42, 58, 0.05); border-radius: 14px; font-size: 13px; color: var(--plum-2); line-height: 1.6; text-align: left; }
+  .footer h3 { font-family: 'Fraunces', serif; font-size: 17px; color: var(--plum); font-weight: 500; margin-bottom: 8px; }
+  .footer strong { color: var(--plum); font-weight: 600; }
+  .footer table { width: 100%; border-collapse: collapse; margin: 12px 0; font-size: 12px; }
+  .footer th, .footer td { padding: 8px 10px; border-bottom: 1px solid rgba(74, 42, 58, 0.08); text-align: left; vertical-align: top; }
+  .footer th { background: rgba(74, 42, 58, 0.04); font-weight: 600; color: var(--plum); letter-spacing: 0.04em; }
+  .pill-free { display: inline-block; font-size: 9px; padding: 2px 6px; border-radius: 6px; background: rgba(125, 134, 104, 0.18); color: var(--moss); letter-spacing: 0.08em; text-transform: uppercase; font-weight: 700; }
+  .pill-plus { display: inline-block; font-size: 9px; padding: 2px 6px; border-radius: 6px; background: var(--gold); color: var(--plum); letter-spacing: 0.08em; text-transform: uppercase; font-weight: 700; }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="eyebrow">FEMWELL PLUS · PAYWALL DEMO · DOCTOR-READY DIARY AS HEADLINE</div>
+  <h1 class="title">Plus tier — three states, one conversion</h1>
+  <p class="lede">After Planner-A C4 ships the Doctor-Ready Diary, FemWell Plus has its first <strong>conversion-pull surface</strong> — a moment where a user <em>needs</em> something gated and is already in the upgrade-shaped mindset. This demo shows the three states: (1) free user generates the diary and sees the watermarked 1-of-4-page preview with the gentle upgrade hook below; (2) tapping unlock opens the upgrade sheet with single-tier £4.99/£39 pricing; (3) Plus user sees all four pages unwatermarked with the Share-with-GP button live. Strategy brief at <code>claude-state/research_plus_tier_2026-05-14.md</code>.</p>
+  <div class="meta-row">
+    <div><strong>Visual canvas:</strong> built on signed-off Planner</div>
+    <div><strong>Pricing:</strong> single tier · £4.99/mo · £39/yr (35% saving)</div>
+    <div><strong>iOS path:</strong> Capacitor + RevenueCat in Sep 2026</div>
+  </div>
+</div>
+
+<div class="stage">
+
+  <!-- PHONE 1: FREE — DIARY PREVIEW WITH WATERMARK -->
+  <div class="phone-wrap">
+    <div class="stage-cap">
+      <div class="label">Phone 1 · Free state — Diary preview</div>
+      <div class="desc">User tapped "Generate" on the Doctor-Ready Diary card. Sees page 1 of 4 with a faint diagonal watermark + inline upgrade card below.</div>
+    </div>
+    <div class="phone">
+      <div class="phone-inner">
+        <div class="notch"></div>
+        <div class="scroll">
+          <div class="ph-eyebrow">DOCTOR-READY DIARY · PREVIEW</div>
+          <h1 class="ph-title">Your 6-week diary</h1>
+          <div class="ph-sub">For your GP visit · Apr 12 – May 23 · NICE-NG23-aligned</div>
+
+          <div class="pdf-stage">
+            <div class="pdf-h">FemWell — Cycle &amp; Symptom Diary</div>
+            <div class="pdf-meta">Halliburton Oji · 41 · Apr 12 – May 23 2026 · 6 weeks</div>
+
+            <div style="margin-top:12px;">
+              <div class="pdf-h" style="font-size:11px;">Bleed pattern · last 6 weeks</div>
+              <div class="pdf-bleed-row">
+                <div class="pdf-bleed-cell n">M</div>
+                <div class="pdf-bleed-cell n">T</div>
+                <div class="pdf-bleed-cell n">W</div>
+                <div class="pdf-bleed-cell n">T</div>
+                <div class="pdf-bleed-cell n">F</div>
+                <div class="pdf-bleed-cell n">S</div>
+                <div class="pdf-bleed-cell n">S</div>
+              </div>
+              <div class="pdf-bleed-row">
+                <div class="pdf-bleed-cell p">12</div>
+                <div class="pdf-bleed-cell p">13</div>
+                <div class="pdf-bleed-cell s">14</div>
+                <div class="pdf-bleed-cell s">15</div>
+                <div class="pdf-bleed-cell n">16</div>
+                <div class="pdf-bleed-cell n">17</div>
+                <div class="pdf-bleed-cell n">18</div>
+              </div>
+              <div class="pdf-bleed-row">
+                <div class="pdf-bleed-cell n">19</div>
+                <div class="pdf-bleed-cell n">20</div>
+                <div class="pdf-bleed-cell n">21</div>
+                <div class="pdf-bleed-cell n">22</div>
+                <div class="pdf-bleed-cell n">23</div>
+                <div class="pdf-bleed-cell n">24</div>
+                <div class="pdf-bleed-cell n">25</div>
+              </div>
+              <div class="pdf-bleed-row">
+                <div class="pdf-bleed-cell n">26</div>
+                <div class="pdf-bleed-cell n">27</div>
+                <div class="pdf-bleed-cell n">28</div>
+                <div class="pdf-bleed-cell n">29</div>
+                <div class="pdf-bleed-cell n">30</div>
+                <div class="pdf-bleed-cell n">1</div>
+                <div class="pdf-bleed-cell n">2</div>
+              </div>
+              <div class="pdf-bleed-row">
+                <div class="pdf-bleed-cell n">3</div>
+                <div class="pdf-bleed-cell n">4</div>
+                <div class="pdf-bleed-cell n">5</div>
+                <div class="pdf-bleed-cell n">6</div>
+                <div class="pdf-bleed-cell n">7</div>
+                <div class="pdf-bleed-cell n">8</div>
+                <div class="pdf-bleed-cell s">9</div>
+              </div>
+              <div class="pdf-bleed-row">
+                <div class="pdf-bleed-cell p">10</div>
+                <div class="pdf-bleed-cell p">11</div>
+                <div class="pdf-bleed-cell s">12</div>
+                <div class="pdf-bleed-cell n">13</div>
+                <div class="pdf-bleed-cell n">14</div>
+                <div class="pdf-bleed-cell n">15</div>
+                <div class="pdf-bleed-cell n">16</div>
+              </div>
+              <div class="pdf-legend">
+                <span><span class="lg-dot" style="background:rgba(184,74,65,0.7);"></span>heavy</span>
+                <span><span class="lg-dot" style="background:rgba(184,74,65,0.3);"></span>spotting</span>
+                <span><span class="lg-dot" style="background:rgba(74,42,58,0.18);"></span>none</span>
+              </div>
+            </div>
+
+            <div style="margin-top:14px;">
+              <div class="pdf-h" style="font-size:11px;">Cycle summary</div>
+              <div class="pdf-row"><div class="pdf-row-l">Cycle length avg (4 cycles)</div><div class="pdf-row-r">26.5 ± 1.3 days</div></div>
+              <div class="pdf-row"><div class="pdf-row-l">Period length avg</div><div class="pdf-row-r">4.0 ± 0.5 days</div></div>
+              <div class="pdf-row"><div class="pdf-row-l">Heavy days avg</div><div class="pdf-row-r">1.5 / cycle</div></div>
+              <div class="pdf-row"><div class="pdf-row-l">Spotting between cycles</div><div class="pdf-row-r">2 occurrences</div></div>
+            </div>
+
+            <div class="pdf-meta-row">
+              <div class="pdf-page-marker">Page 1 of 4</div>
+              <div class="pdf-page-marker" style="color:var(--teal);">NICE NG23</div>
+            </div>
+          </div>
+
+          <!-- Locked pages strip -->
+          <div class="locked-strip">
+            <div class="locked-thumb">
+              <div class="lt-lock">⌒</div>
+              <div class="lt-name">Mood + sleep<br>heatmap</div>
+            </div>
+            <div class="locked-thumb">
+              <div class="lt-lock">⌒</div>
+              <div class="lt-name">HRT timeline<br>+ flashes</div>
+            </div>
+            <div class="locked-thumb">
+              <div class="lt-lock">⌒</div>
+              <div class="lt-name">Summary<br>+ flags</div>
+            </div>
+          </div>
+
+          <!-- Inline upgrade card -->
+          <div class="upgrade-inline">
+            <div class="ui-eyebrow">FEMWELL PLUS</div>
+            <div class="ui-title">Three more pages — including the symptom heatmap your GP is trained to read.</div>
+            <div class="ui-sub">Unlock the full 4-page Doctor-Ready Diary, plus Atelier Reading, Programs Pro and more.</div>
+            <div class="ui-price">
+              <div class="ui-price-main">£4.99 / month</div>
+              <div class="ui-price-mute">or £39 / year (save 35%)</div>
+            </div>
+            <span class="ui-cta">Unlock with Plus →</span>
+          </div>
+
+        </div>
+        <div class="nav">
+          <div class="nav-item"><div class="nav-ico"></div>Today</div>
+          <div class="nav-item active"><div class="nav-ico"></div>Planner</div>
+          <div class="nav-item"><div class="nav-ico"></div>Lifestyle</div>
+          <div class="nav-item"><div class="nav-ico"></div>Jess</div>
+          <div class="nav-item"><div class="nav-ico"></div>Me</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- PHONE 2: UPGRADE SHEET -->
+  <div class="phone-wrap">
+    <div class="stage-cap">
+      <div class="label">Phone 2 · Upgrade sheet</div>
+      <div class="desc">User tapped "Unlock with Plus →". Slide-up sheet (centred modal on desktop). Single tier, annual default-selected.</div>
+    </div>
+    <div class="phone">
+      <div class="phone-inner">
+        <div class="notch"></div>
+        <!-- Background blurred behind sheet -->
+        <div class="scroll" style="filter:blur(2px) opacity(0.45);pointer-events:none;">
+          <div class="ph-eyebrow">DOCTOR-READY DIARY · PREVIEW</div>
+          <h1 class="ph-title">Your 6-week diary</h1>
+          <div class="ph-sub">For your GP visit · Apr 12 – May 23 · NICE-NG23-aligned</div>
+          <div class="pdf-stage" style="height:280px;">
+            <div class="pdf-h">FemWell — Cycle &amp; Symptom Diary</div>
+          </div>
+        </div>
+        <div class="sheet-backdrop"></div>
+        <div class="sheet">
+          <div class="sheet-handle"></div>
+          <div class="sheet-eyebrow">FEMWELL PLUS</div>
+          <div class="sheet-title">Bring your data to your GP.</div>
+          <div class="sheet-sub">Plus unlocks the four-page diary your GP is trained to read — plus the monthly letter from Astra Cole, Programs Pro, and more.</div>
+
+          <div class="price-toggle">
+            <div class="price-item">
+              <div class="price-tier">Monthly</div>
+              <div class="price-val">£4.99</div>
+            </div>
+            <div class="price-item active">
+              <div class="price-tier">Annual</div>
+              <div class="price-val">£39</div>
+              <span class="price-save">Save 35%</span>
+            </div>
+          </div>
+
+          <div style="margin-top:18px;">
+            <div class="ck-item">
+              <div class="ck-icon">✓</div>
+              <div class="ck-body">
+                <div class="ck-title">Doctor-Ready Diary</div>
+                <div class="ck-sub">Full 4-page export · NICE-NG23 aligned · the diary GPs are trained to read</div>
+              </div>
+            </div>
+            <div class="ck-item">
+              <div class="ck-icon">✓</div>
+              <div class="ck-body">
+                <div class="ck-title">Atelier Reading</div>
+                <div class="ck-sub">Monthly long-form letter from Astra Cole, MA FAS · your sky + cycle, woven</div>
+              </div>
+            </div>
+            <div class="ck-item">
+              <div class="ck-icon">✓</div>
+              <div class="ck-body">
+                <div class="ck-title">Programs Pro</div>
+                <div class="ck-sub">PCOS · PMDD · Peri-pro · Meno-pro structured pathways</div>
+              </div>
+            </div>
+            <div class="ck-item">
+              <div class="ck-icon">✓</div>
+              <div class="ck-body">
+                <div class="ck-title">Advanced cycle settings</div>
+                <div class="ck-sub">Custom cycle length, irregular-cycle mode, post-pill reset</div>
+              </div>
+            </div>
+            <div class="ck-item">
+              <div class="ck-icon">✓</div>
+              <div class="ck-body">
+                <div class="ck-title">Future features included</div>
+                <div class="ck-sub">TTC Mode · Skin &amp; Hair timeline · Sessions Garden — as they land</div>
+              </div>
+            </div>
+          </div>
+
+          <button class="big-cta">Start FemWell Plus — £39 / year</button>
+          <div class="cta-tiny">First month free. Charged £39 on Jun 14. Cancel any time in Settings.</div>
+          <div class="cta-microcopy">Payments by Stripe · UK-regulated · your data stays in the EU</div>
+
+          <div class="cta-footer-row">
+            <a href="#">Already have Plus? Sign in</a>
+            <span>·</span>
+            <a href="#">Terms</a>
+            <a href="#">Privacy</a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- PHONE 3: PLUS UNLOCKED -->
+  <div class="phone-wrap">
+    <div class="stage-cap">
+      <div class="label">Phone 3 · Plus active — Diary unlocked</div>
+      <div class="desc">Subscription paid via Stripe. All 4 pages render unwatermarked. Share button live.</div>
+    </div>
+    <div class="phone">
+      <div class="phone-inner">
+        <div class="notch"></div>
+        <div class="scroll">
+          <div class="ph-eyebrow">DOCTOR-READY DIARY · UNLOCKED</div>
+          <h1 class="ph-title">Your 6-week diary</h1>
+          <div class="ph-sub">For your GP visit · Apr 12 – May 23 · NICE-NG23-aligned</div>
+
+          <div class="plus-active">
+            <div class="pa-icon">★</div>
+            <div class="pa-body">
+              <div class="pa-title">FEMWELL PLUS · ACTIVE</div>
+              <div class="pa-sub">Annual · renews 14 May 2027 · £39</div>
+            </div>
+          </div>
+
+          <div class="pdf-stage unlocked">
+            <div class="pdf-h">FemWell — Cycle &amp; Symptom Diary</div>
+            <div class="pdf-meta">Halliburton Oji · 41 · Apr 12 – May 23 2026 · 6 weeks</div>
+
+            <div style="margin-top:12px;">
+              <div class="pdf-h" style="font-size:11px;">Bleed pattern · last 6 weeks</div>
+              <div class="pdf-bleed-row">
+                <div class="pdf-bleed-cell n">M</div>
+                <div class="pdf-bleed-cell n">T</div>
+                <div class="pdf-bleed-cell n">W</div>
+                <div class="pdf-bleed-cell n">T</div>
+                <div class="pdf-bleed-cell n">F</div>
+                <div class="pdf-bleed-cell n">S</div>
+                <div class="pdf-bleed-cell n">S</div>
+              </div>
+              <div class="pdf-bleed-row">
+                <div class="pdf-bleed-cell p">12</div>
+                <div class="pdf-bleed-cell p">13</div>
+                <div class="pdf-bleed-cell s">14</div>
+                <div class="pdf-bleed-cell s">15</div>
+                <div class="pdf-bleed-cell n">16</div>
+                <div class="pdf-bleed-cell n">17</div>
+                <div class="pdf-bleed-cell n">18</div>
+              </div>
+              <div class="pdf-bleed-row">
+                <div class="pdf-bleed-cell n">19</div>
+                <div class="pdf-bleed-cell n">20</div>
+                <div class="pdf-bleed-cell n">21</div>
+                <div class="pdf-bleed-cell n">22</div>
+                <div class="pdf-bleed-cell n">23</div>
+                <div class="pdf-bleed-cell n">24</div>
+                <div class="pdf-bleed-cell n">25</div>
+              </div>
+              <div class="pdf-bleed-row">
+                <div class="pdf-bleed-cell n">26</div>
+                <div class="pdf-bleed-cell n">27</div>
+                <div class="pdf-bleed-cell n">28</div>
+                <div class="pdf-bleed-cell n">29</div>
+                <div class="pdf-bleed-cell n">30</div>
+                <div class="pdf-bleed-cell n">1</div>
+                <div class="pdf-bleed-cell n">2</div>
+              </div>
+              <div class="pdf-bleed-row">
+                <div class="pdf-bleed-cell n">3</div>
+                <div class="pdf-bleed-cell n">4</div>
+                <div class="pdf-bleed-cell n">5</div>
+                <div class="pdf-bleed-cell n">6</div>
+                <div class="pdf-bleed-cell n">7</div>
+                <div class="pdf-bleed-cell n">8</div>
+                <div class="pdf-bleed-cell s">9</div>
+              </div>
+              <div class="pdf-bleed-row">
+                <div class="pdf-bleed-cell p">10</div>
+                <div class="pdf-bleed-cell p">11</div>
+                <div class="pdf-bleed-cell s">12</div>
+                <div class="pdf-bleed-cell n">13</div>
+                <div class="pdf-bleed-cell n">14</div>
+                <div class="pdf-bleed-cell n">15</div>
+                <div class="pdf-bleed-cell n">16</div>
+              </div>
+            </div>
+
+            <div class="pdf-meta-row">
+              <div class="pdf-page-marker">Pages 1 – 4 ready</div>
+              <div class="pdf-page-marker" style="color:var(--teal);">NICE NG23 ✓</div>
+            </div>
+          </div>
+
+          <div class="divider" style="margin-top:18px;">
+            <div class="div-title">What's in your export</div>
+            <div class="div-meta">4 PAGES</div>
+          </div>
+          <div class="ck-item">
+            <div class="ck-icon" style="background:rgba(95,138,133,0.18);color:var(--teal);">1</div>
+            <div class="ck-body">
+              <div class="ck-title">Bleed pattern + cycle summary</div>
+              <div class="ck-sub">6-week visual grid · cycle length avg · period length · heavy days · spotting</div>
+            </div>
+          </div>
+          <div class="ck-item">
+            <div class="ck-icon" style="background:rgba(95,138,133,0.18);color:var(--teal);">2</div>
+            <div class="ck-body">
+              <div class="ck-title">Mood + sleep + symptom heatmap</div>
+              <div class="ck-sub">42-day matrix · brain fog, hot flashes, anxiety, mood, sleep hours</div>
+            </div>
+          </div>
+          <div class="ck-item">
+            <div class="ck-icon" style="background:rgba(95,138,133,0.18);color:var(--teal);">3</div>
+            <div class="ck-body">
+              <div class="ck-title">HRT timeline + symptom delta</div>
+              <div class="ck-sub">Estradiol patch + progesterone log · flash freq before/after</div>
+            </div>
+          </div>
+          <div class="ck-item">
+            <div class="ck-icon" style="background:rgba(95,138,133,0.18);color:var(--teal);">4</div>
+            <div class="ck-body">
+              <div class="ck-title">Three-bullet summary + clinician notes</div>
+              <div class="ck-sub">Written for the GP · 6-week trajectory · what changed · what's stable</div>
+            </div>
+          </div>
+
+          <div class="unlocked-cta">Share with my GP →</div>
+          <div class="cta-tiny" style="margin-top:8px;">PDF · secure link · expires in 7 days</div>
+
+        </div>
+        <div class="nav">
+          <div class="nav-item"><div class="nav-ico"></div>Today</div>
+          <div class="nav-item active"><div class="nav-ico"></div>Planner</div>
+          <div class="nav-item"><div class="nav-ico"></div>Lifestyle</div>
+          <div class="nav-item"><div class="nav-ico"></div>Jess</div>
+          <div class="nav-item"><div class="nav-ico"></div>Me</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<div class="footer">
+  <h3>The conversion thesis</h3>
+  <p>Plus has been theoretical because the unlocked features were <em>nice</em>, not <em>needed</em>. Atelier Reading is monthly content — consumed, not converted-on. Programs Pro is a niche pull (PCOS/PMDD/Peri/Meno specifically). Cycle Settings advanced is for irregular cycles. None of these create a sharp <strong>moment-of-need</strong>.</p>
+  <p><strong>Doctor-Ready Diary changes the curve.</strong> It's a transactional artefact a user grabs before a specific GP appointment. The "moment of need" is real (perimenopause user, GP visit in 8 days). NICE-NG23 alignment makes it credible. £4.99/mo is a near-trivial decision; £8.99 is not.</p>
+
+  <h3>Pricing — single tier at £4.99/mo · £39/yr</h3>
+  <table>
+    <thead><tr><th>Tier</th><th>Price</th><th>Pulls</th></tr></thead>
+    <tbody>
+      <tr><td><span class="pill-free">Free</span></td><td>£0</td><td>Everything except the 5 surfaces below. Capacity Tax · Quiet Mode · Cycle Mirror · Astra sidecar · Pacing Bank · Shutdown ritual · Smart Nudges · 28-day consistency — all free.</td></tr>
+      <tr><td><span class="pill-plus">Plus</span></td><td><strong>£4.99/mo</strong><br>or <strong>£39/yr</strong></td><td><strong>Doctor-Ready Diary full export</strong> (the headline pull) · Atelier Reading monthly letter · Programs Pro pathways · Advanced cycle settings · TTC Mode + Skin &amp; Hair + Sessions Garden (as they ship).</td></tr>
+    </tbody>
+  </table>
+  <p><strong>Why not two tiers?</strong> Every tier doubles the page complexity and halves the conversion. A buyer values pricing clarity at acquisition; tier proliferation signals "they don't know who they're selling to." Single tier with one clear price is the textbook play.</p>
+
+  <h3>Lock placement (binding for next 5 MPs)</h3>
+  <table>
+    <thead><tr><th>Surface</th><th>Where</th><th>Lock style</th></tr></thead>
+    <tbody>
+      <tr><td>Doctor-Ready Diary</td><td>Planner / Cycle tab</td><td><strong>Watermark preview</strong> — 1 of 4 pages, faint diagonal "Preview" overlay, inline upgrade card below</td></tr>
+      <tr><td>Atelier Reading letter</td><td>Horoscope / Atelier hub</td><td><strong>Hard lock</strong> — 3-sentence teaser visible, rest is "Plus to read on"</td></tr>
+      <tr><td>Programs Pro</td><td>Programs hub</td><td><strong>Soft lock</strong> — gold "Plus" pill on each Pro card; tap → upgrade sheet</td></tr>
+      <tr><td>Advanced cycle settings</td><td>Profile / Cycle</td><td><strong>Soft lock</strong> — "Custom cycle length (Plus)" greyed-out option</td></tr>
+      <tr><td>Future features</td><td>Where they ship</td><td>TBD per feature</td></tr>
+    </tbody>
+  </table>
+
+  <h3>Activation funnel (target — instrument from C4 ship)</h3>
+  <pre style="background:rgba(74,42,58,0.04);padding:14px 18px;border-radius:8px;font-family:'Inter',monospace;font-size:11.5px;line-height:1.7;color:var(--plum);overflow-x:auto;">PLUS CONVERSION FUNNEL — 30-day cohort
+├─ App install                                100%  (n=10,000)
+├─ Reached Planner Cycle tab                   78%
+├─ Generated Doctor-Ready Diary preview        18%       ← acquisition moment
+├─ Opened upgrade sheet                         9%
+├─ Clicked "Start FemWell Plus"                 5%
+└─ Paid (after free month)                      4.2%     ← £4.99 ARPU / £39 ARR</pre>
+  <p>Conservative benchmarks (Headspace + Calm + Flo Premium). Real numbers come in once C4 ships and we instrument <code>plus.diary_preview_generated</code> · <code>plus.upgrade_sheet_opened</code> · <code>plus.checkout_started</code> · <code>plus.subscription_started</code> · <code>plus.subscription_renewed</code> · <code>plus.subscription_cancelled</code>.</p>
+
+  <h3>MP sequence — when does Plus actually ship?</h3>
+  <ul style="margin: 6px 0 0 18px;">
+    <li><strong>Planner-A C4</strong> (Code now, autonomous build) — Doctor-Ready Diary backend + UI. <em>Free</em> renders 1-of-4 preview with watermark; <em>Plus</em> renders all 4 unwatermarked.</li>
+    <li><strong>Plus-A</strong> (next Cowork spec after Planner-A wraps) — <code>UpgradeSheet.jsx</code> global component, pricing toggle, Stripe checkout wired for £4.99/£39 price IDs, free-month-trial logic.</li>
+    <li><strong>Plus-B</strong> — lock placement sweep across Atelier, Programs, Settings.</li>
+    <li><strong>Plus-C</strong> — PostHog/Amplitude instrumentation for the 6 funnel events.</li>
+    <li><strong>Plus-D</strong> (Sep 2026) — Capacitor wrap + RevenueCat + iOS App Store submission.</li>
+  </ul>
+
+  <h3>Open questions for Halli</h3>
+  <ol style="margin: 6px 0 0 18px;">
+    <li>One tier or two? <strong>Recommend single £4.99/£39.</strong></li>
+    <li>First month free or 7-day trial or no trial? <strong>Recommend first-month-free.</strong></li>
+    <li>Apple IAP timing — Sep '26 or earlier? <strong>Recommend Sep (4 months out).</strong></li>
+    <li>Watermark wording — "Preview · FemWell Plus required to share" or warmer? <strong>Open to your wording.</strong></li>
+    <li>Plus or Plus+ naming? <strong>Stay with "FemWell Plus" — no tier names.</strong></li>
+  </ol>
+
+  <p style="margin-top:18px;"><strong>Strategy brief:</strong> <code>claude-state/research_plus_tier_2026-05-14.md</code></p>
+</div>
+
+</body>
+</html>
