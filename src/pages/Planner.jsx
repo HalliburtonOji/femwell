@@ -6,6 +6,7 @@ import PlannerTabs, { readInitialView, writeStoredView, resolveViewId } from "@/
 import ConfidencePill from "@/components/planner/ConfidencePill";
 import CapacityTaxBar, { deriveCapacity, derivePredictedLoad } from "@/components/planner/cycle/CapacityTaxBar";
 import ConsistencyCard from "@/components/planner/cycle/ConsistencyCard";
+import CycleMirrorSundayTile from "@/components/planner/cycle/CycleMirrorSundayTile";
 import DoctorReadyDiaryCard from "@/components/planner/cycle/DoctorReadyDiaryCard";
 import QuietModeBanner from "@/components/planner/cycle/QuietModeBanner";
 import RitualReframeShimmer from "@/components/planner/today/RitualReframeShimmer";
@@ -532,6 +533,12 @@ export default function Planner() {
             />
           </div>
           <ConsistencyCard habitLogs={habitLogs} phase={selectedPhase} />
+          <CycleMirrorSundayTile
+            profile={profile}
+            habitLogs={habitLogs}
+            phase={selectedPhase}
+            cycleDay={selectedCycleDay}
+          />
           <div ref={(el) => { cycleSectionRefs.current.weekAhead = el; }} style={cycleStubStyle}>
             <p style={cycleStubTitleStyle}>Week Ahead</p>
             <p style={cycleStubBodyStyle}>A gentle look at what's coming. Coming soon.</p>
