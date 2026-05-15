@@ -827,6 +827,16 @@ Deno.serve(async (req) => {
     phases.push({ name: 'migratePlannerPhase2', ...(await runPhase(base44, 'migratePlannerPhase2', 'migratePlannerPhase2')) });
   }
 
+  // Phase 17 (daily): Planner Phase 2 §C6 — Quiet Mode auto-pull-back. Sweeps
+  // every UserProfile and evaluates two gates: capacity over 120% for 3 days
+  // running OR mood+energy both <3 for 2 days running. When triggered, sets
+  // `quiet_mode_until = now()+72h`. Skips profiles already in a future-set
+  // window so the FE Undo + reset behaviour is honoured. Daily cadence; first
+  // run fires on next cron after deploy via the bootstrap path.
+  if (wantsPhase('evaluateQuietMode')) {
+    phases.push({ name: 'evaluateQuietMode', ...(await runPhase(base44, 'evaluateQuietMode', 'evaluateQuietMode')) });
+  }
+
   const finishedAt = new Date().toISOString();
   return Response.json({
     started_at: startedAt,

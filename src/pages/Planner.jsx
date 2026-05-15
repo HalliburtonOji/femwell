@@ -6,6 +6,7 @@ import PlannerTabs, { readInitialView, writeStoredView, resolveViewId } from "@/
 import ConfidencePill from "@/components/planner/ConfidencePill";
 import CapacityTaxBar, { deriveCapacity, derivePredictedLoad } from "@/components/planner/cycle/CapacityTaxBar";
 import DoctorReadyDiaryCard from "@/components/planner/cycle/DoctorReadyDiaryCard";
+import QuietModeBanner from "@/components/planner/cycle/QuietModeBanner";
 import SmartViewCard from "@/components/planner/today/SmartViewCard";
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -254,6 +255,15 @@ export default function Planner() {
       .map(([name]) => name);
   }, [habitLogs]);
 
+  // Quiet Mode (Phase 2 C6) — server-set boolean derived from
+  // UserProfile.quiet_mode_until. When active, non-anchor PersonalTasks are
+  // hidden from the day list. Anchors (is_anchor === true) remain.
+  const quietModeActive = useMemo(() => {
+    const iso = profile?.quiet_mode_until;
+    if (!iso) return false;
+    try { return new Date(iso).getTime() > Date.now(); } catch { return false; }
+  }, [profile?.quiet_mode_until]);
+
   // Unified day-item list (PlannerItems + PersonalTasks for this date).
   const dayItems = useMemo(() => {
     const planner = items
@@ -266,6 +276,8 @@ export default function Planner() {
       .map(it => ({ ...it, _source: "planner" }));
     const tasks = personalTasks
       .filter(t => t.date === selectedStr)
+      // Quiet Mode hides non-anchor tasks — anchors are commitments, not noise.
+      .filter(t => !quietModeActive || t.is_anchor === true)
       .map(t => ({ ...t, _source: "task", is_completed: !!t.completed }));
     return [...planner, ...tasks].sort((a, b) => {
       if (a.time && b.time) return a.time.localeCompare(b.time);
@@ -273,7 +285,7 @@ export default function Planner() {
       if (b.time) return 1;
       return 0;
     });
-  }, [items, personalTasks, selectedDay, selectedStr]);
+  }, [items, personalTasks, selectedDay, selectedStr, quietModeActive]);
 
   // Meals for selected weekday from MealPlans.plan_days[weekday]
   const dayMeals = useMemo(() => {
@@ -500,6 +512,10 @@ export default function Planner() {
           aria-labelledby="planner-tab-cycle"
           className="max-w-xl mx-auto px-4 pt-5"
         >
+          <QuietModeBanner
+            profile={profile}
+            onCleared={() => setProfile(p => p ? { ...p, quiet_mode_until: null } : p)}
+          />
           <div ref={(el) => { cycleSectionRefs.current.ribbon = el; }} style={cycleStubStyle}>
             <p style={cycleStubTitleStyle}>Month ribbon</p>
             <p style={cycleStubBodyStyle}>The wider arc of your cycle will live here. Coming soon.</p>
@@ -541,6 +557,12 @@ export default function Planner() {
           </div>
         ) : (
           <>
+            {/* ── Quiet Mode banner (Phase 2 C6) — also surfaces on Today ── */}
+            <QuietModeBanner
+              profile={profile}
+              onCleared={() => setProfile(p => p ? { ...p, quiet_mode_until: null } : p)}
+            />
+
             {/* ── Smart View (Phase 2 C5) — adaptive "right now" card ──── */}
             <SmartViewCard
               phase={selectedPhase}
@@ -550,6 +572,7 @@ export default function Planner() {
               activeProgram={activeProgram}
               ritualHabits={ritualHabits}
               todayHabitLogs={todayHabitLogs}
+              quietModeActive={quietModeActive}
             />
 
             {/* ── Smart card 1: Today's intention (DailyPlan) ──────────── */}

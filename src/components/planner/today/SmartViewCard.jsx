@@ -23,7 +23,8 @@ import { useMemo } from "react";
 // ─────────────────────────────────────────────────────────────────────────────
 
 export const SMART_STATES = ["idle", "streaky", "stuck", "drifting", "quiet"];
-export const ACTIVE_SMART_STATES = new Set(["idle", "streaky", "stuck"]); // C5 scope
+// Live in C5 + C6. Drifting joins in C7 via the reframe shimmer.
+export const ACTIVE_SMART_STATES = new Set(["idle", "streaky", "stuck", "quiet"]);
 const STATE_LABEL = {
   idle: "IDLE",
   streaky: "STREAKY",
@@ -132,13 +133,16 @@ export default function SmartViewCard({
   activeProgram,
   ritualHabits,
   todayHabitLogs,
+  quietModeActive = false,
 }) {
   const derivedState = useMemo(
     () => deriveStateFromHeuristics({ dailyPlan, ritualHabits, todayHabitLogs, activeProgram }),
     [dailyPlan, ritualHabits, todayHabitLogs, activeProgram]
   );
   const override = readDevStateOverride();
-  const state = override || derivedState;
+  // Quiet Mode (C6) always wins over derived state — the banner is the
+  // explicit user-facing surface and the chip row should reflect that.
+  const state = override || (quietModeActive ? "quiet" : derivedState);
 
   const { main, sub } = bodyForState({ state, phase, dailyPlan });
   const goodForChips = useMemo(
