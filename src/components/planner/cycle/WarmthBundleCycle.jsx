@@ -20,6 +20,13 @@ const PHASE_LABEL = {
   luteal: "luteal",
 };
 
+const PHASE_DOT = {
+  menstrual:  "#B84A41",
+  follicular: "#E67F73",
+  ovulatory:  "#F2A99A",
+  luteal:     "#8A5F74",
+};
+
 function nextSundayLine() {
   const now = new Date();
   const day = now.getDay();
@@ -31,12 +38,55 @@ function nextSundayLine() {
   return target.toLocaleDateString("en-GB", { weekday: "long", day: "2-digit", month: "short" });
 }
 
-export function WeekAheadCard({ phase, nextPeriodEta, etaWindowDays }) {
+// Same shape as Planner.jsx phaseForDate / MonthRibbon. Returns one of
+// menstrual|follicular|ovulatory|luteal or null when no cycle data.
+function phaseForDate(profile, targetDate) {
+  if (!profile) return null;
+  const last = profile.last_period_start_date;
+  if (!last) return null;
+  const cycleLength = Number(profile.cycle_avg_length) || 28;
+  const periodLength = Number(profile.period_length) || 5;
+  const start = new Date(last);
+  const diff = Math.floor((targetDate - start) / (1000 * 60 * 60 * 24));
+  if (diff < 0) return null;
+  const day = (diff % cycleLength) + 1;
+  if (day <= periodLength) return "menstrual";
+  if (day <= cycleLength * 0.5 - 2) return "follicular";
+  if (day <= cycleLength * 0.5 + 2) return "ovulatory";
+  return "luteal";
+}
+
+function buildAheadChips(profile, count = 5) {
+  const out = [];
+  const today = new Date(); today.setHours(0, 0, 0, 0);
+  for (let i = 1; i <= count; i += 1) {
+    const d = new Date(today);
+    d.setDate(d.getDate() + i);
+    out.push({
+      key: d.toISOString().split("T")[0],
+      dayLabel: d.toLocaleDateString("en-GB", { weekday: "short" }).toUpperCase().slice(0, 3),
+      dayNum: d.getDate(),
+      phase: phaseForDate(profile, d),
+    });
+  }
+  return out;
+}
+
+function formatEtaDate(iso) {
+  if (!iso) return null;
+  try {
+    const d = new Date(iso);
+    return d.toLocaleDateString("en-GB", { weekday: "short", day: "numeric" });
+  } catch { return null; }
+}
+
+export function WeekAheadCard({ phase, nextPeriodEta, etaWindowDays, confidencePct, cyclesObserved, profile }) {
   const sundayLine = nextSundayLine();
   const phaseLine = phase ? PHASE_LABEL[phase] || phase : "this week";
-  const etaLine = nextPeriodEta
-    ? `Period eta ${nextPeriodEta}${etaWindowDays ? ` (±${etaWindowDays}d)` : ""}.`
-    : "Logging a couple more cycles will tighten next-period estimates.";
+  const aheadChips = buildAheadChips(profile, 5);
+  const showChips = aheadChips.some((c) => !!c.phase); // hide chips entirely when no cycle data
+  const showEtaFooter = (Number(cyclesObserved) || 0) >= 4 && nextPeriodEta;
+  const etaPretty = formatEtaDate(nextPeriodEta);
 
   return (
     <section aria-label="Week Ahead" style={cardStyle}>
@@ -45,14 +95,52 @@ export function WeekAheadCard({ phase, nextPeriodEta, etaWindowDays }) {
         <span style={tenseStyle}>{sundayLine.toUpperCase()}</span>
       </div>
       <p style={mainStyle}>A gentle look at what's coming — your {phaseLine} window often sets the cadence.</p>
-      <p style={subStyle}>{etaLine}</p>
-      <a
-        href="/Planner?_smartView=streaky"
-        style={ctaStyle}
-        aria-label="Nudge from Jess — plan with Jess"
-      >
-        Plan with Jess →
-      </a>
+      {!showChips && (
+        <p style={subStyle}>Logging a couple more cycles will tighten next-period estimates.</p>
+      )}
+
+      {showChips && (
+        <div style={aheadRowStyle} aria-label="Five-day forecast">
+          {aheadChips.map((c) => (
+            <div key={c.key} style={chipStyle}>
+              <p style={chipDayStyle}>{c.dayLabel}</p>
+              <p style={chipNumStyle}>{c.dayNum}</p>
+              <span
+                aria-hidden="true"
+                style={{
+                  ...chipDotStyle,
+                  background: c.phase ? PHASE_DOT[c.phase] : "var(--border, rgba(74,42,58,0.18))",
+                }}
+              />
+            </div>
+          ))}
+        </div>
+      )}
+
+      {showEtaFooter ? (
+        <div style={etaFooterStyle}>
+          <p style={etaTextStyle}>
+            Period ETA <strong style={{ color: "var(--plum, #4A2A3A)" }}>{etaPretty}</strong>
+            {etaWindowDays ? ` · ±${etaWindowDays}d` : ""}
+            {confidencePct ? ` · ${Math.round(confidencePct)}% confident` : ""}
+          </p>
+          <a
+            href="/Planner?_smartView=streaky"
+            style={primaryPillStyle}
+            aria-label="Plan with Jess"
+          >
+            Plan with Jess →
+          </a>
+        </div>
+      ) : (
+        <a
+          href="/Planner?_smartView=streaky"
+          style={ctaStyle}
+          aria-label="Nudge from Jess — plan with Jess"
+        >
+          Plan with Jess →
+        </a>
+      )}
     </section>
   );
 }
@@ -183,5 +271,75 @@ const primaryBtnStyle = {
   fontFamily: "'Inter', sans-serif",
   fontSize: 13,
   fontWeight: 600,
+  textDecoration: "none",
+};
+
+// ── A2-2 Week Ahead chip strip + ETA footer ──
+const aheadRowStyle = {
+  display: "grid",
+  gridTemplateColumns: "repeat(5, 1fr)",
+  gap: 6,
+  marginBottom: 10,
+};
+const chipStyle = {
+  display: "flex",
+  flexDirection: "column",
+  alignItems: "center",
+  gap: 4,
+  padding: "8px 4px 10px",
+  borderRadius: 10,
+  background: "var(--cream-deep, #FAF4ED)",
+  border: "1px solid var(--border-subtle, rgba(74,42,58,0.08))",
+};
+const chipDayStyle = {
+  fontFamily: "'Inter', sans-serif",
+  fontSize: 9,
+  fontWeight: 700,
+  letterSpacing: "0.10em",
+  color: "var(--plum-mute, #8A7584)",
+  margin: 0,
+};
+const chipNumStyle = {
+  fontFamily: "'Fraunces', serif",
+  fontSize: 18,
+  fontWeight: 600,
+  color: "var(--plum, #4A2A3A)",
+  margin: 0,
+  letterSpacing: "-0.01em",
+};
+const chipDotStyle = {
+  width: 5,
+  height: 5,
+  borderRadius: 9999,
+  display: "block",
+};
+const etaFooterStyle = {
+  display: "flex",
+  alignItems: "center",
+  justifyContent: "space-between",
+  gap: 8,
+  marginTop: 9,
+  paddingTop: 9,
+  borderTop: "1px solid rgba(74,42,58,0.06)",
+  flexWrap: "wrap",
+};
+const etaTextStyle = {
+  fontFamily: "'Inter', sans-serif",
+  fontSize: 10.5,
+  color: "var(--plum-mute, #8A7584)",
+  letterSpacing: "0.04em",
+  margin: 0,
+};
+const primaryPillStyle = {
+  display: "inline-flex",
+  alignItems: "center",
+  padding: "5px 11px",
+  borderRadius: 9999,
+  background: "var(--plum, #4A2A3A)",
+  color: "var(--cream, #FFFAF5)",
+  fontFamily: "'Inter', sans-serif",
+  fontSize: 10.5,
+  fontWeight: 700,
+  letterSpacing: "0.04em",
   textDecoration: "none",
 };

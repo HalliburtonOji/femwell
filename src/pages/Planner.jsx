@@ -620,6 +620,9 @@ export default function Planner() {
               phase={selectedPhase}
               nextPeriodEta={profile?.cycle_prediction_meta?.next_period_eta || null}
               etaWindowDays={profile?.cycle_prediction_meta?.eta_window_days || null}
+              confidencePct={profile?.cycle_prediction_meta?.confidence_pct || null}
+              cyclesObserved={profile?.cycle_prediction_meta?.cycles_observed || 0}
+              profile={profile}
             />
           </div>
           <div ref={(el) => { cycleSectionRefs.current.doctor = el; }}>
