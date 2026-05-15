@@ -181,11 +181,19 @@ export default function DoctorReadyDiaryCard({ user }) {
   const handleGenerate = async () => {
     setLoading(true); setError(null); setDiary(null);
     try {
-      const res = await base44.functions.invoke("generateDoctorReadyDiary", { weeks });
-      if (!res || !res.ok) {
+      const raw = await base44.functions.invoke("generateDoctorReadyDiary", { weeks });
+      // The SDK wraps function responses as { data: <payload>, error? } in
+      // some versions, and returns the payload directly in others. Defensive
+      // unwrap so both shapes work.
+      const res = raw?.data && (raw.data.ok !== undefined || raw.data.error !== undefined)
+        ? raw.data
+        : raw;
+      if (!res || res.ok === false) {
         setError(res?.error || "Couldn't build the diary. Try again in a moment.");
-      } else {
+      } else if (res?.ok === true || res?.profile_summary || res?.bleeding_pattern) {
         setDiary(res);
+      } else {
+        setError("Couldn't build the diary. Try again in a moment.");
       }
     } catch (err) {
       setError(err?.message || "Couldn't build the diary. Try again in a moment.");
@@ -208,10 +216,12 @@ export default function DoctorReadyDiaryCard({ user }) {
     <section
       aria-label="Doctor-Ready Diary"
       style={{
-        background: "var(--surface, #FFFFFF)",
+        background: "linear-gradient(180deg, var(--cream, #FFFAF5) 0%, rgba(74,42,58,0.04) 100%)",
         borderRadius: 18,
         padding: "18px 18px 16px",
-        border: "1px solid var(--border, rgba(74,42,58,0.10))",
+        border: "1px solid rgba(74,42,58,0.10)",
+        borderLeft: "4px solid var(--plum, #4A2A3A)",
+        boxShadow: "0 1px 3px rgba(74,42,58,0.05)",
         marginBottom: 16,
       }}
     >

@@ -119,6 +119,7 @@ export default function SavedRhythmsCarousel({ profile, currentPhase, currentCyc
           const text = PHASE_TEXT_COLOR[b.phase] || PHASE_TEXT_COLOR.luteal;
           const gradient = PHASE_GRADIENT[b.phase] || PHASE_GRADIENT.luteal;
           const eyebrow = eyebrowFor(b, currentPhase, currentCycleDay);
+          const isActive = b.phase === currentPhase;
           return (
             <div
               key={b.id}
@@ -129,6 +130,11 @@ export default function SavedRhythmsCarousel({ profile, currentPhase, currentCyc
                 ...bundleCardStyle,
                 background: gradient,
                 color: text,
+                boxShadow: isActive
+                  ? "0 0 0 2px var(--gold, #C9A95C), 0 6px 18px rgba(74,42,58,0.18)"
+                  : "0 2px 6px rgba(74,42,58,0.08)",
+                transform: isActive ? "translateY(-2px)" : "none",
+                transition: "transform 160ms ease, box-shadow 160ms ease",
               }}
             >
               <p style={{ ...bundleEyebrowStyle, color: text, opacity: text === "var(--cream, #FFFAF5)" ? 0.85 : 0.65 }}>
@@ -170,6 +176,12 @@ export default function SavedRhythmsCarousel({ profile, currentPhase, currentCyc
 
 // ── Styles ──
 const wrapStyle = {
+  background: "linear-gradient(180deg, var(--cream, #FFFAF5) 0%, rgba(201,169,92,0.06) 100%)",
+  borderRadius: 16,
+  border: "1px solid rgba(74,42,58,0.10)",
+  borderLeft: "4px solid var(--gold, #C9A95C)",
+  boxShadow: "0 1px 3px rgba(74,42,58,0.05)",
+  padding: "12px 14px 14px",
   marginBottom: 16,
 };
 const dividerStyle = {

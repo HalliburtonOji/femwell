@@ -198,18 +198,24 @@ export function PlanMyNextCycleCTA() {
 
 // ── Styles ──
 const cardStyle = {
-  background: "var(--surface, #FFFFFF)",
+  background: "linear-gradient(180deg, var(--cream, #FFFAF5) 0%, var(--cream-2, #FFF5EC) 100%)",
   borderRadius: 16,
   padding: "14px 16px",
-  border: "1px solid var(--border, rgba(74,42,58,0.10))",
+  border: "1px solid rgba(74,42,58,0.10)",
+  borderLeft: "4px solid var(--teal, #5F8A85)",
+  boxShadow: "0 1px 3px rgba(74,42,58,0.05)",
   marginBottom: 16,
 };
 const astraCardStyle = {
   ...cardStyle,
-  background: "var(--cream-deep, #FAF4ED)",
+  background: "linear-gradient(135deg, rgba(201,169,92,0.14) 0%, var(--cream, #FFFAF5) 100%)",
   borderLeft: "4px solid var(--gold, #C9A95C)",
 };
-const planCardStyle = { ...cardStyle, background: "var(--cream, #FFFAF5)" };
+const planCardStyle = {
+  ...cardStyle,
+  background: "linear-gradient(135deg, rgba(74,42,58,0.06) 0%, var(--cream, #FFFAF5) 100%)",
+  borderLeft: "4px solid var(--plum, #4A2A3A)",
+};
 
 const headRowStyle = {
   display: "flex",

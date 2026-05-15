@@ -63,10 +63,12 @@ export default function ConsistencyCard({ habitLogs = [], phase = null }) {
     <section
       aria-label="Consistency over 28 days"
       style={{
-        background: "var(--surface, #FFFFFF)",
+        background: "linear-gradient(180deg, var(--cream, #FFFAF5) 0%, rgba(125,134,104,0.06) 100%)",
         borderRadius: 16,
         padding: "14px 16px",
-        border: "1px solid var(--border, rgba(74,42,58,0.10))",
+        border: "1px solid rgba(74,42,58,0.10)",
+        borderLeft: "4px solid var(--moss, #7D8668)",
+        boxShadow: "0 1px 3px rgba(74,42,58,0.05)",
         marginBottom: 16,
       }}
     >

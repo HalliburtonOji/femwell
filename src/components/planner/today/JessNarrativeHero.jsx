@@ -180,17 +180,24 @@ export default function JessNarrativeHero({ profile, cycleInfo }) {
     ? `THIS WEEK · ${PHASE_LABELS[phase].toUpperCase()}`
     : "THIS WEEK";
 
+  // Stronger gradient for visual weight — bump the phase tint from 18% to
+  // ~32% so the hero clearly anchors the top of the Today tab.
+  const heroBg = tint.replace(/0\.18\)/g, "0.32)").replace(/0\.18 /g, "0.32 ");
+  const accentColor = (PHASE_TINTS[phase] || PHASE_TINTS.none).replace("0.18", "0.85");
+
   return (
     <section
       role="region"
       aria-label="This week's hero, from Jess"
       style={{
         position: "relative",
-        background: `linear-gradient(135deg, ${tint} 0%, rgba(255,250,245,0.85) 100%)`,
-        border: "1px solid rgba(74,42,58,0.10)",
+        background: `linear-gradient(135deg, ${heroBg} 0%, rgba(255,250,245,0.92) 100%)`,
+        border: "1px solid rgba(74,42,58,0.12)",
+        borderLeft: `4px solid ${accentColor}`,
         borderRadius: 18,
         padding: "16px 18px 18px",
-        marginBottom: 8,
+        marginBottom: 12,
+        boxShadow: "0 4px 14px rgba(74,42,58,0.08), 0 1px 3px rgba(74,42,58,0.04)",
       }}
     >
       <p style={eyebrowStyle}>{eyebrow}</p>

@@ -53,10 +53,12 @@ export default function WhatsUnfinishedCard({ stuckDaysByHabit, phase }) {
 
 // ── Styles ──
 const wrapStyle = {
-  background: "var(--surface, #FFFFFF)",
+  background: "linear-gradient(180deg, var(--cream, #FFFAF5) 0%, rgba(201,169,92,0.07) 100%)",
   borderRadius: 16,
   padding: "14px 16px",
-  border: "1px solid var(--border, rgba(74,42,58,0.10))",
+  border: "1px solid rgba(74,42,58,0.10)",
+  borderLeft: "4px solid var(--gold, #C9A95C)",
+  boxShadow: "0 1px 3px rgba(74,42,58,0.05)",
   marginBottom: 16,
 };
 const headRowStyle = {

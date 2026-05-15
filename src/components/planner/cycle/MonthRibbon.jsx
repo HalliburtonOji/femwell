@@ -219,13 +219,52 @@ export default function MonthRibbon({ profile, habitLogs = [], today = new Date(
         ))}
       </div>
 
+      {/* Phase legend + empty-state CTA. When there's no cycle data,
+          ribbons render a faded preview gradient so the page never feels
+          empty, and a primary "Log your last period →" pill links to the
+          tracking flow so first-run users have somewhere to go. */}
+      {!profile?.last_period_start_date && (
+        <div style={emptyHintStyle}>
+          <p style={emptyHintLineStyle}>
+            <strong style={{ color: "var(--plum, #4A2A3A)" }}>Log your last period</strong> to see your cycle flow as a gradient across the month.
+          </p>
+          <a href="/Track?focus=cycle" style={emptyHintCtaStyle}>Log a period →</a>
+        </div>
+      )}
+
+      <div style={legendRowStyle} aria-hidden="true">
+        <span style={legendItemStyle}>
+          <span style={{ ...legendDotStyle, background: PHASE_COLOR.menstrual }} /> Period
+        </span>
+        <span style={legendItemStyle}>
+          <span style={{ ...legendDotStyle, background: PHASE_COLOR.follicular }} /> Follicular
+        </span>
+        <span style={legendItemStyle}>
+          <span style={{ ...legendDotStyle, background: PHASE_COLOR.ovulatory }} /> Ovulatory
+        </span>
+        <span style={legendItemStyle}>
+          <span style={{ ...legendDotStyle, background: PHASE_COLOR.luteal }} /> Luteal
+        </span>
+      </div>
+
       <div style={ribbonsContainerStyle}>
         {weeks.map((days, wi) => {
           const phases = days.map((c) => phaseByDay.get(c.dateISO) || "off");
           const allOff = phases.every((p) => p === "off");
-          const background = allOff
-            ? PHASE_COLOR.off
-            : ribbonGradient(phases);
+          // Empty-state preview — when no cycle data is set, render a
+          // demonstration gradient (period→follicular→ovulatory→luteal)
+          // at 32% opacity so the page is visually rich but obviously
+          // unset. This is the difference between "we have nothing" and
+          // "wall of beige".
+          let background;
+          if (allOff && !profile?.last_period_start_date) {
+            const previewPhases = ["menstrual", "menstrual", "follicular", "follicular", "ovulatory", "luteal", "luteal"];
+            background = `linear-gradient(to right, ${previewPhases.map((p, i) => `${PHASE_COLOR[p]}55 ${(i * 100 / 7).toFixed(1)}%`).join(", ")})`;
+          } else if (allOff) {
+            background = PHASE_COLOR.off;
+          } else {
+            background = ribbonGradient(phases);
+          }
           return (
             <div
               key={wi}
@@ -249,9 +288,10 @@ export default function MonthRibbon({ profile, habitLogs = [], today = new Date(
                     aria-current={isToday ? "date" : undefined}
                     style={{
                       ...cellBtnStyle,
-                      outline: isToday ? "2px solid var(--plum, #4A2A3A)" : "none",
+                      outline: isToday ? "2.5px solid var(--cream, #FFFAF5)" : "none",
                       outlineOffset: isToday ? "-1px" : 0,
-                      background: isToday ? "rgba(255, 250, 245, 0.55)" : "transparent",
+                      background: isToday ? "rgba(74,42,58,0.18)" : "transparent",
+                      boxShadow: isToday ? "0 0 0 1.5px var(--plum, #4A2A3A), 0 0 12px rgba(74,42,58,0.35)" : "none",
                     }}
                   >
                     {isToday && <span style={todayDotStyle} aria-hidden="true" />}
@@ -262,7 +302,9 @@ export default function MonthRibbon({ profile, habitLogs = [], today = new Date(
                           ? "rgba(74,42,58,0.35)"
                           : isOvulatory
                             ? "var(--plum, #4A2A3A)"
-                            : "#FFF5EC",
+                            : "#FFFAF5",
+                        textShadow: !cell.isOff && !isOvulatory ? "0 1px 2px rgba(74,42,58,0.30)" : "none",
+                        fontWeight: isToday ? 800 : 700,
                       }}
                     >
                       {cell.dayNum}
@@ -273,7 +315,9 @@ export default function MonthRibbon({ profile, habitLogs = [], today = new Date(
                         style={{
                           ...activityBarStyle,
                           width: barWidth,
-                          background: isOvulatory ? "rgba(74,42,58,0.6)" : "rgba(255, 245, 236, 0.85)",
+                          background: isOvulatory ? "rgba(74,42,58,0.75)" : "rgba(255, 250, 245, 0.95)",
+                          opacity: 0.95,
+                          boxShadow: isOvulatory ? "none" : "0 0 4px rgba(255, 250, 245, 0.55)",
                         }}
                       />
                     )}
@@ -290,11 +334,72 @@ export default function MonthRibbon({ profile, habitLogs = [], today = new Date(
 
 // ── Styles ──
 const wrapStyle = {
-  background: "var(--surface, #FFFFFF)",
-  borderRadius: 16,
-  padding: "14px 16px 16px",
-  border: "1px solid var(--border, rgba(74,42,58,0.10))",
+  background: "linear-gradient(180deg, var(--cream, #FFFAF5) 0%, var(--cream-2, #FFF5EC) 100%)",
+  borderRadius: 18,
+  padding: "16px 16px 18px",
+  border: "1px solid rgba(74,42,58,0.10)",
+  borderLeft: "4px solid var(--luteal, #8A5F74)",
+  boxShadow: "0 2px 12px rgba(74,42,58,0.06), 0 1px 3px rgba(74,42,58,0.04)",
   marginBottom: 16,
+};
+const emptyHintStyle = {
+  display: "flex",
+  alignItems: "center",
+  justifyContent: "space-between",
+  gap: 10,
+  flexWrap: "wrap",
+  padding: "10px 12px",
+  borderRadius: 12,
+  background: "linear-gradient(135deg, rgba(201,169,92,0.18) 0%, rgba(212,94,82,0.08) 100%)",
+  border: "1px solid rgba(201,169,92,0.30)",
+  marginBottom: 10,
+};
+const emptyHintLineStyle = {
+  fontFamily: "'Inter', sans-serif",
+  fontSize: 12.5,
+  lineHeight: 1.45,
+  color: "var(--plum-2, #6B4559)",
+  margin: 0,
+  flex: 1,
+  minWidth: 180,
+};
+const emptyHintCtaStyle = {
+  display: "inline-flex",
+  alignItems: "center",
+  padding: "6px 12px",
+  borderRadius: 9999,
+  background: "var(--plum, #4A2A3A)",
+  color: "var(--cream, #FFFAF5)",
+  fontFamily: "'Inter', sans-serif",
+  fontSize: 11.5,
+  fontWeight: 700,
+  letterSpacing: "0.02em",
+  textDecoration: "none",
+  whiteSpace: "nowrap",
+};
+const legendRowStyle = {
+  display: "flex",
+  gap: 10,
+  flexWrap: "wrap",
+  marginBottom: 8,
+  padding: "0 2px",
+};
+const legendItemStyle = {
+  display: "inline-flex",
+  alignItems: "center",
+  gap: 5,
+  fontFamily: "'Inter', sans-serif",
+  fontSize: 9.5,
+  fontWeight: 600,
+  letterSpacing: "0.08em",
+  color: "var(--plum-mute, #8A7584)",
+  textTransform: "uppercase",
+};
+const legendDotStyle = {
+  width: 7,
+  height: 7,
+  borderRadius: 9999,
+  display: "inline-block",
 };
 const headRowStyle = {
   display: "flex",

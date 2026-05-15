@@ -127,10 +127,12 @@ export default function CycleMirrorSundayTile({ profile, habitLogs = [], phase, 
     <section
       aria-label="Cycle mirror — looking back at this phase-day"
       style={{
-        background: "var(--surface, #FFFFFF)",
+        background: "linear-gradient(180deg, var(--cream, #FFFAF5) 0%, rgba(138,95,116,0.08) 100%)",
         borderRadius: 16,
         padding: "14px 16px",
-        border: "1px solid var(--border, rgba(74,42,58,0.10))",
+        border: "1px solid rgba(74,42,58,0.10)",
+        borderLeft: "4px solid var(--luteal, #8A5F74)",
+        boxShadow: "0 1px 3px rgba(74,42,58,0.05)",
         marginBottom: 16,
       }}
     >
