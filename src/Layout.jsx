@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { Link } from "react-router-dom";
 import { Heart } from "lucide-react";
 import { base44 } from "@/api/base44Client";
 import FloatingSidebar from "./components/layout/FloatingSidebar";
@@ -82,6 +83,32 @@ export default function Layout({ children, currentPageName }) {
           <Heart aria-hidden="true" className="w-3 h-3" style={{ color: "#E11D48", fill: "#E11D48" }} />
           <span className="sr-only">love</span> in 2026
         </footer>
+      )}
+      {showNav && currentPageName !== "Ideas" && (
+        <Link
+          to="/Ideas"
+          aria-label="Open Ideas (Design Lab — dev only)"
+          style={{
+            position: "fixed",
+            right: 14,
+            bottom: "calc(96px + env(safe-area-inset-bottom, 0px))",
+            zIndex: 60,
+            padding: "8px 14px",
+            background: "#3A2C1A",
+            color: "#F4EDDB",
+            borderRadius: 9999,
+            fontFamily: "'Inter', sans-serif",
+            fontSize: 11,
+            fontWeight: 700,
+            letterSpacing: "0.18em",
+            textTransform: "uppercase",
+            textDecoration: "none",
+            boxShadow: "0 6px 18px rgba(0,0,0,0.22)",
+            border: "1px solid rgba(244,237,219,0.18)",
+          }}
+        >
+          Ideas · dev
+        </Link>
       )}
       {showNav && <MobileBottomNav currentPageName={currentPageName} />}
       <AssistantOverlay

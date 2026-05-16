@@ -16,6 +16,7 @@ const KNOWN_ROUTES = new Set([
   "/LifeStageCare", "/Community", "/Saved", "/Deals", "/Events",
   "/Settings", "/DoctorExport", "/PartnerSettings", "/Explore",
   "/Track", "/Onboarding", "/CycleSettings", "/Upgrade",
+  "/Ideas",
 ]);
 
 function safeRoute(path) {

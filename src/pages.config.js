@@ -80,6 +80,7 @@ import Community from './pages/Community';
 import Planner from './pages/Planner';
 import Insights from './pages/Insights.jsx';
 import OneShotThankYou from './pages/OneShotThankYou';
+import Ideas from './pages/Ideas';
 import __Layout from './Layout.jsx';
 
 
@@ -116,6 +117,7 @@ export const PAGES = {
     "Planner": Planner,
     "Insights": Insights,
     "OneShotThankYou": OneShotThankYou,
+    "Ideas": Ideas,
 }
 
 export const pagesConfig = {
