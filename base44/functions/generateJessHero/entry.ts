@@ -48,6 +48,14 @@ Deno.serve(async (req: Request) => {
     const habitPct = Number.isFinite(Number(body?.habit_hit_rate_pct)) ? Number(body.habit_hit_rate_pct) : null;
     const cyclesObserved = Number(body?.cycle_observed_count);
     const cyclesObservedSafe = Number.isFinite(cyclesObserved) ? Math.max(0, Math.min(99, cyclesObserved)) : 0;
+    // Life Stage context — injected from FE plannerAdapter (Step 4). The
+    // jess_context string is the per-stage / per-condition voice + safety
+    // brief; we trust it because it is computed client-side from the user's
+    // own life_stage and conditions arrays (no free-text). Clamped at 1200
+    // chars to keep the prompt budget under control.
+    const lifeStage = clamp(body?.life_stage, 32);
+    const jessContext = clamp(body?.jess_context, 1200);
+    const bannerText = clamp(body?.banner_text, 200);
 
     if (!ALLOWED_PHASES.has(phase)) return Response.json({ ok: false, error: 'invalid phase' }, { status: 400 });
     if (!ALLOWED_TRENDS.has(moodTrend)) return Response.json({ ok: false, error: 'invalid recent_mood_trend' }, { status: 400 });
@@ -65,7 +73,13 @@ Deno.serve(async (req: Request) => {
       ? "Honesty rule: you're still learning her cycle — say so plainly if helpful."
       : "";
 
-    const prompt = `You write a once-per-week warm hero block at the top of a women's wellness app called FemWell. Brand voice: permissive, warm, never minimising, never body-negative, no medical language, no emoji, never use the words "just" or "only" in a dismissive way, no imperatives ("must" / "should"). Use permissive language: "might find", "tends to", "could feel like".
+    // Life Stage block — prepended to the prompt so the LLM picks up the
+    // per-stage voice + safety rules from src/utils/plannerAdapter.js.
+    const stageBlock = jessContext
+      ? `LIFE STAGE CONTEXT (treat as ground truth — outrank generic cycle phrasing):\n${jessContext}\n${bannerText ? `Operative banner she sees today: "${bannerText}".\n` : ''}\n`
+      : '';
+
+    const prompt = `${stageBlock}You write a once-per-week warm hero block at the top of a women's wellness app called FemWell. Brand voice: permissive, warm, never minimising, never body-negative, no medical language, no emoji, never use the words "just" or "only" in a dismissive way, no imperatives ("must" / "should"). Use permissive language: "might find", "tends to", "could feel like".
 
 ${phaseClause}
 ${trendClause}
@@ -109,7 +123,13 @@ Reply EXACTLY in this JSON shape, no markdown, no code fence:
       return Response.json({ ok: false, error: 'empty fields' }, { status: 502 });
     }
 
-    return Response.json({ ok: true, headline, body: heroBody, generated_at: new Date().toISOString() });
+    return Response.json({
+      ok: true,
+      headline,
+      body: heroBody,
+      generated_at: new Date().toISOString(),
+      life_stage: lifeStage || null,
+    });
   } catch (err: any) {
     return Response.json({ ok: false, error: String(err?.message || err) }, { status: 500 });
   }

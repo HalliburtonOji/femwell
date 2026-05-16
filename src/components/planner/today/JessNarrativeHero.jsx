@@ -179,16 +179,23 @@ function fallbackFor(phase, dateISO) {
   return bank[idx];
 }
 
-export default function JessNarrativeHero({ profile, cycleInfo }) {
+export default function JessNarrativeHero({ profile, cycleInfo, plannerConfig }) {
   const today = new Date();
   const dateISO = today.toISOString().split("T")[0];
   const phase = cycleInfo?.phase || "";
   const week = isoWeekOfYear(today);
 
+  // Life Stage context — bumps the cache key so each stage gets its own
+  // weekly hero, and is passed through to the backend so the LLM prompt
+  // is reshaped per stage / condition. See src/utils/plannerAdapter.js.
+  const lifeStage = profile?.life_stage || "reproductive";
+  const conditionsKey = (profile?.conditions || profile?.condition_flags || [])
+    .slice().sort().join("-") || "none";
+
   const cacheKey = useMemo(() => {
     const uid = profile?.user_id || profile?.id || "anon";
-    return `fw_jess_hero_${uid}_w${week}_${phase || "none"}`;
-  }, [profile?.user_id, profile?.id, week, phase]);
+    return `fw_jess_hero_${uid}_w${week}_${phase || "none"}_${lifeStage}_${conditionsKey}`;
+  }, [profile?.user_id, profile?.id, week, phase, lifeStage, conditionsKey]);
 
   const [hero, setHero] = useState(() => fallbackFor(phase, dateISO));
 
@@ -220,6 +227,9 @@ export default function JessNarrativeHero({ profile, cycleInfo }) {
           recent_mood_trend: "unknown",
           habit_hit_rate_pct: null,
           cycle_observed_count: profile?.cycle_prediction_meta?.cycles_observed || 0,
+          life_stage: lifeStage,
+          jess_context: plannerConfig?.jessContext || "",
+          banner_text: plannerConfig?.bannerText || "",
         });
         const payload = res?.data || res;
         if (cancelled) return;
@@ -239,7 +249,7 @@ export default function JessNarrativeHero({ profile, cycleInfo }) {
     })();
 
     return () => { cancelled = true; };
-  }, [cacheKey, phase, week, profile?.user_id, profile?.cycle_prediction_meta?.cycles_observed]);
+  }, [cacheKey, phase, week, profile?.user_id, profile?.cycle_prediction_meta?.cycles_observed, lifeStage, plannerConfig?.jessContext, plannerConfig?.bannerText]);
 
   const tint = PHASE_TINTS[phase] || PHASE_TINTS.none;
   // Le Menu × Phase Sun — chapter eyebrow: "Chapter IV · Luteal · Day 22"
