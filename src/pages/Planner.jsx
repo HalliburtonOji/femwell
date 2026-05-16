@@ -56,12 +56,12 @@ const CATEGORY_COLORS = {
 
 const CATEGORIES = Object.keys(CATEGORY_COLORS);
 
-// Phase → dot colour. Mirrors the demo palette (femwell_planner_final.html).
+// Le Menu × Phase Sun — saturated phase palette (applied 2026-05-16).
 const PHASE_COLORS = {
-  menstrual:  "#B84A41", // period
-  follicular: "#E67F73",
-  ovulatory:  "#F2A99A",
-  luteal:     "#8A5F74",
+  menstrual:  "#9A2845", // period
+  follicular: "#D4745A",
+  ovulatory:  "#C8A040",
+  luteal:     "#7B5E9A",
 };
 
 function phaseLabelOf(p) {
@@ -535,9 +535,9 @@ export default function Planner() {
   const isSelected = (d) => toDateStr(d) === selectedStr;
 
   return (
-    <div className="min-h-screen pb-28" style={{ backgroundColor: "var(--ivory, #FFFAF5)" }}>
+    <div className="min-h-screen pb-28" style={{ backgroundColor: "#F4EDDB" /* Le Menu cream paper */ }}>
       {/* ── Sticky header: brand · tabs · (Today-only) week strip ──────────── */}
-      <div className="sticky top-0 z-30 px-4 pt-10 pb-3" style={{ backgroundColor: "rgba(255,250,245,0.97)", backdropFilter: "blur(20px)", borderBottom: "1px solid var(--border, rgba(74,42,58,0.08))" }}>
+      <div className="sticky top-0 z-30 px-4 pt-10 pb-3" style={{ backgroundColor: "rgba(244,237,219,0.97)", backdropFilter: "blur(20px)", borderBottom: "1px solid rgba(58,44,26,0.16)" }}>
         <div className="max-w-xl mx-auto">
           {/* A2-4 (1+2+3): tab-specific page title + date-stamped Today eyebrow */}
           <p style={{ fontSize: "0.6rem", fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.14em", color: "var(--plum-mute, #8A7584)", fontFamily: "'Inter', sans-serif" }}>

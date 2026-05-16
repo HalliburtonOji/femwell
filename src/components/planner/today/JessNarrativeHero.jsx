@@ -25,14 +25,69 @@ const PHASE_LABELS = {
   luteal:     "Luteal",
 };
 
+// Le Menu × Phase Sun — saturated phase palette for the sun rays + accent (applied 2026-05-16).
+const PHASE_SOLID = {
+  menstrual:  "#9A2845",
+  follicular: "#D4745A",
+  ovulatory:  "#C8A040",
+  luteal:     "#7B5E9A",
+  none:       "#A6862B",
+};
+
+// Roman numeral chapter for the phase (mirrors the Le Menu eyebrow "Chapter IV · La Lutéale").
+const PHASE_ROMAN = {
+  menstrual:  "I",
+  follicular: "II",
+  ovulatory:  "III",
+  luteal:     "IV",
+  none:       "·",
+};
+
 // Phase tint at 18% opacity over cream gradient (spec default #5).
 const PHASE_TINTS = {
-  menstrual:  "rgba(184,74,65,0.18)",
-  follicular: "rgba(230,127,115,0.18)",
-  ovulatory:  "rgba(242,169,154,0.18)",
-  luteal:     "rgba(138,95,116,0.18)",
-  none:       "rgba(201,169,92,0.18)", // gold tint when phase unknown
+  menstrual:  "rgba(154,40,69,0.18)",
+  follicular: "rgba(212,116,90,0.18)",
+  ovulatory:  "rgba(200,160,64,0.18)",
+  luteal:     "rgba(123,94,154,0.18)",
+  none:       "rgba(166,134,43,0.18)", // gold-deep tint when phase unknown
 };
+
+// Phase Sun — 12 rays in current phase colour, cream/gold core. The Le Menu
+// signature element. Sits in the top-right of the hero.
+function PhaseSun({ phase = "luteal", size = 60 }) {
+  const c = PHASE_SOLID[phase] || PHASE_SOLID.none;
+  const gid = `jess-sun-${phase}`;
+  return (
+    <svg width={size} height={size} viewBox="0 0 72 72" aria-hidden="true">
+      <defs>
+        <radialGradient id={gid} cx="50%" cy="48%" r="50%">
+          <stop offset="0%"  stopColor="#FBF6E6"/>
+          <stop offset="65%" stopColor="#F4E8C8"/>
+          <stop offset="100%" stopColor="#E8D49E"/>
+        </radialGradient>
+      </defs>
+      {Array.from({ length: 12 }).map((_, i) => {
+        const a = (i / 12) * Math.PI * 2;
+        return (
+          <line key={i}
+            x1={36 + Math.cos(a) * 21} y1={36 + Math.sin(a) * 21}
+            x2={36 + Math.cos(a) * 34} y2={36 + Math.sin(a) * 34}
+            stroke={c} strokeWidth="1.6" strokeLinecap="round"/>
+        );
+      })}
+      {Array.from({ length: 12 }).map((_, i) => {
+        const a = ((i + 0.5) / 12) * Math.PI * 2;
+        return (
+          <line key={`t${i}`}
+            x1={36 + Math.cos(a) * 25} y1={36 + Math.sin(a) * 25}
+            x2={36 + Math.cos(a) * 30} y2={36 + Math.sin(a) * 30}
+            stroke={c} strokeWidth="0.9" strokeOpacity="0.55" strokeLinecap="round"/>
+        );
+      })}
+      <circle cx="36" cy="36" r="16" fill={`url(#${gid})`} stroke={c} strokeWidth="0.6" strokeOpacity="0.7"/>
+    </svg>
+  );
+}
 
 // 32-line fallback bank — 4 phases × 8 lines. Selected deterministically by
 // (isoWeek × phase) so the same week on the same phase always shows the
@@ -176,14 +231,17 @@ export default function JessNarrativeHero({ profile, cycleInfo }) {
   }, [cacheKey, phase, week, profile?.user_id, profile?.cycle_prediction_meta?.cycles_observed]);
 
   const tint = PHASE_TINTS[phase] || PHASE_TINTS.none;
-  const eyebrow = phase
-    ? `THIS WEEK · ${PHASE_LABELS[phase].toUpperCase()}`
-    : "THIS WEEK";
+  // Le Menu × Phase Sun — chapter eyebrow style: "Chapter IV · Luteal"
+  const phaseLabel = phase ? PHASE_LABELS[phase] : null;
+  const roman = phase ? PHASE_ROMAN[phase] : null;
+  const eyebrow = phaseLabel && roman
+    ? `Chapter ${roman} · ${phaseLabel}`
+    : "This week";
 
   // Stronger gradient for visual weight — bump the phase tint from 18% to
   // ~32% so the hero clearly anchors the top of the Today tab.
   const heroBg = tint.replace(/0\.18\)/g, "0.32)").replace(/0\.18 /g, "0.32 ");
-  const accentColor = (PHASE_TINTS[phase] || PHASE_TINTS.none).replace("0.18", "0.85");
+  const accentColor = PHASE_SOLID[phase] || PHASE_SOLID.none;
 
   return (
     <section
@@ -191,21 +249,44 @@ export default function JessNarrativeHero({ profile, cycleInfo }) {
       aria-label="This week's hero, from Jess"
       style={{
         position: "relative",
-        background: `linear-gradient(135deg, ${heroBg} 0%, rgba(255,250,245,0.92) 100%)`,
-        border: "1px solid rgba(74,42,58,0.12)",
+        // Le Menu cream paper base, with phase tint blended in
+        background: `linear-gradient(135deg, ${heroBg} 0%, #F4EDDB 70%, #FBF6E6 100%)`,
+        border: "1px solid rgba(58,44,26,0.16)",
         borderLeft: `4px solid ${accentColor}`,
         borderRadius: 18,
         padding: "16px 18px 18px",
         marginBottom: 12,
-        boxShadow: "0 4px 14px rgba(74,42,58,0.08), 0 1px 3px rgba(74,42,58,0.04)",
+        boxShadow: "0 4px 14px rgba(58,44,26,0.10), 0 1px 3px rgba(58,44,26,0.05)",
+        overflow: "hidden",
       }}
     >
-      <p style={eyebrowStyle}>{eyebrow}</p>
-      <h2 aria-live="polite" style={headlineStyle}>{hero.headline}</h2>
-      <p style={bodyStyle}>{hero.body}</p>
-      <div style={attributionStyle}>
-        <Sparkles size={11} strokeWidth={1.6} aria-hidden="true" />
-        <span>From Jess · this week</span>
+      {/* Le Menu Phase Sun — top-right anchor */}
+      <div aria-hidden="true" style={{
+        position: "absolute", top: 12, right: 14, opacity: 0.95, pointerEvents: "none",
+      }}>
+        <PhaseSun phase={phase || "none"} size={60}/>
+      </div>
+      <div style={{ paddingRight: 64 }}>
+        <p style={{
+          ...eyebrowStyle,
+          color: accentColor,
+          letterSpacing: "0.22em",
+        }}>{eyebrow}</p>
+        <h2 aria-live="polite" style={{
+          ...headlineStyle,
+          color: "#3A2C1A",
+        }}>{hero.headline}</h2>
+        <p style={{
+          ...bodyStyle,
+          color: "#6B5840",
+        }}>{hero.body}</p>
+        <div style={{
+          ...attributionStyle,
+          color: "#8A7458",
+        }}>
+          <Sparkles size={11} strokeWidth={1.6} aria-hidden="true" />
+          <span>From Jess · this week</span>
+        </div>
       </div>
     </section>
   );

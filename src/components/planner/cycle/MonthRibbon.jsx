@@ -22,12 +22,13 @@ import { useMemo, useState } from "react";
 //   - chevrons navigate visually only (don't change selected day)
 // ─────────────────────────────────────────────────────────────────────────────
 
+// Le Menu × Phase Sun — saturated phase palette (applied 2026-05-16).
 const PHASE_COLOR = {
-  menstrual:  "#B84A41",
-  follicular: "#E67F73",
-  ovulatory:  "#F2A99A",
-  luteal:     "#8A5F74",
-  off:        "#F0E5D8",
+  menstrual:  "#9A2845",
+  follicular: "#D4745A",
+  ovulatory:  "#C8A040",
+  luteal:     "#7B5E9A",
+  off:        "#E5D9BD",
 };
 
 const PHASE_LABEL_NICE = {
@@ -194,7 +195,7 @@ export default function MonthRibbon({ profile, habitLogs = [], today = new Date(
     >
       <div style={headRowStyle}>
         <div>
-          <p style={titleStyle}>{monthLabel}</p>
+          <p style={titleStyle}><span style={{ color: "#A6862B", fontSize: 13, fontStyle: "italic", marginRight: 8, letterSpacing: "0.06em" }}>I ·</span>{monthLabel}</p>
           <p style={metaStyle}>{subLine}</p>
         </div>
         <div style={{ display: "flex", gap: 4 }}>
@@ -270,6 +271,13 @@ export default function MonthRibbon({ profile, habitLogs = [], today = new Date(
               key={wi}
               style={{ ...ribbonStyle, background }}
             >
+              {/* Le Menu paper-print dot overlay — subtle dotted texture */}
+              <div aria-hidden="true" style={{
+                position: "absolute", inset: 0,
+                backgroundImage: "radial-gradient(rgba(244,237,219,0.10) 0.5px, transparent 0.5px)",
+                backgroundSize: "6px 6px",
+                pointerEvents: "none",
+              }}/>
               {days.map((cell) => {
                 const phase = phaseByDay.get(cell.dateISO) || "off";
                 const isToday = cell.dateISO === todayISO;
@@ -288,10 +296,12 @@ export default function MonthRibbon({ profile, habitLogs = [], today = new Date(
                     aria-current={isToday ? "date" : undefined}
                     style={{
                       ...cellBtnStyle,
-                      outline: isToday ? "2.5px solid var(--cream, #FFFAF5)" : "none",
+                      // Le Menu: today = cream pill with double halo
+                      outline: isToday ? "2.5px solid #F4EDDB" : "none",
                       outlineOffset: isToday ? "-1px" : 0,
-                      background: isToday ? "rgba(74,42,58,0.18)" : "transparent",
-                      boxShadow: isToday ? "0 0 0 1.5px var(--plum, #4A2A3A), 0 0 12px rgba(74,42,58,0.35)" : "none",
+                      background: isToday ? "#F4EDDB" : "transparent",
+                      boxShadow: isToday ? "0 0 0 1.5px #F4EDDB, 0 1px 4px rgba(58,44,26,0.22), 0 0 14px rgba(244,237,219,0.55)" : "none",
+                      zIndex: isToday ? 2 : 1,
                     }}
                   >
                     {isToday && <span style={todayDotStyle} aria-hidden="true" />}
@@ -299,11 +309,13 @@ export default function MonthRibbon({ profile, habitLogs = [], today = new Date(
                       style={{
                         ...dayNumStyle,
                         color: cell.isOff
-                          ? "rgba(74,42,58,0.35)"
-                          : isOvulatory
-                            ? "var(--plum, #4A2A3A)"
-                            : "#FFFAF5",
-                        textShadow: !cell.isOff && !isOvulatory ? "0 1px 2px rgba(74,42,58,0.30)" : "none",
+                          ? "rgba(58,44,26,0.40)"
+                          : isToday
+                            ? PHASE_COLOR[phase] || "#3A2C1A"  // Le Menu: phase ink on the cream today pill
+                            : isOvulatory
+                              ? "var(--plum, #4A2A3A)"
+                              : "#FFFAF5",
+                        textShadow: !cell.isOff && !isOvulatory && !isToday ? "0 1px 2px rgba(74,42,58,0.30)" : "none",
                         fontWeight: isToday ? 800 : 700,
                       }}
                     >

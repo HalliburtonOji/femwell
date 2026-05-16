@@ -227,7 +227,7 @@ export default function DoctorReadyDiaryCard({ user }) {
     >
       <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 12, marginBottom: 10, flexWrap: "wrap" }}>
         <div style={{ flex: 1, minWidth: 220 }}>
-          <p style={kickerStyle}>{PHASE_LABEL}</p>
+          <p style={kickerStyle}><span style={{ color: "#A6862B", marginRight: 6, fontStyle: "italic" }}>IV ·</span>{PHASE_LABEL}</p>
           <p style={titleStyle}>One-tap diary for your next appointment.</p>
           <p style={subStyle}>{PHASE_SUB}</p>
         </div>

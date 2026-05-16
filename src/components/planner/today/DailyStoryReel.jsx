@@ -23,12 +23,21 @@ import { base44 } from "@/api/base44Client";
 // Spec ref: claude-state/base44_mps/2026-05-15_today_redesign_A/spec.md §T-A3.
 // ─────────────────────────────────────────────────────────────────────────────
 
+// Le Menu × Phase Sun — saturated phase gradients (applied 2026-05-16).
 const PHASE_GRADIENTS = {
-  menstrual:  "linear-gradient(135deg, #FFE4E1 0%, #FFCAC2 100%)",
-  follicular: "linear-gradient(135deg, #FFF4E6 0%, #FCD9B6 100%)",
-  ovulatory:  "linear-gradient(135deg, #FFF6E0 0%, #FCE5A8 100%)",
-  luteal:     "linear-gradient(135deg, #F1E6F0 0%, #D9C0D4 100%)",
-  none:       "linear-gradient(135deg, #FAF4ED 0%, #E9DCC9 100%)",
+  menstrual:  "linear-gradient(135deg, #9A2845AA 0%, #4A2868AA 100%)",
+  follicular: "linear-gradient(135deg, #D4745AAA 0%, #9A2845AA 100%)",
+  ovulatory:  "linear-gradient(135deg, #C8A040AA 0%, #D4745AAA 100%)",
+  luteal:     "linear-gradient(135deg, #7B5E9AAA 0%, #4A2868AA 100%)",
+  none:       "linear-gradient(135deg, #C8A040AA 0%, #7B5E9AAA 100%)",
+};
+
+// Roman course numerals — match the Le Menu chapter eyebrow style.
+const PHASE_ROMAN = {
+  menstrual:  "I",
+  follicular: "II",
+  ovulatory:  "III",
+  luteal:     "IV",
 };
 
 function toDateISO(d) {
@@ -173,9 +182,13 @@ export default function DailyStoryReel({ profile, cycleInfo }) {
     );
   }
 
+  // Le Menu × Phase Sun — course prefix on the section header
+  const roman = phase ? PHASE_ROMAN[phase] : null;
+  const reelHead = roman ? `${roman} · For you today` : "For you today";
+
   return (
     <section aria-label="Daily reading reel" style={reelStyle}>
-      <p style={reelHeadStyle}>FOR YOU TODAY</p>
+      <p style={reelHeadStyle}>{reelHead}</p>
       <div style={scrollRowStyle} className="fw-no-scrollbar">
         {cards.map(card => (
           <button
@@ -189,7 +202,10 @@ export default function DailyStoryReel({ profile, cycleInfo }) {
               {card.kind === "daily-story" && <span style={badgeStyle}>DAILY STORY</span>}
             </div>
             <div style={cardBodyStyle}>
-              <p style={eyebrowStyle}>{card.eyebrow}</p>
+              <p style={eyebrowStyle}>
+                {roman ? <span style={{ color: "#7B5E9A", fontWeight: 700 }}>{roman} · </span> : null}
+                {card.eyebrow}
+              </p>
               <h3 style={titleStyle}>{card.title}</h3>
               <p style={metaStyle}>{card.meta || (card.kind === "daily-story" ? "100-word read" : "")}</p>
             </div>
@@ -205,13 +221,15 @@ export default function DailyStoryReel({ profile, cycleInfo }) {
 const reelStyle = {
   marginBottom: 14,
 };
+// Le Menu × Phase Sun — italic gold-deep section header, course-prefixed.
 const reelHeadStyle = {
-  fontSize: 10,
-  fontWeight: 700,
+  fontSize: 11,
+  fontStyle: "italic",
+  fontWeight: 600,
+  letterSpacing: "0.22em",
   textTransform: "uppercase",
-  letterSpacing: "0.16em",
-  color: "var(--mauve, #8A7584)",
-  fontFamily: "'Inter', sans-serif",
+  color: "#A6862B",
+  fontFamily: "'Fraunces', Georgia, serif",
   margin: "0 0 8px",
 };
 const scrollRowStyle = {
@@ -222,15 +240,16 @@ const scrollRowStyle = {
   WebkitOverflowScrolling: "touch",
   paddingBottom: 4,
 };
+// Le Menu × Phase Sun — cream paper cards with espresso ink (applied 2026-05-16).
 function cardStyle(_id, gradient, image) {
   return {
     flex: "0 0 240px",
     height: 320,
     borderRadius: 16,
-    border: "1px solid rgba(74,42,58,0.08)",
+    border: "1px solid rgba(58,44,26,0.10)",
     overflow: "hidden",
-    background: image ? "var(--cream, #FFFAF5)" : gradient,
-    boxShadow: "0 1px 2px rgba(74,42,58,0.05)",
+    background: image ? "#FBF6E6" : gradient,
+    boxShadow: "0 2px 6px rgba(58,44,26,0.06)",
     cursor: "pointer",
     scrollSnapAlign: "start",
     display: "flex",
@@ -261,28 +280,31 @@ const badgeStyle = {
   fontWeight: 700,
   letterSpacing: "0.12em",
 };
+// Le Menu × Phase Sun — cream card body, espresso ink, gold-deep eyebrow.
 const cardBodyStyle = {
   padding: "12px 14px 14px",
   flex: 1,
   display: "flex",
   flexDirection: "column",
   gap: 4,
-  background: "var(--cream, #FFFAF5)",
+  background: "#FBF6E6",
 };
 const eyebrowStyle = {
   fontSize: 9.5,
   fontWeight: 700,
   textTransform: "uppercase",
-  letterSpacing: "0.14em",
-  color: "var(--gold-deep, #A6862B)",
+  letterSpacing: "0.18em",
+  color: "#A6862B",
   fontFamily: "'Inter', sans-serif",
+  margin: 0,
 };
 const titleStyle = {
   fontFamily: "'Fraunces', Georgia, serif",
   fontSize: 17,
   fontWeight: 500,
+  fontStyle: "italic",
   lineHeight: 1.25,
-  color: "var(--plum, #4A2A3A)",
+  color: "#3A2C1A",
   letterSpacing: "-0.012em",
   margin: 0,
   display: "-webkit-box",
@@ -293,6 +315,6 @@ const titleStyle = {
 const metaStyle = {
   fontFamily: "'Inter', sans-serif",
   fontSize: 11,
-  color: "var(--plum-mute, #8A7584)",
+  color: "#8A7458",
   margin: "auto 0 0",
 };

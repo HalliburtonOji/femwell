@@ -20,11 +20,12 @@ const PHASE_LABEL = {
   luteal: "luteal",
 };
 
+// Le Menu × Phase Sun — saturated phase palette (applied 2026-05-16).
 const PHASE_DOT = {
-  menstrual:  "#B84A41",
-  follicular: "#E67F73",
-  ovulatory:  "#F2A99A",
-  luteal:     "#8A5F74",
+  menstrual:  "#9A2845",
+  follicular: "#D4745A",
+  ovulatory:  "#C8A040",
+  luteal:     "#7B5E9A",
 };
 
 function nextSundayLine() {
@@ -91,7 +92,7 @@ export function WeekAheadCard({ phase, nextPeriodEta, etaWindowDays, confidenceP
   return (
     <section aria-label="Week Ahead" style={cardStyle}>
       <div style={headRowStyle}>
-        <p style={kickerStyle}>Week ahead</p>
+        <p style={kickerStyle}><span style={{ color: "#A6862B", marginRight: 6 }}>III ·</span>Week ahead</p>
         <span style={tenseStyle}>{sundayLine.toUpperCase()}</span>
       </div>
       <p style={mainStyle}>A gentle look at what's coming — your {phaseLine} window often sets the cadence.</p>
@@ -156,7 +157,7 @@ export function AstraSidecar({ profile }) {
   return (
     <section aria-label="Astra Cole sidecar" style={astraCardStyle}>
       <div style={headRowStyle}>
-        <p style={kickerStyle}>Astra Cole · sidecar</p>
+        <p style={kickerStyle}><span style={{ color: "#A6862B", marginRight: 6 }}>V ·</span>Astra Cole · sidecar</p>
         <span style={tenseStyle}>TODAY · HOROSCOPE</span>
       </div>
       <p style={mainStyle}>A short reading from Astra is waiting in Lifestyle.</p>
@@ -178,7 +179,7 @@ export function PlanMyNextCycleCTA() {
   return (
     <section aria-label="Plan my next cycle" style={planCardStyle}>
       <div style={headRowStyle}>
-        <p style={kickerStyle}>Plan my next cycle</p>
+        <p style={kickerStyle}><span style={{ color: "#A6862B", marginRight: 6 }}>VI ·</span>Plan my next cycle</p>
         <span style={tenseStyle}>WITH JESS</span>
       </div>
       <p style={mainStyle}>Bring this month's patterns into next month's plan.</p>

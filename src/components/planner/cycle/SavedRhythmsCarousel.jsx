@@ -110,7 +110,7 @@ export default function SavedRhythmsCarousel({ profile, currentPhase, currentCyc
   return (
     <section aria-label="Saved cycle rhythms, swipe horizontally" style={wrapStyle}>
       <div style={dividerStyle}>
-        <p style={divTitleStyle}>Saved rhythms</p>
+        <p style={divTitleStyle}><span style={{ color: "#A6862B", marginRight: 6, fontStyle: "italic" }}>II ·</span>Saved rhythms</p>
         <span style={divMetaStyle}>SWIPE →</span>
       </div>
 

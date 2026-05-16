@@ -1,5 +1,3 @@
-import { useEffect, useState } from "react";
-
 // ─────────────────────────────────────────────────────────────────────────────
 // PlannerTabs — segmented control for Planner Phase 2 two-tab split.
 // Spec ref: claude-state/base44_mps/2026-05-14_planner_phase2/spec_v2.md §C0.
@@ -63,9 +61,12 @@ export default function PlannerTabs({ view, onChange }) {
             onClick={() => onChange(id)}
             style={{
               ...tabBtnStyle,
-              backgroundColor: active ? "var(--plum, #4A2A3A)" : "transparent",
-              color: active ? "var(--cream, #FFFAF5)" : "var(--plum-2, #6B4559)",
+              // Le Menu × Phase Sun — espresso pill, italic Fraunces when active.
+              backgroundColor: active ? "#3A2C1A" : "transparent",
+              color: active ? "#F4EDDB" : "#6B5840",
               fontWeight: active ? 700 : 600,
+              fontStyle: active ? "italic" : "normal",
+              fontFamily: active ? "'Fraunces', Georgia, serif" : tabBtnStyle.fontFamily,
             }}
           >
             {id === "today" ? "Today" : "Cycle"}

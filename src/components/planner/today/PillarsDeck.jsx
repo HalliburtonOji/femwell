@@ -29,11 +29,12 @@ const PHASE_LABELS = {
   luteal:     "Luteal",
 };
 
+// Le Menu × Phase Sun — saturated phase palette (applied 2026-05-16).
 const PHASE_COLORS = {
-  menstrual:  "#B84A41",
-  follicular: "#E67F73",
-  ovulatory:  "#F2A99A",
-  luteal:     "#8A5F74",
+  menstrual:  "#9A2845",
+  follicular: "#D4745A",
+  ovulatory:  "#C8A040",
+  luteal:     "#7B5E9A",
 };
 
 const DELTA_THRESHOLD = 5; // % per spec default #2
@@ -169,6 +170,7 @@ export default function PillarsDeck({ profile, today }) {
       {tiles.map(t => {
         const Icon = t.icon;
         const cls = deltaClass(t.delta);
+        const dotColor = cycleState ? PHASE_COLORS[cycleState.phase] : "#7B5E9A";
         return (
           <button
             key={t.key}
@@ -181,7 +183,12 @@ export default function PillarsDeck({ profile, today }) {
             }
             style={tileStyle}
           >
-            <Icon size={14} strokeWidth={1.6} style={{ color: "var(--plum-2, #6B4559)" }} aria-hidden="true" />
+            {/* Le Menu × Phase Sun — phase-colour dot in top-right corner */}
+            <span aria-hidden="true" style={{
+              position: "absolute", top: 9, right: 9,
+              width: 7, height: 7, borderRadius: 9999, background: dotColor,
+            }}/>
+            <Icon size={14} strokeWidth={1.6} style={{ color: "#6B5840" }} aria-hidden="true" />
             <span style={labelStyle}>{t.label}</span>
             <span style={valueStyle}>
               {t.hasData ? t.value : "—"}
@@ -206,7 +213,13 @@ export default function PillarsDeck({ profile, today }) {
         aria-label={cycleState ? `cycle day ${cycleState.dayOfCycle}, ${PHASE_LABELS[cycleState.phase]} phase` : "cycle — no data yet"}
         style={tileStyle}
       >
-        <Circle size={14} strokeWidth={1.6} style={{ color: cycleState ? PHASE_COLORS[cycleState.phase] : "var(--plum-2, #6B4559)" }} aria-hidden="true" />
+        {/* Le Menu × Phase Sun — phase dot */}
+        <span aria-hidden="true" style={{
+          position: "absolute", top: 9, right: 9,
+          width: 7, height: 7, borderRadius: 9999,
+          background: cycleState ? PHASE_COLORS[cycleState.phase] : "#7B5E9A",
+        }}/>
+        <Circle size={14} strokeWidth={1.6} style={{ color: cycleState ? PHASE_COLORS[cycleState.phase] : "#6B5840" }} aria-hidden="true" />
         <span style={labelStyle}>CYCLE</span>
         <span style={valueStyle}>
           {cycleState ? `Day ${cycleState.dayOfCycle}` : "—"}
@@ -230,7 +243,9 @@ const deckStyle = {
   marginBottom: 14,
   position: "relative",
 };
+// Le Menu × Phase Sun — cream paper tile, espresso ink (applied 2026-05-16).
 const tileStyle = {
+  position: "relative",
   display: "flex",
   flexDirection: "column",
   alignItems: "flex-start",
@@ -238,9 +253,9 @@ const tileStyle = {
   gap: 4,
   padding: "12px 12px 10px",
   borderRadius: 14,
-  background: "var(--cream, #FFFAF5)",
-  border: "1px solid rgba(74,42,58,0.08)",
-  boxShadow: "0 1px 0 rgba(74,42,58,0.04)",
+  background: "#FBF6E6",
+  border: "1px solid rgba(58,44,26,0.08)",
+  boxShadow: "0 1px 0 rgba(58,44,26,0.05)",
   cursor: "pointer",
   textAlign: "left",
   minHeight: 92,
@@ -250,28 +265,29 @@ const labelStyle = {
   fontWeight: 700,
   textTransform: "uppercase",
   letterSpacing: "0.12em",
-  color: "var(--plum-2, #6B4559)",
+  color: "#6B5840",
   fontFamily: "'Inter', sans-serif",
 };
 const valueStyle = {
   fontFamily: "'Fraunces', Georgia, serif",
   fontSize: 22,
   fontWeight: 500,
-  color: "var(--plum, #4A2A3A)",
+  color: "#3A2C1A",
   letterSpacing: "-0.015em",
   lineHeight: 1.1,
 };
 const unitStyle = {
   fontSize: 12,
   fontWeight: 400,
-  color: "var(--plum-mute, #8A7584)",
+  color: "#8A7458",
   marginLeft: 2,
 };
 function deltaStyleFor(cls) {
+  // Le Menu × Phase Sun — sage / rose / espresso-mute (applied 2026-05-16).
   const colorMap = {
-    up:   "var(--moss, #5F8B72)",
-    down: "var(--rose-primary, #D45E52)",
-    flat: "var(--plum-mute, #8A7584)",
+    up:   "#5F8B72",
+    down: "#B84A41",
+    flat: "#8A7458",
   };
   return {
     display: "inline-flex",
