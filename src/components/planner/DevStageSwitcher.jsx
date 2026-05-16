@@ -17,6 +17,12 @@ import { useEffect, useRef, useState } from "react";
 import { Layers, X } from "lucide-react";
 
 export const DEV_STAGE_KEY = "femwell_dev_life_stage";
+// Custom event for same-tab reactivity. The native "storage" event only fires
+// in OTHER tabs of the same origin — to update *this* tab's React tree when
+// localStorage changes (from a click here, from devtools, from any future
+// surface that wants to switch stages), surfaces dispatch this event and the
+// Planner listens for it. See Planner.jsx useEffect.
+export const DEV_STAGE_EVENT = "femwell_dev_stage_change";
 
 const STAGES = [
   { key: "",                label: "Use my real stage" },
@@ -63,6 +69,11 @@ export function writeDevStageOverride(stage) {
     if (typeof window === "undefined") return;
     if (stage) window.localStorage.setItem(DEV_STAGE_KEY, stage);
     else window.localStorage.removeItem(DEV_STAGE_KEY);
+    // Same-tab reactivity — Planner listens for this custom event and
+    // re-renders the entire tree. We dispatch INSIDE writeDevStageOverride
+    // so any caller (click handler, devtools console, future surface) gets
+    // the re-render for free without having to remember to fire the event.
+    window.dispatchEvent(new CustomEvent(DEV_STAGE_EVENT, { detail: stage || null }));
   } catch {
     /* silent */
   }

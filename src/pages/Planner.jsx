@@ -26,7 +26,7 @@ import { TonightCard, ShutdownRitualCard } from "@/components/planner/today/Warm
 import { WeekAheadCard, AstraSidecar, PlanMyNextCycleCTA } from "@/components/planner/cycle/WarmthBundleCycle";
 import { selectedCrumbToday, selectedCrumbCycle } from "@/components/planner/selectedCrumb";
 import { getPlannerConfig } from "@/utils/plannerAdapter";
-import DevStageSwitcher, { readDevStageOverride } from "@/components/planner/DevStageSwitcher";
+import DevStageSwitcher, { readDevStageOverride, DEV_STAGE_KEY, DEV_STAGE_EVENT } from "@/components/planner/DevStageSwitcher";
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Planner — Phase 2 C0 (tab shell + routing)
@@ -413,12 +413,35 @@ export default function Planner() {
   // Dev override (no schema needed): DevStageSwitcher writes to
   // localStorage.femwell_dev_life_stage; if present, it wins over
   // profile.life_stage so Halli can preview any stage with a plain Publish.
+  //
+  // Reactivity: localStorage writes do NOT trigger React re-renders on their
+  // own. We listen to two events so the Planner re-renders the entire tree
+  // whenever the override changes from any source:
+  //   - DEV_STAGE_EVENT (custom) — same-tab updates (the pill click here,
+  //     devtools console, any future surface that calls writeDevStageOverride).
+  //   - "storage" (native) — cross-tab updates (Halli has the same account
+  //     open in two tabs and flips the stage in one).
   const [devStageOverride, setDevStageOverride] = useState(() => readDevStageOverride());
+  useEffect(() => {
+    const onCustom = (e) => setDevStageOverride(e?.detail || null);
+    const onStorage = (e) => {
+      if (e.key === DEV_STAGE_KEY) setDevStageOverride(e.newValue || null);
+    };
+    window.addEventListener(DEV_STAGE_EVENT, onCustom);
+    window.addEventListener("storage", onStorage);
+    return () => {
+      window.removeEventListener(DEV_STAGE_EVENT, onCustom);
+      window.removeEventListener("storage", onStorage);
+    };
+  }, []);
   const realLifeStage = profile?.life_stage ?? null;
   const effectiveLifeStage = devStageOverride || realLifeStage || "reproductive";
   const effectiveConditions = profile?.conditions ?? profile?.condition_flags ?? [];
   const plannerConfig = useMemo(
     () => getPlannerConfig(effectiveLifeStage, effectiveConditions),
+    // Note: effectiveConditions is computed inline each render — when its
+    // array reference changes the memo recomputes, which is fine. The
+    // critical dep is effectiveLifeStage, which flips on every event.
     [effectiveLifeStage, effectiveConditions]
   );
 
