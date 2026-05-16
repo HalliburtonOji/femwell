@@ -2,12 +2,30 @@ import { useState, useEffect } from "react";
 import { base44 } from "@/api/base44Client";
 import { createPageUrl } from "@/utils";
 import {
-  ChevronRight, Bell, Moon, Heart, Shield, Settings,
+  ChevronRight, Bell, Moon, Heart, Shield,
   Calendar, MapPin, Sparkles, Camera
 } from "lucide-react";
 import ConditionHealthProfile from "../components/conditions/ConditionHealthProfile";
 import ProfileNavLinks from "../components/profile/ProfileNavLinks";
 import ProfileDataModals from "../components/profile/ProfileDataModals";
+
+// Friendly labels for the 12 supported life_stage enum values — used by the
+// prominent "Your Femwell stage" card below to read the current stage.
+const STAGE_LABEL = {
+  none:             { label: "Not set",                hint: "Tap Change stage to choose how Femwell should shape itself for you." },
+  teen:             { label: "Teen",                   hint: "Soft copy. Parent Bridge optional. No fertility content by default." },
+  reproductive:     { label: "Reproductive years",     hint: "Standard menstrual cycle is the lens — phases, predictions, the full Planner." },
+  "pre-ttc":        { label: "Pre-TTC",                hint: "Three months of better data before the TTC switch — folic acid, AMH conversations." },
+  ttc:              { label: "Trying to conceive",     hint: "Cycle becomes a clinical tool. BBT, OPK, fertile-window confidence-honest." },
+  "pregnant-t1":    { label: "Pregnant · Trimester I", hint: "Cycle tracking is paused. Trimester week ribbon takes over." },
+  "pregnant-t2":    { label: "Pregnant · Trimester II",hint: "Cycle tracking is paused. 20-week anomaly scan is the landmark." },
+  "pregnant-t3":    { label: "Pregnant · Trimester III",hint: "Cycle tracking is paused. Kick counter + birth plan from here on." },
+  pregnancy:        { label: "Pregnant",               hint: "Cycle tracking is paused. Trimester ribbon is the frame." },
+  postpartum:       { label: "Postpartum",             hint: "Period may not have returned — that's expected. Recovery is the frame." },
+  perimenopause:    { label: "Perimenopause",          hint: "Symptom-pattern ribbon replaces phase prediction. HRT log appears on Patterns." },
+  menopause:        { label: "Menopause",              hint: "Symptom-pattern frame. GSM screen + HRT log. No cycle prediction." },
+  "post-menopause": { label: "Post-menopause",         hint: "Annual health rhythm — DEXA, smear, mammogram. No cycle frame." },
+};
 
 function getCyclePhase(lastPeriodDate, cycleLen = 28, periodLen = 5) {
   if (!lastPeriodDate) return null;
@@ -398,12 +416,99 @@ export default function Profile() {
           )}
         </div>
 
-        {/* Health Profile (conditions + life stage) */}
+        {/* Prominent stage card — the real personalisation lever.
+            Sits above the legacy Health Profile section so it's the first
+            thing the user sees about how Femwell will shape itself. Tap
+            "Change stage" → scrolls down to the existing 12-pill picker
+            inside ConditionHealthProfile.
+            Spec ref: live-walk drift report 2026-05-16 + claude-state/
+            product-research/femwell-complete-life-planner-2026-05-16.md. */}
+        {profile && (() => {
+          const stageKey = profile.life_stage || "none";
+          const stage = STAGE_LABEL[stageKey] || STAGE_LABEL.none;
+          const conds = profile.conditions || profile.condition_flags || [];
+          const condCount = conds.filter(c => c && c !== "prefer_not").length;
+          return (
+            <div style={{
+              background: "linear-gradient(180deg, rgba(168,134,75,0.10), rgba(244,237,219,0.6))",
+              border: "1px solid rgba(58,44,26,0.12)",
+              borderLeft: "3px solid #A6862B",
+              borderRadius: 20,
+              padding: "18px 18px 20px",
+              marginBottom: 16,
+              boxShadow: "var(--shadow-sm)",
+            }}>
+              <div style={{
+                fontFamily: "'Inter', sans-serif",
+                fontSize: 10,
+                fontWeight: 700,
+                letterSpacing: "0.22em",
+                color: "#A6862B",
+                textTransform: "uppercase",
+              }}>Your Femwell stage</div>
+              <div style={{
+                fontFamily: "'Fraunces', Georgia, serif",
+                fontSize: 22,
+                fontWeight: 500,
+                fontStyle: "italic",
+                color: "var(--plum, #4A2A3A)",
+                margin: "6px 0 8px",
+                lineHeight: 1.2,
+              }}>{stage.label}</div>
+              <p style={{
+                fontFamily: "'Inter', sans-serif",
+                fontSize: 12.5,
+                color: "var(--plum-2, #6B4559)",
+                lineHeight: 1.5,
+                margin: "0 0 10px",
+              }}>{stage.hint}</p>
+              <p style={{
+                fontFamily: "Georgia, serif",
+                fontStyle: "italic",
+                fontSize: 11.5,
+                color: "var(--plum-mute, #8A7584)",
+                lineHeight: 1.5,
+                margin: "0 0 12px",
+              }}>
+                This shapes every Planner surface, Jess message, and content card
+                {condCount > 0 ? ` · ${condCount} condition${condCount === 1 ? "" : "s"} also active.` : "."}
+              </p>
+              <button
+                type="button"
+                onClick={() => {
+                  const el = document.getElementById("profile-stage-picker");
+                  if (el) el.scrollIntoView({ behavior: "smooth", block: "start" });
+                }}
+                style={{
+                  display: "inline-flex",
+                  alignItems: "center",
+                  gap: 6,
+                  padding: "9px 16px",
+                  background: "#3A2C1A",
+                  color: "#F4EDDB",
+                  border: "none",
+                  borderRadius: 9999,
+                  fontFamily: "'Inter', sans-serif",
+                  fontSize: 12,
+                  fontWeight: 700,
+                  letterSpacing: "0.06em",
+                  cursor: "pointer",
+                  minHeight: 36,
+                }}
+              >Change stage →</button>
+            </div>
+          );
+        })()}
+
+        {/* Health Profile (conditions + life stage) — anchor for the
+            "Change stage" button on the prominent card above. */}
         {profile && (
-          <ConditionHealthProfile
-            profile={profile}
-            onProfileUpdate={(updates) => setProfile(p => ({ ...p, ...updates }))}
-          />
+          <div id="profile-stage-picker">
+            <ConditionHealthProfile
+              profile={profile}
+              onProfileUpdate={(updates) => setProfile(p => ({ ...p, ...updates }))}
+            />
+          </div>
         )}
 
         {/* Settings card */}
