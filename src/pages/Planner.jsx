@@ -11,6 +11,7 @@ import CycleMirrorSundayTile from "@/components/planner/cycle/CycleMirrorSundayT
 import DoctorReadyDiaryCard from "@/components/planner/cycle/DoctorReadyDiaryCard";
 import MonthRibbon from "@/components/planner/cycle/MonthRibbon";
 import SymptomRibbon from "@/components/planner/SymptomRibbon";
+import HrtLogCard from "@/components/planner/cycle/HrtLogCard";
 import QuietModeBanner from "@/components/planner/cycle/QuietModeBanner";
 import SavedRhythmsCarousel from "@/components/planner/cycle/SavedRhythmsCarousel";
 import WhatsUnfinishedCard from "@/components/planner/cycle/WhatsUnfinishedCard";
@@ -644,11 +645,16 @@ export default function Planner() {
           />
           <div ref={(el) => { cycleSectionRefs.current.ribbon = el; }}>
             {plannerConfig.ribbonType === "symptom" ? (
-              <SymptomRibbon
-                profile={profile}
-                today={today}
-                onLogToday={() => navigate("/Track")}
-              />
+              <>
+                <SymptomRibbon
+                  profile={profile}
+                  today={today}
+                  onLogToday={() => navigate("/Track")}
+                />
+                {plannerConfig.cycleTabMode === "heatmap" && (
+                  <HrtLogCard profile={profile} />
+                )}
+              </>
             ) : (
               <MonthRibbon
                 profile={profile}

@@ -46,7 +46,12 @@ export function readInitialView() {
   return readStoredView();
 }
 
-export default function PlannerTabs({ view, onChange }) {
+export default function PlannerTabs({ view, onChange, plannerConfig }) {
+  // Life Stage adapter — the Cycle tab is renamed per stage:
+  //   Patterns  (peri / meno), Journey (pregnancy), Clinical (TTC),
+  //   Hormones  (PCOS modifier), Recovery (postpartum), Health (post-meno).
+  // Default "Cycle" is used for reproductive years + when no config.
+  const cycleLabel = plannerConfig?.cycleTabName || "Cycle";
   return (
     <div role="tablist" aria-label="Planner view" style={wrapStyle}>
       {VIEWS.map((id) => {
@@ -69,7 +74,7 @@ export default function PlannerTabs({ view, onChange }) {
               fontFamily: active ? "'Fraunces', Georgia, serif" : tabBtnStyle.fontFamily,
             }}
           >
-            {id === "today" ? "Today" : "Cycle"}
+            {id === "today" ? "Today" : cycleLabel}
           </button>
         );
       })}
