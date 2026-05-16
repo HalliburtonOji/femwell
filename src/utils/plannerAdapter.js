@@ -111,9 +111,10 @@ const STAGE_CONFIGS = {
     eyebrowPrefix:  "TODAY · PERI",
     cycleTabName:   "Patterns",
     cycleTabMode:   "heatmap",
-    hiddenFeatures: ["fertileWindow", "phaseColorsDominant"],
+    hiddenFeatures: ["fertileWindow", "phaseColorsDominant", "phaseSignedIntention", "smartViewPhaseChips"],
     contentTags:    ["any", "perimenopause", "hrt"],
     jessContext:    "The user is perimenopausal. She may have irregular cycles, hot flushes, night sweats, sleep disruption, mood changes (often anxiety more than depression), brain fog, joint pain, vaginal dryness, libido changes. Focus on symptom patterns, HRT if relevant (without prescribing), and lifestyle strategies. NICE NG23 allows symptom-based diagnosis — do not push for FSH bloods. Resistance training is the highest-impact intervention.",
+    bannerText:     "Perimenopause Mode — symptoms over predictions.",
   },
   menopause: {
     ribbonType:     "symptom",
@@ -121,9 +122,10 @@ const STAGE_CONFIGS = {
     eyebrowPrefix:  "TODAY · MENOPAUSE",
     cycleTabName:   "Patterns",
     cycleTabMode:   "heatmap",
-    hiddenFeatures: ["fertileWindow", "phaseColors", "cycleRibbon"],
+    hiddenFeatures: ["fertileWindow", "phaseColors", "cycleRibbon", "phaseSignedIntention", "smartViewPhaseChips"],
     contentTags:    ["any", "menopause", "hrt", "gsm"],
     jessContext:    "The user is menopausal (12+ months since last period). Vasomotor symptoms (hot flushes, night sweats) may still be active. Long-term concerns rise: bone density, cardiovascular risk, cognitive health, GSM. Local vaginal oestrogen is safe and effective. UK note: Gina (estradiol 10mcg pessary) is now OTC for 50+ post-menopausal women.",
+    bannerText:     "Menopause Mode — focused on long-term health, not cycle.",
   },
   "post-menopause": {
     ribbonType:     "health",
