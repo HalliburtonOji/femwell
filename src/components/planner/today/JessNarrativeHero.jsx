@@ -264,18 +264,24 @@ function fallbackFor(phase, dateISO, lifeStage, conditions) {
   return bank[idx];
 }
 
-export default function JessNarrativeHero({ profile, cycleInfo, plannerConfig }) {
+export default function JessNarrativeHero({ profile, cycleInfo, plannerConfig, effectiveLifeStage, effectiveConditions }) {
   const today = new Date();
   const dateISO = today.toISOString().split("T")[0];
-  const phase = cycleInfo?.phase || "";
-  const week = isoWeekOfYear(today);
-
   // Life Stage context — bumps the cache key so each stage gets its own
   // weekly hero, and is passed through to the backend so the LLM prompt
   // is reshaped per stage / condition. See src/utils/plannerAdapter.js.
   // plannerConfig.ribbonType !== "cycle" → stage-keyed fallback bank.
-  const lifeStage = profile?.life_stage || "reproductive";
-  const conditions = profile?.conditions || profile?.condition_flags || [];
+  //
+  // Prefer effectiveLifeStage / effectiveConditions when the parent provides
+  // them (Planner.jsx resolves DEV override > profile > "reproductive"); fall
+  // back to reading profile directly so older callers still work.
+  const lifeStage = effectiveLifeStage || profile?.life_stage || "reproductive";
+  const conditions = effectiveConditions || profile?.conditions || profile?.condition_flags || [];
+  // For non-cycle stages, suppress cycle-phase entirely so the LLM cache key
+  // and the fallback selection never collide with stale luteal-week copy.
+  const ribbonTypeForPhase = plannerConfig?.ribbonType || "cycle";
+  const phase = ribbonTypeForPhase === "cycle" ? (cycleInfo?.phase || "") : "";
+  const week = isoWeekOfYear(today);
   const conditionsKey = conditions.slice().sort().join("-") || "none";
 
   const cacheKey = useMemo(() => {

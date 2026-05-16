@@ -926,6 +926,8 @@ export default function Planner() {
               profile={profile}
               cycleInfo={selectedPhase ? { phase: selectedPhase, day: selectedCycleDay } : null}
               plannerConfig={plannerConfig}
+              effectiveLifeStage={effectiveLifeStage}
+              effectiveConditions={effectiveConditions}
             />
 
             {/* ── Fresh-Start banner (Phase 2 B1) — soft reset on inflection.
