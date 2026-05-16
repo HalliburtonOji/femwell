@@ -423,16 +423,32 @@ export default function Planner() {
   //     open in two tabs and flips the stage in one).
   const [devStageOverride, setDevStageOverride] = useState(() => readDevStageOverride());
   useEffect(() => {
-    const onCustom = (e) => setDevStageOverride(e?.detail || null);
+    const onCustom = (e) => {
+      const next = e?.detail || null;
+      console.log("[Planner] DEV_STAGE_EVENT received →", next);
+      setDevStageOverride(next);
+    };
     const onStorage = (e) => {
-      if (e.key === DEV_STAGE_KEY) setDevStageOverride(e.newValue || null);
+      if (e.key !== DEV_STAGE_KEY) return;
+      console.log("[Planner] storage event for life_stage →", e.newValue);
+      setDevStageOverride(e.newValue || null);
     };
     window.addEventListener(DEV_STAGE_EVENT, onCustom);
     window.addEventListener("storage", onStorage);
+    console.log("[Planner] DEV listeners attached. Initial override:", readDevStageOverride());
     return () => {
       window.removeEventListener(DEV_STAGE_EVENT, onCustom);
       window.removeEventListener("storage", onStorage);
     };
+  }, []);
+  // Belt-and-braces: also poll localStorage every 1500ms in case the event
+  // listener path is somehow blocked. Cheap, no-op when value is unchanged.
+  useEffect(() => {
+    const t = window.setInterval(() => {
+      const fresh = readDevStageOverride();
+      setDevStageOverride((prev) => (prev === fresh ? prev : fresh));
+    }, 1500);
+    return () => window.clearInterval(t);
   }, []);
   const realLifeStage = profile?.life_stage ?? null;
   const effectiveLifeStage = devStageOverride || realLifeStage || "reproductive";
@@ -610,10 +626,25 @@ export default function Planner() {
             {/* A2-4 (4): confidence pill lifted out of .ph-sub — always renders */}
             <ConfidencePill meta={profile?.cycle_prediction_meta} />
           </div>
-          {selectedPhase && selectedCycleDay && (
+          {/* Life Stage adapter: hide "Day N · Luteal" cycle chip when the
+              stage is not cycle-anchored (peri, pregnancy, ttc, postpartum,
+              post-meno, pcos / ha modifier). The cycle frame would mislead. */}
+          {selectedPhase && selectedCycleDay && (plannerConfig?.ribbonType === "cycle") && (
             <p style={{ fontSize: 12, color: "var(--plum-2, #6B4559)", fontFamily: "'Inter', sans-serif", marginBottom: 4 }}>
               Day {selectedCycleDay} · <span style={{ color: PHASE_COLORS[selectedPhase], fontWeight: 600 }}>{phaseLabelOf(selectedPhase)}</span>
             </p>
+          )}
+          {/* Stage banner — clearly tell the user which mode is active. */}
+          {plannerConfig?.bannerText && (
+            <p style={{
+              fontSize: 11, fontWeight: 600, color: "var(--plum, #4A2A3A)",
+              fontFamily: "Georgia, serif", fontStyle: "italic",
+              marginBottom: 6, lineHeight: 1.4,
+              padding: "6px 10px",
+              background: "rgba(168,134,75,0.12)",
+              borderLeft: "2px solid #A6862B",
+              borderRadius: 4,
+            }}>{plannerConfig.bannerText}</p>
           )}
           {/* A2-4 (5): selected-crumb subtitle — italic plum-mute */}
           <p style={{ fontSize: 11.5, fontStyle: "italic", color: "var(--plum-mute, #8A7584)", fontFamily: "'Inter', sans-serif", marginBottom: 8, lineHeight: 1.45 }}>
@@ -718,33 +749,43 @@ export default function Planner() {
             />
           </div>
           <ConsistencyCard habitLogs={habitLogs} phase={selectedPhase} />
-          <SavedRhythmsCarousel
-            profile={profile}
-            currentPhase={selectedPhase}
-            currentCycleDay={selectedCycleDay}
-            plannerConfig={plannerConfig}
-          />
-          <WhatsUnfinishedCard
-            stuckDaysByHabit={stuckDaysByHabit}
-            phase={selectedPhase}
-          />
-          <CycleMirrorSundayTile
-            profile={profile}
-            habitLogs={habitLogs}
-            phase={selectedPhase}
-            cycleDay={selectedCycleDay}
-          />
-          <div ref={(el) => { cycleSectionRefs.current.weekAhead = el; }}>
-            <WeekAheadCard
-              phase={selectedPhase}
-              nextPeriodEta={profile?.cycle_prediction_meta?.next_period_eta || null}
-              etaWindowDays={profile?.cycle_prediction_meta?.eta_window_days || null}
-              confidencePct={profile?.cycle_prediction_meta?.confidence_pct || null}
-              cyclesObserved={profile?.cycle_prediction_meta?.cycles_observed || 0}
-              profile={profile}
-              plannerConfig={plannerConfig}
-            />
-          </div>
+          {/* Life Stage adapter: SavedRhythms / WhatsUnfinished /
+              CycleMirror / WeekAhead are all cycle-phase-anchored. Hide
+              them entirely when the stage isn't cycle-anchored (peri,
+              pregnancy, ttc, postpartum, post-meno, pcos / ha). Pregnant
+              and perimenopausal users should NEVER see "your next period
+              ETA" or "Sunday mirror your luteal". */}
+          {plannerConfig?.ribbonType === "cycle" && (
+            <>
+              <SavedRhythmsCarousel
+                profile={profile}
+                currentPhase={selectedPhase}
+                currentCycleDay={selectedCycleDay}
+                plannerConfig={plannerConfig}
+              />
+              <WhatsUnfinishedCard
+                stuckDaysByHabit={stuckDaysByHabit}
+                phase={selectedPhase}
+              />
+              <CycleMirrorSundayTile
+                profile={profile}
+                habitLogs={habitLogs}
+                phase={selectedPhase}
+                cycleDay={selectedCycleDay}
+              />
+              <div ref={(el) => { cycleSectionRefs.current.weekAhead = el; }}>
+                <WeekAheadCard
+                  phase={selectedPhase}
+                  nextPeriodEta={profile?.cycle_prediction_meta?.next_period_eta || null}
+                  etaWindowDays={profile?.cycle_prediction_meta?.eta_window_days || null}
+                  confidencePct={profile?.cycle_prediction_meta?.confidence_pct || null}
+                  cyclesObserved={profile?.cycle_prediction_meta?.cycles_observed || 0}
+                  profile={profile}
+                  plannerConfig={plannerConfig}
+                />
+              </div>
+            </>
+          )}
           <div ref={(el) => { cycleSectionRefs.current.doctor = el; }}>
             <DoctorReadyDiaryCard user={user} profile={profile} plannerConfig={plannerConfig} />
           </div>
@@ -757,7 +798,8 @@ export default function Planner() {
             plannerConfig={plannerConfig}
             effectiveLifeStage={effectiveLifeStage}
           />
-          <PlanMyNextCycleCTA />
+          {/* Plan-my-next-cycle is cycle-anchored. Hide for non-cycle stages. */}
+          {plannerConfig?.ribbonType === "cycle" && <PlanMyNextCycleCTA />}
         </div>
       )}
 
@@ -788,32 +830,41 @@ export default function Planner() {
               plannerConfig={plannerConfig}
             />
 
-            {/* ── Fresh-Start banner (Phase 2 B1) — soft reset on inflection ── */}
-            <FreshStartBanner
-              profile={profile}
-              habitLogs={habitLogs}
-              today={today}
-              onAddAnchor={() => setShowAdd(true)}
-              onPlanWithJess={() => navigate("/Planner?_smartView=streaky")}
-            />
+            {/* ── Fresh-Start banner (Phase 2 B1) — soft reset on inflection.
+                Life Stage adapter: FreshStart triggers on cycle-day-1 etc;
+                hide entirely for non-cycle stages. ───────────────── */}
+            {plannerConfig?.ribbonType === "cycle" && (
+              <FreshStartBanner
+                profile={profile}
+                habitLogs={habitLogs}
+                today={today}
+                onAddAnchor={() => setShowAdd(true)}
+                onPlanWithJess={() => navigate("/Planner?_smartView=streaky")}
+              />
+            )}
 
-            {/* ── Quiet Mode banner (Phase 2 C6) — also surfaces on Today ── */}
+            {/* ── Quiet Mode banner (Phase 2 C6) — mode-agnostic, keep. ── */}
             <QuietModeBanner
               profile={profile}
               onCleared={() => setProfile(p => p ? { ...p, quiet_mode_until: null } : p)}
             />
 
-            {/* ── Smart View (Phase 2 C5) — adaptive "right now" card ──── */}
-            <SmartViewCard
-              phase={selectedPhase}
-              cycleDay={selectedCycleDay}
-              capacityPct={capacityPct}
-              dailyPlan={dailyPlan}
-              activeProgram={activeProgram}
-              ritualHabits={ritualHabits}
-              todayHabitLogs={todayHabitLogs}
-              quietModeActive={quietModeActive}
-            />
+            {/* ── Smart View (Phase 2 C5) — adaptive "right now" card. Phase
+                chips IDLE/STREAKY/STUCK/DRIFTING/QUIET are cycle-phase aware,
+                so hide for non-cycle stages. The pillar tiles below cover
+                the "what to do right now" signal for those stages. ─── */}
+            {plannerConfig?.ribbonType === "cycle" && (
+              <SmartViewCard
+                phase={selectedPhase}
+                cycleDay={selectedCycleDay}
+                capacityPct={capacityPct}
+                dailyPlan={dailyPlan}
+                activeProgram={activeProgram}
+                ritualHabits={ritualHabits}
+                todayHabitLogs={todayHabitLogs}
+                quietModeActive={quietModeActive}
+              />
+            )}
 
             {/* ── Pillars Deck (Today-A T-A1) — 6-tile body summary ──── */}
             <PillarsDeck profile={profile} today={today} plannerConfig={plannerConfig} />
