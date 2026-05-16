@@ -159,17 +159,45 @@
       "type": "string",
       "enum": [
         "none",
-        "pregnancy",
+        "teen",
+        "reproductive",
+        "pre-ttc",
+        "ttc",
+        "pregnant-t1",
+        "pregnant-t2",
+        "pregnant-t3",
+        "postpartum",
+        "perimenopause",
         "menopause",
-        "ttc"
+        "post-menopause",
+        "pregnancy"
       ],
-      "default": "none"
+      "default": "reproductive"
     },
     "life_stage_focus": {
       "type": "array",
       "items": {
         "type": "string"
       }
+    },
+    "conditions": {
+      "type": "array",
+      "description": "Cross-cutting conditions modifier — overrides ribbon and pillar behaviour across life stages. Spec values: pcos | endo | pmdd | fibroids | thyroid | hrt | cancer-survivor | ha | other.",
+      "items": {
+        "type": "string",
+        "enum": [
+          "pcos",
+          "endo",
+          "pmdd",
+          "fibroids",
+          "thyroid",
+          "hrt",
+          "cancer-survivor",
+          "ha",
+          "other"
+        ]
+      },
+      "default": []
     },
     "hydration_target_ml": {
       "type": "number",
