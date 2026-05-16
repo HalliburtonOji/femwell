@@ -5,7 +5,7 @@ import { PageLoader } from "../components/common/LoadingSpinner";
 import { createPageUrl } from "@/utils";
 import {
   AlertCircle, ChevronRight, Utensils, Feather, Brain, Salad, Zap,
-  Droplets, UtensilsCrossed, BookOpen, Activity, Lightbulb, TrendingUp, X, Bookmark
+  Droplets, UtensilsCrossed, BookOpen, Activity, Lightbulb, TrendingUp, X
 } from "lucide-react";
 import PanicModeModal from "../components/today/PanicModeModal";
 import CalmCards from "../components/today/CalmCards";
@@ -449,14 +449,24 @@ export default function Today() {
         {/* ── TODAY TAB */}
         {mainTab === "today" && (
           <div className="pt-4 space-y-3">
-            {/* Hero */}
-            {profile?.life_stage === "ttc" ? (
-              <TodayFertilityBanner user={user} profile={profile} />
-            ) : (
-              <TodayHeroSection user={user} profile={profile} cycleInfo={cycleInfo} todayCheckin={todayCheckin}
-                onOpenCheckin={() => setShowCheckin(true)} onOpenCalendar={() => setMainTab("track")} extractDisplayName={extractDisplayName} />
-            )}
-            {profile && <DailyPhaseBrief profile={profile} />}
+            {/* Hero — Life Stage gate.
+                Pregnant / postpartum / post-menopause / menopause / PCOS users
+                must NOT see "Log your last period" / fertile window banner. */}
+            {(() => {
+              const lifeStage = profile?.life_stage || "none";
+              if (lifeStage === "ttc") return <TodayFertilityBanner user={user} profile={profile} />;
+              return <TodayHeroSection user={user} profile={profile} cycleInfo={cycleInfo} todayCheckin={todayCheckin}
+                onOpenCheckin={() => setShowCheckin(true)} onOpenCalendar={() => setMainTab("track")} extractDisplayName={extractDisplayName} />;
+            })()}
+            {profile && (() => {
+              // Suppress DailyPhaseBrief ("Log your last period date in Track…")
+              // for any non-cycle-anchored stage. Same set as above.
+              const cycleStages = new Set(["none", "reproductive", "pre-ttc", "ttc", "teen", "perimenopause"]);
+              const lifeStage = profile?.life_stage || "none";
+              const conditions = profile?.conditions || profile?.condition_flags || [];
+              const showBrief = cycleStages.has(lifeStage) && !conditions.includes("pcos") && !conditions.includes("ha");
+              return showBrief ? <DailyPhaseBrief profile={profile} /> : null;
+            })()}
 
             <CompleteProfileBanner
               shouldShow={!!profile && (!profile.last_period_start_date || profile.onboarding_complete !== true)}
