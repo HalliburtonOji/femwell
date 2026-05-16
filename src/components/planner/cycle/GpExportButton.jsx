@@ -81,6 +81,18 @@ function isWithinWindow(iso, fromISO, toISO) {
   return iso && iso >= fromISO && iso <= toISO;
 }
 
+// Safe fetch — returns [] when the entity is missing on base44 (e.g. the
+// schema migration hasn't shipped yet) or when the SDK call throws / rejects.
+function safeFilter(entityName, args) {
+  try {
+    const ent = base44?.entities?.[entityName];
+    if (!ent || typeof ent.filter !== "function") return Promise.resolve([]);
+    return ent.filter(...args).catch(() => []);
+  } catch {
+    return Promise.resolve([]);
+  }
+}
+
 async function buildSnapshot(profile, plannerConfig) {
   const userId = profile?.user_id;
   if (!userId) return null;
@@ -91,9 +103,9 @@ async function buildSnapshot(profile, plannerConfig) {
   const toISO = today.toISOString().split("T")[0];
 
   const [dailyAll, menoAll, hrtAll] = await Promise.all([
-    base44.entities.DailyCheckins.filter({ user_id: userId }, "-date", 200).catch(() => []),
-    base44.entities.MenopauseDailyLog.filter({ user_id: userId }, "-date", 200).catch(() => []),
-    base44.entities.HrtLog.filter({ user_id: userId }, "-start_date", 10).catch(() => []),
+    safeFilter("DailyCheckins",       [{ user_id: userId }, "-date",       200]),
+    safeFilter("MenopauseDailyLog",   [{ user_id: userId }, "-date",       200]),
+    safeFilter("HrtLog",              [{ user_id: userId }, "-start_date",  10]),
   ]);
 
   const daily = (Array.isArray(dailyAll) ? dailyAll : []).filter((r) => isWithinWindow(r?.date, fromISO, toISO));
@@ -278,7 +290,18 @@ export default function GpExportButton({ profile, plannerConfig }) {
         return;
       }
       const displayName = profile?.display_name || profile?.user_email || "Femwell user";
-      const pdf = buildPdf(snap, displayName);
+      // Wrap the jsPDF call separately — if the lib fails (rare, but the
+      // Promise from buildSnapshot already swallowed entity-missing errors),
+      // surface a friendly toast rather than crashing the page.
+      let pdf;
+      try {
+        pdf = buildPdf(snap, displayName);
+      } catch (pdfErr) {
+        setStatus("error");
+        setErrorMsg("Export unavailable until schema is migrated.");
+        console.warn("[GpExportButton] PDF build failed:", pdfErr);
+        return;
+      }
       const dateStamp = new Date().toISOString().split("T")[0];
       const safeName = (displayName || "femwell").replace(/[^a-z0-9]+/gi, "-").toLowerCase();
       pdf.save(`gp-summary-${safeName}-${dateStamp}.pdf`);

@@ -26,6 +26,7 @@ import { TonightCard, ShutdownRitualCard } from "@/components/planner/today/Warm
 import { WeekAheadCard, AstraSidecar, PlanMyNextCycleCTA } from "@/components/planner/cycle/WarmthBundleCycle";
 import { selectedCrumbToday, selectedCrumbCycle } from "@/components/planner/selectedCrumb";
 import { getPlannerConfig } from "@/utils/plannerAdapter";
+import DevStageSwitcher, { readDevStageOverride } from "@/components/planner/DevStageSwitcher";
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Planner — Phase 2 C0 (tab shell + routing)
@@ -408,9 +409,17 @@ export default function Planner() {
   // DailyStoryReel, PlannerTabs, MonthRibbon, SavedRhythmsCarousel,
   // DoctorReadyDiaryCard, and the WarmthBundleCycle trio.
   // See src/utils/plannerAdapter.js + /Ideas · Life Stages tab.
+  //
+  // Dev override (no schema needed): DevStageSwitcher writes to
+  // localStorage.femwell_dev_life_stage; if present, it wins over
+  // profile.life_stage so Halli can preview any stage with a plain Publish.
+  const [devStageOverride, setDevStageOverride] = useState(() => readDevStageOverride());
+  const realLifeStage = profile?.life_stage ?? null;
+  const effectiveLifeStage = devStageOverride || realLifeStage || "reproductive";
+  const effectiveConditions = profile?.conditions ?? profile?.condition_flags ?? [];
   const plannerConfig = useMemo(
-    () => getPlannerConfig(profile?.life_stage, profile?.conditions || profile?.condition_flags || []),
-    [profile?.life_stage, profile?.conditions, profile?.condition_flags]
+    () => getPlannerConfig(effectiveLifeStage, effectiveConditions),
+    [effectiveLifeStage, effectiveConditions]
   );
 
   // ── Handlers ──────────────────────────────────────────────────────────────
@@ -587,7 +596,14 @@ export default function Planner() {
               : selectedCrumbToday({ dailyPlan, phase: selectedPhase, date: today })}
           </p>
 
-          <PlannerTabs view={view} onChange={changeView} plannerConfig={plannerConfig} />
+          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12, flexWrap: "wrap" }}>
+            <PlannerTabs view={view} onChange={changeView} plannerConfig={plannerConfig} />
+            <DevStageSwitcher
+              effectiveStage={effectiveLifeStage}
+              realStage={realLifeStage}
+              onChange={setDevStageOverride}
+            />
+          </div>
 
           {view === "today" && (
             <div className="flex items-center gap-2" style={{ marginTop: 14 }}>

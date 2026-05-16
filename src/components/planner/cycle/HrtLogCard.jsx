@@ -51,6 +51,10 @@ export default function HrtLogCard({ profile }) {
   const [logs, setLogs] = useState(null);
   const [editing, setEditing] = useState(false);
   const [saving, setSaving] = useState(false);
+  // entityMissing = true when base44 hasn't been told about the HrtLog
+  // entity yet (Halli hasn't run the schema migration). Show a polite
+  // "coming soon" placeholder instead of crashing.
+  const [entityMissing, setEntityMissing] = useState(false);
   const [form, setForm] = useState({
     type: "oestradiol-patch",
     dose: "",
@@ -61,20 +65,33 @@ export default function HrtLogCard({ profile }) {
 
   const userId = profile?.user_id;
 
-  // Lazy-fetch HrtLog rows.
+  // Lazy-fetch HrtLog rows. Guarded against the entity not existing on
+  // base44 yet — both the SDK throwing synchronously (no `HrtLog` key on
+  // base44.entities) and rejecting asynchronously (HTTP 404 / 400 from
+  // the server) collapse into a placeholder state.
   useEffect(() => {
     if (!userId) return;
     let cancelled = false;
     (async () => {
       try {
-        const rows = await base44.entities.HrtLog.filter(
-          { user_id: userId },
-          "-start_date",
-          10,
-        );
+        const ent = base44?.entities?.HrtLog;
+        if (!ent || typeof ent.filter !== "function") {
+          if (!cancelled) {
+            setEntityMissing(true);
+            setLogs([]);
+          }
+          return;
+        }
+        const rows = await ent.filter({ user_id: userId }, "-start_date", 10);
         if (!cancelled) setLogs(Array.isArray(rows) ? rows : []);
-      } catch {
-        if (!cancelled) setLogs([]);
+      } catch (err) {
+        if (cancelled) return;
+        // If the server returns 404 / 400 for the unknown entity, treat
+        // it the same as a synchronously-missing entity.
+        const msg = String(err?.message || err || "");
+        const looksMissing = /not\s*found|unknown|404|400|HrtLog/i.test(msg);
+        setEntityMissing(looksMissing);
+        setLogs([]);
       }
     })();
     return () => { cancelled = true; };
@@ -100,25 +117,57 @@ export default function HrtLogCard({ profile }) {
 
   const save = async () => {
     if (!userId || saving) return;
+    const ent = base44?.entities?.HrtLog;
+    if (!ent || typeof ent.create !== "function") {
+      setEntityMissing(true);
+      return;
+    }
     setSaving(true);
     try {
-      if (active?.id) {
-        await base44.entities.HrtLog.update(active.id, { ...form, is_active: true });
+      if (active?.id && typeof ent.update === "function") {
+        await ent.update(active.id, { ...form, is_active: true });
       } else {
-        await base44.entities.HrtLog.create({ ...form, user_id: userId, is_active: true });
+        await ent.create({ ...form, user_id: userId, is_active: true });
       }
       // Re-fetch to refresh display.
-      const rows = await base44.entities.HrtLog.filter({ user_id: userId }, "-start_date", 10).catch(() => []);
+      const rows = await ent.filter({ user_id: userId }, "-start_date", 10).catch(() => []);
       setLogs(Array.isArray(rows) ? rows : []);
       setEditing(false);
-    } catch {
-      // silent — the form stays open so user can retry
+    } catch (err) {
+      const msg = String(err?.message || err || "");
+      if (/not\s*found|unknown|404|400|HrtLog/i.test(msg)) {
+        setEntityMissing(true);
+      }
+      // else: silent — the form stays open so user can retry
     } finally {
       setSaving(false);
     }
   };
 
   const loading = logs === null;
+
+  // Schema-pending placeholder — friendly card while Halli waits for the
+  // HrtLog migration. Keeps the layout shape so the Patterns tab doesn't jump.
+  if (entityMissing) {
+    return (
+      <section style={wrap} aria-label="HRT log card — schema pending">
+        <header style={headRow}>
+          <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+            <span style={iconWrap}>
+              <Pill size={14} strokeWidth={1.8} />
+            </span>
+            <div>
+              <div style={eyebrow}>HRT · COMING SOON</div>
+              <div style={titleStyle}>HRT log</div>
+            </div>
+          </div>
+        </header>
+        <p style={hintStyle}>
+          HRT logging arrives once the schema migration is published. We'll preserve everything you tap once it's live.
+        </p>
+      </section>
+    );
+  }
 
   return (
     <section style={wrap} aria-label="HRT log card">

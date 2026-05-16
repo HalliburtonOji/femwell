@@ -69,12 +69,21 @@ export default function SymptomRibbon({ profile, today, onLogToday }) {
   const [logs, setLogs] = useState(null);
   const days = useMemo(() => dateRangeLastN(DAYS_BACK, today || new Date()), [today]);
 
+  // Lazy-fetch MenopauseDailyLog. Guarded against the entity not existing
+  // on base44 yet — both a synchronously-missing entity (no key on
+  // base44.entities) and a 404 / 400 from the server collapse to an empty
+  // ribbon so the page never crashes.
   useEffect(() => {
     if (!profile?.user_id) return;
     let cancelled = false;
     (async () => {
       try {
-        const rows = await base44.entities.MenopauseDailyLog.filter(
+        const ent = base44?.entities?.MenopauseDailyLog;
+        if (!ent || typeof ent.filter !== "function") {
+          if (!cancelled) setLogs([]);
+          return;
+        }
+        const rows = await ent.filter(
           { user_id: profile.user_id },
           "-date",
           DAYS_BACK + 5,

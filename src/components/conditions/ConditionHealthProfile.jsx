@@ -100,7 +100,40 @@ export default function ConditionHealthProfile({ profile, onProfileUpdate }) {
     if (!profile) return;
     setSaving(true);
     try {
-      await base44.entities.UserProfile.update(profile.id, patch);
+      // Try the full patch first. If base44 rejects an unknown field
+      // (the conditions enum hasn't shipped on the live schema yet, etc),
+      // retry with the schema-pre-migration subset so the user still gets
+      // local state updated and we don't no-op silently.
+      try {
+        await base44.entities.UserProfile.update(profile.id, patch);
+      } catch (err) {
+        const msg = String(err?.message || err || "");
+        if (/unknown|conditions|life_stage|400|404/i.test(msg)) {
+          // Strip the new fields and retry.
+          const safe = { ...patch };
+          delete safe.conditions;
+          // life_stage is an older field but its enum has been expanded —
+          // if the server rejects the new value, fall back to "none".
+          if (safe.life_stage && /pre-ttc|pregnant-t|postpartum|perimenopause|menopause|post-menopause|teen|reproductive/.test(String(safe.life_stage))) {
+            // Keep going — server may have it already; only retry if the
+            // first call clearly rejected the value.
+            try {
+              await base44.entities.UserProfile.update(profile.id, safe);
+            } catch {
+              // Last resort — local-only update.
+            }
+          } else {
+            try {
+              await base44.entities.UserProfile.update(profile.id, safe);
+            } catch {
+              /* fall through to local-only update */
+            }
+          }
+          console.warn("[ConditionHealthProfile] schema not migrated yet; local state updated only.", err);
+        } else {
+          throw err;
+        }
+      }
       onProfileUpdate(patch);
     } finally {
       setSaving(false);

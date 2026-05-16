@@ -214,7 +214,12 @@ export default function PillarsDeck({ profile, today, plannerConfig }) {
     let cancelled = false;
     (async () => {
       try {
-        const rows = await base44.entities.MenopauseDailyLog.filter(
+        const ent = base44?.entities?.MenopauseDailyLog;
+        if (!ent || typeof ent.filter !== "function") {
+          if (!cancelled) setMenoLogs([]);
+          return;
+        }
+        const rows = await ent.filter(
           { user_id: profile.user_id },
           "-date",
           14,
