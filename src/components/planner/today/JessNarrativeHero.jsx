@@ -162,6 +162,30 @@ const FALLBACK_BANK = {
 // guidance from src/utils/plannerAdapter.js so the FE-only fallback doesn't
 // drift away from what the LLM would have said.
 const STAGE_FALLBACK_BANK = {
+  "pregnant-t1": [
+    { headline: "The hidden trimester",            body: "First trimester is the one no one sees — nausea, exhaustion, tenderness. Your body is doing extraordinary work in the quiet. Honour that quiet." },
+    { headline: "Small wins, today",               body: "Water. A walk if it feels right. A nap if it doesn't. Right now small is the whole win — and it counts." },
+    { headline: "Rest is also work",               body: "If sleep is the thing your body wants, sleep is the work this week. The to-do list will be there afterwards; T1 fatigue is real." },
+    { headline: "Different from yesterday",        body: "Pregnancy will rearrange your sense of time and energy. Notice what's different without judging it — the noticing is part of how you arrive at the next part." },
+  ],
+  "pregnant-t2": [
+    { headline: "The trimester that lets you breathe", body: "T2 often brings energy back. Use it for the long things — the nursery thought, the harder conversations, the walks you've missed." },
+    { headline: "Movement is starting to be a conversation", body: "Around 18-22 weeks first flutters arrive. Pay attention without measuring — your sense of pattern is the data, the kicks are the answer." },
+    { headline: "Anomaly scan landmark",            body: "The 20-week scan is a real waypoint — emotional and clinical. Bring the questions you've been carrying; ask the things you keep googling." },
+    { headline: "Bigger before bigger",             body: "Bump is making itself known. Adjust sleep position now (left side, pillow between knees) — the body will thank you in T3." },
+  ],
+  "pregnant-t3": [
+    { headline: "The long stretch",                 body: "T3 is the marathon trimester. Reduce the load; over-promising on the calendar is a recipe for end-of-day tears. Keep one anchor a day, no more." },
+    { headline: "Kicks tell you what scans can't",  body: "Patterns matter more than counts. If something feels different, ring the day-assessment unit — never wait. Trust your sense." },
+    { headline: "Pack the bag before week 36",      body: "Hospital bag, birth plan, journey route — done by week 36 means week 37+ can be slow. Slow is the goal." },
+    { headline: "Sleep is a research project now",  body: "Side-sleeping, pillow between knees, propped up if reflux. None of these are perfect; one of them will be yours." },
+  ],
+  postpartum: [
+    { headline: "The fourth trimester",             body: "The body is healing in the background. Sleep, water, small movement — the dull list is the real list for now. Recovery is not linear." },
+    { headline: "Feelings are weather",             body: "Baby blues and PND can look alike on a hard morning. If anything's heavier than it should be, the GP or health visitor wants to know — not later, now." },
+    { headline: "Pelvic floor, lightly",            body: "A short daily contraction set is more useful than a long one once a month. Squeezy app or NHS-aligned cues — either is right." },
+    { headline: "Period when it comes",             body: "Lactational amenorrhea is a real reason periods can take months to return. We're not predicting — just keeping an eye, gently." },
+  ],
   perimenopause: [
     { headline: "Patterns over predictions",        body: "Cycles are doing their own thing now — that's perimenopause, not a glitch. Tracking hot flushes and sleep this week will tell you more than counting days ever could." },
     { headline: "Symptom load, gently watched",     body: "Some weeks land louder than others in peri. Log what you notice; the pattern is the point, not the perfect entry." },
@@ -185,12 +209,6 @@ const STAGE_FALLBACK_BANK = {
     { headline: "It is fine to feel different",     body: "Some weeks you'll feel bright, some heavy. That's bodies, not failure. Tell someone you trust if anything feels too much." },
     { headline: "Body and mood together",           body: "The week before a bleed often dips in mood. Knowing that's normal makes it lighter. We're not measuring you — we're learning with you." },
     { headline: "School + cycle = a real thing",    body: "If a heavy week lands on a hard week at school, that's worth a conversation with someone older. The body deserves room." },
-  ],
-  postpartum: [
-    { headline: "Healing is its own kind of work",  body: "Postpartum weeks ask the body to keep doing the recovery in the background. Sleep, water, gentle movement — the dull stuff is the real thing here." },
-    { headline: "Mood matters this week",           body: "Baby blues and PND can look alike on a hard day. If anything's heavier than it should be, the GP or health visitor wants to know — not after, now." },
-    { headline: "Pelvic floor, lightly",            body: "A short daily contraction set this week is more useful than a long one once a month. Squeezy app or NHS-aligned cues, your call." },
-    { headline: "The cycle will return when it does",body: "Lactational amenorrhea is a real reason periods can take months to come back. We're not predicting — just keeping an eye." },
   ],
   pcos: [
     { headline: "Three steady levers",              body: "Protein at breakfast, a walk after lunch, two strength sessions this week. PCOS responds to repetition more than perfection." },

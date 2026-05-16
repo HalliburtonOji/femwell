@@ -67,9 +67,10 @@ const STAGE_CONFIGS = {
     eyebrowPrefix:  "TODAY · TRIMESTER I",
     cycleTabName:   "Journey",
     cycleTabMode:   "timeline",
-    hiddenFeatures: ["contraception", "fertileWindow", "phaseColors", "ovulation"],
+    hiddenFeatures: ["contraception", "fertileWindow", "phaseColors", "phaseColorsDominant", "ovulation", "periodLogging", "cyclePhaseRibbon", "ovulationWindow", "planNextCycle", "savedRhythms"],
     contentTags:    ["any", "pregnancy", "t1"],
     jessContext:    "The user is in the first trimester of pregnancy. Common symptoms: nausea (often peaks week 8-10), fatigue, breast tenderness, food aversions. Miscarriage risk highest in T1 — never minimise, never falsely reassure. Mention NHS booking appointment + 12-week dating scan when relevant. Do not give clinical advice; signpost to midwife / GP.",
+    bannerText:     "Pregnancy Mode · First Trimester — cycle tracking is paused.",
   },
   "pregnant-t2": {
     ribbonType:     "pregnancy",
@@ -77,9 +78,10 @@ const STAGE_CONFIGS = {
     eyebrowPrefix:  "TODAY · TRIMESTER II",
     cycleTabName:   "Journey",
     cycleTabMode:   "timeline",
-    hiddenFeatures: ["contraception", "fertileWindow", "phaseColors", "ovulation"],
+    hiddenFeatures: ["contraception", "fertileWindow", "phaseColors", "phaseColorsDominant", "ovulation", "periodLogging", "cyclePhaseRibbon", "ovulationWindow", "planNextCycle", "savedRhythms"],
     contentTags:    ["any", "pregnancy", "t2"],
     jessContext:    "The user is in the second trimester. Energy often returns, baby movement first felt ~18-22 weeks, 20-week anomaly scan is the big landmark. Pre-eclampsia and gestational diabetes screening start in T2. Do not give clinical advice; signpost to midwife.",
+    bannerText:     "Pregnancy Mode · Second Trimester — cycle tracking is paused.",
   },
   "pregnant-t3": {
     ribbonType:     "pregnancy",
@@ -87,9 +89,10 @@ const STAGE_CONFIGS = {
     eyebrowPrefix:  "TODAY · TRIMESTER III",
     cycleTabName:   "Journey",
     cycleTabMode:   "timeline",
-    hiddenFeatures: ["contraception", "fertileWindow", "phaseColors", "ovulation"],
+    hiddenFeatures: ["contraception", "fertileWindow", "phaseColors", "phaseColorsDominant", "ovulation", "periodLogging", "cyclePhaseRibbon", "ovulationWindow", "planNextCycle", "savedRhythms"],
     contentTags:    ["any", "pregnancy", "t3", "birth-prep"],
     jessContext:    "The user is in the third trimester. Kick counting from week 24-28 (RCOG: change matters more than absolute count). Birth plan, hospital bag, antenatal classes are landmarks. Watch for pre-eclampsia signs (headache, vision changes, sudden swelling) — signpost to day-assessment unit, do not assess clinically.",
+    bannerText:     "Pregnancy Mode · Third Trimester — cycle tracking is paused.",
   },
   postpartum: {
     ribbonType:     "symptom",
@@ -97,9 +100,10 @@ const STAGE_CONFIGS = {
     eyebrowPrefix:  "TODAY · POSTPARTUM",
     cycleTabName:   "Recovery",
     cycleTabMode:   "events",
-    hiddenFeatures: ["contraception", "fertileWindow", "phaseColors"],
+    hiddenFeatures: ["contraception", "fertileWindow", "phaseColors", "ovulation", "periodLogging", "cyclePhaseRibbon", "ovulationWindow", "planNextCycle", "savedRhythms"],
     contentTags:    ["any", "postpartum", "fourth-trimester"],
     jessContext:    "The user is postpartum. She is sleep-deprived, physically healing, and may be experiencing baby blues or postnatal depression. Use the gentlest possible voice. Reference EPDS check-ins (Edinburgh Postnatal Depression Scale) when mood is mentioned. Pelvic-floor work is universal NHS guidance. Do not predict return of period — it is highly variable with lactational amenorrhea.",
+    bannerText:     "Postpartum Mode — period may not have returned, and that's expected.",
   },
   perimenopause: {
     ribbonType:     "symptom",
@@ -197,6 +201,20 @@ function replacePillar(pillarSet, find, replaceWith) {
   return pillarSet.map((p) => (p === find ? replaceWith : p));
 }
 
+// Pregnancy and post-menopause stages must NOT have their banner /
+// ribbonType / pillarSet overridden by condition modifiers. A pregnant
+// woman with PCOS history is pregnant, not "in PCOS Mode" — her banner
+// should still read "Pregnancy Mode · First Trimester". This list
+// declares the stages whose stage-level config wins over condition
+// overrides for these specific keys.
+const PROTECTED_STAGES = new Set([
+  "pregnant-t1", "pregnant-t2", "pregnant-t3",
+  "pregnancy", // legacy alias
+  "postpartum",
+  "post-menopause",
+]);
+const PROTECTED_KEYS = ["bannerText", "ribbonType", "cycleTabName", "cycleTabMode", "eyebrowPrefix"];
+
 // Main API. Defensive: never throws — bad inputs collapse to the
 // reproductive base config so the Planner always has a usable config.
 export function getPlannerConfig(lifeStage, conditions) {
@@ -207,7 +225,9 @@ export function getPlannerConfig(lifeStage, conditions) {
       : "none";
     // Legacy "pregnancy" enum value → default to T2 config.
     const baseStageKey = stageKey === "pregnancy" ? "pregnant-t2" : stageKey;
-    let cfg = { ...(STAGE_CONFIGS[baseStageKey] || STAGE_CONFIGS.reproductive || BASE) };
+    const baseCfg = { ...(STAGE_CONFIGS[baseStageKey] || STAGE_CONFIGS.reproductive || BASE) };
+    let cfg = { ...baseCfg };
+    const protectedStage = PROTECTED_STAGES.has(stageKey);
 
     // Apply each condition override in spec-listed order. Multiple conditions stack.
     // PCOS is applied first because it most-strongly reshapes the ribbon.
@@ -215,7 +235,24 @@ export function getPlannerConfig(lifeStage, conditions) {
     for (const condKey of order) {
       if (safeConditions.includes(condKey) && CONDITION_OVERRIDES[condKey]) {
         const next = CONDITION_OVERRIDES[condKey](cfg);
-        if (next && typeof next === "object") cfg = next;
+        if (next && typeof next === "object") {
+          cfg = next;
+          // Re-protect the keys that pregnancy/postpartum/post-meno stages
+          // must own. The condition override gets to enrich jessContext and
+          // contentTags + extend hiddenFeatures, but it doesn't get to
+          // replace the banner / ribbon / tab name.
+          if (protectedStage) {
+            for (const k of PROTECTED_KEYS) {
+              if (baseCfg[k] !== undefined) cfg[k] = baseCfg[k];
+            }
+            // hiddenFeatures: merge condition + stage rather than replace.
+            const merged = new Set([
+              ...(baseCfg.hiddenFeatures || []),
+              ...(cfg.hiddenFeatures || []),
+            ]);
+            cfg.hiddenFeatures = Array.from(merged);
+          }
+        }
       }
     }
 

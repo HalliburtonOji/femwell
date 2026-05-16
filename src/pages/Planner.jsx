@@ -28,6 +28,98 @@ import { selectedCrumbToday, selectedCrumbCycle } from "@/components/planner/sel
 import { getPlannerConfig } from "@/utils/plannerAdapter";
 import DevStageSwitcher, { readDevStageOverride, DEV_STAGE_KEY, DEV_STAGE_EVENT } from "@/components/planner/DevStageSwitcher";
 
+// ── Stage-specific ribbon placeholder cards ─────────────────────────────────
+// Replace MonthRibbon (a cycle-phase grid + "Log your last period" CTA) for
+// stages where the cycle frame is wrong: pregnancy ("Journey"), PCOS / HA
+// ("Hormones"), post-menopause ("Health"). Each is a single quiet card —
+// no period gradient, no fertile window, no phase legend.
+
+function PregnancyTimelineCard({ profile, plannerConfig }) {
+  const due = profile?.pregnancy_due_date;
+  const start = profile?.pregnancy_start_date;
+  let weekLabel = "—";
+  let trimesterLabel = (plannerConfig?.cycleTabName || "Journey");
+  if (start) {
+    try {
+      const s = new Date(start);
+      const now = new Date();
+      const weeks = Math.max(0, Math.floor((now - s) / (1000 * 60 * 60 * 24 * 7)));
+      weekLabel = `Week ${weeks}`;
+      trimesterLabel = weeks < 13 ? "Trimester I" : weeks < 27 ? "Trimester II" : "Trimester III";
+    } catch { /* ignore */ }
+  }
+  return (
+    <section style={stageRibbonCardStyle}>
+      <div style={stageRibbonEyebrowStyle}>40-WEEK JOURNEY</div>
+      <div style={stageRibbonTitleStyle}>{trimesterLabel}{weekLabel !== "—" ? ` · ${weekLabel}` : ""}</div>
+      <p style={stageRibbonBodyStyle}>
+        {due
+          ? `Due ${new Date(due).toLocaleDateString("en-GB", { day: "numeric", month: "long", year: "numeric" })}.`
+          : "Set your due date in Profile to see the trimester timeline + NHS antenatal schedule."}
+      </p>
+      <p style={stageRibbonHintStyle}>
+        Cycle tracking is paused while you're pregnant. We're not predicting periods, fertile windows, or ovulation.
+      </p>
+    </section>
+  );
+}
+
+function BleedEventsCard({ profile: _profile, plannerConfig }) {
+  return (
+    <section style={stageRibbonCardStyle}>
+      <div style={stageRibbonEyebrowStyle}>BLEED EVENTS</div>
+      <div style={stageRibbonTitleStyle}>{plannerConfig?.cycleTabName || "Hormones"}</div>
+      <p style={stageRibbonBodyStyle}>
+        We log bleed events when they happen rather than predicting a 28-day rhythm. Use Track to log a bleed when it lands.
+      </p>
+      <p style={stageRibbonHintStyle}>
+        NHS guidance: if you've gone 90+ days without a bleed, mention it to your GP — withdrawal bleeds every 3-4 months protect the endometrium.
+      </p>
+    </section>
+  );
+}
+
+function AnnualHealthCard({ profile: _profile, plannerConfig }) {
+  return (
+    <section style={stageRibbonCardStyle}>
+      <div style={stageRibbonEyebrowStyle}>ANNUAL HEALTH RHYTHM</div>
+      <div style={stageRibbonTitleStyle}>{plannerConfig?.cycleTabName || "Health"}</div>
+      <p style={stageRibbonBodyStyle}>
+        The cycle is no longer the frame. The long-game pillars are bone density (DEXA), cardiovascular health (NHS Health Check 40-74), GSM, and sleep.
+      </p>
+      <p style={stageRibbonHintStyle}>
+        Local oestrogen is OTC as Gina for 50+ post-menopausal women — speak to your pharmacist if anything's dry or tender.
+      </p>
+    </section>
+  );
+}
+
+const stageRibbonCardStyle = {
+  background: "#FBF6E6",
+  border: "1px solid rgba(58,44,26,0.10)",
+  borderRadius: 16,
+  padding: "16px 16px",
+  marginBottom: 14,
+};
+const stageRibbonEyebrowStyle = {
+  fontFamily: "'Inter', system-ui, sans-serif", fontSize: 10,
+  fontWeight: 700, letterSpacing: "0.18em", color: "#A6862B",
+  textTransform: "uppercase",
+};
+const stageRibbonTitleStyle = {
+  fontFamily: "'Fraunces', Georgia, serif", fontSize: 20,
+  fontWeight: 500, color: "#3A2C1A", fontStyle: "italic",
+  margin: "4px 0 8px", letterSpacing: "-0.01em",
+};
+const stageRibbonBodyStyle = {
+  fontFamily: "'Inter', system-ui, sans-serif", fontSize: 12.5,
+  color: "#6B5840", lineHeight: 1.55, margin: "0 0 8px",
+};
+const stageRibbonHintStyle = {
+  fontFamily: "Georgia, serif", fontStyle: "italic", fontSize: 12,
+  color: "#4A2A3A", lineHeight: 1.5, margin: 0,
+};
+
 // ─────────────────────────────────────────────────────────────────────────────
 // Planner — Phase 2 C0 (tab shell + routing)
 //
@@ -729,7 +821,7 @@ export default function Planner() {
                   <HrtLogCard profile={profile} />
                 )}
               </>
-            ) : (
+            ) : plannerConfig?.ribbonType === "cycle" ? (
               <MonthRibbon
                 profile={profile}
                 habitLogs={habitLogs}
@@ -737,7 +829,13 @@ export default function Planner() {
                 onNavigateToToday={navigateToToday}
                 plannerConfig={plannerConfig}
               />
-            )}
+            ) : plannerConfig?.ribbonType === "pregnancy" ? (
+              <PregnancyTimelineCard profile={profile} plannerConfig={plannerConfig} />
+            ) : plannerConfig?.ribbonType === "event" ? (
+              <BleedEventsCard profile={profile} plannerConfig={plannerConfig} />
+            ) : plannerConfig?.ribbonType === "health" ? (
+              <AnnualHealthCard profile={profile} plannerConfig={plannerConfig} />
+            ) : null}
           </div>
           <div ref={(el) => { cycleSectionRefs.current.captax = el; }}>
             <CapacityTaxBar
