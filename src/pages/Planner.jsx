@@ -22,6 +22,7 @@ import SmartViewCard from "@/components/planner/today/SmartViewCard";
 import { TonightCard, ShutdownRitualCard } from "@/components/planner/today/WarmthBundleToday";
 import { WeekAheadCard, AstraSidecar, PlanMyNextCycleCTA } from "@/components/planner/cycle/WarmthBundleCycle";
 import { selectedCrumbToday, selectedCrumbCycle } from "@/components/planner/selectedCrumb";
+import { getPlannerConfig } from "@/utils/plannerAdapter";
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Planner — Phase 2 C0 (tab shell + routing)
@@ -399,6 +400,16 @@ export default function Planner() {
     return out;
   }, [ritualHabits, habitLogs]);
 
+  // Life Stage adapter — single source of truth for "how the Planner reshapes
+  // itself for this user". Wired through to JessNarrativeHero, PillarsDeck,
+  // DailyStoryReel, PlannerTabs, MonthRibbon, SavedRhythmsCarousel,
+  // DoctorReadyDiaryCard, and the WarmthBundleCycle trio.
+  // See src/utils/plannerAdapter.js + /Ideas · Life Stages tab.
+  const plannerConfig = useMemo(
+    () => getPlannerConfig(profile?.life_stage, profile?.conditions || profile?.condition_flags || []),
+    [profile?.life_stage, profile?.conditions, profile?.condition_flags]
+  );
+
   // ── Handlers ──────────────────────────────────────────────────────────────
 
   // Defer N non-anchor, non-completed PersonalTasks from today to a steadier
@@ -573,7 +584,7 @@ export default function Planner() {
               : selectedCrumbToday({ dailyPlan, phase: selectedPhase, date: today })}
           </p>
 
-          <PlannerTabs view={view} onChange={changeView} />
+          <PlannerTabs view={view} onChange={changeView} plannerConfig={plannerConfig} />
 
           {view === "today" && (
             <div className="flex items-center gap-2" style={{ marginTop: 14 }}>
@@ -636,6 +647,7 @@ export default function Planner() {
               habitLogs={habitLogs}
               today={today}
               onNavigateToToday={navigateToToday}
+              plannerConfig={plannerConfig}
             />
           </div>
           <div ref={(el) => { cycleSectionRefs.current.captax = el; }}>
@@ -652,6 +664,7 @@ export default function Planner() {
             profile={profile}
             currentPhase={selectedPhase}
             currentCycleDay={selectedCycleDay}
+            plannerConfig={plannerConfig}
           />
           <WhatsUnfinishedCard
             stuckDaysByHabit={stuckDaysByHabit}
@@ -671,10 +684,11 @@ export default function Planner() {
               confidencePct={profile?.cycle_prediction_meta?.confidence_pct || null}
               cyclesObserved={profile?.cycle_prediction_meta?.cycles_observed || 0}
               profile={profile}
+              plannerConfig={plannerConfig}
             />
           </div>
           <div ref={(el) => { cycleSectionRefs.current.doctor = el; }}>
-            <DoctorReadyDiaryCard user={user} />
+            <DoctorReadyDiaryCard user={user} profile={profile} plannerConfig={plannerConfig} />
           </div>
           <AstraSidecar profile={profile} />
           <PlanMyNextCycleCTA />
@@ -705,6 +719,7 @@ export default function Planner() {
             <JessNarrativeHero
               profile={profile}
               cycleInfo={selectedPhase ? { phase: selectedPhase, day: selectedCycleDay } : null}
+              plannerConfig={plannerConfig}
             />
 
             {/* ── Fresh-Start banner (Phase 2 B1) — soft reset on inflection ── */}
@@ -735,7 +750,7 @@ export default function Planner() {
             />
 
             {/* ── Pillars Deck (Today-A T-A1) — 6-tile body summary ──── */}
-            <PillarsDeck profile={profile} today={today} />
+            <PillarsDeck profile={profile} today={today} plannerConfig={plannerConfig} />
 
             {/* ── Daily Story Reel (Today-A T-A3) — horizontal carousel
                 of today's DailyStory segment + 3-5 phase-tagged unread
@@ -743,6 +758,7 @@ export default function Planner() {
             <DailyStoryReel
               profile={profile}
               cycleInfo={selectedPhase ? { phase: selectedPhase, day: selectedCycleDay } : null}
+              plannerConfig={plannerConfig}
             />
 
             {/* ── Smart card 1: Today's intention (DailyPlan) ──────────── */}
