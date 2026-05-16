@@ -4583,6 +4583,1130 @@ function ResearchView() {
 }
 
 // ═══════════════════════════════════════════════════════════════════════════
+// Life Stages view — phone mockups, build roadmap, architecture, LLM vs Human
+// ═══════════════════════════════════════════════════════════════════════════
+
+// Phase color palette mirrors the production Planner.
+const STAGE_PHASE = {
+  menstrual:  "#9A2845",
+  follicular: "#D4745A",
+  ovulatory:  "#C8A040",
+  luteal:     "#7B5E9A",
+  pregT1:     "#C9A95C",
+  pregT2:     "#7B5E9A",
+  pregT3:     "#4A2A3A",
+};
+
+const STAGE_VIZ = [
+  {
+    id: "reproductive",
+    label: "Reproductive",
+    sub: "18-35 · regular cycle",
+    eyebrow: "TODAY · FRI 16 MAY",
+    phaseColor: STAGE_PHASE.luteal,
+    phaseRibbon: true,
+    ribbonGradient: "linear-gradient(to right, #9A2845 0%, #D4745A 28%, #C8A040 50%, #7B5E9A 78%, #9A2845 100%)",
+    todayCrumb: "A small luteal afternoon — softness over throughput.",
+    cycleCrumb: "May at a glance — luteal week of twenty-eight.",
+    heroEyebrow: "Chapter IV · Luteal · Day 22",
+    heroHeadline: "Soften the edges. Plan the small wins.",
+    pillars: [
+      { name: "Sleep",     value: "7.2h",   bar: 80 },
+      { name: "Energy",    value: "68",     bar: 68 },
+      { name: "Mood",      value: "82",     bar: 82 },
+      { name: "Hydration", value: "6/8",    bar: 75 },
+      { name: "Movement",  value: "32m",    bar: 71 },
+      { name: "Cycle",     value: "Day 22", bar: 78 },
+    ],
+    storyTag: "Luteal · Wind-down",
+    storyTitle: "The dimmable lamp is your friend tonight.",
+    cycleLabel: "Cycle",
+    cycleHeader: "May 2026 · 5 weekly ribbons",
+    cycleTitle: "Phase ribbons flow across the month.",
+    cycleVisual: "ribbon",
+    adds: ["Capacity-aware planner overlay", "Contraception Memory", "Partner Sync 2.0"],
+    hides: [],
+  },
+  {
+    id: "pcos",
+    label: "PCOS",
+    sub: "28 · Day 84, no bleed",
+    eyebrow: "TODAY · DAY 84 SINCE LAST BLEED",
+    phaseColor: "#A86A52",
+    phaseRibbon: false,
+    todayCrumb: "Steady levers — strength, walk, protein.",
+    cycleCrumb: "Bleed events instead of phase prediction.",
+    heroEyebrow: "PCOS Mode · Lifestyle anchors",
+    heroHeadline: "Protein at breakfast. Walk after lunch. Lift twice this week.",
+    todayBanner: "PCOS Mode — we are not predicting your next period.",
+    pillars: [
+      { name: "Sleep",   value: "6.5h",   bar: 72 },
+      { name: "Weight",  value: "−0.4kg", bar: 60 },
+      { name: "Mood",    value: "70",     bar: 70 },
+      { name: "HbA1c",   value: "5.4%",   bar: 65 },
+      { name: "Acne",    value: "mod.",   bar: 40 },
+      { name: "Bleed",   value: "Day 84", bar: 0  },
+    ],
+    storyTag: "PCOS · Anchors",
+    storyTitle: "Three levers. Walk, lift, protein.",
+    cycleLabel: "Hormones",
+    cycleHeader: "Bleed events · last 12 months",
+    cycleTitle: "Two bleeds. Not predicting the next one.",
+    cycleVisual: "bleeds",
+    cycleBanner: "Day 84 — NHS guidance suggests inducing a withdrawal bleed every 3-4 months. Worth a GP conversation.",
+    adds: ["Bleed-events list", "Lab import (HbA1c, fasting insulin, free T, SHBG, AMH)", "Lifestyle anchor card", "Care Bridge to endocrinology"],
+    hides: ["Fertile window", "Phase colours", "Phase prediction"],
+  },
+  {
+    id: "peri",
+    label: "Perimenopause",
+    sub: "49 · on HRT, irregular",
+    eyebrow: "TODAY · 3 HOT FLUSHES YESTERDAY",
+    phaseColor: "#A86A52",
+    phaseRibbon: true,
+    ribbonGradient: "linear-gradient(to right, #A86A52 0%, #C8A040 50%, #6B8F5A 100%)",
+    todayCrumb: "Symptom load: moderate. Sleep score 62.",
+    cycleCrumb: "Symptom heatmap, 90 days. HRT timeline overlaid.",
+    heroEyebrow: "Peri Mode · Day 14 of HRT cycle",
+    heroHeadline: "Patch change due today. Utrogestan tonight.",
+    pillars: [
+      { name: "Sleep",   value: "6.2h",   bar: 62 },
+      { name: "Flushes", value: "3 tdy",  bar: 30 },
+      { name: "Mood",    value: "72",     bar: 72 },
+      { name: "Brain",   value: "low",    bar: 35 },
+      { name: "Joints",  value: "knees",  bar: 40 },
+      { name: "HRT",     value: "patch",  bar: 100 },
+    ],
+    storyTag: "Peri · HRT log",
+    storyTitle: "Hot flush frequency down 60% since March 3.",
+    cycleLabel: "Patterns",
+    cycleHeader: "90-day symptom heatmap",
+    cycleTitle: "HRT timeline overlay across symptoms.",
+    cycleVisual: "heatmap",
+    adds: ["Symptom-pattern ribbon", "HRT log entity + symptom correlation", "Hot-flush quick-tap", "GSM screen", "GP-report PDF"],
+    hides: ["Fertile window prediction", "Phase colours dominance"],
+  },
+  {
+    id: "pregnant",
+    label: "Pregnant · T2",
+    sub: "33 · 20 weeks 3 days",
+    eyebrow: "TODAY · WEEK 20 · DAY 3",
+    phaseColor: STAGE_PHASE.pregT2,
+    phaseRibbon: true,
+    ribbonGradient: "linear-gradient(to right, #C9A95C 0%, #C9A95C 33%, #7B5E9A 33%, #7B5E9A 66%, #4A2A3A 66%, #4A2A3A 100%)",
+    todayCrumb: "Banana-sized. The 20-week anomaly scan is this week.",
+    cycleCrumb: "Forty-week journey. Anomaly scan due.",
+    heroEyebrow: "Week 20 · Trimester II",
+    heroHeadline: "Anomaly scan Tuesday at 10:40. The decoder is ready.",
+    pillars: [
+      { name: "Sleep",     value: "7.5h",   bar: 83 },
+      { name: "Energy",    value: "65",     bar: 65 },
+      { name: "Mood",      value: "78",     bar: 78 },
+      { name: "Hydration", value: "8/8",    bar: 100 },
+      { name: "Move",      value: "20m",    bar: 44 },
+      { name: "Baby",      value: "20w3d",  bar: 50 },
+    ],
+    storyTag: "T2 · This week",
+    storyTitle: "What the anomaly scan looks for, in plain English.",
+    cycleLabel: "Journey",
+    cycleHeader: "40-week pregnancy timeline",
+    cycleTitle: "T1 → T2 → T3. You're 51% of the way.",
+    cycleVisual: "timeline",
+    adds: ["Pregnancy week ribbon", "NHS antenatal schedule mirror", "Kick counter (from week 24)", "Scan-result decoder", "Birth-plan composer", "Hospital bag list"],
+    hides: ["Contraception", "Ovulation / fertile window", "Period prediction", "Cycle phase colours"],
+  },
+  {
+    id: "teen",
+    label: "Teenager",
+    sub: "15 · 8 cycles tracked",
+    eyebrow: "TODAY · DAY 12 · STILL LEARNING",
+    phaseColor: STAGE_PHASE.follicular,
+    phaseRibbon: true,
+    ribbonGradient: "linear-gradient(to right, rgba(212,116,90,0.35) 0%, rgba(200,160,64,0.35) 50%, rgba(123,94,154,0.35) 100%)",
+    todayCrumb: "How's your day going?",
+    cycleCrumb: "A learning record, not a prediction.",
+    heroEyebrow: "Day 12 of an estimated 34-day cycle",
+    heroHeadline: "You've logged 8 cycles. The pattern is still emerging.",
+    todayBanner: "Parent Bridge — Mum can see: dates only.",
+    pillars: [
+      { name: "Sleep",  value: "8.0h",   bar: 89 },
+      { name: "Energy", value: "—",      bar: 0  },
+      { name: "Mood",   value: "warm",   bar: 75 },
+      { name: "Cramps", value: "none",   bar: 0  },
+      { name: "Skin",   value: "ok",     bar: 60 },
+      { name: "Cycle",  value: "Day 12", bar: 35 },
+    ],
+    storyTag: "Teen · Learning",
+    storyTitle: "Your cycle takes up to 2 years to settle. That's normal.",
+    cycleLabel: "Cycle",
+    cycleHeader: "Learning record",
+    cycleTitle: "8 cycles tracked. Mean length 34d, range 28-41d.",
+    cycleVisual: "honest",
+    adds: ["Teen Mode soft copy", "Parent Bridge (opt-in, granular, revocable)", "GP-ready summary PDF", "PMS-vs-PMDD self-screen", "Crisis routing (Childline, YoungMinds, NHS 111)"],
+    hides: ["Contraception (until 16+)", "TTC", "Pregnancy", "Partner sync", "HRT"],
+  },
+  {
+    id: "ttc",
+    label: "TTC",
+    sub: "31 · IUI cycle 2 · CD8",
+    eyebrow: "TODAY · CD8 · STIM DAY 4",
+    phaseColor: STAGE_PHASE.ovulatory,
+    phaseRibbon: true,
+    ribbonGradient: "linear-gradient(to right, #9A2845 0%, #D4745A 30%, #C8A040 60%, #C8A040 100%)",
+    todayCrumb: "Stim day four. Scan Monday. Trigger most likely Tuesday.",
+    cycleCrumb: "Cycle Day Math — CD1, CD8, CD14.",
+    heroEyebrow: "TTC Mode · Cycle Day 8",
+    heroHeadline: "Most likely fertile Tues-Fri. Lower confidence today.",
+    pillars: [
+      { name: "Sleep", value: "7.0h",  bar: 78 },
+      { name: "BBT",   value: "36.4°", bar: 60 },
+      { name: "Mood",  value: "anx.",  bar: 50 },
+      { name: "OPK",   value: "low",   bar: 25 },
+      { name: "Supps", value: "5/5",   bar: 100 },
+      { name: "CD",    value: "8",     bar: 28 },
+    ],
+    storyTag: "TTC · Two-week-wait",
+    storyTitle: "Holding the wait. Not pretending to know.",
+    cycleLabel: "Clinical",
+    cycleHeader: "Cycle Day Math · IUI #2",
+    cycleTitle: "CD1 → CD8 → CD14 → CD28.",
+    cycleVisual: "clinical",
+    adds: ["BBT + OPK photo logger", "CD-labelled ribbon (CD1, CD8, CD14)", "IVF / IUI clinical timeline", "Two-week-wait companion", "UK supplement stack", "Pregnancy-loss path"],
+    hides: ["Cycle phase-colour dominance"],
+  },
+  {
+    id: "postmen",
+    label: "Post-menopause",
+    sub: "62 · 7 years post",
+    eyebrow: "TODAY · DEXA DUE IN 4 MONTHS",
+    phaseColor: "#4A2A3A",
+    phaseRibbon: false,
+    todayCrumb: "Bone is silent until it isn't. Take the walk.",
+    cycleCrumb: "Annual health rhythm.",
+    heroEyebrow: "Post-Menopause Mode",
+    heroHeadline: "Bone, heart, GSM, mood — the long-game pillars.",
+    pillars: [
+      { name: "Sleep", value: "7.5h",     bar: 83 },
+      { name: "Bone",  value: "DEXA 4mo", bar: 60 },
+      { name: "Mood",  value: "calm",     bar: 85 },
+      { name: "BP",    value: "128/82",   bar: 70 },
+      { name: "GSM",   value: "Gina ✓",   bar: 90 },
+      { name: "Move",  value: "45m",      bar: 100 },
+    ],
+    storyTag: "Post-meno · GSM",
+    storyTitle: "Gina is OTC. Most women still don't know.",
+    cycleLabel: "Health",
+    cycleHeader: "Annual health rhythm",
+    cycleTitle: "DEXA · smear · mammogram · NHS Health Check.",
+    cycleVisual: "calendar",
+    cycleBanner: "No cycle ribbon — centred on long-term health.",
+    adds: ["Post-Menopause Mode", "GSM self-screen + treatment tracker", "DEXA / smear / mammogram cadence", "Cardiovascular check rhythm", "Life-pivot planning"],
+    hides: ["Cycle ribbon entirely", "Phase prediction", "Fertile window"],
+  },
+];
+
+// Cycle-tab visual renderer per stage kind
+function CycleVisual({ kind }) {
+  if (kind === "ribbon") {
+    const rows = [
+      ["#9A2845","#9A2845","#9A2845","#9A2845","#D4745A","#D4745A","#D4745A"],
+      ["#D4745A","#D4745A","#D4745A","#D4745A","#D4745A","#C8A040","#C8A040"],
+      ["#C8A040","#C8A040","#C8A040","#C8A040","#C8A040","#7B5E9A","#7B5E9A"],
+      ["#7B5E9A","#7B5E9A","#7B5E9A","#7B5E9A","#7B5E9A","#7B5E9A","#7B5E9A"],
+      ["#7B5E9A","#7B5E9A","#7B5E9A","#7B5E9A","#9A2845","#9A2845","#9A2845"],
+    ];
+    return (
+      <div style={{ display: "flex", flexDirection: "column", gap: 3 }}>
+        {rows.map((r, i) => (
+          <div key={i} style={{ display: "grid", gridTemplateColumns: "repeat(7, 1fr)", gap: 1 }}>
+            {r.map((c, j) => (
+              <div key={j} style={{
+                height: 14, borderRadius: 2, background: c,
+                position: "relative",
+              }}>
+                {i === 3 && j === 1 && (
+                  <span style={{
+                    position: "absolute", top: 4, left: "50%",
+                    transform: "translateX(-50%)",
+                    width: 5, height: 5, borderRadius: 9999,
+                    background: RX.cream, border: `1px solid ${RX.cream}`,
+                  }} />
+                )}
+              </div>
+            ))}
+          </div>
+        ))}
+      </div>
+    );
+  }
+  if (kind === "timeline") {
+    return (
+      <div style={{ position: "relative", paddingBottom: 18 }}>
+        <div style={{
+          height: 10, borderRadius: 5,
+          background: "linear-gradient(to right, #C9A95C 0%, #C9A95C 33%, #7B5E9A 33%, #7B5E9A 66%, #4A2A3A 66%, #4A2A3A 100%)",
+        }} />
+        <div style={{
+          position: "absolute", top: -2, left: "51%",
+          width: 2.5, height: 14, background: RX.espresso, borderRadius: 1,
+        }} />
+        <div style={{
+          position: "absolute", top: 14, left: "42%",
+          fontSize: 8, fontWeight: 700, color: RX.espresso,
+          letterSpacing: "0.08em",
+        }}>WEEK 20</div>
+        <div style={{
+          display: "flex", justifyContent: "space-between",
+          fontSize: 7.5, color: RX.espressoMid, marginTop: 4,
+          fontWeight: 600, letterSpacing: "0.08em",
+        }}>
+          <span>T1</span><span>T2</span><span>T3</span>
+        </div>
+      </div>
+    );
+  }
+  if (kind === "bleeds") {
+    const bleeds = [
+      { date: "Mar 12", days: "5d" },
+      { date: "Aug 04", days: "4d" },
+    ];
+    return (
+      <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
+        {bleeds.map((b, i) => (
+          <div key={i} style={{
+            display: "flex", justifyContent: "space-between", alignItems: "center",
+            padding: "5px 8px", background: RX.cream,
+            borderRadius: 4, border: `0.5px solid ${RX.rule}`,
+          }}>
+            <span style={{ fontSize: 10, fontWeight: 600, color: RX.espresso }}>{b.date}</span>
+            <span style={{ fontSize: 9, color: RX.plumMid, fontStyle: "italic" }}>{b.days}</span>
+          </div>
+        ))}
+        <div style={{
+          padding: "4px 8px", fontSize: 9, color: RX.plumMid,
+          fontStyle: "italic", textAlign: "center",
+        }}>+ 84 days since</div>
+      </div>
+    );
+  }
+  if (kind === "heatmap") {
+    // 10×10 grid of varying intensity
+    const intensity = [3,2,4,1,3,2,3,4,2,1, 2,3,1,4,2,3,1,2,3,4, 4,3,2,3,4,1,2,3,2,1, 1,2,3,4,3,2,1,2,3,4, 3,4,2,1,2,3,4,3,2,1, 2,1,3,4,1,2,3,4,2,3, 4,3,2,1,3,4,2,1,3,2, 1,2,4,3,2,1,2,3,4,1, 3,4,1,2,3,4,2,1,3,2, 2,1,3,4,1,3,2,1,2,1];
+    return (
+      <div style={{
+        display: "grid", gridTemplateColumns: "repeat(10, 1fr)", gap: 1,
+      }}>
+        {intensity.map((v, i) => (
+          <div key={i} style={{
+            aspectRatio: "1", borderRadius: 1,
+            background: `rgba(168,106,82,${0.18 * v})`,
+          }} />
+        ))}
+      </div>
+    );
+  }
+  if (kind === "honest") {
+    return (
+      <div style={{ display: "flex", flexDirection: "column", gap: 3 }}>
+        {[0,1,2,3,4].map((row) => (
+          <div key={row} style={{ display: "grid", gridTemplateColumns: "repeat(7, 1fr)", gap: 1 }}>
+            {[0,1,2,3,4,5,6].map((col) => {
+              const isLogged = (row * 7 + col) < 12;
+              const isToday = row === 1 && col === 4;
+              return (
+                <div key={col} style={{
+                  height: 14, borderRadius: 2,
+                  background: isLogged ? "rgba(212,116,90,0.35)" : "rgba(58,44,26,0.05)",
+                  display: "flex", alignItems: "center", justifyContent: "center",
+                  fontSize: 7, color: RX.espressoMid, fontWeight: 600,
+                  border: isToday ? `1px solid ${STAGE_PHASE.follicular}` : "none",
+                }}>{isLogged ? "" : "?"}</div>
+              );
+            })}
+          </div>
+        ))}
+      </div>
+    );
+  }
+  if (kind === "clinical") {
+    const days = [
+      { l: "CD1",  m: "bleed",   c: "#9A2845" },
+      { l: "CD8",  m: "stim",    c: "#C8A040" },
+      { l: "CD14", m: "trigger", c: "#D4745A" },
+      { l: "CD28", m: "beta",    c: "#7B5E9A" },
+    ];
+    return (
+      <div style={{ position: "relative" }}>
+        <div style={{ height: 4, background: RX.rule, borderRadius: 2, margin: "10px 0 8px" }} />
+        <div style={{ display: "flex", justifyContent: "space-between" }}>
+          {days.map((d, i) => (
+            <div key={i} style={{ textAlign: "center", position: "relative", marginTop: -14 }}>
+              <div style={{
+                width: 10, height: 10, borderRadius: 9999,
+                background: d.c, margin: "0 auto",
+                border: `2px solid ${RX.creamWarm}`,
+              }} />
+              <div style={{
+                fontSize: 8.5, fontWeight: 700, color: RX.espresso,
+                marginTop: 2, letterSpacing: "0.04em",
+              }}>{d.l}</div>
+              <div style={{ fontSize: 7.5, color: RX.plumMid, fontStyle: "italic" }}>{d.m}</div>
+            </div>
+          ))}
+        </div>
+      </div>
+    );
+  }
+  if (kind === "calendar") {
+    const appts = [
+      { date: "Sep 2026", name: "DEXA scan",         due: "4 months" },
+      { date: "Jan 2027", name: "Mammogram",         due: "8 months" },
+      { date: "Mar 2027", name: "NHS Health Check",  due: "10 months" },
+    ];
+    return (
+      <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
+        {appts.map((a, i) => (
+          <div key={i} style={{
+            display: "flex", justifyContent: "space-between", alignItems: "center",
+            padding: "5px 8px", background: RX.cream,
+            borderRadius: 4, border: `0.5px solid ${RX.rule}`,
+          }}>
+            <div>
+              <div style={{ fontSize: 9.5, fontWeight: 700, color: RX.espresso }}>{a.name}</div>
+              <div style={{ fontSize: 8, color: RX.plumMid, fontStyle: "italic" }}>{a.date}</div>
+            </div>
+            <span style={{
+              fontSize: 8, fontWeight: 700, color: RX.goldDeep,
+              letterSpacing: "0.08em",
+            }}>{a.due.toUpperCase()}</span>
+          </div>
+        ))}
+      </div>
+    );
+  }
+  return null;
+}
+
+function MiniSun({ color = "#C9A95C", size = 36 }) {
+  const rays = Array.from({ length: 12 }, (_, i) => i);
+  return (
+    <svg width={size} height={size} viewBox="0 0 36 36" aria-hidden="true" style={{ flexShrink: 0 }}>
+      <g transform="translate(18 18)">
+        {rays.map((i) => (
+          <line key={i} x1="0" y1="-7" x2="0" y2="-13"
+            stroke={color} strokeWidth="1.6" strokeLinecap="round"
+            transform={`rotate(${i * 30})`} />
+        ))}
+        <circle r="6" fill={RX.cream} stroke={color} strokeWidth="1.5" />
+      </g>
+    </svg>
+  );
+}
+
+function PhoneMockup({ data, view, onSwitchView }) {
+  const ph = data.phaseColor;
+  return (
+    <div style={{
+      width: 286, minHeight: 580,
+      background: RX.cream, borderRadius: 28,
+      border: "8px solid #1a1a1a",
+      overflow: "hidden", position: "relative",
+      boxShadow: "0 12px 40px rgba(58,44,26,0.18)",
+      fontFamily: "'Inter', system-ui, sans-serif",
+      margin: "0 auto",
+    }}>
+      {/* Status bar */}
+      <div style={{
+        height: 22, display: "flex",
+        justifyContent: "space-between", alignItems: "center",
+        padding: "0 16px", fontSize: 10.5, fontWeight: 700,
+        color: RX.espresso, background: RX.cream,
+      }}>
+        <span>9:41</span>
+        <span style={{ display: "flex", gap: 5, alignItems: "center", fontSize: 9.5 }}>
+          <span>5G</span>
+          <span style={{ display: "inline-block", width: 16, height: 8, border: `1px solid ${RX.espresso}`, borderRadius: 2, position: "relative" }}>
+            <span style={{ position: "absolute", top: 1, left: 1, bottom: 1, width: "75%", background: RX.espresso, borderRadius: 1 }} />
+          </span>
+        </span>
+      </div>
+
+      {/* Sticky header */}
+      <div style={{ padding: "10px 14px 6px" }}>
+        <div style={{
+          fontSize: 9, fontWeight: 700, letterSpacing: "0.18em",
+          color: RX.goldDeep, textTransform: "uppercase",
+        }}>{data.eyebrow}</div>
+        <div style={{
+          fontFamily: "'Fraunces', Georgia, serif", fontSize: 24,
+          fontWeight: 500, color: RX.espresso, marginTop: 2,
+          lineHeight: 1.05, letterSpacing: "-0.01em",
+        }}>{view === "today" ? "Today" : data.cycleLabel}</div>
+        <div style={{
+          fontStyle: "italic", fontSize: 11, color: RX.plumMid,
+          marginTop: 3, fontFamily: "Georgia, serif", lineHeight: 1.3,
+        }}>{view === "today" ? data.todayCrumb : data.cycleCrumb}</div>
+
+        {/* In-phone tab pills */}
+        <div style={{
+          display: "inline-flex", gap: 3, padding: 3, marginTop: 8,
+          background: RX.creamWarm, borderRadius: 9999,
+          border: `0.5px solid ${RX.rule}`,
+        }}>
+          {["today", "cycle"].map((t) => {
+            const active = t === view;
+            return (
+              <button key={t} onClick={() => onSwitchView(t)} style={{
+                padding: "4px 13px", fontSize: 10,
+                fontWeight: active ? 700 : 600,
+                fontStyle: active ? "italic" : "normal",
+                fontFamily: active ? "'Fraunces', Georgia, serif" : "'Inter', system-ui, sans-serif",
+                background: active ? RX.espresso : "transparent",
+                color: active ? RX.cream : RX.espressoMid,
+                border: "none", borderRadius: 9999, cursor: "pointer",
+                letterSpacing: "0.04em", minWidth: 56,
+              }}>
+                {t === "today" ? "Today" : data.cycleLabel}
+              </button>
+            );
+          })}
+        </div>
+      </div>
+
+      {/* Phase ribbon strip */}
+      {data.phaseRibbon && view === "today" && (
+        <div style={{
+          height: 6, margin: "8px 14px 0",
+          borderRadius: 3,
+          background: data.ribbonGradient || ph,
+        }} />
+      )}
+
+      {/* Body */}
+      <div style={{ padding: "10px 14px 56px" }}>
+        {view === "today"
+          ? <PhoneTodayBody data={data} />
+          : <PhoneCycleBody data={data} />}
+      </div>
+
+      {/* Bottom nav */}
+      <div style={{
+        position: "absolute", bottom: 0, left: 0, right: 0,
+        height: 44, background: "#FFFFFF",
+        borderTop: `0.5px solid ${RX.rule}`,
+        display: "flex", justifyContent: "space-around",
+        alignItems: "center",
+      }}>
+        {["Today","Cycle","Jess","Care","More"].map((n, i) => (
+          <div key={n} style={{
+            fontSize: 9, fontWeight: 700, letterSpacing: "0.06em",
+            color: i === 0 ? RX.espresso : RX.espressoMid,
+            fontFamily: i === 0 ? "'Fraunces', Georgia, serif" : "'Inter', system-ui, sans-serif",
+            fontStyle: i === 0 ? "italic" : "normal",
+          }}>{n}</div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function PhoneTodayBody({ data }) {
+  const ph = data.phaseColor;
+  return (
+    <>
+      {/* Hero card */}
+      <div style={{
+        background: RX.creamWarm, borderRadius: 10,
+        padding: "10px 12px", border: `0.5px solid ${RX.rule}`,
+        display: "flex", gap: 10, alignItems: "center",
+      }}>
+        <MiniSun color={ph} size={36} />
+        <div style={{ flex: 1, minWidth: 0 }}>
+          <div style={{
+            fontSize: 8.5, fontWeight: 700, letterSpacing: "0.14em",
+            color: ph, textTransform: "uppercase",
+          }}>{data.heroEyebrow}</div>
+          <div style={{
+            fontFamily: "'Fraunces', Georgia, serif", fontSize: 13,
+            fontWeight: 500, color: RX.espresso, marginTop: 3,
+            lineHeight: 1.25, fontStyle: "italic",
+          }}>{data.heroHeadline}</div>
+        </div>
+      </div>
+
+      {/* Optional banner */}
+      {data.todayBanner && (
+        <div style={{
+          marginTop: 8, padding: "7px 10px",
+          background: RX.cream, borderRadius: 6,
+          border: `0.5px dashed ${RX.goldDeep}`,
+          fontSize: 10, color: RX.espresso, fontStyle: "italic",
+          fontFamily: "Georgia, serif", lineHeight: 1.4,
+        }}>{data.todayBanner}</div>
+      )}
+
+      {/* Pillars grid 2×3 */}
+      <div style={{
+        marginTop: 9, display: "grid",
+        gridTemplateColumns: "1fr 1fr 1fr", gap: 4,
+      }}>
+        {data.pillars.map((p) => (
+          <div key={p.name} style={{
+            background: RX.creamWarm, borderRadius: 6,
+            padding: "6px 7px 9px", border: `0.5px solid ${RX.rule}`,
+            position: "relative", minHeight: 50,
+          }}>
+            <div style={{
+              fontSize: 7.5, fontWeight: 700, letterSpacing: "0.10em",
+              color: RX.espressoMid, textTransform: "uppercase",
+            }}>{p.name}</div>
+            <div style={{
+              fontFamily: "'Fraunces', Georgia, serif", fontSize: 13,
+              fontWeight: 500, color: RX.espresso, marginTop: 2,
+              lineHeight: 1, fontStyle: "italic",
+            }}>{p.value}</div>
+            <span aria-hidden="true" style={{
+              position: "absolute", top: 5, right: 5,
+              width: 4.5, height: 4.5, borderRadius: 9999,
+              background: ph,
+            }} />
+            {p.bar > 0 && (
+              <span aria-hidden="true" style={{
+                position: "absolute", left: 0, right: 0, bottom: 0,
+                height: 1.5, background: "rgba(58,44,26,0.06)",
+              }}>
+                <span style={{
+                  display: "block", height: "100%",
+                  width: `${p.bar}%`,
+                  background: ph, opacity: 0.85,
+                }} />
+              </span>
+            )}
+          </div>
+        ))}
+      </div>
+
+      {/* Daily Story */}
+      <div style={{
+        marginTop: 10, padding: "9px 12px",
+        background: RX.paper, borderRadius: 8,
+        border: `0.5px solid ${RX.rule}`,
+      }}>
+        <div style={{
+          fontSize: 8.5, fontWeight: 700, letterSpacing: "0.14em",
+          color: RX.goldDeep, textTransform: "uppercase",
+        }}>{data.storyTag}</div>
+        <div style={{
+          fontFamily: "'Fraunces', Georgia, serif", fontSize: 12.5,
+          fontWeight: 500, color: RX.espresso, marginTop: 3,
+          lineHeight: 1.25, fontStyle: "italic",
+        }}>{data.storyTitle}</div>
+      </div>
+    </>
+  );
+}
+
+function PhoneCycleBody({ data }) {
+  const ph = data.phaseColor;
+  return (
+    <>
+      {data.cycleBanner && (
+        <div style={{
+          padding: "9px 11px", marginBottom: 8,
+          background: RX.cream, borderRadius: 8,
+          border: `0.5px solid ${RX.rule}`,
+          borderLeft: `2px solid ${ph}`,
+          fontSize: 10.5, color: RX.espresso, fontStyle: "italic",
+          fontFamily: "Georgia, serif", lineHeight: 1.4,
+        }}>{data.cycleBanner}</div>
+      )}
+
+      <div style={{
+        padding: "10px 12px", background: RX.creamWarm,
+        borderRadius: 10, border: `0.5px solid ${RX.rule}`,
+      }}>
+        <div style={{
+          fontSize: 8.5, fontWeight: 700, letterSpacing: "0.14em",
+          color: RX.goldDeep, textTransform: "uppercase",
+        }}>{data.cycleHeader}</div>
+        <div style={{
+          fontFamily: "'Fraunces', Georgia, serif", fontSize: 13,
+          fontWeight: 500, color: RX.espresso, marginTop: 3,
+          fontStyle: "italic", lineHeight: 1.2,
+        }}>{data.cycleTitle}</div>
+        <div style={{ marginTop: 8 }}>
+          <CycleVisual kind={data.cycleVisual} />
+        </div>
+      </div>
+
+      {data.adds.length > 0 && (
+        <div style={{
+          marginTop: 8, padding: "9px 12px",
+          background: RX.cream, borderRadius: 8,
+          border: `0.5px solid ${RX.rule}`,
+          borderLeft: `2px solid ${RX.sage}`,
+        }}>
+          <div style={{
+            fontSize: 8.5, fontWeight: 700, letterSpacing: "0.18em",
+            color: RX.sage, textTransform: "uppercase",
+          }}>+ Added</div>
+          <ul style={{ margin: "5px 0 0", padding: "0 0 0 14px" }}>
+            {data.adds.map((a, i) => (
+              <li key={i} style={{
+                fontSize: 9.5, color: RX.espresso,
+                lineHeight: 1.4, marginBottom: 2,
+              }}>{a}</li>
+            ))}
+          </ul>
+        </div>
+      )}
+
+      {data.hides.length > 0 && (
+        <div style={{
+          marginTop: 6, padding: "9px 12px",
+          background: RX.cream, borderRadius: 8,
+          border: `0.5px solid ${RX.rule}`,
+          borderLeft: `2px solid ${RX.rose}`,
+        }}>
+          <div style={{
+            fontSize: 8.5, fontWeight: 700, letterSpacing: "0.18em",
+            color: RX.rose, textTransform: "uppercase",
+          }}>− Hidden</div>
+          <ul style={{ margin: "5px 0 0", padding: "0 0 0 14px" }}>
+            {data.hides.map((h, i) => (
+              <li key={i} style={{
+                fontSize: 9.5, color: RX.espresso,
+                lineHeight: 1.4, marginBottom: 2,
+              }}>{h}</li>
+            ))}
+          </ul>
+        </div>
+      )}
+    </>
+  );
+}
+
+// Roadmap with LLM-only / needs-review badges per item
+const ROADMAP_STAGES = [
+  {
+    key: "m3",
+    title: "3 months",
+    subtitle: "Proof of architecture · ship now",
+    color: "#6B8F5A",
+    items: [
+      { name: "Pre-TTC mode",            desc: "Three months of better data before the TTC switch.", badge: "LLM only" },
+      { name: "TTC Mode v1",             desc: "BBT + OPK photo logger; confidence-banded fertile window.", badge: "LLM only" },
+      { name: "Perimenopause Mode v1",   desc: "Symptom-pattern ribbon + HRT log + hot-flush quick-tap.", badge: "LLM only" },
+      { name: "Contraception Memory",    desc: "New entity. Structured logging. No clinical advice.", badge: "LLM only" },
+      { name: "GP-ready PDF export",     desc: "One feature, three modes (teen / peri / postpartum).", badge: "LLM only" },
+      { name: "Confidence honesty",      desc: "\"Still learning\" pattern extended across the product.", badge: "LLM only" },
+      { name: "Care Bridge expansion",   desc: "Midwife, fertility coord, perinatal MH team recipients.", badge: "LLM only" },
+    ],
+  },
+  {
+    key: "m6",
+    title: "6 months",
+    subtitle: "Real clinical care · revenue band",
+    color: "#C8A040",
+    items: [
+      { name: "Pregnancy Mode",          desc: "Full mode replacement. Week ribbon. Antenatal mirror.", badge: "needs review" },
+      { name: "Postpartum Mode",         desc: "EPDS + pelvic-floor (Squeezy-aligned).", badge: "needs review" },
+      { name: "Teen Mode + Parent Bridge", desc: "Safeguarding policy + adolescent MH advisor.", badge: "needs review" },
+      { name: "PCOS Mode v1",            desc: "Bleed events, lab import, lifestyle anchors.", badge: "LLM only" },
+      { name: "HRT decision support",    desc: "Questions to ask your GP. Not prescribing.", badge: "needs review" },
+    ],
+  },
+  {
+    key: "m9",
+    title: "9 months+",
+    subtitle: "Partnerships · clinical sign-off · moat",
+    color: "#D45E52",
+    items: [
+      { name: "NHS scan-result decoder", desc: "Highest liability. MHRA assessment.", badge: "needs review" },
+      { name: "IVF / IUI sub-mode",      desc: "Needs fertility clinic partnership.", badge: "needs review" },
+      { name: "Endo pain mapping",       desc: "3+ months qualitative research first.", badge: "needs review" },
+      { name: "PMDD DRSP-format",        desc: "Specialist referral. Needs PMDD advisor.", badge: "needs review" },
+      { name: "Crisis-language detection", desc: "Safety-critical. Do not rush.", badge: "needs review" },
+      { name: "Full menopause + GSM",    desc: "Bone + heart rhythm. Long-tail retention.", badge: "LLM only" },
+      { name: "Capacitor + StoreKit",    desc: "RevenueCat for App Store IAP paywall.", badge: "needs review" },
+    ],
+  },
+];
+
+const ARCH_SLOTS = [
+  "topRibbon",
+  "eyebrow",
+  "hero",
+  "pillars",
+  "storyReel",
+  "cycleHeader",
+  "cycleVisual",
+];
+
+const LLM_ONLY = [
+  "Mode shells (Pre-TTC, TTC v1, Peri v1, PCOS v1).",
+  "Symptom-pattern ribbon + HRT log entity.",
+  "Contraception Memory entity + correlation surface.",
+  "GP-ready PDF export (per stage).",
+  "Confidence-honesty copy and gating across surfaces.",
+  "Care Bridge recipient expansion.",
+  "Architecture refactor — Life Stage as a first-class enum on UserProfile.",
+  "PlannerAdapter wiring — slot selectors per stage / condition.",
+];
+
+const NEEDS_HUMAN = [
+  "Pregnancy Mode — clinical accuracy needs obstetrics advisor sign-off.",
+  "NHS scan-result decoder — MHRA medical-device assessment required.",
+  "Postpartum EPDS thresholds — perinatal MH advisor must set them.",
+  "Teen Mode + Parent Bridge — safeguarding policy + adolescent MH advisor + legal review.",
+  "Crisis-language detection — clinical advisor + safeguarding lawyer.",
+  "HRT decision support — UK menopause specialist must write copy.",
+  "Miscarriage path — bereaved-user testing before ship.",
+  "Privacy + retention review for pregnancy data (UK GDPR + Caldicott).",
+];
+
+function StagePillRow({ active, onChange }) {
+  return (
+    <div style={{
+      display: "flex", flexWrap: "wrap", gap: 6,
+      marginTop: 14, justifyContent: "center",
+    }}>
+      {STAGE_VIZ.map((s) => {
+        const isActive = s.id === active;
+        return (
+          <button
+            key={s.id}
+            onClick={() => onChange(s.id)}
+            aria-pressed={isActive}
+            style={{
+              padding: "8px 14px",
+              fontFamily: isActive ? "'Fraunces', Georgia, serif" : "'Inter', system-ui, sans-serif",
+              fontSize: 12,
+              fontWeight: isActive ? 700 : 600,
+              fontStyle: isActive ? "italic" : "normal",
+              letterSpacing: "0.02em",
+              background: isActive ? RX.espresso : RX.creamWarm,
+              color: isActive ? RX.cream : RX.espressoMid,
+              border: isActive ? `1px solid ${RX.espresso}` : `1px solid ${RX.rule}`,
+              borderRadius: 9999, cursor: "pointer",
+              transition: "all 0.2s ease",
+            }}
+          >
+            {s.label}
+          </button>
+        );
+      })}
+    </div>
+  );
+}
+
+function RoadmapColumn({ col }) {
+  return (
+    <article style={{
+      background: RX.creamWarm, borderRadius: 14,
+      border: `1px solid ${RX.rule}`, borderTop: `4px solid ${col.color}`,
+      padding: "16px 16px 18px", flex: 1, minWidth: 240,
+    }}>
+      <div style={{
+        fontFamily: "'Fraunces', Georgia, serif", fontSize: 22,
+        fontWeight: 500, color: col.color, fontStyle: "italic",
+        letterSpacing: "-0.01em",
+      }}>{col.title}</div>
+      <div style={{
+        fontFamily: "'Inter', system-ui, sans-serif", fontSize: 10.5,
+        color: RX.espressoMid, letterSpacing: "0.06em",
+        textTransform: "uppercase", fontWeight: 700, marginTop: 2,
+      }}>{col.subtitle}</div>
+      <div style={{ marginTop: 12, display: "flex", flexDirection: "column", gap: 8 }}>
+        {col.items.map((it, i) => {
+          const isLLM = it.badge === "LLM only";
+          return (
+            <div key={i} style={{
+              padding: "9px 11px", background: RX.cream,
+              borderRadius: 8, border: `0.5px solid ${RX.rule}`,
+            }}>
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", gap: 8, flexWrap: "wrap" }}>
+                <div style={{
+                  fontFamily: "'Fraunces', Georgia, serif", fontSize: 13.5,
+                  fontWeight: 600, color: RX.espresso,
+                }}>{it.name}</div>
+                <div style={{
+                  fontFamily: "'Inter', system-ui, sans-serif",
+                  fontSize: 8.5, fontWeight: 700, letterSpacing: "0.14em",
+                  color: isLLM ? RX.sage : RX.rose,
+                  background: isLLM ? "rgba(107,143,90,0.10)" : "rgba(212,94,82,0.10)",
+                  textTransform: "uppercase",
+                  padding: "2px 7px", borderRadius: 9999, whiteSpace: "nowrap",
+                }}>{it.badge}</div>
+              </div>
+              <div style={{
+                fontFamily: "'Inter', system-ui, sans-serif", fontSize: 11.5,
+                color: RX.espressoMid, marginTop: 4, lineHeight: 1.45,
+              }}>{it.desc}</div>
+            </div>
+          );
+        })}
+      </div>
+    </article>
+  );
+}
+
+function ArchDiagram() {
+  return (
+    <div style={{
+      background: RX.creamWarm, borderRadius: 14,
+      border: `1px solid ${RX.rule}`, padding: "20px 16px",
+      marginTop: 16,
+    }}>
+      <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 0 }}>
+        {/* UserProfile box */}
+        <div style={{
+          background: RX.cream, border: `1px solid ${RX.espressoMid}`,
+          borderRadius: 12, padding: "12px 16px", minWidth: 220, textAlign: "center",
+        }}>
+          <div style={{
+            fontFamily: "'Inter', system-ui, sans-serif", fontSize: 9.5,
+            fontWeight: 700, letterSpacing: "0.18em", color: RX.goldDeep,
+            textTransform: "uppercase",
+          }}>UserProfile</div>
+          <div style={{ marginTop: 4, fontFamily: "'Fraunces', Georgia, serif", fontSize: 14, fontWeight: 600, color: RX.espresso, fontStyle: "italic" }}>
+            Halli, 28
+          </div>
+          <div style={{
+            marginTop: 8, fontFamily: "'Inter', system-ui, sans-serif",
+            fontSize: 10.5, color: RX.espressoMid, lineHeight: 1.6,
+          }}>
+            <div><strong style={{ color: RX.espresso }}>lifeStage:</strong> "perimenopause"</div>
+            <div><strong style={{ color: RX.espresso }}>conditions[]:</strong> ["PCOS","HRT"]</div>
+            <div><strong style={{ color: RX.espresso }}>pregnancy_state:</strong> null</div>
+            <div><strong style={{ color: RX.espresso }}>mode_overrides:</strong> {"{}"}</div>
+          </div>
+        </div>
+
+        {/* Arrow down */}
+        <ArchArrow />
+
+        {/* Planner adapter */}
+        <div style={{
+          background: RX.espresso, color: RX.cream,
+          border: `1px solid ${RX.espresso}`,
+          borderRadius: 12, padding: "12px 18px", minWidth: 220, textAlign: "center",
+        }}>
+          <div style={{
+            fontFamily: "'Inter', system-ui, sans-serif", fontSize: 9.5,
+            fontWeight: 700, letterSpacing: "0.18em", color: RX.gold,
+            textTransform: "uppercase",
+          }}>PlannerAdapter</div>
+          <div style={{
+            marginTop: 4, fontFamily: "'Fraunces', Georgia, serif",
+            fontSize: 14, fontWeight: 500, fontStyle: "italic",
+          }}>Resolves slot components by stage + condition</div>
+        </div>
+
+        {/* Arrow down */}
+        <ArchArrow color={RX.gold} />
+
+        {/* 7 slot boxes */}
+        <div style={{
+          display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: 6,
+          marginTop: 6, width: "100%", maxWidth: 460,
+        }}>
+          {ARCH_SLOTS.map((s) => (
+            <div key={s} style={{
+              background: RX.cream, border: `0.5px solid ${RX.rule}`,
+              borderRadius: 8, padding: "9px 11px",
+              fontFamily: "'Inter', system-ui, sans-serif", fontSize: 11,
+              color: RX.espresso, fontWeight: 600, textAlign: "center",
+            }}>
+              <span style={{
+                display: "inline-block", width: 6, height: 6, borderRadius: 9999,
+                background: RX.goldDeep, marginRight: 6,
+              }} />
+              {s}
+            </div>
+          ))}
+        </div>
+
+        <div style={{
+          marginTop: 14, padding: "10px 14px",
+          background: RX.cream, borderRadius: 8, border: `1px dashed ${RX.rule}`,
+          fontFamily: "Georgia, serif", fontStyle: "italic", fontSize: 12,
+          color: RX.plum, lineHeight: 1.45, textAlign: "center", maxWidth: 460,
+        }}>
+          Each stage maps to a slot bundle. Conditions are cross-cutting modifiers — PCOS + perimenopausal? Both packs apply.
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function ArchArrow({ color }) {
+  return (
+    <svg width="14" height="22" viewBox="0 0 14 22" aria-hidden="true" style={{ margin: "8px 0" }}>
+      <line x1="7" y1="0" x2="7" y2="16" stroke={color || RX.espressoMid} strokeWidth="1.5" />
+      <polygon points="3,14 11,14 7,21" fill={color || RX.espressoMid} />
+    </svg>
+  );
+}
+
+function LifeStagesView() {
+  const [stageId, setStageId] = useState("reproductive");
+  const [view, setView] = useState("today");
+  const data = STAGE_VIZ.find((s) => s.id === stageId) || STAGE_VIZ[0];
+
+  return (
+    <div style={{ maxWidth: 720, margin: "0 auto", padding: "8px 16px 40px" }}>
+      {/* Hero */}
+      <header style={{ paddingTop: 28 }}>
+        <div style={rxEyebrow}>The plan · seven stages, one product</div>
+        <h1 style={{
+          fontFamily: "'Fraunces', Georgia, serif", fontSize: 30,
+          fontWeight: 500, color: RX.espresso, letterSpacing: "-0.02em",
+          margin: "10px 0 0", lineHeight: 1.12,
+        }}>How <em style={{ color: RX.plum }}>Femwell</em> reshapes itself for each woman.</h1>
+        <p style={{
+          fontFamily: "'Inter', system-ui, sans-serif", fontSize: 14,
+          color: RX.espressoMid, marginTop: 12, lineHeight: 1.55,
+        }}>
+          The Planner adapts. Cycle is one input among many; life stage is the lens.
+          Tap a stage below — the phone shows what that woman actually sees today and on Cycle.
+        </p>
+      </header>
+
+      {/* Stage pills */}
+      <StagePillRow active={stageId} onChange={setStageId} />
+
+      {/* Current stage caption */}
+      <div style={{
+        marginTop: 16, padding: "12px 16px",
+        background: RX.creamWarm, borderRadius: 12,
+        border: `1px solid ${RX.rule}`, borderLeft: `3px solid ${data.phaseColor}`,
+        textAlign: "center",
+      }}>
+        <div style={{
+          fontFamily: "'Inter', system-ui, sans-serif", fontSize: 10,
+          fontWeight: 700, letterSpacing: "0.18em", color: data.phaseColor,
+          textTransform: "uppercase",
+        }}>{data.sub}</div>
+        <div style={{
+          fontFamily: "'Fraunces', Georgia, serif", fontSize: 20,
+          fontWeight: 500, color: RX.espresso, marginTop: 4,
+          fontStyle: "italic",
+        }}>{data.label}</div>
+      </div>
+
+      {/* Phone mockup */}
+      <div style={{ marginTop: 18, display: "flex", justifyContent: "center" }}>
+        <PhoneMockup data={data} view={view} onSwitchView={setView} />
+      </div>
+
+      {/* Caption under phone */}
+      <div style={{
+        marginTop: 12, padding: "10px 14px",
+        background: RX.cream, borderRadius: 10,
+        border: `1px dashed ${RX.rule}`,
+        fontFamily: "Georgia, serif", fontStyle: "italic", fontSize: 12.5,
+        color: RX.plum, lineHeight: 1.5, textAlign: "center",
+      }}>
+        Tap <strong>Today</strong> / <strong>{data.cycleLabel}</strong> inside the phone to switch tabs.
+      </div>
+
+      {/* Roadmap */}
+      <h2 style={rxH2}>Build roadmap — 3 / 6 / 9 months</h2>
+      <p style={rxIntroP}>
+        Each card is colour-coded — <span style={{ color: RX.sage, fontWeight: 700 }}>sage</span> ships now (LLM-only),
+        <span style={{ color: "#C8A040", fontWeight: 700 }}> gold</span> is the revenue band (some needs review),
+        <span style={{ color: RX.rose, fontWeight: 700 }}> rose-red</span> is partnerships and moat.
+      </p>
+      <div style={{
+        display: "flex", flexDirection: "column", gap: 14, marginTop: 18,
+      }}>
+        {ROADMAP_STAGES.map((c) => <RoadmapColumn key={c.key} col={c} />)}
+      </div>
+
+      {/* Architecture */}
+      <h2 style={rxH2}>Architecture — Life Stage as first-class</h2>
+      <p style={rxIntroP}>
+        The single architectural decision: <em>lifeStage</em> is a first-class field on UserProfile.
+        Every Planner slot resolves through one adapter. Conditions are cross-cutting modifiers.
+      </p>
+      <ArchDiagram />
+
+      {/* LLM vs Human */}
+      <h2 style={rxH2}>What Claude builds · what needs a human eye</h2>
+      <p style={rxIntroP}>
+        Most surfaces ship with the agent team alone. A short, named list needs a clinician,
+        advisor, or lawyer in the room before the build.
+      </p>
+      <div style={{
+        marginTop: 18, display: "grid",
+        gridTemplateColumns: "1fr 1fr", gap: 12,
+      }}>
+        <article style={{
+          background: RX.creamWarm, borderRadius: 14,
+          border: `1px solid ${RX.rule}`, borderTop: `3px solid ${RX.sage}`,
+          padding: "16px 14px 18px",
+        }}>
+          <div style={{
+            fontFamily: "'Inter', system-ui, sans-serif", fontSize: 10,
+            fontWeight: 700, letterSpacing: "0.18em", color: RX.sage,
+            textTransform: "uppercase",
+          }}>LLM only</div>
+          <div style={{
+            fontFamily: "'Fraunces', Georgia, serif", fontSize: 18,
+            fontWeight: 500, color: RX.espresso, fontStyle: "italic",
+            marginTop: 4,
+          }}>Claude ships alone</div>
+          <ul style={{ listStyle: "none", margin: "12px 0 0", padding: 0, display: "flex", flexDirection: "column", gap: 8 }}>
+            {LLM_ONLY.map((x, i) => <RxBullet key={i}>{x}</RxBullet>)}
+          </ul>
+        </article>
+
+        <article style={{
+          background: RX.creamWarm, borderRadius: 14,
+          border: `1px solid ${RX.rule}`, borderTop: `3px solid ${RX.rose}`,
+          padding: "16px 14px 18px",
+        }}>
+          <div style={{
+            fontFamily: "'Inter', system-ui, sans-serif", fontSize: 10,
+            fontWeight: 700, letterSpacing: "0.18em", color: RX.rose,
+            textTransform: "uppercase",
+          }}>Needs review</div>
+          <div style={{
+            fontFamily: "'Fraunces', Georgia, serif", fontSize: 18,
+            fontWeight: 500, color: RX.espresso, fontStyle: "italic",
+            marginTop: 4,
+          }}>Human in the room first</div>
+          <ul style={{ listStyle: "none", margin: "12px 0 0", padding: 0, display: "flex", flexDirection: "column", gap: 8 }}>
+            {NEEDS_HUMAN.map((x, i) => <RxBullet key={i}>{x}</RxBullet>)}
+          </ul>
+        </article>
+      </div>
+
+      {/* Closing card */}
+      <section style={{
+        marginTop: 28, padding: "24px 22px",
+        background: RX.espresso, color: RX.cream,
+        borderRadius: 18,
+      }}>
+        <div style={{
+          fontFamily: "'Inter', system-ui, sans-serif", fontSize: 10,
+          fontWeight: 700, letterSpacing: "0.22em", color: RX.gold,
+          textTransform: "uppercase",
+        }}>The plan, in one line</div>
+        <p style={{
+          fontFamily: "'Fraunces', Georgia, serif", fontStyle: "italic",
+          fontSize: 17, lineHeight: 1.5, margin: "10px 0 0", color: RX.cream,
+        }}>
+          One Femwell. Seven life stages. The Planner adapts so a 15-year-old, a 33-year-old
+          in T2, and a 62-year-old all open the same app and feel <em>met</em>.
+        </p>
+      </section>
+    </div>
+  );
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
 // /Ideas page shell
 // ═══════════════════════════════════════════════════════════════════════════
 
@@ -4620,7 +5744,7 @@ const DESIGNS = [
 export default function Ideas() {
   const [expanded, setExpanded] = useState({});
   const [openHelp, setOpenHelp] = useState(false);
-  const [topTab, setTopTab] = useState("designs"); // "designs" | "research"
+  const [topTab, setTopTab] = useState("designs"); // "designs" | "research" | "lifestages"
   return (
     <div style={{ minHeight: "100vh", background: "#F4F1EA", paddingBottom: 140 }}>
       <div style={{
@@ -4631,10 +5755,10 @@ export default function Ideas() {
         fontSize: 11, letterSpacing: "0.18em", fontWeight: 700,
         textTransform: "uppercase",
       }}>
-        Design Lab · Dev Only · Designs + Research
+        Design Lab · Dev Only · Designs · Research · Life Stages
       </div>
 
-      {/* Tab bar — Designs / Research */}
+      {/* Tab bar — Designs / Research / Life Stages */}
       <div style={{
         display: "flex", justifyContent: "center",
         padding: "18px 16px 0",
@@ -4647,6 +5771,7 @@ export default function Ideas() {
           {[
             { id: "designs", label: "Designs" },
             { id: "research", label: "Research" },
+            { id: "lifestages", label: "Life Stages" },
           ].map((t) => {
             const active = t.id === topTab;
             return (
@@ -4664,7 +5789,7 @@ export default function Ideas() {
                   color: active ? "#F4EDDB" : "#6B5840",
                   fontWeight: active ? 700 : 600,
                   fontStyle: active ? "italic" : "normal",
-                  minWidth: 100, textAlign: "center",
+                  minWidth: 96, textAlign: "center",
                   transition: "all 0.2s ease",
                 }}
               >
@@ -4676,6 +5801,7 @@ export default function Ideas() {
       </div>
 
       {topTab === "research" && <ResearchView />}
+      {topTab === "lifestages" && <LifeStagesView />}
       {topTab === "designs" && (
       <>
       <div style={{ maxWidth: 560, margin: "0 auto", padding: "32px 18px 0" }}>
