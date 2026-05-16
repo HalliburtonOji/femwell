@@ -978,8 +978,15 @@ export default function Planner() {
               plannerConfig={plannerConfig}
             />
 
-            {/* ── Smart card 1: Today's intention (DailyPlan) ──────────── */}
-            {dailyPlan && (
+            {/* ── Smart card 1: Today's intention (DailyPlan) ──────────────
+                Life Stage adapter: phase-signed copy ("Luteal · Boundary
+                check-in") is cycle-frame thinking. Hide for non-cycle
+                stages (pregnancy, postpartum, peri, meno, post-meno) and
+                for any stage whose plannerConfig.hiddenFeatures explicitly
+                opts out via "phaseSignedIntention". ─────────────────── */}
+            {dailyPlan
+              && plannerConfig?.ribbonType === "cycle"
+              && !plannerConfig?.hiddenFeatures?.includes("phaseSignedIntention") && (
               <div style={intentionCardStyle}>
                 <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 8 }}>
                   <span style={smartLabelStyle}>
