@@ -10,6 +10,7 @@ import { habitNameOf, habitCompletedOf } from "@/components/planner/cycle/habitL
 import CycleMirrorSundayTile from "@/components/planner/cycle/CycleMirrorSundayTile";
 import DoctorReadyDiaryCard from "@/components/planner/cycle/DoctorReadyDiaryCard";
 import MonthRibbon from "@/components/planner/cycle/MonthRibbon";
+import SymptomRibbon from "@/components/planner/SymptomRibbon";
 import QuietModeBanner from "@/components/planner/cycle/QuietModeBanner";
 import SavedRhythmsCarousel from "@/components/planner/cycle/SavedRhythmsCarousel";
 import WhatsUnfinishedCard from "@/components/planner/cycle/WhatsUnfinishedCard";
@@ -642,13 +643,21 @@ export default function Planner() {
             onCleared={() => setProfile(p => p ? { ...p, quiet_mode_until: null } : p)}
           />
           <div ref={(el) => { cycleSectionRefs.current.ribbon = el; }}>
-            <MonthRibbon
-              profile={profile}
-              habitLogs={habitLogs}
-              today={today}
-              onNavigateToToday={navigateToToday}
-              plannerConfig={plannerConfig}
-            />
+            {plannerConfig.ribbonType === "symptom" ? (
+              <SymptomRibbon
+                profile={profile}
+                today={today}
+                onLogToday={() => navigate("/Track")}
+              />
+            ) : (
+              <MonthRibbon
+                profile={profile}
+                habitLogs={habitLogs}
+                today={today}
+                onNavigateToToday={navigateToToday}
+                plannerConfig={plannerConfig}
+              />
+            )}
           </div>
           <div ref={(el) => { cycleSectionRefs.current.captax = el; }}>
             <CapacityTaxBar
