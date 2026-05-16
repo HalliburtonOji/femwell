@@ -2015,26 +2015,45 @@ function TheInteriorDemo() {
 }
 
 // ═══════════════════════════════════════════════════════════════════════════
-// DESIGN 3 — The Library (Book Theme)
+// DESIGN 3 — The Library (full typographic transformation)
 //
-// Five targeted moves on top of the live Femwell layout, all inside the
-// native palette (ivory bg, white cards, plum text, rose accents, existing
-// phase colours):
-//   1. Open-book SVG illustration at top of JessNarrativeHero
-//   2. Phase chapter-tab on the right edge of each MonthRibbon row
-//      (P/F/O/L/P letter, phase-coloured)
-//   3. Roman numeral chapter headers above each Cycle tab card
-//      (I · Month View / II · Your Rhythms / III · Week Ahead /
-//       IV · Doctor Ready / V · Next Chapter)
-//   4. Superscript footnote numerals in the corner of each PillarsDeck tile
-//   5. Page-number footer ("p. 22") on each DailyStoryReel card
+// Every component reads like a piece of a printed volume. Parchment bg with
+// horizontal ruled lines runs behind everything. All typography is serif.
+// Hero is a book page with drop cap. PillarsDeck is an index with dotted
+// leaders. Month ribbon is the contents page with chapter rows + red silk
+// bookmark on today. Story reel cards are illustrated plates. Every Cycle
+// card has a chapter header + Roman page number + double-line frame.
 // ═══════════════════════════════════════════════════════════════════════════
 
-const TL = TI; // Library uses the same Femwell-native palette as Interior
+// Library-specific tokens — sit alongside the Femwell palette
+const TL_PARCHMENT      = "#F0E8D4";
+const TL_PARCHMENT_WARM = "#F8F0DC";
+const TL_RULE           = "#D8CCB0";
+const TL_INK            = "#3A2010";
+const TL_INK_DARK       = "#2A1A08";
+const TL_INK_MUTED      = "#8A7060";
+const TL_GOLD           = "#C9A95C";
+const TL_GOLD_DEEP      = "#A6862B";
+const TL_RIBBON         = "#B84A41";    // red silk bookmark — matches live --rose hue
+const TL_LUTEAL         = "#7B5E9A";    // luteal violet for drop cap + phase ink
 
-const SUPS = ["¹", "²", "³", "⁴", "⁵", "⁶"];
+const TL_PHASE_BG = (p) => ({
+  menstrual:  `${TL_RIBBON}1F`,
+  follicular: "#E67F731F",
+  ovulatory:  "#F2A99A24",
+  luteal:     `${TL_LUTEAL}1F`,
+  predicted:  `${TL_LUTEAL}12`,
+}[p]);
 
-const PHASE_INITIAL = {
+const TL_PHASE_INK = {
+  menstrual:  "#9A2845",
+  follicular: "#A85230",
+  ovulatory:  "#8B6F1E",
+  luteal:     TL_LUTEAL,
+  predicted:  "#5A4078",
+};
+
+const PHASE_LETTER = {
   menstrual:  "P",
   follicular: "F",
   ovulatory:  "O",
@@ -2042,108 +2061,137 @@ const PHASE_INITIAL = {
   predicted:  "P",
 };
 
-// ─── Open book SVG — two facing pages, ruled lines + text simulation ───────
-function OpenBook({ width = 320 }) {
+const TL_BANDS = [
+  { roman: "I",   name: "Period",     phase: "menstrual",  days: [1,2,3,4] },
+  { roman: "II",  name: "Follicular", phase: "follicular", days: [5,6,7,8,9,10,11,12,13] },
+  { roman: "III", name: "Ovulatory",  phase: "ovulatory",  days: [14,15,16] },
+  { roman: "IV",  name: "Luteal",     phase: "luteal",     days: [17,18,19,20,21,22,23,24,25,26,27,28] },
+  { roman: "V",   name: "Predicted",  phase: "predicted",  days: [29,30,31] },
+];
+
+// ─── Running book header above the Planner title ──────────────────────────
+function TL_RunningHeader() {
   return (
-    <svg viewBox="0 0 320 96" width={width} height={(96 * width) / 320} aria-hidden="true" style={{ display: "block" }}>
-      {/* Page-stack shadow under the book */}
-      <ellipse cx="160" cy="89" rx="118" ry="3.5" fill="rgba(74,42,58,0.14)"/>
-
-      {/* Outer page-fan (left + right) — suggests stacked pages */}
-      <line x1="46" y1="18" x2="46" y2="80" stroke={TL.plum} strokeWidth="0.5" opacity="0.35"/>
-      <line x1="44" y1="22" x2="44" y2="76" stroke={TL.plum} strokeWidth="0.4" opacity="0.25"/>
-      <line x1="274" y1="18" x2="274" y2="80" stroke={TL.plum} strokeWidth="0.5" opacity="0.35"/>
-      <line x1="276" y1="22" x2="276" y2="76" stroke={TL.plum} strokeWidth="0.4" opacity="0.25"/>
-
-      {/* Left page — rectangle with rounded corners */}
-      <rect x="48" y="14" width="107" height="68" rx="3" fill="#FBF7EE" stroke={TL.plum} strokeWidth="1.4"/>
-      {/* Right page */}
-      <rect x="165" y="14" width="107" height="68" rx="3" fill="#FBF7EE" stroke={TL.plum} strokeWidth="1.4"/>
-
-      {/* Spine fold between pages */}
-      <line x1="158" y1="14" x2="158" y2="82" stroke={TL.plum} strokeWidth="1.2"/>
-      <line x1="162" y1="14" x2="162" y2="82" stroke={TL.plum} strokeWidth="1.2"/>
-      <path d="M 158,14 Q 160,17 162,14" fill="none" stroke={TL.plum} strokeWidth="0.8"/>
-      <path d="M 158,82 Q 160,79 162,82" fill="none" stroke={TL.plum} strokeWidth="0.8"/>
-
-      {/* Left page — drop capital + ruled lines */}
-      <text x="58" y="38" fontFamily="'Fraunces', Georgia, serif" fontSize="20" fontWeight="600" fill={TL.plum} opacity="0.65">L</text>
-      {[34, 44, 54, 64, 74].map((y, i) => (
-        <line key={`l${i}`} x1={i === 0 ? 78 : 56} y1={y} x2="148" y2={y} stroke={TL.goldDeep} strokeWidth="0.5" opacity="0.55"/>
-      ))}
-
-      {/* Right page — simulated paragraph text blocks */}
-      <rect x="173" y="22" width="86" height="2.5" fill={TL.plum} opacity="0.22"/>
-      <rect x="173" y="30" width="92" height="2.5" fill={TL.plum} opacity="0.22"/>
-      <rect x="173" y="38" width="78" height="2.5" fill={TL.plum} opacity="0.22"/>
-      <rect x="173" y="46" width="88" height="2.5" fill={TL.plum} opacity="0.22"/>
-      <rect x="173" y="54" width="72" height="2.5" fill={TL.plum} opacity="0.22"/>
-      <rect x="173" y="62" width="84" height="2.5" fill={TL.plum} opacity="0.22"/>
-      <rect x="173" y="70" width="46" height="2.5" fill={TL.plum} opacity="0.22"/>
-
-      {/* Gilded page edge at the bottom — the gold rim of a book */}
-      <rect x="46" y="80" width="228" height="2.5" fill={TL.gold}/>
-      <rect x="48" y="82.5" width="224" height="1" fill={TL.goldDeep} opacity="0.7"/>
-
-      {/* Ribbon bookmark — small red strip hanging from the spine */}
-      <rect x="158" y="82" width="4" height="10" fill={TL.rose}/>
-      <path d="M 158,92 L 160,94 L 162,92 Z" fill={TL.rose}/>
-    </svg>
+    <p style={{
+      fontFamily: "Georgia, 'Times New Roman', serif",
+      fontStyle: "italic", fontSize: 10.5,
+      color: TL_GOLD_DEEP, letterSpacing: "0.06em",
+      textAlign: "right", margin: "0 0 6px",
+      opacity: 0.85,
+    }}>Femwell Cyclical · Volume I</p>
   );
 }
 
-// ─── Sticky header (Femwell-native) ────────────────────────────────────────
+// ─── Reusable double-line ornamental frame ────────────────────────────────
+function DoubleFrame({ children, padding = "16px 20px", style }) {
+  return (
+    <div style={{
+      border: `1px solid ${TL_GOLD_DEEP}`,
+      padding: 3,
+      background: "transparent",
+      ...style,
+    }}>
+      <div style={{
+        border: `1px solid ${TL_GOLD}`,
+        padding,
+        background: TL_PARCHMENT_WARM,
+      }}>
+        {children}
+      </div>
+    </div>
+  );
+}
+
+// ─── Chapter header (centred italic gold + hairline rule) ─────────────────
+function TL_ChapterHeader({ roman, name }) {
+  return (
+    <div style={{ textAlign: "center", marginBottom: 10 }}>
+      <p style={{
+        fontFamily: "Georgia, 'Times New Roman', serif",
+        fontStyle: "italic", fontWeight: 600, fontSize: 13,
+        letterSpacing: "0.16em", textTransform: "uppercase",
+        color: TL_GOLD_DEEP, margin: "0 0 4px",
+      }}>
+        Chapter {roman} · {name}
+      </p>
+      <div style={{
+        height: 1, background: TL_GOLD,
+        width: 80, margin: "0 auto", opacity: 0.65,
+      }}/>
+    </div>
+  );
+}
+
+// ─── Page number footer ─────────────────────────────────────────────────────
+function TL_PageNumber({ n }) {
+  return (
+    <div style={{ marginTop: 12, paddingTop: 10, borderTop: `0.5px solid ${TL_RULE}`, textAlign: "center" }}>
+      <span style={{
+        fontFamily: "Georgia, 'Times New Roman', serif",
+        fontStyle: "italic", fontSize: 11, color: TL_GOLD_DEEP,
+        letterSpacing: "0.18em",
+      }}>— {n} —</span>
+    </div>
+  );
+}
+
+// ─── Sticky header — parchment + serif + running header ────────────────────
 function TL_StickyHeader({ view, setView }) {
-  const phaseC = TL.phase.luteal;
   return (
     <div style={{
       position: "sticky", top: 0, zIndex: 5,
-      padding: "20px 18px 12px",
-      backgroundColor: "rgba(250,248,245,0.97)",
+      padding: "18px 18px 12px",
+      backgroundColor: "rgba(240,232,212,0.97)",
       backdropFilter: "blur(20px)",
-      borderBottom: `1px solid ${TL.hairline}`,
+      borderBottom: `1px solid ${TL_RULE}`,
     }}>
+      <TL_RunningHeader/>
       <p style={{
-        fontSize: 9.5, fontWeight: 700, textTransform: "uppercase",
-        letterSpacing: "0.18em", color: TL.plumMute,
-        fontFamily: "'Inter', sans-serif", margin: 0,
+        fontFamily: "Georgia, 'Times New Roman', serif",
+        fontStyle: "italic", fontSize: 10,
+        textTransform: "uppercase", letterSpacing: "0.22em",
+        color: TL_INK_MUTED, margin: "0 0 4px",
       }}>
         {view === "cycle" ? "Your cycle" : "Today · Saturday 16 May"}
       </p>
-      <div style={{ display: "flex", alignItems: "baseline", gap: 10, margin: "4px 0 4px" }}>
+      <div style={{ display: "flex", alignItems: "baseline", gap: 10, marginBottom: 4 }}>
         <h1 style={{
-          fontSize: 30, fontWeight: 500, fontFamily: "'Fraunces', Georgia, serif",
-          color: TL.plum, letterSpacing: "-0.018em", margin: 0,
+          fontFamily: "Georgia, 'Times New Roman', serif",
+          fontSize: 30, fontWeight: 600,
+          color: TL_INK_DARK, letterSpacing: "-0.018em", margin: 0,
         }}>
           {view === "cycle" ? "Cycle" : "Today"}
         </h1>
         <span style={{
           display: "inline-flex", alignItems: "center", gap: 5,
-          padding: "3px 9px", borderRadius: 9999,
-          background: TL.cream, border: `1px solid ${TL.hairlineMid}`,
-          fontFamily: "'Inter', sans-serif", fontSize: 10.5,
-          fontWeight: 600, color: TL.plum2, letterSpacing: "0.04em",
+          padding: "3px 9px",
+          background: TL_PARCHMENT_WARM,
+          border: `1px solid ${TL_RULE}`,
+          fontFamily: "Georgia, serif", fontStyle: "italic",
+          fontSize: 10.5, color: TL_INK,
         }}>
-          <span style={{ width: 6, height: 6, borderRadius: 9999, background: phaseC }}/>
-          84% · 4 cycles
+          <span style={{ width: 6, height: 6, borderRadius: 9999, background: TL_LUTEAL }}/>
+          eighty-four percent · iv cycles
         </span>
       </div>
       <p style={{
-        fontSize: 12, color: TL.plum2,
-        fontFamily: "'Inter', sans-serif", margin: "0 0 4px",
+        fontFamily: "Georgia, serif", fontSize: 12.5,
+        color: TL_INK, margin: "0 0 4px",
       }}>
-        Day 22 · <span style={{ color: phaseC, fontWeight: 700 }}>Luteal</span>
+        Day 22 · <span style={{ color: TL_LUTEAL, fontStyle: "italic", fontWeight: 700 }}>Luteal</span>
       </p>
       <p style={{
-        fontSize: 11.5, fontStyle: "italic", color: TL.plumMute,
-        fontFamily: "'Inter', sans-serif", margin: "0 0 10px", lineHeight: 1.45,
+        fontFamily: "Georgia, serif", fontStyle: "italic",
+        fontSize: 11.5, color: TL_INK_MUTED,
+        margin: "0 0 10px", lineHeight: 1.5,
       }}>
         {view === "cycle" ? MOCK_CYCLE_CRUMB : MOCK_TODAY_CRUMB}
       </p>
 
       <div style={{
-        display: "inline-flex", gap: 4, padding: 4, borderRadius: 9999,
-        border: `1px solid ${TL.hairlineMid}`, background: TL.surface,
+        display: "inline-flex",
+        border: `1px solid ${TL_GOLD_DEEP}`,
+        background: TL_PARCHMENT_WARM,
       }}>
         {["today", "cycle"].map((id) => {
           const active = id === view;
@@ -2151,14 +2199,13 @@ function TL_StickyHeader({ view, setView }) {
             <button
               key={id} onClick={() => setView(id)}
               style={{
-                fontFamily: "'Inter', sans-serif", fontSize: 12,
-                letterSpacing: "0.04em",
-                padding: "7px 22px", borderRadius: 9999, border: "none",
-                cursor: "pointer", minWidth: 80, textAlign: "center",
-                background: active ? TL.plum : "transparent",
-                color: active ? TL.cream : TL.plum2,
+                fontFamily: "Georgia, serif", fontStyle: active ? "italic" : "normal",
+                fontSize: 13, padding: "7px 22px",
+                border: "none", cursor: "pointer", minWidth: 80, textAlign: "center",
+                background: active ? TL_INK_DARK : "transparent",
+                color: active ? TL_PARCHMENT : TL_INK,
                 fontWeight: active ? 700 : 600,
-                transition: "background 140ms, color 140ms",
+                transition: "all 140ms",
               }}
             >
               {id === "today" ? "Today" : "Cycle"}
@@ -2169,51 +2216,54 @@ function TL_StickyHeader({ view, setView }) {
 
       {view === "today" && (
         <div style={{ display: "flex", alignItems: "center", gap: 6, marginTop: 14 }}>
-          <button style={tlChev}>‹</button>
+          <button style={tlChevBook}>‹</button>
           <div style={{ display: "flex", gap: 4, flex: 1, justifyContent: "space-between" }}>
             {[11, 12, 13, 14, 15, 16, 17].map((d, i) => {
               const sel = d === 16;
               return (
                 <button key={i} style={{
-                  display: "flex", flexDirection: "column", alignItems: "center",
-                  gap: 2, padding: "8px 4px", borderRadius: 11, flex: 1,
-                  border: "none", cursor: "pointer",
-                  background: sel ? TL.plum : "transparent",
-                  transition: "background 120ms",
+                  display: "flex", flexDirection: "column", alignItems: "center", gap: 2,
+                  padding: "6px 4px", flex: 1, border: "none", cursor: "pointer",
+                  background: sel ? TL_INK_DARK : "transparent",
+                  position: "relative",
                 }}>
+                  {sel && (
+                    <span style={{
+                      position: "absolute", top: -6, left: "50%",
+                      transform: "translateX(-50%)",
+                      width: 8, height: 14, background: TL_RIBBON,
+                      clipPath: "polygon(0 0, 100% 0, 100% 70%, 50% 100%, 0 70%)",
+                    }}/>
+                  )}
                   <span style={{
-                    fontSize: 9, fontWeight: 600, fontFamily: "'Inter', sans-serif",
-                    color: sel ? TL.cream : TL.plumMute,
+                    fontSize: 9, fontWeight: 600, fontFamily: "Georgia, serif",
+                    color: sel ? TL_GOLD : TL_INK_MUTED,
                     textTransform: "uppercase", letterSpacing: "0.08em",
                   }}>{MOCK_WEEKDAYS[i].slice(0, 3)}</span>
                   <span style={{
-                    fontSize: 15, fontWeight: 600, fontFamily: "'Fraunces', Georgia, serif",
-                    color: sel ? TL.cream : TL.plum,
+                    fontSize: 16, fontWeight: 600, fontFamily: "Georgia, serif",
+                    color: sel ? TL_PARCHMENT : TL_INK_DARK,
                   }}>{d}</span>
-                  <span style={{
-                    width: 5, height: 5, borderRadius: 9999,
-                    background: TL.phase.luteal, opacity: sel ? 1 : 0.85,
-                  }}/>
                 </button>
               );
             })}
           </div>
-          <button style={tlChev}>›</button>
+          <button style={tlChevBook}>›</button>
         </div>
       )}
     </div>
   );
 }
 
-const tlChev = {
-  width: 28, height: 28, borderRadius: 9999,
-  border: `1px solid ${TL.hairlineMid}`,
-  background: TL.surface, color: TL.plum2,
-  fontFamily: "'Fraunces', serif", fontSize: 16, lineHeight: 1,
+const tlChevBook = {
+  width: 26, height: 26,
+  border: `1px solid ${TL_GOLD_DEEP}`,
+  background: TL_PARCHMENT_WARM, color: TL_INK_DARK,
+  fontFamily: "Georgia, serif", fontSize: 16, lineHeight: 1,
   cursor: "pointer", padding: 0, flexShrink: 0,
 };
 
-// ─── Bottom nav (Femwell-native) ───────────────────────────────────────────
+// ─── Bottom nav (parchment, serif italic labels) ──────────────────────────
 function TL_BottomNav() {
   const slots = [
     { kind: "today",  label: "Today" },
@@ -2223,17 +2273,19 @@ function TL_BottomNav() {
     { kind: "menu",   label: "Menu" },
   ];
   const Icon = ({ kind }) => {
-    const c = TL.plumMute;
+    const c = TL_INK_MUTED;
     if (kind === "today") return <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke={c} strokeWidth="1.6"><circle cx="12" cy="12" r="4"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3M4.5 4.5l2 2M17.5 17.5l2 2M4.5 19.5l2-2M17.5 6.5l2-2"/></svg>;
     if (kind === "book") return <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke={c} strokeWidth="1.6"><path d="M4 4h7a3 3 0 013 3v13M20 4h-7a3 3 0 00-3 3v13M4 4v15h6M20 4v15h-6"/></svg>;
-    if (kind === "spark") return <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke={TL.cream} strokeWidth="1.7"><path d="M12 3l1.6 4.4L18 9l-4.4 1.6L12 15l-1.6-4.4L6 9l4.4-1.6L12 3z"/></svg>;
+    if (kind === "spark") return <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke={TL_PARCHMENT} strokeWidth="1.7"><path d="M12 3l1.6 4.4L18 9l-4.4 1.6L12 15l-1.6-4.4L6 9l4.4-1.6L12 3z"/></svg>;
     if (kind === "user") return <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke={c} strokeWidth="1.6"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4.4 3.6-8 8-8s8 3.6 8 8"/></svg>;
     return <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke={c} strokeWidth="1.8" strokeLinecap="round"><line x1="4" y1="7" x2="20" y2="7"/><line x1="4" y1="12" x2="20" y2="12"/><line x1="4" y1="17" x2="20" y2="17"/></svg>;
   };
   return (
     <div style={{
       position: "absolute", left: 0, right: 0, bottom: 0, height: 72,
-      background: TL.cream, borderTop: `1px solid ${TL.hairline}`,
+      background: TL_PARCHMENT,
+      borderTop: `1px solid ${TL_GOLD_DEEP}`,
+      boxShadow: `inset 0 1px 0 ${TL_GOLD}`,
       display: "grid", gridTemplateColumns: "repeat(5,1fr)", alignItems: "center",
     }}>
       {slots.map((s) => {
@@ -2242,21 +2294,21 @@ function TL_BottomNav() {
             <div key={s.label} style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 3 }}>
               <div style={{
                 width: 50, height: 50, borderRadius: 9999,
-                background: TL.rose,
+                background: TL_RIBBON,
                 display: "flex", alignItems: "center", justifyContent: "center",
                 marginTop: -16,
-                boxShadow: `0 6px 18px ${TL.rose}55`,
+                boxShadow: `0 6px 18px ${TL_RIBBON}55, 0 0 0 1px ${TL_GOLD}`,
               }}>
                 <Icon kind={s.kind}/>
               </div>
-              <span style={{ fontSize: 10, color: TL.plumMute, fontFamily: "'Inter', sans-serif", fontWeight: 600 }}>{s.label}</span>
+              <span style={{ fontSize: 10, color: TL_INK_MUTED, fontFamily: "Georgia, serif", fontStyle: "italic" }}>{s.label}</span>
             </div>
           );
         }
         return (
           <div key={s.label} style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 3 }}>
             <Icon kind={s.kind}/>
-            <span style={{ fontSize: 10, color: TL.plumMute, fontFamily: "'Inter', sans-serif", fontWeight: 500 }}>{s.label}</span>
+            <span style={{ fontSize: 10.5, color: TL_INK_MUTED, fontFamily: "Georgia, serif", fontStyle: "italic" }}>{s.label}</span>
           </div>
         );
       })}
@@ -2264,196 +2316,179 @@ function TL_BottomNav() {
   );
 }
 
-// ─── Roman numeral chapter header (Cycle cards) ─────────────────────────────
-function ChapterHeader({ roman, title }) {
-  return (
-    <p style={{
-      fontFamily: "'Inter', sans-serif", fontSize: 9.5, fontWeight: 700,
-      letterSpacing: "0.22em", textTransform: "uppercase",
-      color: TL.gold, margin: "0 0 6px",
-      display: "flex", alignItems: "center", gap: 8,
-    }}>
-      <span>{roman}</span>
-      <span style={{ width: 16, height: 1, background: TL.gold, opacity: 0.5 }}/>
-      <span style={{ color: TL.plum2, fontWeight: 600 }}>{title}</span>
-    </p>
-  );
-}
-
-// ─── TODAY: JessNarrativeHero (with OpenBook + chapter heading) ─────────────
+// ─── TODAY: JessNarrativeHero — the entire card IS a book page ──────────────
 function TL_JessNarrativeHero() {
-  const phaseC = TL.phase.luteal;
+  const body = "he luteal half is the inward season — depth over breadth, careful over many. Soften where you can, and let the to-do list wait. The body is asking for less light, and a little more warmth.";
   return (
-    <section style={{
-      background: `linear-gradient(135deg, ${TL.cream} 0%, ${TL.surface} 60%, rgba(138,95,116,0.06) 100%)`,
-      border: `1px solid ${TL.hairlineMid}`,
-      borderLeft: `4px solid ${phaseC}`,
-      borderRadius: 18,
-      padding: 0,
-      marginBottom: 14,
-      overflow: "hidden",
-      boxShadow: "0 4px 14px rgba(74,42,58,0.08), 0 1px 3px rgba(74,42,58,0.04)",
-    }}>
-      <div style={{
-        background: `linear-gradient(180deg, ${TL.cream} 0%, ${TL.cream2} 100%)`,
-        padding: "12px 8px 4px",
-        borderBottom: `1px solid ${TL.hairline}`,
+    <DoubleFrame style={{ marginBottom: 14 }}>
+      <p style={{
+        fontFamily: "Georgia, serif", fontStyle: "italic",
+        fontSize: 10, textTransform: "uppercase", letterSpacing: "0.18em",
+        color: TL_GOLD_DEEP, textAlign: "center", margin: "0 0 6px",
+        fontWeight: 600,
+      }}>Chapter XXII · The Luteal Passage</p>
+      <div style={{ height: 0.5, background: TL_GOLD, opacity: 0.7, margin: "0 0 14px" }}/>
+      <p style={{
+        fontFamily: "Georgia, serif",
+        fontSize: 14, lineHeight: 1.6,
+        color: TL_INK, textAlign: "justify",
+        margin: 0, overflow: "hidden",
       }}>
-        <OpenBook width={332}/>
+        <span style={{
+          float: "left",
+          fontFamily: "Georgia, 'Times New Roman', serif",
+          fontSize: 50, lineHeight: 0.85, fontWeight: 500,
+          color: TL_LUTEAL,
+          marginRight: 6, marginTop: 4, marginBottom: -4,
+        }}>T</span>
+        {body}
+      </p>
+      <div style={{ clear: "both" }}/>
+      <div style={{ marginTop: 14, paddingTop: 10, borderTop: `0.5px solid ${TL_GOLD}`, opacity: 0.85, textAlign: "center" }}>
+        <span style={{
+          fontFamily: "Georgia, serif", fontStyle: "italic",
+          fontSize: 11, color: TL_GOLD_DEEP, letterSpacing: "0.22em",
+        }}>— 22 —</span>
       </div>
-      <div style={{ padding: "14px 18px 16px" }}>
-        <p style={{
-          fontSize: 10, fontWeight: 700, textTransform: "uppercase",
-          letterSpacing: "0.22em", color: TL.gold,
-          fontFamily: "'Inter', sans-serif", margin: "0 0 6px",
-        }}>Chapter XXII</p>
-        <h2 style={{
-          fontFamily: "'Fraunces', Georgia, serif", fontStyle: "italic",
-          fontSize: 22, fontWeight: 500, lineHeight: 1.25,
-          color: TL.plum, letterSpacing: "-0.018em",
-          margin: "0 0 8px",
-        }}>The Luteal Chapter</h2>
-        <p style={{
-          fontFamily: "'Inter', sans-serif", fontSize: 14,
-          lineHeight: 1.55, color: TL.plum2, margin: "0 0 10px",
-        }}>{MOCK_HERO.body}</p>
-        <div style={{
-          display: "inline-flex", alignItems: "center", gap: 5,
-          fontFamily: "'Inter', sans-serif", fontSize: 11,
-          fontWeight: 500, color: TL.plumMute, letterSpacing: "0.02em",
-        }}>
-          <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><path d="M12 3l1.6 4.4L18 9l-4.4 1.6L12 15l-1.6-4.4L6 9l4.4-1.6L12 3z"/></svg>
-          From Jess · this week
-        </div>
-      </div>
-    </section>
+    </DoubleFrame>
   );
 }
 
-// ─── TODAY: PillarsDeck — 6 tiles, footnote superscripts ────────────────────
+// ─── TODAY: PillarsDeck — book index entries with dotted leaders ───────────
 function TL_PillarsDeck() {
   const tiles = [
-    { key: "sleep",     label: "SLEEP",     value: "7.2",     unit: "hrs",  delta: "+4% vs week",      cls: "up" },
-    { key: "energy",    label: "ENERGY",    value: "68",      unit: "%",    delta: "-8% vs week",      cls: "down" },
-    { key: "mood",      label: "MOOD",      value: "60",      unit: "%",    delta: "steady this week", cls: "flat" },
-    { key: "hydration", label: "HYDRATION", value: "6",       unit: "/ 8",  delta: "-2 vs week",       cls: "down" },
-    { key: "movement",  label: "MOVEMENT",  value: "20",      unit: "min",  delta: "steady this week", cls: "flat" },
-    { key: "cycle",     label: "CYCLE",     value: "Day 22",  unit: "",     delta: "Luteal",           cls: "flat" },
+    { label: "Sleep",     value: "7.2 hrs",   def: "hours of rest recorded" },
+    { label: "Energy",    value: "68 %",      def: "self-reported vitality" },
+    { label: "Mood",      value: "60 %",      def: "steady, this week" },
+    { label: "Hydration", value: "6 / 8",     def: "cups taken before dusk" },
+    { label: "Movement",  value: "20 min",    def: "intentional motion logged" },
+    { label: "Cycle",     value: "Day 22",    def: "of twenty-eight · luteal" },
   ];
-  const colourFor = (cls) => cls === "up" ? "#5F8B72" : cls === "down" ? TL.rose : TL.plumMute;
   return (
-    <section style={{
-      display: "grid", gridTemplateColumns: "repeat(2,1fr)", gap: 10, marginBottom: 14,
-    }}>
-      {tiles.map((t, i) => (
-        <div key={t.key} style={{
-          position: "relative",
-          display: "flex", flexDirection: "column", alignItems: "flex-start",
-          justifyContent: "space-between", gap: 4,
-          padding: "12px 12px 10px", borderRadius: 14,
-          background: TL.cream, border: `1px solid ${TL.hairline}`,
-          boxShadow: "0 1px 0 rgba(74,42,58,0.04)",
-          minHeight: 96,
-        }}>
-          {/* Footnote superscript */}
-          <span style={{
-            position: "absolute", top: 8, right: 11,
-            fontFamily: "'Fraunces', Georgia, serif",
-            fontSize: 14, fontWeight: 600,
-            color: TL.gold, lineHeight: 1,
-          }}>{SUPS[i]}</span>
-          <span style={{
-            fontSize: 9.5, fontWeight: 700, textTransform: "uppercase",
-            letterSpacing: "0.12em", color: TL.plum2,
-            fontFamily: "'Inter', sans-serif",
-          }}>{t.label}</span>
-          <span style={{
-            fontFamily: "'Fraunces', Georgia, serif",
-            fontSize: 22, fontWeight: 500, color: TL.plum,
-            letterSpacing: "-0.015em", lineHeight: 1.1,
+    <section style={{ marginBottom: 14 }}>
+      <div style={{ marginBottom: 8, paddingBottom: 6, borderBottom: `1px solid ${TL_GOLD}` }}>
+        <p style={{
+          fontFamily: "Georgia, serif", fontStyle: "italic",
+          fontSize: 11, color: TL_GOLD_DEEP, margin: 0,
+          letterSpacing: "0.08em",
+        }}>Index · Body Observations</p>
+      </div>
+      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8 }}>
+        {tiles.map((t, i) => (
+          <div key={t.label} style={{
+            background: TL_PARCHMENT_WARM,
+            border: `1px solid ${TL_RULE}`,
+            borderRadius: 2,
+            padding: "10px 12px",
           }}>
-            {t.value}
-            {t.unit && <span style={{ fontSize: 12, fontWeight: 400, color: TL.plumMute, marginLeft: 2 }}> {t.unit}</span>}
-          </span>
-          <span style={{
-            fontSize: 11, fontFamily: "'Inter', sans-serif", fontWeight: 500,
-            color: colourFor(t.cls),
-            display: "inline-flex", alignItems: "center", gap: 3,
-          }}>
-            {t.cls === "up" && <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2"><path d="M12 19V5M5 12l7-7 7 7"/></svg>}
-            {t.cls === "down" && <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2"><path d="M12 5v14M19 12l-7 7-7-7"/></svg>}
-            {t.delta}
-          </span>
-        </div>
-      ))}
+            <div style={{
+              display: "flex", alignItems: "baseline", gap: 4,
+              marginBottom: 4,
+            }}>
+              <span style={{
+                fontFamily: "Georgia, 'Times New Roman', serif",
+                fontWeight: 700, fontSize: 12, color: TL_INK_DARK,
+                flexShrink: 0,
+              }}>{t.label}</span>
+              <span style={{
+                flex: 1, height: 1, marginBottom: 2,
+                background: `radial-gradient(circle, ${TL_INK_MUTED} 0.5px, transparent 0.5px)`,
+                backgroundSize: "3px 1px", backgroundRepeat: "repeat-x",
+              }}/>
+              <span style={{
+                fontFamily: "Georgia, serif",
+                fontSize: 14, color: TL_LUTEAL, fontWeight: 600,
+                flexShrink: 0,
+              }}>{t.value}</span>
+            </div>
+            <p style={{
+              fontFamily: "Georgia, serif", fontStyle: "italic",
+              fontSize: 9.5, color: TL_INK_MUTED, margin: 0, lineHeight: 1.35,
+            }}>
+              <span style={{ color: TL_GOLD_DEEP, fontWeight: 600, marginRight: 2 }}>{i + 1}.</span>
+              {t.def}
+            </p>
+          </div>
+        ))}
+      </div>
     </section>
   );
 }
 
-// ─── TODAY: DailyStoryReel — with page-number footer ──────────────────────
+// ─── TODAY: DailyStoryReel — illustrated book plates ──────────────────────
 function TL_DailyStoryReel() {
+  const PLATES = ["I", "II", "III", "IV", "V"];
   return (
     <section style={{ marginBottom: 14 }}>
-      <p style={{
-        fontSize: 10, fontWeight: 700, textTransform: "uppercase",
-        letterSpacing: "0.16em", color: TL.plumMute,
-        fontFamily: "'Inter', sans-serif", margin: "0 0 8px",
-      }}>For you today</p>
+      <div style={{ marginBottom: 8, paddingBottom: 6, borderBottom: `1px solid ${TL_GOLD}` }}>
+        <p style={{
+          fontFamily: "Georgia, serif", fontStyle: "italic",
+          fontSize: 11, color: TL_GOLD_DEEP, margin: 0,
+          letterSpacing: "0.08em",
+        }}>Illustrated Plates · For This Week</p>
+      </div>
       <div style={{
         display: "flex", gap: 12, overflowX: "auto",
         paddingBottom: 4, scrollbarWidth: "none",
       }} className="fw-no-scrollbar">
         {MOCK_STORY_CARDS.map((card, i) => (
           <div key={i} style={{
-            flex: "0 0 220px", height: 312, borderRadius: 14,
-            border: `1px solid ${TL.hairline}`, overflow: "hidden",
-            background: TL.surface,
-            boxShadow: "0 1px 2px rgba(74,42,58,0.05)",
-            display: "flex", flexDirection: "column",
-            position: "relative",
+            flex: "0 0 218px",
+            border: `1px solid ${TL_GOLD_DEEP}`,
+            padding: 3,
+            background: "transparent",
           }}>
             <div style={{
-              position: "relative", width: "100%", height: 152,
-              background: `linear-gradient(135deg, ${TL.phase.luteal}AA 0%, rgba(74,42,58,0.6) 100%)`,
+              border: `1px solid ${TL_GOLD}`,
+              background: TL_PARCHMENT_WARM,
+              display: "flex", flexDirection: "column",
+              minHeight: 308,
             }}>
-              {card.kind === "daily-story" && (
+              <div style={{
+                padding: "8px 12px 6px", textAlign: "center",
+                borderBottom: `0.5px solid ${TL_RULE}`,
+              }}>
                 <span style={{
-                  position: "absolute", top: 10, left: 10,
-                  padding: "4px 10px", borderRadius: 9999,
-                  background: "rgba(20,16,32,0.5)", color: TL.cream,
-                  fontFamily: "'Inter', sans-serif", fontSize: 9.5,
-                  fontWeight: 700, letterSpacing: "0.12em",
-                }}>DAILY STORY</span>
-              )}
-            </div>
-            <div style={{
-              padding: "12px 14px 22px", flex: 1, display: "flex",
-              flexDirection: "column", gap: 4, background: TL.surface,
-              position: "relative",
-            }}>
-              <p style={{
-                fontFamily: "'Inter', sans-serif",
-                fontSize: 9.5, fontWeight: 700, textTransform: "uppercase",
-                letterSpacing: "0.14em", color: TL.goldDeep, margin: 0,
-              }}>{card.eyebrow}</p>
-              <h3 style={{
-                fontFamily: "'Fraunces', Georgia, serif",
-                fontSize: 16, fontWeight: 500, lineHeight: 1.25,
-                color: TL.plum, letterSpacing: "-0.012em",
-                margin: 0,
-                display: "-webkit-box", WebkitLineClamp: 2,
-                WebkitBoxOrient: "vertical", overflow: "hidden",
-              }}>{card.title}</h3>
-              <p style={{
-                fontFamily: "'Inter', sans-serif", fontSize: 11,
-                color: TL.plumMute, margin: "auto 0 0",
-              }}>{card.meta}</p>
-              {/* Page-number footer */}
-              <span style={{
-                position: "absolute", bottom: 8, right: 12,
-                fontFamily: "'Fraunces', Georgia, serif", fontStyle: "italic",
-                fontSize: 10, color: TL.goldDeep,
-              }}>p. {22 + i}</span>
+                  fontFamily: "Georgia, serif", fontStyle: "italic",
+                  fontSize: 9, color: TL_GOLD_DEEP, letterSpacing: "0.24em",
+                  textTransform: "uppercase",
+                }}>Plate {PLATES[i]}</span>
+              </div>
+              <div style={{
+                position: "relative", height: 130,
+                background: `linear-gradient(135deg, ${TL_LUTEAL}55 0%, ${TL_LUTEAL}A0 100%)`,
+                borderBottom: `0.5px solid ${TL_RULE}`,
+                display: "flex", alignItems: "center", justifyContent: "center",
+              }}>
+                <svg width="80" height="50" viewBox="0 0 80 50" aria-hidden="true">
+                  <circle cx="40" cy="25" r="14" fill="none" stroke={TL_PARCHMENT_WARM} strokeWidth="1.2"/>
+                  <circle cx="40" cy="25" r="6" fill={TL_PARCHMENT_WARM} opacity="0.4"/>
+                  <line x1="20" y1="25" x2="60" y2="25" stroke={TL_PARCHMENT_WARM} strokeWidth="0.6" opacity="0.6"/>
+                  <line x1="40" y1="8" x2="40" y2="42" stroke={TL_PARCHMENT_WARM} strokeWidth="0.6" opacity="0.6"/>
+                </svg>
+              </div>
+              <div style={{ padding: "12px 14px 8px", flex: 1, display: "flex", flexDirection: "column" }}>
+                <p style={{
+                  fontFamily: "Georgia, serif", fontStyle: "italic",
+                  fontSize: 13, lineHeight: 1.32, color: TL_INK_DARK,
+                  margin: 0,
+                  display: "-webkit-box", WebkitLineClamp: 2,
+                  WebkitBoxOrient: "vertical", overflow: "hidden",
+                  textAlign: "center",
+                }}>{card.title}</p>
+                <p style={{
+                  fontFamily: "Georgia, serif", fontStyle: "italic",
+                  fontSize: 9.5, color: TL_INK_MUTED,
+                  margin: "auto 0 0", textAlign: "center",
+                  letterSpacing: "0.04em",
+                }}>{card.meta}</p>
+                <p style={{
+                  fontFamily: "Georgia, serif", fontStyle: "italic",
+                  fontSize: 10, color: TL_GOLD_DEEP,
+                  margin: "6px 0 0", textAlign: "center",
+                  letterSpacing: "0.16em",
+                }}>p. {22 + i}</p>
+              </div>
             </div>
           </div>
         ))}
@@ -2463,43 +2498,27 @@ function TL_DailyStoryReel() {
   );
 }
 
-// ─── TODAY: Intention (plain — no chapter number) ──────────────────────────
+// ─── TODAY: Intention ───────────────────────────────────────────────────────
 function TL_IntentionCard() {
   return (
-    <section style={{
-      background: TL.surface, border: `1px solid ${TL.hairlineMid}`,
-      borderRadius: 14, padding: "13px 16px", marginBottom: 14,
-      boxShadow: "0 2px 8px rgba(74,42,58,0.04)",
-    }}>
-      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 8 }}>
-        <span style={{
-          fontFamily: "'Inter', sans-serif", fontSize: 9.5, fontWeight: 700,
-          letterSpacing: "0.16em", textTransform: "uppercase", color: TL.plumMute,
-          display: "inline-flex", alignItems: "center", gap: 4,
-        }}>
-          <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M12 3l1.6 4.4L18 9l-4.4 1.6L12 15l-1.6-4.4L6 9l4.4-1.6L12 3z"/></svg>
-          Today · signed by Jess
-        </span>
-        <span style={{
-          fontFamily: "'Inter', sans-serif", fontSize: 9, fontWeight: 700,
-          letterSpacing: "0.08em", textTransform: "uppercase",
-          padding: "3px 8px", borderRadius: 10,
-          background: `${TL.phase.luteal}22`, color: TL.phase.luteal,
-        }}>Luteal</span>
-      </div>
+    <DoubleFrame style={{ marginBottom: 14 }}>
+      <TL_ChapterHeader roman="VI" name="Intention for the Day"/>
       <p style={{
-        fontFamily: "'Fraunces', Georgia, serif", fontStyle: "italic",
-        fontSize: 17, color: TL.plum, fontWeight: 500,
-        lineHeight: 1.32, margin: "0 0 6px",
-      }}>Close one loop today; let the rest wait.</p>
+        fontFamily: "Georgia, serif", fontStyle: "italic",
+        fontSize: 17, color: TL_INK_DARK, fontWeight: 500,
+        lineHeight: 1.32, margin: "0 0 6px", textAlign: "center",
+      }}>"Close one loop today; let the rest wait."</p>
       <p style={{
-        fontFamily: "'Inter', sans-serif", fontSize: 12.5,
-        color: TL.plum2, lineHeight: 1.5, margin: 0,
-      }}>Pick the writing pass that's been waiting two weeks — one focused half-hour, then walk away.</p>
-    </section>
+        fontFamily: "Georgia, serif",
+        fontSize: 12.5, color: TL_INK,
+        lineHeight: 1.55, margin: 0, textAlign: "justify",
+      }}>Pick the writing pass that has been waiting two weeks — one focused half-hour, then walk away. The page can be closed for the night.</p>
+      <TL_PageNumber n="vi"/>
+    </DoubleFrame>
   );
 }
 
+// ─── TODAY: Morning rituals ─────────────────────────────────────────────────
 function TL_MorningStack() {
   const rituals = [
     { name: "Warm grains breakfast", done: true },
@@ -2507,440 +2526,328 @@ function TL_MorningStack() {
     { name: "Second cup of tea",     done: false },
   ];
   return (
-    <section style={{
-      background: TL.surface, border: `1px solid ${TL.hairlineMid}`,
-      borderRadius: 14, padding: "13px 16px", marginBottom: 14,
-      boxShadow: "0 2px 8px rgba(74,42,58,0.04)",
-    }}>
-      <div style={{
-        display: "flex", justifyContent: "space-between",
-        alignItems: "baseline", marginBottom: 6,
-      }}>
-        <span style={{
-          fontFamily: "'Fraunces', Georgia, serif", fontSize: 16,
-          fontWeight: 500, color: TL.plum,
-        }}>Morning stack</span>
-        <span style={{
-          fontFamily: "'Inter', sans-serif", fontSize: 10,
-          color: TL.plumMute, letterSpacing: "0.14em",
-          textTransform: "uppercase", fontWeight: 700,
-        }}>1 / 3</span>
-      </div>
+    <DoubleFrame style={{ marginBottom: 14 }}>
+      <TL_ChapterHeader roman="VII" name="Morning Rituals"/>
       {rituals.map((r, i) => (
         <div key={r.name} style={{
           display: "flex", alignItems: "center", gap: 12,
-          padding: "10px 0",
-          borderTop: i === 0 ? "none" : `1px solid ${TL.hairline}`,
+          padding: "9px 0",
+          borderTop: i === 0 ? "none" : `0.5px dotted ${TL_RULE}`,
         }}>
           <div style={{
-            width: 22, height: 22, borderRadius: 9999,
-            border: `1.5px solid ${r.done ? TL.rose : "rgba(74,42,58,0.20)"}`,
-            background: r.done ? TL.rose : "transparent",
+            width: 18, height: 18,
+            border: `1.5px solid ${r.done ? TL_RIBBON : TL_GOLD_DEEP}`,
+            background: r.done ? TL_RIBBON : "transparent",
             display: "flex", alignItems: "center", justifyContent: "center",
+            flexShrink: 0,
           }}>
-            {r.done && <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="3"><path d="M20 6 9 17l-5-5"/></svg>}
+            {r.done && <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke={TL_PARCHMENT} strokeWidth="3"><path d="M20 6 9 17l-5-5"/></svg>}
           </div>
           <span style={{
-            fontFamily: "'Inter', sans-serif", fontSize: 13,
-            fontWeight: 600,
-            color: r.done ? TL.plum2 : TL.plum,
+            fontFamily: "Georgia, serif", fontSize: 13,
+            fontStyle: r.done ? "italic" : "normal",
+            color: r.done ? TL_INK_MUTED : TL_INK_DARK,
             textDecoration: r.done ? "line-through" : "none",
           }}>{r.name}</span>
         </div>
       ))}
-    </section>
+      <TL_PageNumber n="vii"/>
+    </DoubleFrame>
   );
 }
 
-// ─── CYCLE: MonthRibbon — phase chapter tabs on right edge ─────────────────
+// ─── CYCLE: MonthRibbon — contents page of a reference book ─────────────────
 function TL_MonthRibbon() {
-  const weeks = mockMonthWeeks();
-  const ribbonBg = (row) => {
-    const stops = row.map((c, i) => {
-      const center = ((i * 100) / 7) + (100 / 14);
-      const colour = c.phase === "predicted" ? TL.phase.luteal : TL.phase[c.phase];
-      return `${colour} ${center.toFixed(2)}%`;
-    });
-    const startC = row[0].phase === "predicted" ? TL.phase.luteal : TL.phase[row[0].phase];
-    const endC = row[6].phase === "predicted" ? TL.phase.luteal : TL.phase[row[6].phase];
-    return `linear-gradient(to right, ${startC} 0%, ${stops.join(", ")}, ${endC} 100%)`;
-  };
-  const dominantPhase = (row) => {
-    const counts = {};
-    for (const c of row) {
-      if (c.isOff) continue;
-      counts[c.phase] = (counts[c.phase] || 0) + 1;
-    }
-    const sorted = Object.entries(counts).sort((a, b) => b[1] - a[1]);
-    return sorted[0]?.[0] || row[3].phase;
-  };
-
   return (
-    <section style={{
-      background: `linear-gradient(180deg, ${TL.cream} 0%, ${TL.cream2} 100%)`,
-      borderRadius: 18,
-      padding: "16px 16px 18px",
-      border: `1px solid ${TL.hairlineMid}`,
-      borderLeft: `4px solid ${TL.phase.luteal}`,
-      boxShadow: "0 2px 12px rgba(74,42,58,0.06)",
-      marginBottom: 16,
-    }}>
-      <ChapterHeader roman="I" title="Month View"/>
+    <DoubleFrame style={{ marginBottom: 16 }}>
+      <TL_ChapterHeader roman="I" name="Contents of May"/>
+      <p style={{
+        fontFamily: "Georgia, serif", fontStyle: "italic",
+        fontSize: 11.5, color: TL_INK_MUTED,
+        margin: "0 0 12px", textAlign: "center", lineHeight: 1.4,
+      }}>The cycle as a table of contents — five chapters across twenty-eight days.</p>
 
-      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 10 }}>
-        <div>
-          <p style={{
-            fontFamily: "'Fraunces', Georgia, serif", fontSize: 22,
-            fontWeight: 500, color: TL.plum,
-            letterSpacing: "-0.01em", margin: 0,
-          }}>May 2026</p>
-          <p style={{
-            fontFamily: "'Inter', sans-serif", fontSize: 11,
-            fontWeight: 600, color: TL.plumMute,
-            letterSpacing: "0.06em", textTransform: "uppercase",
-            margin: "2px 0 0",
-          }}>luteal week · day 22</p>
-        </div>
-        <div style={{ display: "flex", gap: 4 }}>
-          <button style={tlChev}>‹</button>
-          <button style={tlChev}>›</button>
-        </div>
-      </div>
-
-      <div style={{
-        display: "grid", gridTemplateColumns: "1fr 14px", marginBottom: 6, paddingRight: 0,
-      }}>
-        <div style={{
-          display: "grid", gridTemplateColumns: "repeat(7,1fr)", gap: 4,
-          padding: "0 2px",
-        }}>
-          {["M","T","W","T","F","S","S"].map((d, i) => (
-            <div key={i} style={{
-              fontFamily: "'Inter', sans-serif", fontSize: 9,
-              fontWeight: 600, color: TL.plumMute, textAlign: "center",
-              letterSpacing: "0.14em", textTransform: "uppercase",
-            }}>{d}</div>
-          ))}
-        </div>
-      </div>
-
-      <div style={{
-        display: "flex", gap: 10, flexWrap: "wrap", marginBottom: 8,
-        padding: "0 2px",
-      }}>
-        {["menstrual", "follicular", "ovulatory", "luteal"].map((p) => (
-          <span key={p} style={{
-            display: "inline-flex", alignItems: "center", gap: 5,
-            fontFamily: "'Inter', sans-serif", fontSize: 9.5,
-            fontWeight: 600, letterSpacing: "0.08em",
-            color: TL.plumMute, textTransform: "uppercase",
-          }}>
-            <span style={{ width: 7, height: 7, borderRadius: 9999, background: TL.phase[p] }}/>
-            {TL.phaseNice[p]}
-          </span>
-        ))}
-      </div>
-
-      <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
-        {weeks.map((row, wi) => {
-          const tabPhase = dominantPhase(row);
-          const tabColour = TL.phase[tabPhase === "predicted" ? "luteal" : tabPhase];
+      <div style={{ borderTop: `0.5px solid ${TL_GOLD}`, borderBottom: `0.5px solid ${TL_GOLD}` }}>
+        {TL_BANDS.map((band) => {
+          const isCurrentPhase = band.phase === "luteal";
+          const phaseInk = TL_PHASE_INK[band.phase];
           return (
-            <div key={wi} style={{
-              display: "flex", borderRadius: 14, overflow: "hidden",
-              minHeight: 72,
+            <div key={band.roman} style={{
+              display: "grid",
+              gridTemplateColumns: "44px 1fr 16px",
+              alignItems: "stretch",
+              borderBottom: `0.5px solid ${TL_RULE}`,
+              background: TL_PHASE_BG(band.phase),
+              position: "relative",
             }}>
-              {/* Day grid with gradient */}
               <div style={{
-                flex: 1, position: "relative",
-                padding: "8px 6px",
-                display: "grid", gridTemplateColumns: "repeat(7,1fr)", gap: 2,
-                background: ribbonBg(row),
+                display: "flex", flexDirection: "column",
+                alignItems: "flex-start", justifyContent: "center",
+                padding: "10px 6px 10px 10px",
+                borderRight: `0.5px dotted ${TL_RULE}`,
               }}>
-                {row.map((cell) => {
-                  const isToday = cell.today;
-                  const isOvulatory = cell.phase === "ovulatory";
-                  const isPredicted = cell.phase === "predicted";
-                  const activityBar = !cell.isOff && (cell.d === 13 || cell.d === 16 || cell.d % 4 === 0);
-                  return (
-                    <div key={`${cell.m}-${cell.d}`} style={{
-                      position: "relative",
-                      display: "flex", flexDirection: "column",
-                      justifyContent: "space-between", padding: "4px 5px 5px",
-                      borderRadius: 7, minHeight: 56,
-                      outline: isToday ? `2.5px solid ${TL.cream}` : "none",
-                      outlineOffset: isToday ? "-1px" : 0,
-                      background: isToday ? "rgba(74,42,58,0.18)" : "transparent",
-                      boxShadow: isToday ? `0 0 0 1.5px ${TL.plum}, 0 0 12px rgba(74,42,58,0.35)` : "none",
-                      opacity: isPredicted ? 0.5 : 1,
-                    }}>
-                      {isToday && <span style={{
-                        position: "absolute", top: 4, right: 4,
-                        width: 5, height: 5, borderRadius: 9999, background: TL.plum,
-                      }}/>}
-                      <span style={{
-                        fontFamily: "'Inter', sans-serif",
-                        fontWeight: isToday ? 800 : 700, fontSize: 13, lineHeight: 1,
-                        color: cell.isOff
-                          ? "rgba(74,42,58,0.35)"
-                          : isOvulatory ? TL.plum : "#FFFAF5",
-                        textShadow: !cell.isOff && !isOvulatory ? "0 1px 2px rgba(74,42,58,0.30)" : "none",
-                      }}>{cell.d}</span>
-                      {activityBar && (
-                        <span style={{
-                          height: 3, borderRadius: 2,
-                          width: cell.d === 16 ? "75%" : "55%",
-                          alignSelf: "flex-start", marginTop: "auto",
-                          background: isOvulatory ? "rgba(74,42,58,0.75)" : "rgba(255,250,245,0.92)",
-                          opacity: 0.95,
-                          boxShadow: isOvulatory ? "none" : "0 0 4px rgba(255,250,245,0.55)",
-                        }}/>
-                      )}
-                    </div>
-                  );
-                })}
+                <span style={{
+                  fontFamily: "Georgia, serif", fontStyle: "italic",
+                  fontSize: 10, color: TL_GOLD_DEEP, lineHeight: 1,
+                  letterSpacing: "0.04em",
+                }}>Ch. {band.roman}</span>
               </div>
-              {/* Phase chapter tab on right edge */}
               <div style={{
-                width: 14, background: tabColour,
-                display: "flex", alignItems: "center", justifyContent: "center",
-                color: "#FFFAF5",
-                fontFamily: "'Fraunces', Georgia, serif",
-                fontSize: 11, fontWeight: 700,
-                boxShadow: "inset 1px 0 0 rgba(255,255,255,0.18), -1px 0 0 rgba(74,42,58,0.18)",
+                padding: "10px 8px",
+                display: "flex", flexDirection: "column", gap: 4,
               }}>
-                {PHASE_INITIAL[tabPhase]}
+                <div style={{ display: "flex", alignItems: "baseline", gap: 4 }}>
+                  <span style={{
+                    fontFamily: "Georgia, 'Times New Roman', serif",
+                    fontWeight: 700, fontSize: 11.5,
+                    color: TL_INK_DARK,
+                  }}>{band.name}</span>
+                  <span style={{
+                    flex: 1, height: 1, marginLeft: 4,
+                    background: `radial-gradient(circle, ${TL_INK_MUTED} 0.5px, transparent 0.5px)`,
+                    backgroundSize: "4px 1px", backgroundRepeat: "repeat-x",
+                    alignSelf: "center",
+                  }}/>
+                  <span style={{
+                    fontFamily: "Georgia, serif", fontStyle: "italic",
+                    fontSize: 10, color: TL_INK_MUTED,
+                  }}>{band.days[0]}–{band.days[band.days.length - 1]}</span>
+                </div>
+                <div style={{
+                  display: "flex", flexWrap: "wrap", gap: "4px 8px",
+                  fontFamily: "Georgia, serif", fontSize: 11,
+                  color: TL_INK, position: "relative",
+                }}>
+                  {band.days.map((d) => {
+                    const isToday = d === 22 && band.phase === "luteal";
+                    return (
+                      <span key={d} style={{ position: "relative", display: "inline-block", minWidth: 14, textAlign: "center" }}>
+                        {isToday && (
+                          <span style={{
+                            position: "absolute",
+                            top: -14, left: "50%", transform: "translateX(-50%)",
+                            width: 7, height: 14, background: TL_RIBBON,
+                            clipPath: "polygon(0 0, 100% 0, 100% 70%, 50% 100%, 0 70%)",
+                            zIndex: 2,
+                          }}/>
+                        )}
+                        <span style={{
+                          fontWeight: isToday ? 700 : 400,
+                          color: isToday ? TL_RIBBON : (isCurrentPhase ? phaseInk : TL_INK),
+                          fontFamily: "Georgia, serif",
+                          fontStyle: isToday ? "italic" : "normal",
+                          fontSize: isToday ? 12 : 11,
+                        }}>{d}</span>
+                      </span>
+                    );
+                  })}
+                </div>
+              </div>
+              <div style={{
+                background: TL_PHASE_INK[band.phase],
+                color: TL_PARCHMENT_WARM,
+                display: "flex", alignItems: "center", justifyContent: "center",
+                fontFamily: "Georgia, serif", fontWeight: 700, fontSize: 12,
+                boxShadow: "inset 1px 0 0 rgba(255,255,255,0.18)",
+              }}>
+                {PHASE_LETTER[band.phase]}
               </div>
             </div>
           );
         })}
       </div>
-    </section>
+
+      <TL_PageNumber n="i"/>
+    </DoubleFrame>
   );
 }
 
-// ─── CYCLE: SavedRhythmsCarousel (with chapter header) ──────────────────────
+// ─── CYCLE: Saved Rhythms ───────────────────────────────────────────────────
 function TL_SavedRhythmsCarousel() {
   return (
-    <section style={{ marginBottom: 16 }}>
-      <div style={{ padding: "0 2px 8px" }}>
-        <ChapterHeader roman="II" title="Your Rhythms"/>
-        <div style={{
-          display: "flex", justifyContent: "space-between",
-          alignItems: "baseline",
-        }}>
-          <p style={{
-            fontFamily: "'Fraunces', Georgia, serif", fontSize: 16,
-            fontWeight: 500, color: TL.plum, margin: 0,
-          }}>Saved rhythms</p>
-          <span style={{
-            fontFamily: "'Inter', sans-serif", fontSize: 11,
-            fontWeight: 700, color: TL.rose, letterSpacing: "0.04em",
-          }}>browse →</span>
-        </div>
-      </div>
+    <DoubleFrame style={{ marginBottom: 16 }}>
+      <TL_ChapterHeader roman="II" name="Saved Rhythms"/>
+      <p style={{
+        fontFamily: "Georgia, serif", fontStyle: "italic",
+        fontSize: 11.5, color: TL_INK_MUTED,
+        margin: "0 0 10px", textAlign: "center", lineHeight: 1.4,
+      }}>Three rhythms held this cycle — kept, watched, restored.</p>
       <div style={{
-        display: "flex", gap: 10, overflowX: "auto",
+        display: "flex", gap: 8, overflowX: "auto",
         scrollbarWidth: "none", paddingBottom: 4,
       }} className="fw-no-scrollbar">
-        {MOCK_RHYTHMS.map((r) => (
+        {MOCK_RHYTHMS.map((r, i) => (
           <div key={r.name} style={{
-            flex: "0 0 206px", background: TL.surface,
-            border: `1px solid ${TL.hairlineMid}`,
-            borderLeft: r.active ? `3px solid ${TL.phase.luteal}` : "none",
-            borderRadius: 14, padding: "13px 14px",
-            boxShadow: "0 1px 3px rgba(74,42,58,0.05)",
+            flex: "0 0 196px",
+            background: TL_PARCHMENT,
+            border: `1px solid ${r.active ? TL_GOLD_DEEP : TL_RULE}`,
+            padding: "10px 12px",
           }}>
-            <p style={{
-              fontFamily: "'Inter', sans-serif", fontSize: 9.5,
-              fontWeight: 700, letterSpacing: "0.18em", textTransform: "uppercase",
-              color: r.active ? TL.phase.luteal : TL.plumMute, margin: 0,
-            }}>{r.active ? "Active" : "Saved"}</p>
-            <p style={{
-              fontFamily: "'Fraunces', Georgia, serif", fontSize: 17,
-              fontWeight: 500, color: TL.plum, margin: "3px 0 0",
-              lineHeight: 1.2, letterSpacing: "-0.01em",
-            }}>{r.name}</p>
-            <p style={{
-              fontFamily: "'Inter', sans-serif", fontSize: 11.5,
-              color: TL.plum2, margin: "4px 0 0", lineHeight: 1.4,
-            }}>{r.sub}</p>
-            <div style={{
-              marginTop: 10, height: 3, borderRadius: 9999,
-              background: "rgba(74,42,58,0.10)",
-            }}>
-              <div style={{ height: "100%", width: `${r.pct}%`, background: TL.phase.luteal, borderRadius: 9999 }}/>
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline" }}>
+              <span style={{
+                fontFamily: "Georgia, serif", fontStyle: "italic",
+                fontSize: 9.5, color: TL_GOLD_DEEP, letterSpacing: "0.16em",
+                textTransform: "uppercase",
+              }}>Entry {i + 1}</span>
+              <span style={{
+                fontFamily: "Georgia, serif", fontStyle: "italic",
+                fontSize: 9.5, color: r.active ? TL_RIBBON : TL_INK_MUTED,
+              }}>{r.active ? "in progress" : "saved"}</span>
             </div>
             <p style={{
-              fontFamily: "'Inter', sans-serif", fontSize: 10,
-              color: TL.plumMute, margin: "5px 0 0", textAlign: "right",
-              letterSpacing: "0.04em",
-            }}>{r.pct}% · this week</p>
+              fontFamily: "Georgia, 'Times New Roman', serif",
+              fontWeight: 600, fontSize: 16, color: TL_INK_DARK,
+              margin: "4px 0 2px", lineHeight: 1.2,
+            }}>{r.name}</p>
+            <p style={{
+              fontFamily: "Georgia, serif", fontStyle: "italic",
+              fontSize: 11.5, color: TL_INK, margin: 0, lineHeight: 1.4,
+            }}>{r.sub}</p>
+            <div style={{ display: "flex", alignItems: "baseline", gap: 4, marginTop: 10 }}>
+              <span style={{ fontFamily: "Georgia, serif", fontSize: 10, color: TL_INK_MUTED }}>kept</span>
+              <span style={{
+                flex: 1, height: 1, marginLeft: 2,
+                background: `radial-gradient(circle, ${TL_INK_MUTED} 0.5px, transparent 0.5px)`,
+                backgroundSize: "3px 1px", backgroundRepeat: "repeat-x",
+                alignSelf: "center",
+              }}/>
+              <span style={{ fontFamily: "Georgia, serif", fontStyle: "italic", fontSize: 11, color: TL_LUTEAL, fontWeight: 600 }}>{r.pct}%</span>
+            </div>
           </div>
         ))}
       </div>
-    </section>
+      <TL_PageNumber n="ii"/>
+    </DoubleFrame>
   );
 }
 
-// ─── CYCLE: WeekAheadCard (with chapter header) ─────────────────────────────
+// ─── CYCLE: Week Ahead ──────────────────────────────────────────────────────
 function TL_WeekAheadCard() {
   const chips = [
-    { day: "SUN", n: 17, phase: "luteal" },
-    { day: "MON", n: 18, phase: "luteal" },
-    { day: "TUE", n: 19, phase: "luteal" },
-    { day: "WED", n: 20, phase: "luteal" },
-    { day: "THU", n: 21, phase: "luteal" },
+    { day: "Sun", n: 17 },
+    { day: "Mon", n: 18 },
+    { day: "Tue", n: 19 },
+    { day: "Wed", n: 20 },
+    { day: "Thu", n: 21 },
   ];
   return (
-    <section style={{
-      background: `linear-gradient(180deg, ${TL.cream} 0%, ${TL.cream2} 100%)`,
-      borderRadius: 16, padding: "14px 16px",
-      border: `1px solid ${TL.hairlineMid}`,
-      borderLeft: `4px solid ${TL.phase.luteal}`,
-      boxShadow: "0 1px 3px rgba(74,42,58,0.05)",
-      marginBottom: 16,
-    }}>
-      <ChapterHeader roman="III" title="Week Ahead"/>
-      <div style={{
-        display: "flex", justifyContent: "space-between",
-        alignItems: "baseline", marginBottom: 8, gap: 8, flexWrap: "wrap",
-      }}>
-        <p style={{
-          fontFamily: "'Fraunces', Georgia, serif", fontSize: 16,
-          fontWeight: 500, color: TL.plum, margin: 0,
-        }}>The next seven days</p>
-        <span style={{
-          fontFamily: "'Inter', sans-serif", fontSize: 10,
-          fontWeight: 600, letterSpacing: "0.12em", textTransform: "uppercase",
-          color: TL.plumMute,
-        }}>SUNDAY 24 MAY</span>
-      </div>
+    <DoubleFrame style={{ marginBottom: 16 }}>
+      <TL_ChapterHeader roman="III" name="The Week Ahead"/>
       <p style={{
-        fontFamily: "'Inter', sans-serif", fontSize: 12.5,
-        lineHeight: 1.55, color: TL.plum2,
-        margin: "0 0 10px",
-      }}>A gentle look at what's coming — your luteal window often sets the cadence.</p>
+        fontFamily: "Georgia, serif", fontStyle: "italic",
+        fontSize: 13.5, lineHeight: 1.5,
+        color: TL_INK_DARK, margin: "0 0 10px", textAlign: "justify",
+      }}>A gentle look at what is coming. The luteal window often sets the cadence — fewer rooms, earlier candles, the second cup of tea.</p>
 
       <div style={{
-        display: "grid", gridTemplateColumns: "repeat(5,1fr)", gap: 6, marginBottom: 10,
+        display: "grid", gridTemplateColumns: "repeat(5,1fr)", gap: 4,
+        marginBottom: 12,
+        borderTop: `0.5px solid ${TL_GOLD}`,
+        borderBottom: `0.5px solid ${TL_GOLD}`,
+        padding: "10px 0",
       }}>
         {chips.map((c) => (
           <div key={c.n} style={{
-            display: "flex", flexDirection: "column", alignItems: "center", gap: 4,
-            padding: "8px 4px 10px", borderRadius: 10,
-            background: TL.surface, border: `1px solid ${TL.hairline}`,
+            display: "flex", flexDirection: "column", alignItems: "center", gap: 3,
           }}>
-            <p style={{
-              fontFamily: "'Inter', sans-serif", fontSize: 9,
-              fontWeight: 700, letterSpacing: "0.10em",
-              color: TL.plumMute, margin: 0,
-            }}>{c.day}</p>
-            <p style={{
-              fontFamily: "'Fraunces', Georgia, serif", fontSize: 18,
-              fontWeight: 600, color: TL.plum, margin: 0, letterSpacing: "-0.01em",
-            }}>{c.n}</p>
             <span style={{
-              width: 5, height: 5, borderRadius: 9999, background: TL.phase[c.phase],
-            }}/>
+              fontFamily: "Georgia, serif", fontStyle: "italic", fontSize: 9.5,
+              color: TL_INK_MUTED, letterSpacing: "0.08em",
+            }}>{c.day}</span>
+            <span style={{
+              fontFamily: "Georgia, 'Times New Roman', serif",
+              fontSize: 18, fontWeight: 600, color: TL_INK_DARK,
+              lineHeight: 1,
+            }}>{c.n}</span>
+            <span style={{ width: 5, height: 5, borderRadius: 9999, background: TL_LUTEAL }}/>
           </div>
         ))}
       </div>
 
-      <div style={{
-        display: "flex", alignItems: "center", justifyContent: "space-between",
-        gap: 8, marginTop: 9, paddingTop: 9,
-        borderTop: `1px solid ${TL.hairline}`, flexWrap: "wrap",
-      }}>
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", flexWrap: "wrap", gap: 8 }}>
         <p style={{
-          fontFamily: "'Inter', sans-serif", fontSize: 10.5,
-          color: TL.plumMute, letterSpacing: "0.04em", margin: 0,
-        }}>
-          Period ETA <strong style={{ color: TL.plum }}>Fri 22</strong> · ±3d · 84% confident
-        </p>
+          fontFamily: "Georgia, serif", fontStyle: "italic",
+          fontSize: 11, color: TL_INK_MUTED, margin: 0, letterSpacing: "0.04em",
+        }}>Period anticipated <strong style={{ color: TL_INK_DARK, fontStyle: "normal" }}>Friday 22</strong> · ±3 days · 84% certain</p>
         <span style={{
           display: "inline-flex", alignItems: "center",
-          padding: "5px 11px", borderRadius: 9999,
-          background: TL.plum, color: TL.cream,
-          fontFamily: "'Inter', sans-serif", fontSize: 10.5,
-          fontWeight: 700, letterSpacing: "0.04em",
+          padding: "6px 14px",
+          background: TL_INK_DARK, color: TL_PARCHMENT_WARM,
+          fontFamily: "Georgia, serif", fontStyle: "italic", fontSize: 11.5,
+          fontWeight: 600, letterSpacing: "0.04em",
         }}>Plan with Jess →</span>
       </div>
-    </section>
+
+      <TL_PageNumber n="iii"/>
+    </DoubleFrame>
   );
 }
 
-// ─── CYCLE: DoctorReadyDiaryCard (with chapter header) ──────────────────────
+// ─── CYCLE: Doctor-Ready Diary ──────────────────────────────────────────────
 function TL_DoctorReadyDiaryCard() {
   return (
-    <section style={{
-      background: `linear-gradient(135deg, ${TL.phase.luteal}1A 0%, ${TL.surface} 100%)`,
-      borderRadius: 16, padding: "14px 16px",
-      border: `1px solid ${TL.hairlineMid}`,
-      borderLeft: `4px solid ${TL.phase.luteal}`,
-      boxShadow: "0 1px 3px rgba(74,42,58,0.05)",
-      marginBottom: 16,
-    }}>
-      <ChapterHeader roman="IV" title="Doctor Ready"/>
-      <div style={{ display: "flex", alignItems: "center", gap: 14 }}>
+    <DoubleFrame style={{ marginBottom: 16 }}>
+      <TL_ChapterHeader roman="IV" name="Doctor-Ready Diary"/>
+      <div style={{ display: "flex", alignItems: "center", gap: 14, marginBottom: 8 }}>
         <div style={{
-          width: 44, height: 44, borderRadius: "50%",
-          background: `linear-gradient(135deg, ${TL.phase.luteal} 0%, ${TL.plum} 100%)`,
+          width: 44, height: 44,
+          background: `linear-gradient(135deg, ${TL_LUTEAL} 0%, ${TL_INK_DARK} 100%)`,
+          border: `1px solid ${TL_GOLD}`,
           display: "flex", alignItems: "center", justifyContent: "center",
           flexShrink: 0,
         }}>
-          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke={TL.cream} strokeWidth="1.6">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke={TL_PARCHMENT_WARM} strokeWidth="1.6">
             <rect x="3" y="6" width="18" height="14" rx="2"/>
             <path d="M8 6V4a2 2 0 012-2h4a2 2 0 012 2v2M12 11v6M9 14h6"/>
           </svg>
         </div>
-        <div style={{ flex: 1, minWidth: 0 }}>
+        <div style={{ flex: 1 }}>
           <p style={{
-            fontFamily: "'Fraunces', Georgia, serif", fontSize: 15.5,
-            fontStyle: "italic", color: TL.plum, margin: 0, lineHeight: 1.32,
-          }}>6 days to Period · Progesterone <span style={{ color: TL.goldDeep, fontStyle: "normal" }}>↑</span></p>
+            fontFamily: "Georgia, serif", fontStyle: "italic",
+            fontSize: 15.5, color: TL_INK_DARK, margin: 0, lineHeight: 1.32,
+          }}>Six days to Period · Progesterone <span style={{ color: TL_GOLD_DEEP, fontWeight: 700 }}>↑</span></p>
           <p style={{
-            fontFamily: "'Inter', sans-serif", fontSize: 11.5,
-            color: TL.plum2, margin: "3px 0 0",
-          }}>cramps, sleep, mood logged</p>
+            fontFamily: "Georgia, serif",
+            fontSize: 11.5, color: TL_INK_MUTED,
+            margin: "3px 0 0", letterSpacing: "0.02em",
+          }}>cramps, sleep, mood logged · twenty-eight days</p>
         </div>
         <span style={{
-          fontFamily: "'Inter', sans-serif", fontSize: 11,
-          fontWeight: 700, color: TL.rose, letterSpacing: "0.04em",
+          fontFamily: "Georgia, serif", fontStyle: "italic", fontSize: 12,
+          fontWeight: 600, color: TL_RIBBON,
           whiteSpace: "nowrap",
         }}>open →</span>
       </div>
-    </section>
+      <TL_PageNumber n="iv"/>
+    </DoubleFrame>
   );
 }
 
-// ─── CYCLE: PlanMyNextCycleCTA (with chapter header) ───────────────────────
+// ─── CYCLE: The Next Chapter ────────────────────────────────────────────────
 function TL_PlanMyNextCycleCTA() {
   return (
-    <section style={{
-      background: `linear-gradient(135deg, rgba(74,42,58,0.06) 0%, ${TL.surface} 100%)`,
-      borderRadius: 16, padding: "14px 16px",
-      border: `1px solid ${TL.hairlineMid}`,
-      borderLeft: `4px solid ${TL.plum}`,
-      boxShadow: "0 1px 3px rgba(74,42,58,0.05)",
-      marginBottom: 16,
-    }}>
-      <ChapterHeader roman="V" title="Next Chapter"/>
+    <DoubleFrame style={{ marginBottom: 16 }}>
+      <TL_ChapterHeader roman="V" name="The Next Chapter"/>
       <p style={{
-        fontFamily: "'Fraunces', Georgia, serif", fontSize: 16,
-        lineHeight: 1.4, color: TL.plum, letterSpacing: "-0.005em",
-        margin: "0 0 6px",
-      }}>Bring this month's patterns into next month's plan.</p>
+        fontFamily: "Georgia, serif", fontStyle: "italic",
+        fontSize: 17, lineHeight: 1.4, color: TL_INK_DARK,
+        letterSpacing: "-0.005em", margin: "0 0 8px", textAlign: "center",
+      }}>"Bring this month's patterns into next month's plan."</p>
       <p style={{
-        fontFamily: "'Inter', sans-serif", fontSize: 12.5, lineHeight: 1.55,
-        color: TL.plum2, margin: "0 0 12px",
-      }}>A short walk-through of anchors to keep, things to soften, and one nudge for the phase that often feels hardest.</p>
-      <span style={{
-        display: "inline-flex", alignItems: "center", padding: "9px 16px",
-        borderRadius: 9999, background: TL.plum, color: TL.cream,
-        fontFamily: "'Inter', sans-serif", fontSize: 13, fontWeight: 600,
-      }}>Start planning →</span>
-    </section>
+        fontFamily: "Georgia, serif", fontSize: 12.5, lineHeight: 1.6,
+        color: TL_INK, margin: "0 0 14px", textAlign: "justify",
+      }}>A short walk-through of anchors to keep, things to soften, and one nudge for the phase that often feels hardest. The volume continues.</p>
+      <div style={{ textAlign: "center" }}>
+        <span style={{
+          display: "inline-flex", alignItems: "center", padding: "9px 18px",
+          background: TL_INK_DARK, color: TL_PARCHMENT_WARM,
+          fontFamily: "Georgia, serif", fontStyle: "italic", fontSize: 13, fontWeight: 600,
+          border: `1px solid ${TL_GOLD}`,
+          letterSpacing: "0.04em",
+        }}>Begin the next volume →</span>
+      </div>
+      <TL_PageNumber n="v"/>
+    </DoubleFrame>
   );
 }
 
@@ -2969,18 +2876,21 @@ function TL_CycleView() {
   );
 }
 
-// ─── Demo container ─────────────────────────────────────────────────────────
+// ─── Demo container — parchment + horizontal ruled lines ───────────────────
 function TheLibraryDemo() {
   const [view, setView] = useState("today");
   return (
     <div style={{
       width: 380, maxWidth: "100%", height: 820,
-      background: TL.ivory, color: TL.plum,
-      borderRadius: 32, overflow: "hidden", margin: "0 auto",
-      position: "relative",
-      boxShadow: "0 16px 40px rgba(74,42,58,0.18), 0 0 0 1px rgba(74,42,58,0.08)",
-      fontFamily: "'Inter', system-ui, sans-serif",
+      color: TL_INK, borderRadius: 32, overflow: "hidden",
+      margin: "0 auto", position: "relative",
+      boxShadow: "0 16px 40px rgba(74,42,58,0.18), 0 0 0 1px rgba(166,134,43,0.18)",
+      fontFamily: "Georgia, 'Times New Roman', serif",
       display: "flex", flexDirection: "column",
+      background: `
+        repeating-linear-gradient(0deg, transparent 0px, transparent 23px, rgba(216,204,176,0.42) 23px, rgba(216,204,176,0.42) 24px),
+        ${TL_PARCHMENT}
+      `,
     }}>
       <TL_StickyHeader view={view} setView={setView}/>
       <div style={{ flex: 1, overflowY: "auto", scrollbarWidth: "thin" }}>
@@ -3012,8 +2922,8 @@ const DESIGNS = [
   },
   {
     name: "The Library",
-    tagline: "Your cycle is a book. Each phase is a chapter; each day is a page with edge-tabs.",
-    body: "Stays inside the Femwell native palette (ivory bg, white cards, plum text, rose accents, existing phase colours). Five quiet book moves: (1) an open-book SVG at the top of JessNarrativeHero with two facing pages, ruled lines on the left, paragraph blocks on the right, gilded gold page-edge at the bottom, and a tiny rose ribbon bookmark hanging from the spine — heading reads 'Chapter XXII · The Luteal Chapter' in italic Fraunces; (2) phase chapter-tabs on the right edge of every MonthRibbon row — 14px-wide coloured tabs with the phase initial in cream (P / F / O / L / P) styled like the gilt edge-tabs on a reference book; (3) Roman numeral chapter headers above each Cycle card (I · Month View / II · Your Rhythms / III · Week Ahead / IV · Doctor Ready / V · Next Chapter) in gold tracked small-caps; (4) superscript footnote numerals in gold in the corner of each PillarsDeck tile; (5) italic page-number footers ('p. 22'…) in gold-deep on every DailyStoryReel card.",
+    tagline: "A printed volume of your cycle. Parchment, ruled lines, double-frame chapters, drop caps, page numbers, a red silk bookmark on today.",
+    body: "Full typographic transformation, not a book SVG slapped on top. Parchment background #F0E8D4 with horizontal ruled lines every 24px running behind everything. All typography is serif (Georgia). Running header 'Femwell Cyclical · Volume I' above the Planner title in italic gold. JessNarrativeHero IS a book page: double-line gold frame, 'Chapter XXII · The Luteal Passage' running header, hairline rule, 50px drop capital T in luteal violet, justified body in plum ink, '— 22 —' centred page number. PillarsDeck is the Body Observations Index: dictionary entries with bold serif terms, dotted leader lines, phase-coloured values, italic definitions. MonthRibbon is the Contents page: five chapter rows (Ch. I–V) with phase name + dotted leader + day range + page numbers, phase-coloured tab on the right, a red silk bookmark ribbon descending from above today's day number. DailyStoryReel cards are illustrated Plates I–V with double frames and italic captions. Every Cycle card has a centred chapter header, double-line frame, justified body, and Roman page number. Bottom nav stays cream-parchment with serif italic labels.",
     Comp: TheLibraryDemo,
     status: "ready",
   },
