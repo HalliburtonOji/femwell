@@ -190,18 +190,18 @@ export default function DailyStoryReel({ profile, cycleInfo }) {
     <section aria-label="Daily reading reel" style={reelStyle}>
       <p style={reelHeadStyle}>{reelHead}</p>
       <div style={scrollRowStyle} className="fw-no-scrollbar">
-        {cards.map(card => (
+        {cards.map((card, idx) => (
           <button
             key={`${card.kind}-${card.id}`}
             type="button"
             onClick={() => handleTap(card)}
             aria-label={`${card.kind === "daily-story" ? "Daily Story" : "Article"}: ${card.title}`}
-            style={cardStyle(card.id, card.gradient, card.image)}
+            style={cardStyle(card.id, card.gradient, card.image, idx)}
           >
             <div style={coverStyle(card.gradient, card.image)}>
               {card.kind === "daily-story" && <span style={badgeStyle}>DAILY STORY</span>}
             </div>
-            <div style={cardBodyStyle}>
+            <div style={cardBodyTintStyle(idx)}>
               <p style={eyebrowStyle}>
                 {roman ? <span style={{ color: "#7B5E9A", fontWeight: 700 }}>{roman} · </span> : null}
                 {card.eyebrow}
@@ -241,14 +241,16 @@ const scrollRowStyle = {
   paddingBottom: 4,
 };
 // Le Menu × Phase Sun — cream paper cards with espresso ink (applied 2026-05-16).
-function cardStyle(_id, gradient, image) {
+// Polish pass: alternating cream tints so adjacent cards are distinguishable when scrolling.
+const CARD_TINTS = ["#F4EDDB", "#F8F2E4", "#F0E8D0"];
+function cardStyle(_id, gradient, image, idx = 0) {
   return {
     flex: "0 0 240px",
     height: 320,
     borderRadius: 16,
     border: "1px solid rgba(58,44,26,0.10)",
     overflow: "hidden",
-    background: image ? "#FBF6E6" : gradient,
+    background: image ? CARD_TINTS[idx % CARD_TINTS.length] : gradient,
     boxShadow: "0 2px 6px rgba(58,44,26,0.06)",
     cursor: "pointer",
     scrollSnapAlign: "start",
@@ -257,6 +259,9 @@ function cardStyle(_id, gradient, image) {
     padding: 0,
     textAlign: "left",
   };
+}
+function cardBodyTintStyle(idx = 0) {
+  return { ...cardBodyStyle, background: CARD_TINTS[idx % CARD_TINTS.length] };
 }
 function coverStyle(gradient, image) {
   return {

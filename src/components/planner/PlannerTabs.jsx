@@ -95,7 +95,8 @@ const tabBtnStyle = {
   borderRadius: 9999,
   border: "none",
   cursor: "pointer",
-  transition: "background 140ms, color 140ms",
+  // Le Menu polish — smoother tab switch (0.2s vs 140ms)
+  transition: "all 0.2s ease",
   minWidth: 84,
   textAlign: "center",
 };

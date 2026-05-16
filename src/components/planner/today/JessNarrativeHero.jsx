@@ -53,7 +53,7 @@ const PHASE_TINTS = {
 };
 
 // Phase Sun — 12 rays in current phase colour, cream/gold core. The Le Menu
-// signature element. Sits in the top-right of the hero.
+// signature element. Rays rotate 60s · core pulses 3s (polish pass 2026-05-16).
 function PhaseSun({ phase = "luteal", size = 60 }) {
   const c = PHASE_SOLID[phase] || PHASE_SOLID.none;
   const gid = `jess-sun-${phase}`;
@@ -65,26 +65,37 @@ function PhaseSun({ phase = "luteal", size = 60 }) {
           <stop offset="65%" stopColor="#F4E8C8"/>
           <stop offset="100%" stopColor="#E8D49E"/>
         </radialGradient>
+        <style>{`
+          @keyframes jess-sun-rotate { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+          @keyframes jess-sun-pulse  { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.05); } }
+          .jess-sun-rays { transform-origin: 36px 36px; animation: jess-sun-rotate 60s linear infinite; }
+          .jess-sun-core { transform-origin: 36px 36px; animation: jess-sun-pulse 3s ease-in-out infinite; }
+          @media (prefers-reduced-motion: reduce) {
+            .jess-sun-rays, .jess-sun-core { animation: none; }
+          }
+        `}</style>
       </defs>
-      {Array.from({ length: 12 }).map((_, i) => {
-        const a = (i / 12) * Math.PI * 2;
-        return (
-          <line key={i}
-            x1={36 + Math.cos(a) * 21} y1={36 + Math.sin(a) * 21}
-            x2={36 + Math.cos(a) * 34} y2={36 + Math.sin(a) * 34}
-            stroke={c} strokeWidth="1.6" strokeLinecap="round"/>
-        );
-      })}
-      {Array.from({ length: 12 }).map((_, i) => {
-        const a = ((i + 0.5) / 12) * Math.PI * 2;
-        return (
-          <line key={`t${i}`}
-            x1={36 + Math.cos(a) * 25} y1={36 + Math.sin(a) * 25}
-            x2={36 + Math.cos(a) * 30} y2={36 + Math.sin(a) * 30}
-            stroke={c} strokeWidth="0.9" strokeOpacity="0.55" strokeLinecap="round"/>
-        );
-      })}
-      <circle cx="36" cy="36" r="16" fill={`url(#${gid})`} stroke={c} strokeWidth="0.6" strokeOpacity="0.7"/>
+      <g className="jess-sun-rays">
+        {Array.from({ length: 12 }).map((_, i) => {
+          const a = (i / 12) * Math.PI * 2;
+          return (
+            <line key={i}
+              x1={36 + Math.cos(a) * 21} y1={36 + Math.sin(a) * 21}
+              x2={36 + Math.cos(a) * 34} y2={36 + Math.sin(a) * 34}
+              stroke={c} strokeWidth="1.6" strokeLinecap="round"/>
+          );
+        })}
+        {Array.from({ length: 12 }).map((_, i) => {
+          const a = ((i + 0.5) / 12) * Math.PI * 2;
+          return (
+            <line key={`t${i}`}
+              x1={36 + Math.cos(a) * 25} y1={36 + Math.sin(a) * 25}
+              x2={36 + Math.cos(a) * 30} y2={36 + Math.sin(a) * 30}
+              stroke={c} strokeWidth="0.9" strokeOpacity="0.55" strokeLinecap="round"/>
+          );
+        })}
+      </g>
+      <circle className="jess-sun-core" cx="36" cy="36" r="16" fill={`url(#${gid})`} stroke={c} strokeWidth="0.6" strokeOpacity="0.7"/>
     </svg>
   );
 }
@@ -231,11 +242,12 @@ export default function JessNarrativeHero({ profile, cycleInfo }) {
   }, [cacheKey, phase, week, profile?.user_id, profile?.cycle_prediction_meta?.cycles_observed]);
 
   const tint = PHASE_TINTS[phase] || PHASE_TINTS.none;
-  // Le Menu × Phase Sun — chapter eyebrow style: "Chapter IV · Luteal"
+  // Le Menu × Phase Sun — chapter eyebrow: "Chapter IV · Luteal · Day 22"
   const phaseLabel = phase ? PHASE_LABELS[phase] : null;
   const roman = phase ? PHASE_ROMAN[phase] : null;
+  const cycleDay = cycleInfo?.day || null;
   const eyebrow = phaseLabel && roman
-    ? `Chapter ${roman} · ${phaseLabel}`
+    ? (cycleDay ? `Chapter ${roman} · ${phaseLabel} · Day ${cycleDay}` : `Chapter ${roman} · ${phaseLabel}`)
     : "This week";
 
   // Stronger gradient for visual weight — bump the phase tint from 18% to

@@ -535,7 +535,16 @@ export default function Planner() {
   const isSelected = (d) => toDateStr(d) === selectedStr;
 
   return (
-    <div className="min-h-screen pb-28" style={{ backgroundColor: "#F4EDDB" /* Le Menu cream paper */ }}>
+    <div className="min-h-screen pb-28" style={{ backgroundColor: "#F4EDDB", /* Le Menu cream paper */ position: "relative" }}>
+      {/* Le Menu paper grain — feTurbulence overlay at ~2.5% opacity (polish pass 2026-05-16) */}
+      <svg aria-hidden="true" style={{ position: "fixed", inset: 0, width: "100%", height: "100%", pointerEvents: "none", zIndex: 0, opacity: 0.025 }}>
+        <filter id="lm-paper-grain">
+          <feTurbulence type="fractalNoise" baseFrequency="0.85" numOctaves="2" seed="7" stitchTiles="stitch"/>
+          <feColorMatrix values="0 0 0 0 0.227   0 0 0 0 0.173   0 0 0 0 0.102   0 0 0 0.9 0"/>
+        </filter>
+        <rect width="100%" height="100%" filter="url(#lm-paper-grain)"/>
+      </svg>
+      <div style={{ position: "relative", zIndex: 1 }}>
       {/* ── Sticky header: brand · tabs · (Today-only) week strip ──────────── */}
       <div className="sticky top-0 z-30 px-4 pt-10 pb-3" style={{ backgroundColor: "rgba(244,237,219,0.97)", backdropFilter: "blur(20px)", borderBottom: "1px solid rgba(58,44,26,0.16)" }}>
         <div className="max-w-xl mx-auto">
@@ -966,6 +975,7 @@ export default function Planner() {
           </div>
         </>
       )}
+      </div>{/* /Le Menu z-index wrapper */}
     </div>
   );
 }

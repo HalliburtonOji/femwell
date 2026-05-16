@@ -304,7 +304,26 @@ export default function MonthRibbon({ profile, habitLogs = [], today = new Date(
                       zIndex: isToday ? 2 : 1,
                     }}
                   >
-                    {isToday && <span style={todayDotStyle} aria-hidden="true" />}
+                    {isToday && (
+                      <>
+                        {/* Le Menu polish — phase-coloured pulsing dot to draw the eye */}
+                        <style>{`
+                          @keyframes ribbon-today-pulse { 0%, 100% { opacity: 0.45; transform: scale(0.9); } 50% { opacity: 1; transform: scale(1.18); } }
+                          @media (prefers-reduced-motion: reduce) { .ribbon-today-pulse { animation: none; opacity: 0.95; } }
+                        `}</style>
+                        <span
+                          aria-hidden="true"
+                          className="ribbon-today-pulse"
+                          style={{
+                            position: "absolute", top: 4, right: 4,
+                            width: 5, height: 5, borderRadius: 9999,
+                            background: PHASE_COLOR[phase] || "var(--plum, #4A2A3A)",
+                            animation: "ribbon-today-pulse 2s ease-in-out infinite",
+                            zIndex: 4,
+                          }}
+                        />
+                      </>
+                    )}
                     <span
                       style={{
                         ...dayNumStyle,
@@ -495,16 +514,6 @@ const cellBtnStyle = {
   fontFamily: "'Inter', sans-serif",
   textAlign: "left",
   appearance: "none",
-};
-const todayDotStyle = {
-  position: "absolute",
-  top: 4,
-  right: 4,
-  width: 5,
-  height: 5,
-  borderRadius: 9999,
-  background: "var(--plum, #4A2A3A)",
-  zIndex: 3,
 };
 const dayNumStyle = {
   fontFamily: "'Inter', sans-serif",

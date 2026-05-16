@@ -110,6 +110,21 @@ function deltaText(delta, cls) {
   return `${delta > 0 ? "+" : ""}${delta}% vs week`;
 }
 
+// Le Menu polish — map each pillar's value to a 0-100% bar.
+// Targets: sleep 9h, energy/mood 100%, hydration 8 cups, movement 45min.
+function progressPctFor(key, value) {
+  if (value === null || value === undefined) return 0;
+  const n = Number(value);
+  if (!Number.isFinite(n) || n <= 0) return 0;
+  let pct;
+  if (key === "sleep")     pct = (n / 9) * 100;
+  else if (key === "energy" || key === "mood") pct = n;        // already %
+  else if (key === "hydration") pct = (n / 8) * 100;
+  else if (key === "movement")  pct = (n / 45) * 100;
+  else pct = 0;
+  return Math.max(0, Math.min(100, Math.round(pct)));
+}
+
 export default function PillarsDeck({ profile, today }) {
   const [checkins, setCheckins] = useState(null);
   const [toastMsg, setToastMsg] = useState(null);
@@ -203,6 +218,21 @@ export default function PillarsDeck({ profile, today }) {
                 </>
               )}
             </span>
+            {/* Le Menu polish — phase-coloured fill bar at the bottom of each data tile */}
+            {t.hasData && (
+              <span aria-hidden="true" style={{
+                position: "absolute", left: 0, right: 0, bottom: 0,
+                height: 2, background: "rgba(58,44,26,0.06)",
+                overflow: "hidden",
+              }}>
+                <span style={{
+                  display: "block", height: "100%",
+                  width: `${progressPctFor(t.key, t.value)}%`,
+                  background: dotColor, opacity: 0.85,
+                  transition: "width 0.3s ease",
+                }}/>
+              </span>
+            )}
           </button>
         );
       })}
@@ -227,6 +257,21 @@ export default function PillarsDeck({ profile, today }) {
         <span style={deltaStyleFor("flat")}>
           {cycleState ? PHASE_LABELS[cycleState.phase] : "log a period to see your phase"}
         </span>
+        {/* Le Menu polish — phase-colour cycle-progress bar at the bottom */}
+        {cycleState && (
+          <span aria-hidden="true" style={{
+            position: "absolute", left: 0, right: 0, bottom: 0,
+            height: 2, background: "rgba(58,44,26,0.06)",
+            overflow: "hidden",
+          }}>
+            <span style={{
+              display: "block", height: "100%",
+              width: `${Math.max(0, Math.min(100, Math.round((cycleState.dayOfCycle / (profile?.cycle_avg_length || 28)) * 100)))}%`,
+              background: PHASE_COLORS[cycleState.phase], opacity: 0.85,
+              transition: "width 0.3s ease",
+            }}/>
+          </span>
+        )}
       </button>
       {toastMsg && (
         <div role="status" aria-live="polite" style={toastStyle}>{toastMsg}</div>
