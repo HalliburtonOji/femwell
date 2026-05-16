@@ -156,6 +156,56 @@ const FALLBACK_BANK = {
   ],
 };
 
+// Stage-keyed fallback bank — used when plannerConfig.ribbonType !== "cycle"
+// (i.e. peri, ttc, teen, postpartum, ha, pcos-modifier). Four lines per stage,
+// permissive voice, no cycle-phase language. Mirrors the per-stage jess_context
+// guidance from src/utils/plannerAdapter.js so the FE-only fallback doesn't
+// drift away from what the LLM would have said.
+const STAGE_FALLBACK_BANK = {
+  perimenopause: [
+    { headline: "Patterns over predictions",        body: "Cycles are doing their own thing now — that's perimenopause, not a glitch. Tracking hot flushes and sleep this week will tell you more than counting days ever could." },
+    { headline: "Symptom load, gently watched",     body: "Some weeks land louder than others in peri. Log what you notice; the pattern is the point, not the perfect entry." },
+    { headline: "Resistance over relentlessness",   body: "Strength work tends to help most in this phase. A short, honest session beats a long one you dread." },
+    { headline: "Sleep first, ambition second",     body: "Night sweats can fragment everything else. If sleep's been thin, lower the bar on the day — the body's still doing the harder thing." },
+  ],
+  menopause: [
+    { headline: "A different kind of steady",       body: "Without a cycle to ride, the week is yours to shape. Long-game pillars — bone, heart, mood, sleep — earn small consistent moves more than big bursts." },
+    { headline: "Bone is a long conversation",      body: "Weight-bearing movement this week pays back for decades. Walk, lift, climb a stair more than you usually would." },
+    { headline: "Local oestrogen is allowed",       body: "GSM is the most undertreated thing in this stage. If anything's tender or dry, it's worth a GP word — vaginal oestrogen is safe and effective." },
+    { headline: "Quiet wins compound",              body: "The headline metrics don't change overnight here. Sleep, protein, walks, friendship — pick one, hold it lightly." },
+  ],
+  ttc: [
+    { headline: "Holding the wait",                 body: "The two-week wait is the hardest stretch of TTC. Plans that involve other people often help more than plans that involve waiting alone." },
+    { headline: "Cycle as a clinical tool",         body: "BBT, OPK, supplements — this week is data, not destiny. We won't pretend to know what we don't, and you don't have to either." },
+    { headline: "Small steady kindness",            body: "Folic acid, water, sleep, a walk. The dull list still matters; TTC weeks reward repetition over heroics." },
+    { headline: "Both true at once",                body: "You can hope and protect yourself at the same time. Letting this week be both is honest." },
+  ],
+  teen: [
+    { headline: "Still learning your pattern",      body: "Cycles often take a year or two to settle after they start. Logging what you notice is the most useful thing you can do this week — no need for perfect data." },
+    { headline: "It is fine to feel different",     body: "Some weeks you'll feel bright, some heavy. That's bodies, not failure. Tell someone you trust if anything feels too much." },
+    { headline: "Body and mood together",           body: "The week before a bleed often dips in mood. Knowing that's normal makes it lighter. We're not measuring you — we're learning with you." },
+    { headline: "School + cycle = a real thing",    body: "If a heavy week lands on a hard week at school, that's worth a conversation with someone older. The body deserves room." },
+  ],
+  postpartum: [
+    { headline: "Healing is its own kind of work",  body: "Postpartum weeks ask the body to keep doing the recovery in the background. Sleep, water, gentle movement — the dull stuff is the real thing here." },
+    { headline: "Mood matters this week",           body: "Baby blues and PND can look alike on a hard day. If anything's heavier than it should be, the GP or health visitor wants to know — not after, now." },
+    { headline: "Pelvic floor, lightly",            body: "A short daily contraction set this week is more useful than a long one once a month. Squeezy app or NHS-aligned cues, your call." },
+    { headline: "The cycle will return when it does",body: "Lactational amenorrhea is a real reason periods can take months to come back. We're not predicting — just keeping an eye." },
+  ],
+  pcos: [
+    { headline: "Three steady levers",              body: "Protein at breakfast, a walk after lunch, two strength sessions this week. PCOS responds to repetition more than perfection." },
+    { headline: "Cycle on its own clock",           body: "PCOS Mode is on; we won't pretend to predict your next bleed. NHS guidance suggests inducing one every 3-4 months if absent — worth a GP word if you're past that." },
+    { headline: "Sleep is metabolic",               body: "Short or fragmented sleep this week makes the insulin side harder. Earlier bedtimes earn more than later workouts in PCOS." },
+    { headline: "Symptoms over phase",              body: "Acne, energy, mood, weight, hair — that's the dashboard for now. Log what you notice; the cycle is one input, not the whole picture." },
+  ],
+  ha: [
+    { headline: "Recovery is the only goal",        body: "Restoration mode is on. We won't show calorie content or training intensity, and we won't predict a cycle. The body chooses the timeline." },
+    { headline: "Rest is the work",                 body: "Energy availability is the lever in HA. More food and less movement, kindly, repeatedly — this week and the next." },
+    { headline: "If anything's heavy, reach",       body: "Beat (beateatingdisorders.org.uk) and your GP exist for this. The hardest part is starting the conversation; the rest is held." },
+    { headline: "Small honest weeks",               body: "HA recovery happens in many small honest weeks. We're not measuring progress against anything; we're just being here with you." },
+  ],
+};
+
 // Cheap deterministic hash for fallback rotation.
 function stringToHash(str) {
   let h = 0;
@@ -172,7 +222,24 @@ function isoWeekOfYear(d) {
   return Math.ceil(((date - yearStart) / 86400000 + 1) / 7);
 }
 
-function fallbackFor(phase, dateISO) {
+// Resolve the fallback bank for the current state. Stage takes precedence
+// over cycle phase when the stage has its own bank (peri, ttc, teen,
+// postpartum, ha) OR when the conditions include pcos / ha (which reshape
+// the voice in plannerAdapter). Otherwise we fall back to the cycle-phase
+// bank (reproductive default).
+function fallbackFor(phase, dateISO, lifeStage, conditions) {
+  // Stage-keyed override.
+  const conds = Array.isArray(conditions) ? conditions : [];
+  let stageKey = null;
+  if (conds.includes("ha")) stageKey = "ha";
+  else if (conds.includes("pcos")) stageKey = "pcos";
+  else if (lifeStage && STAGE_FALLBACK_BANK[lifeStage]) stageKey = lifeStage;
+  if (stageKey) {
+    const bank = STAGE_FALLBACK_BANK[stageKey];
+    const idx = stringToHash(dateISO + stageKey) % bank.length;
+    return bank[idx];
+  }
+  // Fall back to cycle-phase bank.
   const key = phase && FALLBACK_BANK[phase] ? phase : "none";
   const bank = FALLBACK_BANK[key];
   const idx = stringToHash(dateISO + key) % bank.length;
@@ -188,16 +255,17 @@ export default function JessNarrativeHero({ profile, cycleInfo, plannerConfig })
   // Life Stage context — bumps the cache key so each stage gets its own
   // weekly hero, and is passed through to the backend so the LLM prompt
   // is reshaped per stage / condition. See src/utils/plannerAdapter.js.
+  // plannerConfig.ribbonType !== "cycle" → stage-keyed fallback bank.
   const lifeStage = profile?.life_stage || "reproductive";
-  const conditionsKey = (profile?.conditions || profile?.condition_flags || [])
-    .slice().sort().join("-") || "none";
+  const conditions = profile?.conditions || profile?.condition_flags || [];
+  const conditionsKey = conditions.slice().sort().join("-") || "none";
 
   const cacheKey = useMemo(() => {
     const uid = profile?.user_id || profile?.id || "anon";
     return `fw_jess_hero_${uid}_w${week}_${phase || "none"}_${lifeStage}_${conditionsKey}`;
   }, [profile?.user_id, profile?.id, week, phase, lifeStage, conditionsKey]);
 
-  const [hero, setHero] = useState(() => fallbackFor(phase, dateISO));
+  const [hero, setHero] = useState(() => fallbackFor(phase, dateISO, lifeStage, conditions));
 
   useEffect(() => {
     let cancelled = false;
@@ -252,13 +320,27 @@ export default function JessNarrativeHero({ profile, cycleInfo, plannerConfig })
   }, [cacheKey, phase, week, profile?.user_id, profile?.cycle_prediction_meta?.cycles_observed, lifeStage, plannerConfig?.jessContext, plannerConfig?.bannerText]);
 
   const tint = PHASE_TINTS[phase] || PHASE_TINTS.none;
-  // Le Menu × Phase Sun — chapter eyebrow: "Chapter IV · Luteal · Day 22"
+  // Le Menu × Phase Sun — chapter eyebrow defaults to "Chapter IV · Luteal · Day 22".
+  // Life Stage adapter: when the stage isn't cycle-anchored (peri / pregnancy /
+  // ttc / postpartum / post-meno / pcos-modifier / ha-modifier), swap the
+  // chapter line for a stage-aware prefix from plannerConfig.eyebrowPrefix so
+  // the cycle frame doesn't dominate when it shouldn't.
   const phaseLabel = phase ? PHASE_LABELS[phase] : null;
   const roman = phase ? PHASE_ROMAN[phase] : null;
   const cycleDay = cycleInfo?.day || null;
-  const eyebrow = phaseLabel && roman
-    ? (cycleDay ? `Chapter ${roman} · ${phaseLabel} · Day ${cycleDay}` : `Chapter ${roman} · ${phaseLabel}`)
-    : "This week";
+  const ribbonType = plannerConfig?.ribbonType || "cycle";
+  const stageEyebrow = plannerConfig?.eyebrowPrefix || null;
+  let eyebrow;
+  if (ribbonType !== "cycle" && stageEyebrow) {
+    // Stage-aware: e.g. "TODAY · PERI" / "TODAY · CD" / "TODAY · STILL LEARNING".
+    eyebrow = stageEyebrow;
+  } else if (phaseLabel && roman) {
+    eyebrow = cycleDay
+      ? `Chapter ${roman} · ${phaseLabel} · Day ${cycleDay}`
+      : `Chapter ${roman} · ${phaseLabel}`;
+  } else {
+    eyebrow = "This week";
+  }
 
   // Stronger gradient for visual weight — bump the phase tint from 18% to
   // ~32% so the hero clearly anchors the top of the Today tab.

@@ -262,10 +262,24 @@ export default function PillarsDeck({ profile, today, plannerConfig }) {
       let hasData = false;
       let hint = "logging will surface a pattern here";
       if (def.source === "daily") {
-        const stat = pillarStats(checkins || [], def.field, today);
-        value = stat.value;
-        hasData = stat.hasData;
-        if (hasData && def.scale) value = Math.round(value * def.scale);
+        // Life Stage adapter: when the peri / meno pillar set asks for "Mood"
+        // and MenopauseDailyLog is being fetched, prefer the meno-side row
+        // over scaling DailyCheckins.mood × 20. Same MenopauseDailyLog mood
+        // field name, but on a 1-10 scale, not 1-5 — render as "<N>/10".
+        const fieldOnMeno = needsMenoFetch && menoLatest?.[def.field];
+        const fieldHasMenoValue = fieldOnMeno !== undefined && fieldOnMeno !== null && Number.isFinite(Number(fieldOnMeno));
+        if (fieldHasMenoValue) {
+          value = Number(menoLatest[def.field]);
+          hasData = true;
+          // Override unit when reading from the meno source so we don't
+          // accidentally render "5%" — meno scores are out of 10.
+          if (def.unit === "%") def = { ...def, unit: "/10" };
+        } else {
+          const stat = pillarStats(checkins || [], def.field, today);
+          value = stat.value;
+          hasData = stat.hasData;
+          if (hasData && def.scale) value = Math.round(value * def.scale);
+        }
       } else if (def.source === "meno") {
         const v = menoLatest?.[def.field];
         if (v !== null && v !== undefined && Number.isFinite(Number(v))) {

@@ -267,13 +267,15 @@ function buildPdf(snap, displayName) {
   return pdf;
 }
 
-export default function GpExportButton({ profile, plannerConfig }) {
+export default function GpExportButton({ profile, plannerConfig, effectiveLifeStage }) {
   const [status, setStatus] = useState("idle"); // idle | loading | done | error
   const [errorMsg, setErrorMsg] = useState(null);
 
-  const stage = profile?.life_stage;
-  // Eligibility: per Halli's spec, peri / reproductive / postpartum.
-  // Plus menopause (same data shape as peri) for completeness.
+  // Eligibility: per Halli's spec, peri / reproductive / postpartum +
+  // menopause. Prefer the effective life stage (which honours the
+  // DevStageSwitcher localStorage override) over the raw profile value
+  // so the dev-only preview path shows the export card too.
+  const stage = effectiveLifeStage || profile?.life_stage;
   if (!ELIGIBLE_STAGES.has(stage) && stage !== "menopause") {
     return null;
   }

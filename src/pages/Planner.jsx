@@ -571,15 +571,18 @@ export default function Planner() {
       {/* ── Sticky header: brand · tabs · (Today-only) week strip ──────────── */}
       <div className="sticky top-0 z-30 px-4 pt-10 pb-3" style={{ backgroundColor: "rgba(244,237,219,0.97)", backdropFilter: "blur(20px)", borderBottom: "1px solid rgba(58,44,26,0.16)" }}>
         <div className="max-w-xl mx-auto">
-          {/* A2-4 (1+2+3): tab-specific page title + date-stamped Today eyebrow */}
+          {/* A2-4 (1+2+3): tab-specific page title + date-stamped Today eyebrow.
+              Life Stage adapter: the cycle-view title is the per-stage label
+              (Patterns / Journey / Clinical / Hormones / Recovery / Health),
+              defaulting to "Cycle" when no override is set. */}
           <p style={{ fontSize: "0.6rem", fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.14em", color: "var(--plum-mute, #8A7584)", fontFamily: "'Inter', sans-serif" }}>
             {view === "cycle"
-              ? "Your cycle"
+              ? `Your ${(plannerConfig?.cycleTabName || "Cycle").toLowerCase()}`
               : `Today · ${today.toLocaleDateString("en-GB", { weekday: "long", day: "numeric", month: "long" }).toUpperCase()}`}
           </p>
           <div style={{ display: "flex", alignItems: "baseline", gap: 10, flexWrap: "wrap", margin: "4px 0 4px" }}>
             <h1 style={{ fontSize: 28, fontWeight: 500, fontFamily: "'Fraunces', Georgia, serif", color: "var(--plum, #4A2A3A)", letterSpacing: "-0.015em", margin: 0 }}>
-              {view === "cycle" ? "Cycle" : "Today"}
+              {view === "cycle" ? (plannerConfig?.cycleTabName || "Cycle") : "Today"}
             </h1>
             {/* A2-4 (4): confidence pill lifted out of .ph-sub — always renders */}
             <ConfidencePill meta={profile?.cycle_prediction_meta} />
@@ -723,8 +726,14 @@ export default function Planner() {
             <DoctorReadyDiaryCard user={user} profile={profile} plannerConfig={plannerConfig} />
           </div>
           <AstraSidecar profile={profile} />
-          {/* STEP 7: GP-ready PDF export — peri / reproductive / postpartum. */}
-          <GpExportButton profile={profile} plannerConfig={plannerConfig} />
+          {/* STEP 7: GP-ready PDF export — peri / reproductive / postpartum.
+              Eligibility honours effectiveLifeStage so the DevStageSwitcher
+              preview also surfaces this card. */}
+          <GpExportButton
+            profile={profile}
+            plannerConfig={plannerConfig}
+            effectiveLifeStage={effectiveLifeStage}
+          />
           <PlanMyNextCycleCTA />
         </div>
       )}
