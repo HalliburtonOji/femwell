@@ -3997,6 +3997,592 @@ function TheGardenDemo() {
 }
 
 // ═══════════════════════════════════════════════════════════════════════════
+// Research view — complete life planner for ALL women
+// Source: claude-state/product-research/femwell-complete-life-planner-2026-05-16.md
+// ═══════════════════════════════════════════════════════════════════════════
+
+const RX = {
+  cream:     "#F4EDDB",
+  creamWarm: "#FBF6E6",
+  paper:     "#F8F2E4",
+  espresso:  "#3A2C1A",
+  espressoMid: "#6B5840",
+  plum:      "#4A2A3A",
+  plumMid:   "#7B5E6B",
+  rose:      "#D45E52",
+  gold:      "#C9A95C",
+  goldDeep:  "#A6862B",
+  sage:      "#6B8F5A",
+  rule:      "rgba(58,44,26,0.10)",
+};
+
+const SIX_WOMEN = [
+  "A 14-year-old in Year 10 whose first period landed five months ago.",
+  "A 31-year-old, 14 months trying to conceive, on her second IUI cycle.",
+  "A 27-week pregnant 33-year-old who opens Femwell, sees a menstrual wheel, feels invisible.",
+  "A 47-year-old in early perimenopause whose cycles range from 19 to 62 days.",
+  "A 28-year-old with PCOS who has not bled in 113 days.",
+  "A 62-year-old post-menopausal woman with osteoporosis fears who does not exist in Femwell at all.",
+];
+
+const LIFE_STAGES = [
+  {
+    id: "teen",
+    label: "Teenage years",
+    range: "menarche → 18",
+    population: "~2M UK girls aged 9-17",
+    color: "#D4745A",
+    portrait: "A 14-year-old whose first period landed five months ago, still irregular, with no language for the mood crash before a bleed.",
+    hurts: [
+      "Irregularity anxiety — no one tells her cycles take 2 years to settle.",
+      "Pain dismissal — endo + adenomyosis routinely missed 7–9 years.",
+      "Mood + period overlap — PMDD can start at 13–14.",
+      "Body-image landmines — words that empower a 28-year-old can trigger a 15-year-old.",
+      "Privacy + parental visibility — the hardest design problem in this stage.",
+    ],
+    shouldDo: [
+      "Teen Mode — softer copy, no fertility content, no contraception talk by default.",
+      "\"Still learning your cycle\" honesty band when sample size < 4 cycles.",
+      "Parent Bridge — opt-in, granular, revocable. Teen owns the data; parent is a guest.",
+      "GP-ready summary PDF for the first real period conversation.",
+      "Mental-health soft floor — Childline / Samaritans / NHS 111 / YoungMinds one-tap.",
+    ],
+  },
+  {
+    id: "repro",
+    label: "Reproductive years",
+    range: "18 → 35",
+    population: "~7M UK women — Femwell's sweet spot today",
+    color: "#9A2845",
+    portrait: "A 31-year-old who has been trying to conceive for 14 months and is on her second IUI cycle.",
+    hurts: [
+      "Cycle vs. life mismatch — board presentations in luteal week, weddings in PMS week.",
+      "Contraception decisions made blind — no memory of what each pill did to mood, weight, libido, skin.",
+      "Career stress without language — cyclical capacity exists; corporate culture pretends it doesn't.",
+      "Partner sync is half-done in every app, including Femwell.",
+      "Pre-TTC drift — no mode for the 32-year-old \"thinking about it\".",
+    ],
+    shouldDo: [
+      "Capacity-aware planner overlaying cycle ribbon on calendar density.",
+      "Contraception Memory as a first-class entity — type, dose, side-effects, what it did.",
+      "Pre-TTC mode for the \"thinking about it\" 32-year-old.",
+      "Partner Sync 2.0 — true two-sided co-planning surface, not one-way visibility.",
+    ],
+  },
+  {
+    id: "ttc",
+    label: "TTC — trying to conceive",
+    range: "any age, active",
+    population: "500-800k UK women at any moment",
+    color: "#C8A040",
+    portrait: "1 in 7 UK couples experience fertility difficulty. Every twinge in the two-week wait is interpreted.",
+    hurts: [
+      "The two-week wait — hardest 14 days in TTC; most apps offer nothing.",
+      "Confirmation bias in fertile-window prediction — apps confidently draw a box that is often wrong.",
+      "Miscarriage — 1 in 4 known pregnancies; the path is handled poorly almost everywhere.",
+      "IVF / IUI logistics — stim, trigger, retrieval, transfer — the clinical calendar replaces the cycle.",
+      "Partner intimacy under schedule — \"sex on demand\" is one of the hardest documented parts.",
+    ],
+    shouldDo: [
+      "TTC Mode — clean mode shift. BBT + OPK photo logger; confidence-honest fertile window.",
+      "Cycle Day Math with clinical CD1 / CD8 / CD14 labels (because that is what the clinic uses).",
+      "IVF / IUI sub-mode — clinical milestones replace the phase ribbon.",
+      "Pregnancy-loss path — dignified, data-preserving, content-pausing, resource-routing.",
+      "Supplement stack with UK pricing + NHS-aligned guidance.",
+    ],
+  },
+  {
+    id: "pregnancy",
+    label: "Pregnancy",
+    range: "T1 · T2 · T3",
+    population: "600-700k UK pregnancies annually",
+    color: "#7B5E9A",
+    portrait: "A 27-week pregnant 33-year-old who opens Femwell, sees a menstrual cycle wheel, and feels invisible.",
+    hurts: [
+      "Information asymmetry around scans — NHS reports come back in abbreviations.",
+      "Symptom navigation at 2 a.m. — is this normal? Is this reduced movement?",
+      "Antenatal schedule opaque, varies by trust — women miss appointments they didn't realise they had.",
+      "Birth-plan composition done badly — Mumsnet copy-paste glanced at once by the midwife.",
+      "Antenatal depression under-recognised; perinatal MH team referral threshold often missed.",
+    ],
+    shouldDo: [
+      "Pregnancy Mode — complete mode replacement. Week ribbon replaces cycle ribbon.",
+      "NHS scan-result decoder (highest-liability feature; needs obstetrician sign-off).",
+      "NHS antenatal schedule mirror per trust.",
+      "Kick counter — RCOG-aligned, change-not-absolute logic.",
+      "Birth-plan composer outputting a one-page PDF her midwife will read.",
+      "Hospital bag list dynamic to UK trust + birth-plan choices.",
+      "PHQ-9 / EPDS antenatal mental-health floor with referral threshold.",
+    ],
+  },
+  {
+    id: "postpartum",
+    label: "Postpartum",
+    range: "fourth trimester → 12mo",
+    population: "every UK birth — 600-700k annually",
+    color: "#6B8F5A",
+    portrait: "She is surviving. Healing physically, recovering emotionally, sleep-deprived, asking if her body will ever feel like her own again.",
+    hurts: [
+      "Pelvic-floor neglect — universal NHS guidance, rare reality.",
+      "PND under-detection — EPDS rarely repeated at home.",
+      "Breastfeeding without support — feed timing, side-switching, latch, supply.",
+      "Return-of-period prediction is hard — lactational amenorrhea makes it so.",
+      "Postpartum sex + libido rarely addressed at the 6-week check.",
+    ],
+    shouldDo: [
+      "Postpartum Mode — default 12 months, extendable. Centres healing, sleep, mood, feeding.",
+      "EPDS at 2, 4, 6, 8, 12 weeks with GP-ready summary when score warrants.",
+      "Pelvic-floor program — NHS-aligned, phase-of-healing aware.",
+      "Light-touch feeding tracker.",
+      "Return-of-period prediction as a confidence band, not a date.",
+      "6-week check prep — one-page summary for the GP.",
+    ],
+  },
+  {
+    id: "peri",
+    label: "Perimenopause",
+    range: "40 → 52",
+    population: "~5M UK women at any time",
+    color: "#A86A52",
+    portrait: "A 47-year-old whose cycles range from 19 to 62 days. The phase ribbon is a lie. The \"follicular\" colour is now an insult.",
+    hurts: [
+      "Cycle ribbon meaningless — phase prediction collapses.",
+      "Symptom load invisible to others — partners, employers, GPs.",
+      "HRT decision support is genuinely hard — type, route, progesterone arm, testosterone, local oestrogen.",
+      "The 10-minute GP slot often ends in antidepressants instead of HRT.",
+    ],
+    shouldDo: [
+      "Perimenopause Mode — symptom-pattern ribbon replaces the menstrual ribbon.",
+      "Symptom-to-GP report — monthly one-page PDF.",
+      "HRT decision support — \"questions to ask your GP\", not \"what to take\".",
+      "HRT log as a first-class entity — type, dose, route, symptom correlation.",
+      "Bone + cardiovascular context — DEXA conversation at the right time.",
+    ],
+  },
+  {
+    id: "menopause",
+    label: "Menopause + post-",
+    range: "52+ · the rest of life",
+    population: "~13M UK women",
+    color: "#4A2A3A",
+    portrait: "A 62-year-old with joint pain creeping into her hands and a real fear of osteoporosis. She does not exist in Femwell at all.",
+    hurts: [
+      "The \"you're done now\" framing — every cycle app drops her at 55.",
+      "GSM is the silent epidemic — local oestrogen is safe, cheap, dramatically under-prescribed.",
+      "Bone + heart — both silent until they aren't.",
+      "The pivot — empty nest, eldercare, retirement; rethinking everything.",
+    ],
+    shouldDo: [
+      "Post-Menopause Mode — drops the cycle entirely.",
+      "GSM self-screen + treatment tracker (UK Gina OTC option).",
+      "Annual health rhythm — DEXA, smear (5-yearly HPV-neg), mammogram (3-yearly 50-71).",
+      "Life-pivot planning — eldercare, finance, creative projects.",
+    ],
+  },
+];
+
+const CONDITIONS = [
+  { name: "PCOS", prev: "1 in 10 (~3M UK)", note: "Cycles 35+ days or absent. Phase prediction fails.", action: "PCOS Mode: symptom + metabolic view, event-based not phase-based." },
+  { name: "Endometriosis", prev: "1 in 10 · dx delay 8 yrs", note: "Heavy, painful periods; mid-cycle pain; bowel / bladder symptoms cyclical.", action: "Phendo-style pain-mapping body diagram. Pre/post-surgery sub-modes." },
+  { name: "PMDD", prev: "5-8% (~700k UK)", note: "Severe luteal-locked mood disorder. Needs 2-month DRSP tracking.", action: "Built-in DRSP. After 2 cycles → GP referral report." },
+  { name: "Fibroids", prev: "20-40% by 50", note: "Heavy bleeding, longer bleeds, anaemia.", action: "NHS-aligned HMB flow scoring. Pre/post-Mirena / myomectomy / UFE modes." },
+  { name: "Adenomyosis", prev: "Often co-occurs with fibroids", note: "Heavy bleeding + severe cramping + bulky tender uterus.", action: "Pelvic pain map + flow tracking → MRI referral case." },
+  { name: "POI", prev: "1% by 40", note: "Cycles cease before 40. HRT recommended until natural menopause age.", action: "POI Mode = young person on HRT. Bone, heart, fertility, mental health." },
+  { name: "Hypo / hyperthyroid", prev: "2-3% hypo, 1% hyper", note: "Cycle length altered, mood + energy strongly affected.", action: "Cross-correlate cycle with TSH / T4 readings." },
+  { name: "Autoimmune (Hashi / Lupus / RA)", prev: "1-2% UK women", note: "Luteal flares common; cycle disruption.", action: "Flare tracking + cycle overlay; surface the pattern." },
+  { name: "HRT users (any age)", prev: "~2.6M UK on HRT", note: "Cycle suppressed, regulated, or replaced.", action: "HRT Mode cuts across life stages. Symptom-to-dose correlation." },
+  { name: "Cancer survivors", prev: "Breast / ovarian / endo / cervical", note: "Cycle disrupted by chemo, tamoxifen / AIs; often induced menopause.", action: "Sensitive content gating + treatment-side-effect tracker." },
+  { name: "Hypothalamic Amenorrhea / EDs", prev: "Significant in athletic + restrictive populations", note: "No period for months. Phase ribbon dangerously meaningless.", action: "Recovery mode that does NOT gamify eating, weight, training. Care Bridge to Beat / FEAST." },
+];
+
+const ROADMAP = [
+  {
+    key: "m3",
+    title: "3 months",
+    subtitle: "Highest leverage, lowest risk — proof-of-architecture",
+    color: "#6B8F5A",
+    items: [
+      "Pre-TTC mode — three months of better data before the TTC switch.",
+      "TTC Mode v1 — BBT + OPK photo logger; confidence-banded fertile window.",
+      "Perimenopause Mode v1 — symptom-pattern ribbon + HRT log + hot-flush quick-tap.",
+      "Contraception Memory — new entity, no clinical advice, structured logging.",
+      "GP-ready PDF export — one feature, three modes (teen, peri, postpartum).",
+      "Confidence honesty extended across the product.",
+      "Care Bridge expansion — midwife, fertility coordinator, perinatal MH team.",
+    ],
+  },
+  {
+    key: "m6",
+    title: "6 months",
+    subtitle: "Medium leverage, real clinical care — highest revenue",
+    color: "#C8A040",
+    items: [
+      "Pregnancy Mode — full mode replacement; needs obstetrics advisor.",
+      "Postpartum Mode — EPDS + pelvic-floor (Squeezy-aligned); needs perinatal MH advisor.",
+      "Teen Mode with Parent Bridge — needs adolescent MH advisor + safeguarding policy.",
+      "PCOS Mode v1 — bleed-events, lab import, lifestyle anchor cards.",
+      "HRT decision support — questions-to-ask-your-GP content; needs menopause advisor.",
+    ],
+  },
+  {
+    key: "m9",
+    title: "9 months+",
+    subtitle: "Partnerships, clinical sign-off, or new infrastructure",
+    color: "#7B5E9A",
+    items: [
+      "NHS scan-result decoder — highest liability; MHRA assessment required.",
+      "IVF / IUI sub-mode — needs fertility clinic partnership.",
+      "Endometriosis pain mapping — 3+ months qualitative research.",
+      "PMDD DRSP-format with specialist referral.",
+      "Crisis-language detection + escalation — safety-critical, do not rush.",
+      "Full menopause mode + GSM tracker + bone / heart rhythm.",
+      "Capacitor + StoreKit paywall via RevenueCat.",
+    ],
+  },
+];
+
+const GAPS = [
+  "The continuum — no UK app gracefully follows menarche → post-menopause.",
+  "Confidence honesty — Flo predicts cycles that have never been regular; Femwell can refuse to lie.",
+  "UK NHS context — every benchmark is US-built or US-bigger-than-UK.",
+  "Condition-first vs cycle-first — PCOS / endo / fibroids / HA users get edge-case treatment everywhere.",
+  "Teen-to-adult handover — no app transitions a 17-year-old account gracefully.",
+  "Grief-aware modes — miscarriage, stillbirth, infertility, induced menopause.",
+  "Clinician handoff — a one-page PDF the GP will actually read.",
+  "Partner sync as actual product, not vanity feature.",
+  "Brand voice as accessibility — Fraunces + Inter, plum / rose / sage / gold, permissive not pathologising.",
+];
+
+const RISKS = [
+  { name: "Medical liability for non-cycle advice", note: "Stay on tracking + information side of MHRA's medical-device line. No diagnosis, no prescription, no treatment recommendation." },
+  { name: "MHRA medical-device classification", note: "Pre-decode features with a regulatory advisor. Watch the draft Medical Devices (Amendment) Regulations 2026." },
+  { name: "Brand confusion / dilution", note: "Life Stage as first-class. Per-stage marketing campaigns. Brand voice rules hold across all stages — they are the connective tissue." },
+  { name: "Feature creep + team capacity", note: "The 3 / 6 / 9 month split is the discipline. \"No stale features\" rule applies — every shipped feature must do work." },
+  { name: "Pregnancy + sensitive-data sensitivity", note: "Encrypted at rest. Miscarriage flow user-tested with bereaved users. Partner sync user-controlled. UK GDPR + Caldicott reviewed." },
+  { name: "Teen mode + safeguarding", note: "Granular, revocable, transparent Parent Bridge. Crisis routing one-tap. KSCIE-aware policy. Adolescent MH advisor in the room." },
+  { name: "Clinical-partnership dependency", note: "Soft-launch the schedule mirror as user-entered first. Care Bridge stays user-driven in MVP. Build advisor roster early." },
+  { name: "Competitive response", note: "Confidence honesty + UK NHS context not contestable short-term. Win on care, context, confidence — not on AI." },
+  { name: "Monetisation pressure", note: "6-month strategy is reach + retention proof, not revenue. Paywall is a parallel reference, not a shipped surface until the window closes." },
+];
+
+const OPEN_QUESTIONS = [
+  "Which life-stage expansion is the first MP after the planner tab shell ships? (recommendation: Perimenopause Mode v1.)",
+  "Who is on the clinician advisor roster — names, day rates, scopes?",
+  "What does the Life Stage entity look like in base44 — enum vs transition history?",
+  "How does the data model handle the teen-to-adult handover?",
+  "What is the right voice for the miscarriage path, and who tests it?",
+  "What does App Store positioning look like across life stages — one listing or many?",
+  "Where does the brand voice push back on the medical needs of older user bands?",
+  "What is the right partnership posture with the NHS itself?",
+  "Is there a Femwell Family account model in the future?",
+  "What is the post-9-month soft cap plan if no sale closes?",
+];
+
+const HEADLINE = "If Femwell ships only what is in the 3-month list, it stops being a cycle tracker and becomes a credible complete life planner on architecture alone. The single highest-leverage move is Life Stage as a first-class concept in the data model — every other expansion follows from that one architectural decision.";
+
+// styles shared across the research view
+const rxCard = {
+  marginTop: 18, padding: "16px 18px",
+  background: RX.creamWarm, borderRadius: 14,
+  border: `1px solid ${RX.rule}`,
+};
+const rxEyebrow = {
+  fontFamily: "'Inter', system-ui, sans-serif", fontSize: 10,
+  fontWeight: 700, letterSpacing: "0.22em", color: RX.goldDeep,
+  textTransform: "uppercase",
+};
+const rxSubEyebrow = {
+  fontFamily: "'Inter', system-ui, sans-serif", fontSize: 9.5,
+  fontWeight: 700, letterSpacing: "0.20em", color: RX.goldDeep,
+  textTransform: "uppercase", marginBottom: 6,
+};
+const rxH2 = {
+  fontFamily: "'Fraunces', Georgia, serif", fontSize: 22,
+  fontWeight: 500, color: RX.espresso, letterSpacing: "-0.01em",
+  margin: "36px 0 8px", lineHeight: 1.2, fontStyle: "italic",
+};
+const rxIntroP = {
+  fontFamily: "'Inter', system-ui, sans-serif", fontSize: 13.5,
+  color: RX.espressoMid, lineHeight: 1.55, margin: 0,
+};
+
+function RxBullet({ children }) {
+  return (
+    <li style={{ display: "flex", gap: 10, alignItems: "flex-start" }}>
+      <span aria-hidden="true" style={{
+        width: 4, height: 4, borderRadius: 9999,
+        background: RX.goldDeep, marginTop: 8, flexShrink: 0,
+      }} />
+      <span style={{
+        fontFamily: "'Inter', system-ui, sans-serif", fontSize: 13,
+        color: RX.espressoMid, lineHeight: 1.55,
+      }}>{children}</span>
+    </li>
+  );
+}
+
+function RxNumberedItem({ idx, children, prefix = "" }) {
+  return (
+    <li style={{ display: "flex", gap: 12, alignItems: "flex-start" }}>
+      <span style={{
+        fontFamily: "Georgia, serif", fontStyle: "italic", fontSize: 12,
+        fontWeight: 600, color: RX.goldDeep, minWidth: 26, paddingTop: 2,
+      }}>{prefix}{String(idx + 1).padStart(2, "0")}</span>
+      <span style={{
+        fontFamily: "'Inter', system-ui, sans-serif", fontSize: 13,
+        color: RX.espressoMid, lineHeight: 1.55,
+      }}>{children}</span>
+    </li>
+  );
+}
+
+function ResearchView() {
+  const [openStages, setOpenStages] = useState({ teen: true });
+  const toggleStage = (id) => setOpenStages((s) => ({ ...s, [id]: !s[id] }));
+
+  return (
+    <div style={{ maxWidth: 560, margin: "0 auto", padding: "8px 16px 40px" }}>
+      {/* Hero — Why this doc */}
+      <header style={{ paddingTop: 28 }}>
+        <div style={rxEyebrow}>Strategic research · May 2026</div>
+        <h1 style={{
+          fontFamily: "'Fraunces', Georgia, serif", fontSize: 30,
+          fontWeight: 500, color: RX.espresso, letterSpacing: "-0.02em",
+          margin: "10px 0 0", lineHeight: 1.12,
+        }}>From cycle tracker to<br/><em style={{ color: RX.plum }}>complete life planner</em> for UK women.</h1>
+        <p style={{
+          fontFamily: "'Inter', system-ui, sans-serif", fontSize: 14,
+          color: RX.espressoMid, marginTop: 12, lineHeight: 1.55,
+        }}>
+          Femwell wins a 25–38-year-old urban professional with a textbook 28-day cycle.
+          It does not yet win the rest of the female lifespan — the ~24M UK women who are
+          teens, TTC, pregnant, postpartum, perimenopausal, post-menopausal, or living with
+          a cycle-altering condition. This is the map of where the product grows.
+        </p>
+      </header>
+
+      {/* The six women */}
+      <section style={rxCard}>
+        <div style={rxEyebrow}>The six women we walk past</div>
+        <ul style={{ listStyle: "none", margin: "12px 0 0", padding: 0, display: "flex", flexDirection: "column", gap: 10 }}>
+          {SIX_WOMEN.map((w, i) => (
+            <RxNumberedItem key={i} idx={i}>{w}</RxNumberedItem>
+          ))}
+        </ul>
+      </section>
+
+      {/* Life stages accordion */}
+      <h2 style={rxH2}>Life stages — the full female lifespan</h2>
+      <p style={rxIntroP}>
+        The cycle is one input among many. The life stage is the lens through which every input is interpreted.
+        Tap a stage to expand.
+      </p>
+      <div style={{ display: "flex", flexDirection: "column", gap: 12, marginTop: 16 }}>
+        {LIFE_STAGES.map((s) => {
+          const open = !!openStages[s.id];
+          return (
+            <article key={s.id} style={{
+              background: RX.creamWarm, borderRadius: 14,
+              border: `1px solid ${RX.rule}`,
+              borderLeft: `3px solid ${s.color}`, overflow: "hidden",
+            }}>
+              <button
+                onClick={() => toggleStage(s.id)}
+                aria-expanded={open}
+                style={{
+                  width: "100%", padding: "16px 18px",
+                  background: "transparent", border: "none",
+                  display: "flex", alignItems: "flex-start", gap: 12,
+                  cursor: "pointer", textAlign: "left",
+                }}
+              >
+                <div style={{ flex: 1 }}>
+                  <div style={{
+                    fontFamily: "'Inter', system-ui, sans-serif", fontSize: 10,
+                    fontWeight: 700, letterSpacing: "0.18em", color: s.color,
+                    textTransform: "uppercase",
+                  }}>{s.range}</div>
+                  <div style={{
+                    fontFamily: "'Fraunces', Georgia, serif", fontSize: 20,
+                    fontWeight: 500, color: RX.espresso, marginTop: 4,
+                    fontStyle: "italic",
+                  }}>{s.label}</div>
+                  <div style={{
+                    fontFamily: "'Inter', system-ui, sans-serif", fontSize: 12,
+                    color: RX.espressoMid, marginTop: 4,
+                  }}>{s.population}</div>
+                </div>
+                <span aria-hidden="true" style={{
+                  fontFamily: "'Inter', system-ui, sans-serif",
+                  fontSize: 16, color: RX.espressoMid, fontWeight: 700,
+                  transform: open ? "rotate(180deg)" : "rotate(0deg)",
+                  transition: "transform 0.2s ease",
+                  marginTop: 6,
+                }}>▾</span>
+              </button>
+              {open && (
+                <div style={{ padding: "0 18px 20px" }}>
+                  <div style={{
+                    fontFamily: "Georgia, serif", fontStyle: "italic",
+                    fontSize: 13.5, color: RX.plum, lineHeight: 1.5,
+                    padding: "12px 14px", background: RX.cream,
+                    borderRadius: 8, marginBottom: 14,
+                  }}>“{s.portrait}”</div>
+
+                  <div style={rxSubEyebrow}>What hurts most</div>
+                  <ul style={{ listStyle: "none", margin: 0, padding: 0, display: "flex", flexDirection: "column", gap: 6 }}>
+                    {s.hurts.map((h, i) => <RxBullet key={i}>{h}</RxBullet>)}
+                  </ul>
+
+                  <div style={{ ...rxSubEyebrow, marginTop: 16, color: s.color }}>What Femwell should DO</div>
+                  <ul style={{ listStyle: "none", margin: 0, padding: 0, display: "flex", flexDirection: "column", gap: 6 }}>
+                    {s.shouldDo.map((d, i) => <RxBullet key={i}>{d}</RxBullet>)}
+                  </ul>
+                </div>
+              )}
+            </article>
+          );
+        })}
+      </div>
+
+      {/* Conditions */}
+      <h2 style={rxH2}>Medical conditions — what cycle-tracking misses</h2>
+      <p style={rxIntroP}>
+        Every condition has the same architectural ask: the cycle ribbon is the wrong metaphor.
+        They need their <em>condition</em> as the dominant frame.
+      </p>
+      <div style={{ display: "flex", flexDirection: "column", gap: 8, marginTop: 16 }}>
+        {CONDITIONS.map((c, i) => (
+          <article key={i} style={{
+            background: RX.creamWarm, borderRadius: 10,
+            border: `1px solid ${RX.rule}`, padding: "12px 14px",
+          }}>
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", gap: 8, flexWrap: "wrap" }}>
+              <div style={{
+                fontFamily: "'Fraunces', Georgia, serif", fontSize: 16,
+                fontWeight: 600, color: RX.espresso,
+              }}>{c.name}</div>
+              <div style={{
+                fontFamily: "'Inter', system-ui, sans-serif", fontSize: 10,
+                fontWeight: 700, color: RX.goldDeep, letterSpacing: "0.10em",
+              }}>{c.prev}</div>
+            </div>
+            <div style={{
+              fontFamily: "'Inter', system-ui, sans-serif", fontSize: 12.5,
+              color: RX.espressoMid, marginTop: 4, lineHeight: 1.5,
+            }}>{c.note}</div>
+            <div style={{
+              fontFamily: "Georgia, serif", fontStyle: "italic", fontSize: 13,
+              color: RX.plum, marginTop: 6, lineHeight: 1.45,
+            }}>→ {c.action}</div>
+          </article>
+        ))}
+      </div>
+
+      {/* Roadmap */}
+      <h2 style={rxH2}>Roadmap — 3 / 6 / 9 months</h2>
+      <p style={rxIntroP}>
+        Runway: 6-month sale window, 9-month soft cap. The 3-month list is proof-of-architecture;
+        the 6-month list is revenue; the 9-month list is moat.
+      </p>
+      <div style={{ display: "flex", flexDirection: "column", gap: 14, marginTop: 16 }}>
+        {ROADMAP.map((r) => (
+          <article key={r.key} style={{
+            background: RX.creamWarm, borderRadius: 14,
+            border: `1px solid ${RX.rule}`, borderTop: `3px solid ${r.color}`,
+            padding: "16px 18px",
+          }}>
+            <div style={{ display: "flex", alignItems: "baseline", gap: 12, flexWrap: "wrap" }}>
+              <div style={{
+                fontFamily: "'Fraunces', Georgia, serif", fontSize: 24,
+                fontWeight: 500, color: r.color, fontStyle: "italic",
+              }}>{r.title}</div>
+              <div style={{
+                fontFamily: "'Inter', system-ui, sans-serif", fontSize: 11,
+                color: RX.espressoMid, letterSpacing: "0.04em", flex: 1, minWidth: 0,
+              }}>{r.subtitle}</div>
+            </div>
+            <ul style={{ listStyle: "none", margin: "12px 0 0", padding: 0, display: "flex", flexDirection: "column", gap: 6 }}>
+              {r.items.map((it, i) => <RxBullet key={i}>{it}</RxBullet>)}
+            </ul>
+          </article>
+        ))}
+      </div>
+
+      {/* Gaps */}
+      <h2 style={rxH2}>The gaps — what no app does well yet</h2>
+      <section style={rxCard}>
+        <ul style={{ listStyle: "none", margin: 0, padding: 0, display: "flex", flexDirection: "column", gap: 10 }}>
+          {GAPS.map((g, i) => (
+            <RxNumberedItem key={i} idx={i}>{g}</RxNumberedItem>
+          ))}
+        </ul>
+      </section>
+
+      {/* Risks */}
+      <h2 style={rxH2}>Risk register</h2>
+      <div style={{ display: "flex", flexDirection: "column", gap: 10, marginTop: 16 }}>
+        {RISKS.map((r, i) => (
+          <article key={i} style={{
+            background: RX.creamWarm, borderRadius: 10,
+            border: `1px solid ${RX.rule}`,
+            borderLeft: `2px solid ${RX.rose}`,
+            padding: "12px 14px",
+          }}>
+            <div style={{
+              fontFamily: "'Inter', system-ui, sans-serif", fontSize: 10,
+              fontWeight: 700, color: RX.rose, letterSpacing: "0.16em",
+              textTransform: "uppercase",
+            }}>Risk {String(i + 1).padStart(2, "0")}</div>
+            <div style={{
+              fontFamily: "'Fraunces', Georgia, serif", fontSize: 15,
+              fontWeight: 600, color: RX.espresso, marginTop: 4,
+            }}>{r.name}</div>
+            <div style={{
+              fontFamily: "'Inter', system-ui, sans-serif", fontSize: 12.5,
+              color: RX.espressoMid, marginTop: 6, lineHeight: 1.5,
+            }}>{r.note}</div>
+          </article>
+        ))}
+      </div>
+
+      {/* Open questions */}
+      <h2 style={rxH2}>Open questions for next session</h2>
+      <section style={rxCard}>
+        <ul style={{ listStyle: "none", margin: 0, padding: 0, display: "flex", flexDirection: "column", gap: 10 }}>
+          {OPEN_QUESTIONS.map((q, i) => (
+            <RxNumberedItem key={i} idx={i} prefix="Q">{q}</RxNumberedItem>
+          ))}
+        </ul>
+      </section>
+
+      {/* Headline */}
+      <section style={{
+        marginTop: 28, padding: "24px 22px",
+        background: RX.espresso, color: RX.cream,
+        borderRadius: 18,
+      }}>
+        <div style={{
+          fontFamily: "'Inter', system-ui, sans-serif", fontSize: 10,
+          fontWeight: 700, letterSpacing: "0.22em", color: RX.gold,
+          textTransform: "uppercase",
+        }}>Strategic recommendation</div>
+        <p style={{
+          fontFamily: "'Fraunces', Georgia, serif", fontStyle: "italic",
+          fontSize: 17, lineHeight: 1.5, margin: "10px 0 0", color: RX.cream,
+        }}>{HEADLINE}</p>
+        <div style={{
+          marginTop: 14, fontFamily: "'Inter', system-ui, sans-serif",
+          fontSize: 11.5, color: "rgba(244,237,219,0.7)", lineHeight: 1.5,
+        }}>
+          Full doc: claude-state/product-research/<br/>femwell-complete-life-planner-2026-05-16.md
+        </div>
+      </section>
+    </div>
+  );
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
 // /Ideas page shell
 // ═══════════════════════════════════════════════════════════════════════════
 
@@ -4034,6 +4620,7 @@ const DESIGNS = [
 export default function Ideas() {
   const [expanded, setExpanded] = useState({});
   const [openHelp, setOpenHelp] = useState(false);
+  const [topTab, setTopTab] = useState("designs"); // "designs" | "research"
   return (
     <div style={{ minHeight: "100vh", background: "#F4F1EA", paddingBottom: 140 }}>
       <div style={{
@@ -4044,9 +4631,53 @@ export default function Ideas() {
         fontSize: 11, letterSpacing: "0.18em", fontWeight: 700,
         textTransform: "uppercase",
       }}>
-        Design Lab · Dev Only · 4 interactive Planner reskins
+        Design Lab · Dev Only · Designs + Research
       </div>
 
+      {/* Tab bar — Designs / Research */}
+      <div style={{
+        display: "flex", justifyContent: "center",
+        padding: "18px 16px 0",
+      }}>
+        <div role="tablist" aria-label="Ideas view" style={{
+          display: "inline-flex", gap: 4, padding: 4,
+          borderRadius: 9999, border: "1px solid rgba(14,14,14,0.10)",
+          background: "#FFFFFF",
+        }}>
+          {[
+            { id: "designs", label: "Designs" },
+            { id: "research", label: "Research" },
+          ].map((t) => {
+            const active = t.id === topTab;
+            return (
+              <button
+                key={t.id}
+                role="tab"
+                aria-selected={active}
+                onClick={() => setTopTab(t.id)}
+                style={{
+                  fontFamily: active ? "'Fraunces', Georgia, serif" : "'Inter', system-ui, sans-serif",
+                  fontSize: 12, letterSpacing: "0.04em",
+                  padding: "8px 22px", borderRadius: 9999, border: "none",
+                  cursor: "pointer",
+                  backgroundColor: active ? "#3A2C1A" : "transparent",
+                  color: active ? "#F4EDDB" : "#6B5840",
+                  fontWeight: active ? 700 : 600,
+                  fontStyle: active ? "italic" : "normal",
+                  minWidth: 100, textAlign: "center",
+                  transition: "all 0.2s ease",
+                }}
+              >
+                {t.label}
+              </button>
+            );
+          })}
+        </div>
+      </div>
+
+      {topTab === "research" && <ResearchView />}
+      {topTab === "designs" && (
+      <>
       <div style={{ maxWidth: 560, margin: "0 auto", padding: "32px 18px 0" }}>
         <h1 style={{
           fontFamily: "'Fraunces', Georgia, serif",
@@ -4188,6 +4819,8 @@ export default function Ideas() {
           </div>
         </div>
       </div>
+      </>
+      )}
     </div>
   );
 }
