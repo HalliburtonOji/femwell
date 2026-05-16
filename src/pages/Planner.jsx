@@ -664,14 +664,14 @@ export default function Planner() {
             onCleared={() => setProfile(p => p ? { ...p, quiet_mode_until: null } : p)}
           />
           <div ref={(el) => { cycleSectionRefs.current.ribbon = el; }}>
-            {plannerConfig.ribbonType === "symptom" ? (
+            {plannerConfig?.ribbonType === "symptom" ? (
               <>
                 <SymptomRibbon
                   profile={profile}
                   today={today}
                   onLogToday={() => navigate("/Track")}
                 />
-                {plannerConfig.cycleTabMode === "heatmap" && (
+                {plannerConfig?.cycleTabMode === "heatmap" && (
                   <HrtLogCard profile={profile} />
                 )}
               </>

@@ -254,10 +254,15 @@ export default function PillarsDeck({ profile, today, plannerConfig }) {
   if (!isDefaultSet) {
     const dotColor = (plannerConfig && plannerConfig.ribbonType === "symptom") ? "#A86A52" : "#7B5E9A";
     const altTiles = pillarSet.slice(0, 6).map((label) => {
-      const def = TILE_DEFS_BY_LABEL[label];
-      if (!def) {
+      const baseDef = TILE_DEFS_BY_LABEL[label];
+      if (!baseDef) {
         return { key: label, label: label.toUpperCase(), icon: Circle, value: null, unit: "", hasData: false, bar: 0, hint: "logging will surface a pattern here" };
       }
+      // Local mutable copy — we may override unit when reading from the
+      // MenopauseDailyLog row instead of DailyCheckins (different scale).
+      // The original commit accidentally tried to reassign the const `def`,
+      // which throws TypeError in strict mode (Planner crash post-77bf68f).
+      let def = baseDef;
       let value = null;
       let hasData = false;
       let hint = "logging will surface a pattern here";
@@ -266,7 +271,7 @@ export default function PillarsDeck({ profile, today, plannerConfig }) {
         // and MenopauseDailyLog is being fetched, prefer the meno-side row
         // over scaling DailyCheckins.mood × 20. Same MenopauseDailyLog mood
         // field name, but on a 1-10 scale, not 1-5 — render as "<N>/10".
-        const fieldOnMeno = needsMenoFetch && menoLatest?.[def.field];
+        const fieldOnMeno = needsMenoFetch && menoLatest && def.field ? menoLatest[def.field] : undefined;
         const fieldHasMenoValue = fieldOnMeno !== undefined && fieldOnMeno !== null && Number.isFinite(Number(fieldOnMeno));
         if (fieldHasMenoValue) {
           value = Number(menoLatest[def.field]);

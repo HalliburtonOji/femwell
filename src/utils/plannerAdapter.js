@@ -197,25 +197,33 @@ function replacePillar(pillarSet, find, replaceWith) {
   return pillarSet.map((p) => (p === find ? replaceWith : p));
 }
 
-// Main API.
-export function getPlannerConfig(lifeStage, conditions = []) {
-  const stageKey = lifeStage && STAGE_CONFIGS[lifeStage] !== undefined
-    ? lifeStage
-    : "none";
-  // Legacy "pregnancy" enum value → default to T2 config.
-  const baseStageKey = stageKey === "pregnancy" ? "pregnant-t2" : stageKey;
-  let cfg = { ...STAGE_CONFIGS[baseStageKey] || STAGE_CONFIGS.reproductive };
+// Main API. Defensive: never throws — bad inputs collapse to the
+// reproductive base config so the Planner always has a usable config.
+export function getPlannerConfig(lifeStage, conditions) {
+  try {
+    const safeConditions = Array.isArray(conditions) ? conditions : [];
+    const stageKey = lifeStage && STAGE_CONFIGS[lifeStage] !== undefined
+      ? lifeStage
+      : "none";
+    // Legacy "pregnancy" enum value → default to T2 config.
+    const baseStageKey = stageKey === "pregnancy" ? "pregnant-t2" : stageKey;
+    let cfg = { ...(STAGE_CONFIGS[baseStageKey] || STAGE_CONFIGS.reproductive || BASE) };
 
-  // Apply each condition override in spec-listed order. Multiple conditions stack.
-  // PCOS is applied first because it most-strongly reshapes the ribbon.
-  const order = ["pcos", "ha", "endo", "fibroids", "pmdd", "thyroid", "hrt", "cancer-survivor", "other"];
-  for (const condKey of order) {
-    if (conditions.includes(condKey) && CONDITION_OVERRIDES[condKey]) {
-      cfg = CONDITION_OVERRIDES[condKey](cfg);
+    // Apply each condition override in spec-listed order. Multiple conditions stack.
+    // PCOS is applied first because it most-strongly reshapes the ribbon.
+    const order = ["pcos", "ha", "endo", "fibroids", "pmdd", "thyroid", "hrt", "cancer-survivor", "other"];
+    for (const condKey of order) {
+      if (safeConditions.includes(condKey) && CONDITION_OVERRIDES[condKey]) {
+        const next = CONDITION_OVERRIDES[condKey](cfg);
+        if (next && typeof next === "object") cfg = next;
+      }
     }
-  }
 
-  return cfg;
+    return cfg || { ...BASE };
+  } catch {
+    // Last resort — never crash the Planner. Return a clean reproductive config.
+    return { ...BASE };
+  }
 }
 
 // ──────────────────────────────────────────────────────────────────────────
