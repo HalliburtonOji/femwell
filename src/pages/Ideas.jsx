@@ -29,6 +29,11 @@ const pick = (name) => () =>
 //   Sleep 7.2h · Energy 68% · Mood 60% · Hydration 6/8 · Movement 20min
 //   Confidence 84% · 4 cycles observed
 
+const MOCK_HERO = {
+  headline: "A softer landing this week",
+  body: "Luteal days often invite a different pace — depth over breadth, careful over many. The body's narrowing for a reason.",
+};
+
 const MOCK_STORY_CARDS = [
   { kind: "daily-story", eyebrow: "DAILY STORY · DAY 22", title: "Tonight's tea ritual", meta: "100-word read" },
   { kind: "lifestyle",   eyebrow: "ARTICLE",              title: "Slow walks for luteal afternoons",   meta: "Mindful · 2d ago" },
