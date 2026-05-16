@@ -5707,6 +5707,543 @@ function LifeStagesView() {
 }
 
 // ═══════════════════════════════════════════════════════════════════════════
+// Scheduling view — from the 16 May 2026 scheduling research doc.
+// Source: claude-state/product-research/femwell-planner-scheduling-research-2026-05-16.md
+// ═══════════════════════════════════════════════════════════════════════════
+
+const TOP_10_FEATURES = [
+  {
+    rank: 1, name: "Guided Daily Planning Ritual with Capacity Awareness",
+    bestInClass: "Sunsama (ritual) + Motion (auto-scheduling)",
+    summary: "Structured 5-10 minute morning session led by Jess. Shows today's capacity (cycle + symptoms + sleep), pulls tasks + appointments, time-blocks onto a simple visual timeline, sets one daily intention.",
+    stages: "All — peri (brain fog), TTC (clinic days), postpartum (sleep deprivation).",
+  },
+  {
+    rank: 2, name: "Capacity-Aware Task Scheduler (Smart Load Balancer)",
+    bestInClass: "Motion + The Agenda (only cycle-aware option, but no AI)",
+    summary: "Predicted-capacity engine distributes tasks across the cycle — cognitively demanding work surfaced in follicular / ovulatory, reduced load in late luteal / menstrual. High-stakes events auto-warn when they fall in a low-capacity phase.",
+    stages: "Peri (unpredictable capacity), ADHD women (luteal amplification), teens (exam scheduling).",
+  },
+  {
+    rank: 3, name: "Evening Reflection + Shutdown Ritual",
+    bestInClass: "Sunsama (best in category)",
+    summary: "3-5 minute nightly debrief: review completed + incomplete tasks, dispose of incomplete (carry / reschedule / remove), cycle-aware reflection prompt, psychological boundary between active and rest mode.",
+    stages: "Peri (processing brain-fog days), postpartum (acknowledging what got done), TTC (2WW emotional processing).",
+  },
+  {
+    rank: 4, name: "Phase-Aware Habit Engine with Habit Stacking",
+    bestInClass: "Reclaim.ai + Finch + Atomic Habits",
+    summary: "Habit setup wizard captures when / where / what-trigger (implementation intention). Habit stacking suggested from observed behaviour. Phase-adaptive expectations — missing exercise in menstrual phase is cycle-appropriate, not failure. Streak reads \"21 of last 28 days\", never resets to zero.",
+    stages: "All — especially teens (first habits), TTC (OPK testing), peri (medication adherence).",
+  },
+  {
+    rank: 5, name: "Appointment Preparation + Medical Scheduling Hub",
+    bestInClass: "No app does this well — mySysters comes closest",
+    summary: "Life-stage-specific scheduling that prepares users for medical encounters. Auto-generated symptom summary, question prompt bank, NHS app + NHS Online Hospital links. Pregnancy trimester schedule pre-populated. TTC clinic + trigger-window alerts. Peri 3-month HRT review reminder.",
+    stages: "Peri (GP prep), TTC (clinic management), pregnancy (trimester schedule).",
+  },
+  {
+    rank: 6, name: "Weekly Planning + Review Ritual (Phase-Anchored)",
+    bestInClass: "Sunsama (objectives over tasks)",
+    summary: "Sunday-evening Jess session: review last week (% habits hit, phase-adjusted), set 3 weekly objectives (not task lists), map cycle profile for the coming week, time-block high-priority items into high-capacity days.",
+    stages: "Working women managing peri symptoms, pregnancy (each week different), TTC (fertile-window planning).",
+  },
+  {
+    rank: 7, name: "Natural Language Task + Habit Capture (Jess AI)",
+    bestInClass: "Fantastical + ChatGPT",
+    summary: "Conversational capture — \"remind me to take folic acid every morning\", \"add my 12-week scan on 3 June at 10am\", \"I want to meditate 5 min daily\" — Jess creates the right habit, reminder, or calendar entry with the right implementation intention.",
+    stages: "Postpartum (cognitive load too high for forms), peri (brain fog), teens (conversational feels native).",
+  },
+  {
+    rank: 8, name: "Cycle-Aware Journal Prompts (Guided Reflection)",
+    bestInClass: "Reflectly + Day One (\"On This Day\")",
+    summary: "Phase-rotating prompts replace blank-page paralysis. \"On This Day\" surfaces what you wrote on this cycle day in previous months. Monthly pattern insight: \"In your luteal phase over the last 3 months, you consistently logged anxiety on Days 25-27 — worth a GP conversation.\"",
+    stages: "Peri (uncertainty processing), TTC 2WW (emotional regulation), teens (first cycle awareness).",
+  },
+  {
+    rank: 9, name: "Energy-Aware Social + Community Features",
+    bestInClass: "No app does this well — Finch warmest model",
+    summary: "Phase-grouped circles (Menstrual circle / Follicular energy / Luteal lounge). Anonymous phase disclosure. Accountability pairs matched on phase or life stage. Phase challenges. Community questions tagged by life stage.",
+    stages: "TTC (community reduces isolation), peri (shared experience), postpartum (loneliness).",
+  },
+  {
+    rank: 10, name: "Life Goals Framework (Quarterly / Seasonal Review)",
+    bestInClass: "Notion + Sunsama (with cycle lens nowhere)",
+    summary: "Above the weekly / daily layer — annual goals broken into quarterly intentions, reviewed at the natural cadence of seasons. Spring = new starts (follicular energy), summer = peak output, autumn = editing, winter = rest and reflection.",
+    stages: "Women in transition — peri identity shift, postpartum return to self, TTC after diagnosis.",
+  },
+];
+
+const CAPACITY_DATA_INPUTS = [
+  { layer: "Cycle phase",        source: "Cycle tab",          signal: "Predicted cognitive / physical capacity by phase" },
+  { layer: "Cycle day",          source: "Cycle tab",          signal: "Fine-grained within-phase variation" },
+  { layer: "Symptoms logged",    source: "Track tab",          signal: "Actual vs. predicted capacity (override)" },
+  { layer: "Sleep log",          source: "Track tab",          signal: "Acute capacity modifier (poor sleep = −30% executive function)" },
+  { layer: "Mood log",           source: "Journal / Track",    signal: "Emotional capacity signal" },
+  { layer: "Life stage",         source: "Profile",            signal: "Pregnancy trimester, peri, postpartum overlays" },
+  { layer: "Wearable data",      source: "Apple Health / Garmin (future)", signal: "HRV, resting HR, sleep quality" },
+  { layer: "Medication / HRT",   source: "Care Bridge / Track", signal: "Hormonal stability signal" },
+];
+
+const CAPACITY_PHASE_MODEL = [
+  { phase: "Menstrual", days: "1–5",       score: 45, cognitive: "Low-medium · introspective · big-picture",     physical: "Low · rest", emotional: "Inward · sensitive",       action: "Minimal task load, prioritise rest + reflection." },
+  { phase: "Follicular", days: "6–13",     score: 75, cognitive: "Rising · executive function + verbal memory",  physical: "Rising · best for new exercise", emotional: "Optimistic · curious", action: "Front-load new projects, learning, hard conversations." },
+  { phase: "Ovulatory", days: "14–16",     score: 90, cognitive: "Peak verbal fluency · charisma",               physical: "Peak strength + power", emotional: "Confident · empathetic", action: "Presentations, interviews, GP consultations, dates." },
+  { phase: "Early luteal", days: "17–23",  score: 70, cognitive: "Detail-oriented · methodical",                 physical: "Moderate", emotional: "Calm · completing",            action: "Admin, organising, financial reviews, finishing." },
+  { phase: "Late luteal", days: "24–28",   score: 40, cognitive: "Brain fog · reduced working memory",           physical: "Fatigue · bloating · pain sensitivity", emotional: "PMS · heightened reactivity", action: "Reduce to 2-3 priorities. No high-stakes events." },
+];
+
+const CAPACITY_BEHAVIORS = [
+  {
+    band: "Green", range: "65–100", color: "#6B8F5A",
+    body: "Show full task list. Suggest stretch goal or optional extra. Encourage high-value scheduling — presentations, difficult conversations, creative work.",
+    jess: "Energetic, forward-looking.",
+  },
+  {
+    band: "Amber", range: "35–64", color: "#C8A040",
+    body: "Show planned tasks, no additions. Gently suggest delegating or moving one non-urgent task. Flag if any high-stakes event is today.",
+    jess: "Steady, supportive.",
+  },
+  {
+    band: "Red", range: "0–34", color: "#D45E52",
+    body: "Reduce to 2-3 essentials. Auto-suggest moving non-urgent tasks to next green phase. Offer self-care prompt. If a red day precedes a high-stakes event: \"Your presentation is tomorrow — let's do 5 minutes of prep now.\"",
+    jess: "Compassionate, permission-giving.",
+  },
+];
+
+const FIVE_SPECS = [
+  {
+    id: "morning-ritual",
+    name: "Jess Morning Planning Session",
+    where: "Today tab · triggered at user-set time (default 7:30am)",
+    duration: "3-7 minutes",
+    flow: [
+      "Capacity check (30s) — green/amber/red indicator, 1-tap mood/energy emoji, sleep input updates score.",
+      "Today's schedule overview (1m) — pulls calendar + task inbox. Jess: \"You have 2 meetings + 4 tasks. Capacity is amber — focus on 2-3 tasks.\"",
+      "Task selection + time-blocking (2-3m) — choose tasks pre-sorted by phase-suitability. Drag to time-block. App warns if total exceeds free time.",
+      "Daily intention (30s) — single sentence. Free text or Jess suggestion: \"Given your cycle, today is good for completing / beginning / resting from.\"",
+      "Jess sign-off — brief phase-aware encouragement: \"Day 8 — follicular energy building. Start the thing. You've got this.\"",
+    ],
+  },
+  {
+    id: "task-inbox",
+    name: "Smart Task Inbox with Phase-Aware Sorting",
+    where: "Today tab (persistent) + Jess conversational capture",
+    duration: "Async — capture anywhere, surfaces when relevant",
+    flow: [
+      "Quick capture: single line, single tap. \"Call Dr Shah before Thursday\" → task with due date. \"Take magnesium every night\" → habit prompt. \"Scan on 3 June\" → calendar event.",
+      "Task attributes: title · type (creative / admin / social / physical / medical / rest) · duration estimate · due date · priority 1-3.",
+      "Phase queue: \"Best done this phase (Days 6-13): 3 tasks. Best for next phase: 2. Due soon regardless: 1.\"",
+      "Capacity filter: red days show only urgent / essential. User can override.",
+      "Integrations: Google + Apple Calendar (appointments), Care Bridge (medical), Cycle tab (phase), Track (symptom modifier).",
+    ],
+  },
+  {
+    id: "evening-shutdown",
+    name: "Evening Shutdown + Reflection",
+    where: "Today tab · push notification at user-set time (default 8:30pm)",
+    duration: "3-5 minutes",
+    flow: [
+      "Day review (1m) — Jess: \"You planned 4 tasks. You completed 3. One didn't happen — [task]. Visual: completed · not done · calendar events.\"",
+      "Incomplete disposition (1m) — 3 taps per task: Tomorrow / Schedule for later / Remove. No guilt: \"It's fine to move it — only do what your capacity allows.\"",
+      "Phase-aware reflection prompt (1-2m): Menstrual → \"What did your body ask for today that you gave it?\" / Follicular → \"What did you start that you're proud of?\" / Ovulatory → \"Who did you connect with?\" / Early luteal → \"What did you finish?\" / Late luteal → \"What can you release tonight?\"",
+      "Tomorrow preview (30s) — \"Tomorrow: one event. Cycle day X — one sentence on what to expect. Sleep well.\"",
+      "Optional: response saved to Journal.",
+    ],
+  },
+  {
+    id: "appointment-hub",
+    name: "Medical Appointment Preparation Hub",
+    where: "Care Bridge · My Appointments",
+    duration: "Auto-triggered 48h before any appointment",
+    flow: [
+      "Appointment calendar — manual or natural-language add (\"12-week scan on 3 June at St Thomas's\"). Life-stage templates pre-populate.",
+      "Pre-appointment prep (-48h): Jess auto-generates symptom summary (last 30 or 90 days) + question prompt bank filtered by life stage + recent symptoms.",
+      "Examples — Peri: \"My HRT hasn't controlled night sweats. Can we adjust dose?\" · TTC: \"My luteal is consistently 10 days — should I consider progesterone?\" · Pregnancy: \"Pelvic pain has increased. When should I stop driving?\"",
+      "Save to print / share with GP — formatted PDF.",
+      "Post-appointment log: notes capture, medication changes auto-added to Track, next appointment auto-suggested.",
+      "NHS integration — NHS App for direct booking, NHS Online Hospital for menopause video consultations (launched Jan 2026).",
+    ],
+  },
+  {
+    id: "rhythms-engine",
+    name: "Phase-Adaptive Habit Engine (Rhythms)",
+    where: "Cycle tab → My Rhythms · habits visible in Today tab",
+    duration: "Atomic Habits-informed setup, daily 2-minute defaults",
+    flow: [
+      "Setup wizard: \"What habit? When (or after which existing habit)? Where? How long? (default 2 min.)\"",
+      "Femwell suggests best phase: exercise → follicular / ovulatory; meditation → any (especially late luteal); creative → follicular / ovulatory; journalling → menstrual / late luteal.",
+      "Phase-adaptive targets: \"Run 3×/week\" auto-adjusts → menstrual phase shows walking instead and still counts.",
+      "Tracking: today tab simple tick boxes; streak = \"18/21 days this month\" (never resets to zero).",
+      "Phase-aware streak: \"Menstrual phase habit score: 4/5 days. That's excellent.\"",
+      "Suggestions by life stage — TTC: OPK twice daily, folic acid, BBT. Pregnancy: pelvic floor, vitamins, kick counting. Peri: weight-bearing exercise, HRT, magnesium. Teen: cycle reflection, mood logging.",
+    ],
+  },
+];
+
+const SCHEDULING_ROADMAP = [
+  {
+    band: "0-3 months", color: "#6B8F5A",
+    items: [
+      "Evening Reflection Ritual — lowest tech lift, highest emotional stickiness. Extend Jess into a guided nightly debrief.",
+      "Phase-Aware Journal Prompts — extend existing Journal with phase-rotating prompts. Zero new infra.",
+      "Appointment Prep in Care Bridge — symptom summary + question bank for GP visits. UK-specific. Differentiates from every competitor.",
+    ],
+  },
+  {
+    band: "3-6 months", color: "#C8A040",
+    items: [
+      "Smart Task Inbox + natural-language capture — extend Jess to parse tasks, habits, appointments from conversational input.",
+      "Morning Planning Session — the highest-stickiness feature in the category (Sunsama's defining mechanic, adapted for women's wellness).",
+      "Phase-Adaptive Habit Engine — evolve Saved Rhythms into full habit architecture with implementation intention setup + flexible streaks.",
+    ],
+  },
+  {
+    band: "6-12 months", color: "#D45E52",
+    items: [
+      "Capacity Score + Smart Load Balancer — the technical infra for capacity-aware planning. Requires capacity algorithm, phase data integration, task-type classification.",
+      "Medical Appointment Hub — full TTC, pregnancy, peri scheduling templates. NHS integration.",
+      "Weekly Planning + Review Ritual — once daily ritual lands, extend to weekly objectives layer.",
+    ],
+  },
+];
+
+function SchedulingView() {
+  const [openSpec, setOpenSpec] = useState("morning-ritual");
+  return (
+    <div style={{ maxWidth: 560, margin: "0 auto", padding: "8px 16px 40px" }}>
+      {/* Hero */}
+      <header style={{ paddingTop: 28 }}>
+        <div style={rxEyebrow}>Scheduling research · May 2026</div>
+        <h1 style={{
+          fontFamily: "'Fraunces', Georgia, serif", fontSize: 30,
+          fontWeight: 500, color: RX.espresso, letterSpacing: "-0.02em",
+          margin: "10px 0 0", lineHeight: 1.12,
+        }}>From tracker to <em style={{ color: RX.plum }}>capacity-aware planner</em>.</h1>
+        <p style={{
+          fontFamily: "'Inter', system-ui, sans-serif", fontSize: 14,
+          color: RX.espressoMid, marginTop: 12, lineHeight: 1.55,
+        }}>
+          Femwell knows how a woman feels. It does not yet help her <em>schedule her life</em> around
+          that knowledge. The £75B femtech market is consolidating around apps that move from reactive
+          tracking to proactive life management. Femwell can lead this — if it closes the planning
+          gap now. This is the map of how.
+        </p>
+      </header>
+
+      {/* Industry gap callout */}
+      <section style={rxCard}>
+        <div style={rxEyebrow}>The industry gap</div>
+        <p style={{
+          fontFamily: "Georgia, serif", fontStyle: "italic", fontSize: 13.5,
+          color: RX.plum, lineHeight: 1.5, margin: "8px 0 0",
+        }}>
+          All major women's health apps are excellent data collectors but poor action translators.
+          None of them help you plan your actual day, week, or month in light of your cycle data.
+          No major app integrates Google or Apple Calendar to surface phase <em>inside</em> your
+          existing scheduling system. The Agenda is the only exception — and it is small and limited.
+        </p>
+      </section>
+
+      {/* Top 10 missing features */}
+      <h2 style={rxH2}>Top 10 missing features (ranked by impact)</h2>
+      <p style={rxIntroP}>
+        Each item: what it does, which existing app does it best, and the life stages that benefit most.
+      </p>
+      <div style={{ display: "flex", flexDirection: "column", gap: 10, marginTop: 16 }}>
+        {TOP_10_FEATURES.map((f) => (
+          <article key={f.rank} style={{
+            background: RX.creamWarm, borderRadius: 12,
+            border: `1px solid ${RX.rule}`, padding: "14px 16px",
+          }}>
+            <div style={{ display: "flex", alignItems: "baseline", gap: 12 }}>
+              <span style={{
+                fontFamily: "Georgia, serif", fontStyle: "italic", fontSize: 24,
+                fontWeight: 500, color: RX.goldDeep, minWidth: 28, lineHeight: 1,
+              }}>{String(f.rank).padStart(2, "0")}</span>
+              <div style={{ flex: 1 }}>
+                <div style={{
+                  fontFamily: "'Fraunces', Georgia, serif", fontSize: 16,
+                  fontWeight: 600, color: RX.espresso, fontStyle: "italic",
+                  lineHeight: 1.25,
+                }}>{f.name}</div>
+                <div style={{
+                  fontFamily: "'Inter', system-ui, sans-serif", fontSize: 10,
+                  fontWeight: 700, letterSpacing: "0.14em", color: RX.goldDeep,
+                  textTransform: "uppercase", marginTop: 6,
+                }}>Best in class · {f.bestInClass}</div>
+              </div>
+            </div>
+            <p style={{
+              fontFamily: "'Inter', system-ui, sans-serif", fontSize: 12.5,
+              color: RX.espressoMid, lineHeight: 1.5, margin: "10px 0 0",
+            }}>{f.summary}</p>
+            <p style={{
+              fontFamily: "Georgia, serif", fontStyle: "italic", fontSize: 11.5,
+              color: RX.plumMid, lineHeight: 1.45, margin: "8px 0 0",
+            }}>Best fit: {f.stages}</p>
+          </article>
+        ))}
+      </div>
+
+      {/* Capacity-aware architecture */}
+      <h2 style={rxH2}>Capacity-aware scheduling architecture</h2>
+      <p style={rxIntroP}>
+        A capacity-aware planner does not ask "when are you free?" — it asks "when are you <em>able</em>?"
+        It models predicted cognitive, physical, and emotional capacity and reshapes the day around it.
+      </p>
+
+      {/* Data inputs table */}
+      <section style={rxCard}>
+        <div style={rxEyebrow}>Data inputs</div>
+        <div style={{ display: "flex", flexDirection: "column", gap: 8, marginTop: 12 }}>
+          {CAPACITY_DATA_INPUTS.map((row, i) => (
+            <div key={i} style={{
+              padding: "8px 10px", background: RX.cream,
+              borderRadius: 8, border: `0.5px solid ${RX.rule}`,
+            }}>
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", gap: 8, flexWrap: "wrap" }}>
+                <div style={{
+                  fontFamily: "'Fraunces', Georgia, serif", fontSize: 13,
+                  fontWeight: 600, color: RX.espresso,
+                }}>{row.layer}</div>
+                <div style={{
+                  fontFamily: "'Inter', system-ui, sans-serif", fontSize: 10,
+                  fontWeight: 600, color: RX.goldDeep, letterSpacing: "0.06em",
+                }}>{row.source}</div>
+              </div>
+              <div style={{
+                fontFamily: "'Inter', system-ui, sans-serif", fontSize: 11.5,
+                color: RX.espressoMid, marginTop: 4, lineHeight: 1.4,
+              }}>{row.signal}</div>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      {/* Capacity score by phase */}
+      <section style={rxCard}>
+        <div style={rxEyebrow}>Capacity score by cycle phase</div>
+        <p style={{
+          fontFamily: "'Inter', system-ui, sans-serif", fontSize: 11.5,
+          color: RX.espressoMid, marginTop: 8, lineHeight: 1.4,
+        }}>
+          Base score before symptom + sleep modifiers (peer-reviewed hormonal research).
+        </p>
+        <div style={{ display: "flex", flexDirection: "column", gap: 6, marginTop: 12 }}>
+          {CAPACITY_PHASE_MODEL.map((p, i) => (
+            <div key={i} style={{
+              padding: "10px 12px", background: RX.cream,
+              borderRadius: 8, border: `0.5px solid ${RX.rule}`,
+              borderLeft: `3px solid ${p.score >= 65 ? "#6B8F5A" : p.score >= 35 ? "#C8A040" : "#D45E52"}`,
+            }}>
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline" }}>
+                <div style={{
+                  fontFamily: "'Fraunces', Georgia, serif", fontSize: 14,
+                  fontWeight: 600, color: RX.espresso, fontStyle: "italic",
+                }}>{p.phase} <span style={{ color: RX.plumMid, fontWeight: 400, fontStyle: "normal" }}>· Days {p.days}</span></div>
+                <div style={{
+                  fontFamily: "Georgia, serif", fontStyle: "italic", fontSize: 16,
+                  fontWeight: 600, color: p.score >= 65 ? "#6B8F5A" : p.score >= 35 ? "#C8A040" : "#D45E52",
+                }}>{p.score}</div>
+              </div>
+              <div style={{
+                fontFamily: "'Inter', system-ui, sans-serif", fontSize: 11,
+                color: RX.espressoMid, marginTop: 6, lineHeight: 1.45,
+              }}>
+                <strong>Cognitive:</strong> {p.cognitive}<br/>
+                <strong>Physical:</strong> {p.physical} · <strong>Emotional:</strong> {p.emotional}
+              </div>
+              <div style={{
+                fontFamily: "Georgia, serif", fontStyle: "italic", fontSize: 11.5,
+                color: RX.plum, marginTop: 6, lineHeight: 1.45,
+              }}>→ {p.action}</div>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      {/* Behaviors by capacity level */}
+      <section style={rxCard}>
+        <div style={rxEyebrow}>Planner behaviour by capacity band</div>
+        <div style={{ display: "flex", flexDirection: "column", gap: 10, marginTop: 12 }}>
+          {CAPACITY_BEHAVIORS.map((b) => (
+            <article key={b.band} style={{
+              padding: "12px 14px", background: RX.cream,
+              borderRadius: 10, border: `0.5px solid ${RX.rule}`,
+              borderLeft: `3px solid ${b.color}`,
+            }}>
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", gap: 8 }}>
+                <div style={{
+                  fontFamily: "'Inter', system-ui, sans-serif", fontSize: 10,
+                  fontWeight: 700, letterSpacing: "0.18em", color: b.color,
+                  textTransform: "uppercase",
+                }}>{b.band}</div>
+                <div style={{
+                  fontFamily: "Georgia, serif", fontStyle: "italic", fontSize: 11,
+                  color: RX.plumMid,
+                }}>Score {b.range}</div>
+              </div>
+              <div style={{
+                fontFamily: "'Inter', system-ui, sans-serif", fontSize: 12.5,
+                color: RX.espressoMid, marginTop: 6, lineHeight: 1.5,
+              }}>{b.body}</div>
+              <div style={{
+                fontFamily: "Georgia, serif", fontStyle: "italic", fontSize: 11.5,
+                color: RX.plum, marginTop: 6, lineHeight: 1.4,
+              }}>Jess tone: {b.jess}</div>
+            </article>
+          ))}
+        </div>
+      </section>
+
+      {/* 5 highest-impact specs */}
+      <h2 style={rxH2}>Five highest-impact feature specs</h2>
+      <p style={rxIntroP}>
+        Tap a spec to expand its flow. Each is ready to scope into a Lead Manager MP after Halli signs off.
+      </p>
+      <div style={{ display: "flex", flexDirection: "column", gap: 10, marginTop: 16 }}>
+        {FIVE_SPECS.map((s, i) => {
+          const open = openSpec === s.id;
+          return (
+            <article key={s.id} style={{
+              background: RX.creamWarm, borderRadius: 14,
+              border: `1px solid ${RX.rule}`, borderLeft: `3px solid ${RX.goldDeep}`,
+              overflow: "hidden",
+            }}>
+              <button
+                type="button"
+                onClick={() => setOpenSpec(open ? null : s.id)}
+                aria-expanded={open}
+                style={{
+                  width: "100%", padding: "14px 16px",
+                  background: "transparent", border: "none",
+                  display: "flex", alignItems: "flex-start", gap: 12,
+                  cursor: "pointer", textAlign: "left",
+                }}
+              >
+                <span style={{
+                  fontFamily: "Georgia, serif", fontStyle: "italic", fontSize: 18,
+                  fontWeight: 500, color: RX.goldDeep, minWidth: 26, lineHeight: 1,
+                }}>{String(i + 1).padStart(2, "0")}</span>
+                <div style={{ flex: 1 }}>
+                  <div style={{
+                    fontFamily: "'Fraunces', Georgia, serif", fontSize: 16,
+                    fontWeight: 600, color: RX.espresso, fontStyle: "italic",
+                    lineHeight: 1.25,
+                  }}>{s.name}</div>
+                  <div style={{
+                    fontFamily: "'Inter', system-ui, sans-serif", fontSize: 10,
+                    fontWeight: 600, color: RX.goldDeep, letterSpacing: "0.10em",
+                    marginTop: 6, textTransform: "uppercase",
+                  }}>{s.where}</div>
+                  <div style={{
+                    fontFamily: "Georgia, serif", fontStyle: "italic", fontSize: 11.5,
+                    color: RX.plumMid, marginTop: 4,
+                  }}>{s.duration}</div>
+                </div>
+                <span aria-hidden="true" style={{
+                  fontFamily: "'Inter', system-ui, sans-serif",
+                  fontSize: 16, color: RX.espressoMid, fontWeight: 700,
+                  transform: open ? "rotate(180deg)" : "rotate(0deg)",
+                  transition: "transform 0.2s ease",
+                  marginTop: 4,
+                }}>▾</span>
+              </button>
+              {open && (
+                <div style={{ padding: "0 16px 18px 16px" }}>
+                  <ol style={{ listStyle: "none", margin: 0, padding: 0, display: "flex", flexDirection: "column", gap: 8 }}>
+                    {s.flow.map((step, j) => (
+                      <li key={j} style={{
+                        padding: "10px 12px", background: RX.cream,
+                        borderRadius: 8, border: `0.5px solid ${RX.rule}`,
+                        display: "flex", gap: 10, alignItems: "flex-start",
+                      }}>
+                        <span style={{
+                          fontFamily: "Georgia, serif", fontStyle: "italic",
+                          fontSize: 12, fontWeight: 600, color: RX.goldDeep,
+                          minWidth: 20, paddingTop: 1,
+                        }}>{j + 1}.</span>
+                        <span style={{
+                          fontFamily: "'Inter', system-ui, sans-serif", fontSize: 12.5,
+                          color: RX.espresso, lineHeight: 1.5,
+                        }}>{step}</span>
+                      </li>
+                    ))}
+                  </ol>
+                </div>
+              )}
+            </article>
+          );
+        })}
+      </div>
+
+      {/* Roadmap */}
+      <h2 style={rxH2}>Strategic roadmap</h2>
+      <p style={rxIntroP}>
+        Ship cadence — emotional stickiness first (0-3m), then the planning ritual layer (3-6m), then the
+        capacity engine + NHS integration that earns the moat (6-12m).
+      </p>
+      <div style={{ display: "flex", flexDirection: "column", gap: 12, marginTop: 16 }}>
+        {SCHEDULING_ROADMAP.map((band) => (
+          <article key={band.band} style={{
+            background: RX.creamWarm, borderRadius: 14,
+            border: `1px solid ${RX.rule}`, borderTop: `3px solid ${band.color}`,
+            padding: "16px 16px 18px",
+          }}>
+            <div style={{
+              fontFamily: "'Fraunces', Georgia, serif", fontSize: 22,
+              fontWeight: 500, color: band.color, fontStyle: "italic",
+            }}>{band.band}</div>
+            <ul style={{ listStyle: "none", margin: "10px 0 0", padding: 0, display: "flex", flexDirection: "column", gap: 8 }}>
+              {band.items.map((item, i) => (
+                <li key={i} style={{ display: "flex", gap: 10, alignItems: "flex-start" }}>
+                  <span aria-hidden="true" style={{
+                    width: 4, height: 4, borderRadius: 9999,
+                    background: band.color, marginTop: 8, flexShrink: 0,
+                  }} />
+                  <span style={{
+                    fontFamily: "'Inter', system-ui, sans-serif", fontSize: 12.5,
+                    color: RX.espressoMid, lineHeight: 1.5,
+                  }}>{item}</span>
+                </li>
+              ))}
+            </ul>
+          </article>
+        ))}
+      </div>
+
+      {/* Closing card */}
+      <section style={{
+        marginTop: 28, padding: "24px 22px",
+        background: RX.espresso, color: RX.cream,
+        borderRadius: 18,
+      }}>
+        <div style={{
+          fontFamily: "'Inter', system-ui, sans-serif", fontSize: 10,
+          fontWeight: 700, letterSpacing: "0.22em", color: RX.gold,
+          textTransform: "uppercase",
+        }}>Competitive position</div>
+        <p style={{
+          fontFamily: "'Fraunces', Georgia, serif", fontStyle: "italic",
+          fontSize: 17, lineHeight: 1.5, margin: "10px 0 0", color: RX.cream,
+        }}>
+          No competitor combines cycle-aware AI narrative, life-stage-specific planning, capacity-
+          adjusted scheduling, <em>and</em> NHS-integrated appointment preparation. Femwell with these
+          additions occupies a genuinely unique position.
+        </p>
+        <div style={{
+          marginTop: 14, fontFamily: "'Inter', system-ui, sans-serif",
+          fontSize: 11.5, color: "rgba(244,237,219,0.7)", lineHeight: 1.5,
+        }}>
+          Full doc: claude-state/product-research/<br/>femwell-planner-scheduling-research-2026-05-16.md
+        </div>
+      </section>
+    </div>
+  );
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
 // /Ideas page shell
 // ═══════════════════════════════════════════════════════════════════════════
 
@@ -5744,7 +6281,7 @@ const DESIGNS = [
 export default function Ideas() {
   const [expanded, setExpanded] = useState({});
   const [openHelp, setOpenHelp] = useState(false);
-  const [topTab, setTopTab] = useState("designs"); // "designs" | "research" | "lifestages"
+  const [topTab, setTopTab] = useState("designs"); // "designs" | "research" | "lifestages" | "scheduling"
   return (
     <div style={{ minHeight: "100vh", background: "#F4F1EA", paddingBottom: 140 }}>
       <div style={{
@@ -5755,7 +6292,7 @@ export default function Ideas() {
         fontSize: 11, letterSpacing: "0.18em", fontWeight: 700,
         textTransform: "uppercase",
       }}>
-        Design Lab · Dev Only · Designs · Research · Life Stages
+        Design Lab · Dev Only · Designs · Research · Life Stages · Scheduling
       </div>
 
       {/* Tab bar — Designs / Research / Life Stages */}
@@ -5772,6 +6309,7 @@ export default function Ideas() {
             { id: "designs", label: "Designs" },
             { id: "research", label: "Research" },
             { id: "lifestages", label: "Life Stages" },
+            { id: "scheduling", label: "Scheduling" },
           ].map((t) => {
             const active = t.id === topTab;
             return (
@@ -5789,7 +6327,7 @@ export default function Ideas() {
                   color: active ? "#F4EDDB" : "#6B5840",
                   fontWeight: active ? 700 : 600,
                   fontStyle: active ? "italic" : "normal",
-                  minWidth: 96, textAlign: "center",
+                  minWidth: 92, textAlign: "center",
                   transition: "all 0.2s ease",
                 }}
               >
@@ -5802,6 +6340,7 @@ export default function Ideas() {
 
       {topTab === "research" && <ResearchView />}
       {topTab === "lifestages" && <LifeStagesView />}
+      {topTab === "scheduling" && <SchedulingView />}
       {topTab === "designs" && (
       <>
       <div style={{ maxWidth: 560, margin: "0 auto", padding: "32px 18px 0" }}>
