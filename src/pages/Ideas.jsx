@@ -2902,6 +2902,1101 @@ function TheLibraryDemo() {
 }
 
 // ═══════════════════════════════════════════════════════════════════════════
+// DESIGN 4 — The Garden (Flower Theme, full botanical transformation)
+//
+// Every component is part of a botanical specimen book. Faint repeating
+// leaf pattern runs behind everything. Hero has a hand-drawn lavender
+// sprig. PillarsDeck tiles each carry a tiny ink corner icon (moon, sun,
+// cloud, water, leaf, crescent). MonthRibbon is a pressed-flower
+// collection — each phase row has its own plant illustration on the left,
+// a herbarium leaf silhouette on the right, with a watercolour wash for
+// the phase. Story reel cards are nursery-tagged recipe cards. Every
+// Cycle card gets a sage-green header bar with a tiny botanical icon.
+// ═══════════════════════════════════════════════════════════════════════════
+
+// Garden tokens
+const TG_BG          = "#F8F6F0";  // botanical white
+const TG_PAPER       = "#FFFFFF";  // card bg
+const TG_PAPER_WARM  = "#FDFAF0";  // warmer paper for tiles
+const TG_SAGE        = "#6B8F5A";  // sage accent
+const TG_SAGE_DEEP   = "#4A6840";  // deep sage (today, header bar)
+const TG_SAGE_LIGHT  = "#8AAA78";  // tile border
+const TG_SAGE_PALE   = "#D5E0C8";  // hairlines
+const TG_INK         = "#2A2018";  // headings
+const TG_INK_BODY    = "#5A5040";  // body
+const TG_INK_MUTED   = "#7A6F5E";  // muted
+const TG_LEAF        = "#5A7840";  // leaf green
+const TG_LAV_FLORET  = "#9070B0";
+const TG_LAV_BRIGHT  = "#A080C0";
+const TG_LAV_DEEP    = "#7B5E9A";
+const TG_ROOT        = "#6B4A30";
+
+const TG_PHASE = {
+  menstrual:  "#8B1A2E",   // deep burgundy rose
+  follicular: "#D4847A",   // apple blossom blush
+  ovulatory:  "#C8A020",   // sunflower gold
+  luteal:     "#7B5E9A",   // lavender purple
+  predicted:  "#3A2A18",   // seed-pod brown
+};
+
+const TG_PHASE_NAME = {
+  menstrual:  "Period",
+  follicular: "Follicular",
+  ovulatory:  "Ovulatory",
+  luteal:     "Luteal",
+  predicted:  "Predicted",
+};
+
+const TG_PHASE_PLANT = {
+  menstrual:  "Damask rose",
+  follicular: "Cherry blossom",
+  ovulatory:  "Sunflower",
+  luteal:     "Lavender",
+  predicted:  "Seed-pod",
+};
+
+const TG_BANDS = [
+  { phase: "menstrual",  days: [1,2,3,4] },
+  { phase: "follicular", days: [5,6,7,8,9,10,11,12,13] },
+  { phase: "ovulatory",  days: [14,15,16] },
+  { phase: "luteal",     days: [17,18,19,20,21,22,23,24,25,26,27,28] },
+  { phase: "predicted",  days: [29,30,31] },
+];
+
+// ─── Page-wide repeating leaf pattern (SVG) ─────────────────────────────────
+function GardenBackdrop() {
+  return (
+    <svg style={{
+      position: "absolute", inset: 0, width: "100%", height: "100%",
+      pointerEvents: "none", zIndex: 0,
+    }} aria-hidden="true">
+      <defs>
+        <pattern id="tg-leaves" x="0" y="0" width="60" height="60" patternUnits="userSpaceOnUse">
+          {/* Small leaf silhouette — ink stroke at 4% opacity */}
+          <g stroke="#4A6840" strokeOpacity="0.32" strokeWidth="0.9" strokeLinecap="round" fill="none">
+            <path d="M 18,22 Q 12,28 14,38 Q 22,42 28,36 Q 30,28 24,22 Z"/>
+            <line x1="22" y1="22" x2="28" y2="38"/>
+            <path d="M 38,46 Q 44,52 48,46 Q 46,40 42,42 Q 39,43 38,46 Z"/>
+            <line x1="42" y1="44" x2="46" y2="50"/>
+          </g>
+        </pattern>
+      </defs>
+      <rect width="100%" height="100%" fill="url(#tg-leaves)" opacity="0.5"/>
+    </svg>
+  );
+}
+
+// ─── Lavender sprig SVG (hero illustration) ─────────────────────────────────
+function LavenderSprig({ width = 88 }) {
+  return (
+    <svg viewBox="0 0 88 188" width={width} height={(188 * width) / 88} aria-hidden="true">
+      {/* Root */}
+      <g stroke={TG_ROOT} strokeWidth="0.8" fill="none" strokeLinecap="round">
+        <path d="M 44,186 Q 41,176 35,170"/>
+        <path d="M 44,186 Q 47,176 53,170"/>
+        <path d="M 44,186 L 44,175"/>
+      </g>
+      {/* Main stem (slight curve) */}
+      <path d="M 44,175 Q 45,130 42,80 Q 42,40 44,12"
+            stroke={TG_LEAF} strokeWidth="1.4" fill="none" strokeLinecap="round"/>
+      {/* Lance-shaped leaves — opposite pairs */}
+      <g fill={TG_LEAF} fillOpacity="0.30" stroke={TG_LEAF} strokeWidth="0.8">
+        <path d="M 43,128 Q 26,122 14,128 Q 26,134 43,131 Z"/>
+        <path d="M 43,128 Q 60,122 72,128 Q 60,134 43,131 Z"/>
+        <path d="M 43,150 Q 28,144 18,150 Q 28,156 43,153 Z"/>
+        <path d="M 43,150 Q 58,144 68,150 Q 58,156 43,153 Z"/>
+        <path d="M 43,108 Q 30,103 22,108 Q 30,113 43,111 Z"/>
+        <path d="M 43,108 Q 56,103 64,108 Q 56,113 43,111 Z"/>
+      </g>
+      {/* Calyx (where spike meets stem) */}
+      <path d="M 38,70 L 44,64 L 50,70 L 44,76 Z" fill={TG_LEAF} fillOpacity="0.55"/>
+      {/* Flower spike — 7 levels of clustered florets */}
+      {[
+        { y: 14, w: 4 },
+        { y: 22, w: 5 },
+        { y: 30, w: 6 },
+        { y: 38, w: 6.5 },
+        { y: 46, w: 7 },
+        { y: 54, w: 7 },
+        { y: 62, w: 6.5 },
+      ].map(({ y, w }, i) => (
+        <g key={i}>
+          <ellipse cx="44" cy={y} rx={w} ry="3.2" fill={TG_LAV_FLORET}/>
+          <circle cx={44 - w + 1.5} cy={y - 1.5} r="1.6" fill={TG_LAV_DEEP}/>
+          <circle cx={44 + w - 1.5} cy={y - 1.5} r="1.6" fill={TG_LAV_DEEP}/>
+          <circle cx={44 - w + 2.5} cy={y + 1.5} r="1.4" fill={TG_LAV_BRIGHT}/>
+          <circle cx={44 + w - 2.5} cy={y + 1.5} r="1.4" fill={TG_LAV_BRIGHT}/>
+          <circle cx="44" cy={y - 1} r="1.4" fill={TG_LAV_BRIGHT}/>
+        </g>
+      ))}
+      {/* Topmost bud */}
+      <circle cx="44" cy="9" r="2" fill={TG_LAV_DEEP}/>
+    </svg>
+  );
+}
+
+// ─── Tiny botanical SVGs for pressed-flower row ─────────────────────────────
+function PressedPlant({ kind, size = 26 }) {
+  const w = size;
+  if (kind === "rose") {
+    return (
+      <svg viewBox="0 0 30 30" width={w} height={w} aria-hidden="true">
+        <g stroke="#5A1820" strokeWidth="0.8" fill="none">
+          <path d="M 15,8 Q 11,8 11,12 Q 11,16 15,16 Q 19,16 19,12 Q 19,8 15,8 Z" fill="#8B1A2E" fillOpacity="0.7"/>
+          <path d="M 13,11 Q 15,9 17,11" stroke="#5A1820"/>
+          <path d="M 14,13 Q 15,11.5 16,13"/>
+          <path d="M 15,16 L 15,26" stroke="#5A7840"/>
+          <path d="M 15,21 Q 11,22 9,20" stroke="#5A7840"/>
+          <path d="M 15,23 Q 19,24 21,22" stroke="#5A7840"/>
+        </g>
+      </svg>
+    );
+  }
+  if (kind === "cherry") {
+    return (
+      <svg viewBox="0 0 30 30" width={w} height={w} aria-hidden="true">
+        <g fill="#D4847A" fillOpacity="0.85" stroke="#A85230" strokeWidth="0.6">
+          {[0, 72, 144, 216, 288].map((deg) => {
+            const rad = (deg * Math.PI) / 180;
+            const cx = 15 + Math.cos(rad - Math.PI / 2) * 5;
+            const cy = 13 + Math.sin(rad - Math.PI / 2) * 5;
+            return <ellipse key={deg} cx={cx} cy={cy} rx="2.8" ry="4" transform={`rotate(${deg} ${cx} ${cy})`}/>;
+          })}
+          <circle cx="15" cy="13" r="1.8" fill="#C8A020"/>
+        </g>
+        <path d="M 15,18 L 15,28" stroke="#5A7840" strokeWidth="0.8"/>
+      </svg>
+    );
+  }
+  if (kind === "sunflower") {
+    return (
+      <svg viewBox="0 0 30 30" width={w} height={w} aria-hidden="true">
+        <g fill="#C8A020" fillOpacity="0.85" stroke="#8B6F1E" strokeWidth="0.5">
+          {Array.from({ length: 12 }).map((_, i) => {
+            const a = (i / 12) * Math.PI * 2;
+            const x1 = 15 + Math.cos(a) * 3.5;
+            const y1 = 13 + Math.sin(a) * 3.5;
+            const x2 = 15 + Math.cos(a) * 8;
+            const y2 = 13 + Math.sin(a) * 8;
+            return <ellipse key={i} cx={(x1 + x2) / 2} cy={(y1 + y2) / 2} rx="1.5" ry="3" transform={`rotate(${(i / 12) * 360} ${(x1 + x2) / 2} ${(y1 + y2) / 2})`}/>;
+          })}
+        </g>
+        <circle cx="15" cy="13" r="3.4" fill="#5A4020"/>
+        <circle cx="15" cy="13" r="2.4" fill="#3A2810"/>
+        <path d="M 15,17 L 15,28" stroke="#5A7840" strokeWidth="0.8"/>
+      </svg>
+    );
+  }
+  if (kind === "lavender") {
+    return (
+      <svg viewBox="0 0 30 30" width={w} height={w} aria-hidden="true">
+        {[8, 12, 16, 20].map((y, i) => (
+          <g key={y}>
+            <ellipse cx="15" cy={y} rx={2 + i * 0.4} ry="1.6" fill={TG_LAV_FLORET}/>
+            <circle cx="15" cy={y} r="0.8" fill={TG_LAV_DEEP}/>
+          </g>
+        ))}
+        <path d="M 15,22 L 15,28" stroke={TG_LEAF} strokeWidth="0.8" strokeLinecap="round"/>
+        <path d="M 15,25 Q 12,26 11,24" stroke={TG_LEAF} strokeWidth="0.7" fill="none"/>
+        <path d="M 15,27 Q 18,28 19,26" stroke={TG_LEAF} strokeWidth="0.7" fill="none"/>
+      </svg>
+    );
+  }
+  // bare branch (seed-pod)
+  return (
+    <svg viewBox="0 0 30 30" width={w} height={w} aria-hidden="true">
+      <g stroke="#3A2A18" strokeWidth="0.9" fill="none" strokeLinecap="round">
+        <path d="M 8,26 Q 10,18 14,12 Q 16,9 20,7"/>
+        <path d="M 14,12 Q 18,10 22,12"/>
+        <path d="M 16,9 Q 19,7 22,9"/>
+        <path d="M 11,16 Q 8,14 6,11"/>
+      </g>
+      <circle cx="20" cy="7" r="1.4" fill="#5A4020"/>
+      <circle cx="22" cy="12" r="1.2" fill="#5A4020"/>
+      <circle cx="22" cy="9" r="1.1" fill="#5A4020"/>
+      <circle cx="6" cy="11" r="1" fill="#5A4020"/>
+    </svg>
+  );
+}
+const PLANT_BY_PHASE = {
+  menstrual:  "rose",
+  follicular: "cherry",
+  ovulatory:  "sunflower",
+  luteal:     "lavender",
+  predicted:  "branch",
+};
+
+// ─── Tiny ink corner icons for PillarsDeck tiles ────────────────────────────
+function PillarIcon({ kind }) {
+  const props = { width: 18, height: 18, viewBox: "0 0 24 24", fill: "none", stroke: TG_INK_MUTED, strokeWidth: 1.2, strokeLinecap: "round", strokeLinejoin: "round" };
+  if (kind === "sleep") return (
+    <svg {...props}>
+      <path d="M 18,13 A 7,7 0 1,1 11,6 A 5,5 0 0,0 18,13 Z"/>
+      <path d="M 7,4 L 7.5,5 L 8.5,5 L 7.7,5.7 L 8,7 L 7,6.3 L 6,7 L 6.3,5.7 L 5.5,5 L 6.5,5 Z"/>
+      <path d="M 19,3 L 19.4,4 L 20,4 L 19.5,4.5 L 19.7,5.5 L 19,5 L 18.3,5.5 L 18.5,4.5 L 18,4 L 18.6,4 Z"/>
+    </svg>
+  );
+  if (kind === "energy") return (
+    <svg {...props}>
+      <circle cx="12" cy="12" r="3.5"/>
+      {Array.from({ length: 8 }).map((_, i) => {
+        const a = (i / 8) * Math.PI * 2;
+        const x1 = 12 + Math.cos(a) * 5.5;
+        const y1 = 12 + Math.sin(a) * 5.5;
+        const x2 = 12 + Math.cos(a) * 8.5;
+        const y2 = 12 + Math.sin(a) * 8.5;
+        return <line key={i} x1={x1} y1={y1} x2={x2} y2={y2}/>;
+      })}
+    </svg>
+  );
+  if (kind === "mood") return (
+    <svg {...props}>
+      <path d="M 6,14 Q 6,11 8.5,11 Q 9,8 12,8 Q 15,8 15.5,11 Q 18,11 18,14 Q 18,16 16,16 L 8,16 Q 6,16 6,14 Z"/>
+    </svg>
+  );
+  if (kind === "hydration") return (
+    <svg {...props}>
+      <path d="M 12,4 Q 7,11 7,15 Q 7,18 12,19 Q 17,18 17,15 Q 17,11 12,4 Z"/>
+      <path d="M 9,14 Q 10,16 12,16" strokeOpacity="0.6"/>
+    </svg>
+  );
+  if (kind === "movement") return (
+    <svg {...props}>
+      <path d="M 12,5 Q 7,8 6,13 Q 7,18 12,19 Q 17,18 18,13 Q 17,8 12,5 Z"/>
+      <path d="M 12,5 L 12,19"/>
+      <path d="M 12,10 L 8,12 M 12,13 L 8,15 M 12,10 L 16,12 M 12,13 L 16,15"/>
+    </svg>
+  );
+  // cycle = crescent + dot
+  return (
+    <svg {...props}>
+      <path d="M 17,13 A 6,6 0 1,1 11,7 A 4.5,4.5 0 0,0 17,13 Z"/>
+      <circle cx="18" cy="6" r="1.2" fill={TG_INK_MUTED}/>
+    </svg>
+  );
+}
+
+// ─── Sage leaf sprig for section headers (3 leaves + stem) ──────────────────
+function LeafSprig({ size = 16 }) {
+  return (
+    <svg viewBox="0 0 24 24" width={size} height={size} aria-hidden="true">
+      <g stroke={TG_SAGE_DEEP} strokeWidth="1" fill={TG_SAGE} fillOpacity="0.42" strokeLinecap="round">
+        <path d="M 12,22 L 12,4"/>
+        <path d="M 12,8 Q 6,7 4,12 Q 8,13 12,11"/>
+        <path d="M 12,14 Q 18,13 20,18 Q 16,19 12,17"/>
+        <path d="M 12,4 Q 8,4 8,2 Q 12,2 12,4"/>
+      </g>
+    </svg>
+  );
+}
+
+// ─── Small white ink botanical for Cycle card headers ──────────────────────
+function HeaderLeaf({ size = 18 }) {
+  return (
+    <svg viewBox="0 0 24 24" width={size} height={size} aria-hidden="true">
+      <g stroke={TG_PAPER} strokeWidth="1" fill="none" strokeLinecap="round">
+        <path d="M 12,22 L 12,2"/>
+        <path d="M 12,8 Q 6,8 4,13 Q 8,14 12,11"/>
+        <path d="M 12,12 Q 18,12 20,17 Q 16,18 12,15"/>
+      </g>
+    </svg>
+  );
+}
+
+// ─── 4-petal flower (used on FAB + on today day) ────────────────────────────
+function Petal4({ size = 8, fill }) {
+  return (
+    <svg viewBox="0 0 12 12" width={size} height={size} aria-hidden="true">
+      <g fill={fill}>
+        <ellipse cx="6" cy="3" rx="1.6" ry="3"/>
+        <ellipse cx="9" cy="6" rx="3" ry="1.6"/>
+        <ellipse cx="6" cy="9" rx="1.6" ry="3"/>
+        <ellipse cx="3" cy="6" rx="3" ry="1.6"/>
+      </g>
+      <circle cx="6" cy="6" r="1.2" fill={TG_PAPER}/>
+    </svg>
+  );
+}
+
+// ─── Sticky header (botanical white + sage accents) ────────────────────────
+function TG_StickyHeader({ view, setView }) {
+  return (
+    <div style={{
+      position: "sticky", top: 0, zIndex: 5,
+      padding: "18px 18px 12px",
+      backgroundColor: "rgba(248,246,240,0.97)",
+      backdropFilter: "blur(20px)",
+      borderBottom: `1px solid ${TG_SAGE_PALE}`,
+    }}>
+      <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 4 }}>
+        <LeafSprig size={14}/>
+        <p style={{
+          fontFamily: "Georgia, serif", fontStyle: "italic",
+          fontSize: 10.5, color: TG_SAGE_DEEP, letterSpacing: "0.04em",
+          margin: 0, opacity: 0.95,
+        }}>Femwell Herbarium · Specimen Vol. I</p>
+      </div>
+      <p style={{
+        fontSize: 9.5, fontWeight: 700, textTransform: "uppercase",
+        letterSpacing: "0.22em", color: TG_INK_MUTED,
+        fontFamily: "Georgia, serif", margin: "8px 0 4px",
+      }}>
+        {view === "cycle" ? "Your cycle" : "Today · Saturday 16 May"}
+      </p>
+      <div style={{ display: "flex", alignItems: "baseline", gap: 10, marginBottom: 4 }}>
+        <h1 style={{
+          fontFamily: "Georgia, 'Times New Roman', serif",
+          fontSize: 30, fontWeight: 600, color: TG_INK,
+          letterSpacing: "-0.018em", margin: 0,
+        }}>
+          {view === "cycle" ? "Cycle" : "Today"}
+        </h1>
+        <span style={{
+          display: "inline-flex", alignItems: "center", gap: 5,
+          padding: "3px 10px",
+          background: TG_PAPER, border: `1px solid ${TG_SAGE_PALE}`,
+          fontFamily: "Georgia, serif", fontStyle: "italic",
+          fontSize: 10.5, color: TG_INK_BODY,
+        }}>
+          <span style={{ width: 6, height: 6, borderRadius: 9999, background: TG_LAV_DEEP }}/>
+          84% · 4 cycles
+        </span>
+      </div>
+      <p style={{
+        fontFamily: "Georgia, serif", fontSize: 12.5,
+        color: TG_INK_BODY, margin: "0 0 4px",
+      }}>
+        Day 22 · <span style={{ color: TG_LAV_DEEP, fontStyle: "italic", fontWeight: 700 }}>Luteal</span>
+      </p>
+      <p style={{
+        fontFamily: "Georgia, serif", fontStyle: "italic",
+        fontSize: 11.5, color: TG_INK_MUTED,
+        margin: "0 0 10px", lineHeight: 1.5,
+      }}>
+        {view === "cycle" ? MOCK_CYCLE_CRUMB : MOCK_TODAY_CRUMB}
+      </p>
+
+      <div style={{
+        display: "inline-flex",
+        border: `1px solid ${TG_SAGE}`,
+        background: TG_PAPER,
+        borderRadius: 4,
+      }}>
+        {["today", "cycle"].map((id) => {
+          const active = id === view;
+          return (
+            <button
+              key={id} onClick={() => setView(id)}
+              style={{
+                fontFamily: "Georgia, serif", fontStyle: active ? "italic" : "normal",
+                fontSize: 13, padding: "7px 22px",
+                border: "none", cursor: "pointer", minWidth: 80, textAlign: "center",
+                background: active ? TG_SAGE_DEEP : "transparent",
+                color: active ? TG_PAPER : TG_INK_BODY,
+                fontWeight: active ? 700 : 600,
+                transition: "all 140ms",
+              }}
+            >
+              {id === "today" ? "Today" : "Cycle"}
+            </button>
+          );
+        })}
+      </div>
+
+      {view === "today" && (
+        <div style={{ display: "flex", alignItems: "center", gap: 6, marginTop: 14 }}>
+          <button style={tgChev}>‹</button>
+          <div style={{ display: "flex", gap: 4, flex: 1, justifyContent: "space-between" }}>
+            {[11, 12, 13, 14, 15, 16, 17].map((d, i) => {
+              const sel = d === 16;
+              return (
+                <button key={i} style={{
+                  position: "relative",
+                  display: "flex", flexDirection: "column", alignItems: "center", gap: 2,
+                  padding: "8px 4px", flex: 1, border: "none", cursor: "pointer",
+                  background: sel ? TG_SAGE_DEEP : "transparent",
+                  borderRadius: 6,
+                }}>
+                  {sel && (
+                    <span style={{ position: "absolute", top: 2, right: 2 }}>
+                      <Petal4 size={10} fill={TG_PAPER}/>
+                    </span>
+                  )}
+                  <span style={{
+                    fontSize: 9, fontWeight: 600, fontFamily: "Georgia, serif",
+                    color: sel ? TG_SAGE_PALE : TG_INK_MUTED,
+                    textTransform: "uppercase", letterSpacing: "0.08em",
+                  }}>{MOCK_WEEKDAYS[i].slice(0, 3)}</span>
+                  <span style={{
+                    fontSize: 16, fontWeight: 600, fontFamily: "Georgia, serif",
+                    color: sel ? TG_PAPER : TG_INK,
+                  }}>{d}</span>
+                </button>
+              );
+            })}
+          </div>
+          <button style={tgChev}>›</button>
+        </div>
+      )}
+    </div>
+  );
+}
+
+const tgChev = {
+  width: 28, height: 28,
+  border: `1px solid ${TG_SAGE}`, borderRadius: 4,
+  background: TG_PAPER, color: TG_SAGE_DEEP,
+  fontFamily: "Georgia, serif", fontSize: 16, lineHeight: 1,
+  cursor: "pointer", padding: 0, flexShrink: 0,
+};
+
+// ─── Bottom nav (white + sage active + sage Jess FAB with flower) ──────────
+function TG_BottomNav() {
+  const slots = [
+    { kind: "today",  label: "Today" },
+    { kind: "book",   label: "Lifestyle" },
+    { kind: "spark",  label: "Jess", fab: true },
+    { kind: "user",   label: "Profile" },
+    { kind: "menu",   label: "Menu" },
+  ];
+  const Icon = ({ kind }) => {
+    const c = TG_INK_MUTED;
+    if (kind === "today") return <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke={c} strokeWidth="1.6"><circle cx="12" cy="12" r="4"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3M4.5 4.5l2 2M17.5 17.5l2 2M4.5 19.5l2-2M17.5 6.5l2-2"/></svg>;
+    if (kind === "book") return <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke={c} strokeWidth="1.6"><path d="M4 4h7a3 3 0 013 3v13M20 4h-7a3 3 0 00-3 3v13M4 4v15h6M20 4v15h-6"/></svg>;
+    if (kind === "user") return <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke={c} strokeWidth="1.6"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4.4 3.6-8 8-8s8 3.6 8 8"/></svg>;
+    return <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke={c} strokeWidth="1.8" strokeLinecap="round"><line x1="4" y1="7" x2="20" y2="7"/><line x1="4" y1="12" x2="20" y2="12"/><line x1="4" y1="17" x2="20" y2="17"/></svg>;
+  };
+  return (
+    <div style={{
+      position: "absolute", left: 0, right: 0, bottom: 0, height: 72,
+      background: TG_PAPER,
+      borderTop: `1px solid ${TG_SAGE_PALE}`,
+      display: "grid", gridTemplateColumns: "repeat(5,1fr)", alignItems: "center",
+    }}>
+      {slots.map((s) => {
+        if (s.fab) {
+          return (
+            <div key={s.label} style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 3 }}>
+              <div style={{
+                position: "relative", width: 50, height: 50, borderRadius: 9999,
+                background: TG_SAGE_DEEP,
+                display: "flex", alignItems: "center", justifyContent: "center",
+                marginTop: -16,
+                boxShadow: `0 6px 18px ${TG_SAGE_DEEP}55, 0 0 0 1px ${TG_SAGE_PALE}`,
+              }}>
+                <Petal4 size={22} fill={TG_PAPER_WARM}/>
+              </div>
+              <span style={{ fontSize: 10, color: TG_SAGE_DEEP, fontFamily: "Georgia, serif", fontStyle: "italic", fontWeight: 700 }}>{s.label}</span>
+            </div>
+          );
+        }
+        return (
+          <div key={s.label} style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 3 }}>
+            <Icon kind={s.kind}/>
+            <span style={{ fontSize: 10.5, color: TG_INK_MUTED, fontFamily: "Georgia, serif", fontStyle: "italic" }}>{s.label}</span>
+          </div>
+        );
+      })}
+    </div>
+  );
+}
+
+// ─── Reusable card with sage header bar + botanical icon ───────────────────
+function GardenCard({ title, icon, children }) {
+  return (
+    <section style={{
+      background: TG_PAPER,
+      border: `1px solid ${TG_SAGE}`,
+      borderRadius: 6,
+      overflow: "hidden",
+      marginBottom: 14,
+      boxShadow: "0 2px 8px rgba(74,104,64,0.06)",
+      position: "relative", zIndex: 1,
+    }}>
+      <div style={{
+        background: TG_SAGE_DEEP, color: TG_PAPER,
+        padding: "10px 14px",
+        display: "flex", justifyContent: "space-between", alignItems: "center",
+      }}>
+        <span style={{
+          fontFamily: "Georgia, serif", fontStyle: "italic",
+          fontSize: 13, fontWeight: 600, letterSpacing: "0.02em",
+        }}>{title}</span>
+        {icon}
+      </div>
+      <div style={{ padding: "14px 16px" }}>{children}</div>
+    </section>
+  );
+}
+
+// ─── TODAY: JessNarrativeHero — botanical illustration panel ───────────────
+function TG_JessNarrativeHero() {
+  return (
+    <section style={{
+      background: TG_PAPER,
+      border: `1px solid ${TG_SAGE}`,
+      borderLeft: `3px solid ${TG_SAGE_DEEP}`,
+      borderRadius: 6, padding: 0,
+      marginBottom: 14, overflow: "hidden",
+      boxShadow: "0 4px 14px rgba(74,104,64,0.08)",
+      position: "relative", zIndex: 1,
+      display: "grid", gridTemplateColumns: "40% 60%", minHeight: 220,
+    }}>
+      {/* Left: lavender sprig with botanical label */}
+      <div style={{
+        background: `linear-gradient(180deg, ${TG_PAPER_WARM} 0%, ${TG_PAPER} 100%)`,
+        borderRight: `0.5px solid ${TG_SAGE_PALE}`,
+        padding: "16px 8px 12px",
+        display: "flex", flexDirection: "column", alignItems: "center",
+      }}>
+        <LavenderSprig width={84}/>
+        <p style={{
+          fontFamily: "Georgia, serif", fontStyle: "italic",
+          fontSize: 8.5, color: TG_INK_MUTED,
+          margin: "6px 0 0", textAlign: "center",
+          letterSpacing: "0.02em",
+        }}>Lavandula angustifolia</p>
+      </div>
+      {/* Right: narrative */}
+      <div style={{
+        padding: "16px 16px 14px",
+        display: "flex", flexDirection: "column", justifyContent: "center",
+      }}>
+        <p style={{
+          fontFamily: "Georgia, serif",
+          fontSize: 10, fontWeight: 700, textTransform: "uppercase",
+          letterSpacing: "0.18em", color: TG_SAGE_DEEP,
+          margin: "0 0 6px",
+        }}>Day 22 · Luteal</p>
+        <h2 style={{
+          fontFamily: "Georgia, 'Times New Roman', serif",
+          fontStyle: "italic", fontSize: 18, fontWeight: 500,
+          lineHeight: 1.25, color: TG_INK,
+          letterSpacing: "-0.012em", margin: "0 0 8px",
+        }}>The lavender is setting seed.</h2>
+        <p style={{
+          fontFamily: "Georgia, serif", fontSize: 12.5,
+          lineHeight: 1.55, color: TG_INK_BODY,
+          margin: "0 0 8px", textAlign: "justify",
+        }}>{MOCK_HERO.body}</p>
+        <div style={{
+          display: "inline-flex", alignItems: "center", gap: 5,
+          fontFamily: "Georgia, serif", fontStyle: "italic",
+          fontSize: 10.5, color: TG_INK_MUTED,
+        }}>
+          <Petal4 size={10} fill={TG_SAGE}/>
+          From Jess · this week
+        </div>
+      </div>
+    </section>
+  );
+}
+
+// ─── TODAY: PillarsDeck — botanical specimen labels ────────────────────────
+function TG_PillarsDeck() {
+  const tiles = [
+    { key: "sleep",     label: "Sleep",     value: "7.2",  unit: "hrs",  def: "rest recorded", icon: "sleep" },
+    { key: "energy",    label: "Energy",    value: "68",   unit: "%",    def: "vitality steady", icon: "energy" },
+    { key: "mood",      label: "Mood",      value: "60",   unit: "%",    def: "as a cloud-veiled day", icon: "mood" },
+    { key: "hydration", label: "Hydration", value: "6",    unit: "/ 8",  def: "cups before dusk", icon: "hydration" },
+    { key: "movement",  label: "Movement",  value: "20",   unit: "min",  def: "motion logged", icon: "movement" },
+    { key: "cycle",     label: "Cycle",     value: "22",   unit: "of 28", def: "luteal · day twenty-two", icon: "cycle" },
+  ];
+  return (
+    <section style={{ marginBottom: 14, position: "relative", zIndex: 1 }}>
+      <div style={{ marginBottom: 10, display: "flex", alignItems: "center", gap: 8 }}>
+        <LeafSprig size={16}/>
+        <p style={{
+          fontFamily: "Georgia, serif", fontStyle: "italic",
+          fontSize: 11, color: TG_SAGE_DEEP, margin: 0,
+          letterSpacing: "0.06em",
+        }}>Field Observations · 16 May 2026</p>
+      </div>
+      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8 }}>
+        {tiles.map((t) => (
+          <div key={t.key} style={{
+            position: "relative", background: TG_PAPER,
+            border: `1px solid ${TG_SAGE_LIGHT}`, borderRadius: 4,
+            padding: "12px 12px 10px", minHeight: 92,
+          }}>
+            <div style={{ position: "absolute", top: 8, right: 8 }}>
+              <PillarIcon kind={t.icon}/>
+            </div>
+            <p style={{
+              fontFamily: "Georgia, serif", fontWeight: 700,
+              fontSize: 11.5, color: TG_INK,
+              margin: 0, letterSpacing: "0.01em",
+            }}>{t.label}</p>
+            <p style={{
+              fontFamily: "Georgia, serif", fontSize: 22,
+              fontWeight: 500, color: TG_PHASE.luteal,
+              margin: "4px 0 2px", letterSpacing: "-0.01em", lineHeight: 1.1,
+            }}>
+              {t.value}<span style={{ fontSize: 11, color: TG_INK_MUTED, fontWeight: 400, marginLeft: 2 }}> {t.unit}</span>
+            </p>
+            <p style={{
+              fontFamily: "Georgia, serif", fontStyle: "italic",
+              fontSize: 10, color: TG_SAGE_DEEP,
+              margin: 0, lineHeight: 1.35,
+            }}>{t.def}</p>
+          </div>
+        ))}
+      </div>
+    </section>
+  );
+}
+
+// ─── TODAY: DailyStoryReel — botanical recipe cards ────────────────────────
+function TG_DailyStoryReel() {
+  const PLANTS = ["lavender", "sunflower", "cherry", "rose", "branch"];
+  return (
+    <section style={{ marginBottom: 14, position: "relative", zIndex: 1 }}>
+      <div style={{ marginBottom: 10, display: "flex", alignItems: "center", gap: 8 }}>
+        <LeafSprig size={16}/>
+        <p style={{
+          fontFamily: "Georgia, serif", fontStyle: "italic",
+          fontSize: 11, color: TG_SAGE_DEEP, margin: 0,
+          letterSpacing: "0.06em",
+        }}>From the Garden · For This Week</p>
+      </div>
+      <div style={{
+        display: "flex", gap: 12, overflowX: "auto",
+        paddingBottom: 4, scrollbarWidth: "none",
+      }} className="fw-no-scrollbar">
+        {MOCK_STORY_CARDS.map((card, i) => (
+          <div key={i} style={{
+            flex: "0 0 218px",
+            background: TG_PAPER,
+            border: `1px solid ${TG_SAGE}`,
+            borderRadius: 6, overflow: "hidden",
+            display: "flex", flexDirection: "column",
+            minHeight: 314,
+            boxShadow: "0 2px 6px rgba(74,104,64,0.06)",
+          }}>
+            {/* Botanical header */}
+            <div style={{
+              position: "relative", height: 120,
+              background: `linear-gradient(180deg, ${TG_PAPER_WARM} 0%, ${TG_PAPER} 100%)`,
+              borderBottom: `1px solid ${TG_SAGE_PALE}`,
+              display: "flex", alignItems: "center", justifyContent: "center",
+            }}>
+              <PressedPlant kind={PLANTS[i % PLANTS.length]} size={70}/>
+            </div>
+            {/* Caption + body */}
+            <div style={{ padding: "12px 14px 10px", flex: 1, display: "flex", flexDirection: "column" }}>
+              <p style={{
+                fontFamily: "Georgia, serif", fontStyle: "italic",
+                fontSize: 14, lineHeight: 1.3, color: TG_INK,
+                margin: 0, textAlign: "center",
+                display: "-webkit-box", WebkitLineClamp: 2,
+                WebkitBoxOrient: "vertical", overflow: "hidden",
+              }}>{card.title}</p>
+              <p style={{
+                fontFamily: "Georgia, serif", fontSize: 11,
+                color: TG_INK_MUTED, margin: "6px 0 0", textAlign: "center",
+                letterSpacing: "0.02em", fontStyle: "italic",
+              }}>{card.meta}</p>
+              {/* Nursery tag */}
+              <div style={{ display: "flex", justifyContent: "center", marginTop: "auto", paddingTop: 10 }}>
+                <span style={{
+                  display: "inline-flex", alignItems: "center", gap: 5,
+                  padding: "3px 10px",
+                  border: `1px solid ${TG_SAGE}`,
+                  background: TG_PAPER_WARM,
+                  fontFamily: "Georgia, serif", fontStyle: "italic",
+                  fontSize: 10, color: TG_SAGE_DEEP,
+                  letterSpacing: "0.04em", borderRadius: 2,
+                }}>
+                  <Petal4 size={7} fill={TG_SAGE}/>
+                  Phase: Luteal
+                </span>
+              </div>
+            </div>
+          </div>
+        ))}
+      </div>
+      <style>{`.fw-no-scrollbar::-webkit-scrollbar{display:none}.fw-no-scrollbar{scrollbar-width:none}`}</style>
+    </section>
+  );
+}
+
+// ─── TODAY: Intention ──────────────────────────────────────────────────────
+function TG_IntentionCard() {
+  return (
+    <GardenCard title="Today's Intention" icon={<HeaderLeaf/>}>
+      <p style={{
+        fontFamily: "Georgia, serif", fontStyle: "italic",
+        fontSize: 17, color: TG_INK, fontWeight: 500,
+        lineHeight: 1.32, margin: "0 0 6px", textAlign: "center",
+      }}>"Close one loop today; let the rest wait."</p>
+      <p style={{
+        fontFamily: "Georgia, serif", fontSize: 12.5,
+        color: TG_INK_BODY, lineHeight: 1.55, margin: 0, textAlign: "justify",
+      }}>Pick the writing pass that has been waiting two weeks — one focused half-hour, then walk away. The garden tends itself the rest of the day.</p>
+    </GardenCard>
+  );
+}
+
+// ─── TODAY: Morning rituals ────────────────────────────────────────────────
+function TG_MorningStack() {
+  const rituals = [
+    { name: "Warm grains breakfast", done: true },
+    { name: "Slow walk before noon", done: false },
+    { name: "Second cup of tea",     done: false },
+  ];
+  return (
+    <GardenCard title="Morning Rituals" icon={<HeaderLeaf/>}>
+      {rituals.map((r, i) => (
+        <div key={r.name} style={{
+          display: "flex", alignItems: "center", gap: 12,
+          padding: "9px 0",
+          borderTop: i === 0 ? "none" : `0.5px dotted ${TG_SAGE_PALE}`,
+        }}>
+          <div style={{
+            width: 18, height: 18,
+            border: `1.5px solid ${r.done ? TG_SAGE_DEEP : TG_SAGE_LIGHT}`,
+            background: r.done ? TG_SAGE_DEEP : "transparent",
+            display: "flex", alignItems: "center", justifyContent: "center",
+            flexShrink: 0, borderRadius: 2,
+          }}>
+            {r.done && <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke={TG_PAPER} strokeWidth="3"><path d="M20 6 9 17l-5-5"/></svg>}
+          </div>
+          <span style={{
+            fontFamily: "Georgia, serif", fontSize: 13,
+            fontStyle: r.done ? "italic" : "normal",
+            color: r.done ? TG_INK_MUTED : TG_INK,
+            textDecoration: r.done ? "line-through" : "none",
+          }}>{r.name}</span>
+        </div>
+      ))}
+    </GardenCard>
+  );
+}
+
+// ─── CYCLE: MonthRibbon — pressed flower specimen collection ───────────────
+function TG_MonthRibbon() {
+  return (
+    <GardenCard title="May · The Cycle Specimens" icon={<HeaderLeaf/>}>
+      <p style={{
+        fontFamily: "Georgia, serif", fontStyle: "italic",
+        fontSize: 11.5, color: TG_INK_MUTED,
+        margin: "0 0 12px", textAlign: "center", lineHeight: 1.4,
+      }}>Five specimens pressed across twenty-eight days.</p>
+
+      <div style={{ borderTop: `1px solid ${TG_SAGE_PALE}` }}>
+        {TG_BANDS.map((band) => {
+          const phaseC = TG_PHASE[band.phase];
+          const isLuteal = band.phase === "luteal";
+          const plantKind = PLANT_BY_PHASE[band.phase];
+          return (
+            <div key={band.phase} style={{
+              display: "grid",
+              gridTemplateColumns: "36px 1fr 28px",
+              alignItems: "stretch",
+              borderBottom: `1px solid ${TG_SAGE_PALE}`,
+              background: `${phaseC}15`,
+              minHeight: 70,
+            }}>
+              {/* Left: pressed plant specimen */}
+              <div style={{
+                display: "flex", alignItems: "center", justifyContent: "center",
+                borderRight: `0.5px solid ${TG_SAGE_PALE}`,
+                background: TG_PAPER,
+                padding: 4,
+              }}>
+                <PressedPlant kind={plantKind} size={26}/>
+              </div>
+              {/* Middle: phase name + day pills */}
+              <div style={{ padding: "9px 10px" }}>
+                <p style={{
+                  fontFamily: "Georgia, serif", fontStyle: "italic",
+                  fontSize: 11.5, color: TG_SAGE_DEEP,
+                  margin: "0 0 5px", fontWeight: 600,
+                  letterSpacing: "0.02em",
+                }}>{TG_PHASE_NAME[band.phase]} · {TG_PHASE_PLANT[band.phase]}</p>
+                <div style={{ display: "flex", flexWrap: "wrap", gap: 4 }}>
+                  {band.days.map((d) => {
+                    const isToday = d === 22 && isLuteal;
+                    return (
+                      <div key={d} style={{
+                        position: "relative",
+                        minWidth: 22, padding: "3px 6px", borderRadius: 9999,
+                        background: isToday ? TG_SAGE_DEEP : TG_PAPER,
+                        border: isToday ? "none" : `0.5px solid ${TG_SAGE_PALE}`,
+                        display: "flex", alignItems: "center", justifyContent: "center",
+                      }}>
+                        {isToday && (
+                          <span style={{
+                            position: "absolute", top: -12, left: "50%",
+                            transform: "translateX(-50%)",
+                          }}>
+                            <Petal4 size={9} fill={TG_PHASE.luteal}/>
+                          </span>
+                        )}
+                        <span style={{
+                          fontFamily: "Georgia, serif",
+                          fontSize: 11, fontWeight: isToday ? 700 : 500,
+                          color: isToday ? TG_PAPER : phaseC,
+                        }}>{d}</span>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+              {/* Right: pressed-leaf silhouette */}
+              <div style={{
+                display: "flex", alignItems: "center", justifyContent: "center",
+                opacity: 0.32,
+              }}>
+                <svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true">
+                  <path d="M 12,22 Q 6,18 6,12 Q 6,5 12,2 Q 18,5 18,12 Q 18,18 12,22 Z M 12,2 L 12,22"
+                        fill={phaseC} stroke={phaseC} strokeWidth="0.6"/>
+                </svg>
+              </div>
+            </div>
+          );
+        })}
+      </div>
+    </GardenCard>
+  );
+}
+
+// ─── CYCLE: SavedRhythms ────────────────────────────────────────────────────
+function TG_SavedRhythmsCarousel() {
+  return (
+    <GardenCard title="Saved Rhythms" icon={<HeaderLeaf/>}>
+      <p style={{
+        fontFamily: "Georgia, serif", fontStyle: "italic",
+        fontSize: 11.5, color: TG_INK_MUTED,
+        margin: "0 0 10px", textAlign: "center", lineHeight: 1.4,
+      }}>Three plants kept in cultivation this cycle.</p>
+      <div style={{
+        display: "flex", gap: 8, overflowX: "auto",
+        scrollbarWidth: "none", paddingBottom: 4,
+      }} className="fw-no-scrollbar">
+        {MOCK_RHYTHMS.map((r) => (
+          <div key={r.name} style={{
+            flex: "0 0 196px",
+            background: TG_PAPER_WARM,
+            border: `1px solid ${r.active ? TG_SAGE_DEEP : TG_SAGE_PALE}`,
+            borderRadius: 4, padding: "10px 12px",
+            position: "relative",
+          }}>
+            <div style={{ position: "absolute", top: 8, right: 8 }}>
+              <LeafSprig size={14}/>
+            </div>
+            <p style={{
+              fontFamily: "Georgia, serif", fontStyle: "italic",
+              fontSize: 9.5, color: r.active ? TG_SAGE_DEEP : TG_INK_MUTED,
+              letterSpacing: "0.06em", textTransform: "uppercase",
+              margin: 0, fontWeight: 700,
+            }}>{r.active ? "In Cultivation" : "Saved"}</p>
+            <p style={{
+              fontFamily: "Georgia, 'Times New Roman', serif",
+              fontWeight: 600, fontSize: 16, color: TG_INK,
+              margin: "4px 0 2px", lineHeight: 1.2,
+            }}>{r.name}</p>
+            <p style={{
+              fontFamily: "Georgia, serif", fontStyle: "italic",
+              fontSize: 11.5, color: TG_INK_BODY, margin: 0, lineHeight: 1.4,
+            }}>{r.sub}</p>
+            <div style={{ display: "flex", alignItems: "baseline", gap: 4, marginTop: 10 }}>
+              <span style={{ fontFamily: "Georgia, serif", fontSize: 10, color: TG_INK_MUTED, fontStyle: "italic" }}>tended</span>
+              <span style={{
+                flex: 1, height: 1, marginLeft: 2,
+                background: `radial-gradient(circle, ${TG_INK_MUTED} 0.5px, transparent 0.5px)`,
+                backgroundSize: "3px 1px", backgroundRepeat: "repeat-x",
+                alignSelf: "center",
+              }}/>
+              <span style={{ fontFamily: "Georgia, serif", fontStyle: "italic", fontSize: 11, color: TG_LAV_DEEP, fontWeight: 600 }}>{r.pct}%</span>
+            </div>
+          </div>
+        ))}
+      </div>
+    </GardenCard>
+  );
+}
+
+// ─── CYCLE: Week Ahead ──────────────────────────────────────────────────────
+function TG_WeekAheadCard() {
+  const chips = [
+    { day: "Sun", n: 17 },
+    { day: "Mon", n: 18 },
+    { day: "Tue", n: 19 },
+    { day: "Wed", n: 20 },
+    { day: "Thu", n: 21 },
+  ];
+  return (
+    <GardenCard title="The Week Ahead" icon={<HeaderLeaf/>}>
+      <p style={{
+        fontFamily: "Georgia, serif", fontStyle: "italic",
+        fontSize: 13.5, lineHeight: 1.5,
+        color: TG_INK, margin: "0 0 12px", textAlign: "justify",
+      }}>Five days of lavender remain. The garden quiets before the rose returns.</p>
+
+      <div style={{
+        display: "grid", gridTemplateColumns: "repeat(5,1fr)", gap: 4,
+        marginBottom: 12,
+        borderTop: `0.5px solid ${TG_SAGE_PALE}`,
+        borderBottom: `0.5px solid ${TG_SAGE_PALE}`,
+        padding: "10px 0",
+      }}>
+        {chips.map((c) => (
+          <div key={c.n} style={{
+            display: "flex", flexDirection: "column", alignItems: "center", gap: 3,
+          }}>
+            <span style={{
+              fontFamily: "Georgia, serif", fontStyle: "italic", fontSize: 9.5,
+              color: TG_INK_MUTED, letterSpacing: "0.08em",
+            }}>{c.day}</span>
+            <span style={{
+              fontFamily: "Georgia, 'Times New Roman', serif",
+              fontSize: 18, fontWeight: 600, color: TG_INK,
+              lineHeight: 1,
+            }}>{c.n}</span>
+            <span style={{ width: 5, height: 5, borderRadius: 9999, background: TG_PHASE.luteal }}/>
+          </div>
+        ))}
+      </div>
+
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", flexWrap: "wrap", gap: 8 }}>
+        <p style={{
+          fontFamily: "Georgia, serif", fontStyle: "italic",
+          fontSize: 11, color: TG_INK_MUTED, margin: 0, letterSpacing: "0.04em",
+        }}>Bloom anticipated <strong style={{ color: TG_PHASE.menstrual, fontStyle: "normal" }}>Friday 22</strong> · ±3 days</p>
+        <span style={{
+          display: "inline-flex", alignItems: "center", gap: 5,
+          padding: "6px 14px",
+          background: TG_SAGE_DEEP, color: TG_PAPER,
+          fontFamily: "Georgia, serif", fontStyle: "italic", fontSize: 11.5,
+          fontWeight: 600, letterSpacing: "0.02em", borderRadius: 4,
+        }}>
+          <Petal4 size={8} fill={TG_PAPER_WARM}/>
+          Plan with Jess →
+        </span>
+      </div>
+    </GardenCard>
+  );
+}
+
+// ─── CYCLE: Doctor-Ready Diary ──────────────────────────────────────────────
+function TG_DoctorReadyDiaryCard() {
+  return (
+    <GardenCard title="Doctor-Ready Diary" icon={<HeaderLeaf/>}>
+      <div style={{ display: "flex", alignItems: "center", gap: 14 }}>
+        <div style={{
+          width: 44, height: 44, borderRadius: 4,
+          background: `linear-gradient(135deg, ${TG_PHASE.luteal} 0%, ${TG_SAGE_DEEP} 100%)`,
+          border: `1px solid ${TG_SAGE}`,
+          display: "flex", alignItems: "center", justifyContent: "center",
+          flexShrink: 0,
+        }}>
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke={TG_PAPER} strokeWidth="1.6">
+            <rect x="3" y="6" width="18" height="14" rx="2"/>
+            <path d="M8 6V4a2 2 0 012-2h4a2 2 0 012 2v2M12 11v6M9 14h6"/>
+          </svg>
+        </div>
+        <div style={{ flex: 1 }}>
+          <p style={{
+            fontFamily: "Georgia, serif", fontStyle: "italic",
+            fontSize: 15.5, color: TG_INK, margin: 0, lineHeight: 1.32,
+          }}>Six days to Period · Progesterone <span style={{ color: TG_PHASE.ovulatory, fontWeight: 700 }}>↑</span></p>
+          <p style={{
+            fontFamily: "Georgia, serif", fontSize: 11.5,
+            color: TG_INK_MUTED, margin: "3px 0 0", fontStyle: "italic",
+          }}>cramps, sleep, mood logged · twenty-eight days</p>
+        </div>
+        <span style={{
+          fontFamily: "Georgia, serif", fontStyle: "italic", fontSize: 12,
+          fontWeight: 600, color: TG_SAGE_DEEP,
+          whiteSpace: "nowrap",
+        }}>open →</span>
+      </div>
+    </GardenCard>
+  );
+}
+
+// ─── CYCLE: Next Cycle ──────────────────────────────────────────────────────
+function TG_PlanMyNextCycleCTA() {
+  return (
+    <GardenCard title="The Next Cycle · With Jess" icon={<HeaderLeaf/>}>
+      <p style={{
+        fontFamily: "Georgia, serif", fontStyle: "italic",
+        fontSize: 17, lineHeight: 1.4, color: TG_INK,
+        margin: "0 0 8px", textAlign: "center",
+      }}>"Save the seeds; sow what worked."</p>
+      <p style={{
+        fontFamily: "Georgia, serif", fontSize: 12.5, lineHeight: 1.6,
+        color: TG_INK_BODY, margin: "0 0 14px", textAlign: "justify",
+      }}>A short walk-through of anchors to keep, things to soften, and one nudge for the phase that often feels hardest.</p>
+      <div style={{ textAlign: "center" }}>
+        <span style={{
+          display: "inline-flex", alignItems: "center", gap: 6,
+          padding: "9px 18px",
+          background: TG_SAGE_DEEP, color: TG_PAPER,
+          fontFamily: "Georgia, serif", fontStyle: "italic", fontSize: 13, fontWeight: 600,
+          border: `1px solid ${TG_SAGE}`, borderRadius: 4,
+          letterSpacing: "0.02em",
+        }}>
+          <Petal4 size={10} fill={TG_PAPER_WARM}/>
+          Tend the next garden →
+        </span>
+      </div>
+    </GardenCard>
+  );
+}
+
+// ─── Today + Cycle views ────────────────────────────────────────────────────
+function TG_TodayView() {
+  return (
+    <div style={{ padding: "18px 16px 90px", position: "relative", zIndex: 1 }}>
+      <TG_JessNarrativeHero/>
+      <TG_PillarsDeck/>
+      <TG_DailyStoryReel/>
+      <TG_IntentionCard/>
+      <TG_MorningStack/>
+    </div>
+  );
+}
+
+function TG_CycleView() {
+  return (
+    <div style={{ padding: "18px 16px 90px", position: "relative", zIndex: 1 }}>
+      <TG_MonthRibbon/>
+      <TG_SavedRhythmsCarousel/>
+      <TG_WeekAheadCard/>
+      <TG_DoctorReadyDiaryCard/>
+      <TG_PlanMyNextCycleCTA/>
+    </div>
+  );
+}
+
+// ─── Demo container — botanical white + leaf pattern ───────────────────────
+function TheGardenDemo() {
+  const [view, setView] = useState("today");
+  return (
+    <div style={{
+      width: 380, maxWidth: "100%", height: 820,
+      color: TG_INK, borderRadius: 32, overflow: "hidden",
+      margin: "0 auto", position: "relative",
+      boxShadow: "0 16px 40px rgba(74,104,64,0.18), 0 0 0 1px rgba(107,143,90,0.16)",
+      fontFamily: "Georgia, 'Times New Roman', serif",
+      display: "flex", flexDirection: "column",
+      background: TG_BG,
+    }}>
+      <GardenBackdrop/>
+      <div style={{ position: "relative", zIndex: 1, display: "flex", flexDirection: "column", height: "100%" }}>
+        <TG_StickyHeader view={view} setView={setView}/>
+        <div style={{ flex: 1, overflowY: "auto", scrollbarWidth: "thin" }}>
+          {view === "today" ? <TG_TodayView/> : <TG_CycleView/>}
+        </div>
+        <TG_BottomNav/>
+      </div>
+    </div>
+  );
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
 // /Ideas page shell
 // ═══════════════════════════════════════════════════════════════════════════
 
@@ -2929,10 +4024,10 @@ const DESIGNS = [
   },
   {
     name: "The Garden",
-    tagline: "Each phase is a flower's life-stage. Lavender setting seed. Sage borders. Botanical ink.",
-    body: "Soft botanical white #F8F6F0. Same Planner layout, restyled as a botanical journal. JessNarrativeHero gets an ink illustration of the current phase flower (luteal = lavender). Sage card borders #8AA86A. MonthRibbon rows have botanical line-drawing texture at 10% opacity behind the phase colour. Pillars have leaf/petal/stem watermarks behind the stats.",
-    Comp: null,
-    status: "coming",
+    tagline: "A botanical specimen book of your cycle. Lavender hero, pressed-flower phase rows, sage everything.",
+    body: "Full botanical transformation. Botanical white #F8F6F0 with a faint repeating ink-leaf pattern at 4% opacity behind every component. All living phase colours — burgundy rose #8B1A2E, apple-blossom blush #D4847A, sunflower gold #C8A020, lavender #7B5E9A, seed-pod #3A2A18. Sage green #6B8F5A is the accent throughout (replacing rose). JessNarrativeHero is a 40/60 split: left side a detailed hand-drawn lavender sprig SVG with root, lance-shaped leaves, and seven levels of floret clusters, labelled 'Lavandula angustifolia' in italic; right side a sage 'Day 22 · Luteal' kicker + italic headline 'The lavender is setting seed.' + body. PillarsDeck tiles each carry a tiny ink corner icon (moon+stars / sun / cloud / water-drop / oak-leaf / crescent+dot) with stat values in lavender and italic sage definitions below. MonthRibbon is a pressed-flower specimen collection — five phase rows each with a tiny botanical SVG on the left (rose, cherry blossom, sunflower, lavender, bare branch), italic 'Luteal · Lavender'-style row title, watercolour wash bg, day pills, a herbarium-leaf silhouette on the right; today gets a deep-sage filled pill with a 4-petal flower above it. DailyStoryReel cards are botanical recipe cards with header plant illustrations and nursery-style 'Phase: Luteal' tags. Every Cycle card has a deep-sage header bar with a tiny white botanical sprig. Bottom nav goes white with a deep-sage Jess FAB overlaid with a 4-petal flower.",
+    Comp: TheGardenDemo,
+    status: "ready",
   },
 ];
 
