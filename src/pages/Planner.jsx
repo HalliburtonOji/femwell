@@ -12,6 +12,7 @@ import DoctorReadyDiaryCard from "@/components/planner/cycle/DoctorReadyDiaryCar
 import MonthRibbon from "@/components/planner/cycle/MonthRibbon";
 import SymptomRibbon from "@/components/planner/SymptomRibbon";
 import HrtLogCard from "@/components/planner/cycle/HrtLogCard";
+import GpExportButton from "@/components/planner/cycle/GpExportButton";
 import QuietModeBanner from "@/components/planner/cycle/QuietModeBanner";
 import SavedRhythmsCarousel from "@/components/planner/cycle/SavedRhythmsCarousel";
 import WhatsUnfinishedCard from "@/components/planner/cycle/WhatsUnfinishedCard";
@@ -706,6 +707,8 @@ export default function Planner() {
             <DoctorReadyDiaryCard user={user} profile={profile} plannerConfig={plannerConfig} />
           </div>
           <AstraSidecar profile={profile} />
+          {/* STEP 7: GP-ready PDF export — peri / reproductive / postpartum. */}
+          <GpExportButton profile={profile} plannerConfig={plannerConfig} />
           <PlanMyNextCycleCTA />
         </div>
       )}
