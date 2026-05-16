@@ -1032,6 +1032,936 @@ function LeMenuPhaseSunDemo() {
 }
 
 // ═══════════════════════════════════════════════════════════════════════════
+// DESIGN 2 — The Interior (Warm Room) reskin of the real Planner
+// ═══════════════════════════════════════════════════════════════════════════
+
+const TI = {
+  // Walnut-panelled room at dusk
+  bg:           "#1E1005",          // app bg (dark walnut)
+  bgDeep:       "#160C04",          // header bg
+  bgDark:       "#0E0802",          // bottom nav bg
+  parchment:    "#F5E8CC",          // card bg (candlelight paper)
+  ink:          "#2A1A08",          // primary text on parchment
+  inkMute:      "#5A3A18",          // body on parchment
+  brass:        "#C8903A",          // accent
+  brassDeep:    "#8B6A3A",          // aged brass / secondary on parchment
+  cream:        "#F0E0B0",          // moonlight cream highlights on dark
+  creamMute:    "rgba(245,232,204,0.6)",
+  hairline:     "rgba(200,144,58,0.35)",
+  hairlineDark: "rgba(245,232,204,0.16)",
+
+  // Wallpaper-band phase colours — dark, rich
+  phase: {
+    menstrual:  "#2A0A18",   // cold night crimson
+    follicular: "#4A2010",   // warm ember
+    ovulatory:  "#5A3A08",   // old gold dusk
+    luteal:     "#3A1A5A",   // deep violet evening
+    predicted:  "#1A0A2A",   // midnight
+    off:        "#0E0802",
+  },
+  phaseNice: {
+    menstrual:  "Period",
+    follicular: "Follicular",
+    ovulatory:  "Ovulatory",
+    luteal:     "Luteal",
+    predicted:  "Predicted",
+  },
+};
+
+// ─── Room scene SVG — lamp on left, bookshelf centre, window+moon right ───
+function RoomScene({ width = 320 }) {
+  return (
+    <svg viewBox="0 0 320 70" width={width} height={(70 * width) / 320} aria-hidden="true" style={{ display: "block" }}>
+      <defs>
+        <radialGradient id="ti-lamp-glow" cx="50%" cy="50%" r="50%">
+          <stop offset="0%"   stopColor="#FBD78A" stopOpacity="0.85"/>
+          <stop offset="60%"  stopColor="#F0A040" stopOpacity="0.18"/>
+          <stop offset="100%" stopColor="#FBD78A" stopOpacity="0"/>
+        </radialGradient>
+        <linearGradient id="ti-shelf" x1="0%" y1="0%" x2="0%" y2="100%">
+          <stop offset="0%"   stopColor="#3A2010"/>
+          <stop offset="100%" stopColor="#1A0E04"/>
+        </linearGradient>
+      </defs>
+      {/* Wall — dark panel */}
+      <rect x="0" y="0" width="320" height="70" fill="#1A0E04"/>
+      {/* Wood grain stripes */}
+      <line x1="0" y1="22" x2="320" y2="22" stroke="#0E0802" strokeWidth="0.6" opacity="0.7"/>
+      <line x1="0" y1="48" x2="320" y2="48" stroke="#0E0802" strokeWidth="0.6" opacity="0.7"/>
+      {/* Floor line */}
+      <line x1="0" y1="64" x2="320" y2="64" stroke="#3A2010" strokeWidth="1"/>
+
+      {/* === Lamp === */}
+      <circle cx="50" cy="38" r="28" fill="url(#ti-lamp-glow)"/>
+      <path d="M 34,46 L 66,46 L 60,30 L 40,30 Z" fill="#C8903A"/>
+      <path d="M 34,46 L 66,46 L 60,30 L 40,30 Z" fill="#FBD78A" opacity="0.18"/>
+      <rect x="46" y="46" width="8" height="14" fill="#3A2010"/>
+      <ellipse cx="50" cy="62" rx="12" ry="2.2" fill="#3A2010"/>
+      <circle cx="50" cy="38" r="6" fill="#FBD78A"/>
+
+      {/* === Bookshelf === */}
+      <rect x="116" y="14" width="92" height="50" fill="url(#ti-shelf)" stroke="#4A2010" strokeWidth="0.6"/>
+      <line x1="116" y1="40" x2="208" y2="40" stroke="#4A2010" strokeWidth="0.8"/>
+      <line x1="116" y1="64" x2="208" y2="64" stroke="#4A2010" strokeWidth="0.8"/>
+      {/* Top row spines */}
+      {Array.from({ length: 8 }).map((_, i) => {
+        const colours = ["#7A2818","#3A1A0A","#5A3A08","#7A4A18","#4A2010","#8B5A28","#3A1A18","#6B3818"];
+        const offset = (i % 3);
+        return (
+          <rect key={`s1-${i}`} x={119 + i * 11} y={16 + offset} width="10" height={23 - offset} fill={colours[i]}/>
+        );
+      })}
+      {/* Bottom row spines */}
+      {Array.from({ length: 8 }).map((_, i) => {
+        const colours = ["#5A3A08","#7A2818","#3A1A0A","#7A4A18","#4A2010","#8B5A28","#3A1A18","#6B3818"];
+        const offset = ((i + 1) % 3);
+        return (
+          <rect key={`s2-${i}`} x={119 + i * 11} y={42 + offset} width="10" height={21 - offset} fill={colours[i]}/>
+        );
+      })}
+      {/* Small candle on top of shelf */}
+      <rect x="156" y="9" width="4" height="6" fill="#F0E0B0"/>
+      <ellipse cx="158" cy="9" rx="1.6" ry="3" fill="#FBD78A"/>
+
+      {/* === Window === */}
+      <rect x="232" y="10" width="74" height="48" fill="#0A0218" stroke="#C8903A" strokeWidth="1.5"/>
+      {/* Mullions */}
+      <line x1="269" y1="10" x2="269" y2="58" stroke="#C8903A" strokeWidth="0.8" opacity="0.55"/>
+      <line x1="232" y1="34" x2="306" y2="34" stroke="#C8903A" strokeWidth="0.8" opacity="0.55"/>
+      {/* Moon crescent */}
+      <circle cx="252" cy="22" r="7" fill="#F0E0B0"/>
+      <circle cx="249" cy="20" r="5.5" fill="#0A0218"/>
+      {/* Stars */}
+      <circle cx="286" cy="18" r="0.9" fill="#F0E0B0" opacity="0.8"/>
+      <circle cx="294" cy="28" r="0.8" fill="#F0E0B0" opacity="0.6"/>
+      <circle cx="280" cy="44" r="0.7" fill="#F0E0B0" opacity="0.55"/>
+      <circle cx="296" cy="50" r="0.6" fill="#F0E0B0" opacity="0.5"/>
+      {/* Sill */}
+      <rect x="230" y="58" width="78" height="3" fill="#C8903A" opacity="0.65"/>
+    </svg>
+  );
+}
+
+// ─── Sticky header ─────────────────────────────────────────────────────────
+function TI_StickyHeader({ view, setView }) {
+  return (
+    <div style={{
+      position: "sticky", top: 0, zIndex: 5,
+      padding: "20px 18px 12px",
+      background: TI.bgDeep,
+      backdropFilter: "blur(20px)",
+      borderBottom: `1px solid ${TI.hairlineDark}`,
+    }}>
+      <p style={{
+        fontSize: 9.5, fontWeight: 700, textTransform: "uppercase",
+        letterSpacing: "0.18em", color: TI.brassDeep,
+        fontFamily: "'Inter', sans-serif", margin: 0,
+      }}>
+        {view === "cycle" ? "Your cycle" : "Today · Saturday 16 May"}
+      </p>
+      <div style={{ display: "flex", alignItems: "baseline", gap: 10, margin: "4px 0 4px" }}>
+        <h1 style={{
+          fontSize: 30, fontWeight: 500, fontFamily: "'Fraunces', Georgia, serif",
+          color: TI.cream, letterSpacing: "-0.018em", margin: 0,
+        }}>
+          {view === "cycle" ? "Cycle" : "Today"}
+        </h1>
+        <span style={{
+          display: "inline-flex", alignItems: "center", gap: 5,
+          padding: "3px 9px", borderRadius: 9999,
+          background: "rgba(245,232,204,0.06)", border: `0.5px solid ${TI.hairline}`,
+          fontFamily: "'Inter', sans-serif", fontSize: 10.5,
+          fontWeight: 600, color: TI.brass, letterSpacing: "0.04em",
+        }}>
+          <span style={{ width: 6, height: 6, borderRadius: 9999, background: TI.brass }}/>
+          84% · 4 cycles
+        </span>
+      </div>
+      <p style={{
+        fontSize: 12, color: TI.creamMute,
+        fontFamily: "'Inter', sans-serif", margin: "0 0 4px",
+      }}>
+        Day 22 · <span style={{ color: TI.brass, fontWeight: 700 }}>Luteal</span>
+      </p>
+      <p style={{
+        fontSize: 11.5, fontStyle: "italic", color: TI.brassDeep,
+        fontFamily: "'Inter', sans-serif", margin: "0 0 10px", lineHeight: 1.45,
+      }}>
+        {view === "cycle" ? MOCK_CYCLE_CRUMB : MOCK_TODAY_CRUMB}
+      </p>
+
+      <div style={{
+        display: "inline-flex", gap: 4, padding: 4, borderRadius: 9999,
+        border: `0.5px solid ${TI.hairline}`, background: "rgba(14,8,2,0.6)",
+      }}>
+        {["today", "cycle"].map((id) => {
+          const active = id === view;
+          return (
+            <button
+              key={id} onClick={() => setView(id)}
+              style={{
+                fontFamily: "'Inter', sans-serif", fontSize: 12,
+                letterSpacing: "0.04em",
+                padding: "7px 22px", borderRadius: 9999, border: "none",
+                cursor: "pointer", minWidth: 80, textAlign: "center",
+                background: active ? TI.brass : "transparent",
+                color: active ? TI.ink : TI.cream,
+                fontWeight: active ? 700 : 600,
+                transition: "background 140ms, color 140ms",
+              }}
+            >
+              {id === "today" ? "Today" : "Cycle"}
+            </button>
+          );
+        })}
+      </div>
+
+      {view === "today" && (
+        <div style={{ display: "flex", alignItems: "center", gap: 6, marginTop: 14 }}>
+          <button style={tiChevSmall}>‹</button>
+          <div style={{ display: "flex", gap: 4, flex: 1, justifyContent: "space-between" }}>
+            {[11, 12, 13, 14, 15, 16, 17].map((d, i) => {
+              const sel = d === 16;
+              return (
+                <button key={i} style={{
+                  display: "flex", flexDirection: "column", alignItems: "center",
+                  gap: 2, padding: "8px 4px", borderRadius: 11, flex: 1,
+                  border: "none", cursor: "pointer",
+                  background: sel ? TI.brass : "transparent",
+                  transition: "background 120ms",
+                }}>
+                  <span style={{
+                    fontSize: 9, fontWeight: 600, fontFamily: "'Inter', sans-serif",
+                    color: sel ? TI.ink : TI.brassDeep,
+                    textTransform: "uppercase", letterSpacing: "0.08em",
+                  }}>{MOCK_WEEKDAYS[i].slice(0, 3)}</span>
+                  <span style={{
+                    fontSize: 15, fontWeight: 600, fontFamily: "'Fraunces', Georgia, serif",
+                    color: sel ? TI.ink : TI.cream,
+                  }}>{d}</span>
+                  <span style={{
+                    width: 5, height: 5, borderRadius: 9999,
+                    background: TI.brass, opacity: sel ? 1 : 0.55,
+                  }}/>
+                </button>
+              );
+            })}
+          </div>
+          <button style={tiChevSmall}>›</button>
+        </div>
+      )}
+    </div>
+  );
+}
+
+const tiChevSmall = {
+  width: 26, height: 26, borderRadius: 9999,
+  border: `0.5px solid ${TI.hairline}`,
+  background: "transparent", color: TI.cream,
+  fontFamily: "'Fraunces', serif", fontSize: 16, lineHeight: 1,
+  cursor: "pointer", padding: 0, flexShrink: 0,
+};
+
+// ─── Bottom nav (dark walnut) ───────────────────────────────────────────────
+function TI_BottomNav() {
+  const slots = [
+    { kind: "today",  label: "Today" },
+    { kind: "book",   label: "Lifestyle" },
+    { kind: "spark",  label: "Jess", fab: true },
+    { kind: "user",   label: "Profile" },
+    { kind: "menu",   label: "Menu" },
+  ];
+  const Icon = ({ kind, on }) => {
+    const c = on ? TI.ink : TI.brassDeep;
+    if (kind === "today") return <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke={c} strokeWidth="1.6"><circle cx="12" cy="12" r="4"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3M4.5 4.5l2 2M17.5 17.5l2 2M4.5 19.5l2-2M17.5 6.5l2-2"/></svg>;
+    if (kind === "book") return <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke={c} strokeWidth="1.6"><path d="M4 4h7a3 3 0 013 3v13M20 4h-7a3 3 0 00-3 3v13M4 4v15h6M20 4v15h-6"/></svg>;
+    if (kind === "spark") return <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke={TI.bg} strokeWidth="1.7"><path d="M12 3l1.6 4.4L18 9l-4.4 1.6L12 15l-1.6-4.4L6 9l4.4-1.6L12 3z"/></svg>;
+    if (kind === "user") return <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke={c} strokeWidth="1.6"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4.4 3.6-8 8-8s8 3.6 8 8"/></svg>;
+    return <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke={c} strokeWidth="1.8" strokeLinecap="round"><line x1="4" y1="7" x2="20" y2="7"/><line x1="4" y1="12" x2="20" y2="12"/><line x1="4" y1="17" x2="20" y2="17"/></svg>;
+  };
+  return (
+    <div style={{
+      position: "absolute", left: 0, right: 0, bottom: 0, height: 72,
+      background: TI.bgDark, borderTop: `0.5px solid ${TI.hairline}`,
+      display: "grid", gridTemplateColumns: "repeat(5,1fr)", alignItems: "center",
+    }}>
+      {slots.map((s) => {
+        if (s.fab) {
+          return (
+            <div key={s.label} style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 3 }}>
+              <div style={{
+                width: 50, height: 50, borderRadius: 9999,
+                background: TI.brass,
+                display: "flex", alignItems: "center", justifyContent: "center",
+                marginTop: -16,
+                boxShadow: `0 6px 18px ${TI.brass}66, 0 0 24px ${TI.brass}33`,
+              }}>
+                <Icon kind={s.kind}/>
+              </div>
+              <span style={{ fontSize: 10, color: TI.brassDeep, fontFamily: "'Inter', sans-serif", fontWeight: 600 }}>{s.label}</span>
+            </div>
+          );
+        }
+        return (
+          <div key={s.label} style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 3 }}>
+            <Icon kind={s.kind}/>
+            <span style={{ fontSize: 10, color: TI.brassDeep, fontFamily: "'Inter', sans-serif", fontWeight: 500 }}>{s.label}</span>
+          </div>
+        );
+      })}
+    </div>
+  );
+}
+
+// ─── Reusable card shell with dark header strip ─────────────────────────────
+function TI_Card({ header, label, children, accent }) {
+  return (
+    <section style={{
+      background: TI.parchment,
+      border: `1px solid ${TI.brass}`,
+      borderTopWidth: accent ? 0 : 1,
+      borderRadius: 8,
+      overflow: "hidden",
+      marginBottom: 14,
+      boxShadow: "0 6px 18px rgba(0,0,0,0.4), 0 1px 0 rgba(200,144,58,0.18)",
+    }}>
+      {accent && <div style={{ height: 3, background: TI.brass }}/>}
+      {header && (
+        <div style={{
+          background: TI.ink, color: TI.brass,
+          padding: "8px 14px",
+          display: "flex", justifyContent: "space-between", alignItems: "center",
+          gap: 8, flexWrap: "wrap",
+        }}>
+          <span style={{
+            fontFamily: "'Inter', sans-serif", fontSize: 9.5,
+            fontWeight: 700, letterSpacing: "0.22em", textTransform: "uppercase",
+          }}>{header}</span>
+          {label && (
+            <span style={{
+              fontFamily: "'Inter', sans-serif", fontSize: 9,
+              fontWeight: 600, letterSpacing: "0.16em", textTransform: "uppercase",
+              color: TI.cream, opacity: 0.7,
+            }}>{label}</span>
+          )}
+        </div>
+      )}
+      <div style={{ padding: "13px 14px" }}>{children}</div>
+    </section>
+  );
+}
+
+// ─── TODAY: JessNarrativeHero (with Room Scene) ─────────────────────────────
+function TI_JessNarrativeHero() {
+  return (
+    <section style={{
+      background: TI.parchment,
+      border: `1px solid ${TI.brass}`,
+      borderRadius: 8,
+      overflow: "hidden",
+      marginBottom: 14,
+      boxShadow: "0 8px 22px rgba(0,0,0,0.45), 0 0 0 1px rgba(245,232,204,0.06)",
+    }}>
+      {/* Room scene at top */}
+      <div style={{ background: "#1A0E04", borderBottom: `1px solid ${TI.brass}` }}>
+        <RoomScene width={348}/>
+      </div>
+      {/* Body */}
+      <div style={{ padding: "14px 16px 16px" }}>
+        <p style={{
+          fontFamily: "'Fraunces', Georgia, serif",
+          fontStyle: "italic", fontSize: 16, fontWeight: 500,
+          color: TI.ink, lineHeight: 1.32, margin: "0 0 8px",
+          letterSpacing: "-0.005em",
+        }}>Day 22 · Luteal · <span style={{ color: TI.brass, fontStyle: "normal" }}>The lamp is on.</span></p>
+        <p style={{
+          fontFamily: "'Fraunces', Georgia, serif",
+          fontSize: 14, lineHeight: 1.55,
+          color: TI.inkMute, margin: "0 0 10px",
+        }}>{MOCK_HERO.body}</p>
+        <div style={{
+          display: "inline-flex", alignItems: "center", gap: 5,
+          fontFamily: "'Inter', sans-serif", fontSize: 11,
+          fontWeight: 600, color: TI.brassDeep, letterSpacing: "0.02em",
+        }}>
+          <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><path d="M12 3l1.6 4.4L18 9l-4.4 1.6L12 15l-1.6-4.4L6 9l4.4-1.6L12 3z"/></svg>
+          From Jess · this week
+        </div>
+      </div>
+    </section>
+  );
+}
+
+// ─── TODAY: PillarsDeck (room-object labels) ────────────────────────────────
+function TI_PillarsDeck() {
+  const tiles = [
+    { key: "sleep",     label: "SLEEP",     room: "the bed",    value: "7.2",     unit: "hrs",  delta: "+4% vs week",  cls: "up" },
+    { key: "energy",    label: "ENERGY",    room: "the lamp",   value: "68",      unit: "%",    delta: "-8% vs week",  cls: "down" },
+    { key: "mood",      label: "MOOD",      room: "the window", value: "60",      unit: "%",    delta: "steady this week", cls: "flat" },
+    { key: "hydration", label: "HYDRATION", room: "the kettle", value: "6",       unit: "/ 8",  delta: "-2 vs week",   cls: "down" },
+    { key: "movement",  label: "MOVEMENT",  room: "the door",   value: "20",      unit: "min",  delta: "steady this week", cls: "flat" },
+    { key: "cycle",     label: "CYCLE",     room: "the clock",  value: "Day 22",  unit: "",     delta: "Luteal",       cls: "flat" },
+  ];
+  const colourFor = (cls) => cls === "up" ? "#5F8B72" : cls === "down" ? "#8B3A28" : TI.brassDeep;
+  return (
+    <section style={{
+      display: "grid", gridTemplateColumns: "repeat(2,1fr)", gap: 10, marginBottom: 14,
+    }}>
+      {tiles.map((t) => (
+        <div key={t.key} style={{
+          position: "relative",
+          display: "flex", flexDirection: "column", alignItems: "flex-start",
+          justifyContent: "space-between", gap: 4,
+          padding: "12px 12px 10px", borderRadius: 8,
+          background: TI.parchment, border: `1px solid ${TI.brass}`,
+          boxShadow: "0 3px 10px rgba(0,0,0,0.35)",
+          minHeight: 96,
+        }}>
+          {/* Room-object museum label */}
+          <span style={{
+            position: "absolute", top: 9, right: 10,
+            fontFamily: "'Fraunces', Georgia, serif", fontStyle: "italic",
+            fontSize: 9.5, color: TI.brassDeep, letterSpacing: "0.02em",
+          }}>{t.room}</span>
+          <span style={{
+            fontSize: 9.5, fontWeight: 700, textTransform: "uppercase",
+            letterSpacing: "0.12em", color: TI.brassDeep,
+            fontFamily: "'Inter', sans-serif",
+          }}>{t.label}</span>
+          <span style={{
+            fontFamily: "'Fraunces', Georgia, serif",
+            fontSize: 22, fontWeight: 500, color: TI.ink,
+            letterSpacing: "-0.015em", lineHeight: 1.1,
+          }}>
+            {t.value}
+            {t.unit && <span style={{ fontSize: 12, fontWeight: 400, color: TI.brassDeep, marginLeft: 2 }}> {t.unit}</span>}
+          </span>
+          <span style={{
+            fontSize: 11, fontFamily: "'Inter', sans-serif", fontWeight: 500,
+            color: colourFor(t.cls),
+            display: "inline-flex", alignItems: "center", gap: 3,
+          }}>
+            {t.cls === "up" && <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2"><path d="M12 19V5M5 12l7-7 7 7"/></svg>}
+            {t.cls === "down" && <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2"><path d="M12 5v14M19 12l-7 7-7-7"/></svg>}
+            {t.delta}
+          </span>
+        </div>
+      ))}
+    </section>
+  );
+}
+
+// ─── TODAY: DailyStoryReel ─────────────────────────────────────────────────
+function TI_DailyStoryReel() {
+  return (
+    <section style={{ marginBottom: 14 }}>
+      <p style={{
+        fontSize: 10, fontWeight: 700, textTransform: "uppercase",
+        letterSpacing: "0.18em", color: TI.brass,
+        fontFamily: "'Inter', sans-serif", margin: "0 0 8px",
+      }}>For you today</p>
+      <div style={{
+        display: "flex", gap: 12, overflowX: "auto",
+        paddingBottom: 4, scrollbarWidth: "none",
+      }} className="fw-no-scrollbar">
+        {MOCK_STORY_CARDS.map((card, i) => (
+          <div key={i} style={{
+            flex: "0 0 220px", height: 304, borderRadius: 8,
+            border: `1px solid ${TI.brass}`, overflow: "hidden",
+            background: TI.parchment,
+            boxShadow: "0 3px 12px rgba(0,0,0,0.4)",
+            display: "flex", flexDirection: "column",
+          }}>
+            <div style={{
+              position: "relative", width: "100%", height: 150,
+              background: `linear-gradient(135deg, ${TI.phase.luteal} 0%, ${TI.phase.predicted} 100%)`,
+            }}>
+              {card.kind === "daily-story" && (
+                <span style={{
+                  position: "absolute", top: 10, left: 10,
+                  padding: "4px 10px", borderRadius: 9999,
+                  background: TI.ink, color: TI.brass,
+                  fontFamily: "'Inter', sans-serif", fontSize: 9.5,
+                  fontWeight: 700, letterSpacing: "0.18em",
+                  border: `0.5px solid ${TI.brass}`,
+                }}>DAILY STORY</span>
+              )}
+              {/* Lamp glow corner */}
+              <div style={{
+                position: "absolute", bottom: -10, right: -10,
+                width: 40, height: 40, borderRadius: "50%",
+                background: `radial-gradient(circle, ${TI.brass}66 0%, transparent 70%)`,
+              }}/>
+            </div>
+            <div style={{
+              padding: "12px 14px", flex: 1, display: "flex",
+              flexDirection: "column", gap: 4, background: TI.parchment,
+              borderTop: `1px solid ${TI.brass}`,
+            }}>
+              <p style={{
+                fontFamily: "'Fraunces', Georgia, serif", fontStyle: "italic",
+                fontSize: 9.5, fontWeight: 600,
+                letterSpacing: "0.10em", color: TI.brass, margin: 0,
+                textTransform: "uppercase",
+              }}>{card.eyebrow}</p>
+              <h3 style={{
+                fontFamily: "'Fraunces', Georgia, serif",
+                fontSize: 16, fontWeight: 500, lineHeight: 1.25,
+                color: TI.ink, letterSpacing: "-0.012em",
+                margin: 0,
+                display: "-webkit-box", WebkitLineClamp: 2,
+                WebkitBoxOrient: "vertical", overflow: "hidden",
+              }}>{card.title}</h3>
+              <p style={{
+                fontFamily: "'Inter', sans-serif", fontSize: 11,
+                color: TI.brassDeep, margin: "auto 0 0",
+              }}>{card.meta}</p>
+            </div>
+          </div>
+        ))}
+      </div>
+      <style>{`.fw-no-scrollbar::-webkit-scrollbar{display:none}.fw-no-scrollbar{scrollbar-width:none}`}</style>
+    </section>
+  );
+}
+
+// ─── TODAY: Intention ───────────────────────────────────────────────────────
+function TI_IntentionCard() {
+  return (
+    <TI_Card header="Today · signed by Jess" label="Luteal">
+      <p style={{
+        fontFamily: "'Fraunces', Georgia, serif", fontStyle: "italic",
+        fontSize: 17, color: TI.ink, fontWeight: 500,
+        lineHeight: 1.32, margin: "0 0 6px",
+      }}>Close one loop today; let the rest wait.</p>
+      <p style={{
+        fontFamily: "'Inter', sans-serif", fontSize: 12.5,
+        color: TI.inkMute, lineHeight: 1.5, margin: 0,
+      }}>Pick the writing pass that's been waiting two weeks — one focused half-hour, then walk away.</p>
+    </TI_Card>
+  );
+}
+
+// ─── TODAY: Morning stack ──────────────────────────────────────────────────
+function TI_MorningStack() {
+  const rituals = [
+    { name: "Warm grains breakfast", done: true },
+    { name: "Slow walk before noon", done: false },
+    { name: "Second cup of tea",     done: false },
+  ];
+  return (
+    <TI_Card header="Morning stack" label="1 / 3">
+      {rituals.map((r, i) => (
+        <div key={r.name} style={{
+          display: "flex", alignItems: "center", gap: 12,
+          padding: "10px 0",
+          borderTop: i === 0 ? "none" : `0.5px solid ${TI.hairline}`,
+        }}>
+          <div style={{
+            width: 22, height: 22, borderRadius: 9999,
+            border: `1.5px solid ${r.done ? TI.brass : TI.brassDeep}`,
+            background: r.done ? TI.brass : "transparent",
+            display: "flex", alignItems: "center", justifyContent: "center",
+          }}>
+            {r.done && <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke={TI.ink} strokeWidth="3"><path d="M20 6 9 17l-5-5"/></svg>}
+          </div>
+          <span style={{
+            fontFamily: "'Inter', sans-serif", fontSize: 13,
+            fontWeight: 600,
+            color: r.done ? TI.brassDeep : TI.ink,
+            textDecoration: r.done ? "line-through" : "none",
+          }}>{r.name}</span>
+        </div>
+      ))}
+    </TI_Card>
+  );
+}
+
+// ─── CYCLE: MonthRibbon (wallpaper bands) ──────────────────────────────────
+function TI_MonthRibbon() {
+  const weeks = mockMonthWeeks();
+  const ribbonBg = (row) => {
+    const stops = row.map((c, i) => {
+      const center = ((i * 100) / 7) + (100 / 14);
+      return `${TI.phase[c.phase]} ${center.toFixed(2)}%`;
+    });
+    return `linear-gradient(to right, ${TI.phase[row[0].phase]} 0%, ${stops.join(", ")}, ${TI.phase[row[6].phase]} 100%)`;
+  };
+
+  return (
+    <section style={{
+      background: TI.parchment,
+      border: `1px solid ${TI.brass}`,
+      borderRadius: 8,
+      overflow: "hidden",
+      marginBottom: 16,
+      boxShadow: "0 6px 18px rgba(0,0,0,0.42)",
+    }}>
+      {/* Header strip */}
+      <div style={{
+        background: TI.ink, color: TI.brass,
+        padding: "10px 14px",
+        display: "flex", justifyContent: "space-between", alignItems: "baseline",
+      }}>
+        <div>
+          <p style={{
+            fontFamily: "'Inter', sans-serif", fontSize: 9.5,
+            fontWeight: 700, letterSpacing: "0.22em",
+            textTransform: "uppercase", color: TI.brass, margin: 0,
+          }}>The month</p>
+          <p style={{
+            fontFamily: "'Fraunces', Georgia, serif", fontSize: 18,
+            fontWeight: 500, color: TI.cream,
+            letterSpacing: "-0.01em", margin: "2px 0 0",
+          }}>May 2026</p>
+        </div>
+        <div style={{ display: "flex", gap: 4 }}>
+          <button style={tiChevHeader}>‹</button>
+          <button style={tiChevHeader}>›</button>
+        </div>
+      </div>
+
+      {/* Body */}
+      <div style={{ padding: "12px 12px 14px" }}>
+        {/* Weekday row */}
+        <div style={{
+          display: "grid", gridTemplateColumns: "repeat(7,1fr)", gap: 4,
+          padding: "0 2px", marginBottom: 6,
+        }}>
+          {["M","T","W","T","F","S","S"].map((d, i) => (
+            <div key={i} style={{
+              fontFamily: "'Inter', sans-serif", fontSize: 9,
+              fontWeight: 600, color: TI.brassDeep, textAlign: "center",
+              letterSpacing: "0.14em", textTransform: "uppercase",
+            }}>{d}</div>
+          ))}
+        </div>
+
+        {/* Legend */}
+        <div style={{
+          display: "flex", gap: 9, flexWrap: "wrap", marginBottom: 8,
+          padding: "0 2px",
+        }}>
+          {["menstrual", "follicular", "ovulatory", "luteal", "predicted"].map((p) => (
+            <span key={p} style={{
+              display: "inline-flex", alignItems: "center", gap: 5,
+              fontFamily: "'Inter', sans-serif", fontSize: 9,
+              fontWeight: 600, letterSpacing: "0.08em",
+              color: TI.brassDeep, textTransform: "uppercase",
+            }}>
+              <span style={{ width: 7, height: 7, borderRadius: 9999, background: TI.phase[p] }}/>
+              {TI.phaseNice[p]}
+            </span>
+          ))}
+        </div>
+
+        {/* Ribbon rows — wallpaper bands */}
+        <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+          {weeks.map((row, wi) => (
+            <div key={wi} style={{
+              position: "relative", borderRadius: 6, padding: "8px 6px",
+              display: "grid", gridTemplateColumns: "repeat(7,1fr)", gap: 2,
+              minHeight: 64, overflow: "hidden",
+              background: ribbonBg(row),
+              boxShadow: "inset 0 0 0 0.5px rgba(200,144,58,0.18), inset 0 -10px 16px rgba(0,0,0,0.18)",
+            }}>
+              {/* Wallpaper damask pattern overlay */}
+              <div style={{
+                position: "absolute", inset: 0,
+                backgroundImage: `radial-gradient(${TI.brass}1A 1px, transparent 1px)`,
+                backgroundSize: "12px 12px", pointerEvents: "none",
+              }}/>
+              {row.map((cell) => {
+                const isToday = cell.today;
+                return (
+                  <div key={`${cell.m}-${cell.d}`} style={{
+                    position: "relative",
+                    display: "flex", flexDirection: "column",
+                    justifyContent: "space-between", padding: "4px 5px 5px",
+                    borderRadius: 6, minHeight: 50, zIndex: 1,
+                    background: isToday ? TI.brass : "transparent",
+                    boxShadow: isToday ? `0 0 0 1.5px ${TI.cream}, 0 0 14px ${TI.brass}80` : "none",
+                  }}>
+                    <span style={{
+                      fontFamily: "'Inter', sans-serif",
+                      fontWeight: isToday ? 800 : 700, fontSize: 13, lineHeight: 1,
+                      color: cell.isOff
+                        ? "rgba(245,232,204,0.35)"
+                        : isToday ? TI.ink : TI.cream,
+                      textShadow: !cell.isOff && !isToday ? "0 1px 2px rgba(0,0,0,0.55)" : "none",
+                    }}>{cell.d}</span>
+                    {/* Activity bar — brass */}
+                    {!cell.isOff && (cell.d === 13 || cell.d === 16 || cell.d % 4 === 0) && (
+                      <span style={{
+                        height: 3, borderRadius: 2,
+                        width: cell.d === 16 ? "75%" : "55%",
+                        alignSelf: "flex-start", marginTop: "auto",
+                        background: isToday ? TI.ink : TI.brass,
+                        opacity: 0.85,
+                      }}/>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+          ))}
+        </div>
+      </div>
+    </section>
+  );
+}
+
+const tiChevHeader = {
+  width: 26, height: 26, borderRadius: 9999,
+  border: `0.5px solid ${TI.brass}`,
+  background: "transparent", color: TI.brass,
+  fontFamily: "'Fraunces', serif", fontSize: 14, lineHeight: 1,
+  cursor: "pointer", padding: 0,
+};
+
+// ─── CYCLE: SavedRhythmsCarousel ────────────────────────────────────────────
+function TI_SavedRhythmsCarousel() {
+  return (
+    <section style={{ marginBottom: 16 }}>
+      <div style={{
+        display: "flex", justifyContent: "space-between",
+        alignItems: "baseline", padding: "0 2px 8px",
+      }}>
+        <p style={{
+          fontFamily: "'Inter', sans-serif", fontSize: 10,
+          fontWeight: 700, letterSpacing: "0.22em", textTransform: "uppercase",
+          color: TI.brass, margin: 0,
+        }}>Your rhythms</p>
+        <span style={{
+          fontFamily: "'Inter', sans-serif", fontSize: 11,
+          fontWeight: 700, color: TI.brass, letterSpacing: "0.04em",
+        }}>browse →</span>
+      </div>
+      <div style={{
+        display: "flex", gap: 10, overflowX: "auto",
+        scrollbarWidth: "none", paddingBottom: 4,
+      }} className="fw-no-scrollbar">
+        {MOCK_RHYTHMS.map((r) => (
+          <div key={r.name} style={{
+            flex: "0 0 206px", background: TI.parchment,
+            border: `1px solid ${TI.brass}`,
+            borderRadius: 8, overflow: "hidden",
+            boxShadow: "0 3px 12px rgba(0,0,0,0.38)",
+          }}>
+            <div style={{
+              background: r.active ? TI.ink : "rgba(42,26,8,0.7)",
+              padding: "6px 12px",
+              display: "flex", justifyContent: "space-between", alignItems: "center",
+            }}>
+              <span style={{
+                fontFamily: "'Inter', sans-serif", fontSize: 9,
+                fontWeight: 700, letterSpacing: "0.22em", textTransform: "uppercase",
+                color: TI.brass,
+              }}>{r.active ? "Active" : "Saved"}</span>
+              <span style={{ width: 5, height: 5, borderRadius: 9999, background: TI.brass, opacity: r.active ? 1 : 0.4 }}/>
+            </div>
+            <div style={{ padding: "10px 12px" }}>
+              <p style={{
+                fontFamily: "'Fraunces', Georgia, serif", fontSize: 17,
+                fontWeight: 500, color: TI.ink, margin: 0,
+                lineHeight: 1.2, letterSpacing: "-0.01em",
+              }}>{r.name}</p>
+              <p style={{
+                fontFamily: "'Inter', sans-serif", fontSize: 11.5,
+                color: TI.inkMute, margin: "4px 0 0", lineHeight: 1.4,
+              }}>{r.sub}</p>
+              <div style={{
+                marginTop: 10, height: 3, borderRadius: 9999,
+                background: "rgba(42,26,8,0.20)",
+              }}>
+                <div style={{ height: "100%", width: `${r.pct}%`, background: TI.brass, borderRadius: 9999 }}/>
+              </div>
+              <p style={{
+                fontFamily: "'Inter', sans-serif", fontSize: 10,
+                color: TI.brassDeep, margin: "5px 0 0", textAlign: "right",
+                letterSpacing: "0.04em",
+              }}>{r.pct}% · this week</p>
+            </div>
+          </div>
+        ))}
+      </div>
+    </section>
+  );
+}
+
+// ─── CYCLE: WeekAheadCard ────────────────────────────────────────────────────
+function TI_WeekAheadCard() {
+  const chips = [
+    { day: "SUN", n: 17, phase: "luteal" },
+    { day: "MON", n: 18, phase: "luteal" },
+    { day: "TUE", n: 19, phase: "luteal" },
+    { day: "WED", n: 20, phase: "luteal" },
+    { day: "THU", n: 21, phase: "luteal" },
+  ];
+  return (
+    <TI_Card header="Week ahead" label="Sunday 24 May">
+      <p style={{
+        fontFamily: "'Fraunces', Georgia, serif", fontSize: 15.5,
+        lineHeight: 1.4, color: TI.ink, letterSpacing: "-0.005em",
+        margin: "0 0 12px",
+      }}>A gentle look at what's coming — your luteal window often sets the cadence.</p>
+
+      <div style={{
+        display: "grid", gridTemplateColumns: "repeat(5,1fr)", gap: 6, marginBottom: 10,
+      }}>
+        {chips.map((c) => (
+          <div key={c.n} style={{
+            display: "flex", flexDirection: "column", alignItems: "center", gap: 4,
+            padding: "8px 4px 10px", borderRadius: 6,
+            background: TI.ink, border: `0.5px solid ${TI.brass}`,
+          }}>
+            <p style={{
+              fontFamily: "'Inter', sans-serif", fontSize: 9,
+              fontWeight: 700, letterSpacing: "0.10em",
+              color: TI.brassDeep, margin: 0,
+            }}>{c.day}</p>
+            <p style={{
+              fontFamily: "'Fraunces', Georgia, serif", fontSize: 18,
+              fontWeight: 600, color: TI.cream, margin: 0, letterSpacing: "-0.01em",
+            }}>{c.n}</p>
+            <span style={{
+              width: 5, height: 5, borderRadius: 9999, background: TI.phase[c.phase],
+              boxShadow: `0 0 4px ${TI.brass}66`,
+            }}/>
+          </div>
+        ))}
+      </div>
+
+      <div style={{
+        display: "flex", alignItems: "center", justifyContent: "space-between",
+        gap: 8, marginTop: 9, paddingTop: 9,
+        borderTop: `0.5px solid ${TI.hairline}`, flexWrap: "wrap",
+      }}>
+        <p style={{
+          fontFamily: "'Inter', sans-serif", fontSize: 10.5,
+          color: TI.brassDeep, letterSpacing: "0.04em", margin: 0,
+        }}>
+          Period ETA <strong style={{ color: TI.ink }}>Fri 22</strong> · ±3d · 84% confident
+        </p>
+        <span style={{
+          display: "inline-flex", alignItems: "center",
+          padding: "5px 11px", borderRadius: 9999,
+          background: TI.brass, color: TI.ink,
+          fontFamily: "'Inter', sans-serif", fontSize: 10.5,
+          fontWeight: 700, letterSpacing: "0.04em",
+        }}>Plan with Jess →</span>
+      </div>
+    </TI_Card>
+  );
+}
+
+// ─── CYCLE: DoctorReadyDiaryCard ────────────────────────────────────────────
+function TI_DoctorReadyDiaryCard() {
+  return (
+    <TI_Card header="Doctor-ready diary" label="Last 28d">
+      <div style={{ display: "flex", alignItems: "center", gap: 14 }}>
+        <div style={{
+          width: 44, height: 44, borderRadius: "50%",
+          background: `linear-gradient(135deg, ${TI.phase.luteal} 0%, ${TI.phase.predicted} 100%)`,
+          display: "flex", alignItems: "center", justifyContent: "center",
+          flexShrink: 0, border: `1px solid ${TI.brass}`,
+        }}>
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke={TI.brass} strokeWidth="1.6">
+            <rect x="3" y="6" width="18" height="14" rx="2"/>
+            <path d="M8 6V4a2 2 0 012-2h4a2 2 0 012 2v2M12 11v6M9 14h6"/>
+          </svg>
+        </div>
+        <div style={{ flex: 1, minWidth: 0 }}>
+          <p style={{
+            fontFamily: "'Fraunces', Georgia, serif", fontSize: 15.5,
+            fontStyle: "italic", color: TI.ink, margin: 0, lineHeight: 1.32,
+          }}>6 days to Period · Progesterone <span style={{ color: "#8B5A28", fontStyle: "normal" }}>↑</span></p>
+          <p style={{
+            fontFamily: "'Inter', sans-serif", fontSize: 11.5,
+            color: TI.brassDeep, margin: "3px 0 0",
+          }}>cramps, sleep, mood logged</p>
+        </div>
+        <span style={{
+          fontFamily: "'Inter', sans-serif", fontSize: 11,
+          fontWeight: 700, color: TI.brass, letterSpacing: "0.04em",
+          whiteSpace: "nowrap",
+        }}>open →</span>
+      </div>
+    </TI_Card>
+  );
+}
+
+// ─── CYCLE: PlanMyNextCycleCTA ──────────────────────────────────────────────
+function TI_PlanMyNextCycleCTA() {
+  return (
+    <TI_Card header="Plan my next cycle" label="With Jess">
+      <p style={{
+        fontFamily: "'Fraunces', Georgia, serif", fontSize: 16,
+        lineHeight: 1.4, color: TI.ink, letterSpacing: "-0.005em",
+        margin: "0 0 6px",
+      }}>Bring this month's patterns into next month's plan.</p>
+      <p style={{
+        fontFamily: "'Inter', sans-serif", fontSize: 12.5, lineHeight: 1.55,
+        color: TI.inkMute, margin: "0 0 12px",
+      }}>A short walk-through of anchors to keep, things to soften, and one nudge for the phase that often feels hardest.</p>
+      <span style={{
+        display: "inline-flex", alignItems: "center", padding: "9px 16px",
+        borderRadius: 9999, background: TI.ink, color: TI.brass,
+        fontFamily: "'Inter', sans-serif", fontSize: 13, fontWeight: 600,
+        border: `0.5px solid ${TI.brass}`,
+      }}>Start planning →</span>
+    </TI_Card>
+  );
+}
+
+// ─── Today + Cycle views ────────────────────────────────────────────────────
+function TI_TodayView() {
+  return (
+    <div style={{ padding: "18px 16px 90px" }}>
+      <TI_JessNarrativeHero/>
+      <TI_PillarsDeck/>
+      <TI_DailyStoryReel/>
+      <TI_IntentionCard/>
+      <TI_MorningStack/>
+    </div>
+  );
+}
+
+function TI_CycleView() {
+  return (
+    <div style={{ padding: "18px 16px 90px" }}>
+      <TI_MonthRibbon/>
+      <TI_SavedRhythmsCarousel/>
+      <TI_WeekAheadCard/>
+      <TI_DoctorReadyDiaryCard/>
+      <TI_PlanMyNextCycleCTA/>
+    </div>
+  );
+}
+
+// ─── Demo container ─────────────────────────────────────────────────────────
+function TheInteriorDemo() {
+  const [view, setView] = useState("today");
+  return (
+    <div style={{
+      width: 380, maxWidth: "100%", height: 820,
+      background: TI.bg, color: TI.cream,
+      borderRadius: 32, overflow: "hidden", margin: "0 auto",
+      position: "relative",
+      boxShadow: "0 20px 50px rgba(0,0,0,0.55), 0 0 0 1px rgba(200,144,58,0.18)",
+      fontFamily: "'Inter', system-ui, sans-serif",
+      display: "flex", flexDirection: "column",
+    }}>
+      <TI_StickyHeader view={view} setView={setView}/>
+      <div style={{ flex: 1, overflowY: "auto", scrollbarWidth: "thin" }}>
+        {view === "today" ? <TI_TodayView/> : <TI_CycleView/>}
+      </div>
+      <TI_BottomNav/>
+    </div>
+  );
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
 // /Ideas page shell
 // ═══════════════════════════════════════════════════════════════════════════
 
@@ -1045,10 +1975,10 @@ const DESIGNS = [
   },
   {
     name: "The Interior (Warm Room)",
-    tagline: "Your cycle is a room. Currently it's amber-evening luteal — lamp on, dusk window, dark wood panel.",
-    body: "Deep warm brown #1E1005 backdrop. Same Planner layout as the live app, restyled as a furnished room. Today's hero is an illustrated room scene that changes by phase. Cards float as parchment 'objects' with amber borders. Wallpaper-band MonthRibbon. Pillars are room metaphors (Sleep = bed, Energy = lamp, etc.) keeping the real 6-tile structure.",
-    Comp: null,
-    status: "coming",
+    tagline: "Your cycle is a room. Luteal = amber-evening — lamp on, dusk window, dark wood panel.",
+    body: "Deep walnut backdrop #1E1005 with warm parchment cards floating in the dark. Same Planner layout as the live app — JessNarrativeHero opens with an illustrated SVG room scene (lit amber lamp + bookshelf with book spines + dark window with a crescent moon and stars). Cards have dark espresso header strips with brass section labels, like museum or laboratory plaques. PillarsDeck tiles each carry an italic room-object label (the bed / the lamp / the window / the kettle / the door / the clock). MonthRibbon rows are wallpaper bands in deep night colours (cold-night crimson, warm ember, old-gold dusk, deep-violet evening, midnight). Today = a brass-filled pill with dark text. Bottom nav goes very dark walnut; the Jess FAB glows brass.",
+    Comp: TheInteriorDemo,
+    status: "ready",
   },
   {
     name: "The Library",
