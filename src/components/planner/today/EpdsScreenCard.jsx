@@ -22,6 +22,11 @@ import { useEffect, useMemo, useState } from "react";
 import { Heart, ChevronDown, ChevronUp, RotateCw } from "lucide-react";
 
 const EPDS_KEY_PREFIX = "femwell_epds_last_";
+// Sprint 4 BUILD 4 — full history of completed checkins for the trend
+// sparkline. Stays local; never sent to base44. Cap at the most recent 24
+// entries so localStorage doesn't grow unbounded.
+const EPDS_HISTORY_KEY_PREFIX = "femwell_epds_history_";
+const EPDS_HISTORY_CAP = 24;
 
 // EPDS items (paraphrased — official wording is © Cox et al 1987 but
 // the structure + scoring is the screening standard the NHS uses).
@@ -92,6 +97,23 @@ const BAND_COPY = {
 function storageKey(userId) {
   return `${EPDS_KEY_PREFIX}${userId || "anon"}`;
 }
+function historyKey(userId) {
+  return `${EPDS_HISTORY_KEY_PREFIX}${userId || "anon"}`;
+}
+function readHistory(userId) {
+  try {
+    const raw = window.localStorage.getItem(historyKey(userId));
+    if (!raw) return [];
+    const parsed = JSON.parse(raw);
+    if (!Array.isArray(parsed)) return [];
+    return parsed.filter((r) => r && typeof r.iso === "string" && Number.isFinite(r.total));
+  } catch { return []; }
+}
+function writeHistory(userId, entries) {
+  try {
+    window.localStorage.setItem(historyKey(userId), JSON.stringify(entries));
+  } catch { /* silent — quota or unavailable */ }
+}
 
 function daysAgo(iso) {
   if (!iso) return null;
@@ -107,6 +129,7 @@ export default function EpdsScreenCard({ profile }) {
   const [open, setOpen] = useState(false);
   const [answers, setAnswers] = useState(Array(10).fill(null));
   const [lastResult, setLastResult] = useState(null);
+  const [history, setHistory] = useState([]); // [{iso, total, band, q10}, ...]
 
   // Hydrate from localStorage on mount / userId change.
   useEffect(() => {
@@ -114,6 +137,7 @@ export default function EpdsScreenCard({ profile }) {
       const raw = window.localStorage.getItem(storageKey(userId));
       if (raw) setLastResult(JSON.parse(raw));
     } catch { /* silent */ }
+    setHistory(readHistory(userId));
   }, [userId]);
 
   const total = useMemo(
@@ -139,12 +163,25 @@ export default function EpdsScreenCard({ profile }) {
     };
     try { window.localStorage.setItem(storageKey(userId), JSON.stringify(payload)); } catch { /* silent */ }
     setLastResult(payload);
+    // Append to rolling history (capped at EPDS_HISTORY_CAP entries).
+    const existing = readHistory(userId);
+    const next = [...existing, payload].slice(-EPDS_HISTORY_CAP);
+    writeHistory(userId, next);
+    setHistory(next);
   };
 
   const reset = () => {
     setAnswers(Array(10).fill(null));
     setLastResult(null);
     try { window.localStorage.removeItem(storageKey(userId)); } catch { /* silent */ }
+    // Note: we do NOT wipe history on a single 'clear result'. History is the
+    // trend record. There's a dedicated 'Clear history' button on the result
+    // panel below for the explicit erase case.
+  };
+
+  const clearHistory = () => {
+    try { window.localStorage.removeItem(historyKey(userId)); } catch { /* silent */ }
+    setHistory([]);
   };
 
   const lastDays = daysAgo(lastResult?.iso);
@@ -208,6 +245,13 @@ export default function EpdsScreenCard({ profile }) {
           </button>
           <button type="button" style={ghostBtn} onClick={reset}>Clear result</button>
         </div>
+
+        {/* ── Trend sparkline — Sprint 4 BUILD 4 ──────────────────────────
+            Only renders when >= 3 historical entries exist. localStorage
+            only — same as the rest of this card. */}
+        {history.length >= 3 && (
+          <EpdsTrendSparkline history={history} onClearHistory={clearHistory} />
+        )}
       </section>
     );
   }
@@ -283,6 +327,120 @@ export default function EpdsScreenCard({ profile }) {
       </div>
       <p style={privacyLine}>Stays on your device. Never shared. Never sent to base44.</p>
     </section>
+  );
+}
+
+// ─── EpdsTrendSparkline ─────────────────────────────────────────────────────
+// Lightweight SVG sparkline of total EPDS scores over time. Rendered below
+// the result panel when the user has >= 3 entries in localStorage history.
+// Line in --femwell-muted; dots colour-shifted by band so the user can spot
+// a trend at a glance without reading the numbers.
+function EpdsTrendSparkline({ history, onClearHistory }) {
+  const W = 280;
+  const H = 90;
+  const PAD_X = 14;
+  const PAD_TOP = 14;
+  const PAD_BOTTOM = 22;
+  const innerW = W - PAD_X * 2;
+  const innerH = H - PAD_TOP - PAD_BOTTOM;
+
+  // y axis: 0 (bottom) - 30 (top). Bands: 0-9 sage line, 10-12 warning, 13+ alert.
+  const Y_MAX = 30;
+  const xFor = (i) => PAD_X + (i / Math.max(1, history.length - 1)) * innerW;
+  const yFor = (v) => PAD_TOP + ((Y_MAX - v) / Y_MAX) * innerH;
+
+  const points = history.map((h, i) => ({
+    x: xFor(i),
+    y: yFor(Math.max(0, Math.min(Y_MAX, h.total))),
+    band: h.band,
+    total: h.total,
+    iso: h.iso,
+  }));
+
+  // Light reference lines at 10 and 13 (the band thresholds).
+  const y10 = yFor(10);
+  const y13 = yFor(13);
+
+  const first = history[0];
+  const last  = history[history.length - 1];
+  const firstDate = (() => { try { return new Date(first.iso).toLocaleDateString("en-GB", { day: "numeric", month: "short" }); } catch { return ""; } })();
+  const lastDate  = (() => { try { return new Date(last.iso).toLocaleDateString("en-GB", { day: "numeric", month: "short" }); } catch { return ""; } })();
+
+  const dotFill = (band) => {
+    if (band === "high")   return "#8C5A6E";
+    if (band === "medium") return "#E8B4B8";
+    return "#8FAF8F";
+  };
+
+  return (
+    <div style={trendWrap} aria-label="EPDS score trend over time">
+      <div style={trendHeadRow}>
+        <p style={trendEyebrow}>YOUR SCORE TREND · {history.length} CHECK-INS</p>
+        <button
+          type="button"
+          onClick={onClearHistory}
+          style={trendClearBtn}
+          aria-label="Clear EPDS history"
+        >
+          Clear history
+        </button>
+      </div>
+
+      <svg
+        viewBox={`0 0 ${W} ${H}`}
+        role="img"
+        aria-label="Line chart of EPDS scores over time"
+        style={trendSvg}
+      >
+        {/* Band threshold reference lines */}
+        <line x1={PAD_X} x2={W - PAD_X} y1={y10} y2={y10}
+              stroke="rgba(232,180,184,0.55)" strokeWidth="0.8" strokeDasharray="3 3"/>
+        <line x1={PAD_X} x2={W - PAD_X} y1={y13} y2={y13}
+              stroke="rgba(140,90,110,0.55)" strokeWidth="0.8" strokeDasharray="3 3"/>
+        <text x={W - PAD_X - 2} y={y10 - 2} textAnchor="end"
+              fontSize="8" fontFamily="'Inter', sans-serif" fill="#C48A8C"
+              style={{ letterSpacing: "0.08em" }}>10</text>
+        <text x={W - PAD_X - 2} y={y13 - 2} textAnchor="end"
+              fontSize="8" fontFamily="'Inter', sans-serif" fill="#8C5A6E"
+              style={{ letterSpacing: "0.08em" }}>13</text>
+
+        {/* Line in muted */}
+        <polyline
+          points={points.map((p) => `${p.x.toFixed(1)},${p.y.toFixed(1)}`).join(" ")}
+          fill="none"
+          stroke="#9B8B7A"
+          strokeWidth="1.4"
+          strokeLinejoin="round"
+          strokeLinecap="round"
+        />
+
+        {/* Dots */}
+        {points.map((p, i) => (
+          <circle
+            key={i}
+            cx={p.x.toFixed(1)} cy={p.y.toFixed(1)}
+            r={i === points.length - 1 ? 3.4 : 2.4}
+            fill={dotFill(p.band)}
+            stroke="#FBF6E6"
+            strokeWidth="0.8"
+          />
+        ))}
+
+        {/* X-axis labels — first + last only to keep it quiet */}
+        <text x={PAD_X} y={H - 6}
+              fontSize="9" fontFamily="'Inter', sans-serif" fill="#9B8B7A">
+          {firstDate}
+        </text>
+        <text x={W - PAD_X} y={H - 6} textAnchor="end"
+              fontSize="9" fontFamily="'Inter', sans-serif" fill="#9B8B7A">
+          {lastDate}
+        </text>
+      </svg>
+
+      <p style={trendNote}>
+        Lower is better. Speak to your midwife if score is above 12.
+      </p>
+    </div>
   );
 }
 
@@ -447,4 +605,52 @@ const ctaHint = {
 const privacyLine = {
   fontFamily: "'Inter', sans-serif", fontSize: 10.5, color: "#9B8B7A",
   fontStyle: "italic", margin: "10px 0 0",
+};
+const trendWrap = {
+  marginTop: 12,
+  padding: "10px 12px 6px",
+  background: "rgba(255,255,255,0.55)",
+  border: "1px solid rgba(58,44,26,0.10)",
+  borderRadius: 10,
+};
+const trendHeadRow = {
+  display: "flex",
+  justifyContent: "space-between",
+  alignItems: "center",
+  marginBottom: 4,
+};
+const trendEyebrow = {
+  fontFamily: "'Inter', sans-serif",
+  fontSize: 9.5,
+  fontWeight: 700,
+  letterSpacing: "0.18em",
+  color: "#9B8B7A",
+  textTransform: "uppercase",
+  margin: 0,
+};
+const trendClearBtn = {
+  background: "transparent",
+  border: "1px solid rgba(58,44,26,0.16)",
+  borderRadius: 9999,
+  padding: "3px 8px",
+  fontFamily: "'Inter', sans-serif",
+  fontSize: 9.5,
+  fontWeight: 600,
+  letterSpacing: "0.06em",
+  color: "#6B5840",
+  cursor: "pointer",
+};
+const trendSvg = {
+  width: "100%",
+  height: "auto",
+  display: "block",
+};
+const trendNote = {
+  fontFamily: "'Inter', sans-serif",
+  fontSize: 11,
+  color: "#6B5840",
+  fontStyle: "italic",
+  margin: "6px 0 0",
+  lineHeight: 1.45,
+  textAlign: "center",
 };
