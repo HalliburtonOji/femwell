@@ -16,10 +16,7 @@ const VALID_PREFS = ['spotify', 'apple', 'pocketCasts'];
 function base64UrlSafe(input) {
   if (typeof input !== 'string' || !input) return '';
   // btoa handles ASCII; podcast feed URLs are ASCII so this is safe.
-  // Fallback for non-browser (SSR) environments via Buffer.
-  const b64 = typeof btoa === 'function'
-    ? btoa(input)
-    : (typeof Buffer !== 'undefined' ? Buffer.from(input, 'utf8').toString('base64') : '');
+  const b64 = btoa(input);
   return b64.replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
 }
 

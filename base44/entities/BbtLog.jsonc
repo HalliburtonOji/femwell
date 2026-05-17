@@ -1,0 +1,32 @@
+{
+  "name": "BbtLog",
+  "type": "object",
+  "properties": {
+    "date": {
+      "type": "string",
+      "format": "date",
+      "description": "Date of the BBT reading (YYYY-MM-DD)"
+    },
+    "temp_celsius": {
+      "type": "number",
+      "description": "Basal body temperature in Celsius"
+    },
+    "time_taken": {
+      "type": "string",
+      "description": "Optional time when temperature was taken (HH:MM format)"
+    },
+    "notes": {
+      "type": "string",
+      "description": "Optional notes about the reading or conditions"
+    },
+    "user_id": {
+      "type": "string",
+      "description": "User who owns this BBT log entry"
+    }
+  },
+  "required": [
+    "date",
+    "temp_celsius",
+    "user_id"
+  ]
+}
