@@ -16,6 +16,7 @@ import ContraceptionCard from "@/components/planner/cycle/ContraceptionCard";
 import { FolicAcidNudge, AmhAwarenessCard, SupplementStackCard } from "@/components/planner/cycle/PreTtcCards";
 import SupplementTrackerCard from "@/components/planner/cycle/SupplementTrackerCard";
 import KickCounterCard from "@/components/planner/today/KickCounterCard";
+import EpdsScreenCard from "@/components/planner/today/EpdsScreenCard";
 import FertileWindowCard from "@/components/planner/cycle/FertileWindowCard";
 import FirstLaunchStagePicker, { shouldShowFirstLaunch } from "@/components/planner/FirstLaunchStagePicker";
 import GpExportButton from "@/components/planner/cycle/GpExportButton";
@@ -1186,6 +1187,15 @@ export default function Planner() {
             {/* ── Kick counter — T3 only ──────────────────────────────────── */}
             {effectiveLifeStage === "pregnant-t3" && (
               <KickCounterCard userId={user?.id} />
+            )}
+
+            {/* ── EPDS postnatal wellbeing check-in — postpartum only ─────
+                10-question Edinburgh Postnatal Depression Scale screen.
+                Stays local (localStorage); never persists to base44. Three
+                bands trigger NHS health-visitor / GP signposts. Q10 safety
+                item escalates regardless of total. ─────────────────────── */}
+            {effectiveLifeStage === "postpartum" && (
+              <EpdsScreenCard profile={profile} />
             )}
 
             {/* ── Fresh-Start banner (Phase 2 B1) — soft reset on inflection.
