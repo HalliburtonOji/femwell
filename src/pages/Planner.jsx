@@ -1287,6 +1287,71 @@ export default function Planner() {
         </div>
       )}
 
+      {/* Phase 2 QA-fix-bundle-9 — DEBUG strip HOISTED above the view-tab
+          conditional so it renders on every tab. QA fiber inspection
+          found the previous nesting site was inside {view === "today" &&}
+          which hid the strip (and every stage card) when on Cycle. ──── */}
+      <div className="max-w-xl mx-auto px-4" style={{ marginTop: 8 }}>
+        <div style={{
+          fontFamily: "'Inter', sans-serif",
+          fontSize: 10,
+          color: "var(--plum-mute, #8A7584)",
+          padding: "4px 8px",
+          background: "rgba(58,44,26,0.04)",
+          border: "1px dashed rgba(58,44,26,0.14)",
+          borderRadius: 6,
+          letterSpacing: "0.02em",
+        }}>
+          <strong style={{ fontWeight: 700, color: "#3A2C1A" }}>DEBUG</strong>{" "}
+          tab=<strong style={{ color: "#3A2C1A" }}>{view}</strong>
+          {" · "}stage=<strong style={{ color: "#3A2C1A" }}>{effectiveLifeStage}</strong>
+          {" · "}local=<strong>{liveLocalOverride || "—"}</strong>
+          {" · "}state=<strong>{devStageOverride || "—"}</strong>
+          {" · "}real=<strong>{realLifeStage || "—"}</strong>
+          {" · "}tick={stageTick}
+        </div>
+      </div>
+
+      {/* Phase 2 QA-fix-bundle-9 — stage-specific cards HOISTED out of the
+          {view === "today" && ...} wrapper so they render on every tab.
+          They were previously buried 60+ lines below this point inside the
+          Today panel; if QA happened to land on the Cycle tab (via
+          ?view=cycle or a localStorage fw_planner_view = "cycle"), the
+          entire Today panel was hidden and every stage-card gate evaluated
+          inside a non-rendered subtree. Move them up here so they're tab-
+          agnostic — they're stage-anchored, not time-of-day-anchored, so
+          this is also more honest UX. ─────────────────────────────────── */}
+      {!loading && (
+        <div className="max-w-xl mx-auto px-4" style={{ paddingTop: 12 }}>
+          {(() => {
+            // eslint-disable-next-line no-console
+            console.log("[Planner debug TOP-LEVEL] effectiveLifeStage=", effectiveLifeStage,
+              "| view=", view,
+              "| liveLocalOverride=", liveLocalOverride,
+              "| devStageOverride state=", devStageOverride,
+              "| realLifeStage=", realLifeStage,
+              "| stageTick=", stageTick,
+              "| profile.id=", profile?.id);
+            return null;
+          })()}
+          {(["pregnant-t1", "pregnant-t2", "pregnant-t3", "pregnancy"].includes(effectiveLifeStage)) && (
+            <PregnancyTimelineCard profile={profile} plannerConfig={plannerConfig} variant="today" />
+          )}
+          {(["pregnant-t2", "pregnant-t3"].includes(effectiveLifeStage)) && (
+            <KickCounterCard userId={user?.id} />
+          )}
+          {effectiveLifeStage === "postpartum" && (
+            <EpdsScreenCard profile={profile} />
+          )}
+          {(effectiveLifeStage === "perimenopause"
+            || (Array.isArray(effectiveConditions) && effectiveConditions.includes("hrt"))
+            || (Array.isArray(profile?.conditions) && profile.conditions.includes("hrt"))
+            || (Array.isArray(profile?.condition_flags) && profile.condition_flags.includes("hrt"))) && (
+            <HrtCorrelationCard profile={profile} />
+          )}
+        </div>
+      )}
+
       {/* ── Cycle view (C0 stub — C1+ populates the surfaces) ─────────────── */}
       {view === "cycle" && (
         <div
@@ -1452,55 +1517,10 @@ export default function Planner() {
               effectiveConditions={effectiveConditions}
             />
 
-            {/* ── Stage-specific cards — Phase 2 QA-fix-bundle-7.
-                Direct stage-string checks on effectiveLifeStage, which
-                now reads localStorage at render time (bundle-7 above). ── */}
-            {(() => {
-              // eslint-disable-next-line no-console
-              console.log("[Planner debug] effectiveLifeStage=", effectiveLifeStage,
-                "| liveLocalOverride=", liveLocalOverride,
-                "| devStageOverride state=", devStageOverride,
-                "| realLifeStage=", realLifeStage,
-                "| stageTick=", stageTick,
-                "| profile.id=", profile?.id);
-              return null;
-            })()}
-            {/* Phase 2 QA-fix-bundle-7 — visible debug strip so QA can read
-                the resolved stage on screen without DevTools. Tiny muted
-                row at the top of the Today body. Remove once verified. */}
-            <div style={{
-              fontFamily: "'Inter', sans-serif",
-              fontSize: 10,
-              color: "var(--plum-mute, #8A7584)",
-              padding: "4px 8px",
-              marginBottom: 8,
-              background: "rgba(58,44,26,0.04)",
-              border: "1px dashed rgba(58,44,26,0.14)",
-              borderRadius: 6,
-              letterSpacing: "0.02em",
-            }}>
-              <strong style={{ fontWeight: 700, color: "#3A2C1A" }}>DEBUG</strong>{" "}
-              stage=<strong style={{ color: "#3A2C1A" }}>{effectiveLifeStage}</strong>
-              {" · "}local=<strong>{liveLocalOverride || "—"}</strong>
-              {" · "}state=<strong>{devStageOverride || "—"}</strong>
-              {" · "}real=<strong>{realLifeStage || "—"}</strong>
-              {" · "}tick={stageTick}
-            </div>
-            {(["pregnant-t1", "pregnant-t2", "pregnant-t3", "pregnancy"].includes(effectiveLifeStage)) && (
-              <PregnancyTimelineCard profile={profile} plannerConfig={plannerConfig} variant="today" />
-            )}
-            {(["pregnant-t2", "pregnant-t3"].includes(effectiveLifeStage)) && (
-              <KickCounterCard userId={user?.id} />
-            )}
-            {effectiveLifeStage === "postpartum" && (
-              <EpdsScreenCard profile={profile} />
-            )}
-            {(effectiveLifeStage === "perimenopause"
-              || (Array.isArray(effectiveConditions) && effectiveConditions.includes("hrt"))
-              || (Array.isArray(profile?.conditions) && profile.conditions.includes("hrt"))
-              || (Array.isArray(profile?.condition_flags) && profile.condition_flags.includes("hrt"))) && (
-              <HrtCorrelationCard profile={profile} />
-            )}
+            {/* Phase 2 QA-fix-bundle-9 — stage-specific cards were here.
+                Hoisted to the page-level (above the view-tab conditional)
+                so they render regardless of whether QA is on Today or
+                Cycle tab. See the hoisted block earlier in this file. */}
 
             {/* ── Fresh-Start banner (Phase 2 B1) — soft reset on inflection.
                 Life Stage adapter: FreshStart triggers on cycle-day-1 etc;
