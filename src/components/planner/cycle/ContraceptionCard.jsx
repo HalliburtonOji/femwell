@@ -19,7 +19,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { base44 } from "@/api/base44Client";
-import { Shield, Plus, Pencil, X, Check } from "lucide-react";
+import { Shield, Plus, Pencil, X, Check, ChevronLeft, Star, Clock } from "lucide-react";
 
 const TYPES = [
   { key: "pill",      label: "Combined pill" },
@@ -53,6 +53,7 @@ export default function ContraceptionCard({ profile }) {
   const [editing, setEditing] = useState(false);
   const [saving, setSaving] = useState(false);
   const [entityMissing, setEntityMissing] = useState(false);
+  const [showHistory, setShowHistory] = useState(false);
   const [form, setForm] = useState({
     type: "pill",
     brand: "",
@@ -321,12 +322,107 @@ export default function ContraceptionCard({ profile }) {
         )}
       </p>
       {active.notes && <p style={bodyMute}>{active.notes}</p>}
-      {logs.length > 1 && (
-        <p style={historyLine}>
-          {logs.length} {logs.length === 1 ? "method" : "methods"} logged · history view coming
-        </p>
+      <button
+        type="button"
+        onClick={() => setShowHistory(true)}
+        style={historyBtn}
+        aria-label="View contraception history"
+      >
+        <Clock size={11} strokeWidth={2.0} />
+        <span>
+          View history{logs.length > 1 ? ` · ${logs.length} method${logs.length > 1 ? "s" : ""}` : ""}
+        </span>
+      </button>
+      {showHistory && (
+        <ContraceptionHistoryView
+          logs={logs}
+          activeId={active.id}
+          onClose={() => setShowHistory(false)}
+        />
       )}
     </section>
+  );
+}
+
+// ─── ContraceptionHistoryView ───────────────────────────────────────────────
+// Full-screen-ish modal overlay that lists every logged method in reverse
+// chrono order. Each row: type pill + date range + rating stars + side-effect
+// chips. Empty state covers the schema-pending case (no rows yet) so we never
+// crash before the base44 ContraceptionLog entity lands.
+function ContraceptionHistoryView({ logs, activeId, onClose }) {
+  const rows = Array.isArray(logs) ? logs : [];
+  return (
+    <div role="dialog" aria-modal="true" aria-label="Contraception history" style={historyOverlay}>
+      <div style={historyPanel}>
+        <header style={historyHead}>
+          <button type="button" onClick={onClose} style={backBtn} aria-label="Back to summary">
+            <ChevronLeft size={14} strokeWidth={2.2} />
+            <span>Back</span>
+          </button>
+          <div>
+            <p style={eyebrowStyle}>CONTRACEPTION · HISTORY</p>
+            <p style={titleStyle}>Every method, every effect</p>
+          </div>
+          <span style={{ width: 60 }} aria-hidden="true" />
+        </header>
+
+        {rows.length === 0 ? (
+          <div style={historyEmpty}>
+            <p style={historyEmptyTitle}>Your history will appear here once you start logging</p>
+            <p style={bodyMute}>
+              One row per method — Femwell remembers the side-effects, brand, and switch reasons so
+              you don't have to re-tell the same story to each GP.
+            </p>
+          </div>
+        ) : (
+          <ul style={historyList}>
+            {rows.map((row) => {
+              const isActive = row?.id && row.id === activeId;
+              const rating = typeof row?.rating === "number" ? row.rating : null;
+              return (
+                <li key={row.id || row.startDate + (row.brand || row.type)} style={historyRow}>
+                  <div style={historyRowHead}>
+                    <span style={methodPill}>{typeLabelOf(row.type)}{row.brand ? ` · ${row.brand}` : ""}</span>
+                    {isActive && <span style={activeTag}>Active</span>}
+                  </div>
+                  <p style={historyDates}>
+                    {row.startDate ? formatStart(row.startDate) : "Start unknown"}
+                    {" — "}
+                    {row.endDate ? formatStart(row.endDate) : "now"}
+                  </p>
+                  {rating !== null && (
+                    <div style={ratingRow} aria-label={`Rating ${rating} of 5`}>
+                      {[1, 2, 3, 4, 5].map((n) => (
+                        <Star
+                          key={n}
+                          size={12}
+                          strokeWidth={1.6}
+                          fill={n <= rating ? "#A6862B" : "none"}
+                          stroke={n <= rating ? "#A6862B" : "#8A7458"}
+                        />
+                      ))}
+                      <span style={ratingNum}>{rating}/5</span>
+                    </div>
+                  )}
+                  {Array.isArray(row.sideEffects) && row.sideEffects.length > 0 && (
+                    <div style={historyChips}>
+                      {row.sideEffects.map((se) => (
+                        <span key={se} style={historyChip}>{se}</span>
+                      ))}
+                    </div>
+                  )}
+                  {row.notes && <p style={historyNotes}>{row.notes}</p>}
+                </li>
+              );
+            })}
+          </ul>
+        )}
+
+        <footer style={historyFoot}>
+          <button type="button" onClick={onClose} style={ghostBtnLarge}>Close</button>
+        </footer>
+      </div>
+    </div>
   );
 }
 
@@ -392,12 +488,169 @@ const bodyMute = {
   margin: "0 0 10px",
   lineHeight: 1.5,
 };
-const historyLine = {
+const historyBtn = {
+  display: "inline-flex",
+  alignItems: "center",
+  gap: 6,
+  marginTop: 6,
+  padding: "5px 10px",
+  borderRadius: 9999,
+  background: "rgba(166,134,43,0.10)",
+  border: "1px solid rgba(166,134,43,0.30)",
+  color: "#6B5840",
+  fontFamily: "'Inter', sans-serif",
+  fontSize: 11.5,
+  fontWeight: 600,
+  cursor: "pointer",
+};
+const historyOverlay = {
+  position: "fixed",
+  inset: 0,
+  zIndex: 950,
+  background: "rgba(58,44,26,0.50)",
+  backdropFilter: "blur(2.5px)",
+  display: "flex",
+  alignItems: "center",
+  justifyContent: "center",
+  padding: 16,
+};
+const historyPanel = {
+  background: "#FBF6E6",
+  border: "1px solid rgba(58,44,26,0.16)",
+  borderRadius: 18,
+  padding: 18,
+  width: "100%",
+  maxWidth: 480,
+  maxHeight: "90vh",
+  overflowY: "auto",
+  boxShadow: "0 14px 50px rgba(58,44,26,0.30)",
+};
+const historyHead = {
+  display: "flex",
+  alignItems: "flex-start",
+  justifyContent: "space-between",
+  gap: 8,
+  marginBottom: 12,
+};
+const backBtn = {
+  display: "inline-flex",
+  alignItems: "center",
+  gap: 4,
+  padding: "5px 8px 5px 6px",
+  borderRadius: 9999,
+  background: "transparent",
+  border: "1px solid rgba(58,44,26,0.18)",
+  color: "#6B5840",
+  fontFamily: "'Inter', sans-serif",
+  fontSize: 11.5,
+  fontWeight: 600,
+  cursor: "pointer",
+  height: 26,
+};
+const historyEmpty = {
+  padding: "24px 12px",
+  textAlign: "center",
+};
+const historyEmptyTitle = {
+  fontFamily: "'Fraunces', Georgia, serif",
+  fontSize: 16,
+  fontStyle: "italic",
+  color: "#3A2C1A",
+  margin: "0 0 8px",
+  lineHeight: 1.3,
+};
+const historyList = {
+  listStyle: "none",
+  padding: 0,
+  margin: "0 0 12px",
+  display: "flex",
+  flexDirection: "column",
+  gap: 10,
+};
+const historyRow = {
+  background: "rgba(255,255,255,0.55)",
+  border: "1px solid rgba(58,44,26,0.10)",
+  borderRadius: 10,
+  padding: "10px 12px",
+};
+const historyRowHead = {
+  display: "flex",
+  alignItems: "center",
+  justifyContent: "space-between",
+  gap: 8,
+  marginBottom: 2,
+};
+const methodPill = {
+  display: "inline-flex",
+  padding: "3px 8px",
+  borderRadius: 9999,
+  background: "rgba(166,134,43,0.18)",
+  color: "#3A2C1A",
+  fontFamily: "'Inter', sans-serif",
+  fontSize: 11.5,
+  fontWeight: 700,
+};
+const activeTag = {
+  display: "inline-flex",
+  padding: "2px 7px",
+  borderRadius: 9999,
+  background: "#3A2C1A",
+  color: "#F4EDDB",
+  fontFamily: "'Inter', sans-serif",
+  fontSize: 9.5,
+  fontWeight: 700,
+  letterSpacing: "0.06em",
+  textTransform: "uppercase",
+};
+const historyDates = {
+  fontFamily: "'Inter', sans-serif",
+  fontSize: 12,
+  color: "#6B5840",
+  fontStyle: "italic",
+  margin: "2px 0 4px",
+};
+const ratingRow = {
+  display: "inline-flex",
+  alignItems: "center",
+  gap: 3,
+  margin: "0 0 4px",
+};
+const ratingNum = {
+  marginLeft: 4,
   fontFamily: "'Inter', sans-serif",
   fontSize: 11,
-  color: "#8A7458",
-  fontStyle: "italic",
-  margin: 0,
+  fontWeight: 600,
+  color: "#6B5840",
+};
+const historyChips = {
+  display: "flex",
+  flexWrap: "wrap",
+  gap: 4,
+  marginTop: 4,
+};
+const historyChip = {
+  display: "inline-flex",
+  padding: "2px 8px",
+  borderRadius: 9999,
+  background: "rgba(212,116,90,0.16)",
+  color: "#7A3422",
+  fontFamily: "'Inter', sans-serif",
+  fontSize: 10.5,
+  fontWeight: 600,
+  textTransform: "capitalize",
+};
+const historyNotes = {
+  fontFamily: "'Inter', sans-serif",
+  fontSize: 12,
+  color: "#3A2C1A",
+  lineHeight: 1.5,
+  margin: "6px 0 0",
+};
+const historyFoot = {
+  display: "flex",
+  justifyContent: "flex-end",
+  paddingTop: 10,
+  borderTop: "1px dashed rgba(58,44,26,0.16)",
 };
 const fieldLabel = {
   display: "block",
