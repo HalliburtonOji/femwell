@@ -28,6 +28,8 @@ const COLOUR_MUTED  = "#9B8B7A";
 const COLOUR_BLUSH  = "#E8B4B8";
 const COLOUR_ESPRESSO = "#3A2C1A";
 const COLOUR_SAGE   = "#8FAF8F";
+// Sprint 5 BUILD 2 — gold accent for the LH-peak reference line.
+const COLOUR_GOLD   = "#D4AF37";
 
 function tempToY(temp) {
   const clamped = Math.max(Y_MIN, Math.min(Y_MAX, temp));
@@ -56,12 +58,13 @@ function cycleDayFor(isoDate, profile) {
 
 export default function BbtChart({ userId, refreshKey, profile }) {
   const [logs, setLogs] = useState([]);
+  const [opkLogs, setOpkLogs] = useState([]);
 
   useEffect(() => {
     if (!userId) return;
+    const cutoff = format(subDays(new Date(), 13), "yyyy-MM-dd");
     const fetch14 = async () => {
       try {
-        const cutoff = format(subDays(new Date(), 13), "yyyy-MM-dd");
         const rows = await base44.entities.BbtLog.filter(
           { user_id: userId },
           "-date",
@@ -71,6 +74,19 @@ export default function BbtChart({ userId, refreshKey, profile }) {
       } catch {
         // Entity may not exist yet — show empty state silently
         setLogs([]);
+      }
+      // Sprint 5 BUILD 2 — pull the same 14-day OPK window so we can render
+      // a gold reference line for the most recent 'peak' result. Graceful
+      // entity-missing fallback mirrors the BbtLog path.
+      try {
+        const opkRows = await base44.entities.OpkLog.filter(
+          { user_id: userId },
+          "-date",
+          30,
+        );
+        setOpkLogs((Array.isArray(opkRows) ? opkRows : []).filter((r) => r?.date >= cutoff));
+      } catch {
+        setOpkLogs([]);
       }
     };
     fetch14();
@@ -89,6 +105,24 @@ export default function BbtChart({ userId, refreshKey, profile }) {
 
   const points = days.filter((d) => d.temp != null);
   const hasData = points.length >= 2;
+
+  // Sprint 5 BUILD 2 — most recent 'peak' OPK within the chart window.
+  // Returns the day index (0–13) that matches the OPK row's date so we can
+  // draw a gold vertical reference line + 'LH Peak' label at that column.
+  const lhPeak = useMemo(() => {
+    if (!Array.isArray(opkLogs) || opkLogs.length === 0) return null;
+    // Filter to peak results, then pick the most recent by date.
+    const peaks = opkLogs
+      .filter((r) => typeof r?.result === "string" && r.result.toLowerCase() === "peak")
+      .sort((a, b) => (a.date > b.date ? -1 : a.date < b.date ? 1 : 0));
+    if (peaks.length === 0) return null;
+    const recent = peaks[0];
+    const idx = days.findIndex((d) => d.dayStr === recent.date);
+    if (idx < 0) return null;
+    // Cycle day at the peak — for the label tooltip.
+    const cd = cycleDayFor(recent.date, profile);
+    return { idx, date: recent.date, cd };
+  }, [opkLogs, days, profile]);
 
   // ── Coverline insight (Sprint 4 BUILD 1) ────────────────────────────────
   // Conditions: >= 5 logged days in window AND >= 3 readings above 36.7°C.
@@ -148,6 +182,37 @@ export default function BbtChart({ userId, refreshKey, profile }) {
                   style={{ letterSpacing: "0.08em" }}
                 >36.7°</text>
               )}
+            </>
+          );
+        })()}
+
+        {/* Sprint 5 BUILD 2 — LH peak reference line. Vertical gold dashed
+            line at the day of the most recent 'peak' OPK in the window,
+            with an 'LH Peak' label above the chart. */}
+        {lhPeak && (() => {
+          const xPeak = PAD.left + (lhPeak.idx / 13) * (280 - PAD.left - PAD.right);
+          return (
+            <>
+              <line
+                x1={xPeak}
+                x2={xPeak}
+                y1={PAD.top - 2}
+                y2={SVG_H - PAD.bottom + 2}
+                stroke={COLOUR_GOLD}
+                strokeWidth={1.2}
+                strokeDasharray="4 2"
+              />
+              <text
+                x={xPeak}
+                y={PAD.top + 6}
+                textAnchor="middle"
+                dominantBaseline="hanging"
+                fontFamily="Inter, sans-serif"
+                fontSize="8.5"
+                fontWeight="700"
+                fill={COLOUR_GOLD}
+                style={{ letterSpacing: "0.10em" }}
+              >LH Peak{lhPeak.cd ? ` · CD ${lhPeak.cd}` : ""}</text>
             </>
           );
         })()}
