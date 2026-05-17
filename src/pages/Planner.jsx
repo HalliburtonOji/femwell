@@ -1127,7 +1127,7 @@ export default function Planner() {
               peak day with BBT + OPK quick-log buttons. Renders only on
               the TTC stage (Clinical tab). ───────────────────────────── */}
           {effectiveLifeStage === "ttc" && (
-            <FertileWindowCard profile={profile} cycleDay={selectedCycleDay} />
+            <FertileWindowCard profile={profile} cycleDay={selectedCycleDay} userId={user?.id} />
           )}
           <AstraSidecar profile={profile} />
           {/* STEP 7: GP-ready PDF export — peri / reproductive / postpartum.

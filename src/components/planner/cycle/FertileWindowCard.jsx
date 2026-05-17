@@ -1,49 +1,37 @@
 // ─────────────────────────────────────────────────────────────────────────────
 // FertileWindowCard — TTC stage Cycle tab card.
 //
-// 7-day strip centred on the predicted peak fertile day (CD 14 default).
-// Each day cell is colour-coded by confidence: low=cream border, medium=blush,
-// high=sage fill (peak). Below the strip: + Log BBT and + Log OPK buttons that
-// open inline forms (number for BBT °C, positive/negative toggle for OPK).
-//
-// Empty state when no cycle data is available: "Log a few cycles and we'll
-// map your fertile window" with a "Log today" CTA.
-//
-// Gating: parent (Planner.jsx) renders this only when
-// effectiveLifeStage === 'ttc' OR plannerConfig.cycleTabMode === 'ttc'.
-//
-// Data: peak day defaults to CD 14 unless profile.cycle_prediction_meta gives
-// a learned peak. BBT/OPK entries are local-only stub records for v1 (no
-// schema dependency); a future MP will persist them to a BbtLog / OpkLog
-// entity once base44 is taught about them.
+// Now persists BBT + OPK to the FertileWindowLog entity.
+// Includes BbtChart (14-day sparkline) below the 7-day fertile strip.
 // ─────────────────────────────────────────────────────────────────────────────
 
-import { useMemo, useState } from "react";
-import { Thermometer, FlaskConical, Check, X, Plus } from "lucide-react";
+import { useMemo, useState, useEffect, useCallback } from "react";
+import { Thermometer, FlaskConical, Check, Plus } from "lucide-react";
+import { format } from "date-fns";
+import { base44 } from "@/api/base44Client";
+import BbtChart from "./BbtChart";
 
-// Confidence per day, indexed by offset from peak (negative = before peak).
-// Standard fertile-window curve: peak day + 1 are the two highest-fertility
-// days, peak-1 to peak-5 ramps up; +2 onward drops sharply.
+// ── Confidence curve ──────────────────────────────────────────────────────────
 const CONFIDENCE_BY_OFFSET = {
   "-3": "low",
   "-2": "medium",
   "-1": "medium",
-  "0":  "high",     // peak
+  "0":  "high",
   "1":  "high",
   "2":  "medium",
   "3":  "low",
 };
-
 const CONFIDENCE_STYLES = {
-  low:    { bg: "transparent",                border: "1px solid rgba(58,44,26,0.20)", color: "#6B5840" },
-  medium: { bg: "rgba(212,116,90,0.18)",      border: "1px solid rgba(212,116,90,0.40)", color: "#7A3422" },
-  high:   { bg: "rgba(107,143,90,0.30)",      border: "1px solid #6B8F5A", color: "#2D4E1A" },
+  low:    { bg: "transparent",               border: "1px solid rgba(58,44,26,0.20)", color: "#6B5840" },
+  medium: { bg: "rgba(212,116,90,0.18)",     border: "1px solid rgba(212,116,90,0.40)", color: "#7A3422" },
+  high:   { bg: "rgba(107,143,90,0.30)",     border: "1px solid #6B8F5A", color: "#2D4E1A" },
 };
-
 const CONFIDENCE_LABEL = { low: "Low", medium: "Building", high: "Peak" };
 
-export default function FertileWindowCard({ profile, cycleDay }) {
-  // Peak day — prefer learned value if present, else CD 14 default.
+const todayStr = () => format(new Date(), "yyyy-MM-dd");
+
+export default function FertileWindowCard({ profile, cycleDay, userId }) {
+  // ── Derived values ──────────────────────────────────────────────────────────
   const peakDay = useMemo(() => {
     const learned = profile?.cycle_prediction_meta?.predicted_ovulation_day;
     if (Number.isFinite(learned) && learned > 0) return Math.round(learned);
@@ -52,7 +40,6 @@ export default function FertileWindowCard({ profile, cycleDay }) {
 
   const todayCd = Number.isFinite(cycleDay) ? cycleDay : null;
 
-  // Build the 7-day strip centred on peakDay (peak-3 … peak+3).
   const strip = useMemo(() => {
     const out = [];
     for (let off = -3; off <= 3; off++) {
@@ -68,39 +55,82 @@ export default function FertileWindowCard({ profile, cycleDay }) {
     return out;
   }, [peakDay, todayCd]);
 
-  // ── BBT / OPK inline forms ────────────────────────────────────────────────
+  // ── Persistence — FertileWindowLog ─────────────────────────────────────────
+  const [logs, setLogs] = useState([]);
+  const [todayLog, setTodayLog] = useState(null);
+  const [saving, setSaving] = useState(false);
+  const [toast, setToast] = useState(null);
+
+  const showToast = (msg) => {
+    setToast(msg);
+    window.setTimeout(() => setToast(null), 2600);
+  };
+
+  const loadLogs = useCallback(async () => {
+    if (!userId) return;
+    const recs = await base44.entities.FertileWindowLog.filter(
+      { user_id: userId },
+      "-date",
+      30,
+    );
+    setLogs(recs);
+    const today = recs.find((r) => r.date === todayStr());
+    setTodayLog(today || null);
+  }, [userId]);
+
+  useEffect(() => { loadLogs(); }, [loadLogs]);
+
+  // ── Form state ──────────────────────────────────────────────────────────────
   const [bbtOpen, setBbtOpen] = useState(false);
   const [opkOpen, setOpkOpen] = useState(false);
   const [bbtValue, setBbtValue] = useState("");
-  const [opkValue, setOpkValue] = useState(null); // null | "positive" | "negative"
-  const [savedToast, setSavedToast] = useState(null);
+  const [opkValue, setOpkValue] = useState(null); // 'negative'|'low'|'high'|'peak'
 
-  const saveBbt = () => {
-    if (!bbtValue) return;
-    // V1: local stub — log and toast. Persistence MP queued separately.
-    // eslint-disable-next-line no-console
-    console.log("[FertileWindow] BBT logged (local stub):", bbtValue, "°C");
-    setBbtValue("");
+  // Pre-fill from today's existing log.
+  useEffect(() => {
+    if (todayLog) {
+      if (todayLog.bbt_celsius) setBbtValue(String(todayLog.bbt_celsius));
+      if (todayLog.lh_result && todayLog.lh_result !== "not_tested") setOpkValue(todayLog.lh_result);
+    }
+  }, [todayLog]);
+
+  const upsertTodayLog = async (patch) => {
+    const uid = userId;
+    if (!uid) return;
+    setSaving(true);
+    if (todayLog?.id) {
+      const updated = await base44.entities.FertileWindowLog.update(todayLog.id, patch);
+      setTodayLog(updated);
+    } else {
+      const created = await base44.entities.FertileWindowLog.create({
+        user_id: uid,
+        date: todayStr(),
+        ...patch,
+      });
+      setTodayLog(created);
+    }
+    setSaving(false);
+    // Refresh 14-day window for chart.
+    loadLogs();
+  };
+
+  const saveBbt = async () => {
+    const val = parseFloat(bbtValue);
+    if (!Number.isFinite(val) || val < 35 || val > 38) return;
+    await upsertTodayLog({ bbt_celsius: val });
     setBbtOpen(false);
-    setSavedToast("BBT saved (local) · entity coming");
-    window.setTimeout(() => setSavedToast(null), 2400);
+    showToast(`BBT ${val.toFixed(2)} °C saved`);
   };
 
-  const saveOpk = () => {
+  const saveOpk = async () => {
     if (!opkValue) return;
-    // eslint-disable-next-line no-console
-    console.log("[FertileWindow] OPK logged (local stub):", opkValue);
-    setOpkValue(null);
+    await upsertTodayLog({ lh_result: opkValue });
     setOpkOpen(false);
-    setSavedToast(`OPK ${opkValue} saved (local) · entity coming`);
-    window.setTimeout(() => setSavedToast(null), 2400);
+    showToast(`OPK ${opkValue} saved`);
   };
 
-  // Empty state — no peak available AND no cycle day. Default behaviour above
-  // ensures we always have a peak (14), but if profile is fully empty we surface
-  // a gentler entry.
-  const isEmpty = !profile;
-  if (isEmpty) {
+  // ── Empty state ─────────────────────────────────────────────────────────────
+  if (!profile) {
     return (
       <section style={wrap} aria-label="Fertile window empty state">
         <header style={headRow}>
@@ -120,6 +150,7 @@ export default function FertileWindowCard({ profile, cycleDay }) {
     );
   }
 
+  // ── Main card ───────────────────────────────────────────────────────────────
   return (
     <section style={wrap} aria-label="Fertile window estimated">
       <header style={headRow}>
@@ -133,13 +164,13 @@ export default function FertileWindowCard({ profile, cycleDay }) {
       </header>
 
       <p style={metaRow}>
-        Confidence is a soft prediction. BBT + OPK logging tightens the band over a few cycles —
-        we won't pretend we know it on a single data point.
+        Confidence is a soft prediction. BBT + OPK logging tightens the band over a few cycles.
       </p>
 
+      {/* 7-day strip */}
       <div style={stripRow} role="list" aria-label="7-day fertile strip">
         {strip.map((d) => {
-          const styles = CONFIDENCE_STYLES[d.confidence];
+          const s = CONFIDENCE_STYLES[d.confidence];
           return (
             <div
               key={d.cd}
@@ -147,9 +178,9 @@ export default function FertileWindowCard({ profile, cycleDay }) {
               aria-label={`CD ${d.cd} · ${CONFIDENCE_LABEL[d.confidence]}${d.isToday ? " · today" : ""}`}
               style={{
                 ...stripCell,
-                background: styles.bg,
-                border: styles.border,
-                color: styles.color,
+                background: s.bg,
+                border: s.border,
+                color: s.color,
                 outline: d.isToday ? "2px solid #A6862B" : "none",
                 outlineOffset: d.isToday ? "1px" : "0",
               }}
@@ -162,6 +193,7 @@ export default function FertileWindowCard({ profile, cycleDay }) {
         })}
       </div>
 
+      {/* Legend */}
       <div style={legendRow} aria-hidden="true">
         <span style={legendItem}>
           <span style={{ ...legendSwatch, ...CONFIDENCE_STYLES.low }} /> Low
@@ -174,21 +206,35 @@ export default function FertileWindowCard({ profile, cycleDay }) {
         </span>
       </div>
 
+      {/* CTA buttons */}
       <div style={ctaRow}>
-        <button type="button" style={logBtn} onClick={() => { setBbtOpen(!bbtOpen); setOpkOpen(false); }}>
+        <button
+          type="button"
+          style={logBtn}
+          onClick={() => { setBbtOpen(!bbtOpen); setOpkOpen(false); }}
+        >
           <Thermometer size={12} strokeWidth={2.0} />
-          <span>+ Log BBT</span>
+          <span>{todayLog?.bbt_celsius ? `BBT ${todayLog.bbt_celsius} °C` : "+ Log BBT"}</span>
         </button>
-        <button type="button" style={logBtn} onClick={() => { setOpkOpen(!opkOpen); setBbtOpen(false); }}>
+        <button
+          type="button"
+          style={logBtn}
+          onClick={() => { setOpkOpen(!opkOpen); setBbtOpen(false); }}
+        >
           <FlaskConical size={12} strokeWidth={2.0} />
-          <span>+ Log OPK</span>
+          <span>
+            {todayLog?.lh_result && todayLog.lh_result !== "not_tested"
+              ? `OPK: ${todayLog.lh_result}`
+              : "+ Log OPK"}
+          </span>
         </button>
       </div>
 
+      {/* BBT inline form */}
       {bbtOpen && (
         <div style={inlineForm}>
           <label style={fieldLabel}>
-            BBT (°C, e.g. 36.4)
+            BBT (°C, e.g. 36.40)
             <input
               type="number"
               step="0.01"
@@ -202,21 +248,30 @@ export default function FertileWindowCard({ profile, cycleDay }) {
             />
           </label>
           <div style={formActions}>
-            <button type="button" style={primaryBtn} onClick={saveBbt} disabled={!bbtValue}>
-              <Check size={12} strokeWidth={2.4} /> <span>Save BBT</span>
+            <button
+              type="button"
+              style={primaryBtn}
+              onClick={saveBbt}
+              disabled={!bbtValue || saving}
+            >
+              <Check size={12} strokeWidth={2.4} />
+              <span>{saving ? "Saving..." : "Save BBT"}</span>
             </button>
             <button type="button" style={ghostBtn} onClick={() => setBbtOpen(false)}>Cancel</button>
           </div>
         </div>
       )}
 
+      {/* OPK inline form */}
       {opkOpen && (
         <div style={inlineForm}>
           <p style={fieldLabel}>OPK result</p>
           <div style={toggleRow} role="radiogroup" aria-label="OPK result">
             {[
-              { key: "positive", label: "Positive", colour: "#6B8F5A" },
               { key: "negative", label: "Negative", colour: "#8A7458" },
+              { key: "low",      label: "Low",      colour: "#C4A86A" },
+              { key: "high",     label: "High",     colour: "#D47A5A" },
+              { key: "peak",     label: "Peak",     colour: "#E11D74" },
             ].map((opt) => {
               const on = opkValue === opt.key;
               return (
@@ -239,20 +294,29 @@ export default function FertileWindowCard({ profile, cycleDay }) {
             })}
           </div>
           <div style={formActions}>
-            <button type="button" style={primaryBtn} onClick={saveOpk} disabled={!opkValue}>
-              <Check size={12} strokeWidth={2.4} /> <span>Save OPK</span>
+            <button
+              type="button"
+              style={primaryBtn}
+              onClick={saveOpk}
+              disabled={!opkValue || saving}
+            >
+              <Check size={12} strokeWidth={2.4} />
+              <span>{saving ? "Saving..." : "Save OPK"}</span>
             </button>
             <button type="button" style={ghostBtn} onClick={() => { setOpkOpen(false); setOpkValue(null); }}>Cancel</button>
           </div>
         </div>
       )}
 
-      {savedToast && <p style={toastLine}>{savedToast}</p>}
+      {/* 14-day BBT sparkline */}
+      <BbtChart logs={logs} />
+
+      {toast && <p style={toastLine}>{toast}</p>}
     </section>
   );
 }
 
-// ─── Styles ─────────────────────────────────────────────────────────────────
+// ─── Styles ──────────────────────────────────────────────────────────────────
 const wrap = {
   background: "linear-gradient(180deg, rgba(107,143,90,0.10), rgba(244,237,219,0.6))",
   border: "1px solid rgba(58,44,26,0.12)",
@@ -270,8 +334,7 @@ const iconWrap = {
 };
 const eyebrowStyle = {
   fontFamily: "'Inter', sans-serif", fontSize: 10, fontWeight: 700,
-  letterSpacing: "0.18em", color: "#3F6228", textTransform: "uppercase",
-  margin: 0,
+  letterSpacing: "0.18em", color: "#3F6228", textTransform: "uppercase", margin: 0,
 };
 const titleStyle = {
   fontFamily: "'Fraunces', Georgia, serif", fontSize: 17, fontWeight: 500,
@@ -282,45 +345,32 @@ const metaRow = {
   fontStyle: "italic", lineHeight: 1.5, margin: "0 0 10px",
 };
 const stripRow = {
-  display: "grid",
-  gridTemplateColumns: "repeat(7, minmax(0, 1fr))",
-  gap: 6,
-  marginBottom: 6,
+  display: "grid", gridTemplateColumns: "repeat(7, minmax(0, 1fr))",
+  gap: 6, marginBottom: 6,
 };
 const stripCell = {
   position: "relative",
   display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center",
-  borderRadius: 10,
-  padding: "8px 2px",
-  fontFamily: "'Inter', sans-serif",
-  minHeight: 50,
+  borderRadius: 10, padding: "8px 2px",
+  fontFamily: "'Inter', sans-serif", minHeight: 50,
 };
-const stripCdLabel = { fontSize: 8.5, fontWeight: 700, letterSpacing: "0.12em", opacity: 0.7 };
-const stripCdNumber = { fontSize: 16, fontWeight: 700, lineHeight: 1, marginTop: 2 };
-const peakDot = { position: "absolute", top: 3, right: 6, fontSize: 9, color: "#3F6228" };
-const legendRow = {
-  display: "flex", justifyContent: "center", gap: 12, flexWrap: "wrap",
-  marginBottom: 10,
-};
-const legendItem = {
-  display: "inline-flex", alignItems: "center", gap: 4,
-  fontFamily: "'Inter', sans-serif", fontSize: 10.5, color: "#6B5840",
-};
-const legendSwatch = { width: 12, height: 12, borderRadius: 4 };
-const ctaRow = { display: "flex", gap: 8, marginBottom: 4 };
+const stripCdLabel   = { fontSize: 8.5, fontWeight: 700, letterSpacing: "0.12em", opacity: 0.7 };
+const stripCdNumber  = { fontSize: 16, fontWeight: 700, lineHeight: 1, marginTop: 2 };
+const peakDot        = { position: "absolute", top: 3, right: 6, fontSize: 9, color: "#3F6228" };
+const legendRow      = { display: "flex", justifyContent: "center", gap: 12, flexWrap: "wrap", marginBottom: 10 };
+const legendItem     = { display: "inline-flex", alignItems: "center", gap: 4, fontFamily: "'Inter', sans-serif", fontSize: 10.5, color: "#6B5840" };
+const legendSwatch   = { width: 12, height: 12, borderRadius: 4 };
+const ctaRow         = { display: "flex", gap: 8, marginBottom: 4, flexWrap: "wrap" };
 const logBtn = {
   display: "inline-flex", alignItems: "center", gap: 5,
-  padding: "7px 12px",
-  borderRadius: 9999,
+  padding: "7px 12px", borderRadius: 9999,
   background: "rgba(255,255,255,0.55)",
   border: "1px solid rgba(58,44,26,0.18)",
   color: "#3A2C1A",
-  fontFamily: "'Inter', sans-serif", fontSize: 12, fontWeight: 600,
-  cursor: "pointer",
+  fontFamily: "'Inter', sans-serif", fontSize: 12, fontWeight: 600, cursor: "pointer",
 };
 const inlineForm = {
-  marginTop: 10,
-  padding: 10,
+  marginTop: 10, padding: 10,
   background: "rgba(255,255,255,0.65)",
   border: "1px solid rgba(58,44,26,0.10)",
   borderRadius: 10,
@@ -332,44 +382,35 @@ const fieldLabel = {
   color: "#6B5840", marginBottom: 4,
 };
 const input = {
-  width: "100%",
-  display: "block",
-  padding: "7px 10px",
-  borderRadius: 8,
+  width: "100%", display: "block",
+  padding: "7px 10px", borderRadius: 8,
   border: "1px solid rgba(58,44,26,0.18)",
-  background: "#FBF6E6",
-  color: "#3A2C1A",
-  fontFamily: "'Inter', sans-serif", fontSize: 14,
-  marginTop: 4,
+  background: "#FBF6E6", color: "#3A2C1A",
+  fontFamily: "'Inter', sans-serif", fontSize: 14, marginTop: 4,
 };
-const toggleRow = { display: "flex", gap: 6, marginBottom: 8 };
+const toggleRow = { display: "flex", gap: 6, marginBottom: 8, flexWrap: "wrap" };
 const toggleBtn = {
   flex: 1,
-  padding: "8px 12px",
+  padding: "7px 8px",
   borderRadius: 9999,
   border: "1px solid",
-  fontFamily: "'Inter', sans-serif", fontSize: 12.5, fontWeight: 700,
-  cursor: "pointer",
+  fontFamily: "'Inter', sans-serif", fontSize: 12, fontWeight: 700,
+  cursor: "pointer", minWidth: 60,
 };
 const formActions = { display: "flex", gap: 8, marginTop: 6 };
 const primaryBtn = {
   display: "inline-flex", alignItems: "center", gap: 5,
-  padding: "7px 14px",
-  borderRadius: 9999,
-  background: "#3A2C1A",
-  color: "#F4EDDB",
+  padding: "7px 14px", borderRadius: 9999,
+  background: "#3A2C1A", color: "#F4EDDB",
   border: "1px solid #3A2C1A",
-  fontFamily: "'Inter', sans-serif", fontSize: 12, fontWeight: 700,
-  cursor: "pointer",
+  fontFamily: "'Inter', sans-serif", fontSize: 12, fontWeight: 700, cursor: "pointer",
 };
 const ghostBtn = {
-  padding: "7px 14px",
-  borderRadius: 9999,
+  padding: "7px 14px", borderRadius: 9999,
   background: "transparent",
   border: "1px solid rgba(58,44,26,0.18)",
   color: "#6B5840",
-  fontFamily: "'Inter', sans-serif", fontSize: 12, fontWeight: 600,
-  cursor: "pointer",
+  fontFamily: "'Inter', sans-serif", fontSize: 12, fontWeight: 600, cursor: "pointer",
 };
 const toastLine = {
   fontFamily: "'Inter', sans-serif", fontSize: 11, color: "#3F6228",

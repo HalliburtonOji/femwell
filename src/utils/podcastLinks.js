@@ -6,12 +6,6 @@
 // pair derived from localStorage preference. Any field can be null if we
 // don't have the data needed to build it.
 
-let Buffer;
-try {
-  Buffer = require('buffer').Buffer;
-} catch {
-  // Browser environment — Buffer undefined is handled in base64UrlSafe
-}
 
 const STORAGE_KEY = 'fw_podcast_preferred_app';
 const VALID_PREFS = ['spotify', 'apple', 'pocketCasts'];
