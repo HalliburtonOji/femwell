@@ -794,15 +794,30 @@ export default function TrackTab({ user, profile }) {
         </div>
       </div>
 
-      {/* Date selector (shown on all non-calendar tabs) */}
-      {subTab !== "calendar" && (
-        <div style={{ marginTop: 12, marginBottom: 2, display: "flex", alignItems: "center", gap: 8 }}>
-          <p style={{ fontSize: 11, color: "var(--mauve)", fontFamily: "'Inter', sans-serif" }}>Date:</p>
-          <input type="date" value={selectedDate} max={todayStr} onChange={e => setSelectedDate(e.target.value)}
-            style={{ fontSize: 12, fontWeight: 600, color: "var(--plum)", fontFamily: "'Inter', sans-serif", border: "1px solid var(--border)", borderRadius: 10, padding: "4px 10px", backgroundColor: "var(--surface)", outline: "none" }}
-          />
-        </div>
-      )}
+      {/* Date selector (shown on all non-calendar tabs).
+          Phase 2 QA fix #5 — render the selected date as a readable label
+          alongside the native picker. On some browsers / mobile renderings
+          the bare <input type="date"> was showing empty, so QA reported
+          the "Date:" label as having no value. The explicit span guarantees
+          the user always sees which date these logs apply to. */}
+      {subTab !== "calendar" && (() => {
+        const friendly = (() => {
+          try {
+            const d = new Date(`${selectedDate}T00:00:00`);
+            return d.toLocaleDateString("en-GB", { weekday: "short", day: "numeric", month: "short" });
+          } catch { return selectedDate; }
+        })();
+        return (
+          <div style={{ marginTop: 12, marginBottom: 2, display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
+            <p style={{ fontSize: 11, color: "var(--mauve)", fontFamily: "'Inter', sans-serif", margin: 0 }}>Date:</p>
+            <span style={{ fontSize: 12, fontWeight: 600, color: "var(--plum)", fontFamily: "'Inter', sans-serif" }}>{friendly}</span>
+            <input type="date" value={selectedDate || todayStr} max={todayStr} onChange={e => setSelectedDate(e.target.value)}
+              aria-label="Select date"
+              style={{ fontSize: 12, fontWeight: 600, color: "var(--plum)", fontFamily: "'Inter', sans-serif", border: "1px solid var(--border)", borderRadius: 10, padding: "4px 10px", backgroundColor: "var(--surface)", outline: "none" }}
+            />
+          </div>
+        );
+      })()}
 
       {subTab === "calendar"  && <CalendarSubTab user={user} profile={profile} />}
       {subTab === "cycle"     && <CycleSubTab user={user} profile={profile} selectedDate={selectedDate} />}

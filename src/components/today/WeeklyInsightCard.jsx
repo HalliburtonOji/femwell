@@ -199,10 +199,22 @@ Write the insight in Markdown with clear sections separated by blank lines (two 
             border: "1px solid var(--border-subtle)",
             marginTop: "12px"
           }}>
-            {insight.insight_text
-              .split("\n\n")
-              .filter(Boolean)
-              .map((para, i) => (
+            {/* Phase 2 QA fix #6 — paragraph split fallback so the insight
+                never renders as one wall of text. Try blank-line split first,
+                then single-newline split, then chunk by sentence triples. */}
+            {(() => {
+              const text = insight.insight_text || "";
+              let paras = text.split(/\n{2,}/).filter(Boolean);
+              if (paras.length < 2) paras = text.split(/\n/).filter(Boolean);
+              if (paras.length < 2) {
+                // Sentence-triple fallback: every 3 sentences becomes a para.
+                const sentences = text.split(/(?<=[.!?])\s+/).filter(Boolean);
+                paras = [];
+                for (let i = 0; i < sentences.length; i += 3) {
+                  paras.push(sentences.slice(i, i + 3).join(" "));
+                }
+              }
+              return paras.map((para, i) => (
                 <p key={i} style={{
                   fontSize: "13px", lineHeight: 1.65,
                   color: "var(--plum)", marginBottom: "10px",
@@ -210,7 +222,8 @@ Write the insight in Markdown with clear sections separated by blank lines (two 
                 }}>
                   {para.replace(/^#+\s*/, "").replace(/\*\*/g, "")}
                 </p>
-              ))}
+              ));
+            })()}
           </div>
           <Link to={createPageUrl("Pulse")} style={{
             display: "inline-block", marginTop: "12px",

@@ -1472,6 +1472,22 @@ export default function Planner() {
                 stages (pregnancy, postpartum, peri, meno, post-meno) and
                 for any stage whose plannerConfig.hiddenFeatures explicitly
                 opts out via "phaseSignedIntention". ─────────────────── */}
+            {/* Phase 2 QA fix #8 — empty-state placeholder when stage is
+                cycle-anchored but no DailyPlan row exists yet. Tells the
+                user the surface exists rather than silently absent. */}
+            {!dailyPlan
+              && plannerConfig?.ribbonType === "cycle"
+              && !plannerConfig?.hiddenFeatures?.includes("phaseSignedIntention") && (
+              <div style={{ ...intentionCardStyle, background: "rgba(255,255,255,0.6)", borderStyle: "dashed" }}>
+                <span style={smartLabelStyle}>YOUR DAILY INTENTION</span>
+                <p style={{ ...intentionMainStyle, opacity: 0.6, marginTop: 6 }}>
+                  Jess is drafting tonight…
+                </p>
+                <p style={{ ...intentionSubStyle, opacity: 0.7 }}>
+                  Your intention will appear here once today's plan is generated.
+                </p>
+              </div>
+            )}
             {dailyPlan
               && plannerConfig?.ribbonType === "cycle"
               && !plannerConfig?.hiddenFeatures?.includes("phaseSignedIntention") && (
@@ -1518,7 +1534,20 @@ export default function Planner() {
               </div>
             )}
 
-            {/* ── Smart card 3: Morning ritual stack (HabitLogs) ─────── */}
+            {/* ── Smart card 3: Morning ritual stack (HabitLogs) ───────
+                Phase 2 QA fix #8 — when no recurring habits yet (fresh
+                account), render a one-line nudge so the surface tells the
+                user where stacks come from. ─────────────────────────── */}
+            {ritualHabits.length === 0 && (
+              <div style={{ ...stackCardStyle, background: "rgba(255,255,255,0.6)", borderStyle: "dashed", padding: "12px 16px" }}>
+                <div style={stackHeadStyle}>
+                  <span style={stackTitleStyle}>Morning stack</span>
+                </div>
+                <p style={{ fontSize: 12, color: "var(--plum-mute, #8A7584)", fontFamily: "'Inter', sans-serif", margin: "4px 0 0", fontStyle: "italic", lineHeight: 1.4 }}>
+                  Log a few habits in Track and they'll surface here as a checkable stack.
+                </p>
+              </div>
+            )}
             {ritualHabits.length > 0 && (
               <div style={stackCardStyle}>
                 <div style={stackHeadStyle}>
