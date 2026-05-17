@@ -2,6 +2,7 @@ import { format } from "date-fns";
 import { Sun, Moon, Sunset, Plus, CalendarDays } from "lucide-react";
 import { Link } from "react-router-dom";
 import { createPageUrl } from "@/utils";
+import { isCycleLifeStage } from "@/utils/plannerAdapter";
 
 const MORNING_MESSAGES = {
   menstrual: [
@@ -140,19 +141,33 @@ export default function TodayHeroSection({
 }) {
   const { word: greetWord, Icon: GreetIcon } = getGreeting();
   const firstName = extractFirstName(profile, user);
-  const phaseMeta = cycleInfo ? PHASE_META[cycleInfo.phase] : null;
+
+  // Phase 2 QA fix #1 (BLOCKER) — cycle-anchored UI must NEVER render on
+  // non-cycle stages (pregnant-t1/t2/t3, postpartum, menopause, post-
+  // menopause, PCOS-modified, HA-modified). Even if the profile still
+  // carries a `last_period_start_date` from before the stage flip, "Period
+  // in 2 days" on a pregnant user is factually wrong + violates trust.
+  const lifeStage = profile?.life_stage || "reproductive";
+  const conditions = profile?.conditions || profile?.condition_flags || [];
+  const cycleAnchored = isCycleLifeStage(lifeStage, conditions);
+
+  const phaseMeta = cycleInfo && cycleAnchored ? PHASE_META[cycleInfo.phase] : null;
   const today = new Date();
 
-  // Smart morning message — deterministic pick by day-of-year
+  // Smart morning message — deterministic pick by day-of-year. Only render
+  // a phase-keyed message when the stage is cycle-anchored; otherwise the
+  // greeting + check-in stays neutral.
   const morningMsg = (() => {
+    if (!cycleAnchored) return null;
     const phase = cycleInfo?.phase;
     const msgs = phase ? MORNING_MESSAGES[phase] : null;
     if (!msgs) return null;
     return msgs[getDayOfYear() % msgs.length];
   })();
 
-  // Period countdown
-  const daysUntilPeriod = computeNextPeriod(profile);
+  // Period countdown — only compute when stage is cycle-anchored. Pregnant /
+  // postpartum / menopausal users must not see "Period in N days".
+  const daysUntilPeriod = cycleAnchored ? computeNextPeriod(profile) : null;
 
   return (
     <div className="relative rounded-[28px] overflow-hidden mb-6" style={{ boxShadow: "var(--shadow-md)" }}>

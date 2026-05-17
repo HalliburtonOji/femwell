@@ -220,6 +220,72 @@ const PROTECTED_STAGES = new Set([
 ]);
 const PROTECTED_KEYS = ["bannerText", "ribbonType", "cycleTabName", "cycleTabMode", "eyebrowPrefix"];
 
+// Convenience predicate — true when this stage uses cycle-anchored language
+// and surfaces (period predictions, phase ribbon, fertile window, etc).
+// Pregnancy / postpartum / menopause / post-menopause / event-mode (PCOS, HA)
+// all fail this check and must not see the cycle frame.
+export function isCycleStage(plannerConfig) {
+  return plannerConfig?.ribbonType === "cycle";
+}
+
+// Stage-string → cycle-anchored boolean. Convenience wrapper for surfaces
+// that only have the raw life_stage string (e.g. older Today subsurfaces
+// that don't thread plannerConfig yet). Treats unknown stages as cycle-
+// anchored ("reproductive default") to match getPlannerConfig fallback.
+export function isCycleLifeStage(lifeStage, conditions) {
+  return isCycleStage(getPlannerConfig(lifeStage, conditions));
+}
+
+// Stage-aware program filter. Drops UserPrograms (or program rows) that
+// don't match the user's current life stage. Two layers:
+//   1. Hard layer — if a program has `target_stages` array, require the
+//      stage to be in it (or "all" to pass through).
+//   2. Soft layer — name-pattern blocklist for stage / programme mismatch
+//      so legacy un-tagged programs ("PMS Relief Path", "Perimenopause
+//      Foundations") still get filtered correctly per user stage.
+//
+// Returns the filtered list. Safe on bad inputs (empty / null / non-array).
+export function filterProgramsByStage(programs, lifeStage) {
+  if (!Array.isArray(programs)) return [];
+  const stage = lifeStage || "reproductive";
+  const isPregnancy = stage === "pregnant-t1" || stage === "pregnant-t2" || stage === "pregnant-t3" || stage === "pregnancy";
+  const isPostpartum = stage === "postpartum";
+  const isPeri = stage === "perimenopause";
+  const isMeno = stage === "menopause" || stage === "post-menopause";
+  const isTtc = stage === "ttc" || stage === "pre-ttc";
+
+  // Name-pattern blocklist per stage. Matches anywhere in title (case-insensitive).
+  const BLOCK_PATTERNS = {
+    pregnancy:  [/\bpms\b/i, /\bperimenopause\b/i, /\bmenopause\b/i, /\bperiod\b/i, /\bfertil/i, /\bttc\b/i, /\bovulat/i],
+    postpartum: [/\bpms\b/i, /\bperimenopause\b/i, /\bmenopause\b/i, /\bpregnancy\b/i, /\bttc\b/i, /\bfertil/i],
+    perimeno:   [/\bpregnancy\b/i, /\bttc\b/i],
+    menopause:  [/\bpregnancy\b/i, /\bttc\b/i, /\bfertil/i, /\bperiod\b/i, /\bpms\b/i],
+    ttc:        [/\bperimenopause\b/i, /\bmenopause\b/i, /\bpost-menopause\b/i],
+    reproductive: [/\bpregnancy\b/i],
+  };
+
+  const activePatterns =
+    isPregnancy  ? BLOCK_PATTERNS.pregnancy
+  : isPostpartum ? BLOCK_PATTERNS.postpartum
+  : isPeri       ? BLOCK_PATTERNS.perimeno
+  : isMeno       ? BLOCK_PATTERNS.menopause
+  : isTtc        ? BLOCK_PATTERNS.ttc
+  :                BLOCK_PATTERNS.reproductive;
+
+  return programs.filter((p) => {
+    if (!p) return false;
+    // Hard layer: explicit target_stages tag.
+    const targets = p.target_stages || p.targetStages || null;
+    if (Array.isArray(targets) && targets.length > 0) {
+      if (targets.includes("all")) return true;
+      if (!targets.includes(stage)) return false;
+    }
+    // Soft layer: name-pattern blocklist.
+    const title = p.program_name || p.title || p.name || "";
+    return !activePatterns.some((rx) => rx.test(title));
+  });
+}
+
 // Main API. Defensive: never throws — bad inputs collapse to the
 // reproductive base config so the Planner always has a usable config.
 export function getPlannerConfig(lifeStage, conditions) {

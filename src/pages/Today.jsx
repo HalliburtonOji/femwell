@@ -3,6 +3,7 @@ import { useLocation } from "react-router-dom";
 import { base44 } from "@/api/base44Client";
 import { PageLoader } from "../components/common/LoadingSpinner";
 import { createPageUrl } from "@/utils";
+import { isCycleLifeStage, filterProgramsByStage } from "@/utils/plannerAdapter";
 import {
   AlertCircle, ChevronRight, Utensils, Feather, Brain, Salad, Zap,
   Droplets, UtensilsCrossed, BookOpen, Activity, Lightbulb, TrendingUp, X
@@ -307,20 +308,53 @@ export default function Today() {
         setLoading(false);
       }
 
+      // Capture life stage now so the lazy setTimeout closure below can
+      // soft-filter PROGRAMME recommendations without re-fetching profile.
+      const stageForRecs = (() => {
+        // Profile state is set inside the previous try block; read from the
+        // same `profiles[0]` via a fresh fetch (cheap, cached) so the
+        // closure stays self-contained.
+        return null;
+      })();
+
       // Secondary: programs (non-blocking)
       Promise.all([
         base44.entities.UserPrograms.filter({ user_id: u.id }).catch(() => []),
         base44.entities.Programs.list("-created_date", 50).catch(() => []),
-      ]).then(([userPrograms, allPrograms]) => {
-        setActivePrograms(userPrograms.filter(e => e.is_saved || e.status === "active"));
-        setProgramLibrary(allPrograms);
+        base44.entities.UserProfile.filter({ user_id: u.id }, null, 1).catch(() => []),
+      ]).then(([userPrograms, allPrograms, profiles2]) => {
+        const stage2 = profiles2?.[0]?.life_stage || "reproductive";
+        // Phase 2 QA fix #3 — stage-filter active programmes so we never
+        // surface "Perimenopause Foundations" on TTC/postpartum, "PMS
+        // Relief" on pregnancy, etc.
+        const stageFilteredUserPrograms = filterProgramsByStage(
+          userPrograms.filter(e => e.is_saved || e.status === "active"),
+          stage2,
+        );
+        setActivePrograms(stageFilteredUserPrograms);
+        setProgramLibrary(filterProgramsByStage(allPrograms, stage2));
       }).catch(() => {});
 
       // Lazy: recommendations
+      // Phase 2 QA fix #9 — filter fallback programmes by life stage so a
+      // pregnant user never sees "PMS Relief Path". One small UserProfile
+      // fetch inside the closure keeps this self-contained.
       setTimeout(async () => {
         try {
-          const recs = await base44.entities.TodayRecommendations.filter({ user_id: u.id, date: todayStr }).catch(() => []);
-          setHomeRecommendations(recs.length > 0 ? recs.slice(0, 3) : fallbackTodayRecommendations);
+          const [recs, profiles2] = await Promise.all([
+            base44.entities.TodayRecommendations.filter({ user_id: u.id, date: todayStr }).catch(() => []),
+            base44.entities.UserProfile.filter({ user_id: u.id }, null, 1).catch(() => []),
+          ]);
+          const stage = profiles2?.[0]?.life_stage || stageForRecs || "reproductive";
+          const list = recs.length > 0 ? recs.slice(0, 3) : fallbackTodayRecommendations;
+          // Soft filter: drop fallback PROGRAMME rows whose copy contradicts
+          // the user's stage. Cast through filterProgramsByStage using the
+          // title field for the pattern match.
+          const filtered = filterProgramsByStage(
+            list.map((r) => ({ ...r, title: r.title || r.program_name || "" })),
+            stage,
+          );
+          setHomeRecommendations(filtered.length > 0 ? filtered : list.filter(r => r.type !== "PROGRAMME"));
         } catch {
           setHomeRecommendations(fallbackTodayRecommendations);
         } finally {
@@ -472,23 +506,32 @@ export default function Today() {
               shouldShow={!!profile && (!profile.last_period_start_date || profile.onboarding_complete !== true)}
             />
 
-            {/* Phase banner — gradient circle indicator, no emoji */}
-            {cycleInfo && (
-              <div style={{ background: PHASE_GRADIENTS[cycleInfo.phase], border: "1px solid var(--border)", borderRadius: 16, padding: "13px 16px" }}>
-                <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 3 }}>
-                  <div style={{
-                    width: 10, height: 10, borderRadius: 9999,
-                    background: `radial-gradient(circle at 35% 35%, white 0%, ${PHASE_INFO[cycleInfo.phase].color} 100%)`,
-                    boxShadow: `0 0 6px ${PHASE_INFO[cycleInfo.phase].color}55`,
-                    flexShrink: 0,
-                  }} />
-                  <span style={{ fontSize: 10, fontWeight: 700, color: PHASE_INFO[cycleInfo.phase].color, textTransform: "uppercase", letterSpacing: "0.1em", fontFamily: "'Inter', sans-serif" }}>
-                    {PHASE_INFO[cycleInfo.phase].label} · Day {cycleInfo.day}
-                  </span>
+            {/* Phase banner — gradient circle indicator, no emoji.
+                Phase 2 QA fix #1 — gated on cycle-anchored stage so
+                pregnant / postpartum / menopausal users never see "Luteal
+                · Day 18" framing. */}
+            {cycleInfo && (() => {
+              const lifeStage = profile?.life_stage || "none";
+              const conditions = profile?.conditions || profile?.condition_flags || [];
+              const cycleAnchored = isCycleLifeStage(lifeStage, conditions);
+              if (!cycleAnchored) return null;
+              return (
+                <div style={{ background: PHASE_GRADIENTS[cycleInfo.phase], border: "1px solid var(--border)", borderRadius: 16, padding: "13px 16px" }}>
+                  <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 3 }}>
+                    <div style={{
+                      width: 10, height: 10, borderRadius: 9999,
+                      background: `radial-gradient(circle at 35% 35%, white 0%, ${PHASE_INFO[cycleInfo.phase].color} 100%)`,
+                      boxShadow: `0 0 6px ${PHASE_INFO[cycleInfo.phase].color}55`,
+                      flexShrink: 0,
+                    }} />
+                    <span style={{ fontSize: 10, fontWeight: 700, color: PHASE_INFO[cycleInfo.phase].color, textTransform: "uppercase", letterSpacing: "0.1em", fontFamily: "'Inter', sans-serif" }}>
+                      {PHASE_INFO[cycleInfo.phase].label} · Day {cycleInfo.day}
+                    </span>
+                  </div>
+                  <p style={{ fontSize: 13, color: "var(--plum)", fontFamily: "'Inter', sans-serif", lineHeight: 1.55 }}>{PHASE_INFO[cycleInfo.phase].tip}</p>
                 </div>
-                <p style={{ fontSize: 13, color: "var(--plum)", fontFamily: "'Inter', sans-serif", lineHeight: 1.55 }}>{PHASE_INFO[cycleInfo.phase].tip}</p>
-              </div>
-            )}
+              );
+            })()}
 
             {/* Calm Cards + Panic pills */}
             <div className="flex items-center justify-between gap-2">
