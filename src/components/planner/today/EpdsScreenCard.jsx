@@ -19,7 +19,7 @@
 // ─────────────────────────────────────────────────────────────────────────────
 
 import { useEffect, useMemo, useState } from "react";
-import { Heart, ChevronDown, ChevronUp, RotateCw } from "lucide-react";
+import { Heart, ChevronDown, ChevronUp, RotateCw, AlertTriangle } from "lucide-react";
 
 const EPDS_KEY_PREFIX = "femwell_epds_last_";
 // Sprint 4 BUILD 4 — full history of completed checkins for the trend
@@ -186,6 +186,24 @@ export default function EpdsScreenCard({ profile }) {
 
   const lastDays = daysAgo(lastResult?.iso);
 
+  // 7-day nudge — surfaced when there's at least one saved check-in AND the
+  // most recent one is older than 7 days. Uses the rolling `history` so this
+  // survives a 'Clear result' (single-key wipe) without false-firing.
+  const sevenDayNudge = useMemo(() => {
+    if (!Array.isArray(history) || history.length === 0) return null;
+    const latest = history[history.length - 1];
+    const since = daysAgo(latest?.iso);
+    return Number.isFinite(since) && since > 7 ? since : null;
+  }, [history]);
+  const NudgeBanner = sevenDayNudge != null ? (
+    <div style={nudgeBox} role="status" aria-label={`${sevenDayNudge} days since last EPDS check-in`}>
+      <AlertTriangle size={14} strokeWidth={2} color="#8C6D1E" aria-hidden="true" />
+      <p style={nudgeText}>
+        It's been <strong>{sevenDayNudge} days</strong> since your last check-in. How are you feeling today?
+      </p>
+    </div>
+  ) : null;
+
   // ── Collapsed state — show entry CTA + last result summary if any ─────────
   if (!open && !allAnswered) {
     const lastBand = lastResult?.band;
@@ -199,6 +217,7 @@ export default function EpdsScreenCard({ profile }) {
             <p style={titleStyle}>How are you feeling this week?</p>
           </div>
         </header>
+        {NudgeBanner}
         <p style={bodyMute}>
           A 10-question wellbeing screen used by UK health visitors. Takes about two minutes. Stays on your device — never shared.
         </p>
@@ -272,6 +291,8 @@ export default function EpdsScreenCard({ profile }) {
       <p style={bodyMute}>
         In the past 7 days... pick the answer that comes closest to how you have felt.
       </p>
+
+      {NudgeBanner}
 
       <ol style={qList}>
         {EPDS_QUESTIONS.map((q, qIdx) => {
@@ -606,6 +627,27 @@ const ctaHint = {
 const privacyLine = {
   fontFamily: "'Inter', sans-serif", fontSize: 10.5, color: "#9B8B7A",
   fontStyle: "italic", margin: "10px 0 0",
+};
+const nudgeBox = {
+  // Sprint 5 BUILD 1 — 7-day reminder banner. Amber-bg per spec; espresso
+  // text; Lucide AlertTriangle substituted for the spec's ⚠️ codepoint per
+  // the 'no emoji in product' rule.
+  display: "flex",
+  alignItems: "flex-start",
+  gap: 8,
+  margin: "0 0 10px",
+  padding: "9px 12px",
+  background: "#FFF3CD",
+  border: "1px solid rgba(140,109,30,0.30)",
+  borderLeft: "3px solid #D4AF37",
+  borderRadius: 10,
+};
+const nudgeText = {
+  fontFamily: "'Inter', sans-serif",
+  fontSize: 12.5,
+  color: "#3A2C1A",
+  lineHeight: 1.45,
+  margin: 0,
 };
 const trendWrap = {
   marginTop: 12,
