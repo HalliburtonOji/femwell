@@ -527,6 +527,10 @@ export default function Planner() {
   const [mealPlan, setMealPlan] = useState(null);
   const [loading, setLoading] = useState(true);
   const [showAdd, setShowAdd] = useState(false);
+  // Phase 2 BUILD 3 — controls which form the bottom sheet renders. Defaults
+  // to "task" (the legacy single-form behaviour). BUILD 2's "+ add to evening
+  // stack" pre-selects "habit"; BUILD 3 FAB satellites set this directly.
+  const [addMode, setAddMode] = useState("task");
   const [saving, setSaving] = useState(false);
   const [newItem, setNewItem] = useState({ title: "", category: "reminder", time: "", repeat: "once", notes: "" });
 
@@ -591,18 +595,46 @@ export default function Planner() {
   // Top 3 recurring habits — derived from the last 60 HabitLogs.
   // Use habitLogNormalise so Track.jsx writers (habit_type) AND Planner.jsx
   // writers (habit_name) both feed Morning/Evening stack rendering.
-  const ritualHabits = useMemo(() => {
+  //
+  // Morning stack = habits whose recent rows are either tagged
+  // time_of_day === "morning" OR carry no time_of_day at all (legacy rows).
+  // Evening stack = habits whose recent rows are tagged "evening" or "night".
+  // Inference fallback: if no time_of_day on any row but the habit name
+  // contains a clear evening cue ("bedtime", "wind down", "sleep", "evening",
+  // "night"), route to the evening stack.
+  function inferIsEvening(name, rows) {
+    const tagged = rows.some(r => {
+      const t = (r?.time_of_day || "").toLowerCase();
+      return t === "evening" || t === "night";
+    });
+    if (tagged) return true;
+    const taggedMorning = rows.some(r => (r?.time_of_day || "").toLowerCase() === "morning");
+    if (taggedMorning) return false;
+    const lower = (name || "").toLowerCase();
+    return /\b(bedtime|wind\s?down|sleep|evening|night|shutdown|moon)\b/.test(lower);
+  }
+  const { ritualHabits, eveningRitualHabits } = useMemo(() => {
     const counts = {};
+    const rowsByName = {};
     for (const h of habitLogs) {
       const name = habitNameOf(h);
       if (!name) continue;
       counts[name] = (counts[name] || 0) + 1;
+      (rowsByName[name] = rowsByName[name] || []).push(h);
     }
-    return Object.entries(counts)
+    const ranked = Object.entries(counts)
       .filter(([, n]) => n >= 2)
       .sort((a, b) => b[1] - a[1])
-      .slice(0, 3)
       .map(([name]) => name);
+    const morning = [];
+    const evening = [];
+    for (const name of ranked) {
+      const isPm = inferIsEvening(name, rowsByName[name] || []);
+      if (isPm && evening.length < 3) evening.push(name);
+      else if (!isPm && morning.length < 3) morning.push(name);
+      if (morning.length === 3 && evening.length === 3) break;
+    }
+    return { ritualHabits: morning, eveningRitualHabits: evening };
   }, [habitLogs]);
 
   // Quiet Mode (Phase 2 C6) — server-set boolean derived from
@@ -876,20 +908,25 @@ export default function Planner() {
     await base44.entities.PlannerItems.delete(item.id);
   };
 
-  const toggleHabit = async (habitName) => {
+  const toggleHabit = async (habitName, timeOfDay) => {
     if (!user?.id) return;
     const wasOn = !!todayHabitLogs[habitName];
     setTodayHabitLogs(prev => ({ ...prev, [habitName]: !wasOn }));
     // Optimistic; persist a new HabitLog row if turning on, mark existing if off.
     if (!wasOn) {
       try {
-        await base44.entities.HabitLogs.create({
+        const payload = {
           user_id: user.id,
           habit_name: habitName,
           date: selectedStr,
           is_completed: true,
           created_at: new Date().toISOString(),
-        });
+        };
+        // Phase 2 BUILD 2 — stamp time_of_day when toggled from the evening
+        // stack so future renders route correctly. The field is optional on
+        // the entity; older rows without it still infer via name pattern.
+        if (timeOfDay) payload.time_of_day = timeOfDay;
+        await base44.entities.HabitLogs.create(payload);
       } catch { /* silent */ }
     } else {
       try {
@@ -1393,6 +1430,44 @@ export default function Planner() {
               </div>
             )}
 
+            {/* ── Evening ritual stack (Phase 2 BUILD 2) ──────────────────
+                Mirrors the morning stack but for habits whose recent logs
+                are tagged time_of_day = "evening" / "night" (or inferred
+                from habit name when no tag is present). Renders only when
+                at least one evening habit exists; empty-state is silent
+                so the page doesn't grow vertical clutter for users who
+                only run a morning routine. ─────────────────────────────── */}
+            {eveningRitualHabits.length > 0 && (
+              <div style={stackCardStyle}>
+                <div style={stackHeadStyle}>
+                  <span style={stackTitleStyle}>Evening stack</span>
+                  <span style={stackCountStyle}>{eveningRitualHabits.filter(n => todayHabitLogs[n]).length}/{eveningRitualHabits.length}</span>
+                </div>
+                {eveningRitualHabits.map((name, i) => {
+                  const done = !!todayHabitLogs[name];
+                  return (
+                    <div key={i} style={{ borderTop: i === 0 ? "none" : "1px solid rgba(74,42,58,0.06)" }}>
+                      <button onClick={() => toggleHabit(name, "evening")} style={{ ...ritualRowStyle, borderTop: "none" }}>
+                        <div style={{ ...ritualCheckStyle, background: done ? "var(--plum, #4A2A3A)" : "transparent", borderColor: done ? "var(--plum, #4A2A3A)" : "rgba(74,42,58,0.20)" }}>
+                          {done && <Check size={12} style={{ color: "white" }} />}
+                        </div>
+                        <div style={{ flex: 1, textAlign: "left" }}>
+                          <p style={{ ...ritualNameStyle, textDecoration: done ? "line-through" : "none", color: done ? "var(--plum-2, #6B4559)" : "var(--plum, #4A2A3A)" }}>{name}</p>
+                        </div>
+                      </button>
+                    </div>
+                  );
+                })}
+                <button
+                  onClick={() => { setAddMode("habit"); setShowAdd(true); }}
+                  style={addToStackBtnStyle}
+                  aria-label="Add to evening stack"
+                >
+                  + add to evening stack
+                </button>
+              </div>
+            )}
+
             {/* ── Smart card 4: Meals row ──────────────────────────────── */}
             {dayMeals && (dayMeals.breakfast || dayMeals.lunch || dayMeals.dinner) ? (
               <div style={{ marginBottom: 12 }}>
@@ -1578,6 +1653,7 @@ const stackCountStyle = { fontSize: 10, color: "var(--plum-mute, #8A7584)", lett
 const ritualRowStyle = { display: "flex", alignItems: "center", gap: 12, padding: "10px 0", border: "none", background: "transparent", width: "100%", cursor: "pointer" };
 const ritualCheckStyle = { width: 22, height: 22, borderRadius: 9999, border: "1.5px solid", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, transition: "all 120ms" };
 const ritualNameStyle = { fontSize: 13, fontWeight: 600, fontFamily: "'Inter', sans-serif", lineHeight: 1.2, margin: 0 };
+const addToStackBtnStyle = { marginTop: 8, padding: "8px 12px", background: "transparent", border: "1px dashed rgba(74,42,58,0.22)", borderRadius: 9999, fontSize: 11, fontWeight: 600, color: "var(--plum-mute, #8A7584)", fontFamily: "'Inter', sans-serif", cursor: "pointer", letterSpacing: "0.04em" };
 
 const dividerStyle = { fontFamily: "'Fraunces', Georgia, serif", fontSize: 13, color: "var(--plum, #4A2A3A)", fontWeight: 500, margin: "16px 0 8px" };
 
