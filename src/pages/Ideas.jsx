@@ -1,6 +1,7 @@
 import { useState } from "react";
 import BiorhythmTimeline from "@/components/BiorhythmTimeline";
 import MissionControl from "@/components/MissionControl";
+import MorningBrief from "@/components/MorningBrief";
 
 // ─────────────────────────────────────────────────────────────────────────────
 // /Ideas — interactive design lab. 4 candidate Planner reskins.
@@ -6294,7 +6295,7 @@ export default function Ideas() {
         fontSize: 11, letterSpacing: "0.18em", fontWeight: 700,
         textTransform: "uppercase",
       }}>
-        Design Lab · Dev Only · Biorhythm · Mission · Designs · Research · Life Stages · Scheduling
+        Design Lab · Dev Only · Biorhythm · Mission · Brief · Designs · Research · Life Stages · Scheduling
       </div>
 
       {/* Tab bar — Biorhythm / Designs / Research / Life Stages / Scheduling */}
@@ -6310,6 +6311,7 @@ export default function Ideas() {
           {[
             { id: "biorhythm", label: "Biorhythm" },
             { id: "mission", label: "Mission" },
+            { id: "brief", label: "Brief" },
             { id: "designs", label: "Designs" },
             { id: "research", label: "Research" },
             { id: "lifestages", label: "Life Stages" },
@@ -6398,6 +6400,34 @@ export default function Ideas() {
             </p>
           </div>
           <MissionControl />
+        </div>
+      )}
+      {topTab === "brief" && (
+        <div style={{ padding: "28px 16px 0" }}>
+          <div style={{ maxWidth: 560, margin: "0 auto 22px", padding: "0 4px" }}>
+            <p style={{
+              fontFamily: "'Inter', system-ui, sans-serif",
+              fontSize: 10, letterSpacing: "0.22em", textTransform: "uppercase",
+              fontWeight: 700, color: "rgba(14,14,14,0.55)", margin: 0,
+            }}>Concept 3 · The Morning Brief</p>
+            <h2 style={{
+              fontFamily: "'Fraunces', Georgia, serif",
+              fontSize: 26, fontWeight: 500, color: "#0E0E0E",
+              letterSpacing: "-0.02em", margin: "6px 0 8px", lineHeight: 1.15,
+            }}>The planner is a conversation, not a form.</h2>
+            <p style={{
+              fontFamily: "'Inter', system-ui, sans-serif",
+              fontSize: 13, color: "rgba(14,14,14,0.7)",
+              margin: 0, lineHeight: 1.55,
+            }}>
+              Jess walks you through a 90-second morning planning session, one card
+              at a time. Each card arrives like a message; small decisions, no empty
+              schedule. The toggle at the top swaps to evening shutdown mode —
+              reflect, defer unfinished work, set tomorrow&apos;s anchor, close the day.
+              Warmest of the three concepts, intimate and narrative.
+            </p>
+          </div>
+          <MorningBrief onSwitchToBiorhythm={() => setTopTab("biorhythm")} />
         </div>
       )}
       {topTab === "research" && <ResearchView />}
