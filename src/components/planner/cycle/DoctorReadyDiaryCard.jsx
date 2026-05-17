@@ -51,7 +51,9 @@ function ensureNumber(n, fallback = 0) {
 
 // Lay out the PDF deterministically — no fancy autotable, just text + lines,
 // because jsPDF text is the most reliable cross-browser path (esp. iOS).
-function buildPdf(diary, displayName) {
+// Sprint 6B Feature 2 — exported so MergedExportSheet can append diary
+// pages to a combined PDF, or download as a stand-alone file.
+export function buildDiaryPdf(diary, displayName) {
   const pdf = new jsPDF({ unit: "pt", format: "a4" });
   const page = { w: 595.28, h: 841.89 };
   const margin = 48;
@@ -205,7 +207,7 @@ export default function DoctorReadyDiaryCard({ user }) {
   const handleDownload = () => {
     if (!diary) return;
     const displayName = user?.full_name || user?.email || "";
-    const pdf = buildPdf(diary, displayName);
+    const pdf = buildDiaryPdf(diary, displayName);
     const fname = `femwell-doctor-diary-${diary?.range?.to || "export"}.pdf`;
     pdf.save(fname);
   };

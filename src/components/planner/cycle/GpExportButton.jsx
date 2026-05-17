@@ -110,7 +110,9 @@ function safeFilter(entityName, args) {
   }
 }
 
-async function buildSnapshot(profile, plannerConfig) {
+// Sprint 6B Feature 2 — exported so MergedExportSheet can build the GP
+// PDF alongside the doctor-diary PDF in a single user gesture.
+export async function buildSnapshot(profile, plannerConfig) {
   const userId = profile?.user_id;
   if (!userId) return null;
   const today = new Date();
@@ -334,7 +336,9 @@ function buildPreTtcPdf(snap, displayName) {
   return pdf;
 }
 
-function buildPdf(snap, displayName) {
+// Sprint 6B Feature 2 — exported so MergedExportSheet can reuse the
+// existing GP PDF layout when generating a combined export.
+export function buildGpPdf(snap, displayName) {
   const routeStage = snap.profile?.life_stage;
   if (PREGNANCY_STAGES.has(routeStage)) return buildPregnancyPdf(snap, displayName);
   if (routeStage === "pre-ttc")          return buildPreTtcPdf(snap, displayName);
@@ -533,7 +537,7 @@ export default function GpExportButton({ profile, plannerConfig, effectiveLifeSt
       // surface a friendly toast rather than crashing the page.
       let pdf;
       try {
-        pdf = buildPdf(snap, displayName);
+        pdf = buildGpPdf(snap, displayName);
       } catch (pdfErr) {
         setStatus("error");
         setErrorMsg("Export unavailable until schema is migrated.");

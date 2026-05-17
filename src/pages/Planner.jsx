@@ -21,6 +21,7 @@ import HrtCorrelationCard from "@/components/planner/today/HrtCorrelationCard";
 import FertileWindowCard from "@/components/planner/cycle/FertileWindowCard";
 import FirstLaunchStagePicker, { shouldShowFirstLaunch } from "@/components/planner/FirstLaunchStagePicker";
 import GpExportButton from "@/components/planner/cycle/GpExportButton";
+import MergedExportSheet from "@/components/planner/cycle/MergedExportSheet";
 import QuietModeBanner from "@/components/planner/cycle/QuietModeBanner";
 import SavedRhythmsCarousel from "@/components/planner/cycle/SavedRhythmsCarousel";
 import WhatsUnfinishedCard from "@/components/planner/cycle/WhatsUnfinishedCard";
@@ -540,10 +541,16 @@ export default function Planner() {
   const [fabOpen, setFabOpen] = useState(false);
   const [showMedAdd, setShowMedAdd] = useState(false);
   const [medications, setMedications] = useState([]);
-  const [medForm, setMedForm] = useState({ name: "", time: "", dose: "", notes: "" });
+  // Sprint 6B Feature 1 — explicit `date` field on the med form (defaults
+  // to selectedStr at modal open).
+  const [medForm, setMedForm] = useState({ name: "", time: "", dose: "", notes: "", date: "" });
   const [savingMed, setSavingMed] = useState(false);
   const [saving, setSaving] = useState(false);
-  const [newItem, setNewItem] = useState({ title: "", category: "reminder", time: "", repeat: "once", notes: "" });
+  // Sprint 6B Feature 1 — explicit `date` field on the new-item form so the
+  // user can target a date other than today. Defaults at modal open to the
+  // currently-selected day in the strip. The handleAdd flow uses newItem.date
+  // if set, otherwise falls back to selectedStr.
+  const [newItem, setNewItem] = useState({ title: "", category: "reminder", time: "", repeat: "once", notes: "", date: "" });
 
   const weekDays = getWeekDays(monday);
   const selectedStr = toDateStr(selectedDay);
@@ -748,6 +755,8 @@ export default function Planner() {
       .filter(item =>
         item.date === selectedStr ||
         item.repeat === "daily" ||
+        // Sprint 6B Feature 1 — Mon-Fri recurrence.
+        (item.repeat === "weekdays" && selectedDay.getDay() >= 1 && selectedDay.getDay() <= 5) ||
         (item.repeat === "weekly" && item.date && new Date(item.date).getDay() === selectedDay.getDay()) ||
         (item.repeat === "monthly" && item.date && new Date(item.date).getDate() === selectedDay.getDate())
       )
@@ -1009,25 +1018,24 @@ export default function Planner() {
   const handleAdd = async () => {
     if (!newItem.title.trim()) return;
     setSaving(true);
-    // Phase 2 BUILD 3 — habit-mode FAB writes directly to HabitLogs so future
-    // ritual stacks pick the habit up; task/ritual/reminder still go through
-    // PlannerItems (the canonical task entity post-Phase 1 unification).
+    // Sprint 6B Feature 1 — use explicit newItem.date when set, else fall
+    // back to the currently selected day in the strip.
+    const targetDate = newItem.date || selectedStr;
     if (addMode === "habit") {
       try {
         await base44.entities.HabitLogs.create({
           user_id: user.id,
           habit_name: newItem.title.trim(),
-          date: selectedStr,
+          date: targetDate,
           is_completed: false,
           time_of_day: newItem.time && Number(newItem.time.split(":")[0] || 12) >= 17 ? "evening" : "morning",
           created_at: new Date().toISOString(),
         });
       } catch { /* surface silently — user can retry */ }
-      setNewItem({ title: "", category: "reminder", time: "", repeat: "once", notes: "" });
+      setNewItem({ title: "", category: "reminder", time: "", repeat: "once", notes: "", date: "" });
       setAddMode("task");
       setShowAdd(false);
       setSaving(false);
-      // Trigger a habit re-fetch on the next selected-day change.
       try {
         const habits = await base44.entities.HabitLogs.filter({ user_id: user.id }, "-created_date", 60);
         setHabitLogs(habits);
@@ -1039,7 +1047,7 @@ export default function Planner() {
       user_id: user.id,
       title: newItem.title.trim(),
       category,
-      date: selectedStr,
+      date: targetDate,
       time: newItem.time || null,
       repeat: addMode === "ritual" ? "daily" : newItem.repeat,
       notes: newItem.notes || null,
@@ -1047,7 +1055,7 @@ export default function Planner() {
       created_at: new Date().toISOString(),
     });
     setItems(prev => [{ ...created, _source: "planner" }, ...prev]);
-    setNewItem({ title: "", category: "reminder", time: "", repeat: "once", notes: "" });
+    setNewItem({ title: "", category: "reminder", time: "", repeat: "once", notes: "", date: "" });
     setAddMode("task");
     setShowAdd(false);
     setSaving(false);
@@ -1058,24 +1066,25 @@ export default function Planner() {
   const handleSaveMed = async () => {
     if (!medForm.name.trim() || !user?.id) return;
     setSavingMed(true);
+    // Sprint 6B Feature 1 — honour the date picker on the med form.
+    const targetDate = medForm.date || selectedStr;
     try {
       await base44.entities.MedicationReminders.create({
         user_id: user.id,
         medication_name: medForm.name.trim(),
         dosage: medForm.dose || null,
         reminder_time: medForm.time || null,
-        date: selectedStr,
+        date: targetDate,
         notes: medForm.notes || null,
         is_taken: false,
         created_at: new Date().toISOString(),
       });
-      // Re-fetch today's meds so the commitment row appears immediately.
       try {
         const rows = await base44.entities.MedicationReminders.filter({ user_id: user.id, date: selectedStr }, "-created_date", 20);
         setMedications(rows || []);
       } catch { /* silent */ }
     } catch { /* MedicationReminders may not be migrated yet */ }
-    setMedForm({ name: "", time: "", dose: "", notes: "" });
+    setMedForm({ name: "", time: "", dose: "", notes: "", date: "" });
     setShowMedAdd(false);
     setSavingMed(false);
   };
@@ -1534,12 +1543,16 @@ export default function Planner() {
             <FertileWindowCard profile={profile} cycleDay={selectedCycleDay} userId={user?.id} />
           )}
           <AstraSidecar profile={profile} />
-          {/* STEP 7: GP-ready PDF export — peri / reproductive / postpartum.
-              Eligibility honours effectiveLifeStage so the DevStageSwitcher
-              preview also surfaces this card. */}
-          <GpExportButton
+          {/* Sprint 6B Feature 2 — merged Export sheet replaces the two
+              prior CTAs (Export for GP + Build diary appointment). Single
+              "Export" button opens a bottom sheet with checkboxes + a
+              combined/separate toggle. Reuses the existing PDF builders
+              from GpExportButton + DoctorReadyDiaryCard so the output is
+              byte-identical to the prior surfaces. */}
+          <MergedExportSheet
             profile={profile}
             plannerConfig={plannerConfig}
+            user={user}
             effectiveLifeStage={effectiveLifeStage}
           />
           {/* Plan-my-next-cycle is cycle-anchored. Hide for non-cycle stages. */}
@@ -1950,10 +1963,10 @@ export default function Planner() {
             {fabOpen && (
               <>
                 {[
-                  { key: "task",       label: "Task",       Icon: ListTodo, onClick: () => { setAddMode("task");     setNewItem({ title: "", category: "personal", time: "", repeat: "once",  notes: "" }); setFabOpen(false); setShowAdd(true); } },
-                  { key: "habit",      label: "Habit",      Icon: Repeat,   onClick: () => { setAddMode("habit");    setNewItem({ title: "", category: "wellbeing", time: "", repeat: "daily", notes: "" }); setFabOpen(false); setShowAdd(true); } },
-                  { key: "medication", label: "Medication", Icon: Pill,     onClick: () => { setFabOpen(false); setShowMedAdd(true); } },
-                  { key: "ritual",     label: "Ritual",     Icon: Sparkles, onClick: () => { setAddMode("ritual");   setNewItem({ title: "", category: "wellbeing", time: "", repeat: "daily", notes: "" }); setFabOpen(false); setShowAdd(true); } },
+                  { key: "task",       label: "Task",       Icon: ListTodo, onClick: () => { setAddMode("task");     setNewItem({ title: "", category: "personal", time: "", repeat: "once",  notes: "", date: selectedStr }); setFabOpen(false); setShowAdd(true); } },
+                  { key: "habit",      label: "Habit",      Icon: Repeat,   onClick: () => { setAddMode("habit");    setNewItem({ title: "", category: "wellbeing", time: "", repeat: "daily", notes: "", date: selectedStr }); setFabOpen(false); setShowAdd(true); } },
+                  { key: "medication", label: "Medication", Icon: Pill,     onClick: () => { setMedForm({ name: "", time: "", dose: "", notes: "", date: selectedStr }); setFabOpen(false); setShowMedAdd(true); } },
+                  { key: "ritual",     label: "Ritual",     Icon: Sparkles, onClick: () => { setAddMode("ritual");   setNewItem({ title: "", category: "wellbeing", time: "", repeat: "daily", notes: "", date: selectedStr }); setFabOpen(false); setShowAdd(true); } },
                   { key: "journal",    label: "Journal",    Icon: BookHeart, onClick: () => { setFabOpen(false); navigate(`/Journal?date=${selectedStr}`); } },
                 ].map(({ key, label, Icon, onClick }) => (
                   <button
@@ -2020,6 +2033,32 @@ export default function Planner() {
                 </div>
               </div>
 
+              {/* Sprint 6B Feature 1 — Date row. Defaults to the strip's
+                  selected day (set at modal open). Shows an inline warn
+                  hint when a past date is picked. Native input keeps the
+                  picker minimal + platform-native. */}
+              <div>
+                <p style={fieldLabelStyle}>Date</p>
+                <input
+                  type="date"
+                  value={newItem.date || selectedStr}
+                  onChange={e => setNewItem(p => ({ ...p, date: e.target.value }))}
+                  style={inputStyle}
+                />
+                {(() => {
+                  const chosen = newItem.date || selectedStr;
+                  const todayStr = toDateStr(today);
+                  if (chosen < todayStr) {
+                    return (
+                      <p style={{ fontSize: 11, color: "#A6862B", fontFamily: "'Inter', sans-serif", marginTop: 4, fontStyle: "italic" }}>
+                        This date has passed — add anyway?
+                      </p>
+                    );
+                  }
+                  return null;
+                })()}
+              </div>
+
               <div className="grid grid-cols-2 gap-3">
                 <div>
                   <p style={fieldLabelStyle}>Time (optional)</p>
@@ -2028,7 +2067,13 @@ export default function Planner() {
                 <div>
                   <p style={fieldLabelStyle}>Repeat</p>
                   <select value={newItem.repeat} onChange={e => setNewItem(p => ({ ...p, repeat: e.target.value }))} style={inputStyle}>
-                    {["once", "daily", "weekly", "monthly"].map(r => <option key={r} value={r}>{r.charAt(0).toUpperCase() + r.slice(1)}</option>)}
+                    {/* Sprint 6B Feature 1 — added "weekdays" alongside the
+                        existing once/daily/weekly/monthly options. */}
+                    <option value="once">None (one-off)</option>
+                    <option value="daily">Daily</option>
+                    <option value="weekdays">Weekdays</option>
+                    <option value="weekly">Weekly</option>
+                    <option value="monthly">Monthly</option>
                   </select>
                 </div>
               </div>
@@ -2077,6 +2122,28 @@ export default function Planner() {
                 onChange={e => setMedForm(p => ({ ...p, name: e.target.value }))}
                 style={inputStyle}
               />
+              {/* Sprint 6B Feature 1 — date row on medication form. */}
+              <div>
+                <p style={fieldLabelStyle}>Date</p>
+                <input
+                  type="date"
+                  value={medForm.date || selectedStr}
+                  onChange={e => setMedForm(p => ({ ...p, date: e.target.value }))}
+                  style={inputStyle}
+                />
+                {(() => {
+                  const chosen = medForm.date || selectedStr;
+                  const todayStr = toDateStr(today);
+                  if (chosen < todayStr) {
+                    return (
+                      <p style={{ fontSize: 11, color: "#A6862B", fontFamily: "'Inter', sans-serif", marginTop: 4, fontStyle: "italic" }}>
+                        This date has passed — add anyway?
+                      </p>
+                    );
+                  }
+                  return null;
+                })()}
+              </div>
               <div className="grid grid-cols-2 gap-3">
                 <div>
                   <p style={fieldLabelStyle}>Time</p>
