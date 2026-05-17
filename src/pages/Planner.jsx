@@ -1132,6 +1132,16 @@ export default function Planner() {
     }
   };
 
+  // Phase 2 QA-fix-bundle-11 — snap the week strip back to today's week
+  // and select today. Wired to the "Today" pill that surfaces whenever
+  // selectedDay drifts off today.
+  const goToToday = () => {
+    const t = new Date();
+    t.setHours(0, 0, 0, 0);
+    setSelectedDay(t);
+    setMonday(getMondayOfWeek(t));
+  };
+
   const prevWeek = () => {
     const d = new Date(monday);
     d.setDate(d.getDate() - 7);
@@ -1275,6 +1285,35 @@ export default function Planner() {
               </div>
               <button onClick={nextWeek} aria-label="Next week" style={navBtnStyle}>
                 <ChevronRight className="w-4 h-4" style={{ color: "var(--plum-mute, #8A7584)" }} />
+              </button>
+            </div>
+          )}
+          {/* Phase 2 QA-fix-bundle-11 — "Today" pill. Surfaces only when
+              the selected day isn't today (so the strip needs a snap-back).
+              Tap returns to today's week + selects today. Centred under
+              the chip strip in --femwell-blush so it reads as a soft
+              affordance rather than a CTA shouting from the page. ───── */}
+          {view === "today" && !isTodayDate(selectedDay) && (
+            <div style={{ display: "flex", justifyContent: "center", marginTop: 8 }}>
+              <button
+                onClick={goToToday}
+                aria-label="Snap back to today"
+                style={{
+                  display: "inline-flex", alignItems: "center", gap: 6,
+                  padding: "4px 12px",
+                  borderRadius: 9999,
+                  border: "1px solid var(--femwell-blush, #E8B4B8)",
+                  background: "rgba(232,180,184,0.18)",
+                  color: "var(--femwell-espresso, #3A2C1A)",
+                  fontFamily: "'Inter', sans-serif",
+                  fontSize: 11,
+                  fontWeight: 700,
+                  letterSpacing: "0.06em",
+                  cursor: "pointer",
+                }}
+              >
+                <span aria-hidden="true" style={{ fontSize: 11 }}>↩</span>
+                Today
               </button>
             </div>
           )}
@@ -1939,7 +1978,12 @@ export default function Planner() {
       {showAdd && (
         <>
           <div onClick={() => setShowAdd(false)} style={{ position: "fixed", inset: 0, zIndex: 40, backgroundColor: "rgba(74,42,58,0.4)", backdropFilter: "blur(4px)" }} />
-          <div style={{ position: "fixed", bottom: 0, left: 0, right: 0, zIndex: 50, backgroundColor: "var(--surface, #FFFFFF)", borderRadius: "24px 24px 0 0", padding: "20px 20px 40px", maxHeight: "80vh", overflowY: "auto" }}>
+          {/* Phase 2 QA-fix-bundle-11 — bottom padding must clear the
+              bottom nav bar (≈64-72px) + iOS safe area, otherwise the
+              "Add to planner" CTA at the bottom of the sheet is hidden
+              behind the nav. calc(80px + env(safe-area-inset-bottom))
+              gives ~12px breathing room above the nav on all devices. */}
+          <div style={{ position: "fixed", bottom: 0, left: 0, right: 0, zIndex: 50, backgroundColor: "var(--surface, #FFFFFF)", borderRadius: "24px 24px 0 0", padding: "20px 20px calc(80px + env(safe-area-inset-bottom, 0px))", maxHeight: "85vh", overflowY: "auto" }}>
             <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 20 }}>
               <h2 style={{ fontFamily: "'Fraunces', Georgia, serif", fontSize: 20, fontWeight: 500, color: "var(--plum, #4A2A3A)", margin: 0 }}>
                 {addMode === "habit"  ? "Add a habit"
@@ -2015,7 +2059,10 @@ export default function Planner() {
       {showMedAdd && (
         <>
           <div onClick={() => setShowMedAdd(false)} style={{ position: "fixed", inset: 0, zIndex: 40, backgroundColor: "rgba(74,42,58,0.4)", backdropFilter: "blur(4px)" }} />
-          <div style={{ position: "fixed", bottom: 0, left: 0, right: 0, zIndex: 50, backgroundColor: "var(--surface, #FFFFFF)", borderRadius: "24px 24px 0 0", padding: "20px 20px 40px", maxHeight: "75vh", overflowY: "auto" }}>
+          {/* Phase 2 QA-fix-bundle-11 — same nav-clearance padding as the
+              main add sheet, so "Save medication" isn't hidden behind the
+              bottom nav (Today/Lifestyle/Jess/Profile/Menu) on mobile. */}
+          <div style={{ position: "fixed", bottom: 0, left: 0, right: 0, zIndex: 50, backgroundColor: "var(--surface, #FFFFFF)", borderRadius: "24px 24px 0 0", padding: "20px 20px calc(80px + env(safe-area-inset-bottom, 0px))", maxHeight: "85vh", overflowY: "auto" }}>
             <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 20 }}>
               <h2 style={{ fontFamily: "'Fraunces', Georgia, serif", fontSize: 20, fontWeight: 500, color: "var(--plum, #4A2A3A)", margin: 0 }}>Add medication</h2>
               <button onClick={() => setShowMedAdd(false)} aria-label="Close" style={{ width: 30, height: 30, borderRadius: 9999, backgroundColor: "var(--cream-2, #FFF5EC)", border: "none", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center" }}>
