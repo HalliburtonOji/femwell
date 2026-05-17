@@ -18,11 +18,11 @@
     },
     "brand": {
       "type": "string",
-      "description": "Optional brand/type of OPK test used"
+      "description": "Optional brand of the OPK test used"
     },
     "notes": {
       "type": "string",
-      "description": "Optional notes about the test or results"
+      "description": "Optional notes about the test or conditions"
     },
     "user_id": {
       "type": "string",
