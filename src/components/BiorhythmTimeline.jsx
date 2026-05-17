@@ -20,6 +20,7 @@ import { useState, useEffect, useMemo } from "react";
 import {
   Pill, Briefcase, Sparkles, Activity, Droplets, Moon,
   Heart, X, Plus, ChevronRight, Clock, Zap, ListPlus,
+  Baby, Footprints, FileText, Stethoscope, Star, TrendingUp,
 } from "lucide-react";
 
 // ── Design tokens ───────────────────────────────────────────────────────────
@@ -50,30 +51,45 @@ const HOURS = Object.keys(ENERGY_CURVE).map(Number).sort((a, b) => a - b);
 const TIMELINE_START = 6;
 const HOUR_PX = 72;
 
+// Every item references a real Planner section — Morning Stack habits,
+// MedicationReminders, RitualBundles, Tonight card, Shutdown ritual,
+// PlannerItems (incl. anchor tasks + antenatal appointment).
 const INITIAL_TASKS = [
-  { id: 1, type: "habit",      hour: 7,  minute: 0,  dur: 15, title: "Morning stretch",       note: "Five sun salutations." },
-  { id: 2, type: "medication", hour: 8,  minute: 0,  dur: 5,  title: "Folic acid",            note: "400 mcg with breakfast." },
-  { id: 3, type: "task",       hour: 10, minute: 0,  dur: 90, title: "Deep work block",      note: "Q3 strategy doc — first draft.", anchor: true },
-  { id: 4, type: "habit",      hour: 12, minute: 30, dur: 30, title: "Lunch + walk",          note: "Outside if dry." },
-  { id: 5, type: "ritual",     hour: 14, minute: 0,  dur: 10, title: "Afternoon tea",         note: "Tulsi rose. Phone face down." },
-  { id: 6, type: "medication", hour: 18, minute: 30, dur: 5,  title: "Magnesium glycinate",   note: "200 mg before dinner." },
-  { id: 7, type: "habit",      hour: 19, minute: 30, dur: 30, title: "Evening walk",          note: "20 min slow loop." },
-  { id: 8, type: "ritual",     hour: 21, minute: 0,  dur: 15, title: "Shutdown ritual",       note: "Lights low. Hot water bottle." },
+  { id: 1, type: "habit",      hour: 7,  minute: 0,  dur: 15, title: "Morning stretch",       note: "Five sun salutations.",                source: "Morning Stack",       anchor: true },
+  { id: 2, type: "medication", hour: 8,  minute: 0,  dur: 5,  title: "Folic acid 400 mcg",    note: "With breakfast.",                       source: "MedicationReminders" },
+  { id: 3, type: "habit",      hour: 8,  minute: 30, dur: 5,  title: "Drink water",            note: "First glass.",                          source: "Morning Stack"      },
+  { id: 4, type: "task",       hour: 10, minute: 0,  dur: 90, title: "Deep work block",       note: "Q3 strategy doc — first draft.",        source: "PlannerItems",       anchor: true },
+  { id: 5, type: "habit",      hour: 12, minute: 30, dur: 30, title: "Lunch + walk",          note: "Outside if dry.",                       source: "Morning Stack"      },
+  { id: 6, type: "task",       hour: 14, minute: 0,  dur: 60, title: "Antenatal class",       note: "Trimester II group session.",           source: "PlannerItems"       },
+  { id: 7, type: "ritual",     hour: 15, minute: 30, dur: 10, title: "Tulsi tea ritual",      note: "Phone face down. From RitualBundles.",  source: "RitualBundles"      },
+  { id: 8, type: "medication", hour: 18, minute: 30, dur: 5,  title: "Magnesium glycinate",   note: "200 mg before dinner.",                 source: "MedicationReminders" },
+  { id: 9, type: "habit",      hour: 19, minute: 30, dur: 30, title: "Evening walk",          note: "20 min slow loop.",                     source: "Morning Stack"      },
+  { id: 10,type: "ritual",     hour: 20, minute: 30, dur: 20, title: "Tonight — wind-down",   note: "Tonight card pre-placement.",           source: "Tonight card"       },
+  { id: 11,type: "ritual",     hour: 22, minute: 0,  dur: 8,  title: "Shutdown ritual",       note: "3-step ritual: close tabs, anchor, breath.", source: "Shutdown card"   },
 ];
 
 const INITIAL_UNSCHEDULED = [
-  { id: 100, type: "task",   dur: 45, title: "Q3 planning review", note: "Read team draft and comment.", anchor: true },
-  { id: 101, type: "ritual", dur: 20, title: "Epsom bath",         note: "500 g salts, 20 min." },
-  { id: 102, type: "habit",  dur: 1,  title: "Vitamin D",           note: "1000 IU." },
-  { id: 103, type: "task",   dur: 10, title: "Reply to Sarah",      note: "Re: schedule for next week." },
+  { id: 100, type: "task",   dur: 45, title: "Q3 planning review", note: "Read team draft and comment.", source: "PlannerItems", anchor: true },
+  { id: 101, type: "ritual", dur: 20, title: "Epsom bath",         note: "From RitualBundles — Warmth set.", source: "RitualBundles" },
+  { id: 102, type: "habit",  dur: 1,  title: "Vitamin D",          note: "1000 IU.",                       source: "Morning Stack" },
+  { id: 103, type: "task",   dur: 10, title: "Reply to Sarah",      note: "Re: scope for next week.",       source: "PlannerItems" },
 ];
 
+// Six body tiles — matches the live Planner: Sleep / Mood / Energy /
+// Hydration / Movement / Baby (Baby surfaces only on pregnancy stages).
 const BODY = {
-  sleep: { value: 7.5, unit: "h",     label: "Sleep",     icon: Moon,     tone: TOKENS.plum    },
-  mood:  { value: 4,   unit: "/5",    label: "Mood",      icon: Heart,    tone: TOKENS.rose    },
-  energy:{ value: 3,   unit: "/5",    label: "Energy",    icon: Zap,      tone: TOKENS.gold    },
-  water: { value: 4,   unit: "/8",    label: "Hydration", icon: Droplets, tone: "#60B4FA"      },
+  sleep:    { value: 7.5, unit: "h",   label: "Sleep",     icon: Moon,        tone: TOKENS.plum    },
+  mood:     { value: 4,   unit: "/5",  label: "Mood",      icon: Heart,       tone: TOKENS.rose    },
+  energy:   { value: 3,   unit: "/5",  label: "Energy",    icon: Zap,         tone: TOKENS.gold    },
+  water:    { value: 4,   unit: "/8",  label: "Hydration", icon: Droplets,    tone: "#60B4FA"      },
+  movement: { value: 32,  unit: "min", label: "Movement",  icon: Footprints,  tone: TOKENS.sage    },
+  baby:     { value: "✓", unit: "kicks", label: "Baby",    icon: Baby,        tone: TOKENS.blush   },
 };
+
+// 28-day consistency dots for the Journey tab — kept / missed / today.
+const CONSISTENCY_28 = [
+  1,1,1,0,1,1,1, 1,0,1,1,1,1,0, 1,1,1,1,0,1,1, 1,1,1,1,1,1,1,
+];
 
 const WEEK = [
   { day: "Mon", value: 72, phase: "follicular" },
@@ -153,8 +169,11 @@ export default function BiorhythmTimeline() {
   const [expandedBlock, setExpandedBlock] = useState(null);
   const [pickedUp, setPickedUp]           = useState(null);
   const [dockOpen, setDockOpen]           = useState(false);
+  const [dockTab, setDockTab]             = useState("body"); // body | journey
   const [recentId, setRecentId]           = useState(null);
   const [body, setBody]                   = useState(BODY);
+  const [stageBannerOpen, setStageBannerOpen] = useState(true);
+  const [careOpen, setCareOpen]           = useState(false);
   const [, setTick]                       = useState(0);
 
   // micro-pulse every minute
@@ -224,9 +243,12 @@ export default function BiorhythmTimeline() {
       const cur = b[key];
       if (key === "water") return { ...b, water: { ...cur, value: Math.min(8, cur.value + 1) } };
       if (key === "mood" || key === "energy") return { ...b, [key]: { ...cur, value: Math.min(5, cur.value + 1) } };
+      if (key === "movement") return { ...b, movement: { ...cur, value: cur.value + 5 } };
       return b;
     });
   };
+
+  const consistencyKept = CONSISTENCY_28.filter(d => d === 1).length;
 
   const totalTimelinePx = HOURS.length * HOUR_PX;
   const nowTop = nowLineTop(MOCK_NOW);
@@ -235,15 +257,37 @@ export default function BiorhythmTimeline() {
     <div style={shell}>
       <style>{cssAnimations}</style>
 
-      {/* Phase pill — pinned to top */}
-      <div style={phasePill}>
-        <span style={phaseDot} />
-        <span style={phaseTextEyebrow}>{PHASE.name}</span>
-        <span style={phaseDivider}>·</span>
-        <span style={phaseTextBody}>Day {PHASE.day}</span>
-        <span style={phaseDivider}>·</span>
-        <span style={phaseTextBody}>Capacity {PHASE.capacity}%</span>
+      {/* Phase pill row — phase pill + GP export icon */}
+      <div style={phasePillRow}>
+        <div style={phasePill}>
+          <span style={phaseDot} />
+          <span style={phaseTextEyebrow}>{PHASE.name}</span>
+          <span style={phaseDivider}>·</span>
+          <span style={phaseTextBody}>Day {PHASE.day}</span>
+          <span style={phaseDivider}>·</span>
+          <span style={phaseTextBody}>Capacity {PHASE.capacity}%</span>
+        </div>
+        <button onClick={() => setCareOpen(true)} style={exportBtn} aria-label="Open GP export and Doctor-Ready Diary">
+          <FileText size={11} />
+          Export
+        </button>
       </div>
+
+      {/* Life-stage banner — collapsible, pinned below phase pill */}
+      <button onClick={() => setStageBannerOpen(v => !v)} style={stageBanner} aria-expanded={stageBannerOpen}>
+        <div style={{ ...stageBannerIcon, background: "rgba(232,180,184,0.30)", color: TOKENS.rose }}>
+          <Baby size={14} />
+        </div>
+        <div style={{ flex: 1, textAlign: "left" }}>
+          <div style={stageBannerTitle}>Pregnancy &middot; Trimester II &middot; Week 22</div>
+          {stageBannerOpen && (
+            <div style={stageBannerSub}>
+              Kick counter logged 11:14 &middot; Next antenatal: <b>14:00</b> today &middot; 20-week scan complete &middot; HRT card hidden (stage-protected)
+            </div>
+          )}
+        </div>
+        <ChevronRight size={14} style={{ color: TOKENS.muted, transform: stageBannerOpen ? "rotate(90deg)" : "rotate(0deg)", transition: "transform 0.2s" }} />
+      </button>
 
       {/* Compose bar */}
       <div style={composeWrap}>
@@ -364,28 +408,87 @@ export default function BiorhythmTimeline() {
           </div>
         </div>
 
-        {/* Right-edge body dock */}
+        {/* Right-edge body / journey dock */}
         <div style={{ ...dockShell, transform: dockOpen ? "translateX(0)" : "translateX(calc(100% - 36px))" }}>
-          <button onClick={() => setDockOpen(v => !v)} style={dockTab} aria-label={dockOpen ? "Hide body" : "Show body"}>
+          <button onClick={() => setDockOpen(v => !v)} style={dockTab} aria-label={dockOpen ? "Hide body and journey" : "Show body and journey"}>
             {dockOpen ? <ChevronRight size={14} /> : <Heart size={14} />}
           </button>
           <div style={dockBody}>
-            <div style={dockEyebrow}>YOUR BODY</div>
-            <div style={dockGrid}>
-              {Object.entries(body).map(([key, m]) => {
-                const Icon = m.icon;
+            {/* Dock tabs — Body / Journey */}
+            <div style={dockTabsRow} role="tablist">
+              {[
+                { id: "body",    label: "Body",    Icon: Heart },
+                { id: "journey", label: "Journey", Icon: TrendingUp },
+              ].map(({ id, label, Icon }) => {
+                const active = dockTab === id;
                 return (
-                  <button key={key} onClick={() => bumpBody(key)} style={{ ...dockTile, borderColor: `${m.tone}55` }}>
-                    <div style={{ ...dockTileIcon, background: `${m.tone}22`, color: m.tone }}>
-                      <Icon size={14} />
-                    </div>
-                    <div style={dockTileValue}>{m.value}<span style={dockTileUnit}>{m.unit}</span></div>
-                    <div style={dockTileLabel}>{m.label}</div>
+                  <button key={id} onClick={() => setDockTab(id)} role="tab" aria-selected={active}
+                          style={{ ...dockTabPill, background: active ? TOKENS.espresso : "transparent", color: active ? TOKENS.cream : TOKENS.muted, borderColor: active ? TOKENS.espresso : "rgba(58,44,26,0.10)" }}>
+                    <Icon size={11} /> {label}
                   </button>
                 );
               })}
             </div>
-            <p style={dockNote}>Logs straight into your daily check-in — same entity as Today.</p>
+
+            {dockTab === "body" && (
+              <>
+                <div style={dockGrid}>
+                  {Object.entries(body).map(([key, m]) => {
+                    const Icon = m.icon;
+                    return (
+                      <button key={key} onClick={() => bumpBody(key)} style={{ ...dockTile, borderColor: `${m.tone}55` }}>
+                        <div style={{ ...dockTileIcon, background: `${m.tone}22`, color: m.tone }}>
+                          <Icon size={14} />
+                        </div>
+                        <div style={dockTileValue}>{m.value}<span style={dockTileUnit}>{m.unit}</span></div>
+                        <div style={dockTileLabel}>{m.label}</div>
+                      </button>
+                    );
+                  })}
+                </div>
+                <p style={dockNote}>Six tiles, same DailyCheckins entity as Today — Movement and Baby are stage-aware.</p>
+              </>
+            )}
+
+            {dockTab === "journey" && (
+              <>
+                <div style={journeyBlock}>
+                  <div style={journeyEyebrow}>CAPACITY TAX</div>
+                  <div style={journeyBarTrack}>
+                    <div style={{ ...journeyBarFill, width: `${PHASE.capacity}%`, background: TOKENS.gold }} />
+                  </div>
+                  <div style={journeyMeta}>Predicted load <b>{PHASE.capacity}</b> &middot; defer high-cost items to Thu.</div>
+                </div>
+                <div style={journeyBlock}>
+                  <div style={journeyEyebrow}>28-DAY CONSISTENCY · {consistencyKept}/28</div>
+                  <div style={dotsRow}>
+                    {CONSISTENCY_28.map((v, i) => (
+                      <span key={i} style={{
+                        ...dotMini,
+                        background: v === 1 ? TOKENS.sage : "rgba(58,44,26,0.10)",
+                        transform: i === 14 ? "scale(1.4)" : "scale(1)",
+                      }} />
+                    ))}
+                  </div>
+                </div>
+                <button onClick={() => setCareOpen(true)} style={journeyDoctorBtn}>
+                  <FileText size={12} /> Doctor-Ready Diary
+                </button>
+                <div style={astraSidecar}>
+                  <div style={{ ...stageBannerIcon, background: "rgba(212,175,55,0.20)", color: TOKENS.goldDeep, width: 20, height: 20, borderRadius: 6 }}>
+                    <Star size={11} />
+                  </div>
+                  <div>
+                    <div style={astraTitle}>Astra Cole · MA, FAS</div>
+                    <div style={astraSub}>&ldquo;A protective day. Don&apos;t spend the morning.&rdquo;</div>
+                  </div>
+                </div>
+                <button onClick={() => setCareOpen(true)} style={journeyGpBtn}>
+                  <Stethoscope size={12} /> GP export
+                </button>
+                <p style={dockNote}>Capacity Tax + 28-day Consistency + Doctor-Ready Diary + Astra Cole + GP export — all sourced from existing Cycle/Today cards.</p>
+              </>
+            )}
           </div>
         </div>
       </div>
@@ -499,6 +602,33 @@ export default function BiorhythmTimeline() {
               </button>
             </div>
             <p style={sheetWire}>Wired data: <b>{BLOCK[expandedBlock.type].label}</b> blocks come from your existing PlannerItems / MedicationReminders / HabitLogs — this demo doesn&apos;t duplicate the entities.</p>
+          </div>
+        </>
+      )}
+
+      {/* Care modal — Doctor-Ready Diary + GP export */}
+      {careOpen && (
+        <>
+          <div onClick={() => setCareOpen(false)} style={careBackdrop} aria-hidden="true" />
+          <div style={careSheet} role="dialog" aria-label="Care">
+            <div style={careHandle} />
+            <div style={careHead}>
+              <div style={{ ...stageBannerIcon, background: "rgba(232,180,184,0.30)", color: TOKENS.rose }}>
+                <Stethoscope size={14} />
+              </div>
+              <div style={{ flex: 1 }}>
+                <div style={careEyebrow}>CARE</div>
+                <div style={careTitle}>Doctor-Ready Diary &amp; GP export</div>
+              </div>
+              <button onClick={() => setCareOpen(false)} style={careClose} aria-label="Close care"><X size={14} /></button>
+            </div>
+            <div style={careRow}><FileText size={14} style={{ color: TOKENS.muted }} /><span><b>NICE NG23</b> appointment diary — 8 weeks of entries.</span></div>
+            <div style={careRow}><Star size={14} style={{ color: TOKENS.gold }} /><span><b>Astra Cole sidecar</b> — &ldquo;Backed by Astra Cole, MA, FAS&rdquo;.</span></div>
+            <div style={careActions}>
+              <button style={careCta}><FileText size={13} /> Build PDF</button>
+              <button style={careCtaAlt}><Stethoscope size={13} /> Open diary</button>
+            </div>
+            <p style={careWire}>Routes through the existing DoctorReadyDiaryCard / GpExportButton / MergedExportSheet.</p>
           </div>
         </>
       )}
@@ -927,3 +1057,132 @@ const sheetWire = {
   padding: "8px 10px", borderRadius: 8,
   background: TOKENS.paper, border: `1px dashed rgba(58,44,26,0.10)`,
 };
+
+
+// ── New styles added 2026-05-17 (Planner integration sweep) ─────────────────
+const phasePillRow = {
+  display: "flex", alignItems: "center", justifyContent: "space-between",
+  gap: 10, marginBottom: 10,
+};
+const exportBtn = {
+  display: "inline-flex", alignItems: "center", gap: 5,
+  padding: "5px 11px", borderRadius: 9999,
+  background: TOKENS.paper, color: TOKENS.espresso,
+  border: "1px solid rgba(58,44,26,0.15)",
+  cursor: "pointer",
+  fontSize: 10, fontWeight: 700, letterSpacing: "0.14em", textTransform: "uppercase",
+};
+
+const stageBanner = {
+  width: "100%",
+  display: "flex", alignItems: "center", gap: 10,
+  padding: "10px 12px", marginBottom: 12,
+  background: TOKENS.paper,
+  border: "1px solid rgba(232,180,184,0.42)",
+  borderLeft: `4px solid ${TOKENS.blush}`,
+  borderRadius: 14,
+  cursor: "pointer", textAlign: "left",
+};
+const stageBannerIcon = {
+  width: 28, height: 28, borderRadius: 9,
+  display: "flex", alignItems: "center", justifyContent: "center",
+  flexShrink: 0,
+};
+const stageBannerTitle = { fontSize: 12, fontWeight: 700, color: TOKENS.espresso, letterSpacing: "0.04em" };
+const stageBannerSub = { fontSize: 11, color: TOKENS.muted, marginTop: 3, lineHeight: 1.4 };
+
+// Dock tabs
+const dockTabsRow = { display: "flex", gap: 6, marginBottom: 10 };
+const dockTabPill = {
+  display: "inline-flex", alignItems: "center", gap: 5,
+  padding: "5px 10px", borderRadius: 9999,
+  fontSize: 11, fontWeight: 700, letterSpacing: "0.06em",
+  border: "1px solid", cursor: "pointer",
+};
+
+// Journey tab
+const journeyBlock = {
+  padding: "8px 0", marginBottom: 8,
+  borderBottom: "1px solid rgba(58,44,26,0.06)",
+};
+const journeyEyebrow = { fontSize: 9, fontWeight: 700, letterSpacing: "0.16em", color: TOKENS.muted, marginBottom: 6 };
+const journeyBarTrack = { height: 8, borderRadius: 9999, background: "rgba(58,44,26,0.08)", overflow: "hidden" };
+const journeyBarFill = { height: "100%", borderRadius: 9999, transition: "width 0.5s ease" };
+const journeyMeta = { fontSize: 11, color: TOKENS.espresso, marginTop: 6, lineHeight: 1.4 };
+const dotsRow = { display: "grid", gridTemplateColumns: "repeat(14, 1fr)", gap: 3 };
+const dotMini = { width: 6, height: 6, borderRadius: 9999, transition: "transform 0.2s ease" };
+const journeyDoctorBtn = {
+  width: "100%",
+  display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 5,
+  padding: "8px 11px", borderRadius: 9999,
+  background: TOKENS.cream, color: TOKENS.espresso,
+  border: "1px solid rgba(58,44,26,0.15)", cursor: "pointer",
+  fontSize: 11, fontWeight: 700, letterSpacing: "0.04em",
+  marginBottom: 8,
+};
+const astraSidecar = {
+  display: "flex", gap: 8, alignItems: "flex-start",
+  padding: "8px 10px", borderRadius: 10,
+  background: "rgba(212,175,55,0.14)",
+  border: `1px solid ${TOKENS.gold}55`,
+  marginBottom: 8,
+};
+const astraTitle = { fontSize: 10, fontWeight: 700, letterSpacing: "0.10em", color: TOKENS.goldDeep, textTransform: "uppercase" };
+const astraSub = { fontSize: 11, color: TOKENS.espresso, fontStyle: "italic", lineHeight: 1.4, marginTop: 2 };
+const journeyGpBtn = {
+  width: "100%",
+  display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 5,
+  padding: "8px 11px", borderRadius: 9999,
+  background: TOKENS.espresso, color: TOKENS.cream,
+  border: "none", cursor: "pointer",
+  fontSize: 11, fontWeight: 700, letterSpacing: "0.04em",
+};
+
+// Care sheet
+const careBackdrop = {
+  position: "fixed", inset: 0, zIndex: 80,
+  background: "rgba(58,44,26,0.40)", backdropFilter: "blur(6px)",
+};
+const careSheet = {
+  position: "fixed", left: "50%", bottom: 24,
+  transform: "translateX(-50%)",
+  width: "min(540px, calc(100vw - 32px))",
+  background: TOKENS.cream, color: TOKENS.espresso,
+  borderRadius: 24, padding: "18px 20px 22px", zIndex: 81,
+  boxShadow: "0 24px 64px rgba(58,44,26,0.30)",
+};
+const careHandle = { width: 38, height: 4, borderRadius: 9999, background: "rgba(58,44,26,0.15)", margin: "0 auto 12px" };
+const careHead = { display: "flex", alignItems: "center", gap: 10, marginBottom: 10 };
+const careEyebrow = { fontSize: 10, fontWeight: 700, letterSpacing: "0.16em", color: TOKENS.muted };
+const careTitle = { fontFamily: "'Fraunces', Georgia, serif", fontSize: 18, fontWeight: 500, color: TOKENS.espresso, marginTop: 2 };
+const careClose = {
+  width: 30, height: 30, borderRadius: 9999,
+  background: TOKENS.paper, border: "1px solid rgba(58,44,26,0.10)",
+  cursor: "pointer", color: TOKENS.muted,
+  display: "flex", alignItems: "center", justifyContent: "center",
+};
+const careRow = {
+  display: "flex", alignItems: "center", gap: 10,
+  padding: "10px 12px", borderRadius: 12,
+  background: TOKENS.paper, border: "1px solid rgba(58,44,26,0.08)",
+  fontSize: 12, color: TOKENS.espresso, lineHeight: 1.5, marginBottom: 6,
+};
+const careActions = { display: "flex", gap: 8, marginTop: 10 };
+const careCta = {
+  flex: 1, padding: "11px 14px", borderRadius: 9999,
+  display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 6,
+  background: TOKENS.espresso, color: TOKENS.cream, border: "none", cursor: "pointer",
+  fontSize: 13, fontWeight: 700, letterSpacing: "0.04em",
+};
+const careCtaAlt = {
+  flex: 1, padding: "11px 14px", borderRadius: 9999,
+  display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 6,
+  background: "transparent", color: TOKENS.espresso, border: "1px solid rgba(58,44,26,0.15)", cursor: "pointer",
+  fontSize: 13, fontWeight: 700, letterSpacing: "0.04em",
+};
+const careWire = {
+  fontSize: 10, color: TOKENS.muted, fontStyle: "italic", marginTop: 12,
+  padding: "8px 10px", borderRadius: 8,
+  background: TOKENS.paper, border: "1px dashed rgba(58,44,26,0.10)",
+};
+

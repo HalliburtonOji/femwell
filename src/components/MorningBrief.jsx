@@ -177,7 +177,7 @@ function JessTag() {
 }
 
 // ── Component ───────────────────────────────────────────────────────────────
-export default function MorningBrief({ onSwitchToBiorhythm }) {
+export default function MorningBrief({ onSwitchToBiorhythm, onClose, onComplete }) {
   const [eveningMode, setEveningMode] = useState(false);
 
   // ── Morning state ─────────────────────────────────────────────────────────
@@ -202,8 +202,14 @@ export default function MorningBrief({ onSwitchToBiorhythm }) {
   const [shutdown, setShutdown] = useState(new Set());
 
   useEffect(() => {
-    if (step === 6 && !completedAt) setCompletedAt(Date.now());
-  }, [step, completedAt]);
+    if (step === 6 && !completedAt) {
+      const now = Date.now();
+      setCompletedAt(now);
+      // Notify parent (Planner bottom-sheet) that the brief is complete.
+      // The parent decides whether to auto-dismiss after the confetti moment.
+      if (typeof onComplete === "function") onComplete({ at: now, anchors, captures });
+    }
+  }, [step, completedAt, onComplete, anchors, captures]);
 
   // Auto-advance step 0 after 2.6s (typewriter finishes by then)
   useEffect(() => {
@@ -292,6 +298,11 @@ export default function MorningBrief({ onSwitchToBiorhythm }) {
             <RotateCcw size={11} />
             Restart
           </button>
+          {typeof onClose === "function" && (
+            <button onClick={onClose} aria-label="Close brief" style={closeBtn}>
+              <X size={13} />
+            </button>
+          )}
         </div>
       </div>
 
@@ -524,9 +535,11 @@ export default function MorningBrief({ onSwitchToBiorhythm }) {
             <p style={cardEyebrow}>YOUR RHYTHM FOR TODAY</p>
             <h3 style={cardTitle}>Here&apos;s how the day might land.</h3>
           </div>
-          <button onClick={onSwitchToBiorhythm} style={rhythmAdjust} aria-label="See Biorhythm view">
-            See Biorhythm <ArrowRight size={11} />
-          </button>
+          {typeof onSwitchToBiorhythm === "function" && (
+            <button onClick={onSwitchToBiorhythm} style={rhythmAdjust} aria-label="See Biorhythm view">
+              See Biorhythm <ArrowRight size={11} />
+            </button>
+          )}
         </div>
         <p style={cardJess}>
           Late luteal is best for closing loops, not opening new ones. Protect your morning, lighten your afternoon.
@@ -597,9 +610,11 @@ export default function MorningBrief({ onSwitchToBiorhythm }) {
           <a href="/Planner" style={primaryBtn}>
             Open full planner <ArrowRight size={14} />
           </a>
-          <button onClick={onSwitchToBiorhythm} style={secondaryBtnFull}>
-            See the Biorhythm view <ArrowRight size={13} />
-          </button>
+          {typeof onSwitchToBiorhythm === "function" && (
+            <button onClick={onSwitchToBiorhythm} style={secondaryBtnFull}>
+              See the Biorhythm view <ArrowRight size={13} />
+            </button>
+          )}
         </div>
         <p style={cardWire}>Summary writes nothing yet — the live planner reads the same anchors, stack, and check-ins this brief just collected.</p>
       </Card>
@@ -794,6 +809,13 @@ const topLinkIcon = {
   background: "transparent", border: "none", cursor: "pointer",
   fontSize: 11, fontWeight: 600, color: T.muted,
   fontFamily: "inherit",
+};
+const closeBtn = {
+  width: 26, height: 26, borderRadius: 9999,
+  background: T.paper, border: "1px solid rgba(58,44,26,0.15)",
+  color: T.muted, cursor: "pointer",
+  display: "inline-flex", alignItems: "center", justifyContent: "center",
+  marginLeft: 4,
 };
 
 const stepDotsRow = {

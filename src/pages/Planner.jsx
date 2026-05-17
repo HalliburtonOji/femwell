@@ -37,6 +37,7 @@ import { WeekAheadCard, AstraSidecar, PlanMyNextCycleCTA } from "@/components/pl
 import { selectedCrumbToday, selectedCrumbCycle } from "@/components/planner/selectedCrumb";
 import { getPlannerConfig, filterProgramsByStage } from "@/utils/plannerAdapter";
 import DevStageSwitcher from "@/components/planner/DevStageSwitcher";
+import MorningBrief from "@/components/MorningBrief";
 // Phase 2 QA-fix-bundle-8 — Planner subscribes to the module-level
 // devStageStore directly. The CustomEvent bus is no longer used here.
 import {
@@ -858,6 +859,23 @@ export default function Planner() {
   const [devStageOverride, setDevStageOverride] = useState(() => readDevStage() || null);
   const [devConditionsOverride, setDevConditionsOverride] = useState(() => readDevConditions());
   const [stageTick, setStageTick] = useState(0);
+
+  // ── "Plan today" Morning Brief bottom-sheet ─────────────────────────────
+  // briefOpen drives the overlay. briefCompleted is hydrated from localStorage
+  // — when a user finishes the brief, we stamp `femwell_brief_completed_<YYYY-MM-DD>=1`
+  // so the button switches to "Planned" for the rest of the calendar day.
+  const briefKey = `femwell_brief_completed_${new Date().toISOString().split("T")[0]}`;
+  const [briefOpen, setBriefOpen] = useState(false);
+  const [briefCompleted, setBriefCompleted] = useState(() => {
+    try { return typeof window !== "undefined" && !!window.localStorage.getItem(briefKey); }
+    catch { return false; }
+  });
+  const markBriefCompleted = () => {
+    try { window.localStorage.setItem(briefKey, "1"); } catch {}
+    setBriefCompleted(true);
+    // Auto-dismiss after 1.5s so the confetti moment lands then closes
+    setTimeout(() => setBriefOpen(false), 1500);
+  };
   useEffect(() => {
     const unsubStage = subscribeDevStage((next) => {
       console.log("[Planner] devStageStore notify →", next);
@@ -1324,6 +1342,44 @@ export default function Planner() {
                 <span aria-hidden="true" style={{ fontSize: 11 }}>↩</span>
                 Today
               </button>
+            </div>
+          )}
+          {/* "Plan today" — soft optional nudge to open the Morning Brief
+              bottom sheet. Once completed today, swaps to a muted "Planned"
+              chip for the rest of the calendar day. Only shows on the
+              TODAY tab when the selected date is actually today. ───────── */}
+          {view === "today" && isTodayDate(selectedDay) && (
+            <div style={{ display: "flex", justifyContent: "center", marginTop: 10 }}>
+              {briefCompleted ? (
+                <span aria-label="You've planned today"
+                      style={{
+                        display: "inline-flex", alignItems: "center", gap: 6,
+                        padding: "5px 12px", borderRadius: 9999,
+                        background: "rgba(143,175,143,0.18)",
+                        border: "1px solid rgba(143,175,143,0.42)",
+                        color: "var(--femwell-mauve, #9B8B7A)",
+                        fontFamily: "'Inter', sans-serif",
+                        fontSize: 11, fontWeight: 700, letterSpacing: "0.06em",
+                      }}>
+                  <span aria-hidden="true">✓</span> Planned
+                </span>
+              ) : (
+                <button onClick={() => setBriefOpen(true)}
+                        aria-label="Open the Morning Brief"
+                        style={{
+                          display: "inline-flex", alignItems: "center", gap: 6,
+                          padding: "6px 14px", borderRadius: 9999,
+                          background: "rgba(232,180,184,0.30)",
+                          border: "1px solid var(--femwell-blush, #E8B4B8)",
+                          color: "var(--femwell-espresso, #3A2C1A)",
+                          fontFamily: "'Inter', sans-serif",
+                          fontSize: 12, fontWeight: 700, letterSpacing: "0.06em",
+                          cursor: "pointer",
+                        }}>
+                  <Sparkle className="w-3 h-3" style={{ color: "var(--femwell-rose, #D45E52)" }} />
+                  Plan today
+                </button>
+              )}
             </div>
           )}
           {/* Phase 2 BUILD 1 — energy summary for the next 7 days, derived
@@ -2172,6 +2228,62 @@ export default function Planner() {
         </>
       )}
       </div>{/* /Le Menu z-index wrapper */}
+
+      {/* ── Morning Brief bottom-sheet overlay ────────────────────────────
+          Triggered by the "Plan today" pill near the phase pill. Sits
+          above the bottom nav at ~85vh. Tap backdrop or X to dismiss.
+          When the brief reaches Step 6 (Summary), onComplete fires the
+          markBriefCompleted helper which stamps localStorage and
+          auto-dismisses the sheet after 1.5s so the confetti lands. */}
+      {briefOpen && (
+        <>
+          <div
+            onClick={() => setBriefOpen(false)}
+            aria-hidden="true"
+            style={{
+              position: "fixed", inset: 0, zIndex: 90,
+              background: "rgba(58,44,26,0.45)",
+              backdropFilter: "blur(6px)",
+              animation: "fwBriefBackdropIn 220ms ease-out",
+            }}
+          />
+          <div
+            role="dialog"
+            aria-label="Morning Brief"
+            style={{
+              position: "fixed", left: 0, right: 0, bottom: 0,
+              zIndex: 91,
+              height: "85vh", maxHeight: "85vh",
+              background: "var(--femwell-cream, #F4EDDB)",
+              borderRadius: "24px 24px 0 0",
+              boxShadow: "0 -16px 48px rgba(58,44,26,0.22)",
+              overflow: "hidden",
+              display: "flex", flexDirection: "column",
+              animation: "fwBriefSheetIn 320ms cubic-bezier(0.2, 0.8, 0.2, 1)",
+            }}
+          >
+            <div style={{
+              display: "flex", justifyContent: "center", padding: "10px 0 4px",
+              flexShrink: 0,
+            }}>
+              <div style={{
+                width: 38, height: 4, borderRadius: 9999,
+                background: "rgba(58,44,26,0.18)",
+              }} />
+            </div>
+            <div style={{ flex: 1, overflowY: "auto", padding: "4px 12px 24px" }}>
+              <MorningBrief
+                onClose={() => setBriefOpen(false)}
+                onComplete={markBriefCompleted}
+              />
+            </div>
+          </div>
+          <style>{`
+            @keyframes fwBriefBackdropIn { from { opacity: 0 } to { opacity: 1 } }
+            @keyframes fwBriefSheetIn { from { transform: translateY(100%) } to { transform: translateY(0) } }
+          `}</style>
+        </>
+      )}
     </div>
   );
 }
