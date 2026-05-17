@@ -199,28 +199,46 @@ Write the insight in Markdown with clear sections separated by blank lines (two 
             border: "1px solid var(--border-subtle)",
             marginTop: "12px"
           }}>
-            {/* Phase 2 QA fix #6 — paragraph split fallback so the insight
-                never renders as one wall of text. Try blank-line split first,
-                then single-newline split, then chunk by sentence triples. */}
+            {/* Phase 2 QA fix #6 (hardened) — paragraph split with three
+                fallback tiers so the insight never renders as one wall of
+                text regardless of LLM output shape:
+                  1. Blank-line split (preferred — prompt now requests it).
+                  2. Single-newline split (LLM forgot the blank line).
+                  3. Sentence-triple chunking (LLM returned one giant blob).
+                Plus a defensive cap — if any single resulting paragraph
+                is >360 chars (one comma-spliced paragraph from older
+                insights pre-blank-line-prompt), split it again into
+                sentence pairs. */}
             {(() => {
-              const text = insight.insight_text || "";
-              let paras = text.split(/\n{2,}/).filter(Boolean);
-              if (paras.length < 2) paras = text.split(/\n/).filter(Boolean);
+              const text = (insight.insight_text || "").trim();
+              const cleanInline = (s) => s.replace(/^#+\s*/, "").replace(/\*\*/g, "").trim();
+              let paras = text.split(/\n{2,}/).map(cleanInline).filter(Boolean);
+              if (paras.length < 2) paras = text.split(/\n/).map(cleanInline).filter(Boolean);
               if (paras.length < 2) {
-                // Sentence-triple fallback: every 3 sentences becomes a para.
-                const sentences = text.split(/(?<=[.!?])\s+/).filter(Boolean);
+                const sentences = text.split(/(?<=[.!?])\s+/).map(cleanInline).filter(Boolean);
                 paras = [];
                 for (let i = 0; i < sentences.length; i += 3) {
                   paras.push(sentences.slice(i, i + 3).join(" "));
                 }
               }
-              return paras.map((para, i) => (
+              // Hard cap on paragraph length — re-split any monster into
+              // sentence pairs so the eye gets a break every 2 sentences.
+              const MAX_PARA_CHARS = 360;
+              const finalParas = [];
+              for (const p of paras) {
+                if (p.length <= MAX_PARA_CHARS) { finalParas.push(p); continue; }
+                const ss = p.split(/(?<=[.!?])\s+/).filter(Boolean);
+                for (let i = 0; i < ss.length; i += 2) {
+                  finalParas.push(ss.slice(i, i + 2).join(" "));
+                }
+              }
+              return finalParas.map((para, i) => (
                 <p key={i} style={{
                   fontSize: "13px", lineHeight: 1.65,
                   color: "var(--plum)", marginBottom: "10px",
                   fontFamily: "'Inter', sans-serif"
                 }}>
-                  {para.replace(/^#+\s*/, "").replace(/\*\*/g, "")}
+                  {para}
                 </p>
               ));
             })()}

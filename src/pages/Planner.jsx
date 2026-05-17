@@ -546,6 +546,34 @@ export default function Planner() {
   const weekDays = getWeekDays(monday);
   const selectedStr = toDateStr(selectedDay);
 
+  // Phase 2 QA-fix-bundle-2 — live profile re-fetch.
+  //
+  // The mount-time UserProfile fetch was a snapshot. If the user changed
+  // their life_stage from /Profile (or any other surface) and returned to
+  // /Planner, the Planner kept rendering with stale stage data — none of
+  // the adapter-flag mounts updated until a full page refresh.
+  //
+  // refetchProfile re-reads UserProfile and re-sets the slice, which
+  // cascades through effectiveLifeStage → plannerConfig → every shows*
+  // gate without a remount.
+  const refetchProfile = async (uid) => {
+    const targetUid = uid || user?.id;
+    if (!targetUid) return;
+    try {
+      const rows = await base44.entities.UserProfile.filter({ user_id: targetUid }, null, 1);
+      if (rows && rows[0]) {
+        // Only update if the relevant fields actually changed. Spares us
+        // a re-render storm on the focus / visibility / poll triggers.
+        setProfile((prev) => {
+          if (!prev) return rows[0];
+          const same = prev.life_stage === rows[0].life_stage
+            && JSON.stringify(prev.conditions || prev.condition_flags || []) === JSON.stringify(rows[0].conditions || rows[0].condition_flags || []);
+          return same ? prev : rows[0];
+        });
+      }
+    } catch { /* silent */ }
+  };
+
   // One-time load — user, profile, recurring entities. Day-specific data is
   // re-fetched in the second effect below when selectedDay changes.
   useEffect(() => {
@@ -578,6 +606,32 @@ export default function Planner() {
       }
     })();
   }, []);
+
+  // Phase 2 QA-fix-bundle-2 — wire refetchProfile to the four moments where
+  // life_stage could have changed under us:
+  //   (a) window focus       — user came back from /Profile in another tab
+  //   (b) visibilitychange   — same tab, returning from another route
+  //   (c) custom event       — Profile.jsx + Settings dispatch this when
+  //                            saving a stage change so we can update
+  //                            without waiting for focus/visibility
+  //   (d) 6-second interval  — belt-and-braces for edge cases where the
+  //                            event listeners miss (e.g. focus suppressed
+  //                            on PWA, mobile background → foreground).
+  useEffect(() => {
+    if (!user?.id) return;
+    const handler = () => refetchProfile(user.id);
+    const visHandler = () => { if (document.visibilityState === "visible") refetchProfile(user.id); };
+    window.addEventListener("focus", handler);
+    document.addEventListener("visibilitychange", visHandler);
+    window.addEventListener("femwell:profile-updated", handler);
+    const poll = window.setInterval(handler, 6000);
+    return () => {
+      window.removeEventListener("focus", handler);
+      document.removeEventListener("visibilitychange", visHandler);
+      window.removeEventListener("femwell:profile-updated", handler);
+      window.clearInterval(poll);
+    };
+  }, [user?.id]);
 
   // Day-specific fetches — DailyPlan, MealPlans, today's HabitLog checkmarks,
   // and (BUILD 4) MedicationReminders scheduled for the selected day.
@@ -1085,6 +1139,9 @@ export default function Planner() {
           onSaved={(stage) => {
             setProfile((p) => p ? { ...p, life_stage: stage } : p);
             setShowStagePicker(false);
+            // Same cross-surface signal Profile fires — keeps any other
+            // mounted listener in sync.
+            try { window.dispatchEvent(new Event("femwell:profile-updated")); } catch { /* silent */ }
           }}
           onSkip={() => setShowStagePicker(false)}
         />

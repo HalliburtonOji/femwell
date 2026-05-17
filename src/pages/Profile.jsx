@@ -169,6 +169,10 @@ export default function Profile() {
     await base44.entities.UserProfile.update(profile.id, { life_stage: stage });
     setProfile(p => ({ ...p, life_stage: stage }));
     setEditLifeStage(false);
+    // Notify any other tab/route (esp. /Planner) that the profile changed
+    // so they re-fetch and reshape stage-gated cards immediately rather
+    // than waiting for focus / 6s poll.
+    try { window.dispatchEvent(new Event("femwell:profile-updated")); } catch { /* SSR-safe */ }
   };
 
   const currentTone = tones.find((t) => t.id === (preferences?.coach_tone || profile?.tone_preference)) || tones[0];
@@ -529,6 +533,9 @@ export default function Profile() {
             onSaved={(stage) => {
               setProfile((p) => p ? { ...p, life_stage: stage } : p);
               try { writeDevStageOverride(stage); } catch { /* silent */ }
+              // Fire the same custom event Planner listens for so the
+              // shows* flags re-evaluate without a focus/poll wait.
+              try { window.dispatchEvent(new Event("femwell:profile-updated")); } catch { /* silent */ }
               setShowStageModal(false);
               setStageToast("Stage updated — your planner will refresh");
               window.setTimeout(() => setStageToast(null), 3500);
