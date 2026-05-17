@@ -1192,8 +1192,10 @@ export default function Planner() {
               <PregnancyTimelineCard profile={profile} plannerConfig={plannerConfig} variant="today" />
             )}
 
-            {/* ── Kick counter — T3 only ──────────────────────────────────── */}
-            {effectiveLifeStage === "pregnant-t3" && (
+            {/* ── Kick counter — T2 + T3 (movement-aware trimesters) ─────
+                T2 starts logging movement around week 16-22 (first flutters);
+                T3 is the main monitoring window. T1 doesn't render this. */}
+            {(effectiveLifeStage === "pregnant-t2" || effectiveLifeStage === "pregnant-t3") && (
               <KickCounterCard userId={user?.id} />
             )}
 

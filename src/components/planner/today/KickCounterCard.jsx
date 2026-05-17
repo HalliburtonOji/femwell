@@ -1,13 +1,16 @@
 // ─────────────────────────────────────────────────────────────────────────────
-// KickCounterCard — Trimester 3 kick counter.
-// Build 3 of the pregnancy feature set.
+// KickCounterCard — Trimester 2 + 3 kick counter.
+// Build 3 of the pregnancy feature set. Extended Sprint 4 BUILD 3 with a
+// 'Today / History' tab toggle that renders a 7-day bar chart of total
+// kicks per day (sage bars, --femwell-muted day labels, "No data" empty).
 //
 // Props:
 //   userId  (string) — current user's id
 // ─────────────────────────────────────────────────────────────────────────────
 
-import { useState, useEffect, useCallback, useRef } from "react";
-import { format } from "date-fns";
+import { useState, useEffect, useCallback, useRef, useMemo } from "react";
+import { format, subDays } from "date-fns";
+import { Footprints } from "lucide-react";
 import { base44 } from "@/api/base44Client";
 
 const TODAY = format(new Date(), "yyyy-MM-dd");
@@ -27,11 +30,13 @@ function calcDurationMinutes(startIso) {
 
 export default function KickCounterCard({ userId }) {
   const [sessions, setSessions]     = useState([]);
+  const [weekRows, setWeekRows]     = useState([]); // last-7-day rows for the chart
   const [loading, setLoading]       = useState(true);
   const [inSession, setInSession]   = useState(false);
   const [sessionStart, setSessionStart] = useState(null); // ISO string
   const [kickCount, setKickCount]   = useState(0);
   const [saving, setSaving]         = useState(false);
+  const [view, setView]             = useState("today"); // 'today' | 'history'
   // Live timer display
   const [elapsed, setElapsed]       = useState(0); // seconds
   const timerRef                    = useRef(null);
@@ -39,14 +44,24 @@ export default function KickCounterCard({ userId }) {
   const loadSessions = useCallback(async () => {
     if (!userId) return;
     try {
-      const rows = await base44.entities.KickLog.filter(
+      // Today's sessions for the "Today's sessions" list.
+      const todayRows = await base44.entities.KickLog.filter(
         { user_id: userId, date: TODAY },
         "-session_start",
         20,
       );
-      setSessions(rows);
+      setSessions(todayRows);
+      // Last 7 calendar days for the History chart.
+      const cutoff = format(subDays(new Date(), 6), "yyyy-MM-dd");
+      const wkRows = await base44.entities.KickLog.filter(
+        { user_id: userId },
+        "-date",
+        80,
+      );
+      setWeekRows((Array.isArray(wkRows) ? wkRows : []).filter((r) => r?.date >= cutoff));
     } catch {
       setSessions([]);
+      setWeekRows([]);
     } finally {
       setLoading(false);
     }
@@ -106,64 +121,223 @@ export default function KickCounterCard({ userId }) {
     return `${m}:${String(s).padStart(2, "0")}`;
   };
 
+  // 7-day series: oldest left, today right. Total kicks per day across sessions.
+  const weekSeries = useMemo(() => {
+    const today = new Date();
+    const out = [];
+    for (let i = 6; i >= 0; i--) {
+      const d = subDays(today, i);
+      const iso = format(d, "yyyy-MM-dd");
+      const rows = weekRows.filter((r) => r?.date === iso);
+      const total = rows.reduce((sum, r) => sum + (Number(r?.kick_count) || 0), 0);
+      out.push({
+        iso,
+        dayLabel: format(d, "EEEEE"), // single-letter weekday
+        total,
+        isToday: iso === TODAY,
+      });
+    }
+    return out;
+  }, [weekRows]);
+
   return (
     <section style={card} aria-label="Kick counter">
       {/* Header */}
-      <p style={eyebrow}>KICK COUNTER · TRIMESTER 3</p>
+      <p style={eyebrow}>KICK COUNTER · TRIMESTER 2-3</p>
       <p style={title}>Count your baby's movements</p>
 
-      {/* Main counter area */}
-      <div style={counterArea}>
-        {inSession ? (
-          <>
-            {/* Big tap button */}
+      {/* Today / History toggle */}
+      <div role="tablist" aria-label="View" style={tabRow}>
+        {[
+          { key: "today",   label: "Today" },
+          { key: "history", label: "History · 7 days" },
+        ].map((t) => {
+          const on = view === t.key;
+          return (
             <button
-              onClick={handleKick}
-              style={kickBtn}
-              aria-label={`Count kick — currently ${kickCount}`}
+              key={t.key}
+              role="tab"
+              aria-selected={on}
+              onClick={() => setView(t.key)}
+              style={{
+                ...tabBtn,
+                background: on ? "#3A2C1A" : "transparent",
+                color: on ? "#F4EDDB" : "#3A2C1A",
+                borderColor: on ? "#3A2C1A" : "rgba(58,44,26,0.16)",
+              }}
             >
-              <span style={kickEmoji}>👣</span>
-              <span style={kickNum}>{kickCount}</span>
-              <span style={kickLabel}>kicks</span>
+              {t.label}
             </button>
-            <p style={timerText}>{elapsedLabel()} elapsed</p>
-            {/* Done button */}
-            <button
-              onClick={handleDone}
-              disabled={saving}
-              style={{ ...doneBtn, opacity: saving ? 0.6 : 1 }}
-            >
-              {saving ? "Saving..." : "Done — end session"}
-            </button>
-          </>
-        ) : (
-          <button onClick={handleStart} style={startBtn}>
-            Start session
-          </button>
-        )}
+          );
+        })}
       </div>
 
-      {/* Today's sessions */}
-      {!loading && sessions.length > 0 && (
-        <div style={sessionsList}>
-          <p style={sessionsLabel}>Today's sessions</p>
-          {sessions.map((s) => (
-            <div key={s.id} style={sessionRow}>
-              <span style={sessionTime}>{fmtTime(s.session_start)}</span>
-              <span style={sessionKicks}>{s.kick_count} kicks</span>
-              {s.duration_minutes && (
-                <span style={sessionDur}>{s.duration_minutes} min</span>
-              )}
+      {view === "today" && (
+        <>
+          {/* Main counter area */}
+          <div style={counterArea}>
+            {inSession ? (
+              <>
+                {/* Big tap button */}
+                <button
+                  onClick={handleKick}
+                  style={kickBtn}
+                  aria-label={`Count kick — currently ${kickCount}`}
+                >
+                  <Footprints size={26} strokeWidth={1.6} color="#3A2C1A" aria-hidden="true" />
+                  <span style={kickNum}>{kickCount}</span>
+                  <span style={kickLabel}>kicks</span>
+                </button>
+                <p style={timerText}>{elapsedLabel()} elapsed</p>
+                {/* Done button */}
+                <button
+                  onClick={handleDone}
+                  disabled={saving}
+                  style={{ ...doneBtn, opacity: saving ? 0.6 : 1 }}
+                >
+                  {saving ? "Saving..." : "Done — end session"}
+                </button>
+              </>
+            ) : (
+              <button onClick={handleStart} style={startBtn}>
+                Start session
+              </button>
+            )}
+          </div>
+
+          {/* Today's sessions */}
+          {!loading && sessions.length > 0 && (
+            <div style={sessionsList}>
+              <p style={sessionsLabel}>Today's sessions</p>
+              {sessions.map((s) => (
+                <div key={s.id} style={sessionRow}>
+                  <span style={sessionTime}>{fmtTime(s.session_start)}</span>
+                  <span style={sessionKicks}>{s.kick_count} kicks</span>
+                  {s.duration_minutes && (
+                    <span style={sessionDur}>{s.duration_minutes} min</span>
+                  )}
+                </div>
+              ))}
             </div>
-          ))}
-        </div>
+          )}
+        </>
       )}
 
-      {/* NHS signpost */}
+      {view === "history" && (
+        <KickWeekChart series={weekSeries} loading={loading} />
+      )}
+
+      {/* NHS signpost — visible in both views */}
       <p style={nhsNote}>
         If you notice fewer than 10 movements in 2 hours, contact your midwife.
       </p>
     </section>
+  );
+}
+
+// ─── KickWeekChart — 7-day bar chart, pure SVG ──────────────────────────────
+function KickWeekChart({ series, loading }) {
+  const W = 280;
+  const H = 130;
+  const PAD_X = 18;
+  const PAD_TOP = 14;
+  const PAD_BOTTOM = 26;
+  const innerW = W - PAD_X * 2;
+  const innerH = H - PAD_TOP - PAD_BOTTOM;
+  const colCount = series.length || 1;
+  const colWidth = innerW / colCount;
+  const barWidth = Math.max(10, colWidth * 0.6);
+
+  const maxTotal = Math.max(10, ...series.map((d) => d.total)); // floor at 10 so a 1-kick day doesn't fill the chart
+
+  const yFor = (v) => PAD_TOP + (1 - v / maxTotal) * innerH;
+  const xFor = (i) => PAD_X + colWidth * i + (colWidth - barWidth) / 2;
+
+  const total7 = series.reduce((sum, d) => sum + d.total, 0);
+  const hasAny = total7 > 0;
+
+  return (
+    <div style={chartWrap} aria-label="Last 7 days kick history">
+      <div style={chartHeadRow}>
+        <p style={chartEyebrow}>LAST 7 DAYS · TOTAL KICKS</p>
+        <p style={chartTotal}>{hasAny ? `${total7} total` : "No data"}</p>
+      </div>
+      <svg
+        viewBox={`0 0 ${W} ${H}`}
+        role="img"
+        aria-label="Bar chart of kicks per day over the last 7 days"
+        style={chartSvg}
+      >
+        {/* Horizontal baseline */}
+        <line
+          x1={PAD_X} x2={W - PAD_X}
+          y1={H - PAD_BOTTOM} y2={H - PAD_BOTTOM}
+          stroke="rgba(58,44,26,0.16)" strokeWidth="0.8"
+        />
+        {/* Bars */}
+        {series.map((d, i) => {
+          const x = xFor(i);
+          const barH = d.total > 0 ? Math.max(2, innerH - (yFor(d.total) - PAD_TOP)) : 0;
+          const y = H - PAD_BOTTOM - barH;
+          return (
+            <g key={d.iso}>
+              {d.total > 0 ? (
+                <rect
+                  x={x} y={y}
+                  width={barWidth} height={barH}
+                  rx={3}
+                  fill="#8FAF8F"
+                  opacity={d.isToday ? 1 : 0.85}
+                  stroke={d.isToday ? "#3F6228" : "transparent"}
+                  strokeWidth={d.isToday ? 0.8 : 0}
+                />
+              ) : (
+                // Empty-day placeholder: faint dashed cap at the baseline.
+                <line
+                  x1={x + barWidth * 0.18}
+                  x2={x + barWidth * 0.82}
+                  y1={H - PAD_BOTTOM - 1}
+                  y2={H - PAD_BOTTOM - 1}
+                  stroke="rgba(155,139,122,0.55)"
+                  strokeWidth="1.2"
+                  strokeDasharray="2 2"
+                />
+              )}
+              {/* Bar value label */}
+              {d.total > 0 && (
+                <text
+                  x={x + barWidth / 2}
+                  y={y - 3}
+                  textAnchor="middle"
+                  fontSize="9"
+                  fontWeight="700"
+                  fontFamily="'Inter', sans-serif"
+                  fill="#3F6228"
+                >{d.total}</text>
+              )}
+              {/* X-axis day label */}
+              <text
+                x={x + barWidth / 2}
+                y={H - 10}
+                textAnchor="middle"
+                fontSize="9.5"
+                fontFamily="'Inter', sans-serif"
+                fontWeight={d.isToday ? "700" : "500"}
+                fill={d.isToday ? "#3A2C1A" : "#9B8B7A"}
+              >{d.dayLabel}</text>
+            </g>
+          );
+        })}
+      </svg>
+      {loading && (
+        <p style={chartLoadingNote}>Loading week…</p>
+      )}
+      {!loading && !hasAny && (
+        <p style={chartEmpty}>
+          No sessions logged this week. Tap <strong>Today</strong> to start one.
+        </p>
+      )}
+    </div>
   );
 }
 
@@ -175,6 +349,7 @@ const card = {
   borderRadius: 14,
   padding: "16px 16px 14px",
   marginBottom: 12,
+  maxWidth: 390,
 };
 const eyebrow = {
   fontFamily: "'Inter', sans-serif",
@@ -190,7 +365,22 @@ const title = {
   fontSize: 18,
   fontWeight: 500,
   color: "#3A2C1A",
-  margin: "4px 0 16px",
+  margin: "4px 0 12px",
+};
+const tabRow = {
+  display: "flex",
+  gap: 6,
+  marginBottom: 12,
+};
+const tabBtn = {
+  padding: "5px 12px",
+  borderRadius: 9999,
+  border: "1px solid",
+  fontFamily: "'Inter', sans-serif",
+  fontSize: 11.5,
+  fontWeight: 700,
+  cursor: "pointer",
+  letterSpacing: "0.02em",
 };
 const counterArea = {
   display: "flex",
@@ -215,10 +405,6 @@ const kickBtn = {
   transition: "transform 80ms",
   WebkitTapHighlightColor: "transparent",
   userSelect: "none",
-};
-const kickEmoji = {
-  fontSize: 24,
-  lineHeight: 1,
 };
 const kickNum = {
   fontFamily: "'Fraunces', Georgia, serif",
@@ -321,4 +507,56 @@ const nhsNote = {
   padding: "8px 10px",
   background: "rgba(58,44,26,0.05)",
   borderRadius: 8,
+};
+const chartWrap = {
+  marginTop: 4,
+  marginBottom: 12,
+  padding: "10px 10px 6px",
+  background: "rgba(255,255,255,0.55)",
+  border: "1px solid rgba(58,44,26,0.10)",
+  borderRadius: 12,
+};
+const chartHeadRow = {
+  display: "flex",
+  justifyContent: "space-between",
+  alignItems: "baseline",
+  padding: "0 2px",
+  marginBottom: 4,
+};
+const chartEyebrow = {
+  fontFamily: "'Inter', sans-serif",
+  fontSize: 9,
+  fontWeight: 700,
+  letterSpacing: "0.16em",
+  color: "#3F6228",
+  textTransform: "uppercase",
+  margin: 0,
+};
+const chartTotal = {
+  fontFamily: "'Inter', sans-serif",
+  fontSize: 11,
+  fontWeight: 700,
+  color: "#3A2C1A",
+  margin: 0,
+};
+const chartSvg = {
+  width: "100%",
+  height: "auto",
+  display: "block",
+};
+const chartLoadingNote = {
+  fontFamily: "'Inter', sans-serif",
+  fontSize: 11,
+  color: "#9B8B7A",
+  fontStyle: "italic",
+  textAlign: "center",
+  margin: "4px 0 0",
+};
+const chartEmpty = {
+  fontFamily: "'Inter', sans-serif",
+  fontSize: 11.5,
+  color: "#9B8B7A",
+  fontStyle: "italic",
+  textAlign: "center",
+  margin: "6px 0 0",
 };
