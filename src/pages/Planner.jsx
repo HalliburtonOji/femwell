@@ -570,16 +570,22 @@ export default function Planner() {
     })();
   }, []);
 
-  // Day-specific fetches — DailyPlan, MealPlans, today's HabitLog checkmarks.
+  // Day-specific fetches — DailyPlan, MealPlans, today's HabitLog checkmarks,
+  // and (BUILD 4) MedicationReminders scheduled for the selected day.
   useEffect(() => {
     if (!user?.id) return;
     let cancelled = false;
     (async () => {
       const day_key = selectedStr;
-      const [plans, meals, todayHabits] = await Promise.all([
+      const [plans, meals, todayHabits, meds] = await Promise.all([
         base44.entities.DailyPlan.filter({ user_id: user.id, day_key }, null, 1).catch(() => []),
         base44.entities.MealPlans.filter({ user_id: user.id }, "-created_date", 3).catch(() => []),
         base44.entities.HabitLogs.filter({ user_id: user.id, date: day_key }, null, 20).catch(() => []),
+        // MedicationReminders may be scheduled (date=day_key) or recurring
+        // (date null + days-of-week). Fetch the union: today-stamped + a
+        // recent 60-row window so daily/PRN rows surface too. Graceful empty
+        // fallback if the entity isn't migrated on this account yet.
+        base44.entities.MedicationReminders.filter({ user_id: user.id }, "-created_date", 60).catch(() => []),
       ]);
       if (cancelled) return;
       setDailyPlan(plans[0] || null);
@@ -593,9 +599,29 @@ export default function Planner() {
         if (name) map[name] = habitCompletedOf(h);
       }
       setTodayHabitLogs(map);
+      // Today's medication rows: same date OR repeat-daily OR no-date repeat.
+      const dayMeds = (meds || []).filter((m) => {
+        if (!m) return false;
+        if (m.date === day_key) return true;
+        if (m.repeat === "daily") return true;
+        if (m.frequency === "daily") return true;
+        return false;
+      });
+      setMedications(dayMeds);
     })();
     return () => { cancelled = true; };
   }, [user?.id, selectedStr]);
+
+  // BUILD 4 — toggle taken/skipped state for a medication row. Optimistic
+  // update + persist; silent failure (re-fetch on next day flip will reconcile).
+  const toggleMedTaken = async (med) => {
+    if (!med?.id || !user?.id) return;
+    const next = !med.is_taken;
+    setMedications(prev => prev.map(m => m.id === med.id ? { ...m, is_taken: next } : m));
+    try {
+      await base44.entities.MedicationReminders.update(med.id, { is_taken: next });
+    } catch { /* silent */ }
+  };
 
   // Top 3 recurring habits — derived from the last 60 HabitLogs.
   // Use habitLogNormalise so Track.jsx writers (habit_type) AND Planner.jsx
@@ -1544,6 +1570,49 @@ export default function Planner() {
               </div>
             ) : null}
 
+            {/* ── Medications (Phase 2 BUILD 4) ───────────────────────────
+                Sits in the commitments band — name + dose + time + tap to
+                mark taken/skipped. Soft empty state nudges into the FAB
+                Medication satellite. Reads/writes MedicationReminders;
+                entity-missing accounts see the empty hint silently. */}
+            <div style={{ marginBottom: 12 }}>
+              <p style={dividerStyle}>Medications</p>
+              {medications.length === 0 ? (
+                <p style={{ fontSize: 11.5, color: "var(--plum-mute, #8A7584)", fontFamily: "'Inter', sans-serif", fontStyle: "italic", margin: "0 0 4px", textAlign: "center", padding: "10px 8px", border: "1px dashed rgba(74,42,58,0.12)", borderRadius: 12 }}>
+                  No medications logged — add one ↑
+                </p>
+              ) : (
+                <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+                  {medications.map(med => {
+                    const name = med.medication_name || med.name || "Medication";
+                    const dose = med.dosage || med.dose || null;
+                    const time = med.reminder_time || med.time || null;
+                    const taken = !!med.is_taken;
+                    return (
+                      <div key={med.id} style={{ ...listItemStyle, opacity: taken ? 0.55 : 1, padding: "10px 12px" }}>
+                        <button onClick={() => toggleMedTaken(med)} style={{ ...checkBtnStyle, borderColor: taken ? "var(--rose-primary, #D45E52)" : "var(--border, rgba(74,42,58,0.16))", backgroundColor: taken ? "var(--rose-primary, #D45E52)" : "transparent" }}>
+                          {taken && <Check className="w-3 h-3" style={{ color: "white" }} />}
+                        </button>
+                        <div style={{ flex: 1, minWidth: 0, display: "flex", alignItems: "center", gap: 8 }}>
+                          <Pill className="w-4 h-4" style={{ color: "var(--plum-mute, #8A7584)", flexShrink: 0 }} />
+                          <div style={{ flex: 1, minWidth: 0 }}>
+                            <p style={{ fontSize: 13.5, fontWeight: 600, color: "var(--plum, #4A2A3A)", fontFamily: "'Inter', sans-serif", textDecoration: taken ? "line-through" : "none", margin: 0, lineHeight: 1.2 }}>
+                              {name}{dose ? ` · ${dose}` : ""}
+                            </p>
+                            {time && (
+                              <span style={{ fontSize: 10.5, color: "var(--plum-mute, #8A7584)", fontFamily: "'Inter', sans-serif", display: "inline-flex", alignItems: "center", gap: 3, marginTop: 2 }}>
+                                <Clock className="w-3 h-3" />{time}
+                              </span>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
+            </div>
+
             {/* ── Commitments — PlannerItems + PersonalTasks unified ───── */}
             {dayItems.length === 0 ? (
               <p style={{ fontSize: 12, color: "var(--plum-mute, #8A7584)", fontFamily: "'Inter', sans-serif", textAlign: "center", padding: "20px 0", fontStyle: "italic" }}>
@@ -1586,7 +1655,7 @@ export default function Planner() {
             )}
 
             {/* Fallback empty hint when literally nothing on the day */}
-            {!dailyPlan && !activeProgram && ritualHabits.length === 0 && !dayMeals && dayItems.length === 0 && (
+            {!dailyPlan && !activeProgram && ritualHabits.length === 0 && eveningRitualHabits.length === 0 && !dayMeals && dayItems.length === 0 && medications.length === 0 && (
               <div style={{ textAlign: "center", padding: "44px 24px" }}>
                 <Calendar className="w-9 h-9 mx-auto mb-3" style={{ color: "var(--rose-primary, #D45E52)", opacity: 0.5 }} />
                 <p style={{ fontSize: 15, fontWeight: 500, color: "var(--plum, #4A2A3A)", fontFamily: "'Fraunces', Georgia, serif", marginBottom: 4 }}>A soft, open day</p>
