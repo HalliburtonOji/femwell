@@ -841,35 +841,55 @@ export default function Planner() {
   //     open in two tabs and flips the stage in one).
   const [devStageOverride, setDevStageOverride] = useState(() => readDevStageOverride());
   const [devConditionsOverride, setDevConditionsOverride] = useState(() => readDevConditionsOverride());
+  // Phase 2 QA-fix-bundle-7 — force-render tick.
+  // Two QA passes proved the listener-based reactivity is not propagating
+  // to the render in some sequence we cannot reproduce from static
+  // analysis. Adding a monotonic counter that every relevant event
+  // increments — the counter is a render dep so React MUST re-render
+  // when it bumps, and the effectiveLifeStage computation below reads
+  // localStorage directly so even a stuck state value cannot mask the
+  // chosen stage.
+  const [stageTick, setStageTick] = useState(0);
   useEffect(() => {
     const onCustom = (e) => {
       const next = e?.detail || null;
       console.log("[Planner] DEV_STAGE_EVENT received →", next);
       setDevStageOverride(next);
+      setStageTick((t) => t + 1);
     };
     const onStorage = (e) => {
       if (e.key === DEV_STAGE_KEY) {
         console.log("[Planner] storage event for life_stage →", e.newValue);
         setDevStageOverride(e.newValue || null);
+        setStageTick((t) => t + 1);
         return;
       }
       if (e.key === DEV_CONDITIONS_KEY) {
         console.log("[Planner] storage event for conditions →", e.newValue);
         setDevConditionsOverride(readDevConditionsOverride());
+        setStageTick((t) => t + 1);
       }
     };
     const onConditions = (e) => {
       console.log("[Planner] DEV_CONDITIONS_EVENT received →", e?.detail);
       setDevConditionsOverride(readDevConditionsOverride());
+      setStageTick((t) => t + 1);
     };
+    // Phase 2 QA-fix-bundle-7 — alias event names so anything dispatching
+    // a kebab-case "femwell:dev-stage-change" also bumps the tick.
+    const onAlias = () => { setStageTick((t) => t + 1); };
     window.addEventListener(DEV_STAGE_EVENT, onCustom);
     window.addEventListener(DEV_CONDITIONS_EVENT, onConditions);
     window.addEventListener("storage", onStorage);
+    window.addEventListener("femwell:dev-stage-change", onAlias);
+    window.addEventListener("femwell:profile-updated", onAlias);
     console.log("[Planner] DEV listeners attached. Initial override:", readDevStageOverride(), readDevConditionsOverride());
     return () => {
       window.removeEventListener(DEV_STAGE_EVENT, onCustom);
       window.removeEventListener(DEV_CONDITIONS_EVENT, onConditions);
       window.removeEventListener("storage", onStorage);
+      window.removeEventListener("femwell:dev-stage-change", onAlias);
+      window.removeEventListener("femwell:profile-updated", onAlias);
     };
   }, []);
   // Belt-and-braces: also poll localStorage every 1500ms in case the event
@@ -889,7 +909,23 @@ export default function Planner() {
     return () => window.clearInterval(t);
   }, []);
   const realLifeStage = profile?.life_stage ?? null;
-  const effectiveLifeStage = devStageOverride || realLifeStage || "reproductive";
+  // Phase 2 QA-fix-bundle-7 — read localStorage DIRECTLY at render time
+  // (with stageTick as a render dependency so React re-runs this on every
+  // tick bump). Bypasses readDevStageOverride's STAGES whitelist so a
+  // valid stage cannot be silently rejected. void-ref to stageTick keeps
+  // the linter quiet about the unused expression while ensuring React
+  // doesn't dead-code the dependency.
+  void stageTick;
+  const liveLocalOverride = (() => {
+    try {
+      if (typeof window !== "undefined" && window.localStorage) {
+        const v = window.localStorage.getItem(DEV_STAGE_KEY);
+        return v && v.length > 0 ? v : null;
+      }
+    } catch { /* silent */ }
+    return null;
+  })();
+  const effectiveLifeStage = liveLocalOverride || devStageOverride || realLifeStage || "reproductive";
   const realConditions = profile?.conditions ?? profile?.condition_flags ?? [];
   // DEV conditions override: explicit (even empty) wins over the real list.
   // readDevConditionsOverride() returns null when no override is set.
@@ -1448,24 +1484,40 @@ export default function Planner() {
               effectiveConditions={effectiveConditions}
             />
 
-            {/* ── Stage-specific cards — Phase 2 QA-fix-bundle-4.
-                Two prior attempts (adapter shows* flags, then OR'd flags
-                + string match) both failed in production. Reverting to
-                the simplest possible thing: direct stage-string checks
-                on effectiveLifeStage. No adapter dependency, no flag
-                lookups, no serialisation boundary to lose data across.
-                Inline console.log immediately above so QA can verify in
-                DevTools what value Planner actually sees. ────────────── */}
+            {/* ── Stage-specific cards — Phase 2 QA-fix-bundle-7.
+                Direct stage-string checks on effectiveLifeStage, which
+                now reads localStorage at render time (bundle-7 above). ── */}
             {(() => {
               // eslint-disable-next-line no-console
               console.log("[Planner debug] effectiveLifeStage=", effectiveLifeStage,
-                "| effectiveConditions=", effectiveConditions,
-                "| showsEpds=", plannerConfig?.showsEpds,
-                "| showsKickCounter=", plannerConfig?.showsKickCounter,
-                "| showsPregnancyTimeline=", plannerConfig?.showsPregnancyTimeline,
-                "| showsHrtCorrelation=", plannerConfig?.showsHrtCorrelation);
+                "| liveLocalOverride=", liveLocalOverride,
+                "| devStageOverride state=", devStageOverride,
+                "| realLifeStage=", realLifeStage,
+                "| stageTick=", stageTick,
+                "| profile.id=", profile?.id);
               return null;
             })()}
+            {/* Phase 2 QA-fix-bundle-7 — visible debug strip so QA can read
+                the resolved stage on screen without DevTools. Tiny muted
+                row at the top of the Today body. Remove once verified. */}
+            <div style={{
+              fontFamily: "'Inter', sans-serif",
+              fontSize: 10,
+              color: "var(--plum-mute, #8A7584)",
+              padding: "4px 8px",
+              marginBottom: 8,
+              background: "rgba(58,44,26,0.04)",
+              border: "1px dashed rgba(58,44,26,0.14)",
+              borderRadius: 6,
+              letterSpacing: "0.02em",
+            }}>
+              <strong style={{ fontWeight: 700, color: "#3A2C1A" }}>DEBUG</strong>{" "}
+              stage=<strong style={{ color: "#3A2C1A" }}>{effectiveLifeStage}</strong>
+              {" · "}local=<strong>{liveLocalOverride || "—"}</strong>
+              {" · "}state=<strong>{devStageOverride || "—"}</strong>
+              {" · "}real=<strong>{realLifeStage || "—"}</strong>
+              {" · "}tick={stageTick}
+            </div>
             {(["pregnant-t1", "pregnant-t2", "pregnant-t3", "pregnancy"].includes(effectiveLifeStage)) && (
               <PregnancyTimelineCard profile={profile} plannerConfig={plannerConfig} variant="today" />
             )}
