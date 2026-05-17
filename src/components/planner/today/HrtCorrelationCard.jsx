@@ -18,7 +18,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { base44 } from "@/api/base44Client";
-import { Activity, Sparkles } from "lucide-react";
+import { Activity, Sparkles, ChevronDown } from "lucide-react";
 
 // Same graceful-entity helper used elsewhere — null when entity is missing on
 // base44 (e.g. early-stage migration), otherwise the live ent reference.
@@ -160,6 +160,63 @@ export default function HrtCorrelationCard({ profile }) {
   const series = useMemo(() => buildSeries({ logs: logs || [], hrtRows }), [logs, hrtRows]);
   const insight = useMemo(() => computeInsight(series, showHrtOverlay), [series, showHrtOverlay]);
 
+  // ── Sprint 5 BUILD 4 — per-pillar 30-day stats for the drill-down ─────
+  // Each row computes Week avg / Best / Worst / vs last week / Trend off
+  // the underlying MenopauseDailyLog rows. Mood is inverted (5-m) so all
+  // metrics are 'higher = worse' for visual consistency with the chart.
+  const pillarStats = useMemo(() => {
+    const rows = Array.isArray(logs) ? logs : [];
+    const todayIso = isoNDaysAgo(0);
+    const w0 = isoNDaysAgo(6);  // last 7 days inclusive
+    const w1 = isoNDaysAgo(13); // 7 days before that
+
+    function statsForField(field, { invert = false } = {}) {
+      const valOf = (r) => {
+        const raw = Number(r?.[field]);
+        if (!Number.isFinite(raw)) return null;
+        if (invert) return Math.max(0, Math.min(4, 5 - raw));
+        return Math.max(0, Math.min(4, raw));
+      };
+      const within = rows.filter((r) => r?.date && r.date <= todayIso);
+      const thisWeek = within.filter((r) => r.date >= w0).map((r) => ({ d: r.date, v: valOf(r) })).filter((r) => r.v != null);
+      const lastWeek = within.filter((r) => r.date >= w1 && r.date < w0).map((r) => ({ d: r.date, v: valOf(r) })).filter((r) => r.v != null);
+      if (thisWeek.length === 0) {
+        return { weekAvg: null, best: null, worst: null, vsLast: null, trend: "—", logged: 0 };
+      }
+      const weekAvg = thisWeek.reduce((a, b) => a + b.v, 0) / thisWeek.length;
+      const best = thisWeek.reduce((a, b) => (b.v < a.v ? b : a), thisWeek[0]);
+      const worst = thisWeek.reduce((a, b) => (b.v > a.v ? b : a), thisWeek[0]);
+      let vsLast = null;
+      if (lastWeek.length > 0) {
+        const lastAvg = lastWeek.reduce((a, b) => a + b.v, 0) / lastWeek.length;
+        vsLast = weekAvg - lastAvg; // negative = improving (less severity)
+      }
+      // Trend over 30 days — split first half vs second half.
+      const allValues = within.map((r) => valOf(r)).filter((v) => v != null);
+      let trend = "Holding";
+      if (allValues.length >= 6) {
+        const mid = Math.floor(allValues.length / 2);
+        const older = allValues.slice(0, mid).reduce((a, b) => a + b, 0) / mid;
+        const newer = allValues.slice(mid).reduce((a, b) => a + b, 0) / (allValues.length - mid);
+        if (newer < older - 0.4) trend = "Easing";
+        else if (newer > older + 0.4) trend = "Rising";
+      }
+      return { weekAvg, best, worst, vsLast, trend, logged: thisWeek.length };
+    }
+
+    return [
+      { key: "hot_flashes",  label: "Hot flushes",  stats: statsForField("hot_flashes") },
+      { key: "night_sweats", label: "Night sweats", stats: statsForField("night_sweats") },
+      { key: "mood",         label: "Mood",         stats: statsForField("mood", { invert: true }) },
+      { key: "brain_fog",    label: "Brain fog",    stats: statsForField("brain_fog") },
+      { key: "joint_pain",   label: "Joint pain",   stats: statsForField("joint_pain") },
+    ];
+  }, [logs]);
+
+  // Accordion — only one row open at a time.
+  const [openPillar, setOpenPillar] = useState(null);
+  const togglePillar = (key) => setOpenPillar((cur) => (cur === key ? null : key));
+
   // ── Render branches ──────────────────────────────────────────────────────
   if (entityMissing) {
     return (
@@ -211,7 +268,95 @@ export default function HrtCorrelationCard({ profile }) {
         Severity averaged across hot flushes, night sweats, mood, brain fog, joint pain.
         {showHrtOverlay && " HRT line at top shows days an active regimen was logged."}
       </p>
+
+      {/* Sprint 5 BUILD 4 — per-pillar drill-down. Tap a pillar row to
+          expand 5 derived stats. Single-open accordion. ─────────────── */}
+      <div style={pillarList} role="list" aria-label="Pillar drill-down">
+        {pillarStats.map((p) => {
+          const isOpen = openPillar === p.key;
+          const s = p.stats;
+          const barPct = s.weekAvg != null ? Math.round((s.weekAvg / 4) * 100) : 0;
+          return (
+            <div key={p.key} style={pillarItem}>
+              <button
+                type="button"
+                onClick={() => togglePillar(p.key)}
+                aria-expanded={isOpen}
+                aria-controls={`pillar-${p.key}-detail`}
+                style={pillarRow}
+              >
+                <span style={pillarLabel}>{p.label}</span>
+                <span style={pillarBarOuter} aria-hidden="true">
+                  <span style={{ ...pillarBarFill, width: `${barPct}%`, background: barColour(s.weekAvg) }} />
+                </span>
+                <span style={pillarAvgNum}>
+                  {s.weekAvg != null ? s.weekAvg.toFixed(1) : "—"}
+                </span>
+                <ChevronDown
+                  size={12} strokeWidth={2.2}
+                  aria-hidden="true"
+                  style={{
+                    color: "#6B5840",
+                    transform: isOpen ? "rotate(180deg)" : "rotate(0)",
+                    transition: "transform 180ms ease",
+                  }}
+                />
+              </button>
+              <div
+                id={`pillar-${p.key}-detail`}
+                role="region"
+                style={{
+                  ...pillarDetail,
+                  maxHeight: isOpen ? 220 : 0,
+                  opacity: isOpen ? 1 : 0,
+                  paddingTop: isOpen ? 8 : 0,
+                  paddingBottom: isOpen ? 10 : 0,
+                }}
+              >
+                <PillarSubRow label="Week avg"      value={s.weekAvg != null ? `${s.weekAvg.toFixed(1)} / 4` : "—"} />
+                <PillarSubRow label="Best day"      value={s.best  ? `${s.best.v.toFixed(1)} · ${fmtIso(s.best.d)}`  : "—"} />
+                <PillarSubRow label="Worst day"     value={s.worst ? `${s.worst.v.toFixed(1)} · ${fmtIso(s.worst.d)}` : "—"} />
+                <PillarSubRow label="vs last week"  value={s.vsLast != null
+                  ? `${s.vsLast >= 0 ? "+" : ""}${s.vsLast.toFixed(1)}${s.vsLast < 0 ? " easier" : s.vsLast > 0 ? " harder" : ""}`
+                  : "—"}
+                  tone={s.vsLast == null ? "neutral" : s.vsLast < -0.2 ? "good" : s.vsLast > 0.2 ? "watch" : "neutral"}
+                />
+                <PillarSubRow label="Trend (30d)"   value={s.trend} tone={s.trend === "Easing" ? "good" : s.trend === "Rising" ? "watch" : "neutral"} />
+              </div>
+            </div>
+          );
+        })}
+      </div>
     </section>
+  );
+}
+
+function fmtIso(iso) {
+  if (!iso) return "";
+  try {
+    return new Date(iso).toLocaleDateString("en-GB", { day: "numeric", month: "short" });
+  } catch { return iso; }
+}
+
+function barColour(v) {
+  if (v == null)        return "rgba(58,44,26,0.16)";
+  if (v >= 3)           return "#8C5A6E"; // plum — worst
+  if (v >= 1.5)         return "#E8B4B8"; // blush — building
+  return "#8FAF8F";                        // sage — easing
+}
+
+function toneColour(tone) {
+  if (tone === "good")  return "#3F6228";
+  if (tone === "watch") return "#8C5A6E";
+  return "#6B5840";
+}
+
+function PillarSubRow({ label, value, tone = "neutral" }) {
+  return (
+    <div style={pillarSubRow}>
+      <span style={pillarSubLabel}>{label}</span>
+      <span style={{ ...pillarSubValue, color: toneColour(tone) }}>{value}</span>
+    </div>
   );
 }
 
@@ -427,4 +572,81 @@ const skel = {
   background: "rgba(58,44,26,0.08)",
   borderRadius: 6,
   marginBottom: 8,
+};
+// Sprint 5 BUILD 4 — pillar drill-down accordion.
+const pillarList = {
+  display: "flex",
+  flexDirection: "column",
+  gap: 4,
+  marginTop: 10,
+};
+const pillarItem = {
+  background: "rgba(255,255,255,0.55)",
+  border: "1px solid rgba(58,44,26,0.10)",
+  borderRadius: 10,
+  overflow: "hidden",
+};
+const pillarRow = {
+  display: "flex",
+  alignItems: "center",
+  gap: 8,
+  width: "100%",
+  padding: "9px 12px",
+  border: "none",
+  background: "transparent",
+  cursor: "pointer",
+  textAlign: "left",
+  fontFamily: "'Inter', sans-serif",
+};
+const pillarLabel = {
+  fontSize: 12.5,
+  fontWeight: 700,
+  color: "#3A2C1A",
+  flexShrink: 0,
+  minWidth: 96,
+};
+const pillarBarOuter = {
+  flex: 1,
+  height: 6,
+  background: "rgba(58,44,26,0.08)",
+  borderRadius: 9999,
+  overflow: "hidden",
+};
+const pillarBarFill = {
+  display: "block",
+  height: "100%",
+  borderRadius: 9999,
+  transition: "width 220ms ease",
+};
+const pillarAvgNum = {
+  fontFamily: "'Fraunces', Georgia, serif",
+  fontSize: 13,
+  fontWeight: 500,
+  color: "#3A2C1A",
+  minWidth: 28,
+  textAlign: "right",
+};
+const pillarDetail = {
+  padding: "0 12px",
+  overflow: "hidden",
+  transition: "max-height 220ms ease, opacity 180ms ease, padding 180ms ease",
+  borderTop: "1px dashed rgba(58,44,26,0.10)",
+};
+const pillarSubRow = {
+  display: "flex",
+  justifyContent: "space-between",
+  alignItems: "baseline",
+  gap: 8,
+  padding: "4px 0",
+  fontFamily: "'Inter', sans-serif",
+};
+const pillarSubLabel = {
+  fontSize: 11.5,
+  color: "#9B8B7A",
+  fontWeight: 600,
+  letterSpacing: "0.04em",
+};
+const pillarSubValue = {
+  fontSize: 12,
+  fontWeight: 700,
 };
