@@ -17,6 +17,7 @@ import { FolicAcidNudge, AmhAwarenessCard, SupplementStackCard } from "@/compone
 import SupplementTrackerCard from "@/components/planner/cycle/SupplementTrackerCard";
 import KickCounterCard from "@/components/planner/today/KickCounterCard";
 import EpdsScreenCard from "@/components/planner/today/EpdsScreenCard";
+import HrtCorrelationCard from "@/components/planner/today/HrtCorrelationCard";
 import FertileWindowCard from "@/components/planner/cycle/FertileWindowCard";
 import FirstLaunchStagePicker, { shouldShowFirstLaunch } from "@/components/planner/FirstLaunchStagePicker";
 import GpExportButton from "@/components/planner/cycle/GpExportButton";
@@ -1196,6 +1197,15 @@ export default function Planner() {
                 item escalates regardless of total. ─────────────────────── */}
             {effectiveLifeStage === "postpartum" && (
               <EpdsScreenCard profile={profile} />
+            )}
+
+            {/* ── HRT × symptom 30-day correlation — perimenopause only ────
+                Reads MenopauseDailyLog for severity series; overlays
+                HrtLog active intervals as a step line when conditions
+                includes 'hrt'. Computes insight ('Symptoms lower on days
+                HRT was taken' / 'Keep logging' / etc) from the data. ──── */}
+            {effectiveLifeStage === "perimenopause" && (
+              <HrtCorrelationCard profile={profile} />
             )}
 
             {/* ── Fresh-Start banner (Phase 2 B1) — soft reset on inflection.
