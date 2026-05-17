@@ -198,16 +198,23 @@ export default function DevStageSwitcher({
     ? ` +${activeConditions.length}`
     : "";
 
-  // Phase 2 QA-fix-bundle-5 — the canonical write path is now DB + local.
-  // Order:
-  //   1. Save previous localStorage value so we can revert on error.
-  //   2. Optimistic localStorage write — Planner picks up the fast-path
-  //      via the DEV_STAGE_EVENT dispatched inside writeDevStageOverride.
-  //   3. Await the UserProfile.update call so profile.life_stage actually
-  //      changes in the DB; on success, call onProfileUpdated so Planner's
-  //      profile state slice updates without waiting for the 6s poll.
-  //   4. On error, revert localStorage + re-dispatch the event so the UI
-  //      snaps back, then flash an inline error message.
+  // Phase 2 QA-fix-bundle-6 — DB write is now best-effort, local override
+  // is canonical. The previous version (bundle-5) reverted localStorage on
+  // any DB error. QA pass found that the live UserProfile schema's
+  // life_stage enum doesn't include "pregnant-t1/t2/t3" yet (only the legacy
+  // "pregnancy" value), so update() rejects on those — and the revert
+  // wiped out the local override that would have made Planner render
+  // correctly anyway. Result: pregnant-T2 picker silently restored TTC.
+  //
+  // New order:
+  //   1. Snapshot previous override (no longer used for revert, but kept
+  //      for visibility in the warn message).
+  //   2. Optimistic localStorage write — this is now THE source of truth
+  //      for the preview. Planner picks it up immediately.
+  //   3. Best-effort DB write. On success: also update Planner's profile
+  //      state so realLifeStage matches. On failure: KEEP the local
+  //      override active and flash a warn-tone "saved locally, DB sync
+  //      failed (schema enum?)" message. Cards still render.
   const handlePick = async (stage) => {
     if (savingStage) return; // ignore double-clicks while in-flight
     const previousOverride = readDevStageOverride() || "";
@@ -221,42 +228,43 @@ export default function DevStageSwitcher({
       return;
     }
 
-    // 1+2. Optimistic local-cache write so the Planner re-renders instantly.
+    // 1+2. Optimistic local-cache write. This is the canonical preview state.
     writeDevStageOverride(stage);
     onChange(stage);
 
-    // 3. DB write. If profileId is missing (component mounted without a
-    //    profile in scope), surface a clear error and revert.
+    // No profileId → local-only preview, no DB attempt.
     if (!profileId) {
-      writeDevStageOverride(previousOverride);
-      onChange(previousOverride || null);
-      flashStatus("No profile id — stage saved locally only. Refresh to retry DB write.", "warn");
+      flashStatus(`Previewing ${SHORT_LABEL[stage] || stage} locally — no profile id for DB sync.`, "warn");
+      setOpen(false);
       return;
     }
+
     setSavingStage(stage);
     try {
       await base44.entities.UserProfile.update(profileId, { life_stage: stage });
-      // Re-dispatch event after the DB confirms so any listener that
-      // missed the optimistic event still sees the final state.
+      // DB confirmed. Re-dispatch + sync Planner profile state.
       try { window.dispatchEvent(new CustomEvent(DEV_STAGE_EVENT, { detail: stage })); } catch { /* silent */ }
-      // Let Planner refresh its profile state immediately so realLifeStage
-      // also reflects the new value (not just devStageOverride).
       if (typeof onProfileUpdated === "function") {
         try { onProfileUpdated({ life_stage: stage }); } catch { /* silent */ }
       }
-      // Broadcast the canonical profile-updated event the Planner's live
-      // re-fetch listener also subscribes to (commit 2e6016b).
       try { window.dispatchEvent(new Event("femwell:profile-updated")); } catch { /* silent */ }
       // eslint-disable-next-line no-console
-      console.log("[DevStageSwitcher] Stage updated to:", stage);
+      console.log("[DevStageSwitcher] Stage updated to:", stage, "(DB synced)");
       flashStatus(`Stage updated to ${SHORT_LABEL[stage] || stage}.`, "success");
       setOpen(false);
     } catch (err) {
-      writeDevStageOverride(previousOverride);
-      onChange(previousOverride || null);
+      // Phase 2 QA-fix-bundle-6 — DO NOT revert. Keep the local override
+      // active so Planner still renders the preview. The user can still
+      // verify all stage-aware behaviour; the only thing missing is
+      // cross-device sync. Most likely cause is a schema-enum mismatch
+      // (the live UserProfile.life_stage may not include all 11 values yet).
       // eslint-disable-next-line no-console
-      console.error("[DevStageSwitcher] Stage update failed:", err);
-      flashStatus(`Stage update failed — ${err?.message || "try again"}.`, "error");
+      console.warn("[DevStageSwitcher] DB sync failed, keeping local override active:", err);
+      const reason = (err && (err.message || err.statusText)) || "schema enum may not include this stage";
+      flashStatus(`Previewing ${SHORT_LABEL[stage] || stage} locally. DB sync failed (${reason}) — preview still works.`, "warn");
+      // Suppress unused-var linter warning for previousOverride (it's part
+      // of the diagnostic flow even when we don't actively use it).
+      void previousOverride;
     } finally {
       setSavingStage(null);
     }

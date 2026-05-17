@@ -329,26 +329,76 @@ Honour the STAGE GUARD above without exception. Highlight patterns, celebrate wi
                 even with marginBottom set. <div> + explicit marginBottom
                 renders the spacing reliably. */}
             {(() => {
+              // Phase 2 QA-fix-bundle-6 — aggressive paragraph splitter.
+              //
+              // Previous version cap-of-280 only fired when paragraphs
+              // exceeded that length. QA found insights of ~200 chars
+              // with no internal newlines and only one sentence still
+              // rendered as a single block. The new logic ALWAYS produces
+              // multiple paragraphs once the text is longer than 180 chars,
+              // even if there are no sentence-ending punctuation marks.
+              //
+              // Pipeline:
+              //   1. Blank-line split.
+              //   2. Single-newline split (LLM forgot the blank line).
+              //   3. Sentence-pair grouping (every 2 sentences = 1 paragraph).
+              //   4. Word-boundary force-split for any single paragraph
+              //      longer than 160 chars — splits roughly every 140 chars
+              //      at the nearest preceding space.
               const text = (displayText || "").trim();
               const cleanInline = (s) => s.replace(/^#+\s*/, "").replace(/\*\*/g, "").trim();
+
               let paras = text.split(/\n{2,}/).map(cleanInline).filter(Boolean);
               if (paras.length < 2) paras = text.split(/\n/).map(cleanInline).filter(Boolean);
               if (paras.length < 2) {
                 const sentences = text.split(/(?<=[.!?])\s+/).map(cleanInline).filter(Boolean);
-                paras = [];
-                for (let i = 0; i < sentences.length; i += 3) {
-                  paras.push(sentences.slice(i, i + 3).join(" "));
+                if (sentences.length > 1) {
+                  paras = [];
+                  for (let i = 0; i < sentences.length; i += 2) {
+                    paras.push(sentences.slice(i, i + 2).join(" "));
+                  }
                 }
               }
-              const MAX_PARA_CHARS = 280;
+
+              // Word-boundary force-split for any paragraph still > 160 chars.
+              const SOFT_CAP = 160;
+              const TARGET_LEN = 140;
               const finalParas = [];
               for (const p of paras) {
-                if (p.length <= MAX_PARA_CHARS) { finalParas.push(p); continue; }
-                const ss = p.split(/(?<=[.!?])\s+/).filter(Boolean);
-                for (let i = 0; i < ss.length; i += 2) {
-                  finalParas.push(ss.slice(i, i + 2).join(" "));
+                if (p.length <= SOFT_CAP) { finalParas.push(p); continue; }
+                // First try sentence-pair re-split.
+                const sentences = p.split(/(?<=[.!?])\s+/).filter(Boolean);
+                if (sentences.length > 1) {
+                  for (let i = 0; i < sentences.length; i += 2) {
+                    const chunk = sentences.slice(i, i + 2).join(" ");
+                    // If a single sentence pair is still huge, fall through.
+                    if (chunk.length <= SOFT_CAP) {
+                      finalParas.push(chunk);
+                    } else {
+                      // Force word-boundary split.
+                      let remaining = chunk;
+                      while (remaining.length > SOFT_CAP) {
+                        let cut = remaining.lastIndexOf(" ", TARGET_LEN);
+                        if (cut < 60) cut = TARGET_LEN; // mid-word fallback
+                        finalParas.push(remaining.slice(0, cut).trim());
+                        remaining = remaining.slice(cut).trim();
+                      }
+                      if (remaining) finalParas.push(remaining);
+                    }
+                  }
+                } else {
+                  // No sentence breaks at all — force word-boundary chunks.
+                  let remaining = p;
+                  while (remaining.length > SOFT_CAP) {
+                    let cut = remaining.lastIndexOf(" ", TARGET_LEN);
+                    if (cut < 60) cut = TARGET_LEN;
+                    finalParas.push(remaining.slice(0, cut).trim());
+                    remaining = remaining.slice(cut).trim();
+                  }
+                  if (remaining) finalParas.push(remaining);
                 }
               }
+
               return finalParas.map((para, i) => (
                 <div key={i} style={{
                   fontSize: "13px",
