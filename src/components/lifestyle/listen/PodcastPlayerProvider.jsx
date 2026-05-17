@@ -93,7 +93,14 @@ export function PodcastPlayerProvider({ children }) {
     if (audioRef.current) return;
     const a = document.createElement('audio');
     a.preload = 'metadata';
-    a.crossOrigin = 'anonymous'; // Best-effort; ignored when host doesn't return CORS headers.
+    // INTENTIONAL: do NOT set a.crossOrigin = 'anonymous'.
+    // Most podcast CDNs (On Being's host, Megaphone, Simplecast, Libsyn,
+    // BBC, NPR, etc.) don't return Access-Control-Allow-Origin headers.
+    // Setting crossOrigin forces the browser to expect those headers and
+    // reject the load when they're missing — that's what produced the
+    // "Playback error" the founder saw on the Michael Pollan / On Being
+    // episode. Plain HTMLAudio playback (no Web Audio API decoding)
+    // works without CORS, so leaving crossOrigin unset is correct.
     document.body.appendChild(a);
     audioRef.current = a;
 
@@ -129,7 +136,20 @@ export function PodcastPlayerProvider({ children }) {
         upsertListenRow(ep, pos, dur, dur > 0 && pos / dur >= COMPLETED_THRESHOLD);
       }
     };
-    const onErr = () => setError('Playback error');
+    const onErr = () => {
+      // Surface the kind of error so the UI can offer the right fallback.
+      // Most podcast playback failures are CORS-style src rejections (code 4
+      // MEDIA_ERR_SRC_NOT_SUPPORTED). For those we want the player to show an
+      // "Open in podcast app" / "Open episode page" CTA rather than a dead
+      // "Playback error" badge.
+      const code = a?.error?.code;
+      const msg = code === 4
+        ? "Couldn't play here — opens externally instead"
+        : code === 2
+          ? 'Network hiccup — try again or open externally'
+          : 'Playback error';
+      setError(msg);
+    };
     const onEnd = () => {
       setIsPlaying(false);
       // Mark completed.
