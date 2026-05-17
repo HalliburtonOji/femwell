@@ -14,7 +14,7 @@
 //                                       existing iron row
 // ─────────────────────────────────────────────────────────────────────────────
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useMemo } from "react";
 import { format, subDays } from "date-fns";
 import { Sprout } from "lucide-react";
 import { base44 } from "@/api/base44Client";
@@ -87,9 +87,11 @@ function calcStreak(logs) {
 
 export default function SupplementTrackerCard({ userId, profile, lifeStage }) {
   const [todayLog, setTodayLog] = useState(null);   // today's SupplementLog record or null
+  const [recent30, setRecent30] = useState([]);     // last 30 rows for the History tab
   const [streak, setStreak] = useState(0);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [view, setView] = useState("today");        // 'today' | 'history'
 
   const supplements = resolveSupplements(profile, lifeStage);
 
@@ -106,9 +108,11 @@ export default function SupplementTrackerCard({ userId, profile, lifeStage }) {
       const recent = rows.filter((r) => r.date >= cutoff);
       const todayRec = recent.find((r) => r.date === TODAY) || null;
       setTodayLog(todayRec);
+      setRecent30(recent);
       setStreak(calcStreak(recent));
     } catch {
       setTodayLog(null);
+      setRecent30([]);
       setStreak(0);
     } finally {
       setLoading(false);
@@ -156,6 +160,22 @@ export default function SupplementTrackerCard({ userId, profile, lifeStage }) {
 
   const checkedCount = supplements.filter((s) => todayLog?.[s.key] === true).length;
 
+  // Sprint 5 BUILD 3 — 30-day dot grid (6 cols × 5 rows, oldest top-left,
+  // newest bottom-right). A day is 'logged' if ANY supplement key is true.
+  const supplementKeys = supplements.map((s) => s.key);
+  const gridDays = useMemo(() => {
+    const today = new Date();
+    const out = [];
+    for (let i = 29; i >= 0; i--) {
+      const iso = format(subDays(today, i), "yyyy-MM-dd");
+      const row = recent30.find((r) => r?.date === iso);
+      const logged = !!row && supplementKeys.some((k) => row[k] === true);
+      out.push({ iso, logged, isToday: iso === TODAY });
+    }
+    return out;
+  }, [recent30, supplementKeys]);
+  const loggedDays = gridDays.filter((d) => d.logged).length;
+
   return (
     <section style={card} aria-label="Supplement tracker">
       {/* Header row */}
@@ -171,7 +191,62 @@ export default function SupplementTrackerCard({ userId, profile, lifeStage }) {
         </div>
       </div>
 
-      {loading ? (
+      {/* Today / History tab toggle */}
+      <div role="tablist" aria-label="View" style={tabRow}>
+        {[
+          { key: "today",   label: "Today" },
+          { key: "history", label: "History · 30 days" },
+        ].map((t) => {
+          const on = view === t.key;
+          return (
+            <button
+              key={t.key}
+              role="tab"
+              aria-selected={on}
+              onClick={() => setView(t.key)}
+              style={{
+                ...tabBtn,
+                background: on ? "#3A2C1A" : "transparent",
+                color: on ? "#F4EDDB" : "#3A2C1A",
+                borderColor: on ? "#3A2C1A" : "rgba(58,44,26,0.16)",
+              }}
+            >
+              {t.label}
+            </button>
+          );
+        })}
+      </div>
+
+      {view === "history" ? (
+        loading ? (
+          <div style={{ padding: "12px 0", textAlign: "center" }}>
+            <div style={spinner} />
+          </div>
+        ) : (
+          <div aria-label="Last 30 days compliance grid">
+            <div style={gridWrap}>
+              {gridDays.map((d) => (
+                <span
+                  key={d.iso}
+                  title={`${d.iso}${d.logged ? " · logged" : " · no log"}`}
+                  aria-label={`${d.iso}${d.logged ? " logged" : " not logged"}`}
+                  style={{
+                    ...gridDot,
+                    background: d.logged ? "#8FAF8F" : "transparent",
+                    borderColor: d.logged ? "#8FAF8F" : "rgba(58,44,26,0.18)",
+                    boxShadow: d.isToday ? "0 0 0 1.5px #D4AF37" : "none",
+                  }}
+                />
+              ))}
+            </div>
+            <p style={gridStat}>
+              {loggedDays > 0
+                ? `${loggedDays} day${loggedDays === 1 ? "" : "s"} logged this month`
+                : "No history yet — start tracking today!"}
+            </p>
+          </div>
+        )
+      ) : loading ? (
         <div style={{ padding: "12px 0", textAlign: "center" }}>
           <div style={spinner} />
         </div>
@@ -364,4 +439,46 @@ const spinner = {
   borderTopColor: "#E8B4B8",
   animation: "spin 0.7s linear infinite",
   margin: "0 auto",
+};
+// Sprint 5 BUILD 3 — 30-day compliance grid (6 cols × 5 rows).
+const tabRow = {
+  display: "flex",
+  gap: 6,
+  marginBottom: 12,
+};
+const tabBtn = {
+  padding: "5px 12px",
+  borderRadius: 9999,
+  border: "1px solid",
+  fontFamily: "'Inter', sans-serif",
+  fontSize: 11.5,
+  fontWeight: 700,
+  cursor: "pointer",
+  letterSpacing: "0.02em",
+};
+const gridWrap = {
+  display: "grid",
+  gridTemplateColumns: "repeat(6, 1fr)",
+  gap: 8,
+  padding: "6px 4px 4px",
+  background: "rgba(255,255,255,0.55)",
+  border: "1px solid rgba(58,44,26,0.10)",
+  borderRadius: 10,
+  justifyItems: "center",
+};
+const gridDot = {
+  display: "block",
+  width: 22,
+  height: 22,
+  borderRadius: "50%",
+  border: "1.5px solid",
+  background: "transparent",
+};
+const gridStat = {
+  fontFamily: "'Inter', sans-serif",
+  fontSize: 11.5,
+  color: "#9B8B7A",
+  fontStyle: "italic",
+  textAlign: "center",
+  margin: "8px 0 0",
 };
