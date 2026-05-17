@@ -297,7 +297,7 @@ export default function FertileWindowCard({ profile, cycleDay, userId }) {
         {openForm === "bbt" && (
           <BbtForm userId={userId} onSaved={handleSaved} onCancel={() => setOpenForm(null)} />
         )}
-        <BbtChart userId={userId} refreshKey={chartKey} />
+        <BbtChart userId={userId} refreshKey={chartKey} profile={profile} />
       </section>
     );
   }
@@ -386,7 +386,7 @@ export default function FertileWindowCard({ profile, cycleDay, userId }) {
       )}
 
       {/* 14-day BBT sparkline */}
-      <BbtChart userId={userId} refreshKey={chartKey} />
+      <BbtChart userId={userId} refreshKey={chartKey} profile={profile} />
     </section>
   );
 }

@@ -1,6 +1,16 @@
 // ─────────────────────────────────────────────────────────────────────────────
 // BbtChart — 14-day BBT sparkline, inline SVG, no external chart lib.
-// Self-fetches from BbtLog entity. Accepts `userId` and `refreshKey` props.
+// Self-fetches from BbtLog entity. Accepts `userId`, `refreshKey`, and
+// optional `profile` so we can compute cycle-day-at-crossing for the
+// coverline insight.
+//
+// Coverline insight (Sprint 4 BUILD 1):
+//   When the user has >= 5 days of BBT data AND >= 3 readings above 36.7°C,
+//   the dashed reference line renders in --femwell-blush (#E8B4B8) and a
+//   small label below the chart says:
+//     "Coverline crossed on CD <n>"
+//   where <n> is the cycle day of the FIRST reading >= 36.7°C in the window,
+//   derived from profile.last_period_start_date + cycle_avg_length.
 // ─────────────────────────────────────────────────────────────────────────────
 
 import { useState, useEffect, useMemo } from "react";
@@ -9,9 +19,15 @@ import { base44 } from "@/api/base44Client";
 
 const Y_MIN = 36.0;
 const Y_MAX = 37.5;
-const REF_LINE = 36.7;
+const COVERLINE = 36.7;
 const SVG_H = 80;
 const PAD = { top: 8, bottom: 8, left: 4, right: 4 };
+
+// --femwell-* token mirrors
+const COLOUR_MUTED  = "#9B8B7A";
+const COLOUR_BLUSH  = "#E8B4B8";
+const COLOUR_ESPRESSO = "#3A2C1A";
+const COLOUR_SAGE   = "#8FAF8F";
 
 function tempToY(temp) {
   const clamped = Math.max(Y_MIN, Math.min(Y_MAX, temp));
@@ -20,7 +36,25 @@ function tempToY(temp) {
   return PAD.top + (1 - ratio) * (SVG_H - PAD.top - PAD.bottom);
 }
 
-export default function BbtChart({ userId, refreshKey }) {
+// Compute the cycle day of a given ISO date string given profile cycle info.
+// Returns null if we don't have enough info or the date is before the last
+// period start.
+function cycleDayFor(isoDate, profile) {
+  const lastStart = profile?.last_period_start_date;
+  if (!lastStart || !isoDate) return null;
+  const avg = Number(profile?.cycle_avg_length) > 0 ? Number(profile.cycle_avg_length) : 28;
+  try {
+    const ms = new Date(isoDate).getTime() - new Date(lastStart).getTime();
+    if (!Number.isFinite(ms) || ms < 0) return null;
+    const diffDays = Math.floor(ms / (1000 * 60 * 60 * 24));
+    // Within the most recent cycle window — CD is 1-indexed.
+    return (diffDays % avg) + 1;
+  } catch {
+    return null;
+  }
+}
+
+export default function BbtChart({ userId, refreshKey, profile }) {
   const [logs, setLogs] = useState([]);
 
   useEffect(() => {
@@ -56,6 +90,26 @@ export default function BbtChart({ userId, refreshKey }) {
   const points = days.filter((d) => d.temp != null);
   const hasData = points.length >= 2;
 
+  // ── Coverline insight (Sprint 4 BUILD 1) ────────────────────────────────
+  // Conditions: >= 5 logged days in window AND >= 3 readings above 36.7°C.
+  // Find the FIRST reading (chronologically earliest) at or above 36.7 °C —
+  // that's the day the user "crossed" the coverline.
+  const coverlineCrossed = useMemo(() => {
+    if (points.length < 5) return null;
+    const aboveCount = points.filter((p) => p.temp >= COVERLINE).length;
+    if (aboveCount < 3) return null;
+    // points are in chronological order (oldest left) because `days` is
+    // and `points` is filter()ed from it.
+    const firstAbove = points.find((p) => p.temp >= COVERLINE);
+    if (!firstAbove) return null;
+    return {
+      day: firstAbove.dayStr,
+      cd: cycleDayFor(firstAbove.dayStr, profile),
+    };
+  }, [points, profile]);
+
+  const coverlineColour = coverlineCrossed ? COLOUR_BLUSH : COLOUR_MUTED;
+
   return (
     <div style={wrap} aria-label="14-day BBT chart">
       <p style={eyebrow}>BBT · LAST 14 DAYS</p>
@@ -67,19 +121,34 @@ export default function BbtChart({ userId, refreshKey }) {
         style={{ display: "block", background: "#F4EDDB", borderRadius: 8 }}
         aria-hidden={!hasData}
       >
-        {/* Reference line at 36.7 °C */}
+        {/* Coverline reference at 36.7 °C — turns blush when the user has
+            crossed it, muted otherwise. */}
         {(() => {
-          const ry = tempToY(REF_LINE);
+          const ry = tempToY(COVERLINE);
           return (
-            <line
-              x1={PAD.left}
-              y1={ry}
-              x2={280 - PAD.right}
-              y2={ry}
-              stroke="#9B8B7A"
-              strokeWidth={1}
-              strokeDasharray="4 3"
-            />
+            <>
+              <line
+                x1={PAD.left}
+                y1={ry}
+                x2={280 - PAD.right}
+                y2={ry}
+                stroke={coverlineColour}
+                strokeWidth={coverlineCrossed ? 1.4 : 1}
+                strokeDasharray="4 3"
+              />
+              {coverlineCrossed && (
+                <text
+                  x={280 - PAD.right - 2}
+                  y={ry - 3}
+                  textAnchor="end"
+                  fontFamily="Inter, sans-serif"
+                  fontSize="9"
+                  fontWeight="700"
+                  fill={COLOUR_BLUSH}
+                  style={{ letterSpacing: "0.08em" }}
+                >36.7°</text>
+              )}
+            </>
           );
         })()}
 
@@ -96,7 +165,7 @@ export default function BbtChart({ userId, refreshKey }) {
               <polyline
                 points={polyPoints}
                 fill="none"
-                stroke="#3A2C1A"
+                stroke={COLOUR_ESPRESSO}
                 strokeWidth={1.5}
                 strokeLinejoin="round"
               />
@@ -106,8 +175,8 @@ export default function BbtChart({ userId, refreshKey }) {
                   cx={xOf(p.x).toFixed(1)}
                   cy={tempToY(p.temp).toFixed(1)}
                   r={3}
-                  fill="#8FAF8F"
-                  stroke="#3A2C1A"
+                  fill={p.temp >= COVERLINE ? COLOUR_BLUSH : COLOUR_SAGE}
+                  stroke={COLOUR_ESPRESSO}
                   strokeWidth={1}
                 />
               ))}
@@ -124,14 +193,24 @@ export default function BbtChart({ userId, refreshKey }) {
             fontFamily="Inter, sans-serif"
             fontSize="10"
             fontStyle="italic"
-            fill="#9B8B7A"
+            fill={COLOUR_MUTED}
           >
             Keep logging — your BBT pattern will appear here
           </text>
         )}
       </svg>
 
-      <p style={note}>Dashed line = 36.70 °C reference (coverline may vary)</p>
+      {coverlineCrossed ? (
+        <p style={{ ...note, color: COLOUR_BLUSH, fontWeight: 600, fontStyle: "normal" }}>
+          Coverline crossed
+          {coverlineCrossed.cd ? ` on CD ${coverlineCrossed.cd}` : ""}
+          {" · "}<span style={{ color: COLOUR_MUTED, fontWeight: 400, fontStyle: "italic" }}>
+            sustained shift suggests post-ovulation
+          </span>
+        </p>
+      ) : (
+        <p style={note}>Dashed line = 36.70 °C coverline (your number may vary)</p>
+      )}
     </div>
   );
 }
