@@ -318,20 +318,16 @@ Honour the STAGE GUARD above without exception. Highlight patterns, celebrate wi
             borderRadius: "14px", padding: "14px",
             backgroundColor: "var(--ivory)",
             border: "1px solid var(--border-subtle)",
-            marginTop: "12px"
+            marginTop: "12px",
+            // Phase 2 QA-fix-bundle-4 — outer container preserves all
+            // whitespace so any \n inside the text actually wraps. Acts as
+            // a safety net under the per-paragraph divs below.
+            whiteSpace: "pre-wrap",
           }}>
-            {/* Phase 2 QA-fix-bundle-3 (#4 hardened) — paragraph rendering
-                with three layers of insurance so the wall-of-text bug can't
-                survive any LLM output shape:
-                  1. Stage-aware scrub on the text first (already applied
-                     to displayText above).
-                  2. Multi-tier split: \n{2,} → \n → sentence-triple.
-                  3. Hard cap: any paragraph >280 chars gets re-split into
-                     sentence pairs.
-                  4. Each <p> renders with whiteSpace:"pre-line" so any
-                     surviving newline inside still becomes a visible
-                     break, AND a <br/> after each sentence so even a
-                     fully-collapsed paragraph still wraps. */}
+            {/* Phase 2 QA-fix-bundle-4 — switch <p> → <div> for paragraphs
+                because some global reset CSS was collapsing <p> margins
+                even with marginBottom set. <div> + explicit marginBottom
+                renders the spacing reliably. */}
             {(() => {
               const text = (displayText || "").trim();
               const cleanInline = (s) => s.replace(/^#+\s*/, "").replace(/\*\*/g, "").trim();
@@ -344,7 +340,6 @@ Honour the STAGE GUARD above without exception. Highlight patterns, celebrate wi
                   paras.push(sentences.slice(i, i + 3).join(" "));
                 }
               }
-              // Cap paragraph length — re-split monsters into sentence pairs.
               const MAX_PARA_CHARS = 280;
               const finalParas = [];
               for (const p of paras) {
@@ -354,31 +349,18 @@ Honour the STAGE GUARD above without exception. Highlight patterns, celebrate wi
                   finalParas.push(ss.slice(i, i + 2).join(" "));
                 }
               }
-              return finalParas.map((para, i) => {
-                // Belt-and-braces: split each para on sentence boundaries
-                // and inject <br/><br/> after every 2 sentences so the eye
-                // gets a break even if all the CSS / whitespace logic fails.
-                const sentences = para.split(/(?<=[.!?])\s+/).filter(Boolean);
-                const chunks = [];
-                for (let j = 0; j < sentences.length; j += 2) {
-                  chunks.push(sentences.slice(j, j + 2).join(" "));
-                }
-                return (
-                  <p key={i} style={{
-                    fontSize: "13px", lineHeight: 1.65,
-                    color: "var(--plum)", marginBottom: "12px",
-                    fontFamily: "'Inter', sans-serif",
-                    whiteSpace: "pre-line",
-                  }}>
-                    {chunks.map((c, k) => (
-                      <span key={k}>
-                        {c}
-                        {k < chunks.length - 1 && <><br/><br/></>}
-                      </span>
-                    ))}
-                  </p>
-                );
-              });
+              return finalParas.map((para, i) => (
+                <div key={i} style={{
+                  fontSize: "13px",
+                  lineHeight: 1.65,
+                  color: "var(--plum)",
+                  marginBottom: "12px",
+                  fontFamily: "'Inter', sans-serif",
+                  whiteSpace: "pre-wrap",
+                }}>
+                  {para}
+                </div>
+              ));
             })()}
           </div>
           <Link to={createPageUrl("Pulse")} style={{

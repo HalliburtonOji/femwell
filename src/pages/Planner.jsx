@@ -1440,48 +1440,39 @@ export default function Planner() {
               effectiveConditions={effectiveConditions}
             />
 
-            {/* ── Stage-specific cards — Phase 2 QA fix #2 (hardened pass).
-                QA verification #2 found that suppression gates fired
-                correctly but affirmative mounts didn't. Likely cause:
-                stale bundle chunk on a CDN or shows* flag dropped through
-                a serialisation boundary. Belt-and-braces: render when
-                EITHER the adapter flag is truthy OR the explicit stage
-                string matches OR the ribbonType matches the stage
-                family. Three signals, fail-open. The mount is harmless
-                if it fires on the wrong stage (the cards themselves are
-                self-gating on relevant profile fields). ─────────────── */}
+            {/* ── Stage-specific cards — Phase 2 QA-fix-bundle-4.
+                Two prior attempts (adapter shows* flags, then OR'd flags
+                + string match) both failed in production. Reverting to
+                the simplest possible thing: direct stage-string checks
+                on effectiveLifeStage. No adapter dependency, no flag
+                lookups, no serialisation boundary to lose data across.
+                Inline console.log immediately above so QA can verify in
+                DevTools what value Planner actually sees. ────────────── */}
             {(() => {
-              const stage = effectiveLifeStage;
-              const ribbon = plannerConfig?.ribbonType;
-              const isPregnancy = ribbon === "pregnancy"
-                || stage === "pregnant-t1" || stage === "pregnant-t2"
-                || stage === "pregnant-t3" || stage === "pregnancy";
-              const isT2T3 = stage === "pregnant-t2" || stage === "pregnant-t3";
-              const isPostpartum = stage === "postpartum";
-              const isPeri = stage === "perimenopause";
-              const conditionsHaveHrt = Array.isArray(effectiveConditions)
-                && effectiveConditions.includes("hrt");
-              const showsPregnancyTimeline = !!plannerConfig?.showsPregnancyTimeline || isPregnancy;
-              const showsKickCounter       = !!plannerConfig?.showsKickCounter       || isT2T3;
-              const showsEpds              = !!plannerConfig?.showsEpds              || isPostpartum;
-              const showsHrtCorrelation    = !!plannerConfig?.showsHrtCorrelation    || isPeri || conditionsHaveHrt;
-              return (
-                <>
-                  {showsPregnancyTimeline && (
-                    <PregnancyTimelineCard profile={profile} plannerConfig={plannerConfig} variant="today" />
-                  )}
-                  {showsKickCounter && (
-                    <KickCounterCard userId={user?.id} />
-                  )}
-                  {showsEpds && (
-                    <EpdsScreenCard profile={profile} />
-                  )}
-                  {showsHrtCorrelation && (
-                    <HrtCorrelationCard profile={profile} />
-                  )}
-                </>
-              );
+              // eslint-disable-next-line no-console
+              console.log("[Planner debug] effectiveLifeStage=", effectiveLifeStage,
+                "| effectiveConditions=", effectiveConditions,
+                "| showsEpds=", plannerConfig?.showsEpds,
+                "| showsKickCounter=", plannerConfig?.showsKickCounter,
+                "| showsPregnancyTimeline=", plannerConfig?.showsPregnancyTimeline,
+                "| showsHrtCorrelation=", plannerConfig?.showsHrtCorrelation);
+              return null;
             })()}
+            {(["pregnant-t1", "pregnant-t2", "pregnant-t3", "pregnancy"].includes(effectiveLifeStage)) && (
+              <PregnancyTimelineCard profile={profile} plannerConfig={plannerConfig} variant="today" />
+            )}
+            {(["pregnant-t2", "pregnant-t3"].includes(effectiveLifeStage)) && (
+              <KickCounterCard userId={user?.id} />
+            )}
+            {effectiveLifeStage === "postpartum" && (
+              <EpdsScreenCard profile={profile} />
+            )}
+            {(effectiveLifeStage === "perimenopause"
+              || (Array.isArray(effectiveConditions) && effectiveConditions.includes("hrt"))
+              || (Array.isArray(profile?.conditions) && profile.conditions.includes("hrt"))
+              || (Array.isArray(profile?.condition_flags) && profile.condition_flags.includes("hrt"))) && (
+              <HrtCorrelationCard profile={profile} />
+            )}
 
             {/* ── Fresh-Start banner (Phase 2 B1) — soft reset on inflection.
                 Life Stage adapter: FreshStart triggers on cycle-day-1 etc;
