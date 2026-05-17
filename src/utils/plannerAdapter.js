@@ -18,6 +18,9 @@
 // ─────────────────────────────────────────────────────────────────────────────
 
 // Sensible base config (reproductive years, no conditions).
+// "shows*" boolean flags drive stage-specific card mounting in
+// Planner.jsx — these supersede brittle exact-string checks against
+// effectiveLifeStage. Default false so cards opt-in per stage.
 const BASE = {
   ribbonType:     "cycle",      // 'cycle' | 'pregnancy' | 'symptom' | 'event' | 'health'
   pillarSet:      ["Sleep", "Energy", "Mood", "Hydration", "Movement", "Cycle"],
@@ -28,6 +31,11 @@ const BASE = {
   contentTags:    ["any", "reproductive"],
   jessContext:    "The user is in her reproductive years with a standard menstrual cycle. Speak with confidence-honesty: use phase language where appropriate, but stay permissive — never imperative.",
   bannerText:     null,
+  // Stage-card mount flags — replace exact-string checks.
+  showsEpds:               false,
+  showsKickCounter:        false,
+  showsPregnancyTimeline:  false,
+  showsHrtCorrelation:     false,
 };
 
 // 11 life-stage configs (plus "none" → reproductive default).
@@ -74,6 +82,7 @@ const STAGE_CONFIGS = {
     contentTags:    ["any", "pregnancy", "t1"],
     jessContext:    "The user is in the first trimester of pregnancy. Common symptoms: nausea (often peaks week 8-10), fatigue, breast tenderness, food aversions. Miscarriage risk highest in T1 — never minimise, never falsely reassure. Mention NHS booking appointment + 12-week dating scan when relevant. Do not give clinical advice; signpost to midwife / GP.",
     bannerText:     "Pregnancy Mode · First Trimester — cycle tracking is paused.",
+    showsPregnancyTimeline: true,
   },
   "pregnant-t2": {
     ribbonType:     "pregnancy",
@@ -85,6 +94,8 @@ const STAGE_CONFIGS = {
     contentTags:    ["any", "pregnancy", "t2"],
     jessContext:    "The user is in the second trimester. Energy often returns, baby movement first felt ~18-22 weeks, 20-week anomaly scan is the big landmark. Pre-eclampsia and gestational diabetes screening start in T2. Do not give clinical advice; signpost to midwife.",
     bannerText:     "Pregnancy Mode · Second Trimester — cycle tracking is paused.",
+    showsPregnancyTimeline: true,
+    showsKickCounter:       true,
   },
   "pregnant-t3": {
     ribbonType:     "pregnancy",
@@ -96,6 +107,8 @@ const STAGE_CONFIGS = {
     contentTags:    ["any", "pregnancy", "t3", "birth-prep"],
     jessContext:    "The user is in the third trimester. Kick counting from week 24-28 (RCOG: change matters more than absolute count). Birth plan, hospital bag, antenatal classes are landmarks. Watch for pre-eclampsia signs (headache, vision changes, sudden swelling) — signpost to day-assessment unit, do not assess clinically.",
     bannerText:     "Pregnancy Mode · Third Trimester — cycle tracking is paused.",
+    showsPregnancyTimeline: true,
+    showsKickCounter:       true,
   },
   postpartum: {
     ribbonType:     "symptom",
@@ -107,6 +120,7 @@ const STAGE_CONFIGS = {
     contentTags:    ["any", "postpartum", "fourth-trimester"],
     jessContext:    "The user is postpartum. She is sleep-deprived, physically healing, and may be experiencing baby blues or postnatal depression. Use the gentlest possible voice. Reference EPDS check-ins (Edinburgh Postnatal Depression Scale) when mood is mentioned. Pelvic-floor work is universal NHS guidance. Do not predict return of period — it is highly variable with lactational amenorrhea.",
     bannerText:     "Postpartum Mode — period may not have returned, and that's expected.",
+    showsEpds:      true,
   },
   perimenopause: {
     ribbonType:     "symptom",
@@ -118,6 +132,7 @@ const STAGE_CONFIGS = {
     contentTags:    ["any", "perimenopause", "hrt"],
     jessContext:    "The user is perimenopausal. She may have irregular cycles, hot flushes, night sweats, sleep disruption, mood changes (often anxiety more than depression), brain fog, joint pain, vaginal dryness, libido changes. Focus on symptom patterns, HRT if relevant (without prescribing), and lifestyle strategies. NICE NG23 allows symptom-based diagnosis — do not push for FSH bloods. Resistance training is the highest-impact intervention.",
     bannerText:     "Perimenopause Mode — symptoms over predictions.",
+    showsHrtCorrelation: true,
   },
   menopause: {
     ribbonType:     "symptom",
@@ -183,6 +198,7 @@ const CONDITION_OVERRIDES = {
     ...cfg,
     pillarSet:   replacePillar(cfg.pillarSet, "Cycle", "HRT log"),
     contentTags: Array.from(new Set([...cfg.contentTags, "hrt"])),
+    showsHrtCorrelation: true,
     jessContext: cfg.jessContext + " She is on HRT — type, dose, and route matter. Common UK regimens: oestradiol patch / gel / tablet, with progesterone (utrogestan or Mirena IUS), and sometimes testosterone (off-label, gel or AndroFeme). Local vaginal oestrogen is separate and safe alongside systemic HRT. Do not advise on dosing — surface the pattern she logs and prompt a GP review at the 3-month mark.",
   }),
   "cancer-survivor": (cfg) => ({

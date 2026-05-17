@@ -840,6 +840,21 @@ export default function Planner() {
     [effectiveLifeStage, effectiveConditions]
   );
 
+  // Phase 2 QA fix #2 — dev diagnostic so future QA walks can verify the
+  // adapter resolution live. Logs once per stage/conditions change.
+  useEffect(() => {
+    // eslint-disable-next-line no-console
+    console.log("[Planner] effective stage →", effectiveLifeStage,
+      "| conditions →", effectiveConditions,
+      "| ribbon →", plannerConfig?.ribbonType,
+      "| showsEpds:", plannerConfig?.showsEpds,
+      "| showsKickCounter:", plannerConfig?.showsKickCounter,
+      "| showsPregnancyTimeline:", plannerConfig?.showsPregnancyTimeline,
+      "| showsHrtCorrelation:", plannerConfig?.showsHrtCorrelation);
+  }, [effectiveLifeStage, effectiveConditions, plannerConfig?.ribbonType,
+      plannerConfig?.showsEpds, plannerConfig?.showsKickCounter,
+      plannerConfig?.showsPregnancyTimeline, plannerConfig?.showsHrtCorrelation]);
+
   // First-launch stage picker — show on /Planner mount when the user signed up
   // before the 11-stage picker existed (life_stage null/empty/"none"). Suppressed
   // by DEV stage override and by a one-shot localStorage opt-out.
@@ -1354,35 +1369,37 @@ export default function Planner() {
             />
 
             {/* ── Pregnancy timeline countdown (Today variant) ───────────
-                Renders under Jess hero on Today for pregnant-t1/t2/t3
-                stages. Shows Week n of 40 + 40-segment progress + next
-                NHS milestone. Hidden everywhere else. ─────────────────── */}
-            {plannerConfig?.ribbonType === "pregnancy" && (
+                Phase 2 QA fix #2 — adapter flag mount instead of exact
+                stage string. plannerConfig.showsPregnancyTimeline is true
+                for pregnant-t1/t2/t3; false everywhere else. ─────────── */}
+            {plannerConfig?.showsPregnancyTimeline && (
               <PregnancyTimelineCard profile={profile} plannerConfig={plannerConfig} variant="today" />
             )}
 
-            {/* ── Kick counter — T2 + T3 (movement-aware trimesters) ─────
-                T2 starts logging movement around week 16-22 (first flutters);
-                T3 is the main monitoring window. T1 doesn't render this. */}
-            {(effectiveLifeStage === "pregnant-t2" || effectiveLifeStage === "pregnant-t3") && (
+            {/* ── Kick counter — adapter-flag mount.
+                plannerConfig.showsKickCounter true on pregnant-t2 + t3.
+                Replaces brittle effectiveLifeStage === "pregnant-t2"
+                check that QA found failing when profile.life_stage didn't
+                exactly match the enum string. ────────────────────────── */}
+            {plannerConfig?.showsKickCounter && (
               <KickCounterCard userId={user?.id} />
             )}
 
-            {/* ── EPDS postnatal wellbeing check-in — postpartum only ─────
-                10-question Edinburgh Postnatal Depression Scale screen.
-                Stays local (localStorage); never persists to base44. Three
-                bands trigger NHS health-visitor / GP signposts. Q10 safety
-                item escalates regardless of total. ─────────────────────── */}
-            {effectiveLifeStage === "postpartum" && (
+            {/* ── EPDS postnatal wellbeing check-in — adapter-flag mount.
+                plannerConfig.showsEpds true on postpartum. 10-question
+                EPDS, localStorage only (never persists to base44), three
+                bands trigger NHS health-visitor / GP signposts. Q10
+                safety item escalates regardless of total. ────────────── */}
+            {plannerConfig?.showsEpds && (
               <EpdsScreenCard profile={profile} />
             )}
 
-            {/* ── HRT × symptom 30-day correlation — perimenopause only ────
-                Reads MenopauseDailyLog for severity series; overlays
-                HrtLog active intervals as a step line when conditions
-                includes 'hrt'. Computes insight ('Symptoms lower on days
-                HRT was taken' / 'Keep logging' / etc) from the data. ──── */}
-            {effectiveLifeStage === "perimenopause" && (
+            {/* ── HRT × symptom 30-day correlation — adapter-flag mount.
+                plannerConfig.showsHrtCorrelation true on perimenopause OR
+                when conditions includes "hrt". So a reproductive user on
+                HRT post-fibroid surgery also gets the chart, which the
+                old exact-string check missed. ─────────────────────────── */}
+            {plannerConfig?.showsHrtCorrelation && (
               <HrtCorrelationCard profile={profile} />
             )}
 
