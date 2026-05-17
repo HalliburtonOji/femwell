@@ -35,14 +35,16 @@ import RitualBundlesCarousel from "@/components/planner/today/RitualBundlesCarou
 import { WeekAheadCard, AstraSidecar, PlanMyNextCycleCTA } from "@/components/planner/cycle/WarmthBundleCycle";
 import { selectedCrumbToday, selectedCrumbCycle } from "@/components/planner/selectedCrumb";
 import { getPlannerConfig, filterProgramsByStage } from "@/utils/plannerAdapter";
-import DevStageSwitcher, {
-  readDevStageOverride,
-  readDevConditionsOverride,
+import DevStageSwitcher from "@/components/planner/DevStageSwitcher";
+// Phase 2 QA-fix-bundle-8 — Planner subscribes to the module-level
+// devStageStore directly. The CustomEvent bus is no longer used here.
+import {
   DEV_STAGE_KEY,
-  DEV_STAGE_EVENT,
-  DEV_CONDITIONS_KEY,
-  DEV_CONDITIONS_EVENT,
-} from "@/components/planner/DevStageSwitcher";
+  readDevStage,
+  readDevConditions,
+  subscribeDevStage,
+  subscribeDevConditions,
+} from "@/utils/devStageStore";
 
 // ── Stage-specific ribbon placeholder cards ─────────────────────────────────
 // Replace MonthRibbon (a cycle-phase grid + "Log your last period" CTA) for
@@ -839,74 +841,40 @@ export default function Planner() {
   //     devtools console, any future surface that calls writeDevStageOverride).
   //   - "storage" (native) — cross-tab updates (Halli has the same account
   //     open in two tabs and flips the stage in one).
-  const [devStageOverride, setDevStageOverride] = useState(() => readDevStageOverride());
-  const [devConditionsOverride, setDevConditionsOverride] = useState(() => readDevConditionsOverride());
-  // Phase 2 QA-fix-bundle-7 — force-render tick.
-  // Two QA passes proved the listener-based reactivity is not propagating
-  // to the render in some sequence we cannot reproduce from static
-  // analysis. Adding a monotonic counter that every relevant event
-  // increments — the counter is a render dep so React MUST re-render
-  // when it bumps, and the effectiveLifeStage computation below reads
-  // localStorage directly so even a stuck state value cannot mask the
-  // chosen stage.
+  // Phase 2 QA-fix-bundle-8 — subscribe to the module-level devStageStore
+  // singleton. The store calls subscribers SYNCHRONOUSLY on writes,
+  // bypassing the CustomEvent bus entirely. No stale closures, no
+  // event-listener-missed-by-mount-timing edge case, no whitelist
+  // validation in the read path.
+  const [devStageOverride, setDevStageOverride] = useState(() => readDevStage() || null);
+  const [devConditionsOverride, setDevConditionsOverride] = useState(() => readDevConditions());
   const [stageTick, setStageTick] = useState(0);
   useEffect(() => {
-    const onCustom = (e) => {
-      const next = e?.detail || null;
-      console.log("[Planner] DEV_STAGE_EVENT received →", next);
-      setDevStageOverride(next);
+    const unsubStage = subscribeDevStage((next) => {
+      console.log("[Planner] devStageStore notify →", next);
+      setDevStageOverride(next || null);
       setStageTick((t) => t + 1);
-    };
+    });
+    const unsubCond = subscribeDevConditions((next) => {
+      console.log("[Planner] devStageStore conditions notify →", next);
+      setDevConditionsOverride(next);
+      setStageTick((t) => t + 1);
+    });
+    // Cross-tab "storage" event is still useful for the rare case where
+    // Halli has the app open in two tabs and flips the switcher in one.
     const onStorage = (e) => {
       if (e.key === DEV_STAGE_KEY) {
-        console.log("[Planner] storage event for life_stage →", e.newValue);
         setDevStageOverride(e.newValue || null);
         setStageTick((t) => t + 1);
-        return;
-      }
-      if (e.key === DEV_CONDITIONS_KEY) {
-        console.log("[Planner] storage event for conditions →", e.newValue);
-        setDevConditionsOverride(readDevConditionsOverride());
-        setStageTick((t) => t + 1);
       }
     };
-    const onConditions = (e) => {
-      console.log("[Planner] DEV_CONDITIONS_EVENT received →", e?.detail);
-      setDevConditionsOverride(readDevConditionsOverride());
-      setStageTick((t) => t + 1);
-    };
-    // Phase 2 QA-fix-bundle-7 — alias event names so anything dispatching
-    // a kebab-case "femwell:dev-stage-change" also bumps the tick.
-    const onAlias = () => { setStageTick((t) => t + 1); };
-    window.addEventListener(DEV_STAGE_EVENT, onCustom);
-    window.addEventListener(DEV_CONDITIONS_EVENT, onConditions);
     window.addEventListener("storage", onStorage);
-    window.addEventListener("femwell:dev-stage-change", onAlias);
-    window.addEventListener("femwell:profile-updated", onAlias);
-    console.log("[Planner] DEV listeners attached. Initial override:", readDevStageOverride(), readDevConditionsOverride());
+    console.log("[Planner] devStageStore listeners attached. Initial:", readDevStage(), readDevConditions());
     return () => {
-      window.removeEventListener(DEV_STAGE_EVENT, onCustom);
-      window.removeEventListener(DEV_CONDITIONS_EVENT, onConditions);
+      unsubStage();
+      unsubCond();
       window.removeEventListener("storage", onStorage);
-      window.removeEventListener("femwell:dev-stage-change", onAlias);
-      window.removeEventListener("femwell:profile-updated", onAlias);
     };
-  }, []);
-  // Belt-and-braces: also poll localStorage every 1500ms in case the event
-  // listener path is somehow blocked. Cheap, no-op when value is unchanged.
-  useEffect(() => {
-    const t = window.setInterval(() => {
-      const freshStage = readDevStageOverride();
-      setDevStageOverride((prev) => (prev === freshStage ? prev : freshStage));
-      const freshCond = readDevConditionsOverride();
-      setDevConditionsOverride((prev) => {
-        // Compare by JSON since both are arrays/null.
-        const a = prev === null ? "__null__" : JSON.stringify(prev);
-        const b = freshCond === null ? "__null__" : JSON.stringify(freshCond);
-        return a === b ? prev : freshCond;
-      });
-    }, 1500);
-    return () => window.clearInterval(t);
   }, []);
   const realLifeStage = profile?.life_stage ?? null;
   // Phase 2 QA-fix-bundle-7 — read localStorage DIRECTLY at render time

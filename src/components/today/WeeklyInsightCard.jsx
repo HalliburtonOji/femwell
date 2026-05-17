@@ -5,6 +5,7 @@ import { subDays, format } from "date-fns";
 import { createPageUrl } from "@/utils";
 import { Link } from "react-router-dom";
 import { getPlannerConfig, isCycleLifeStage } from "@/utils/plannerAdapter";
+import { readDevStage, subscribeDevStage } from "@/utils/devStageStore";
 
 // ────────────────────────────────────────────────────────────────────────────
 // scrubCycleCopyForNonCycleStage — Phase 2 QA-fix-bundle-3 (#5).
@@ -72,6 +73,13 @@ export default function WeeklyInsightCard({ user }) {
   // Did the cached insight stage match the current one? When false, the
   // header gets a "stage changed — regenerate" affordance.
   const [insightIsStale, setInsightIsStale] = useState(false);
+  // Phase 2 QA-fix-bundle-8 — subscribe to the devStageStore so this card
+  // re-evaluates the cycle-copy scrubber + stale banner whenever the DEV
+  // switcher changes stage (without waiting for a remount or refetch).
+  const [devOverride, setDevOverride] = useState(() => readDevStage() || "");
+  useEffect(() => {
+    return subscribeDevStage((next) => setDevOverride(next || ""));
+  }, []);
 
   const weekStart = subDays(new Date(), 6).toISOString().split("T")[0];
   const weekEnd = new Date().toISOString().split("T")[0];
@@ -96,10 +104,15 @@ export default function WeeklyInsightCard({ user }) {
         // Compare insight's generated_for_stage to current. Insights from
         // before this commit won't have generated_for_stage — treat them
         // as stale on non-cycle stages (the prompt at generation time
-        // didn't know about life_stage).
+        // didn't know about life_stage). Phase 2 QA-fix-bundle-8 — when a
+        // DEV override is active, compare against that instead of the
+        // profile stage so previewing a different stage marks the cached
+        // insight as stale.
+        const liveOverride = readDevStage() || "";
+        const compareStage = liveOverride || stage;
         const insightStage = insights[0].generated_for_stage || null;
-        const stageMismatch = insightStage && insightStage !== stage;
-        const preStageInsight = !insightStage && !isCycleLifeStage(stage, conds);
+        const stageMismatch = insightStage && insightStage !== compareStage;
+        const preStageInsight = !insightStage && !isCycleLifeStage(compareStage, conds);
         setInsightIsStale(!!(stageMismatch || preStageInsight));
       }
     } finally {
@@ -207,12 +220,17 @@ Honour the STAGE GUARD above without exception. Highlight patterns, celebrate wi
   // Don't render an empty card — only show when there's an insight
   if (!insight) return null;
 
+  // Phase 2 QA-fix-bundle-8 — let the DEV override win over the fetched
+  // profile stage when previewing. This makes the cycle-copy scrubber + the
+  // stale-stage banner immediately reflect the switcher's chosen stage.
+  const effectiveStage = devOverride || currentStage;
+
   // Phase 2 QA-fix-bundle-3 (#5) — apply the cycle-copy scrubber for
   // non-cycle stages BEFORE paragraph splitting so the splitter sees clean
   // stage-appropriate text.
   const displayText = scrubCycleCopyForNonCycleStage(
     insight.insight_text || "",
-    currentStage,
+    effectiveStage,
     currentConditions,
   );
 

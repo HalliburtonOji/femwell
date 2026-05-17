@@ -16,21 +16,26 @@
 import { useEffect, useRef, useState } from "react";
 import { Layers, X } from "lucide-react";
 import { base44 } from "@/api/base44Client";
-
-export const DEV_STAGE_KEY = "femwell_dev_life_stage";
-// Custom event for same-tab reactivity. The native "storage" event only fires
-// in OTHER tabs of the same origin — to update *this* tab's React tree when
-// localStorage changes (from a click here, from devtools, from any future
-// surface that wants to switch stages), surfaces dispatch this event and the
-// Planner listens for it. See Planner.jsx useEffect.
-export const DEV_STAGE_EVENT = "femwell_dev_stage_change";
-
-// Parallel keys for the conditions modifier picker. Conditions are stored as
-// a JSON array of strings (e.g. ["pcos","hrt"]) so the same UserProfile
-// shape is preserved. Planner.jsx feeds these into getPlannerConfig as the
-// second argument when the override is present.
-export const DEV_CONDITIONS_KEY = "femwell_dev_conditions";
-export const DEV_CONDITIONS_EVENT = "femwell_dev_conditions_change";
+// Phase 2 QA-fix-bundle-8 — module-level singleton store. All reads/writes
+// for the DEV stage + conditions override now go through this store; the
+// previous CustomEvent bus is kept as a legacy fallback inside the store
+// but components no longer subscribe to it.
+import {
+  DEV_STAGE_KEY,
+  DEV_STAGE_EVENT,
+  DEV_CONDITIONS_KEY,
+  DEV_CONDITIONS_EVENT,
+  readDevStage,
+  writeDevStage,
+  readDevConditions,
+  writeDevConditions,
+} from "@/utils/devStageStore";
+export {
+  DEV_STAGE_KEY,
+  DEV_STAGE_EVENT,
+  DEV_CONDITIONS_KEY,
+  DEV_CONDITIONS_EVENT,
+};
 
 const CONDITIONS = [
   { key: "pcos",                label: "PCOS",                hint: "Cycle prediction paused; metabolic pillars" },
@@ -75,65 +80,35 @@ const SHORT_LABEL = {
   "post-menopause": "Post-meno",
 };
 
+// Phase 2 QA-fix-bundle-8 — readDevStageOverride / writeDevStageOverride
+// and the conditions equivalents now live in `@/utils/devStageStore`.
+// Re-export them here under the old names so older imports keep working.
 export function readDevStageOverride() {
-  try {
-    if (typeof window === "undefined") return null;
-    const v = window.localStorage.getItem(DEV_STAGE_KEY);
-    if (!v) return null;
-    return STAGES.some((s) => s.key && s.key === v) ? v : null;
-  } catch {
-    return null;
-  }
+  const v = readDevStage();
+  // Honour the legacy validation behaviour — if the stored value isn't
+  // in the STAGES whitelist, return null. This is still safe because
+  // writeDevStage doesn't filter; only the read path does.
+  return v && STAGES.some((s) => s.key && s.key === v) ? v : null;
 }
 
 export function writeDevStageOverride(stage) {
-  try {
-    if (typeof window === "undefined") return;
-    if (stage) window.localStorage.setItem(DEV_STAGE_KEY, stage);
-    else window.localStorage.removeItem(DEV_STAGE_KEY);
-    // Same-tab reactivity — Planner listens for this custom event and
-    // re-renders the entire tree. We dispatch INSIDE writeDevStageOverride
-    // so any caller (click handler, devtools console, future surface) gets
-    // the re-render for free without having to remember to fire the event.
-    window.dispatchEvent(new CustomEvent(DEV_STAGE_EVENT, { detail: stage || null }));
-  } catch {
-    /* silent */
-  }
+  writeDevStage(stage);
 }
 
-// ─── Conditions override ────────────────────────────────────────────────────
-// Returns an array. Empty array means "no override" (use the real profile.conditions
-// downstream); we return [] rather than null so callers can distinguish "explicitly
-// no conditions" (empty array stored) from "no override" via has-key check.
 export function readDevConditionsOverride() {
-  try {
-    if (typeof window === "undefined") return null;
-    const raw = window.localStorage.getItem(DEV_CONDITIONS_KEY);
-    if (raw === null) return null;
-    const parsed = JSON.parse(raw);
-    if (!Array.isArray(parsed)) return null;
-    return parsed.filter((c) => CONDITIONS.some((opt) => opt.key === c));
-  } catch {
-    return null;
-  }
+  const parsed = readDevConditions();
+  if (!Array.isArray(parsed)) return null;
+  return parsed.filter((c) => CONDITIONS.some((opt) => opt.key === c));
 }
 
 export function writeDevConditionsOverride(conditions) {
-  try {
-    if (typeof window === "undefined") return;
-    if (conditions === null || conditions === undefined) {
-      window.localStorage.removeItem(DEV_CONDITIONS_KEY);
-    } else {
-      const safe = Array.isArray(conditions)
-        ? conditions.filter((c) => CONDITIONS.some((opt) => opt.key === c))
-        : [];
-      window.localStorage.setItem(DEV_CONDITIONS_KEY, JSON.stringify(safe));
-    }
-    window.dispatchEvent(new CustomEvent(DEV_CONDITIONS_EVENT, {
-      detail: conditions === null || conditions === undefined ? null : conditions,
-    }));
-  } catch {
-    /* silent */
+  if (conditions === null || conditions === undefined) {
+    writeDevConditions(null);
+  } else {
+    const safe = Array.isArray(conditions)
+      ? conditions.filter((c) => CONDITIONS.some((opt) => opt.key === c))
+      : [];
+    writeDevConditions(safe);
   }
 }
 
