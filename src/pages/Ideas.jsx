@@ -1,5 +1,6 @@
 import { useState } from "react";
 import BiorhythmTimeline from "@/components/BiorhythmTimeline";
+import MissionControl from "@/components/MissionControl";
 
 // ─────────────────────────────────────────────────────────────────────────────
 // /Ideas — interactive design lab. 4 candidate Planner reskins.
@@ -6293,7 +6294,7 @@ export default function Ideas() {
         fontSize: 11, letterSpacing: "0.18em", fontWeight: 700,
         textTransform: "uppercase",
       }}>
-        Design Lab · Dev Only · Biorhythm · Designs · Research · Life Stages · Scheduling
+        Design Lab · Dev Only · Biorhythm · Mission · Designs · Research · Life Stages · Scheduling
       </div>
 
       {/* Tab bar — Biorhythm / Designs / Research / Life Stages / Scheduling */}
@@ -6308,6 +6309,7 @@ export default function Ideas() {
         }}>
           {[
             { id: "biorhythm", label: "Biorhythm" },
+            { id: "mission", label: "Mission" },
             { id: "designs", label: "Designs" },
             { id: "research", label: "Research" },
             { id: "lifestages", label: "Life Stages" },
@@ -6366,6 +6368,36 @@ export default function Ideas() {
             </p>
           </div>
           <BiorhythmTimeline />
+        </div>
+      )}
+      {topTab === "mission" && (
+        <div style={{ padding: "28px 16px 0" }}>
+          <div style={{ maxWidth: 560, margin: "0 auto 22px", padding: "0 4px" }}>
+            <p style={{
+              fontFamily: "'Inter', system-ui, sans-serif",
+              fontSize: 10, letterSpacing: "0.22em", textTransform: "uppercase",
+              fontWeight: 700, color: "rgba(14,14,14,0.55)", margin: 0,
+            }}>Concept 2 · Mission Control</p>
+            <h2 style={{
+              fontFamily: "'Fraunces', Georgia, serif",
+              fontSize: 26, fontWeight: 500, color: "#0E0E0E",
+              letterSpacing: "-0.02em", margin: "6px 0 8px", lineHeight: 1.15,
+            }}>A capacity-first command deck.</h2>
+            <p style={{
+              fontFamily: "'Inter', system-ui, sans-serif",
+              fontSize: 13, color: "rgba(14,14,14,0.7)",
+              margin: 0, lineHeight: 1.55,
+            }}>
+              Big semicircular gauge dominates the deck. Tasks auto-sort into three
+              rails by capacity cost — LIGHT / BALANCED / INTENSIVE. When today&apos;s
+              capacity won&apos;t support the Intensive rail, a one-tap defer ships
+              the lot to the next high-cap day. A single command bar at the bottom
+              captures anything; &ldquo;High-cap window&rdquo; auto-schedules. The week
+              strip plans biologically. Dark-warm cockpit — intentionally distinct
+              from the rest of the app.
+            </p>
+          </div>
+          <MissionControl />
         </div>
       )}
       {topTab === "research" && <ResearchView />}
