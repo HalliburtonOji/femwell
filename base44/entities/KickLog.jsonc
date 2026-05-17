@@ -1,0 +1,37 @@
+{
+  "name": "KickLog",
+  "type": "object",
+  "properties": {
+    "date": {
+      "type": "string",
+      "format": "date",
+      "description": "Date of the kick counting session (YYYY-MM-DD)"
+    },
+    "session_start": {
+      "type": "string",
+      "description": "ISO timestamp when the session started"
+    },
+    "kick_count": {
+      "type": "number",
+      "description": "Total kicks counted in this session"
+    },
+    "duration_minutes": {
+      "type": "number",
+      "description": "Duration of the session in minutes (auto-calculated)"
+    },
+    "notes": {
+      "type": "string",
+      "description": "Optional free-text notes"
+    },
+    "user_id": {
+      "type": "string",
+      "description": "User who owns this kick log entry"
+    }
+  },
+  "required": [
+    "date",
+    "session_start",
+    "kick_count",
+    "user_id"
+  ]
+}

@@ -15,6 +15,7 @@ import HrtLogCard from "@/components/planner/cycle/HrtLogCard";
 import ContraceptionCard from "@/components/planner/cycle/ContraceptionCard";
 import { FolicAcidNudge, AmhAwarenessCard, SupplementStackCard } from "@/components/planner/cycle/PreTtcCards";
 import SupplementTrackerCard from "@/components/planner/cycle/SupplementTrackerCard";
+import KickCounterCard from "@/components/planner/today/KickCounterCard";
 import FertileWindowCard from "@/components/planner/cycle/FertileWindowCard";
 import FirstLaunchStagePicker, { shouldShowFirstLaunch } from "@/components/planner/FirstLaunchStagePicker";
 import GpExportButton from "@/components/planner/cycle/GpExportButton";
@@ -1180,6 +1181,11 @@ export default function Planner() {
                 NHS milestone. Hidden everywhere else. ─────────────────── */}
             {plannerConfig?.ribbonType === "pregnancy" && (
               <PregnancyTimelineCard profile={profile} plannerConfig={plannerConfig} variant="today" />
+            )}
+
+            {/* ── Kick counter — T3 only ──────────────────────────────────── */}
+            {effectiveLifeStage === "pregnant-t3" && (
+              <KickCounterCard userId={user?.id} />
             )}
 
             {/* ── Fresh-Start banner (Phase 2 B1) — soft reset on inflection.
