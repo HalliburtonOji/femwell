@@ -1,19 +1,27 @@
 // ─────────────────────────────────────────────────────────────────────────────
-// SupplementTrackerCard — pre-TTC daily supplement compliance tracker.
-// Build 2 of the pre-TTC feature set.
+// SupplementTrackerCard — pre-TTC / TTC daily supplement compliance tracker.
+// Build 2 of the pre-TTC feature set. Extended in Sprint 4 BUILD 2.
 //
 // Props:
-//   userId   (string)  — required, current user's id
-//   profile  (object)  — UserProfile; checks .conditions for 'thyroid'
+//   userId         (string)  — required, current user's id
+//   profile        (object)  — UserProfile; checks .conditions for stack
+//   lifeStage      (string)  — optional, 'pre-ttc' or 'ttc' (gates CoQ10)
+//
+// Conditional supplement stacks (read from profile.conditions):
+//   thyroid                          → Selenium 200 mcg
+//   pcos + (pre-ttc | ttc)           → CoQ10 200 mg, 2x daily ('Supports egg quality')
+//   endo                             → Iron note 'Monitor ferritin levels' on the
+//                                       existing iron row
 // ─────────────────────────────────────────────────────────────────────────────
 
 import { useState, useEffect, useCallback } from "react";
 import { format, subDays } from "date-fns";
+import { Sprout } from "lucide-react";
 import { base44 } from "@/api/base44Client";
 
 const TODAY = format(new Date(), "yyyy-MM-dd");
 
-// Base supplement checklist
+// Base supplement checklist. `note` is rendered as a sub-line when present.
 const BASE_SUPPLEMENTS = [
   { key: "folic_acid", label: "Folic Acid", dose: "400 mcg" },
   { key: "vitamin_d",  label: "Vitamin D",  dose: "1000 IU" },
@@ -21,13 +29,44 @@ const BASE_SUPPLEMENTS = [
   { key: "iron",       label: "Iron",       dose: "diet-first" },
 ];
 
-// Extra supplement shown when profile.conditions includes 'thyroid'
+// Conditionally-added supplements.
 const SELENIUM_SUPPLEMENT = { key: "selenium", label: "Selenium", dose: "200 mcg" };
+const COQ10_SUPPLEMENT    = { key: "coq10",    label: "CoQ10",    dose: "200 mg · 2× daily", note: "Supports egg quality" };
 
-function hasThyroid(profile) {
+function getConditions(profile) {
   const conds = profile?.conditions ?? profile?.condition_flags ?? [];
-  if (!Array.isArray(conds)) return false;
-  return conds.some((c) => typeof c === "string" && c.toLowerCase().includes("thyroid"));
+  if (!Array.isArray(conds)) return [];
+  return conds.map((c) => (typeof c === "string" ? c.toLowerCase() : ""));
+}
+
+function hasCondition(profile, key) {
+  return getConditions(profile).some((c) => c.includes(key));
+}
+
+// Build the supplement list for this user's stage + conditions.
+function resolveSupplements(profile, lifeStage) {
+  const list = [...BASE_SUPPLEMENTS];
+
+  // Endo → annotate the existing iron row with a ferritin note rather than
+  // adding a new row, so the checkbox + persistence keys stay unchanged.
+  if (hasCondition(profile, "endo")) {
+    const idx = list.findIndex((s) => s.key === "iron");
+    if (idx >= 0) {
+      list[idx] = { ...list[idx], note: "Monitor ferritin levels" };
+    }
+  }
+
+  // PCOS + (pre-ttc OR ttc) → CoQ10 row for egg quality.
+  if (hasCondition(profile, "pcos") && (lifeStage === "pre-ttc" || lifeStage === "ttc")) {
+    list.push(COQ10_SUPPLEMENT);
+  }
+
+  // Thyroid → Selenium.
+  if (hasCondition(profile, "thyroid")) {
+    list.push(SELENIUM_SUPPLEMENT);
+  }
+
+  return list;
 }
 
 // Count consecutive days (ending today) where folic_acid === true
@@ -46,15 +85,13 @@ function calcStreak(logs) {
   return streak;
 }
 
-export default function SupplementTrackerCard({ userId, profile }) {
+export default function SupplementTrackerCard({ userId, profile, lifeStage }) {
   const [todayLog, setTodayLog] = useState(null);   // today's SupplementLog record or null
   const [streak, setStreak] = useState(0);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
 
-  const supplements = hasThyroid(profile)
-    ? [...BASE_SUPPLEMENTS, SELENIUM_SUPPLEMENT]
-    : BASE_SUPPLEMENTS;
+  const supplements = resolveSupplements(profile, lifeStage);
 
   const load = useCallback(async () => {
     if (!userId) return;
@@ -128,7 +165,7 @@ export default function SupplementTrackerCard({ userId, profile }) {
           <p style={title}>What have you taken today?</p>
         </div>
         <div style={streakBadge} aria-label={`${streak}-day folic acid streak`}>
-          <span style={streakEmoji}>🌿</span>
+          <Sprout size={14} strokeWidth={1.8} color="#3F6228" aria-hidden="true" />
           <span style={streakNum}>{streak}</span>
           <span style={streakLabel}>day{streak !== 1 ? "s" : ""}</span>
         </div>
@@ -173,6 +210,7 @@ export default function SupplementTrackerCard({ userId, profile }) {
                     {s.label}
                   </span>
                   <span style={rowDose}>{s.dose}</span>
+                  {s.note && <span style={rowNote}>{s.note}</span>}
                 </span>
               </button>
             );
@@ -238,9 +276,13 @@ const streakBadge = {
   minWidth: 52,
   flexShrink: 0,
 };
-const streakEmoji = {
-  fontSize: 14,
-  lineHeight: 1,
+const rowNote = {
+  fontFamily: "'Inter', sans-serif",
+  fontSize: 10.5,
+  color: "#9B8B7A",
+  fontStyle: "italic",
+  lineHeight: 1.3,
+  marginTop: 2,
 };
 const streakNum = {
   fontFamily: "'Fraunces', Georgia, serif",

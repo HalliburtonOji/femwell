@@ -1122,11 +1122,18 @@ export default function Planner() {
               so they ship without any base44 schema dependency. ──────── */}
           {effectiveLifeStage === "pre-ttc" && (
             <>
-              <SupplementTrackerCard userId={user?.id} profile={profile} />
+              <SupplementTrackerCard userId={user?.id} profile={profile} lifeStage={effectiveLifeStage} />
               <FolicAcidNudge />
               <AmhAwarenessCard />
               <SupplementStackCard />
             </>
+          )}
+          {/* ── TTC also gets the SupplementTrackerCard so PCOS users see
+              the CoQ10 row for egg quality. Folic / AMH / SupplementStack
+              are static pre-conception primers — TTC users have moved past
+              those. ─────────────────────────────────────────────────── */}
+          {effectiveLifeStage === "ttc" && (
+            <SupplementTrackerCard userId={user?.id} profile={profile} lifeStage={effectiveLifeStage} />
           )}
           {/* ── TTC fertile-window strip — 7-day band centred on predicted
               peak day with BBT + OPK quick-log buttons. Renders only on
