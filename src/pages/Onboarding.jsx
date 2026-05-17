@@ -635,7 +635,20 @@ export default function Onboarding() {
               <p style={{ fontSize: "13px", color: "var(--mauve)", fontFamily: "'Inter', sans-serif", marginTop: "6px" }}>Helps personalise care, logging, and recommendations.</p>
             </div>
             <div className="space-y-3">
-              {[{ id: "none", label: "Not now", desc: "Skip this for now - you can set it later" }, { id: "pregnancy", label: "Pregnancy", desc: "Pregnancy tracking, nutrition, and kick counter" }, { id: "menopause", label: "Menopause", desc: "Menopause symptom tracking and tailored support" }].map(item => (
+              {[
+                { id: "none",             label: "Not now",          desc: "Skip — you can set this anytime from Profile" },
+                { id: "teen",             label: "Teen",             desc: "Still learning your pattern · educational + body-neutral" },
+                { id: "reproductive",     label: "Reproductive years", desc: "Standard cycle tracking · phases · daily plan" },
+                { id: "pre-ttc",          label: "Pre-TTC",          desc: "Thinking about it · baseline + folic acid + AMH" },
+                { id: "ttc",              label: "Trying to conceive", desc: "Clinical view · BBT · OPK · fertile window" },
+                { id: "pregnant-t1",      label: "Pregnant — T1",    desc: "First trimester · cycle paused · NHS-aligned" },
+                { id: "pregnant-t2",      label: "Pregnant — T2",    desc: "Second trimester · anomaly scan · movement" },
+                { id: "pregnant-t3",      label: "Pregnant — T3",    desc: "Third trimester · kick counter · bag-by-36" },
+                { id: "postpartum",       label: "Postpartum",       desc: "Recovery · sleep · pelvic floor · mood watch" },
+                { id: "perimenopause",    label: "Perimenopause",    desc: "Symptoms over predictions · HRT log · patterns" },
+                { id: "menopause",        label: "Menopause",        desc: "12+ months no period · long-term health focus" },
+                { id: "post-menopause",   label: "Post-menopause",   desc: "Cycle no longer relevant · bone · heart · cognition" },
+              ].map(item => (
                 <button key={item.id} onClick={() => { setLifeStage(item.id); setLifeStageFocus([]); }} className="w-full text-left"
                   style={{ borderRadius: "16px", padding: "14px 16px", cursor: "pointer", border: lifeStage === item.id ? "2px solid var(--rose-dust)" : "1.5px solid var(--border)", backgroundColor: lifeStage === item.id ? "var(--rose-dust-subtle)" : "var(--surface)", transition: "all 0.15s" }}>
                   <p style={{ fontSize: "14px", fontWeight: 600, color: lifeStage === item.id ? "var(--rose-dust)" : "var(--plum)", fontFamily: "'Inter', sans-serif" }}>{item.label}</p>
@@ -643,7 +656,10 @@ export default function Onboarding() {
                 </button>
               ))}
             </div>
-            {lifeStage === "pregnancy" && (
+            <p style={{ fontSize: "11px", color: "var(--mauve)", fontFamily: "'Inter', sans-serif", marginTop: "10px", fontStyle: "italic", lineHeight: 1.5 }}>
+              This shapes every Planner surface, every Jess message, and every content card. You can change it any time from Profile.
+            </p>
+            {(lifeStage === "pregnant-t1" || lifeStage === "pregnant-t2" || lifeStage === "pregnant-t3" || lifeStage === "pregnancy") && (
               <div style={{ ...card, padding: "16px" }} className="space-y-3">
                 <p style={{ fontSize: "13px", fontWeight: 600, color: "var(--plum)", fontFamily: "'Inter', sans-serif" }}>Pregnancy details (optional)</p>
                 <div>
@@ -675,7 +691,7 @@ export default function Onboarding() {
                 </div>
               </div>
             )}
-            {lifeStage === "menopause" && (
+            {(lifeStage === "menopause" || lifeStage === "perimenopause" || lifeStage === "post-menopause") && (
               <div style={{ ...card, padding: "16px" }} className="space-y-3">
                 <p style={{ fontSize: "13px", fontWeight: 600, color: "var(--plum)", fontFamily: "'Inter', sans-serif" }}>Menopause stage</p>
                 <Select value={menoStage} onValueChange={setMenoStage}>

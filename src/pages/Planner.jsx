@@ -14,6 +14,7 @@ import SymptomRibbon from "@/components/planner/SymptomRibbon";
 import HrtLogCard from "@/components/planner/cycle/HrtLogCard";
 import ContraceptionCard from "@/components/planner/cycle/ContraceptionCard";
 import { FolicAcidNudge, AmhAwarenessCard, SupplementStackCard } from "@/components/planner/cycle/PreTtcCards";
+import FirstLaunchStagePicker, { shouldShowFirstLaunch } from "@/components/planner/FirstLaunchStagePicker";
 import GpExportButton from "@/components/planner/cycle/GpExportButton";
 import QuietModeBanner from "@/components/planner/cycle/QuietModeBanner";
 import SavedRhythmsCarousel from "@/components/planner/cycle/SavedRhythmsCarousel";
@@ -585,6 +586,15 @@ export default function Planner() {
     [effectiveLifeStage, effectiveConditions]
   );
 
+  // First-launch stage picker — show on /Planner mount when the user signed up
+  // before the 11-stage picker existed (life_stage null/empty/"none"). Suppressed
+  // by DEV stage override and by a one-shot localStorage opt-out.
+  const [showStagePicker, setShowStagePicker] = useState(false);
+  useEffect(() => {
+    if (loading) return;
+    setShowStagePicker(shouldShowFirstLaunch(profile));
+  }, [loading, profile?.life_stage, profile?.id]);
+
   // ── Handlers ──────────────────────────────────────────────────────────────
 
   // Defer N non-anchor, non-completed PersonalTasks from today to a steadier
@@ -722,6 +732,20 @@ export default function Planner() {
 
   return (
     <div className="min-h-screen pb-28" style={{ backgroundColor: "#F4EDDB", /* Le Menu cream paper */ position: "relative" }}>
+      {/* First-launch stage picker — modal overlay for users who never set
+          a life_stage (signed up before the 11-stage picker existed). The
+          picker writes to UserProfile.life_stage so plannerAdapter reshapes
+          everything on close. */}
+      {showStagePicker && (
+        <FirstLaunchStagePicker
+          profile={profile}
+          onSaved={(stage) => {
+            setProfile((p) => p ? { ...p, life_stage: stage } : p);
+            setShowStagePicker(false);
+          }}
+          onSkip={() => setShowStagePicker(false)}
+        />
+      )}
       {/* Le Menu paper grain — feTurbulence overlay at ~2.5% opacity (polish pass 2026-05-16) */}
       <svg aria-hidden="true" style={{ position: "fixed", inset: 0, width: "100%", height: "100%", pointerEvents: "none", zIndex: 0, opacity: 0.025 }}>
         <filter id="lm-paper-grain">
