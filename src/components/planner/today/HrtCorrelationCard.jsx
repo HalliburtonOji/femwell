@@ -13,7 +13,11 @@
 //   - data → SVG chart + insight ("Symptoms lower on days HRT was taken"
 //     when the difference is meaningful, otherwise a neutral framing).
 //
-// Visibility gate (parent): effectiveLifeStage === 'perimenopause'.
+// Visibility gate (parent): plannerConfig.showsHrtCorrelation (true on
+// perimenopause stage OR when conditions includes "hrt"). Older docs
+// said effectiveLifeStage === 'perimenopause' — QA Phase 2 pass found
+// the exact-string gate failing on off-spec profiles and missing the
+// reproductive-stage-on-HRT case. Adapter flag is the source of truth.
 // ─────────────────────────────────────────────────────────────────────────────
 
 import { useEffect, useMemo, useState } from "react";

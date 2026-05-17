@@ -15,7 +15,10 @@
 // days ago" but the data never leaves their browser. This is sensitive mental
 // health data — base44 round-trip is the wrong frame for v1.
 //
-// Visibility: gated by Planner.jsx on effectiveLifeStage === 'postpartum'.
+// Visibility: gated by Planner.jsx on plannerConfig.showsEpds (true on the
+// postpartum stage in plannerAdapter.js). Old gate was an exact-string
+// check on effectiveLifeStage; QA Phase 2 walk found it failing on
+// off-spec profile enums. The adapter flag is the source of truth.
 // ─────────────────────────────────────────────────────────────────────────────
 
 import { useEffect, useMemo, useState } from "react";
