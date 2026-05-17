@@ -47,9 +47,12 @@ const STAGE_CONFIGS = {
   reproductive:   { ...BASE },
   "pre-ttc": {
     ...BASE,
+    pillarSet:      ["Sleep", "Cycle", "Mood", "Nutrition", "Movement", "Supplements"],
     eyebrowPrefix:  "TODAY · PRE-TTC",
+    cycleTabName:   "Prepare",
     contentTags:    ["any", "pre-ttc", "fertility-prep"],
-    jessContext:    "The user is thinking about trying to conceive but has not started. Surface AMH context lightly, prompt folic acid (UK NHS recommends 400 mcg daily from before conception), and partner conversations. Do not pretend she is actively TTC; she is preparing.",
+    jessContext:    "The user is thinking about trying to conceive but isn't trying yet. She needs preparation data — folic acid timing, cycle baseline, AMH awareness, pre-conception lifestyle. Never use clinical TTC language; this is the 'thinking about it' phase. Surface NHS pre-conception guidance lightly — folic acid 400 mcg daily from before conception (higher dose 5 mg for some risk groups), vitamin D in winter, BMI, alcohol, smoking. Do not assume timeline; some users will TTC in 6 weeks, some in 3 years.",
+    bannerText:     "Pre-TTC Mode — building your baseline for when you're ready",
   },
   ttc: {
     ribbonType:     "cycle",

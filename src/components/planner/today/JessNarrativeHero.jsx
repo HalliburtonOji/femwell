@@ -162,6 +162,12 @@ const FALLBACK_BANK = {
 // guidance from src/utils/plannerAdapter.js so the FE-only fallback doesn't
 // drift away from what the LLM would have said.
 const STAGE_FALLBACK_BANK = {
+  "pre-ttc": [
+    { headline: "Folic acid from today — not from the positive test", body: "NHS recommends 400 mcg daily from before conception (5 mg for some risk groups — your GP knows). The neural tube closes by week 6, often before you'd suspect a pregnancy." },
+    { headline: "The best data is the data you already have",     body: "Three months of cycle baseline matters more than any one test result. Logging this week is doing the work without doing the trying." },
+    { headline: "Three months of good sleep before conception matters more than most know", body: "Pre-conception sleep, alcohol, weight and stress reshape egg quality (it takes ~90 days for the cohort to mature). The dull-list always works." },
+    { headline: "You don't have to be trying to start preparing",  body: "Pre-TTC is its own season. AMH context, vitamin D in winter, partner conversations — you can build the runway without booking the flight." },
+  ],
   "pregnant-t1": [
     { headline: "The hidden trimester",            body: "First trimester is the one no one sees — nausea, exhaustion, tenderness. Your body is doing extraordinary work in the quiet. Honour that quiet." },
     { headline: "Small wins, today",               body: "Water. A walk if it feels right. A nap if it doesn't. Right now small is the whole win — and it counts." },

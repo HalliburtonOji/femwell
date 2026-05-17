@@ -13,6 +13,7 @@ import MonthRibbon from "@/components/planner/cycle/MonthRibbon";
 import SymptomRibbon from "@/components/planner/SymptomRibbon";
 import HrtLogCard from "@/components/planner/cycle/HrtLogCard";
 import ContraceptionCard from "@/components/planner/cycle/ContraceptionCard";
+import { FolicAcidNudge, AmhAwarenessCard, SupplementStackCard } from "@/components/planner/cycle/PreTtcCards";
 import GpExportButton from "@/components/planner/cycle/GpExportButton";
 import QuietModeBanner from "@/components/planner/cycle/QuietModeBanner";
 import SavedRhythmsCarousel from "@/components/planner/cycle/SavedRhythmsCarousel";
@@ -928,6 +929,16 @@ export default function Planner() {
           {plannerConfig?.ribbonType === "cycle"
             && !plannerConfig?.hiddenFeatures?.includes("contraception") && (
             <ContraceptionCard profile={profile} />
+          )}
+          {/* ── Pre-TTC prep cards — folic acid · AMH · supplement stack ──
+              Pre-TTC only. The cards are self-contained (no entity reads)
+              so they ship without any base44 schema dependency. ──────── */}
+          {effectiveLifeStage === "pre-ttc" && (
+            <>
+              <FolicAcidNudge />
+              <AmhAwarenessCard />
+              <SupplementStackCard />
+            </>
           )}
           <AstraSidecar profile={profile} />
           {/* STEP 7: GP-ready PDF export — peri / reproductive / postpartum.
