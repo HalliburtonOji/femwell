@@ -26,7 +26,14 @@ import { TonightCard, ShutdownRitualCard } from "@/components/planner/today/Warm
 import { WeekAheadCard, AstraSidecar, PlanMyNextCycleCTA } from "@/components/planner/cycle/WarmthBundleCycle";
 import { selectedCrumbToday, selectedCrumbCycle } from "@/components/planner/selectedCrumb";
 import { getPlannerConfig } from "@/utils/plannerAdapter";
-import DevStageSwitcher, { readDevStageOverride, DEV_STAGE_KEY, DEV_STAGE_EVENT } from "@/components/planner/DevStageSwitcher";
+import DevStageSwitcher, {
+  readDevStageOverride,
+  readDevConditionsOverride,
+  DEV_STAGE_KEY,
+  DEV_STAGE_EVENT,
+  DEV_CONDITIONS_KEY,
+  DEV_CONDITIONS_EVENT,
+} from "@/components/planner/DevStageSwitcher";
 
 // ── Stage-specific ribbon placeholder cards ─────────────────────────────────
 // Replace MonthRibbon (a cycle-phase grid + "Log your last period" CTA) for
@@ -514,6 +521,7 @@ export default function Planner() {
   //   - "storage" (native) — cross-tab updates (Halli has the same account
   //     open in two tabs and flips the stage in one).
   const [devStageOverride, setDevStageOverride] = useState(() => readDevStageOverride());
+  const [devConditionsOverride, setDevConditionsOverride] = useState(() => readDevConditionsOverride());
   useEffect(() => {
     const onCustom = (e) => {
       const next = e?.detail || null;
@@ -521,15 +529,27 @@ export default function Planner() {
       setDevStageOverride(next);
     };
     const onStorage = (e) => {
-      if (e.key !== DEV_STAGE_KEY) return;
-      console.log("[Planner] storage event for life_stage →", e.newValue);
-      setDevStageOverride(e.newValue || null);
+      if (e.key === DEV_STAGE_KEY) {
+        console.log("[Planner] storage event for life_stage →", e.newValue);
+        setDevStageOverride(e.newValue || null);
+        return;
+      }
+      if (e.key === DEV_CONDITIONS_KEY) {
+        console.log("[Planner] storage event for conditions →", e.newValue);
+        setDevConditionsOverride(readDevConditionsOverride());
+      }
+    };
+    const onConditions = (e) => {
+      console.log("[Planner] DEV_CONDITIONS_EVENT received →", e?.detail);
+      setDevConditionsOverride(readDevConditionsOverride());
     };
     window.addEventListener(DEV_STAGE_EVENT, onCustom);
+    window.addEventListener(DEV_CONDITIONS_EVENT, onConditions);
     window.addEventListener("storage", onStorage);
-    console.log("[Planner] DEV listeners attached. Initial override:", readDevStageOverride());
+    console.log("[Planner] DEV listeners attached. Initial override:", readDevStageOverride(), readDevConditionsOverride());
     return () => {
       window.removeEventListener(DEV_STAGE_EVENT, onCustom);
+      window.removeEventListener(DEV_CONDITIONS_EVENT, onConditions);
       window.removeEventListener("storage", onStorage);
     };
   }, []);
@@ -537,14 +557,24 @@ export default function Planner() {
   // listener path is somehow blocked. Cheap, no-op when value is unchanged.
   useEffect(() => {
     const t = window.setInterval(() => {
-      const fresh = readDevStageOverride();
-      setDevStageOverride((prev) => (prev === fresh ? prev : fresh));
+      const freshStage = readDevStageOverride();
+      setDevStageOverride((prev) => (prev === freshStage ? prev : freshStage));
+      const freshCond = readDevConditionsOverride();
+      setDevConditionsOverride((prev) => {
+        // Compare by JSON since both are arrays/null.
+        const a = prev === null ? "__null__" : JSON.stringify(prev);
+        const b = freshCond === null ? "__null__" : JSON.stringify(freshCond);
+        return a === b ? prev : freshCond;
+      });
     }, 1500);
     return () => window.clearInterval(t);
   }, []);
   const realLifeStage = profile?.life_stage ?? null;
   const effectiveLifeStage = devStageOverride || realLifeStage || "reproductive";
-  const effectiveConditions = profile?.conditions ?? profile?.condition_flags ?? [];
+  const realConditions = profile?.conditions ?? profile?.condition_flags ?? [];
+  // DEV conditions override: explicit (even empty) wins over the real list.
+  // readDevConditionsOverride() returns null when no override is set.
+  const effectiveConditions = devConditionsOverride !== null ? devConditionsOverride : realConditions;
   const plannerConfig = useMemo(
     () => getPlannerConfig(effectiveLifeStage, effectiveConditions),
     // Note: effectiveConditions is computed inline each render — when its
@@ -750,7 +780,10 @@ export default function Planner() {
             <DevStageSwitcher
               effectiveStage={effectiveLifeStage}
               realStage={realLifeStage}
+              effectiveConditions={effectiveConditions}
+              realConditions={realConditions}
               onChange={setDevStageOverride}
+              onConditionsChange={setDevConditionsOverride}
             />
           </div>
 

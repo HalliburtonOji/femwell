@@ -24,6 +24,24 @@ export const DEV_STAGE_KEY = "femwell_dev_life_stage";
 // Planner listens for it. See Planner.jsx useEffect.
 export const DEV_STAGE_EVENT = "femwell_dev_stage_change";
 
+// Parallel keys for the conditions modifier picker. Conditions are stored as
+// a JSON array of strings (e.g. ["pcos","hrt"]) so the same UserProfile
+// shape is preserved. Planner.jsx feeds these into getPlannerConfig as the
+// second argument when the override is present.
+export const DEV_CONDITIONS_KEY = "femwell_dev_conditions";
+export const DEV_CONDITIONS_EVENT = "femwell_dev_conditions_change";
+
+const CONDITIONS = [
+  { key: "pcos",            label: "PCOS",            hint: "Cycle prediction paused; metabolic pillars" },
+  { key: "endo",            label: "Endometriosis",   hint: "Pain pillar; pacing voice" },
+  { key: "pmdd",            label: "PMDD",            hint: "Luteal mood support; safety signposts" },
+  { key: "fibroids",        label: "Fibroids",        hint: "Bleeding tracking; iron status nudge" },
+  { key: "thyroid",         label: "Thyroid",         hint: "Energy + temp signal; med-timing nudge" },
+  { key: "hrt",             label: "On HRT",          hint: "HRT log; dosage notes; review cadence" },
+  { key: "cancer-survivor", label: "Cancer survivor", hint: "Induced-menopause aware; opt-in fertility" },
+  { key: "ha",              label: "HA (recovery)",   hint: "Recovery mode; no calories/intensity" },
+];
+
 const STAGES = [
   { key: "",                label: "Use my real stage" },
   { key: "teen",            label: "Teen" },
@@ -79,7 +97,43 @@ export function writeDevStageOverride(stage) {
   }
 }
 
-export default function DevStageSwitcher({ effectiveStage, realStage, onChange }) {
+// ─── Conditions override ────────────────────────────────────────────────────
+// Returns an array. Empty array means "no override" (use the real profile.conditions
+// downstream); we return [] rather than null so callers can distinguish "explicitly
+// no conditions" (empty array stored) from "no override" via has-key check.
+export function readDevConditionsOverride() {
+  try {
+    if (typeof window === "undefined") return null;
+    const raw = window.localStorage.getItem(DEV_CONDITIONS_KEY);
+    if (raw === null) return null;
+    const parsed = JSON.parse(raw);
+    if (!Array.isArray(parsed)) return null;
+    return parsed.filter((c) => CONDITIONS.some((opt) => opt.key === c));
+  } catch {
+    return null;
+  }
+}
+
+export function writeDevConditionsOverride(conditions) {
+  try {
+    if (typeof window === "undefined") return;
+    if (conditions === null || conditions === undefined) {
+      window.localStorage.removeItem(DEV_CONDITIONS_KEY);
+    } else {
+      const safe = Array.isArray(conditions)
+        ? conditions.filter((c) => CONDITIONS.some((opt) => opt.key === c))
+        : [];
+      window.localStorage.setItem(DEV_CONDITIONS_KEY, JSON.stringify(safe));
+    }
+    window.dispatchEvent(new CustomEvent(DEV_CONDITIONS_EVENT, {
+      detail: conditions === null || conditions === undefined ? null : conditions,
+    }));
+  } catch {
+    /* silent */
+  }
+}
+
+export default function DevStageSwitcher({ effectiveStage, realStage, effectiveConditions = [], realConditions = [], onChange, onConditionsChange }) {
   const [open, setOpen] = useState(false);
   const panelRef = useRef(null);
 
@@ -98,12 +152,34 @@ export default function DevStageSwitcher({ effectiveStage, realStage, onChange }
   }, [open]);
 
   const overrideActive = !!readDevStageOverride();
+  const conditionsOverride = readDevConditionsOverride();
+  const conditionsOverrideActive = conditionsOverride !== null;
+  const activeConditions = conditionsOverrideActive ? conditionsOverride : effectiveConditions;
   const shortLabel = SHORT_LABEL[effectiveStage] || "Stage";
+  const conditionsBadge = activeConditions && activeConditions.length > 0
+    ? ` +${activeConditions.length}`
+    : "";
 
   const handlePick = (stage) => {
     writeDevStageOverride(stage);
     onChange(stage || null);
     setOpen(false);
+  };
+
+  const handleToggleCondition = (key) => {
+    const current = conditionsOverrideActive
+      ? conditionsOverride
+      : (Array.isArray(effectiveConditions) ? effectiveConditions : []);
+    const next = current.includes(key)
+      ? current.filter((c) => c !== key)
+      : [...current, key];
+    writeDevConditionsOverride(next);
+    if (onConditionsChange) onConditionsChange(next);
+  };
+
+  const handleClearConditions = () => {
+    writeDevConditionsOverride(null);
+    if (onConditionsChange) onConditionsChange(null);
   };
 
   return (
@@ -121,7 +197,7 @@ export default function DevStageSwitcher({ effectiveStage, realStage, onChange }
       >
         <Layers size={11} strokeWidth={2.2} />
         <span style={pillEyebrow}>DEV</span>
-        <span style={pillStage}>{shortLabel}</span>
+        <span style={pillStage}>{shortLabel}{conditionsBadge}</span>
       </button>
 
       {open && (
@@ -172,6 +248,63 @@ export default function DevStageSwitcher({ effectiveStage, realStage, onChange }
                 </button>
               );
             })}
+          </div>
+
+          {/* ── Conditions (cross-cutting modifiers) ──────────────────────
+              Conditions stack on top of the chosen life_stage — e.g. peri +
+              HRT, reproductive + PCOS, postpartum + thyroid. Stored in
+              localStorage as a JSON array so the existing UserProfile shape
+              is preserved when this lifts to real users. ───────────────── */}
+          <div style={conditionsBlock}>
+            <div style={conditionsHeadRow}>
+              <div style={panelEyebrow}>CONDITIONS (DEV)</div>
+              {conditionsOverrideActive && (
+                <button
+                  type="button"
+                  onClick={handleClearConditions}
+                  style={clearBtn}
+                  aria-label="Clear condition override"
+                >
+                  Use real
+                </button>
+              )}
+            </div>
+            <p style={conditionsHint}>
+              Stack on top of stage. Real conditions on file: <strong style={{ color: "#3A2C1A" }}>
+                {(realConditions && realConditions.length > 0) ? realConditions.join(" · ") : "none"}
+              </strong>.
+            </p>
+            <div role="list" style={conditionsList}>
+              {CONDITIONS.map((c) => {
+                const isOn = activeConditions.includes(c.key);
+                return (
+                  <button
+                    key={c.key}
+                    role="listitem"
+                    type="button"
+                    aria-pressed={isOn}
+                    onClick={() => handleToggleCondition(c.key)}
+                    style={{
+                      ...conditionRow,
+                      background: isOn ? "rgba(166,134,43,0.18)" : "transparent",
+                      color: isOn ? "#3A2C1A" : "#3A2C1A",
+                      borderColor: isOn ? "#A6862B" : "rgba(58,44,26,0.10)",
+                    }}
+                  >
+                    <span style={conditionDot} aria-hidden="true">
+                      <span style={{
+                        ...conditionDotInner,
+                        background: isOn ? "#A6862B" : "transparent",
+                      }}/>
+                    </span>
+                    <span style={{ flex: 1, minWidth: 0 }}>
+                      <span style={conditionLabel}>{c.label}</span>
+                      <span style={conditionHintInline}>{c.hint}</span>
+                    </span>
+                  </button>
+                );
+              })}
+            </div>
           </div>
         </div>
       )}
@@ -276,4 +409,85 @@ const stageRow = {
   fontWeight: 600,
   cursor: "pointer",
   minHeight: 32,
+};
+const conditionsBlock = {
+  marginTop: 14,
+  paddingTop: 12,
+  borderTop: "1px dashed rgba(58,44,26,0.16)",
+};
+const conditionsHeadRow = {
+  display: "flex",
+  justifyContent: "space-between",
+  alignItems: "center",
+  gap: 8,
+  marginBottom: 6,
+};
+const conditionsHint = {
+  fontFamily: "'Inter', system-ui, sans-serif",
+  fontSize: 10.5,
+  color: "#6B5840",
+  lineHeight: 1.5,
+  margin: "0 0 8px",
+};
+const conditionsList = {
+  display: "flex",
+  flexDirection: "column",
+  gap: 4,
+};
+const conditionRow = {
+  display: "flex",
+  alignItems: "flex-start",
+  gap: 8,
+  textAlign: "left",
+  padding: "7px 10px",
+  borderRadius: 8,
+  border: "1px solid",
+  fontSize: 12,
+  fontWeight: 600,
+  cursor: "pointer",
+  fontFamily: "'Inter', system-ui, sans-serif",
+  minHeight: 32,
+};
+const conditionDot = {
+  display: "inline-flex",
+  alignItems: "center",
+  justifyContent: "center",
+  width: 14,
+  height: 14,
+  borderRadius: 4,
+  border: "1.5px solid rgba(58,44,26,0.35)",
+  marginTop: 1,
+  flexShrink: 0,
+};
+const conditionDotInner = {
+  width: 7,
+  height: 7,
+  borderRadius: 2,
+};
+const conditionLabel = {
+  display: "block",
+  fontSize: 12.5,
+  fontWeight: 700,
+  lineHeight: 1.25,
+};
+const conditionHintInline = {
+  display: "block",
+  marginTop: 1,
+  fontSize: 10.5,
+  fontWeight: 400,
+  color: "#6B5840",
+  lineHeight: 1.35,
+};
+const clearBtn = {
+  fontFamily: "'Inter', system-ui, sans-serif",
+  fontSize: 10,
+  fontWeight: 700,
+  letterSpacing: "0.06em",
+  textTransform: "uppercase",
+  padding: "3px 8px",
+  borderRadius: 9999,
+  border: "1px solid rgba(58,44,26,0.18)",
+  background: "transparent",
+  color: "#6B5840",
+  cursor: "pointer",
 };
