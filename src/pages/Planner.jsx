@@ -12,6 +12,7 @@ import DoctorReadyDiaryCard from "@/components/planner/cycle/DoctorReadyDiaryCar
 import MonthRibbon from "@/components/planner/cycle/MonthRibbon";
 import SymptomRibbon from "@/components/planner/SymptomRibbon";
 import HrtLogCard from "@/components/planner/cycle/HrtLogCard";
+import ContraceptionCard from "@/components/planner/cycle/ContraceptionCard";
 import GpExportButton from "@/components/planner/cycle/GpExportButton";
 import QuietModeBanner from "@/components/planner/cycle/QuietModeBanner";
 import SavedRhythmsCarousel from "@/components/planner/cycle/SavedRhythmsCarousel";
@@ -920,6 +921,14 @@ export default function Planner() {
           <div ref={(el) => { cycleSectionRefs.current.doctor = el; }}>
             <DoctorReadyDiaryCard user={user} profile={profile} plannerConfig={plannerConfig} />
           </div>
+          {/* ── Contraception memory — reproductive + pre-TTC only ──────
+              Hidden via plannerConfig.hiddenFeatures.includes("contraception")
+              for teen/pregnant/postpartum/peri/meno (declared in
+              plannerAdapter.js). Only renders on the Cycle view. ─────── */}
+          {plannerConfig?.ribbonType === "cycle"
+            && !plannerConfig?.hiddenFeatures?.includes("contraception") && (
+            <ContraceptionCard profile={profile} />
+          )}
           <AstraSidecar profile={profile} />
           {/* STEP 7: GP-ready PDF export — peri / reproductive / postpartum.
               Eligibility honours effectiveLifeStage so the DevStageSwitcher
