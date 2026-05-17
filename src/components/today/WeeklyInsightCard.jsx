@@ -4,6 +4,7 @@ import { RefreshCw, ChevronDown, ChevronUp } from "lucide-react";
 import { subDays, format } from "date-fns";
 import { createPageUrl } from "@/utils";
 import { Link } from "react-router-dom";
+import { getPlannerConfig, isCycleLifeStage } from "@/utils/plannerAdapter";
 
 export default function WeeklyInsightCard({ user }) {
   const [insight, setInsight] = useState(null);
@@ -33,12 +34,17 @@ export default function WeeklyInsightCard({ user }) {
     setGenerating(true);
     const today = new Date().toISOString().split("T")[0];
 
-    const [journals, checkins, habits, symptoms, cycles] = await Promise.all([
+    // Phase 2 QA fix #4 — fetch UserProfile alongside the data sources so
+    // we can pass life_stage + jessContext into the LLM prompt. Without
+    // this the model defaulted to cycle framing ("approaching menstrual
+    // phase") for pregnancy / postpartum / menopause users.
+    const [journals, checkins, habits, symptoms, cycles, profiles] = await Promise.all([
       base44.entities.JournalEntries.filter({ user_id: user.id }),
       base44.entities.DailyCheckins.filter({ user_id: user.id }),
       base44.entities.HabitLogs.filter({ user_id: user.id }),
       base44.entities.SymptomLogs.filter({ user_id: user.id }),
       base44.entities.CycleEvents.filter({ user_id: user.id }),
+      base44.entities.UserProfile.filter({ user_id: user.id }, null, 1).catch(() => []),
     ]);
 
     const recentJournals = journals.filter(j => (j.session_date || j.created_date?.split("T")[0]) >= weekStart);
@@ -47,7 +53,24 @@ export default function WeeklyInsightCard({ user }) {
     const recentSymptoms = symptoms.filter(s => s.date >= weekStart);
     const recentCycles = cycles.filter(c => c.date >= weekStart);
 
+    // Stage context — drives both the writer-style instruction and the
+    // explicit "do not assume cycle" guard for non-cycle stages.
+    const profile = profiles?.[0] || null;
+    const lifeStage = profile?.life_stage || "reproductive";
+    const conditions = profile?.conditions || profile?.condition_flags || [];
+    const conditionsLabel = Array.isArray(conditions) && conditions.length > 0 ? conditions.join(", ") : "none";
+    const stageConfig = getPlannerConfig(lifeStage, conditions);
+    const cycleAnchored = isCycleLifeStage(lifeStage, conditions);
+    const stageGuard = cycleAnchored
+      ? "Cycle framing is appropriate for this user."
+      : "DO NOT reference cycle phases, ovulation, or 'approaching menstrual phase'. The cycle frame is wrong for this user's life stage — speak only in terms of energy, sleep, recovery, mood, and stage-appropriate concerns.";
+
     const prompt = `You are a compassionate women's wellness coach. Analyse the following data from the past 7 days (${weekStart} to ${today}) and write a concise, warm "Weekly Wellness Insight" report (3-5 short paragraphs). Highlight patterns, celebrate wins, note any recurring symptoms or habits, and offer 1-2 actionable suggestions for the coming week. Do not diagnose. Be encouraging.
+
+LIFE STAGE: ${lifeStage}
+CONDITIONS: ${conditionsLabel}
+STAGE GUIDANCE: ${stageConfig?.jessContext || ""}
+STAGE GUARD: ${stageGuard}
 
 JOURNAL ENTRIES (${recentJournals.length}):
 ${recentJournals.map(j => `- "${j.text?.slice(0, 100)}"`).join("\n") || "None logged"}
@@ -64,7 +87,7 @@ ${recentSymptoms.map(s => `- ${s.date}: ${s.symptom_type} (severity ${s.severity
 CYCLE EVENTS (${recentCycles.length}):
 ${recentCycles.map(c => `- ${c.date}: ${c.type}`).join("\n") || "None logged"}
 
-Write the insight in Markdown with clear sections. Keep it warm, personal, and actionable.`;
+Write the insight in Markdown with clear sections separated by blank lines (two newlines). Keep it warm, personal, and actionable. Honour the STAGE GUARD above without exception.`;
 
     const totalDataPoints = recentJournals.length + recentCheckins.length + recentHabits.length + recentSymptoms.length + recentCycles.length;
     if (totalDataPoints < 5) {
