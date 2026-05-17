@@ -14,6 +14,7 @@ import SymptomRibbon from "@/components/planner/SymptomRibbon";
 import HrtLogCard from "@/components/planner/cycle/HrtLogCard";
 import ContraceptionCard from "@/components/planner/cycle/ContraceptionCard";
 import { FolicAcidNudge, AmhAwarenessCard, SupplementStackCard } from "@/components/planner/cycle/PreTtcCards";
+import FertileWindowCard from "@/components/planner/cycle/FertileWindowCard";
 import FirstLaunchStagePicker, { shouldShowFirstLaunch } from "@/components/planner/FirstLaunchStagePicker";
 import GpExportButton from "@/components/planner/cycle/GpExportButton";
 import QuietModeBanner from "@/components/planner/cycle/QuietModeBanner";
@@ -963,6 +964,12 @@ export default function Planner() {
               <AmhAwarenessCard />
               <SupplementStackCard />
             </>
+          )}
+          {/* ── TTC fertile-window strip — 7-day band centred on predicted
+              peak day with BBT + OPK quick-log buttons. Renders only on
+              the TTC stage (Clinical tab). ───────────────────────────── */}
+          {effectiveLifeStage === "ttc" && (
+            <FertileWindowCard profile={profile} cycleDay={selectedCycleDay} />
           )}
           <AstraSidecar profile={profile} />
           {/* STEP 7: GP-ready PDF export — peri / reproductive / postpartum.
