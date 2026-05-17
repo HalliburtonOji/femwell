@@ -31,6 +31,7 @@ import PillarsDeck from "@/components/planner/today/PillarsDeck";
 import RitualReframeShimmer from "@/components/planner/today/RitualReframeShimmer";
 import SmartViewCard from "@/components/planner/today/SmartViewCard";
 import { TonightCard, ShutdownRitualCard } from "@/components/planner/today/WarmthBundleToday";
+import RitualBundlesCarousel from "@/components/planner/today/RitualBundlesCarousel";
 import { WeekAheadCard, AstraSidecar, PlanMyNextCycleCTA } from "@/components/planner/cycle/WarmthBundleCycle";
 import { selectedCrumbToday, selectedCrumbCycle } from "@/components/planner/selectedCrumb";
 import { getPlannerConfig } from "@/utils/plannerAdapter";
@@ -1514,6 +1515,32 @@ export default function Planner() {
                 })}
               </div>
             )}
+
+            {/* ── Ritual bundles carousel (Phase 2 BUILD 5) ────────────────
+                Phase-keyed bundles below the morning stack. Tapping a
+                bundle adds its rituals to HabitLogs for the selected day,
+                stamped with time_of_day so they route to morning/evening
+                stacks on next render. Non-cycle stages get a single
+                "Wellbeing" bundle instead of the 4-phase set. ───────── */}
+            <RitualBundlesCarousel
+              userId={user?.id}
+              selectedDateStr={selectedStr}
+              currentPhase={selectedPhase}
+              plannerConfig={plannerConfig}
+              onRitualsAdded={async () => {
+                try {
+                  const habits = await base44.entities.HabitLogs.filter({ user_id: user.id }, "-created_date", 60);
+                  setHabitLogs(habits);
+                  const today = await base44.entities.HabitLogs.filter({ user_id: user.id, date: selectedStr }, null, 20);
+                  const map = {};
+                  for (const h of today) {
+                    const n = habitNameOf(h);
+                    if (n) map[n] = habitCompletedOf(h);
+                  }
+                  setTodayHabitLogs(map);
+                } catch { /* silent */ }
+              }}
+            />
 
             {/* ── Evening ritual stack (Phase 2 BUILD 2) ──────────────────
                 Mirrors the morning stack but for habits whose recent logs
