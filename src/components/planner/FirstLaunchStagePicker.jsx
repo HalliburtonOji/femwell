@@ -47,10 +47,17 @@ export function shouldShowFirstLaunch(profile) {
   return !ls || ls === "none" || ls === "";
 }
 
-export default function FirstLaunchStagePicker({ profile, onSaved, onSkip }) {
-  const [selected, setSelected] = useState(null);
+export default function FirstLaunchStagePicker({ profile, onSaved, onSkip, editMode = false }) {
+  const [selected, setSelected] = useState(editMode ? (profile?.life_stage || null) : null);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState(null);
+
+  // editMode flips the copy from a first-launch onboarding question to an
+  // 'update' framing for the Profile page modal. Logic + layout identical.
+  const eyebrowCopy = editMode ? "UPDATE · YOUR SEASON" : "FIRST · CHOOSE YOUR STAGE";
+  const titleCopy   = editMode ? "Update your season"    : "What season are you in?";
+  const ctaCopy     = editMode ? "Save change"            : "Continue →";
+  const cancelCopy  = editMode ? "Cancel"                 : "Not now";
 
   const save = async () => {
     if (!selected || saving) return;
@@ -85,8 +92,8 @@ export default function FirstLaunchStagePicker({ profile, onSaved, onSkip }) {
       <div style={panel}>
         <header style={head}>
           <div>
-            <p style={eyebrow}>FIRST · CHOOSE YOUR STAGE</p>
-            <h2 style={title}>What season are you in?</h2>
+            <p style={eyebrow}>{eyebrowCopy}</p>
+            <h2 style={title}>{titleCopy}</h2>
             <p style={subtitle}>
               This shapes every Planner surface, every Jess message, and every content card. You
               can change it any time from Profile.
@@ -124,14 +131,14 @@ export default function FirstLaunchStagePicker({ profile, onSaved, onSkip }) {
         {error && <p style={errorLine}>{error}</p>}
 
         <footer style={foot}>
-          <button type="button" onClick={skip} style={ghostBtn}>Not now</button>
+          <button type="button" onClick={skip} style={ghostBtn}>{cancelCopy}</button>
           <button
             type="button"
             onClick={save}
             disabled={!selected || saving}
             style={{ ...primaryBtn, opacity: !selected || saving ? 0.5 : 1 }}
           >
-            {saving ? "Saving…" : "Continue →"}
+            {saving ? "Saving…" : ctaCopy}
           </button>
         </footer>
       </div>

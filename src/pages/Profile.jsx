@@ -8,6 +8,8 @@ import {
 import ConditionHealthProfile from "../components/conditions/ConditionHealthProfile";
 import ProfileNavLinks from "../components/profile/ProfileNavLinks";
 import ProfileDataModals from "../components/profile/ProfileDataModals";
+import FirstLaunchStagePicker from "../components/planner/FirstLaunchStagePicker";
+import { writeDevStageOverride } from "../components/planner/DevStageSwitcher";
 
 // Friendly labels for the 12 supported life_stage enum values — used by the
 // prominent "Your Femwell stage" card below to read the current stage.
@@ -60,6 +62,11 @@ export default function Profile() {
   const [uploadingPhoto, setUploadingPhoto] = useState(false);
   const [showDataExportModal, setShowDataExportModal] = useState(false);
   const [showDataDeleteModal, setShowDataDeleteModal] = useState(false);
+  // Stage picker modal — lifts FirstLaunchStagePicker into a Profile edit
+  // surface so the user can change life_stage without scrolling to the
+  // legacy inline picker further down the page.
+  const [showStageModal, setShowStageModal] = useState(false);
+  const [stageToast, setStageToast] = useState(null);
 
   const handlePhotoUpload = async (e) => {
     const file = e.target.files?.[0];
@@ -475,10 +482,7 @@ export default function Profile() {
               </p>
               <button
                 type="button"
-                onClick={() => {
-                  const el = document.getElementById("profile-stage-picker");
-                  if (el) el.scrollIntoView({ behavior: "smooth", block: "start" });
-                }}
+                onClick={() => setShowStageModal(true)}
                 style={{
                   display: "inline-flex",
                   alignItems: "center",
@@ -496,9 +500,42 @@ export default function Profile() {
                   minHeight: 36,
                 }}
               >Change stage →</button>
+              {stageToast && (
+                <p style={{
+                  marginTop: 10,
+                  padding: "6px 12px",
+                  background: "rgba(107,143,90,0.18)",
+                  border: "1px solid rgba(107,143,90,0.45)",
+                  borderRadius: 9999,
+                  fontFamily: "'Inter', sans-serif",
+                  fontSize: 11.5,
+                  color: "#2D4E1A",
+                  display: "inline-block",
+                }} role="status">{stageToast}</p>
+              )}
             </div>
           );
         })()}
+
+        {/* Stage edit modal — the 11-stage picker lifted from
+            FirstLaunchStagePicker, in 'edit' mode (different copy). On save,
+            updates the profile state (so the gold card refreshes) AND mirrors
+            the value into localStorage.femwell_dev_life_stage so the next
+            Planner mount picks it up before the backend round-trip finishes. */}
+        {showStageModal && profile && (
+          <FirstLaunchStagePicker
+            profile={profile}
+            editMode
+            onSaved={(stage) => {
+              setProfile((p) => p ? { ...p, life_stage: stage } : p);
+              try { writeDevStageOverride(stage); } catch { /* silent */ }
+              setShowStageModal(false);
+              setStageToast("Stage updated — your planner will refresh");
+              window.setTimeout(() => setStageToast(null), 3500);
+            }}
+            onSkip={() => setShowStageModal(false)}
+          />
+        )}
 
         {/* Health Profile (conditions + life stage) — anchor for the
             "Change stage" button on the prominent card above. */}
