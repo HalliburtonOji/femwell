@@ -34,7 +34,7 @@ import { TonightCard, ShutdownRitualCard } from "@/components/planner/today/Warm
 import RitualBundlesCarousel from "@/components/planner/today/RitualBundlesCarousel";
 import { WeekAheadCard, AstraSidecar, PlanMyNextCycleCTA } from "@/components/planner/cycle/WarmthBundleCycle";
 import { selectedCrumbToday, selectedCrumbCycle } from "@/components/planner/selectedCrumb";
-import { getPlannerConfig } from "@/utils/plannerAdapter";
+import { getPlannerConfig, filterProgramsByStage } from "@/utils/plannerAdapter";
 import DevStageSwitcher, {
   readDevStageOverride,
   readDevConditionsOverride,
@@ -522,6 +522,9 @@ export default function Planner() {
   const [items, setItems] = useState([]);
   const [personalTasks, setPersonalTasks] = useState([]);
   const [dailyPlan, setDailyPlan] = useState(null);
+  // Raw programmes (pre-stage-filter) kept so DEV stage flips re-filter
+  // without a re-fetch. activeProgram below is the filtered selection.
+  const [rawPrograms, setRawPrograms] = useState([]);
   const [activeProgram, setActiveProgram] = useState(null);
   const [habitLogs, setHabitLogs] = useState([]);
   const [todayHabitLogs, setTodayHabitLogs] = useState({});
@@ -563,7 +566,12 @@ export default function Planner() {
         setProfile(profiles[0] || null);
         setItems(allItems);
         setPersonalTasks(allTasks);
-        setActiveProgram(programs[0] || null);
+        // Phase 2 QA fix #3 — stage-filter active programmes so we never
+        // show "Perimenopause Foundations" to a TTC or postpartum user.
+        // Store the raw list; a downstream effect re-applies the filter
+        // whenever effectiveLifeStage changes (DEV stage flip, profile
+        // re-fetch, etc).
+        setRawPrograms(programs);
         setHabitLogs(habits);
       } finally {
         setLoading(false);
@@ -854,6 +862,13 @@ export default function Planner() {
   }, [effectiveLifeStage, effectiveConditions, plannerConfig?.ribbonType,
       plannerConfig?.showsEpds, plannerConfig?.showsKickCounter,
       plannerConfig?.showsPregnancyTimeline, plannerConfig?.showsHrtCorrelation]);
+
+  // Phase 2 QA fix #3 — stage-filter active programmes. Re-runs whenever
+  // effectiveLifeStage changes (DEV switcher flip, profile re-fetch, etc).
+  useEffect(() => {
+    const filtered = filterProgramsByStage(rawPrograms || [], effectiveLifeStage);
+    setActiveProgram(filtered[0] || null);
+  }, [rawPrograms, effectiveLifeStage]);
 
   // First-launch stage picker — show on /Planner mount when the user signed up
   // before the 11-stage picker existed (life_stage null/empty/"none"). Suppressed
