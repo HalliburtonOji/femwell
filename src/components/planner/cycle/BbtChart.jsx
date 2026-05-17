@@ -1,177 +1,162 @@
 // ─────────────────────────────────────────────────────────────────────────────
-// BbtChart — 14-day BBT temperature sparkline for TTC mode.
-// Rendered inside FertileWindowCard below the 7-day strip.
-// Uses Recharts LineChart (already installed).
-// OPK results are overlaid as coloured dots on the x-axis.
+// BbtChart — 14-day BBT sparkline, inline SVG, no external chart lib.
+// Self-fetches from BbtLog entity. Accepts `userId` and `refreshKey` props.
 // ─────────────────────────────────────────────────────────────────────────────
 
-import { useMemo } from "react";
-import {
-  LineChart, Line, XAxis, YAxis, Tooltip, ReferenceLine,
-  ResponsiveContainer, Dot,
-} from "recharts";
-import { format, subDays, parseISO } from "date-fns";
+import { useState, useEffect, useMemo } from "react";
+import { format, subDays } from "date-fns";
+import { base44 } from "@/api/base44Client";
 
-// OPK result → dot fill colour.
-const OPK_DOT_COLOR = {
-  peak:     "#E11D74",
-  high:     "#D47A5A",
-  low:      "#C4A86A",
-  negative: "#9CA3AF",
-};
+const Y_MIN = 36.0;
+const Y_MAX = 37.5;
+const REF_LINE = 36.7;
+const SVG_H = 80;
+const PAD = { top: 8, bottom: 8, left: 4, right: 4 };
 
-// Custom dot that overlays OPK result colour.
-function BbtDot(props) {
-  const { cx, cy, payload } = props;
-  if (!payload?.bbt || !Number.isFinite(cy)) return null;
-  const fill = payload.opk_color || "#6B8F5A";
-  return (
-    <Dot
-      cx={cx}
-      cy={cy}
-      r={4}
-      fill={fill}
-      stroke="#FBF6E6"
-      strokeWidth={1.5}
-    />
-  );
+function tempToY(temp) {
+  const clamped = Math.max(Y_MIN, Math.min(Y_MAX, temp));
+  const ratio = (clamped - Y_MIN) / (Y_MAX - Y_MIN);
+  // High temp = low Y (SVG y=0 is top)
+  return PAD.top + (1 - ratio) * (SVG_H - PAD.top - PAD.bottom);
 }
 
-function BbtTooltip({ active, payload }) {
-  if (!active || !payload?.length) return null;
-  const d = payload[0]?.payload;
-  if (!d) return null;
-  return (
-    <div style={tooltipStyle}>
-      <p style={{ margin: 0, fontWeight: 700 }}>{d.label}</p>
-      {d.bbt != null && (
-        <p style={{ margin: "2px 0 0", color: "#3F6228" }}>
-          BBT {d.bbt.toFixed(2)} °C
-        </p>
-      )}
-      {d.opk_label && (
-        <p style={{ margin: "2px 0 0", color: d.opk_color || "#6B5840" }}>
-          OPK: {d.opk_label}
-        </p>
-      )}
-    </div>
-  );
-}
+export default function BbtChart({ userId, refreshKey }) {
+  const [logs, setLogs] = useState([]);
 
-export default function BbtChart({ logs }) {
-  // Build 14-day data array (oldest first).
-  const data = useMemo(() => {
+  useEffect(() => {
+    if (!userId) return;
+    const fetch14 = async () => {
+      try {
+        const cutoff = format(subDays(new Date(), 13), "yyyy-MM-dd");
+        const rows = await base44.entities.BbtLog.filter(
+          { user_id: userId },
+          "-date",
+          14,
+        );
+        setLogs(rows.filter((r) => r.date >= cutoff));
+      } catch {
+        // Entity may not exist yet — show empty state silently
+        setLogs([]);
+      }
+    };
+    fetch14();
+  }, [userId, refreshKey]);
+
+  // Build 14-slot day array (oldest left, today right)
+  const days = useMemo(() => {
     const today = new Date();
-    const points = [];
-    for (let i = 13; i >= 0; i--) {
-      const d = subDays(today, i);
+    return Array.from({ length: 14 }, (_, i) => {
+      const d = subDays(today, 13 - i);
       const dayStr = format(d, "yyyy-MM-dd");
-      const log = logs?.find((l) => l.date === dayStr);
-      const bbt = log?.bbt_celsius ?? null;
-      const opk = log?.lh_result ?? null;
-      points.push({
-        label: format(d, "d MMM"),
-        dayStr,
-        bbt: bbt != null ? parseFloat(bbt.toFixed(2)) : null,
-        opk_label: opk && opk !== "not_tested" ? opk : null,
-        opk_color: OPK_DOT_COLOR[opk] || null,
-      });
-    }
-    return points;
+      const log = logs.find((r) => r.date === dayStr);
+      return { dayStr, temp: log?.temp_celsius ?? null, x: i };
+    });
   }, [logs]);
 
-  // Y-axis domain: clamp around the data range (±0.3 °C headroom).
-  const yDomain = useMemo(() => {
-    const vals = data.map((d) => d.bbt).filter((v) => v != null);
-    if (!vals.length) return [36.0, 37.2];
-    const min = Math.min(...vals);
-    const max = Math.max(...vals);
-    return [
-      parseFloat((min - 0.15).toFixed(2)),
-      parseFloat((max + 0.15).toFixed(2)),
-    ];
-  }, [data]);
-
-  const hasAnyBbt = data.some((d) => d.bbt != null);
-  if (!hasAnyBbt) return null;
+  const points = days.filter((d) => d.temp != null);
+  const hasData = points.length >= 2;
 
   return (
-    <div style={chartWrap} aria-label="14-day BBT chart">
-      <p style={chartEyebrow}>BBT · LAST 14 DAYS</p>
-      <ResponsiveContainer width="100%" height={100}>
-        <LineChart data={data} margin={{ top: 4, right: 6, bottom: 0, left: -16 }}>
-          <XAxis
-            dataKey="label"
-            tick={{ fontFamily: "'Inter', sans-serif", fontSize: 9, fill: "#9A8A78" }}
-            tickLine={false}
-            axisLine={false}
-            interval={1}
-          />
-          <YAxis
-            domain={yDomain}
-            tick={{ fontFamily: "'Inter', sans-serif", fontSize: 9, fill: "#9A8A78" }}
-            tickLine={false}
-            axisLine={false}
-            tickFormatter={(v) => v.toFixed(1)}
-            width={32}
-          />
-          <Tooltip content={<BbtTooltip />} />
-          {/* Coverline reference — standard 0.2 °C above follicular mean */}
-          <ReferenceLine
-            y={36.7}
-            stroke="rgba(212,94,82,0.35)"
-            strokeDasharray="4 3"
-            strokeWidth={1}
-          />
-          <Line
-            type="monotone"
-            dataKey="bbt"
-            stroke="#6B8F5A"
-            strokeWidth={2}
-            dot={<BbtDot />}
-            activeDot={false}
-            connectNulls={false}
-            isAnimationActive={false}
-          />
-        </LineChart>
-      </ResponsiveContainer>
-      <p style={chartNote}>
-        Dashed line = 36.70 °C (typical coverline — yours may differ)
-      </p>
+    <div style={wrap} aria-label="14-day BBT chart">
+      <p style={eyebrow}>BBT · LAST 14 DAYS</p>
+
+      <svg
+        width="100%"
+        viewBox={`0 0 280 ${SVG_H}`}
+        preserveAspectRatio="none"
+        style={{ display: "block", background: "#F4EDDB", borderRadius: 8 }}
+        aria-hidden={!hasData}
+      >
+        {/* Reference line at 36.7 °C */}
+        {(() => {
+          const ry = tempToY(REF_LINE);
+          return (
+            <line
+              x1={PAD.left}
+              y1={ry}
+              x2={280 - PAD.right}
+              y2={ry}
+              stroke="#9B8B7A"
+              strokeWidth={1}
+              strokeDasharray="4 3"
+            />
+          );
+        })()}
+
+        {hasData && (() => {
+          // Map day index (0–13) to SVG x coordinate
+          const xOf = (idx) => PAD.left + (idx / 13) * (280 - PAD.left - PAD.right);
+
+          const polyPoints = points
+            .map((p) => `${xOf(p.x).toFixed(1)},${tempToY(p.temp).toFixed(1)}`)
+            .join(" ");
+
+          return (
+            <>
+              <polyline
+                points={polyPoints}
+                fill="none"
+                stroke="#3A2C1A"
+                strokeWidth={1.5}
+                strokeLinejoin="round"
+              />
+              {points.map((p) => (
+                <circle
+                  key={p.dayStr}
+                  cx={xOf(p.x).toFixed(1)}
+                  cy={tempToY(p.temp).toFixed(1)}
+                  r={3}
+                  fill="#8FAF8F"
+                  stroke="#3A2C1A"
+                  strokeWidth={1}
+                />
+              ))}
+            </>
+          );
+        })()}
+
+        {!hasData && (
+          <text
+            x="140"
+            y={SVG_H / 2}
+            textAnchor="middle"
+            dominantBaseline="middle"
+            fontFamily="Inter, sans-serif"
+            fontSize="10"
+            fontStyle="italic"
+            fill="#9B8B7A"
+          >
+            Keep logging — your BBT pattern will appear here
+          </text>
+        )}
+      </svg>
+
+      <p style={note}>Dashed line = 36.70 °C reference (coverline may vary)</p>
     </div>
   );
 }
 
-const chartWrap = {
+const wrap = {
   marginTop: 14,
   padding: "10px 10px 6px",
   background: "rgba(255,255,255,0.55)",
   border: "1px solid rgba(58,44,26,0.10)",
   borderRadius: 12,
 };
-const chartEyebrow = {
+const eyebrow = {
   fontFamily: "'Inter', sans-serif",
   fontSize: 9,
   fontWeight: 700,
   letterSpacing: "0.18em",
   color: "#3F6228",
   textTransform: "uppercase",
-  margin: "0 0 4px",
+  margin: "0 0 6px",
 };
-const chartNote = {
+const note = {
   fontFamily: "'Inter', sans-serif",
   fontSize: 9.5,
   color: "#9A8A78",
   fontStyle: "italic",
   margin: "4px 0 0",
   textAlign: "center",
-};
-const tooltipStyle = {
-  background: "#FBF6E6",
-  border: "1px solid rgba(58,44,26,0.16)",
-  borderRadius: 8,
-  padding: "6px 10px",
-  fontFamily: "'Inter', sans-serif",
-  fontSize: 11.5,
-  color: "#3A2C1A",
 };

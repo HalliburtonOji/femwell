@@ -5,7 +5,7 @@
 // Includes BbtChart (14-day sparkline) below the 7-day fertile strip.
 // ─────────────────────────────────────────────────────────────────────────────
 
-import { useMemo, useState, useEffect, useCallback } from "react";
+import { useMemo, useState } from "react";
 import { Thermometer, FlaskConical, Check, Plus, X } from "lucide-react";
 import { format } from "date-fns";
 import { base44 } from "@/api/base44Client";
@@ -266,29 +266,15 @@ export default function FertileWindowCard({ profile, cycleDay, userId }) {
     return out;
   }, [peakDay, todayCd]);
 
-  // ── Persistence — FertileWindowLog (legacy chart data) ─────────────────────
-  const [logs, setLogs] = useState([]);
-
-  const loadLogs = useCallback(async () => {
-    if (!userId) return;
-    const recs = await base44.entities.FertileWindowLog.filter(
-      { user_id: userId },
-      "-date",
-      30,
-    );
-    setLogs(recs);
-  }, [userId]);
-
-  useEffect(() => { loadLogs(); }, [loadLogs]);
-
   // ── Inline form toggle ───────────────────────────────────────────────────────
   const [openForm, setOpenForm] = useState(null); // null | 'bbt' | 'opk'
+  const [chartKey, setChartKey] = useState(0);
 
   const toggleForm = (form) => setOpenForm((prev) => (prev === form ? null : form));
 
   const handleSaved = () => {
     setOpenForm(null);
-    loadLogs();
+    setChartKey((k) => k + 1);
   };
 
   // ── Empty state ─────────────────────────────────────────────────────────────
@@ -311,6 +297,7 @@ export default function FertileWindowCard({ profile, cycleDay, userId }) {
         {openForm === "bbt" && (
           <BbtForm userId={userId} onSaved={handleSaved} onCancel={() => setOpenForm(null)} />
         )}
+        <BbtChart userId={userId} refreshKey={chartKey} />
       </section>
     );
   }
@@ -399,7 +386,7 @@ export default function FertileWindowCard({ profile, cycleDay, userId }) {
       )}
 
       {/* 14-day BBT sparkline */}
-      <BbtChart logs={logs} />
+      <BbtChart userId={userId} refreshKey={chartKey} />
     </section>
   );
 }
