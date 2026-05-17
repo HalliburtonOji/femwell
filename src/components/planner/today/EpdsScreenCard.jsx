@@ -452,6 +452,7 @@ const wrap = {
   borderRadius: 14,
   padding: "14px 14px 16px",
   marginBottom: 12,
+  maxWidth: 390,
 };
 const headRow = {
   display: "flex",

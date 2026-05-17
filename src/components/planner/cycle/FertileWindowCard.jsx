@@ -399,6 +399,7 @@ const wrap = {
   borderRadius: 14,
   padding: "14px 14px 16px",
   marginBottom: 12,
+  maxWidth: 390,
 };
 const headRow = { display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 8, marginBottom: 8 };
 const iconRow = { display: "flex", alignItems: "center", gap: 8 };
