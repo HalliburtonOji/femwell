@@ -1,7 +1,7 @@
 import { useState, useEffect, useMemo, useRef } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { base44 } from "@/api/base44Client";
-import { Calendar, Plus, Clock, Trash2, Check, ChevronLeft, ChevronRight, X, Sparkles } from "lucide-react";
+import { Calendar, Plus, Clock, Trash2, Check, ChevronLeft, ChevronRight, X, Sparkles, ListTodo, Repeat, Pill, Sparkle, BookHeart } from "lucide-react";
 import PlannerTabs, { readInitialView, writeStoredView, resolveViewId } from "@/components/planner/PlannerTabs";
 import ConfidencePill from "@/components/planner/ConfidencePill";
 import CapacityTaxBar, { deriveCapacity, derivePredictedLoad } from "@/components/planner/cycle/CapacityTaxBar";
@@ -531,6 +531,11 @@ export default function Planner() {
   // to "task" (the legacy single-form behaviour). BUILD 2's "+ add to evening
   // stack" pre-selects "habit"; BUILD 3 FAB satellites set this directly.
   const [addMode, setAddMode] = useState("task");
+  const [fabOpen, setFabOpen] = useState(false);
+  const [showMedAdd, setShowMedAdd] = useState(false);
+  const [medications, setMedications] = useState([]);
+  const [medForm, setMedForm] = useState({ name: "", time: "", dose: "", notes: "" });
+  const [savingMed, setSavingMed] = useState(false);
   const [saving, setSaving] = useState(false);
   const [newItem, setNewItem] = useState({ title: "", category: "reminder", time: "", repeat: "once", notes: "" });
 
@@ -869,21 +874,75 @@ export default function Planner() {
   const handleAdd = async () => {
     if (!newItem.title.trim()) return;
     setSaving(true);
+    // Phase 2 BUILD 3 — habit-mode FAB writes directly to HabitLogs so future
+    // ritual stacks pick the habit up; task/ritual/reminder still go through
+    // PlannerItems (the canonical task entity post-Phase 1 unification).
+    if (addMode === "habit") {
+      try {
+        await base44.entities.HabitLogs.create({
+          user_id: user.id,
+          habit_name: newItem.title.trim(),
+          date: selectedStr,
+          is_completed: false,
+          time_of_day: newItem.time && Number(newItem.time.split(":")[0] || 12) >= 17 ? "evening" : "morning",
+          created_at: new Date().toISOString(),
+        });
+      } catch { /* surface silently — user can retry */ }
+      setNewItem({ title: "", category: "reminder", time: "", repeat: "once", notes: "" });
+      setAddMode("task");
+      setShowAdd(false);
+      setSaving(false);
+      // Trigger a habit re-fetch on the next selected-day change.
+      try {
+        const habits = await base44.entities.HabitLogs.filter({ user_id: user.id }, "-created_date", 60);
+        setHabitLogs(habits);
+      } catch { /* silent */ }
+      return;
+    }
+    const category = addMode === "ritual" ? "wellbeing" : newItem.category;
     const created = await base44.entities.PlannerItems.create({
       user_id: user.id,
       title: newItem.title.trim(),
-      category: newItem.category,
+      category,
       date: selectedStr,
       time: newItem.time || null,
-      repeat: newItem.repeat,
+      repeat: addMode === "ritual" ? "daily" : newItem.repeat,
       notes: newItem.notes || null,
       is_completed: false,
       created_at: new Date().toISOString(),
     });
     setItems(prev => [{ ...created, _source: "planner" }, ...prev]);
     setNewItem({ title: "", category: "reminder", time: "", repeat: "once", notes: "" });
+    setAddMode("task");
     setShowAdd(false);
     setSaving(false);
+  };
+
+  // Phase 2 BUILD 3 + BUILD 4 — Medication mini-form. Writes to
+  // MedicationReminders entity; falls back silently if entity is missing.
+  const handleSaveMed = async () => {
+    if (!medForm.name.trim() || !user?.id) return;
+    setSavingMed(true);
+    try {
+      await base44.entities.MedicationReminders.create({
+        user_id: user.id,
+        medication_name: medForm.name.trim(),
+        dosage: medForm.dose || null,
+        reminder_time: medForm.time || null,
+        date: selectedStr,
+        notes: medForm.notes || null,
+        is_taken: false,
+        created_at: new Date().toISOString(),
+      });
+      // Re-fetch today's meds so the commitment row appears immediately.
+      try {
+        const rows = await base44.entities.MedicationReminders.filter({ user_id: user.id, date: selectedStr }, "-created_date", 20);
+        setMedications(rows || []);
+      } catch { /* silent */ }
+    } catch { /* MedicationReminders may not be migrated yet */ }
+    setMedForm({ name: "", time: "", dose: "", notes: "" });
+    setShowMedAdd(false);
+    setSavingMed(false);
   };
 
   const toggleComplete = async (item) => {
@@ -1544,15 +1603,55 @@ export default function Planner() {
       </div>
       )}
 
-      {/* FAB — Today view only; Cycle view is read-only on C0. */}
+      {/* FAB — Today view only; Cycle view is read-only on C0.
+          Phase 2 BUILD 3: tapping the FAB now expands a 5-way satellite
+          menu — Task · Habit · Medication · Ritual · Journal. Each satellite
+          sets the addMode and opens the appropriate form (Journal navigates
+          out to /Journal). Tap outside the satellites or the FAB itself
+          collapses the menu. */}
       {view === "today" && (
-        <button
-          onClick={() => setShowAdd(true)}
-          aria-label="Add to planner"
-          style={{ position: "fixed", bottom: 96, right: 20, width: 52, height: 52, borderRadius: 9999, backgroundColor: "var(--rose-primary, #D45E52)", color: "white", border: "none", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", boxShadow: "0 6px 20px rgba(212,94,82,0.36)", zIndex: 30 }}
-        >
-          <Plus className="w-6 h-6" />
-        </button>
+        <>
+          {fabOpen && (
+            <div
+              onClick={() => setFabOpen(false)}
+              style={{ position: "fixed", inset: 0, zIndex: 28, background: "rgba(74,42,58,0.18)", backdropFilter: "blur(2px)" }}
+              aria-hidden="true"
+            />
+          )}
+          <div style={{ position: "fixed", bottom: 96, right: 20, zIndex: 30, display: "flex", flexDirection: "column-reverse", alignItems: "flex-end", gap: 10 }}>
+            <button
+              onClick={() => setFabOpen(o => !o)}
+              aria-label={fabOpen ? "Close add menu" : "Add to planner"}
+              aria-expanded={fabOpen}
+              style={{ width: 52, height: 52, borderRadius: 9999, backgroundColor: "var(--rose-primary, #D45E52)", color: "white", border: "none", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", boxShadow: "0 6px 20px rgba(212,94,82,0.36)", transition: "transform 180ms", transform: fabOpen ? "rotate(45deg)" : "rotate(0deg)" }}
+            >
+              <Plus className="w-6 h-6" />
+            </button>
+            {fabOpen && (
+              <>
+                {[
+                  { key: "task",       label: "Task",       Icon: ListTodo, onClick: () => { setAddMode("task");     setNewItem({ title: "", category: "personal", time: "", repeat: "once",  notes: "" }); setFabOpen(false); setShowAdd(true); } },
+                  { key: "habit",      label: "Habit",      Icon: Repeat,   onClick: () => { setAddMode("habit");    setNewItem({ title: "", category: "wellbeing", time: "", repeat: "daily", notes: "" }); setFabOpen(false); setShowAdd(true); } },
+                  { key: "medication", label: "Medication", Icon: Pill,     onClick: () => { setFabOpen(false); setShowMedAdd(true); } },
+                  { key: "ritual",     label: "Ritual",     Icon: Sparkles, onClick: () => { setAddMode("ritual");   setNewItem({ title: "", category: "wellbeing", time: "", repeat: "daily", notes: "" }); setFabOpen(false); setShowAdd(true); } },
+                  { key: "journal",    label: "Journal",    Icon: BookHeart, onClick: () => { setFabOpen(false); navigate(`/Journal?date=${selectedStr}`); } },
+                ].map(({ key, label, Icon, onClick }) => (
+                  <button
+                    key={key}
+                    onClick={onClick}
+                    aria-label={`Add ${label.toLowerCase()}`}
+                    style={fabSatelliteStyle}
+                  >
+                    <span style={fabSatelliteLabelStyle}>{label}</span>
+                    <span style={fabSatelliteIconStyle}>
+                      <Icon className="w-4 h-4" />
+                    </span>
+                  </button>
+                ))}
+              </>
+            )}
+          </div>
+        </>
       )}
 
       {/* Add item bottom sheet (unchanged structure, restyled) */}
@@ -1561,7 +1660,11 @@ export default function Planner() {
           <div onClick={() => setShowAdd(false)} style={{ position: "fixed", inset: 0, zIndex: 40, backgroundColor: "rgba(74,42,58,0.4)", backdropFilter: "blur(4px)" }} />
           <div style={{ position: "fixed", bottom: 0, left: 0, right: 0, zIndex: 50, backgroundColor: "var(--surface, #FFFFFF)", borderRadius: "24px 24px 0 0", padding: "20px 20px 40px", maxHeight: "80vh", overflowY: "auto" }}>
             <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 20 }}>
-              <h2 style={{ fontFamily: "'Fraunces', Georgia, serif", fontSize: 20, fontWeight: 500, color: "var(--plum, #4A2A3A)", margin: 0 }}>Add to planner</h2>
+              <h2 style={{ fontFamily: "'Fraunces', Georgia, serif", fontSize: 20, fontWeight: 500, color: "var(--plum, #4A2A3A)", margin: 0 }}>
+                {addMode === "habit"  ? "Add a habit"
+                 : addMode === "ritual" ? "Add a ritual"
+                 : "Add to planner"}
+              </h2>
               <button onClick={() => setShowAdd(false)} aria-label="Close" style={{ width: 30, height: 30, borderRadius: 9999, backgroundColor: "var(--cream-2, #FFF5EC)", border: "none", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center" }}>
                 <X className="w-4 h-4" style={{ color: "var(--plum-mute, #8A7584)" }} />
               </button>
@@ -1623,6 +1726,56 @@ export default function Planner() {
           </div>
         </>
       )}
+
+      {/* Phase 2 BUILD 3 — Medication bottom sheet. Smaller form: name +
+          time + dose + notes. Writes to MedicationReminders entity; the
+          entity may not be migrated yet on some accounts (Phase 4 work),
+          in which case the save is a no-op and the sheet still closes. */}
+      {showMedAdd && (
+        <>
+          <div onClick={() => setShowMedAdd(false)} style={{ position: "fixed", inset: 0, zIndex: 40, backgroundColor: "rgba(74,42,58,0.4)", backdropFilter: "blur(4px)" }} />
+          <div style={{ position: "fixed", bottom: 0, left: 0, right: 0, zIndex: 50, backgroundColor: "var(--surface, #FFFFFF)", borderRadius: "24px 24px 0 0", padding: "20px 20px 40px", maxHeight: "75vh", overflowY: "auto" }}>
+            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 20 }}>
+              <h2 style={{ fontFamily: "'Fraunces', Georgia, serif", fontSize: 20, fontWeight: 500, color: "var(--plum, #4A2A3A)", margin: 0 }}>Add medication</h2>
+              <button onClick={() => setShowMedAdd(false)} aria-label="Close" style={{ width: 30, height: 30, borderRadius: 9999, backgroundColor: "var(--cream-2, #FFF5EC)", border: "none", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                <X className="w-4 h-4" style={{ color: "var(--plum-mute, #8A7584)" }} />
+              </button>
+            </div>
+            <div className="space-y-4">
+              <input
+                autoFocus
+                placeholder="Medication name"
+                value={medForm.name}
+                onChange={e => setMedForm(p => ({ ...p, name: e.target.value }))}
+                style={inputStyle}
+              />
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <p style={fieldLabelStyle}>Time</p>
+                  <input type="time" value={medForm.time} onChange={e => setMedForm(p => ({ ...p, time: e.target.value }))} style={inputStyle} />
+                </div>
+                <div>
+                  <p style={fieldLabelStyle}>Dose (optional)</p>
+                  <input placeholder="e.g. 200mg" value={medForm.dose} onChange={e => setMedForm(p => ({ ...p, dose: e.target.value }))} style={inputStyle} />
+                </div>
+              </div>
+              <textarea
+                placeholder="Notes (optional)"
+                value={medForm.notes}
+                onChange={e => setMedForm(p => ({ ...p, notes: e.target.value }))}
+                rows={2}
+                style={{ ...inputStyle, resize: "none" }}
+              />
+              <button
+                onClick={handleSaveMed}
+                disabled={!medForm.name.trim() || savingMed}
+                style={{ width: "100%", height: 48, borderRadius: 9999, backgroundColor: "var(--rose-primary, #D45E52)", color: "white", fontSize: 14, fontWeight: 700, border: "none", cursor: "pointer", fontFamily: "'Inter', sans-serif", opacity: (!medForm.name.trim() || savingMed) ? 0.5 : 1 }}>
+                {savingMed ? "Saving..." : "Save medication"}
+              </button>
+            </div>
+          </div>
+        </>
+      )}
       </div>{/* /Le Menu z-index wrapper */}
     </div>
   );
@@ -1654,6 +1807,41 @@ const ritualRowStyle = { display: "flex", alignItems: "center", gap: 12, padding
 const ritualCheckStyle = { width: 22, height: 22, borderRadius: 9999, border: "1.5px solid", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, transition: "all 120ms" };
 const ritualNameStyle = { fontSize: 13, fontWeight: 600, fontFamily: "'Inter', sans-serif", lineHeight: 1.2, margin: 0 };
 const addToStackBtnStyle = { marginTop: 8, padding: "8px 12px", background: "transparent", border: "1px dashed rgba(74,42,58,0.22)", borderRadius: 9999, fontSize: 11, fontWeight: 600, color: "var(--plum-mute, #8A7584)", fontFamily: "'Inter', sans-serif", cursor: "pointer", letterSpacing: "0.04em" };
+
+// Phase 2 BUILD 3 — FAB satellite buttons (Task / Habit / Medication / Ritual / Journal).
+const fabSatelliteStyle = {
+  display: "flex",
+  alignItems: "center",
+  gap: 10,
+  padding: 0,
+  background: "transparent",
+  border: "none",
+  cursor: "pointer",
+  animation: "fab-pop 200ms ease both",
+};
+const fabSatelliteLabelStyle = {
+  background: "var(--surface, #FFFFFF)",
+  color: "var(--plum, #4A2A3A)",
+  fontFamily: "'Inter', sans-serif",
+  fontSize: 12,
+  fontWeight: 600,
+  padding: "6px 12px",
+  borderRadius: 9999,
+  border: "1px solid rgba(74,42,58,0.10)",
+  boxShadow: "0 2px 8px rgba(74,42,58,0.10)",
+};
+const fabSatelliteIconStyle = {
+  width: 42,
+  height: 42,
+  borderRadius: 9999,
+  backgroundColor: "var(--plum, #4A2A3A)",
+  color: "var(--cream, #FFFAF5)",
+  display: "flex",
+  alignItems: "center",
+  justifyContent: "center",
+  boxShadow: "0 4px 14px rgba(74,42,58,0.28)",
+  flexShrink: 0,
+};
 
 const dividerStyle = { fontFamily: "'Fraunces', Georgia, serif", fontSize: 13, color: "var(--plum, #4A2A3A)", fontWeight: 500, margin: "16px 0 8px" };
 
