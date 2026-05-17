@@ -1,0 +1,43 @@
+{
+  "name": "SupplementLog",
+  "type": "object",
+  "properties": {
+    "date": {
+      "type": "string",
+      "format": "date",
+      "description": "Date of the supplement log entry (YYYY-MM-DD)"
+    },
+    "folic_acid": {
+      "type": "boolean",
+      "default": false,
+      "description": "400 mcg folic acid taken today"
+    },
+    "vitamin_d": {
+      "type": "boolean",
+      "default": false,
+      "description": "1000 IU Vitamin D taken today"
+    },
+    "omega3": {
+      "type": "boolean",
+      "default": false,
+      "description": "Omega-3 / DHA taken today"
+    },
+    "iron": {
+      "type": "boolean",
+      "default": false,
+      "description": "Iron supplement taken today"
+    },
+    "custom_notes": {
+      "type": "string",
+      "description": "Optional free-text notes"
+    },
+    "user_id": {
+      "type": "string",
+      "description": "User who owns this log entry"
+    }
+  },
+  "required": [
+    "date",
+    "user_id"
+  ]
+}

@@ -14,6 +14,7 @@ import SymptomRibbon from "@/components/planner/SymptomRibbon";
 import HrtLogCard from "@/components/planner/cycle/HrtLogCard";
 import ContraceptionCard from "@/components/planner/cycle/ContraceptionCard";
 import { FolicAcidNudge, AmhAwarenessCard, SupplementStackCard } from "@/components/planner/cycle/PreTtcCards";
+import SupplementTrackerCard from "@/components/planner/cycle/SupplementTrackerCard";
 import FertileWindowCard from "@/components/planner/cycle/FertileWindowCard";
 import FirstLaunchStagePicker, { shouldShowFirstLaunch } from "@/components/planner/FirstLaunchStagePicker";
 import GpExportButton from "@/components/planner/cycle/GpExportButton";
@@ -1118,6 +1119,7 @@ export default function Planner() {
               so they ship without any base44 schema dependency. ──────── */}
           {effectiveLifeStage === "pre-ttc" && (
             <>
+              <SupplementTrackerCard userId={user?.id} profile={profile} />
               <FolicAcidNudge />
               <AmhAwarenessCard />
               <SupplementStackCard />
