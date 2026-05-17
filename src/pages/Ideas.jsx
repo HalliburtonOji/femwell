@@ -1,4 +1,5 @@
 import { useState } from "react";
+import BiorhythmTimeline from "@/components/BiorhythmTimeline";
 
 // ─────────────────────────────────────────────────────────────────────────────
 // /Ideas — interactive design lab. 4 candidate Planner reskins.
@@ -6281,7 +6282,7 @@ const DESIGNS = [
 export default function Ideas() {
   const [expanded, setExpanded] = useState({});
   const [openHelp, setOpenHelp] = useState(false);
-  const [topTab, setTopTab] = useState("designs"); // "designs" | "research" | "lifestages" | "scheduling"
+  const [topTab, setTopTab] = useState("biorhythm"); // "biorhythm" | "designs" | "research" | "lifestages" | "scheduling"
   return (
     <div style={{ minHeight: "100vh", background: "#F4F1EA", paddingBottom: 140 }}>
       <div style={{
@@ -6292,10 +6293,10 @@ export default function Ideas() {
         fontSize: 11, letterSpacing: "0.18em", fontWeight: 700,
         textTransform: "uppercase",
       }}>
-        Design Lab · Dev Only · Designs · Research · Life Stages · Scheduling
+        Design Lab · Dev Only · Biorhythm · Designs · Research · Life Stages · Scheduling
       </div>
 
-      {/* Tab bar — Designs / Research / Life Stages */}
+      {/* Tab bar — Biorhythm / Designs / Research / Life Stages / Scheduling */}
       <div style={{
         display: "flex", justifyContent: "center",
         padding: "18px 16px 0",
@@ -6303,9 +6304,10 @@ export default function Ideas() {
         <div role="tablist" aria-label="Ideas view" style={{
           display: "inline-flex", gap: 4, padding: 4,
           borderRadius: 9999, border: "1px solid rgba(14,14,14,0.10)",
-          background: "#FFFFFF",
+          background: "#FFFFFF", flexWrap: "wrap", justifyContent: "center",
         }}>
           {[
+            { id: "biorhythm", label: "Biorhythm" },
             { id: "designs", label: "Designs" },
             { id: "research", label: "Research" },
             { id: "lifestages", label: "Life Stages" },
@@ -6338,6 +6340,34 @@ export default function Ideas() {
         </div>
       </div>
 
+      {topTab === "biorhythm" && (
+        <div style={{ padding: "28px 16px 0" }}>
+          <div style={{ maxWidth: 560, margin: "0 auto 22px", padding: "0 4px" }}>
+            <p style={{
+              fontFamily: "'Inter', system-ui, sans-serif",
+              fontSize: 10, letterSpacing: "0.22em", textTransform: "uppercase",
+              fontWeight: 700, color: "rgba(14,14,14,0.55)", margin: 0,
+            }}>Concept 1 · Biorhythm Timeline</p>
+            <h2 style={{
+              fontFamily: "'Fraunces', Georgia, serif",
+              fontSize: 26, fontWeight: 500, color: "#0E0E0E",
+              letterSpacing: "-0.02em", margin: "6px 0 8px", lineHeight: 1.15,
+            }}>Capacity, painted on the day.</h2>
+            <p style={{
+              fontFamily: "'Inter', system-ui, sans-serif",
+              fontSize: 13, color: "rgba(14,14,14,0.7)",
+              margin: 0, lineHeight: 1.55,
+            }}>
+              A full-bleed timeline where each hour is tinted by your biological capacity.
+              Existing planner items render as type-coloured blocks. Unscheduled tasks live
+              in a tray below — tap to pick up, tap a time slot to place; the highest-capacity
+              empty window gets a gold ring. Compose bar parses &ldquo;at 9am&rdquo;.
+              Body dock on the right writes back into the same daily check-in as Today.
+            </p>
+          </div>
+          <BiorhythmTimeline />
+        </div>
+      )}
       {topTab === "research" && <ResearchView />}
       {topTab === "lifestages" && <LifeStagesView />}
       {topTab === "scheduling" && <SchedulingView />}
