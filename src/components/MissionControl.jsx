@@ -180,7 +180,7 @@ export default function MissionControl() {
   const [composePhase, setComposePhase]   = useState("now");
   const [anchorFlag, setAnchorFlag]       = useState(false);
   const [dockOpen, setDockOpen]           = useState(false);
-  const [dockTab, setDockTab]             = useState("body"); // body | journey
+  const [dockActiveTab, setDockTab]             = useState("body"); // body | journey
   const [body, setBody]                   = useState(BODY_INIT);
   const [needleAnim, setNeedleAnim]       = useState(0);
   const [recentId, setRecentId]           = useState(null);
@@ -588,27 +588,27 @@ export default function MissionControl() {
 
       {/* Right body / journey dock */}
       <div style={{ ...dockShell, transform: dockOpen ? "translateX(0)" : "translateX(calc(100% - 36px))" }}>
-        <button onClick={() => setDockOpen(v => !v)} style={dockTabBtn} aria-label={dockOpen ? "Hide" : "Show body and journey"}>
+        <button onClick={() => setDockOpen(v => !v)} style={dockActiveTabBtn} aria-label={dockOpen ? "Hide" : "Show body and journey"}>
           {dockOpen ? <ChevronRight size={14} /> : <ChevronLeft size={14} />}
         </button>
         <div style={dockBody}>
           {/* Dock tabs */}
-          <div style={dockTabsRow} role="tablist">
+          <div style={dockActiveTabsRow} role="tablist">
             {[
               { id: "body",    label: "Body",    Icon: Heart },
               { id: "journey", label: "Journey", Icon: TrendingUp },
             ].map(({ id, label, Icon }) => {
-              const active = dockTab === id;
+              const active = dockActiveTab === id;
               return (
                 <button key={id} onClick={() => setDockTab(id)} role="tab" aria-selected={active}
-                        style={{ ...dockTabPill, background: active ? T.espresso : "transparent", color: active ? T.cream : T.muted, borderColor: active ? T.espresso : T.espressoSoft }}>
+                        style={{ ...dockActiveTabPill, background: active ? T.espresso : "transparent", color: active ? T.cream : T.muted, borderColor: active ? T.espresso : T.espressoSoft }}>
                   <Icon size={11} /> {label}
                 </button>
               );
             })}
           </div>
 
-          {dockTab === "body" && (
+          {dockActiveTab === "body" && (
             <>
               <div style={dockGrid}>
                 {Object.entries(body).map(([k, m]) => {
@@ -628,7 +628,7 @@ export default function MissionControl() {
             </>
           )}
 
-          {dockTab === "journey" && (
+          {dockActiveTab === "journey" && (
             <>
               <div style={journeyBlock}>
                 <div style={journeyEyebrow}>CAPACITY TAX · 28 D</div>
@@ -1038,7 +1038,7 @@ const dockShell = {
   transition: "transform 0.35s cubic-bezier(0.4,0,0.2,1)",
   zIndex: 5,
 };
-const dockTabBtn = {
+const dockActiveTabBtn = {
   width: 36, height: 56,
   borderRadius: "12px 0 0 12px",
   background: T.espresso, color: T.cream,
@@ -1053,8 +1053,8 @@ const dockBody = {
   borderRadius: "16px 0 0 16px",
   padding: "12px 12px 16px",
 };
-const dockTabsRow = { display: "flex", gap: 6, marginBottom: 10 };
-const dockTabPill = {
+const dockActiveTabsRow = { display: "flex", gap: 6, marginBottom: 10 };
+const dockActiveTabPill = {
   display: "inline-flex", alignItems: "center", gap: 5,
   padding: "5px 10px", borderRadius: 9999,
   fontSize: 11, fontWeight: 700, letterSpacing: "0.06em",

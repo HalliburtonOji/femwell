@@ -169,7 +169,7 @@ export default function BiorhythmTimeline() {
   const [expandedBlock, setExpandedBlock] = useState(null);
   const [pickedUp, setPickedUp]           = useState(null);
   const [dockOpen, setDockOpen]           = useState(false);
-  const [dockTab, setDockTab]             = useState("body"); // body | journey
+  const [dockActiveTab, setDockActiveTab] = useState("body"); // body | journey
   const [recentId, setRecentId]           = useState(null);
   const [body, setBody]                   = useState(BODY);
   const [stageBannerOpen, setStageBannerOpen] = useState(true);
@@ -420,9 +420,9 @@ export default function BiorhythmTimeline() {
                 { id: "body",    label: "Body",    Icon: Heart },
                 { id: "journey", label: "Journey", Icon: TrendingUp },
               ].map(({ id, label, Icon }) => {
-                const active = dockTab === id;
+                const active = dockActiveTab === id;
                 return (
-                  <button key={id} onClick={() => setDockTab(id)} role="tab" aria-selected={active}
+                  <button key={id} onClick={() => setDockActiveTab(id)} role="tab" aria-selected={active}
                           style={{ ...dockTabPill, background: active ? TOKENS.espresso : "transparent", color: active ? TOKENS.cream : TOKENS.muted, borderColor: active ? TOKENS.espresso : "rgba(58,44,26,0.10)" }}>
                     <Icon size={11} /> {label}
                   </button>
@@ -430,7 +430,7 @@ export default function BiorhythmTimeline() {
               })}
             </div>
 
-            {dockTab === "body" && (
+            {dockActiveTab === "body" && (
               <>
                 <div style={dockGrid}>
                   {Object.entries(body).map(([key, m]) => {
@@ -450,7 +450,7 @@ export default function BiorhythmTimeline() {
               </>
             )}
 
-            {dockTab === "journey" && (
+            {dockActiveTab === "journey" && (
               <>
                 <div style={journeyBlock}>
                   <div style={journeyEyebrow}>CAPACITY TAX</div>
