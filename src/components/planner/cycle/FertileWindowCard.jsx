@@ -1,12 +1,12 @@
 // ─────────────────────────────────────────────────────────────────────────────
 // FertileWindowCard — TTC stage Cycle tab card.
 //
-// Now persists BBT + OPK to the FertileWindowLog entity.
+// Persists BBT to BbtLog entity and OPK to OpkLog entity.
 // Includes BbtChart (14-day sparkline) below the 7-day fertile strip.
 // ─────────────────────────────────────────────────────────────────────────────
 
 import { useMemo, useState, useEffect, useCallback } from "react";
-import { Thermometer, FlaskConical, Check, Plus } from "lucide-react";
+import { Thermometer, FlaskConical, Check, Plus, X } from "lucide-react";
 import { format } from "date-fns";
 import { base44 } from "@/api/base44Client";
 import BbtChart from "./BbtChart";
@@ -30,8 +30,219 @@ const CONFIDENCE_LABEL = { low: "Low", medium: "Building", high: "Peak" };
 
 const todayStr = () => format(new Date(), "yyyy-MM-dd");
 
+// ── Inline slide-down form ───────────────────────────────────────────────────
+function BbtForm({ userId, onSaved, onCancel }) {
+  const [date, setDate] = useState(todayStr());
+  const [temp, setTemp] = useState("");
+  const [timeTaken, setTimeTaken] = useState("");
+  const [notes, setNotes] = useState("");
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState(null);
+
+  const handleSave = async () => {
+    const val = parseFloat(temp);
+    if (!Number.isFinite(val) || val < 35 || val > 38) {
+      setError("Temperature must be between 35 and 38 °C");
+      return;
+    }
+    setSaving(true);
+    setError(null);
+    try {
+      await base44.entities.BbtLog.create({
+        user_id: userId,
+        date,
+        temp_celsius: val,
+        ...(timeTaken ? { time_taken: timeTaken } : {}),
+        ...(notes ? { notes } : {}),
+      });
+      onSaved();
+    } catch {
+      setError("Couldn't save — try again");
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  return (
+    <div style={inlineForm}>
+      <div style={formHeader}>
+        <span style={fieldLabel}>Log BBT</span>
+        <button type="button" style={cancelIconBtn} onClick={onCancel} aria-label="Cancel">
+          <X size={13} strokeWidth={2.2} />
+        </button>
+      </div>
+
+      <label style={fieldLabel}>
+        Date
+        <input
+          type="date"
+          value={date}
+          onChange={(e) => setDate(e.target.value)}
+          style={input}
+        />
+      </label>
+
+      <label style={fieldLabel}>
+        Temperature (°C)
+        <input
+          type="number"
+          step="0.01"
+          min="35"
+          max="38"
+          value={temp}
+          onChange={(e) => setTemp(e.target.value)}
+          style={input}
+          placeholder="36.5"
+          autoFocus
+        />
+      </label>
+
+      <label style={fieldLabel}>
+        Time taken
+        <input
+          type="text"
+          value={timeTaken}
+          onChange={(e) => setTimeTaken(e.target.value)}
+          style={input}
+          placeholder="e.g. 07:00"
+        />
+      </label>
+
+      <label style={fieldLabel}>
+        Notes
+        <input
+          type="text"
+          value={notes}
+          onChange={(e) => setNotes(e.target.value)}
+          style={input}
+          placeholder="Optional notes"
+        />
+      </label>
+
+      {error && <p style={errorLine}>{error}</p>}
+
+      <div style={formActions}>
+        <button
+          type="button"
+          style={primaryBtn}
+          onClick={handleSave}
+          disabled={!temp || saving}
+        >
+          <Check size={12} strokeWidth={2.4} />
+          <span>{saving ? "Saving..." : "Save BBT"}</span>
+        </button>
+        <button type="button" style={ghostBtn} onClick={onCancel}>Cancel</button>
+      </div>
+    </div>
+  );
+}
+
+function OpkForm({ userId, onSaved, onCancel }) {
+  const [date, setDate] = useState(todayStr());
+  const [result, setResult] = useState("");
+  const [brand, setBrand] = useState("");
+  const [notes, setNotes] = useState("");
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState(null);
+
+  const handleSave = async () => {
+    if (!result) {
+      setError("Please select a result");
+      return;
+    }
+    setSaving(true);
+    setError(null);
+    try {
+      await base44.entities.OpkLog.create({
+        user_id: userId,
+        date,
+        result,
+        ...(brand ? { brand } : {}),
+        ...(notes ? { notes } : {}),
+      });
+      onSaved();
+    } catch {
+      setError("Couldn't save — try again");
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  return (
+    <div style={inlineForm}>
+      <div style={formHeader}>
+        <span style={fieldLabel}>Log OPK</span>
+        <button type="button" style={cancelIconBtn} onClick={onCancel} aria-label="Cancel">
+          <X size={13} strokeWidth={2.2} />
+        </button>
+      </div>
+
+      <label style={fieldLabel}>
+        Date
+        <input
+          type="date"
+          value={date}
+          onChange={(e) => setDate(e.target.value)}
+          style={input}
+        />
+      </label>
+
+      <label style={fieldLabel}>
+        Result
+        <select
+          value={result}
+          onChange={(e) => setResult(e.target.value)}
+          style={input}
+        >
+          <option value="">Select result</option>
+          <option value="negative">Negative</option>
+          <option value="positive">Positive</option>
+          <option value="peak">Peak</option>
+        </select>
+      </label>
+
+      <label style={fieldLabel}>
+        Brand
+        <input
+          type="text"
+          value={brand}
+          onChange={(e) => setBrand(e.target.value)}
+          style={input}
+          placeholder="e.g. Clearblue"
+        />
+      </label>
+
+      <label style={fieldLabel}>
+        Notes
+        <input
+          type="text"
+          value={notes}
+          onChange={(e) => setNotes(e.target.value)}
+          style={input}
+          placeholder="Optional notes"
+        />
+      </label>
+
+      {error && <p style={errorLine}>{error}</p>}
+
+      <div style={formActions}>
+        <button
+          type="button"
+          style={primaryBtn}
+          onClick={handleSave}
+          disabled={!result || saving}
+        >
+          <Check size={12} strokeWidth={2.4} />
+          <span>{saving ? "Saving..." : "Save OPK"}</span>
+        </button>
+        <button type="button" style={ghostBtn} onClick={onCancel}>Cancel</button>
+      </div>
+    </div>
+  );
+}
+
+// ── Main card ─────────────────────────────────────────────────────────────────
 export default function FertileWindowCard({ profile, cycleDay, userId }) {
-  // ── Derived values ──────────────────────────────────────────────────────────
   const peakDay = useMemo(() => {
     const learned = profile?.cycle_prediction_meta?.predicted_ovulation_day;
     if (Number.isFinite(learned) && learned > 0) return Math.round(learned);
@@ -55,16 +266,8 @@ export default function FertileWindowCard({ profile, cycleDay, userId }) {
     return out;
   }, [peakDay, todayCd]);
 
-  // ── Persistence — FertileWindowLog ─────────────────────────────────────────
+  // ── Persistence — FertileWindowLog (legacy chart data) ─────────────────────
   const [logs, setLogs] = useState([]);
-  const [todayLog, setTodayLog] = useState(null);
-  const [saving, setSaving] = useState(false);
-  const [toast, setToast] = useState(null);
-
-  const showToast = (msg) => {
-    setToast(msg);
-    window.setTimeout(() => setToast(null), 2600);
-  };
 
   const loadLogs = useCallback(async () => {
     if (!userId) return;
@@ -74,59 +277,18 @@ export default function FertileWindowCard({ profile, cycleDay, userId }) {
       30,
     );
     setLogs(recs);
-    const today = recs.find((r) => r.date === todayStr());
-    setTodayLog(today || null);
   }, [userId]);
 
   useEffect(() => { loadLogs(); }, [loadLogs]);
 
-  // ── Form state ──────────────────────────────────────────────────────────────
-  const [bbtOpen, setBbtOpen] = useState(false);
-  const [opkOpen, setOpkOpen] = useState(false);
-  const [bbtValue, setBbtValue] = useState("");
-  const [opkValue, setOpkValue] = useState(null); // 'negative'|'low'|'high'|'peak'
+  // ── Inline form toggle ───────────────────────────────────────────────────────
+  const [openForm, setOpenForm] = useState(null); // null | 'bbt' | 'opk'
 
-  // Pre-fill from today's existing log.
-  useEffect(() => {
-    if (todayLog) {
-      if (todayLog.bbt_celsius) setBbtValue(String(todayLog.bbt_celsius));
-      if (todayLog.lh_result && todayLog.lh_result !== "not_tested") setOpkValue(todayLog.lh_result);
-    }
-  }, [todayLog]);
+  const toggleForm = (form) => setOpenForm((prev) => (prev === form ? null : form));
 
-  const upsertTodayLog = async (patch) => {
-    const uid = userId;
-    if (!uid) return;
-    setSaving(true);
-    if (todayLog?.id) {
-      const updated = await base44.entities.FertileWindowLog.update(todayLog.id, patch);
-      setTodayLog(updated);
-    } else {
-      const created = await base44.entities.FertileWindowLog.create({
-        user_id: uid,
-        date: todayStr(),
-        ...patch,
-      });
-      setTodayLog(created);
-    }
-    setSaving(false);
-    // Refresh 14-day window for chart.
+  const handleSaved = () => {
+    setOpenForm(null);
     loadLogs();
-  };
-
-  const saveBbt = async () => {
-    const val = parseFloat(bbtValue);
-    if (!Number.isFinite(val) || val < 35 || val > 38) return;
-    await upsertTodayLog({ bbt_celsius: val });
-    setBbtOpen(false);
-    showToast(`BBT ${val.toFixed(2)} °C saved`);
-  };
-
-  const saveOpk = async () => {
-    if (!opkValue) return;
-    await upsertTodayLog({ lh_result: opkValue });
-    setOpkOpen(false);
-    showToast(`OPK ${opkValue} saved`);
   };
 
   // ── Empty state ─────────────────────────────────────────────────────────────
@@ -142,15 +304,17 @@ export default function FertileWindowCard({ profile, cycleDay, userId }) {
             </div>
           </div>
         </header>
-        <button type="button" style={primaryBtn} onClick={() => setBbtOpen(true)}>
+        <button type="button" style={primaryBtn} onClick={() => setOpenForm("bbt")}>
           <Plus size={13} strokeWidth={2.4} />
           <span>Log today</span>
         </button>
+        {openForm === "bbt" && (
+          <BbtForm userId={userId} onSaved={handleSaved} onCancel={() => setOpenForm(null)} />
+        )}
       </section>
     );
   }
 
-  // ── Main card ───────────────────────────────────────────────────────────────
   return (
     <section style={wrap} aria-label="Fertile window estimated">
       <header style={headRow}>
@@ -210,108 +374,32 @@ export default function FertileWindowCard({ profile, cycleDay, userId }) {
       <div style={ctaRow}>
         <button
           type="button"
-          style={logBtn}
-          onClick={() => { setBbtOpen(!bbtOpen); setOpkOpen(false); }}
+          style={{ ...logBtn, ...(openForm === "bbt" ? logBtnActive : {}) }}
+          onClick={() => toggleForm("bbt")}
         >
           <Thermometer size={12} strokeWidth={2.0} />
-          <span>{todayLog?.bbt_celsius ? `BBT ${todayLog.bbt_celsius} °C` : "+ Log BBT"}</span>
+          <span>+ Log BBT</span>
         </button>
         <button
           type="button"
-          style={logBtn}
-          onClick={() => { setOpkOpen(!opkOpen); setBbtOpen(false); }}
+          style={{ ...logBtn, ...(openForm === "opk" ? logBtnActive : {}) }}
+          onClick={() => toggleForm("opk")}
         >
           <FlaskConical size={12} strokeWidth={2.0} />
-          <span>
-            {todayLog?.lh_result && todayLog.lh_result !== "not_tested"
-              ? `OPK: ${todayLog.lh_result}`
-              : "+ Log OPK"}
-          </span>
+          <span>+ Log OPK</span>
         </button>
       </div>
 
-      {/* BBT inline form */}
-      {bbtOpen && (
-        <div style={inlineForm}>
-          <label style={fieldLabel}>
-            BBT (°C, e.g. 36.40)
-            <input
-              type="number"
-              step="0.01"
-              min="35"
-              max="38"
-              value={bbtValue}
-              onChange={(e) => setBbtValue(e.target.value)}
-              style={input}
-              placeholder="36.50"
-              autoFocus
-            />
-          </label>
-          <div style={formActions}>
-            <button
-              type="button"
-              style={primaryBtn}
-              onClick={saveBbt}
-              disabled={!bbtValue || saving}
-            >
-              <Check size={12} strokeWidth={2.4} />
-              <span>{saving ? "Saving..." : "Save BBT"}</span>
-            </button>
-            <button type="button" style={ghostBtn} onClick={() => setBbtOpen(false)}>Cancel</button>
-          </div>
-        </div>
+      {/* Inline slide-down forms */}
+      {openForm === "bbt" && (
+        <BbtForm userId={userId} onSaved={handleSaved} onCancel={() => setOpenForm(null)} />
       )}
-
-      {/* OPK inline form */}
-      {opkOpen && (
-        <div style={inlineForm}>
-          <p style={fieldLabel}>OPK result</p>
-          <div style={toggleRow} role="radiogroup" aria-label="OPK result">
-            {[
-              { key: "negative", label: "Negative", colour: "#8A7458" },
-              { key: "low",      label: "Low",      colour: "#C4A86A" },
-              { key: "high",     label: "High",     colour: "#D47A5A" },
-              { key: "peak",     label: "Peak",     colour: "#E11D74" },
-            ].map((opt) => {
-              const on = opkValue === opt.key;
-              return (
-                <button
-                  key={opt.key}
-                  type="button"
-                  role="radio"
-                  aria-checked={on}
-                  onClick={() => setOpkValue(opt.key)}
-                  style={{
-                    ...toggleBtn,
-                    background: on ? opt.colour : "transparent",
-                    color: on ? "#FBF6E6" : opt.colour,
-                    borderColor: opt.colour,
-                  }}
-                >
-                  {opt.label}
-                </button>
-              );
-            })}
-          </div>
-          <div style={formActions}>
-            <button
-              type="button"
-              style={primaryBtn}
-              onClick={saveOpk}
-              disabled={!opkValue || saving}
-            >
-              <Check size={12} strokeWidth={2.4} />
-              <span>{saving ? "Saving..." : "Save OPK"}</span>
-            </button>
-            <button type="button" style={ghostBtn} onClick={() => { setOpkOpen(false); setOpkValue(null); }}>Cancel</button>
-          </div>
-        </div>
+      {openForm === "opk" && (
+        <OpkForm userId={userId} onSaved={handleSaved} onCancel={() => setOpenForm(null)} />
       )}
 
       {/* 14-day BBT sparkline */}
       <BbtChart logs={logs} />
-
-      {toast && <p style={toastLine}>{toast}</p>}
     </section>
   );
 }
@@ -369,17 +457,29 @@ const logBtn = {
   color: "#3A2C1A",
   fontFamily: "'Inter', sans-serif", fontSize: 12, fontWeight: 600, cursor: "pointer",
 };
+const logBtnActive = {
+  background: "rgba(58,44,26,0.10)",
+  border: "1px solid rgba(58,44,26,0.35)",
+};
 const inlineForm = {
-  marginTop: 10, padding: 10,
-  background: "rgba(255,255,255,0.65)",
+  marginTop: 10, padding: 12,
+  background: "rgba(255,255,255,0.72)",
   border: "1px solid rgba(58,44,26,0.10)",
   borderRadius: 10,
+  display: "flex", flexDirection: "column", gap: 8,
+};
+const formHeader = {
+  display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 2,
+};
+const cancelIconBtn = {
+  background: "none", border: "none", cursor: "pointer",
+  color: "#6B5840", padding: 2, lineHeight: 1,
 };
 const fieldLabel = {
   display: "block",
   fontFamily: "'Inter', sans-serif", fontSize: 11, fontWeight: 600,
   letterSpacing: "0.06em", textTransform: "uppercase",
-  color: "#6B5840", marginBottom: 4,
+  color: "#6B5840", marginBottom: 0,
 };
 const input = {
   width: "100%", display: "block",
@@ -387,17 +487,9 @@ const input = {
   border: "1px solid rgba(58,44,26,0.18)",
   background: "#FBF6E6", color: "#3A2C1A",
   fontFamily: "'Inter', sans-serif", fontSize: 14, marginTop: 4,
+  boxSizing: "border-box",
 };
-const toggleRow = { display: "flex", gap: 6, marginBottom: 8, flexWrap: "wrap" };
-const toggleBtn = {
-  flex: 1,
-  padding: "7px 8px",
-  borderRadius: 9999,
-  border: "1px solid",
-  fontFamily: "'Inter', sans-serif", fontSize: 12, fontWeight: 700,
-  cursor: "pointer", minWidth: 60,
-};
-const formActions = { display: "flex", gap: 8, marginTop: 6 };
+const formActions = { display: "flex", gap: 8, marginTop: 4 };
 const primaryBtn = {
   display: "inline-flex", alignItems: "center", gap: 5,
   padding: "7px 14px", borderRadius: 9999,
@@ -412,7 +504,7 @@ const ghostBtn = {
   color: "#6B5840",
   fontFamily: "'Inter', sans-serif", fontSize: 12, fontWeight: 600, cursor: "pointer",
 };
-const toastLine = {
-  fontFamily: "'Inter', sans-serif", fontSize: 11, color: "#3F6228",
-  fontStyle: "italic", margin: "8px 0 0",
+const errorLine = {
+  fontFamily: "'Inter', sans-serif", fontSize: 11, color: "#C0392B",
+  margin: 0,
 };
