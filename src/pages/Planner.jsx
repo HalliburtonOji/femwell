@@ -45,35 +45,193 @@ import DevStageSwitcher, {
 // ("Hormones"), post-menopause ("Health"). Each is a single quiet card —
 // no period gradient, no fertile window, no phase legend.
 
-function PregnancyTimelineCard({ profile, plannerConfig }) {
+// NHS antenatal milestones — Cowork-locked weeks. Week numbers match common
+// NICE NG201 antenatal schedule landmarks; copy stays factual + non-clinical.
+const PREGNANCY_MILESTONES = [
+  { week: 8,  label: "First scan" },
+  { week: 12, label: "Dating scan" },
+  { week: 16, label: "Anomaly scan booking" },
+  { week: 20, label: "20-week anomaly scan" },
+  { week: 28, label: "Glucose tolerance test" },
+  { week: 32, label: "32-week scan" },
+  { week: 36, label: "Group B strep test" },
+  { week: 40, label: "Due date" },
+];
+
+function PregnancyTimelineCard({ profile, plannerConfig, variant = "ribbon" }) {
   const due = profile?.pregnancy_due_date;
   const start = profile?.pregnancy_start_date;
-  let weekLabel = "—";
-  let trimesterLabel = (plannerConfig?.cycleTabName || "Journey");
-  if (start) {
+
+  // Resolve current week. Prefer due_date math (40 - weeks_remaining) — this is
+  // how most antenatal apps anchor the timeline (more reliable than a remembered
+  // start_date). Fall back to start_date math, then to no-week.
+  let currentWeek = null;
+  let trimesterLabel = plannerConfig?.cycleTabName || "Journey";
+  if (due) {
+    try {
+      const d = new Date(due);
+      const now = new Date();
+      const weeksRemaining = Math.max(0, Math.round((d - now) / (1000 * 60 * 60 * 24 * 7)));
+      currentWeek = Math.max(0, Math.min(40, 40 - weeksRemaining));
+    } catch { /* ignore */ }
+  } else if (start) {
     try {
       const s = new Date(start);
       const now = new Date();
-      const weeks = Math.max(0, Math.floor((now - s) / (1000 * 60 * 60 * 24 * 7)));
-      weekLabel = `Week ${weeks}`;
-      trimesterLabel = weeks < 13 ? "Trimester I" : weeks < 27 ? "Trimester II" : "Trimester III";
+      currentWeek = Math.max(0, Math.floor((now - s) / (1000 * 60 * 60 * 24 * 7)));
     } catch { /* ignore */ }
   }
+  if (Number.isFinite(currentWeek)) {
+    trimesterLabel = currentWeek < 13 ? "Trimester I"
+                   : currentWeek < 27 ? "Trimester II"
+                   : "Trimester III";
+  }
+
+  const trimesterRoman = trimesterLabel.endsWith("III") ? "III" : trimesterLabel.endsWith("II") ? "II" : "I";
+
+  // Next milestone (>= currentWeek). Falls back to first one if user has no week yet.
+  let nextMilestone = null;
+  let weeksToNext = null;
+  if (Number.isFinite(currentWeek)) {
+    nextMilestone = PREGNANCY_MILESTONES.find((m) => m.week >= currentWeek) || null;
+    if (nextMilestone) weeksToNext = nextMilestone.week - currentWeek;
+  }
+
+  // Progress bar — 40 segments coloured to currentWeek. Cream baseline,
+  // sage fill up to current week, with a gold marker on the current week itself.
+  const progressBar = (
+    <div style={progressOuter} role="progressbar"
+         aria-valuenow={currentWeek || 0} aria-valuemin={0} aria-valuemax={40}
+         aria-label={`Pregnancy progress: week ${currentWeek || 0} of 40`}>
+      {Array.from({ length: 40 }).map((_, i) => {
+        const week = i + 1;
+        const filled = currentWeek != null && week <= currentWeek;
+        const isCurrent = currentWeek === week;
+        return (
+          <span
+            key={i}
+            style={{
+              ...progressSeg,
+              background: isCurrent
+                ? "#A6862B"
+                : filled
+                  ? "rgba(107,143,90,0.55)"
+                  : "rgba(58,44,26,0.08)",
+            }}
+          />
+        );
+      })}
+    </div>
+  );
+
+  if (variant === "today") {
+    return (
+      <section style={todayWrap} aria-label="Pregnancy timeline">
+        <p style={todayEyebrow}>YOUR PREGNANCY · CHAPTER {trimesterRoman}</p>
+        <p style={todayHero}>
+          {currentWeek != null ? <>Week <strong>{currentWeek}</strong> of 40</> : "Add your due date to see the timeline"}
+        </p>
+        {progressBar}
+        {nextMilestone && weeksToNext != null ? (
+          <p style={todayMilestone}>
+            <strong>Coming up:</strong> {nextMilestone.label}{" "}
+            {weeksToNext === 0 ? "this week" : `in ${weeksToNext} ${weeksToNext === 1 ? "week" : "weeks"}`}
+          </p>
+        ) : (
+          <a href="/Profile" style={todayCta}>
+            Add your due date →
+          </a>
+        )}
+        {due && (
+          <p style={todayDue}>
+            Due {new Date(due).toLocaleDateString("en-GB", { day: "numeric", month: "long", year: "numeric" })}
+          </p>
+        )}
+      </section>
+    );
+  }
+
+  // Default "ribbon" variant — used on the Cycle/Journey tab.
   return (
     <section style={stageRibbonCardStyle}>
-      <div style={stageRibbonEyebrowStyle}>40-WEEK JOURNEY</div>
-      <div style={stageRibbonTitleStyle}>{trimesterLabel}{weekLabel !== "—" ? ` · ${weekLabel}` : ""}</div>
+      <div style={stageRibbonEyebrowStyle}>40-WEEK JOURNEY · CHAPTER {trimesterRoman}</div>
+      <div style={stageRibbonTitleStyle}>
+        {trimesterLabel}
+        {currentWeek != null ? ` · Week ${currentWeek}` : ""}
+      </div>
+      {progressBar}
       <p style={stageRibbonBodyStyle}>
         {due
           ? `Due ${new Date(due).toLocaleDateString("en-GB", { day: "numeric", month: "long", year: "numeric" })}.`
           : "Set your due date in Profile to see the trimester timeline + NHS antenatal schedule."}
       </p>
+      {nextMilestone && weeksToNext != null && (
+        <p style={stageRibbonHintStyle}>
+          <strong>Coming up:</strong> {nextMilestone.label}{" "}
+          {weeksToNext === 0 ? "this week" : `in ${weeksToNext} ${weeksToNext === 1 ? "week" : "weeks"}`}.
+        </p>
+      )}
       <p style={stageRibbonHintStyle}>
         Cycle tracking is paused while you're pregnant. We're not predicting periods, fertile windows, or ovulation.
       </p>
     </section>
   );
 }
+
+// ─── PregnancyTimelineCard styles ───────────────────────────────────────────
+const progressOuter = {
+  display: "grid",
+  gridTemplateColumns: "repeat(40, minmax(0, 1fr))",
+  gap: 1,
+  margin: "8px 0 10px",
+  padding: "2px 0",
+};
+const progressSeg = {
+  height: 8,
+  borderRadius: 2,
+  background: "rgba(58,44,26,0.08)",
+};
+const todayWrap = {
+  background: "linear-gradient(180deg, rgba(107,143,90,0.10), rgba(244,237,219,0.6))",
+  border: "1px solid rgba(58,44,26,0.12)",
+  borderLeft: "3px solid #6B8F5A",
+  borderRadius: 16,
+  padding: "16px 16px 18px",
+  marginBottom: 12,
+};
+const todayEyebrow = {
+  fontFamily: "'Inter', sans-serif",
+  fontSize: 10, fontWeight: 700, letterSpacing: "0.20em",
+  color: "#3F6228", textTransform: "uppercase",
+  margin: 0,
+};
+const todayHero = {
+  fontFamily: "'Fraunces', Georgia, serif",
+  fontSize: 22, fontWeight: 500, lineHeight: 1.2,
+  color: "#3A2C1A", margin: "4px 0 8px",
+};
+const todayMilestone = {
+  fontFamily: "'Inter', sans-serif",
+  fontSize: 13, color: "#3A2C1A", lineHeight: 1.5,
+  margin: "4px 0 0",
+};
+const todayCta = {
+  display: "inline-block",
+  marginTop: 4,
+  padding: "6px 14px",
+  borderRadius: 9999,
+  background: "#3A2C1A",
+  color: "#F4EDDB",
+  fontFamily: "'Inter', sans-serif",
+  fontSize: 12, fontWeight: 700,
+  textDecoration: "none",
+};
+const todayDue = {
+  fontFamily: "'Inter', sans-serif",
+  fontSize: 11, color: "#6B5840",
+  fontStyle: "italic",
+  margin: "8px 0 0",
+};
 
 function BleedEventsCard({ profile: _profile, plannerConfig }) {
   return (
@@ -1013,6 +1171,14 @@ export default function Planner() {
               effectiveLifeStage={effectiveLifeStage}
               effectiveConditions={effectiveConditions}
             />
+
+            {/* ── Pregnancy timeline countdown (Today variant) ───────────
+                Renders under Jess hero on Today for pregnant-t1/t2/t3
+                stages. Shows Week n of 40 + 40-segment progress + next
+                NHS milestone. Hidden everywhere else. ─────────────────── */}
+            {plannerConfig?.ribbonType === "pregnancy" && (
+              <PregnancyTimelineCard profile={profile} plannerConfig={plannerConfig} variant="today" />
+            )}
 
             {/* ── Fresh-Start banner (Phase 2 B1) — soft reset on inflection.
                 Life Stage adapter: FreshStart triggers on cycle-day-1 etc;
