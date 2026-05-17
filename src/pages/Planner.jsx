@@ -365,6 +365,33 @@ function dayOfCycle(profile, targetDate) {
   return (diff % cycleLength) + 1;
 }
 
+// Energy bucket for the 7-day forecast summary line (Phase 2 BUILD 1).
+// Maps cycle phase + cycle-day position into one of three buckets:
+//   • high-energy  — ovulatory window, late follicular
+//   • steady       — early luteal, mid-follicular
+//   • restful      — menstrual, late luteal
+// Returns null when no profile / cycle data is available so the summary
+// line can suppress itself for non-cycle stages.
+function energyBucketFor(profile, targetDate) {
+  const phase = phaseForDate(profile, targetDate);
+  if (!phase) return null;
+  const cd = dayOfCycle(profile, targetDate);
+  const cycleLength = profile?.cycle_avg_length || 28;
+  if (phase === "ovulatory") return "high";
+  if (phase === "menstrual") return "restful";
+  if (phase === "follicular") {
+    // Late follicular (within 3 days of ovulation) reads as high-energy.
+    const midpoint = Math.round(cycleLength * 0.5);
+    return cd != null && cd >= midpoint - 3 ? "high" : "steady";
+  }
+  if (phase === "luteal") {
+    // Late luteal (last 3 days before next period) reads as restful;
+    // earlier luteal stays steady.
+    return cd != null && cd >= cycleLength - 3 ? "restful" : "steady";
+  }
+  return null;
+}
+
 function getWeekDays(mondayDate) {
   return Array.from({ length: 7 }, (_, i) => {
     const d = new Date(mondayDate);
@@ -1009,6 +1036,25 @@ export default function Planner() {
               </button>
             </div>
           )}
+          {/* Phase 2 BUILD 1 — energy summary for the next 7 days, derived
+              from energyBucketFor() over each weekday. Suppressed for non-
+              cycle stages (no phase → no buckets). Plain prose; no chips. */}
+          {view === "today" && plannerConfig?.ribbonType === "cycle" && (() => {
+            const buckets = weekDays.map((d) => energyBucketFor(profile, d));
+            const counts = { high: 0, steady: 0, restful: 0 };
+            for (const b of buckets) { if (b && counts[b] != null) counts[b] += 1; }
+            const total = counts.high + counts.steady + counts.restful;
+            if (total < 4) return null;
+            return (
+              <p style={energySummaryStyle} aria-label="Seven-day energy summary">
+                {counts.high} high-energy
+                <span style={energyDotSep}> · </span>
+                {counts.steady} steady
+                <span style={energyDotSep}> · </span>
+                {counts.restful} restful days ahead
+              </p>
+            );
+          })()}
         </div>
       </div>
 
@@ -1549,6 +1595,21 @@ const fieldLabelStyle = { fontSize: 11, fontWeight: 600, color: "var(--plum-mute
 const cycleStubStyle = { background: "#FFFFFF", border: "1px solid rgba(74,42,58,0.08)", borderRadius: 16, padding: "16px 16px 14px", marginBottom: 12, boxShadow: "0 2px 8px rgba(74,42,58,0.04)" };
 const cycleStubTitleStyle = { fontFamily: "'Fraunces', Georgia, serif", fontSize: 16, fontWeight: 500, color: "var(--plum, #4A2A3A)", margin: "0 0 4px" };
 const cycleStubBodyStyle = { fontSize: 13, color: "var(--plum-2, #6B4559)", fontFamily: "'Inter', sans-serif", lineHeight: 1.5, margin: 0 };
+
+// ── 7-day energy summary (Phase 2 BUILD 1) ─────────────────────────────────
+const energySummaryStyle = {
+  marginTop: 10,
+  textAlign: "center",
+  fontFamily: "'Inter', sans-serif",
+  fontSize: 11,
+  fontWeight: 500,
+  color: "var(--plum-mute, #8A7584)",
+  letterSpacing: "0.02em",
+};
+const energyDotSep = {
+  color: "rgba(74,42,58,0.30)",
+  margin: "0 2px",
+};
 
 // ── Cross-tab toast banner ──────────────────────────────────────────────────
 const toastStyle = {
