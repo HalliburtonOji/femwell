@@ -40,8 +40,23 @@ const BODY_GOALS = [
   { id: "menopause",       label: "Menopause"        },
 ];
 
-const STEPS = ["welcome", "cycle_basics", "display_name", "goals", "location", "interests", "preferences", "life_stage", "setup", "skin_profile", "assistant_intro", "done"];
-const PROGRESS_STEPS = ["cycle_basics", "goals", "location", "interests", "preferences", "life_stage", "setup", "skin_profile"];
+const STEPS = ["welcome", "cycle_basics", "display_name", "goals", "location", "interests", "preferences", "life_stage", "conditions", "setup", "skin_profile", "assistant_intro", "done"];
+const PROGRESS_STEPS = ["cycle_basics", "goals", "location", "interests", "preferences", "life_stage", "conditions", "setup", "skin_profile"];
+
+// Sprint 5 BUILD 5 — conditions multi-select. Keys match plannerAdapter
+// CONDITION_OVERRIDES where present; unknown keys fall through the 'other'
+// no-op so persistence works without crashing.
+const CONDITION_OPTIONS = [
+  { key: "pcos",                label: "PCOS" },
+  { key: "endo",                label: "Endometriosis" },
+  { key: "fibroids",            label: "Fibroids" },
+  { key: "thyroid",             label: "Thyroid disorder" },
+  { key: "pmdd",                label: "PMDD" },
+  { key: "diabetes",            label: "Diabetes" },
+  { key: "hypertension",        label: "Hypertension" },
+  { key: "anxiety-depression",  label: "Anxiety / Depression" },
+];
+const NONE_KEY = "none";
 
 const PREG_FOCUSES = ["Sleep", "Nausea", "Movement", "Nutrition", "Birth prep", "Calm", "Pelvic health"];
 const MENO_FOCUSES = ["Sleep", "Hot flashes", "Mood", "Energy", "Brain fog", "Joint comfort", "Weight balance"];
@@ -92,6 +107,9 @@ export default function Onboarding() {
   // Life stage
   const [lifeStage, setLifeStage] = useState("none");
   const [lifeStageFocus, setLifeStageFocus] = useState([]);
+  // Sprint 5 BUILD 5 — conditions multi-select. Saves to UserProfile.conditions
+  // (the canonical field plannerAdapter reads) + appends into condition_flags.
+  const [conditions, setConditions] = useState([]);
   const [pregDueDate, setPregDueDate] = useState("");
   const [pregWeek, setPregWeek] = useState("");
   const [pregTrimester, setPregTrimester] = useState("first");
@@ -178,6 +196,14 @@ export default function Onboarding() {
       const conditionFlags = [];
       if (lifeStage === "pregnancy") conditionFlags.push("pregnancy");
       if (lifeStage === "menopause") conditionFlags.push("menopause");
+      // Sprint 5 BUILD 5 — append explicit condition picks. Skip the
+      // 'none of the above' sentinel — it's a UI affordance, not a real
+      // condition. Resulting conditions array maps directly to
+      // plannerAdapter CONDITION_OVERRIDES keys.
+      const explicitConditions = (conditions || []).filter((c) => c && c !== NONE_KEY);
+      for (const c of explicitConditions) {
+        if (!conditionFlags.includes(c)) conditionFlags.push(c);
+      }
       const pData = {
         user_id: user.id, user_email: user.email, onboarding_complete: true,
         goals, tone_preference: tone,
@@ -188,6 +214,7 @@ export default function Onboarding() {
         life_stage: lifeStage,
         life_stage_focus: lifeStageFocus,
         condition_flags: conditionFlags,
+        conditions: explicitConditions,
         ai_assistant_name: assistantName || "Guide",
         ...(locationCity ? { location_city: locationCity } : {}),
         ...(cycleBasics || {}),
@@ -717,6 +744,83 @@ export default function Onboarding() {
           </div>
         )}
 
+        {current === "conditions" && (
+          <div className="w-full space-y-6">
+            <div>
+              {(() => { const n = PROGRESS_STEPS.indexOf(current) + 1; return n > 0 && <p style={sLabel}>Step {n} of {PROGRESS_STEPS.length}</p>; })()}
+              <h2 style={{ fontSize: "22px", fontWeight: 700, color: "var(--plum)", fontFamily: "'Fraunces', serif", marginTop: "4px", lineHeight: 1.2 }}>
+                Any diagnosed conditions?
+              </h2>
+              <p style={{ fontSize: "13px", color: "var(--mauve)", fontFamily: "'Inter', sans-serif", marginTop: "6px", lineHeight: 1.5 }}>
+                Select all that apply — this helps us personalize your plan. You can change this any time from Profile.
+              </p>
+            </div>
+            <div className="flex flex-wrap gap-2">
+              {CONDITION_OPTIONS.map((c) => {
+                const on = conditions.includes(c.key);
+                return (
+                  <button
+                    key={c.key}
+                    type="button"
+                    onClick={() => {
+                      setConditions((cur) => {
+                        // Toggling any real condition deselects 'None of the above'.
+                        const cleaned = cur.filter((x) => x !== NONE_KEY);
+                        if (cleaned.includes(c.key)) return cleaned.filter((x) => x !== c.key);
+                        return [...cleaned, c.key];
+                      });
+                    }}
+                    aria-pressed={on}
+                    style={{
+                      padding: "8px 16px",
+                      borderRadius: 9999,
+                      fontFamily: "'Inter', sans-serif",
+                      fontSize: 13,
+                      fontWeight: 600,
+                      cursor: "pointer",
+                      border: on ? "1px solid #8FAF8F" : "1px solid #3A2C1A",
+                      background: on ? "#8FAF8F" : "#F4EDDB",
+                      color: on ? "#FFFFFF" : "#3A2C1A",
+                      transition: "background 120ms, color 120ms, border-color 120ms",
+                    }}
+                  >
+                    {c.label}
+                  </button>
+                );
+              })}
+              {(() => {
+                const on = conditions.includes(NONE_KEY);
+                return (
+                  <button
+                    key={NONE_KEY}
+                    type="button"
+                    onClick={() => {
+                      // 'None of the above' wipes all other selections.
+                      setConditions((cur) => (cur.includes(NONE_KEY) ? [] : [NONE_KEY]));
+                    }}
+                    aria-pressed={on}
+                    style={{
+                      padding: "8px 16px",
+                      borderRadius: 9999,
+                      fontFamily: "'Inter', sans-serif",
+                      fontSize: 13,
+                      fontWeight: 600,
+                      fontStyle: "italic",
+                      cursor: "pointer",
+                      border: on ? "1px solid #8FAF8F" : "1px dashed #3A2C1A",
+                      background: on ? "#8FAF8F" : "transparent",
+                      color: on ? "#FFFFFF" : "#3A2C1A",
+                      transition: "background 120ms, color 120ms, border-color 120ms",
+                    }}
+                  >
+                    None of the above
+                  </button>
+                );
+              })()}
+            </div>
+          </div>
+        )}
+
         {current === "assistant_intro" && (
           <div className="w-full space-y-6 text-center">
             {showVoice && (
@@ -814,7 +918,8 @@ export default function Onboarding() {
             className="btn-primary flex-1"
             disabled={
               (current === "goals" && goals.length === 0) ||
-              (current === "interests" && interests.length === 0)
+              (current === "interests" && interests.length === 0) ||
+              (current === "conditions" && conditions.length === 0)
             }>
             Continue <ChevronRight className="ml-1 inline h-4 w-4" />
           </button>
