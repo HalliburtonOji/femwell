@@ -152,3 +152,305 @@ This means Halli never has to copy status from chat to chat. When either Claude 
 ---
 
 _Last updated 2026-05-14 by Cowork. If this file is more than two weeks old at read time, surface that to the user — direction docs decay fast on a 6-month sale runway._
+
+---
+
+# Sprint state — 2026-05-17 (life-stage adapter sprint)
+
+Current sprint focus: **stage-specific persistence + insights**. We are 3 sprints deep into the life-stage adapter rebuild — `getPlannerConfig(lifeStage, conditions)` is now the single source of truth that reshapes the entire Planner.
+
+## Sprint 3 — done (today)
+
+| # | Build | Commit | Notes |
+|---|---|---|---|
+| 1 | TTC: BBT/OPK persistence + 14-day SVG chart | `8566904`…`896ea0e` (Code) | `BbtChart.jsx`, `BbtLog.jsonc`, `OpkLog.jsonc`. Graceful entity-missing fallback. |
+| 2 | Pre-TTC: SupplementTrackerCard daily compliance | `655a70c` (Code) | `SupplementLog.jsonc`. Adds Selenium row when `conditions` includes `thyroid`. |
+| 3 | Pregnancy T3: KickCounterCard with NHS signpost | `443b24e` (Code) | `KickLog.jsonc`. <10 kicks in 2h → midwife signpost. |
+| 4 | Postpartum: EPDS 10-question wellbeing check-in | `868c6a8` (Cowork) | localStorage-only. Q10 safety-flag escalates regardless of total. Three bands → NHS signpost. |
+| 5 | Perimenopause: HRT × symptom 30-day correlation | `7ff2526` (Cowork) | Pure-SVG chart. HRT overlay step line when `conditions.includes('hrt')`. Data-driven insight copy. |
+
+## Sprint 2 — done (2026-05-17 earlier)
+
+| # | Build | Commit |
+|---|---|---|
+| 1 | ContraceptionCard history shell + drift fix | `4a34d1d` + `f8225d8` |
+| 2 | TTC FertileWindowCard v1 (7-day strip + local-stub BBT/OPK) | `c1cc602` |
+| 3 | Pregnancy due-date countdown card (Today variant) | `541e239` |
+| 4 | Profile Stage edit modal lift | `5e651c5` |
+| 5 | GP-ready PDF: pregnancy + pre-TTC variants | `040dc31` |
+
+## Sprint 1 — done (2026-05-17 morning)
+
+Pregnancy bugs (`337159e`, `b057a11`, `b660832`) · Jess hero DEV-override fix (`a5a9d80`) · peri/meno banners (`212f778`) · onboarding life-stage step + FirstLaunchStagePicker (`5c0c809`) · ContraceptionMemory entity + card (`bd141b3`) · DevStageSwitcher conditions picker (`4be1851`) · Pre-TTC mode richer config + FolicAcid/AMH/SupplementStack cards (`08611a5`) · IntentionCard gate (`edbd441`).
+
+---
+
+## Workflow now — direct GitHub commits
+
+The 2026-05-13 "hybrid" rule above still applies in spirit, but **all five Sprint 3 builds shipped as direct repo commits**. Halli publishes on base44 herself after each commit — no paste-ready prompts unless schema migration is involved. Pattern:
+
+1. Edit files in this repo.
+2. `npm run build` — must exit 0.
+3. `git commit -m "<conventional message>"` with the Claude Code-Authored-By trailer.
+4. `git push origin main`.
+5. **Halli publishes** on base44 (Preview → Publish → Publish App).
+6. Live walk on femwells.com via the Claude-in-Chrome MCP using the DEV switcher to QA every stage/condition combo.
+
+Two-agent rebase rule: if `git push` rejects because Code agent pushed in parallel, `git rebase --abort` + `git reset --hard origin/main` + rebuild your changes on top. Their factoring usually wins.
+
+---
+
+## Life stages — 12 enum values
+
+| Key | Label | Tab | Ribbon type | Banner |
+|---|---|---|---|---|
+| `none` | Not set | Cycle | cycle | — (first-launch modal fires) |
+| `teen` | Teen | Cycle | cycle | Parent Bridge — Mum can see: dates only. |
+| `reproductive` | Reproductive years | Cycle | cycle | — |
+| `pre-ttc` | Pre-TTC | **Prepare** | cycle | Pre-TTC Mode — building your baseline for when you're ready |
+| `ttc` | Trying to conceive | **Clinical** | cycle | — |
+| `pregnant-t1` | Pregnant · T1 | **Journey** | pregnancy | Pregnancy Mode · First Trimester — cycle tracking is paused. |
+| `pregnant-t2` | Pregnant · T2 | Journey | pregnancy | Pregnancy Mode · Second Trimester — cycle tracking is paused. |
+| `pregnant-t3` | Pregnant · T3 | Journey | pregnancy | Pregnancy Mode · Third Trimester — cycle tracking is paused. |
+| `postpartum` | Postpartum | **Recovery** | event | Postpartum Mode — period may not have returned, and that's expected. |
+| `perimenopause` | Perimenopause | **Patterns** | symptom | Perimenopause Mode — symptoms over predictions. |
+| `menopause` | Menopause | Patterns | symptom | Menopause Mode — focused on long-term health, not cycle. |
+| `post-menopause` | Post-menopause | **Health** | health | No cycle ribbon — centred on long-term health. |
+
+`pregnancy` exists as a legacy alias for pregnant-t1/2/3.
+
+---
+
+## Conditions — 8 cross-cutting modifiers
+
+`pcos`, `endo`, `pmdd`, `fibroids`, `thyroid`, `hrt`, `cancer-survivor`, `ha`.
+
+Conditions stack on top of the stage config. PCOS adds the `"PCOS Mode — we are not predicting your next period."` banner unless overridden by a protected stage. HA adds `"Recovery mode — we will not predict your cycle."` and reshapes voice entirely. HRT activates the HrtLog card on peri/meno surfaces and the HrtCorrelationCard overlay on the Today tab.
+
+**Protected stages** (whose `bannerText`, `ribbonType`, `cycleTabName`, `cycleTabMode`, `eyebrowPrefix` survive a condition override): `pregnant-t1/t2/t3`, `pregnancy`, `postpartum`, `post-menopause`. See `PROTECTED_STAGES` + `PROTECTED_KEYS` in plannerAdapter.
+
+---
+
+## plannerAdapter pattern (read before editing any Planner surface)
+
+`src/utils/plannerAdapter.js` exports `getPlannerConfig(lifeStage, conditions)`. **Every Planner child should consult the returned config object — never read `profile.life_stage` directly**, because that bypasses the DEV override and (in production) the first-launch modal flow.
+
+Returned shape:
+
+```js
+{
+  ribbonType:     "cycle" | "symptom" | "pregnancy" | "event" | "health",
+  pillarSet:      ["Sleep", "Energy", ...],         // 6 PillarsDeck tiles
+  eyebrowPrefix:  "TODAY · PERI",                    // string above Jess hero
+  cycleTabName:   "Patterns" | "Journey" | "Clinical" | "Prepare" | "Recovery" | "Health" | "Cycle",
+  cycleTabMode:   "ribbon" | "heatmap" | "timeline" | "events" | "health",
+  hiddenFeatures: ["periodLogging", "phaseSignedIntention", ...],
+  contentTags:    ["any", "perimenopause", "hrt"],
+  jessContext:    "Plain-English prompt fragment for the Jess LLM",
+  bannerText:     "Perimenopause Mode — symptoms over predictions." | null,
+}
+```
+
+In Planner.jsx, the chain looks like:
+
+```js
+const realLifeStage    = profile?.life_stage ?? null;
+const effectiveLifeStage = devStageOverride || realLifeStage || "reproductive";
+const realConditions     = profile?.conditions ?? profile?.condition_flags ?? [];
+const effectiveConditions = devConditionsOverride !== null ? devConditionsOverride : realConditions;
+const plannerConfig = useMemo(
+  () => getPlannerConfig(effectiveLifeStage, effectiveConditions),
+  [effectiveLifeStage, effectiveConditions]
+);
+```
+
+Pass `plannerConfig` (and where needed, `effectiveLifeStage` + `effectiveConditions`) down as props.
+
+**Hidden-features gate pattern:** `{!plannerConfig?.hiddenFeatures?.includes('periodLogging') && <Component />}`. Hidden features currently in use: `periodLogging`, `fertileWindow`, `cyclePhaseRibbon`, `ovulationWindow`, `planNextCycle`, `savedRhythms`, `contraception`, `phaseSignedIntention`, `smartViewPhaseChips`, `phaseColors`, `phaseColorsDominant`, `cycleRibbon`, `phasePrediction`, `ttc`, `pregnancy`, `partnerSync`, `hrt`.
+
+---
+
+## Entity pattern (base44 SDK)
+
+All new code talks to base44 via `import { base44 } from "@/api/base44Client";`. Legacy code uses `window.ezsite.apis.*` — phase out in passing, don't grand-refactor.
+
+Canonical graceful-degradation helper for any entity that might not exist on base44 yet:
+
+```js
+function safeEntity(name) {
+  try {
+    const ent = base44?.entities?.[name];
+    if (!ent || typeof ent.filter !== "function") return null;
+    return ent;
+  } catch { return null; }
+}
+
+// In a component:
+const ent = safeEntity("BbtLog");
+if (!ent) { setEntityMissing(true); return; }
+try {
+  const rows = await ent.filter({ user_id: userId }, "-date", 60);
+  setLogs(Array.isArray(rows) ? rows : []);
+} catch (err) {
+  const msg = String(err?.message || err || "");
+  if (/not\s*found|unknown|404|400|BbtLog/i.test(msg)) setEntityMissing(true);
+}
+```
+
+Every new entity-backed card MUST render a friendly "Coming soon" placeholder when the entity is missing on base44. Reference implementations: `HrtLogCard.jsx`, `ContraceptionCard.jsx`, `FertileWindowCard.jsx`, `HrtCorrelationCard.jsx`.
+
+**Privacy carve-out:** EPDS / mental-health screens are localStorage-only. Never persist to base44. See `EpdsScreenCard.jsx`.
+
+Schema source-of-truth lives in `base44/entities/*.jsonc` (committed for traceability) but the live schema is on base44. To make an entity exist:
+1. Add the `.jsonc` schema file.
+2. Write a paste-ready prompt at `claude-handoff/from-cowork-to-base44-ai-YYYY-MM-DD-<name>.md`.
+3. Build the UI shell with graceful fallback so the card renders before the entity exists.
+4. Halli pastes the prompt into the base44 AI builder and republishes.
+
+---
+
+## DevStageSwitcher pattern
+
+`src/components/planner/DevStageSwitcher.jsx` is the floating pill on the Planner page. Halli uses it to QA every stage + condition combo without touching the backend.
+
+Keys + events:
+- `localStorage.femwell_dev_life_stage` (string) — DEV stage override.
+- `localStorage.femwell_dev_conditions` (JSON array) — DEV conditions override. Empty array means "override on but no conditions"; absent key means "use real conditions".
+- `femwell_dev_stage_change` and `femwell_dev_conditions_change` — same-tab custom events. Cross-tab uses native `storage` event. 1.5s polling fallback in Planner.jsx as belt-and-braces.
+
+Exported helpers: `readDevStageOverride()`, `writeDevStageOverride(stage)`, `readDevConditionsOverride()`, `writeDevConditionsOverride(arr)`.
+
+---
+
+## Design tokens
+
+```
+--femwell-cream:    #F4EDDB    page background
+--femwell-paper:    #FBF6E6    card background
+--femwell-espresso: #3A2C1A    primary text
+--femwell-plum:     #4A2A3A    secondary text
+--femwell-blush:    #E8B4B8    postpartum, soft warm accent
+--femwell-sage:     #8FAF8F    peri, TTC, good-news accent
+--femwell-muted:    #9B8B7A    italic meta text
+--femwell-gold:     #A6862B    eyebrows, peak markers, accent borders
+--femwell-rose:     #D45E52    primary CTAs
+```
+
+**Cycle phase palette** (Le Menu × Phase Sun):
+
+```
+menstrual  #9A2845
+follicular #D4745A
+ovulatory  #C8A040
+luteal     #7B5E9A
+none       #A6862B
+```
+
+**Typography:** Fraunces (italic serif for hero titles + insights) + Inter (everything else) + Lucide icons. **No emoji codepoints in product** — Lucide / SVG glyph fallback only.
+
+---
+
+## SVG chart convention
+
+No external chart libraries — bundle stays small. Pattern:
+
+```jsx
+const W = 320; const H = 110;
+const PAD_X = 16; const PAD_TOP = 18; const PAD_BOTTOM = 20;
+const innerW = W - PAD_X * 2;
+const innerH = H - PAD_TOP - PAD_BOTTOM;
+const xFor = (i) => PAD_X + (i / Math.max(1, series.length - 1)) * innerW;
+const yFor = (v) => PAD_TOP + ((MAX - v) / (MAX - MIN)) * innerH;
+
+// Connect consecutive non-null points so logging gaps render as breaks:
+const segments = [];
+let cur = [];
+series.forEach((d, i) => {
+  if (d.value != null) cur.push({ x: xFor(i), y: yFor(d.value) });
+  else if (cur.length > 0) { segments.push(cur); cur = []; }
+});
+if (cur.length > 0) segments.push(cur);
+```
+
+Canonical implementations: `BbtChart.jsx` (14-day BBT with coverline), `HrtCorrelationCard.jsx`'s `CorrelationChart` (30-day severity + HRT overlay), Planner's `PregnancyTimelineCard` progress bar (40 segments).
+
+---
+
+## File structure quick-ref
+
+```
+femwell-repo/
+├── CLAUDE.md                      ← this file
+├── base44/entities/*.jsonc        ← entity schema sources
+├── claude-handoff/                ← paste-ready prompts for base44 AI builder
+├── claude-state/
+│   ├── STATUS.md                  ← shared baton between Cowork + Code
+│   ├── master-plan.md             ← strategic direction (versioned)
+│   └── ...
+├── .claude/memory/                ← rolling memory (read on session start)
+└── src/
+    ├── pages/
+    │   ├── Planner.jsx            ← the central life-stage adapter consumer
+    │   ├── Profile.jsx            ← stage gold card + edit modal
+    │   ├── Today.jsx              ← daily check-in landing
+    │   └── Onboarding.jsx         ← 11-stage life_stage step
+    ├── components/planner/
+    │   ├── DevStageSwitcher.jsx
+    │   ├── FirstLaunchStagePicker.jsx
+    │   ├── today/
+    │   │   ├── JessNarrativeHero.jsx
+    │   │   ├── PillarsDeck.jsx
+    │   │   ├── KickCounterCard.jsx          (T3 only)
+    │   │   ├── EpdsScreenCard.jsx           (postpartum only)
+    │   │   └── HrtCorrelationCard.jsx       (peri only)
+    │   └── cycle/
+    │       ├── MonthRibbon.jsx              (cycle stages)
+    │       ├── SymptomRibbon.jsx            (peri/meno)
+    │       ├── HrtLogCard.jsx               (peri/meno HRT regimen)
+    │       ├── ContraceptionCard.jsx        (repro / pre-ttc)
+    │       ├── FertileWindowCard.jsx        (TTC)
+    │       ├── BbtChart.jsx                 (shared SVG, extracted by Code)
+    │       ├── PreTtcCards.jsx              (FolicAcid + AMH + SupplementStack)
+    │       ├── SupplementTrackerCard.jsx    (pre-TTC daily compliance)
+    │       ├── DoctorReadyDiaryCard.jsx     (NICE NG23 PDF)
+    │       └── GpExportButton.jsx           (GP / midwife / pre-conception PDF)
+    ├── utils/plannerAdapter.js     ← getPlannerConfig — the single source of truth
+    └── api/base44Client.js         ← base44 SDK init
+```
+
+---
+
+## What NOT to ship without explicit go-ahead
+
+- **Stripe / paywall code** — Plus tier parked until end of project. No watermark wiring, upgrade sheets, Stripe price IDs.
+- **Capacitor / native wrap** — likely needed for App Store IAP but not until paywall question lands.
+- **Investment / financial advice** — never. App is health, not finance.
+- **Auth-flow changes** — no OAuth additions, password resets, account-creation paths without explicit ask.
+- **Emoji codepoints** — never, anywhere in product. Lucide / SVG only.
+
+---
+
+## Quick verification commands
+
+```bash
+# What life stages are wired in plannerAdapter?
+grep -E "^  \"?[a-z-]+\"?: \{" src/utils/plannerAdapter.js
+
+# Which cards render on each Cycle / Today path?
+grep -nE "effectiveLifeStage === |ribbonType ===" src/pages/Planner.jsx
+
+# Which entities does the app touch?
+grep -rnE "base44\\.entities\\.[A-Z][a-zA-Z]+" src/ | grep -oE "base44\\.entities\\.[A-Z][a-zA-Z]+" | sort -u
+
+# Build + test
+npm run build           # must exit 0 before committing
+npx eslint src/         # warnings OK, errors not
+
+# Recent commits
+git log --oneline -20
+```
+
+---
+
+_Sprint 3 section added 2026-05-17 by Cowork. The 2026-05-14 orientation above remains canonical for workflow + agent team; this section is current state + adapter reference._
+
