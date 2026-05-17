@@ -1210,6 +1210,14 @@ export default function Planner() {
               realConditions={realConditions}
               onChange={setDevStageOverride}
               onConditionsChange={setDevConditionsOverride}
+              profileId={profile?.id}
+              onProfileUpdated={(updates) => {
+                // Phase 2 QA-fix-bundle-5 — DB write inside the switcher
+                // confirmed; mirror the change into Planner state so
+                // realLifeStage updates on the very next render (without
+                // waiting for the 6-second poll or focus event).
+                setProfile((p) => p ? { ...p, ...updates } : p);
+              }}
             />
           </div>
 

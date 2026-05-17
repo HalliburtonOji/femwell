@@ -15,6 +15,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import { Layers, X } from "lucide-react";
+import { base44 } from "@/api/base44Client";
 
 export const DEV_STAGE_KEY = "femwell_dev_life_stage";
 // Custom event for same-tab reactivity. The native "storage" event only fires
@@ -32,14 +33,17 @@ export const DEV_CONDITIONS_KEY = "femwell_dev_conditions";
 export const DEV_CONDITIONS_EVENT = "femwell_dev_conditions_change";
 
 const CONDITIONS = [
-  { key: "pcos",            label: "PCOS",            hint: "Cycle prediction paused; metabolic pillars" },
-  { key: "endo",            label: "Endometriosis",   hint: "Pain pillar; pacing voice" },
-  { key: "pmdd",            label: "PMDD",            hint: "Luteal mood support; safety signposts" },
-  { key: "fibroids",        label: "Fibroids",        hint: "Bleeding tracking; iron status nudge" },
-  { key: "thyroid",         label: "Thyroid",         hint: "Energy + temp signal; med-timing nudge" },
-  { key: "hrt",             label: "On HRT",          hint: "HRT log; dosage notes; review cadence" },
-  { key: "cancer-survivor", label: "Cancer survivor", hint: "Induced-menopause aware; opt-in fertility" },
-  { key: "ha",              label: "HA (recovery)",   hint: "Recovery mode; no calories/intensity" },
+  { key: "pcos",                label: "PCOS",                hint: "Cycle prediction paused; metabolic pillars" },
+  { key: "endo",                label: "Endometriosis",       hint: "Pain pillar; pacing voice" },
+  { key: "fibroids",            label: "Fibroids",            hint: "Bleeding tracking; iron status nudge" },
+  { key: "thyroid",             label: "Thyroid",             hint: "Energy + temp signal; med-timing nudge" },
+  { key: "pmdd",                label: "PMDD",                hint: "Luteal mood support; safety signposts" },
+  { key: "diabetes",            label: "Diabetes",            hint: "Glucose-aware nudges; HbA1c reminders" },
+  { key: "hypertension",        label: "Hypertension",        hint: "BP-aware pillar; salt + movement nudge" },
+  { key: "anxiety-depression",  label: "Anxiety / Depression", hint: "Gentle voice; crisis signposts" },
+  { key: "hrt",                 label: "On HRT",              hint: "HRT log; dosage notes; review cadence" },
+  { key: "cancer-survivor",     label: "Cancer survivor",     hint: "Induced-menopause aware; opt-in fertility" },
+  { key: "ha",                  label: "HA (recovery)",       hint: "Recovery mode; no calories/intensity" },
 ];
 
 const STAGES = [
@@ -133,8 +137,31 @@ export function writeDevConditionsOverride(conditions) {
   }
 }
 
-export default function DevStageSwitcher({ effectiveStage, realStage, effectiveConditions = [], realConditions = [], onChange, onConditionsChange }) {
+export default function DevStageSwitcher({
+  effectiveStage,
+  realStage,
+  effectiveConditions = [],
+  realConditions = [],
+  onChange,
+  onConditionsChange,
+  // Phase 2 QA-fix-bundle-5 — DB-write upgrade. profileId comes from
+  // Planner.jsx so we can persist the chosen stage to UserProfile, not
+  // just localStorage. onProfileUpdated lets Planner refresh its profile
+  // state immediately so realLifeStage matches the picked stage on the
+  // very next render.
+  profileId,
+  onProfileUpdated,
+}) {
   const [open, setOpen] = useState(false);
+  // savingStage holds the stage-key currently being written. Used to show
+  // a per-row "Saving…" state and disable other rows during the in-flight
+  // write so we don't race two updates.
+  const [savingStage, setSavingStage] = useState(null);
+  // statusMessage is a transient toast shown inside the panel. The colour
+  // varies by status — green-ish for success, blush for error.
+  const [statusMessage, setStatusMessage] = useState(null);
+  const [statusKind, setStatusKind] = useState("info");
+  const statusTimerRef = useRef(null);
   const panelRef = useRef(null);
 
   // Close panel on outside click.
@@ -151,6 +178,17 @@ export default function DevStageSwitcher({ effectiveStage, realStage, effectiveC
     };
   }, [open]);
 
+  useEffect(() => () => {
+    if (statusTimerRef.current) window.clearTimeout(statusTimerRef.current);
+  }, []);
+
+  const flashStatus = (msg, kind = "info") => {
+    setStatusMessage(msg);
+    setStatusKind(kind);
+    if (statusTimerRef.current) window.clearTimeout(statusTimerRef.current);
+    statusTimerRef.current = window.setTimeout(() => setStatusMessage(null), 4200);
+  };
+
   const overrideActive = !!readDevStageOverride();
   const conditionsOverride = readDevConditionsOverride();
   const conditionsOverrideActive = conditionsOverride !== null;
@@ -160,10 +198,68 @@ export default function DevStageSwitcher({ effectiveStage, realStage, effectiveC
     ? ` +${activeConditions.length}`
     : "";
 
-  const handlePick = (stage) => {
+  // Phase 2 QA-fix-bundle-5 — the canonical write path is now DB + local.
+  // Order:
+  //   1. Save previous localStorage value so we can revert on error.
+  //   2. Optimistic localStorage write — Planner picks up the fast-path
+  //      via the DEV_STAGE_EVENT dispatched inside writeDevStageOverride.
+  //   3. Await the UserProfile.update call so profile.life_stage actually
+  //      changes in the DB; on success, call onProfileUpdated so Planner's
+  //      profile state slice updates without waiting for the 6s poll.
+  //   4. On error, revert localStorage + re-dispatch the event so the UI
+  //      snaps back, then flash an inline error message.
+  const handlePick = async (stage) => {
+    if (savingStage) return; // ignore double-clicks while in-flight
+    const previousOverride = readDevStageOverride() || "";
+
+    // Empty key = "Use my real stage" — clear local override, no DB write.
+    if (!stage) {
+      writeDevStageOverride("");
+      onChange(null);
+      flashStatus("Override cleared — using your real stage on file.", "info");
+      setOpen(false);
+      return;
+    }
+
+    // 1+2. Optimistic local-cache write so the Planner re-renders instantly.
     writeDevStageOverride(stage);
-    onChange(stage || null);
-    setOpen(false);
+    onChange(stage);
+
+    // 3. DB write. If profileId is missing (component mounted without a
+    //    profile in scope), surface a clear error and revert.
+    if (!profileId) {
+      writeDevStageOverride(previousOverride);
+      onChange(previousOverride || null);
+      flashStatus("No profile id — stage saved locally only. Refresh to retry DB write.", "warn");
+      return;
+    }
+    setSavingStage(stage);
+    try {
+      await base44.entities.UserProfile.update(profileId, { life_stage: stage });
+      // Re-dispatch event after the DB confirms so any listener that
+      // missed the optimistic event still sees the final state.
+      try { window.dispatchEvent(new CustomEvent(DEV_STAGE_EVENT, { detail: stage })); } catch { /* silent */ }
+      // Let Planner refresh its profile state immediately so realLifeStage
+      // also reflects the new value (not just devStageOverride).
+      if (typeof onProfileUpdated === "function") {
+        try { onProfileUpdated({ life_stage: stage }); } catch { /* silent */ }
+      }
+      // Broadcast the canonical profile-updated event the Planner's live
+      // re-fetch listener also subscribes to (commit 2e6016b).
+      try { window.dispatchEvent(new Event("femwell:profile-updated")); } catch { /* silent */ }
+      // eslint-disable-next-line no-console
+      console.log("[DevStageSwitcher] Stage updated to:", stage);
+      flashStatus(`Stage updated to ${SHORT_LABEL[stage] || stage}.`, "success");
+      setOpen(false);
+    } catch (err) {
+      writeDevStageOverride(previousOverride);
+      onChange(previousOverride || null);
+      // eslint-disable-next-line no-console
+      console.error("[DevStageSwitcher] Stage update failed:", err);
+      flashStatus(`Stage update failed — ${err?.message || "try again"}.`, "error");
+    } finally {
+      setSavingStage(null);
+    }
   };
 
   const handleToggleCondition = (key) => {
@@ -218,8 +314,33 @@ export default function DevStageSwitcher({ effectiveStage, realStage, effectiveC
           </header>
 
           <p style={panelHint}>
-            Override your real life_stage for testing. Stored in your browser only — no schema change needed. Your real stage on file: <strong style={{ color: "#3A2C1A" }}>{realStage || "not set"}</strong>.
+            Saves to your UserProfile so the Planner reshapes everywhere. Your real stage on file: <strong style={{ color: "#3A2C1A" }}>{realStage || "not set"}</strong>.
           </p>
+
+          {/* Phase 2 QA-fix-bundle-5 — inline status banner (success / error /
+              warn). Auto-dismisses after ~4s via flashStatus. */}
+          {statusMessage && (
+            <div role={statusKind === "error" ? "alert" : "status"} style={{
+              ...statusBanner,
+              background:
+                statusKind === "success" ? "rgba(107,143,90,0.16)"
+              : statusKind === "error"   ? "rgba(212,94,82,0.14)"
+              : statusKind === "warn"    ? "rgba(168,134,75,0.16)"
+              :                            "rgba(58,44,26,0.06)",
+              color:
+                statusKind === "success" ? "#3F6228"
+              : statusKind === "error"   ? "#9A2845"
+              : statusKind === "warn"    ? "#A6862B"
+              :                            "#3A2C1A",
+              borderColor:
+                statusKind === "success" ? "rgba(107,143,90,0.40)"
+              : statusKind === "error"   ? "rgba(212,94,82,0.34)"
+              : statusKind === "warn"    ? "rgba(168,134,75,0.40)"
+              :                            "rgba(58,44,26,0.10)",
+            }}>
+              {statusMessage}
+            </div>
+          )}
 
           <div role="list" style={list}>
             {STAGES.map((s) => {
@@ -227,12 +348,16 @@ export default function DevStageSwitcher({ effectiveStage, realStage, effectiveC
               const isActive = isUseReal
                 ? !overrideActive
                 : effectiveStage === s.key && overrideActive;
+              const isSavingThisRow = savingStage === s.key;
+              const otherRowSaving = savingStage && savingStage !== s.key;
               return (
                 <button
                   key={s.key || "__real__"}
                   role="listitem"
                   type="button"
                   onClick={() => handlePick(s.key)}
+                  disabled={!!savingStage}
+                  aria-busy={isSavingThisRow}
                   style={{
                     ...stageRow,
                     background: isActive ? "#3A2C1A" : "transparent",
@@ -242,9 +367,16 @@ export default function DevStageSwitcher({ effectiveStage, realStage, effectiveC
                     fontFamily: isUseReal
                       ? "'Fraunces', Georgia, serif"
                       : "'Inter', system-ui, sans-serif",
+                    opacity: otherRowSaving ? 0.5 : 1,
+                    cursor: savingStage ? "wait" : "pointer",
                   }}
                 >
                   {s.label}
+                  {isSavingThisRow && (
+                    <span style={{ marginLeft: 8, fontSize: 11, fontWeight: 600, opacity: 0.85 }}>
+                      Saving…
+                    </span>
+                  )}
                 </button>
               );
             })}
@@ -394,6 +526,16 @@ const panelHint = {
   color: "#6B5840",
   lineHeight: 1.5,
   margin: "0 0 10px",
+};
+const statusBanner = {
+  border: "1px solid",
+  borderRadius: 8,
+  padding: "6px 10px",
+  fontSize: 11,
+  fontWeight: 600,
+  fontFamily: "'Inter', system-ui, sans-serif",
+  lineHeight: 1.4,
+  marginBottom: 8,
 };
 const list = {
   display: "flex",
