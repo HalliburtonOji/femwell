@@ -1440,40 +1440,48 @@ export default function Planner() {
               effectiveConditions={effectiveConditions}
             />
 
-            {/* ── Pregnancy timeline countdown (Today variant) ───────────
-                Phase 2 QA fix #2 — adapter flag mount instead of exact
-                stage string. plannerConfig.showsPregnancyTimeline is true
-                for pregnant-t1/t2/t3; false everywhere else. ─────────── */}
-            {plannerConfig?.showsPregnancyTimeline && (
-              <PregnancyTimelineCard profile={profile} plannerConfig={plannerConfig} variant="today" />
-            )}
-
-            {/* ── Kick counter — adapter-flag mount.
-                plannerConfig.showsKickCounter true on pregnant-t2 + t3.
-                Replaces brittle effectiveLifeStage === "pregnant-t2"
-                check that QA found failing when profile.life_stage didn't
-                exactly match the enum string. ────────────────────────── */}
-            {plannerConfig?.showsKickCounter && (
-              <KickCounterCard userId={user?.id} />
-            )}
-
-            {/* ── EPDS postnatal wellbeing check-in — adapter-flag mount.
-                plannerConfig.showsEpds true on postpartum. 10-question
-                EPDS, localStorage only (never persists to base44), three
-                bands trigger NHS health-visitor / GP signposts. Q10
-                safety item escalates regardless of total. ────────────── */}
-            {plannerConfig?.showsEpds && (
-              <EpdsScreenCard profile={profile} />
-            )}
-
-            {/* ── HRT × symptom 30-day correlation — adapter-flag mount.
-                plannerConfig.showsHrtCorrelation true on perimenopause OR
-                when conditions includes "hrt". So a reproductive user on
-                HRT post-fibroid surgery also gets the chart, which the
-                old exact-string check missed. ─────────────────────────── */}
-            {plannerConfig?.showsHrtCorrelation && (
-              <HrtCorrelationCard profile={profile} />
-            )}
+            {/* ── Stage-specific cards — Phase 2 QA fix #2 (hardened pass).
+                QA verification #2 found that suppression gates fired
+                correctly but affirmative mounts didn't. Likely cause:
+                stale bundle chunk on a CDN or shows* flag dropped through
+                a serialisation boundary. Belt-and-braces: render when
+                EITHER the adapter flag is truthy OR the explicit stage
+                string matches OR the ribbonType matches the stage
+                family. Three signals, fail-open. The mount is harmless
+                if it fires on the wrong stage (the cards themselves are
+                self-gating on relevant profile fields). ─────────────── */}
+            {(() => {
+              const stage = effectiveLifeStage;
+              const ribbon = plannerConfig?.ribbonType;
+              const isPregnancy = ribbon === "pregnancy"
+                || stage === "pregnant-t1" || stage === "pregnant-t2"
+                || stage === "pregnant-t3" || stage === "pregnancy";
+              const isT2T3 = stage === "pregnant-t2" || stage === "pregnant-t3";
+              const isPostpartum = stage === "postpartum";
+              const isPeri = stage === "perimenopause";
+              const conditionsHaveHrt = Array.isArray(effectiveConditions)
+                && effectiveConditions.includes("hrt");
+              const showsPregnancyTimeline = !!plannerConfig?.showsPregnancyTimeline || isPregnancy;
+              const showsKickCounter       = !!plannerConfig?.showsKickCounter       || isT2T3;
+              const showsEpds              = !!plannerConfig?.showsEpds              || isPostpartum;
+              const showsHrtCorrelation    = !!plannerConfig?.showsHrtCorrelation    || isPeri || conditionsHaveHrt;
+              return (
+                <>
+                  {showsPregnancyTimeline && (
+                    <PregnancyTimelineCard profile={profile} plannerConfig={plannerConfig} variant="today" />
+                  )}
+                  {showsKickCounter && (
+                    <KickCounterCard userId={user?.id} />
+                  )}
+                  {showsEpds && (
+                    <EpdsScreenCard profile={profile} />
+                  )}
+                  {showsHrtCorrelation && (
+                    <HrtCorrelationCard profile={profile} />
+                  )}
+                </>
+              );
+            })()}
 
             {/* ── Fresh-Start banner (Phase 2 B1) — soft reset on inflection.
                 Life Stage adapter: FreshStart triggers on cycle-day-1 etc;

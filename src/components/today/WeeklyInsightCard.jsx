@@ -1,16 +1,77 @@
 import { useState, useEffect } from "react";
 import { base44 } from "@/api/base44Client";
-import { RefreshCw, ChevronDown, ChevronUp } from "lucide-react";
+import { RefreshCw, ChevronDown, ChevronUp, AlertCircle } from "lucide-react";
 import { subDays, format } from "date-fns";
 import { createPageUrl } from "@/utils";
 import { Link } from "react-router-dom";
 import { getPlannerConfig, isCycleLifeStage } from "@/utils/plannerAdapter";
+
+// ────────────────────────────────────────────────────────────────────────────
+// scrubCycleCopyForNonCycleStage — Phase 2 QA-fix-bundle-3 (#5).
+//
+// Old insights generated before the LIFE STAGE / STAGE GUARD prompt blocks
+// shipped (commit 010ca9f) still contain cycle copy like "you're approaching
+// your luteal phase" on pregnancy / postpartum / menopause accounts. Even
+// after we add stage-aware cache invalidation + regenerate, there's a window
+// of stale insights already saved to base44 that we shouldn't surface as-is.
+//
+// This client-side post-processor scrubs cycle-frame language on non-cycle
+// stages. It's conservative: only fires when isCycleLifeStage is false.
+// Replacements aim to be neutral / stage-appropriate rather than perfect.
+// ────────────────────────────────────────────────────────────────────────────
+function scrubCycleCopyForNonCycleStage(text, lifeStage, conditions) {
+  if (!text) return text;
+  if (isCycleLifeStage(lifeStage, conditions)) return text;
+  // Whole-phrase replacements first (longest matches win).
+  const replacements = [
+    [/approaching your menstrual phase/gi, "moving through this week"],
+    [/approaching your luteal phase/gi,    "moving through this week"],
+    [/approaching your follicular phase/gi,"moving through this week"],
+    [/approaching your ovulatory phase/gi, "moving through this week"],
+    [/approaching your period/gi,          "moving through this week"],
+    [/approaching menstrual phase/gi,      "moving through this week"],
+    [/your luteal phase/gi,                "this week"],
+    [/your follicular phase/gi,            "this week"],
+    [/your ovulatory phase/gi,             "this week"],
+    [/your menstrual phase/gi,             "this week"],
+    [/the luteal phase/gi,                 "this week"],
+    [/the follicular phase/gi,             "this week"],
+    [/the ovulatory phase/gi,              "this week"],
+    [/the menstrual phase/gi,              "this week"],
+    [/luteal phase/gi,                     "this part of your rhythm"],
+    [/follicular phase/gi,                 "this part of your rhythm"],
+    [/ovulatory phase/gi,                  "this part of your rhythm"],
+    [/menstrual phase/gi,                  "this part of your rhythm"],
+    [/your cycle is/gi,                    "your rhythm is"],
+    [/in your cycle/gi,                    "in your rhythm"],
+    [/cycle day \d+/gi,                    "this week"],
+    [/PMS symptoms/gi,                     "your symptoms"],
+    [/PMS\b/gi,                            "symptoms"],
+    [/your period\b/gi,                    "this season"],
+    [/before your period/gi,               "during this season"],
+    [/ovulation\b/gi,                      "the middle of this rhythm"],
+    [/luteal\b/gi,                         "this part of your rhythm"],
+    [/follicular\b/gi,                     "this part of your rhythm"],
+  ];
+  let out = text;
+  for (const [pattern, repl] of replacements) {
+    out = out.replace(pattern, repl);
+  }
+  return out;
+}
 
 export default function WeeklyInsightCard({ user }) {
   const [insight, setInsight] = useState(null);
   const [loading, setLoading] = useState(true);
   const [generating, setGenerating] = useState(false);
   const [expanded, setExpanded] = useState(false);
+  // Phase 2 QA-fix-bundle-3 (#5) — track the user's current stage so we can
+  // detect when a cached insight was generated before the stage flipped.
+  const [currentStage, setCurrentStage] = useState(null);
+  const [currentConditions, setCurrentConditions] = useState([]);
+  // Did the cached insight stage match the current one? When false, the
+  // header gets a "stage changed — regenerate" affordance.
+  const [insightIsStale, setInsightIsStale] = useState(false);
 
   const weekStart = subDays(new Date(), 6).toISOString().split("T")[0];
   const weekEnd = new Date().toISOString().split("T")[0];
@@ -20,14 +81,30 @@ export default function WeeklyInsightCard({ user }) {
   }, [user]);
 
   const loadInsight = async () => {
-    base44.entities.WeeklyInsights.filter({ user_id: user.id }, "-generated_at", 1)
-      .then(insights => {
-        if (insights[0] && insights[0].week_start >= weekStart) {
-          setInsight(insights[0]);
-        }
-      })
-      .catch(() => {})
-      .finally(() => setLoading(false));
+    try {
+      const [insights, profiles] = await Promise.all([
+        base44.entities.WeeklyInsights.filter({ user_id: user.id }, "-generated_at", 1).catch(() => []),
+        base44.entities.UserProfile.filter({ user_id: user.id }, null, 1).catch(() => []),
+      ]);
+      const profile = profiles?.[0] || null;
+      const stage = profile?.life_stage || "reproductive";
+      const conds = profile?.conditions || profile?.condition_flags || [];
+      setCurrentStage(stage);
+      setCurrentConditions(conds);
+      if (insights[0] && insights[0].week_start >= weekStart) {
+        setInsight(insights[0]);
+        // Compare insight's generated_for_stage to current. Insights from
+        // before this commit won't have generated_for_stage — treat them
+        // as stale on non-cycle stages (the prompt at generation time
+        // didn't know about life_stage).
+        const insightStage = insights[0].generated_for_stage || null;
+        const stageMismatch = insightStage && insightStage !== stage;
+        const preStageInsight = !insightStage && !isCycleLifeStage(stage, conds);
+        setInsightIsStale(!!(stageMismatch || preStageInsight));
+      }
+    } finally {
+      setLoading(false);
+    }
   };
 
   const generate = async () => {
@@ -65,7 +142,13 @@ export default function WeeklyInsightCard({ user }) {
       ? "Cycle framing is appropriate for this user."
       : "DO NOT reference cycle phases, ovulation, or 'approaching menstrual phase'. The cycle frame is wrong for this user's life stage — speak only in terms of energy, sleep, recovery, mood, and stage-appropriate concerns.";
 
-    const prompt = `You are a compassionate women's wellness coach. Analyse the following data from the past 7 days (${weekStart} to ${today}) and write a concise, warm "Weekly Wellness Insight" report (3-5 short paragraphs). Highlight patterns, celebrate wins, note any recurring symptoms or habits, and offer 1-2 actionable suggestions for the coming week. Do not diagnose. Be encouraging.
+    const prompt = `You are a compassionate women's wellness coach. Analyse the following data from the past 7 days (${weekStart} to ${today}) and write a concise, warm "Weekly Wellness Insight" report.
+
+CRITICAL FORMATTING RULES:
+- Output 3-5 SHORT paragraphs.
+- Separate paragraphs with a BLANK LINE (two newlines).
+- Each paragraph should be 1-3 sentences max.
+- Do NOT output one long block of prose.
 
 LIFE STAGE: ${lifeStage}
 CONDITIONS: ${conditionsLabel}
@@ -87,37 +170,51 @@ ${recentSymptoms.map(s => `- ${s.date}: ${s.symptom_type} (severity ${s.severity
 CYCLE EVENTS (${recentCycles.length}):
 ${recentCycles.map(c => `- ${c.date}: ${c.type}`).join("\n") || "None logged"}
 
-Write the insight in Markdown with clear sections separated by blank lines (two newlines). Keep it warm, personal, and actionable. Honour the STAGE GUARD above without exception.`;
+Honour the STAGE GUARD above without exception. Highlight patterns, celebrate wins, note any recurring symptoms or habits, and offer 1-2 actionable suggestions for the coming week. Do not diagnose. Be encouraging.`;
 
     const totalDataPoints = recentJournals.length + recentCheckins.length + recentHabits.length + recentSymptoms.length + recentCycles.length;
     if (totalDataPoints < 5) {
-      const text = "You are just getting started. The more you log, the sharper your insights become. Try logging a daily check-in, journaling, or tracking a habit this week — even small entries help build your personal health picture.";
+      const text = "You are just getting started.\n\nThe more you log, the sharper your insights become.\n\nTry logging a daily check-in, journaling, or tracking a habit this week — even small entries help build your personal health picture.";
       const saved = await base44.entities.WeeklyInsights.create({
         user_id: user.id, week_start: weekStart, week_end: weekEnd,
         insight_text: text, generated_at: new Date().toISOString(),
+        generated_for_stage: lifeStage,
       });
       setInsight(saved); setExpanded(true); setGenerating(false);
+      setInsightIsStale(false);
       return;
     }
 
     const result = await base44.integrations.Core.InvokeLLM({ prompt, model: "claude_sonnet_4_6" });
     const text = typeof result === "string" ? result : result?.text || result?.content || JSON.stringify(result);
 
+    // Stamp the stage on the row so we can detect staleness next reload.
     const saved = await base44.entities.WeeklyInsights.create({
       user_id: user.id,
       week_start: weekStart,
       week_end: weekEnd,
       insight_text: text,
       generated_at: new Date().toISOString(),
+      generated_for_stage: lifeStage,
     });
     setInsight(saved);
     setExpanded(true);
     setGenerating(false);
+    setInsightIsStale(false);
   };
 
   if (loading) return null;
   // Don't render an empty card — only show when there's an insight
   if (!insight) return null;
+
+  // Phase 2 QA-fix-bundle-3 (#5) — apply the cycle-copy scrubber for
+  // non-cycle stages BEFORE paragraph splitting so the splitter sees clean
+  // stage-appropriate text.
+  const displayText = scrubCycleCopyForNonCycleStage(
+    insight.insight_text || "",
+    currentStage,
+    currentConditions,
+  );
 
   return (
     <div style={{
@@ -180,6 +277,30 @@ Write the insight in Markdown with clear sections separated by blank lines (two 
         </div>
       </div>
 
+      {/* Phase 2 QA-fix-bundle-3 (#5) — stale-stage banner. Surfaces when
+          the insight was generated against a different life_stage than the
+          user currently has, OR when the insight has no generated_for_stage
+          stamp AND the user is on a non-cycle stage (legacy insights that
+          almost certainly contain cycle copy). Tapping regenerates. */}
+      {insightIsStale && !generating && (
+        <button
+          onClick={generate}
+          style={{
+            width: "100%", marginBottom: 10, padding: "8px 12px",
+            display: "flex", alignItems: "center", gap: 8,
+            background: "rgba(168,134,75,0.10)",
+            border: "1px solid rgba(168,134,75,0.32)",
+            borderRadius: 10, cursor: "pointer", textAlign: "left",
+            fontFamily: "'Inter', sans-serif",
+          }}
+        >
+          <AlertCircle className="w-3.5 h-3.5" style={{ color: "#A6862B", flexShrink: 0 }} />
+          <span style={{ fontSize: 11.5, fontWeight: 600, color: "var(--plum)" }}>
+            Your stage has changed since this insight was written — tap to regenerate.
+          </span>
+        </button>
+      )}
+
       {generating && (
         <div className="flex items-center gap-2 py-3">
           <div className="w-4 h-4 rounded-full border-2 border-t-transparent animate-spin"
@@ -199,18 +320,20 @@ Write the insight in Markdown with clear sections separated by blank lines (two 
             border: "1px solid var(--border-subtle)",
             marginTop: "12px"
           }}>
-            {/* Phase 2 QA fix #6 (hardened) — paragraph split with three
-                fallback tiers so the insight never renders as one wall of
-                text regardless of LLM output shape:
-                  1. Blank-line split (preferred — prompt now requests it).
-                  2. Single-newline split (LLM forgot the blank line).
-                  3. Sentence-triple chunking (LLM returned one giant blob).
-                Plus a defensive cap — if any single resulting paragraph
-                is >360 chars (one comma-spliced paragraph from older
-                insights pre-blank-line-prompt), split it again into
-                sentence pairs. */}
+            {/* Phase 2 QA-fix-bundle-3 (#4 hardened) — paragraph rendering
+                with three layers of insurance so the wall-of-text bug can't
+                survive any LLM output shape:
+                  1. Stage-aware scrub on the text first (already applied
+                     to displayText above).
+                  2. Multi-tier split: \n{2,} → \n → sentence-triple.
+                  3. Hard cap: any paragraph >280 chars gets re-split into
+                     sentence pairs.
+                  4. Each <p> renders with whiteSpace:"pre-line" so any
+                     surviving newline inside still becomes a visible
+                     break, AND a <br/> after each sentence so even a
+                     fully-collapsed paragraph still wraps. */}
             {(() => {
-              const text = (insight.insight_text || "").trim();
+              const text = (displayText || "").trim();
               const cleanInline = (s) => s.replace(/^#+\s*/, "").replace(/\*\*/g, "").trim();
               let paras = text.split(/\n{2,}/).map(cleanInline).filter(Boolean);
               if (paras.length < 2) paras = text.split(/\n/).map(cleanInline).filter(Boolean);
@@ -221,9 +344,8 @@ Write the insight in Markdown with clear sections separated by blank lines (two 
                   paras.push(sentences.slice(i, i + 3).join(" "));
                 }
               }
-              // Hard cap on paragraph length — re-split any monster into
-              // sentence pairs so the eye gets a break every 2 sentences.
-              const MAX_PARA_CHARS = 360;
+              // Cap paragraph length — re-split monsters into sentence pairs.
+              const MAX_PARA_CHARS = 280;
               const finalParas = [];
               for (const p of paras) {
                 if (p.length <= MAX_PARA_CHARS) { finalParas.push(p); continue; }
@@ -232,15 +354,31 @@ Write the insight in Markdown with clear sections separated by blank lines (two 
                   finalParas.push(ss.slice(i, i + 2).join(" "));
                 }
               }
-              return finalParas.map((para, i) => (
-                <p key={i} style={{
-                  fontSize: "13px", lineHeight: 1.65,
-                  color: "var(--plum)", marginBottom: "10px",
-                  fontFamily: "'Inter', sans-serif"
-                }}>
-                  {para}
-                </p>
-              ));
+              return finalParas.map((para, i) => {
+                // Belt-and-braces: split each para on sentence boundaries
+                // and inject <br/><br/> after every 2 sentences so the eye
+                // gets a break even if all the CSS / whitespace logic fails.
+                const sentences = para.split(/(?<=[.!?])\s+/).filter(Boolean);
+                const chunks = [];
+                for (let j = 0; j < sentences.length; j += 2) {
+                  chunks.push(sentences.slice(j, j + 2).join(" "));
+                }
+                return (
+                  <p key={i} style={{
+                    fontSize: "13px", lineHeight: 1.65,
+                    color: "var(--plum)", marginBottom: "12px",
+                    fontFamily: "'Inter', sans-serif",
+                    whiteSpace: "pre-line",
+                  }}>
+                    {chunks.map((c, k) => (
+                      <span key={k}>
+                        {c}
+                        {k < chunks.length - 1 && <><br/><br/></>}
+                      </span>
+                    ))}
+                  </p>
+                );
+              });
             })()}
           </div>
           <Link to={createPageUrl("Pulse")} style={{
@@ -261,7 +399,7 @@ Write the insight in Markdown with clear sections separated by blank lines (two 
           display: "-webkit-box", WebkitLineClamp: 2,
           WebkitBoxOrient: "vertical", overflow: "hidden"
         }}>
-          {insight.insight_text?.replace(/[#*_]/g, "").slice(0, 120)}…
+          {displayText?.replace(/[#*_]/g, "").slice(0, 120)}…
         </p>
       )}
 
