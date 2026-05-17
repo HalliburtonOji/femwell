@@ -869,11 +869,31 @@ export default function Planner() {
       }
     };
     window.addEventListener("storage", onStorage);
+    // Phase 2 QA-fix-bundle-10 — 500ms poll on localStorage as a final
+    // defensive layer. Catches the case where someone (QA, devtools
+    // console, a future surface) writes femwell_dev_life_stage directly
+    // via localStorage.setItem without going through writeDevStage. The
+    // raw setItem doesn't fire store subscribers OR the native "storage"
+    // event (which only fires in OTHER tabs), so without this poll the
+    // override is invisible to React until something else triggers a
+    // re-render. 500ms cadence is cheap (one localStorage.getItem) and
+    // imperceptible for a preview-mode dev tool.
+    const pollRef = window.setInterval(() => {
+      const current = readDevStage();
+      setDevStageOverride((prev) => {
+        if (current !== (prev || "")) {
+          setStageTick((t) => t + 1);
+          return current || null;
+        }
+        return prev;
+      });
+    }, 500);
     console.log("[Planner] devStageStore listeners attached. Initial:", readDevStage(), readDevConditions());
     return () => {
       unsubStage();
       unsubCond();
       window.removeEventListener("storage", onStorage);
+      window.clearInterval(pollRef);
     };
   }, []);
   const realLifeStage = profile?.life_stage ?? null;
