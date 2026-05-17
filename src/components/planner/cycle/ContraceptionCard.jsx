@@ -169,6 +169,22 @@ export default function ContraceptionCard({ profile }) {
           Log every method you've tried so side-effects, switches, and notes accumulate over time —
           better than a stateless dropdown. Lands as soon as the schema migration ships.
         </p>
+        <button
+          type="button"
+          onClick={() => setShowHistory(true)}
+          style={historyBtn}
+          aria-label="Preview contraception history view"
+        >
+          <Clock size={11} strokeWidth={2.0} />
+          <span>Preview history view</span>
+        </button>
+        {showHistory && (
+          <ContraceptionHistoryView
+            logs={[]}
+            activeId={null}
+            onClose={() => setShowHistory(false)}
+          />
+        )}
       </section>
     );
   }
@@ -293,10 +309,23 @@ export default function ContraceptionCard({ profile }) {
           One row per method you've tried — Femwell remembers the side-effects and the why-we-switched
           so you don't have to.
         </p>
-        <button type="button" onClick={() => setEditing(true)} style={primaryBtn}>
-          <Plus size={13} strokeWidth={2.4} />
-          <span>Log contraception</span>
-        </button>
+        <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+          <button type="button" onClick={() => setEditing(true)} style={primaryBtn}>
+            <Plus size={13} strokeWidth={2.4} />
+            <span>Log contraception</span>
+          </button>
+          <button type="button" onClick={() => setShowHistory(true)} style={historyBtn} aria-label="Preview history view">
+            <Clock size={11} strokeWidth={2.0} />
+            <span>View history</span>
+          </button>
+        </div>
+        {showHistory && (
+          <ContraceptionHistoryView
+            logs={[]}
+            activeId={null}
+            onClose={() => setShowHistory(false)}
+          />
+        )}
       </section>
     );
   }
