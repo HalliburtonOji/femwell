@@ -22,4 +22,5 @@ If you see "This session is being continued from a previous conversation that ra
 
 ## CURRENT STATE (update after each sprint):
 - Sprint 1–4: complete and committed
-- Sprint 5: in progress (5 builds — see last messages for specs)
+- Sprint 5: complete and committed
+- Sprint 6: ready for specs
