@@ -1,0 +1,37 @@
+{
+  "name": "OpkLog",
+  "type": "object",
+  "properties": {
+    "date": {
+      "type": "string",
+      "format": "date",
+      "description": "Date of the OPK test (YYYY-MM-DD)"
+    },
+    "result": {
+      "type": "string",
+      "enum": [
+        "negative",
+        "peak",
+        "positive"
+      ],
+      "description": "OPK test result"
+    },
+    "brand": {
+      "type": "string",
+      "description": "Optional brand/type of OPK test used"
+    },
+    "notes": {
+      "type": "string",
+      "description": "Optional notes about the test or results"
+    },
+    "user_id": {
+      "type": "string",
+      "description": "User who owns this OPK log entry"
+    }
+  },
+  "required": [
+    "date",
+    "result",
+    "user_id"
+  ]
+}
