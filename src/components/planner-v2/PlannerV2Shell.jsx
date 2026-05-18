@@ -1,24 +1,26 @@
 // ─────────────────────────────────────────────────────────────────────────────
 // PlannerV2Shell — production renderer of the signed-off UnifiedPlannerDemo.
 //
-// This file is a direct copy of src/components/UnifiedPlannerDemo.jsx with
-// three minimal changes:
-//   1. Function renamed from UnifiedPlannerDemo to PlannerV2Shell.
-//   2. Mock data constants are overridden by real props passed from
-//      Planner.jsx; variable names are preserved so the render tree is
-//      visually unchanged.
-//   3. <StageRow ... /> and <ConditionRow ... /> are inserted directly
-//      after the BodyTodayRow section so users with a life stage or
-//      condition see the matching extra row in place. Reproductive users
-//      with no conditions see exactly the demo's 9 rows in order.
+// Direct copy of UnifiedPlannerDemo.jsx with:
+//   1. Function renamed UnifiedPlannerDemo → PlannerV2Shell.
+//   2. MOCK constants used as fallback; real props from Planner.jsx
+//      override them.
+//   3. <StageRow ... /> and <ConditionRow ... /> inserted after the
+//      BodyTodayRow section.
+//   4. The demo's inline Stage / Phase chip pickers replaced by a
+//      single discreet "DEV" pill in the top-right corner of the
+//      hero. The pill is gated by `import.meta.env.DEV` OR `?dev=1`
+//      so real users never see it; the panel inside contains stage
+//      chips + condition checkboxes that write to
+//      `localStorage.femwell_dev_stage` and
+//      `localStorage.femwell_dev_conditions`.
 //
 // Brand rule: NO emoji. Lucide icons + custom SVG only.
 // ─────────────────────────────────────────────────────────────────────────────
 
-import React, { useState } from "react";
-import { Sparkles } from "lucide-react";
+import React, { useState, useEffect, useRef } from "react";
+import { Sparkles, Layers, X, Check } from "lucide-react";
 
-// The real, shared planner-v2 row components.
 import JessHeroRow       from "@/components/planner-v2/JessHeroRow";
 import BodyTodayRow      from "@/components/planner-v2/BodyTodayRow";
 import TimeOfDayRow      from "@/components/planner-v2/TimeOfDayRow";
@@ -33,25 +35,271 @@ import ConditionRow      from "@/components/planner-v2/ConditionRows";
 
 import { C } from "@/components/planner-v2/tokens";
 
-// ─────────────────────────────────────────────────────────────────────────────
-// Mock data — used as a fallback when real props aren't passed (e.g.
-// before the user/profile load). Shaped exactly like the production
-// payloads PlannerV2Shell receives from Planner.jsx.
-// ─────────────────────────────────────────────────────────────────────────────
+// ─── Dev visibility gate ────────────────────────────────────────────────────
+// Show the DEV drawer only when:
+//   - we're in a Vite dev build (import.meta.env.DEV === true), OR
+//   - the URL contains ?dev=1
+// In production builds without ?dev=1, the pill never renders.
+
+function shouldShowDev() {
+  try {
+    if (import.meta.env && import.meta.env.DEV) return true;
+    if (typeof window === "undefined") return false;
+    const params = new URLSearchParams(window.location.search);
+    return params.get("dev") === "1";
+  } catch { return false; }
+}
+
+// ─── Dev localStorage helpers ───────────────────────────────────────────────
+
+function readDevStage() {
+  try { return localStorage.getItem("femwell_dev_stage") || ""; }
+  catch { return ""; }
+}
+function writeDevStage(v) {
+  try {
+    if (v) localStorage.setItem("femwell_dev_stage", v);
+    else   localStorage.removeItem("femwell_dev_stage");
+  } catch { /* silent */ }
+}
+function readDevConditions() {
+  try {
+    const raw = localStorage.getItem("femwell_dev_conditions");
+    if (!raw) return [];
+    const parsed = JSON.parse(raw);
+    return Array.isArray(parsed) ? parsed : [];
+  } catch { return []; }
+}
+function writeDevConditions(arr) {
+  try {
+    if (arr && arr.length > 0) localStorage.setItem("femwell_dev_conditions", JSON.stringify(arr));
+    else                       localStorage.removeItem("femwell_dev_conditions");
+  } catch { /* silent */ }
+}
+
+// ─── Stage + condition catalogues ──────────────────────────────────────────
+
+const STAGES_DEV = [
+  { id: "",                label: "Use real" },
+  { id: "reproductive",    label: "Reproductive" },
+  { id: "teen",            label: "Teen" },
+  { id: "pre-ttc",         label: "Pre-TTC" },
+  { id: "ttc",             label: "TTC" },
+  { id: "pregnant-t1",     label: "Pregnant · T1" },
+  { id: "pregnant-t2",     label: "Pregnant · T2" },
+  { id: "pregnant-t3",     label: "Pregnant · T3" },
+  { id: "postpartum",      label: "Postpartum" },
+  { id: "perimenopause",   label: "Perimenopause" },
+  { id: "menopause",       label: "Menopause" },
+  { id: "post-menopause",  label: "Post-menopause" },
+];
+
+const CONDITIONS_DEV = [
+  { key: "pmdd",                label: "PMDD" },
+  { key: "pcos",                label: "PCOS" },
+  { key: "endo",                label: "Endometriosis" },
+  { key: "fibroids",            label: "Fibroids" },
+  { key: "thyroid",             label: "Thyroid" },
+  { key: "adenomyosis",         label: "Adenomyosis" },
+  { key: "anxiety-depression",  label: "Anxiety / Depression" },
+  { key: "me-cfs",              label: "ME / CFS" },
+];
+
+// ─── DEV drawer ─────────────────────────────────────────────────────────────
+// Small pill in the top-right of the hero band that opens a panel of
+// stage chips + condition checkboxes. Writes are persisted to
+// localStorage and the parent state updates so the shell re-renders.
+
+function DevDrawer({ devStage, devConditions, onChangeStage, onChangeConditions }) {
+  const [open, setOpen] = useState(false);
+  const wrapRef = useRef(null);
+
+  // Close on outside click.
+  useEffect(() => {
+    if (!open) return;
+    function onDocClick(e) {
+      if (wrapRef.current && !wrapRef.current.contains(e.target)) setOpen(false);
+    }
+    document.addEventListener("mousedown", onDocClick);
+    return () => document.removeEventListener("mousedown", onDocClick);
+  }, [open]);
+
+  function pickStage(id) {
+    writeDevStage(id);
+    onChangeStage(id);
+  }
+  function toggleCondition(key) {
+    const next = devConditions.includes(key)
+      ? devConditions.filter((c) => c !== key)
+      : [...devConditions, key];
+    writeDevConditions(next);
+    onChangeConditions(next);
+  }
+
+  const stageOverrideActive = !!devStage;
+  const condCount = devConditions.length;
+  const shortStage = stageOverrideActive
+    ? (STAGES_DEV.find((s) => s.id === devStage)?.label || devStage)
+    : "Real";
+
+  return (
+    <div ref={wrapRef} style={{ position: "relative", display: "inline-block" }}>
+      <button
+        type="button"
+        onClick={() => setOpen((v) => !v)}
+        aria-expanded={open}
+        aria-label="Open dev controls"
+        style={{
+          display: "inline-flex",
+          alignItems: "center",
+          gap: 5,
+          padding: "5px 11px",
+          borderRadius: 9999,
+          border: "1px solid rgba(58,44,26,0.18)",
+          background: stageOverrideActive || condCount > 0 ? "#3A2C1A" : "rgba(58,44,26,0.10)",
+          color: stageOverrideActive || condCount > 0 ? "#F4EDDB" : "#3A2C1A",
+          cursor: "pointer",
+          fontFamily: "'Inter', system-ui, sans-serif",
+          minHeight: 28,
+        }}
+      >
+        <Layers size={11} strokeWidth={2.2} />
+        <span style={{ fontSize: 8.5, fontWeight: 700, letterSpacing: "0.16em", opacity: 0.7 }}>DEV</span>
+        <span style={{ fontSize: 10.5, fontWeight: 700, letterSpacing: "0.04em" }}>
+          {shortStage}{condCount > 0 ? ` · ${condCount}c` : ""}
+        </span>
+      </button>
+
+      {open && (
+        <div role="dialog" aria-label="Dev controls" style={{
+          position: "absolute",
+          top: "calc(100% + 8px)",
+          right: 0,
+          zIndex: 50,
+          background: "#FBF6E6",
+          border: "1px solid rgba(58,44,26,0.12)",
+          borderRadius: 14,
+          boxShadow: "0 8px 24px rgba(58,44,26,0.16)",
+          padding: 14,
+          minWidth: 280,
+          maxWidth: "calc(100vw - 32px)",
+        }}>
+          <header style={{
+            display: "flex", alignItems: "flex-start", justifyContent: "space-between",
+            gap: 10, marginBottom: 10,
+          }}>
+            <div>
+              <div style={{
+                fontSize: 9, letterSpacing: "0.20em", textTransform: "uppercase",
+                color: C.goldDeep, fontWeight: 700,
+              }}>DEV ONLY</div>
+              <div style={{
+                fontFamily: "'Fraunces', Georgia, serif",
+                fontSize: 16, fontWeight: 500, color: C.espresso,
+              }}>Preview stage + conditions</div>
+            </div>
+            <button
+              type="button"
+              onClick={() => setOpen(false)}
+              aria-label="Close dev controls"
+              style={{
+                width: 26, height: 26, borderRadius: 9999,
+                background: "rgba(58,44,26,0.08)", border: "none",
+                color: C.espresso, cursor: "pointer",
+                display: "inline-flex", alignItems: "center", justifyContent: "center", padding: 0,
+              }}
+            >
+              <X size={13} strokeWidth={2.2} />
+            </button>
+          </header>
+
+          {/* Stage chips */}
+          <div style={{
+            fontSize: 9, letterSpacing: "0.18em", textTransform: "uppercase",
+            color: C.muted, fontWeight: 700, marginBottom: 6,
+          }}>STAGE</div>
+          <div role="list" style={{ display: "flex", flexWrap: "wrap", gap: 4, marginBottom: 14 }}>
+            {STAGES_DEV.map((s) => {
+              const active = s.id === devStage || (!devStage && s.id === "");
+              return (
+                <button
+                  key={s.id || "__real__"}
+                  role="listitem"
+                  type="button"
+                  onClick={() => pickStage(s.id)}
+                  style={{
+                    padding: "5px 11px", borderRadius: 9999,
+                    fontFamily: "'Inter', system-ui, sans-serif",
+                    fontSize: 11, fontWeight: 600, cursor: "pointer",
+                    border: active ? `1px solid ${C.espresso}` : `1px solid rgba(58,44,26,0.16)`,
+                    background: active ? C.espresso : "transparent",
+                    color: active ? C.cream : C.espresso,
+                  }}
+                >{s.label}</button>
+              );
+            })}
+          </div>
+
+          {/* Condition checkboxes */}
+          <div style={{
+            fontSize: 9, letterSpacing: "0.18em", textTransform: "uppercase",
+            color: C.muted, fontWeight: 700, marginBottom: 6,
+            paddingTop: 6, borderTop: "1px dashed rgba(58,44,26,0.10)",
+          }}>CONDITIONS</div>
+          <div role="list" style={{ display: "flex", flexDirection: "column", gap: 4 }}>
+            {CONDITIONS_DEV.map((c) => {
+              const on = devConditions.includes(c.key);
+              return (
+                <button
+                  key={c.key}
+                  role="listitem"
+                  type="button"
+                  aria-pressed={on}
+                  onClick={() => toggleCondition(c.key)}
+                  style={{
+                    display: "flex", alignItems: "center", gap: 8,
+                    padding: "7px 10px", borderRadius: 10,
+                    border: `1px solid ${on ? "#A6862B" : "rgba(58,44,26,0.10)"}`,
+                    background: on ? "rgba(166,134,43,0.16)" : "transparent",
+                    color: C.espresso,
+                    fontFamily: "'Inter', system-ui, sans-serif",
+                    fontSize: 12, fontWeight: 600, cursor: "pointer",
+                    textAlign: "left",
+                  }}
+                >
+                  <span style={{
+                    width: 16, height: 16, borderRadius: 4,
+                    background: on ? "#A6862B" : "transparent",
+                    border: `1.5px solid ${on ? "#A6862B" : "rgba(58,44,26,0.22)"}`,
+                    display: "inline-flex", alignItems: "center", justifyContent: "center",
+                    flexShrink: 0,
+                  }}>
+                    {on && <Check size={11} style={{ color: "#fff" }} />}
+                  </span>
+                  <span style={{ flex: 1 }}>{c.label}</span>
+                </button>
+              );
+            })}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+// ─── Mock data fallback ─────────────────────────────────────────────────────
 
 const MOCK = {
   phase:     "luteal",
   cycleDay:  25,
   stage:     "reproductive",
 
-  // Profile shim for ScheduleCycleRow → MonthRibbon mount.
   userProfile: {
     last_period_start_date: "2026-04-24",
     cycle_avg_length: 28,
     period_length: 5,
   },
 
-  // JessHeroRow
   jessMessage: "Late luteal asks for softness. The week before a bleed is when you over-give. Save edges for tomorrow.",
   astraReading: {
     title: "Your luteal reading",
@@ -59,7 +307,6 @@ const MOCK = {
   },
   weeklyInsight: "Three of your last four luteal weeks ended with a low-mood day on cycle day 26. This is biological, not personal.",
 
-  // ScheduleCycleRow — schedule preview events
   events: [
     { id: "e1", hour: 10, title: "Yoga · gentle flow",            duration: 45, done: false },
     { id: "e2", hour: 13, title: "Lunch with Anna",               duration: 60, done: false },
@@ -67,7 +314,6 @@ const MOCK = {
     { id: "e4", hour: 19, title: "Magnesium + wind-down",         duration: 15, done: false },
   ],
 
-  // NourishmentRow
   macros:    { protein: 48, carbs: 142, fat: 38, proteinTarget: 80, carbsTarget: 200, fatTarget: 65 },
   hydration: { glasses: 5, target: 8 },
   meals: [
@@ -81,11 +327,9 @@ const MOCK = {
     { name: "Cacao + tahini bites",      time: "10 min", tone: C.gold  },
   ],
 
-  // InsightsRow
   intention:  "Edges. Slow over fast.",
   moodHistory: [4, 3, 3, 2, 2, 3, 3],
 
-  // CareRow
   medications: [
     { id: "m1", name: "Iron bisglycinate", dose: "25mg",  time: "with breakfast", taken: true  },
     { id: "m2", name: "Vitamin D3",        dose: "1000IU", time: "morning",        taken: false },
@@ -100,7 +344,6 @@ const MOCK = {
     { id: "y3", label: "Bloating",     severity: 2 },
   ],
 
-  // TonightRow
   tomorrowPhase: "luteal",
   tomorrowEvents: [
     { id: "tm1", hour: 9,  title: "Quiet morning · journal" },
@@ -109,25 +352,13 @@ const MOCK = {
   ],
 };
 
-// Stage selector — lets you flip to pregnancy / peri etc. to verify the
-// stage-aware variants in the row components.
-const STAGES = [
-  { id: "reproductive",  label: "Reproductive" },
-  { id: "pregnant-t1",   label: "Pregnant · T1" },
-  { id: "pregnant-t2",   label: "Pregnant · T2" },
-  { id: "pregnant-t3",   label: "Pregnant · T3" },
-  { id: "perimenopause", label: "Perimenopause" },
-  { id: "postpartum",    label: "Postpartum" },
-];
+// ─── Demo header (visual chrome) ────────────────────────────────────────────
+// Matches UnifiedPlannerDemo's hero band exactly. The bottom Stage/Phase
+// chip row from the demo is removed — its function moves into the DEV
+// drawer pill which only renders when ?dev=1 (or in dev builds).
 
-const PHASES = ["menstrual", "follicular", "ovulatory", "luteal"];
-
-// ─────────────────────────────────────────────────────────────────────────────
-// Demo header — eyebrow + dev controls. Lets a tester flip stage / phase
-// and watch every row reshape itself.
-// ─────────────────────────────────────────────────────────────────────────────
-
-function DemoHeader({ stage, setStage, phase, setPhase }) {
+function DemoHeader({ devStage, devConditions, onChangeStage, onChangeConditions }) {
+  const showDev = shouldShowDev();
   return (
     <div style={{
       padding: "24px 16px 14px",
@@ -136,12 +367,25 @@ function DemoHeader({ stage, setStage, phase, setPhase }) {
     }}>
       <div style={{ maxWidth: 640, margin: "0 auto" }}>
         <div style={{
-          display: "flex", alignItems: "center", gap: 6,
-          fontSize: 10, letterSpacing: "0.18em", textTransform: "uppercase",
-          color: C.muted, fontWeight: 700,
-          fontFamily: "'Inter', system-ui, sans-serif",
+          display: "flex", alignItems: "center", justifyContent: "space-between", gap: 10,
         }}>
-          <Sparkles size={11} style={{ color: C.gold }} /> Unified Planner · v2 row test harness
+          <div style={{
+            display: "flex", alignItems: "center", gap: 6,
+            fontSize: 10, letterSpacing: "0.18em", textTransform: "uppercase",
+            color: C.muted, fontWeight: 700,
+            fontFamily: "'Inter', system-ui, sans-serif",
+            flex: 1, minWidth: 0,
+          }}>
+            <Sparkles size={11} style={{ color: C.gold }} /> Unified Planner · v2 row test harness
+          </div>
+          {showDev && (
+            <DevDrawer
+              devStage={devStage}
+              devConditions={devConditions}
+              onChangeStage={onChangeStage}
+              onChangeConditions={onChangeConditions}
+            />
+          )}
         </div>
         <h1 style={{
           fontFamily: "'Fraunces', Georgia, serif",
@@ -160,43 +404,12 @@ function DemoHeader({ stage, setStage, phase, setPhase }) {
           behind a feature flag (<code>femwell_planner_v2</code>) — see
           PlannerV2Shell.
         </p>
-
-        <div style={{ display: "flex", flexWrap: "wrap", gap: 16, marginTop: 16 }}>
-          <DevControl label="Stage" value={stage} setValue={setStage} options={STAGES} />
-          <DevControl label="Phase" value={phase} setValue={setPhase}
-                      options={PHASES.map((p) => ({ id: p, label: p[0].toUpperCase() + p.slice(1) }))} />
-        </div>
       </div>
     </div>
   );
 }
 
-function DevControl({ label, value, setValue, options }) {
-  return (
-    <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
-      <span style={{
-        fontSize: 9, letterSpacing: "0.20em", textTransform: "uppercase",
-        color: C.goldDeep, fontWeight: 700,
-      }}>{label}</span>
-      <div style={{ display: "flex", flexWrap: "wrap", gap: 4 }}>
-        {options.map((opt) => (
-          <button key={opt.id} onClick={() => setValue(opt.id)} style={{
-            padding: "5px 11px", borderRadius: 9999,
-            fontFamily: "'Inter', system-ui, sans-serif",
-            fontSize: 11, fontWeight: 600, cursor: "pointer",
-            border: value === opt.id ? `1px solid ${C.espresso}` : `1px solid rgba(58,44,26,0.16)`,
-            background: value === opt.id ? C.espresso : "transparent",
-            color: value === opt.id ? C.cream : C.espresso,
-          }}>{opt.label}</button>
-        ))}
-      </div>
-    </div>
-  );
-}
-
-// ─────────────────────────────────────────────────────────────────────────────
-// Component
-// ─────────────────────────────────────────────────────────────────────────────
+// ─── Component ──────────────────────────────────────────────────────────────
 
 export default function PlannerV2Shell({
   profile,
@@ -213,19 +426,19 @@ export default function PlannerV2Shell({
   mealPlan,
 } = {}) {
 
-  // Initial stage/phase prefer real props over MOCK. The Stage / Phase
-  // dev pickers in DemoHeader still flip the local state so a tester
-  // can preview every variant without leaving the page.
-  const [stage, setStage] = useState(effectiveLifeStage || profile?.life_stage || MOCK.stage);
-  const [phase, setPhase] = useState(selectedPhase || MOCK.phase);
+  // Dev state — sourced from localStorage. Updates re-render the shell
+  // so the matching stage row + condition row appears immediately.
+  const [devStage, setDevStage] = useState(() => readDevStage());
+  const [devConditions, setDevConditions] = useState(() => readDevConditions());
 
-  // Real-data fallbacks. Variable names match the demo so the render
-  // tree below is byte-identical to UnifiedPlannerDemo.jsx — only the
-  // values change when real data is present.
+  // Effective stage and phase. Dev override wins, then real props,
+  // then profile, then MOCK fallback.
+  const stage = devStage || effectiveLifeStage || profile?.life_stage || MOCK.stage;
+  const phase = selectedPhase || MOCK.phase;
   const cycleDay = selectedCycleDay || MOCK.cycleDay;
   const userProfile = profile || MOCK.userProfile;
 
-  // Schedule events: derive from real personalTasks/dailyPlan when present.
+  // Schedule events from real personalTasks if present, else MOCK.
   let events = MOCK.events;
   if (Array.isArray(personalTasks) && personalTasks.length > 0) {
     events = personalTasks
@@ -247,7 +460,7 @@ export default function PlannerV2Shell({
       });
   }
 
-  // Meals: derive from real mealPlan when present (lowercase weekday key).
+  // Meals from real mealPlan if present.
   let meals = MOCK.meals;
   const today = selectedDay || new Date();
   const weekday = today.toLocaleDateString("en-GB", { weekday: "long" }).toLowerCase();
@@ -260,7 +473,7 @@ export default function PlannerV2Shell({
     ];
   }
 
-  // Medications: real medication entities if present.
+  // Medications from real entities if present.
   let realMeds = MOCK.medications;
   if (Array.isArray(medications) && medications.length > 0) {
     realMeds = medications.map((m, i) => ({
@@ -276,18 +489,7 @@ export default function PlannerV2Shell({
   const PHASE_NEXT = { menstrual: "follicular", follicular: "ovulatory", ovulatory: "luteal", luteal: "menstrual" };
   const tomorrowPhase = PHASE_NEXT[phase] || MOCK.tomorrowPhase;
 
-  // Effective conditions: DEV switcher writes to localStorage; falls back
-  // to the prop (which Planner.jsx populates) and then to profile.conditions.
-  const devConditionsRaw = (() => {
-    try { return localStorage.getItem("femwell_dev_conditions"); } catch { return null; }
-  })();
-  let devConditions = [];
-  if (devConditionsRaw) {
-    try {
-      const parsed = JSON.parse(devConditionsRaw);
-      if (Array.isArray(parsed)) devConditions = parsed;
-    } catch { /* silent */ }
-  }
+  // Effective conditions: dev override > prop > profile > [].
   const effectiveConditions = devConditions.length > 0
     ? devConditions
     : (Array.isArray(effectiveConditionsProp) && effectiveConditionsProp.length > 0
@@ -302,13 +504,15 @@ export default function PlannerV2Shell({
       fontFamily: "'Inter', system-ui, sans-serif",
     }}>
       <DemoHeader
-        stage={stage} setStage={setStage}
-        phase={phase} setPhase={setPhase}
+        devStage={devStage}
+        devConditions={devConditions}
+        onChangeStage={setDevStage}
+        onChangeConditions={setDevConditions}
       />
 
       <div style={{ maxWidth: 640, margin: "0 auto", paddingTop: 18 }}>
 
-        {/* 1 — Jess hero · phase-aware narrative slider */}
+        {/* 1 — Jess hero */}
         <JessHeroRow
           phase={phase}
           cycleDay={cycleDay}
@@ -317,15 +521,14 @@ export default function PlannerV2Shell({
           weeklyInsight={MOCK.weeklyInsight}
         />
 
-        {/* 2 — Body today · capacity ring · smart view · cycle zone */}
+        {/* 2 — Body today */}
         <BodyTodayRow
           stage={stage}
           phase={phase}
           cycleDay={cycleDay}
         />
 
-        {/* 2.5 — Stage-specific row · only renders for stages that need
-              dedicated cards. Reproductive users see nothing here. */}
+        {/* 2.5 — Stage-specific row */}
         <StageRow
           stage={stage}
           profile={profile}
@@ -333,10 +536,7 @@ export default function PlannerV2Shell({
           cycleDay={cycleDay}
         />
 
-        {/* 2.6 — Condition-specific row · renders the FIRST matching
-              condition (PMDD · PCOS · Endo · Fibroids · Thyroid ·
-              Adenomyosis · Anxiety/Depression · ME-CFS). DEV switcher
-              writes to femwell_dev_conditions; falls back to profile. */}
+        {/* 2.6 — Condition-specific row */}
         <ConditionRow
           conditions={effectiveConditions}
           profile={profile}
@@ -344,7 +544,7 @@ export default function PlannerV2Shell({
           cycleDay={cycleDay}
         />
 
-        {/* 3 — Morning / Afternoon / Evening — one tall slider */}
+        {/* 3 — Morning / Afternoon / Evening */}
         <TimeOfDayRow
           stage={stage}
           phase={phase}
@@ -358,13 +558,13 @@ export default function PlannerV2Shell({
           userProfile={userProfile}
         />
 
-        {/* 5 — Rituals — pass-through to RitualBundlesCarousel */}
+        {/* 5 — Rituals */}
         <RitualsRow
           currentPhase={phase}
           selectedDateStr={new Date().toISOString().slice(0, 10)}
         />
 
-        {/* 6 — Nourishment — macros + hydration + meal plan + phase recipes */}
+        {/* 6 — Nourishment */}
         <NourishmentRow
           macros={MOCK.macros}
           hydration={MOCK.hydration}
@@ -373,14 +573,14 @@ export default function PlannerV2Shell({
           phase={phase}
         />
 
-        {/* 7 — Mind & insight — intention + Astra + mood + breathwork + Inner Season */}
+        {/* 7 — Mind & insight */}
         <InsightsRow
           intention={MOCK.intention}
           phase={phase}
           moodHistory={MOCK.moodHistory}
         />
 
-        {/* 8 — Care — meds & supplements + symptom + body scan + GP report */}
+        {/* 8 — Care */}
         <CareRow
           medications={realMeds}
           supplements={MOCK.supplements}
@@ -388,7 +588,7 @@ export default function PlannerV2Shell({
           stage={stage}
         />
 
-        {/* 9 — Tonight & tomorrow — intentions + tomorrow phase + reflection */}
+        {/* 9 — Tonight & tomorrow */}
         <TonightRow
           tomorrowPhase={tomorrowPhase}
           tomorrowEvents={MOCK.tomorrowEvents}
