@@ -38,6 +38,10 @@ import {
 // Real production cycle calendar — same component Planner.jsx mounts on the
 // Cycle tab. Imported so the demo doesn't drift from production visuals.
 import MonthRibbon from "@/components/planner/cycle/MonthRibbon";
+// Universal logger — replaces the demo's inline FAB + Quick Add. The FAB
+// is now mounted at the app root, so the demo just calls openLogger() from
+// every "+ Add" affordance instead of rendering its own.
+import { openLogger } from "@/components/UniversalLogger";
 
 // ── Tokens ─────────────────────────────────────────────────────────────────
 const C = {
@@ -218,7 +222,6 @@ function phaseForCalDay(d) {
 // Main
 // ─────────────────────────────────────────────────────────────────────────────
 export default function UnifiedPlannerDemo() {
-  const [addOpen, setAddOpen] = useState(false);
   const [scheduleOpen, setScheduleOpen] = useState(false);
   const [cycleOpen, setCycleOpen] = useState(false);
   const [dayDetail, setDayDetail] = useState(null);
@@ -301,10 +304,6 @@ export default function UnifiedPlannerDemo() {
       <DemoFooter />
 
       <PlanADaySheet open={planOpen} onClose={() => setPlanOpen(false)} />
-
-      <AddFAB onClick={() => setAddOpen(true)} />
-
-      <AddPopup open={addOpen} onClose={() => setAddOpen(false)} />
 
       <FullScheduleOverlay
         open={scheduleOpen}
@@ -789,7 +788,10 @@ function YourDayCard({ variant }) {
           </ul>
         </div>
       ))}
-      <button style={{ ...yourDayAddBtn, color: variant.accent, borderColor: `${variant.accent}55` }}>
+      <button
+        onClick={() => openLogger()}
+        style={{ ...yourDayAddBtn, color: variant.accent, borderColor: `${variant.accent}55` }}
+      >
         <Plus size={12} /> Add
       </button>
     </article>
@@ -1948,7 +1950,7 @@ function MedicationsCard() {
           </CheckboxRow>
         ))}
       </ul>
-      <button style={addMedBtn}><Plus size={11} /> Add medication</button>
+      <button onClick={() => openLogger("med")} style={addMedBtn}><Plus size={11} /> Add medication</button>
     </article>
   );
 }
@@ -2245,7 +2247,7 @@ function DayDetailSheet({ iso, onClose }) {
         )}
         <div style={{ display: "flex", gap: 8, marginTop: 14 }}>
           <button style={dayPrimaryBtn}>Plan this day</button>
-          {!isFuture && <button style={daySecondaryBtn}>Log symptoms</button>}
+          {!isFuture && <button onClick={() => openLogger("symptom")} style={daySecondaryBtn}>Log symptoms</button>}
         </div>
       </div>
     </div>
