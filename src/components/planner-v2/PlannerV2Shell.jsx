@@ -1304,40 +1304,288 @@ function YourDaySection({ user }) {
 }
 
 // ─── 5. Your Body Today ─────────────────────────────────────────────────────
+// Four slider cards (Mood · Energy · Sleep · Symptoms) wired to the
+// DailyCheckins + SymptomLogs entities. The section component fetches both
+// once for today and threads the values down to each card; per-field updates
+// flow back through callbacks that upsert DailyCheckins (mirroring the legacy
+// mood_score / energy_level fields used elsewhere).
 
-function BodyTodayCard() {
+const SLEEP_OPTIONS = [5, 5.5, 6, 6.5, 7, 7.5, 8, 8.5, 9];
+
+function bodyIconChip(tone) {
+  return {
+    width: 28, height: 28, borderRadius: 9,
+    background: `${tone}1F`, color: tone,
+    display: "inline-flex", alignItems: "center", justifyContent: "center",
+    flexShrink: 0,
+  };
+}
+
+function levelButton(active, accent) {
+  return {
+    flex: 1, height: 30, borderRadius: 9,
+    background: active ? accent : C.cream,
+    color: active ? C.cream : C.espresso,
+    border: `1px solid ${active ? accent : "rgba(58,44,26,0.10)"}`,
+    fontFamily: "'Inter', system-ui, sans-serif",
+    fontSize: 13, fontWeight: 700, cursor: "pointer",
+  };
+}
+
+function MoodCard({ value, onChange }) {
+  const has = value != null && !Number.isNaN(value);
   return (
-    <article style={cardStyle}>
-      <span style={kicker}>YOUR BODY TODAY</span>
-      <h3 style={cardTitle}>Mood · energy · sleep · symptoms</h3>
-      <div style={{ display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: 8, marginTop: 4 }}>
-        {[
-          { label: "Mood",     Icon: Smile,    note: "Tap to log" },
-          { label: "Energy",   Icon: Battery,  note: "Tap to log" },
-          { label: "Sleep",    Icon: MoonStar, note: "Tap to log" },
-          { label: "Symptoms", Icon: Heart,    note: "Tap to log" },
-        ].map((t) => (
-          <div key={t.label} style={{
-            background: C.cream, borderRadius: 10,
-            border: "1px solid rgba(58,44,26,0.06)",
-            padding: "10px 12px",
-            display: "flex", flexDirection: "column", gap: 4,
-          }}>
-            <t.Icon size={14} style={{ color: C.muted }} />
-            <span style={{ fontSize: 12.5, fontWeight: 600, color: C.espresso }}>{t.label}</span>
-            <span style={{ fontSize: 10.5, color: C.muted, fontStyle: "italic" }}>{t.note}</span>
-          </div>
+    <article style={{ ...cardStyle, minHeight: 160 }}>
+      <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+        <span style={bodyIconChip(C.rose)}><Smile size={13} /></span>
+        <span style={kicker}>MOOD</span>
+      </div>
+      {has ? (
+        <p style={{ ...cardSub, margin: "2px 0 0" }}>
+          <strong style={{ color: C.espresso, fontWeight: 700 }}>{value}</strong> / 5
+        </p>
+      ) : (
+        <p style={{ ...cardSub, margin: "2px 0 0", fontStyle: "italic" }}>Tap to log</p>
+      )}
+      <div style={{ display: "flex", gap: 4, marginTop: "auto" }}>
+        {[1, 2, 3, 4, 5].map((n) => (
+          <button key={n} type="button" onClick={() => onChange(n)} aria-pressed={value === n} style={levelButton(value === n, C.rose)}>
+            {n}
+          </button>
         ))}
       </div>
-      <p style={placeholderHint}>[skeleton] Each tile reads / writes today's CheckIn entity.</p>
     </article>
   );
 }
 
-function YourBodyTodaySection() {
+function EnergyCard({ value, onChange }) {
+  const has = value != null && !Number.isNaN(value);
+  return (
+    <article style={{ ...cardStyle, minHeight: 160 }}>
+      <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+        <span style={bodyIconChip(C.gold)}><Battery size={13} /></span>
+        <span style={kicker}>ENERGY</span>
+      </div>
+      {has ? (
+        <p style={{ ...cardSub, margin: "2px 0 0" }}>
+          <strong style={{ color: C.espresso, fontWeight: 700 }}>{value}</strong> / 5
+        </p>
+      ) : (
+        <p style={{ ...cardSub, margin: "2px 0 0", fontStyle: "italic" }}>Tap to log</p>
+      )}
+      <div style={{ display: "flex", gap: 4, marginTop: "auto" }}>
+        {[1, 2, 3, 4, 5].map((n) => (
+          <button key={n} type="button" onClick={() => onChange(n)} aria-pressed={value === n} style={levelButton(value === n, C.gold)}>
+            {n}
+          </button>
+        ))}
+      </div>
+    </article>
+  );
+}
+
+function SleepCard({ value, onChange }) {
+  const has = value != null && !Number.isNaN(Number(value));
+  return (
+    <article style={{ ...cardStyle, minHeight: 160 }}>
+      <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+        <span style={bodyIconChip(C.plum)}><MoonStar size={13} /></span>
+        <span style={kicker}>SLEEP</span>
+      </div>
+      {has ? (
+        <p style={{ ...cardSub, margin: "2px 0 0" }}>
+          <strong style={{ color: C.espresso, fontWeight: 700 }}>{Number(value)}</strong> hrs
+        </p>
+      ) : (
+        <p style={{ ...cardSub, margin: "2px 0 0", fontStyle: "italic" }}>Tap to log</p>
+      )}
+      <div style={{
+        display: "flex", flexWrap: "wrap", gap: 4, marginTop: "auto",
+      }}>
+        {SLEEP_OPTIONS.map((h) => {
+          const active = Number(value) === h;
+          return (
+            <button key={h} type="button" onClick={() => onChange(h)} aria-pressed={active} style={{
+              padding: "4px 9px", borderRadius: 9999,
+              background: active ? C.plum : C.cream,
+              color: active ? C.cream : C.espresso,
+              border: `1px solid ${active ? C.plum : "rgba(58,44,26,0.10)"}`,
+              fontFamily: "'Inter', system-ui, sans-serif",
+              fontSize: 11.5, fontWeight: 700, cursor: "pointer",
+            }}>{h}</button>
+          );
+        })}
+      </div>
+    </article>
+  );
+}
+
+function SymptomsCard({ symptoms, onAdd }) {
+  const [adding, setAdding] = useState(false);
+  const [draft, setDraft] = useState("");
+  const [saving, setSaving] = useState(false);
+  const inputRef = useRef(null);
+  useEffect(() => { if (adding && inputRef.current) { try { inputRef.current.focus(); } catch {} } }, [adding]);
+
+  async function confirmAdd() {
+    const name = draft.trim();
+    if (!name || saving) return;
+    setSaving(true);
+    try {
+      await onAdd(name);
+      setDraft("");
+      setAdding(false);
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  return (
+    <article style={{ ...cardStyle, minHeight: 160 }}>
+      <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+        <span style={bodyIconChip(C.sage)}><Heart size={13} /></span>
+        <span style={kicker}>SYMPTOMS</span>
+      </div>
+
+      {(!symptoms || symptoms.length === 0) ? (
+        <p style={{ ...cardSub, margin: "2px 0 0", fontStyle: "italic" }}>No symptoms logged</p>
+      ) : (
+        <div style={{ display: "flex", flexWrap: "wrap", gap: 4, marginTop: 4 }}>
+          {symptoms.map((s) => (
+            <span key={s.id} style={{
+              fontSize: 11, fontWeight: 600, color: C.espresso,
+              padding: "4px 10px", borderRadius: 9999,
+              background: `${C.sage}22`,
+              border: `1px solid ${C.sage}55`,
+            }}>{s.symptom_type || "Symptom"}</span>
+          ))}
+        </div>
+      )}
+
+      <div style={{ marginTop: "auto" }}>
+        {adding ? (
+          <div style={{ display: "flex", gap: 4 }}>
+            <input
+              ref={inputRef}
+              type="text"
+              value={draft}
+              onChange={(e) => setDraft(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === "Enter") confirmAdd();
+                if (e.key === "Escape") { setAdding(false); setDraft(""); }
+              }}
+              placeholder="Symptom name…"
+              style={{
+                flex: 1, padding: "5px 10px", borderRadius: 9999,
+                border: "1px solid rgba(58,44,26,0.18)",
+                background: C.cream, color: C.espresso,
+                fontFamily: "'Inter', system-ui, sans-serif",
+                fontSize: 11.5, outline: "none", minWidth: 0,
+              }}
+            />
+            <button
+              type="button"
+              onClick={confirmAdd}
+              disabled={saving || !draft.trim()}
+              style={{
+                padding: "5px 10px", borderRadius: 9999,
+                background: C.espresso, color: C.cream, border: "none",
+                fontSize: 10.5, fontWeight: 700,
+                cursor: saving || !draft.trim() ? "default" : "pointer",
+                opacity: saving || !draft.trim() ? 0.5 : 1, flexShrink: 0,
+              }}
+            >Add</button>
+          </div>
+        ) : (
+          <button
+            type="button"
+            onClick={() => setAdding(true)}
+            style={{ ...ctaPill, marginTop: 0, borderColor: `${C.sage}55`, color: C.espresso }}
+          >
+            <Plus size={11} /> Add symptom
+          </button>
+        )}
+      </div>
+    </article>
+  );
+}
+
+function YourBodyTodaySection({ user }) {
+  const [checkin, setCheckin] = useState(null);
+  const [symptoms, setSymptoms] = useState([]);
+  const todayStr = useMemo(() => new Date().toISOString().split("T")[0], []);
+
+  useEffect(() => {
+    let cancelled = false;
+    if (!user?.id) return;
+    (async () => {
+      try {
+        const [checkins, syms] = await Promise.all([
+          base44.entities.DailyCheckins.filter({ user_id: user.id, date: todayStr }, "-updated_at", 1).catch(() => []),
+          base44.entities.SymptomLogs.filter({ user_id: user.id, date: todayStr }, "-created_date", 50).catch(() => []),
+        ]);
+        if (cancelled) return;
+        setCheckin(Array.isArray(checkins) && checkins[0] ? checkins[0] : null);
+        setSymptoms(Array.isArray(syms) ? syms : []);
+      } catch {
+        if (!cancelled) { setCheckin(null); setSymptoms([]); }
+      }
+    })();
+    return () => { cancelled = true; };
+  }, [user?.id, todayStr]);
+
+  async function updateField(field, value) {
+    if (!user?.id) return;
+    const prev = checkin;
+    const optimistic = { ...(checkin || {}), [field]: value };
+    if (field === "mood") optimistic.mood_score = value;
+    if (field === "energy") optimistic.energy_level = value;
+    setCheckin(optimistic);
+    try {
+      const mirror = {};
+      if (field === "mood") mirror.mood_score = value;
+      if (field === "energy") mirror.energy_level = value;
+      if (checkin?.id) {
+        await base44.entities.DailyCheckins.update(checkin.id, {
+          [field]: value, ...mirror, updated_at: new Date().toISOString(),
+        });
+      } else {
+        const created = await base44.entities.DailyCheckins.create({
+          user_id: user.id, date: todayStr,
+          [field]: value, ...mirror, updated_at: new Date().toISOString(),
+        });
+        if (created?.id) setCheckin(created);
+      }
+    } catch {
+      setCheckin(prev);
+    }
+  }
+
+  async function addSymptom(name) {
+    if (!user?.id) return;
+    try {
+      const created = await base44.entities.SymptomLogs.create({
+        user_id: user.id,
+        date: todayStr,
+        symptom_type: name,
+        severity: 2,
+      });
+      if (created?.id) setSymptoms((prev) => [...prev, created]);
+    } catch {
+      // silent
+    }
+  }
+
+  const moodValue   = checkin?.mood ?? checkin?.mood_score ?? null;
+  const energyValue = checkin?.energy ?? checkin?.energy_level ?? null;
+  const sleepValue  = checkin?.sleep_hours ?? null;
+
   return (
     <SliderRow label="Your body today">
-      <BodyTodayCard />
+      <MoodCard   value={moodValue}   onChange={(v) => updateField("mood", v)} />
+      <EnergyCard value={energyValue} onChange={(v) => updateField("energy", v)} />
+      <SleepCard  value={sleepValue}  onChange={(v) => updateField("sleep_hours", v)} />
+      <SymptomsCard symptoms={symptoms} onAdd={addSymptom} />
     </SliderRow>
   );
 }
@@ -1554,7 +1802,7 @@ export default function PlannerV2Shell({
         <YourDaySection user={user} />
 
         {/* 5 — Your Body Today */}
-        <YourBodyTodaySection />
+        <YourBodyTodaySection user={user} />
 
         {/* 6 — Stage Row (life-stage-specific cards from StageRows.jsx) */}
         <StageRow
