@@ -370,10 +370,18 @@ function greetingFor(hour) {
   return "Resting well";
 }
 
+// Mirrors src/pages/Today.jsx → extractDisplayName.
+// Priority: profile.display_name (use as-is, e.g. "Test Halli") →
+// user.full_name first token → sanitised email prefix → null.
 function firstNameFrom(user, profile) {
-  const raw = (user && (user.full_name || user.name)) || (profile && (profile.full_name || profile.name)) || "";
-  if (!raw || typeof raw !== "string") return "";
-  return raw.trim().split(/\s+/)[0] || "";
+  if (profile && profile.display_name) return profile.display_name;
+  if (user && user.full_name) return user.full_name.split(" ")[0];
+  if (user && user.email) {
+    const prefix = user.email.split("@")[0];
+    const words = prefix.split(/[0-9_.\-]+/).filter(Boolean);
+    if (words[0]) return words[0].charAt(0).toUpperCase() + words[0].slice(1).toLowerCase();
+  }
+  return "";
 }
 
 function JessHero({ phase, cycleDay, profile, user }) {
