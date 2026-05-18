@@ -268,25 +268,29 @@ export default function UnifiedPlannerDemo() {
       <Row label="Mind & insight">
         <IntentionCard />
         <AstraCard />
+        <MoodMentalHealthCard />
+        <BreathworkCard />
+        <CyclePsychologyCard />
       </Row>
 
       <Row label="Nourishment">
-        <MealPlannerCard />
-        <EatForPhaseCard />
+        <MacroTrackerCard />
+        <HydrationCard />
+        <AIMealPlanCard />
+        <PhaseRecipesCard />
       </Row>
 
       <Row label="Care">
-        <MedicationsCard />
-        <SupplementsCard />
+        <MedsAndSuppsCard />
+        <SymptomLogCard />
+        <BodyScanCard />
+        <GPReportCardSmall />
       </Row>
 
       <Row label="Tonight">
         <TonightReflectionCard />
-        <SleepTargetCard />
-      </Row>
-
-      <Row label="Records">
-        <GPReportCard />
+        <TomorrowPreviewCard />
+        <CycleReflectionCard />
       </Row>
 
       <DemoFooter />
@@ -1366,6 +1370,506 @@ function AstraCard() {
         </div>
       )}
     </>
+  );
+}
+
+// ── Mind & Insight extras (Mood / Breathwork / Cycle psych) ──────────────
+function MoodMentalHealthCard() {
+  const moodDots = [
+    { v: 3, label: "T" }, { v: 4, label: "W" }, { v: 3, label: "T" },
+    { v: 2, label: "F" }, { v: 2, label: "S" }, { v: 3, label: "S" }, { v: 3, label: "M" },
+  ];
+  const colorFor = (v) => v >= 4 ? C.sage : v >= 3 ? C.gold : C.blush;
+  const [carrying, setCarrying] = useState("");
+  const [relief, setRelief] = useState("");
+  return (
+    <article style={cardStyle}>
+      <span style={kicker}>MOOD & MENTAL HEALTH</span>
+      <h3 style={cardTitle}>How are you really feeling?</h3>
+      <div style={moodWeekRow}>
+        {moodDots.map((d, i) => (
+          <span key={i} style={moodDotCol}>
+            <span style={{ ...moodDot, background: colorFor(d.v) }} />
+            <span style={moodDotLabel}>{d.label}</span>
+          </span>
+        ))}
+      </div>
+      <p style={tipText}>Luteal can bring emotional intensity — this is biological, not personal.</p>
+      <label style={miniInputLabel}>
+        <span style={miniLabel}>WHAT ARE YOU CARRYING TODAY?</span>
+        <input type="text" value={carrying} onChange={(e) => setCarrying(e.target.value)} placeholder="…" style={miniInput} />
+      </label>
+      <label style={miniInputLabel}>
+        <span style={miniLabel}>WHAT WOULD FEEL LIKE RELIEF?</span>
+        <input type="text" value={relief} onChange={(e) => setRelief(e.target.value)} placeholder="…" style={miniInput} />
+      </label>
+      <button style={talkJessBtn}>
+        <Sparkles size={11} style={{ color: C.gold }} /> Talk to Jess <ChevronRight size={11} />
+      </button>
+    </article>
+  );
+}
+
+function BreathworkCard() {
+  const patterns = [
+    { id: "box",    name: "Box breathing",   pattern: "4-4-4-4", duration: "4 min", purpose: "Calm" },
+    { id: "478",    name: "4-7-8 breathing", pattern: "4-7-8",   duration: "5 min", purpose: "Sleep" },
+    { id: "sigh",   name: "Cyclic sighing",  pattern: "2-1",     duration: "3 min", purpose: "Stress relief" },
+  ];
+  const [active, setActive] = useState(null);
+  return (
+    <article style={cardStyle}>
+      <span style={kicker}>BREATHWORK</span>
+      <h3 style={cardTitle}>Centre yourself</h3>
+      <div style={{ display: "flex", flexDirection: "column", gap: 6, marginTop: 4 }}>
+        {patterns.map((p) => (
+          <button key={p.id} onClick={() => setActive(active === p.id ? null : p.id)} style={{
+            ...breathwork,
+            background: active === p.id ? `${C.gold}1F` : C.cream,
+            borderColor: active === p.id ? C.gold : "rgba(58,44,26,0.08)",
+          }}>
+            <div style={{ flex: 1, minWidth: 0, textAlign: "left" }}>
+              <div style={breathName}>{p.name}</div>
+              <div style={breathMeta}>{p.pattern} · {p.duration} · {p.purpose}</div>
+            </div>
+            {active === p.id ? <BreathOrb /> : <ChevronRight size={12} style={{ color: C.muted }} />}
+          </button>
+        ))}
+      </div>
+      <p style={tipText}>Luteal — try 4-7-8 tonight for sleep.</p>
+    </article>
+  );
+}
+
+function BreathOrb() {
+  return (
+    <>
+      <style>{`@keyframes fwBreathe { 0%,100% { transform: scale(0.7); } 50% { transform: scale(1.0); } }`}</style>
+      <span style={{
+        width: 24, height: 24, borderRadius: 9999,
+        background: C.gold, opacity: 0.7,
+        animation: "fwBreathe 4000ms ease-in-out infinite",
+        display: "inline-block",
+      }} />
+    </>
+  );
+}
+
+function CyclePsychologyCard() {
+  const seasonNames = {
+    menstrual: "Inner Winter", follicular: "Inner Spring",
+    ovulatory: "Inner Summer", luteal: "Inner Autumn",
+  };
+  const seasonChars = {
+    menstrual:  ["Energy turns inward", "Boundaries feel natural", "Rest is the work"],
+    follicular: ["Curiosity rises", "New ideas land easily", "Energy feels lighter"],
+    ovulatory:  ["Verbal sharpness peaks", "Confidence is high", "Visibility lands well"],
+    luteal:     ["Reflection sharpens", "Boundaries feel natural", "Inner critic may get loud"],
+  };
+  return (
+    <article style={cardStyle}>
+      <span style={kicker}>CYCLE PSYCHOLOGY</span>
+      <h3 style={cardTitle}>Your inner season</h3>
+      <div style={{ display: "flex", alignItems: "center", gap: 10, padding: "10px 12px", borderRadius: 12, background: `${PHASE_DEEP[profile.phase]}1F`, border: `1px solid ${PHASE_DEEP[profile.phase]}33` }}>
+        <span style={{ width: 12, height: 12, borderRadius: 9999, background: PHASE_DEEP[profile.phase] }} />
+        <div>
+          <div style={{ fontFamily: "'Fraunces', Georgia, serif", fontSize: 16, fontWeight: 500, color: C.espresso }}>
+            {profile.phase[0].toUpperCase() + profile.phase.slice(1)} · {seasonNames[profile.phase]}
+          </div>
+        </div>
+      </div>
+      <ul style={{ ...bulletList, gap: 5, marginTop: 8 }}>
+        {seasonChars[profile.phase].map((c) => (
+          <li key={c} style={bulletLine}><span style={bulletDot} />{c}</li>
+        ))}
+      </ul>
+      <p style={{ ...tipText, fontStyle: "italic" }}>This is normal. You are not broken.</p>
+      <button style={astraOpenBtn}>Learn more about your phase <ChevronRight size={12} /></button>
+    </article>
+  );
+}
+
+// ── Nourishment (4 new cards) ─────────────────────────────────────────────
+function MacroTrackerCard() {
+  const macros = [
+    { label: "Protein", value: 62, target: 80, tone: C.sage,  unit: "g" },
+    { label: "Carbs",   value: 145, target: 200, tone: C.gold,  unit: "g" },
+    { label: "Fat",     value: 48, target: 65, tone: C.blush, unit: "g" },
+  ];
+  return (
+    <article style={cardStyle}>
+      <span style={kicker}>MACRO TRACKER</span>
+      <h3 style={cardTitle}>Today's plate</h3>
+      <div style={macroRingRow}>
+        {macros.map((m) => {
+          const R = 24, CIRC = 2 * Math.PI * R;
+          const pct = Math.min(1, m.value / m.target);
+          const offset = CIRC * (1 - pct);
+          return (
+            <div key={m.label} style={macroCol}>
+              <svg width={64} height={64} viewBox="0 0 64 64">
+                <circle cx={32} cy={32} r={R} fill="none" stroke={C.faint} strokeWidth={5} />
+                <circle cx={32} cy={32} r={R} fill="none" stroke={m.tone} strokeWidth={5}
+                  strokeLinecap="round" strokeDasharray={CIRC} strokeDashoffset={offset}
+                  transform="rotate(-90 32 32)" />
+                <text x={32} y={36} textAnchor="middle" fontFamily="'Fraunces', Georgia, serif" fontSize={15} fontWeight="500" fill={C.espresso}>{m.value}</text>
+              </svg>
+              <div style={macroLabel}>{m.value}/{m.target}{m.unit}</div>
+              <div style={macroSub}>{m.label}</div>
+            </div>
+          );
+        })}
+      </div>
+      <button style={astraOpenBtn}>Log a meal <ChevronRight size={12} /></button>
+    </article>
+  );
+}
+
+function HydrationCard() {
+  const [glasses, setGlasses] = useState(5);
+  const target = 8;
+  return (
+    <article style={cardStyle}>
+      <span style={kicker}>HYDRATION</span>
+      <div style={{ display: "flex", alignItems: "center", gap: 12, marginTop: 4 }}>
+        <Droplets size={32} style={{ color: C.espresso, flexShrink: 0 }} />
+        <div style={{ flex: 1 }}>
+          <div style={hydrationCount}>{glasses} <span style={{ fontSize: 13, fontWeight: 600, color: C.muted }}>of {target} glasses</span></div>
+        </div>
+      </div>
+      <div style={hydroGlassRow}>
+        {Array.from({ length: target }).map((_, i) => (
+          <span key={i} style={{
+            ...hydroGlassDot,
+            background: i < glasses ? "#60B4FA" : "rgba(58,44,26,0.08)",
+            borderColor: i < glasses ? "#60B4FA" : "rgba(58,44,26,0.18)",
+          }} />
+        ))}
+      </div>
+      <div style={hydroBtnRow}>
+        <button onClick={() => setGlasses((g) => Math.max(0, g - 1))} style={hydroAdjustBtn}>−</button>
+        <button onClick={() => setGlasses((g) => Math.min(target, g + 1))} style={{ ...hydroAdjustBtn, background: C.espresso, color: C.cream }}>+</button>
+      </div>
+      <p style={tipText}>Luteal phase — aim for 2.5L, bloating can mask thirst.</p>
+    </article>
+  );
+}
+
+function AIMealPlanCard() {
+  const meals = [
+    { label: "Breakfast", text: "Eggs + spinach + sourdough · iron + B12 for luteal energy" },
+    { label: "Lunch",     text: "Roast salmon, sweet potato, kale · anti-inflammatory + Mg" },
+    { label: "Dinner",    text: "Turmeric chicken stew + brown rice · warming + magnesium-rich" },
+  ];
+  return (
+    <article style={cardStyle}>
+      <div style={cardHeadRow}>
+        <span style={kicker}>AI MEAL PLAN</span>
+        <span style={astraTag}>Powered by Jess</span>
+      </div>
+      <h3 style={cardTitle}>Today's plan <Sparkles size={14} style={{ color: C.gold, verticalAlign: -1 }} /></h3>
+      <ul style={{ ...bulletList, gap: 8, marginTop: 4 }}>
+        {meals.map((m) => (
+          <li key={m.label} style={aiMealRow}>
+            <div style={aiMealLabel}>{m.label}</div>
+            <div style={aiMealText}>{m.text}</div>
+          </li>
+        ))}
+      </ul>
+      <button style={{ ...astraOpenBtn, color: C.goldDeep }}>
+        <Sparkles size={11} /> Regenerate <ChevronRight size={11} />
+      </button>
+    </article>
+  );
+}
+
+function PhaseRecipesCard() {
+  const recipes = [
+    { name: "Turmeric salmon",       time: "20 min", tone: C.blush },
+    { name: "Roasted root + lentil bowl", time: "30 min", tone: C.gold  },
+    { name: "Magnesium magic dahl",  time: "25 min", tone: C.sage  },
+  ];
+  return (
+    <article style={cardStyle}>
+      <span style={kicker}>PHASE RECIPES · LUTEAL</span>
+      <h3 style={cardTitle}>For your phase</h3>
+      <p style={cardSub}>Anti-inflammatory, warming, magnesium-rich.</p>
+      <ul style={{ ...bulletList, gap: 6, marginTop: 4 }}>
+        {recipes.map((r) => (
+          <li key={r.name} style={recipeRow}>
+            <span style={{ ...recipeImg, background: `${r.tone}33` }}>
+              <Utensils size={12} style={{ color: r.tone }} />
+            </span>
+            <div style={{ flex: 1, minWidth: 0 }}>
+              <div style={recipeName}>{r.name}</div>
+              <div style={recipeTime}>{r.time}</div>
+            </div>
+            <ChevronRight size={12} style={{ color: C.muted }} />
+          </li>
+        ))}
+      </ul>
+      <button style={astraOpenBtn}>View all recipes <ChevronRight size={12} /></button>
+    </article>
+  );
+}
+
+// ── Care: merged Meds+Supps · Symptom log · Body scan · small GP card ────
+function MedsAndSuppsCard() {
+  const [meds, setMeds] = useState(initialStack.meds);
+  const [supps, setSupps] = useState([
+    { id: "om3", text: "Omega-3", done: false, when: "with breakfast" },
+    { id: "mg",  text: "Magnesium glycinate", done: false, when: "evening" },
+  ]);
+  function toggleMed(id) { setMeds((ms) => ms.map((m) => m.id === id ? { ...m, done: !m.done } : m)); }
+  function toggleSupp(id) { setSupps((ss) => ss.map((s) => s.id === id ? { ...s, done: !s.done } : s)); }
+  const allMedsDone = meds.every((m) => m.done);
+  return (
+    <article style={cardStyle}>
+      <div style={cardHeadRow}>
+        <h3 style={{ ...cardTitle, margin: 0 }}>Medications &amp; Supplements</h3>
+        {allMedsDone && <span style={allDoneChip}><Check size={11} /> Meds done</span>}
+      </div>
+      <Section name="MEDICATIONS">
+        {meds.map((m) => (
+          <CheckboxRow key={m.id} checked={m.done} onChange={() => toggleMed(m.id)} text={m.text}>
+            <span style={medTimeChip}>{m.time}</span>
+          </CheckboxRow>
+        ))}
+      </Section>
+      <Section name="SUPPLEMENTS">
+        {supps.map((s) => (
+          <CheckboxRow key={s.id} checked={s.done} onChange={() => toggleSupp(s.id)} text={s.text}>
+            <span style={medTimeChip}>{s.when}</span>
+          </CheckboxRow>
+        ))}
+      </Section>
+      <button style={addMedBtn}><Plus size={11} /> Add</button>
+    </article>
+  );
+}
+
+const SYMPTOMS = [
+  "Cramps", "Bloating", "Headache", "Fatigue", "Mood dip",
+  "Breast tenderness", "Spotting", "Brain fog", "Insomnia",
+  "Skin changes", "Other",
+];
+
+function SymptomLogCard() {
+  const [selected, setSelected] = useState(new Set());
+  const [saved, setSaved] = useState(false);
+  function toggle(s) {
+    setSelected((p) => {
+      const n = new Set(p);
+      if (n.has(s)) n.delete(s); else n.add(s);
+      return n;
+    });
+  }
+  function save() {
+    if (selected.size === 0) return;
+    setSaved(true);
+    setTimeout(() => setSaved(false), 2000);
+  }
+  return (
+    <article style={cardStyle}>
+      <span style={kicker}>SYMPTOM LOG</span>
+      <h3 style={cardTitle}>Log a symptom</h3>
+      <div style={chipBowl}>
+        {SYMPTOMS.map((s) => {
+          const on = selected.has(s);
+          return (
+            <button key={s} onClick={() => toggle(s)} style={{
+              ...softChip,
+              background: on ? `${C.gold}1F` : C.cream,
+              border: on ? `1px solid ${C.gold}` : "1px solid rgba(58,44,26,0.10)",
+              color: on ? C.goldDeep : C.espresso,
+              cursor: "pointer",
+            }}>
+              {s}
+            </button>
+          );
+        })}
+      </div>
+      {saved && <span style={savedChip}><Check size={11} style={{ color: C.sage }} /> {selected.size} symptom{selected.size === 1 ? "" : "s"} logged</span>}
+      <button onClick={save} disabled={selected.size === 0} style={{
+        ...modalSaveBtn, alignSelf: "flex-start", marginTop: 6,
+        opacity: selected.size === 0 ? 0.4 : 1,
+        cursor: selected.size === 0 ? "not-allowed" : "pointer",
+      }}>Save {selected.size > 0 ? `(${selected.size})` : ""}</button>
+    </article>
+  );
+}
+
+function BodyScanCard() {
+  const [pain, setPain] = useState(2);
+  const [crash, setCrash] = useState(3);
+  const [emo, setEmo] = useState(3);
+  const Slider = ({ value, set, lo, hi }) => (
+    <div style={scanRow}>
+      <span style={scanLabel}>{lo}</span>
+      <div style={scanDots}>
+        {[1,2,3,4,5].map((v) => (
+          <button key={v} onClick={() => set(v)} style={{
+            ...scanDot,
+            background: v === value ? C.espresso : "transparent",
+            borderColor: v === value ? C.espresso : "rgba(58,44,26,0.22)",
+          }} />
+        ))}
+      </div>
+      <span style={scanLabel}>{hi}</span>
+    </div>
+  );
+  return (
+    <article style={cardStyle}>
+      <span style={kicker}>BODY SCAN</span>
+      <h3 style={cardTitle}>Quick body check</h3>
+      <p style={miniLabel}>PAIN / DISCOMFORT</p>
+      <Slider value={pain} set={setPain} lo="None" hi="Severe" />
+      <p style={miniLabel}>ENERGY CRASH</p>
+      <Slider value={crash} set={setCrash} lo="None" hi="Total" />
+      <p style={miniLabel}>EMOTIONAL LOAD</p>
+      <Slider value={emo} set={setEmo} lo="Light" hi="Heavy" />
+      <p style={tipText}>This data helps Jess understand your patterns.</p>
+      <button style={modalSaveBtn} onClick={() => {}}>Save</button>
+    </article>
+  );
+}
+
+function GPReportCardSmall() {
+  const [open, setOpen] = useState(false);
+  return (
+    <>
+      <article style={{ ...cardStyle, minHeight: 160 }}>
+        <div style={cardHeadRow}>
+          <span style={{ ...iconCircle, background: C.cream, width: 30, height: 30, borderRadius: 9 }}>
+            <FileText size={13} style={{ color: C.espresso }} />
+          </span>
+          <div style={{ flex: 1 }}>
+            <h3 style={{ ...cardTitle, margin: 0, fontSize: 15 }}>GP Report & Diary</h3>
+            <p style={{ ...cardSub, margin: "2px 0 0" }}>Build your health report</p>
+          </div>
+        </div>
+        <button onClick={() => setOpen(true)} style={{ ...modalSaveBtn, alignSelf: "flex-start", marginTop: 8 }}>
+          Open <ChevronRight size={11} />
+        </button>
+        <p style={reportLastExport}>Last exported: Never</p>
+      </article>
+      {open && (
+        <div style={modalBackdrop} onClick={() => setOpen(false)}>
+          <div style={{ ...modalCard, maxHeight: "85vh", overflowY: "auto" }} onClick={(e) => e.stopPropagation()}>
+            <div style={modalHead}>
+              <span style={kicker}>GP REPORT & DIARY</span>
+              <button onClick={() => setOpen(false)} style={drawerCloseBtn}><X size={14} /></button>
+            </div>
+            <h3 style={modalTitle}>Build your report</h3>
+            <p style={cardSub}>Diary entries are off by default.</p>
+            <div style={{ display: "flex", flexDirection: "column", gap: 6, marginTop: 10 }}>
+              {["Cycle data", "Symptoms", "Diary entries", "Medications", "Sleep + mood"].map((label, i) => (
+                <label key={label} style={reportSectionRow}>
+                  <input type="checkbox" defaultChecked={i !== 2} style={{ accentColor: C.sage }} />
+                  <span style={{ fontSize: 13, color: C.espresso }}>{label}</span>
+                </label>
+              ))}
+            </div>
+            <div style={modalFoot}>
+              <button onClick={() => setOpen(false)} style={modalCancelBtn}>Cancel</button>
+              <button onClick={() => setOpen(false)} style={modalSaveBtn}>Export PDF</button>
+            </div>
+          </div>
+        </div>
+      )}
+    </>
+  );
+}
+
+// ── Tonight extras (Tomorrow preview · Cycle reflection) ─────────────────
+function TomorrowPreviewCard() {
+  const tomorrowDate = new Date(today); tomorrowDate.setDate(today.getDate() + 1);
+  const tmCycleDay = profile.cycleDay + 1;
+  const tmPhase = tmCycleDay <= 28 ? "luteal" : "menstrual";
+  const key = `femwell_tomorrow_priority_${tomorrowDate.toISOString().split("T")[0]}`;
+  const [pri, setPri] = useState(() => { try { return localStorage.getItem(key) || ""; } catch { return ""; } });
+  function save(v) { setPri(v); try { localStorage.setItem(key, v); } catch {} }
+  return (
+    <article style={cardStyle}>
+      <span style={kicker}>TOMORROW</span>
+      <h3 style={cardTitle}>{tomorrowDate.toLocaleDateString(undefined, { weekday: "long", month: "long", day: "numeric" })}</h3>
+      <div style={{ display: "flex", alignItems: "center", gap: 8, padding: "8px 12px", borderRadius: 10, background: `${PHASE_LIGHT[tmPhase]}22`, border: `1px solid ${PHASE_LIGHT[tmPhase]}55` }}>
+        <span style={{ width: 10, height: 10, borderRadius: 9999, background: PHASE_LIGHT[tmPhase] }} />
+        <span style={{ fontFamily: "'Fraunces', Georgia, serif", fontSize: 15, fontWeight: 500, color: C.espresso }}>
+          Late {tmPhase[0].toUpperCase() + tmPhase.slice(1)} · Day {tmCycleDay}
+        </span>
+      </div>
+      <div style={energyForecastRow}>
+        <span style={miniLabel}>ENERGY FORECAST</span>
+        <div style={energyBars}>
+          <span style={{ ...energyBar, height: 6,  background: C.muted }} />
+          <span style={{ ...energyBar, height: 12, background: C.blush }} />
+          <span style={{ ...energyBar, height: 6,  background: "rgba(58,44,26,0.12)" }} />
+        </div>
+        <span style={{ fontSize: 11, color: C.muted, fontStyle: "italic" }}>Easing</span>
+      </div>
+      <label style={miniInputLabel}>
+        <span style={miniLabel}>TOP PRIORITY TOMORROW</span>
+        <input type="text" value={pri} onChange={(e) => save(e.target.value)} placeholder="The one thing" style={miniInput} />
+      </label>
+      <ul style={{ ...bulletList, gap: 4, marginTop: 4 }}>
+        <li style={bulletLine}><span style={bulletDot} /> 9am — Antenatal class</li>
+        <li style={bulletLine}><span style={bulletDot} /> 4pm — Investor follow-up</li>
+      </ul>
+      <p style={tipText}>Luteal tomorrow — front-load your morning.</p>
+    </article>
+  );
+}
+
+function CycleReflectionCard() {
+  const [energy, setEnergy] = useState("high");
+  const [mood, setMood] = useState("good");
+  const [body, setBody] = useState("good");
+  const [note, setNote] = useState("");
+  const [saved, setSaved] = useState(false);
+  const opts = {
+    energy: ["Low", "Medium", "High"],
+    mood: ["Difficult", "Neutral", "Good"],
+    body: ["Uncomfortable", "Okay", "Good"],
+  };
+  function Row3({ label, value, set, list }) {
+    return (
+      <div style={reflectionLine}>
+        <span style={reflectionLineLabel}>{label}</span>
+        <div style={reflectionPicks}>
+          {list.map((opt) => {
+            const key = opt.toLowerCase();
+            const on = value === key;
+            return (
+              <button key={opt} onClick={() => set(key)} style={{
+                ...reflectionPick,
+                background: on ? C.espresso : C.cream,
+                color: on ? C.cream : C.plumSoft || C.muted,
+                borderColor: on ? C.espresso : "rgba(58,44,26,0.12)",
+              }}>{opt}</button>
+            );
+          })}
+        </div>
+      </div>
+    );
+  }
+  function handleSave() {
+    setSaved(true);
+    setTimeout(() => setSaved(false), 2000);
+  }
+  return (
+    <article style={cardStyle}>
+      <span style={kicker}>CYCLE REFLECTION</span>
+      <h3 style={cardTitle}>How did your body feel today?</h3>
+      <Row3 label="Energy" value={energy} set={setEnergy} list={opts.energy} />
+      <Row3 label="Mood" value={mood} set={setMood} list={opts.mood} />
+      <Row3 label="Body" value={body} set={setBody} list={opts.body} />
+      <input type="text" value={note} onChange={(e) => setNote(e.target.value)} placeholder="Add a note (optional)…" style={miniInput} />
+      {saved && <span style={savedChip}><Check size={11} style={{ color: C.sage }} /> Reflection saved</span>}
+      <button onClick={handleSave} style={{ ...modalSaveBtn, alignSelf: "flex-start", marginTop: 4 }}>
+        Save reflection <ChevronRight size={11} />
+      </button>
+    </article>
   );
 }
 
@@ -2997,4 +3501,165 @@ const cycleRomanBadge = {
   fontFamily: "'Fraunces', Georgia, serif",
   fontSize: 14, fontWeight: 600, fontStyle: "italic",
   color: C.gold, letterSpacing: "0.04em",
+};
+
+// ── Mind & Insight extras ────────────────────────────────────────────────
+const moodWeekRow = {
+  display: "flex", gap: 8, padding: "8px 0", marginTop: 4,
+};
+const moodDotCol = {
+  flex: 1, display: "flex", flexDirection: "column", alignItems: "center", gap: 4,
+};
+const moodDot = {
+  width: 18, height: 18, borderRadius: 9999, display: "inline-block",
+};
+const moodDotLabel = {
+  fontSize: 9, letterSpacing: "0.1em", color: C.muted, fontWeight: 700,
+};
+const miniInputLabel = {
+  display: "flex", flexDirection: "column", gap: 4, marginTop: 4,
+};
+const miniInput = {
+  width: "100%", padding: "7px 10px",
+  borderRadius: 8, background: C.cream,
+  border: "1px solid rgba(58,44,26,0.10)",
+  fontFamily: "'Inter', sans-serif", fontSize: 12,
+  color: C.espresso, outline: "none",
+  boxSizing: "border-box",
+};
+const talkJessBtn = {
+  alignSelf: "flex-start", marginTop: 6,
+  display: "inline-flex", alignItems: "center", gap: 4,
+  padding: "6px 12px", borderRadius: 9999,
+  background: `${C.gold}1F`, border: `1px solid ${C.gold}55`,
+  color: C.espresso, fontSize: 11, fontWeight: 700, cursor: "pointer",
+};
+
+// Breathwork
+const breathwork = {
+  display: "flex", alignItems: "center", gap: 8,
+  padding: "10px 12px", borderRadius: 12,
+  border: "1px solid", cursor: "pointer",
+  fontFamily: "inherit",
+  width: "100%",
+};
+const breathName = {
+  fontFamily: "'Fraunces', Georgia, serif",
+  fontSize: 14, fontWeight: 500, color: C.espresso, lineHeight: 1.2,
+};
+const breathMeta = {
+  fontSize: 10, color: C.muted, marginTop: 2, letterSpacing: "0.04em",
+};
+
+// Macro tracker
+const macroRingRow = {
+  display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 6, marginTop: 6,
+};
+const macroCol = {
+  display: "flex", flexDirection: "column", alignItems: "center", gap: 2,
+};
+const macroLabel = {
+  fontSize: 11, fontWeight: 700, color: C.espresso,
+};
+const macroSub = {
+  fontSize: 9, letterSpacing: "0.10em", color: C.muted, fontWeight: 600, textTransform: "uppercase",
+};
+
+// Hydration
+const hydrationCount = {
+  fontFamily: "'Fraunces', Georgia, serif",
+  fontSize: 28, fontWeight: 500, color: C.espresso, lineHeight: 1,
+};
+const hydroGlassRow = {
+  display: "flex", gap: 5, marginTop: 4,
+};
+const hydroGlassDot = {
+  flex: 1, height: 22, borderRadius: 6,
+  border: "1px solid",
+  display: "inline-block",
+};
+const hydroBtnRow = {
+  display: "flex", gap: 8, marginTop: 6,
+};
+const hydroAdjustBtn = {
+  flex: 1, padding: "8px 0", borderRadius: 9999,
+  background: C.paperHi, color: C.espresso,
+  border: "1px solid rgba(58,44,26,0.15)",
+  fontSize: 16, fontWeight: 700, cursor: "pointer",
+};
+
+// AI meal
+const aiMealRow = {
+  padding: "6px 10px", borderRadius: 10,
+  background: C.cream, border: "1px solid rgba(58,44,26,0.05)",
+  display: "flex", flexDirection: "column", gap: 2,
+};
+const aiMealLabel = {
+  fontSize: 10, letterSpacing: "0.14em", textTransform: "uppercase",
+  color: C.goldDeep, fontWeight: 700,
+};
+const aiMealText = {
+  fontSize: 12, color: C.espresso, lineHeight: 1.4,
+};
+
+// Phase recipes
+const recipeRow = {
+  display: "flex", alignItems: "center", gap: 8,
+  padding: "6px 0",
+};
+const recipeImg = {
+  width: 30, height: 30, borderRadius: 9999,
+  display: "inline-flex", alignItems: "center", justifyContent: "center",
+  flexShrink: 0,
+};
+const recipeName = {
+  fontSize: 13, fontWeight: 600, color: C.espresso, lineHeight: 1.2,
+};
+const recipeTime = {
+  fontSize: 10, color: C.muted, marginTop: 1,
+};
+
+// Body scan
+const scanRow = {
+  display: "flex", alignItems: "center", gap: 8, padding: "4px 0",
+};
+const scanLabel = {
+  fontSize: 10, color: C.muted, fontWeight: 600, minWidth: 50,
+};
+const scanDots = {
+  display: "flex", flex: 1, gap: 6, justifyContent: "center",
+};
+const scanDot = {
+  width: 14, height: 14, borderRadius: 9999,
+  border: "1.5px solid", cursor: "pointer",
+  background: "transparent", padding: 0,
+};
+
+// Tomorrow
+const energyForecastRow = {
+  display: "flex", alignItems: "center", gap: 8,
+  padding: "8px 12px", borderRadius: 10,
+  background: C.cream, marginTop: 4,
+};
+const energyBars = {
+  display: "flex", alignItems: "flex-end", gap: 3, height: 14,
+};
+const energyBar = {
+  width: 6, borderRadius: 2, display: "inline-block",
+};
+
+// Cycle reflection
+const reflectionLine = {
+  display: "flex", alignItems: "center", gap: 8, marginTop: 6,
+};
+const reflectionLineLabel = {
+  fontSize: 11, fontWeight: 700, color: C.muted, minWidth: 50, letterSpacing: "0.04em",
+};
+const reflectionPicks = {
+  display: "flex", flex: 1, gap: 4, flexWrap: "wrap",
+};
+const reflectionPick = {
+  padding: "4px 10px", borderRadius: 9999,
+  border: "1px solid", cursor: "pointer",
+  fontSize: 10.5, fontWeight: 600,
 };
