@@ -1,6 +1,10 @@
 import { useState, useRef } from "react";
 import { format, parseISO } from "date-fns";
-import { Star, MoreVertical, Check } from "lucide-react";
+import {
+  Star, MoreVertical, Check,
+  PenLine, HeartHandshake, MessageSquareDashed, CheckSquare,
+  Sparkles, Zap, Moon, Frown, Meh, Smile, Edit3, Palette, Trash2,
+} from "lucide-react";
 import { base44 } from "@/api/base44Client";
 
 const COLOR_MAP = {
@@ -14,17 +18,25 @@ const COLOR_MAP = {
   sage:     "#DFF0DC",
 };
 
+// Brand rule — no emoji. Lucide icons only.
 const TYPE_META = {
-  free:        { icon: "✍️", label: "Free write" },
-  gratitude:   { icon: "🙏", label: "Gratitude" },
-  mood:        { icon: "💭", label: "Mood" },
-  todo:        { icon: "✅", label: "Todo" },
-  reflection:  { icon: "🪞", label: "Reflection" },
-  affirmation: { icon: "⚡", label: "Affirmation" },
-  dream:       { icon: "🌙", label: "Dream" },
+  free:        { Icon: PenLine,             label: "Free write" },
+  gratitude:   { Icon: HeartHandshake,      label: "Gratitude" },
+  mood:        { Icon: MessageSquareDashed, label: "Mood" },
+  todo:        { Icon: CheckSquare,         label: "Todo" },
+  reflection:  { Icon: Sparkles,            label: "Reflection" },
+  affirmation: { Icon: Zap,                 label: "Affirmation" },
+  dream:       { Icon: Moon,                label: "Dream" },
 };
 
-const MOOD_EMOJI = { 1: "😞", 2: "😕", 3: "😐", 4: "🙂", 5: "😊" };
+// 5-point face scale — Lucide Frown/Meh/Smile, no emoji.
+const MOOD_FACES = {
+  1: { Icon: Frown, fill: "#D45E52" },
+  2: { Icon: Frown, fill: "#C17B4E" },
+  3: { Icon: Meh,   fill: "#9B8B7A" },
+  4: { Icon: Smile, fill: "#6B8F5A" },
+  5: { Icon: Smile, fill: "#3A2C1A" },
+};
 
 const COLOR_NAMES = ["rose","peach","yellow","mint","sky","lavender","lilac","sage"];
 
@@ -81,12 +93,12 @@ export default function JotterCard({ entry, onEdit, onDelete, onPin, onColorChan
       {/* Type pill + menu row */}
       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 8 }}>
         <span style={{
-          display: "inline-flex", alignItems: "center", gap: 4,
+          display: "inline-flex", alignItems: "center", gap: 5,
           backgroundColor: "rgba(255,255,255,0.55)", borderRadius: 999,
-          padding: "2px 8px", fontSize: 11, fontWeight: 600,
+          padding: "3px 10px 3px 8px", fontSize: 11, fontWeight: 600,
           color: "#2A2035", fontFamily: "'Inter', sans-serif",
         }}>
-          {meta.icon} {meta.label}
+          <meta.Icon size={11} strokeWidth={2.2} /> {meta.label}
         </span>
         <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
           {entry.is_pinned && <Star style={{ width: 14, height: 14, fill: "#B89E6A", color: "#B89E6A" }} />}
@@ -107,14 +119,16 @@ export default function JotterCard({ entry, onEdit, onDelete, onPin, onColorChan
                 onClick={() => setMenuOpen(false)}
               >
                 {[
-                  { label: "✏️ Edit", action: () => onEdit && onEdit(entry) },
-                  { label: entry.is_pinned ? "☆ Unpin" : "⭐ Pin", action: () => onPin && onPin(entry) },
-                  { label: "🎨 Colour", action: null },
-                  { label: "🗑️ Delete", action: () => onDelete && onDelete(entry), danger: true },
+                  { id: "edit",   Icon: Edit3,   label: "Edit",                          action: () => onEdit && onEdit(entry) },
+                  { id: "pin",    Icon: Star,    label: entry.is_pinned ? "Unpin" : "Pin", action: () => onPin && onPin(entry) },
+                  { id: "color",  Icon: Palette, label: "Colour",                        action: null },
+                  { id: "delete", Icon: Trash2,  label: "Delete",                        action: () => onDelete && onDelete(entry), danger: true },
                 ].map((item) =>
-                  item.label === "🎨 Colour" ? (
+                  item.id === "color" ? (
                     <div key="color" style={{ padding: "8px 14px", borderBottom: "1px solid #F5F1EE" }}>
-                      <p style={{ fontSize: 11, color: "#8A7E88", fontFamily: "'Inter', sans-serif", marginBottom: 6 }}>Change colour</p>
+                      <p style={{ fontSize: 11, color: "#8A7E88", fontFamily: "'Inter', sans-serif", marginBottom: 6, display: "flex", alignItems: "center", gap: 6 }}>
+                        <Palette size={11} /> Change colour
+                      </p>
                       <div style={{ display: "flex", gap: 5, flexWrap: "wrap" }}>
                         {COLOR_NAMES.map(c => (
                           <button
@@ -132,7 +146,7 @@ export default function JotterCard({ entry, onEdit, onDelete, onPin, onColorChan
                     </div>
                   ) : (
                     <button
-                      key={item.label}
+                      key={item.id}
                       onClick={item.action}
                       style={{
                         width: "100%", textAlign: "left", padding: "9px 14px",
@@ -140,9 +154,10 @@ export default function JotterCard({ entry, onEdit, onDelete, onPin, onColorChan
                         fontSize: 13, fontFamily: "'Inter', sans-serif",
                         color: item.danger ? "#B85050" : "#2A2035",
                         borderBottom: "1px solid #F5F1EE",
+                        display: "flex", alignItems: "center", gap: 8,
                       }}
                     >
-                      {item.label}
+                      <item.Icon size={13} /> {item.label}
                     </button>
                   )
                 )}
@@ -213,9 +228,17 @@ export default function JotterCard({ entry, onEdit, onDelete, onPin, onColorChan
 
       {/* Footer: mood + tags */}
       <div style={{ display: "flex", alignItems: "center", gap: 6, flexWrap: "wrap", marginTop: 4 }}>
-        {entry.mood_rating && (
-          <span style={{ fontSize: 16 }}>{MOOD_EMOJI[entry.mood_rating]}</span>
-        )}
+        {entry.mood_rating && MOOD_FACES[entry.mood_rating] && (() => {
+          const { Icon, fill } = MOOD_FACES[entry.mood_rating];
+          return (
+            <span style={{
+              display: "inline-flex", alignItems: "center", justifyContent: "center",
+              color: fill,
+            }} aria-label={`Mood ${entry.mood_rating} of 5`}>
+              <Icon size={16} strokeWidth={2} />
+            </span>
+          );
+        })()}
         {tags.map(tag => (
           <span
             key={tag}

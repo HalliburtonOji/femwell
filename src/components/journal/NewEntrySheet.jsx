@@ -1,5 +1,9 @@
 import { useState, useEffect } from "react";
-import { X, Plus, Check } from "lucide-react";
+import {
+  X, Plus, Check,
+  PenLine, HeartHandshake, MessageSquareDashed, CheckSquare,
+  Sparkles, Zap, Moon, Frown, Meh, Smile,
+} from "lucide-react";
 import { base44 } from "@/api/base44Client";
 
 const COLOR_MAP = {
@@ -14,13 +18,15 @@ const COLOR_MAP = {
 };
 const COLOR_NAMES = Object.keys(COLOR_MAP);
 
+// Brand rule — no emoji. Lucide icons only.
 const CARD_TYPES = [
-  { id: "free",        icon: "✍️", label: "Free write" },
-  { id: "gratitude",   icon: "🙏", label: "Gratitude" },
-  { id: "todo",        icon: "✅", label: "Todo list" },
-  { id: "mood",        icon: "💭", label: "Mood check" },
-  { id: "reflection",  icon: "🪞", label: "Reflection" },
-  { id: "dream",       icon: "🌙", label: "Dream log" },
+  { id: "free",        Icon: PenLine,             label: "Free write" },
+  { id: "gratitude",   Icon: HeartHandshake,      label: "Gratitude" },
+  { id: "todo",        Icon: CheckSquare,         label: "Todo list" },
+  { id: "mood",        Icon: MessageSquareDashed, label: "Mood check" },
+  { id: "reflection",  Icon: Sparkles,            label: "Reflection" },
+  { id: "affirmation", Icon: Zap,                 label: "Affirmation" },
+  { id: "dream",       Icon: Moon,                label: "Dream log" },
 ];
 
 const PHASE_PROMPTS = {
@@ -31,7 +37,15 @@ const PHASE_PROMPTS = {
   default:    ["How am I feeling right now?", "What made today meaningful?", "What do I want to remember about today?"],
 };
 
-const MOOD_EMOJI = ["", "😞", "😕", "😐", "🙂", "😊"];
+// 5-point face scale — Lucide Frown/Meh/Smile, no emoji.
+const MOOD_FACES = [
+  null,
+  { Icon: Frown, fill: "#D45E52", label: "Low" },
+  { Icon: Frown, fill: "#C17B4E", label: "Down" },
+  { Icon: Meh,   fill: "#9B8B7A", label: "Neutral" },
+  { Icon: Smile, fill: "#6B8F5A", label: "Good" },
+  { Icon: Smile, fill: "#3A2C1A", label: "Bright" },
+];
 
 function randomColor() {
   return COLOR_NAMES[Math.floor(Math.random() * COLOR_NAMES.length)];
@@ -122,8 +136,17 @@ export default function NewEntrySheet({ user, phase, onClose, onSaved, editEntry
 
         {/* Header */}
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "8px 20px 16px" }}>
-          <h2 style={{ fontFamily: "'Fraunces', serif", fontSize: 19, fontWeight: 700, color: "#2A2035", margin: 0 }}>
-            {step === "type" ? "New entry" : editEntry ? "Edit entry" : CARD_TYPES.find(t => t.id === cardType)?.icon + " " + CARD_TYPES.find(t => t.id === cardType)?.label}
+          <h2 style={{ fontFamily: "'Fraunces', serif", fontSize: 19, fontWeight: 700, color: "#2A2035", margin: 0, display: "inline-flex", alignItems: "center", gap: 8 }}>
+            {step === "type"
+              ? "New entry"
+              : editEntry
+                ? "Edit entry"
+                : (() => {
+                    const t = CARD_TYPES.find((x) => x.id === cardType);
+                    if (!t) return "Entry";
+                    const I = t.Icon;
+                    return (<><I size={17} strokeWidth={2} /> {t.label}</>);
+                  })()}
           </h2>
           <button onClick={onClose} style={{ background: "rgba(255,255,255,0.5)", border: "none", borderRadius: "50%", width: 30, height: 30, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center" }}>
             <X style={{ width: 16, height: 16, color: "#2A2035" }} />
@@ -138,22 +161,26 @@ export default function NewEntrySheet({ user, phase, onClose, onSaved, editEntry
                 What kind of entry?
               </p>
               <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
-                {CARD_TYPES.map(t => (
-                  <button
-                    key={t.id}
-                    onClick={() => { setCardType(t.id); setStep("form"); }}
-                    style={{
-                      borderRadius: 16, padding: "18px 14px",
-                      backgroundColor: "rgba(255,255,255,0.55)",
-                      border: "1.5px solid rgba(255,255,255,0.7)",
-                      cursor: "pointer", textAlign: "center",
-                      boxShadow: "0 1px 4px rgba(42,32,53,0.07)",
-                    }}
-                  >
-                    <div style={{ fontSize: 28, marginBottom: 6 }}>{t.icon}</div>
-                    <p style={{ fontSize: 13, fontWeight: 600, color: "#2A2035", fontFamily: "'Inter', sans-serif", margin: 0 }}>{t.label}</p>
-                  </button>
-                ))}
+                {CARD_TYPES.map(t => {
+                  const I = t.Icon;
+                  return (
+                    <button
+                      key={t.id}
+                      onClick={() => { setCardType(t.id); setStep("form"); }}
+                      style={{
+                        borderRadius: 16, padding: "18px 14px",
+                        backgroundColor: "rgba(255,255,255,0.55)",
+                        border: "1.5px solid rgba(255,255,255,0.7)",
+                        cursor: "pointer", textAlign: "center",
+                        boxShadow: "0 1px 4px rgba(42,32,53,0.07)",
+                        display: "flex", flexDirection: "column", alignItems: "center", gap: 6,
+                      }}
+                    >
+                      <I size={26} strokeWidth={1.6} style={{ color: "#2A2035" }} />
+                      <p style={{ fontSize: 13, fontWeight: 600, color: "#2A2035", fontFamily: "'Inter', sans-serif", margin: 0 }}>{t.label}</p>
+                    </button>
+                  );
+                })}
               </div>
             </div>
           )}
@@ -165,8 +192,8 @@ export default function NewEntrySheet({ user, phase, onClose, onSaved, editEntry
               {/* Gratitude type */}
               {cardType === "gratitude" && (
                 <div>
-                  <p style={{ fontSize: 13, fontWeight: 600, color: "#2A2035", fontFamily: "'Inter', sans-serif", marginBottom: 12 }}>
-                    🙏 I'm grateful for...
+                  <p style={{ fontSize: 13, fontWeight: 600, color: "#2A2035", fontFamily: "'Inter', sans-serif", marginBottom: 12, display: "inline-flex", alignItems: "center", gap: 6 }}>
+                    <HeartHandshake size={13} strokeWidth={2} /> I&apos;m grateful for…
                   </p>
                   {gratitudes.map((g, i) => (
                     <input
@@ -191,19 +218,26 @@ export default function NewEntrySheet({ user, phase, onClose, onSaved, editEntry
                 <div>
                   <p style={{ fontSize: 13, fontWeight: 600, color: "#2A2035", fontFamily: "'Inter', sans-serif", marginBottom: 12 }}>How are you feeling?</p>
                   <div style={{ display: "flex", gap: 12, marginBottom: 16 }}>
-                    {[1,2,3,4,5].map(n => (
-                      <button
-                        key={n}
-                        onClick={() => setMood(n)}
-                        style={{
-                          fontSize: 28, background: "none", border: "none", cursor: "pointer",
-                          transform: mood === n ? "scale(1.3)" : "scale(1)",
-                          transition: "transform 0.15s",
-                        }}
-                      >
-                        {MOOD_EMOJI[n]}
-                      </button>
-                    ))}
+                    {[1,2,3,4,5].map(n => {
+                      const face = MOOD_FACES[n]; if (!face) return null;
+                      const I = face.Icon;
+                      return (
+                        <button
+                          key={n}
+                          onClick={() => setMood(n)}
+                          aria-label={face.label}
+                          style={{
+                            background: "none", border: "none", cursor: "pointer",
+                            color: face.fill,
+                            transform: mood === n ? "scale(1.3)" : "scale(1)",
+                            transition: "transform 0.15s",
+                            padding: 4,
+                          }}
+                        >
+                          <I size={30} strokeWidth={2} />
+                        </button>
+                      );
+                    })}
                   </div>
                 </div>
               )}
@@ -211,7 +245,9 @@ export default function NewEntrySheet({ user, phase, onClose, onSaved, editEntry
               {/* Todo type */}
               {cardType === "todo" && (
                 <div>
-                  <p style={{ fontSize: 13, fontWeight: 600, color: "#2A2035", fontFamily: "'Inter', sans-serif", marginBottom: 12 }}>✅ My list</p>
+                  <p style={{ fontSize: 13, fontWeight: 600, color: "#2A2035", fontFamily: "'Inter', sans-serif", marginBottom: 12, display: "inline-flex", alignItems: "center", gap: 6 }}>
+                    <CheckSquare size={13} strokeWidth={2} /> My list
+                  </p>
                   {todoItems.map((item, idx) => (
                     <div key={idx} style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 6 }}>
                       <div style={{ width: 16, height: 16, borderRadius: 4, border: "1.5px solid rgba(42,32,53,0.3)", flexShrink: 0, backgroundColor: "rgba(255,255,255,0.4)" }} />
@@ -292,19 +328,27 @@ export default function NewEntrySheet({ user, phase, onClose, onSaved, editEntry
                 <div>
                   <p style={{ fontSize: 11, color: "#8A7E88", fontFamily: "'Inter', sans-serif", marginBottom: 8 }}>Mood (optional)</p>
                   <div style={{ display: "flex", gap: 10 }}>
-                    {[1,2,3,4,5].map(n => (
-                      <button
-                        key={n}
-                        onClick={() => setMood(mood === n ? 0 : n)}
-                        style={{
-                          fontSize: 22, background: "none", border: "none", cursor: "pointer",
-                          transform: mood === n ? "scale(1.25)" : "scale(1)",
-                          transition: "transform 0.15s", opacity: mood && mood !== n ? 0.45 : 1,
-                        }}
-                      >
-                        {MOOD_EMOJI[n]}
-                      </button>
-                    ))}
+                    {[1,2,3,4,5].map(n => {
+                      const face = MOOD_FACES[n]; if (!face) return null;
+                      const I = face.Icon;
+                      return (
+                        <button
+                          key={n}
+                          onClick={() => setMood(mood === n ? 0 : n)}
+                          aria-label={face.label}
+                          style={{
+                            background: "none", border: "none", cursor: "pointer",
+                            color: face.fill,
+                            transform: mood === n ? "scale(1.25)" : "scale(1)",
+                            transition: "transform 0.15s",
+                            opacity: mood && mood !== n ? 0.45 : 1,
+                            padding: 2,
+                          }}
+                        >
+                          <I size={24} strokeWidth={2} />
+                        </button>
+                      );
+                    })}
                   </div>
                 </div>
               )}

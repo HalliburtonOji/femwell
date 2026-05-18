@@ -13,8 +13,46 @@ const FILTER_TYPES = [
   { id: "todo",        label: "Todo" },
   { id: "mood",        label: "Mood" },
   { id: "reflection",  label: "Reflection" },
+  { id: "affirmation", label: "Affirmation" },
   { id: "dream",       label: "Dream" },
 ];
+
+// Phase → Inner Season name + italic seasonal line.
+const PHASE_SEASON = {
+  menstrual:  { name: "Inner Winter",  line: "Soft pace. The body is doing the work." },
+  follicular: { name: "Inner Spring",  line: "Something new wants to begin." },
+  ovulatory:  { name: "Inner Summer",  line: "Your voice carries today." },
+  luteal:     { name: "Inner Autumn",  line: "Boundaries feel natural now." },
+};
+
+// Cycle-count rhythm — kinder than streak shame for cyclical writers.
+function entriesThisCycle(entries, profile) {
+  if (!entries.length || !profile?.last_period_start_date) {
+    return { count: entries.length, label: "entries so far" };
+  }
+  try {
+    const cycleStart = parseISO(profile.last_period_start_date);
+    const today = new Date();
+    if (cycleStart > today) return { count: entries.length, label: "entries so far" };
+    const inCycle = entries.filter((e) => {
+      const d = e.session_date ? parseISO(e.session_date) : e.created_date ? new Date(e.created_date) : null;
+      return d && d >= cycleStart;
+    });
+    return { count: inCycle.length, label: "entries this cycle" };
+  } catch {
+    return { count: entries.length, label: "entries so far" };
+  }
+}
+
+function cycleDayOf(profile) {
+  if (!profile?.last_period_start_date) return null;
+  try {
+    const cycleLen = profile.cycle_avg_length || 28;
+    const diff = differenceInDays(new Date(), parseISO(profile.last_period_start_date));
+    if (diff < 0) return null;
+    return ((diff % cycleLen) + 1);
+  } catch { return null; }
+}
 
 function calcStreak(entries) {
   if (!entries.length) return 0;
@@ -75,6 +113,9 @@ export default function Journal() {
 
   const phase = getCurrentPhase(profile);
   const streak = calcStreak(entries);
+  const cycleDay = cycleDayOf(profile);
+  const season = phase ? PHASE_SEASON[phase] : null;
+  const cycleCount = entriesThisCycle(entries, profile);
 
   const pinnedEntries = entries.filter(e => e.is_pinned);
   const unpinnedEntries = entries.filter(e => !e.is_pinned);
@@ -139,24 +180,38 @@ export default function Journal() {
 
       <div className="max-w-2xl mx-auto px-4">
 
-        {/* ── Header ── */}
+        {/* ── Header ── phase + cycle day + italic seasonal line + cycle-count rhythm */}
         <div className="pt-10 pb-5">
           <div className="flex items-start justify-between">
             <div>
+              {phase && season ? (
+                <p style={{
+                  fontSize: 10, fontWeight: 700, letterSpacing: "0.18em",
+                  color: "var(--mauve)", fontFamily: "'Inter', sans-serif",
+                  textTransform: "uppercase", margin: 0, marginBottom: 4,
+                }}>
+                  {phase} · {season.name}{cycleDay ? ` · Day ${cycleDay}` : ""}
+                </p>
+              ) : null}
               <div className="flex items-center gap-2 mb-1">
                 <h1 style={{ fontFamily: "'Fraunces', serif", color: "var(--plum)", fontSize: 26, fontWeight: 700, letterSpacing: "-0.02em", margin: 0 }}>
                   Journal
                 </h1>
               </div>
-              {streak > 0 ? (
-                <p style={{ fontSize: 13, color: "var(--mauve)", fontFamily: "'Inter', sans-serif" }}>
-                  {streak} day journaling streak
+              {season ? (
+                <p style={{
+                  fontFamily: "Georgia, serif", fontStyle: "italic",
+                  fontSize: 13, color: "var(--mauve)", margin: "0 0 4px",
+                  lineHeight: 1.5,
+                }}>
+                  {season.line}
                 </p>
-              ) : (
-                <p style={{ fontSize: 13, color: "var(--mauve)", fontFamily: "'Inter', sans-serif" }}>
-                  {format(new Date(), "EEEE, MMMM d")}
-                </p>
-              )}
+              ) : null}
+              <p style={{ fontSize: 12, color: "var(--mauve)", fontFamily: "'Inter', sans-serif", margin: 0 }}>
+                {cycleCount.count > 0
+                  ? <><strong style={{ color: "var(--plum)", fontWeight: 700 }}>{cycleCount.count}</strong> {cycleCount.label} — you&apos;re building a pattern.</>
+                  : <>{format(new Date(), "EEEE, MMMM d")}</>}
+              </p>
             </div>
             <button
               onClick={() => setShowNewEntry(true)}
