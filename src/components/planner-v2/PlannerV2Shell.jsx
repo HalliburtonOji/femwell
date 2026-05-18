@@ -32,6 +32,7 @@ import {
 } from "lucide-react";
 import StageRow from "@/components/planner-v2/StageRows";
 import ConditionRow from "@/components/planner-v2/ConditionRows";
+import { base44 } from "@/api/base44Client";
 
 // ─── Tokens (match UnifiedPlannerDemo) ──────────────────────────────────────
 
@@ -423,15 +424,212 @@ function JessHero({ phase, cycleDay, profile, user }) {
 }
 
 // ─── 2. My Lists ────────────────────────────────────────────────────────────
+// Reads PersonalTasks for today where completed=false. Tap circle → optimistic
+// removal + base44.entities.PersonalTasks.update(id,{ completed:true }).
+// Three "Add to morning/afternoon/evening" buttons open an inline text input
+// that creates a new PersonalTasks row tagged with the chosen time_of_day.
 
-function MyListsRow() {
+function MyListsRow({ user }) {
+  const [items, setItems] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [addMode, setAddMode] = useState(null); // 'morning' | 'afternoon' | 'evening' | null
+  const [draft, setDraft] = useState("");
+  const [saving, setSaving] = useState(false);
+  const inputRef = useRef(null);
+
+  const todayStr = useMemo(() => new Date().toISOString().split("T")[0], []);
+
+  useEffect(() => {
+    let cancelled = false;
+    if (!user?.id) { setLoading(false); return; }
+    (async () => {
+      try {
+        const rows = await base44.entities.PersonalTasks.filter(
+          { user_id: user.id, date: todayStr, completed: false },
+          "created_date",
+          50,
+        );
+        if (!cancelled) setItems(Array.isArray(rows) ? rows : []);
+      } catch {
+        if (!cancelled) setItems([]);
+      } finally {
+        if (!cancelled) setLoading(false);
+      }
+    })();
+    return () => { cancelled = true; };
+  }, [user?.id, todayStr]);
+
+  useEffect(() => {
+    if (addMode && inputRef.current) {
+      try { inputRef.current.focus(); } catch {}
+    }
+  }, [addMode]);
+
+  async function toggleDone(id) {
+    setItems((prev) => prev.filter((t) => t.id !== id));
+    try {
+      await base44.entities.PersonalTasks.update(id, { completed: true });
+    } catch {
+      // re-fetch silently on failure
+      try {
+        const rows = await base44.entities.PersonalTasks.filter(
+          { user_id: user.id, date: todayStr, completed: false },
+          "created_date",
+          50,
+        );
+        setItems(Array.isArray(rows) ? rows : []);
+      } catch {}
+    }
+  }
+
+  async function confirmAdd() {
+    const title = draft.trim();
+    if (!title || !addMode || !user?.id || saving) return;
+    setSaving(true);
+    try {
+      const created = await base44.entities.PersonalTasks.create({
+        user_id: user.id,
+        date: todayStr,
+        title,
+        time_of_day: addMode,
+        completed: false,
+      });
+      if (created && created.id) {
+        setItems((prev) => [...prev, created]);
+      }
+      setDraft("");
+      setAddMode(null);
+    } catch {
+      // silent — user can retry
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  const slotOrder = { morning: 0, afternoon: 1, evening: 2 };
+  const ordered = useMemo(() => {
+    return [...items].sort((a, b) => {
+      const sa = slotOrder[(a?.time_of_day || "").toLowerCase()] ?? 3;
+      const sb = slotOrder[(b?.time_of_day || "").toLowerCase()] ?? 3;
+      if (sa !== sb) return sa - sb;
+      const ta = a?.created_date || a?.created_at || "";
+      const tb = b?.created_date || b?.created_at || "";
+      return String(ta).localeCompare(String(tb));
+    });
+  }, [items]);
+
   return (
     <SliderRow label="My lists">
       <article style={cardStyle}>
         <span style={kicker}>TASKS · TODAY</span>
         <h3 style={cardTitle}>Your list</h3>
-        <p style={placeholderHint}>[skeleton] Reads Task entity where due_date = today. Tap to complete; Add to create.</p>
-        <button style={ctaPill}><Plus size={11} /> Add a task</button>
+
+        {!loading && ordered.length === 0 && (
+          <p style={placeholderHint}>Nothing on your list yet.</p>
+        )}
+
+        {ordered.length > 0 && (
+          <ul style={{
+            listStyle: "none", padding: 0, margin: "4px 0 0",
+            display: "flex", flexDirection: "column", gap: 4,
+          }}>
+            {ordered.map((t) => (
+              <li key={t.id} style={{
+                display: "flex", alignItems: "center", gap: 8,
+                padding: "7px 10px", borderRadius: 10,
+                background: C.cream,
+                border: "1px solid rgba(58,44,26,0.06)",
+              }}>
+                <button
+                  type="button"
+                  onClick={() => toggleDone(t.id)}
+                  aria-label={`Complete ${t.title || "task"}`}
+                  style={{
+                    width: 20, height: 20, borderRadius: 9999,
+                    background: "transparent",
+                    border: "1.5px solid rgba(58,44,26,0.22)",
+                    cursor: "pointer", padding: 0, flexShrink: 0,
+                    display: "inline-flex", alignItems: "center", justifyContent: "center",
+                  }}
+                />
+                <span style={{
+                  flex: 1, fontSize: 12.5, color: C.espresso, fontWeight: 600,
+                  minWidth: 0, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap",
+                }}>
+                  {t.title || "Untitled"}
+                </span>
+                {t.time_of_day && (
+                  <span style={{
+                    fontSize: 9, fontWeight: 700, letterSpacing: "0.10em",
+                    color: C.muted, textTransform: "uppercase",
+                  }}>{t.time_of_day}</span>
+                )}
+                {t.is_anchor && (
+                  <span style={{
+                    fontSize: 9, fontWeight: 700, letterSpacing: "0.10em",
+                    color: C.goldDeep, padding: "2px 6px", borderRadius: 9999,
+                    background: `${C.gold}22`,
+                  }}>ANCHOR</span>
+                )}
+              </li>
+            ))}
+          </ul>
+        )}
+
+        {addMode && (
+          <div style={{ display: "flex", gap: 6, marginTop: 8 }}>
+            <input
+              ref={inputRef}
+              type="text"
+              value={draft}
+              onChange={(e) => setDraft(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === "Enter") confirmAdd();
+                if (e.key === "Escape") { setAddMode(null); setDraft(""); }
+              }}
+              placeholder={`Add to ${addMode}…`}
+              style={{
+                flex: 1, padding: "6px 10px", borderRadius: 9999,
+                border: "1px solid rgba(58,44,26,0.18)",
+                background: C.cream, color: C.espresso,
+                fontFamily: "'Inter', system-ui, sans-serif",
+                fontSize: 12, outline: "none", minWidth: 0,
+              }}
+            />
+            <button
+              type="button"
+              onClick={confirmAdd}
+              disabled={saving || !draft.trim()}
+              style={{
+                padding: "6px 12px", borderRadius: 9999,
+                background: C.espresso, color: C.cream, border: "none",
+                fontSize: 11, fontWeight: 700,
+                cursor: saving || !draft.trim() ? "default" : "pointer",
+                opacity: saving || !draft.trim() ? 0.5 : 1, flexShrink: 0,
+              }}
+            >Add</button>
+          </div>
+        )}
+
+        <div style={{ display: "flex", flexWrap: "wrap", gap: 6, marginTop: 8 }}>
+          {["morning", "afternoon", "evening"].map((slot) => (
+            <button
+              key={slot}
+              type="button"
+              onClick={() => {
+                setAddMode((cur) => (cur === slot ? null : slot));
+                setDraft("");
+              }}
+              style={{
+                ...ctaPill,
+                marginTop: 0,
+                background: addMode === slot ? "rgba(58,44,26,0.08)" : "transparent",
+              }}
+            >
+              <Plus size={11} /> Add to {slot}
+            </button>
+          ))}
+        </div>
       </article>
     </SliderRow>
   );
@@ -785,7 +983,7 @@ export default function PlannerV2Shell({
       <div style={{ maxWidth: 640, margin: "0 auto", paddingTop: 18 }}>
 
         {/* 2 — My Lists */}
-        <MyListsRow />
+        <MyListsRow user={user} />
 
         {/* 3 — Schedule & Cycle (compact, expand on tap) */}
         <ScheduleCycleSection phase={phase} cycleDay={cycleDay} profile={profile} />
