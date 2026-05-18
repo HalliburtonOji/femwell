@@ -1,6 +1,7 @@
 import { useState } from "react";
 import BiorhythmTimeline from "@/components/BiorhythmTimeline";
 import MissionControl from "@/components/MissionControl";
+import AccordionPlanner from "@/components/AccordionPlanner";
 
 // ─────────────────────────────────────────────────────────────────────────────
 // /Ideas — interactive design lab. 4 candidate Planner reskins.
@@ -6294,7 +6295,7 @@ export default function Ideas() {
         fontSize: 11, letterSpacing: "0.18em", fontWeight: 700,
         textTransform: "uppercase",
       }}>
-        Design Lab · Dev Only · Biorhythm · Mission · Designs · Research · Life Stages · Scheduling
+        Design Lab · Dev Only · Biorhythm · Mission · Accordion · Designs · Research · Life Stages · Scheduling
       </div>
 
       {/* Tab bar — Biorhythm / Designs / Research / Life Stages / Scheduling */}
@@ -6310,6 +6311,7 @@ export default function Ideas() {
           {[
             { id: "biorhythm", label: "Biorhythm" },
             { id: "mission", label: "Mission" },
+            { id: "accordion", label: "Accordion" },
             { id: "designs", label: "Designs" },
             { id: "research", label: "Research" },
             { id: "lifestages", label: "Life Stages" },
@@ -6398,6 +6400,35 @@ export default function Ideas() {
             </p>
           </div>
           <MissionControl />
+        </div>
+      )}
+      {topTab === "accordion" && (
+        <div style={{ padding: "28px 16px 0" }}>
+          <div style={{ maxWidth: 560, margin: "0 auto 22px", padding: "0 4px" }}>
+            <p style={{
+              fontFamily: "'Inter', system-ui, sans-serif",
+              fontSize: 10, letterSpacing: "0.22em", textTransform: "uppercase",
+              fontWeight: 700, color: "rgba(14,14,14,0.55)", margin: 0,
+            }}>Demo A · The Accordion</p>
+            <h2 style={{
+              fontFamily: "'Fraunces', Georgia, serif",
+              fontSize: 26, fontWeight: 500, color: "#0E0E0E",
+              letterSpacing: "-0.02em", margin: "6px 0 8px", lineHeight: 1.15,
+            }}>Eleven named strips. Open what you need.</h2>
+            <p style={{
+              fontFamily: "'Inter', system-ui, sans-serif",
+              fontSize: 13, color: "rgba(14,14,14,0.7)",
+              margin: 0, lineHeight: 1.55,
+            }}>
+              The combined Today + Cycle landscape, rendered as collapsible strips
+              top-to-bottom. Each strip shows a one-line summary; tap to reveal the
+              full section. Mass-action chips (Close all / Open Today / Open Cycle)
+              sit at the top so a one-tap tour is possible. Multiple strips can be
+              open at once — the page stops being a fixed scroll and becomes a
+              landscape of choices.
+            </p>
+          </div>
+          <AccordionPlanner />
         </div>
       )}
       {topTab === "research" && <ResearchView />}
