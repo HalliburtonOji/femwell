@@ -40,17 +40,20 @@ import { getPlannerConfig, filterProgramsByStage } from "@/utils/plannerAdapter"
 import DevStageSwitcher from "@/components/planner/DevStageSwitcher";
 import MorningBrief from "@/components/MorningBrief";
 import PlanADaySheet from "@/components/PlanADaySheet";
-// Phase 2 (2026-05-18) — opt-in unified v2 layout. Renders the
-// planner-v2 row components in place of the existing Planner body
-// when localStorage.femwell_planner_v2 === "true". DevStageSwitcher
-// surfaces the toggle. Zero change to the production layout when the
-// flag is false.
+// Phase 2 (2026-05-18) — unified v2 layout is now the DEFAULT for all
+// users. The localStorage flag is inverted: present only as an OPT-OUT
+// for testing the legacy layout side-by-side. Users with no flag set
+// see v2.
+//
+// `femwell_planner_v2`:
+//   undefined / "true"  → v2 (default)
+//   "false"             → legacy layout (explicit opt-out)
 import PlannerV2Shell from "@/components/planner-v2/PlannerV2Shell";
 
-// Reads the v2 feature flag from localStorage. Safe SSR-style fallback.
 function readV2Flag() {
-  try { return localStorage.getItem("femwell_planner_v2") === "true"; }
-  catch { return false; }
+  try {
+    return localStorage.getItem("femwell_planner_v2") !== "false";
+  } catch { return true; }
 }
 // Phase 2 QA-fix-bundle-8 — Planner subscribes to the module-level
 // devStageStore directly. The CustomEvent bus is no longer used here.

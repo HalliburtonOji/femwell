@@ -435,20 +435,21 @@ export default function DevStageSwitcher({
             <p style={{
               ...conditionsHint, marginTop: 4, marginBottom: 8,
             }}>
-              Try the new unified row-based Planner. Reloads the page.
+              v2 layout is the default. Flip OFF to fall back to the legacy
+              layout. Reloads the page.
             </p>
             <button
               type="button"
               onClick={() => {
                 try {
-                  const next = localStorage.getItem("femwell_planner_v2") === "true" ? "false" : "true";
-                  localStorage.setItem("femwell_planner_v2", next);
+                  const isOn = localStorage.getItem("femwell_planner_v2") !== "false";
+                  localStorage.setItem("femwell_planner_v2", isOn ? "false" : "true");
                 } catch { /* silent */ }
                 try { window.location.reload(); } catch { /* silent */ }
               }}
               style={(() => {
-                let on = false;
-                try { on = localStorage.getItem("femwell_planner_v2") === "true"; } catch { /* silent */ }
+                let on = true;
+                try { on = localStorage.getItem("femwell_planner_v2") !== "false"; } catch { /* silent */ }
                 return {
                   display: "inline-flex", alignItems: "center", gap: 8,
                   padding: "8px 12px", borderRadius: 9999,
@@ -464,16 +465,16 @@ export default function DevStageSwitcher({
             >
               <span>New Planner (v2)</span>
               <span style={(() => {
-                let on = false;
-                try { on = localStorage.getItem("femwell_planner_v2") === "true"; } catch { /* silent */ }
+                let on = true;
+                try { on = localStorage.getItem("femwell_planner_v2") !== "false"; } catch { /* silent */ }
                 return {
                   fontSize: 10, letterSpacing: "0.10em",
                   padding: "2px 8px", borderRadius: 9999,
                   background: on ? "rgba(244,237,219,0.18)" : "rgba(58,44,26,0.08)",
                 };
               })()}>{(() => {
-                let on = false;
-                try { on = localStorage.getItem("femwell_planner_v2") === "true"; } catch { /* silent */ }
+                let on = true;
+                try { on = localStorage.getItem("femwell_planner_v2") !== "false"; } catch { /* silent */ }
                 return on ? "ON" : "OFF";
               })()}</span>
             </button>
