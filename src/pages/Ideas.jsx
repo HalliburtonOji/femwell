@@ -3,6 +3,8 @@ import BiorhythmTimeline from "@/components/BiorhythmTimeline";
 import MissionControl from "@/components/MissionControl";
 import AccordionPlanner from "@/components/AccordionPlanner";
 import MorningDashboard from "@/components/MorningDashboard";
+import TimeOfDayFlow from "@/components/TimeOfDayFlow";
+import CardDeckPlanner from "@/components/CardDeckPlanner";
 import JournalDemo from "@/components/JournalDemo";
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -6297,7 +6299,7 @@ export default function Ideas() {
         fontSize: 11, letterSpacing: "0.18em", fontWeight: 700,
         textTransform: "uppercase",
       }}>
-        Design Lab · Dev Only · Biorhythm · Mission · Accordion · Dashboard · Designs · Research · Life Stages · Scheduling · Journal
+        Design Lab · Dev Only · Biorhythm · Mission · Accordion · Dashboard · Flow · Deck · Designs · Research · Life Stages · Scheduling · Journal
       </div>
 
       {/* Tab bar — Biorhythm / Designs / Research / Life Stages / Scheduling */}
@@ -6315,6 +6317,8 @@ export default function Ideas() {
             { id: "mission", label: "Mission" },
             { id: "accordion", label: "Accordion" },
             { id: "dashboard", label: "Dashboard" },
+            { id: "flow", label: "Flow" },
+            { id: "deck", label: "Deck" },
             { id: "designs", label: "Designs" },
             { id: "research", label: "Research" },
             { id: "lifestages", label: "Life Stages" },
@@ -6460,6 +6464,60 @@ export default function Ideas() {
             </p>
           </div>
           <MorningDashboard />
+        </div>
+      )}
+      {topTab === "flow" && (
+        <div style={{ padding: "28px 16px 0" }}>
+          <div style={{ maxWidth: 560, margin: "0 auto 22px", padding: "0 4px" }}>
+            <p style={{
+              fontFamily: "'Inter', system-ui, sans-serif",
+              fontSize: 10, letterSpacing: "0.22em", textTransform: "uppercase",
+              fontWeight: 700, color: "rgba(14,14,14,0.55)", margin: 0,
+            }}>Demo C · Time of Day Flow</p>
+            <h2 style={{
+              fontFamily: "'Fraunces', Georgia, serif",
+              fontSize: 26, fontWeight: 500, color: "#0E0E0E",
+              letterSpacing: "-0.02em", margin: "6px 0 8px", lineHeight: 1.15,
+            }}>The day, top to bottom.</h2>
+            <p style={{
+              fontFamily: "'Inter', system-ui, sans-serif",
+              fontSize: 13, color: "rgba(14,14,14,0.7)",
+              margin: 0, lineHeight: 1.55,
+            }}>
+              Three time-of-day scenes — Morning · Afternoon · Evening — each one a
+              full-width "act" with its own ambient backdrop. The cycle arc sits
+              pinned below the three scenes as the bigger picture. A sticky rail
+              tracks scroll position.
+            </p>
+          </div>
+          <TimeOfDayFlow />
+        </div>
+      )}
+      {topTab === "deck" && (
+        <div style={{ padding: "28px 16px 0" }}>
+          <div style={{ maxWidth: 560, margin: "0 auto 22px", padding: "0 4px" }}>
+            <p style={{
+              fontFamily: "'Inter', system-ui, sans-serif",
+              fontSize: 10, letterSpacing: "0.22em", textTransform: "uppercase",
+              fontWeight: 700, color: "rgba(14,14,14,0.55)", margin: 0,
+            }}>Demo D · The Card Deck</p>
+            <h2 style={{
+              fontFamily: "'Fraunces', Georgia, serif",
+              fontSize: 26, fontWeight: 500, color: "#0E0E0E",
+              letterSpacing: "-0.02em", margin: "6px 0 8px", lineHeight: 1.15,
+            }}>Eight cards. One at a time.</h2>
+            <p style={{
+              fontFamily: "'Inter', system-ui, sans-serif",
+              fontSize: 13, color: "rgba(14,14,14,0.7)",
+              margin: 0, lineHeight: 1.55,
+            }}>
+              The whole Planner as a swipeable horizontal deck. Scroll-snap, dot
+              pagination, arrow buttons, thin progress bar — and a tab strip
+              above the deck to jump. Each card holds one topic; nothing else
+              competes for the user's attention while they're on it.
+            </p>
+          </div>
+          <CardDeckPlanner />
         </div>
       )}
       {topTab === "journal" && <JournalDemo />}
