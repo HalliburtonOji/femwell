@@ -650,9 +650,100 @@ function MyListsRow({ user }) {
 }
 
 // ─── 3. Schedule & Cycle (compact, expand on tap) ───────────────────────────
+// Schedule reads PlannerItems for today; Cycle renders the current month with
+// phase-coloured cells derived from profile.last_period_start_date +
+// cycle_avg_length + period_length. Both cards retain the existing chevron
+// toggle and 96px collapsed height.
 
-function ScheduleCard() {
+function fmtTime(t) {
+  if (!t) return "";
+  // PlannerItems.time arrives as "HH:MM" 24h. Render as e.g. "9am" / "2:30pm".
+  const m = /^(\d{1,2})(?::(\d{2}))?/.exec(String(t));
+  if (!m) return String(t);
+  const h = Number(m[1]);
+  const mm = m[2] || "00";
+  const ampm = h < 12 ? "am" : "pm";
+  const h12 = h === 0 ? 12 : (h > 12 ? h - 12 : h);
+  return mm === "00" ? `${h12}${ampm}` : `${h12}:${mm}${ampm}`;
+}
+
+function phaseForCycleDay(dayInCycle, cycleLen, periodLen) {
+  if (dayInCycle <= periodLen) return "menstrual";
+  if (dayInCycle <= Math.round(cycleLen * 0.4)) return "follicular";
+  if (dayInCycle <= Math.round(cycleLen * 0.55)) return "ovulatory";
+  return "luteal";
+}
+
+function ScheduleCard({ user }) {
   const [expanded, setExpanded] = useState(false);
+  const [items, setItems] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [adding, setAdding] = useState(false);
+  const [titleDraft, setTitleDraft] = useState("");
+  const [timeDraft, setTimeDraft] = useState("");
+  const [saving, setSaving] = useState(false);
+
+  const todayStr = useMemo(() => new Date().toISOString().split("T")[0], []);
+
+  useEffect(() => {
+    let cancelled = false;
+    if (!user?.id) { setLoading(false); return; }
+    (async () => {
+      try {
+        const rows = await base44.entities.PlannerItems.filter(
+          { user_id: user.id, date: todayStr },
+          "-created_date",
+          100,
+        );
+        if (!cancelled) setItems(Array.isArray(rows) ? rows : []);
+      } catch {
+        if (!cancelled) setItems([]);
+      } finally {
+        if (!cancelled) setLoading(false);
+      }
+    })();
+    return () => { cancelled = true; };
+  }, [user?.id, todayStr]);
+
+  const sorted = useMemo(() => {
+    return [...items].sort((a, b) => {
+      // Items with no time sink to the bottom; otherwise ascending by HH:MM.
+      const ta = a?.time || "99:99";
+      const tb = b?.time || "99:99";
+      return String(ta).localeCompare(String(tb));
+    });
+  }, [items]);
+
+  const nextUp = sorted.find((e) => !e.is_completed) || sorted[0] || null;
+
+  async function confirmAddEvent() {
+    const title = titleDraft.trim();
+    if (!title || !user?.id || saving) return;
+    setSaving(true);
+    try {
+      const created = await base44.entities.PlannerItems.create({
+        user_id: user.id,
+        title,
+        category: "reminder",
+        date: todayStr,
+        time: timeDraft || null,
+        repeat: "once",
+        is_completed: false,
+        created_at: new Date().toISOString(),
+      });
+      if (created && created.id) {
+        setItems((prev) => [...prev, created]);
+      }
+      setTitleDraft("");
+      setTimeDraft("");
+      setAdding(false);
+    } catch {
+      // silent — user can retry
+    } finally {
+      setSaving(false);
+    }
+  }
+
   return (
     <article style={{ ...cardStyle, minHeight: expanded ? undefined : 96 }}>
       <button onClick={() => setExpanded((v) => !v)} aria-expanded={expanded} style={cardToggleBtn}>
@@ -665,13 +756,107 @@ function ScheduleCard() {
         </div>
         <span style={chevronPill}>{expanded ? <ChevronUp size={14} /> : <ChevronDown size={14} />}</span>
       </button>
+
       {!expanded && (
-        <p style={cardSub}>[skeleton] Next event line will render here when wired.</p>
+        !loading && !nextUp ? (
+          <p style={{ ...cardSub, fontStyle: "italic" }}>No events today.</p>
+        ) : nextUp ? (
+          <p style={cardSub}>
+            Next · <strong style={{ color: C.espresso, fontWeight: 700 }}>
+              {nextUp.time ? fmtTime(nextUp.time) : "Today"}
+            </strong> {nextUp.title || "Event"}
+          </p>
+        ) : null
       )}
+
       {expanded && (
         <>
-          <p style={placeholderHint}>[skeleton] Will read Event entity for today + render timeline of hour-blocks.</p>
-          <button style={ctaPill}><CalendarPlus size={11} /> Add event</button>
+          {sorted.length === 0 && !loading && (
+            <p style={{ ...cardSub, fontStyle: "italic", margin: "6px 0 0" }}>Nothing scheduled today.</p>
+          )}
+          {sorted.length > 0 && (
+            <ul style={{
+              listStyle: "none", padding: 0, margin: "6px 0 0",
+              display: "flex", flexDirection: "column", gap: 4,
+            }}>
+              {sorted.map((e) => (
+                <li key={e.id} style={{
+                  display: "flex", alignItems: "center", gap: 8,
+                  padding: "6px 10px", borderRadius: 10,
+                  background: C.cream, border: "1px solid rgba(58,44,26,0.06)",
+                }}>
+                  <span style={{ fontSize: 11, fontWeight: 700, color: C.muted, minWidth: 44 }}>
+                    {e.time ? fmtTime(e.time) : "—"}
+                  </span>
+                  <span style={{
+                    flex: 1, fontSize: 12.5, color: C.espresso, fontWeight: 600,
+                    minWidth: 0, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap",
+                    opacity: e.is_completed ? 0.5 : 1,
+                    textDecoration: e.is_completed ? "line-through" : "none",
+                  }}>{e.title || "Event"}</span>
+                </li>
+              ))}
+            </ul>
+          )}
+
+          {adding ? (
+            <div style={{ display: "flex", flexDirection: "column", gap: 6, marginTop: 8 }}>
+              <input
+                type="text"
+                value={titleDraft}
+                onChange={(e) => setTitleDraft(e.target.value)}
+                placeholder="Event title"
+                autoFocus
+                style={{
+                  padding: "6px 10px", borderRadius: 9999,
+                  border: "1px solid rgba(58,44,26,0.18)",
+                  background: C.cream, color: C.espresso,
+                  fontFamily: "'Inter', system-ui, sans-serif",
+                  fontSize: 12, outline: "none",
+                }}
+              />
+              <div style={{ display: "flex", gap: 6 }}>
+                <input
+                  type="time"
+                  value={timeDraft}
+                  onChange={(e) => setTimeDraft(e.target.value)}
+                  style={{
+                    flex: 1, padding: "6px 10px", borderRadius: 9999,
+                    border: "1px solid rgba(58,44,26,0.18)",
+                    background: C.cream, color: C.espresso,
+                    fontFamily: "'Inter', system-ui, sans-serif",
+                    fontSize: 12, outline: "none",
+                  }}
+                />
+                <button
+                  type="button"
+                  onClick={confirmAddEvent}
+                  disabled={saving || !titleDraft.trim()}
+                  style={{
+                    padding: "6px 12px", borderRadius: 9999,
+                    background: C.espresso, color: C.cream, border: "none",
+                    fontSize: 11, fontWeight: 700,
+                    cursor: saving || !titleDraft.trim() ? "default" : "pointer",
+                    opacity: saving || !titleDraft.trim() ? 0.5 : 1,
+                  }}
+                >Save</button>
+                <button
+                  type="button"
+                  onClick={() => { setAdding(false); setTitleDraft(""); setTimeDraft(""); }}
+                  style={{
+                    padding: "6px 10px", borderRadius: 9999,
+                    background: "transparent", color: C.muted,
+                    border: "1px solid rgba(58,44,26,0.10)",
+                    fontSize: 11, fontWeight: 700, cursor: "pointer",
+                  }}
+                >Cancel</button>
+              </div>
+            </div>
+          ) : (
+            <button type="button" onClick={() => setAdding(true)} style={ctaPill}>
+              <CalendarPlus size={11} /> Add event
+            </button>
+          )}
         </>
       )}
     </article>
@@ -682,6 +867,60 @@ function CycleCard({ phase, cycleDay, profile }) {
   const [expanded, setExpanded] = useState(false);
   const tone = PHASE_COLOR[phase] || C.gold;
   const phaseLabel = phase ? `${phase[0].toUpperCase()}${phase.slice(1)} week` : "This cycle";
+
+  const cycleLen  = profile?.cycle_avg_length || 28;
+  const periodLen = profile?.period_length || 5;
+
+  // Build the current month grid (Mon → Sun). Each cell carries its
+  // phase classification (if cycle anchor exists) so we can colour-code.
+  const monthGrid = useMemo(() => {
+    const today = new Date();
+    const year = today.getFullYear();
+    const month = today.getMonth();
+    const firstOfMonth = new Date(year, month, 1);
+    const daysInMonth = new Date(year, month + 1, 0).getDate();
+
+    // Sunday=0 → shift so week starts Monday (offset 0..6 from Mon).
+    const dow = firstOfMonth.getDay(); // 0=Sun
+    const leadingBlanks = (dow + 6) % 7;
+
+    const anchor = profile?.last_period_start_date
+      ? new Date(profile.last_period_start_date)
+      : null;
+    const anchorOk = anchor && !isNaN(anchor.getTime());
+
+    const cells = [];
+    for (let i = 0; i < leadingBlanks; i++) cells.push(null);
+
+    for (let day = 1; day <= daysInMonth; day++) {
+      const d = new Date(year, month, day);
+      let phaseKey = null;
+      if (anchorOk) {
+        const daysSince = Math.floor((d - anchor) / 86400000);
+        if (daysSince >= 0) {
+          const dayInCycle = (daysSince % cycleLen) + 1;
+          phaseKey = phaseForCycleDay(dayInCycle, cycleLen, periodLen);
+        }
+      }
+      const isToday = d.toDateString() === today.toDateString();
+      cells.push({ day, phaseKey, isToday });
+    }
+    return cells;
+  }, [profile?.last_period_start_date, cycleLen, periodLen]);
+
+  // Calendar tone palette (per spec):
+  //   menstrual = blush, follicular = sage, ovulatory = gold, luteal = muted.
+  const CAL_TONE = {
+    menstrual:  C.blush,
+    follicular: C.sage,
+    ovulatory:  C.gold,
+    luteal:     C.muted,
+  };
+  const DOW_LABELS = ["M", "T", "W", "T", "F", "S", "S"];
+  const monthLabel = useMemo(() => {
+    return new Date().toLocaleString(undefined, { month: "long", year: "numeric" });
+  }, []);
+
   return (
     <article style={{ ...cardStyle, minHeight: expanded ? undefined : 96 }}>
       <button onClick={() => setExpanded((v) => !v)} aria-expanded={expanded} style={cardToggleBtn}>
@@ -694,22 +933,84 @@ function CycleCard({ phase, cycleDay, profile }) {
         </div>
         <span style={chevronPill}>{expanded ? <ChevronUp size={14} /> : <ChevronDown size={14} />}</span>
       </button>
+
       {!expanded && (
         <p style={cardSub}>
-          {cycleDay ? <>Day <strong style={{ color: C.espresso, fontWeight: 700 }}>{cycleDay}</strong> of {profile?.cycle_avg_length || 28}</> : "Tap to open the calendar."}
+          {cycleDay ? (
+            <>Day <strong style={{ color: C.espresso, fontWeight: 700 }}>{cycleDay}</strong> of {cycleLen}</>
+          ) : "Tap to open the calendar."}
         </p>
       )}
+
       {expanded && (
-        <p style={placeholderHint}>[skeleton] Mini calendar (4 weekly rows) with phase-coloured cells will render here when wired to CycleLog.</p>
+        <div style={{ marginTop: 6 }}>
+          <div style={{
+            fontSize: 11, fontWeight: 700, letterSpacing: "0.08em",
+            color: C.muted, textTransform: "uppercase", marginBottom: 6,
+          }}>{monthLabel}</div>
+
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(7, 1fr)", gap: 4, marginBottom: 4 }}>
+            {DOW_LABELS.map((d, i) => (
+              <div key={i} style={{
+                fontSize: 9, fontWeight: 700, color: C.muted,
+                textAlign: "center", letterSpacing: "0.04em",
+              }}>{d}</div>
+            ))}
+          </div>
+
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(7, 1fr)", gap: 4 }}>
+            {monthGrid.map((c, i) => {
+              if (!c) return <div key={`b${i}`} style={{ height: 26 }} />;
+              const dot = c.phaseKey ? CAL_TONE[c.phaseKey] : null;
+              return (
+                <div key={c.day} style={{
+                  height: 26, position: "relative",
+                  display: "flex", alignItems: "center", justifyContent: "center",
+                  borderRadius: 9999,
+                  background: c.isToday ? C.espresso : "transparent",
+                  color: c.isToday ? C.cream : C.espresso,
+                  fontSize: 11, fontWeight: c.isToday ? 700 : 500,
+                }}>
+                  <span>{c.day}</span>
+                  {dot && !c.isToday && (
+                    <span style={{
+                      position: "absolute", bottom: 2, left: "50%",
+                      transform: "translateX(-50%)",
+                      width: 4, height: 4, borderRadius: 9999,
+                      background: dot,
+                    }} />
+                  )}
+                </div>
+              );
+            })}
+          </div>
+
+          <div style={{
+            display: "flex", flexWrap: "wrap", gap: 8, marginTop: 8,
+            fontSize: 9.5, color: C.muted, fontWeight: 600, letterSpacing: "0.04em",
+          }}>
+            {[
+              ["Period",     C.blush],
+              ["Follicular", C.sage],
+              ["Ovulatory",  C.gold],
+              ["Luteal",     C.muted],
+            ].map(([label, colour]) => (
+              <span key={label} style={{ display: "inline-flex", alignItems: "center", gap: 4 }}>
+                <span style={{ width: 6, height: 6, borderRadius: 9999, background: colour }} />
+                {label}
+              </span>
+            ))}
+          </div>
+        </div>
       )}
     </article>
   );
 }
 
-function ScheduleCycleSection({ phase, cycleDay, profile }) {
+function ScheduleCycleSection({ phase, cycleDay, profile, user }) {
   return (
     <SliderRow label="Schedule & cycle">
-      <ScheduleCard />
+      <ScheduleCard user={user} />
       <CycleCard phase={phase} cycleDay={cycleDay} profile={profile} />
     </SliderRow>
   );
@@ -1000,7 +1301,7 @@ export default function PlannerV2Shell({
         <MyListsRow user={user} />
 
         {/* 3 — Schedule & Cycle (compact, expand on tap) */}
-        <ScheduleCycleSection phase={phase} cycleDay={cycleDay} profile={profile} />
+        <ScheduleCycleSection phase={phase} cycleDay={cycleDay} profile={profile} user={user} />
 
         {/* 4 — Your Day (Morning · Afternoon · Evening) */}
         <YourDaySection />
