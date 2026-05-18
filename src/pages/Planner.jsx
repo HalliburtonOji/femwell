@@ -40,6 +40,18 @@ import { getPlannerConfig, filterProgramsByStage } from "@/utils/plannerAdapter"
 import DevStageSwitcher from "@/components/planner/DevStageSwitcher";
 import MorningBrief from "@/components/MorningBrief";
 import PlanADaySheet from "@/components/PlanADaySheet";
+// Phase 2 (2026-05-18) — opt-in unified v2 layout. Renders the
+// planner-v2 row components in place of the existing Planner body
+// when localStorage.femwell_planner_v2 === "true". DevStageSwitcher
+// surfaces the toggle. Zero change to the production layout when the
+// flag is false.
+import PlannerV2Shell from "@/components/planner-v2/PlannerV2Shell";
+
+// Reads the v2 feature flag from localStorage. Safe SSR-style fallback.
+function readV2Flag() {
+  try { return localStorage.getItem("femwell_planner_v2") === "true"; }
+  catch { return false; }
+}
 // Phase 2 QA-fix-bundle-8 — Planner subscribes to the module-level
 // devStageStore directly. The CustomEvent bus is no longer used here.
 import {
@@ -537,6 +549,11 @@ export default function Planner() {
   const [mealPlan, setMealPlan] = useState(null);
   const [loading, setLoading] = useState(true);
   const [showAdd, setShowAdd] = useState(false);
+  // Phase 2 feature flag — when true, render PlannerV2Shell in place of
+  // the existing Planner body. Lives in localStorage; flipped from the
+  // DevStageSwitcher panel. Refreshes the page on toggle so the new
+  // shell mounts cleanly.
+  const [useV2, setUseV2] = useState(() => readV2Flag());
   // Phase 2 BUILD 3 — controls which form the bottom sheet renders. Defaults
   // to "task" (the legacy single-form behaviour). BUILD 2's "+ add to evening
   // stack" pre-selects "habit"; BUILD 3 FAB satellites set this directly.
@@ -1189,6 +1206,57 @@ export default function Planner() {
   };
   const isTodayDate = (d) => toDateStr(d) === toDateStr(today);
   const isSelected = (d) => toDateStr(d) === selectedStr;
+
+  // ── Phase 2 feature flag ── If the v2 flag is on, render PlannerV2Shell
+  // in place of the existing layout. The DevStageSwitcher still mounts at
+  // the top so the user can flip stages + flip the v2 flag back off.
+  if (useV2) {
+    return (
+      <div className="min-h-screen" style={{ backgroundColor: "#F4EDDB", position: "relative" }}>
+        <div style={{
+          position: "sticky", top: 0, zIndex: 30,
+          background: "rgba(244,237,219,0.96)",
+          backdropFilter: "blur(8px)",
+          borderBottom: "1px solid rgba(58,44,26,0.10)",
+          padding: "10px 16px",
+          display: "flex", alignItems: "center", justifyContent: "space-between", gap: 8,
+        }}>
+          <span style={{
+            fontSize: 10, letterSpacing: "0.18em", textTransform: "uppercase",
+            color: "#9B8B7A", fontFamily: "'Inter', system-ui, sans-serif", fontWeight: 700,
+          }}>Planner · v2 (feature flag)</span>
+          <DevStageSwitcher
+            effectiveStage={effectiveLifeStage}
+            realStage={realLifeStage}
+            effectiveConditions={effectiveConditions}
+            realConditions={realConditions}
+            onChange={setDevStageOverride}
+            onConditionsChange={setDevConditionsOverride}
+            profileId={profile?.id}
+            onProfileUpdated={(updates) => {
+              setProfile((p) => p ? { ...p, ...updates } : p);
+            }}
+          />
+        </div>
+        <PlannerV2Shell
+          user={user}
+          profile={profile}
+          plannerConfig={plannerConfig}
+          effectiveLifeStage={effectiveLifeStage}
+          selectedDay={selectedDay}
+          selectedPhase={selectedPhase}
+          selectedCycleDay={selectedCycleDay}
+          personalTasks={personalTasks}
+          dailyPlan={dailyPlan}
+          habitLogs={habitLogs}
+          medications={medications}
+          mealPlan={mealPlan}
+          activeProgram={activeProgram}
+          onPlanADay={() => setShowAdd(true)}
+        />
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen pb-28" style={{ backgroundColor: "#F4EDDB", /* Le Menu cream paper */ position: "relative" }}>

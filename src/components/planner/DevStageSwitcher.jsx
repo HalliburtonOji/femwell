@@ -421,6 +421,63 @@ export default function DevStageSwitcher({
               })}
             </div>
           </div>
+
+          {/* ───── v2 layout flag ─────────────────────────────────────────────
+              Phase 2 (2026-05-18) — flips the production Planner between the
+              existing layout and the new PlannerV2Shell that uses the
+              planner-v2 row components. Persists to localStorage; refreshes
+              the page so the new shell mounts cleanly. */}
+          <div style={{
+            marginTop: 14, paddingTop: 12,
+            borderTop: "1px dashed rgba(58,44,26,0.10)",
+          }}>
+            <div style={panelEyebrow}>LAYOUT (DEV)</div>
+            <p style={{
+              ...conditionsHint, marginTop: 4, marginBottom: 8,
+            }}>
+              Try the new unified row-based Planner. Reloads the page.
+            </p>
+            <button
+              type="button"
+              onClick={() => {
+                try {
+                  const next = localStorage.getItem("femwell_planner_v2") === "true" ? "false" : "true";
+                  localStorage.setItem("femwell_planner_v2", next);
+                } catch { /* silent */ }
+                try { window.location.reload(); } catch { /* silent */ }
+              }}
+              style={(() => {
+                let on = false;
+                try { on = localStorage.getItem("femwell_planner_v2") === "true"; } catch { /* silent */ }
+                return {
+                  display: "inline-flex", alignItems: "center", gap: 8,
+                  padding: "8px 12px", borderRadius: 9999,
+                  background: on ? "#3A2C1A" : "transparent",
+                  color: on ? "#F4EDDB" : "#3A2C1A",
+                  border: `1px solid ${on ? "#3A2C1A" : "rgba(58,44,26,0.20)"}`,
+                  fontFamily: "'Inter', system-ui, sans-serif",
+                  fontSize: 12, fontWeight: 700, cursor: "pointer",
+                  width: "100%", justifyContent: "space-between",
+                };
+              })()}
+              aria-label="Toggle Planner v2 layout"
+            >
+              <span>New Planner (v2)</span>
+              <span style={(() => {
+                let on = false;
+                try { on = localStorage.getItem("femwell_planner_v2") === "true"; } catch { /* silent */ }
+                return {
+                  fontSize: 10, letterSpacing: "0.10em",
+                  padding: "2px 8px", borderRadius: 9999,
+                  background: on ? "rgba(244,237,219,0.18)" : "rgba(58,44,26,0.08)",
+                };
+              })()}>{(() => {
+                let on = false;
+                try { on = localStorage.getItem("femwell_planner_v2") === "true"; } catch { /* silent */ }
+                return on ? "ON" : "OFF";
+              })()}</span>
+            </button>
+          </div>
         </div>
       )}
     </div>
