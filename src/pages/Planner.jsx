@@ -40,21 +40,11 @@ import { getPlannerConfig, filterProgramsByStage } from "@/utils/plannerAdapter"
 import DevStageSwitcher from "@/components/planner/DevStageSwitcher";
 import MorningBrief from "@/components/MorningBrief";
 import PlanADaySheet from "@/components/PlanADaySheet";
-// Phase 2 (2026-05-18) — unified v2 layout is now the DEFAULT for all
-// users. The localStorage flag is inverted: present only as an OPT-OUT
-// for testing the legacy layout side-by-side. Users with no flag set
-// see v2.
-//
-// `femwell_planner_v2`:
-//   undefined / "true"  → v2 (default)
-//   "false"             → legacy layout (explicit opt-out)
+// Phase 2 (2026-05-18) — unified v2 layout is ALWAYS rendered. The
+// localStorage flag (femwell_planner_v2) is gone entirely. The legacy
+// render path below this conditional is now unreachable; it remains
+// in the file for diff-readability but no user ever sees it.
 import PlannerV2Shell from "@/components/planner-v2/PlannerV2Shell";
-
-function readV2Flag() {
-  try {
-    return localStorage.getItem("femwell_planner_v2") !== "false";
-  } catch { return true; }
-}
 // Phase 2 QA-fix-bundle-8 — Planner subscribes to the module-level
 // devStageStore directly. The CustomEvent bus is no longer used here.
 import {
@@ -552,11 +542,6 @@ export default function Planner() {
   const [mealPlan, setMealPlan] = useState(null);
   const [loading, setLoading] = useState(true);
   const [showAdd, setShowAdd] = useState(false);
-  // Phase 2 feature flag — when true, render PlannerV2Shell in place of
-  // the existing Planner body. Lives in localStorage; flipped from the
-  // DevStageSwitcher panel. Refreshes the page on toggle so the new
-  // shell mounts cleanly.
-  const [useV2, setUseV2] = useState(() => readV2Flag());
   // Phase 2 BUILD 3 — controls which form the bottom sheet renders. Defaults
   // to "task" (the legacy single-form behaviour). BUILD 2's "+ add to evening
   // stack" pre-selects "habit"; BUILD 3 FAB satellites set this directly.
@@ -1210,37 +1195,33 @@ export default function Planner() {
   const isTodayDate = (d) => toDateStr(d) === toDateStr(today);
   const isSelected = (d) => toDateStr(d) === selectedStr;
 
-  // ── Phase 2 feature flag ── If the v2 flag is on, render PlannerV2Shell
-  // in place of the existing layout. PlannerV2Shell mirrors the signed-off
-  // UnifiedPlannerDemo layout pixel-for-pixel; DevStageSwitcher lives inside
-  // its hero band so the chrome is unchanged from the demo.
-  if (useV2) {
-    return (
-      <PlannerV2Shell
-        user={user}
-        profile={profile}
-        plannerConfig={plannerConfig}
-        effectiveLifeStage={effectiveLifeStage}
-        realLifeStage={realLifeStage}
-        effectiveConditions={effectiveConditions}
-        realConditions={realConditions}
-        selectedDay={selectedDay}
-        selectedPhase={selectedPhase}
-        selectedCycleDay={selectedCycleDay}
-        personalTasks={personalTasks}
-        dailyPlan={dailyPlan}
-        habitLogs={habitLogs}
-        medications={medications}
-        mealPlan={mealPlan}
-        activeProgram={activeProgram}
-        onStageChange={setDevStageOverride}
-        onConditionsChange={setDevConditionsOverride}
-        onProfileUpdated={(updates) => {
-          setProfile((p) => p ? { ...p, ...updates } : p);
-        }}
-      />
-    );
-  }
+  // ── PlannerV2Shell is now the ONLY render path ──
+  // The legacy return statement below this is unreachable. Left in
+  // place so the diff stays readable; will be deleted in a follow-up
+  // pass once we've confirmed nothing was referencing it.
+  return (
+    <PlannerV2Shell
+      user={user}
+      profile={profile}
+      plannerConfig={plannerConfig}
+      effectiveLifeStage={effectiveLifeStage}
+      realLifeStage={realLifeStage}
+      effectiveConditions={effectiveConditions}
+      realConditions={realConditions}
+      selectedDay={selectedDay}
+      selectedPhase={selectedPhase}
+      selectedCycleDay={selectedCycleDay}
+      personalTasks={personalTasks}
+      dailyPlan={dailyPlan}
+      habitLogs={habitLogs}
+      medications={medications}
+      mealPlan={mealPlan}
+      activeProgram={activeProgram}
+    />
+  );
+
+  // eslint-disable-next-line no-unreachable
+  // ─── Legacy render path (unreachable) ─────────────────────────────────────
 
   return (
     <div className="min-h-screen pb-28" style={{ backgroundColor: "#F4EDDB", /* Le Menu cream paper */ position: "relative" }}>
