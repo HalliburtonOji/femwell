@@ -35,6 +35,7 @@ import InsightsRow       from "./InsightsRow";
 import CareRow           from "./CareRow";
 import TonightRow        from "./TonightRow";
 import StageRow          from "./StageRows";
+import ConditionRow      from "./ConditionRows";
 import { C } from "./tokens";
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -124,15 +125,38 @@ function ShellHero({
       padding: "24px 16px 14px",
       background: `linear-gradient(180deg, ${C.cream} 0%, ${C.paper} 100%)`,
       borderBottom: `1px solid rgba(58,44,26,0.08)`,
+      position: "relative", // anchors the DevStageSwitcher panel
+      zIndex: 5,            // keep panel popup above row content
     }}>
-      <div style={{ maxWidth: 640, margin: "0 auto" }}>
+      <div style={{ maxWidth: 640, margin: "0 auto", position: "relative" }}>
+        {/* Top row: eyebrow on left, DevStageSwitcher on right.
+            DevStageSwitcher's panel uses `position: absolute; right: 0` so
+            mounting on the right keeps the popup onscreen. Previously the
+            switcher was tucked at the bottom-left of the hero band, where
+            the right-aligned panel popped off-screen. */}
         <div style={{
-          display: "flex", alignItems: "center", gap: 6,
-          fontSize: 10, letterSpacing: "0.18em", textTransform: "uppercase",
-          color: C.muted, fontWeight: 700,
-          fontFamily: "'Inter', system-ui, sans-serif",
+          display: "flex", alignItems: "center", justifyContent: "space-between",
+          gap: 10, minHeight: 28,
         }}>
-          <Sparkles size={11} style={{ color: C.gold }} /> {eyebrowText}
+          <div style={{
+            display: "flex", alignItems: "center", gap: 6,
+            fontSize: 10, letterSpacing: "0.18em", textTransform: "uppercase",
+            color: C.muted, fontWeight: 700,
+            fontFamily: "'Inter', system-ui, sans-serif",
+            flex: 1, minWidth: 0,
+          }}>
+            <Sparkles size={11} style={{ color: C.gold }} /> {eyebrowText}
+          </div>
+          <DevStageSwitcher
+            effectiveStage={effectiveStage}
+            realStage={realStage}
+            effectiveConditions={effectiveConditions}
+            realConditions={realConditions}
+            onChange={onStageChange}
+            onConditionsChange={onConditionsChange}
+            profileId={profileId}
+            onProfileUpdated={onProfileUpdated}
+          />
         </div>
         <h1 style={{
           fontFamily: "'Fraunces', Georgia, serif",
@@ -158,21 +182,6 @@ function ShellHero({
             borderRadius: 4, lineHeight: 1.4,
           }}>{plannerConfig.bannerText}</p>
         ) : null}
-
-        {/* Dev affordance — sits where the demo had Stage / Phase pickers.
-            Lets the user preview a different stage without leaving the page. */}
-        <div style={{ display: "flex", flexWrap: "wrap", gap: 10, marginTop: 16, alignItems: "center" }}>
-          <DevStageSwitcher
-            effectiveStage={effectiveStage}
-            realStage={realStage}
-            effectiveConditions={effectiveConditions}
-            realConditions={realConditions}
-            onChange={onStageChange}
-            onConditionsChange={onConditionsChange}
-            profileId={profileId}
-            onProfileUpdated={onProfileUpdated}
-          />
-        </div>
       </div>
     </div>
   );
@@ -278,6 +287,17 @@ export default function PlannerV2Shell({
               (StageRow returns null), so the layout stays unchanged. */}
         <StageRow
           stage={stage}
+          profile={profile}
+          phase={phase}
+          cycleDay={cycleDay}
+        />
+
+        {/* 2.6 — Condition-specific row · renders the FIRST matching
+              condition (PMDD / PCOS / endo / fibroids / thyroid /
+              adenomyosis / anxiety-depression / ME-CFS). Returns null
+              when profile.conditions is empty or contains no recognised
+              condition. */}
+        <ConditionRow
           profile={profile}
           phase={phase}
           cycleDay={cycleDay}
