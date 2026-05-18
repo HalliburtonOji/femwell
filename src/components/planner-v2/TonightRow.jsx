@@ -202,7 +202,7 @@ const ctaLink = {
   color: C.espresso, fontSize: 12, fontWeight: 700, cursor: "pointer", padding: 0,
 };
 
-export default function TonightRow({ tomorrowPhase, tomorrowEvents, reflection, stage, dateKey }) {
+function TonightRow({ tomorrowPhase, tomorrowEvents, reflection, stage, dateKey }) {
   return (
     <Row label="Tonight & tomorrow">
       <TonightIntentionsCard stage={stage} dateKey={dateKey} />
@@ -211,3 +211,5 @@ export default function TonightRow({ tomorrowPhase, tomorrowEvents, reflection, 
     </Row>
   );
 }
+
+export default React.memo(TonightRow);

@@ -80,7 +80,7 @@ const DEFAULTS = {
   luteal:     { title: "Your habits eased back this week", body: "This luteal week might invite gentler rhythms and smaller wins; you might find rest and lower activity feel more nourishing, with options left to follow your own pace." },
 };
 
-export default function JessHeroRow({
+function JessHeroRow({
   phase = "luteal",
   cycleDay = 25,
   jessMessage,
@@ -122,3 +122,5 @@ export default function JessHeroRow({
     </Row>
   );
 }
+
+export default React.memo(JessHeroRow);

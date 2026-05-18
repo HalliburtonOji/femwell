@@ -168,7 +168,7 @@ function CyclePsychologyCard({ phase = "luteal" }) {
   );
 }
 
-export default function InsightsRow({ intention, astraReading, phase, moodHistory }) {
+function InsightsRow({ intention, astraReading, phase, moodHistory }) {
   return (
     <Row label="Mind & insight">
       <IntentionCard initial={intention} />
@@ -179,3 +179,5 @@ export default function InsightsRow({ intention, astraReading, phase, moodHistor
     </Row>
   );
 }
+
+export default React.memo(InsightsRow);

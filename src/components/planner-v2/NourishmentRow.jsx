@@ -163,7 +163,7 @@ const adjustBtn = {
   fontSize: 16, fontWeight: 700, cursor: "pointer",
 };
 
-export default function NourishmentRow({ macros, hydration, meals, recipes, phase }) {
+function NourishmentRow({ macros, hydration, meals, recipes, phase }) {
   return (
     <Row label="Nourishment">
       <MacroTrackerCard macros={macros} />
@@ -173,3 +173,5 @@ export default function NourishmentRow({ macros, hydration, meals, recipes, phas
     </Row>
   );
 }
+
+export default React.memo(NourishmentRow);

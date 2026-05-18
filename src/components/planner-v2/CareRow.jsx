@@ -247,7 +247,7 @@ const ctaLink = {
   color: C.espresso, fontSize: 12, fontWeight: 700, cursor: "pointer", padding: 0,
 };
 
-export default function CareRow({ medications, supplements, symptoms, stage, onOpenGpReport }) {
+function CareRow({ medications, supplements, symptoms, stage, onOpenGpReport }) {
   return (
     <Row label="Care">
       <MedsSupplementsCard medications={medications} supplements={supplements} stage={stage} />
@@ -257,3 +257,5 @@ export default function CareRow({ medications, supplements, symptoms, stage, onO
     </Row>
   );
 }
+
+export default React.memo(CareRow);

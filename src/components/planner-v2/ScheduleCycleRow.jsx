@@ -111,7 +111,7 @@ const openFullBtn = {
   fontSize: 11, fontWeight: 700, cursor: "pointer",
 };
 
-export default function ScheduleCycleRow({ events, phase, cycleDay, userProfile, onOpenSchedule, onOpenCycle }) {
+function ScheduleCycleRow({ events, phase, cycleDay, userProfile, onOpenSchedule, onOpenCycle }) {
   return (
     <Row label="Schedule & cycle">
       <SchedulePreviewCard events={events} onOpen={onOpenSchedule} />
@@ -119,3 +119,5 @@ export default function ScheduleCycleRow({ events, phase, cycleDay, userProfile,
     </Row>
   );
 }
+
+export default React.memo(ScheduleCycleRow);

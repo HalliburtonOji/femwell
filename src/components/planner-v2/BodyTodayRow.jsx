@@ -143,7 +143,7 @@ function PregnancyBodyCard({ stage, week }) {
   );
 }
 
-export default function BodyTodayRow({
+function BodyTodayRow({
   phase = "luteal", cycleDay = 25, capacity = 55,
   checkin, smartBullets, cycleZone, stage,
   onOpenCycle,
@@ -159,3 +159,5 @@ export default function BodyTodayRow({
     </Row>
   );
 }
+
+export default React.memo(BodyTodayRow);

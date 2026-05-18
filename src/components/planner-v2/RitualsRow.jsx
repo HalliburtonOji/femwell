@@ -5,7 +5,7 @@
 import React from "react";
 import RitualBundlesCarousel from "@/components/planner/today/RitualBundlesCarousel";
 
-export default function RitualsRow(props) {
+function RitualsRow(props) {
   // Production RitualBundlesCarousel expects: userId, selectedDateStr,
   // currentPhase, plannerConfig, onRitualsAdded. All optional — falls back
   // to safe defaults when called from the v2 demo harness.
@@ -13,3 +13,5 @@ export default function RitualsRow(props) {
     <RitualBundlesCarousel {...props} />
   );
 }
+
+export default React.memo(RitualsRow);

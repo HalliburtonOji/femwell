@@ -127,7 +127,7 @@ function VariantCard({ variant, sections, onItemToggle, onAdd }) {
   );
 }
 
-export default function TimeOfDayRow({ stage, phase, morningItems, afternoonItems, eveningItems, onAdd }) {
+function TimeOfDayRow({ stage, phase, morningItems, afternoonItems, eveningItems, onAdd }) {
   const trackRef = useRef(null);
   const [active, setActive] = useState(0);
 
@@ -209,3 +209,5 @@ export default function TimeOfDayRow({ stage, phase, morningItems, afternoonItem
     </section>
   );
 }
+
+export default React.memo(TimeOfDayRow);

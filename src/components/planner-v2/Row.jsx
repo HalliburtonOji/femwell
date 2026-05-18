@@ -6,7 +6,7 @@ import { ChevronLeft, ChevronRight } from "lucide-react";
 
 const C = { espresso: "#3A2C1A", muted: "#9B8B7A" };
 
-export default function Row({ label, children, slotWidth = "calc(100% - 32px)", maxSlotWidth = 520 }) {
+function Row({ label, children, slotWidth = "calc(100% - 32px)", maxSlotWidth = 520 }) {
   const trackRef = useRef(null);
   const [idx, setIdx] = useState(0);
   const count = Children.count(children);
@@ -77,3 +77,5 @@ const arrowBtn = {
   background: "transparent", border: "none", color: C.muted, cursor: "pointer",
   display: "inline-flex", alignItems: "center", justifyContent: "center", padding: 0,
 };
+
+export default React.memo(Row);

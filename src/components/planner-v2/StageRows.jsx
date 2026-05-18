@@ -1293,7 +1293,7 @@ export function TeenRow({ phase }) {
 // Returns the matching stage row, or null for stages without a dedicated
 // row (e.g. reproductive — the base experience already covers it).
 
-export default function StageRow({ stage, profile, phase, cycleDay }) {
+function StageRow({ stage, profile, phase, cycleDay }) {
   if (!stage) return null;
   if (stage.startsWith("pregnant"))                   return <PregnancyRow stage={stage} profile={profile} />;
   if (stage === "postpartum")                          return <PostpartumRow />;
@@ -1312,3 +1312,5 @@ const adjustBtn = {
   fontFamily: "'Inter', system-ui, sans-serif",
   fontSize: 14, fontWeight: 700, cursor: "pointer",
 };
+
+export default React.memo(StageRow);

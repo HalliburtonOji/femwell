@@ -18,7 +18,7 @@
 // Brand rule: NO emoji. Lucide icons + custom SVG only.
 // ─────────────────────────────────────────────────────────────────────────────
 
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef, useMemo, useCallback } from "react";
 import { Sparkles, Layers, X, Check } from "lucide-react";
 
 import JessHeroRow       from "@/components/planner-v2/JessHeroRow";
@@ -110,7 +110,7 @@ const CONDITIONS_DEV = [
 // stage chips + condition checkboxes. Writes are persisted to
 // localStorage and the parent state updates so the shell re-renders.
 
-function DevDrawer({ devStage, devConditions, onChangeStage, onChangeConditions }) {
+const DevDrawer = React.memo(function DevDrawer({ devStage, devConditions, onChangeStage, onChangeConditions }) {
   const [open, setOpen] = useState(false);
   const wrapRef = useRef(null);
 
@@ -285,7 +285,7 @@ function DevDrawer({ devStage, devConditions, onChangeStage, onChangeConditions 
       )}
     </div>
   );
-}
+});
 
 // ─── Mock data fallback ─────────────────────────────────────────────────────
 
@@ -357,7 +357,7 @@ const MOCK = {
 // chip row from the demo is removed — its function moves into the DEV
 // drawer pill which only renders when ?dev=1 (or in dev builds).
 
-function DemoHeader({ devStage, devConditions, onChangeStage, onChangeConditions }) {
+const DemoHeader = React.memo(function DemoHeader({ devStage, devConditions, onChangeStage, onChangeConditions }) {
   const showDev = shouldShowDev();
   return (
     <div style={{
@@ -407,7 +407,7 @@ function DemoHeader({ devStage, devConditions, onChangeStage, onChangeConditions
       </div>
     </div>
   );
-}
+});
 
 // ─── Component ──────────────────────────────────────────────────────────────
 
@@ -431,70 +431,89 @@ export default function PlannerV2Shell({
   const [devStage, setDevStage] = useState(() => readDevStage());
   const [devConditions, setDevConditions] = useState(() => readDevConditions());
 
-  // Effective stage and phase. Dev override wins, then real props,
-  // then profile, then MOCK fallback.
-  const stage = devStage || effectiveLifeStage || profile?.life_stage || MOCK.stage;
-  const phase = selectedPhase || MOCK.phase;
-  const cycleDay = selectedCycleDay || MOCK.cycleDay;
-  const userProfile = profile || MOCK.userProfile;
+  // useCallback prevents the DevDrawer from re-rendering when the parent
+  // re-renders for unrelated reasons (real prop updates from Planner.jsx).
+  const handleStageChange = useCallback((id) => setDevStage(id), []);
+  const handleConditionsChange = useCallback((next) => setDevConditions(next), []);
+
+  // Effective stage + phase + cycle day. All memoised — the derived
+  // values only recompute when their inputs actually change.
+  const stage = useMemo(
+    () => devStage || effectiveLifeStage || profile?.life_stage || MOCK.stage,
+    [devStage, effectiveLifeStage, profile?.life_stage],
+  );
+  const phase = useMemo(() => selectedPhase || MOCK.phase, [selectedPhase]);
+  const cycleDay = useMemo(() => selectedCycleDay || MOCK.cycleDay, [selectedCycleDay]);
+  const userProfile = useMemo(() => profile || MOCK.userProfile, [profile]);
 
   // Schedule events from real personalTasks if present, else MOCK.
-  let events = MOCK.events;
-  if (Array.isArray(personalTasks) && personalTasks.length > 0) {
-    events = personalTasks
-      .filter((t) => t && !t.completed && !t.is_done && !t.archived_at)
-      .slice(0, 4)
-      .map((t, i) => {
-        let hour = 9 + i * 3;
-        if (t.due_time && typeof t.due_time === "string") {
-          const m = t.due_time.match(/(\d{1,2})/);
-          if (m) hour = parseInt(m[1], 10) || hour;
-        }
-        return {
-          id: t.id || `pt-${i}`,
-          hour,
-          title: t.title || t.task_name || "Untitled task",
-          duration: t.duration_minutes || undefined,
-          done: false,
-        };
-      });
-  }
+  const events = useMemo(() => {
+    if (Array.isArray(personalTasks) && personalTasks.length > 0) {
+      return personalTasks
+        .filter((t) => t && !t.completed && !t.is_done && !t.archived_at)
+        .slice(0, 4)
+        .map((t, i) => {
+          let hour = 9 + i * 3;
+          if (t.due_time && typeof t.due_time === "string") {
+            const m = t.due_time.match(/(\d{1,2})/);
+            if (m) hour = parseInt(m[1], 10) || hour;
+          }
+          return {
+            id: t.id || `pt-${i}`,
+            hour,
+            title: t.title || t.task_name || "Untitled task",
+            duration: t.duration_minutes || undefined,
+            done: false,
+          };
+        });
+    }
+    return MOCK.events;
+  }, [personalTasks]);
 
   // Meals from real mealPlan if present.
-  let meals = MOCK.meals;
-  const today = selectedDay || new Date();
-  const weekday = today.toLocaleDateString("en-GB", { weekday: "long" }).toLowerCase();
-  const mealsForDay = mealPlan?.plan_days?.[weekday];
-  if (mealsForDay) {
-    meals = [
-      { label: "Breakfast", text: mealsForDay.breakfast || "—" },
-      { label: "Lunch",     text: mealsForDay.lunch     || "—" },
-      { label: "Dinner",    text: mealsForDay.dinner    || "—" },
-    ];
-  }
+  const meals = useMemo(() => {
+    const today = selectedDay || new Date();
+    const weekday = today.toLocaleDateString("en-GB", { weekday: "long" }).toLowerCase();
+    const mealsForDay = mealPlan?.plan_days?.[weekday];
+    if (mealsForDay) {
+      return [
+        { label: "Breakfast", text: mealsForDay.breakfast || "—" },
+        { label: "Lunch",     text: mealsForDay.lunch     || "—" },
+        { label: "Dinner",    text: mealsForDay.dinner    || "—" },
+      ];
+    }
+    return MOCK.meals;
+  }, [selectedDay, mealPlan]);
 
   // Medications from real entities if present.
-  let realMeds = MOCK.medications;
-  if (Array.isArray(medications) && medications.length > 0) {
-    realMeds = medications.map((m, i) => ({
-      id: m.id || `m-${i}`,
-      name: m.name || m.medication || "Medication",
-      dose: m.dose || m.amount || "",
-      time: m.time || m.schedule || "",
-      taken: !!m.taken_today,
-    }));
-  }
+  const realMeds = useMemo(() => {
+    if (Array.isArray(medications) && medications.length > 0) {
+      return medications.map((m, i) => ({
+        id: m.id || `m-${i}`,
+        name: m.name || m.medication || "Medication",
+        dose: m.dose || m.amount || "",
+        time: m.time || m.schedule || "",
+        taken: !!m.taken_today,
+      }));
+    }
+    return MOCK.medications;
+  }, [medications]);
 
   // Tomorrow's phase — cycle order.
-  const PHASE_NEXT = { menstrual: "follicular", follicular: "ovulatory", ovulatory: "luteal", luteal: "menstrual" };
-  const tomorrowPhase = PHASE_NEXT[phase] || MOCK.tomorrowPhase;
+  const tomorrowPhase = useMemo(() => {
+    const PHASE_NEXT = { menstrual: "follicular", follicular: "ovulatory", ovulatory: "luteal", luteal: "menstrual" };
+    return PHASE_NEXT[phase] || MOCK.tomorrowPhase;
+  }, [phase]);
 
   // Effective conditions: dev override > prop > profile > [].
-  const effectiveConditions = devConditions.length > 0
-    ? devConditions
-    : (Array.isArray(effectiveConditionsProp) && effectiveConditionsProp.length > 0
-        ? effectiveConditionsProp
-        : (Array.isArray(profile?.conditions) ? profile.conditions : []));
+  const effectiveConditions = useMemo(
+    () => devConditions.length > 0
+      ? devConditions
+      : (Array.isArray(effectiveConditionsProp) && effectiveConditionsProp.length > 0
+          ? effectiveConditionsProp
+          : (Array.isArray(profile?.conditions) ? profile.conditions : [])),
+    [devConditions, effectiveConditionsProp, profile?.conditions],
+  );
 
   return (
     <div style={{
@@ -506,8 +525,8 @@ export default function PlannerV2Shell({
       <DemoHeader
         devStage={devStage}
         devConditions={devConditions}
-        onChangeStage={setDevStage}
-        onChangeConditions={setDevConditions}
+        onChangeStage={handleStageChange}
+        onChangeConditions={handleConditionsChange}
       />
 
       <div style={{ maxWidth: 640, margin: "0 auto", paddingTop: 18 }}>

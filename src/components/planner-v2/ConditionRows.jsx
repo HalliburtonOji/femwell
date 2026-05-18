@@ -1276,7 +1276,7 @@ const FIRST_MATCH_ORDER = [
   "chronic-fatigue",
 ];
 
-export default function ConditionRow({ conditions: conditionsProp, profile, phase, cycleDay }) {
+function ConditionRow({ conditions: conditionsProp, profile, phase, cycleDay }) {
   // Prefer the explicit conditions prop (so the DEV switcher's override
   // propagates correctly); fall back to profile.conditions otherwise.
   const conditions = Array.isArray(conditionsProp) && conditionsProp.length > 0
@@ -1306,3 +1306,5 @@ const adjustBtn = {
   fontFamily: "'Inter', system-ui, sans-serif",
   fontSize: 14, fontWeight: 700, cursor: "pointer",
 };
+
+export default React.memo(ConditionRow);
