@@ -48,10 +48,16 @@ const C = {
   gold:     "#D4AF37",
   goldDeep: "#A6862B",
   rose:     "#D45E52",
-  pMenstrual:  "#8B2842",
-  pFollicular: "#C8694D",
-  pOvulatory:  "#D4A23A",
-  pLuteal:     "#6B5896",
+  // Updated to match the reference cycle calendar image
+  pMenstrual:  "#8B2635",
+  pFollicular: "#C17B4E",
+  pOvulatory:  "#C4933F",
+  pLuteal:     "#5B4A8A",
+  // Soft pastel tints for hero gradient backgrounds
+  softMenstrual:  "#F0D4D8",
+  softFollicular: "#EBC9B5",
+  softOvulatory:  "#F0E0B0",
+  softLuteal:     "#C4B5D4",
   faint:    "rgba(58,44,26,0.10)",
 };
 const PHASE_LIGHT = {
@@ -68,7 +74,20 @@ const PHASE_DEEP = {
 };
 
 // ── Mock ──────────────────────────────────────────────────────────────────
-const profile = { name: "Halli", phase: "ovulatory", cycleDay: 14, cycleLen: 28 };
+const profile = { name: "Halli", phase: "luteal", cycleDay: 25, cycleLen: 28 };
+const PHASE_SOFT = {
+  menstrual:  C.softMenstrual,
+  follicular: C.softFollicular,
+  ovulatory:  C.softOvulatory,
+  luteal:     C.softLuteal,
+};
+const phaseChapter = { menstrual: "I", follicular: "II", ovulatory: "III", luteal: "IV" };
+const phaseInsights = {
+  menstrual:  { title: "A week to soften", body: "Your body is doing important work. Lower the bar, lower the lights, and let this week be small." },
+  follicular: { title: "Your spring has arrived", body: "Energy is rising. New things will catch your eye — let yourself follow one or two of them." },
+  ovulatory:  { title: "Your peak window opened", body: "Visibility, bold asks, and creative output land easily this week. Spend the energy you have." },
+  luteal:     { title: "Your habits eased back this week", body: "This luteal week might invite gentler rhythms and smaller wins; you might find rest and lower activity feel more nourishing, with options left to follow your own pace." },
+};
 const today = new Date();
 const todayISO = today.toISOString().split("T")[0];
 
@@ -113,13 +132,13 @@ const ritualBundles = [
 ];
 
 const weekStrip = [
-  { d: "M", date: 12, phase: "follicular", energy: "high"   },
-  { d: "T", date: 13, phase: "follicular", energy: "high"   },
-  { d: "W", date: 14, phase: "ovulatory",  energy: "high", today: true },
-  { d: "T", date: 15, phase: "ovulatory",  energy: "high"   },
-  { d: "F", date: 16, phase: "ovulatory",  energy: "medium" },
-  { d: "S", date: 17, phase: "luteal",     energy: "medium" },
-  { d: "S", date: 18, phase: "luteal",     energy: "low"    },
+  { d: "M", date: 18, phase: "luteal",    energy: "medium", today: true },
+  { d: "T", date: 19, phase: "luteal",    energy: "medium" },
+  { d: "W", date: 20, phase: "luteal",    energy: "low"    },
+  { d: "T", date: 21, phase: "luteal",    energy: "low"    },
+  { d: "F", date: 22, phase: "menstrual", energy: "low"    },
+  { d: "S", date: 23, phase: "menstrual", energy: "low"    },
+  { d: "S", date: 24, phase: "menstrual", energy: "low"    },
 ];
 const ENERGY_TONE = { high: C.gold, medium: C.sage, low: C.blush };
 
@@ -130,10 +149,10 @@ const intentionPrompts = {
   menstrual:  "How can you slow down today?",
 };
 const astraReading = {
-  title: "Your Ovulatory Reading",
-  short: "Your energy peaks now — use it. This is your window for visibility, bold asks, and creative output.",
+  title: "Your Luteal Reading",
+  short: "Your peak window is closing — the bold output of the last fortnight has done its work. This week wants softness, not push.",
   full:
-    "Day 14. Oestrogen is at its highest, testosterone is rising. Your verbal and persuasive abilities are at their peak. This is the day to ask for the raise, send the bold email, host the dinner. The window narrows in two to three days — spend the energy you have instead of saving it.",
+    "Day 25. Progesterone is doing the heavy lifting. Your body is winding the cycle down — and the work you did at ovulation is now consolidating. This is a finishing week, not a starting week. Close loops you've left open. Say no to one thing that doesn't need you. The rooms you walk into this week want you softer, not louder.",
 };
 
 const initialBlocks = [
@@ -194,6 +213,7 @@ export default function UnifiedPlannerDemo() {
   const [cycleOpen, setCycleOpen] = useState(false);
   const [dayDetail, setDayDetail] = useState(null);
   const [blockEdit, setBlockEdit] = useState(null);
+  const [planOpen, setPlanOpen] = useState(false);
   const [blocks, setBlocks] = useState(() => {
     try {
       const raw = localStorage.getItem("femwell_unified_blocks");
@@ -215,7 +235,11 @@ export default function UnifiedPlannerDemo() {
 
   return (
     <div style={shell}>
-      <Header greeting={greeting} />
+      <Header greeting={greeting} onOpenPlan={() => setPlanOpen(true)} />
+
+      {/* INSIGHTS hero — first horizontal slider on the page */}
+      <InsightsHeroRow />
+
       <ListsSection />
 
       <Row label="Schedule & cycle">
@@ -223,11 +247,7 @@ export default function UnifiedPlannerDemo() {
         <CyclePreviewCard onExpand={() => setCycleOpen(true)} />
       </Row>
 
-      <Row label="Your day">
-        <DayPartCard part="morning" />
-        <DayPartCard part="afternoon" />
-        <DayPartCard part="evening" />
-      </Row>
+      <YourDayRow />
 
       <Row label="Your body today">
         <BodyTodayCard />
@@ -243,11 +263,6 @@ export default function UnifiedPlannerDemo() {
       <Row label="Rituals">
         <CreateRitualCard />
         {ritualBundles.map((b) => <RitualBundleCard key={b.id} bundle={b} />)}
-      </Row>
-
-      <Row label="Planning">
-        <PlanADayCard />
-        <WeekStripCard />
       </Row>
 
       <Row label="Mind & insight">
@@ -275,6 +290,8 @@ export default function UnifiedPlannerDemo() {
       </Row>
 
       <DemoFooter />
+
+      <PlanADaySheet open={planOpen} onClose={() => setPlanOpen(false)} />
 
       <AddFAB onClick={() => setAddOpen(true)} />
 
@@ -309,17 +326,464 @@ export default function UnifiedPlannerDemo() {
 }
 
 // ── Header ─────────────────────────────────────────────────────────────────
-function Header({ greeting }) {
+function Header({ greeting, onOpenPlan }) {
   return (
     <div style={headerStyle}>
       <div style={greetingRow}>
         <h1 style={greetingText}>{greeting}, {profile.name}</h1>
         <Sun size={18} style={{ color: C.gold, flexShrink: 0 }} />
       </div>
-      <div style={greetingSub}>
-        Monday · Cycle Day {profile.cycleDay} · {profile.phase[0].toUpperCase() + profile.phase.slice(1)}
+      <div style={headerSubRow}>
+        <span style={greetingSub}>
+          Monday 18 May · {profile.phase[0].toUpperCase() + profile.phase.slice(1)} Day {profile.cycleDay}
+        </span>
+        <button onClick={onOpenPlan} style={planPillBtn}>
+          <CalendarCheck size={11} /> Plan a day <ChevronDown size={11} />
+        </button>
       </div>
     </div>
+  );
+}
+
+// ── Plan a day — compact bottom sheet ─────────────────────────────────────
+function PlanADaySheet({ open, onClose }) {
+  const [mode, setMode] = useState("none");
+  const dateRef = useRef(null);
+  const [bpStep, setBpStep] = useState(0);
+  const [bpDate, setBpDate] = useState(null);
+  const [todayPlan, setTodayPlan] = useState([
+    "Deep work · investor update", "Lunch with Sam", "Wind-down · journal",
+  ]);
+  useEffect(() => {
+    if (!open) { setMode("none"); setBpStep(0); setBpDate(null); }
+  }, [open]);
+
+  function openDatePicker() {
+    const el = dateRef.current; if (!el) return;
+    if (typeof el.showPicker === "function") el.showPicker();
+    else { el.focus(); el.click(); }
+  }
+  function handleDateChange(e) {
+    const v = e.target.value;
+    if (v) { setBpDate(v); setMode("future"); setBpStep(0); }
+    e.target.value = "";
+  }
+
+  if (!open) return null;
+  return (
+    <div style={modalBackdrop} onClick={onClose}>
+      <div style={{ ...modalCard, maxHeight: "60vh", overflowY: "auto" }} onClick={(e) => e.stopPropagation()}>
+        <div style={modalHead}>
+          <span style={kicker}>PLAN A DAY</span>
+          <button onClick={onClose} style={drawerCloseBtn}><X size={14} /></button>
+        </div>
+
+        {mode === "none" && (
+          <>
+            <div style={planBtnRow}>
+              <button onClick={() => setMode("today")} style={planBtn}>
+                <CalendarCheck size={20} style={{ color: C.espresso }} />
+                <span style={planBtnLabel}>Today</span>
+              </button>
+              <button onClick={openDatePicker} style={planBtn}>
+                <Calendar size={20} style={{ color: C.espresso }} />
+                <span style={planBtnLabel}>Pick a date</span>
+              </button>
+            </div>
+            <input ref={dateRef} type="date" min={todayISO} onChange={handleDateChange} style={hiddenDateInput} tabIndex={-1} />
+          </>
+        )}
+
+        {mode === "today" && (
+          <>
+            <h3 style={modalTitle}>Today's plan</h3>
+            <ul style={todayPlanList}>
+              {todayPlan.map((p, i) => (
+                <li key={i} style={todayPlanLine}>
+                  <span style={todayPlanDot} />
+                  <span style={todayPlanText}>{p}</span>
+                </li>
+              ))}
+            </ul>
+            <button onClick={() => setTodayPlan((arr) => [...arr, "New plan item"])} style={addPlanLineBtn}>
+              <Plus size={11} /> Add item
+            </button>
+          </>
+        )}
+
+        {mode === "future" && bpDate && (
+          <FutureBlueprintInline date={bpDate} step={bpStep} setStep={setBpStep} onClose={onClose} />
+        )}
+      </div>
+    </div>
+  );
+}
+
+function FutureBlueprintInline({ date, step, setStep, onClose }) {
+  const d = new Date(date);
+  const todayDom = today.getDate();
+  const cycleDay = ((d.getDate() - todayDom + profile.cycleDay - 1 + profile.cycleLen * 3) % profile.cycleLen) + 1;
+  const phase = (cycleDay <= 5) ? "menstrual"
+    : (cycleDay <= 13) ? "follicular"
+    : (cycleDay <= 16) ? "ovulatory" : "luteal";
+  const [intention, setIntention] = useState("");
+  const [capacity, setCapacity] = useState("moderate");
+  return (
+    <>
+      <div style={blueprintDotsRow}>
+        {[0, 1, 2, 3].map((i) => (
+          <span key={i} style={{
+            ...blueprintDot,
+            background: i === step ? C.espresso : "rgba(58,44,26,0.20)",
+            transform: i === step ? "scale(1.4)" : "scale(1)",
+          }} />
+        ))}
+      </div>
+
+      {step === 0 && (
+        <>
+          <h3 style={modalTitle}>Predicted phase</h3>
+          <div style={{ padding: "10px 14px", borderRadius: 12, background: `${PHASE_LIGHT[phase]}1F`, border: `1px solid ${PHASE_LIGHT[phase]}55`, display: "flex", alignItems: "center", gap: 10 }}>
+            <span style={{ width: 14, height: 14, borderRadius: 9999, background: PHASE_LIGHT[phase] }} />
+            <div>
+              <div style={{ fontFamily: "'Fraunces', Georgia, serif", fontSize: 17, fontWeight: 500, color: C.espresso }}>
+                {phase[0].toUpperCase() + phase.slice(1)} · Day {cycleDay}
+              </div>
+              <div style={{ fontSize: 11, color: C.muted }}>
+                {d.toLocaleDateString(undefined, { weekday: "long", month: "short", day: "numeric" })}
+              </div>
+            </div>
+          </div>
+        </>
+      )}
+      {step === 1 && (
+        <>
+          <h3 style={modalTitle}>Set an intention</h3>
+          <textarea value={intention} onChange={(e) => setIntention(e.target.value)}
+            placeholder="What do you want from this day?" style={intentionTextarea} rows={4} autoFocus />
+        </>
+      )}
+      {step === 2 && (
+        <>
+          <h3 style={modalTitle}>Protect your energy</h3>
+          <div style={chipRowSpacing}>
+            {["light", "moderate", "full capacity"].map((c) => (
+              <button key={c} onClick={() => setCapacity(c)} style={{
+                ...modalChip,
+                background: capacity === c ? C.espresso : C.paperHi,
+                color: capacity === c ? C.cream : C.muted,
+                borderColor: capacity === c ? C.espresso : "rgba(58,44,26,0.18)",
+              }}>{c[0].toUpperCase() + c.slice(1)}</button>
+            ))}
+          </div>
+        </>
+      )}
+      {step === 3 && (
+        <>
+          <h3 style={modalTitle}>Ready</h3>
+          <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+            <div style={confirmLineStyle}>
+              <span style={miniLabel}>DATE</span>
+              <span style={{ fontFamily: "'Fraunces', Georgia, serif", fontSize: 14, fontWeight: 500, color: C.espresso }}>
+                {d.toLocaleDateString(undefined, { weekday: "short", month: "short", day: "numeric" })}
+              </span>
+            </div>
+            <div style={confirmLineStyle}>
+              <span style={miniLabel}>PHASE</span>
+              <span style={{ fontFamily: "'Fraunces', Georgia, serif", fontSize: 14, fontWeight: 500, color: C.espresso }}>
+                {phase[0].toUpperCase() + phase.slice(1)}
+              </span>
+            </div>
+            <div style={confirmLineStyle}>
+              <span style={miniLabel}>INTENTION</span>
+              <span style={{ fontFamily: "'Fraunces', Georgia, serif", fontSize: 14, fontWeight: 500, color: C.espresso }}>
+                {intention || "(none)"}
+              </span>
+            </div>
+            <div style={confirmLineStyle}>
+              <span style={miniLabel}>CAPACITY</span>
+              <span style={{ fontFamily: "'Fraunces', Georgia, serif", fontSize: 14, fontWeight: 500, color: C.espresso }}>
+                {capacity[0].toUpperCase() + capacity.slice(1)}
+              </span>
+            </div>
+          </div>
+        </>
+      )}
+
+      <div style={modalFoot}>
+        {step > 0 && <button onClick={() => setStep(step - 1)} style={modalCancelBtn}>Back</button>}
+        {step < 3 && <button onClick={() => setStep(step + 1)} style={modalSaveBtn}>Next</button>}
+        {step === 3 && <button onClick={onClose} style={modalSaveBtn}>Save blueprint</button>}
+      </div>
+    </>
+  );
+}
+
+// ── Sun illustration SVG ──────────────────────────────────────────────────
+function SunIllustration({ tone = C.gold, size = 70 }) {
+  const cx = size / 2, cy = size / 2;
+  const ray = (angle, r1, r2) => {
+    const a = (angle * Math.PI) / 180;
+    return {
+      x1: cx + Math.cos(a) * r1,
+      y1: cy + Math.sin(a) * r1,
+      x2: cx + Math.cos(a) * r2,
+      y2: cy + Math.sin(a) * r2,
+    };
+  };
+  const rays = Array.from({ length: 12 }, (_, i) => ray(i * 30, size * 0.30, size * 0.45));
+  return (
+    <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`} style={{ flexShrink: 0 }}>
+      <circle cx={cx} cy={cy} r={size * 0.18} fill="none" stroke={tone} strokeWidth={1.4} />
+      {rays.map((r, i) => (
+        <line key={i} x1={r.x1} y1={r.y1} x2={r.x2} y2={r.y2} stroke={tone} strokeWidth={1.2} strokeLinecap="round" />
+      ))}
+    </svg>
+  );
+}
+
+// ── Insights hero slider row (NEW) ────────────────────────────────────────
+function InsightsHeroRow() {
+  const phase = profile.phase;
+  const accent = PHASE_DEEP[phase];
+  const soft = PHASE_SOFT[phase];
+  const insight = phaseInsights[phase];
+  const chapter = phaseChapter[phase];
+  return (
+    <Row label="">
+      <HeroInsightCard
+        eyebrow={`CHAPTER ${chapter} · ${phase.toUpperCase()} · DAY ${profile.cycleDay}`}
+        title={insight.title}
+        body={insight.body}
+        footer="From Jess · this week"
+        accent={accent}
+        soft={soft}
+      />
+      <HeroInsightCard
+        eyebrow={`ASTRA · OVULATORY READING`}
+        title="Your peak window is closing"
+        body="You're at day 25 — luteal is in motion. The bold output of the last fortnight has done its work; this week the rooms you walk into want softness, not push. Listen for what's narrowing."
+        footer="From Astra · today"
+        accent={C.gold}
+        soft="#F0E0B0"
+      />
+      <HeroInsightCard
+        eyebrow={`PHASE · GENTLE NOTE`}
+        title="Sleep is the work this week"
+        body="In luteal, progesterone is doing the heavy lifting. Bed by 10:30. The rest of your day will thank you tomorrow."
+        footer="From your body · always"
+        accent={C.sage}
+        soft="#D8E5D3"
+      />
+    </Row>
+  );
+}
+
+function HeroInsightCard({ eyebrow, title, body, footer, accent, soft }) {
+  return (
+    <article style={{
+      ...heroCard,
+      background: `linear-gradient(135deg, ${soft} 0%, ${C.cream} 100%)`,
+      borderLeft: `4px solid ${accent}`,
+    }}>
+      <div style={heroCardRow}>
+        <p style={{ ...heroEyebrow, color: accent }}>{eyebrow}</p>
+        <div style={heroSunWrap}>
+          <SunIllustration tone={accent} size={70} />
+        </div>
+      </div>
+      <h2 style={heroTitle}>{title}</h2>
+      <p style={heroBody}>{body}</p>
+      <div style={heroFootRow}>
+        <Sparkles size={11} style={{ color: accent }} />
+        <span style={heroFootText}>{footer}</span>
+      </div>
+    </article>
+  );
+}
+
+// ── Your Day row — 3 tall cards (Morning · Afternoon · Evening) ──────────
+const YOUR_DAY_VARIANTS = [
+  {
+    id: "morning",
+    label: "MORNING",
+    Icon: Sun,
+    accent: C.gold,
+    sections: [
+      { name: "HABITS", items: [
+        { id: "h1", text: "Morning movement",   meta: "28d streak", done: false },
+        { id: "h2", text: "Hydration check",    meta: "8d streak",  done: false },
+        { id: "h3", text: "Supplements",        meta: "12d streak", done: false },
+        { id: "h4", text: "Gratitude journal",  meta: "35d streak", done: true  },
+      ]},
+      { name: "NOURISHMENT", items: [
+        { id: "n1", text: "Breakfast — Avocado toast + eggs", meta: "380 cal · P:18g C:32g F:22g", done: true },
+      ]},
+      { name: "CARE", items: [
+        { id: "c1", text: "Progesterone 200mg", meta: "9:00am", done: true },
+        { id: "c2", text: "Vitamin D 2000IU",   meta: "9:00am", done: false },
+      ]},
+      { name: "TASKS", items: [
+        { id: "t1", text: "Team standup",          meta: "Work", done: false },
+        { id: "t2", text: "Draft investor update", meta: "Work", done: false },
+      ]},
+    ],
+  },
+  {
+    id: "afternoon",
+    label: "AFTERNOON",
+    Icon: Activity,
+    accent: C.sage,
+    sections: [
+      { name: "HABITS", items: [
+        { id: "ah1", text: "Hydration check (midday)", meta: "", done: false },
+        { id: "ah2", text: "Walk after lunch",         meta: "", done: false },
+      ]},
+      { name: "NOURISHMENT", items: [
+        { id: "an1", text: "Lunch — Salmon + greens", meta: "planned",  done: false },
+        { id: "an2", text: "Snack — Not planned",     meta: "[+ Add]",  done: false, empty: true },
+      ]},
+      { name: "TASKS", items: [
+        { id: "at1", text: "Draft investor update (carry over)", meta: "Work", done: false },
+        { id: "at2", text: "Check emails",                       meta: "",     done: false },
+      ]},
+    ],
+  },
+  {
+    id: "evening",
+    label: "EVENING",
+    Icon: Moon,
+    accent: C.blush,
+    sections: [
+      { name: "TONIGHT'S REFLECTION", items: [
+        { id: "tr1", text: "One win today",        meta: "_______________", done: false, reflection: true },
+        { id: "tr2", text: "Energy rating (1–10)", meta: "_______________", done: false, reflection: true },
+        { id: "tr3", text: "Intention for tomorrow", meta: "_______________", done: false, reflection: true },
+      ]},
+      { name: "CARE", items: [
+        { id: "ec1", text: "Magnesium glycinate",   meta: "evening", done: false },
+        { id: "ec2", text: "Evening wind-down habit", meta: "",      done: false },
+      ]},
+      { name: "NOURISHMENT", items: [
+        { id: "en1", text: "Dinner — Not planned", meta: "[+ Add]", done: false, empty: true },
+      ]},
+      { name: "SLEEP TARGET", items: [
+        { id: "es1", text: "Aim for bed by 10:30pm",          meta: "",                             done: false, info: true },
+        { id: "es2", text: "Last night: 7h 20min · Good",     meta: "",                             done: false, info: true },
+      ]},
+    ],
+  },
+];
+
+function YourDayRow() {
+  const [active, setActive] = useState(0);
+  const trackRef = useRef(null);
+
+  function jumpTo(i) {
+    const clamped = Math.max(0, Math.min(YOUR_DAY_VARIANTS.length - 1, i));
+    setActive(clamped);
+    const track = trackRef.current; if (!track) return;
+    const child = track.children[clamped];
+    if (child) track.scrollTo({ left: child.offsetLeft - track.offsetLeft, behavior: "smooth" });
+  }
+  function onScroll() {
+    const track = trackRef.current; if (!track) return;
+    let best = 0, bestDist = Infinity;
+    Array.from(track.children).forEach((el, i) => {
+      const left = el.offsetLeft - track.offsetLeft;
+      const dist = Math.abs(left - track.scrollLeft);
+      if (dist < bestDist) { bestDist = dist; best = i; }
+    });
+    setActive(best);
+  }
+
+  const activeAccent = YOUR_DAY_VARIANTS[active].accent;
+
+  return (
+    <section style={rowShell} aria-label="Your day">
+      <div style={rowHead}>
+        <span style={kicker}>YOUR DAY</span>
+        <div style={rowNav}>
+          <button onClick={() => jumpTo(active - 1)} style={rowArrow}><ChevronLeft size={14} /></button>
+          {YOUR_DAY_VARIANTS.map((v, i) => (
+            <span key={i} style={{
+              ...rowDot,
+              background: i === active ? v.accent : "rgba(58,44,26,0.20)",
+              transform: i === active ? "scale(1.4)" : "scale(1)",
+            }} />
+          ))}
+          <button onClick={() => jumpTo(active + 1)} style={rowArrow}><ChevronRight size={14} /></button>
+        </div>
+      </div>
+      <div ref={trackRef} onScroll={onScroll} style={rowTrack}>
+        {YOUR_DAY_VARIANTS.map((v) => (
+          <div key={v.id} style={rowSlot}>
+            <YourDayCard variant={v} />
+          </div>
+        ))}
+      </div>
+    </section>
+  );
+}
+
+function YourDayCard({ variant }) {
+  const [sections, setSections] = useState(variant.sections);
+  function toggle(secName, id) {
+    setSections((sx) => sx.map((s) => s.name === secName
+      ? { ...s, items: s.items.map((it) => it.id === id ? { ...it, done: !it.done } : it) }
+      : s));
+  }
+  return (
+    <article style={{
+      ...yourDayCard,
+      borderLeft: `4px solid ${variant.accent}`,
+    }}>
+      <div style={yourDayHead}>
+        <span style={{ ...yourDayIconChip, background: `${variant.accent}1F`, color: variant.accent }}>
+          <variant.Icon size={14} />
+        </span>
+        <span style={{ ...yourDayLabel, color: variant.accent }}>{variant.label}</span>
+      </div>
+      {sections.map((sec) => (
+        <div key={sec.name} style={{ marginTop: 10 }}>
+          <div style={yourDaySectionLine}>
+            <span style={yourDaySectionRule} />
+            <span style={yourDaySectionName}>{sec.name}</span>
+            <span style={yourDaySectionRule} />
+          </div>
+          <ul style={{ ...bulletList, gap: 4, marginTop: 4 }}>
+            {sec.items.map((it) => (
+              <li key={it.id} style={yourDayItemRow}>
+                {!it.reflection && !it.info ? (
+                  <input type="checkbox" checked={it.done} onChange={() => toggle(sec.name, it.id)}
+                    style={{ accentColor: variant.accent, flexShrink: 0 }} />
+                ) : it.reflection ? (
+                  <span style={{ width: 16, height: 16, flexShrink: 0 }} />
+                ) : (
+                  <Moon size={14} style={{ color: C.muted, flexShrink: 0 }} />
+                )}
+                <span style={{
+                  fontSize: 12.5, flex: 1, color: C.espresso,
+                  textDecoration: it.done ? "line-through" : "none",
+                  opacity: it.done ? 0.5 : 1,
+                }}>{it.text}</span>
+                {it.meta && (
+                  <span style={{
+                    ...yourDayItemMeta,
+                    color: it.empty ? variant.accent : C.muted,
+                    fontStyle: it.empty ? "normal" : "normal",
+                    fontWeight: it.empty ? 700 : 600,
+                  }}>{it.meta}</span>
+                )}
+              </li>
+            ))}
+          </ul>
+        </div>
+      ))}
+      <button style={{ ...yourDayAddBtn, color: variant.accent, borderColor: `${variant.accent}55` }}>
+        <Plus size={12} /> Add
+      </button>
+    </article>
   );
 }
 
@@ -417,14 +881,14 @@ function SchedulePreviewCard({ blocks, onExpand }) {
 
 // ── Cycle preview card ────────────────────────────────────────────────────
 function CyclePreviewCard({ onExpand }) {
-  // Render a compact 7-day strip of this week
+  const tone = PHASE_DEEP[profile.phase];
   return (
     <article style={cardStyle}>
       <div style={cardHeadRow}>
-        <span style={{ ...iconChip, background: `${C.pOvulatory}1F`, color: C.pOvulatory }}><Calendar size={13} /></span>
+        <span style={{ ...iconChip, background: `${tone}1F`, color: tone }}><Calendar size={13} /></span>
         <div style={{ flex: 1 }}>
           <span style={kicker}>CYCLE</span>
-          <h3 style={{ ...cardTitle, margin: "2px 0 0" }}>May 2026 · Ovulatory week</h3>
+          <h3 style={{ ...cardTitle, margin: "2px 0 0" }}>May 2026 · Luteal week</h3>
         </div>
         <button onClick={onExpand} style={expandIconBtn} aria-label="Expand calendar">
           <Maximize2 size={13} />
@@ -436,16 +900,17 @@ function CyclePreviewCard({ onExpand }) {
           return (
             <div key={i} style={{
               ...miniWeekCell,
-              background: phaseDeep,
-              border: d.today ? `2px solid ${C.espresso}` : `1px solid transparent`,
+              background: d.today ? "#FFFFFF" : phaseDeep,
+              boxShadow: d.today ? "0 2px 8px rgba(58,44,26,0.15)" : "none",
+              border: d.today ? `1px solid rgba(58,44,26,0.12)` : `1px solid transparent`,
             }}>
-              <span style={miniWeekLetter}>{d.d}</span>
-              <span style={{ ...miniWeekNum, color: d.today ? C.cream : "rgba(255,255,255,0.95)" }}>{d.date}</span>
+              <span style={{ ...miniWeekLetter, color: d.today ? C.muted : "rgba(255,255,255,0.85)" }}>{d.d}</span>
+              <span style={{ ...miniWeekNum, color: d.today ? C.espresso : "rgba(255,255,255,0.95)" }}>{d.date}</span>
             </div>
           );
         })}
       </div>
-      <p style={cardSub}>Period predicted in <b>6 days</b> · {profile.confidence || 84}% confidence</p>
+      <p style={cardSub}>Period predicted in <b>3 days</b> · 84% confidence</p>
       <button onClick={onExpand} style={openFullBtn}>
         Open month view <ChevronRight size={12} />
       </button>
@@ -509,15 +974,17 @@ function BodyTodayCard() {
   useEffect(() => {
     try { localStorage.setItem("femwell_body_strip_expanded", expanded ? "1" : "0"); } catch {}
   }, [expanded]);
-  const pct = 80;
+  const pct = 55;
   const R = 30, CIRC = 2 * Math.PI * R;
   const offset = CIRC * (1 - pct / 100);
+  const phaseTone = PHASE_LIGHT[profile.phase];
+  const phaseToneDeep = PHASE_DEEP[profile.phase];
   return (
     <article style={cardStyle}>
       <div style={cardHeadRow}>
-        <span style={{ ...phaseChip, background: `${C.gold}1F`, color: C.goldDeep, border: `1px solid ${C.gold}55` }}>
-          <span style={{ width: 6, height: 6, borderRadius: 9999, background: C.gold, marginRight: 5 }} />
-          Ovulatory Day {profile.cycleDay}
+        <span style={{ ...phaseChip, background: `${phaseTone}1F`, color: phaseToneDeep, border: `1px solid ${phaseTone}55` }}>
+          <span style={{ width: 6, height: 6, borderRadius: 9999, background: phaseTone, marginRight: 5 }} />
+          {profile.phase[0].toUpperCase() + profile.phase.slice(1)} Day {profile.cycleDay}
         </span>
         <button onClick={() => setExpanded((v) => !v)} style={expandBtn}>
           {expanded ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
@@ -526,13 +993,13 @@ function BodyTodayCard() {
       <div style={ringRow}>
         <svg width={76} height={76} viewBox="0 0 76 76">
           <circle cx={38} cy={38} r={R} fill="none" stroke={C.faint} strokeWidth={6} />
-          <circle cx={38} cy={38} r={R} fill="none" stroke={C.gold} strokeWidth={6} strokeLinecap="round"
+          <circle cx={38} cy={38} r={R} fill="none" stroke={phaseToneDeep} strokeWidth={6} strokeLinecap="round"
             strokeDasharray={CIRC} strokeDashoffset={offset} transform="rotate(-90 38 38)" />
           <text x={38} y={42} textAnchor="middle" fontFamily="'Fraunces', Georgia, serif" fontSize={22} fontWeight="500" fill={C.espresso}>{pct}</text>
         </svg>
         <div style={{ flex: 1, marginLeft: 12 }}>
           <div style={ringTitle}>Capacity</div>
-          <div style={ringSub}>Peak energy window</div>
+          <div style={ringSub}>Settling rhythm</div>
         </div>
       </div>
       <div style={miniChipRow}>
@@ -566,9 +1033,9 @@ function BodyTodayCard() {
 
 function SmartViewCard() {
   const bullets = [
-    "High-intensity exercise window",
-    "Speak up in meetings — confidence peaks now",
-    "Prioritise iron-rich foods",
+    "Lower the activity bar — your body is finishing the cycle",
+    "Magnesium + warm cooked food make luteal kinder",
+    "Bed by 10:30 protects tomorrow's mood",
   ];
   return (
     <article style={cardStyle}>
@@ -587,18 +1054,19 @@ function SmartViewCard() {
 }
 
 function CycleZoneCard({ onOpen }) {
+  const tone = PHASE_DEEP[profile.phase];
   return (
     <article style={{ ...cardStyle, padding: 0, overflow: "hidden" }}>
-      <div style={cycleBanner}>
-        <span style={cycleBannerLabel}>OVULATORY</span>
-        <p style={cycleBannerSub}>Day {profile.cycleDay} of {profile.cycleLen} · next phase in 4 days</p>
+      <div style={{ ...cycleBanner, background: `linear-gradient(135deg, ${tone}22 0%, ${tone}08 100%)`, borderBottom: `1px solid ${tone}33` }}>
+        <span style={cycleBannerLabel}>{profile.phase.toUpperCase()}</span>
+        <p style={cycleBannerSub}>Day {profile.cycleDay} of {profile.cycleLen} · period in 3 days</p>
       </div>
       <div style={{ padding: "12px 14px" }}>
         <span style={kicker}>PREDICTED TODAY</span>
         <div style={chipBowl}>
-          <span style={softChip}><span style={{ ...softChipDot, background: C.gold }} /> Energy up</span>
-          <span style={softChip}><span style={{ ...softChipDot, background: C.sage }} /> Confidence up</span>
-          <span style={softChip}><span style={{ ...softChipDot, background: "#60B4FA" }} /> CM fertile</span>
+          <span style={softChip}><span style={{ ...softChipDot, background: C.muted }} /> Energy easing</span>
+          <span style={softChip}><span style={{ ...softChipDot, background: C.blush }} /> PMS rising</span>
+          <span style={softChip}><span style={{ ...softChipDot, background: tone }} /> Inner autumn</span>
         </div>
         <button onClick={onOpen} style={openCycleBtn}>
           Open cycle calendar <ChevronRight size={12} />
@@ -1185,7 +1653,10 @@ function FullCycleOverlay({ open, onClose, onDayTap }) {
       <div style={overlayHead}>
         <button onClick={onClose} style={overlayClose}><ArrowLeft size={16} /></button>
         <div style={{ flex: 1, textAlign: "center" }}>
-          <h2 style={overlayTitle}>{monthName}</h2>
+          <h2 style={overlayTitleWithRoman}>
+            <span style={cycleRomanBadge}>I</span>
+            {monthName}
+          </h2>
           <p style={calSub}>{profile.phase.toUpperCase()} WEEK · DAY {profile.cycleDay}</p>
         </div>
         <div style={{ display: "flex", gap: 6 }}>
@@ -1576,19 +2047,21 @@ function Row({ label, children }) {
     setIdx(best);
   }
   return (
-    <section style={rowShell} aria-label={label}>
-      <div style={rowHead}>
-        <span style={kicker}>{label.toUpperCase()}</span>
-        {count > 1 && (
-          <div style={rowNav}>
-            <button onClick={() => jumpTo(idx - 1)} style={rowArrow}><ChevronLeft size={14} /></button>
-            {Array.from({ length: count }).map((_, i) => (
-              <span key={i} style={{ ...rowDot, background: i === idx ? C.espresso : "rgba(58,44,26,0.20)" }} />
-            ))}
-            <button onClick={() => jumpTo(idx + 1)} style={rowArrow}><ChevronRight size={14} /></button>
-          </div>
-        )}
-      </div>
+    <section style={rowShell} aria-label={label || "row"}>
+      {(label || count > 1) && (
+        <div style={rowHead}>
+          <span style={kicker}>{label ? label.toUpperCase() : ""}</span>
+          {count > 1 && (
+            <div style={rowNav}>
+              <button onClick={() => jumpTo(idx - 1)} style={rowArrow}><ChevronLeft size={14} /></button>
+              {Array.from({ length: count }).map((_, i) => (
+                <span key={i} style={{ ...rowDot, background: i === idx ? C.espresso : "rgba(58,44,26,0.20)" }} />
+              ))}
+              <button onClick={() => jumpTo(idx + 1)} style={rowArrow}><ChevronRight size={14} /></button>
+            </div>
+          )}
+        </div>
+      )}
       <div ref={trackRef} onScroll={onScroll} style={rowTrack}>
         {Children.map(children, (child, i) => <div key={i} style={rowSlot}>{child}</div>)}
       </div>
@@ -2387,3 +2860,141 @@ const demoFooter = {
   textAlign: "center",
 };
 const demoFooterText = { fontSize: 11, color: C.muted, margin: "6px 0 0", lineHeight: 1.55 };
+
+// ── Header sub-row (greeting + Plan a day pill) ──────────────────────────
+const headerSubRow = {
+  display: "flex", justifyContent: "space-between", alignItems: "center",
+  marginTop: 4, gap: 8, flexWrap: "wrap",
+};
+const planPillBtn = {
+  display: "inline-flex", alignItems: "center", gap: 4,
+  padding: "5px 12px", borderRadius: 9999,
+  background: C.paperHi, color: C.espresso,
+  border: "1px solid rgba(58,44,26,0.15)",
+  fontFamily: "'Inter', sans-serif",
+  fontSize: 11, fontWeight: 700, letterSpacing: "0.04em",
+  cursor: "pointer",
+};
+
+// ── Hero insight card ─────────────────────────────────────────────────────
+const heroCard = {
+  borderRadius: 20,
+  padding: "20px 22px 18px",
+  display: "flex", flexDirection: "column", gap: 8,
+  minHeight: 220,
+  position: "relative",
+  boxSizing: "border-box",
+  boxShadow: "0 2px 12px rgba(58,44,26,0.08)",
+};
+const heroCardRow = {
+  display: "flex", alignItems: "flex-start", justifyContent: "space-between",
+};
+const heroEyebrow = {
+  fontSize: 11, fontWeight: 700, letterSpacing: "0.18em",
+  textTransform: "uppercase", margin: 0,
+};
+const heroSunWrap = {
+  flexShrink: 0,
+  opacity: 0.85,
+};
+const heroTitle = {
+  fontFamily: "'Fraunces', Georgia, serif",
+  fontSize: 26, fontWeight: 500, color: C.espresso,
+  margin: "4px 0 0", lineHeight: 1.2, letterSpacing: "-0.015em",
+};
+const heroBody = {
+  fontSize: 15, color: "rgba(58,44,26,0.78)",
+  margin: "4px 0 0", lineHeight: 1.6,
+};
+const heroFootRow = {
+  display: "flex", alignItems: "center", gap: 5,
+  marginTop: 8,
+};
+const heroFootText = {
+  fontSize: 11, color: C.muted, fontWeight: 600,
+};
+
+// ── Your Day card (tall) ──────────────────────────────────────────────────
+const yourDayCard = {
+  background: C.cream,
+  borderRadius: 18,
+  padding: "16px 18px 16px 14px",
+  boxShadow: "0 2px 12px rgba(58,44,26,0.08)",
+  minHeight: 380,
+  height: "100%",
+  display: "flex", flexDirection: "column", gap: 4,
+  boxSizing: "border-box",
+};
+const yourDayHead = {
+  display: "flex", alignItems: "center", gap: 8,
+};
+const yourDayIconChip = {
+  width: 28, height: 28, borderRadius: 9999,
+  display: "inline-flex", alignItems: "center", justifyContent: "center",
+};
+const yourDayLabel = {
+  fontFamily: "'Inter', sans-serif",
+  fontSize: 11, fontWeight: 700, letterSpacing: "0.18em",
+};
+const yourDaySectionLine = {
+  display: "flex", alignItems: "center", gap: 6,
+  padding: "4px 0",
+};
+const yourDaySectionRule = {
+  flex: 1, height: 1, background: "rgba(58,44,26,0.10)",
+};
+const yourDaySectionName = {
+  fontSize: 9, fontWeight: 700, letterSpacing: "0.18em",
+  color: C.muted,
+};
+const yourDayItemRow = {
+  display: "flex", alignItems: "center", gap: 8,
+  padding: "4px 0",
+};
+const yourDayItemMeta = {
+  fontSize: 9.5, letterSpacing: "0.08em",
+};
+const yourDayAddBtn = {
+  alignSelf: "flex-start", marginTop: 10,
+  display: "inline-flex", alignItems: "center", gap: 4,
+  padding: "5px 12px", borderRadius: 9999,
+  background: "transparent",
+  border: "1px dashed",
+  fontFamily: "'Inter', sans-serif",
+  fontSize: 11, fontWeight: 700, letterSpacing: "0.04em",
+  cursor: "pointer",
+};
+
+// ── Plan a day sheet ──────────────────────────────────────────────────────
+const blueprintDotsRow = {
+  display: "flex", justifyContent: "center", gap: 5, margin: "8px 0 12px",
+};
+const blueprintDot = {
+  width: 7, height: 7, borderRadius: 9999,
+  transition: "all 200ms ease",
+};
+const confirmLineStyle = {
+  padding: "8px 12px", borderRadius: 10,
+  background: C.paperHi, border: "1px solid rgba(58,44,26,0.08)",
+  display: "flex", flexDirection: "column", gap: 2,
+};
+const addPlanLineBtn = {
+  marginTop: 8,
+  display: "inline-flex", alignItems: "center", gap: 4,
+  padding: "6px 12px", borderRadius: 9999,
+  background: C.cream, border: "1px dashed rgba(58,44,26,0.25)",
+  color: C.espresso, fontSize: 11, fontWeight: 700, cursor: "pointer",
+};
+
+// ── Cycle overlay roman numeral badge ─────────────────────────────────────
+const overlayTitleWithRoman = {
+  fontFamily: "'Fraunces', Georgia, serif",
+  fontSize: 22, fontWeight: 500, color: C.espresso,
+  margin: "2px 0 0", letterSpacing: "-0.01em",
+  display: "inline-flex", alignItems: "baseline", gap: 8,
+};
+const cycleRomanBadge = {
+  fontFamily: "'Fraunces', Georgia, serif",
+  fontSize: 14, fontWeight: 600, fontStyle: "italic",
+  color: C.gold, letterSpacing: "0.04em",
+};
