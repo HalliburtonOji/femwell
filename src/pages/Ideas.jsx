@@ -3,6 +3,7 @@ import BiorhythmTimeline from "@/components/BiorhythmTimeline";
 import MissionControl from "@/components/MissionControl";
 import AccordionPlanner from "@/components/AccordionPlanner";
 import MorningDashboard from "@/components/MorningDashboard";
+import JournalDemo from "@/components/JournalDemo";
 
 // ─────────────────────────────────────────────────────────────────────────────
 // /Ideas — interactive design lab. 4 candidate Planner reskins.
@@ -6296,7 +6297,7 @@ export default function Ideas() {
         fontSize: 11, letterSpacing: "0.18em", fontWeight: 700,
         textTransform: "uppercase",
       }}>
-        Design Lab · Dev Only · Biorhythm · Mission · Accordion · Dashboard · Designs · Research · Life Stages · Scheduling
+        Design Lab · Dev Only · Biorhythm · Mission · Accordion · Dashboard · Designs · Research · Life Stages · Scheduling · Journal
       </div>
 
       {/* Tab bar — Biorhythm / Designs / Research / Life Stages / Scheduling */}
@@ -6318,6 +6319,7 @@ export default function Ideas() {
             { id: "research", label: "Research" },
             { id: "lifestages", label: "Life Stages" },
             { id: "scheduling", label: "Scheduling" },
+            { id: "journal", label: "Journal" },
           ].map((t) => {
             const active = t.id === topTab;
             return (
@@ -6460,6 +6462,7 @@ export default function Ideas() {
           <MorningDashboard />
         </div>
       )}
+      {topTab === "journal" && <JournalDemo />}
       {topTab === "research" && <ResearchView />}
       {topTab === "lifestages" && <LifeStagesView />}
       {topTab === "scheduling" && <SchedulingView />}
