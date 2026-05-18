@@ -1,34 +1,31 @@
 import { useState } from 'react';
-import { ExternalLink, Headphones } from 'lucide-react';
+import { Play, ExternalLink } from 'lucide-react';
 import SaveHeartButton from '@/components/lifestyle/foryou/SaveHeartButton';
 import { getCategoryGradient, attachFallbackOverlay } from '@/utils/imageFallback';
+import { usePodcastPlayer } from '@/hooks/usePodcastPlayer';
 import PodcastListenSheet from './PodcastListenSheet';
 
-function ListenIndicator() {
-  // Halli 2026-05-18: podcasts are external-link-only. The hover state on the
-  // card art now reads "Listen in your app" with a headphones glyph so the
-  // affordance is clear before the listen sheet opens.
+function PlayIndicator() {
   return (
     <div style={{
       position: 'absolute',
       top: '50%', left: '50%',
       transform: 'translate(-50%, -50%)',
-      padding: '8px 14px',
-      borderRadius: 9999,
-      background: 'rgba(20,16,32,0.55)',
+      width: 56, height: 56,
+      borderRadius: '50%',
+      background: 'rgba(20,16,32,0.5)',
       display: 'flex',
       alignItems: 'center',
-      gap: 6,
+      justifyContent: 'center',
       pointerEvents: 'none',
-      color: 'var(--cream)',
-      fontFamily: "'Inter', sans-serif",
-      fontSize: 11,
-      fontWeight: 700,
-      letterSpacing: '0.08em',
-      textTransform: 'uppercase',
     }}>
-      <Headphones size={14} strokeWidth={2} />
-      Listen in your app
+      <Play
+        size={24}
+        strokeWidth={1.5}
+        fill="var(--cream)"
+        color="var(--cream)"
+        style={{ marginLeft: 2 }}
+      />
     </div>
   );
 }
@@ -52,20 +49,20 @@ export default function PodcastCard({ item, saved, hasPhaseTag, onSave, onUntag 
   const articleLabel = isPractice ? 'Practice' : 'Podcast';
 
   const [sheetOpen, setSheetOpen] = useState(false);
+  const player = usePodcastPlayer();
 
-  // Halli 2026-05-18 — podcasts are external-link-only.
-  //
-  // The in-app PodcastPlayerProvider stays mounted (it still owns the
-  // singleton <audio> for any guided practices or meditations we host),
-  // but PodcastCard no longer routes to it. Every podcast card tap opens
-  // the PodcastListenSheet so the user picks their own app — Spotify,
-  // Apple Podcasts, Pocket Casts, or the show page. This fixes the
-  // navigation-pause issue (audio could cut when leaving Lifestyle) and
-  // matches Halli's preference: podcasts belong in podcast apps, not
-  // inside FemWell's player.
-  //
-  // Practice rows (legacy code path — feature removed from Listen) keep
-  // the direct content_url window.open behaviour for safety.
+  // Phase 2 tap behaviour (spec §2.5):
+  //   - Primary tap on card body → play episode in-app via PodcastPlayer.
+  //     Mini-player appears at bottom of viewport, ExpandedPlayer one
+  //     more tap away.
+  //   - Falls back to opening the link-out sheet if (a) the audio_url is
+  //     missing or (b) the PodcastPlayerProvider isn't mounted (e.g.
+  //     rendered outside Layout).
+  //   - Bottom-right ExternalLink "↗" button always opens the link-out
+  //     sheet — the Phase 1 link-out flow is now a secondary affordance.
+  // Practice rows fall through to the legacy content_url path. The
+  // PRACTICE feature was removed from Listen in Cowork's 8fa3e6f, so this
+  // branch is effectively dead in main but kept for safety.
   const handleClick = () => {
     if (isPractice) {
       if (item.content_url) {
@@ -73,6 +70,11 @@ export default function PodcastCard({ item, saved, hasPhaseTag, onSave, onUntag 
       }
       return;
     }
+    if (player && item.audio_url) {
+      player.play(item);
+      return;
+    }
+    // No in-app player available → graceful fallback to link-out sheet.
     setSheetOpen(true);
   };
 
@@ -156,8 +158,8 @@ export default function PodcastCard({ item, saved, hasPhaseTag, onSave, onUntag 
           />
         </div>
 
-        {/* Listen-in-app indicator (replaces the old in-app Play icon) */}
-        <ListenIndicator />
+        {/* Play indicator */}
+        <PlayIndicator />
       </div>
 
       {/* Body */}

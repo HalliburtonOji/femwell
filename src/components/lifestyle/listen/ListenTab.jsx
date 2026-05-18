@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { base44 } from '@/api/base44Client';
 import TikTokRail from './TikTokRail';
 import PodcastRail from './PodcastRail';
+import ExternalPodcastsRail from './ExternalPodcastsRail';
 import ListenGrid from './ListenGrid';
 import Toast from '@/components/lifestyle/foryou/Toast';
 
@@ -207,6 +208,11 @@ export default function ListenTab({ categoryFilter, activeChip = 'all' }) {
           onSave={handleSave}
           onUntag={handleUntag}
         />
+
+        {/* Curated external-link podcasts (Apple / Spotify / YouTube /
+            Pocket Casts). 2026-05-18 — added alongside the in-app
+            PodcastRail per Halli's request. */}
+        <ExternalPodcastsRail />
 
         <TikTokRail
           items={tikTokItems}

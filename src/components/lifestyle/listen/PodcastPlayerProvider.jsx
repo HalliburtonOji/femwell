@@ -6,6 +6,34 @@ const COMPLETED_THRESHOLD = 0.95; // 95% of duration → mark completed
 const PERSIST_DEBOUNCE_MS = 5000;
 const STORAGE_KEY_SPEED = 'fw_podcast_playback_rate';
 
+// ─────────────────────────────────────────────────────────────────────────────
+// Module-level singleton — survives every component unmount.
+//
+// 2026-05-18 audio-cutout fix (Halli reported audio cuts when leaving the
+// Lifestyle tab). Root cause: useRef + useEffect cleanup paused the audio
+// AND removed event listeners when the provider unmounted, e.g. on
+// StrictMode double-mount or any Layout re-render that re-mounted the
+// provider. The audio <audio> stayed in the DOM but went silent because
+// the cleanup explicitly called a.pause().
+//
+// Fix shape: pull the audio element + playing state into module scope so
+// (1) the audio survives any unmount, (2) a remounted provider re-attaches
+// to the same element and reads the current state, and (3) the cleanup
+// stops calling a.pause()/a.remove(). This matches the audioManager
+// pattern Halli specified.
+// ─────────────────────────────────────────────────────────────────────────────
+let _singletonAudio = null;
+let _singletonEpisode = null; // current episode object, mirrors React state
+let _singletonRate = 1.0;
+// Subscribers used so other components could read state directly; today
+// only the provider subscribes, but the hook is here for future use.
+const _singletonSubscribers = new Set();
+function _notifySingleton() {
+  for (const fn of _singletonSubscribers) {
+    try { fn(); } catch { /* noop */ }
+  }
+}
+
 // Singleton-ish podcast player context. Wrapped around the app shell in
 // Layout.jsx. Manages a single <audio> element appended to document.body
 // for its lifetime — that's the key to background-tab + lock-screen audio
@@ -91,17 +119,39 @@ export function PodcastPlayerProvider({ children }) {
   // root so it survives every component unmount inside the app.
   useEffect(() => {
     if (audioRef.current) return;
-    const a = document.createElement('audio');
-    a.preload = 'metadata';
-    // INTENTIONAL: do NOT set a.crossOrigin = 'anonymous'.
-    // Most podcast CDNs (On Being's host, Megaphone, Simplecast, Libsyn,
-    // BBC, NPR, etc.) don't return Access-Control-Allow-Origin headers.
-    // Setting crossOrigin forces the browser to expect those headers and
-    // reject the load when they're missing — that's what produced the
-    // "Playback error" the founder saw on the Michael Pollan / On Being
-    // episode. Plain HTMLAudio playback (no Web Audio API decoding)
-    // works without CORS, so leaving crossOrigin unset is correct.
-    document.body.appendChild(a);
+
+    // Reuse the module-level singleton if a previous provider instance
+    // already created one. This is the key audio-cutout fix — when the
+    // provider remounts (StrictMode double-mount, dev hot reload, or any
+    // Layout re-render), we attach to the SAME audio element so playback
+    // continues seamlessly.
+    let a;
+    if (_singletonAudio) {
+      a = _singletonAudio;
+      // Re-sync React state from the live audio element. If a previous
+      // instance was playing, this is what restores the mini-player UI on
+      // navigation back to Lifestyle.
+      if (_singletonEpisode) {
+        setCurrentEpisode(_singletonEpisode);
+        currentEpisodeRef.current = _singletonEpisode;
+      }
+      if (!a.paused) setIsPlaying(true);
+      setPosition(a.currentTime || 0);
+      setDuration(a.duration || 0);
+    } else {
+      a = document.createElement('audio');
+      a.preload = 'metadata';
+      // INTENTIONAL: do NOT set a.crossOrigin = 'anonymous'.
+      // Most podcast CDNs (On Being's host, Megaphone, Simplecast, Libsyn,
+      // BBC, NPR, etc.) don't return Access-Control-Allow-Origin headers.
+      // Setting crossOrigin forces the browser to expect those headers and
+      // reject the load when they're missing — that's what produced the
+      // "Playback error" the founder saw on the Michael Pollan / On Being
+      // episode. Plain HTMLAudio playback (no Web Audio API decoding)
+      // works without CORS, so leaving crossOrigin unset is correct.
+      document.body.appendChild(a);
+      _singletonAudio = a;
+    }
     audioRef.current = a;
 
     const onTime = () => {
@@ -169,6 +219,11 @@ export function PodcastPlayerProvider({ children }) {
     a.addEventListener('ended', onEnd);
 
     return () => {
+      // 2026-05-18 audio-cutout fix — do NOT pause or remove the audio
+      // element on provider unmount. The DOM <audio> + module-level
+      // singleton survive so playback continues across navigation. The
+      // remounted provider will re-attach its own listeners and re-sync
+      // React state from the live element.
       a.removeEventListener('timeupdate', onTime);
       a.removeEventListener('loadedmetadata', onMeta);
       a.removeEventListener('durationchange', onMeta);
@@ -176,8 +231,6 @@ export function PodcastPlayerProvider({ children }) {
       a.removeEventListener('pause', onPause);
       a.removeEventListener('error', onErr);
       a.removeEventListener('ended', onEnd);
-      try { a.pause(); } catch { /* noop */ }
-      try { a.remove(); } catch { /* noop */ }
       audioRef.current = null;
     };
     // intentional: mount once, lifetime of provider
@@ -240,6 +293,8 @@ export function PodcastPlayerProvider({ children }) {
     if (switching) {
       setCurrentEpisode(episode);
       currentEpisodeRef.current = episode;
+      _singletonEpisode = episode; // module-level so a remounted provider can re-sync
+      _notifySingleton();
       setPosition(0);
       setDuration(Number(episode.duration_seconds) || 0);
       a.src = audioUrl;
@@ -313,6 +368,8 @@ export function PodcastPlayerProvider({ children }) {
     if (a) { try { a.pause(); a.removeAttribute('src'); a.load(); } catch { /* noop */ } }
     setCurrentEpisode(null);
     currentEpisodeRef.current = null;
+    _singletonEpisode = null;
+    _notifySingleton();
     setIsPlaying(false);
     setPosition(0);
     setDuration(0);

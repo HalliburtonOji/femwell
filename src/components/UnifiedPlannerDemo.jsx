@@ -35,6 +35,9 @@ import {
   StickyNote, Stethoscope, ListChecks, ArrowLeft, ArrowRight,
   Maximize2,
 } from "lucide-react";
+// Real production cycle calendar — same component Planner.jsx mounts on the
+// Cycle tab. Imported so the demo doesn't drift from production visuals.
+import MonthRibbon from "@/components/planner/cycle/MonthRibbon";
 
 // ── Tokens ─────────────────────────────────────────────────────────────────
 const C = {
@@ -75,6 +78,13 @@ const PHASE_DEEP = {
 
 // ── Mock ──────────────────────────────────────────────────────────────────
 const profile = { name: "Halli", phase: "luteal", cycleDay: 25, cycleLen: 28 };
+// MonthRibbon expects the production UserProfile shape. Today is May 18 cycle
+// day 25 → last_period_start_date = April 24. Period length 5, cycle 28.
+const mockMonthRibbonProfile = {
+  last_period_start_date: "2026-04-24",
+  cycle_avg_length: 28,
+  period_length: 5,
+};
 const PHASE_SOFT = {
   menstrual:  C.softMenstrual,
   follicular: C.softFollicular,
@@ -253,11 +263,6 @@ export default function UnifiedPlannerDemo() {
         <BodyTodayCard />
         <SmartViewCard />
         <CycleZoneCard onOpen={() => setCycleOpen(true)} />
-      </Row>
-
-      <Row label="Morning stack">
-        <MorningStackCard />
-        <ConsistencyCard />
       </Row>
 
       <Row label="Rituals">
@@ -2142,47 +2147,26 @@ function ScheduleBlock({ block, onTap }) {
 }
 
 function FullCycleOverlay({ open, onClose, onDayTap }) {
-  const [view, setView] = useState({ year: today.getFullYear(), month: today.getMonth() });
   if (!open) return null;
-  const weeks = buildMonth(view.year, view.month);
-  const monthName = new Date(view.year, view.month, 1).toLocaleString(undefined, { month: "long", year: "numeric" });
-  function step(delta) {
-    let m = view.month + delta, y = view.year;
-    if (m < 0) { m = 11; y--; }
-    if (m > 11) { m = 0; y++; }
-    setView({ year: y, month: m });
-  }
   return (
     <div style={overlayShell} role="dialog" aria-modal="true">
       <div style={overlayHead}>
         <button onClick={onClose} style={overlayClose}><ArrowLeft size={16} /></button>
         <div style={{ flex: 1, textAlign: "center" }}>
-          <h2 style={overlayTitleWithRoman}>
-            <span style={cycleRomanBadge}>I</span>
-            {monthName}
-          </h2>
-          <p style={calSub}>{profile.phase.toUpperCase()} WEEK · DAY {profile.cycleDay}</p>
+          <h2 style={overlayTitleWithRoman}>Cycle</h2>
+          <p style={calSub}>{profile.phase.toUpperCase()} · DAY {profile.cycleDay}</p>
         </div>
-        <div style={{ display: "flex", gap: 6 }}>
-          <button onClick={() => step(-1)} style={overlayClose}><ArrowLeft size={14} /></button>
-          <button onClick={() => step(1)} style={overlayClose}><ArrowRight size={14} /></button>
-        </div>
+        <span style={{ width: 32, height: 32 }} />
       </div>
       <div style={{ padding: "0 16px 30px" }}>
-        <div style={dowRow}>
-          {["M","T","W","T","F","S","S"].map((d, i) => <span key={i} style={dowLabel}>{d}</span>)}
-        </div>
-        <div style={weekStack}>
-          {weeks.map((week, wi) => (
-            <WeekPill key={wi} week={week} onDayTap={onDayTap} />
-          ))}
-        </div>
-        <div style={cycleLegendRow}>
-          <span style={cycleLegendChip}><span style={{ width: 10, height: 10, borderRadius: 9999, background: C.pMenstrual }} /> menstrual</span>
-          <span style={cycleLegendChip}><span style={{ width: 10, height: 10, borderRadius: 9999, background: C.pFollicular }} /> follicular</span>
-          <span style={cycleLegendChip}><span style={{ width: 10, height: 10, borderRadius: 9999, background: C.pOvulatory }} /> ovulatory</span>
-          <span style={cycleLegendChip}><span style={{ width: 10, height: 10, borderRadius: 9999, background: C.pLuteal }} /> luteal</span>
-        </div>
+        {/* Real production MonthRibbon — same component Planner.jsx mounts on
+            the Cycle tab. Phase gradient ribbons, activity bars per day, plum
+            today marker, all sourced from the production palette. */}
+        <MonthRibbon
+          profile={mockMonthRibbonProfile}
+          habitLogs={[]}
+          onNavigateToToday={(iso) => onDayTap(iso)}
+        />
       </div>
     </div>
   );
