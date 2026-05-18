@@ -1,25 +1,18 @@
-// PlannerV2Shell — pixel-faithful production rendering of the
-// signed-off UnifiedPlannerDemo layout.
+// PlannerV2Shell — production renderer of UnifiedPlannerDemo's layout.
 //
-// Halli signed off on UnifiedPlannerDemo's visual layout. This shell
-// MUST match it exactly — same wrapper, same hero band, same row
-// order, same card designs. The ONLY differences from the demo:
-//   1. Real entity data is fed to each row instead of mock data.
-//   2. The demo's Stage / Phase dev controls are replaced by the
-//      DevStageSwitcher (so users can still preview a different
-//      stage in production without leaving the page).
-//   3. The demo's "v2 row test harness" eyebrow + designer h1 copy
-//      become production copy ("Today" + phase-aware eyebrow).
+// Visual rule: this shell MUST render the same DOM tree and styles as
+// UnifiedPlannerDemo. The only differences are:
+//   1. Real entity data is fed to each row.
+//   2. The demo's Stage / Phase dev pickers are replaced by the production
+//      DevStageSwitcher (sits in the same bottom dev-controls slot the
+//      demo uses).
+//   3. The demo's "v2 row test harness" eyebrow + designer h1 are swapped
+//      for production-appropriate phase + cycleDay eyebrow + "Today" h1.
 //
-// Life-stage logic is purely ADDITIVE — it personalises CONTENT inside
-// existing rows (pregnancy kick-counter in CareRow, perimenopause hot
-// flush chip in Symptom Log, teen gentler prompts, etc.). It NEVER
-// changes the row order, the card design, the colour scheme, or the
-// page chrome. The row components already accept `stage` as a prop
-// and reshape themselves accordingly — the shell just threads it
-// through.
-//
-// Brand rule: no emoji. Lucide icons + custom SVG only.
+// Life-stage and condition rows are ADDITIVE — they insert content
+// between BodyTodayRow and TimeOfDayRow without changing the rest of
+// the layout. Reproductive users with no conditions see exactly the
+// demo's 9 rows in their original order.
 
 import React from "react";
 import { Sparkles } from "lucide-react";
@@ -38,10 +31,7 @@ import StageRow          from "./StageRows";
 import ConditionRow      from "./ConditionRows";
 import { C } from "./tokens";
 
-// ─────────────────────────────────────────────────────────────────────────────
-// Adapters — convert Planner.jsx entity shapes to row-component prop
-// shapes. Tiny pure functions: no fetches, no state, no side effects.
-// ─────────────────────────────────────────────────────────────────────────────
+// ─── Adapters ───────────────────────────────────────────────────────────────
 
 function adaptScheduleEvents({ personalTasks = [], dailyPlan }) {
   const tasks = personalTasks
@@ -88,75 +78,36 @@ function adaptTomorrowPhase(currentPhase) {
   return ORDER[currentPhase] || "follicular";
 }
 
-// Permissive phase-aware subtitle for the hero band. Matches the
-// signed-off demo's descriptive paragraph slot.
-const PHASE_SUBTITLE = {
-  menstrual:  "Soft pace today. The body is doing the work.",
-  follicular: "Something new wants to begin.",
-  ovulatory:  "Your voice carries today.",
-  luteal:     "Boundaries feel natural now.",
-};
-
-// ─────────────────────────────────────────────────────────────────────────────
-// Hero band — matches UnifiedPlannerDemo's DemoHeader visual chrome
-// exactly: same gradient, same padding, same eyebrow style, same h1
-// style, same descriptor paragraph style. Only the content differs
-// (real phase / cycleDay instead of "v2 row test harness"; "Today"
-// instead of "One day. Every row, every stage.").
+// ─── Shell hero ─────────────────────────────────────────────────────────────
 //
-// DevStageSwitcher occupies the slot where the demo's Stage / Phase
-// dev controls live, so users can still preview stages without
-// leaving the page.
-// ─────────────────────────────────────────────────────────────────────────────
+// This component IS the demo's DemoHeader. Same gradient, same padding,
+// same border, same eyebrow style, same h1 style, same paragraph style,
+// same bottom dev-controls flex row. Only the content varies.
 
 function ShellHero({
-  phase, cycleDay, plannerConfig,
+  phase, cycleDay,
   effectiveStage, realStage, effectiveConditions, realConditions,
   onStageChange, onConditionsChange, profileId, onProfileUpdated,
 }) {
   const phaseLabel = phase ? phase[0].toUpperCase() + phase.slice(1) : null;
   const eyebrowText = phaseLabel
-    ? `${phaseLabel}${cycleDay ? ` · DAY ${cycleDay}` : ""}${plannerConfig?.cycleTabName && plannerConfig.cycleTabName !== "Cycle" ? ` · ${plannerConfig.cycleTabName.toUpperCase()}` : ""}`
+    ? `${phaseLabel}${cycleDay ? ` · DAY ${cycleDay}` : ""}`
     : "Today";
-  const subtitle = (phase && PHASE_SUBTITLE[phase]) || "One day, in your shape.";
 
   return (
     <div style={{
       padding: "24px 16px 14px",
       background: `linear-gradient(180deg, ${C.cream} 0%, ${C.paper} 100%)`,
       borderBottom: `1px solid rgba(58,44,26,0.08)`,
-      position: "relative", // anchors the DevStageSwitcher panel
-      zIndex: 5,            // keep panel popup above row content
     }}>
-      <div style={{ maxWidth: 640, margin: "0 auto", position: "relative" }}>
-        {/* Top row: eyebrow on left, DevStageSwitcher on right.
-            DevStageSwitcher's panel uses `position: absolute; right: 0` so
-            mounting on the right keeps the popup onscreen. Previously the
-            switcher was tucked at the bottom-left of the hero band, where
-            the right-aligned panel popped off-screen. */}
+      <div style={{ maxWidth: 640, margin: "0 auto" }}>
         <div style={{
-          display: "flex", alignItems: "center", justifyContent: "space-between",
-          gap: 10, minHeight: 28,
+          display: "flex", alignItems: "center", gap: 6,
+          fontSize: 10, letterSpacing: "0.18em", textTransform: "uppercase",
+          color: C.muted, fontWeight: 700,
+          fontFamily: "'Inter', system-ui, sans-serif",
         }}>
-          <div style={{
-            display: "flex", alignItems: "center", gap: 6,
-            fontSize: 10, letterSpacing: "0.18em", textTransform: "uppercase",
-            color: C.muted, fontWeight: 700,
-            fontFamily: "'Inter', system-ui, sans-serif",
-            flex: 1, minWidth: 0,
-          }}>
-            <Sparkles size={11} style={{ color: C.gold }} /> {eyebrowText}
-          </div>
-          <DevStageSwitcher
-            effectiveStage={effectiveStage}
-            realStage={realStage}
-            effectiveConditions={effectiveConditions}
-            realConditions={realConditions}
-            onChange={onStageChange}
-            onConditionsChange={onConditionsChange}
-            profileId={profileId}
-            onProfileUpdated={onProfileUpdated}
-          />
+          <Sparkles size={11} style={{ color: C.gold }} /> {eyebrowText}
         </div>
         <h1 style={{
           fontFamily: "'Fraunces', Georgia, serif",
@@ -169,30 +120,37 @@ function ShellHero({
           fontFamily: "'Inter', system-ui, sans-serif", fontSize: 13,
           color: C.muted, margin: 0, lineHeight: 1.5,
         }}>
-          {subtitle}
+          One day, in your shape.
         </p>
 
-        {plannerConfig?.bannerText ? (
-          <p style={{
-            fontFamily: "Georgia, serif", fontStyle: "italic",
-            fontSize: 12.5, color: C.plum, margin: "10px 0 0",
-            padding: "6px 10px",
-            background: "rgba(168,134,75,0.12)",
-            borderLeft: `2px solid ${C.gold}`,
-            borderRadius: 4, lineHeight: 1.4,
-          }}>{plannerConfig.bannerText}</p>
-        ) : null}
+        {/* Bottom dev-controls slot — same flex row as demo's Stage/Phase
+            pickers. justify-content: flex-end is the single deviation from
+            the demo: the production switcher's panel popup anchors to its
+            right edge (`right: 0`), so the pill must sit on the right side
+            of the row for the panel to stay on-screen. */}
+        <div style={{
+          display: "flex", flexWrap: "wrap", gap: 16, marginTop: 16,
+          justifyContent: "flex-end",
+        }}>
+          <DevStageSwitcher
+            effectiveStage={effectiveStage}
+            realStage={realStage}
+            effectiveConditions={effectiveConditions}
+            realConditions={realConditions}
+            onChange={onStageChange}
+            onConditionsChange={onConditionsChange}
+            profileId={profileId}
+            onProfileUpdated={onProfileUpdated}
+          />
+        </div>
       </div>
     </div>
   );
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
-// Component — exact 1:1 mirror of UnifiedPlannerDemo's render tree.
-// ─────────────────────────────────────────────────────────────────────────────
+// ─── Component ──────────────────────────────────────────────────────────────
 
 export default function PlannerV2Shell({
-  // Auth / profile / config
   user,
   profile,
   plannerConfig,
@@ -200,19 +158,15 @@ export default function PlannerV2Shell({
   realLifeStage,
   effectiveConditions,
   realConditions,
-  // Selected day + cycle
   selectedDay,
   selectedPhase,
   selectedCycleDay,
-  // Entity data
   personalTasks,
   dailyPlan,
   habitLogs,            // eslint-disable-line no-unused-vars
   medications,
   mealPlan,
   activeProgram,        // eslint-disable-line no-unused-vars
-  // DevStageSwitcher actions (lift from Planner.jsx so override flips
-  // continue to work inside the v2 shell)
   onStageChange,
   onConditionsChange,
   onProfileUpdated,
@@ -225,7 +179,6 @@ export default function PlannerV2Shell({
   const meds = adaptMedications(medications);
   const tomorrowPhase = adaptTomorrowPhase(phase);
 
-  // Meals plumbed from mealPlan if present.
   const today = selectedDay || new Date();
   const weekday = today.toLocaleDateString("en-GB", { weekday: "long" }).toLowerCase();
   const mealsForDay = mealPlan?.plan_days?.[weekday];
@@ -237,14 +190,10 @@ export default function PlannerV2Shell({
       ]
     : undefined;
 
-  // YYYY-MM-DD for RitualBundlesCarousel.
   const selectedDateStr = (selectedDay instanceof Date)
     ? selectedDay.toISOString().slice(0, 10)
     : new Date().toISOString().slice(0, 10);
 
-  // Wrapper matches UnifiedPlannerDemo exactly — cream bg, 100px bottom
-  // pad, Inter font. The 640px max-width on the row container matches the
-  // demo to the pixel.
   return (
     <div style={{
       minHeight: "100vh",
@@ -255,7 +204,6 @@ export default function PlannerV2Shell({
       <ShellHero
         phase={phase}
         cycleDay={cycleDay}
-        plannerConfig={plannerConfig}
         effectiveStage={effectiveLifeStage}
         realStage={realLifeStage}
         effectiveConditions={effectiveConditions}
@@ -268,23 +216,20 @@ export default function PlannerV2Shell({
 
       <div style={{ maxWidth: 640, margin: "0 auto", paddingTop: 18 }}>
 
-        {/* 1 — Jess hero · phase-aware narrative slider */}
+        {/* 1 — Jess hero */}
         <JessHeroRow
           phase={phase}
           cycleDay={cycleDay}
         />
 
-        {/* 2 — Body today · capacity ring · smart view · cycle zone
-              (pregnancy variant fires automatically when stage starts with "pregnant") */}
+        {/* 2 — Body today */}
         <BodyTodayRow
           stage={stage}
           phase={phase}
           cycleDay={cycleDay}
         />
 
-        {/* 2.5 — Stage-specific row · only renders for stages that need
-              dedicated cards. Standard reproductive users see nothing here
-              (StageRow returns null), so the layout stays unchanged. */}
+        {/* 2.5 — Stage-specific row · null for reproductive */}
         <StageRow
           stage={stage}
           profile={profile}
@@ -292,25 +237,22 @@ export default function PlannerV2Shell({
           cycleDay={cycleDay}
         />
 
-        {/* 2.6 — Condition-specific row · renders the FIRST matching
-              condition (PMDD / PCOS / endo / fibroids / thyroid /
-              adenomyosis / anxiety-depression / ME-CFS). Returns null
-              when profile.conditions is empty or contains no recognised
-              condition. */}
+        {/* 2.6 — Condition-specific row · reads effectiveConditions (DEV
+              switcher writes there; profile.conditions used as fallback) */}
         <ConditionRow
+          conditions={effectiveConditions}
           profile={profile}
           phase={phase}
           cycleDay={cycleDay}
         />
 
-        {/* 3 — Morning / Afternoon / Evening — one tall slider
-              (pregnancy stage swaps prompts to folic acid, kick count, etc.) */}
+        {/* 3 — Morning / Afternoon / Evening */}
         <TimeOfDayRow
           stage={stage}
           phase={phase}
         />
 
-        {/* 4 — Schedule preview + production MonthRibbon */}
+        {/* 4 — Schedule preview + MonthRibbon */}
         <ScheduleCycleRow
           events={events}
           phase={phase}
@@ -318,7 +260,7 @@ export default function PlannerV2Shell({
           userProfile={profile}
         />
 
-        {/* 5 — Rituals — pass-through to production RitualBundlesCarousel */}
+        {/* 5 — Rituals */}
         <RitualsRow
           userId={user?.id}
           selectedDateStr={selectedDateStr}
@@ -326,27 +268,24 @@ export default function PlannerV2Shell({
           plannerConfig={plannerConfig}
         />
 
-        {/* 6 — Nourishment — macros + hydration + AI plan + phase recipes */}
+        {/* 6 — Nourishment */}
         <NourishmentRow
           meals={meals}
           phase={phase}
         />
 
-        {/* 7 — Mind & insight — intention + Astra + mood + breathwork + Inner Season */}
+        {/* 7 — Mind & insight */}
         <InsightsRow
           phase={phase}
         />
 
-        {/* 8 — Care — meds & supplements + symptom + body scan + GP report
-              (pregnancy: kick counter + folic acid surface inside;
-               perimenopause: HRT tracker + hot flush in symptom log;
-               teen: empty medications section hides) */}
+        {/* 8 — Care */}
         <CareRow
           medications={meds}
           stage={stage}
         />
 
-        {/* 9 — Tonight & tomorrow — intentions + tomorrow phase + reflection */}
+        {/* 9 — Tonight & tomorrow */}
         <TonightRow
           tomorrowPhase={tomorrowPhase}
           stage={stage}

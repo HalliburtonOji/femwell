@@ -1276,8 +1276,12 @@ const FIRST_MATCH_ORDER = [
   "chronic-fatigue",
 ];
 
-export default function ConditionRow({ profile, phase, cycleDay }) {
-  const conditions = Array.isArray(profile?.conditions) ? profile.conditions : [];
+export default function ConditionRow({ conditions: conditionsProp, profile, phase, cycleDay }) {
+  // Prefer the explicit conditions prop (so the DEV switcher's override
+  // propagates correctly); fall back to profile.conditions otherwise.
+  const conditions = Array.isArray(conditionsProp) && conditionsProp.length > 0
+    ? conditionsProp
+    : (Array.isArray(profile?.conditions) ? profile.conditions : []);
   if (conditions.length === 0) return null;
   const first = FIRST_MATCH_ORDER.find((c) => conditions.includes(c));
   if (!first) return null;
