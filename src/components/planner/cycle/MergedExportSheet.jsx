@@ -332,18 +332,26 @@ const exportBtn = {
   marginTop: 4,
 };
 
+// 2026-05-18 — Halli flagged nav bar bleeding through the sheet. Bumped
+// z-index above the app shell + bottom nav (which sits at z 60-80 in some
+// layouts) and made the sheet fill the full viewport so nothing peeks
+// behind it. Using 100dvh first for mobile, falling back to 100vh.
 const overlayStyle = {
-  position: "fixed", inset: 0, zIndex: 40,
-  background: "rgba(58,44,26,0.45)",
+  position: "fixed", inset: 0, zIndex: 9999,
+  background: "rgba(58,44,26,0.50)",
   backdropFilter: "blur(4px)",
 };
 const sheetStyle = {
-  position: "fixed", bottom: 0, left: 0, right: 0, zIndex: 50,
-  background: "var(--surface, #FFFFFF)",
-  borderRadius: "24px 24px 0 0",
-  padding: "20px 20px calc(80px + env(safe-area-inset-bottom, 0px))",
-  maxHeight: "85vh", overflowY: "auto",
+  position: "fixed", bottom: 0, left: 0, right: 0, top: 0, zIndex: 10000,
+  background: "var(--cream, #F4EDDB)",
+  borderRadius: "20px 20px 0 0",
+  padding: "20px 20px calc(40px + env(safe-area-inset-bottom, 0px))",
+  height: "100vh",
+  // dvh fixes the iOS Safari bottom-nav-bleed
+  maxHeight: "100dvh",
+  overflowY: "auto",
   fontFamily: "'Inter', sans-serif",
+  boxSizing: "border-box",
 };
 const sheetHeader = { display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 14 };
 const sheetTitleWrap = { flex: 1 };
