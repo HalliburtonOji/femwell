@@ -33,6 +33,7 @@ import {
 import StageRow from "@/components/planner-v2/StageRows";
 import ConditionRow from "@/components/planner-v2/ConditionRows";
 import { base44 } from "@/api/base44Client";
+import { openLogger } from "@/components/UniversalLogger";
 
 // ─── Tokens (match UnifiedPlannerDemo) ──────────────────────────────────────
 
@@ -1024,7 +1025,96 @@ const TIME_OF_DAY = [
   { id: "evening",   label: "EVENING",   Icon: Moon,     accent: C.blush },
 ];
 
-function TimeOfDayCard({ variant }) {
+// Bucket MealLog rows by time-of-day slot:
+//   morning   ← meal_type = "breakfast"
+//   afternoon ← meal_type ∈ {"lunch", "snack"}
+//   evening   ← meal_type = "dinner"
+function bucketMealByType(mealType) {
+  const m = String(mealType || "").toLowerCase();
+  if (m === "breakfast") return "morning";
+  if (m === "lunch" || m === "snack") return "afternoon";
+  if (m === "dinner") return "evening";
+  return null;
+}
+
+function TimeOfDayCard({ variant, user, meals }) {
+  const [tasks, setTasks] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [adding, setAdding] = useState(false);
+  const [draft, setDraft] = useState("");
+  const [saving, setSaving] = useState(false);
+  const inputRef = useRef(null);
+
+  const todayStr = useMemo(() => new Date().toISOString().split("T")[0], []);
+
+  useEffect(() => {
+    let cancelled = false;
+    if (!user?.id) { setLoading(false); return; }
+    (async () => {
+      try {
+        const rows = await base44.entities.PersonalTasks.filter(
+          { user_id: user.id, date: todayStr, time_of_day: variant.id, completed: false },
+          "created_date",
+          30,
+        );
+        if (!cancelled) setTasks(Array.isArray(rows) ? rows : []);
+      } catch {
+        if (!cancelled) setTasks([]);
+      } finally {
+        if (!cancelled) setLoading(false);
+      }
+    })();
+    return () => { cancelled = true; };
+  }, [user?.id, todayStr, variant.id]);
+
+  useEffect(() => {
+    if (adding && inputRef.current) {
+      try { inputRef.current.focus(); } catch {}
+    }
+  }, [adding]);
+
+  async function toggleDone(id) {
+    let nextCompleted = false;
+    setTasks((prev) => prev.map((t) => {
+      if (t.id !== id) return t;
+      nextCompleted = !t.completed;
+      return { ...t, completed: nextCompleted };
+    }));
+    try {
+      await base44.entities.PersonalTasks.update(id, { completed: nextCompleted });
+    } catch {
+      setTasks((prev) => prev.map((t) =>
+        t.id === id ? { ...t, completed: !nextCompleted } : t
+      ));
+    }
+  }
+
+  async function confirmAddTask() {
+    const title = draft.trim();
+    if (!title || !user?.id || saving) return;
+    setSaving(true);
+    try {
+      const created = await base44.entities.PersonalTasks.create({
+        user_id: user.id,
+        date: todayStr,
+        title,
+        time_of_day: variant.id,
+        completed: false,
+      });
+      if (created && created.id) {
+        setTasks((prev) => [...prev, created]);
+      }
+      setDraft("");
+      setAdding(false);
+    } catch {
+      // silent — user can retry
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  const mealList = Array.isArray(meals) ? meals : [];
+
   return (
     <article style={{ ...cardStyle, borderLeft: `4px solid ${variant.accent}`, minHeight: 380 }}>
       <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
@@ -1035,23 +1125,180 @@ function TimeOfDayCard({ variant }) {
         }}><variant.Icon size={14} /></span>
         <span style={{ ...kicker, color: variant.accent }}>{variant.label}</span>
       </div>
-      <p style={placeholderHint}>
-        [skeleton] Each time-of-day card will list Journey · Nourishment · Tasks sections wired
-        to HabitLog / MealLog / Task entities scoped to {variant.id}.
-      </p>
-      <button style={{ ...ctaPill, borderColor: `${variant.accent}55`, color: variant.accent }}>
-        <Plus size={11} /> Add to {variant.id}
-      </button>
+
+      {/* ── Journey: PersonalTasks for this time_of_day ───────────────────── */}
+      <div style={{ marginTop: 4 }}>
+        <div style={{
+          fontSize: 9, fontWeight: 700, letterSpacing: "0.14em",
+          color: C.muted, textTransform: "uppercase", marginBottom: 4,
+        }}>Journey</div>
+
+        {!loading && tasks.length === 0 && (
+          <p style={{ ...placeholderHint, margin: "0 0 4px" }}>Nothing planned.</p>
+        )}
+
+        {tasks.length > 0 && (
+          <ul style={{
+            listStyle: "none", padding: 0, margin: "0 0 4px",
+            display: "flex", flexDirection: "column", gap: 4,
+          }}>
+            {tasks.map((t) => (
+              <li key={t.id} style={{
+                display: "flex", alignItems: "center", gap: 8,
+                padding: "6px 10px", borderRadius: 10,
+                background: C.cream, border: "1px solid rgba(58,44,26,0.06)",
+              }}>
+                <button
+                  type="button"
+                  onClick={() => toggleDone(t.id)}
+                  aria-label={t.completed ? `Mark ${t.title || "task"} not done` : `Complete ${t.title || "task"}`}
+                  aria-pressed={!!t.completed}
+                  style={{
+                    width: 18, height: 18, borderRadius: 9999,
+                    background: t.completed ? variant.accent : "transparent",
+                    border: `1.5px solid ${t.completed ? variant.accent : "rgba(58,44,26,0.22)"}`,
+                    cursor: "pointer", padding: 0, flexShrink: 0,
+                    display: "inline-flex", alignItems: "center", justifyContent: "center",
+                  }}
+                >
+                  {t.completed && <Check size={10} style={{ color: C.cream }} />}
+                </button>
+                <span style={{
+                  flex: 1, fontSize: 12, color: C.espresso, fontWeight: 600,
+                  minWidth: 0, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap",
+                  textDecoration: t.completed ? "line-through" : "none",
+                  opacity: t.completed ? 0.5 : 1,
+                }}>
+                  {t.title || "Untitled"}
+                </span>
+              </li>
+            ))}
+          </ul>
+        )}
+
+        {adding ? (
+          <div style={{ display: "flex", gap: 4, marginTop: 4 }}>
+            <input
+              ref={inputRef}
+              type="text"
+              value={draft}
+              onChange={(e) => setDraft(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === "Enter") confirmAddTask();
+                if (e.key === "Escape") { setAdding(false); setDraft(""); }
+              }}
+              placeholder={`Add to ${variant.id}…`}
+              style={{
+                flex: 1, padding: "5px 10px", borderRadius: 9999,
+                border: "1px solid rgba(58,44,26,0.18)",
+                background: C.cream, color: C.espresso,
+                fontFamily: "'Inter', system-ui, sans-serif",
+                fontSize: 11.5, outline: "none", minWidth: 0,
+              }}
+            />
+            <button
+              type="button"
+              onClick={confirmAddTask}
+              disabled={saving || !draft.trim()}
+              style={{
+                padding: "5px 10px", borderRadius: 9999,
+                background: C.espresso, color: C.cream, border: "none",
+                fontSize: 10, fontWeight: 700,
+                cursor: saving || !draft.trim() ? "default" : "pointer",
+                opacity: saving || !draft.trim() ? 0.5 : 1, flexShrink: 0,
+              }}
+            >Add</button>
+          </div>
+        ) : (
+          <button
+            type="button"
+            onClick={() => setAdding(true)}
+            style={{ ...ctaPill, marginTop: 2, borderColor: `${variant.accent}55`, color: variant.accent }}
+          >
+            <Plus size={11} /> Add task
+          </button>
+        )}
+      </div>
+
+      <div style={{ height: 1, background: "rgba(58,44,26,0.08)", margin: "10px 0 6px" }} />
+
+      {/* ── Nourishment: MealLog snapshot for this slot ───────────────────── */}
+      <div>
+        <div style={{
+          fontSize: 9, fontWeight: 700, letterSpacing: "0.14em",
+          color: C.muted, textTransform: "uppercase", marginBottom: 4,
+        }}>Nourishment</div>
+
+        {mealList.length === 0 && (
+          <p style={{ ...placeholderHint, margin: "0 0 4px" }}>Nothing logged yet.</p>
+        )}
+
+        {mealList.length > 0 && (
+          <ul style={{
+            listStyle: "none", padding: 0, margin: "0 0 4px",
+            display: "flex", flexDirection: "column", gap: 3,
+          }}>
+            {mealList.slice(0, 3).map((m) => (
+              <li key={m.id} style={{
+                fontSize: 11.5, color: C.espresso, lineHeight: 1.35,
+                padding: "4px 8px", borderRadius: 8,
+                background: C.cream, border: "1px solid rgba(58,44,26,0.05)",
+                overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap",
+              }}>
+                {m.raw_text || m.meal_type || "Logged meal"}
+              </li>
+            ))}
+          </ul>
+        )}
+
+        <button
+          type="button"
+          onClick={() => openLogger("meal")}
+          style={{ ...ctaPill, marginTop: 2, borderColor: `${variant.accent}55`, color: variant.accent }}
+        >
+          <Plus size={11} /> Log meal
+        </button>
+      </div>
     </article>
   );
 }
 
-function YourDaySection() {
+function YourDaySection({ user }) {
+  // Fetch MealLog for today once and bucket by slot.
+  // MealLog stores the date as `day_key` (not `date`); `meal_type` is one of
+  // breakfast/lunch/dinner/snack.
+  const [mealsByBucket, setMealsByBucket] = useState({ morning: [], afternoon: [], evening: [] });
+  const todayStr = useMemo(() => new Date().toISOString().split("T")[0], []);
+
+  useEffect(() => {
+    let cancelled = false;
+    if (!user?.id) return;
+    (async () => {
+      try {
+        const rows = await base44.entities.MealLog.filter(
+          { user_id: user.id, day_key: todayStr },
+          "-logged_at",
+          40,
+        );
+        if (cancelled) return;
+        const buckets = { morning: [], afternoon: [], evening: [] };
+        for (const m of rows || []) {
+          const slot = bucketMealByType(m?.meal_type);
+          if (slot) buckets[slot].push(m);
+        }
+        setMealsByBucket(buckets);
+      } catch {
+        if (!cancelled) setMealsByBucket({ morning: [], afternoon: [], evening: [] });
+      }
+    })();
+    return () => { cancelled = true; };
+  }, [user?.id, todayStr]);
+
   return (
     <SliderRow label="Your day">
-      <TimeOfDayCard variant={TIME_OF_DAY[0]} />
-      <TimeOfDayCard variant={TIME_OF_DAY[1]} />
-      <TimeOfDayCard variant={TIME_OF_DAY[2]} />
+      <TimeOfDayCard variant={TIME_OF_DAY[0]} user={user} meals={mealsByBucket.morning} />
+      <TimeOfDayCard variant={TIME_OF_DAY[1]} user={user} meals={mealsByBucket.afternoon} />
+      <TimeOfDayCard variant={TIME_OF_DAY[2]} user={user} meals={mealsByBucket.evening} />
     </SliderRow>
   );
 }
@@ -1304,7 +1551,7 @@ export default function PlannerV2Shell({
         <ScheduleCycleSection phase={phase} cycleDay={cycleDay} profile={profile} user={user} />
 
         {/* 4 — Your Day (Morning · Afternoon · Evening) */}
-        <YourDaySection />
+        <YourDaySection user={user} />
 
         {/* 5 — Your Body Today */}
         <YourBodyTodaySection />
