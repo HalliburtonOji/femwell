@@ -547,7 +547,21 @@ export default function PlannerV2Shell({
           cycleDay={cycleDay}
         />
 
-        {/* 2.5 — Stage-specific row */}
+        {/* 3 — Schedule & cycle (compact, expand on tap) */}
+        <ScheduleCycleRow
+          events={events}
+          phase={phase}
+          cycleDay={cycleDay}
+          userProfile={userProfile}
+        />
+
+        {/* 4 — Your day · Morning / Afternoon / Evening */}
+        <TimeOfDayRow
+          stage={stage}
+          phase={phase}
+        />
+
+        {/* 4.5 — Stage-specific row (if applicable) */}
         <StageRow
           stage={stage}
           profile={profile}
@@ -555,26 +569,12 @@ export default function PlannerV2Shell({
           cycleDay={cycleDay}
         />
 
-        {/* 2.6 — Condition-specific row */}
+        {/* 4.6 — Condition-specific row (if applicable) */}
         <ConditionRow
           conditions={effectiveConditions}
           profile={profile}
           phase={phase}
           cycleDay={cycleDay}
-        />
-
-        {/* 3 — Morning / Afternoon / Evening */}
-        <TimeOfDayRow
-          stage={stage}
-          phase={phase}
-        />
-
-        {/* 4 — Schedule preview + production MonthRibbon */}
-        <ScheduleCycleRow
-          events={events}
-          phase={phase}
-          cycleDay={cycleDay}
-          userProfile={userProfile}
         />
 
         {/* 5 — Rituals */}
