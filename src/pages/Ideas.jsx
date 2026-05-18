@@ -6,6 +6,7 @@ import MorningDashboard from "@/components/MorningDashboard";
 import TimeOfDayFlow from "@/components/TimeOfDayFlow";
 import CardDeckPlanner from "@/components/CardDeckPlanner";
 import JournalDemo from "@/components/JournalDemo";
+import UnifiedPlannerDemo from "@/components/UnifiedPlannerDemo";
 
 // ─────────────────────────────────────────────────────────────────────────────
 // /Ideas — interactive design lab. 4 candidate Planner reskins.
@@ -6299,7 +6300,7 @@ export default function Ideas() {
         fontSize: 11, letterSpacing: "0.18em", fontWeight: 700,
         textTransform: "uppercase",
       }}>
-        Design Lab · Dev Only · Biorhythm · Mission · Accordion · Dashboard · Flow · Deck · Designs · Research · Life Stages · Scheduling · Journal
+        Design Lab · Dev Only · Biorhythm · Mission · Accordion · Dashboard · Flow · Deck · Designs · Research · Life Stages · Scheduling · Journal · Unified
       </div>
 
       {/* Tab bar — Biorhythm / Designs / Research / Life Stages / Scheduling */}
@@ -6324,6 +6325,7 @@ export default function Ideas() {
             { id: "lifestages", label: "Life Stages" },
             { id: "scheduling", label: "Scheduling" },
             { id: "journal", label: "Journal" },
+            { id: "unified", label: "Unified" },
           ].map((t) => {
             const active = t.id === topTab;
             return (
@@ -6521,6 +6523,7 @@ export default function Ideas() {
         </div>
       )}
       {topTab === "journal" && <JournalDemo />}
+      {topTab === "unified" && <UnifiedPlannerDemo />}
       {topTab === "research" && <ResearchView />}
       {topTab === "lifestages" && <LifeStagesView />}
       {topTab === "scheduling" && <SchedulingView />}
