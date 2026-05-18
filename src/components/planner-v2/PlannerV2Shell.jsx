@@ -353,10 +353,38 @@ const placeholderHint = {
 
 // ─── 1. Jess Hero band ──────────────────────────────────────────────────────
 
-function JessHero({ phase, cycleDay, profile }) {
+// Phase-aware Jess greeting line (static copy per phase). Pure text — no
+// CSS / structural change to the hero band.
+const PHASE_LINE = {
+  menstrual:  "Energy turns inward this week. Rest is the work.",
+  follicular: "Something new wants to begin. Lean into momentum.",
+  ovulatory:  "Your voice carries today. Visibility lands well.",
+  luteal:     "Boundaries feel natural now. Protect your evenings.",
+};
+
+function greetingFor(hour) {
+  if (hour < 5)  return "Resting well";
+  if (hour < 12) return "Good morning";
+  if (hour < 17) return "Good afternoon";
+  if (hour < 21) return "Good evening";
+  return "Resting well";
+}
+
+function firstNameFrom(user, profile) {
+  const raw = (user && (user.full_name || user.name)) || (profile && (profile.full_name || profile.name)) || "";
+  if (!raw || typeof raw !== "string") return "";
+  return raw.trim().split(/\s+/)[0] || "";
+}
+
+function JessHero({ phase, cycleDay, profile, user }) {
   const phaseLabel = phase ? phase[0].toUpperCase() + phase.slice(1) : null;
   const stageLabel = profile?.life_stage || null;
   const tone = PHASE_COLOR[phase] || C.gold;
+  const hour = (typeof window !== "undefined") ? new Date().getHours() : 9;
+  const greet = greetingFor(hour);
+  const firstName = firstNameFrom(user, profile);
+  const greetingText = firstName ? `${greet}, ${firstName}.` : `${greet}.`;
+  const phaseLine = (phase && PHASE_LINE[phase]) || "One day, in your shape.";
   return (
     <div style={{
       padding: "24px 16px 22px",
@@ -374,15 +402,12 @@ function JessHero({ phase, cycleDay, profile }) {
           fontFamily: "'Fraunces', Georgia, serif",
           fontSize: 28, fontWeight: 500, color: C.espresso,
           letterSpacing: "-0.02em", margin: "6px 0 4px", lineHeight: 1.15,
-        }}>Good morning.</h1>
+        }}>{greetingText}</h1>
         <p style={{
           fontFamily: "Georgia, serif", fontStyle: "italic",
           fontSize: 13.5, color: C.plumMid, margin: 0, lineHeight: 1.5,
         }}>
-          Jess greeting wires here.
-        </p>
-        <p style={placeholderHint}>
-          [skeleton] Hero will read phase + cycleDay from CycleLog + UserProfile.
+          {phaseLine}
         </p>
       </div>
     </div>
@@ -705,6 +730,7 @@ const chevronPill = {
 // ─── Main shell ─────────────────────────────────────────────────────────────
 
 export default function PlannerV2Shell({
+  user,
   profile,
   effectiveLifeStage: effectiveLifeStageProp,
   effectiveConditions: effectiveConditionsProp,
@@ -746,7 +772,7 @@ export default function PlannerV2Shell({
       )}
 
       {/* 1 — Jess Hero band */}
-      <JessHero phase={phase} cycleDay={cycleDay} profile={profile} />
+      <JessHero phase={phase} cycleDay={cycleDay} profile={profile} user={user} />
 
       <div style={{ maxWidth: 640, margin: "0 auto", paddingTop: 18 }}>
 
