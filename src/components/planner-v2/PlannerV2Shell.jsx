@@ -424,10 +424,11 @@ function JessHero({ phase, cycleDay, profile, user }) {
 }
 
 // ─── 2. My Lists ────────────────────────────────────────────────────────────
-// Reads PersonalTasks for today where completed=false. Tap circle → optimistic
-// removal + base44.entities.PersonalTasks.update(id,{ completed:true }).
-// Three "Add to morning/afternoon/evening" buttons open an inline text input
-// that creates a new PersonalTasks row tagged with the chosen time_of_day.
+// Reads ALL PersonalTasks for today (completed + incomplete) so finished tasks
+// stay visible with a strikethrough. Tap the circle → optimistic toggle of the
+// `completed` boolean (either direction). Three "Add to morning/afternoon/
+// evening" buttons open an inline text input that creates a new PersonalTasks
+// row tagged with the chosen time_of_day.
 
 function MyListsRow({ user }) {
   const [items, setItems] = useState([]);
@@ -445,7 +446,7 @@ function MyListsRow({ user }) {
     (async () => {
       try {
         const rows = await base44.entities.PersonalTasks.filter(
-          { user_id: user.id, date: todayStr, completed: false },
+          { user_id: user.id, date: todayStr },
           "created_date",
           50,
         );
@@ -466,19 +467,19 @@ function MyListsRow({ user }) {
   }, [addMode]);
 
   async function toggleDone(id) {
-    setItems((prev) => prev.filter((t) => t.id !== id));
+    let nextCompleted = false;
+    setItems((prev) => prev.map((t) => {
+      if (t.id !== id) return t;
+      nextCompleted = !t.completed;
+      return { ...t, completed: nextCompleted };
+    }));
     try {
-      await base44.entities.PersonalTasks.update(id, { completed: true });
+      await base44.entities.PersonalTasks.update(id, { completed: nextCompleted });
     } catch {
-      // re-fetch silently on failure
-      try {
-        const rows = await base44.entities.PersonalTasks.filter(
-          { user_id: user.id, date: todayStr, completed: false },
-          "created_date",
-          50,
-        );
-        setItems(Array.isArray(rows) ? rows : []);
-      } catch {}
+      // revert on failure
+      setItems((prev) => prev.map((t) =>
+        t.id === id ? { ...t, completed: !nextCompleted } : t
+      ));
     }
   }
 
@@ -509,9 +510,15 @@ function MyListsRow({ user }) {
   const slotOrder = { morning: 0, afternoon: 1, evening: 2 };
   const ordered = useMemo(() => {
     return [...items].sort((a, b) => {
+      // 1) incomplete first, completed last
+      const ca = a?.completed ? 1 : 0;
+      const cb = b?.completed ? 1 : 0;
+      if (ca !== cb) return ca - cb;
+      // 2) then morning → afternoon → evening
       const sa = slotOrder[(a?.time_of_day || "").toLowerCase()] ?? 3;
       const sb = slotOrder[(b?.time_of_day || "").toLowerCase()] ?? 3;
       if (sa !== sb) return sa - sb;
+      // 3) then creation order
       const ta = a?.created_date || a?.created_at || "";
       const tb = b?.created_date || b?.created_at || "";
       return String(ta).localeCompare(String(tb));
@@ -543,18 +550,23 @@ function MyListsRow({ user }) {
                 <button
                   type="button"
                   onClick={() => toggleDone(t.id)}
-                  aria-label={`Complete ${t.title || "task"}`}
+                  aria-label={t.completed ? `Mark ${t.title || "task"} not done` : `Complete ${t.title || "task"}`}
+                  aria-pressed={!!t.completed}
                   style={{
                     width: 20, height: 20, borderRadius: 9999,
-                    background: "transparent",
-                    border: "1.5px solid rgba(58,44,26,0.22)",
+                    background: t.completed ? C.espresso : "transparent",
+                    border: `1.5px solid ${t.completed ? C.espresso : "rgba(58,44,26,0.22)"}`,
                     cursor: "pointer", padding: 0, flexShrink: 0,
                     display: "inline-flex", alignItems: "center", justifyContent: "center",
                   }}
-                />
+                >
+                  {t.completed && <Check size={11} style={{ color: C.cream }} />}
+                </button>
                 <span style={{
                   flex: 1, fontSize: 12.5, color: C.espresso, fontWeight: 600,
                   minWidth: 0, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap",
+                  textDecoration: t.completed ? "line-through" : "none",
+                  opacity: t.completed ? 0.5 : 1,
                 }}>
                   {t.title || "Untitled"}
                 </span>
@@ -562,6 +574,7 @@ function MyListsRow({ user }) {
                   <span style={{
                     fontSize: 9, fontWeight: 700, letterSpacing: "0.10em",
                     color: C.muted, textTransform: "uppercase",
+                    opacity: t.completed ? 0.5 : 1,
                   }}>{t.time_of_day}</span>
                 )}
                 {t.is_anchor && (
@@ -569,6 +582,7 @@ function MyListsRow({ user }) {
                     fontSize: 9, fontWeight: 700, letterSpacing: "0.10em",
                     color: C.goldDeep, padding: "2px 6px", borderRadius: 9999,
                     background: `${C.gold}22`,
+                    opacity: t.completed ? 0.5 : 1,
                   }}>ANCHOR</span>
                 )}
               </li>
