@@ -29,6 +29,7 @@ import DailyStoryReel from "@/components/planner/today/DailyStoryReel";
 import FreshStartBanner from "@/components/planner/today/FreshStartBanner";
 import JessNarrativeHero from "@/components/planner/today/JessNarrativeHero";
 import PillarsDeck from "@/components/planner/today/PillarsDeck";
+import BodyStrip from "@/components/planner/today/BodyStrip";
 import RitualReframeShimmer from "@/components/planner/today/RitualReframeShimmer";
 import SmartViewCard from "@/components/planner/today/SmartViewCard";
 import { TonightCard, ShutdownRitualCard } from "@/components/planner/today/WarmthBundleToday";
@@ -38,6 +39,7 @@ import { selectedCrumbToday, selectedCrumbCycle } from "@/components/planner/sel
 import { getPlannerConfig, filterProgramsByStage } from "@/utils/plannerAdapter";
 import DevStageSwitcher from "@/components/planner/DevStageSwitcher";
 import MorningBrief from "@/components/MorningBrief";
+import PlanADaySheet from "@/components/PlanADaySheet";
 // Phase 2 QA-fix-bundle-8 — Planner subscribes to the module-level
 // devStageStore directly. The CustomEvent bus is no longer used here.
 import {
@@ -1216,8 +1218,12 @@ export default function Planner() {
         <rect width="100%" height="100%" filter="url(#lm-paper-grain)"/>
       </svg>
       <div style={{ position: "relative", zIndex: 1 }}>
-      {/* ── Sticky header: brand · tabs · (Today-only) week strip ──────────── */}
-      <div className="sticky top-0 z-30 px-4 pt-10 pb-3" style={{ backgroundColor: "rgba(244,237,219,0.97)", backdropFilter: "blur(20px)", borderBottom: "1px solid rgba(58,44,26,0.16)" }}>
+      {/* ── Header: brand · tabs · (Today-only) week strip ──────────────────
+          Founder feedback 2026-05-18: was sticky (sticky top-0 z-30), the
+          pinned header made the page feel cramped. Now scrolls naturally
+          with the page content. Background blur kept for the brand
+          continuity but no longer pinned. */}
+      <div className="px-4 pt-10 pb-3" style={{ backgroundColor: "rgba(244,237,219,0.97)", borderBottom: "1px solid rgba(58,44,26,0.16)" }}>
         <div className="max-w-xl mx-auto">
           {/* A2-4 (1+2+3): tab-specific page title + date-stamped Today eyebrow.
               Life Stage adapter: the cycle-view title is the per-stage label
@@ -1365,7 +1371,7 @@ export default function Planner() {
                 </span>
               ) : (
                 <button onClick={() => setBriefOpen(true)}
-                        aria-label="Open the Morning Brief"
+                        aria-label="Plan a day"
                         style={{
                           display: "inline-flex", alignItems: "center", gap: 6,
                           padding: "6px 14px", borderRadius: 9999,
@@ -1377,7 +1383,7 @@ export default function Planner() {
                           cursor: "pointer",
                         }}>
                   <Sparkle className="w-3 h-3" style={{ color: "var(--femwell-rose, #D45E52)" }} />
-                  Plan today
+                  Plan a day
                 </button>
               )}
             </div>
@@ -1686,8 +1692,11 @@ export default function Planner() {
               />
             )}
 
-            {/* ── Pillars Deck (Today-A T-A1) — 6-tile body summary ──── */}
-            <PillarsDeck profile={profile} today={today} plannerConfig={plannerConfig} />
+            {/* ── Body strip (founder feedback 2026-05-18) ──────────────
+                Was a fixed 2×3 grid (PillarsDeck). Now a single-line
+                collapsible strip with chevron — full grid still available
+                on expand. State persisted in localStorage. */}
+            <BodyStrip profile={profile} today={today} plannerConfig={plannerConfig} />
 
             {/* ── Daily Story Reel (Today-A T-A3) — horizontal carousel
                 of today's DailyStory segment + 3-5 phase-tagged unread
@@ -2272,7 +2281,8 @@ export default function Planner() {
               }} />
             </div>
             <div style={{ flex: 1, overflowY: "auto", padding: "4px 12px 24px" }}>
-              <MorningBrief
+              <PlanADaySheet
+                profile={profile}
                 onClose={() => setBriefOpen(false)}
                 onComplete={markBriefCompleted}
               />

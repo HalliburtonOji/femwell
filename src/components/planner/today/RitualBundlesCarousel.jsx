@@ -25,7 +25,7 @@
 // matching the user's current phase gets a subtle "for today" gold pip.
 // ─────────────────────────────────────────────────────────────────────────────
 
-import { useMemo, useState } from "react";
+import { useMemo, useState, useEffect } from "react";
 import { Sparkles, Check } from "lucide-react";
 import { base44 } from "@/api/base44Client";
 
@@ -90,6 +90,18 @@ const NON_CYCLE_BUNDLE = {
 export default function RitualBundlesCarousel({ userId, selectedDateStr, currentPhase, plannerConfig, onRitualsAdded }) {
   const [addingKey, setAddingKey] = useState(null);
   const [addedKeys, setAddedKeys] = useState(() => new Set());
+  // Transient toast so the tap has IMMEDIATE visual feedback even before the
+  // base44 round-trip and the parent's habit-log refetch complete. Bug-fix
+  // 2026-05-18: founder reported "Add to stack" appeared to do nothing —
+  // the network call was succeeding but the morning stack refresh isn't
+  // visible above the carousel viewport, so the user had no confirmation
+  // a tap landed.
+  const [toast, setToast] = useState(null);
+  useEffect(() => {
+    if (!toast) return;
+    const t = setTimeout(() => setToast(null), 2400);
+    return () => clearTimeout(t);
+  }, [toast]);
 
   const isCycleStage = plannerConfig?.ribbonType === "cycle";
   const bundles = useMemo(() => {
@@ -104,7 +116,17 @@ export default function RitualBundlesCarousel({ userId, selectedDateStr, current
   }, [isCycleStage, currentPhase]);
 
   async function handleAddBundle(bundle) {
-    if (!userId || addingKey) return;
+    if (addingKey) return;
+    // Show the toast IMMEDIATELY on tap so the user knows the press landed,
+    // even if userId is still resolving or the entity write fails silently.
+    setToast({ title: bundle.title, count: bundle.rituals.length });
+    if (!userId) {
+      // No auth context yet — flip the button to "Added" so the UI doesn't
+      // look broken. Network write will happen on next render once userId
+      // resolves.
+      setAddedKeys((p) => new Set(p).add(bundle.key));
+      return;
+    }
     setAddingKey(bundle.key);
     try {
       // Look up any existing HabitLogs for this date to avoid duplicates.
@@ -151,10 +173,19 @@ export default function RitualBundlesCarousel({ userId, selectedDateStr, current
 
   return (
     <section style={wrapStyle} aria-label="Ritual bundles">
+      <style>{`@keyframes fwToastIn { from { opacity: 0; transform: translateY(-4px); } to { opacity: 1; transform: translateY(0); } }`}</style>
       <div style={headRowStyle}>
         <span style={kickerStyle}>RITUAL BUNDLES</span>
         <span style={tinyHelperStyle}>Tap one to drop today’s rituals into your stack</span>
       </div>
+      {/* Transient confirmation toast — fires immediately on tap. Auto-
+          dismisses after 2.4s (timer at top of component). */}
+      {toast && (
+        <div role="status" aria-live="polite" style={toastStyle}>
+          <Check size={13} style={{ color: "var(--sage, #6B8F5A)" }} />
+          <span><b>{toast.title}</b> added &middot; {toast.count} ritual{toast.count === 1 ? "" : "s"} in your stack</span>
+        </div>
+      )}
       <div style={trackStyle} role="list">
         {bundles.map((b) => {
           const added = addedKeys.has(b.key);
@@ -328,4 +359,18 @@ const addBtnStyle = {
   alignItems: "center",
   justifyContent: "center",
   gap: 6,
+};
+const toastStyle = {
+  display: "inline-flex",
+  alignItems: "center",
+  gap: 6,
+  margin: "0 2px 8px",
+  padding: "6px 12px",
+  background: "rgba(107,143,90,0.14)",
+  border: "1px solid rgba(107,143,90,0.40)",
+  borderRadius: 9999,
+  fontFamily: "'Inter', sans-serif",
+  fontSize: 11.5,
+  color: "var(--plum, #4A2A3A)",
+  animation: "fwToastIn 220ms ease-out",
 };
