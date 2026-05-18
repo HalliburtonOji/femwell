@@ -1,21 +1,29 @@
-// PlannerV2Shell — production layout that consumes real entity data and
-// renders the planner-v2 row components in order.
+// PlannerV2Shell — pixel-faithful production rendering of the
+// signed-off UnifiedPlannerDemo layout.
 //
-// Mounted by Planner.jsx when the `femwell_planner_v2` localStorage flag
-// is true. Receives all the entity data that Planner.jsx already fetches
-// — no extra network requests, no duplicated state. The flag means: the
-// existing Planner.jsx component tree stays the same (auth, routing,
-// data fetching), only the visual layout changes.
+// Halli signed off on UnifiedPlannerDemo's visual layout. This shell
+// MUST match it exactly — same wrapper, same hero band, same row
+// order, same card designs. The ONLY differences from the demo:
+//   1. Real entity data is fed to each row instead of mock data.
+//   2. The demo's Stage / Phase dev controls are replaced by the
+//      DevStageSwitcher (so users can still preview a different
+//      stage in production without leaving the page).
+//   3. The demo's "v2 row test harness" eyebrow + designer h1 copy
+//      become production copy ("Today" + phase-aware eyebrow).
 //
-// Stage-specific logic (pregnancy, peri, HRT, TTC, postpartum, PCOS, HA)
-// is fully preserved — every row component already receives `stage`
-// and reshapes itself. The shell threads `plannerConfig.life_stage`
-// through to every row so the existing per-stage variants fire.
+// Life-stage logic is purely ADDITIVE — it personalises CONTENT inside
+// existing rows (pregnancy kick-counter in CareRow, perimenopause hot
+// flush chip in Symptom Log, teen gentler prompts, etc.). It NEVER
+// changes the row order, the card design, the colour scheme, or the
+// page chrome. The row components already accept `stage` as a prop
+// and reshape themselves accordingly — the shell just threads it
+// through.
 //
 // Brand rule: no emoji. Lucide icons + custom SVG only.
 
 import React from "react";
-import { CalendarPlus, FileText } from "lucide-react";
+import { Sparkles } from "lucide-react";
+import DevStageSwitcher from "@/components/planner/DevStageSwitcher";
 
 import JessHeroRow       from "./JessHeroRow";
 import BodyTodayRow      from "./BodyTodayRow";
@@ -26,16 +34,14 @@ import NourishmentRow    from "./NourishmentRow";
 import InsightsRow       from "./InsightsRow";
 import CareRow           from "./CareRow";
 import TonightRow        from "./TonightRow";
+import StageRow          from "./StageRows";
 import { C } from "./tokens";
 
 // ─────────────────────────────────────────────────────────────────────────────
-// Adapters — convert Planner.jsx entity shapes to row-component prop shapes.
-// Keep these tiny and pure: no fetches, no state, no side effects.
+// Adapters — convert Planner.jsx entity shapes to row-component prop
+// shapes. Tiny pure functions: no fetches, no state, no side effects.
 // ─────────────────────────────────────────────────────────────────────────────
 
-// PersonalTasks + dailyPlan → schedule preview events.
-// PersonalTasks rows can have `due_time` ("09:30") or `due_date` ISO; we
-// take the first 4 with a hour estimate and stack them.
 function adaptScheduleEvents({ personalTasks = [], dailyPlan }) {
   const tasks = personalTasks
     .filter((t) => t && !t.completed && !t.is_done && !t.archived_at)
@@ -66,16 +72,6 @@ function adaptScheduleEvents({ personalTasks = [], dailyPlan }) {
   return tasks;
 }
 
-// HabitLogs today → simple mood history (last 7 days). The real Planner
-// already filters habitLogs to today; for the mood ribbon we'd ideally
-// hit DailyCheckins, but a safe seed-from-recent is acceptable for v0.
-function adaptMoodHistory(_habitLogs) {
-  // v0 fallback: keep the mock until a DailyCheckins pass lands.
-  // Returning undefined lets InsightsRow show its own default.
-  return undefined;
-}
-
-// MedicationLogs + supplements (if present on profile/extras) → care row props.
 function adaptMedications(medications = []) {
   return medications.map((m, i) => ({
     id: m.id || `m-${i}`,
@@ -86,80 +82,104 @@ function adaptMedications(medications = []) {
   }));
 }
 
-// Phase → next-phase preview. Cycle order: menstrual → follicular → ovulatory → luteal.
 function adaptTomorrowPhase(currentPhase) {
   const ORDER = { menstrual: "follicular", follicular: "ovulatory", ovulatory: "luteal", luteal: "menstrual" };
   return ORDER[currentPhase] || "follicular";
 }
 
+// Permissive phase-aware subtitle for the hero band. Matches the
+// signed-off demo's descriptive paragraph slot.
+const PHASE_SUBTITLE = {
+  menstrual:  "Soft pace today. The body is doing the work.",
+  follicular: "Something new wants to begin.",
+  ovulatory:  "Your voice carries today.",
+  luteal:     "Boundaries feel natural now.",
+};
+
 // ─────────────────────────────────────────────────────────────────────────────
-// Top header — eyebrow + Today/Cycle + "Plan a day" pill + GP export
-// (preserves the existing Planner header signal without duplicating its
-// production layout).
+// Hero band — matches UnifiedPlannerDemo's DemoHeader visual chrome
+// exactly: same gradient, same padding, same eyebrow style, same h1
+// style, same descriptor paragraph style. Only the content differs
+// (real phase / cycleDay instead of "v2 row test harness"; "Today"
+// instead of "One day. Every row, every stage.").
+//
+// DevStageSwitcher occupies the slot where the demo's Stage / Phase
+// dev controls live, so users can still preview stages without
+// leaving the page.
 // ─────────────────────────────────────────────────────────────────────────────
 
-function ShellHeader({ profile, plannerConfig, selectedPhase, selectedCycleDay, onPlanADay, onOpenGpReport }) {
-  const cycleTab = plannerConfig?.cycleTabName || "Cycle";
-  const phaseLabel = selectedPhase ? selectedPhase[0].toUpperCase() + selectedPhase.slice(1) : null;
+function ShellHero({
+  phase, cycleDay, plannerConfig,
+  effectiveStage, realStage, effectiveConditions, realConditions,
+  onStageChange, onConditionsChange, profileId, onProfileUpdated,
+}) {
+  const phaseLabel = phase ? phase[0].toUpperCase() + phase.slice(1) : null;
+  const eyebrowText = phaseLabel
+    ? `${phaseLabel}${cycleDay ? ` · DAY ${cycleDay}` : ""}${plannerConfig?.cycleTabName && plannerConfig.cycleTabName !== "Cycle" ? ` · ${plannerConfig.cycleTabName.toUpperCase()}` : ""}`
+    : "Today";
+  const subtitle = (phase && PHASE_SUBTITLE[phase]) || "One day, in your shape.";
+
   return (
     <div style={{
-      padding: "22px 16px 12px",
+      padding: "24px 16px 14px",
+      background: `linear-gradient(180deg, ${C.cream} 0%, ${C.paper} 100%)`,
       borderBottom: `1px solid rgba(58,44,26,0.08)`,
     }}>
-      <p style={{
-        fontSize: 10, fontWeight: 700, letterSpacing: "0.18em",
-        color: C.muted, fontFamily: "'Inter', system-ui, sans-serif",
-        textTransform: "uppercase", margin: 0,
-      }}>
-        {phaseLabel
-          ? `${phaseLabel}${selectedCycleDay ? ` · Day ${selectedCycleDay}` : ""}${cycleTab !== "Cycle" ? ` · ${cycleTab}` : ""}`
-          : `Today · ${cycleTab}`}
-      </p>
-      <div style={{ display: "flex", alignItems: "baseline", justifyContent: "space-between", gap: 10, flexWrap: "wrap", marginTop: 4 }}>
+      <div style={{ maxWidth: 640, margin: "0 auto" }}>
+        <div style={{
+          display: "flex", alignItems: "center", gap: 6,
+          fontSize: 10, letterSpacing: "0.18em", textTransform: "uppercase",
+          color: C.muted, fontWeight: 700,
+          fontFamily: "'Inter', system-ui, sans-serif",
+        }}>
+          <Sparkles size={11} style={{ color: C.gold }} /> {eyebrowText}
+        </div>
         <h1 style={{
-          fontFamily: "'Fraunces', Georgia, serif", fontSize: 28, fontWeight: 500,
-          color: "#4A2A3A", letterSpacing: "-0.018em", margin: 0,
+          fontFamily: "'Fraunces', Georgia, serif",
+          fontSize: 28, fontWeight: 500, color: C.espresso,
+          letterSpacing: "-0.02em", margin: "6px 0 4px", lineHeight: 1.15,
         }}>
           Today
         </h1>
-        <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
-          <button onClick={onPlanADay} aria-label="Plan a day" style={pillBtn(true)}>
-            <CalendarPlus size={13} strokeWidth={2.2} /> Plan a day
-          </button>
-          {onOpenGpReport && (
-            <button onClick={onOpenGpReport} aria-label="Open GP report" style={pillBtn(false)}>
-              <FileText size={13} strokeWidth={2.2} /> GP report
-            </button>
-          )}
+        <p style={{
+          fontFamily: "'Inter', system-ui, sans-serif", fontSize: 13,
+          color: C.muted, margin: 0, lineHeight: 1.5,
+        }}>
+          {subtitle}
+        </p>
+
+        {plannerConfig?.bannerText ? (
+          <p style={{
+            fontFamily: "Georgia, serif", fontStyle: "italic",
+            fontSize: 12.5, color: C.plum, margin: "10px 0 0",
+            padding: "6px 10px",
+            background: "rgba(168,134,75,0.12)",
+            borderLeft: `2px solid ${C.gold}`,
+            borderRadius: 4, lineHeight: 1.4,
+          }}>{plannerConfig.bannerText}</p>
+        ) : null}
+
+        {/* Dev affordance — sits where the demo had Stage / Phase pickers.
+            Lets the user preview a different stage without leaving the page. */}
+        <div style={{ display: "flex", flexWrap: "wrap", gap: 10, marginTop: 16, alignItems: "center" }}>
+          <DevStageSwitcher
+            effectiveStage={effectiveStage}
+            realStage={realStage}
+            effectiveConditions={effectiveConditions}
+            realConditions={realConditions}
+            onChange={onStageChange}
+            onConditionsChange={onConditionsChange}
+            profileId={profileId}
+            onProfileUpdated={onProfileUpdated}
+          />
         </div>
       </div>
-      {plannerConfig?.bannerText && (
-        <p style={{
-          fontFamily: "Georgia, serif", fontStyle: "italic",
-          fontSize: 12.5, color: "#4A2A3A", margin: "8px 0 0",
-          padding: "6px 10px",
-          background: "rgba(168,134,75,0.12)",
-          borderLeft: "2px solid #A6862B",
-          borderRadius: 4, lineHeight: 1.4,
-        }}>{plannerConfig.bannerText}</p>
-      )}
     </div>
   );
 }
 
-const pillBtn = (primary) => ({
-  display: "inline-flex", alignItems: "center", gap: 5,
-  padding: "7px 13px", borderRadius: 9999,
-  border: primary ? "none" : `1px solid rgba(58,44,26,0.18)`,
-  background: primary ? C.espresso : "transparent",
-  color: primary ? C.cream : C.espresso,
-  fontFamily: "'Inter', system-ui, sans-serif",
-  fontSize: 12, fontWeight: 700, cursor: "pointer",
-  whiteSpace: "nowrap",
-});
-
 // ─────────────────────────────────────────────────────────────────────────────
-// Component
+// Component — exact 1:1 mirror of UnifiedPlannerDemo's render tree.
 // ─────────────────────────────────────────────────────────────────────────────
 
 export default function PlannerV2Shell({
@@ -168,6 +188,9 @@ export default function PlannerV2Shell({
   profile,
   plannerConfig,
   effectiveLifeStage,
+  realLifeStage,
+  effectiveConditions,
+  realConditions,
   // Selected day + cycle
   selectedDay,
   selectedPhase,
@@ -175,15 +198,15 @@ export default function PlannerV2Shell({
   // Entity data
   personalTasks,
   dailyPlan,
-  habitLogs,
+  habitLogs,            // eslint-disable-line no-unused-vars
   medications,
   mealPlan,
-  activeProgram,
-  // Actions
-  onPlanADay,
-  onOpenSchedule,
-  onOpenCycle,
-  onOpenGpReport,
+  activeProgram,        // eslint-disable-line no-unused-vars
+  // DevStageSwitcher actions (lift from Planner.jsx so override flips
+  // continue to work inside the v2 shell)
+  onStageChange,
+  onConditionsChange,
+  onProfileUpdated,
 }) {
   const stage = effectiveLifeStage || profile?.life_stage || "reproductive";
   const phase = selectedPhase || "luteal";
@@ -191,10 +214,9 @@ export default function PlannerV2Shell({
 
   const events = adaptScheduleEvents({ personalTasks, dailyPlan });
   const meds = adaptMedications(medications);
-  const moodHistory = adaptMoodHistory(habitLogs);
   const tomorrowPhase = adaptTomorrowPhase(phase);
 
-  // Meals plumbed from mealPlan if present (lowercase weekday keyed).
+  // Meals plumbed from mealPlan if present.
   const today = selectedDay || new Date();
   const weekday = today.toLocaleDateString("en-GB", { weekday: "long" }).toLowerCase();
   const mealsForDay = mealPlan?.plan_days?.[weekday];
@@ -204,44 +226,65 @@ export default function PlannerV2Shell({
         { label: "Lunch",     text: mealsForDay.lunch     || "—" },
         { label: "Dinner",    text: mealsForDay.dinner    || "—" },
       ]
-    : undefined; // NourishmentRow falls back to phase-aware defaults
+    : undefined;
 
-  // Schedule date string for RitualsRow (RitualBundlesCarousel expects YYYY-MM-DD).
+  // YYYY-MM-DD for RitualBundlesCarousel.
   const selectedDateStr = (selectedDay instanceof Date)
     ? selectedDay.toISOString().slice(0, 10)
     : new Date().toISOString().slice(0, 10);
 
+  // Wrapper matches UnifiedPlannerDemo exactly — cream bg, 100px bottom
+  // pad, Inter font. The 640px max-width on the row container matches the
+  // demo to the pixel.
   return (
     <div style={{
       minHeight: "100vh",
-      paddingBottom: 140,
+      background: C.cream,
+      paddingBottom: 100,
       fontFamily: "'Inter', system-ui, sans-serif",
     }}>
-      <ShellHeader
-        profile={profile}
+      <ShellHero
+        phase={phase}
+        cycleDay={cycleDay}
         plannerConfig={plannerConfig}
-        selectedPhase={phase}
-        selectedCycleDay={cycleDay}
-        onPlanADay={onPlanADay}
-        onOpenGpReport={onOpenGpReport}
+        effectiveStage={effectiveLifeStage}
+        realStage={realLifeStage}
+        effectiveConditions={effectiveConditions}
+        realConditions={realConditions}
+        onStageChange={onStageChange}
+        onConditionsChange={onConditionsChange}
+        profileId={profile?.id}
+        onProfileUpdated={onProfileUpdated}
       />
 
-      <div style={{ maxWidth: 640, margin: "0 auto", paddingTop: 14 }}>
+      <div style={{ maxWidth: 640, margin: "0 auto", paddingTop: 18 }}>
 
-        {/* 1 — Jess hero (phase-aware narrative slider) */}
+        {/* 1 — Jess hero · phase-aware narrative slider */}
         <JessHeroRow
           phase={phase}
           cycleDay={cycleDay}
         />
 
-        {/* 2 — Body today */}
+        {/* 2 — Body today · capacity ring · smart view · cycle zone
+              (pregnancy variant fires automatically when stage starts with "pregnant") */}
         <BodyTodayRow
           stage={stage}
           phase={phase}
           cycleDay={cycleDay}
         />
 
-        {/* 3 — Morning / Afternoon / Evening — one tall slider */}
+        {/* 2.5 — Stage-specific row · only renders for stages that need
+              dedicated cards. Standard reproductive users see nothing here
+              (StageRow returns null), so the layout stays unchanged. */}
+        <StageRow
+          stage={stage}
+          profile={profile}
+          phase={phase}
+          cycleDay={cycleDay}
+        />
+
+        {/* 3 — Morning / Afternoon / Evening — one tall slider
+              (pregnancy stage swaps prompts to folic acid, kick count, etc.) */}
         <TimeOfDayRow
           stage={stage}
           phase={phase}
@@ -253,11 +296,9 @@ export default function PlannerV2Shell({
           phase={phase}
           cycleDay={cycleDay}
           userProfile={profile}
-          onOpenSchedule={onOpenSchedule}
-          onOpenCycle={onOpenCycle}
         />
 
-        {/* 5 — Rituals — pass-through to RitualBundlesCarousel */}
+        {/* 5 — Rituals — pass-through to production RitualBundlesCarousel */}
         <RitualsRow
           userId={user?.id}
           selectedDateStr={selectedDateStr}
@@ -274,14 +315,15 @@ export default function PlannerV2Shell({
         {/* 7 — Mind & insight — intention + Astra + mood + breathwork + Inner Season */}
         <InsightsRow
           phase={phase}
-          moodHistory={moodHistory}
         />
 
-        {/* 8 — Care — meds & supplements + symptom + body scan + GP report */}
+        {/* 8 — Care — meds & supplements + symptom + body scan + GP report
+              (pregnancy: kick counter + folic acid surface inside;
+               perimenopause: HRT tracker + hot flush in symptom log;
+               teen: empty medications section hides) */}
         <CareRow
           medications={meds}
           stage={stage}
-          onOpenGpReport={onOpenGpReport}
         />
 
         {/* 9 — Tonight & tomorrow — intentions + tomorrow phase + reflection */}

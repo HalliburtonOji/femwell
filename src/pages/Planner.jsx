@@ -1208,53 +1208,34 @@ export default function Planner() {
   const isSelected = (d) => toDateStr(d) === selectedStr;
 
   // ── Phase 2 feature flag ── If the v2 flag is on, render PlannerV2Shell
-  // in place of the existing layout. The DevStageSwitcher still mounts at
-  // the top so the user can flip stages + flip the v2 flag back off.
+  // in place of the existing layout. PlannerV2Shell mirrors the signed-off
+  // UnifiedPlannerDemo layout pixel-for-pixel; DevStageSwitcher lives inside
+  // its hero band so the chrome is unchanged from the demo.
   if (useV2) {
     return (
-      <div className="min-h-screen" style={{ backgroundColor: "#F4EDDB", position: "relative" }}>
-        <div style={{
-          position: "sticky", top: 0, zIndex: 30,
-          background: "rgba(244,237,219,0.96)",
-          backdropFilter: "blur(8px)",
-          borderBottom: "1px solid rgba(58,44,26,0.10)",
-          padding: "10px 16px",
-          display: "flex", alignItems: "center", justifyContent: "space-between", gap: 8,
-        }}>
-          <span style={{
-            fontSize: 10, letterSpacing: "0.18em", textTransform: "uppercase",
-            color: "#9B8B7A", fontFamily: "'Inter', system-ui, sans-serif", fontWeight: 700,
-          }}>Planner · v2 (feature flag)</span>
-          <DevStageSwitcher
-            effectiveStage={effectiveLifeStage}
-            realStage={realLifeStage}
-            effectiveConditions={effectiveConditions}
-            realConditions={realConditions}
-            onChange={setDevStageOverride}
-            onConditionsChange={setDevConditionsOverride}
-            profileId={profile?.id}
-            onProfileUpdated={(updates) => {
-              setProfile((p) => p ? { ...p, ...updates } : p);
-            }}
-          />
-        </div>
-        <PlannerV2Shell
-          user={user}
-          profile={profile}
-          plannerConfig={plannerConfig}
-          effectiveLifeStage={effectiveLifeStage}
-          selectedDay={selectedDay}
-          selectedPhase={selectedPhase}
-          selectedCycleDay={selectedCycleDay}
-          personalTasks={personalTasks}
-          dailyPlan={dailyPlan}
-          habitLogs={habitLogs}
-          medications={medications}
-          mealPlan={mealPlan}
-          activeProgram={activeProgram}
-          onPlanADay={() => setShowAdd(true)}
-        />
-      </div>
+      <PlannerV2Shell
+        user={user}
+        profile={profile}
+        plannerConfig={plannerConfig}
+        effectiveLifeStage={effectiveLifeStage}
+        realLifeStage={realLifeStage}
+        effectiveConditions={effectiveConditions}
+        realConditions={realConditions}
+        selectedDay={selectedDay}
+        selectedPhase={selectedPhase}
+        selectedCycleDay={selectedCycleDay}
+        personalTasks={personalTasks}
+        dailyPlan={dailyPlan}
+        habitLogs={habitLogs}
+        medications={medications}
+        mealPlan={mealPlan}
+        activeProgram={activeProgram}
+        onStageChange={setDevStageOverride}
+        onConditionsChange={setDevConditionsOverride}
+        onProfileUpdated={(updates) => {
+          setProfile((p) => p ? { ...p, ...updates } : p);
+        }}
+      />
     );
   }
 
