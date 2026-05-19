@@ -1597,28 +1597,223 @@ function YourBodyTodaySection({ user }) {
 // and mounted directly below — no wrapper needed.
 
 // ─── 8. Rituals ─────────────────────────────────────────────────────────────
+// FemWell ships rituals as phase-keyed bundles (see RitualBundlesCarousel).
+// We mirror those four bundles here so the slider stays self-contained inside
+// the v2 shell. "Add to today" writes one HabitLogs row per ritual in the
+// bundle, stamped with the ritual's time_of_day — same write pattern as the
+// production carousel. The bundle matching the user's current phase gets a
+// "FOR TODAY" pip.
 
-function RitualsSection() {
+const RITUAL_BUNDLES = [
+  {
+    key: "menstrual",
+    title: "Restore",
+    subtitle: "Soften, slow, rest",
+    accent: "#9A2845",
+    rituals: [
+      { name: "Heat on belly",          timeOfDay: "evening" },
+      { name: "Yin yoga · 10m",         timeOfDay: "evening" },
+      { name: "Warm cooked breakfast",  timeOfDay: "morning" },
+      { name: "Lights out by 10pm",     timeOfDay: "evening" },
+    ],
+  },
+  {
+    key: "follicular",
+    title: "Build",
+    subtitle: "New energy, fresh starts",
+    accent: "#D4745A",
+    rituals: [
+      { name: "Morning walk · 20m",     timeOfDay: "morning" },
+      { name: "Strength · 25m",         timeOfDay: "morning" },
+      { name: "Plan one small thing",   timeOfDay: "morning" },
+      { name: "Cold water on face",     timeOfDay: "morning" },
+    ],
+  },
+  {
+    key: "ovulatory",
+    title: "Expand",
+    subtitle: "Connect, speak, move",
+    accent: "#C8A040",
+    rituals: [
+      { name: "Reach out to someone",   timeOfDay: "morning" },
+      { name: "HIIT or dance · 20m",    timeOfDay: "morning" },
+      { name: "Sunlight before screens", timeOfDay: "morning" },
+      { name: "Hydration: 2L",          timeOfDay: "morning" },
+    ],
+  },
+  {
+    key: "luteal",
+    title: "Settle",
+    subtitle: "Soft edges, honest hours",
+    accent: "#7B5E9A",
+    rituals: [
+      { name: "Journal · 5m",           timeOfDay: "evening" },
+      { name: "Magnesium at dinner",    timeOfDay: "evening" },
+      { name: "Wind-down walk",         timeOfDay: "evening" },
+      { name: "Bath + book before bed", timeOfDay: "evening" },
+    ],
+  },
+];
+
+function RitualBundleCard({ bundle, isForToday, alreadyAdded, onAdd }) {
+  const [adding, setAdding] = useState(false);
+  const done = alreadyAdded || adding === "done";
+
+  async function handleAdd() {
+    if (adding || done) return;
+    setAdding("pending");
+    try {
+      await onAdd(bundle);
+      setAdding("done");
+    } catch {
+      setAdding(false);
+    }
+  }
+
+  return (
+    <article style={cardStyle}>
+      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 6 }}>
+        <span style={kicker}>BUNDLE</span>
+        {isForToday && (
+          <span style={{
+            display: "inline-flex", alignItems: "center", gap: 4,
+            fontSize: 9, fontWeight: 700, letterSpacing: "0.12em",
+            color: C.goldDeep,
+            background: `${C.gold}22`, border: `1px solid ${C.gold}55`,
+            padding: "2px 8px", borderRadius: 9999,
+          }}>
+            <Sparkles size={9} /> FOR TODAY
+          </span>
+        )}
+      </div>
+      <h3 style={cardTitle}>{bundle.title}</h3>
+      <p style={{ ...cardSub, margin: "2px 0 0", fontStyle: "italic" }}>{bundle.subtitle}</p>
+      <p style={{ fontSize: 11, color: C.muted, fontWeight: 600, margin: "6px 0 0" }}>
+        {bundle.rituals.length} rituals
+      </p>
+      <button
+        type="button"
+        onClick={handleAdd}
+        disabled={done || adding === "pending"}
+        style={{
+          alignSelf: "flex-start", marginTop: "auto",
+          display: "inline-flex", alignItems: "center", gap: 4,
+          padding: "6px 12px", borderRadius: 9999,
+          background: done ? `${bundle.accent}22` : bundle.accent,
+          color: done ? bundle.accent : C.cream,
+          border: `1px solid ${bundle.accent}`,
+          fontFamily: "'Inter', system-ui, sans-serif",
+          fontSize: 11, fontWeight: 700,
+          cursor: done || adding === "pending" ? "default" : "pointer",
+          opacity: adding === "pending" ? 0.6 : 1,
+        }}
+      >
+        {done ? (<><Check size={11} /> Added</>) : (<><Plus size={11} /> Add to today</>)}
+      </button>
+    </article>
+  );
+}
+
+function RitualsSection({ user, phase }) {
+  // Fetch today's HabitLogs once so each bundle can decide whether it's
+  // already on the user's stack.
+  const [todayHabitNames, setTodayHabitNames] = useState(() => new Set());
+  const [locallyAddedKeys, setLocallyAddedKeys] = useState(() => new Set());
+  const todayStr = useMemo(() => new Date().toISOString().split("T")[0], []);
+
+  useEffect(() => {
+    let cancelled = false;
+    if (!user?.id) return;
+    (async () => {
+      try {
+        const rows = await base44.entities.HabitLogs.filter(
+          { user_id: user.id, date: todayStr },
+          null,
+          80,
+        );
+        if (cancelled) return;
+        const names = new Set(
+          (rows || [])
+            .map((r) => (r?.habit_name || r?.habit_type || "").toLowerCase())
+            .filter(Boolean),
+        );
+        setTodayHabitNames(names);
+      } catch {
+        if (!cancelled) setTodayHabitNames(new Set());
+      }
+    })();
+    return () => { cancelled = true; };
+  }, [user?.id, todayStr]);
+
+  async function addBundle(bundle) {
+    if (!user?.id) return;
+    // Skip rituals already present today; create the rest.
+    const toCreate = bundle.rituals.filter(
+      (r) => !todayHabitNames.has((r.name || "").toLowerCase()),
+    );
+    for (const r of toCreate) {
+      try {
+        await base44.entities.HabitLogs.create({
+          user_id: user.id,
+          habit_name: r.name,
+          date: todayStr,
+          is_completed: false,
+          time_of_day: r.timeOfDay || "morning",
+          created_at: new Date().toISOString(),
+        });
+      } catch { /* silent — duplicate or transient */ }
+    }
+    // Mirror into local state so the button stays in "Added" without a refetch.
+    setTodayHabitNames((prev) => {
+      const next = new Set(prev);
+      for (const r of bundle.rituals) next.add((r.name || "").toLowerCase());
+      return next;
+    });
+    setLocallyAddedKeys((prev) => new Set(prev).add(bundle.key));
+  }
+
+  function isBundleAlreadyAdded(bundle) {
+    if (locallyAddedKeys.has(bundle.key)) return true;
+    return bundle.rituals.every((r) =>
+      todayHabitNames.has((r.name || "").toLowerCase()),
+    );
+  }
+
   return (
     <SliderRow label="Rituals">
+      {/* Card 1 — Create ritual via UniversalLogger */}
       <article style={cardStyle}>
         <span style={kicker}>RITUALS</span>
         <h3 style={cardTitle}>Create your own</h3>
-        <p style={placeholderHint}>[skeleton] RitualBundles entity → cards with "FOR TODAY" badge when ritual is in today's stack.</p>
-        <button style={ctaPill}><Plus size={11} /> Create ritual</button>
+        <p style={{ ...cardSub, margin: "2px 0 0" }}>
+          A bundle is a few rituals you bring back regularly.
+        </p>
+        <button
+          type="button"
+          onClick={() => openLogger("ritual")}
+          style={{
+            alignSelf: "flex-start", marginTop: "auto",
+            display: "inline-flex", alignItems: "center", gap: 4,
+            padding: "6px 12px", borderRadius: 9999,
+            background: C.espresso, color: C.cream, border: "none",
+            fontFamily: "'Inter', system-ui, sans-serif",
+            fontSize: 11, fontWeight: 700, cursor: "pointer",
+          }}
+        >
+          <Plus size={11} /> Create ritual
+        </button>
       </article>
-      <article style={cardStyle}>
-        <span style={kicker}>BUNDLE</span>
-        <h3 style={cardTitle}>Morning anchor</h3>
-        <p style={cardSub}>[skeleton] Sample bundle preview card.</p>
-        <button style={ctaPill}>Add to today</button>
-      </article>
-      <article style={cardStyle}>
-        <span style={kicker}>BUNDLE</span>
-        <h3 style={cardTitle}>Evening close</h3>
-        <p style={cardSub}>[skeleton] Sample bundle preview card.</p>
-        <button style={ctaPill}>Add to today</button>
-      </article>
+
+      {/* Cards 2-5 — phase bundles */}
+      {RITUAL_BUNDLES.map((b) => (
+        <RitualBundleCard
+          key={b.key}
+          bundle={b}
+          isForToday={phase === b.key}
+          alreadyAdded={isBundleAlreadyAdded(b)}
+          onAdd={addBundle}
+        />
+      ))}
     </SliderRow>
   );
 }
@@ -1821,7 +2016,7 @@ export default function PlannerV2Shell({
         />
 
         {/* 8 — Rituals */}
-        <RitualsSection />
+        <RitualsSection user={user} phase={phase} />
 
         {/* 9 — Nourishment */}
         <NourishmentSection />
