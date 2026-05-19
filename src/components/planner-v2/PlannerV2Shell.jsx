@@ -515,7 +515,7 @@ export default function PlannerV2Shell({
       {/* INSIGHTS hero — first horizontal slider on the page */}
       <InsightsHeroRow />
 
-      <ListsSection />
+      <ListsSection user={user} />
 
       <Row label="Schedule & cycle">
         <SchedulePreviewCard blocks={blocks} onExpand={() => setScheduleOpen(true)} />
@@ -1098,23 +1098,81 @@ function YourDayCard({ variant }) {
 }
 
 // ── My Lists ───────────────────────────────────────────────────────────────
-function ListsSection() {
-  const [lists, setLists] = useState(() => {
-    try {
-      const raw = localStorage.getItem("femwell_unified_lists");
-      if (raw) return JSON.parse(raw);
-    } catch {}
-    return initialLists;
-  });
-  const [expanded, setExpanded] = useState(null);
-  useEffect(() => {
-    try { localStorage.setItem("femwell_unified_lists", JSON.stringify(lists)); } catch {}
-  }, [lists]);
+// Phase B2 — PersonalTasks wiring.
+// The demo's three lists (Work / Personal / Health) used static seed data
+// in `initialLists`. The visual is identical here; only the data source
+// changes — three chips now group today's PersonalTasks by `time_of_day`
+// (morning / afternoon / evening). Tasks without a time_of_day fall into
+// the morning bucket. Sort inside each chip: incomplete first, then
+// completed (which already gets the demo's strikethrough + 0.5 opacity).
+function ListsSection({ user }) {
+  // Bucket definitions match the original 3-chip layout. Colours are pulled
+  // from the demo's existing palette so the chip styling renders identically.
+  const BUCKETS = useMemo(() => ([
+    { id: "morning",   name: "Morning",   colour: "#D4AF37" }, // gold
+    { id: "afternoon", name: "Afternoon", colour: "#8FAF8F" }, // sage
+    { id: "evening",   name: "Evening",   colour: "#3A2C1A" }, // espresso
+  ]), []);
 
-  function toggleTask(listId, taskId) {
-    setLists((ls) => ls.map((l) => l.id === listId
-      ? { ...l, tasks: l.tasks.map((t) => t.id === taskId ? { ...t, done: !t.done } : t) }
-      : l));
+  const [rawTasks, setRawTasks] = useState([]);
+  const [expanded, setExpanded] = useState(null);
+
+  // Fetch all of today's PersonalTasks for this user (both completed and
+  // incomplete — the strikethrough state needs both).
+  useEffect(() => {
+    let cancelled = false;
+    if (!user?.id) return;
+    (async () => {
+      try {
+        const rows = await base44.entities.PersonalTasks.filter(
+          { user_id: user.id, date: todayISO },
+          "-created_date",
+          200,
+        );
+        if (!cancelled) setRawTasks(Array.isArray(rows) ? rows : []);
+      } catch {
+        if (!cancelled) setRawTasks([]);
+      }
+    })();
+    return () => { cancelled = true; };
+  }, [user?.id]);
+
+  // Bucket + sort: incomplete first, completed last; within each, preserve
+  // server-newest-first order from the filter.
+  const lists = useMemo(() => {
+    const byBucket = { morning: [], afternoon: [], evening: [] };
+    for (const t of rawTasks) {
+      const slot = (t?.time_of_day || "").toLowerCase();
+      const bucket = byBucket[slot] ? slot : "morning";
+      byBucket[bucket].push({
+        id: t.id,
+        text: t.title || "Untitled",
+        done: !!t.completed,
+        due: t.date,
+      });
+    }
+    for (const k of Object.keys(byBucket)) {
+      byBucket[k].sort((a, b) => (a.done ? 1 : 0) - (b.done ? 1 : 0));
+    }
+    return BUCKETS.map((b) => ({ ...b, tasks: byBucket[b.id] }));
+  }, [rawTasks, BUCKETS]);
+
+  async function toggleTask(_listId, taskId) {
+    // Optimistic flip locally, then persist.
+    let nextCompleted = false;
+    setRawTasks((prev) => prev.map((t) => {
+      if (t.id !== taskId) return t;
+      nextCompleted = !t.completed;
+      return { ...t, completed: nextCompleted };
+    }));
+    try {
+      await base44.entities.PersonalTasks.update(taskId, { completed: nextCompleted });
+    } catch {
+      // Revert on failure.
+      setRawTasks((prev) => prev.map((t) =>
+        t.id === taskId ? { ...t, completed: !nextCompleted } : t,
+      ));
+    }
   }
 
   return (
@@ -1141,7 +1199,7 @@ function ListsSection() {
       </div>
       {expanded && (
         <div style={listsAccordion}>
-          {lists.find((l) => l.id === expanded).tasks.map((t) => (
+          {(lists.find((l) => l.id === expanded)?.tasks || []).map((t) => (
             <label key={t.id} style={listsTaskRow}>
               <input type="checkbox" checked={t.done} onChange={() => toggleTask(expanded, t.id)} style={{ accentColor: C.sage }} />
               <span style={{ fontSize: 13, color: C.espresso,
