@@ -2291,27 +2291,183 @@ function MindInsightSection({ user, phase }) {
 }
 
 // ─── 11. Care ───────────────────────────────────────────────────────────────
+// Card 1 reads MedicationLogs for today. Card 2 reads SupplementLog (one row
+// per day with boolean per-supplement fields). Card 3 deep-links to
+// /DoctorExport. The med + supplement loggers both share UniversalLogger's
+// "med" type (its sub-label is "Med or supplement").
 
-function CareSection() {
+const SUPPLEMENT_FIELDS = [
+  { key: "folic_acid", label: "Folic acid" },
+  { key: "vitamin_d",  label: "Vitamin D" },
+  { key: "omega3",     label: "Omega-3" },
+  { key: "iron",       label: "Iron" },
+];
+
+function MedicationsTodayCard({ user }) {
+  const [meds, setMeds] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const todayStr = useMemo(() => new Date().toISOString().split("T")[0], []);
+
+  useEffect(() => {
+    let cancelled = false;
+    if (!user?.id) { setLoading(false); return; }
+    (async () => {
+      try {
+        const rows = await base44.entities.MedicationLogs.filter(
+          { user_id: user.id, date: todayStr },
+          "-created_date",
+          40,
+        );
+        if (!cancelled) setMeds(Array.isArray(rows) ? rows : []);
+      } catch {
+        if (!cancelled) setMeds([]);
+      } finally {
+        if (!cancelled) setLoading(false);
+      }
+    })();
+    return () => { cancelled = true; };
+  }, [user?.id, todayStr]);
+
+  return (
+    <article style={cardStyle}>
+      <span style={kicker}>MEDICATIONS</span>
+      <h3 style={cardTitle}>Today's stack</h3>
+
+      {!loading && meds.length === 0 && (
+        <p style={{ ...cardSub, margin: "2px 0 0", fontStyle: "italic" }}>
+          No medications logged
+        </p>
+      )}
+
+      {meds.length > 0 && (
+        <ul style={{
+          listStyle: "none", padding: 0, margin: "4px 0 0",
+          display: "flex", flexDirection: "column", gap: 4,
+        }}>
+          {meds.slice(0, 4).map((m) => (
+            <li key={m.id} style={{
+              display: "flex", alignItems: "center", gap: 8,
+              padding: "6px 10px", borderRadius: 10,
+              background: C.cream, border: "1px solid rgba(58,44,26,0.06)",
+            }}>
+              {m.taken && (
+                <span style={{
+                  width: 16, height: 16, borderRadius: 9999,
+                  background: C.sage, color: C.cream,
+                  display: "inline-flex", alignItems: "center", justifyContent: "center", flexShrink: 0,
+                }}>
+                  <Check size={9} />
+                </span>
+              )}
+              <div style={{ flex: 1, minWidth: 0 }}>
+                <div style={{
+                  fontSize: 12, fontWeight: 600, color: C.espresso,
+                  overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap",
+                }}>{m.item_name || "Medication"}</div>
+                {m.dose && (
+                  <div style={{ fontSize: 10, color: C.muted, marginTop: 1 }}>
+                    {m.dose}
+                  </div>
+                )}
+              </div>
+            </li>
+          ))}
+        </ul>
+      )}
+
+      <button type="button" onClick={() => openLogger("med")} style={ctaPill}>
+        <Pill size={11} /> Log med
+      </button>
+    </article>
+  );
+}
+
+function SupplementsTodayCard({ user }) {
+  const [todayLog, setTodayLog] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const todayStr = useMemo(() => new Date().toISOString().split("T")[0], []);
+
+  useEffect(() => {
+    let cancelled = false;
+    if (!user?.id) { setLoading(false); return; }
+    (async () => {
+      try {
+        const rows = await base44.entities.SupplementLog.filter(
+          { user_id: user.id, date: todayStr },
+          "-date",
+          1,
+        );
+        if (!cancelled) setTodayLog(Array.isArray(rows) && rows[0] ? rows[0] : null);
+      } catch {
+        if (!cancelled) setTodayLog(null);
+      } finally {
+        if (!cancelled) setLoading(false);
+      }
+    })();
+    return () => { cancelled = true; };
+  }, [user?.id, todayStr]);
+
+  const takenSupplements = SUPPLEMENT_FIELDS.filter((s) => todayLog?.[s.key]);
+
+  return (
+    <article style={cardStyle}>
+      <span style={kicker}>SUPPLEMENTS</span>
+      <h3 style={cardTitle}>Today's supplements</h3>
+
+      {!loading && takenSupplements.length === 0 && (
+        <p style={{ ...cardSub, margin: "2px 0 0", fontStyle: "italic" }}>
+          No supplements logged
+        </p>
+      )}
+
+      {takenSupplements.length > 0 && (
+        <div style={{ display: "flex", flexWrap: "wrap", gap: 4, marginTop: 4 }}>
+          {takenSupplements.map((s) => (
+            <span key={s.key} style={{
+              display: "inline-flex", alignItems: "center", gap: 4,
+              fontSize: 11, fontWeight: 600, color: C.espresso,
+              padding: "4px 10px", borderRadius: 9999,
+              background: `${C.sage}22`,
+              border: `1px solid ${C.sage}55`,
+            }}>
+              <Check size={9} style={{ color: C.sage }} /> {s.label}
+            </span>
+          ))}
+        </div>
+      )}
+
+      <button type="button" onClick={() => openLogger("med")} style={ctaPill}>
+        <Pill size={11} /> Log supplement
+      </button>
+    </article>
+  );
+}
+
+function GpReportCard() {
+  return (
+    <article style={cardStyle}>
+      <span style={kicker}>GP REPORT</span>
+      <h3 style={cardTitle}>Doctor-Ready Diary</h3>
+      <p style={{ ...cardSub, margin: "2px 0 0" }}>
+        Export your cycle, symptoms, and meds in a print-ready PDF for your doctor.
+      </p>
+      <button
+        type="button"
+        onClick={() => { try { window.location.href = "/DoctorExport"; } catch {} }}
+        style={ctaPill}
+      >
+        <FileText size={11} /> Open report
+      </button>
+    </article>
+  );
+}
+
+function CareSection({ user }) {
   return (
     <SliderRow label="Care">
-      <article style={cardStyle}>
-        <span style={kicker}>MEDICATIONS</span>
-        <h3 style={cardTitle}>Today's stack</h3>
-        <p style={placeholderHint}>[skeleton] MedicationLog rows + Log button.</p>
-        <button style={ctaPill}><Pill size={11} /> Log a dose</button>
-      </article>
-      <article style={cardStyle}>
-        <span style={kicker}>SUPPLEMENTS</span>
-        <h3 style={cardTitle}>Today's supplements</h3>
-        <p style={placeholderHint}>[skeleton] Daily supplements list with tap-to-take.</p>
-      </article>
-      <article style={cardStyle}>
-        <span style={kicker}>GP REPORT</span>
-        <h3 style={cardTitle}>Doctor-Ready Diary</h3>
-        <p style={placeholderHint}>[skeleton] Navigates to /DoctorExport.</p>
-        <button style={ctaPill}><FileText size={11} /> Open export</button>
-      </article>
+      <MedicationsTodayCard user={user} />
+      <SupplementsTodayCard user={user} />
+      <GpReportCard />
     </SliderRow>
   );
 }
@@ -2447,7 +2603,7 @@ export default function PlannerV2Shell({
         <MindInsightSection user={user} phase={phase} />
 
         {/* 11 — Care */}
-        <CareSection />
+        <CareSection user={user} />
 
         {/* 12 — Tonight & Tomorrow */}
         <TonightSection />
