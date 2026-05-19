@@ -1911,16 +1911,37 @@ function AstraCard() {
   const [open, setOpen] = useState(false);
   return (
     <>
-      <article style={{ ...cardStyle, position: "relative" }}>
+      <article
+        style={{ ...cardStyle, position: "relative", cursor: "pointer" }}
+        onClick={() => setOpen(true)}
+        role="button"
+        tabIndex={0}
+        onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); setOpen(true); } }}
+      >
         <div style={astraAvatar}><Sparkles size={14} style={{ color: C.gold }} /></div>
         <span style={kicker}>ASTRA · READING</span>
         <h3 style={cardTitle}>{astraReading.title}</h3>
         <p style={astraShort}>{astraReading.short}</p>
-        <button onClick={() => setOpen(true)} style={astraOpenBtn}>Full reading <ChevronRight size={12} /></button>
+        <button
+          onClick={(e) => { e.stopPropagation(); setOpen(true); }}
+          style={astraOpenBtn}
+        >Full reading <ChevronRight size={12} /></button>
       </article>
       {open && (
-        <div style={modalBackdrop} onClick={() => setOpen(false)}>
-          <div style={modalCard} onClick={(e) => e.stopPropagation()}>
+        <div
+          style={{ ...modalBackdrop, zIndex: 9999, alignItems: "flex-start", padding: 0 }}
+          onClick={() => setOpen(false)}
+        >
+          <div
+            style={{
+              ...modalCard,
+              width: "100%", maxWidth: "100%",
+              minHeight: "100vh", maxHeight: "100vh",
+              borderRadius: 0, overflowY: "auto",
+              padding: "max(20px, env(safe-area-inset-top)) 20px max(20px, env(safe-area-inset-bottom))",
+            }}
+            onClick={(e) => e.stopPropagation()}
+          >
             <div style={modalHead}>
               <span style={kicker}>ASTRA · FULL READING</span>
               <button onClick={() => setOpen(false)} style={drawerCloseBtn}><X size={14} /></button>
@@ -1990,15 +2011,28 @@ function MoodMentalHealthCard({ user }) {
       <p style={tipText}>Luteal can bring emotional intensity — this is biological, not personal.</p>
       <label style={miniInputLabel}>
         <span style={miniLabel}>WHAT ARE YOU CARRYING TODAY?</span>
-        <input type="text" value={carrying} onChange={(e) => setCarrying(e.target.value)} placeholder="…" style={miniInput} />
+        <textarea
+          value={carrying}
+          onChange={(e) => setCarrying(e.target.value)}
+          placeholder="…"
+          rows={2}
+          style={{ ...miniInput, minHeight: 44, resize: "vertical", fontFamily: "'Inter', sans-serif" }}
+        />
       </label>
       <label style={miniInputLabel}>
         <span style={miniLabel}>WHAT WOULD FEEL LIKE RELIEF?</span>
-        <input type="text" value={relief} onChange={(e) => setRelief(e.target.value)} placeholder="…" style={miniInput} />
+        <textarea
+          value={relief}
+          onChange={(e) => setRelief(e.target.value)}
+          placeholder="…"
+          rows={2}
+          style={{ ...miniInput, minHeight: 44, resize: "vertical", fontFamily: "'Inter', sans-serif" }}
+        />
       </label>
       <button
-        onClick={() => { try { window.location.href = "/Jess"; } catch {} }}
-        style={talkJessBtn}
+        type="button"
+        onClick={(e) => { e.preventDefault(); try { window.location.href = "/Jess"; } catch {} }}
+        style={{ ...talkJessBtn, pointerEvents: "auto", position: "relative", zIndex: 1 }}
       >
         <Sparkles size={11} style={{ color: C.gold }} /> Talk to Jess <ChevronRight size={11} />
       </button>
