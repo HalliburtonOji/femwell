@@ -578,7 +578,7 @@ export default function PlannerV2Shell({
       <YourDayRow />
 
       <Row label="Your body today">
-        <BodyTodayCard />
+        <BodyTodayCard user={user} />
         <SmartViewCard />
         <CycleZoneCard onOpen={() => setCycleOpen(true)} />
       </Row>
@@ -1402,14 +1402,61 @@ function DayPartCard({ part }) {
 }
 
 // ── Body / Smart View / Cycle zone ────────────────────────────────────────
-function BodyTodayCard() {
+// Phase B4 — DailyCheckins + SymptomLogs wiring.
+// Maps the 1-5 mood/energy scale to the demo's text labels so the
+// existing visual (chip pills + ring + expanded tile grid) is untouched.
+const MOOD_LABEL   = { 1: "Heavy", 2: "Tender", 3: "Settled", 4: "Bright", 5: "Buoyant" };
+const ENERGY_LABEL = { 1: "Low",   2: "Easy",   3: "Steady",  4: "High",   5: "Soaring" };
+function sleepLabel(hours) {
+  if (hours == null || !Number.isFinite(Number(hours))) return "—";
+  const h = Number(hours);
+  const whole = Math.floor(h);
+  const mins = Math.round((h - whole) * 60);
+  return mins > 0 ? `${whole}h ${String(mins).padStart(2, "0")}m` : `${whole}h`;
+}
+function BodyTodayCard({ user }) {
   const [expanded, setExpanded] = useState(() => {
     try { return localStorage.getItem("femwell_body_strip_expanded") === "1"; } catch { return false; }
   });
   useEffect(() => {
     try { localStorage.setItem("femwell_body_strip_expanded", expanded ? "1" : "0"); } catch {}
   }, [expanded]);
-  const pct = 55;
+
+  // Real data: today's DailyCheckins (mood/energy/sleep) + SymptomLogs.
+  const [checkin, setCheckin] = useState(null);
+  const [symptoms, setSymptoms] = useState([]);
+  useEffect(() => {
+    let cancelled = false;
+    if (!user?.id) return;
+    (async () => {
+      try {
+        const [checkins, syms] = await Promise.all([
+          base44.entities.DailyCheckins.filter({ user_id: user.id, date: todayISO }, "-updated_at", 1).catch(() => []),
+          base44.entities.SymptomLogs.filter({ user_id: user.id, date: todayISO }, "-created_date", 10).catch(() => []),
+        ]);
+        if (cancelled) return;
+        setCheckin(Array.isArray(checkins) && checkins[0] ? checkins[0] : null);
+        setSymptoms(Array.isArray(syms) ? syms : []);
+      } catch { /* silent */ }
+    })();
+    return () => { cancelled = true; };
+  }, [user?.id]);
+
+  const moodNum     = checkin?.mood ?? checkin?.mood_score ?? null;
+  const energyNum   = checkin?.energy ?? checkin?.energy_level ?? null;
+  const sleepHrs    = checkin?.sleep_hours ?? null;
+  const moodLabel   = moodNum   != null ? MOOD_LABEL[moodNum]   || "—" : "—";
+  const energyLabel = energyNum != null ? ENERGY_LABEL[energyNum] || "—" : "—";
+  const sleepText   = sleepLabel(sleepHrs);
+  const firstSymptom = symptoms[0]?.symptom_type || "—";
+
+  // Capacity ring: rough composite of mood + energy → 0-100. Falls back to
+  // the demo's 55 baseline when no checkin exists, so the ring never reads
+  // visually broken.
+  const composite = (moodNum != null && energyNum != null)
+    ? Math.round(((moodNum + energyNum) / 10) * 100)
+    : 55;
+  const pct = composite;
   const R = 30, CIRC = 2 * Math.PI * R;
   const offset = CIRC * (1 - pct / 100);
   const phaseTone = PHASE_LIGHT[profile.phase];
@@ -1438,19 +1485,19 @@ function BodyTodayCard() {
         </div>
       </div>
       <div style={miniChipRow}>
-        <button style={miniChip}><Smile size={12} style={{ color: C.rose }} /> Mood</button>
-        <button style={miniChip}><Zap size={12} style={{ color: C.goldDeep }} /> Energy</button>
-        <button style={miniChip}><Moon size={12} style={{ color: C.muted }} /> Sleep 7h</button>
+        <button onClick={() => openLogger("checkin")} style={miniChip}><Smile size={12} style={{ color: C.rose }} /> Mood {moodNum ?? ""}</button>
+        <button onClick={() => openLogger("checkin")} style={miniChip}><Zap size={12} style={{ color: C.goldDeep }} /> Energy {energyNum ?? ""}</button>
+        <button onClick={() => openLogger("checkin")} style={miniChip}><Moon size={12} style={{ color: C.muted }} /> Sleep {sleepHrs != null ? `${sleepHrs}h` : "—"}</button>
       </div>
       {expanded && (
         <div style={bodyGridStyle}>
           {[
-            { label: "Mood", value: "Buoyant", Icon: Smile, tone: C.rose },
-            { label: "Energy", value: "High", Icon: Zap, tone: C.goldDeep },
-            { label: "Sleep", value: "7h 20m", Icon: Moon, tone: C.muted },
-            { label: "Symptom", value: "Clear CM", Icon: Droplets, tone: "#60B4FA" },
-            { label: "Cycle day", value: `${profile.cycleDay}/${profile.cycleLen}`, Icon: CircleDot, tone: C.gold },
-            { label: "Next event", value: "Luteal · 4d", Icon: Calendar, tone: C.sage },
+            { label: "Mood",       value: moodLabel,                              Icon: Smile,    tone: C.rose },
+            { label: "Energy",     value: energyLabel,                            Icon: Zap,      tone: C.goldDeep },
+            { label: "Sleep",      value: sleepText,                              Icon: Moon,     tone: C.muted },
+            { label: "Symptom",    value: firstSymptom,                           Icon: Droplets, tone: "#60B4FA" },
+            { label: "Cycle day",  value: `${profile.cycleDay}/${profile.cycleLen}`, Icon: CircleDot, tone: C.gold },
+            { label: "Symptoms",   value: symptoms.length === 0 ? "None" : `${symptoms.length} today`, Icon: Calendar, tone: C.sage },
           ].map((it) => (
             <div key={it.label} style={bodyTile}>
               <span style={{ ...bodyIcon, background: `${it.tone}1F`, color: it.tone }}><it.Icon size={11} /></span>
