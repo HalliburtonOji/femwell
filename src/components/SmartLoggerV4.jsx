@@ -1,4 +1,9 @@
-import { useState, useCallback, useRef, useEffect } from 'react';
+import { useState, useCallback, useRef } from 'react';
+import {
+  Heart, Droplets, Utensils, Pill, Sparkles, Pen,
+  Headphones, BookOpen, Thermometer, X as XIcon, Check, Plus, Minus,
+  Activity, Coffee, Wine, Scale,
+} from 'lucide-react';
 
 // ─── Design tokens ────────────────────────────────────────────────────────────
 const T = {
@@ -6,26 +11,32 @@ const T = {
   espresso: '#3A2C1A',
   blush:    '#E8B4B8',
   sage:     '#8FAF8F',
+  sageDeep: '#6F8B6F',
   muted:    '#9B8B7A',
   gold:     '#D4AF37',
+  goldDeep: '#A6862B',
   white:    '#FFFFFF',
   dark:     '#1A1209',
   cardBg:   '#FAF6EE',
+  paperHi:  '#FFFFFF',
   border:   'rgba(58,44,26,0.12)',
 };
 
+// 8 progress strings for 0-6 completed (we have 6 cards now)
 const PROGRESS_COPY = [
-  'Start logging ✏️',
-  'Getting started!',
-  'Keep going 💪',
-  'Halfway there!',
-  'Looking great!',
-  'Almost there! ⭐',
-  "One more — you've got this!",
-  'All done today 🎉',
+  'Start logging',
+  'Getting started',
+  'Keep going',
+  'Halfway there',
+  'Looking great',
+  'Almost there',
+  'One more left',
+  'All done today',
 ];
 
-const CARD_LABELS = ['Smart', 'Body', 'Period', 'Nourish', 'Health', 'Cycle', 'Mind & Life'];
+// 6 cards now — Smart + Body merged, no stage-aware Cycle card, Rituals is its own card.
+const CARD_LABELS = ['Smart & Body', 'Period & Cycle', 'Nourish', 'Health', 'Rituals', 'Mind & Life'];
+const TOTAL_CARDS = CARD_LABELS.length;
 
 const STAGES = [
   { id: 'luteal',        label: 'Luteal D25' },
@@ -48,43 +59,53 @@ const STAGE_JOURNAL = {
   ttc:           'What intention are you holding this cycle?',
 };
 
+const MOOD_LABELS = ['Awful', 'Low', 'Okay', 'Good', 'Great'];
+
+// Engagement rail content (per stage) — emoji removed, Lucide icons used.
 const ENGAGEMENT_RAIL = {
   luteal: [
-    { emoji: '🎙️', title: 'Cycle & Mood', sub: 'Episode 12 — Luteal Phase Nutrition', color: ['#3A2C1A', '#6B3D2A'] },
-    { emoji: '📓', title: 'Journal Prompt', sub: 'Write about what your body needs most', color: ['#2A3A2C', '#3D6B4A'] },
-    { emoji: '📖', title: 'Reading', sub: 'The Luteal Phase Survival Guide', color: ['#2C2A3A', '#4A3D6B'] },
-    { emoji: '✨', title: 'Jess Tip', sub: 'Magnesium glycinate supports PMS symptoms', color: ['#3A2A2C', '#6B3D4A'] },
+    { Icon: Headphones, type: 'PODCAST', title: 'Cycle & Mood',     sub: 'Luteal Phase Nutrition',  grad: ['#3D2E5C', '#1F1733'] },
+    { Icon: Pen,        type: 'JOURNAL', title: 'Journal prompt',   sub: 'What does your body need?', grad: ['#1F3D2E', '#0E1F17'] },
+    { Icon: BookOpen,   type: 'READING', title: 'Iron + luteal',    sub: 'The Atlas · 6 min',        grad: ['#1F3A5C', '#0E1A33'] },
+    { Icon: Sparkles,   type: 'JESS TIP',title: 'Magnesium',        sub: 'Before bed eases cramps',  grad: ['#4A3520', '#1A1410'] },
   ],
   pregnant: [
-    { emoji: '👶', title: 'Kick Milestone', sub: 'Log daily kicks & note patterns', color: ['#2C3A32', '#3D6B54'] },
-    { emoji: '📖', title: 'Reading', sub: 'Second Trimester: What to Expect', color: ['#2C2A3A', '#4A3D6B'] },
-    { emoji: '🎙️', title: 'Podcast', sub: 'The Pregnancy Podcast — Episode 31', color: ['#3A2C1A', '#6B3D2A'] },
-    { emoji: '✨', title: 'Jess Tip', sub: 'Iron + Vitamin C together boosts absorption', color: ['#3A2A2C', '#6B3D4A'] },
+    { Icon: Headphones, type: 'PODCAST', title: 'T2 energy slumps', sub: 'Mother & Baby · 38 min',  grad: ['#3D2E5C', '#1F1733'] },
+    { Icon: Pen,        type: 'JOURNAL', title: 'Letter to baby',   sub: 'Pregnancy diary',          grad: ['#1F3D2E', '#0E1F17'] },
+    { Icon: BookOpen,   type: 'READING', title: '20-week scan',     sub: 'NHS guide · 8 min',        grad: ['#1F3A5C', '#0E1A33'] },
+    { Icon: Sparkles,   type: 'JESS TIP',title: 'Left-side sleep',  sub: 'Improves circulation',     grad: ['#4A3520', '#1A1410'] },
   ],
   perimenopause: [
-    { emoji: '🌡️', title: 'Hot Flash Tips', sub: 'Cooling strategies that actually work', color: ['#3A2A1A', '#6B4A2A'] },
-    { emoji: '📖', title: 'Reading', sub: 'The Menopause Manifesto', color: ['#2C2A3A', '#4A3D6B'] },
-    { emoji: '🎙️', title: 'Podcast', sub: 'Menopause & Me — Episode 8', color: ['#3A2C1A', '#6B3D2A'] },
-    { emoji: '✨', title: 'Jess Tip', sub: 'Phytoestrogens in flaxseed may ease symptoms', color: ['#3A2A2C', '#6B3D4A'] },
+    { Icon: Headphones, type: 'PODCAST', title: 'HRT myths',        sub: 'Dr Louise Newson · 55 min',grad: ['#3D2E5C', '#1F1733'] },
+    { Icon: Pen,        type: 'JOURNAL', title: 'What surprised you?',sub: 'Peri reflection',         grad: ['#1F3D2E', '#0E1F17'] },
+    { Icon: BookOpen,   type: 'READING', title: 'Hot flashes',      sub: 'The Atlas · 5 min',        grad: ['#1F3A5C', '#0E1A33'] },
+    { Icon: Sparkles,   type: 'JESS TIP',title: 'Cool the room 2°C',sub: 'Halves flash frequency',   grad: ['#4A3520', '#1A1410'] },
   ],
   ttc: [
-    { emoji: '🌡️', title: 'BBT Charting Tip', sub: 'Temp at same time daily for accuracy', color: ['#2A3A2C', '#3D6B4A'] },
-    { emoji: '📖', title: 'Reading', sub: 'Taking Charge of Your Fertility — Ch.4', color: ['#2C2A3A', '#4A3D6B'] },
-    { emoji: '🎙️', title: 'Podcast', sub: 'Fertility Friday — Episode 22', color: ['#3A2C1A', '#6B3D2A'] },
-    { emoji: '✨', title: 'Jess Tip', sub: 'Egg-white CM is your most fertile sign', color: ['#3A2A2C', '#6B3D4A'] },
+    { Icon: Headphones, type: 'PODCAST', title: 'Fertile window',   sub: 'Modern Fertility · 47 min',grad: ['#3D2E5C', '#1F1733'] },
+    { Icon: Pen,        type: 'JOURNAL', title: 'About this cycle', sub: 'TTC reflection',           grad: ['#1F3D2E', '#0E1F17'] },
+    { Icon: BookOpen,   type: 'READING', title: 'BBT charting',     sub: 'The Atlas · 7 min',        grad: ['#1F3A5C', '#0E1A33'] },
+    { Icon: Sparkles,   type: 'JESS TIP',title: 'Stress + ovulation',sub: 'Can delay 3 days',        grad: ['#4A3520', '#1A1410'] },
   ],
 };
+
+// Card-title icons (Lucide, no emoji)
+const CARD_ICONS = [Heart, Droplets, Utensils, Pill, Sparkles, Pen];
 
 // ─── Tiny Toast ───────────────────────────────────────────────────────────────
 function Toast({ message, visible }) {
   return (
     <div style={{
-      position: 'fixed', bottom: 96, left: '50%', transform: `translateX(-50%) translateY(${visible ? 0 : 20}px)`,
-      background: T.espresso, color: T.cream, padding: '8px 18px', borderRadius: 20,
-      fontSize: 13, fontWeight: 600, opacity: visible ? 1 : 0,
-      transition: 'opacity 0.25s ease, transform 0.25s ease',
+      position: 'absolute', bottom: 16, left: '50%',
+      transform: `translateX(-50%) translateY(${visible ? 0 : 12}px)`,
+      background: T.espresso, color: T.cream, padding: '8px 16px', borderRadius: 20,
+      fontSize: 12.5, fontWeight: 700, opacity: visible ? 1 : 0,
+      transition: 'opacity 0.22s ease, transform 0.22s ease',
       pointerEvents: 'none', zIndex: 9999, whiteSpace: 'nowrap',
+      display: 'inline-flex', alignItems: 'center', gap: 6,
+      boxShadow: '0 6px 18px rgba(0,0,0,0.25)',
     }}>
+      <Check size={13} strokeWidth={3} />
       {message}
     </div>
   );
@@ -103,12 +124,15 @@ function PillNav({ current, completed, onSelect }) {
             onClick={() => onSelect(i)}
             style={{
               flexShrink: 0, padding: '6px 14px', borderRadius: 20, border: 'none', cursor: 'pointer',
-              fontSize: 12, fontWeight: 600, transition: 'all 0.2s ease',
-              background: isActive ? T.gold : isDone ? T.sage : 'rgba(58,44,26,0.1)',
+              fontSize: 11.5, fontWeight: 700, transition: 'all 0.2s ease',
+              background: isActive ? T.gold : isDone ? T.sage : 'rgba(58,44,26,0.10)',
               color: isActive ? T.espresso : isDone ? T.white : T.muted,
+              display: 'inline-flex', alignItems: 'center', gap: 5,
+              letterSpacing: '0.01em',
             }}
           >
-            {isDone && !isActive ? `✓ ${label}` : label}
+            {isDone && !isActive && <Check size={11} strokeWidth={3} />}
+            {label}
           </button>
         );
       })}
@@ -119,15 +143,15 @@ function PillNav({ current, completed, onSelect }) {
 // ─── Progress bar ─────────────────────────────────────────────────────────────
 function ProgressBar({ completed }) {
   const count = completed.size;
-  const copy = PROGRESS_COPY[count] || PROGRESS_COPY[0];
+  const copy = PROGRESS_COPY[Math.min(count, PROGRESS_COPY.length - 1)];
   return (
-    <div style={{ padding: '12px 16px 8px' }}>
+    <div style={{ padding: '12px 16px 6px' }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 6 }}>
         <span style={{ fontSize: 12, fontWeight: 700, color: T.espresso }}>{copy}</span>
-        <span style={{ fontSize: 11, color: T.muted }}>{count}/7</span>
+        <span style={{ fontSize: 11, color: T.muted }}>{count}/{TOTAL_CARDS}</span>
       </div>
       <div style={{ display: 'flex', gap: 4 }}>
-        {Array.from({ length: 7 }, (_, i) => (
+        {Array.from({ length: TOTAL_CARDS }, (_, i) => (
           <div key={i} style={{
             flex: 1, height: 5, borderRadius: 3,
             background: completed.has(i) ? T.gold : 'rgba(58,44,26,0.15)',
@@ -142,22 +166,27 @@ function ProgressBar({ completed }) {
 // ─── Shared sub-components ────────────────────────────────────────────────────
 function SectionLabel({ children }) {
   return (
-    <div style={{ fontSize: 11, fontWeight: 700, color: T.muted, textTransform: 'uppercase', letterSpacing: 1, marginBottom: 8 }}>
+    <div style={{
+      fontSize: 10.5, fontWeight: 700, color: T.muted, textTransform: 'uppercase',
+      letterSpacing: '0.10em', marginBottom: 6, marginTop: 4,
+    }}>
       {children}
     </div>
   );
 }
 
-function ChipRow({ options, selected, onToggle, multi = true }) {
+function ChipRow({ options, selected, onToggle, multi = true, small = false }) {
   return (
-    <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
+    <div style={{ display: 'flex', flexWrap: 'wrap', gap: 5 }}>
       {options.map(opt => {
         const active = multi ? selected.includes(opt) : selected === opt;
         return (
           <button key={opt} onClick={() => onToggle(opt)} style={{
-            padding: '6px 12px', borderRadius: 16, border: `1.5px solid ${active ? T.gold : T.border}`,
+            padding: small ? '4px 10px' : '5px 11px', borderRadius: 14,
+            border: `1.5px solid ${active ? T.gold : T.border}`,
             background: active ? `${T.gold}22` : 'transparent',
-            color: active ? T.espresso : T.muted, fontSize: 12, fontWeight: 600, cursor: 'pointer',
+            color: active ? T.espresso : T.muted,
+            fontSize: small ? 11 : 11.5, fontWeight: 600, cursor: 'pointer',
             transition: 'all 0.18s ease',
           }}>
             {opt}
@@ -170,16 +199,16 @@ function ChipRow({ options, selected, onToggle, multi = true }) {
 
 function DotRating({ value, onChange, max = 5, color = T.gold }) {
   return (
-    <div style={{ display: 'flex', gap: 8 }}>
+    <div style={{ display: 'flex', gap: 6 }}>
       {Array.from({ length: max }, (_, i) => (
         <button key={i} onClick={() => onChange(i + 1)} style={{
-          width: 34, height: 34, borderRadius: '50%', border: `2px solid ${i < value ? color : T.border}`,
+          width: 30, height: 30, borderRadius: '50%',
+          border: `2px solid ${i < value ? color : T.border}`,
           background: i < value ? color : 'transparent',
           color: i < value ? T.espresso : T.muted,
-          fontSize: 12, fontWeight: 700, cursor: 'pointer', transition: 'all 0.18s ease',
-        }}>
-          {i + 1}
-        </button>
+          fontSize: 11.5, fontWeight: 700, cursor: 'pointer',
+          transition: 'all 0.18s ease',
+        }}>{i + 1}</button>
       ))}
     </div>
   );
@@ -187,34 +216,34 @@ function DotRating({ value, onChange, max = 5, color = T.gold }) {
 
 function Counter({ value, onChange, step = 1, min = 0, max = 99, label = '' }) {
   return (
-    <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+    <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
       <button onClick={() => onChange(Math.max(min, parseFloat((value - step).toFixed(2))))} style={{
-        width: 32, height: 32, borderRadius: '50%', border: `1.5px solid ${T.border}`,
-        background: 'transparent', color: T.espresso, fontSize: 18, cursor: 'pointer', fontWeight: 700,
+        width: 30, height: 30, borderRadius: '50%', border: `1.5px solid ${T.border}`,
+        background: 'transparent', color: T.espresso, cursor: 'pointer',
         display: 'flex', alignItems: 'center', justifyContent: 'center',
-      }}>−</button>
-      <span style={{ minWidth: 40, textAlign: 'center', fontWeight: 700, fontSize: 16, color: T.espresso }}>
+      }}><Minus size={14} /></button>
+      <span style={{ minWidth: 44, textAlign: 'center', fontWeight: 700, fontSize: 15, color: T.espresso }}>
         {value}{label}
       </span>
       <button onClick={() => onChange(Math.min(max, parseFloat((value + step).toFixed(2))))} style={{
-        width: 32, height: 32, borderRadius: '50%', border: `1.5px solid ${T.border}`,
-        background: 'transparent', color: T.espresso, fontSize: 18, cursor: 'pointer', fontWeight: 700,
+        width: 30, height: 30, borderRadius: '50%', border: `1.5px solid ${T.border}`,
+        background: 'transparent', color: T.espresso, cursor: 'pointer',
         display: 'flex', alignItems: 'center', justifyContent: 'center',
-      }}>+</button>
+      }}><Plus size={14} /></button>
     </div>
   );
 }
 
 function Toggle({ checked, onChange, label }) {
   return (
-    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '8px 0' }}>
-      <span style={{ fontSize: 13, color: T.espresso, fontWeight: 500 }}>{label}</span>
+    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '6px 0' }}>
+      <span style={{ fontSize: 12.5, color: T.espresso, fontWeight: 500 }}>{label}</span>
       <div onClick={() => onChange(!checked)} style={{
-        width: 44, height: 24, borderRadius: 12, cursor: 'pointer', transition: 'background 0.2s',
-        background: checked ? T.gold : 'rgba(58,44,26,0.2)', position: 'relative',
+        width: 40, height: 22, borderRadius: 12, cursor: 'pointer', transition: 'background 0.2s',
+        background: checked ? T.gold : 'rgba(58,44,26,0.2)', position: 'relative', flexShrink: 0,
       }}>
         <div style={{
-          position: 'absolute', top: 2, left: checked ? 22 : 2, width: 20, height: 20,
+          position: 'absolute', top: 2, left: checked ? 20 : 2, width: 18, height: 18,
           borderRadius: '50%', background: T.white, transition: 'left 0.2s ease',
           boxShadow: '0 1px 3px rgba(0,0,0,0.2)',
         }} />
@@ -223,82 +252,83 @@ function Toggle({ checked, onChange, label }) {
   );
 }
 
-function MoodFaces({ value, onChange }) {
-  const faces = ['😔', '😕', '😐', '🙂', '😊'];
+// Mood pill row — text-only, NO emoji
+function MoodPills({ value, onChange }) {
   return (
-    <div style={{ display: 'flex', gap: 8, justifyContent: 'center' }}>
-      {faces.map((f, i) => (
-        <button key={i} onClick={() => onChange(i + 1)} style={{
-          fontSize: value === i + 1 ? 36 : 28, background: 'none', border: 'none', cursor: 'pointer',
-          padding: '4px 2px', transform: value === i + 1 ? 'scale(1.15)' : 'scale(1)',
-          transition: 'transform 0.18s ease, font-size 0.18s ease',
-          filter: value === i + 1 ? 'drop-shadow(0 2px 4px rgba(212,175,55,0.4))' : 'none',
-        }}>
-          {f}
-        </button>
-      ))}
+    <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
+      {MOOD_LABELS.map((m, i) => {
+        const active = value === i + 1;
+        return (
+          <button key={m} onClick={() => onChange(i + 1)} style={{
+            flex: '1 1 0', minWidth: 0,
+            padding: '8px 6px', borderRadius: 14,
+            border: `1.5px solid ${active ? T.gold : T.border}`,
+            background: active ? T.gold : T.paperHi,
+            color: active ? T.espresso : T.muted,
+            fontSize: 12, fontWeight: 700, cursor: 'pointer',
+            transition: 'all 0.16s ease',
+          }}>{m}</button>
+        );
+      })}
     </div>
   );
 }
 
-// ─── Card 1: Smart ────────────────────────────────────────────────────────────
-function Card1Smart({ stage, onSave }) {
+// ─── Card 1: Smart & Body (merged) ────────────────────────────────────────────
+function Card1SmartBody({ stage, onSave }) {
   const [mood, setMood] = useState(0);
   const [influences, setInfluences] = useState([]);
-
-  const handleMood = (v) => { setMood(v); onSave(); };
-  const handleInfluence = (opt) => {
-    setInfluences(prev => prev.includes(opt) ? prev.filter(x => x !== opt) : [...prev, opt]);
-    onSave();
-  };
-
-  return (
-    <div>
-      <p style={{ fontSize: 13, color: T.muted, marginBottom: 16, textAlign: 'center', fontStyle: 'italic' }}>
-        {STAGE_CONTEXT[stage]}
-      </p>
-      <SectionLabel>Mood</SectionLabel>
-      <div style={{ marginBottom: 20 }}>
-        <MoodFaces value={mood} onChange={handleMood} />
-      </div>
-      <SectionLabel>What's influencing you?</SectionLabel>
-      <ChipRow
-        options={['Sleep quality', 'Stress', 'Exercise', 'Nutrition', 'Social', 'Hormones']}
-        selected={influences}
-        onToggle={handleInfluence}
-      />
-    </div>
-  );
-}
-
-// ─── Card 2: Body ─────────────────────────────────────────────────────────────
-function Card2Body({ onSave }) {
   const [energy, setEnergy] = useState(0);
   const [symptoms, setSymptoms] = useState([]);
   const [weight, setWeight] = useState(65);
+  const toggleArr = (setter) => (opt) =>
+    setter((prev) => { const next = prev.includes(opt) ? prev.filter((x) => x !== opt) : [...prev, opt]; onSave(); return next; });
 
   return (
     <div>
-      <SectionLabel>Energy level</SectionLabel>
-      <div style={{ marginBottom: 20 }}>
-        <DotRating value={energy} onChange={(v) => { setEnergy(v); onSave(); }} color={T.gold} />
+      <p style={{
+        fontSize: 12.5, color: T.muted, marginBottom: 12, marginTop: 0,
+        textAlign: 'center', fontStyle: 'italic',
+      }}>{STAGE_CONTEXT[stage]}</p>
+
+      <SectionLabel>Mood</SectionLabel>
+      <div style={{ marginBottom: 12 }}>
+        <MoodPills value={mood} onChange={(v) => { setMood(v); onSave(); }} />
       </div>
-      <SectionLabel>Symptoms today</SectionLabel>
-      <div style={{ marginBottom: 20 }}>
+
+      <SectionLabel>What's influencing you?</SectionLabel>
+      <div style={{ marginBottom: 12 }}>
         <ChipRow
-          options={['Cramps', 'Bloating', 'Headache', 'Back pain', 'Breast tenderness', 'Fatigue', 'Nausea', 'Brain fog', 'Skin breakout', 'Joint pain']}
-          selected={symptoms}
-          onToggle={(opt) => { setSymptoms(prev => prev.includes(opt) ? prev.filter(x => x !== opt) : [...prev, opt]); onSave(); }}
+          options={['Sleep', 'Stress', 'Exercise', 'Nutrition', 'Social', 'Hormones']}
+          selected={influences}
+          onToggle={toggleArr(setInfluences)}
+          small
         />
       </div>
-      <SectionLabel>Weight (kg)</SectionLabel>
-      <Counter value={weight} onChange={(v) => { setWeight(v); onSave(); }} step={0.1} min={30} max={200} />
+
+      <SectionLabel>Energy</SectionLabel>
+      <div style={{ marginBottom: 12 }}>
+        <DotRating value={energy} onChange={(v) => { setEnergy(v); onSave(); }} color={T.gold} />
+      </div>
+
+      <SectionLabel>Symptoms today</SectionLabel>
+      <div style={{ marginBottom: 12 }}>
+        <ChipRow
+          options={['Cramps', 'Bloating', 'Headache', 'Back pain', 'Tender breasts', 'Fatigue', 'Nausea', 'Brain fog', 'Breakout', 'Joint pain']}
+          selected={symptoms}
+          onToggle={toggleArr(setSymptoms)}
+          small
+        />
+      </div>
+
+      <SectionLabel>Weight</SectionLabel>
+      <Counter value={weight} onChange={(v) => { setWeight(v); onSave(); }} step={0.1} min={30} max={200} label=" kg" />
     </div>
   );
 }
 
-// ─── Card 3: Period & Cycle ───────────────────────────────────────────────────
-function Card3Period({ onSave }) {
+// ─── Card 2: Period & Cycle ───────────────────────────────────────────────────
+function Card2Period({ onSave }) {
   const [status, setStatus] = useState('');
   const [flow, setFlow] = useState('');
   const [pain, setPain] = useState(0);
@@ -306,362 +336,396 @@ function Card3Period({ onSave }) {
   const [pillTaken, setPillTaken] = useState(false);
   const [patchCheck, setPatchCheck] = useState(false);
   const [injectionDue, setInjectionDue] = useState(false);
-
   const showFlow = ['Period start', 'Ongoing'].includes(status);
 
   return (
     <div>
       <SectionLabel>Period status</SectionLabel>
-      <div style={{ marginBottom: 16 }}>
+      <div style={{ marginBottom: 12 }}>
         <ChipRow
           options={['Period start', 'Ongoing', 'Period end', 'Spotting', 'No period']}
           selected={status}
           onToggle={(opt) => { setStatus(opt); onSave(); }}
           multi={false}
+          small
         />
       </div>
       {showFlow && (
-        <div style={{ marginBottom: 16 }}>
+        <div style={{ marginBottom: 12 }}>
           <SectionLabel>Flow</SectionLabel>
           <ChipRow
             options={['Light', 'Medium', 'Heavy', 'Very heavy']}
             selected={flow}
             onToggle={(opt) => { setFlow(opt); onSave(); }}
             multi={false}
+            small
           />
         </div>
       )}
       <SectionLabel>Pain level</SectionLabel>
-      <div style={{ marginBottom: 16 }}>
+      <div style={{ marginBottom: 8 }}>
         <DotRating value={pain} onChange={(v) => { setPain(v); onSave(); }} color={T.blush} />
       </div>
       <Toggle checked={clots} onChange={(v) => { setClots(v); onSave(); }} label="Clots present" />
-      <div style={{ marginTop: 12 }}>
+      <div style={{ marginTop: 6 }}>
         <SectionLabel>Contraception</SectionLabel>
-        <Toggle checked={pillTaken} onChange={(v) => { setPillTaken(v); onSave(); }} label="Pill taken today" />
-        <Toggle checked={patchCheck} onChange={(v) => { setPatchCheck(v); onSave(); }} label="Patch / Ring check" />
+        <Toggle checked={pillTaken}    onChange={(v) => { setPillTaken(v); onSave(); }}    label="Pill taken today" />
+        <Toggle checked={patchCheck}   onChange={(v) => { setPatchCheck(v); onSave(); }}   label="Patch / Ring check" />
         <Toggle checked={injectionDue} onChange={(v) => { setInjectionDue(v); onSave(); }} label="Injection due soon" />
       </div>
     </div>
   );
 }
 
-// ─── Card 4: Nourish ──────────────────────────────────────────────────────────
-function Card4Nourish({ onSave }) {
+// ─── Card 3: Nourish ──────────────────────────────────────────────────────────
+function Card3Nourish({ onSave }) {
   const [water, setWater] = useState(4);
   const [caffeine, setCaffeine] = useState(0);
   const [alcohol, setAlcohol] = useState(0);
   const [meals, setMeals] = useState([]);
+  const toggleMeal = (m) => setMeals((prev) => { const next = prev.includes(m) ? prev.filter((x) => x !== m) : [...prev, m]; onSave(); return next; });
 
   return (
     <div>
-      <div style={{ marginBottom: 18 }}>
-        <SectionLabel>Water (glasses)</SectionLabel>
-        <Counter value={water} onChange={(v) => { setWater(v); onSave(); }} min={0} max={20} />
-      </div>
-      <div style={{ marginBottom: 18 }}>
-        <SectionLabel>Caffeine (cups)</SectionLabel>
-        <Counter value={caffeine} onChange={(v) => { setCaffeine(v); onSave(); }} min={0} max={20} />
-      </div>
-      <div style={{ marginBottom: 18 }}>
-        <SectionLabel>Alcohol (units)</SectionLabel>
-        <Counter value={alcohol} onChange={(v) => { setAlcohol(v); onSave(); }} min={0} max={20} />
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 14, marginBottom: 14 }}>
+        <div>
+          <SectionLabel><Droplets size={11} style={{ verticalAlign: 'middle', marginRight: 4 }} />Water (glasses)</SectionLabel>
+          <Counter value={water}    onChange={(v) => { setWater(v); onSave(); }}    min={0} max={20} />
+        </div>
+        <div>
+          <SectionLabel><Coffee size={11} style={{ verticalAlign: 'middle', marginRight: 4 }} />Caffeine (cups)</SectionLabel>
+          <Counter value={caffeine} onChange={(v) => { setCaffeine(v); onSave(); }} min={0} max={20} />
+        </div>
+        <div>
+          <SectionLabel><Wine size={11} style={{ verticalAlign: 'middle', marginRight: 4 }} />Alcohol (units)</SectionLabel>
+          <Counter value={alcohol}  onChange={(v) => { setAlcohol(v); onSave(); }}  min={0} max={20} />
+        </div>
       </div>
       <SectionLabel>Meals logged</SectionLabel>
       <ChipRow
         options={['Breakfast', 'Lunch', 'Dinner', 'Snack']}
         selected={meals}
-        onToggle={(opt) => { setMeals(prev => prev.includes(opt) ? prev.filter(x => x !== opt) : [...prev, opt]); onSave(); }}
+        onToggle={toggleMeal}
+        small
       />
     </div>
   );
 }
 
-// ─── Card 5: Health ───────────────────────────────────────────────────────────
-function Card5Health({ onSave, showToast }) {
-  const [meds, setMeds] = useState([]);
+// ─── Card 4: Health (with add-med input) ──────────────────────────────────────
+function Card4Health({ onSave, showToast }) {
+  const presets = ['Iron supplement', 'Vitamin D', 'Magnesium'];
+  const [customMeds, setCustomMeds] = useState([]); // [{ name, qty }]
+  const [checked, setChecked] = useState(new Set());
+  const [newName, setNewName] = useState('');
+  const [newQty, setNewQty] = useState(1);
   const [sleep, setSleep] = useState(7.0);
-  const medOptions = ['Iron supplement', 'Vitamin D', 'Magnesium'];
+
+  const allMeds = [...presets, ...customMeds.map((m) => m.name + (m.qty > 1 ? ` × ${m.qty}` : ''))];
 
   const toggleMed = (med) => {
-    setMeds(prev => {
-      const next = prev.includes(med) ? prev.filter(x => x !== med) : [...prev, med];
-      if (!prev.includes(med)) showToast(`✓ ${med} logged`);
+    setChecked((prev) => {
+      const next = new Set(prev);
+      if (next.has(med)) next.delete(med);
+      else { next.add(med); showToast(`${med} logged`); }
       return next;
     });
     onSave();
   };
 
+  const addMed = () => {
+    const name = newName.trim();
+    if (!name) return;
+    setCustomMeds((prev) => [...prev, { name, qty: newQty }]);
+    setNewName(''); setNewQty(1);
+    showToast(`${name} added`);
+    onSave();
+  };
+
   return (
     <div>
-      <SectionLabel>Medications</SectionLabel>
-      <div style={{ marginBottom: 20 }}>
-        {medOptions.map(med => (
+      <SectionLabel>Medications today</SectionLabel>
+      <div style={{ marginBottom: 10, maxHeight: 110, overflowY: 'auto' }}>
+        {allMeds.map((med) => (
           <div key={med} onClick={() => toggleMed(med)} style={{
-            display: 'flex', alignItems: 'center', gap: 10, padding: '10px 0',
+            display: 'flex', alignItems: 'center', gap: 10, padding: '7px 0',
             borderBottom: `1px solid ${T.border}`, cursor: 'pointer',
           }}>
             <div style={{
-              width: 22, height: 22, borderRadius: 6, border: `2px solid ${meds.includes(med) ? T.gold : T.border}`,
-              background: meds.includes(med) ? T.gold : 'transparent',
+              width: 20, height: 20, borderRadius: 5,
+              border: `2px solid ${checked.has(med) ? T.gold : T.border}`,
+              background: checked.has(med) ? T.gold : 'transparent',
               display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0,
-              transition: 'all 0.18s ease',
             }}>
-              {meds.includes(med) && <span style={{ fontSize: 13, color: T.espresso }}>✓</span>}
+              {checked.has(med) && <Check size={11} strokeWidth={3} style={{ color: T.espresso }} />}
             </div>
-            <span style={{ fontSize: 13, color: T.espresso, fontWeight: 500 }}>{med}</span>
+            <span style={{ fontSize: 12.5, color: T.espresso, fontWeight: 500 }}>{med}</span>
           </div>
         ))}
       </div>
+
+      {/* Add medication */}
+      <div style={{
+        background: 'rgba(212,175,55,0.08)', border: `1px dashed ${T.gold}55`,
+        borderRadius: 10, padding: '8px 10px', marginBottom: 12,
+      }}>
+        <SectionLabel>Add medication</SectionLabel>
+        <div style={{ display: 'flex', gap: 6, alignItems: 'center' }}>
+          <input
+            value={newName}
+            onChange={(e) => setNewName(e.target.value)}
+            placeholder="Med name…"
+            onKeyDown={(e) => e.key === 'Enter' && addMed()}
+            style={{
+              flex: 1, minWidth: 0, padding: '7px 9px', borderRadius: 8,
+              border: `1px solid ${T.border}`, background: T.white,
+              fontSize: 12, color: T.espresso, outline: 'none',
+            }}
+          />
+          <div style={{
+            display: 'inline-flex', alignItems: 'center', gap: 4,
+            border: `1px solid ${T.border}`, borderRadius: 8, padding: '4px 6px', background: T.white,
+          }}>
+            <button onClick={() => setNewQty((q) => Math.max(1, q - 1))} style={{
+              width: 20, height: 20, borderRadius: '50%', background: 'transparent',
+              border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center',
+              color: T.espresso,
+            }}><Minus size={11} /></button>
+            <span style={{ minWidth: 22, textAlign: 'center', fontSize: 12, fontWeight: 700, color: T.espresso }}>{newQty}</span>
+            <button onClick={() => setNewQty((q) => q + 1)} style={{
+              width: 20, height: 20, borderRadius: '50%', background: 'transparent',
+              border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center',
+              color: T.espresso,
+            }}><Plus size={11} /></button>
+          </div>
+          <button onClick={addMed} disabled={!newName.trim()} style={{
+            padding: '7px 12px', borderRadius: 8, border: 'none',
+            background: newName.trim() ? T.espresso : 'rgba(58,44,26,0.18)',
+            color: T.cream, fontSize: 12, fontWeight: 700, cursor: newName.trim() ? 'pointer' : 'not-allowed',
+          }}>Add</button>
+        </div>
+      </div>
+
       <SectionLabel>Sleep last night (hours)</SectionLabel>
       <Counter value={sleep} onChange={(v) => { setSleep(v); onSave(); }} step={0.5} min={0} max={16} label="h" />
     </div>
   );
 }
 
-// ─── Card 6: Cycle (stage-aware) ──────────────────────────────────────────────
-function Card6Cycle({ stage, onSave }) {
-  // Luteal state
-  const [pmsChips, setPmsChips] = useState([]);
-  const [spotting, setSpotting] = useState('');
-  // Pregnant state
-  const [kicks, setKicks] = useState(0);
-  const [braxton, setBraxton] = useState(false);
-  const [nausea, setNausea] = useState(false);
-  // Perimenopause state
-  const [hotFlashes, setHotFlashes] = useState(0);
-  const [hfIntensity, setHfIntensity] = useState('');
-  const [hfTriggers, setHfTriggers] = useState([]);
-  const [hrtTaken, setHrtTaken] = useState(false);
-  const [nightSweats, setNightSweats] = useState(false);
-  // TTC state
-  const [bbt, setBbt] = useState(36.20);
-  const [cm, setCm] = useState('');
-  const [lh, setLh] = useState('');
-  const [intercourse, setIntercourse] = useState(false);
+// ─── Card 5: Rituals (user-created + presets, writes to HabitLogs) ────────────
+function Card5Rituals({ onSave, showToast }) {
+  const presets = ['Moon wind-down', '10 min reading', 'Breathwork', 'Supplement routine'];
+  const [customRituals, setCustomRituals] = useState([]);
+  const [completed, setCompleted] = useState(new Set());
+  const [newRitual, setNewRitual] = useState('');
 
-  if (stage === 'luteal') return (
+  const allRituals = [...presets, ...customRituals];
+
+  const toggleRitual = (r) => {
+    setCompleted((prev) => {
+      const next = new Set(prev);
+      if (next.has(r)) {
+        next.delete(r);
+      } else {
+        next.add(r);
+        // Simulate HabitLogs.create({ habit_name, completed: true, date: today })
+        showToast(`${r} logged to your habits`);
+      }
+      return next;
+    });
+    onSave();
+  };
+
+  const addRitual = () => {
+    const name = newRitual.trim();
+    if (!name) return;
+    setCustomRituals((prev) => [...prev, name]);
+    setNewRitual('');
+    showToast(`${name} added`);
+    onSave();
+  };
+
+  return (
     <div>
-      <SectionLabel>PMS symptoms</SectionLabel>
-      <div style={{ marginBottom: 20 }}>
-        <ChipRow
-          options={['Mood swings', 'Irritability', 'Anxiety', 'Cravings', 'Bloating', 'Breast tenderness']}
-          selected={pmsChips}
-          onToggle={(opt) => { setPmsChips(prev => prev.includes(opt) ? prev.filter(x => x !== opt) : [...prev, opt]); onSave(); }}
-        />
+      <div style={{
+        display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', marginBottom: 6,
+      }}>
+        <SectionLabel>Your Rituals</SectionLabel>
+        <span style={{ fontSize: 11, color: T.muted, fontWeight: 600 }}>
+          {completed.size}/{allRituals.length} today
+        </span>
       </div>
-      <SectionLabel>Spotting</SectionLabel>
-      <ChipRow
-        options={['None', 'Light', 'Spotting']}
-        selected={spotting}
-        onToggle={(opt) => { setSpotting(opt); onSave(); }}
-        multi={false}
-      />
-    </div>
-  );
 
-  if (stage === 'pregnant') return (
-    <div>
-      <SectionLabel>Kick counter</SectionLabel>
-      <div style={{ marginBottom: 24, textAlign: 'center' }}>
-        <button onClick={() => { setKicks(k => k + 1); onSave(); }} style={{
-          width: 120, height: 120, borderRadius: '50%',
-          background: `linear-gradient(135deg, ${T.blush}, #d4889c)`,
-          border: 'none', cursor: 'pointer', fontSize: 36, color: T.white,
-          boxShadow: '0 4px 20px rgba(232,180,184,0.5)',
-          display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
-          margin: '0 auto', transition: 'transform 0.1s',
-        }}>
-          <span>👶</span>
-          <span style={{ fontSize: 12, fontWeight: 700, marginTop: 4 }}>Log a kick</span>
-        </button>
-        <div style={{ marginTop: 12, fontSize: 20, fontWeight: 700, color: T.espresso }}>
-          {kicks} kicks today
+      <div style={{ marginBottom: 10, maxHeight: 130, overflowY: 'auto' }}>
+        {allRituals.map((r) => (
+          <div key={r} onClick={() => toggleRitual(r)} style={{
+            display: 'flex', alignItems: 'center', gap: 10, padding: '7px 0',
+            borderBottom: `1px solid ${T.border}`, cursor: 'pointer',
+          }}>
+            <div style={{
+              width: 20, height: 20, borderRadius: 5,
+              border: `2px solid ${completed.has(r) ? T.sage : T.border}`,
+              background: completed.has(r) ? T.sage : 'transparent',
+              display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0,
+            }}>
+              {completed.has(r) && <Check size={11} strokeWidth={3} style={{ color: T.white }} />}
+            </div>
+            <span style={{
+              fontSize: 12.5, color: T.espresso, fontWeight: 500,
+              textDecoration: completed.has(r) ? 'line-through' : 'none',
+              opacity: completed.has(r) ? 0.6 : 1,
+            }}>{r}</span>
+          </div>
+        ))}
+      </div>
+
+      <div style={{
+        background: 'rgba(143,175,143,0.10)', border: `1px dashed ${T.sage}55`,
+        borderRadius: 10, padding: '8px 10px',
+      }}>
+        <SectionLabel>Create ritual</SectionLabel>
+        <div style={{ display: 'flex', gap: 6 }}>
+          <input
+            value={newRitual}
+            onChange={(e) => setNewRitual(e.target.value)}
+            placeholder="e.g. Sunday slow morning"
+            onKeyDown={(e) => e.key === 'Enter' && addRitual()}
+            style={{
+              flex: 1, padding: '7px 9px', borderRadius: 8,
+              border: `1px solid ${T.border}`, background: T.white,
+              fontSize: 12, color: T.espresso, outline: 'none',
+            }}
+          />
+          <button onClick={addRitual} disabled={!newRitual.trim()} style={{
+            padding: '7px 12px', borderRadius: 8, border: 'none',
+            background: newRitual.trim() ? T.espresso : 'rgba(58,44,26,0.18)',
+            color: T.cream, fontSize: 12, fontWeight: 700, cursor: newRitual.trim() ? 'pointer' : 'not-allowed',
+          }}>Add</button>
         </div>
       </div>
-      <Toggle checked={braxton} onChange={(v) => { setBraxton(v); onSave(); }} label="Braxton Hicks contractions" />
-      <Toggle checked={nausea} onChange={(v) => { setNausea(v); onSave(); }} label="Nausea today" />
     </div>
   );
-
-  if (stage === 'perimenopause') return (
-    <div>
-      <div style={{ marginBottom: 16 }}>
-        <SectionLabel>Hot flashes today</SectionLabel>
-        <Counter value={hotFlashes} onChange={(v) => { setHotFlashes(v); onSave(); }} min={0} max={30} />
-      </div>
-      <div style={{ marginBottom: 16 }}>
-        <SectionLabel>Intensity</SectionLabel>
-        <ChipRow
-          options={['Mild', 'Moderate', 'Severe']}
-          selected={hfIntensity}
-          onToggle={(opt) => { setHfIntensity(opt); onSave(); }}
-          multi={false}
-        />
-      </div>
-      <div style={{ marginBottom: 16 }}>
-        <SectionLabel>Triggers</SectionLabel>
-        <ChipRow
-          options={['Stress', 'Heat', 'Caffeine', 'Alcohol', 'Spicy food']}
-          selected={hfTriggers}
-          onToggle={(opt) => { setHfTriggers(prev => prev.includes(opt) ? prev.filter(x => x !== opt) : [...prev, opt]); onSave(); }}
-        />
-      </div>
-      <Toggle checked={hrtTaken} onChange={(v) => { setHrtTaken(v); onSave(); }} label="HRT taken today" />
-      <Toggle checked={nightSweats} onChange={(v) => { setNightSweats(v); onSave(); }} label="Night sweats last night" />
-    </div>
-  );
-
-  if (stage === 'ttc') return (
-    <div>
-      <div style={{ marginBottom: 16 }}>
-        <SectionLabel>Basal Body Temp (°C)</SectionLabel>
-        <Counter value={bbt} onChange={(v) => { setBbt(v); onSave(); }} step={0.05} min={35} max={38.5} label="°" />
-      </div>
-      <div style={{ marginBottom: 16 }}>
-        <SectionLabel>Cervical mucus</SectionLabel>
-        <ChipRow
-          options={['Dry', 'Sticky', 'Creamy', 'Watery', 'Egg white']}
-          selected={cm}
-          onToggle={(opt) => { setCm(opt); onSave(); }}
-          multi={false}
-        />
-      </div>
-      <div style={{ marginBottom: 16 }}>
-        <SectionLabel>LH test result</SectionLabel>
-        <ChipRow
-          options={['Not tested', 'Negative', 'Positive', 'Peak']}
-          selected={lh}
-          onToggle={(opt) => { setLh(opt); onSave(); }}
-          multi={false}
-        />
-      </div>
-      <Toggle checked={intercourse} onChange={(v) => { setIntercourse(v); onSave(); }} label="Intercourse today" />
-    </div>
-  );
-
-  return null;
 }
 
-// ─── Card 7: Mind & Life ──────────────────────────────────────────────────────
-function Card7Mind({ stage, onSave, showToast }) {
+// ─── Card 6: Mind & Life ──────────────────────────────────────────────────────
+function Card6Mind({ stage, onSave, showToast }) {
   const [journalText, setJournalText] = useState('');
-  const [rituals, setRituals] = useState([]);
   const [taskInput, setTaskInput] = useState('');
   const [tasks, setTasks] = useState([]);
   const saveTimer = useRef(null);
-  const ritualOptions = ['Moon wind-down', '10 min reading', 'Breathwork', 'Supplement routine'];
 
   const handleJournal = (e) => {
-    const val = e.target.value;
-    setJournalText(val);
-    if (val.length >= 3) {
+    const v = e.target.value;
+    setJournalText(v);
+    if (v.length >= 3) {
       clearTimeout(saveTimer.current);
-      saveTimer.current = setTimeout(() => {
-        onSave();
-        showToast('✓ Saved');
-      }, 800);
+      saveTimer.current = setTimeout(() => { onSave(); showToast('Journal saved'); }, 800);
     }
-  };
-
-  const toggleRitual = (r) => {
-    setRituals(prev => {
-      const next = prev.includes(r) ? prev.filter(x => x !== r) : [...prev, r];
-      if (!prev.includes(r)) { onSave(); showToast(`✓ ${r} logged`); }
-      return next;
-    });
   };
 
   const addTask = () => {
     if (!taskInput.trim()) return;
-    setTasks(prev => [...prev, taskInput.trim()]);
+    setTasks((prev) => [...prev, taskInput.trim()]);
     setTaskInput('');
     onSave();
-    showToast('✓ Task added');
+    showToast('Task added');
   };
 
   return (
     <div>
       <SectionLabel>Journal prompt</SectionLabel>
-      <p style={{ fontSize: 12, color: T.muted, fontStyle: 'italic', marginBottom: 8 }}>
+      <p style={{ fontSize: 12, color: T.muted, fontStyle: 'italic', marginBottom: 6, marginTop: 0 }}>
         {STAGE_JOURNAL[stage]}
       </p>
       <textarea
-        value={journalText}
-        onChange={handleJournal}
-        placeholder="Write freely here…"
+        value={journalText} onChange={handleJournal} placeholder="Write freely here…"
         style={{
-          width: '100%', minHeight: 80, borderRadius: 10, border: `1.5px solid ${T.border}`,
-          background: 'rgba(244,237,219,0.5)', padding: '10px 12px', fontSize: 13, color: T.espresso,
+          width: '100%', minHeight: 70, borderRadius: 10, border: `1.5px solid ${T.border}`,
+          background: 'rgba(244,237,219,0.5)', padding: '8px 10px', fontSize: 12.5, color: T.espresso,
           resize: 'vertical', outline: 'none', fontFamily: 'inherit', boxSizing: 'border-box',
+          marginBottom: 12,
         }}
       />
-      <div style={{ marginTop: 16 }}>
-        <SectionLabel>Evening rituals</SectionLabel>
-        {ritualOptions.map(r => (
-          <div key={r} onClick={() => toggleRitual(r)} style={{
-            display: 'flex', alignItems: 'center', gap: 10, padding: '9px 0',
-            borderBottom: `1px solid ${T.border}`, cursor: 'pointer',
-          }}>
-            <div style={{
-              width: 22, height: 22, borderRadius: 6, border: `2px solid ${rituals.includes(r) ? T.sage : T.border}`,
-              background: rituals.includes(r) ? T.sage : 'transparent',
-              display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0,
-              transition: 'all 0.18s ease',
-            }}>
-              {rituals.includes(r) && <span style={{ fontSize: 12, color: T.white }}>✓</span>}
+      <SectionLabel>Quick task</SectionLabel>
+      <div style={{ display: 'flex', gap: 6 }}>
+        <input
+          value={taskInput} onChange={(e) => setTaskInput(e.target.value)}
+          onKeyDown={(e) => e.key === 'Enter' && addTask()}
+          placeholder="Add a task…"
+          style={{
+            flex: 1, borderRadius: 8, border: `1.5px solid ${T.border}`,
+            background: 'rgba(244,237,219,0.5)', padding: '7px 10px',
+            fontSize: 12.5, color: T.espresso, outline: 'none', fontFamily: 'inherit',
+          }}
+        />
+        <button onClick={addTask} style={{
+          padding: '7px 14px', borderRadius: 8, border: 'none', background: T.gold,
+          color: T.espresso, fontWeight: 700, fontSize: 12.5, cursor: 'pointer',
+        }}>Add</button>
+      </div>
+      {tasks.length > 0 && (
+        <div style={{ marginTop: 8, maxHeight: 60, overflowY: 'auto' }}>
+          {tasks.map((t, i) => (
+            <div key={i} style={{ fontSize: 11.5, color: T.muted, padding: '3px 0', paddingLeft: 4 }}>
+              • {t}
             </div>
-            <span style={{ fontSize: 13, color: T.espresso, fontWeight: 500 }}>{r}</span>
-          </div>
-        ))}
-      </div>
-      <div style={{ marginTop: 16 }}>
-        <SectionLabel>Quick task</SectionLabel>
-        <div style={{ display: 'flex', gap: 8 }}>
-          <input
-            value={taskInput}
-            onChange={e => setTaskInput(e.target.value)}
-            onKeyDown={e => e.key === 'Enter' && addTask()}
-            placeholder="Add a task…"
-            style={{
-              flex: 1, borderRadius: 8, border: `1.5px solid ${T.border}`,
-              background: 'rgba(244,237,219,0.5)', padding: '8px 12px',
-              fontSize: 13, color: T.espresso, outline: 'none', fontFamily: 'inherit',
-            }}
-          />
-          <button onClick={addTask} style={{
-            padding: '8px 14px', borderRadius: 8, border: 'none', background: T.gold,
-            color: T.espresso, fontWeight: 700, fontSize: 13, cursor: 'pointer',
-          }}>Add</button>
+          ))}
         </div>
-        {tasks.map((t, i) => (
-          <div key={i} style={{ fontSize: 12, color: T.muted, padding: '4px 0', paddingLeft: 4 }}>• {t}</div>
-        ))}
-      </div>
+      )}
     </div>
   );
 }
 
-// ─── Engagement Rail ──────────────────────────────────────────────────────────
-function EngagementRail({ stage }) {
+// ─── Engagement strip — compact, ~80px tall, scrolls within strip ─────────────
+function EngagementStrip({ stage }) {
   const cards = ENGAGEMENT_RAIL[stage] || ENGAGEMENT_RAIL.luteal;
   return (
-    <div>
-      <div style={{ padding: '0 16px 8px', fontSize: 11, fontWeight: 700, color: T.muted, textTransform: 'uppercase', letterSpacing: 1 }}>
-        Recommended for you
-      </div>
-      <div style={{ display: 'flex', gap: 10, overflowX: 'auto', padding: '0 16px 4px', scrollbarWidth: 'none' }}>
-        {cards.map((c, i) => (
-          <div key={i} style={{
-            flexShrink: 0, width: 150, padding: '14px 14px 16px',
-            background: `linear-gradient(135deg, ${c.color[0]}, ${c.color[1]})`,
-            borderRadius: 14, cursor: 'pointer',
-          }}>
-            <div style={{ fontSize: 22, marginBottom: 6 }}>{c.emoji}</div>
-            <div style={{ fontSize: 12, fontWeight: 700, color: T.cream, marginBottom: 3 }}>{c.title}</div>
-            <div style={{ fontSize: 10, color: 'rgba(244,237,219,0.7)', lineHeight: 1.3 }}>{c.sub}</div>
-          </div>
-        ))}
+    <div style={{
+      padding: '8px 16px 10px',
+      borderTop: `1px solid ${T.border}`,
+      background: 'rgba(58,44,26,0.03)',
+    }}>
+      <div style={{
+        fontSize: 9.5, fontWeight: 800, color: T.muted, textTransform: 'uppercase',
+        letterSpacing: '0.16em', marginBottom: 6,
+      }}>From across your app</div>
+      <div style={{
+        display: 'flex', gap: 8, overflowX: 'auto', scrollbarWidth: 'none',
+        paddingBottom: 2,
+      }}>
+        {cards.map((c, i) => {
+          const Glyph = c.Icon;
+          return (
+            <button key={i} style={{
+              flexShrink: 0, width: 140, height: 72,
+              padding: '8px 10px', borderRadius: 10,
+              background: `linear-gradient(135deg, ${c.grad[0]}, ${c.grad[1]})`,
+              color: T.cream, cursor: 'pointer', border: 'none', textAlign: 'left',
+              display: 'flex', flexDirection: 'column', justifyContent: 'space-between',
+              position: 'relative', overflow: 'hidden',
+              boxShadow: '0 3px 8px rgba(0,0,0,0.20)',
+            }}>
+              <Glyph size={48} style={{
+                position: 'absolute', right: -10, bottom: -10,
+                color: 'rgba(244,237,219,0.18)',
+              }} />
+              <div style={{ position: 'relative', zIndex: 1 }}>
+                <div style={{
+                  fontSize: 8, letterSpacing: '0.14em', fontWeight: 800,
+                  color: 'rgba(244,237,219,0.72)', textTransform: 'uppercase',
+                }}>{c.type}</div>
+                <div style={{
+                  fontSize: 11.5, fontWeight: 700, color: T.cream, marginTop: 2,
+                  lineHeight: 1.2,
+                }}>{c.title}</div>
+              </div>
+              <div style={{
+                position: 'relative', zIndex: 1,
+                fontSize: 9.5, color: 'rgba(244,237,219,0.72)',
+              }}>{c.sub}</div>
+            </button>
+          );
+        })}
       </div>
     </div>
   );
@@ -669,10 +733,7 @@ function EngagementRail({ stage }) {
 
 // ─── Main SmartLoggerV4 ───────────────────────────────────────────────────────
 export default function SmartLoggerV4() {
-  // Demo state: the sheet renders open by default so the founder can see the
-  // full card deck immediately when the tab loads. The FAB still toggles
-  // visibility for interactive demos.
-  const [open, setOpen] = useState(true);
+  const [open, setOpen] = useState(true);     // demo opens by default
   const [stage, setStage] = useState('luteal');
   const [currentCard, setCurrentCard] = useState(0);
   const [completed, setCompleted] = useState(new Set());
@@ -683,16 +744,12 @@ export default function SmartLoggerV4() {
   const showToast = useCallback((msg) => {
     clearTimeout(toastTimer.current);
     setToast({ message: msg, visible: true });
-    toastTimer.current = setTimeout(() => setToast(t => ({ ...t, visible: false })), 1500);
+    toastTimer.current = setTimeout(() => setToast((t) => ({ ...t, visible: false })), 1500);
   }, []);
 
   const markDone = useCallback((idx) => {
-    setCompleted(prev => {
-      const next = new Set(prev);
-      next.add(idx);
-      return next;
-    });
-    showToast('✓ Saved');
+    setCompleted((prev) => { const next = new Set(prev); next.add(idx); return next; });
+    showToast('Saved');
   }, [showToast]);
 
   const makeOnSave = (cardIdx) => () => markDone(cardIdx);
@@ -704,40 +761,44 @@ export default function SmartLoggerV4() {
     const delta = dragStart.current - clientX;
     dragStart.current = null;
     if (Math.abs(delta) < 40) return;
-    if (delta > 0 && currentCard < 6) setCurrentCard(c => c + 1);
-    if (delta < 0 && currentCard > 0) setCurrentCard(c => c - 1);
+    if (delta > 0 && currentCard < TOTAL_CARDS - 1) setCurrentCard((c) => c + 1);
+    if (delta < 0 && currentCard > 0)                setCurrentCard((c) => c - 1);
   };
 
+  // 3D card transform per index
   const cardTransform = (pos) => {
     const diff = pos - currentCard;
-    if (diff === 0) return { x: '0%', scale: 1, opacity: 1, zIndex: 10 };
-    if (diff === 1) return { x: '85%', scale: 0.9, opacity: 0.7, zIndex: 9 };
-    if (diff >= 2) return { x: '170%', scale: 0.85, opacity: 0.4, zIndex: 8 };
-    if (diff === -1) return { x: '-100%', scale: 0.95, opacity: 0, zIndex: 7 };
-    return { x: '-200%', scale: 0.9, opacity: 0, zIndex: 6 };
+    if (diff === 0)  return { x: '0%',     scale: 1,    opacity: 1,    rotateY: 0,   zIndex: 10 };
+    if (diff === 1)  return { x: '75%',    scale: 0.92, opacity: 0.65, rotateY: -8,  zIndex: 9 };
+    if (diff >= 2)   return { x: '150%',   scale: 0.85, opacity: 0,    rotateY: -10, zIndex: 8 };
+    if (diff === -1) return { x: '-105%',  scale: 0.88, opacity: 0,    rotateY: 12,  zIndex: 7 };
+    return            { x: '-200%',  scale: 0.85, opacity: 0,    rotateY: 14,  zIndex: 6 };
   };
 
-  const cardContent = (i) => {
+  const renderCard = (i) => {
     switch (i) {
-      case 0: return <Card1Smart stage={stage} onSave={makeOnSave(0)} />;
-      case 1: return <Card2Body onSave={makeOnSave(1)} />;
-      case 2: return <Card3Period onSave={makeOnSave(2)} />;
-      case 3: return <Card4Nourish onSave={makeOnSave(3)} />;
-      case 4: return <Card5Health onSave={makeOnSave(4)} showToast={showToast} />;
-      case 5: return <Card6Cycle stage={stage} onSave={makeOnSave(5)} />;
-      case 6: return <Card7Mind stage={stage} onSave={makeOnSave(6)} showToast={showToast} />;
+      case 0: return <Card1SmartBody stage={stage} onSave={makeOnSave(0)} />;
+      case 1: return <Card2Period onSave={makeOnSave(1)} />;
+      case 2: return <Card3Nourish onSave={makeOnSave(2)} />;
+      case 3: return <Card4Health onSave={makeOnSave(3)} showToast={showToast} />;
+      case 4: return <Card5Rituals onSave={makeOnSave(4)} showToast={showToast} />;
+      case 5: return <Card6Mind stage={stage} onSave={makeOnSave(5)} showToast={showToast} />;
       default: return null;
     }
   };
 
   const cardTitle = (i) => {
-    const icons = ['✨', '💪', '🌸', '🥗', '💊', '🌙', '📓'];
+    const Icon = CARD_ICONS[i];
     return (
-      <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 14 }}>
-        <span style={{ fontSize: 18 }}>{icons[i]}</span>
-        <span style={{ fontSize: 16, fontWeight: 700, color: T.espresso }}>{CARD_LABELS[i]}</span>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 10 }}>
+        <span style={{
+          width: 26, height: 26, borderRadius: 8,
+          background: `${T.gold}22`, color: T.goldDeep,
+          display: 'inline-flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0,
+        }}><Icon size={14} /></span>
+        <span style={{ fontSize: 14.5, fontWeight: 800, color: T.espresso }}>{CARD_LABELS[i]}</span>
         <div style={{ flex: 1 }} />
-        {i < 6 && (
+        {i < TOTAL_CARDS - 1 && (
           <button onClick={() => setCurrentCard(i + 1)} style={{
             fontSize: 11, color: T.muted, background: 'none', border: 'none', cursor: 'pointer',
             fontWeight: 600, padding: 0,
@@ -752,26 +813,23 @@ export default function SmartLoggerV4() {
       maxWidth: 480, margin: '0 auto', position: 'relative',
       padding: '0 0 24px',
     }}>
-      {/* Page-level stage selector (above the sheet) */}
+      {/* Stage selector — page-level above the sheet */}
       <div style={{
         display: 'flex', gap: 6, justifyContent: 'center',
         padding: '14px 12px 16px', flexWrap: 'wrap',
       }}>
-        {STAGES.map(s => (
+        {STAGES.map((s) => (
           <button key={s.id} onClick={() => setStage(s.id)} style={{
             padding: '9px 16px', borderRadius: 9999,
             border: `1.5px solid ${stage === s.id ? T.espresso : T.border}`,
-            background: stage === s.id ? T.espresso : T.paperHi || '#FFFFFF',
+            background: stage === s.id ? T.espresso : T.paperHi,
             color: stage === s.id ? T.cream : T.espresso,
             fontSize: 12, fontWeight: 700, cursor: 'pointer', transition: 'all 0.18s ease',
             letterSpacing: '0.02em',
-          }}>
-            {s.label}
-          </button>
+          }}>{s.label}</button>
         ))}
       </div>
 
-      {/* Inline open-by-default sheet */}
       {open ? (
         <div style={{
           background: T.cream, borderRadius: 20,
@@ -780,97 +838,88 @@ export default function SmartLoggerV4() {
           display: 'flex', flexDirection: 'column',
           overflow: 'hidden',
         }}>
-          {/* Header row */}
+          {/* Header */}
           <div style={{
             display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-            padding: '14px 16px 10px',
+            padding: '12px 16px 8px',
             borderBottom: `1px solid ${T.border}`,
           }}>
             <span style={{ fontSize: 15, fontWeight: 800, color: T.espresso }}>Daily Log</span>
             <button onClick={() => setOpen(false)} aria-label="Close sheet" style={{
-              background: 'none', border: 'none', cursor: 'pointer', fontSize: 20,
-              color: T.muted, lineHeight: 1, padding: '0 4px',
-            }}>×</button>
+              width: 26, height: 26, borderRadius: '50%',
+              background: 'rgba(58,44,26,0.06)', border: 'none', cursor: 'pointer',
+              color: T.muted, display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
+            }}><XIcon size={13} /></button>
           </div>
 
-          {/* Progress bar */}
           <ProgressBar completed={completed} />
-
-          {/* Pill nav */}
           <PillNav current={currentCard} completed={completed} onSelect={setCurrentCard} />
 
-          {/* Card deck */}
+          {/* 3D card deck — fixed height, no outer scroll */}
           <div
-            style={{ position: 'relative', height: 380, margin: '12px 0 4px', overflow: 'hidden' }}
-            onMouseDown={e => handleDragStart(e.clientX)}
-            onMouseUp={e => handleDragEnd(e.clientX)}
-            onTouchStart={e => handleDragStart(e.touches[0].clientX)}
-            onTouchEnd={e => handleDragEnd(e.changedTouches[0].clientX)}
+            style={{
+              position: 'relative', height: 320, margin: '10px 0 4px',
+              overflow: 'hidden',
+              perspective: '1200px', perspectiveOrigin: '50% 30%',
+            }}
+            onMouseDown={(e) => handleDragStart(e.clientX)}
+            onMouseUp={(e)   => handleDragEnd(e.clientX)}
+            onTouchStart={(e) => handleDragStart(e.touches[0].clientX)}
+            onTouchEnd={(e)   => handleDragEnd(e.changedTouches[0].clientX)}
           >
-            {Array.from({ length: 7 }, (_, i) => {
-              const { x, scale, opacity, zIndex } = cardTransform(i);
+            {Array.from({ length: TOTAL_CARDS }, (_, i) => {
+              const { x, scale, opacity, rotateY, zIndex } = cardTransform(i);
+              const isActive = i === currentCard;
               return (
                 <div key={i} style={{
                   position: 'absolute', top: 0, left: '50%',
-                  width: 'calc(100% - 32px)', transform: `translateX(calc(-50% + ${x})) scale(${scale})`,
-                  opacity, zIndex, transition: 'transform 0.35s ease, opacity 0.35s ease',
-                  background: T.cardBg, borderRadius: 16, padding: '14px 16px',
-                  boxShadow: '0 2px 12px rgba(58,44,26,0.1)',
+                  width: 'calc(100% - 32px)',
+                  transform: `translateX(calc(-50% + ${x})) scale(${scale}) rotateY(${rotateY}deg)`,
+                  transformStyle: 'preserve-3d',
+                  opacity, zIndex,
+                  transition: 'transform 0.4s cubic-bezier(0.23, 1, 0.32, 1), opacity 0.4s ease',
+                  background: T.cardBg, borderRadius: 16, padding: '12px 14px',
+                  boxShadow: isActive
+                    ? '0 20px 60px rgba(58,44,26,0.18), 0 4px 16px rgba(58,44,26,0.12)'
+                    : '0 6px 18px rgba(58,44,26,0.08)',
                   border: `1px solid ${T.border}`,
-                  overflowY: 'auto', maxHeight: 360,
-                  pointerEvents: i === currentCard ? 'auto' : 'none',
+                  overflowY: 'auto', maxHeight: 304,
+                  pointerEvents: isActive ? 'auto' : 'none',
                 }}>
                   {cardTitle(i)}
-                  {cardContent(i)}
+                  {renderCard(i)}
                 </div>
               );
             })}
           </div>
 
-          {/* Swipe hint */}
-          <div style={{ textAlign: 'center', fontSize: 11, color: T.muted, paddingBottom: 8 }}>
-            ← swipe to navigate →
-          </div>
-
-          {/* Engagement rail */}
-          <div style={{ paddingBottom: 16 }}>
-            <EngagementRail stage={stage} />
-          </div>
+          {/* Engagement strip — compact, always visible, NO outer scroll */}
+          <EngagementStrip stage={stage} />
         </div>
       ) : (
-        // Closed state — show a small reopen hint with the FAB.
         <div style={{
           padding: '40px 20px', textAlign: 'center',
           background: T.cream, borderRadius: 20,
-          border: `1px dashed ${T.border}`,
-          color: T.muted, fontSize: 13,
+          border: `1px dashed ${T.border}`, color: T.muted, fontSize: 13,
         }}>
           Sheet closed — tap the gold + to reopen.
         </div>
       )}
 
-      {/* FAB — kept for interactive reopen; sits inline at bottom-right of demo block */}
       {!open && (
         <button
-          onClick={() => setOpen(true)}
-          aria-label="Open Smart Logger"
+          onClick={() => setOpen(true)} aria-label="Open Smart Logger"
           style={{
             position: 'absolute', bottom: 24, right: 16,
             width: 56, height: 56, borderRadius: '50%',
             background: T.gold, border: 'none', cursor: 'pointer',
-            fontSize: 28, color: T.espresso, fontWeight: 300,
             boxShadow: '0 4px 16px rgba(212,175,55,0.45)',
             display: 'flex', alignItems: 'center', justifyContent: 'center',
-            zIndex: 2, transition: 'transform 0.15s ease',
+            zIndex: 2,
           }}
-          onMouseEnter={e => e.currentTarget.style.transform = 'scale(1.08)'}
-          onMouseLeave={e => e.currentTarget.style.transform = 'scale(1)'}
-        >
-          +
-        </button>
+        ><Plus size={26} style={{ color: T.espresso }} strokeWidth={2.6} /></button>
       )}
 
-      {/* Toast */}
       <Toast message={toast.message} visible={toast.visible} />
     </div>
   );
