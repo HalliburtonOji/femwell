@@ -29,6 +29,7 @@ import {
   Footprints, ListChecks, Pill, Utensils, CalendarClock, Droplets,
   StickyNote, Smile, Stethoscope, Check, Frown, Meh, Heart, Zap,
 } from "lucide-react";
+import { base44 } from "@/api/base44Client";
 
 // ── Tokens ─────────────────────────────────────────────────────────────────
 const C = {
@@ -317,14 +318,159 @@ function TypeGrid({ onPick }) {
 function DetailForm({ type, onCancel, onSaved }) {
   const config = TYPE_CONFIG[type.id];
   const [values, setValues] = useState({});
+  const [saving, setSaving] = useState(false);
   function set(k, v) { setValues((p) => ({ ...p, [k]: v })); }
 
-  function handleSave() {
-    // Real entity wiring will come per-row during the production migration.
-    // For now, log + close so the UX flow is complete.
-    // eslint-disable-next-line no-console
-    console.log("[UniversalLogger] save", type.id, values);
-    onSaved();
+  // ── Real entity wiring ────────────────────────────────────────────────────
+  // Maps each TYPE_CONFIG id to a base44 entity create call with the correct
+  // schema fields (verified against /base44/entities/*.jsonc). Unknown fields
+  // are silently dropped by base44 so we keep payloads tight.
+  async function handleSave() {
+    if (saving) return;
+    setSaving(true);
+    const todayISO = new Date().toISOString().split("T")[0];
+    const nowISO   = new Date().toISOString();
+    try {
+      const me = await base44.entities.User.me().catch(() => null);
+      const user_id = me?.id;
+      if (!user_id) { onSaved(); return; }
+
+      switch (type.id) {
+        case "task": {
+          const cat = (values.list || "Personal").toLowerCase();
+          const category = ["work", "personal", "wellness", "social"].includes(cat) ? cat
+            : (cat === "health" ? "wellness" : "personal");
+          await base44.entities.PersonalTasks.create({
+            user_id, date: todayISO, title: values.name || "Task",
+            category, completed: false, notes: values.notes || "",
+            created_at: nowISO, updated_at: nowISO,
+          });
+          break;
+        }
+        case "habit": {
+          await base44.entities.HabitLogs.create({
+            user_id, date: todayISO, habit_type: values.name || "Habit",
+            habit_category: "other", completed: false,
+            created_at: nowISO, updated_at: nowISO,
+          });
+          break;
+        }
+        case "med": {
+          await base44.entities.MedicationLogs.create({
+            user_id, date: todayISO, item_name: values.name || "Medication",
+            dose: values.dose ? String(values.dose) : "", taken: false,
+            notes: "", created_at: nowISO, updated_at: nowISO,
+          });
+          break;
+        }
+        case "meal": {
+          const kind = (values.kind || "Lunch").toLowerCase();
+          const meal_type = ["breakfast", "lunch", "dinner", "snack"].includes(kind) ? kind : "lunch";
+          await base44.entities.MealLog.create({
+            user_id, logged_at: nowISO, day_key: todayISO,
+            meal_type, method: "text",
+            raw_text: values.name || "",
+            notes: values.notes || "",
+          });
+          break;
+        }
+        case "event": {
+          const time = values.start || "09:00";
+          await base44.entities.PlannerItems.create({
+            user_id, date: values.date || todayISO,
+            time, title: values.name || "Event",
+            category: "personal", repeat: "once",
+            notes: [values.loc, values.notes].filter(Boolean).join(" · "),
+            is_completed: false, created_at: nowISO, updated_at: nowISO,
+          });
+          break;
+        }
+        case "hydration": {
+          const opt = values.amount || "1 glass (250ml)";
+          const m = String(opt).match(/(\d+)\s*ml/i) || String(opt).match(/(\d+)\s*L/i);
+          let amount_ml = 250;
+          if (m) amount_ml = /L/i.test(opt) ? Number(m[1]) * 1000 : Number(m[1]);
+          else if (/^2\b/.test(opt)) amount_ml = 500;
+          await base44.entities.HydrationLog.create({
+            user_id, day_key: todayISO, amount_ml,
+            logged_at: nowISO, source: "manual",
+          });
+          break;
+        }
+        case "note": {
+          await base44.entities.JournalEntries.create({
+            user_id, session_date: todayISO,
+            text: values.text || "",
+            tags: values.mood ? [String(values.mood).toLowerCase()] : ["note"],
+            prompt: "Quick note",
+          });
+          break;
+        }
+        case "checkin": {
+          // Upsert today's DailyCheckins row.
+          const existing = await base44.entities.DailyCheckins.filter(
+            { user_id, date: todayISO }, "-updated_at", 1,
+          ).catch(() => []);
+          const row = (existing || [])[0];
+          const patch = { updated_at: nowISO };
+          if (values.mood   != null) patch.mood   = Number(values.mood);
+          if (values.energy != null) patch.energy = Number(values.energy);
+          if (values.sleep  != null) patch.sleep_hours = Number(values.sleep);
+          if (values.notes) patch.notes = values.notes;
+          if (row?.id) {
+            await base44.entities.DailyCheckins.update(row.id, patch);
+          } else {
+            await base44.entities.DailyCheckins.create({
+              user_id, date: todayISO, ...patch,
+            });
+          }
+          break;
+        }
+        case "symptom": {
+          const list = Array.isArray(values.list) ? values.list : (values.list ? [values.list] : []);
+          const sev = Number(values.sev || 3);
+          // Create one SymptomLogs row per selected symptom (the schema is
+          // single-symptom per row).
+          for (const sym of list) {
+            try {
+              await base44.entities.SymptomLogs.create({
+                user_id, date: todayISO,
+                symptom_type: String(sym),
+                severity: sev,
+                notes: values.notes || "",
+                created_at: nowISO, updated_at: nowISO,
+              });
+            } catch { /* silent per row */ }
+          }
+          break;
+        }
+        case "ritual": {
+          // Build a HabitLogs row per item in the ritual list, tagged by
+          // the ritual's chosen time of day.
+          const items = Array.isArray(values.items) ? values.items : [];
+          for (const step of items) {
+            try {
+              await base44.entities.HabitLogs.create({
+                user_id, date: todayISO,
+                habit_type: String(step),
+                habit_category: "other",
+                completed: false,
+                created_at: nowISO, updated_at: nowISO,
+              });
+            } catch { /* silent */ }
+          }
+          break;
+        }
+        default:
+          // Unknown type — close silently rather than crash.
+          break;
+      }
+    } catch {
+      // Network / auth error — swallow so the UX still closes.
+    } finally {
+      setSaving(false);
+      onSaved();
+    }
   }
 
   const valid = useMemo(() => {

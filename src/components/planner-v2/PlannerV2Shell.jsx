@@ -1877,30 +1877,28 @@ function IntentionCard({ user }) {
   const key = `femwell_intention_${todayISO}`;
   const [val, setVal] = useState(() => { try { return localStorage.getItem(key) || ""; } catch { return ""; } });
   const [saved, setSaved] = useState(false);
-  const [checkinId, setCheckinId] = useState(null);
+  // DailyCheckins has no `daily_intention` field (verified against schema).
+  // Persist to JournalEntries keyed by tag="daily_intention" instead.
+  const [entryId, setEntryId] = useState(null);
 
-  // Pre-populate from today's existing DailyCheckins.daily_intention if any.
   useEffect(() => {
     let cancelled = false;
     if (!user?.id) return;
     (async () => {
       try {
-        const rows = await base44.entities.DailyCheckins.filter(
-          { user_id: user.id, date: todayISO }, "-updated_at", 1,
+        const rows = await base44.entities.JournalEntries.filter(
+          { user_id: user.id, session_date: todayISO }, "-updated_date", 40,
         );
         if (cancelled) return;
-        const row = (rows || [])[0];
-        if (row?.id) setCheckinId(row.id);
-        if (row?.daily_intention) {
-          setVal((cur) => cur || row.daily_intention);
-        }
+        const list = Array.isArray(rows) ? rows : [];
+        const row = list.find((r) => Array.isArray(r?.tags) && r.tags.includes("daily_intention"));
+        if (row?.id) setEntryId(row.id);
+        if (row?.text) setVal((cur) => cur || row.text);
       } catch { /* silent */ }
     })();
     return () => { cancelled = true; };
   }, [user?.id]);
 
-  // Phase B follow-up — on blur, cache locally and upsert
-  // DailyCheckins.daily_intention for today.
   async function handleBlur() {
     try { localStorage.setItem(key, val); } catch {}
     setSaved(true);
@@ -1908,16 +1906,15 @@ function IntentionCard({ user }) {
     const trimmed = (val || "").trim();
     if (!trimmed || !user?.id) return;
     try {
-      if (checkinId) {
-        await base44.entities.DailyCheckins.update(checkinId, {
-          daily_intention: trimmed, updated_at: new Date().toISOString(),
-        });
+      if (entryId) {
+        await base44.entities.JournalEntries.update(entryId, { text: trimmed });
       } else {
-        const created = await base44.entities.DailyCheckins.create({
-          user_id: user.id, date: todayISO,
-          daily_intention: trimmed, updated_at: new Date().toISOString(),
+        const created = await base44.entities.JournalEntries.create({
+          user_id: user.id, session_date: todayISO,
+          text: trimmed, tags: ["daily_intention"],
+          prompt: intentionPrompts[profile.phase],
         });
-        if (created?.id) setCheckinId(created.id);
+        if (created?.id) setEntryId(created.id);
       }
     } catch { /* silent */ }
   }
@@ -2021,44 +2018,52 @@ function MoodMentalHealthCard({ user }) {
   const colorFor = (v) => v >= 4 ? C.sage : v >= 3 ? C.gold : C.blush;
   const [carrying, setCarrying] = useState("");
   const [relief, setRelief] = useState("");
-  const [reflectionCheckinId, setReflectionCheckinId] = useState(null);
+  // Track existing JournalEntries rows by tag so blur updates instead of
+  // spawning a new row each keystroke.
+  const [carryingEntryId, setCarryingEntryId] = useState(null);
+  const [reliefEntryId, setReliefEntryId] = useState(null);
 
-  // Comprehensive audit: pre-populate carrying/relief from today's
-  // DailyCheckins.reflection_carrying / reflection_relief if they exist,
-  // so the user sees what they wrote earlier today.
+  // DailyCheckins has no `reflection_carrying` / `reflection_relief` fields
+  // (schema verified — the only string field is `notes`). Use JournalEntries
+  // with a tag scope instead, keyed by user_id + session_date + tag.
   useEffect(() => {
     let cancelled = false;
     if (!user?.id) return;
     (async () => {
       try {
-        const rows = await base44.entities.DailyCheckins.filter(
-          { user_id: user.id, date: todayISO }, "-updated_at", 1,
+        const rows = await base44.entities.JournalEntries.filter(
+          { user_id: user.id, session_date: todayISO }, "-updated_date", 40,
         );
         if (cancelled) return;
-        const row = (rows || [])[0];
-        if (row?.id) setReflectionCheckinId(row.id);
-        if (row?.reflection_carrying) setCarrying((c) => c || row.reflection_carrying);
-        if (row?.reflection_relief)   setRelief((r) => r || row.reflection_relief);
+        const list = Array.isArray(rows) ? rows : [];
+        const carryRow  = list.find((r) => Array.isArray(r?.tags) && r.tags.includes("reflection_carrying"));
+        const reliefRow = list.find((r) => Array.isArray(r?.tags) && r.tags.includes("reflection_relief"));
+        if (carryRow?.id)   setCarryingEntryId(carryRow.id);
+        if (reliefRow?.id)  setReliefEntryId(reliefRow.id);
+        if (carryRow?.text)  setCarrying((c) => c || carryRow.text);
+        if (reliefRow?.text) setRelief((r) => r || reliefRow.text);
       } catch { /* silent */ }
     })();
     return () => { cancelled = true; };
   }, [user?.id]);
 
-  // Persist a reflection field to today's DailyCheckins row (upsert).
-  async function saveReflection(field, value) {
+  // Persist a single reflection field to JournalEntries (upsert by tag).
+  async function saveReflection(tag, value, entryId, setEntryId) {
     if (!user?.id) return;
     const trimmed = (value || "").trim();
+    if (!trimmed) return;
     try {
-      if (reflectionCheckinId) {
-        await base44.entities.DailyCheckins.update(reflectionCheckinId, {
-          [field]: trimmed, updated_at: new Date().toISOString(),
-        });
+      if (entryId) {
+        await base44.entities.JournalEntries.update(entryId, { text: trimmed });
       } else {
-        const created = await base44.entities.DailyCheckins.create({
-          user_id: user.id, date: todayISO,
-          [field]: trimmed, updated_at: new Date().toISOString(),
+        const created = await base44.entities.JournalEntries.create({
+          user_id: user.id, session_date: todayISO,
+          text: trimmed, tags: ["reflection", tag],
+          prompt: tag === "reflection_carrying"
+            ? "What are you carrying today?"
+            : "What would feel like relief?",
         });
-        if (created?.id) setReflectionCheckinId(created.id);
+        if (created?.id) setEntryId(created.id);
       }
     } catch { /* silent */ }
   }
@@ -2081,7 +2086,7 @@ function MoodMentalHealthCard({ user }) {
         <textarea
           value={carrying}
           onChange={(e) => setCarrying(e.target.value)}
-          onBlur={() => saveReflection("reflection_carrying", carrying)}
+          onBlur={() => saveReflection("reflection_carrying", carrying, carryingEntryId, setCarryingEntryId)}
           placeholder="…"
           rows={2}
           style={{ ...miniInput, minHeight: 44, resize: "vertical", fontFamily: "'Inter', sans-serif" }}
@@ -2092,7 +2097,7 @@ function MoodMentalHealthCard({ user }) {
         <textarea
           value={relief}
           onChange={(e) => setRelief(e.target.value)}
-          onBlur={() => saveReflection("reflection_relief", relief)}
+          onBlur={() => saveReflection("reflection_relief", relief, reliefEntryId, setReliefEntryId)}
           placeholder="…"
           rows={2}
           style={{ ...miniInput, minHeight: 44, resize: "vertical", fontFamily: "'Inter', sans-serif" }}
@@ -2847,24 +2852,23 @@ function TonightReflectionCard({ user }) {
     try { const raw = localStorage.getItem(key); if (raw) return JSON.parse(raw); } catch {}
     return { win: "", energy: "", tomorrow: "" };
   });
-  // Phase B6 — keep a local cache for instant repaint, plus persist the
-  // "Intention for tomorrow" string to DailyCheckins.sleep_intention so
-  // it survives across devices and feeds the doctor diary.
-  const [checkinId, setCheckinId] = useState(null);
+  // DailyCheckins has no `sleep_intention` field (verified against schema).
+  // Persist the "Intention for tomorrow" prompt to JournalEntries keyed by
+  // tag="sleep_intention" instead.
+  const [entryId, setEntryId] = useState(null);
   useEffect(() => {
     let cancelled = false;
     if (!user?.id) return;
     (async () => {
       try {
-        const rows = await base44.entities.DailyCheckins.filter(
-          { user_id: user.id, date: todayISO }, "-updated_at", 1,
+        const rows = await base44.entities.JournalEntries.filter(
+          { user_id: user.id, session_date: todayISO }, "-updated_date", 40,
         );
         if (cancelled) return;
-        const row = (rows || [])[0];
-        if (row?.id) setCheckinId(row.id);
-        if (row?.sleep_intention) {
-          setData((d) => ({ ...d, tomorrow: row.sleep_intention }));
-        }
+        const list = Array.isArray(rows) ? rows : [];
+        const row = list.find((r) => Array.isArray(r?.tags) && r.tags.includes("sleep_intention"));
+        if (row?.id) setEntryId(row.id);
+        if (row?.text) setData((d) => ({ ...d, tomorrow: d.tomorrow || row.text }));
       } catch { /* silent */ }
     })();
     return () => { cancelled = true; };
@@ -2874,21 +2878,19 @@ function TonightReflectionCard({ user }) {
     const next = { ...data, [field]: v };
     setData(next);
     try { localStorage.setItem(key, JSON.stringify(next)); } catch {}
-    // Only the "Intention for tomorrow" field maps to a server entity for now.
     if (field !== "tomorrow" || !user?.id) return;
     const trimmed = (v || "").trim();
     if (!trimmed) return;
     try {
-      if (checkinId) {
-        await base44.entities.DailyCheckins.update(checkinId, {
-          sleep_intention: trimmed, updated_at: new Date().toISOString(),
-        });
+      if (entryId) {
+        await base44.entities.JournalEntries.update(entryId, { text: trimmed });
       } else {
-        const created = await base44.entities.DailyCheckins.create({
-          user_id: user.id, date: todayISO,
-          sleep_intention: trimmed, updated_at: new Date().toISOString(),
+        const created = await base44.entities.JournalEntries.create({
+          user_id: user.id, session_date: todayISO,
+          text: trimmed, tags: ["sleep_intention"],
+          prompt: "Intention for tomorrow",
         });
-        if (created?.id) setCheckinId(created.id);
+        if (created?.id) setEntryId(created.id);
       }
     } catch { /* silent */ }
   }
