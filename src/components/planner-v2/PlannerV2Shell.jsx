@@ -2059,26 +2059,233 @@ function NourishmentSection({ user, profile, phase }) {
 }
 
 // ─── 10. Mind & Insight ─────────────────────────────────────────────────────
+// JournalCard reads the latest JournalEntries row. MoodTrendCard reads the
+// last 7 days of DailyCheckins and renders a dot-row. AffirmationCard is a
+// static phase-keyed lookup (no entity).
 
-function MindInsightSection() {
+const PHASE_AFFIRMATIONS = {
+  menstrual:  "Rest is not retreat. It is how you return.",
+  follicular: "You are at the beginning of something good.",
+  ovulatory:  "Your presence is the gift today.",
+  luteal:     "Boundaries are an act of love — for yourself first.",
+};
+
+function JournalLastEntryCard({ user }) {
+  const [entry, setEntry] = useState(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    let cancelled = false;
+    if (!user?.id) { setLoading(false); return; }
+    (async () => {
+      try {
+        const rows = await base44.entities.JournalEntries.filter(
+          { user_id: user.id },
+          "-created_date",
+          1,
+        );
+        if (!cancelled) setEntry(Array.isArray(rows) && rows[0] ? rows[0] : null);
+      } catch {
+        if (!cancelled) setEntry(null);
+      } finally {
+        if (!cancelled) setLoading(false);
+      }
+    })();
+    return () => { cancelled = true; };
+  }, [user?.id]);
+
+  function fmtDate(iso) {
+    if (!iso) return "";
+    try {
+      const d = new Date(iso);
+      return d.toLocaleDateString(undefined, { month: "short", day: "numeric" });
+    } catch { return ""; }
+  }
+
+  const preview = (entry?.text || "").trim().slice(0, 60);
+  const showEllipsis = (entry?.text || "").trim().length > 60;
+  const dateStr = fmtDate(entry?.session_date || entry?.created_date || entry?.created_at);
+
+  return (
+    <article style={cardStyle}>
+      <span style={kicker}>JOURNAL</span>
+      <h3 style={cardTitle}>{entry ? "Last entry" : "Start writing"}</h3>
+
+      {!loading && !entry && (
+        <p style={{ ...cardSub, margin: "2px 0 0", fontStyle: "italic" }}>
+          Start your first entry.
+        </p>
+      )}
+
+      {entry && (
+        <>
+          {dateStr && (
+            <p style={{
+              fontSize: 10, color: C.muted, fontWeight: 700,
+              letterSpacing: "0.10em", textTransform: "uppercase",
+              margin: "2px 0 0",
+            }}>{dateStr}</p>
+          )}
+          <p style={{
+            fontFamily: "Georgia, serif", fontStyle: "italic",
+            fontSize: 13, color: C.espresso, margin: "6px 0 0",
+            lineHeight: 1.45,
+          }}>
+            {preview || "(no preview)"}{showEllipsis ? "…" : ""}
+          </p>
+        </>
+      )}
+
+      <button
+        type="button"
+        onClick={() => { try { window.location.href = "/Journal"; } catch {} }}
+        style={ctaPill}
+      >
+        <BookOpen size={11} /> Write
+      </button>
+    </article>
+  );
+}
+
+function MoodTrendCard({ user }) {
+  const [points, setPoints] = useState([]); // [{ key, mood: 1-5 | null, label }]
+  const [loading, setLoading] = useState(true);
+
+  // Last 7 days, oldest → newest, labeled with single-letter weekday initials.
+  const days = useMemo(() => {
+    const out = [];
+    const today = new Date();
+    for (let i = 6; i >= 0; i--) {
+      const d = new Date(today);
+      d.setDate(today.getDate() - i);
+      const key = d.toISOString().split("T")[0];
+      const init = ["S", "M", "T", "W", "T", "F", "S"][d.getDay()];
+      out.push({ key, label: init });
+    }
+    return out;
+  }, []);
+
+  useEffect(() => {
+    let cancelled = false;
+    if (!user?.id) { setLoading(false); return; }
+    (async () => {
+      try {
+        const rows = await base44.entities.DailyCheckins.filter(
+          { user_id: user.id },
+          "-date",
+          30,
+        );
+        if (cancelled) return;
+        const byDate = new Map();
+        for (const r of rows || []) {
+          if (!r?.date) continue;
+          const mood = r?.mood ?? r?.mood_score ?? null;
+          // Keep the newest non-null mood per date (filter is already sorted).
+          if (!byDate.has(r.date)) byDate.set(r.date, mood);
+        }
+        const pts = days.map((d) => ({
+          ...d,
+          mood: byDate.has(d.key) ? byDate.get(d.key) : null,
+        }));
+        setPoints(pts);
+      } catch {
+        if (!cancelled) setPoints(days.map((d) => ({ ...d, mood: null })));
+      } finally {
+        if (!cancelled) setLoading(false);
+      }
+    })();
+    return () => { cancelled = true; };
+  }, [user?.id, days]);
+
+  const logged = points.filter((p) => p.mood != null);
+  const tooSparse = !loading && logged.length < 2;
+
+  // Map mood 1..5 → dot size and shade (darker = higher mood).
+  function dotForMood(mood) {
+    if (mood == null) return { size: 6, bg: "transparent", border: "1.5px solid rgba(58,44,26,0.18)" };
+    const sizes = { 1: 6, 2: 8, 3: 10, 4: 12, 5: 14 };
+    // Espresso with stepped alpha → darker dot for higher mood.
+    const alphas = { 1: 0.25, 2: 0.4, 3: 0.55, 4: 0.75, 5: 1 };
+    const a = alphas[mood] ?? 0.55;
+    return {
+      size: sizes[mood] ?? 10,
+      bg: `rgba(58, 44, 26, ${a})`,
+      border: "none",
+    };
+  }
+
+  return (
+    <article style={cardStyle}>
+      <span style={kicker}>MOOD TREND</span>
+      <h3 style={cardTitle}>7 days</h3>
+
+      {tooSparse ? (
+        <p style={{ ...cardSub, margin: "4px 0 0", fontStyle: "italic" }}>
+          Log mood for a few days to see your trend.
+        </p>
+      ) : (
+        <div style={{
+          display: "grid", gridTemplateColumns: "repeat(7, 1fr)", gap: 4,
+          marginTop: 6, alignItems: "end",
+        }}>
+          {points.map((p, i) => {
+            const dot = dotForMood(p.mood);
+            const isToday = i === points.length - 1;
+            return (
+              <div key={p.key} style={{
+                display: "flex", flexDirection: "column", alignItems: "center", gap: 4,
+                height: 36, justifyContent: "flex-end",
+              }}>
+                <span style={{
+                  width: dot.size, height: dot.size, borderRadius: 9999,
+                  background: dot.bg, border: dot.border,
+                  flexShrink: 0,
+                }} />
+                <span style={{
+                  fontSize: 9, fontWeight: isToday ? 700 : 600,
+                  color: isToday ? C.espresso : C.muted,
+                  letterSpacing: "0.04em",
+                }}>{p.label}</span>
+              </div>
+            );
+          })}
+        </div>
+      )}
+    </article>
+  );
+}
+
+function AffirmationCard({ phase }) {
+  const text = PHASE_AFFIRMATIONS[phase] || "Today asks gentleness of you.";
+  const phaseLabel = phase ? phase : "this season";
+  return (
+    <article style={cardStyle}>
+      <span style={kicker}>AFFIRMATION</span>
+      <p style={{
+        fontFamily: "'Fraunces', Georgia, serif", fontStyle: "italic",
+        fontSize: 16, lineHeight: 1.35, color: C.espresso,
+        fontWeight: 500, margin: "4px 0 0",
+        letterSpacing: "-0.005em",
+      }}>
+        {text}
+      </p>
+      <span style={{
+        marginTop: "auto",
+        fontSize: 10, fontWeight: 700, letterSpacing: "0.16em",
+        color: C.muted, textTransform: "uppercase",
+      }}>
+        For {phaseLabel}
+      </span>
+    </article>
+  );
+}
+
+function MindInsightSection({ user, phase }) {
   return (
     <SliderRow label="Mind & insight">
-      <article style={cardStyle}>
-        <span style={kicker}>JOURNAL</span>
-        <h3 style={cardTitle}>Last entry</h3>
-        <p style={placeholderHint}>[skeleton] Latest JournalEntry preview + Write CTA.</p>
-        <button style={ctaPill}><BookOpen size={11} /> Write</button>
-      </article>
-      <article style={cardStyle}>
-        <span style={kicker}>MOOD TREND</span>
-        <h3 style={cardTitle}>7 days</h3>
-        <p style={placeholderHint}>[skeleton] CheckIn.mood over last 7 days as dots.</p>
-      </article>
-      <article style={cardStyle}>
-        <span style={kicker}>AFFIRMATION</span>
-        <h3 style={cardTitle}>Today's note</h3>
-        <p style={placeholderHint}>[skeleton] Phase-specific affirmation copy.</p>
-      </article>
+      <JournalLastEntryCard user={user} />
+      <MoodTrendCard user={user} />
+      <AffirmationCard phase={phase} />
     </SliderRow>
   );
 }
@@ -2237,7 +2444,7 @@ export default function PlannerV2Shell({
         <NourishmentSection user={user} profile={profile} phase={phase} />
 
         {/* 10 — Mind & Insight */}
-        <MindInsightSection />
+        <MindInsightSection user={user} phase={phase} />
 
         {/* 11 — Care */}
         <CareSection />
