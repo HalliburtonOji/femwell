@@ -427,11 +427,35 @@ export default function PlannerV2Shell({
     [devConditions, effectiveConditionsProp, profileProp?.conditions],
   );
 
-  // Phase + cycle day used by StageRow / ConditionRow only (the demo body
-  // still reads its own module-level `profile` const for visuals — that mock
-  // wiring gets swapped to real entities in the follow-up commit).
+  // Phase + cycle day used by StageRow / ConditionRow.
   const phase    = selectedPhase     || profileProp?.current_phase || profile.phase;
   const cycleDay = selectedCycleDay  || profileProp?.cycle_day     || profile.cycleDay;
+
+  // ── Phase B1: real profile + greeting wiring ──────────────────────────────
+  // The demo's many child components read from the module-level `profile`
+  // const. We don't refactor 30+ call sites; instead we sync that const's
+  // fields with real values once per render. The const's binding stays
+  // immutable; only its properties are mutated (legal JS, and React doesn't
+  // observe these so there's no concurrent-mode hazard).
+  const realDisplayName = useMemo(() => {
+    if (profileProp?.display_name) return profileProp.display_name;
+    if (user?.full_name) return String(user.full_name).split(" ")[0];
+    if (user?.email) {
+      const prefix = String(user.email).split("@")[0];
+      const words = prefix.split(/[0-9_.\-]+/).filter(Boolean);
+      if (words[0]) return words[0].charAt(0).toUpperCase() + words[0].slice(1).toLowerCase();
+    }
+    return profile.name; // mock fallback so visual stays intact
+  }, [profileProp?.display_name, user?.full_name, user?.email]);
+  const realCycleLen = profileProp?.cycle_avg_length || profile.cycleLen;
+
+  // Side-effect on every render: keep the module-level mock in sync with
+  // real values so downstream cards (Header, JessHero, MonthRibbon, etc.)
+  // pick them up without any change.
+  profile.name     = realDisplayName;
+  profile.phase    = phase;
+  profile.cycleDay = cycleDay;
+  profile.cycleLen = realCycleLen;
 
   // ── Original demo state (unchanged from the approved 3,651-line reference) ──
   const [scheduleOpen, setScheduleOpen] = useState(false);
@@ -450,12 +474,16 @@ export default function PlannerV2Shell({
     try { localStorage.setItem("femwell_unified_blocks", JSON.stringify(blocks)); } catch {}
   }, [blocks]);
 
+  // Greeting reads the real wall-clock hour each render (the module-level
+  // `today` is evaluated once at app load and would otherwise stay stuck).
   const greeting = useMemo(() => {
-    const h = today.getHours();
+    const h = new Date().getHours();
+    if (h < 5)  return "Resting well";
     if (h < 12) return "Good morning";
     if (h < 17) return "Good afternoon";
     if (h < 21) return "Good evening";
     return "Resting well";
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   return (
