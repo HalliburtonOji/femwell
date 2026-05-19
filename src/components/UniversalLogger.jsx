@@ -206,6 +206,14 @@ const TYPE_CONFIG = {
 // ─────────────────────────────────────────────────────────────────────────────
 // Component
 // ─────────────────────────────────────────────────────────────────────────────
+// Render delegates to SmartLoggerV4 in production mode. The global
+// openLogger()/closeLogger() singletons stay intact so the 50+ call sites
+// across the codebase keep working — they now open the unified Smart Logger
+// sheet instead of the old TYPE_GRID/DetailForm pair. Pass `hideFAB` on /Ideas
+// since that page hosts its own dedicated demo of SmartLoggerV4 v4.
+// ─────────────────────────────────────────────────────────────────────────────
+import SmartLoggerV4 from "@/components/SmartLoggerV4";
+
 export default function UniversalLogger({ hideFAB = false } = {}) {
   const [tick, setTick] = useState(0);
   useEffect(() => {
@@ -213,19 +221,20 @@ export default function UniversalLogger({ hideFAB = false } = {}) {
     _subs.add(fn);
     return () => _subs.delete(fn);
   }, []);
-  const { open, type } = _state;
+  const { open } = _state;
 
-  if (!open && hideFAB) return null;
+  // Hide everything (including the FAB) on /Ideas so the page-level demo
+  // owns the surface there.
+  if (hideFAB) return null;
+  if (typeof window !== "undefined" && /\/Ideas\b/.test(window.location.pathname)) return null;
 
   return (
-    <>
-      {!hideFAB && (
-        <button onClick={() => openLogger()} style={fabStyle} aria-label="Quick add">
-          <Plus size={26} style={{ color: C.cream }} />
-        </button>
-      )}
-      {open && <LoggerSheet initialType={type} key={tick} />}
-    </>
+    <SmartLoggerV4
+      key={tick}
+      mode="production"
+      externalOpen={open}
+      onCloseExternal={closeLogger}
+    />
   );
 }
 
