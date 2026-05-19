@@ -1819,26 +1819,241 @@ function RitualsSection({ user, phase }) {
 }
 
 // ─── 9. Nourishment ─────────────────────────────────────────────────────────
+// Three cards inside the existing slider:
+//   1) Meals today  — MealLog read; "Log meal" opens UniversalLogger.
+//   2) Hydration    — HydrationLog read; "+" creates a 250ml row.
+//   3) Eat for phase — static phase-aware suggestions, read-only.
 
-function NourishmentSection() {
+const HYDRATION_TICK_ML = 250;
+const HYDRATION_GOAL_ML = 2000;
+
+const PHASE_FOOD = {
+  menstrual:  {
+    tagline: "Replenish iron and warmth.",
+    foods: ["Iron-rich foods", "Warming soups", "Dark chocolate"],
+  },
+  follicular: {
+    tagline: "Light, fresh, building energy.",
+    foods: ["Fresh greens", "Fermented foods", "Light proteins"],
+  },
+  ovulatory: {
+    tagline: "Bright, raw, mineral-rich.",
+    foods: ["Raw salads", "Berries", "Zinc-rich seeds"],
+  },
+  luteal: {
+    tagline: "Steady carbs and grounding minerals.",
+    foods: ["Complex carbs", "Magnesium", "Root vegetables"],
+  },
+};
+
+function MealsTodayCard({ user }) {
+  const [meals, setMeals] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const todayStr = useMemo(() => new Date().toISOString().split("T")[0], []);
+
+  useEffect(() => {
+    let cancelled = false;
+    if (!user?.id) { setLoading(false); return; }
+    (async () => {
+      try {
+        const rows = await base44.entities.MealLog.filter(
+          { user_id: user.id, day_key: todayStr },
+          "-logged_at",
+          30,
+        );
+        if (!cancelled) setMeals(Array.isArray(rows) ? rows : []);
+      } catch {
+        if (!cancelled) setMeals([]);
+      } finally {
+        if (!cancelled) setLoading(false);
+      }
+    })();
+    return () => { cancelled = true; };
+  }, [user?.id, todayStr]);
+
+  function fmtLogged(iso) {
+    if (!iso) return "";
+    try {
+      const d = new Date(iso);
+      let h = d.getHours();
+      const m = d.getMinutes();
+      const ap = h < 12 ? "am" : "pm";
+      h = h === 0 ? 12 : (h > 12 ? h - 12 : h);
+      const mm = String(m).padStart(2, "0");
+      return mm === "00" ? `${h}${ap}` : `${h}:${mm}${ap}`;
+    } catch { return ""; }
+  }
+
+  return (
+    <article style={cardStyle}>
+      <span style={kicker}>MEALS</span>
+      <h3 style={cardTitle}>Today</h3>
+
+      {!loading && meals.length === 0 && (
+        <p style={{ ...cardSub, margin: "2px 0 0", fontStyle: "italic" }}>Nothing logged yet</p>
+      )}
+
+      {meals.length > 0 && (
+        <ul style={{
+          listStyle: "none", padding: 0, margin: "4px 0 0",
+          display: "flex", flexDirection: "column", gap: 4,
+        }}>
+          {meals.slice(0, 4).map((m) => (
+            <li key={m.id} style={{
+              display: "flex", alignItems: "center", gap: 8,
+              padding: "6px 10px", borderRadius: 10,
+              background: C.cream, border: "1px solid rgba(58,44,26,0.06)",
+            }}>
+              <span style={{
+                flex: 1, fontSize: 12, color: C.espresso, fontWeight: 600,
+                minWidth: 0, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap",
+              }}>
+                {m.raw_text || m.meal_type || "Logged meal"}
+              </span>
+              {m.logged_at && (
+                <span style={{ fontSize: 10, color: C.muted, fontWeight: 600 }}>
+                  {fmtLogged(m.logged_at)}
+                </span>
+              )}
+            </li>
+          ))}
+        </ul>
+      )}
+
+      <button type="button" onClick={() => openLogger("meal")} style={ctaPill}>
+        <Plus size={11} /> Log meal
+      </button>
+    </article>
+  );
+}
+
+function HydrationCard({ user, profile }) {
+  const [totalMl, setTotalMl] = useState(0);
+  const [logging, setLogging] = useState(false);
+  const todayStr = useMemo(() => new Date().toISOString().split("T")[0], []);
+  const goalMl = profile?.hydration_goal_ml || profile?.hydration_goal || HYDRATION_GOAL_ML;
+
+  useEffect(() => {
+    let cancelled = false;
+    if (!user?.id) return;
+    (async () => {
+      try {
+        const rows = await base44.entities.HydrationLog.filter(
+          { user_id: user.id, day_key: todayStr },
+          "-logged_at",
+          80,
+        );
+        if (cancelled) return;
+        const sum = (rows || []).reduce((acc, r) => {
+          if (typeof r?.amount_ml === "number") return acc + r.amount_ml;
+          if (typeof r?.glasses_count === "number") return acc + r.glasses_count * HYDRATION_TICK_ML;
+          return acc;
+        }, 0);
+        setTotalMl(sum);
+      } catch {
+        if (!cancelled) setTotalMl(0);
+      }
+    })();
+    return () => { cancelled = true; };
+  }, [user?.id, todayStr]);
+
+  async function addTick() {
+    if (logging || !user?.id) return;
+    setLogging(true);
+    const next = totalMl + HYDRATION_TICK_ML;
+    setTotalMl(next); // optimistic
+    try {
+      await base44.entities.HydrationLog.create({
+        user_id: user.id,
+        day_key: todayStr,
+        amount_ml: HYDRATION_TICK_ML,
+        logged_at: new Date().toISOString(),
+      });
+    } catch {
+      setTotalMl((prev) => Math.max(0, prev - HYDRATION_TICK_ML));
+    } finally {
+      setLogging(false);
+    }
+  }
+
+  const pct = goalMl > 0 ? Math.min(100, Math.round((totalMl / goalMl) * 100)) : 0;
+  const litres = (totalMl / 1000).toFixed(totalMl < 1000 ? 2 : 1).replace(/\.?0+$/, "");
+  const goalL  = (goalMl / 1000).toFixed(goalMl < 1000 ? 2 : 1).replace(/\.?0+$/, "");
+
+  return (
+    <article style={cardStyle}>
+      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 6 }}>
+        <span style={kicker}>HYDRATION</span>
+        <button
+          type="button"
+          onClick={addTick}
+          disabled={logging}
+          aria-label="Add 250ml"
+          style={{
+            width: 32, height: 32, borderRadius: 9999,
+            background: C.espresso, color: C.cream,
+            border: "none", display: "inline-flex", alignItems: "center", justifyContent: "center",
+            cursor: logging ? "default" : "pointer",
+            opacity: logging ? 0.6 : 1, padding: 0,
+          }}
+        >
+          <Plus size={14} />
+        </button>
+      </div>
+
+      <h3 style={cardTitle}>
+        {litres}L
+        <span style={{ fontSize: 13, color: C.muted, fontWeight: 500 }}> / {goalL}L</span>
+      </h3>
+
+      <div style={{
+        position: "relative", height: 8, borderRadius: 9999,
+        background: "rgba(58,44,26,0.08)", overflow: "hidden", marginTop: 6,
+      }}>
+        <div style={{
+          position: "absolute", top: 0, left: 0, bottom: 0,
+          width: `${pct}%`, background: C.sage,
+          borderRadius: 9999, transition: "width 0.25s ease",
+        }} />
+      </div>
+      <p style={{ ...cardSub, margin: "6px 0 0" }}>
+        {Math.round(totalMl / HYDRATION_TICK_ML)} of {Math.round(goalMl / HYDRATION_TICK_ML)} glasses
+      </p>
+    </article>
+  );
+}
+
+function EatForPhaseCard({ phase }) {
+  const data = PHASE_FOOD[phase] || PHASE_FOOD.luteal;
+  const phaseLabel = phase ? `${phase[0].toUpperCase()}${phase.slice(1)}` : "Your phase";
+  return (
+    <article style={cardStyle}>
+      <span style={kicker}>EAT FOR PHASE</span>
+      <h3 style={cardTitle}>{phaseLabel}</h3>
+      <p style={{
+        fontFamily: "Georgia, serif", fontStyle: "italic",
+        fontSize: 13, color: C.plumMid, margin: "2px 0 0", lineHeight: 1.45,
+      }}>{data.tagline}</p>
+      <div style={{ display: "flex", flexWrap: "wrap", gap: 4, marginTop: 6 }}>
+        {data.foods.map((f) => (
+          <span key={f} style={{
+            fontSize: 11, fontWeight: 600, color: C.espresso,
+            padding: "4px 10px", borderRadius: 9999,
+            background: `${C.gold}22`,
+            border: `1px solid ${C.gold}55`,
+          }}>{f}</span>
+        ))}
+      </div>
+    </article>
+  );
+}
+
+function NourishmentSection({ user, profile, phase }) {
   return (
     <SliderRow label="Nourishment">
-      <article style={cardStyle}>
-        <span style={kicker}>MEALS</span>
-        <h3 style={cardTitle}>Today</h3>
-        <p style={placeholderHint}>[skeleton] MealLog rows for today + add buttons.</p>
-        <button style={ctaPill}><Plus size={11} /> Log meal</button>
-      </article>
-      <article style={cardStyle}>
-        <span style={kicker}>HYDRATION</span>
-        <h3 style={cardTitle}>0 of 8 glasses</h3>
-        <p style={placeholderHint}>[skeleton] HydrationLog counter + 8-glass strip.</p>
-      </article>
-      <article style={cardStyle}>
-        <span style={kicker}>EAT FOR PHASE</span>
-        <h3 style={cardTitle}>Suggestions</h3>
-        <p style={placeholderHint}>[skeleton] Static phase-aware food guidance.</p>
-      </article>
+      <MealsTodayCard user={user} />
+      <HydrationCard user={user} profile={profile} />
+      <EatForPhaseCard phase={phase} />
     </SliderRow>
   );
 }
@@ -2019,7 +2234,7 @@ export default function PlannerV2Shell({
         <RitualsSection user={user} phase={phase} />
 
         {/* 9 — Nourishment */}
-        <NourishmentSection />
+        <NourishmentSection user={user} profile={profile} phase={phase} />
 
         {/* 10 — Mind & Insight */}
         <MindInsightSection />
