@@ -25,7 +25,7 @@
 
 import React, { useState, useEffect, useRef, useMemo } from "react";
 import {
-  Sun, Moon, Sparkles, Layers, X, Check, Plus, ChevronLeft, ChevronRight,
+  Sun, Sunrise, Moon, Sparkles, Layers, X, Check, Plus, ChevronLeft, ChevronRight,
   ChevronDown, ChevronUp, Activity, Calendar, Heart, Droplets, Pill,
   BookOpen, FileText, ListChecks, Coffee, MoonStar, Battery, Smile,
   Frown, Meh, MessageCircle, CalendarPlus,
@@ -2473,20 +2473,306 @@ function CareSection({ user }) {
 }
 
 // ─── 12. Tonight & Tomorrow ─────────────────────────────────────────────────
+// TonightCard writes to DailyCheckins.sleep_intention (base44 accepts the
+// extra field; mirrored locally so the value sticks before refetch).
+// TomorrowCard reads tomorrow's PlannerItems + PersonalTasks and surfaces a
+// count + the first two titles.
 
-function TonightSection() {
+const WIND_DOWN_PROMPTS = {
+  menstrual:  "Warmth, quiet, early sleep.",
+  follicular: "Ease into rest. Tomorrow needs you fresh.",
+  ovulatory:  "Let the day settle. You did well.",
+  luteal:     "Screens off early. Your system is asking for stillness.",
+};
+
+function TonightCard({ user, phase }) {
+  const [checkin, setCheckin] = useState(null);
+  const [intention, setIntention] = useState("");
+  const [editing, setEditing] = useState(false);
+  const [draft, setDraft] = useState("");
+  const [saving, setSaving] = useState(false);
+  const inputRef = useRef(null);
+  const todayStr = useMemo(() => new Date().toISOString().split("T")[0], []);
+
+  useEffect(() => {
+    let cancelled = false;
+    if (!user?.id) return;
+    (async () => {
+      try {
+        const rows = await base44.entities.DailyCheckins.filter(
+          { user_id: user.id, date: todayStr },
+          "-updated_at",
+          1,
+        );
+        if (cancelled) return;
+        const row = Array.isArray(rows) && rows[0] ? rows[0] : null;
+        setCheckin(row);
+        setIntention(row?.sleep_intention || "");
+      } catch {
+        if (!cancelled) { setCheckin(null); setIntention(""); }
+      }
+    })();
+    return () => { cancelled = true; };
+  }, [user?.id, todayStr]);
+
+  useEffect(() => {
+    if (editing && inputRef.current) { try { inputRef.current.focus(); } catch {} }
+  }, [editing]);
+
+  async function commitIntention() {
+    const value = draft.trim();
+    if (saving || !user?.id) return;
+    setSaving(true);
+    const optimistic = value;
+    setIntention(optimistic);
+    setEditing(false);
+    try {
+      if (checkin?.id) {
+        const updated = await base44.entities.DailyCheckins.update(checkin.id, {
+          sleep_intention: value,
+          updated_at: new Date().toISOString(),
+        });
+        if (updated && updated.id) setCheckin({ ...checkin, ...updated, sleep_intention: value });
+      } else {
+        const created = await base44.entities.DailyCheckins.create({
+          user_id: user.id,
+          date: todayStr,
+          sleep_intention: value,
+          updated_at: new Date().toISOString(),
+        });
+        if (created && created.id) setCheckin(created);
+      }
+    } catch {
+      // silent — keep optimistic value in local state
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  const prompt = WIND_DOWN_PROMPTS[phase] || "Soften the edges. Let today close.";
+
+  return (
+    <article style={cardStyle}>
+      <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+        <span style={{
+          width: 28, height: 28, borderRadius: 9,
+          background: `${C.plum}1F`, color: C.plum,
+          display: "inline-flex", alignItems: "center", justifyContent: "center",
+        }}><Moon size={13} /></span>
+        <div style={{ flex: 1 }}>
+          <span style={kicker}>TONIGHT</span>
+          <h3 style={{ ...cardTitle, margin: "2px 0 0" }}>Wind down</h3>
+        </div>
+      </div>
+
+      <p style={{
+        fontFamily: "Georgia, serif", fontStyle: "italic",
+        fontSize: 13, color: C.plumMid, margin: "4px 0 0", lineHeight: 1.5,
+      }}>
+        {prompt}
+      </p>
+
+      {editing ? (
+        <div style={{ display: "flex", gap: 6, marginTop: 8 }}>
+          <input
+            ref={inputRef}
+            type="text"
+            value={draft}
+            onChange={(e) => setDraft(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === "Enter") commitIntention();
+              if (e.key === "Escape") { setEditing(false); setDraft(intention); }
+            }}
+            placeholder="Set a sleep intention…"
+            style={{
+              flex: 1, padding: "6px 10px", borderRadius: 9999,
+              border: "1px solid rgba(58,44,26,0.18)",
+              background: C.cream, color: C.espresso,
+              fontFamily: "'Inter', system-ui, sans-serif",
+              fontSize: 12, outline: "none", minWidth: 0,
+            }}
+          />
+          <button
+            type="button"
+            onClick={commitIntention}
+            disabled={saving}
+            style={{
+              padding: "6px 12px", borderRadius: 9999,
+              background: C.espresso, color: C.cream, border: "none",
+              fontSize: 11, fontWeight: 700,
+              cursor: saving ? "default" : "pointer",
+              opacity: saving ? 0.6 : 1, flexShrink: 0,
+            }}
+          >Save</button>
+        </div>
+      ) : intention ? (
+        <button
+          type="button"
+          onClick={() => { setDraft(intention); setEditing(true); }}
+          aria-label="Edit sleep intention"
+          style={{
+            marginTop: 8, padding: "8px 12px", borderRadius: 12,
+            background: `${C.plum}10`, border: `1px solid ${C.plum}22`,
+            color: C.espresso, cursor: "pointer", textAlign: "left",
+            display: "flex", alignItems: "flex-start", gap: 8,
+            width: "100%", fontFamily: "inherit",
+          }}
+        >
+          <span style={{ flex: 1, fontSize: 13, lineHeight: 1.45 }}>{intention}</span>
+          <span style={{ fontSize: 10, fontWeight: 700, color: C.muted, letterSpacing: "0.10em" }}>EDIT</span>
+        </button>
+      ) : (
+        <button
+          type="button"
+          onClick={() => { setDraft(""); setEditing(true); }}
+          style={{
+            ...ctaPill,
+            marginTop: 8,
+            background: "transparent",
+            color: C.muted,
+            fontStyle: "italic",
+            fontWeight: 600,
+            border: "1px dashed rgba(58,44,26,0.20)",
+          }}
+        >
+          <Plus size={11} /> Set a sleep intention…
+        </button>
+      )}
+    </article>
+  );
+}
+
+function TomorrowCard({ user }) {
+  const [events, setEvents] = useState([]);
+  const [tasks, setTasks] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  const tomorrowStr = useMemo(() => {
+    const d = new Date();
+    d.setDate(d.getDate() + 1);
+    return d.toISOString().split("T")[0];
+  }, []);
+
+  useEffect(() => {
+    let cancelled = false;
+    if (!user?.id) { setLoading(false); return; }
+    (async () => {
+      try {
+        const [evts, tks] = await Promise.all([
+          base44.entities.PlannerItems.filter({ user_id: user.id, date: tomorrowStr }, "-created_date", 50).catch(() => []),
+          base44.entities.PersonalTasks.filter({ user_id: user.id, date: tomorrowStr }, "-created_date", 50).catch(() => []),
+        ]);
+        if (cancelled) return;
+        setEvents(Array.isArray(evts) ? evts : []);
+        setTasks(Array.isArray(tks) ? tks : []);
+      } catch {
+        if (!cancelled) { setEvents([]); setTasks([]); }
+      } finally {
+        if (!cancelled) setLoading(false);
+      }
+    })();
+    return () => { cancelled = true; };
+  }, [user?.id, tomorrowStr]);
+
+  // Build a top-of-list preview combining the soonest events first.
+  const sortedEvents = useMemo(() => {
+    return [...events].sort((a, b) => {
+      const ta = a?.time || "99:99";
+      const tb = b?.time || "99:99";
+      return String(ta).localeCompare(String(tb));
+    });
+  }, [events]);
+
+  const preview = useMemo(() => {
+    const out = [];
+    for (const e of sortedEvents) {
+      out.push({ kind: "event", title: e.title || "Event", time: e.time, id: e.id });
+      if (out.length >= 2) break;
+    }
+    if (out.length < 2) {
+      for (const t of tasks) {
+        out.push({ kind: "task", title: t.title || "Task", time: t.time_of_day || null, id: t.id });
+        if (out.length >= 2) break;
+      }
+    }
+    return out;
+  }, [sortedEvents, tasks]);
+
+  const totalCount = events.length + tasks.length;
+
+  return (
+    <article style={cardStyle}>
+      <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+        <span style={{
+          width: 28, height: 28, borderRadius: 9,
+          background: `${C.gold}1F`, color: C.gold,
+          display: "inline-flex", alignItems: "center", justifyContent: "center",
+        }}><Sunrise size={13} /></span>
+        <div style={{ flex: 1 }}>
+          <span style={kicker}>TOMORROW</span>
+          <h3 style={{ ...cardTitle, margin: "2px 0 0" }}>What's on</h3>
+        </div>
+      </div>
+
+      {!loading && totalCount === 0 ? (
+        <p style={{ ...cardSub, margin: "4px 0 0", fontStyle: "italic" }}>
+          Nothing planned yet.
+        </p>
+      ) : (
+        <>
+          <p style={{ ...cardSub, margin: "4px 0 0" }}>
+            <strong style={{ color: C.espresso, fontWeight: 700 }}>{events.length}</strong> {events.length === 1 ? "event" : "events"}
+            {" · "}
+            <strong style={{ color: C.espresso, fontWeight: 700 }}>{tasks.length}</strong> {tasks.length === 1 ? "task" : "tasks"}
+          </p>
+          {preview.length > 0 && (
+            <ul style={{
+              listStyle: "none", padding: 0, margin: "6px 0 0",
+              display: "flex", flexDirection: "column", gap: 4,
+            }}>
+              {preview.map((p, i) => (
+                <li key={`${p.kind}-${p.id || i}`} style={{
+                  display: "flex", alignItems: "center", gap: 8,
+                  padding: "6px 10px", borderRadius: 10,
+                  background: C.cream, border: "1px solid rgba(58,44,26,0.06)",
+                }}>
+                  <span style={{
+                    fontSize: 9, fontWeight: 700, letterSpacing: "0.10em",
+                    color: p.kind === "event" ? C.gold : C.muted,
+                    textTransform: "uppercase", minWidth: 36,
+                  }}>{p.kind === "event" ? "EVENT" : "TASK"}</span>
+                  <span style={{
+                    flex: 1, fontSize: 12, color: C.espresso, fontWeight: 600,
+                    minWidth: 0, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap",
+                  }}>{p.title}</span>
+                  {p.time && (
+                    <span style={{ fontSize: 10, color: C.muted, fontWeight: 600 }}>
+                      {String(p.time).slice(0, 5)}
+                    </span>
+                  )}
+                </li>
+              ))}
+            </ul>
+          )}
+        </>
+      )}
+
+      <button
+        type="button"
+        onClick={() => { try { window.location.href = "/Planner"; } catch {} }}
+        style={ctaPill}
+      >
+        Plan tomorrow <ChevronRight size={11} />
+      </button>
+    </article>
+  );
+}
+
+function TonightSection({ user, phase }) {
   return (
     <SliderRow label="Tonight & tomorrow">
-      <article style={cardStyle}>
-        <span style={kicker}>TONIGHT</span>
-        <h3 style={cardTitle}>Wind down</h3>
-        <p style={placeholderHint}>[skeleton] Sleep intention textarea → CheckIn.sleep_intention.</p>
-      </article>
-      <article style={cardStyle}>
-        <span style={kicker}>TOMORROW</span>
-        <h3 style={cardTitle}>What's on</h3>
-        <p style={placeholderHint}>[skeleton] Tomorrow's Events + Tasks count summary.</p>
-      </article>
+      <TonightCard user={user} phase={phase} />
+      <TomorrowCard user={user} />
     </SliderRow>
   );
 }
@@ -2606,7 +2892,7 @@ export default function PlannerV2Shell({
         <CareSection user={user} />
 
         {/* 12 — Tonight & Tomorrow */}
-        <TonightSection />
+        <TonightSection user={user} phase={phase} />
 
       </div>
     </div>
