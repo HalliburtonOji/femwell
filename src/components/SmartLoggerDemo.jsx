@@ -1,20 +1,28 @@
 // ─────────────────────────────────────────────────────────────────────────────
-// SmartLoggerDemo — interactive concept for /Ideas
+// SmartLoggerDemo v2 — redesigned with founder feedback
 //
-// Shows the unified FAB + contextual logger sheet that would replace the
-// separate per-page loggers (Today's CheckinModal + the global Universal
-// FAB). Stage-aware suggestions, mood log flow, and Jess pattern insight.
+// What changed from v1:
+//   • 4 grouped sections (Body · Nourish · Health · Mind & Life) instead of a
+//     flat 14-tile grid
+//   • Added Period (Body), Drinks (Nourish), Caffeine (Nourish), Weight,
+//     Sleep, Appointment, Activity → 17 log types total
+//   • Suggestions are a horizontal scroll of compact ~120px pill cards
+//   • New "From across your app" engagement rail — 4 dark gradient cards
+//     (Podcast · Reading · Journal Prompt · Jess Tip), all stage-aware
+//   • Lighter overall layout — one-line sheet header, smaller chips
 //
-// Self-contained: no real entity writes. Visual prototype only.
+// Same interactions: FAB tap, mood log (5-face + tags + save), Jess insight
+// card, stage switching, walkthrough buttons.
 // ─────────────────────────────────────────────────────────────────────────────
 
 import { useState } from "react";
 import {
-  Plus, X, ChevronRight, Sparkles, Check, ArrowLeft,
+  Plus, X, ChevronRight, Sparkles, Check,
   Smile, Frown, Meh, Heart, Zap, Moon, Sun, Droplets,
   Footprints, ListChecks, Pill, Utensils, CalendarClock,
   StickyNote, Stethoscope, BookOpen, Activity, FileText,
-  Thermometer, Pencil, Camera, Mic,
+  Thermometer, Camera, Mic, Coffee, Wine, Scale, Bed,
+  Headphones, MessageCircle, Pen,
 } from "lucide-react";
 
 const C = {
@@ -49,10 +57,10 @@ const STAGES = {
     bodyRow: { items: ["Cramps · mild", "Bloating", "Tired"] },
     stageRow: { title: "Luteal · D25", sub: "Period predicted in 3 days · 84%" },
     suggestions: [
-      { id: "mood", label: "Log your mood", sub: "Not logged today", Icon: Smile, tone: C.rose, urgent: true },
-      { id: "supp", label: "Evening supplement", sub: "Iron · missed 4 days", Icon: Pill, tone: C.blush, urgent: true },
-      { id: "meal", label: "Log dinner", sub: "Most meals haven't been captured", Icon: Utensils, tone: C.gold },
-      { id: "note", label: "Wind-down note", sub: "Tonight's reflection", Icon: StickyNote, tone: C.muted },
+      { id: "mood", label: "Mood",          sub: "Not logged today",   Icon: Smile,  tone: C.rose, urgent: true },
+      { id: "supp", label: "Iron supp",     sub: "Missed 4 days",      Icon: Pill,   tone: C.blush, urgent: true },
+      { id: "meal", label: "Log dinner",    sub: "Most meals missing", Icon: Utensils, tone: C.gold },
+      { id: "note", label: "Wind-down",     sub: "Tonight's note",     Icon: StickyNote, tone: C.muted },
     ],
     insight: {
       kicker: "JESS PATTERN INSIGHT",
@@ -61,6 +69,12 @@ const STAGES = {
       confirmation: "Iron reminder added to evenings",
       confirmationSub: "Daily nudge at 8pm during your luteal week",
     },
+    rail: [
+      { type: "podcast", emoji: "🎧", typeLabel: "PODCAST",      title: "PCOS & Perimenopause with Dr Sara", meta: "42 min · Saved",         cta: "Play" },
+      { type: "reading", emoji: "📖", typeLabel: "READING",      title: "Iron & the luteal phase",            meta: "6 min · The Atlas",      cta: "Read" },
+      { type: "prompt",  emoji: "✍️", typeLabel: "JOURNAL PROMPT", title: "What does your body need tonight?", meta: "Phase prompt · Luteal", cta: "Write" },
+      { type: "jess",    emoji: "✨", typeLabel: "JESS TIP",      title: "Magnesium before bed can ease luteal cramps", meta: "30 sec read", cta: "Tell me more" },
+    ],
   },
   pregnant: {
     id: "pregnant",
@@ -75,12 +89,12 @@ const STAGES = {
     accentLine:  C.gold,
     moodRow: { value: 4, label: "Bright", color: C.sage },
     bodyRow: { items: ["No nausea today", "Back twinges", "Movements ↑"] },
-    stageRow: { title: "Week 22 · T2", sub: "Anaomaly scan was at 20w · all clear" },
+    stageRow: { title: "Week 22 · T2", sub: "Anomaly scan was at 20w · all clear" },
     suggestions: [
-      { id: "kicks", label: "Kick counter", sub: "Start a 1-hour window", Icon: Heart, tone: C.rose, urgent: true },
-      { id: "nausea", label: "Log nausea", sub: "Has eased — track the change", Icon: Stethoscope, tone: C.blush },
-      { id: "appt", label: "Antenatal appointment", sub: "Add 24w midwife check", Icon: CalendarClock, tone: C.sage },
-      { id: "vits", label: "Prenatal vitamins", sub: "Folate + D · taken today?", Icon: Pill, tone: C.gold },
+      { id: "kicks",  label: "Kick counter", sub: "Start 1-hr window", Icon: Heart,         tone: C.rose,  urgent: true },
+      { id: "nausea", label: "Nausea",       sub: "Track the change",  Icon: Stethoscope,   tone: C.blush },
+      { id: "appt",   label: "Antenatal",    sub: "Add 24w check",     Icon: CalendarClock, tone: C.sage },
+      { id: "vits",   label: "Prenatal",     sub: "Folate · D",        Icon: Pill,          tone: C.gold },
     ],
     insight: {
       kicker: "JESS PATTERN INSIGHT",
@@ -89,6 +103,12 @@ const STAGES = {
       confirmation: "Kick logging reminders set for after meals",
       confirmationSub: "Three gentle nudges a day — breakfast, lunch, dinner",
     },
+    rail: [
+      { type: "podcast", emoji: "🎧", typeLabel: "PODCAST",        title: "Second trimester energy slumps explained", meta: "38 min · Mother & Baby", cta: "Play" },
+      { type: "reading", emoji: "📖", typeLabel: "READING",        title: "What to expect at your 20-week scan",       meta: "8 min · NHS guide",       cta: "Read" },
+      { type: "prompt",  emoji: "✍️", typeLabel: "JOURNAL PROMPT", title: "Write a letter to your baby this week",     meta: "Pregnancy diary",         cta: "Write" },
+      { type: "jess",    emoji: "✨", typeLabel: "JESS TIP",       title: "Left-side sleeping from T2 improves circulation", meta: "40 sec read",       cta: "Tell me more" },
+    ],
   },
   peri: {
     id: "peri",
@@ -105,10 +125,10 @@ const STAGES = {
     bodyRow: { items: ["3 hot flashes today", "Sleep 5h 40m", "Joint ache"] },
     stageRow: { title: "Peri · since 2024", sub: "GP export ready · 12 days of data" },
     suggestions: [
-      { id: "flash", label: "Log hot flash", sub: "3 already today", Icon: Thermometer, tone: C.rose, urgent: true },
-      { id: "sleep", label: "Sleep quality", sub: "Last night was rough — tag it", Icon: Moon, tone: C.plum },
-      { id: "hrt", label: "HRT reminder", sub: "Evening dose due at 8pm", Icon: Pill, tone: C.blush },
-      { id: "mood", label: "Stress & mood", sub: "Track the connection", Icon: Smile, tone: C.gold },
+      { id: "flash", label: "Hot flash",  sub: "3 already today",       Icon: Thermometer, tone: C.rose,  urgent: true },
+      { id: "sleep", label: "Sleep",      sub: "Last night rough",      Icon: Moon,        tone: C.plum },
+      { id: "hrt",   label: "HRT",        sub: "8pm dose due",          Icon: Pill,        tone: C.blush },
+      { id: "mood",  label: "Mood",       sub: "Stress + mood link",    Icon: Smile,       tone: C.gold },
     ],
     insight: {
       kicker: "JESS PATTERN INSIGHT",
@@ -117,6 +137,12 @@ const STAGES = {
       confirmation: "Opening Doctor Export…",
       confirmationSub: "12-day flash log + sleep + HRT timeline · PDF ready",
     },
+    rail: [
+      { type: "podcast", emoji: "🎧", typeLabel: "PODCAST",        title: "HRT myths busted with Dr Louise Newson", meta: "55 min · Balance",         cta: "Play" },
+      { type: "reading", emoji: "📖", typeLabel: "READING",        title: "Hot flashes: why they happen & what helps", meta: "5 min · The Atlas",     cta: "Read" },
+      { type: "prompt",  emoji: "✍️", typeLabel: "JOURNAL PROMPT", title: "What has surprised you most about this stage?", meta: "Peri reflection",   cta: "Write" },
+      { type: "jess",    emoji: "✨", typeLabel: "JESS TIP",       title: "Cooling the room by 2°C can halve hot flash frequency", meta: "25 sec read", cta: "Tell me more" },
+    ],
   },
   ttc: {
     id: "ttc",
@@ -133,10 +159,10 @@ const STAGES = {
     bodyRow: { items: ["BBT 36.7°C", "Egg-white mucus", "Energy ↑"] },
     stageRow: { title: "TTC · Cycle 3", sub: "Ovulation predicted today · LH+" },
     suggestions: [
-      { id: "bbt", label: "BBT temperature", sub: "Log this morning's reading", Icon: Thermometer, tone: C.rose, urgent: true },
-      { id: "cm", label: "Cervical mucus", sub: "Texture + clarity", Icon: Droplets, tone: "#60B4FA" },
-      { id: "mood", label: "Energy & mood", sub: "Daily check-in", Icon: Zap, tone: C.goldDeep },
-      { id: "vits", label: "Prenatal vitamins", sub: "Folate + iron · taken?", Icon: Pill, tone: C.gold },
+      { id: "bbt",  label: "BBT",          sub: "Morning reading",      Icon: Thermometer, tone: C.rose, urgent: true },
+      { id: "cm",   label: "Mucus",        sub: "Texture + clarity",    Icon: Droplets,    tone: "#60B4FA" },
+      { id: "mood", label: "Mood",         sub: "Daily check-in",       Icon: Zap,         tone: C.goldDeep },
+      { id: "vits", label: "Prenatal",     sub: "Folate + iron",        Icon: Pill,        tone: C.gold },
     ],
     insight: {
       kicker: "JESS PATTERN INSIGHT",
@@ -145,36 +171,77 @@ const STAGES = {
       confirmation: "Fertility summary ready in Jess",
       confirmationSub: "3-cycle BBT + LH chart + window prediction",
     },
+    rail: [
+      { type: "podcast", emoji: "🎧", typeLabel: "PODCAST",        title: "Optimising your fertile window naturally", meta: "47 min · Modern Fertility", cta: "Play" },
+      { type: "reading", emoji: "📖", typeLabel: "READING",        title: "BBT charting: a beginner's guide",          meta: "7 min · The Atlas",          cta: "Read" },
+      { type: "prompt",  emoji: "✍️", typeLabel: "JOURNAL PROMPT", title: "How are you feeling about this cycle?",     meta: "TTC reflection",             cta: "Write" },
+      { type: "jess",    emoji: "✨", typeLabel: "JESS TIP",       title: "Stress hormones can delay ovulation by up to 3 days", meta: "35 sec read",      cta: "Tell me more" },
+    ],
   },
 };
 
-// ── Full grid of 14 log types — shown below suggestions ──────────────────────
-const GRID = [
-  { id: "mood",     label: "Mood",       Icon: Smile,         tone: C.rose },
-  { id: "energy",   label: "Energy",     Icon: Zap,           tone: C.goldDeep },
-  { id: "symptom",  label: "Symptom",    Icon: Stethoscope,   tone: C.plum },
-  { id: "meal",     label: "Meal",       Icon: Utensils,      tone: C.gold },
-  { id: "hydr",     label: "Hydration",  Icon: Droplets,      tone: "#60B4FA" },
-  { id: "habit",    label: "Habit",      Icon: Footprints,    tone: C.sage },
-  { id: "task",     label: "Task",       Icon: ListChecks,    tone: C.espresso },
-  { id: "med",      label: "Medication", Icon: Pill,          tone: C.blush },
-  { id: "event",    label: "Event",      Icon: CalendarClock, tone: C.goldDeep },
-  { id: "sleep",    label: "Sleep",      Icon: Moon,          tone: C.plum },
-  { id: "ritual",   label: "Ritual",     Icon: Sparkles,      tone: C.muted },
-  { id: "note",     label: "Note",       Icon: StickyNote,    tone: C.muted },
-  { id: "photo",    label: "Photo",      Icon: Camera,        tone: C.muted },
-  { id: "voice",    label: "Voice",      Icon: Mic,           tone: C.muted },
+// ── Grouped log types ────────────────────────────────────────────────────────
+const LOG_GROUPS = [
+  {
+    id: "body",
+    label: "Body",
+    items: [
+      { id: "mood",    label: "Mood",     Icon: Smile,       tone: C.rose },
+      { id: "energy",  label: "Energy",   Icon: Zap,         tone: C.goldDeep },
+      { id: "symptom", label: "Symptoms", Icon: Stethoscope, tone: C.plum },
+      { id: "period",  label: "Period",   Icon: Droplets,    tone: C.rose },
+      { id: "weight",  label: "Weight",   Icon: Scale,       tone: C.muted },
+    ],
+  },
+  {
+    id: "nourish",
+    label: "Nourish",
+    items: [
+      { id: "meal",     label: "Meal",     Icon: Utensils, tone: C.gold },
+      { id: "water",    label: "Water",    Icon: Droplets, tone: "#60B4FA" },
+      { id: "drinks",   label: "Drinks",   Icon: Wine,     tone: C.plum },
+      { id: "caffeine", label: "Caffeine", Icon: Coffee,   tone: C.espresso },
+    ],
+  },
+  {
+    id: "health",
+    label: "Health",
+    items: [
+      { id: "med",   label: "Medication",  Icon: Pill,          tone: C.blush },
+      { id: "supp",  label: "Supplement",  Icon: Pill,          tone: C.sage },
+      { id: "sleep", label: "Sleep",       Icon: Bed,           tone: C.plum },
+      { id: "appt",  label: "Appointment", Icon: CalendarClock, tone: C.goldDeep },
+    ],
+  },
+  {
+    id: "mindlife",
+    label: "Mind & Life",
+    items: [
+      { id: "journal",  label: "Journal",  Icon: StickyNote, tone: C.muted },
+      { id: "ritual",   label: "Ritual",   Icon: Sparkles,   tone: C.gold },
+      { id: "task",     label: "Task",     Icon: ListChecks, tone: C.espresso },
+      { id: "activity", label: "Activity", Icon: Footprints, tone: C.sage },
+    ],
+  },
 ];
 
 const MOOD_FACES = [
-  { v: 0, Icon: Frown, label: "Low",       color: C.rose },
-  { v: 1, Icon: Frown, label: "Down",      color: "#C97A7E" },
-  { v: 2, Icon: Meh,   label: "Tender",    color: C.blush },
-  { v: 3, Icon: Smile, label: "Steady",    color: C.gold },
-  { v: 4, Icon: Smile, label: "Bright",    color: C.sage },
+  { v: 0, Icon: Frown, label: "Low",    color: C.rose },
+  { v: 1, Icon: Frown, label: "Down",   color: "#C97A7E" },
+  { v: 2, Icon: Meh,   label: "Tender", color: C.blush },
+  { v: 3, Icon: Smile, label: "Steady", color: C.gold },
+  { v: 4, Icon: Smile, label: "Bright", color: C.sage },
 ];
 
 const INFLUENCES = ["Sleep", "Hormones", "Iron", "Stress", "Connection", "Movement", "Sun", "Caffeine"];
+
+// ── Rail card colors (dark gradients, consistent across stages) ──────────────
+const RAIL_COLOURS = {
+  podcast: { bg: "linear-gradient(160deg, #3D2E5C 0%, #1F1733 100%)", glyph: Headphones,    accent: "#B79EE8" },
+  reading: { bg: "linear-gradient(160deg, #1F3A5C 0%, #0E1A33 100%)", glyph: BookOpen,      accent: "#88B0E8" },
+  prompt:  { bg: "linear-gradient(160deg, #1F3D2E 0%, #0E1F17 100%)", glyph: Pen,           accent: "#A2D8B5" },
+  jess:    { bg: "linear-gradient(160deg, #4A3520 0%, #1A1410 100%)", glyph: Sparkles,      accent: C.gold },
+};
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Top-level component
@@ -219,7 +286,7 @@ export default function SmartLoggerDemo() {
         <div style={{
           fontSize: 11, letterSpacing: "0.22em", fontWeight: 700,
           color: "rgba(244,237,219,0.55)", textTransform: "uppercase",
-        }}>Design Lab · Concept Demo</div>
+        }}>Design Lab · Concept Demo · v2</div>
         <h1 style={{
           fontFamily: "'Fraunces', Georgia, serif",
           fontSize: 32, fontWeight: 500, color: C.cream,
@@ -227,10 +294,10 @@ export default function SmartLoggerDemo() {
         }}>Smart Logger</h1>
         <p style={{
           fontSize: 14, color: "rgba(244,237,219,0.7)", lineHeight: 1.55,
-          maxWidth: 520, margin: "0 auto",
+          maxWidth: 540, margin: "0 auto",
         }}>
-          One unified FAB. Context-aware suggestions per life stage and time of day.
-          Replaces the separate Today modal + Universal FAB with a single, smart entry point.
+          Compact suggestions, grouped log types, and an engagement rail that pulls in
+          what's relevant to your stage — podcast, reading, prompt, Jess tip.
         </p>
       </div>
 
@@ -260,9 +327,7 @@ export default function SmartLoggerDemo() {
       </div>
 
       {/* Phone */}
-      <div style={{
-        marginTop: 32, display: "flex", justifyContent: "center",
-      }}>
+      <div style={{ marginTop: 32, display: "flex", justifyContent: "center" }}>
         <Phone S={S} step={step} mood={mood} influences={influences} note={note}
           onOpenLogger={() => setStep("logger")}
           onCloseLogger={() => setStep("home")}
@@ -285,15 +350,15 @@ export default function SmartLoggerDemo() {
         fontSize: 11.5, color: "rgba(244,237,219,0.45)", lineHeight: 1.6,
         fontStyle: "italic",
       }}>
-        Concept prototype — interactions are visual only. No real entity writes.
-        Switch life stages to see how suggestions, the phase line, and Jess's insight all change.
+        Concept prototype — interactions are visual only. Swipe the engagement rail at
+        the bottom of the sheet, and switch stages to see how every section rebuilds.
       </p>
     </div>
   );
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
-// Phone — the 390px mockup with all step layers
+// Phone — 390px mockup with all step layers
 // ─────────────────────────────────────────────────────────────────────────────
 function Phone({
   S, step, mood, influences, note,
@@ -325,7 +390,6 @@ function Phone({
         <span style={{ opacity: 0.5 }}>· · ·</span>
       </div>
 
-      {/* Planner background */}
       <PlannerBg S={S} />
 
       {/* Gold FAB */}
@@ -337,37 +401,27 @@ function Phone({
           border: "none", cursor: "pointer",
           boxShadow: "0 12px 28px rgba(212,175,55,0.55), 0 0 0 4px rgba(244,237,219,0.85)",
           display: "flex", alignItems: "center", justifyContent: "center",
-          transition: "transform .15s ease",
         }}>
           <Plus size={28} style={{ color: C.cream }} strokeWidth={2.6} />
         </button>
       )}
 
-      {/* Logger sheet */}
       {step === "logger" && (
         <LoggerSheet S={S} onClose={onCloseLogger} onPickMood={onPickMood} />
       )}
-
-      {/* Mood log */}
       {step === "mood" && (
         <MoodSheet
           S={S}
           mood={mood} setMood={setMood}
           influences={influences} toggleInfluence={toggleInfluence}
           note={note} setNote={setNote}
-          onBack={onPickMood /* re-opens mood — kept for the back button below */}
           onClose={onCloseLogger}
           onSave={onSaveMood}
-          onBackToLogger={() => { /* go back to logger */ }}
         />
       )}
-
-      {/* Insight card */}
       {step === "insight" && (
         <InsightCard S={S} onAccept={onAcceptInsight} onDismiss={onDismissInsight} />
       )}
-
-      {/* Accepted confirmation */}
       {step === "accepted" && (
         <AcceptedCard S={S} onClose={onDismissInsight} />
       )}
@@ -401,12 +455,11 @@ function Phone({
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
-// PlannerBg — the home-state visible content behind the FAB
+// PlannerBg — visible content behind the FAB
 // ─────────────────────────────────────────────────────────────────────────────
 function PlannerBg({ S }) {
   return (
     <div style={{ padding: "8px 18px 100px", overflow: "hidden" }}>
-      {/* Header */}
       <div style={{
         fontSize: 9.5, letterSpacing: "0.18em", fontWeight: 700,
         color: C.muted, textTransform: "uppercase", marginTop: 6,
@@ -424,7 +477,6 @@ function PlannerBg({ S }) {
         <span>{S.headerEmoji}</span> {S.headerSub}
       </div>
 
-      {/* Mood row */}
       <PlannerRow kicker="MOOD" title={S.moodRow.label}>
         <div style={{ display: "flex", gap: 6, alignItems: "center" }}>
           {[0,1,2,3,4].map((i) => (
@@ -438,7 +490,6 @@ function PlannerBg({ S }) {
         </div>
       </PlannerRow>
 
-      {/* Body row */}
       <PlannerRow kicker="BODY" title="Today's signals">
         <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
           {S.bodyRow.items.map((b, i) => (
@@ -451,11 +502,8 @@ function PlannerBg({ S }) {
         </div>
       </PlannerRow>
 
-      {/* Cycle/stage row */}
       <PlannerRow kicker="STAGE" title={S.stageRow.title} sub={S.stageRow.sub} accent={S.accentLine}>
-        <div style={{
-          display: "flex", gap: 4, alignItems: "center", marginTop: 4,
-        }}>
+        <div style={{ display: "flex", gap: 4, alignItems: "center", marginTop: 4 }}>
           {Array.from({ length: 7 }, (_, i) => (
             <span key={i} style={{
               flex: 1, height: 14, borderRadius: 4,
@@ -494,96 +542,124 @@ function PlannerRow({ kicker, title, sub, accent, children }) {
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
-// LoggerSheet — slides up from bottom; suggestions + 14-type grid
+// LoggerSheet — redesigned: one-line header, scroll suggestions, grouped chips,
+// engagement rail at the bottom
 // ─────────────────────────────────────────────────────────────────────────────
 function LoggerSheet({ S, onClose, onPickMood }) {
   return (
-    <SheetShell onClose={onClose} title="Smart Logger" kicker="LOG ANYTHING" maxHeight="86%">
-      {/* Greeting + context */}
+    <SheetShell onClose={onClose} maxHeight="90%">
+      {/* Compact one-line header */}
       <div style={{
-        padding: "10px 14px", borderRadius: 14,
-        background: S.accentLight, border: `1px solid ${S.accentLine}44`,
-        marginBottom: 16,
+        display: "flex", alignItems: "center", gap: 10, marginBottom: 8,
+        padding: "0 2px",
       }}>
-        <div style={{
-          fontSize: 9.5, letterSpacing: "0.18em", fontWeight: 700,
-          color: C.muted, textTransform: "uppercase",
-        }}>{S.timeBlock}</div>
-        <div style={{
-          fontFamily: "'Fraunces', Georgia, serif", fontSize: 16, fontWeight: 500,
-          color: C.espresso, margin: "3px 0 2px",
-        }}>{S.greeting}</div>
-        <div style={{ fontSize: 12, color: C.muted, fontStyle: "italic" }}>{S.phaseContext}</div>
+        <span style={{
+          fontFamily: "'Fraunces', Georgia, serif", fontSize: 17, fontWeight: 500, color: C.espresso,
+        }}>Log anything</span>
+        <span style={{ fontSize: 11, color: C.muted }}>· {S.timeBlock}</span>
+        <span style={{ flex: 1 }} />
+        <button onClick={onClose} aria-label="Close" style={{
+          width: 28, height: 28, borderRadius: "50%",
+          background: "rgba(58,44,26,0.06)", border: "none",
+          color: C.espresso, cursor: "pointer",
+          display: "inline-flex", alignItems: "center", justifyContent: "center",
+        }}><X size={14} /></button>
       </div>
 
-      {/* Suggestions */}
-      <SectionHead title="Suggested for you" sub="Based on your stage, time, and what's not logged yet" />
-      <div style={{ display: "flex", flexDirection: "column", gap: 8, marginTop: 8 }}>
+      {/* Phase context line */}
+      <div style={{
+        fontSize: 11.5, color: C.muted, fontStyle: "italic",
+        padding: "0 2px 12px",
+      }}>
+        <span style={{ marginRight: 6 }}>{S.headerEmoji}</span>
+        {S.phaseContext}
+      </div>
+
+      {/* Suggestions — horizontal scroll */}
+      <SectionHead kicker="SUGGESTED FOR YOU" />
+      <div style={{
+        display: "flex", gap: 8, overflowX: "auto", paddingBottom: 4,
+        marginTop: 6, marginLeft: -2, marginRight: -2,
+        scrollSnapType: "x mandatory",
+      }}>
         {S.suggestions.map((s) => (
           <button
             key={s.id}
             onClick={s.id === "mood" ? onPickMood : undefined}
             style={{
-              display: "flex", alignItems: "center", gap: 11, padding: "12px 14px",
-              borderRadius: 14, background: C.paperHi,
+              flexShrink: 0, width: 118, padding: "10px 11px",
+              borderRadius: 14,
+              background: C.paperHi,
               border: s.urgent ? `1.5px solid ${s.tone}77` : "1px solid rgba(58,44,26,0.10)",
-              cursor: "pointer", textAlign: "left", width: "100%",
+              cursor: "pointer", textAlign: "left",
+              display: "flex", flexDirection: "column", gap: 8,
+              scrollSnapAlign: "start",
               boxShadow: s.urgent ? `0 0 0 3px ${s.tone}11` : "none",
             }}
           >
-            <span style={{
-              width: 38, height: 38, borderRadius: 12,
-              background: `${s.tone}22`, color: s.tone,
-              display: "inline-flex", alignItems: "center", justifyContent: "center",
-              flexShrink: 0,
-            }}><s.Icon size={18} /></span>
-            <div style={{ flex: 1, minWidth: 0 }}>
-              <div style={{
-                fontSize: 13.5, fontWeight: 700, color: C.espresso,
-                display: "flex", alignItems: "center", gap: 6,
-              }}>
-                {s.label}
-                {s.urgent && <span style={{
-                  fontSize: 9, letterSpacing: "0.1em", fontWeight: 700,
-                  color: s.tone, background: `${s.tone}22`, borderRadius: 9999,
-                  padding: "2px 7px",
-                }}>NUDGE</span>}
-              </div>
-              <div style={{ fontSize: 11.5, color: C.muted, marginTop: 2 }}>{s.sub}</div>
+            <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+              <span style={{
+                width: 26, height: 26, borderRadius: 8,
+                background: `${s.tone}22`, color: s.tone,
+                display: "inline-flex", alignItems: "center", justifyContent: "center",
+              }}><s.Icon size={13} /></span>
+              {s.urgent && <span style={{
+                fontSize: 8.5, letterSpacing: "0.1em", fontWeight: 700,
+                color: s.tone, background: `${s.tone}22`, borderRadius: 9999,
+                padding: "2px 7px",
+              }}>NUDGE</span>}
             </div>
-            <ChevronRight size={15} style={{ color: C.muted, flexShrink: 0 }} />
+            <div>
+              <div style={{ fontSize: 12.5, fontWeight: 700, color: C.espresso, lineHeight: 1.2 }}>{s.label}</div>
+              <div style={{ fontSize: 10.5, color: C.muted, marginTop: 2, lineHeight: 1.3 }}>{s.sub}</div>
+            </div>
           </button>
         ))}
       </div>
 
-      {/* Grid */}
-      <div style={{ marginTop: 18 }}>
-        <SectionHead title="All log types" sub="14 categories · pick anything to log" />
+      {/* Grouped log types */}
+      <div style={{ marginTop: 18, display: "flex", flexDirection: "column", gap: 14 }}>
+        {LOG_GROUPS.map((g) => (
+          <div key={g.id}>
+            <div style={{
+              fontSize: 9.5, letterSpacing: "0.18em", fontWeight: 700,
+              color: C.muted, textTransform: "uppercase", marginBottom: 6,
+            }}>{g.label}</div>
+            <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
+              {g.items.map((it) => (
+                <button
+                  key={it.id}
+                  onClick={it.id === "mood" ? onPickMood : undefined}
+                  style={{
+                    display: "inline-flex", alignItems: "center", gap: 6,
+                    padding: "6px 11px 6px 8px", borderRadius: 9999,
+                    background: C.paperHi, border: "1px solid rgba(58,44,26,0.10)",
+                    cursor: "pointer",
+                  }}
+                >
+                  <span style={{
+                    width: 20, height: 20, borderRadius: 6,
+                    background: `${it.tone}22`, color: it.tone,
+                    display: "inline-flex", alignItems: "center", justifyContent: "center",
+                  }}><it.Icon size={11} /></span>
+                  <span style={{ fontSize: 11.5, fontWeight: 700, color: C.espresso }}>{it.label}</span>
+                </button>
+              ))}
+            </div>
+          </div>
+        ))}
+      </div>
+
+      {/* Engagement rail — From across your app */}
+      <div style={{ marginTop: 22 }}>
+        <SectionHead kicker="FROM ACROSS YOUR APP" sub="Picked for where you are right now" />
         <div style={{
-          marginTop: 8,
-          display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 8,
+          display: "flex", gap: 10, overflowX: "auto",
+          marginTop: 8, paddingBottom: 6, marginLeft: -2, marginRight: -2,
+          scrollSnapType: "x mandatory",
         }}>
-          {GRID.map((g) => (
-            <button
-              key={g.id}
-              onClick={g.id === "mood" ? onPickMood : undefined}
-              style={{
-                padding: "11px 6px", borderRadius: 12,
-                background: C.paperHi, border: "1px solid rgba(58,44,26,0.10)",
-                cursor: "pointer",
-                display: "flex", flexDirection: "column", alignItems: "center", gap: 5,
-              }}
-            >
-              <span style={{
-                width: 30, height: 30, borderRadius: 9,
-                background: `${g.tone}22`, color: g.tone,
-                display: "inline-flex", alignItems: "center", justifyContent: "center",
-              }}><g.Icon size={15} /></span>
-              <span style={{
-                fontSize: 10.5, fontWeight: 700, color: C.espresso,
-                letterSpacing: "0.01em",
-              }}>{g.label}</span>
-            </button>
+          {S.rail.map((card, i) => (
+            <RailCard key={i} card={card} />
           ))}
         </div>
       </div>
@@ -596,14 +672,60 @@ function LoggerSheet({ S, onClose, onPickMood }) {
         display: "flex", alignItems: "center", gap: 10,
       }}>
         <Sparkles size={13} style={{ color: C.gold, flexShrink: 0 }} />
-        Hold the + for voice. Tap the camera tile for a photo log (food, skin, scan).
+        Hold the + for voice. Long-press any chip to scan with the camera.
       </div>
     </SheetShell>
   );
 }
 
+function RailCard({ card }) {
+  const t = RAIL_COLOURS[card.type] || RAIL_COLOURS.jess;
+  const Glyph = t.glyph;
+  return (
+    <div style={{
+      flexShrink: 0, width: 142, minHeight: 158, borderRadius: 16,
+      background: t.bg, color: C.cream,
+      padding: "12px 12px 11px",
+      display: "flex", flexDirection: "column", justifyContent: "space-between",
+      boxShadow: "0 6px 14px rgba(0,0,0,0.25)",
+      scrollSnapAlign: "start",
+      position: "relative", overflow: "hidden",
+    }}>
+      {/* Glyph backdrop */}
+      <Glyph size={72} style={{
+        position: "absolute", right: -16, bottom: -10,
+        color: t.accent, opacity: 0.12,
+      }} />
+
+      <div style={{ position: "relative", zIndex: 1 }}>
+        <div style={{ fontSize: 16, marginBottom: 4 }}>{card.emoji}</div>
+        <div style={{
+          fontSize: 8.5, letterSpacing: "0.16em", fontWeight: 700,
+          color: t.accent, textTransform: "uppercase", marginBottom: 4,
+        }}>{card.typeLabel}</div>
+        <div style={{
+          fontFamily: "'Fraunces', Georgia, serif", fontSize: 12.5, fontWeight: 500,
+          color: C.cream, lineHeight: 1.25,
+        }}>{card.title}</div>
+      </div>
+      <div style={{
+        position: "relative", zIndex: 1,
+        display: "flex", justifyContent: "space-between", alignItems: "center",
+        marginTop: 8,
+      }}>
+        <div style={{ fontSize: 9.5, color: "rgba(244,237,219,0.7)", lineHeight: 1.2 }}>{card.meta}</div>
+        <span style={{
+          display: "inline-flex", alignItems: "center", gap: 3,
+          fontSize: 9.5, fontWeight: 700, color: t.accent,
+          letterSpacing: "0.04em",
+        }}>{card.cta} <ChevronRight size={10} /></span>
+      </div>
+    </div>
+  );
+}
+
 // ─────────────────────────────────────────────────────────────────────────────
-// MoodSheet — 5-face scale + influences + note
+// MoodSheet — unchanged from v1 (founder kept this flow)
 // ─────────────────────────────────────────────────────────────────────────────
 function MoodSheet({
   S, mood, setMood, influences, toggleInfluence, note, setNote,
@@ -611,8 +733,23 @@ function MoodSheet({
 }) {
   const valid = mood != null;
   return (
-    <SheetShell onClose={onClose} title="Log your mood" kicker="MOOD · 8:42PM" maxHeight="86%">
-      {/* Phase chip */}
+    <SheetShell onClose={onClose} maxHeight="86%">
+      <div style={{
+        display: "flex", alignItems: "center", gap: 10, marginBottom: 8,
+      }}>
+        <span style={{
+          fontFamily: "'Fraunces', Georgia, serif", fontSize: 17, fontWeight: 500, color: C.espresso,
+        }}>Log your mood</span>
+        <span style={{ fontSize: 11, color: C.muted }}>· {S.timeBlock.split(" · ")[1]}</span>
+        <span style={{ flex: 1 }} />
+        <button onClick={onClose} aria-label="Close" style={{
+          width: 28, height: 28, borderRadius: "50%",
+          background: "rgba(58,44,26,0.06)", border: "none",
+          color: C.espresso, cursor: "pointer",
+          display: "inline-flex", alignItems: "center", justifyContent: "center",
+        }}><X size={14} /></button>
+      </div>
+
       <div style={{
         display: "inline-flex", alignItems: "center", gap: 6,
         padding: "4px 10px", borderRadius: 9999,
@@ -622,7 +759,6 @@ function MoodSheet({
         <span>{S.headerEmoji}</span> {S.headerSub}
       </div>
 
-      {/* Faces */}
       <div style={{ marginTop: 6 }}>
         <div style={{ fontSize: 13, fontWeight: 700, color: C.espresso }}>How are you feeling?</div>
         <div style={{
@@ -658,12 +794,9 @@ function MoodSheet({
         </div>
       </div>
 
-      {/* Influences */}
       <div style={{ marginTop: 22 }}>
         <div style={{ fontSize: 13, fontWeight: 700, color: C.espresso }}>What influenced this?</div>
-        <div style={{
-          display: "flex", flexWrap: "wrap", gap: 6, marginTop: 10,
-        }}>
+        <div style={{ display: "flex", flexWrap: "wrap", gap: 6, marginTop: 10 }}>
           {INFLUENCES.map((t) => {
             const on = influences.includes(t);
             return (
@@ -679,7 +812,6 @@ function MoodSheet({
         </div>
       </div>
 
-      {/* Note */}
       <div style={{ marginTop: 22 }}>
         <div style={{ fontSize: 13, fontWeight: 700, color: C.espresso }}>Anything else? <span style={{ fontWeight: 500, color: C.muted }}>· optional</span></div>
         <textarea
@@ -698,7 +830,6 @@ function MoodSheet({
         />
       </div>
 
-      {/* Save */}
       <div style={{ marginTop: 22, display: "flex", gap: 10 }}>
         <button onClick={onClose} style={{
           flex: 1, padding: "12px 16px", borderRadius: 9999,
@@ -729,7 +860,22 @@ function MoodSheet({
 // ─────────────────────────────────────────────────────────────────────────────
 function InsightCard({ S, onAccept, onDismiss }) {
   return (
-    <SheetShell onClose={onDismiss} title="A note from Jess" kicker="PATTERN SPOTTED" maxHeight="62%" gold>
+    <SheetShell onClose={onDismiss} maxHeight="62%">
+      <div style={{
+        display: "flex", alignItems: "center", gap: 10, marginBottom: 8,
+      }}>
+        <span style={{
+          fontFamily: "'Fraunces', Georgia, serif", fontSize: 17, fontWeight: 500, color: C.espresso,
+        }}>A note from Jess</span>
+        <span style={{ flex: 1 }} />
+        <button onClick={onDismiss} aria-label="Close" style={{
+          width: 28, height: 28, borderRadius: "50%",
+          background: "rgba(58,44,26,0.06)", border: "none",
+          color: C.espresso, cursor: "pointer",
+          display: "inline-flex", alignItems: "center", justifyContent: "center",
+        }}><X size={14} /></button>
+      </div>
+
       <div style={{
         padding: "14px 16px", borderRadius: 16,
         background: `${C.gold}1A`, border: `1px solid ${C.gold}55`,
@@ -780,12 +926,24 @@ function InsightCard({ S, onAccept, onDismiss }) {
   );
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
-// AcceptedCard — confirmation after accepting Jess's insight
-// ─────────────────────────────────────────────────────────────────────────────
 function AcceptedCard({ S, onClose }) {
   return (
-    <SheetShell onClose={onClose} title="Done" kicker="ACCEPTED" maxHeight="52%" gold>
+    <SheetShell onClose={onClose} maxHeight="52%">
+      <div style={{
+        display: "flex", alignItems: "center", gap: 10, marginBottom: 8,
+      }}>
+        <span style={{
+          fontFamily: "'Fraunces', Georgia, serif", fontSize: 17, fontWeight: 500, color: C.espresso,
+        }}>Done</span>
+        <span style={{ flex: 1 }} />
+        <button onClick={onClose} aria-label="Close" style={{
+          width: 28, height: 28, borderRadius: "50%",
+          background: "rgba(58,44,26,0.06)", border: "none",
+          color: C.espresso, cursor: "pointer",
+          display: "inline-flex", alignItems: "center", justifyContent: "center",
+        }}><X size={14} /></button>
+      </div>
+
       <div style={{
         padding: "22px 18px", borderRadius: 16,
         background: `${C.sage}1A`, border: `1px solid ${C.sage}55`,
@@ -816,73 +974,43 @@ function AcceptedCard({ S, onClose }) {
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
-// SheetShell — reusable bottom sheet container
+// SheetShell — bottom sheet wrapper (slimmer than v1)
 // ─────────────────────────────────────────────────────────────────────────────
-function SheetShell({ children, onClose, title, kicker, maxHeight = "80%", gold = false }) {
+function SheetShell({ children, onClose, maxHeight = "80%" }) {
   return (
     <>
-      {/* Backdrop */}
       <div style={{
         position: "absolute", inset: 0, background: "rgba(26,20,16,0.45)",
         zIndex: 5,
       }} onClick={onClose} />
 
-      {/* Sheet */}
       <div style={{
         position: "absolute", left: 0, right: 0, bottom: 0,
         background: C.cream, borderRadius: "26px 26px 0 0",
-        padding: "10px 18px 24px",
+        padding: "10px 16px 22px",
         maxHeight, overflowY: "auto",
         zIndex: 6,
         boxShadow: "0 -12px 30px rgba(0,0,0,0.18)",
         animation: "fwSheetUp .25s ease",
       }}>
         <style>{`@keyframes fwSheetUp { from { transform: translateY(20%); opacity: 0.7; } to { transform: translateY(0); opacity: 1; } }`}</style>
-
-        {/* Grab handle */}
         <div style={{
           width: 44, height: 4, background: "rgba(58,44,26,0.18)",
-          borderRadius: 9999, margin: "4px auto 14px",
+          borderRadius: 9999, margin: "4px auto 12px",
         }} />
-
-        {/* Head */}
-        <div style={{
-          display: "flex", alignItems: "center", justifyContent: "space-between",
-          marginBottom: 12,
-        }}>
-          <div>
-            <div style={{
-              fontSize: 9.5, letterSpacing: "0.18em", fontWeight: 700,
-              color: gold ? C.goldDeep : C.muted, textTransform: "uppercase",
-            }}>{kicker}</div>
-            <div style={{
-              fontFamily: "'Fraunces', Georgia, serif", fontSize: 19, fontWeight: 500,
-              color: C.espresso,
-            }}>{title}</div>
-          </div>
-          <button onClick={onClose} aria-label="Close" style={{
-            width: 30, height: 30, borderRadius: "50%",
-            background: "rgba(58,44,26,0.06)", border: "none",
-            color: C.espresso, cursor: "pointer",
-            display: "inline-flex", alignItems: "center", justifyContent: "center",
-          }}>
-            <X size={15} />
-          </button>
-        </div>
-
         {children}
       </div>
     </>
   );
 }
 
-function SectionHead({ title, sub }) {
+function SectionHead({ kicker, sub }) {
   return (
     <div>
       <div style={{
         fontSize: 9.5, letterSpacing: "0.18em", fontWeight: 700,
         color: C.muted, textTransform: "uppercase",
-      }}>{title}</div>
+      }}>{kicker}</div>
       {sub && (
         <div style={{ fontSize: 11, color: C.muted, fontStyle: "italic", marginTop: 2 }}>{sub}</div>
       )}
