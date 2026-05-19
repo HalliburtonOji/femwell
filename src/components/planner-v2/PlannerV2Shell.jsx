@@ -180,6 +180,37 @@ const astraReading = {
     "Day 25. Progesterone is doing the heavy lifting. Your body is winding the cycle down — and the work you did at ovulation is now consolidating. This is a finishing week, not a starting week. Close loops you've left open. Say no to one thing that doesn't need you. The rooms you walk into this week want you softer, not louder.",
 };
 
+// Phase B3 — adapter: PlannerItems entity row → schedule block shape used
+// throughout the demo (id, hour, duration, title, type, anchor, done).
+function plannerItemToBlock(row) {
+  if (!row || typeof row !== "object") return null;
+  // Parse "HH:MM" or "HH" out of PlannerItems.time. Default to 9 if missing.
+  let hour = 9;
+  if (row.time) {
+    const m = /^(\d{1,2})/.exec(String(row.time));
+    if (m) {
+      const h = Number(m[1]);
+      if (Number.isFinite(h) && h >= 0 && h <= 23) hour = h;
+    }
+  }
+  const cat = String(row.category || "").toLowerCase();
+  let type = "task";
+  if (cat === "habit" || cat === "wellbeing") type = "habit";
+  else if (cat === "reminder" || cat === "medication" || cat === "med") type = "med";
+  else if (cat === "appointment" || cat === "event") type = "event";
+  return {
+    id: row.id,
+    hour,
+    duration: Number(row.duration_minutes) || 30,
+    title: row.title || "Untitled",
+    type,
+    anchor: !!(row.is_anchor || row.anchor),
+    done: !!row.is_completed,
+    // Keep the raw row so save/delete handlers can round-trip cleanly.
+    _raw: row,
+  };
+}
+
 const initialBlocks = [
   { id: "b1", hour: 7,  duration: 15, title: "Morning stretch",    type: "habit", anchor: true,  done: true },
   { id: "b2", hour: 8,  duration: 5,  title: "Folic acid",         type: "med",   anchor: true,  done: true },
@@ -476,16 +507,38 @@ export default function PlannerV2Shell({
   const [dayDetail, setDayDetail] = useState(null);
   const [blockEdit, setBlockEdit] = useState(null);
   const [planOpen, setPlanOpen] = useState(false);
-  const [blocks, setBlocks] = useState(() => {
-    try {
-      const raw = localStorage.getItem("femwell_unified_blocks");
-      if (raw) return JSON.parse(raw);
-    } catch {}
-    return initialBlocks;
-  });
+  // Phase B3 — `blocks` (schedule timeline items) is now backed by
+  // PlannerItems for today. Each PlannerItem maps to a block:
+  //   id        ← PlannerItems.id
+  //   title     ← PlannerItems.title
+  //   hour      ← parsed from PlannerItems.time ("HH:MM"); falls back to 9
+  //   duration  ← PlannerItems.duration_minutes (legacy field); falls back to 30
+  //   type      ← "med" if category=="reminder" or "medication", "habit" if
+  //                category=="habit" or "wellbeing", "event" if "appointment",
+  //                otherwise "task"
+  //   anchor    ← PlannerItems.is_anchor or PlannerItems.anchor
+  //   done      ← PlannerItems.is_completed
+  // The local edit handlers below stay — they now persist to base44.
+  const [blocks, setBlocks] = useState([]);
   useEffect(() => {
-    try { localStorage.setItem("femwell_unified_blocks", JSON.stringify(blocks)); } catch {}
-  }, [blocks]);
+    let cancelled = false;
+    if (!user?.id) return;
+    (async () => {
+      try {
+        const rows = await base44.entities.PlannerItems.filter(
+          { user_id: user.id, date: todayISO },
+          "-created_date",
+          200,
+        );
+        if (cancelled) return;
+        const next = (rows || []).map(plannerItemToBlock);
+        setBlocks(next);
+      } catch {
+        if (!cancelled) setBlocks([]);
+      }
+    })();
+    return () => { cancelled = true; };
+  }, [user?.id]);
 
   // Greeting reads the real wall-clock hour each render (the module-level
   // `today` is evaluated once at app load and would otherwise stay stuck).
@@ -597,13 +650,26 @@ export default function PlannerV2Shell({
       <BlockEditSheet
         block={blockEdit ? blocks.find((b) => b.id === blockEdit) : null}
         onClose={() => setBlockEdit(null)}
-        onSave={(next) => {
+        onSave={async (next) => {
           setBlocks((bs) => bs.map((b) => b.id === next.id ? next : b));
           setBlockEdit(null);
+          // Phase B3 — persist edits to PlannerItems. We only push the
+          // fields the demo's BlockEditSheet exposes (title, hour, duration,
+          // done). Everything else stays as the server has it.
+          try {
+            const hh = Number.isFinite(next.hour) ? String(next.hour).padStart(2, "0") : "09";
+            await base44.entities.PlannerItems.update(next.id, {
+              title: next.title,
+              time: `${hh}:00`,
+              duration_minutes: next.duration,
+              is_completed: !!next.done,
+            });
+          } catch { /* silent */ }
         }}
-        onDelete={(id) => {
+        onDelete={async (id) => {
           setBlocks((bs) => bs.filter((b) => b.id !== id));
           setBlockEdit(null);
+          try { await base44.entities.PlannerItems.delete(id); } catch { /* silent */ }
         }}
       />
     </div>
