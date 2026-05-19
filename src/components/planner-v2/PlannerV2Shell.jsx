@@ -604,16 +604,16 @@ export default function PlannerV2Shell({
       </Row>
 
       <Row label="Mind & insight">
-        <IntentionCard />
+        <IntentionCard user={user} />
         <AstraCard />
-        <MoodMentalHealthCard />
+        <MoodMentalHealthCard user={user} />
         <BreathworkCard />
         <CyclePsychologyCard />
       </Row>
 
       <Row label="Nourishment">
         <MacroTrackerCard />
-        <HydrationCard />
+        <HydrationCard user={user} />
         <AIMealPlanCard />
         <PhaseRecipesCard />
       </Row>
@@ -1804,14 +1804,31 @@ function WeekStripCard() {
 }
 
 // ── Intention + Astra ─────────────────────────────────────────────────────
-function IntentionCard() {
+function IntentionCard({ user }) {
   const key = `femwell_intention_${todayISO}`;
   const [val, setVal] = useState(() => { try { return localStorage.getItem(key) || ""; } catch { return ""; } });
   const [saved, setSaved] = useState(false);
-  function handleBlur() {
+  // Phase B5 — on blur we both keep the localStorage cache (so the
+  // textarea repopulates instantly on next render) AND create a
+  // JournalEntries row for today so the daily intention persists in the
+  // user's journal feed.
+  async function handleBlur() {
     try { localStorage.setItem(key, val); } catch {}
     setSaved(true);
     setTimeout(() => setSaved(false), 1800);
+    const trimmed = (val || "").trim();
+    if (trimmed && user?.id) {
+      try {
+        await base44.entities.JournalEntries.create({
+          user_id: user.id,
+          content_id: "daily_intention",
+          text: trimmed,
+          card_type: "intention",
+          session_date: todayISO,
+          created_at: new Date().toISOString(),
+        });
+      } catch { /* silent */ }
+    }
   }
   return (
     <article style={cardStyle}>
@@ -1852,11 +1869,43 @@ function AstraCard() {
 }
 
 // ── Mind & Insight extras (Mood / Breathwork / Cycle psych) ──────────────
-function MoodMentalHealthCard() {
-  const moodDots = [
+function MoodMentalHealthCard({ user }) {
+  // Phase B5 — 7-day mood dots now come from the last 30 DailyCheckins,
+  // indexed by date, capped to the 7-day window ending today. Missing days
+  // fall back to value 2 so the bar still renders (visual is unchanged).
+  const [moodDots, setMoodDots] = useState(() => [
     { v: 3, label: "T" }, { v: 4, label: "W" }, { v: 3, label: "T" },
     { v: 2, label: "F" }, { v: 2, label: "S" }, { v: 3, label: "S" }, { v: 3, label: "M" },
-  ];
+  ]);
+  useEffect(() => {
+    let cancelled = false;
+    if (!user?.id) return;
+    (async () => {
+      try {
+        const rows = await base44.entities.DailyCheckins.filter(
+          { user_id: user.id }, "-date", 30,
+        );
+        if (cancelled) return;
+        const byDate = new Map();
+        for (const r of rows || []) {
+          if (!r?.date) continue;
+          const v = r?.mood ?? r?.mood_score ?? null;
+          if (!byDate.has(r.date) && v != null) byDate.set(r.date, Number(v));
+        }
+        const out = [];
+        const dayInits = ["S", "M", "T", "W", "T", "F", "S"];
+        const todayD = new Date();
+        for (let i = 6; i >= 0; i--) {
+          const d = new Date(todayD);
+          d.setDate(todayD.getDate() - i);
+          const key = d.toISOString().split("T")[0];
+          out.push({ v: byDate.get(key) ?? 2, label: dayInits[d.getDay()] });
+        }
+        setMoodDots(out);
+      } catch { /* silent */ }
+    })();
+    return () => { cancelled = true; };
+  }, [user?.id]);
   const colorFor = (v) => v >= 4 ? C.sage : v >= 3 ? C.gold : C.blush;
   const [carrying, setCarrying] = useState("");
   const [relief, setRelief] = useState("");
@@ -2003,9 +2052,49 @@ function MacroTrackerCard() {
   );
 }
 
-function HydrationCard() {
-  const [glasses, setGlasses] = useState(5);
+// Phase B5 — HydrationLog wiring. Each tap of + creates a 250ml row;
+// minus subtracts locally only (deletion of the most-recent row would be
+// noisy and out of scope). Initial glasses derived from sum(amount_ml)/250
+// of today's HydrationLog rows.
+function HydrationCard({ user }) {
+  const [glasses, setGlasses] = useState(0);
   const target = 8;
+  useEffect(() => {
+    let cancelled = false;
+    if (!user?.id) return;
+    (async () => {
+      try {
+        const rows = await base44.entities.HydrationLog.filter(
+          { user_id: user.id, day_key: todayISO },
+          "-logged_at",
+          80,
+        );
+        if (cancelled) return;
+        const sumMl = (rows || []).reduce((acc, r) => {
+          if (typeof r?.amount_ml === "number") return acc + r.amount_ml;
+          if (typeof r?.glasses_count === "number") return acc + r.glasses_count * 250;
+          return acc;
+        }, 0);
+        setGlasses(Math.min(target, Math.round(sumMl / 250)));
+      } catch { /* silent */ }
+    })();
+    return () => { cancelled = true; };
+  }, [user?.id]);
+
+  async function bump(delta) {
+    setGlasses((g) => Math.max(0, Math.min(target, g + delta)));
+    if (delta > 0 && user?.id) {
+      try {
+        await base44.entities.HydrationLog.create({
+          user_id: user.id,
+          day_key: todayISO,
+          amount_ml: 250,
+          logged_at: new Date().toISOString(),
+        });
+      } catch { /* silent */ }
+    }
+  }
+
   return (
     <article style={cardStyle}>
       <span style={kicker}>HYDRATION</span>
@@ -2025,8 +2114,8 @@ function HydrationCard() {
         ))}
       </div>
       <div style={hydroBtnRow}>
-        <button onClick={() => setGlasses((g) => Math.max(0, g - 1))} style={hydroAdjustBtn}>−</button>
-        <button onClick={() => setGlasses((g) => Math.min(target, g + 1))} style={{ ...hydroAdjustBtn, background: C.espresso, color: C.cream }}>+</button>
+        <button onClick={() => bump(-1)} style={hydroAdjustBtn}>−</button>
+        <button onClick={() => bump(+1)} style={{ ...hydroAdjustBtn, background: C.espresso, color: C.cream }}>+</button>
       </div>
       <p style={tipText}>Luteal phase — aim for 2.5L, bloating can mask thirst.</p>
     </article>
