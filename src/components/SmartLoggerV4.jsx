@@ -669,7 +669,10 @@ function EngagementRail({ stage }) {
 
 // ─── Main SmartLoggerV4 ───────────────────────────────────────────────────────
 export default function SmartLoggerV4() {
-  const [open, setOpen] = useState(false);
+  // Demo state: the sheet renders open by default so the founder can see the
+  // full card deck immediately when the tab loads. The FAB still toggles
+  // visibility for interactive demos.
+  const [open, setOpen] = useState(true);
   const [stage, setStage] = useState('luteal');
   const [currentCard, setCurrentCard] = useState(0);
   const [completed, setCompleted] = useState(new Set());
@@ -745,85 +748,58 @@ export default function SmartLoggerV4() {
   };
 
   return (
-    <>
-      {/* FAB */}
-      {!open && (
-        <button
-          onClick={() => setOpen(true)}
-          style={{
-            position: 'fixed', bottom: 24, right: 20, width: 56, height: 56,
-            borderRadius: '50%', background: T.gold, border: 'none', cursor: 'pointer',
-            fontSize: 28, color: T.espresso, fontWeight: 300,
-            boxShadow: '0 4px 16px rgba(212,175,55,0.45)',
-            display: 'flex', alignItems: 'center', justifyContent: 'center',
-            zIndex: 1000, transition: 'transform 0.15s ease',
-          }}
-          onMouseEnter={e => e.currentTarget.style.transform = 'scale(1.08)'}
-          onMouseLeave={e => e.currentTarget.style.transform = 'scale(1)'}
-        >
-          +
-        </button>
-      )}
-
-      {/* Backdrop */}
-      {open && (
-        <div
-          onClick={() => setOpen(false)}
-          style={{
-            position: 'fixed', inset: 0, background: 'rgba(58,44,26,0.35)',
-            zIndex: 998, backdropFilter: 'blur(2px)',
-          }}
-        />
-      )}
-
-      {/* Bottom sheet */}
+    <div style={{
+      maxWidth: 480, margin: '0 auto', position: 'relative',
+      padding: '0 0 24px',
+    }}>
+      {/* Page-level stage selector (above the sheet) */}
       <div style={{
-        position: 'fixed', bottom: 0, left: 0, right: 0, zIndex: 999,
-        background: T.cream, borderRadius: '20px 20px 0 0',
-        boxShadow: '0 -4px 30px rgba(58,44,26,0.18)',
-        transform: open ? 'translateY(0)' : 'translateY(110%)',
-        transition: 'transform 0.38s cubic-bezier(0.32,0.72,0,1)',
-        maxHeight: '92vh', display: 'flex', flexDirection: 'column',
-        overflow: 'hidden',
+        display: 'flex', gap: 6, justifyContent: 'center',
+        padding: '14px 12px 16px', flexWrap: 'wrap',
       }}>
-        {/* Handle bar */}
-        <div style={{ display: 'flex', justifyContent: 'center', padding: '10px 0 4px' }}>
-          <div style={{ width: 36, height: 4, borderRadius: 2, background: 'rgba(58,44,26,0.2)' }} />
-        </div>
+        {STAGES.map(s => (
+          <button key={s.id} onClick={() => setStage(s.id)} style={{
+            padding: '9px 16px', borderRadius: 9999,
+            border: `1.5px solid ${stage === s.id ? T.espresso : T.border}`,
+            background: stage === s.id ? T.espresso : T.paperHi || '#FFFFFF',
+            color: stage === s.id ? T.cream : T.espresso,
+            fontSize: 12, fontWeight: 700, cursor: 'pointer', transition: 'all 0.18s ease',
+            letterSpacing: '0.02em',
+          }}>
+            {s.label}
+          </button>
+        ))}
+      </div>
 
-        {/* Header row */}
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '4px 16px 8px' }}>
-          <span style={{ fontSize: 15, fontWeight: 800, color: T.espresso }}>Daily Log</span>
-          <button onClick={() => setOpen(false)} style={{
-            background: 'none', border: 'none', cursor: 'pointer', fontSize: 20,
-            color: T.muted, lineHeight: 1, padding: '0 4px',
-          }}>×</button>
-        </div>
+      {/* Inline open-by-default sheet */}
+      {open ? (
+        <div style={{
+          background: T.cream, borderRadius: 20,
+          boxShadow: '0 8px 30px rgba(58,44,26,0.12)',
+          border: `1px solid ${T.border}`,
+          display: 'flex', flexDirection: 'column',
+          overflow: 'hidden',
+        }}>
+          {/* Header row */}
+          <div style={{
+            display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+            padding: '14px 16px 10px',
+            borderBottom: `1px solid ${T.border}`,
+          }}>
+            <span style={{ fontSize: 15, fontWeight: 800, color: T.espresso }}>Daily Log</span>
+            <button onClick={() => setOpen(false)} aria-label="Close sheet" style={{
+              background: 'none', border: 'none', cursor: 'pointer', fontSize: 20,
+              color: T.muted, lineHeight: 1, padding: '0 4px',
+            }}>×</button>
+          </div>
 
-        {/* Stage tabs */}
-        <div style={{ display: 'flex', gap: 6, padding: '0 16px 10px', overflowX: 'auto', scrollbarWidth: 'none' }}>
-          {STAGES.map(s => (
-            <button key={s.id} onClick={() => setStage(s.id)} style={{
-              flexShrink: 0, padding: '5px 12px', borderRadius: 16,
-              border: `1.5px solid ${stage === s.id ? T.espresso : T.border}`,
-              background: stage === s.id ? T.espresso : 'transparent',
-              color: stage === s.id ? T.cream : T.muted,
-              fontSize: 11, fontWeight: 600, cursor: 'pointer', transition: 'all 0.18s ease',
-            }}>
-              {s.label}
-            </button>
-          ))}
-        </div>
+          {/* Progress bar */}
+          <ProgressBar completed={completed} />
 
-        {/* Progress bar */}
-        <ProgressBar completed={completed} />
+          {/* Pill nav */}
+          <PillNav current={currentCard} completed={completed} onSelect={setCurrentCard} />
 
-        {/* Pill nav */}
-        <PillNav current={currentCard} completed={completed} onSelect={setCurrentCard} />
-
-        {/* Scrollable content area */}
-        <div style={{ flex: 1, overflowY: 'auto', overflowX: 'hidden', position: 'relative' }}>
-          {/* Card deck container */}
+          {/* Card deck */}
           <div
             style={{ position: 'relative', height: 380, margin: '12px 0 4px', overflow: 'hidden' }}
             onMouseDown={e => handleDragStart(e.clientX)}
@@ -861,10 +837,41 @@ export default function SmartLoggerV4() {
             <EngagementRail stage={stage} />
           </div>
         </div>
-      </div>
+      ) : (
+        // Closed state — show a small reopen hint with the FAB.
+        <div style={{
+          padding: '40px 20px', textAlign: 'center',
+          background: T.cream, borderRadius: 20,
+          border: `1px dashed ${T.border}`,
+          color: T.muted, fontSize: 13,
+        }}>
+          Sheet closed — tap the gold + to reopen.
+        </div>
+      )}
+
+      {/* FAB — kept for interactive reopen; sits inline at bottom-right of demo block */}
+      {!open && (
+        <button
+          onClick={() => setOpen(true)}
+          aria-label="Open Smart Logger"
+          style={{
+            position: 'absolute', bottom: 24, right: 16,
+            width: 56, height: 56, borderRadius: '50%',
+            background: T.gold, border: 'none', cursor: 'pointer',
+            fontSize: 28, color: T.espresso, fontWeight: 300,
+            boxShadow: '0 4px 16px rgba(212,175,55,0.45)',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            zIndex: 2, transition: 'transform 0.15s ease',
+          }}
+          onMouseEnter={e => e.currentTarget.style.transform = 'scale(1.08)'}
+          onMouseLeave={e => e.currentTarget.style.transform = 'scale(1)'}
+        >
+          +
+        </button>
+      )}
 
       {/* Toast */}
       <Toast message={toast.message} visible={toast.visible} />
-    </>
+    </div>
   );
 }
