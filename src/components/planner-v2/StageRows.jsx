@@ -22,6 +22,10 @@ import {
 } from "lucide-react";
 import Row from "./Row";
 import { C, PHASE_DEEP, card, kicker, cardTitle, cardSub } from "./tokens";
+import { openLogger } from "@/components/UniversalLogger";
+
+// Phase B follow-up: shared nav helper for "Talk to Jess" CTAs.
+function goToJess() { try { window.location.href = "/Jess"; } catch {} }
 
 // Shared helpers ─────────────────────────────────────────────────────────────
 
@@ -249,7 +253,7 @@ function AntenatalTrackerCard() {
           </li>
         ))}
       </ul>
-      <button style={ctaLink}><Plus size={11} /> Add appointment <ChevronRight size={11} /></button>
+      <button onClick={() => openLogger("event")} style={ctaLink}><Plus size={11} /> Add appointment <ChevronRight size={11} /></button>
     </article>
   );
 }
@@ -480,7 +484,7 @@ function PostpartumMoodCard() {
       <p style={{ ...cardSub, fontStyle: "italic" }}>
         You are not alone. Postnatal feelings can be heavy and changeable — that's real.
       </p>
-      <button style={ctaLink}><MessageCircle size={11} /> Talk to Jess <ChevronRight size={11} /></button>
+      <button onClick={goToJess} style={ctaLink}><MessageCircle size={11} /> Talk to Jess <ChevronRight size={11} /></button>
       <p style={{ fontSize: 10, color: C.muted, marginTop: 4 }}>PANDAS · APNI · Samaritans</p>
     </article>
   );
@@ -1116,7 +1120,7 @@ function MenoWellbeingCard() {
       }}>
         What's becoming clearer for you this week?
       </p>
-      <button style={ctaLink}><MessageCircle size={11} /> Talk to Jess <ChevronRight size={11} /></button>
+      <button onClick={goToJess} style={ctaLink}><MessageCircle size={11} /> Talk to Jess <ChevronRight size={11} /></button>
     </article>
   );
 }
@@ -1273,7 +1277,7 @@ function TalkAboutItCard({ phase }) {
         fontSize: 13, color: C.plum, margin: "6px 0 0", lineHeight: 1.5,
       }}>{PROMPTS[phase] || PROMPTS.follicular}</p>
       <p style={cardSub}>In this phase it's normal to feel a lot. You're not alone.</p>
-      <button style={ctaLink}><Sparkles size={11} /> Talk to Jess <ChevronRight size={11} /></button>
+      <button onClick={goToJess} style={ctaLink}><Sparkles size={11} /> Talk to Jess <ChevronRight size={11} /></button>
     </article>
   );
 }

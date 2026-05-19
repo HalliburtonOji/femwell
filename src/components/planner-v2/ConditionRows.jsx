@@ -23,6 +23,9 @@ import {
 import Row from "./Row";
 import { C, card, kicker, cardTitle, cardSub } from "./tokens";
 
+// Phase B follow-up: shared nav helper for "Talk to Jess" CTAs across condition cards.
+function goToJess() { try { window.location.href = "/Jess"; } catch {} }
+
 // ─── Shared atoms ────────────────────────────────────────────────────────────
 
 const ctaLink = {
@@ -247,7 +250,7 @@ function PmddJessCard() {
       <p style={{ ...cardSub, fontStyle: "italic" }}>
         PMDD affects 3–8% of menstruating people. The intensity is real biology.
       </p>
-      <button style={ctaLink}><MessageCircle size={11} /> Talk to Jess <ChevronRight size={11} /></button>
+      <button onClick={goToJess} style={ctaLink}><MessageCircle size={11} /> Talk to Jess <ChevronRight size={11} /></button>
       <ul style={{ listStyle: "none", padding: 0, margin: "4px 0 0", display: "flex", flexDirection: "column", gap: 3 }}>
         {["NAPS — naps.org.uk", "Vicious Cycle PMDD", "Mind 0300 123 3393"].map((r) => (
           <li key={r} style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 11.5, color: C.espresso }}>
@@ -547,7 +550,7 @@ function EndoJessCard() {
       <p style={{ ...cardSub, fontStyle: "italic", color: C.plum }}>
         Living with endometriosis is real work. The diagnostic delay was not your fault.
       </p>
-      <button style={ctaLink}><MessageCircle size={11} /> Talk to Jess <ChevronRight size={11} /></button>
+      <button onClick={goToJess} style={ctaLink}><MessageCircle size={11} /> Talk to Jess <ChevronRight size={11} /></button>
       <ul style={{ listStyle: "none", padding: 0, margin: "4px 0 0", display: "flex", flexDirection: "column", gap: 3 }}>
         <li style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 11.5, color: C.espresso }}>
           <BookOpen size={10} style={{ color: C.gold }} /> Endometriosis UK · 0808 808 2227
@@ -939,7 +942,7 @@ function AdenoJessCard() {
       <p style={{ ...cardSub, fontStyle: "italic", color: C.plum }}>
         Adenomyosis is under-diagnosed and under-treated. Your pain is real.
       </p>
-      <button style={ctaLink}><MessageCircle size={11} /> Talk to Jess <ChevronRight size={11} /></button>
+      <button onClick={goToJess} style={ctaLink}><MessageCircle size={11} /> Talk to Jess <ChevronRight size={11} /></button>
       <ul style={{ listStyle: "none", padding: 0, margin: "4px 0 0", display: "flex", flexDirection: "column", gap: 3 }}>
         <li style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 11.5, color: C.espresso }}>
           <BookOpen size={10} style={{ color: C.gold }} /> Adenomyosis Advice Association · UK

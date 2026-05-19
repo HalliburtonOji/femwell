@@ -1260,7 +1260,7 @@ function ListsSection({ user }) {
     <section style={listsShell} aria-label="My lists">
       <div style={listsHead}>
         <span style={kicker}>MY LISTS</span>
-        <button style={listsAddBtn}><Plus size={11} /> New list</button>
+        <button onClick={() => openLogger("task")} style={listsAddBtn}><Plus size={11} /> New list</button>
       </div>
       <div style={listsChipRow}>
         {lists.map((l) => {
@@ -1975,7 +1975,10 @@ function MoodMentalHealthCard({ user }) {
         <span style={miniLabel}>WHAT WOULD FEEL LIKE RELIEF?</span>
         <input type="text" value={relief} onChange={(e) => setRelief(e.target.value)} placeholder="…" style={miniInput} />
       </label>
-      <button style={talkJessBtn}>
+      <button
+        onClick={() => { try { window.location.href = "/Jess"; } catch {} }}
+        style={talkJessBtn}
+      >
         <Sparkles size={11} style={{ color: C.gold }} /> Talk to Jess <ChevronRight size={11} />
       </button>
     </article>
@@ -2056,7 +2059,10 @@ function CyclePsychologyCard() {
         ))}
       </ul>
       <p style={{ ...tipText, fontStyle: "italic" }}>This is normal. You are not broken.</p>
-      <button style={astraOpenBtn}>Learn more about your phase <ChevronRight size={12} /></button>
+      <button
+        onClick={() => { try { window.location.href = "/Lifestyle"; } catch {} }}
+        style={astraOpenBtn}
+      >Learn more about your phase <ChevronRight size={12} /></button>
     </article>
   );
 }
@@ -2092,7 +2098,7 @@ function MacroTrackerCard() {
           );
         })}
       </div>
-      <button style={astraOpenBtn}>Log a meal <ChevronRight size={12} /></button>
+      <button onClick={() => openLogger("meal")} style={astraOpenBtn}>Log a meal <ChevronRight size={12} /></button>
     </article>
   );
 }
@@ -2188,7 +2194,10 @@ function AIMealPlanCard() {
           </li>
         ))}
       </ul>
-      <button style={{ ...astraOpenBtn, color: C.goldDeep }}>
+      <button
+        onClick={() => openLogger("meal")}
+        style={{ ...astraOpenBtn, color: C.goldDeep }}
+      >
         <Sparkles size={11} /> Regenerate <ChevronRight size={11} />
       </button>
     </article>
@@ -2220,7 +2229,10 @@ function PhaseRecipesCard() {
           </li>
         ))}
       </ul>
-      <button style={astraOpenBtn}>View all recipes <ChevronRight size={12} /></button>
+      <button
+        onClick={() => { try { window.location.href = "/Nutrition"; } catch {} }}
+        style={astraOpenBtn}
+      >View all recipes <ChevronRight size={12} /></button>
     </article>
   );
 }
