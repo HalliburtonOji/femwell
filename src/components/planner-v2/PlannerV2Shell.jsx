@@ -109,8 +109,12 @@ const phaseInsights = {
   ovulatory:  { title: "Your peak window opened", body: "Visibility, bold asks, and creative output land easily this week. Spend the energy you have." },
   luteal:     { title: "Your habits eased back this week", body: "This luteal week might invite gentler rhythms and smaller wins; you might find rest and lower activity feel more nourishing, with options left to follow your own pace." },
 };
-const today = new Date();
-const todayISO = today.toISOString().split("T")[0];
+// Module-level `today` / `todayISO` are mutable so PlannerV2Shell can refresh
+// them on every render. The demo's many consumers read these as if they were
+// constants; this lets us keep that pattern while still reflecting the real
+// wall-clock date after midnight rolls over.
+let today = new Date();
+let todayISO = today.toISOString().split("T")[0];
 
 const initialLists = [
   { id: "work",     name: "Work",     colour: "#3A2C1A", tasks: [
@@ -438,8 +442,12 @@ export default function PlannerV2Shell({
   // immutable; only its properties are mutated (legal JS, and React doesn't
   // observe these so there's no concurrent-mode hazard).
   const realDisplayName = useMemo(() => {
+    // display_name is used WHOLE (no split), even if it contains a space.
     if (profileProp?.display_name) return profileProp.display_name;
-    if (user?.full_name) return String(user.full_name).split(" ")[0];
+    // full_name is also kept whole — splitting on space and taking [0] was
+    // wrong for names like "Test Halli" where the chosen given name is
+    // already the second token.
+    if (user?.full_name) return user.full_name;
     if (user?.email) {
       const prefix = String(user.email).split("@")[0];
       const words = prefix.split(/[0-9_.\-]+/).filter(Boolean);
@@ -448,14 +456,19 @@ export default function PlannerV2Shell({
     return profile.name; // mock fallback so visual stays intact
   }, [profileProp?.display_name, user?.full_name, user?.email]);
   const realCycleLen = profileProp?.cycle_avg_length || profile.cycleLen;
+  const realLifeStage = effectiveLifeStage; // already merged with DEV pill + props
 
-  // Side-effect on every render: keep the module-level mock in sync with
+  // Side-effect on every render: keep the module-level mocks in sync with
   // real values so downstream cards (Header, JessHero, MonthRibbon, etc.)
   // pick them up without any change.
   profile.name     = realDisplayName;
   profile.phase    = phase;
   profile.cycleDay = cycleDay;
   profile.cycleLen = realCycleLen;
+  // Refresh today/todayISO so any consumer that reads them after midnight
+  // sees the new date instead of the value frozen at app-load time.
+  today    = new Date();
+  todayISO = today.toISOString().split("T")[0];
 
   // ── Original demo state (unchanged from the approved 3,651-line reference) ──
   const [scheduleOpen, setScheduleOpen] = useState(false);
@@ -497,7 +510,7 @@ export default function PlannerV2Shell({
         />
       )}
 
-      <Header greeting={greeting} onOpenPlan={() => setPlanOpen(true)} />
+      <Header greeting={greeting} onOpenPlan={() => setPlanOpen(true)} lifeStage={realLifeStage} />
 
       {/* INSIGHTS hero — first horizontal slider on the page */}
       <InsightsHeroRow />
@@ -598,7 +611,27 @@ export default function PlannerV2Shell({
 }
 
 // ── Header ─────────────────────────────────────────────────────────────────
-function Header({ greeting, onOpenPlan }) {
+// Phase B1 fix: date + stage-aware subline.
+//   • Date is computed from a fresh new Date() each render — the demo's
+//     module-level `today` const was evaluated once at app load and
+//     could drift past midnight.
+//   • For pregnancy stages (pregnant-t1 / t2 / t3) we render
+//     "Pregnant · Trimester N" instead of "Luteal Day 25".
+//   • Other stages keep the original cycle-day format.
+function Header({ greeting, onOpenPlan, lifeStage }) {
+  const now = new Date();
+  const dateLabel = now.toLocaleDateString(undefined, {
+    weekday: "long", day: "numeric", month: "long",
+  });
+  const stageLower = String(lifeStage || "").toLowerCase();
+  const isPregnant = stageLower.startsWith("pregnant");
+  const trimester  = stageLower.endsWith("-t1") ? "1"
+                   : stageLower.endsWith("-t2") ? "2"
+                   : stageLower.endsWith("-t3") ? "3"
+                   : null;
+  const stageLine = isPregnant
+    ? `Pregnant · Trimester ${trimester || "—"}`
+    : `${profile.phase[0].toUpperCase() + profile.phase.slice(1)} Day ${profile.cycleDay}`;
   return (
     <div style={headerStyle}>
       <div style={greetingRow}>
@@ -607,7 +640,7 @@ function Header({ greeting, onOpenPlan }) {
       </div>
       <div style={headerSubRow}>
         <span style={greetingSub}>
-          Monday 18 May · {profile.phase[0].toUpperCase() + profile.phase.slice(1)} Day {profile.cycleDay}
+          {dateLabel} · {stageLine}
         </span>
         <button onClick={onOpenPlan} style={planPillBtn}>
           <CalendarCheck size={11} /> Plan a day <ChevronDown size={11} />
