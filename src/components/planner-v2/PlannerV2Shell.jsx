@@ -625,10 +625,12 @@ function Header({ greeting, onOpenPlan, lifeStage }) {
   });
   const stageLower = String(lifeStage || "").toLowerCase();
   const isPregnant = stageLower.startsWith("pregnant");
-  const trimester  = stageLower.endsWith("-t1") ? "1"
-                   : stageLower.endsWith("-t2") ? "2"
-                   : stageLower.endsWith("-t3") ? "3"
-                   : null;
+  // Extract the trimester digit directly from the string so the mapping is
+  // unambiguous: "pregnant-t1" → "1", "pregnant_t2" → "2", "pregnant-t3" → "3".
+  // (The earlier endsWith chain was correct, but a regex makes it impossible
+  // for off-by-one or separator variations to slip through.)
+  const trimMatch  = stageLower.match(/t([123])\b/);
+  const trimester  = trimMatch ? trimMatch[1] : null;
   const stageLine = isPregnant
     ? `Pregnant · Trimester ${trimester || "—"}`
     : `${profile.phase[0].toUpperCase() + profile.phase.slice(1)} Day ${profile.cycleDay}`;
