@@ -1,28 +1,39 @@
 // ─────────────────────────────────────────────────────────────────────────────
-// SmartLoggerDemo v2 — redesigned with founder feedback
+// SmartLoggerDemo v3 — speed & inline-everything
 //
-// What changed from v1:
-//   • 4 grouped sections (Body · Nourish · Health · Mind & Life) instead of a
-//     flat 14-tile grid
-//   • Added Period (Body), Drinks (Nourish), Caffeine (Nourish), Weight,
-//     Sleep, Appointment, Activity → 17 log types total
-//   • Suggestions are a horizontal scroll of compact ~120px pill cards
-//   • New "From across your app" engagement rail — 4 dark gradient cards
-//     (Podcast · Reading · Journal Prompt · Jess Tip), all stage-aware
-//   • Lighter overall layout — one-line sheet header, smaller chips
+// Big v3 changes from v2:
+//   • FAB hold-to-radial: press-and-hold the gold + for 400ms → 5 icons fan
+//     out around it (Mood · Water · Meds · Meal · Period). Tap = instant
+//     action. Regular tap (under 400ms) = opens the full sheet. FAB rotates
+//     45° when the dial is open.
+//   • Inside the sheet there is a top "Quick log" rail of one-tap pills
+//     (Water · Meds · Period · Caffeine · Drinks). Each pill logs in place
+//     and turns sage green with a "✓" confirmation. No screens.
+//   • The smart suggestion is ALREADY expanded inline — 5 face buttons live
+//     directly in the card. Tap a face → influence tags appear → Save in
+//     place. After save the card transforms to a "Logged ✓" state.
+//   • Jess insight is an inline panel that slides in below the mood card in
+//     the SAME sheet — no overlay, no push navigation.
+//   • Log types live in 4 collapsed accordion groups at the bottom of the
+//     sheet (Body · Nourish · Health · Mind & Life). Tap a group → chips
+//     expand inline.
+//   • Engagement rail (Podcast / Reading / Prompt / Jess Tip) is unchanged
+//     from v2 — stage-aware, dark gradient cards.
 //
-// Same interactions: FAB tap, mood log (5-face + tags + save), Jess insight
-// card, stage switching, walkthrough buttons.
+// Tap counts:
+//   • Old v2:  FAB → sheet → tile → sub-screen → pick → save  = 5 taps
+//   • New v3:  FAB → tap face inline → save                    = 2 taps
+//     Speed-dial water: hold FAB → tap 💧                       = 1 hold
 // ─────────────────────────────────────────────────────────────────────────────
 
-import { useState } from "react";
+import { useState, useRef, useEffect } from "react";
 import {
-  Plus, X, ChevronRight, Sparkles, Check,
+  Plus, X, ChevronRight, ChevronDown, ChevronUp, Sparkles, Check,
   Smile, Frown, Meh, Heart, Zap, Moon, Sun, Droplets,
   Footprints, ListChecks, Pill, Utensils, CalendarClock,
   StickyNote, Stethoscope, BookOpen, Activity, FileText,
-  Thermometer, Camera, Mic, Coffee, Wine, Scale, Bed,
-  Headphones, MessageCircle, Pen,
+  Thermometer, Coffee, Wine, Scale, Bed,
+  Headphones, Pen,
 } from "lucide-react";
 
 const C = {
@@ -32,6 +43,7 @@ const C = {
   espresso: "#3A2C1A",
   blush:    "#E8B4B8",
   sage:     "#8FAF8F",
+  sageDeep: "#6F8B6F",
   muted:    "#9B8B7A",
   gold:     "#D4AF37",
   goldDeep: "#A6862B",
@@ -56,24 +68,27 @@ const STAGES = {
     moodRow: { value: 2, label: "Tender", color: C.blush },
     bodyRow: { items: ["Cramps · mild", "Bloating", "Tired"] },
     stageRow: { title: "Luteal · D25", sub: "Period predicted in 3 days · 84%" },
-    suggestions: [
-      { id: "mood", label: "Mood",          sub: "Not logged today",   Icon: Smile,  tone: C.rose, urgent: true },
-      { id: "supp", label: "Iron supp",     sub: "Missed 4 days",      Icon: Pill,   tone: C.blush, urgent: true },
-      { id: "meal", label: "Log dinner",    sub: "Most meals missing", Icon: Utensils, tone: C.gold },
-      { id: "note", label: "Wind-down",     sub: "Tonight's note",     Icon: StickyNote, tone: C.muted },
-    ],
+    smartCard: {
+      kicker: "NOT LOGGED TODAY",
+      question: "How's your mood right now?",
+      sub: "Late luteal · mood can amplify here. Capture it in one tap.",
+    },
+    savedMessage: {
+      headline: "Mood logged — Low 😔",
+      sub: "Synced to Planner · Pulse · Jess",
+    },
     insight: {
       kicker: "JESS PATTERN INSIGHT",
       body: "You've logged low mood 4 days in a row — all in your luteal phase. This could be linked to the iron supplement you've been missing.",
-      cta: "Yes, add reminder",
-      confirmation: "Iron reminder added to evenings",
+      cta: "Add iron reminder",
+      confirmation: "Iron reminder added ✓",
       confirmationSub: "Daily nudge at 8pm during your luteal week",
     },
     rail: [
-      { type: "podcast", emoji: "🎧", typeLabel: "PODCAST",      title: "PCOS & Perimenopause with Dr Sara", meta: "42 min · Saved",         cta: "Play" },
-      { type: "reading", emoji: "📖", typeLabel: "READING",      title: "Iron & the luteal phase",            meta: "6 min · The Atlas",      cta: "Read" },
+      { type: "podcast", emoji: "🎧", typeLabel: "PODCAST",       title: "PCOS & Perimenopause with Dr Sara", meta: "42 min · Saved",        cta: "Play" },
+      { type: "reading", emoji: "📖", typeLabel: "READING",       title: "Iron & the luteal phase",            meta: "6 min · The Atlas",     cta: "Read" },
       { type: "prompt",  emoji: "✍️", typeLabel: "JOURNAL PROMPT", title: "What does your body need tonight?", meta: "Phase prompt · Luteal", cta: "Write" },
-      { type: "jess",    emoji: "✨", typeLabel: "JESS TIP",      title: "Magnesium before bed can ease luteal cramps", meta: "30 sec read", cta: "Tell me more" },
+      { type: "jess",    emoji: "✨", typeLabel: "JESS TIP",       title: "Magnesium before bed can ease luteal cramps", meta: "30 sec read", cta: "Tell me more" },
     ],
   },
   pregnant: {
@@ -90,18 +105,21 @@ const STAGES = {
     moodRow: { value: 4, label: "Bright", color: C.sage },
     bodyRow: { items: ["No nausea today", "Back twinges", "Movements ↑"] },
     stageRow: { title: "Week 22 · T2", sub: "Anomaly scan was at 20w · all clear" },
-    suggestions: [
-      { id: "kicks",  label: "Kick counter", sub: "Start 1-hr window", Icon: Heart,         tone: C.rose,  urgent: true },
-      { id: "nausea", label: "Nausea",       sub: "Track the change",  Icon: Stethoscope,   tone: C.blush },
-      { id: "appt",   label: "Antenatal",    sub: "Add 24w check",     Icon: CalendarClock, tone: C.sage },
-      { id: "vits",   label: "Prenatal",     sub: "Folate · D",        Icon: Pill,          tone: C.gold },
-    ],
+    smartCard: {
+      kicker: "MORNING CHECK-IN",
+      question: "How's your mood right now?",
+      sub: "T2 mood often steadies — track the shift in one tap.",
+    },
+    savedMessage: {
+      headline: "Mood logged — Bright 🙂",
+      sub: "Synced to Pregnancy Diary · Jess",
+    },
     insight: {
       kicker: "JESS PATTERN INSIGHT",
       body: "You've logged movements 5 days straight — great consistency! Kicks are most noticeable after meals in T2.",
-      cta: "Yes, set reminders",
-      confirmation: "Kick logging reminders set for after meals",
-      confirmationSub: "Three gentle nudges a day — breakfast, lunch, dinner",
+      cta: "Set kick reminders",
+      confirmation: "Kick reminders set ✓",
+      confirmationSub: "Three gentle nudges after meals",
     },
     rail: [
       { type: "podcast", emoji: "🎧", typeLabel: "PODCAST",        title: "Second trimester energy slumps explained", meta: "38 min · Mother & Baby", cta: "Play" },
@@ -124,17 +142,20 @@ const STAGES = {
     moodRow: { value: 3, label: "Steady", color: C.gold },
     bodyRow: { items: ["3 hot flashes today", "Sleep 5h 40m", "Joint ache"] },
     stageRow: { title: "Peri · since 2024", sub: "GP export ready · 12 days of data" },
-    suggestions: [
-      { id: "flash", label: "Hot flash",  sub: "3 already today",       Icon: Thermometer, tone: C.rose,  urgent: true },
-      { id: "sleep", label: "Sleep",      sub: "Last night rough",      Icon: Moon,        tone: C.plum },
-      { id: "hrt",   label: "HRT",        sub: "8pm dose due",          Icon: Pill,        tone: C.blush },
-      { id: "mood",  label: "Mood",       sub: "Stress + mood link",    Icon: Smile,       tone: C.gold },
-    ],
+    smartCard: {
+      kicker: "AFTERNOON CHECK-IN",
+      question: "How's your mood right now?",
+      sub: "Stress + heat can lift mood swings — log the moment.",
+    },
+    savedMessage: {
+      headline: "Mood logged — Steady 😐",
+      sub: "Synced to Care Bridge · GP export",
+    },
     insight: {
       kicker: "JESS PATTERN INSIGHT",
       body: "You've logged 3+ hot flashes daily for 12 days. This is building a strong picture for your GP — your Doctor Export is ready to review.",
       cta: "View GP export",
-      confirmation: "Opening Doctor Export…",
+      confirmation: "Opening Doctor Export ✓",
       confirmationSub: "12-day flash log + sleep + HRT timeline · PDF ready",
     },
     rail: [
@@ -158,17 +179,20 @@ const STAGES = {
     moodRow: { value: 4, label: "Hopeful", color: C.sage },
     bodyRow: { items: ["BBT 36.7°C", "Egg-white mucus", "Energy ↑"] },
     stageRow: { title: "TTC · Cycle 3", sub: "Ovulation predicted today · LH+" },
-    suggestions: [
-      { id: "bbt",  label: "BBT",          sub: "Morning reading",      Icon: Thermometer, tone: C.rose, urgent: true },
-      { id: "cm",   label: "Mucus",        sub: "Texture + clarity",    Icon: Droplets,    tone: "#60B4FA" },
-      { id: "mood", label: "Mood",         sub: "Daily check-in",       Icon: Zap,         tone: C.goldDeep },
-      { id: "vits", label: "Prenatal",     sub: "Folate + iron",        Icon: Pill,        tone: C.gold },
-    ],
+    smartCard: {
+      kicker: "FERTILE WINDOW · D14",
+      question: "How's your mood right now?",
+      sub: "Stress lifts ovulation. A quick read keeps your cycle picture clean.",
+    },
+    savedMessage: {
+      headline: "Mood logged — Hopeful 🙂",
+      sub: "Synced to Cycle · Fertility map · Jess",
+    },
     insight: {
       kicker: "JESS PATTERN INSIGHT",
       body: "Your BBT pattern over 3 cycles shows a clear thermal shift around D14. Today and tomorrow are your highest-probability days.",
-      cta: "See my fertility summary",
-      confirmation: "Fertility summary ready in Jess",
+      cta: "See fertility summary",
+      confirmation: "Fertility summary ready ✓",
       confirmationSub: "3-cycle BBT + LH chart + window prediction",
     },
     rail: [
@@ -180,11 +204,46 @@ const STAGES = {
   },
 };
 
-// ── Grouped log types ────────────────────────────────────────────────────────
+// ── Speed-dial radial icons (around the FAB) ─────────────────────────────────
+// Five icons fan out across a 90° arc from straight-up (90°) to straight-left (180°).
+const RADIAL = [
+  { id: "mood",   emoji: "😊", label: "Mood",   Icon: Smile,    angle: 90  },
+  { id: "water",  emoji: "💧", label: "Water",  Icon: Droplets, angle: 112.5 },
+  { id: "meds",   emoji: "💊", label: "Meds",   Icon: Pill,     angle: 135 },
+  { id: "meal",   emoji: "🍽️", label: "Meal",   Icon: Utensils, angle: 157.5 },
+  { id: "period", emoji: "🔴", label: "Period", Icon: Heart,    angle: 180 },
+];
+const RADIAL_RADIUS = 100;
+
+// ── One-tap rail inside the sheet ────────────────────────────────────────────
+// Each item shows a fresh state (untapped) and a logged state (tapped).
+const QUICK_DEFS = [
+  {
+    id: "water", emoji: "💧", baseLabel: "+Water", Icon: Droplets, accent: "#60B4FA", startCount: 4,
+    loggedText: (count) => `${count} glasses ✓`,
+  },
+  {
+    id: "meds", emoji: "💊", baseLabel: "Meds", Icon: Pill, accent: C.blush,
+    loggedText: () => "Taken ✓",
+  },
+  {
+    id: "period", emoji: "🔴", baseLabel: "Period", Icon: Heart, accent: C.rose,
+    loggedText: () => "Logged ✓",
+  },
+  {
+    id: "caffeine", emoji: "☕", baseLabel: "+Caffeine", Icon: Coffee, accent: C.espresso, startCount: 1,
+    loggedText: (count) => `${count} cups ✓`,
+  },
+  {
+    id: "drinks", emoji: "🍷", baseLabel: "Drinks", Icon: Wine, accent: C.plum,
+    loggedText: () => "Logged ✓",
+  },
+];
+
+// ── Grouped log types (accordions at bottom of sheet) ────────────────────────
 const LOG_GROUPS = [
   {
-    id: "body",
-    label: "Body",
+    id: "body", label: "Body",
     items: [
       { id: "mood",    label: "Mood",     Icon: Smile,       tone: C.rose },
       { id: "energy",  label: "Energy",   Icon: Zap,         tone: C.goldDeep },
@@ -194,8 +253,7 @@ const LOG_GROUPS = [
     ],
   },
   {
-    id: "nourish",
-    label: "Nourish",
+    id: "nourish", label: "Nourish",
     items: [
       { id: "meal",     label: "Meal",     Icon: Utensils, tone: C.gold },
       { id: "water",    label: "Water",    Icon: Droplets, tone: "#60B4FA" },
@@ -204,8 +262,7 @@ const LOG_GROUPS = [
     ],
   },
   {
-    id: "health",
-    label: "Health",
+    id: "health", label: "Health",
     items: [
       { id: "med",   label: "Medication",  Icon: Pill,          tone: C.blush },
       { id: "supp",  label: "Supplement",  Icon: Pill,          tone: C.sage },
@@ -214,8 +271,7 @@ const LOG_GROUPS = [
     ],
   },
   {
-    id: "mindlife",
-    label: "Mind & Life",
+    id: "mindlife", label: "Mind & Life",
     items: [
       { id: "journal",  label: "Journal",  Icon: StickyNote, tone: C.muted },
       { id: "ritual",   label: "Ritual",   Icon: Sparkles,   tone: C.gold },
@@ -235,12 +291,11 @@ const MOOD_FACES = [
 
 const INFLUENCES = ["Sleep", "Hormones", "Iron", "Stress", "Connection", "Movement", "Sun", "Caffeine"];
 
-// ── Rail card colors (dark gradients, consistent across stages) ──────────────
 const RAIL_COLOURS = {
-  podcast: { bg: "linear-gradient(160deg, #3D2E5C 0%, #1F1733 100%)", glyph: Headphones,    accent: "#B79EE8" },
-  reading: { bg: "linear-gradient(160deg, #1F3A5C 0%, #0E1A33 100%)", glyph: BookOpen,      accent: "#88B0E8" },
-  prompt:  { bg: "linear-gradient(160deg, #1F3D2E 0%, #0E1F17 100%)", glyph: Pen,           accent: "#A2D8B5" },
-  jess:    { bg: "linear-gradient(160deg, #4A3520 0%, #1A1410 100%)", glyph: Sparkles,      accent: C.gold },
+  podcast: { bg: "linear-gradient(160deg, #3D2E5C 0%, #1F1733 100%)", glyph: Headphones, accent: "#B79EE8" },
+  reading: { bg: "linear-gradient(160deg, #1F3A5C 0%, #0E1A33 100%)", glyph: BookOpen,   accent: "#88B0E8" },
+  prompt:  { bg: "linear-gradient(160deg, #1F3D2E 0%, #0E1F17 100%)", glyph: Pen,        accent: "#A2D8B5" },
+  jess:    { bg: "linear-gradient(160deg, #4A3520 0%, #1A1410 100%)", glyph: Sparkles,   accent: C.gold },
 };
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -248,30 +303,21 @@ const RAIL_COLOURS = {
 // ─────────────────────────────────────────────────────────────────────────────
 export default function SmartLoggerDemo() {
   const [stage, setStage] = useState("luteal");
-  const [step, setStep]   = useState("home"); // home | logger | mood | insight | accepted
-  const [mood, setMood]   = useState(null);
-  const [influences, setInfluences] = useState([]);
-  const [note, setNote]   = useState("");
+  const [sheetOpen, setSheetOpen] = useState(false);
 
-  const S = STAGES[stage];
+  // Walkthrough only — drives the demo through a canonical path.
+  const [walkStep, setWalkStep] = useState("home");
 
   function changeStage(nextId) {
     setStage(nextId);
-    setStep("home");
-    setMood(null);
-    setInfluences([]);
-    setNote("");
+    setSheetOpen(false);
+    setWalkStep("home");
   }
-  function resetTo(s) {
-    setStep(s);
-    if (s === "home" || s === "logger") {
-      setMood(null);
-      setInfluences([]);
-      setNote("");
-    }
-  }
-  function toggleInfluence(t) {
-    setInfluences((prev) => prev.includes(t) ? prev.filter((x) => x !== t) : [...prev, t]);
+
+  function applyWalkStep(s) {
+    setWalkStep(s);
+    if (s === "home") setSheetOpen(false);
+    else setSheetOpen(true);
   }
 
   return (
@@ -279,14 +325,14 @@ export default function SmartLoggerDemo() {
       background: C.ink, minHeight: "100vh",
       padding: "32px 16px 80px",
       fontFamily: "'Inter', system-ui, sans-serif",
-      color: "#F4EDDB",
+      color: C.cream,
     }}>
       {/* Headline */}
       <div style={{ maxWidth: 720, margin: "0 auto", textAlign: "center" }}>
         <div style={{
           fontSize: 11, letterSpacing: "0.22em", fontWeight: 700,
           color: "rgba(244,237,219,0.55)", textTransform: "uppercase",
-        }}>Design Lab · Concept Demo · v2</div>
+        }}>Design Lab · Concept Demo · v3</div>
         <h1 style={{
           fontFamily: "'Fraunces', Georgia, serif",
           fontSize: 32, fontWeight: 500, color: C.cream,
@@ -294,10 +340,10 @@ export default function SmartLoggerDemo() {
         }}>Smart Logger</h1>
         <p style={{
           fontSize: 14, color: "rgba(244,237,219,0.7)", lineHeight: 1.55,
-          maxWidth: 540, margin: "0 auto",
+          maxWidth: 560, margin: "0 auto",
         }}>
-          Compact suggestions, grouped log types, and an engagement rail that pulls in
-          what's relevant to your stage — podcast, reading, prompt, Jess tip.
+          Speed-first. Hold the FAB for a radial speed-dial · one-tap quick logs ·
+          mood saves inline · Jess insight appears below — never a sub-screen.
         </p>
       </div>
 
@@ -319,7 +365,6 @@ export default function SmartLoggerDemo() {
                 color: active ? C.cream : "rgba(244,237,219,0.7)",
                 fontSize: 12.5, fontWeight: 700, cursor: "pointer",
                 letterSpacing: "0.02em",
-                transition: "all .2s ease",
               }}
             >{st.tabLabel}</button>
           );
@@ -328,60 +373,110 @@ export default function SmartLoggerDemo() {
 
       {/* Phone */}
       <div style={{ marginTop: 32, display: "flex", justifyContent: "center" }}>
-        <Phone S={S} step={step} mood={mood} influences={influences} note={note}
-          onOpenLogger={() => setStep("logger")}
-          onCloseLogger={() => setStep("home")}
-          onPickMood={() => setStep("mood")}
-          onSaveMood={() => setStep("insight")}
-          onAcceptInsight={() => setStep("accepted")}
-          onDismissInsight={() => setStep("home")}
-          setMood={setMood}
-          toggleInfluence={toggleInfluence}
-          setNote={setNote}
+        <Phone
+          stageId={stage}
+          sheetOpen={sheetOpen}
+          setSheetOpen={setSheetOpen}
+          walkStep={walkStep}
+          setWalkStep={setWalkStep}
         />
       </div>
 
       {/* Walkthrough */}
-      <Walkthrough step={step} onStep={resetTo} />
+      <Walkthrough step={walkStep} onStep={applyWalkStep} />
 
-      {/* Footnote */}
       <p style={{
-        textAlign: "center", maxWidth: 540, margin: "32px auto 0",
+        textAlign: "center", maxWidth: 560, margin: "32px auto 0",
         fontSize: 11.5, color: "rgba(244,237,219,0.45)", lineHeight: 1.6,
         fontStyle: "italic",
       }}>
-        Concept prototype — interactions are visual only. Swipe the engagement rail at
-        the bottom of the sheet, and switch stages to see how every section rebuilds.
+        Concept prototype — interactions are visual only. Hold the FAB on the phone
+        for ~400ms to see the radial speed dial. Switch stages to rebuild every
+        stage-aware section.
       </p>
     </div>
   );
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
-// Phone — 390px mockup with all step layers
+// Phone — the 390px mockup
 // ─────────────────────────────────────────────────────────────────────────────
-function Phone({
-  S, step, mood, influences, note,
-  onOpenLogger, onCloseLogger, onPickMood, onSaveMood,
-  onAcceptInsight, onDismissInsight,
-  setMood, toggleInfluence, setNote,
-}) {
+function Phone({ stageId, sheetOpen, setSheetOpen, walkStep, setWalkStep }) {
+  const S = STAGES[stageId];
+
+  // FAB hold-to-radial state
+  const [radialOpen, setRadialOpen] = useState(false);
+  const holdTimer = useRef(null);
+  const triggeredHoldRef = useRef(false);
+
+  function startHold(e) {
+    if (e && e.preventDefault) e.preventDefault();
+    triggeredHoldRef.current = false;
+    holdTimer.current = setTimeout(() => {
+      triggeredHoldRef.current = true;
+      setRadialOpen(true);
+      holdTimer.current = null;
+    }, 400);
+  }
+  function endHold() {
+    if (holdTimer.current) {
+      clearTimeout(holdTimer.current);
+      holdTimer.current = null;
+      if (!radialOpen && !triggeredHoldRef.current) {
+        setSheetOpen(true);
+        setWalkStep("sheet");
+      }
+    }
+  }
+  function cancelHold() {
+    if (holdTimer.current) {
+      clearTimeout(holdTimer.current);
+      holdTimer.current = null;
+    }
+  }
+  useEffect(() => () => { if (holdTimer.current) clearTimeout(holdTimer.current); }, []);
+
+  // Reset quick-log state whenever the sheet closes so the demo is replayable
+  // from any starting walk step.
+  const [sheetKey, setSheetKey] = useState(0);
+  useEffect(() => { if (!sheetOpen) setSheetKey((k) => k + 1); }, [sheetOpen]);
+
+  // Walkthrough → quick-log states are driven from inside LoggerSheet, but
+  // we tell the sheet which walk step we're on via prop.
+
+  // Radial icon tap handler
+  function onRadialPick(id) {
+    setRadialOpen(false);
+    if (id === "mood" || id === "meal") {
+      setSheetOpen(true);
+      setWalkStep("sheet");
+    }
+    // water / meds / period → silent instant log (animation flashes in the
+    // FAB to acknowledge — see the highlight below).
+    flashFab(id);
+  }
+
+  // Brief FAB highlight after an instant radial action
+  const [fabFlash, setFabFlash] = useState(null);
+  function flashFab(id) {
+    setFabFlash(id);
+    setTimeout(() => setFabFlash(null), 1100);
+  }
+
   return (
     <div style={{
       width: 390, minHeight: 780, position: "relative",
-      borderRadius: 40, padding: "0",
+      borderRadius: 40,
       background: C.cream,
       boxShadow: "0 30px 80px rgba(0,0,0,0.55), 0 0 0 8px #1A1410, 0 0 0 9px rgba(212,175,55,0.18)",
       overflow: "hidden",
       fontFamily: "'Inter', system-ui, sans-serif",
     }}>
-      {/* Notch */}
       <div style={{
         position: "absolute", top: 8, left: "50%", transform: "translateX(-50%)",
         width: 110, height: 26, borderRadius: 14, background: "#1A1410", zIndex: 3,
       }} />
 
-      {/* Status bar */}
       <div style={{
         padding: "16px 22px 6px", display: "flex", justifyContent: "space-between",
         fontSize: 12, fontWeight: 600, color: C.espresso, position: "relative", zIndex: 4,
@@ -392,38 +487,108 @@ function Phone({
 
       <PlannerBg S={S} />
 
+      {/* Radial backdrop (closes the dial on tap) */}
+      {radialOpen && (
+        <div onClick={() => setRadialOpen(false)} style={{
+          position: "absolute", inset: 0, zIndex: 5,
+          background: "rgba(26,20,16,0.25)",
+        }} />
+      )}
+
+      {/* Radial speed-dial icons */}
+      {RADIAL.map((r) => {
+        const rad = (r.angle * Math.PI) / 180;
+        const dx = -Math.cos(rad) * RADIAL_RADIUS;
+        const dy = -Math.sin(rad) * RADIAL_RADIUS;
+        const finalRight = 52 - dx;      // 52 = FAB right (22) + half (30) approx
+        const finalBottom = 52 - dy;
+        return (
+          <div key={r.id} style={{
+            position: "absolute",
+            right: radialOpen ? finalRight - 22 : 22,
+            bottom: radialOpen ? finalBottom - 22 : 22,
+            width: 44, height: 44, zIndex: 6,
+            transform: radialOpen ? "scale(1)" : "scale(0.4)",
+            opacity: radialOpen ? 1 : 0,
+            transition: "all .26s cubic-bezier(.2,.7,.3,1.2)",
+            pointerEvents: radialOpen ? "auto" : "none",
+          }}>
+            <button
+              onClick={() => onRadialPick(r.id)}
+              aria-label={r.label}
+              style={{
+                width: 44, height: 44, borderRadius: "50%",
+                background: C.paperHi, color: C.espresso,
+                border: "none", cursor: "pointer",
+                boxShadow: "0 8px 18px rgba(0,0,0,0.25)",
+                display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center",
+                fontSize: 18,
+              }}
+            >
+              <span style={{ lineHeight: 1 }}>{r.emoji}</span>
+            </button>
+            <div style={{
+              position: "absolute", top: 46, left: "50%", transform: "translateX(-50%)",
+              fontSize: 9.5, fontWeight: 700, color: C.cream, letterSpacing: "0.02em",
+              textShadow: "0 1px 2px rgba(0,0,0,0.6)", whiteSpace: "nowrap",
+            }}>{r.label}</div>
+          </div>
+        );
+      })}
+
       {/* Gold FAB */}
-      {step === "home" && (
-        <button onClick={onOpenLogger} aria-label="Smart logger" style={{
-          position: "absolute", bottom: 22, right: 22, zIndex: 4,
+      <button
+        aria-label="Smart logger"
+        onMouseDown={startHold}
+        onMouseUp={endHold}
+        onMouseLeave={cancelHold}
+        onTouchStart={startHold}
+        onTouchEnd={endHold}
+        onTouchCancel={cancelHold}
+        onContextMenu={(e) => e.preventDefault()}
+        style={{
+          position: "absolute", bottom: 22, right: 22, zIndex: 7,
           width: 60, height: 60, borderRadius: "50%",
-          background: `linear-gradient(145deg, ${C.gold}, ${C.goldDeep})`,
+          background: fabFlash ? `linear-gradient(145deg, ${C.sage}, ${C.sageDeep})` : `linear-gradient(145deg, ${C.gold}, ${C.goldDeep})`,
           border: "none", cursor: "pointer",
           boxShadow: "0 12px 28px rgba(212,175,55,0.55), 0 0 0 4px rgba(244,237,219,0.85)",
           display: "flex", alignItems: "center", justifyContent: "center",
+          transform: radialOpen ? "rotate(45deg)" : "rotate(0deg)",
+          transition: "all .25s ease",
+          touchAction: "none", userSelect: "none",
+        }}
+      >
+        {fabFlash ? <Check size={26} style={{ color: C.cream }} strokeWidth={3} />
+                  : <Plus size={28} style={{ color: C.cream }} strokeWidth={2.6} />}
+      </button>
+
+      {/* Instant-log toast */}
+      {fabFlash && (
+        <div style={{
+          position: "absolute", bottom: 100, right: 22, zIndex: 7,
+          padding: "8px 14px", borderRadius: 9999,
+          background: C.espresso, color: C.cream,
+          fontSize: 11.5, fontWeight: 700, letterSpacing: "0.02em",
+          boxShadow: "0 8px 18px rgba(0,0,0,0.35)",
+          animation: "fwToastIn .2s ease",
         }}>
-          <Plus size={28} style={{ color: C.cream }} strokeWidth={2.6} />
-        </button>
+          <style>{`@keyframes fwToastIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }`}</style>
+          {fabFlash === "water"  && "+1 glass ✓"}
+          {fabFlash === "meds"   && "Meds taken ✓"}
+          {fabFlash === "period" && "Period logged ✓"}
+          {fabFlash === "mood"   && "Opening mood…"}
+          {fabFlash === "meal"   && "Opening meal…"}
+        </div>
       )}
 
-      {step === "logger" && (
-        <LoggerSheet S={S} onClose={onCloseLogger} onPickMood={onPickMood} />
-      )}
-      {step === "mood" && (
-        <MoodSheet
+      {sheetOpen && (
+        <LoggerSheet
+          key={sheetKey}
           S={S}
-          mood={mood} setMood={setMood}
-          influences={influences} toggleInfluence={toggleInfluence}
-          note={note} setNote={setNote}
-          onClose={onCloseLogger}
-          onSave={onSaveMood}
+          walkStep={walkStep}
+          setWalkStep={setWalkStep}
+          onClose={() => { setSheetOpen(false); setWalkStep("home"); }}
         />
-      )}
-      {step === "insight" && (
-        <InsightCard S={S} onAccept={onAcceptInsight} onDismiss={onDismissInsight} />
-      )}
-      {step === "accepted" && (
-        <AcceptedCard S={S} onClose={onDismissInsight} />
       )}
 
       {/* Bottom nav */}
@@ -455,7 +620,7 @@ function Phone({
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
-// PlannerBg — visible content behind the FAB
+// PlannerBg — same visible content behind the FAB
 // ─────────────────────────────────────────────────────────────────────────────
 function PlannerBg({ S }) {
   return (
@@ -483,7 +648,6 @@ function PlannerBg({ S }) {
             <span key={i} style={{
               width: i === S.moodRow.value ? 22 : 10, height: 10, borderRadius: 9999,
               background: i === S.moodRow.value ? S.moodRow.color : "rgba(58,44,26,0.14)",
-              transition: "all .2s ease",
             }} />
           ))}
           <span style={{ fontSize: 11, color: C.muted, marginLeft: 8 }}>Today</span>
@@ -542,142 +706,468 @@ function PlannerRow({ kicker, title, sub, accent, children }) {
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
-// LoggerSheet — redesigned: one-line header, scroll suggestions, grouped chips,
-// engagement rail at the bottom
+// LoggerSheet — v3, everything inline
 // ─────────────────────────────────────────────────────────────────────────────
-function LoggerSheet({ S, onClose, onPickMood }) {
+function LoggerSheet({ S, walkStep, setWalkStep, onClose }) {
+  // One-tap rail state — each item tracks logged status + (for counters)
+  // its current count. Initial counts come from QUICK_DEFS.startCount.
+  const [quick, setQuick] = useState(() => {
+    const o = {};
+    for (const q of QUICK_DEFS) o[q.id] = { logged: false, count: q.startCount || 0 };
+    return o;
+  });
+  function tapQuick(id) {
+    setQuick((prev) => {
+      const cur = prev[id];
+      const def = QUICK_DEFS.find((q) => q.id === id);
+      if (def.startCount != null) {
+        // Counter — increment, mark logged
+        const next = cur.count + 1;
+        return { ...prev, [id]: { logged: true, count: next } };
+      }
+      return { ...prev, [id]: { logged: true, count: 0 } };
+    });
+  }
+
+  // Smart card state — 'open' | 'saved'
+  const [smartState, setSmartState] = useState("open");
+  const [mood, setMood] = useState(null);
+  const [influences, setInfluences] = useState([]);
+  function toggleInfluence(t) {
+    setInfluences((prev) => prev.includes(t) ? prev.filter((x) => x !== t) : [...prev, t]);
+  }
+  function saveMood() {
+    if (mood == null) return;
+    setSmartState("saved");
+    setWalkStep("saved");
+  }
+
+  // Jess inline panel state — 'hidden' | 'shown' | 'accepted'
+  const [jess, setJess] = useState("hidden");
+  // Show Jess automatically a short tick after the mood saves, so it has
+  // a slide-in feel.
+  useEffect(() => {
+    if (smartState === "saved" && jess === "hidden") {
+      const t = setTimeout(() => { setJess("shown"); setWalkStep("jess"); }, 350);
+      return () => clearTimeout(t);
+    }
+  }, [smartState, jess, setWalkStep]);
+
+  function acceptJess()  { setJess("accepted"); setWalkStep("accepted"); }
+  function dismissJess() { onClose(); }
+
+  // Walk-step driven shortcuts so the walkthrough pills can fast-forward.
+  useEffect(() => {
+    if (walkStep === "sheet" && smartState !== "open") { setSmartState("open"); setMood(null); setInfluences([]); setJess("hidden"); }
+    if (walkStep === "quick") { /* no-op, just sheet open */ }
+    if (walkStep === "saved" && smartState !== "saved") { setMood(0); setSmartState("saved"); }
+    if (walkStep === "jess" && jess === "hidden") { setJess("shown"); }
+    if (walkStep === "accepted" && jess !== "accepted") { if (smartState !== "saved") { setMood(0); setSmartState("saved"); } setJess("accepted"); }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [walkStep]);
+
+  // Group accordions
+  const [openGroups, setOpenGroups] = useState({ body: true }); // default Body open
+  function toggleGroup(id) {
+    setOpenGroups((p) => ({ ...p, [id]: !p[id] }));
+  }
+
   return (
-    <SheetShell onClose={onClose} maxHeight="90%">
-      {/* Compact one-line header */}
+    <>
+      {/* Backdrop */}
+      <div onClick={onClose} style={{
+        position: "absolute", inset: 0, background: "rgba(26,20,16,0.45)", zIndex: 5,
+      }} />
+
+      {/* Sheet */}
       <div style={{
-        display: "flex", alignItems: "center", gap: 10, marginBottom: 8,
-        padding: "0 2px",
+        position: "absolute", left: 0, right: 0, bottom: 0,
+        background: C.cream, borderRadius: "26px 26px 0 0",
+        padding: "10px 16px 24px",
+        maxHeight: "92%", overflowY: "auto", zIndex: 6,
+        boxShadow: "0 -12px 30px rgba(0,0,0,0.18)",
+        animation: "fwSheetUp .25s ease",
       }}>
-        <span style={{
-          fontFamily: "'Fraunces', Georgia, serif", fontSize: 17, fontWeight: 500, color: C.espresso,
-        }}>Log anything</span>
-        <span style={{ fontSize: 11, color: C.muted }}>· {S.timeBlock}</span>
-        <span style={{ flex: 1 }} />
-        <button onClick={onClose} aria-label="Close" style={{
-          width: 28, height: 28, borderRadius: "50%",
-          background: "rgba(58,44,26,0.06)", border: "none",
-          color: C.espresso, cursor: "pointer",
-          display: "inline-flex", alignItems: "center", justifyContent: "center",
-        }}><X size={14} /></button>
-      </div>
+        <style>{`@keyframes fwSheetUp { from { transform: translateY(20%); opacity: 0.7; } to { transform: translateY(0); opacity: 1; } } @keyframes fwSlideDown { from { opacity: 0; transform: translateY(-6px); } to { opacity: 1; transform: translateY(0); } }`}</style>
 
-      {/* Phase context line */}
-      <div style={{
-        fontSize: 11.5, color: C.muted, fontStyle: "italic",
-        padding: "0 2px 12px",
-      }}>
-        <span style={{ marginRight: 6 }}>{S.headerEmoji}</span>
-        {S.phaseContext}
-      </div>
-
-      {/* Suggestions — horizontal scroll */}
-      <SectionHead kicker="SUGGESTED FOR YOU" />
-      <div style={{
-        display: "flex", gap: 8, overflowX: "auto", paddingBottom: 4,
-        marginTop: 6, marginLeft: -2, marginRight: -2,
-        scrollSnapType: "x mandatory",
-      }}>
-        {S.suggestions.map((s) => (
-          <button
-            key={s.id}
-            onClick={s.id === "mood" ? onPickMood : undefined}
-            style={{
-              flexShrink: 0, width: 118, padding: "10px 11px",
-              borderRadius: 14,
-              background: C.paperHi,
-              border: s.urgent ? `1.5px solid ${s.tone}77` : "1px solid rgba(58,44,26,0.10)",
-              cursor: "pointer", textAlign: "left",
-              display: "flex", flexDirection: "column", gap: 8,
-              scrollSnapAlign: "start",
-              boxShadow: s.urgent ? `0 0 0 3px ${s.tone}11` : "none",
-            }}
-          >
-            <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
-              <span style={{
-                width: 26, height: 26, borderRadius: 8,
-                background: `${s.tone}22`, color: s.tone,
-                display: "inline-flex", alignItems: "center", justifyContent: "center",
-              }}><s.Icon size={13} /></span>
-              {s.urgent && <span style={{
-                fontSize: 8.5, letterSpacing: "0.1em", fontWeight: 700,
-                color: s.tone, background: `${s.tone}22`, borderRadius: 9999,
-                padding: "2px 7px",
-              }}>NUDGE</span>}
-            </div>
-            <div>
-              <div style={{ fontSize: 12.5, fontWeight: 700, color: C.espresso, lineHeight: 1.2 }}>{s.label}</div>
-              <div style={{ fontSize: 10.5, color: C.muted, marginTop: 2, lineHeight: 1.3 }}>{s.sub}</div>
-            </div>
-          </button>
-        ))}
-      </div>
-
-      {/* Grouped log types */}
-      <div style={{ marginTop: 18, display: "flex", flexDirection: "column", gap: 14 }}>
-        {LOG_GROUPS.map((g) => (
-          <div key={g.id}>
-            <div style={{
-              fontSize: 9.5, letterSpacing: "0.18em", fontWeight: 700,
-              color: C.muted, textTransform: "uppercase", marginBottom: 6,
-            }}>{g.label}</div>
-            <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
-              {g.items.map((it) => (
-                <button
-                  key={it.id}
-                  onClick={it.id === "mood" ? onPickMood : undefined}
-                  style={{
-                    display: "inline-flex", alignItems: "center", gap: 6,
-                    padding: "6px 11px 6px 8px", borderRadius: 9999,
-                    background: C.paperHi, border: "1px solid rgba(58,44,26,0.10)",
-                    cursor: "pointer",
-                  }}
-                >
-                  <span style={{
-                    width: 20, height: 20, borderRadius: 6,
-                    background: `${it.tone}22`, color: it.tone,
-                    display: "inline-flex", alignItems: "center", justifyContent: "center",
-                  }}><it.Icon size={11} /></span>
-                  <span style={{ fontSize: 11.5, fontWeight: 700, color: C.espresso }}>{it.label}</span>
-                </button>
-              ))}
-            </div>
-          </div>
-        ))}
-      </div>
-
-      {/* Engagement rail — From across your app */}
-      <div style={{ marginTop: 22 }}>
-        <SectionHead kicker="FROM ACROSS YOUR APP" sub="Picked for where you are right now" />
+        {/* Grab handle */}
         <div style={{
-          display: "flex", gap: 10, overflowX: "auto",
-          marginTop: 8, paddingBottom: 6, marginLeft: -2, marginRight: -2,
+          width: 44, height: 4, background: "rgba(58,44,26,0.18)",
+          borderRadius: 9999, margin: "4px auto 10px",
+        }} />
+
+        {/* Compact header */}
+        <div style={{
+          display: "flex", alignItems: "center", gap: 10, marginBottom: 12,
+        }}>
+          <span style={{
+            fontFamily: "'Fraunces', Georgia, serif", fontSize: 17, fontWeight: 500, color: C.espresso,
+          }}>Log anything</span>
+          <span style={{ fontSize: 11, color: C.muted }}>· {S.timeBlock}</span>
+          <span style={{ flex: 1 }} />
+          <button onClick={onClose} aria-label="Close" style={{
+            width: 28, height: 28, borderRadius: "50%",
+            background: "rgba(58,44,26,0.06)", border: "none",
+            color: C.espresso, cursor: "pointer",
+            display: "inline-flex", alignItems: "center", justifyContent: "center",
+          }}><X size={14} /></button>
+        </div>
+
+        {/* QUICK LOG RAIL */}
+        <SectionHead kicker="QUICK LOG" sub="One tap · saves instantly" />
+        <div style={{
+          display: "flex", gap: 8, overflowX: "auto", paddingBottom: 6,
+          marginTop: 6, marginLeft: -2, marginRight: -2,
           scrollSnapType: "x mandatory",
         }}>
-          {S.rail.map((card, i) => (
-            <RailCard key={i} card={card} />
-          ))}
+          {QUICK_DEFS.map((q) => {
+            const st = quick[q.id];
+            const isLogged = st.logged;
+            return (
+              <button
+                key={q.id}
+                onClick={() => tapQuick(q.id)}
+                style={{
+                  flexShrink: 0, padding: "9px 14px",
+                  borderRadius: 9999,
+                  background: isLogged ? C.sage : C.paperHi,
+                  color: isLogged ? C.cream : C.espresso,
+                  border: isLogged ? `1px solid ${C.sageDeep}` : "1px solid rgba(58,44,26,0.12)",
+                  cursor: "pointer",
+                  fontSize: 12, fontWeight: 700, letterSpacing: "0.01em",
+                  display: "inline-flex", alignItems: "center", gap: 7,
+                  scrollSnapAlign: "start",
+                  boxShadow: isLogged ? `0 0 0 3px ${C.sage}33` : "none",
+                  transition: "all .18s ease",
+                }}
+              >
+                <span style={{ fontSize: 14, lineHeight: 1 }}>{q.emoji}</span>
+                {isLogged ? q.loggedText(st.count) : q.baseLabel}
+              </button>
+            );
+          })}
+        </div>
+
+        {/* SMART SUGGESTION — inline expanded form */}
+        <div style={{ marginTop: 16 }}>
+          <SmartCard
+            S={S}
+            state={smartState}
+            mood={mood} setMood={setMood}
+            influences={influences} toggleInfluence={toggleInfluence}
+            onSave={saveMood}
+            onPickFace={() => setWalkStep("face")}
+          />
+        </div>
+
+        {/* Jess inline panel — appears AFTER save, in the same sheet */}
+        {smartState === "saved" && jess !== "hidden" && (
+          <div style={{ marginTop: 12, animation: "fwSlideDown .25s ease" }}>
+            <JessInline
+              S={S}
+              state={jess}
+              onAccept={acceptJess}
+              onDismiss={dismissJess}
+            />
+          </div>
+        )}
+
+        {/* GROUPED LOG TYPES — accordions */}
+        <div style={{ marginTop: 18 }}>
+          <SectionHead kicker="MORE LOG TYPES" />
+          <div style={{ marginTop: 8, display: "flex", flexDirection: "column", gap: 8 }}>
+            {LOG_GROUPS.map((g) => {
+              const open = !!openGroups[g.id];
+              return (
+                <div key={g.id} style={{
+                  background: C.paperHi, borderRadius: 14,
+                  border: "1px solid rgba(58,44,26,0.10)",
+                  padding: "0",
+                }}>
+                  <button
+                    onClick={() => toggleGroup(g.id)}
+                    style={{
+                      width: "100%", padding: "10px 14px",
+                      display: "flex", alignItems: "center", gap: 10,
+                      background: "transparent", border: "none",
+                      cursor: "pointer", textAlign: "left",
+                    }}
+                  >
+                    <span style={{
+                      fontFamily: "'Fraunces', Georgia, serif", fontSize: 14, fontWeight: 500,
+                      color: C.espresso, flex: 1,
+                    }}>{g.label}</span>
+                    <span style={{
+                      fontSize: 10, color: C.muted, fontWeight: 600,
+                    }}>{g.items.length}</span>
+                    {open ? <ChevronUp size={14} style={{ color: C.muted }} />
+                          : <ChevronDown size={14} style={{ color: C.muted }} />}
+                  </button>
+                  {open && (
+                    <div style={{
+                      padding: "2px 14px 12px",
+                      display: "flex", flexWrap: "wrap", gap: 6,
+                      animation: "fwSlideDown .2s ease",
+                    }}>
+                      {g.items.map((it) => (
+                        <button key={it.id} style={{
+                          display: "inline-flex", alignItems: "center", gap: 6,
+                          padding: "6px 11px 6px 8px", borderRadius: 9999,
+                          background: C.cream, border: "1px solid rgba(58,44,26,0.10)",
+                          cursor: "pointer",
+                        }}>
+                          <span style={{
+                            width: 20, height: 20, borderRadius: 6,
+                            background: `${it.tone}22`, color: it.tone,
+                            display: "inline-flex", alignItems: "center", justifyContent: "center",
+                          }}><it.Icon size={11} /></span>
+                          <span style={{ fontSize: 11.5, fontWeight: 700, color: C.espresso }}>{it.label}</span>
+                        </button>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              );
+            })}
+          </div>
+        </div>
+
+        {/* ENGAGEMENT RAIL */}
+        <div style={{ marginTop: 22 }}>
+          <SectionHead kicker="FROM ACROSS YOUR APP" sub="Picked for where you are right now" />
+          <div style={{
+            display: "flex", gap: 10, overflowX: "auto",
+            marginTop: 8, paddingBottom: 6, marginLeft: -2, marginRight: -2,
+            scrollSnapType: "x mandatory",
+          }}>
+            {S.rail.map((card, i) => (
+              <RailCard key={i} card={card} />
+            ))}
+          </div>
+        </div>
+
+        {/* Footer hint */}
+        <div style={{
+          marginTop: 14, padding: "10px 14px", borderRadius: 12,
+          border: "1px dashed rgba(58,44,26,0.18)",
+          fontSize: 11.5, color: C.muted, fontStyle: "italic",
+          display: "flex", alignItems: "center", gap: 10,
+        }}>
+          <Sparkles size={13} style={{ color: C.gold, flexShrink: 0 }} />
+          Hold the + for the speed dial. Voice + camera live on a long-press.
         </div>
       </div>
-
-      {/* Voice & camera hint */}
-      <div style={{
-        marginTop: 14, padding: "10px 14px", borderRadius: 12,
-        border: "1px dashed rgba(58,44,26,0.18)",
-        fontSize: 11.5, color: C.muted, fontStyle: "italic",
-        display: "flex", alignItems: "center", gap: 10,
-      }}>
-        <Sparkles size={13} style={{ color: C.gold, flexShrink: 0 }} />
-        Hold the + for voice. Long-press any chip to scan with the camera.
-      </div>
-    </SheetShell>
+    </>
   );
 }
 
+// ─────────────────────────────────────────────────────────────────────────────
+// SmartCard — inline expanded mood log
+// ─────────────────────────────────────────────────────────────────────────────
+function SmartCard({ S, state, mood, setMood, influences, toggleInfluence, onSave, onPickFace }) {
+  if (state === "saved") {
+    return (
+      <div style={{
+        padding: "14px 16px", borderRadius: 16,
+        background: `${C.sage}1A`, border: `1px solid ${C.sage}55`,
+        display: "flex", alignItems: "center", gap: 12,
+        animation: "fwSlideDown .2s ease",
+      }}>
+        <span style={{
+          width: 36, height: 36, borderRadius: 12,
+          background: C.sage, color: C.cream,
+          display: "inline-flex", alignItems: "center", justifyContent: "center",
+          flexShrink: 0,
+        }}><Check size={18} strokeWidth={3} /></span>
+        <div style={{ flex: 1, minWidth: 0 }}>
+          <div style={{
+            fontFamily: "'Fraunces', Georgia, serif", fontSize: 15, fontWeight: 500,
+            color: C.espresso, lineHeight: 1.25,
+          }}>{S.savedMessage.headline}</div>
+          <div style={{ fontSize: 11.5, color: C.muted, marginTop: 2 }}>
+            {S.savedMessage.sub}
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div style={{
+      padding: "14px 16px", borderRadius: 16,
+      background: C.paperHi, border: `1.5px solid ${C.gold}66`,
+      boxShadow: `0 0 0 3px ${C.gold}11`,
+    }}>
+      <div style={{
+        display: "inline-flex", alignItems: "center", gap: 6,
+        padding: "3px 9px", borderRadius: 9999,
+        background: `${C.gold}22`, color: C.goldDeep,
+        fontSize: 9, fontWeight: 800, letterSpacing: "0.12em",
+      }}>
+        <Sparkles size={10} /> {S.smartCard.kicker}
+      </div>
+      <div style={{
+        fontFamily: "'Fraunces', Georgia, serif", fontSize: 17, fontWeight: 500,
+        color: C.espresso, margin: "8px 0 2px", lineHeight: 1.25,
+      }}>{S.smartCard.question}</div>
+      <div style={{ fontSize: 11.5, color: C.muted, lineHeight: 1.5, marginBottom: 12 }}>
+        {S.smartCard.sub}
+      </div>
+
+      {/* Faces */}
+      <div style={{ display: "flex", justifyContent: "space-between", padding: "0 4px" }}>
+        {MOOD_FACES.map((f) => {
+          const active = mood === f.v;
+          return (
+            <button key={f.v} onClick={() => { setMood(f.v); onPickFace && onPickFace(); }} style={{
+              display: "flex", flexDirection: "column", alignItems: "center", gap: 5,
+              background: "transparent", border: "none", cursor: "pointer",
+            }}>
+              <span style={{
+                width: active ? 46 : 36, height: active ? 46 : 36,
+                borderRadius: "50%",
+                background: active ? f.color : `${f.color}30`,
+                color: active ? C.cream : f.color,
+                display: "inline-flex", alignItems: "center", justifyContent: "center",
+                border: active ? `2px solid ${f.color}` : `1px solid ${f.color}55`,
+                boxShadow: active ? `0 8px 18px ${f.color}55` : "none",
+                transition: "all .15s ease",
+              }}>
+                <f.Icon size={active ? 20 : 17} />
+              </span>
+              <span style={{
+                fontSize: 10, fontWeight: active ? 700 : 600,
+                color: active ? f.color : C.muted,
+              }}>{f.label}</span>
+            </button>
+          );
+        })}
+      </div>
+
+      {/* Influences — appear AFTER a face is picked */}
+      {mood != null && (
+        <div style={{ marginTop: 14, animation: "fwSlideDown .2s ease" }}>
+          <div style={{
+            fontSize: 11, fontWeight: 700, color: C.muted,
+            letterSpacing: "0.05em", textTransform: "uppercase",
+          }}>What influenced this?</div>
+          <div style={{ display: "flex", flexWrap: "wrap", gap: 6, marginTop: 8 }}>
+            {INFLUENCES.map((t) => {
+              const on = influences.includes(t);
+              return (
+                <button key={t} onClick={() => toggleInfluence(t)} style={{
+                  padding: "5px 11px", borderRadius: 9999,
+                  background: on ? C.espresso : "transparent",
+                  color: on ? C.cream : C.espresso,
+                  border: on ? `1px solid ${C.espresso}` : "1px solid rgba(58,44,26,0.18)",
+                  cursor: "pointer", fontSize: 11, fontWeight: 600,
+                }}>{t}</button>
+              );
+            })}
+          </div>
+        </div>
+      )}
+
+      {/* Save — appears after face is picked */}
+      {mood != null && (
+        <button onClick={onSave} style={{
+          marginTop: 14, padding: "10px 16px", borderRadius: 9999,
+          background: C.espresso, color: C.cream,
+          border: "none", fontWeight: 700, fontSize: 12.5, cursor: "pointer",
+          display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 6,
+          animation: "fwSlideDown .2s ease",
+        }}>
+          <Check size={14} /> Save mood
+        </button>
+      )}
+    </div>
+  );
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// JessInline — appears below the saved smart card, in the same sheet
+// ─────────────────────────────────────────────────────────────────────────────
+function JessInline({ S, state, onAccept, onDismiss }) {
+  if (state === "accepted") {
+    return (
+      <div style={{
+        padding: "14px 16px", borderRadius: 16,
+        background: `${C.gold}1A`, border: `1px solid ${C.gold}55`,
+        display: "flex", alignItems: "center", gap: 12,
+      }}>
+        <span style={{
+          width: 36, height: 36, borderRadius: 12,
+          background: `linear-gradient(145deg, ${C.gold}, ${C.goldDeep})`,
+          color: C.cream,
+          display: "inline-flex", alignItems: "center", justifyContent: "center",
+          flexShrink: 0,
+        }}><Check size={18} strokeWidth={3} /></span>
+        <div style={{ flex: 1 }}>
+          <div style={{
+            fontFamily: "'Fraunces', Georgia, serif", fontSize: 15, fontWeight: 500,
+            color: C.espresso,
+          }}>{S.insight.confirmation}</div>
+          <div style={{ fontSize: 11.5, color: C.muted, marginTop: 2 }}>
+            {S.insight.confirmationSub}
+          </div>
+        </div>
+        <button onClick={onDismiss} style={{
+          padding: "8px 12px", borderRadius: 9999,
+          background: C.espresso, color: C.cream,
+          border: "none", fontWeight: 700, fontSize: 11.5, cursor: "pointer",
+          flexShrink: 0,
+        }}>Done · close</button>
+      </div>
+    );
+  }
+
+  return (
+    <div style={{
+      padding: "14px 16px", borderRadius: 16,
+      background: `${C.gold}1A`, border: `1px solid ${C.gold}55`,
+    }}>
+      <div style={{ display: "flex", gap: 11 }}>
+        <span style={{
+          width: 36, height: 36, borderRadius: 12, flexShrink: 0,
+          background: `linear-gradient(145deg, ${C.gold}, ${C.goldDeep})`,
+          color: C.cream,
+          display: "inline-flex", alignItems: "center", justifyContent: "center",
+        }}><Sparkles size={17} /></span>
+        <div style={{ flex: 1, minWidth: 0 }}>
+          <div style={{
+            fontSize: 9, letterSpacing: "0.16em", fontWeight: 800,
+            color: C.goldDeep, textTransform: "uppercase",
+          }}>{S.insight.kicker}</div>
+          <div style={{
+            fontFamily: "'Fraunces', Georgia, serif", fontSize: 14.5, fontWeight: 500,
+            color: C.espresso, margin: "3px 0 0", lineHeight: 1.35,
+          }}>{S.insight.body}</div>
+        </div>
+      </div>
+
+      <div style={{ marginTop: 12, display: "flex", gap: 8 }}>
+        <button onClick={onDismiss} style={{
+          flex: 1, padding: "9px 12px", borderRadius: 9999,
+          background: "transparent", color: C.espresso,
+          border: "1px solid rgba(58,44,26,0.20)", fontWeight: 700,
+          fontSize: 11.5, cursor: "pointer",
+        }}>Not now</button>
+        <button onClick={onAccept} style={{
+          flex: 2, padding: "9px 12px", borderRadius: 9999,
+          background: C.espresso, color: C.cream,
+          border: "none", fontWeight: 700, fontSize: 11.5, cursor: "pointer",
+          display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 6,
+        }}>
+          <Check size={12} /> {S.insight.cta}
+        </button>
+      </div>
+    </div>
+  );
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// RailCard — same as v2
+// ─────────────────────────────────────────────────────────────────────────────
 function RailCard({ card }) {
   const t = RAIL_COLOURS[card.type] || RAIL_COLOURS.jess;
   const Glyph = t.glyph;
@@ -691,12 +1181,10 @@ function RailCard({ card }) {
       scrollSnapAlign: "start",
       position: "relative", overflow: "hidden",
     }}>
-      {/* Glyph backdrop */}
       <Glyph size={72} style={{
         position: "absolute", right: -16, bottom: -10,
         color: t.accent, opacity: 0.12,
       }} />
-
       <div style={{ position: "relative", zIndex: 1 }}>
         <div style={{ fontSize: 16, marginBottom: 4 }}>{card.emoji}</div>
         <div style={{
@@ -724,286 +1212,6 @@ function RailCard({ card }) {
   );
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
-// MoodSheet — unchanged from v1 (founder kept this flow)
-// ─────────────────────────────────────────────────────────────────────────────
-function MoodSheet({
-  S, mood, setMood, influences, toggleInfluence, note, setNote,
-  onClose, onSave,
-}) {
-  const valid = mood != null;
-  return (
-    <SheetShell onClose={onClose} maxHeight="86%">
-      <div style={{
-        display: "flex", alignItems: "center", gap: 10, marginBottom: 8,
-      }}>
-        <span style={{
-          fontFamily: "'Fraunces', Georgia, serif", fontSize: 17, fontWeight: 500, color: C.espresso,
-        }}>Log your mood</span>
-        <span style={{ fontSize: 11, color: C.muted }}>· {S.timeBlock.split(" · ")[1]}</span>
-        <span style={{ flex: 1 }} />
-        <button onClick={onClose} aria-label="Close" style={{
-          width: 28, height: 28, borderRadius: "50%",
-          background: "rgba(58,44,26,0.06)", border: "none",
-          color: C.espresso, cursor: "pointer",
-          display: "inline-flex", alignItems: "center", justifyContent: "center",
-        }}><X size={14} /></button>
-      </div>
-
-      <div style={{
-        display: "inline-flex", alignItems: "center", gap: 6,
-        padding: "4px 10px", borderRadius: 9999,
-        background: S.accentLight, border: `1px solid ${S.accentLine}55`,
-        color: C.espresso, fontSize: 11, fontWeight: 600, marginBottom: 12,
-      }}>
-        <span>{S.headerEmoji}</span> {S.headerSub}
-      </div>
-
-      <div style={{ marginTop: 6 }}>
-        <div style={{ fontSize: 13, fontWeight: 700, color: C.espresso }}>How are you feeling?</div>
-        <div style={{
-          display: "flex", justifyContent: "space-between",
-          marginTop: 14, padding: "0 4px",
-        }}>
-          {MOOD_FACES.map((f) => {
-            const active = mood === f.v;
-            return (
-              <button key={f.v} onClick={() => setMood(f.v)} style={{
-                display: "flex", flexDirection: "column", alignItems: "center", gap: 6,
-                background: "transparent", border: "none", cursor: "pointer",
-              }}>
-                <span style={{
-                  width: active ? 48 : 38, height: active ? 48 : 38,
-                  borderRadius: "50%",
-                  background: active ? f.color : `${f.color}30`,
-                  color: active ? C.cream : f.color,
-                  display: "inline-flex", alignItems: "center", justifyContent: "center",
-                  border: active ? `2px solid ${f.color}` : `1px solid ${f.color}55`,
-                  boxShadow: active ? `0 8px 18px ${f.color}55` : "none",
-                  transition: "all .15s ease",
-                }}>
-                  <f.Icon size={active ? 22 : 18} />
-                </span>
-                <span style={{
-                  fontSize: 10.5, fontWeight: active ? 700 : 600,
-                  color: active ? f.color : C.muted,
-                }}>{f.label}</span>
-              </button>
-            );
-          })}
-        </div>
-      </div>
-
-      <div style={{ marginTop: 22 }}>
-        <div style={{ fontSize: 13, fontWeight: 700, color: C.espresso }}>What influenced this?</div>
-        <div style={{ display: "flex", flexWrap: "wrap", gap: 6, marginTop: 10 }}>
-          {INFLUENCES.map((t) => {
-            const on = influences.includes(t);
-            return (
-              <button key={t} onClick={() => toggleInfluence(t)} style={{
-                padding: "6px 11px", borderRadius: 9999,
-                background: on ? C.espresso : "transparent",
-                color: on ? C.cream : C.espresso,
-                border: on ? `1px solid ${C.espresso}` : "1px solid rgba(58,44,26,0.18)",
-                cursor: "pointer", fontSize: 11.5, fontWeight: 600,
-              }}>{t}</button>
-            );
-          })}
-        </div>
-      </div>
-
-      <div style={{ marginTop: 22 }}>
-        <div style={{ fontSize: 13, fontWeight: 700, color: C.espresso }}>Anything else? <span style={{ fontWeight: 500, color: C.muted }}>· optional</span></div>
-        <textarea
-          value={note}
-          onChange={(e) => setNote(e.target.value)}
-          placeholder="A line about today…"
-          rows={2}
-          style={{
-            display: "block", width: "100%", boxSizing: "border-box",
-            marginTop: 8, padding: "10px 12px",
-            borderRadius: 12, background: C.paperHi,
-            border: "1px solid rgba(58,44,26,0.16)",
-            fontFamily: "'Inter', system-ui, sans-serif", fontSize: 13, color: C.espresso,
-            outline: "none", resize: "vertical", minHeight: 50,
-          }}
-        />
-      </div>
-
-      <div style={{ marginTop: 22, display: "flex", gap: 10 }}>
-        <button onClick={onClose} style={{
-          flex: 1, padding: "12px 16px", borderRadius: 9999,
-          background: "transparent", color: C.espresso,
-          border: "1px solid rgba(58,44,26,0.18)", fontWeight: 700,
-          fontSize: 13, cursor: "pointer",
-        }}>Cancel</button>
-        <button
-          onClick={valid ? onSave : undefined}
-          disabled={!valid}
-          style={{
-            flex: 2, padding: "12px 16px", borderRadius: 9999,
-            background: valid ? C.espresso : "rgba(58,44,26,0.3)",
-            color: C.cream, border: "none", fontWeight: 700, fontSize: 13,
-            cursor: valid ? "pointer" : "not-allowed",
-            display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 6,
-          }}
-        >
-          <Check size={14} /> Save mood
-        </button>
-      </div>
-    </SheetShell>
-  );
-}
-
-// ─────────────────────────────────────────────────────────────────────────────
-// InsightCard — Jess pattern message after a save
-// ─────────────────────────────────────────────────────────────────────────────
-function InsightCard({ S, onAccept, onDismiss }) {
-  return (
-    <SheetShell onClose={onDismiss} maxHeight="62%">
-      <div style={{
-        display: "flex", alignItems: "center", gap: 10, marginBottom: 8,
-      }}>
-        <span style={{
-          fontFamily: "'Fraunces', Georgia, serif", fontSize: 17, fontWeight: 500, color: C.espresso,
-        }}>A note from Jess</span>
-        <span style={{ flex: 1 }} />
-        <button onClick={onDismiss} aria-label="Close" style={{
-          width: 28, height: 28, borderRadius: "50%",
-          background: "rgba(58,44,26,0.06)", border: "none",
-          color: C.espresso, cursor: "pointer",
-          display: "inline-flex", alignItems: "center", justifyContent: "center",
-        }}><X size={14} /></button>
-      </div>
-
-      <div style={{
-        padding: "14px 16px", borderRadius: 16,
-        background: `${C.gold}1A`, border: `1px solid ${C.gold}55`,
-        display: "flex", gap: 12,
-      }}>
-        <span style={{
-          width: 40, height: 40, borderRadius: 12, flexShrink: 0,
-          background: `linear-gradient(145deg, ${C.gold}, ${C.goldDeep})`,
-          color: C.cream,
-          display: "inline-flex", alignItems: "center", justifyContent: "center",
-        }}><Sparkles size={18} /></span>
-        <div>
-          <div style={{
-            fontSize: 9.5, letterSpacing: "0.18em", fontWeight: 700,
-            color: C.goldDeep, textTransform: "uppercase",
-          }}>{S.insight.kicker}</div>
-          <div style={{
-            fontFamily: "'Fraunces', Georgia, serif", fontSize: 16, fontWeight: 500,
-            color: C.espresso, margin: "4px 0 6px", lineHeight: 1.35,
-          }}>{S.insight.body}</div>
-        </div>
-      </div>
-
-      <div style={{ marginTop: 14, display: "flex", gap: 10 }}>
-        <button onClick={onDismiss} style={{
-          flex: 1, padding: "11px 14px", borderRadius: 9999,
-          background: "transparent", color: C.espresso,
-          border: "1px solid rgba(58,44,26,0.20)", fontWeight: 700,
-          fontSize: 12.5, cursor: "pointer",
-        }}>Not now</button>
-        <button onClick={onAccept} style={{
-          flex: 2, padding: "11px 14px", borderRadius: 9999,
-          background: C.espresso, color: C.cream,
-          border: "none", fontWeight: 700, fontSize: 12.5, cursor: "pointer",
-          display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 6,
-        }}>
-          <Check size={13} /> {S.insight.cta}
-        </button>
-      </div>
-
-      <p style={{
-        marginTop: 14, fontSize: 11.5, fontStyle: "italic",
-        color: C.muted, textAlign: "center", lineHeight: 1.5,
-      }}>
-        Jess only surfaces a pattern after 3+ data points. You can mute insights anytime in Settings.
-      </p>
-    </SheetShell>
-  );
-}
-
-function AcceptedCard({ S, onClose }) {
-  return (
-    <SheetShell onClose={onClose} maxHeight="52%">
-      <div style={{
-        display: "flex", alignItems: "center", gap: 10, marginBottom: 8,
-      }}>
-        <span style={{
-          fontFamily: "'Fraunces', Georgia, serif", fontSize: 17, fontWeight: 500, color: C.espresso,
-        }}>Done</span>
-        <span style={{ flex: 1 }} />
-        <button onClick={onClose} aria-label="Close" style={{
-          width: 28, height: 28, borderRadius: "50%",
-          background: "rgba(58,44,26,0.06)", border: "none",
-          color: C.espresso, cursor: "pointer",
-          display: "inline-flex", alignItems: "center", justifyContent: "center",
-        }}><X size={14} /></button>
-      </div>
-
-      <div style={{
-        padding: "22px 18px", borderRadius: 16,
-        background: `${C.sage}1A`, border: `1px solid ${C.sage}55`,
-        textAlign: "center",
-      }}>
-        <div style={{
-          width: 56, height: 56, borderRadius: "50%",
-          background: C.sage, color: C.cream,
-          display: "inline-flex", alignItems: "center", justifyContent: "center",
-          margin: "0 auto 12px",
-        }}><Check size={28} strokeWidth={3} /></div>
-        <div style={{
-          fontFamily: "'Fraunces', Georgia, serif", fontSize: 18, fontWeight: 500,
-          color: C.espresso, lineHeight: 1.3, margin: "0 0 4px",
-        }}>{S.insight.confirmation}</div>
-        <div style={{ fontSize: 12, color: C.muted, lineHeight: 1.5 }}>
-          {S.insight.confirmationSub}
-        </div>
-      </div>
-
-      <button onClick={onClose} style={{
-        marginTop: 18, width: "100%", padding: "12px 16px", borderRadius: 9999,
-        background: C.espresso, color: C.cream,
-        border: "none", fontWeight: 700, fontSize: 13, cursor: "pointer",
-      }}>Back to home</button>
-    </SheetShell>
-  );
-}
-
-// ─────────────────────────────────────────────────────────────────────────────
-// SheetShell — bottom sheet wrapper (slimmer than v1)
-// ─────────────────────────────────────────────────────────────────────────────
-function SheetShell({ children, onClose, maxHeight = "80%" }) {
-  return (
-    <>
-      <div style={{
-        position: "absolute", inset: 0, background: "rgba(26,20,16,0.45)",
-        zIndex: 5,
-      }} onClick={onClose} />
-
-      <div style={{
-        position: "absolute", left: 0, right: 0, bottom: 0,
-        background: C.cream, borderRadius: "26px 26px 0 0",
-        padding: "10px 16px 22px",
-        maxHeight, overflowY: "auto",
-        zIndex: 6,
-        boxShadow: "0 -12px 30px rgba(0,0,0,0.18)",
-        animation: "fwSheetUp .25s ease",
-      }}>
-        <style>{`@keyframes fwSheetUp { from { transform: translateY(20%); opacity: 0.7; } to { transform: translateY(0); opacity: 1; } }`}</style>
-        <div style={{
-          width: 44, height: 4, background: "rgba(58,44,26,0.18)",
-          borderRadius: 9999, margin: "4px auto 12px",
-        }} />
-        {children}
-      </div>
-    </>
-  );
-}
-
 function SectionHead({ kicker, sub }) {
   return (
     <div>
@@ -1019,21 +1227,18 @@ function SectionHead({ kicker, sub }) {
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
-// Walkthrough — 5 step buttons below the phone
+// Walkthrough — updated for v3 flow
 // ─────────────────────────────────────────────────────────────────────────────
 function Walkthrough({ step, onStep }) {
   const STEPS = [
     { id: "home",     label: "Home" },
-    { id: "logger",   label: "Open logger" },
-    { id: "mood",     label: "Log mood" },
-    { id: "insight",  label: "Jess insight" },
+    { id: "sheet",    label: "Open sheet" },
+    { id: "saved",    label: "Mood saved" },
+    { id: "jess",     label: "Jess panel" },
     { id: "accepted", label: "Accepted" },
   ];
   return (
-    <div style={{
-      maxWidth: 640, margin: "32px auto 0",
-      padding: "0 12px",
-    }}>
+    <div style={{ maxWidth: 640, margin: "32px auto 0", padding: "0 12px" }}>
       <div style={{
         display: "flex", justifyContent: "center", gap: 6, flexWrap: "wrap",
       }}>
@@ -1048,7 +1253,6 @@ function Walkthrough({ step, onStep }) {
               cursor: "pointer",
               fontSize: 11.5, fontWeight: 700, letterSpacing: "0.02em",
               display: "inline-flex", alignItems: "center", gap: 7,
-              transition: "all .15s ease",
             }}>
               <span style={{
                 width: 18, height: 18, borderRadius: "50%",
@@ -1066,7 +1270,8 @@ function Walkthrough({ step, onStep }) {
         textAlign: "center", marginTop: 14, fontSize: 11, fontStyle: "italic",
         color: "rgba(244,237,219,0.5)", lineHeight: 1.5,
       }}>
-        Tap a step to jump, or use the FAB + sheet inside the phone to walk through naturally.
+        Hold the FAB on the phone (~400ms) for the speed dial · tap pills in Quick Log ·
+        tap a face directly to save mood inline.
       </p>
     </div>
   );
