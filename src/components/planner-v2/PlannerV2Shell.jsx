@@ -600,7 +600,7 @@ export default function PlannerV2Shell({
 
       <Row label="Rituals">
         <CreateRitualCard />
-        {ritualBundles.map((b) => <RitualBundleCard key={b.id} bundle={b} />)}
+        {ritualBundles.map((b) => <RitualBundleCard key={b.id} bundle={b} user={user} />)}
       </Row>
 
       <Row label="Mind & insight">
@@ -751,7 +751,10 @@ function PlanADaySheet({ open, onClose }) {
         {mode === "none" && (
           <>
             <div style={planBtnRow}>
-              <button onClick={() => setMode("today")} style={planBtn}>
+              <button
+                onClick={() => { onClose(); openLogger("event"); }}
+                style={planBtn}
+              >
                 <CalendarCheck size={20} style={{ color: C.espresso }} />
                 <span style={planBtnLabel}>Today</span>
               </button>
@@ -760,7 +763,18 @@ function PlanADaySheet({ open, onClose }) {
                 <span style={planBtnLabel}>Pick a date</span>
               </button>
             </div>
-            <input ref={dateRef} type="date" min={todayISO} onChange={handleDateChange} style={hiddenDateInput} tabIndex={-1} />
+            <input
+              ref={dateRef}
+              type="date"
+              min={todayISO}
+              onChange={(e) => {
+                const v = e.target.value;
+                e.target.value = "";
+                if (v) { onClose(); openLogger("event"); }
+              }}
+              style={hiddenDateInput}
+              tabIndex={-1}
+            />
           </>
         )}
 
@@ -1664,15 +1678,46 @@ function ConsistencyCard() {
 // ── Rituals ───────────────────────────────────────────────────────────────
 function CreateRitualCard() {
   return (
-    <button style={createRitualCard}>
+    <button onClick={() => openLogger("ritual")} style={createRitualCard}>
       <span style={createRitualIcon}><Sparkles size={24} style={{ color: C.gold }} /></span>
       <span style={createRitualTitle}>Build a ritual</span>
       <span style={createRitualSub}>Your own bundle, your phase, your time</span>
     </button>
   );
 }
-function RitualBundleCard({ bundle }) {
+function RitualBundleCard({ bundle, user }) {
   const [added, setAdded] = useState(false);
+  const [adding, setAdding] = useState(false);
+  // Phase B6 follow-up: tap "Add to stack" creates one HabitLogs row per
+  // ritual in the bundle for today (skipping duplicates by name).
+  async function handleAddToStack() {
+    if (added || adding) return;
+    setAdding(true);
+    setAdded(true); // optimistic
+    try {
+      if (user?.id) {
+        const existing = await base44.entities.HabitLogs.filter(
+          { user_id: user.id, date: todayISO }, null, 80,
+        ).catch(() => []);
+        const have = new Set((existing || []).map((r) => (r?.habit_name || r?.habit_type || "").toLowerCase()).filter(Boolean));
+        for (const name of bundle.rituals) {
+          if (have.has(String(name).toLowerCase())) continue;
+          try {
+            await base44.entities.HabitLogs.create({
+              user_id: user.id,
+              habit_name: name,
+              date: todayISO,
+              is_completed: false,
+              time_of_day: (bundle.time || "morning").toLowerCase(),
+              created_at: new Date().toISOString(),
+            });
+          } catch { /* silent */ }
+        }
+      }
+    } finally {
+      setAdding(false);
+    }
+  }
   return (
     <article style={{ ...cardStyle, borderTop: `3px solid ${bundle.accent}` }}>
       <div style={cardHeadRow}>
@@ -1691,7 +1736,7 @@ function RitualBundleCard({ bundle }) {
         ))}
         {bundle.rituals.length > 3 && <li style={{ ...ritualLine, color: C.muted, fontStyle: "italic" }}>+{bundle.rituals.length - 3} more</li>}
       </ul>
-      <button onClick={() => setAdded(true)} disabled={added} style={{
+      <button onClick={handleAddToStack} disabled={added || adding} style={{
         ...addToStackBtn,
         background: added ? "transparent" : C.espresso,
         color: added ? C.espresso : C.cream,
@@ -2272,7 +2317,7 @@ function MedsAndSuppsCard({ user }) {
           </CheckboxRow>
         ))}
       </Section>
-      <button style={addMedBtn}><Plus size={11} /> Add</button>
+      <button onClick={() => openLogger("med")} style={addMedBtn}><Plus size={11} /> Add</button>
     </article>
   );
 }
@@ -2788,6 +2833,9 @@ function FullScheduleOverlay({ open, onClose, blocks, onBlockTap }) {
           <span style={kicker}>SCHEDULE · {today.toLocaleDateString(undefined, { weekday: "short", month: "short", day: "numeric" }).toUpperCase()}</span>
           <h2 style={overlayTitle}>Today, hour by hour</h2>
         </div>
+        <button onClick={() => openLogger("event")} style={overlayClose} aria-label="Add event">
+          <Plus size={16} />
+        </button>
       </div>
       <p style={overlayHint}>Tap a block to edit. Long press to drag.</p>
       <div style={{ padding: "0 16px 30px" }}>
@@ -2816,7 +2864,11 @@ function ScheduleHour({ hour, blocks, isCurrent, currentMinute, onBlockTap }) {
         )}
       </div>
       <div style={schedBlockCol}>
-        {blocks.length === 0 && <button style={schedEmptySlot}><Plus size={12} /> Add</button>}
+        {blocks.length === 0 && (
+          <button onClick={() => openLogger("event")} style={schedEmptySlot}>
+            <Plus size={12} /> Add
+          </button>
+        )}
         {blocks.map((b) => <ScheduleBlock key={b.id} block={b} onTap={() => onBlockTap(b.id)} />)}
       </div>
     </div>
@@ -2944,7 +2996,7 @@ function DayDetailSheet({ iso, onClose }) {
           </Section>
         )}
         <div style={{ display: "flex", gap: 8, marginTop: 14 }}>
-          <button style={dayPrimaryBtn}>Plan this day</button>
+          <button onClick={() => openLogger("event")} style={dayPrimaryBtn}>Plan this day</button>
           {!isFuture && <button onClick={() => openLogger("symptom")} style={daySecondaryBtn}>Log symptoms</button>}
         </div>
       </div>
