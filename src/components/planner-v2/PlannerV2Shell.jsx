@@ -510,7 +510,7 @@ export default function PlannerV2Shell({
         />
       )}
 
-      <Header greeting={greeting} onOpenPlan={() => setPlanOpen(true)} lifeStage={realLifeStage} />
+      <Header greeting={greeting} onOpenPlan={() => setPlanOpen(true)} lifeStage={profileProp?.life_stage || realLifeStage} />
 
       {/* INSIGHTS hero — first horizontal slider on the page */}
       <InsightsHeroRow />
@@ -624,15 +624,12 @@ function Header({ greeting, onOpenPlan, lifeStage }) {
     weekday: "long", day: "numeric", month: "long",
   });
   const stageLower = String(lifeStage || "").toLowerCase();
-  const isPregnant = stageLower.startsWith("pregnant");
-  // Extract the trimester digit directly from the string so the mapping is
-  // unambiguous: "pregnant-t1" → "1", "pregnant_t2" → "2", "pregnant-t3" → "3".
-  // (The earlier endsWith chain was correct, but a regex makes it impossible
-  // for off-by-one or separator variations to slip through.)
-  const trimMatch  = stageLower.match(/t([123])\b/);
-  const trimester  = trimMatch ? trimMatch[1] : null;
-  const stageLine = isPregnant
-    ? `Pregnant · Trimester ${trimester || "—"}`
+  const isPregnant = stageLower.startsWith("pregnant-t");
+  // Per Halli's exact spec: strip the prefix and parse the trailing digit.
+  // "pregnant-t1" → 1, "pregnant-t2" → 2, "pregnant-t3" → 3.
+  const trimNum    = isPregnant ? parseInt(stageLower.replace("pregnant-t", ""), 10) : null;
+  const stageLine  = isPregnant
+    ? `Pregnant · Trimester ${Number.isFinite(trimNum) ? trimNum : "—"}`
     : `${profile.phase[0].toUpperCase() + profile.phase.slice(1)} Day ${profile.cycleDay}`;
   return (
     <div style={headerStyle}>
@@ -1117,15 +1114,19 @@ function ListsSection({ user }) {
   const [rawTasks, setRawTasks] = useState([]);
   const [expanded, setExpanded] = useState(null);
 
-  // Fetch all of today's PersonalTasks for this user (both completed and
-  // incomplete — the strikethrough state needs both).
+  // Fetch the user's PersonalTasks. No date filter — Bug 2 (B2): when the
+  // filter was scoped to `date: todayISO`, rows created on a previous day
+  // (or without a `date` field set) never reached the chip panel, so the
+  // accordion always rendered empty. The chips show "today's stack" by
+  // intent, but tasks that lack a date or were dated earlier should still
+  // appear so the user can complete them.
   useEffect(() => {
     let cancelled = false;
     if (!user?.id) return;
     (async () => {
       try {
         const rows = await base44.entities.PersonalTasks.filter(
-          { user_id: user.id, date: todayISO },
+          { user_id: user.id },
           "-created_date",
           200,
         );
