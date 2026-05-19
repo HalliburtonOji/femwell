@@ -751,10 +751,7 @@ function PlanADaySheet({ open, onClose }) {
         {mode === "none" && (
           <>
             <div style={planBtnRow}>
-              <button
-                onClick={() => { onClose(); openLogger("event"); }}
-                style={planBtn}
-              >
+              <button onClick={() => setMode("today")} style={planBtn}>
                 <CalendarCheck size={20} style={{ color: C.espresso }} />
                 <span style={planBtnLabel}>Today</span>
               </button>
@@ -763,18 +760,7 @@ function PlanADaySheet({ open, onClose }) {
                 <span style={planBtnLabel}>Pick a date</span>
               </button>
             </div>
-            <input
-              ref={dateRef}
-              type="date"
-              min={todayISO}
-              onChange={(e) => {
-                const v = e.target.value;
-                e.target.value = "";
-                if (v) { onClose(); openLogger("event"); }
-              }}
-              style={hiddenDateInput}
-              tabIndex={-1}
-            />
+            <input ref={dateRef} type="date" min={todayISO} onChange={handleDateChange} style={hiddenDateInput} tabIndex={-1} />
           </>
         )}
 
@@ -1288,6 +1274,19 @@ function ListsSection({ user }) {
               {t.due && <span style={listsDueChip}>today</span>}
             </label>
           ))}
+          <button
+            onClick={() => openLogger("task")}
+            style={{
+              alignSelf: "flex-start", marginTop: 6,
+              display: "inline-flex", alignItems: "center", gap: 4,
+              padding: "5px 10px", borderRadius: 9999,
+              background: "transparent", border: "1px dashed rgba(58,44,26,0.20)",
+              color: C.muted, cursor: "pointer", fontStyle: "italic", fontWeight: 600,
+              fontFamily: "'Inter', system-ui, sans-serif", fontSize: 11,
+            }}
+          >
+            <Plus size={11} /> Add task
+          </button>
         </div>
       )}
     </section>
@@ -1853,27 +1852,49 @@ function IntentionCard({ user }) {
   const key = `femwell_intention_${todayISO}`;
   const [val, setVal] = useState(() => { try { return localStorage.getItem(key) || ""; } catch { return ""; } });
   const [saved, setSaved] = useState(false);
-  // Phase B5 — on blur we both keep the localStorage cache (so the
-  // textarea repopulates instantly on next render) AND create a
-  // JournalEntries row for today so the daily intention persists in the
-  // user's journal feed.
+  const [checkinId, setCheckinId] = useState(null);
+
+  // Pre-populate from today's existing DailyCheckins.daily_intention if any.
+  useEffect(() => {
+    let cancelled = false;
+    if (!user?.id) return;
+    (async () => {
+      try {
+        const rows = await base44.entities.DailyCheckins.filter(
+          { user_id: user.id, date: todayISO }, "-updated_at", 1,
+        );
+        if (cancelled) return;
+        const row = (rows || [])[0];
+        if (row?.id) setCheckinId(row.id);
+        if (row?.daily_intention) {
+          setVal((cur) => cur || row.daily_intention);
+        }
+      } catch { /* silent */ }
+    })();
+    return () => { cancelled = true; };
+  }, [user?.id]);
+
+  // Phase B follow-up — on blur, cache locally and upsert
+  // DailyCheckins.daily_intention for today.
   async function handleBlur() {
     try { localStorage.setItem(key, val); } catch {}
     setSaved(true);
     setTimeout(() => setSaved(false), 1800);
     const trimmed = (val || "").trim();
-    if (trimmed && user?.id) {
-      try {
-        await base44.entities.JournalEntries.create({
-          user_id: user.id,
-          content_id: "daily_intention",
-          text: trimmed,
-          card_type: "intention",
-          session_date: todayISO,
-          created_at: new Date().toISOString(),
+    if (!trimmed || !user?.id) return;
+    try {
+      if (checkinId) {
+        await base44.entities.DailyCheckins.update(checkinId, {
+          daily_intention: trimmed, updated_at: new Date().toISOString(),
         });
-      } catch { /* silent */ }
-    }
+      } else {
+        const created = await base44.entities.DailyCheckins.create({
+          user_id: user.id, date: todayISO,
+          daily_intention: trimmed, updated_at: new Date().toISOString(),
+        });
+        if (created?.id) setCheckinId(created.id);
+      }
+    } catch { /* silent */ }
   }
   return (
     <article style={cardStyle}>
@@ -2195,7 +2216,9 @@ function AIMealPlanCard() {
         ))}
       </ul>
       <button
-        onClick={() => openLogger("meal")}
+        onClick={() => {
+          try { alert("Meal suggestions coming soon — Jess AI is brewing."); } catch {}
+        }}
         style={{ ...astraOpenBtn, color: C.goldDeep }}
       >
         <Sparkles size={11} /> Regenerate <ChevronRight size={11} />
@@ -3791,6 +3814,7 @@ const addMedBtn = {
 const reflectionRow = { display: "flex", flexDirection: "column", gap: 3, margin: "8px 0" };
 const reflectionLabel = { fontSize: 11, color: C.muted, fontWeight: 600 };
 const reflectionInput = {
+  display: "block", width: "100%", boxSizing: "border-box",
   padding: "7px 10px", borderRadius: 8,
   background: C.cream, border: "1px solid rgba(58,44,26,0.10)",
   fontSize: 12, color: C.espresso, outline: "none",
@@ -4043,7 +4067,7 @@ const manualSub = { fontSize: 10, color: C.muted, marginTop: 2, lineHeight: 1.3 
 // Modal
 const modalBackdrop = {
   position: "fixed", inset: 0,
-  background: "rgba(58,44,26,0.40)", zIndex: 95,
+  background: "rgba(58,44,26,0.40)", zIndex: 9999,
   display: "flex", alignItems: "flex-end", justifyContent: "center",
   padding: "0 0 max(16px, env(safe-area-inset-bottom))",
 };
@@ -4267,8 +4291,10 @@ const moodDotLabel = {
 const miniInputLabel = {
   display: "flex", flexDirection: "column", gap: 4, marginTop: 4,
 };
+// Phase B follow-up: explicit width so empty inputs stay clickable on mobile.
 const miniInput = {
-  width: "100%", padding: "7px 10px",
+  display: "block", width: "100%", boxSizing: "border-box",
+  padding: "7px 10px",
   borderRadius: 8, background: C.cream,
   border: "1px solid rgba(58,44,26,0.10)",
   fontFamily: "'Inter', sans-serif", fontSize: 12,
