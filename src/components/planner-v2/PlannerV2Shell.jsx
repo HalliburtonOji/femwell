@@ -619,15 +619,15 @@ export default function PlannerV2Shell({
       </Row>
 
       <Row label="Care">
-        <MedsAndSuppsCard />
+        <MedsAndSuppsCard user={user} />
         <SymptomLogCard />
         <BodyScanCard />
         <GPReportCardSmall />
       </Row>
 
       <Row label="Tonight">
-        <TonightReflectionCard />
-        <TomorrowPreviewCard />
+        <TonightReflectionCard user={user} />
+        <TomorrowPreviewCard user={user} />
         <CycleReflectionCard />
       </Row>
 
@@ -2181,15 +2181,77 @@ function PhaseRecipesCard() {
 }
 
 // ── Care: merged Meds+Supps · Symptom log · Body scan · small GP card ────
-function MedsAndSuppsCard() {
+// Phase B6 — MedicationLogs + SupplementLog wiring.
+const SUPPLEMENT_FIELDS_B6 = [
+  { key: "folic_acid", text: "Folic acid",  when: "morning" },
+  { key: "vitamin_d",  text: "Vitamin D",   when: "morning" },
+  { key: "omega3",     text: "Omega-3",     when: "with breakfast" },
+  { key: "iron",       text: "Iron",        when: "evening" },
+];
+function MedsAndSuppsCard({ user }) {
   const [meds, setMeds] = useState(initialStack.meds);
-  const [supps, setSupps] = useState([
-    { id: "om3", text: "Omega-3", done: false, when: "with breakfast" },
-    { id: "mg",  text: "Magnesium glycinate", done: false, when: "evening" },
-  ]);
-  function toggleMed(id) { setMeds((ms) => ms.map((m) => m.id === id ? { ...m, done: !m.done } : m)); }
-  function toggleSupp(id) { setSupps((ss) => ss.map((s) => s.id === id ? { ...s, done: !s.done } : s)); }
-  const allMedsDone = meds.every((m) => m.done);
+  const [supps, setSupps] = useState(
+    SUPPLEMENT_FIELDS_B6.map((s) => ({ id: s.key, text: s.text, when: s.when, done: false }))
+  );
+  const [suppRowId, setSuppRowId] = useState(null);
+
+  useEffect(() => {
+    let cancelled = false;
+    if (!user?.id) return;
+    (async () => {
+      try {
+        const [medRows, suppRows] = await Promise.all([
+          base44.entities.MedicationLogs.filter({ user_id: user.id, date: todayISO }, "-created_date", 40).catch(() => []),
+          base44.entities.SupplementLog.filter({ user_id: user.id, date: todayISO }, "-date", 1).catch(() => []),
+        ]);
+        if (cancelled) return;
+        const mappedMeds = (medRows || []).map((m) => ({
+          id: m.id,
+          text: m.item_name || "Medication",
+          time: m.dose || "",
+          done: !!m.taken,
+        }));
+        if (mappedMeds.length > 0) setMeds(mappedMeds);
+        const suppRow = (suppRows || [])[0] || null;
+        setSuppRowId(suppRow?.id || null);
+        setSupps(SUPPLEMENT_FIELDS_B6.map((s) => ({
+          id: s.key, text: s.text, when: s.when,
+          done: !!(suppRow && suppRow[s.key]),
+        })));
+      } catch { /* silent */ }
+    })();
+    return () => { cancelled = true; };
+  }, [user?.id]);
+
+  async function toggleMed(id) {
+    let next = false;
+    setMeds((ms) => ms.map((m) => {
+      if (m.id !== id) return m;
+      next = !m.done;
+      return { ...m, done: next };
+    }));
+    try { await base44.entities.MedicationLogs.update(id, { taken: next }); } catch { /* silent */ }
+  }
+  async function toggleSupp(id) {
+    let next = false;
+    setSupps((ss) => ss.map((s) => {
+      if (s.id !== id) return s;
+      next = !s.done;
+      return { ...s, done: next };
+    }));
+    if (!user?.id) return;
+    try {
+      if (suppRowId) {
+        await base44.entities.SupplementLog.update(suppRowId, { [id]: next });
+      } else {
+        const payload = { user_id: user.id, date: todayISO };
+        for (const f of SUPPLEMENT_FIELDS_B6) payload[f.key] = (f.key === id ? next : false);
+        const created = await base44.entities.SupplementLog.create(payload);
+        if (created?.id) setSuppRowId(created.id);
+      }
+    } catch { /* silent */ }
+  }
+  const allMedsDone = meds.length > 0 && meds.every((m) => m.done);
   return (
     <article style={cardStyle}>
       <div style={cardHeadRow}>
@@ -2349,13 +2411,46 @@ function GPReportCardSmall() {
 }
 
 // ── Tonight extras (Tomorrow preview · Cycle reflection) ─────────────────
-function TomorrowPreviewCard() {
+function TomorrowPreviewCard({ user }) {
   const tomorrowDate = new Date(today); tomorrowDate.setDate(today.getDate() + 1);
+  const tomorrowStr  = tomorrowDate.toISOString().split("T")[0];
   const tmCycleDay = profile.cycleDay + 1;
   const tmPhase = tmCycleDay <= 28 ? "luteal" : "menstrual";
-  const key = `femwell_tomorrow_priority_${tomorrowDate.toISOString().split("T")[0]}`;
+  const key = `femwell_tomorrow_priority_${tomorrowStr}`;
   const [pri, setPri] = useState(() => { try { return localStorage.getItem(key) || ""; } catch { return ""; } });
   function save(v) { setPri(v); try { localStorage.setItem(key, v); } catch {} }
+  // Phase B6 — tomorrow's bullets pulled from PlannerItems + PersonalTasks
+  // for the next day. Falls back to a single italic prompt when nothing
+  // is scheduled yet.
+  const [tomorrowBullets, setTomorrowBullets] = useState([]);
+  useEffect(() => {
+    let cancelled = false;
+    if (!user?.id) return;
+    (async () => {
+      try {
+        const [evts, tks] = await Promise.all([
+          base44.entities.PlannerItems.filter({ user_id: user.id, date: tomorrowStr }, "-created_date", 30).catch(() => []),
+          base44.entities.PersonalTasks.filter({ user_id: user.id, date: tomorrowStr }, "-created_date", 30).catch(() => []),
+        ]);
+        if (cancelled) return;
+        const evList = (evts || []).slice().sort((a, b) => String(a?.time || "99:99").localeCompare(String(b?.time || "99:99")));
+        const out = [];
+        for (const e of evList) {
+          const h = e.time ? String(e.time).slice(0, 5) : "";
+          out.push(h ? `${h} — ${e.title || "Event"}` : (e.title || "Event"));
+          if (out.length >= 2) break;
+        }
+        if (out.length < 2) {
+          for (const t of tks || []) {
+            out.push(t.title || "Task");
+            if (out.length >= 2) break;
+          }
+        }
+        setTomorrowBullets(out);
+      } catch { /* silent */ }
+    })();
+    return () => { cancelled = true; };
+  }, [user?.id, tomorrowStr]);
   return (
     <article style={cardStyle}>
       <span style={kicker}>TOMORROW</span>
@@ -2380,8 +2475,11 @@ function TomorrowPreviewCard() {
         <input type="text" value={pri} onChange={(e) => save(e.target.value)} placeholder="The one thing" style={miniInput} />
       </label>
       <ul style={{ ...bulletList, gap: 4, marginTop: 4 }}>
-        <li style={bulletLine}><span style={bulletDot} /> 9am — Antenatal class</li>
-        <li style={bulletLine}><span style={bulletDot} /> 4pm — Investor follow-up</li>
+        {tomorrowBullets.length === 0 ? (
+          <li style={bulletLine}><span style={bulletDot} /> <span style={{ fontStyle: "italic", color: C.muted }}>Nothing planned yet</span></li>
+        ) : tomorrowBullets.map((b, i) => (
+          <li key={i} style={bulletLine}><span style={bulletDot} /> {b}</li>
+        ))}
       </ul>
       <p style={tipText}>Luteal tomorrow — front-load your morning.</p>
     </article>
@@ -2537,17 +2635,57 @@ function SupplementsCard() {
 }
 
 // ── Tonight ───────────────────────────────────────────────────────────────
-function TonightReflectionCard() {
+function TonightReflectionCard({ user }) {
   const key = `femwell_tonight_${todayISO}`;
   const prompts = ["One win today", "Energy rating (1–10)", "Intention for tomorrow"];
   const [data, setData] = useState(() => {
     try { const raw = localStorage.getItem(key); if (raw) return JSON.parse(raw); } catch {}
     return { win: "", energy: "", tomorrow: "" };
   });
-  function save(field, v) {
+  // Phase B6 — keep a local cache for instant repaint, plus persist the
+  // "Intention for tomorrow" string to DailyCheckins.sleep_intention so
+  // it survives across devices and feeds the doctor diary.
+  const [checkinId, setCheckinId] = useState(null);
+  useEffect(() => {
+    let cancelled = false;
+    if (!user?.id) return;
+    (async () => {
+      try {
+        const rows = await base44.entities.DailyCheckins.filter(
+          { user_id: user.id, date: todayISO }, "-updated_at", 1,
+        );
+        if (cancelled) return;
+        const row = (rows || [])[0];
+        if (row?.id) setCheckinId(row.id);
+        if (row?.sleep_intention) {
+          setData((d) => ({ ...d, tomorrow: row.sleep_intention }));
+        }
+      } catch { /* silent */ }
+    })();
+    return () => { cancelled = true; };
+  }, [user?.id]);
+
+  async function save(field, v) {
     const next = { ...data, [field]: v };
     setData(next);
     try { localStorage.setItem(key, JSON.stringify(next)); } catch {}
+    // Only the "Intention for tomorrow" field maps to a server entity for now.
+    if (field !== "tomorrow" || !user?.id) return;
+    const trimmed = (v || "").trim();
+    if (!trimmed) return;
+    try {
+      if (checkinId) {
+        await base44.entities.DailyCheckins.update(checkinId, {
+          sleep_intention: trimmed, updated_at: new Date().toISOString(),
+        });
+      } else {
+        const created = await base44.entities.DailyCheckins.create({
+          user_id: user.id, date: todayISO,
+          sleep_intention: trimmed, updated_at: new Date().toISOString(),
+        });
+        if (created?.id) setCheckinId(created.id);
+      }
+    } catch { /* silent */ }
   }
   return (
     <article style={cardStyle}>
