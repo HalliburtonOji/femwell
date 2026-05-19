@@ -418,7 +418,10 @@ function RecoveryCard() {
           <ChecklistItem key={it.id} item={it} onToggle={() => toggle(it.id)} accent={C.sage} />
         ))}
       </ul>
-      <button style={ctaLink}>EPDS · How are you really? <ChevronRight size={11} /></button>
+      <button
+        onClick={() => { try { window.location.href = "/Lifestyle"; } catch {} }}
+        style={ctaLink}
+      >EPDS · How are you really? <ChevronRight size={11} /></button>
     </article>
   );
 }
@@ -447,7 +450,10 @@ function BreastfeedingSupportCard() {
       <p style={{ ...cardSub, fontStyle: "italic" }}>
         Cluster feeding is normal — it doesn't mean low supply.
       </p>
-      <button style={ctaLink}>NHS lactation helpline <ChevronRight size={11} /></button>
+      <button
+        onClick={() => { try { window.location.href = "/Lifestyle"; } catch {} }}
+        style={ctaLink}
+      >NHS lactation helpline <ChevronRight size={11} /></button>
     </article>
   );
 }
@@ -768,7 +774,10 @@ function BodyPrepCard({ phase }) {
       <p style={{ ...cardSub, fontStyle: "italic", color: C.plum }}>
         {FOCUS[phase] || FOCUS.follicular}
       </p>
-      <button style={ctaLink}>Phase meals · Nutrition page <ChevronRight size={11} /></button>
+      <button
+        onClick={() => { try { window.location.href = "/Nutrition"; } catch {} }}
+        style={ctaLink}
+      >Phase meals · Nutrition page <ChevronRight size={11} /></button>
     </article>
   );
 }
@@ -888,7 +897,10 @@ function HrtLogCard() {
           <div style={{ fontSize: 10.5, color: C.muted }}>Next prescription due in 18 days</div>
         </div>
       </div>
-      <button style={ctaLink}><Plus size={11} /> Log side effect <ChevronRight size={11} /></button>
+      <button
+        onClick={() => { try { openLogger("symptom"); } catch {} }}
+        style={ctaLink}
+      ><Plus size={11} /> Log side effect <ChevronRight size={11} /></button>
     </article>
   );
 }
@@ -1247,7 +1259,10 @@ function PeriodTrackerCard() {
         ))}
       </div>
       <SeveritySlider value={pain} onChange={setPain} accent={C.rose} label="Pain" />
-      <button style={ctaLink}><AlertCircle size={11} /> Is this normal? <ChevronRight size={11} /></button>
+      <button
+        onClick={() => { try { window.location.href = "/Jess"; } catch {} }}
+        style={ctaLink}
+      ><AlertCircle size={11} /> Is this normal? <ChevronRight size={11} /></button>
     </article>
   );
 }

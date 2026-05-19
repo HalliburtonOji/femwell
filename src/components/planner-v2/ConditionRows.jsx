@@ -22,6 +22,7 @@ import {
 } from "lucide-react";
 import Row from "./Row";
 import { C, card, kicker, cardTitle, cardSub } from "./tokens";
+import { openLogger } from "@/components/UniversalLogger";
 
 // Phase B follow-up: shared nav helper for "Talk to Jess" CTAs across condition cards.
 function goToJess() { try { window.location.href = "/Jess"; } catch {} }
@@ -386,7 +387,10 @@ function PcosFertilityCard() {
           }}>{opt}</button>
         ))}
       </div>
-      <button style={ctaLink}><Plus size={11} /> Log today's OPK <ChevronRight size={11} /></button>
+      <button
+        onClick={() => { try { openLogger("symptom"); } catch {} }}
+        style={ctaLink}
+      ><Plus size={11} /> Log today's OPK <ChevronRight size={11} /></button>
     </article>
   );
 }
@@ -703,7 +707,10 @@ function FibroidsMonitorCard() {
         </div>
       </div>
       <p style={cardSub}>Track size + symptoms together so your GP sees the trend.</p>
-      <button style={ctaLink}><Plus size={11} /> Log a scan result <ChevronRight size={11} /></button>
+      <button
+        onClick={() => { try { openLogger("symptom"); } catch {} }}
+        style={ctaLink}
+      ><Plus size={11} /> Log a scan result <ChevronRight size={11} /></button>
       <p style={{ ...cardSub, fontStyle: "italic" }}>
         If pain or bleeding worsens — don&apos;t wait for the next appointment.
       </p>
@@ -822,7 +829,10 @@ function ThyroidTestCard() {
         </div>
       </div>
       <p style={cardSub}>Your interval: every {intervalMonths} months. Ask for free T3 + free T4 + antibodies, not just TSH.</p>
-      <button style={ctaLink}><Plus size={11} /> Log result <ChevronRight size={11} /></button>
+      <button
+        onClick={() => { try { openLogger("symptom"); } catch {} }}
+        style={ctaLink}
+      ><Plus size={11} /> Log result <ChevronRight size={11} /></button>
     </article>
   );
 }
@@ -1247,7 +1257,10 @@ function MeFlareCard() {
             style={{ width: "100%", marginTop: 6, padding: "6px 10px", borderRadius: 9, border: "1px solid rgba(58,44,26,0.12)", background: C.cream, fontFamily: "inherit", fontSize: 12.5, color: C.espresso, boxSizing: "border-box" }} />
         </>
       )}
-      <button style={ctaLink}><BookOpen size={11} /> ME Association · meassociation.org.uk</button>
+      <button
+        onClick={() => { try { window.location.href = "/Lifestyle"; } catch {} }}
+        style={ctaLink}
+      ><BookOpen size={11} /> ME Association · meassociation.org.uk</button>
     </article>
   );
 }

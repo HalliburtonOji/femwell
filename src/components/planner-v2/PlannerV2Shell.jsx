@@ -1687,6 +1687,31 @@ function CreateRitualCard() {
 function RitualBundleCard({ bundle, user }) {
   const [added, setAdded] = useState(false);
   const [adding, setAdding] = useState(false);
+
+  // Comprehensive audit: on mount, check whether all of this bundle's
+  // rituals already exist in today's HabitLogs. If so, mark Added so the
+  // CTA reflects reality after reload / across sessions. This is the
+  // "slider state lift" — the card derives its Added flag from the
+  // HabitLogs slice rather than purely local optimistic state.
+  useEffect(() => {
+    let cancelled = false;
+    if (!user?.id) return;
+    (async () => {
+      try {
+        const existing = await base44.entities.HabitLogs.filter(
+          { user_id: user.id, date: todayISO }, null, 200,
+        ).catch(() => []);
+        if (cancelled) return;
+        const have = new Set((existing || [])
+          .map((r) => (r?.habit_name || r?.habit_type || "").toLowerCase())
+          .filter(Boolean));
+        const allPresent = bundle.rituals.every((name) => have.has(String(name).toLowerCase()));
+        if (allPresent) setAdded(true);
+      } catch { /* silent */ }
+    })();
+    return () => { cancelled = true; };
+  }, [user?.id, bundle.id]);
+
   // Phase B6 follow-up: tap "Add to stack" creates one HabitLogs row per
   // ritual in the bundle for today (skipping duplicates by name).
   async function handleAddToStack() {
@@ -1996,6 +2021,48 @@ function MoodMentalHealthCard({ user }) {
   const colorFor = (v) => v >= 4 ? C.sage : v >= 3 ? C.gold : C.blush;
   const [carrying, setCarrying] = useState("");
   const [relief, setRelief] = useState("");
+  const [reflectionCheckinId, setReflectionCheckinId] = useState(null);
+
+  // Comprehensive audit: pre-populate carrying/relief from today's
+  // DailyCheckins.reflection_carrying / reflection_relief if they exist,
+  // so the user sees what they wrote earlier today.
+  useEffect(() => {
+    let cancelled = false;
+    if (!user?.id) return;
+    (async () => {
+      try {
+        const rows = await base44.entities.DailyCheckins.filter(
+          { user_id: user.id, date: todayISO }, "-updated_at", 1,
+        );
+        if (cancelled) return;
+        const row = (rows || [])[0];
+        if (row?.id) setReflectionCheckinId(row.id);
+        if (row?.reflection_carrying) setCarrying((c) => c || row.reflection_carrying);
+        if (row?.reflection_relief)   setRelief((r) => r || row.reflection_relief);
+      } catch { /* silent */ }
+    })();
+    return () => { cancelled = true; };
+  }, [user?.id]);
+
+  // Persist a reflection field to today's DailyCheckins row (upsert).
+  async function saveReflection(field, value) {
+    if (!user?.id) return;
+    const trimmed = (value || "").trim();
+    try {
+      if (reflectionCheckinId) {
+        await base44.entities.DailyCheckins.update(reflectionCheckinId, {
+          [field]: trimmed, updated_at: new Date().toISOString(),
+        });
+      } else {
+        const created = await base44.entities.DailyCheckins.create({
+          user_id: user.id, date: todayISO,
+          [field]: trimmed, updated_at: new Date().toISOString(),
+        });
+        if (created?.id) setReflectionCheckinId(created.id);
+      }
+    } catch { /* silent */ }
+  }
+
   return (
     <article style={cardStyle}>
       <span style={kicker}>MOOD & MENTAL HEALTH</span>
@@ -2014,6 +2081,7 @@ function MoodMentalHealthCard({ user }) {
         <textarea
           value={carrying}
           onChange={(e) => setCarrying(e.target.value)}
+          onBlur={() => saveReflection("reflection_carrying", carrying)}
           placeholder="…"
           rows={2}
           style={{ ...miniInput, minHeight: 44, resize: "vertical", fontFamily: "'Inter', sans-serif" }}
@@ -2024,6 +2092,7 @@ function MoodMentalHealthCard({ user }) {
         <textarea
           value={relief}
           onChange={(e) => setRelief(e.target.value)}
+          onBlur={() => saveReflection("reflection_relief", relief)}
           placeholder="…"
           rows={2}
           style={{ ...miniInput, minHeight: 44, resize: "vertical", fontFamily: "'Inter', sans-serif" }}
@@ -2067,6 +2136,13 @@ function BreathworkCard() {
         ))}
       </div>
       <p style={tipText}>Luteal — try 4-7-8 tonight for sleep.</p>
+      <button
+        type="button"
+        onClick={() => { try { window.location.href = "/Lifestyle"; } catch {} }}
+        style={astraOpenBtn}
+      >
+        Guided sessions in Lifestyle <ChevronRight size={11} />
+      </button>
     </article>
   );
 }
@@ -2472,7 +2548,10 @@ function BodyScanCard() {
       <p style={miniLabel}>EMOTIONAL LOAD</p>
       <Slider value={emo} set={setEmo} lo="Light" hi="Heavy" />
       <p style={tipText}>This data helps Jess understand your patterns.</p>
-      <button style={modalSaveBtn} onClick={() => {}}>Save</button>
+      <button
+        style={modalSaveBtn}
+        onClick={() => { try { openLogger("symptom"); } catch {} }}
+      >Save</button>
     </article>
   );
 }
@@ -2596,6 +2675,13 @@ function TomorrowPreviewCard({ user }) {
         ))}
       </ul>
       <p style={tipText}>Luteal tomorrow — front-load your morning.</p>
+      <button
+        type="button"
+        onClick={() => { try { openLogger("event"); } catch {} }}
+        style={{ ...modalSaveBtn, alignSelf: "flex-start", marginTop: 6 }}
+      >
+        <Plus size={11} /> Plan tomorrow
+      </button>
     </article>
   );
 }
@@ -2672,7 +2758,12 @@ function MealPlannerCard() {
               <div style={mealLabel}>{m.label}</div>
               <div style={mealValue}>{m.value}</div>
             </div>
-            {m.empty && <button style={addMealBtn}><Plus size={10} /> Add</button>}
+            {m.empty && (
+              <button
+                onClick={() => { try { openLogger("meal"); } catch {} }}
+                style={addMealBtn}
+              ><Plus size={10} /> Add</button>
+            )}
           </li>
         ))}
       </ul>
@@ -3043,7 +3134,10 @@ function DayDetailSheet({ iso, onClose }) {
           <span style={{ flex: 1, textAlign: "center", fontFamily: "'Fraunces', Georgia, serif", fontSize: 14, fontWeight: 500, color: C.espresso }}>
             {date.toLocaleDateString(undefined, { month: "long", day: "numeric", year: "numeric" })}
           </span>
-          <button style={dayEditBtn}>Edit</button>
+          <button
+            onClick={() => { try { openLogger("event"); } catch {} }}
+            style={dayEditBtn}
+          >Edit</button>
         </div>
         <h3 style={modalTitle}>{phase[0].toUpperCase() + phase.slice(1)} · Day {cycleDay}</h3>
         <Section name="PHASE SUMMARY">
