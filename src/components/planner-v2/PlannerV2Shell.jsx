@@ -599,6 +599,7 @@ export default function PlannerV2Shell({
       />
 
       <Row label="Rituals">
+        <MorningStackCard />
         <CreateRitualCard />
         {ritualBundles.map((b) => <RitualBundleCard key={b.id} bundle={b} user={user} />)}
       </Row>
