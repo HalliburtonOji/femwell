@@ -5,1862 +5,1799 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>FemWell — Unified Logger Tab Sheet V2</title>
 <style>
-  * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+* { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
 
-  :root {
-    --cream: #F4EDDB;
-    --espresso: #3A2C1A;
-    --blush: #E8B4B8;
-    --sage: #8FAF8F;
-    --muted: #9B8B7A;
-    --gold: #D4AF37;
-    --gold-light: #F0D875;
-    --cream-dark: #EBE2C8;
-    --white: #FFFFFF;
-  }
+:root {
+  --cream: #F4EDDB;
+  --espresso: #3A2C1A;
+  --blush: #E8B4B8;
+  --sage: #8FAF8F;
+  --muted: #9B8B7A;
+  --gold: #D4AF37;
+}
 
-  body {
-    background: #2a2a2a;
-    min-height: 100vh;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    font-family: system-ui, -apple-system, sans-serif;
-    padding: 24px 16px 40px;
-  }
+body {
+  background: #1a1a1a;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+  padding: 32px 16px 48px;
+  gap: 24px;
+}
 
-  /* PHONE FRAME */
-  .phone-frame {
-    width: 375px;
-    height: 780px;
-    background: var(--cream);
-    border-radius: 48px;
-    border: 3px solid #555;
-    box-shadow: 0 0 0 1px #333, 0 32px 80px rgba(0,0,0,0.7), inset 0 0 0 1px rgba(255,255,255,0.08);
-    position: relative;
-    overflow: hidden;
-    display: flex;
-    flex-direction: column;
-  }
+/* ─── PHONE FRAME ─── */
+.phone-frame {
+  width: 390px;
+  height: 844px;
+  background: var(--cream);
+  border-radius: 44px;
+  border: 8px solid #1a1a1a;
+  box-shadow:
+    0 0 0 1px #333,
+    inset 0 0 0 1px rgba(255,255,255,0.06),
+    0 40px 100px rgba(0,0,0,0.8),
+    0 12px 32px rgba(0,0,0,0.5);
+  position: relative;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
 
-  /* NOTCH */
-  .notch {
-    width: 120px;
-    height: 28px;
-    background: #222;
-    border-radius: 0 0 18px 18px;
-    margin: 0 auto;
-    flex-shrink: 0;
-    position: relative;
-    z-index: 10;
-  }
+/* Notch */
+.notch {
+  position: absolute;
+  top: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 126px;
+  height: 34px;
+  background: #1a1a1a;
+  border-radius: 0 0 20px 20px;
+  z-index: 100;
+}
+.notch::before {
+  content: '';
+  position: absolute;
+  top: 8px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 12px;
+  height: 12px;
+  background: #2a2a2a;
+  border-radius: 50%;
+  box-shadow: inset 0 0 4px rgba(0,0,0,0.6);
+}
 
-  /* STATUS BAR */
-  .status-bar {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 6px 20px 0;
-    font-size: 11px;
-    font-weight: 600;
-    color: var(--espresso);
-    flex-shrink: 0;
-  }
+/* ─── PLANNER BACKGROUND ─── */
+.planner-bg {
+  flex: 1;
+  background: var(--cream);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  position: relative;
+}
 
-  /* PAGE CONTENT */
-  .page-content {
-    flex: 1;
-    overflow-y: auto;
-    padding: 12px 16px 80px;
-    scrollbar-width: none;
-  }
-  .page-content::-webkit-scrollbar { display: none; }
+.planner-header {
+  padding: 52px 20px 16px;
+  border-bottom: 1px solid rgba(58,44,26,0.08);
+}
+.planner-header .date-label {
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  color: var(--muted);
+  text-transform: uppercase;
+  margin-bottom: 2px;
+}
+.planner-header .date-big {
+  font-size: 22px;
+  font-weight: 700;
+  color: var(--espresso);
+  letter-spacing: -0.3px;
+}
 
-  /* PLANNER ROWS */
-  .page-header {
-    margin-bottom: 12px;
-  }
-  .page-date {
-    font-size: 12px;
-    color: var(--muted);
-    font-weight: 500;
-    letter-spacing: 0.04em;
-    text-transform: uppercase;
-    margin-bottom: 2px;
-  }
-  .page-title {
-    font-size: 22px;
-    font-weight: 700;
-    color: var(--espresso);
-  }
+.planner-rows {
+  flex: 1;
+  overflow: hidden;
+  padding: 8px 0;
+}
 
-  .planner-row {
-    background: white;
-    border-radius: 14px;
-    padding: 12px 14px;
-    margin-bottom: 8px;
-    border: 1px solid rgba(58,44,26,0.08);
-  }
-  .planner-row-label {
-    font-size: 10px;
-    font-weight: 700;
-    letter-spacing: 0.08em;
-    text-transform: uppercase;
-    color: var(--muted);
-    margin-bottom: 6px;
-  }
-  .planner-row-title {
-    font-size: 14px;
-    font-weight: 600;
-    color: var(--espresso);
-    margin-bottom: 2px;
-  }
-  .planner-row-sub {
-    font-size: 12px;
-    color: var(--muted);
-  }
-  .mini-chips {
-    display: flex;
-    gap: 5px;
-    flex-wrap: wrap;
-    margin-top: 6px;
-  }
-  .mini-chip {
-    background: var(--cream);
-    border-radius: 20px;
-    padding: 3px 10px;
-    font-size: 11px;
-    color: var(--espresso);
-    font-weight: 500;
-  }
-  .mini-chip.sage { background: var(--sage); color: white; }
-  .mini-chip.blush { background: var(--blush); color: var(--espresso); }
+.planner-row {
+  display: flex;
+  align-items: center;
+  padding: 11px 20px;
+  border-bottom: 1px solid rgba(58,44,26,0.06);
+  gap: 12px;
+}
+.planner-row-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--blush);
+  flex-shrink: 0;
+}
+.planner-row-dot.sage { background: var(--sage); }
+.planner-row-dot.gold { background: var(--gold); }
+.planner-row-label {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--espresso);
+}
+.planner-row-sub {
+  font-size: 12px;
+  color: var(--muted);
+  margin-left: auto;
+}
 
-  /* BOTTOM NAV */
-  .bottom-nav {
-    position: absolute;
-    bottom: 0;
-    left: 0;
-    right: 0;
-    height: 68px;
-    background: white;
-    border-top: 1px solid rgba(58,44,26,0.1);
-    display: flex;
-    align-items: center;
-    justify-content: space-around;
-    padding-bottom: 8px;
-    z-index: 20;
-  }
-  .nav-item {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 2px;
-    padding: 6px 8px;
-    cursor: pointer;
-    opacity: 0.45;
-    transition: opacity 0.2s;
-  }
-  .nav-item.active { opacity: 1; }
-  .nav-icon { font-size: 18px; }
-  .nav-label { font-size: 9px; font-weight: 600; color: var(--espresso); letter-spacing: 0.03em; }
-  .nav-item.active .nav-label { color: var(--gold); }
-  .nav-item.active .nav-icon { filter: none; }
+/* Bottom nav */
+.bottom-nav {
+  height: 72px;
+  background: var(--cream);
+  border-top: 1px solid rgba(58,44,26,0.1);
+  display: flex;
+  align-items: center;
+  justify-content: space-around;
+  padding: 0 4px 10px;
+  flex-shrink: 0;
+}
+.nav-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  flex: 1;
+  cursor: pointer;
+  opacity: 0.45;
+  transition: opacity 0.2s;
+}
+.nav-item.active { opacity: 1; }
+.nav-item svg { width: 22px; height: 22px; }
+.nav-item span {
+  font-size: 10px;
+  font-weight: 500;
+  color: var(--espresso);
+}
+.nav-item.active span { color: var(--gold); font-weight: 600; }
+.nav-item.active svg { color: var(--gold); }
 
-  /* FAB */
-  .fab {
-    position: absolute;
-    bottom: 74px;
-    right: 16px;
-    width: 56px;
-    height: 56px;
-    border-radius: 50%;
-    background: var(--gold);
-    border: none;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    box-shadow: 0 4px 16px rgba(212,175,55,0.45), 0 2px 6px rgba(0,0,0,0.2);
-    z-index: 25;
-    transition: transform 0.2s, box-shadow 0.2s;
-    outline: none;
-  }
-  .fab:active { transform: scale(0.94); }
-  .fab svg { width: 24px; height: 24px; }
-  .fab.open { transform: rotate(45deg); }
+/* ─── FAB ─── */
+.fab {
+  position: absolute;
+  bottom: 96px;
+  right: 20px;
+  width: 56px;
+  height: 56px;
+  background: var(--gold);
+  border-radius: 50%;
+  border: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 4px 16px rgba(212,175,55,0.45), 0 2px 6px rgba(0,0,0,0.2);
+  z-index: 50;
+  transition: transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
+  -webkit-tap-highlight-color: transparent;
+}
+.fab:hover { transform: scale(1.06); }
+.fab.open { transform: rotate(45deg) scale(1.06); }
+.fab svg {
+  width: 26px;
+  height: 26px;
+  stroke: white;
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  fill: none;
+  transition: transform 0.25s;
+}
 
-  /* BOTTOM SHEET */
-  .sheet-overlay {
-    position: absolute;
-    inset: 0;
-    background: rgba(58,44,26,0.4);
-    z-index: 30;
-    opacity: 0;
-    pointer-events: none;
-    transition: opacity 0.3s;
-  }
-  .sheet-overlay.visible { opacity: 1; pointer-events: all; }
+/* ─── BACKDROP ─── */
+.backdrop {
+  position: absolute;
+  inset: 0;
+  background: rgba(58,44,26,0.35);
+  z-index: 60;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.3s ease;
+}
+.backdrop.visible {
+  opacity: 1;
+  pointer-events: all;
+}
 
-  .bottom-sheet {
-    position: absolute;
-    bottom: 0;
-    left: 0;
-    right: 0;
-    background: var(--cream);
-    border-radius: 24px 24px 0 0;
-    z-index: 35;
-    transform: translateY(100%);
-    transition: transform 0.38s cubic-bezier(0.32, 0.72, 0, 1);
-    max-height: 88%;
-    display: flex;
-    flex-direction: column;
-    overflow: hidden;
-  }
-  .bottom-sheet.open { transform: translateY(0); }
+/* ─── BOTTOM SHEET ─── */
+.sheet {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  max-height: 90%;
+  background: var(--cream);
+  border-radius: 24px 24px 0 0;
+  z-index: 70;
+  display: flex;
+  flex-direction: column;
+  transform: translateY(100%);
+  transition: transform 0.38s cubic-bezier(0.32, 0.72, 0, 1);
+  overflow: hidden;
+}
+.sheet.open {
+  transform: translateY(0);
+}
 
-  .sheet-handle {
-    width: 36px;
-    height: 4px;
-    background: rgba(58,44,26,0.2);
-    border-radius: 2px;
-    margin: 10px auto 0;
-    flex-shrink: 0;
-  }
+/* Sheet drag handle */
+.sheet-handle {
+  width: 36px;
+  height: 4px;
+  background: rgba(58,44,26,0.18);
+  border-radius: 2px;
+  margin: 10px auto 0;
+  flex-shrink: 0;
+}
 
-  .sheet-header {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 10px 18px 8px;
-    flex-shrink: 0;
-  }
-  .sheet-title {
-    font-size: 17px;
-    font-weight: 700;
-    color: var(--espresso);
-    letter-spacing: -0.01em;
-  }
-  .sheet-close {
-    width: 30px;
-    height: 30px;
-    border-radius: 50%;
-    background: rgba(58,44,26,0.1);
-    border: none;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 16px;
-    color: var(--espresso);
-    font-weight: 600;
-    transition: background 0.15s;
-  }
-  .sheet-close:active { background: rgba(58,44,26,0.18); }
+/* Sheet header */
+.sheet-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 20px 0;
+  flex-shrink: 0;
+}
+.sheet-title {
+  font-size: 17px;
+  font-weight: 600;
+  color: var(--espresso);
+  letter-spacing: -0.2px;
+}
+.sheet-close {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: rgba(58,44,26,0.08);
+  border: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--espresso);
+  font-size: 16px;
+  font-weight: 400;
+  transition: background 0.2s;
+  line-height: 1;
+}
+.sheet-close:hover { background: rgba(58,44,26,0.14); }
 
-  /* TABS */
-  .tab-pills {
-    display: flex;
-    gap: 6px;
-    padding: 0 18px 12px;
-    flex-shrink: 0;
-  }
-  .tab-pill {
-    flex: 1;
-    height: 36px;
-    border-radius: 20px;
-    border: none;
-    cursor: pointer;
-    font-size: 14px;
-    font-weight: 600;
-    transition: background 0.2s, color 0.2s, transform 0.1s;
-    letter-spacing: -0.01em;
-  }
-  .tab-pill:active { transform: scale(0.97); }
-  .tab-pill.log-active { background: var(--gold); color: var(--espresso); }
-  .tab-pill.log-inactive { background: rgba(58,44,26,0.08); color: var(--muted); }
-  .tab-pill.add-active { background: var(--espresso); color: var(--cream); }
-  .tab-pill.add-inactive { background: rgba(58,44,26,0.08); color: var(--muted); }
+/* ─── TAB ROW ─── */
+.tab-row {
+  display: flex;
+  gap: 4px;
+  padding: 12px 20px 0;
+  flex-shrink: 0;
+}
+.tab-pill {
+  flex: 1;
+  height: 40px;
+  border: none;
+  border-radius: 12px;
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.25s, color 0.25s;
+  font-family: inherit;
+}
+.tab-pill.log {
+  background: rgba(58,44,26,0.05);
+  color: var(--muted);
+  border: 0.5px solid rgba(58,44,26,0.15);
+}
+.tab-pill.log.active {
+  background: var(--gold);
+  color: var(--cream);
+  border-color: transparent;
+}
+.tab-pill.add {
+  background: rgba(58,44,26,0.05);
+  color: var(--muted);
+  border: 0.5px solid rgba(58,44,26,0.15);
+}
+.tab-pill.add.active {
+  background: var(--espresso);
+  color: var(--cream);
+  border-color: transparent;
+}
 
-  /* SHEET BODY */
-  .sheet-body {
-    flex: 1;
-    overflow-y: auto;
-    scrollbar-width: none;
-  }
-  .sheet-body::-webkit-scrollbar { display: none; }
+/* ─── SHEET CONTENT ─── */
+.sheet-body {
+  flex: 1;
+  overflow-y: auto;
+  overflow-x: hidden;
+  -webkit-overflow-scrolling: touch;
+}
+.sheet-body::-webkit-scrollbar { display: none; }
 
-  /* TAB PANELS */
-  .tab-panel { display: none; }
-  .tab-panel.active { display: block; }
+/* Tab panes */
+.tab-pane {
+  display: none;
+  padding: 16px 20px 24px;
+}
+.tab-pane.active { display: block; }
 
-  /* LOG TAB — CARD NAV CHIPS */
-  .card-nav {
-    display: flex;
-    gap: 6px;
-    padding: 0 18px 10px;
-    overflow-x: auto;
-    scrollbar-width: none;
-    flex-shrink: 0;
-  }
-  .card-nav::-webkit-scrollbar { display: none; }
-  .card-nav-chip {
-    flex-shrink: 0;
-    padding: 5px 12px;
-    border-radius: 20px;
-    background: rgba(58,44,26,0.07);
-    color: var(--muted);
-    font-size: 12px;
-    font-weight: 600;
-    border: none;
-    cursor: pointer;
-    transition: background 0.2s, color 0.2s;
-    white-space: nowrap;
-    display: flex;
-    align-items: center;
-    gap: 4px;
-  }
-  .card-nav-chip.active { background: var(--gold); color: var(--espresso); }
-  .card-nav-chip.done { background: var(--sage); color: white; }
+/* ─── PROGRESS BAR ─── */
+.progress-section {
+  margin-bottom: 14px;
+}
+.progress-bar {
+  display: flex;
+  gap: 3px;
+  margin-bottom: 6px;
+}
+.progress-seg {
+  flex: 1;
+  height: 4px;
+  border-radius: 2px;
+  background: rgba(58,44,26,0.12);
+  transition: background 0.3s;
+}
+.progress-seg.filled { background: var(--gold); }
+.progress-copy {
+  font-size: 11px;
+  color: var(--muted);
+  font-weight: 400;
+}
 
-  /* PROGRESS BAR */
-  .progress-wrap {
-    padding: 0 18px 10px;
-  }
-  .progress-bar-bg {
-    height: 4px;
-    background: rgba(58,44,26,0.1);
-    border-radius: 2px;
-    display: flex;
-    gap: 2px;
-    overflow: hidden;
-  }
-  .progress-seg {
-    flex: 1;
-    background: rgba(58,44,26,0.1);
-    border-radius: 2px;
-    transition: background 0.3s;
-  }
-  .progress-seg.filled { background: var(--gold); }
-  .progress-label {
-    font-size: 11px;
-    color: var(--muted);
-    margin-top: 5px;
-    font-weight: 500;
-  }
+/* ─── PILL NAV ─── */
+.pill-nav {
+  display: flex;
+  gap: 8px;
+  overflow-x: auto;
+  margin-bottom: 16px;
+  padding-bottom: 2px;
+  -webkit-overflow-scrolling: touch;
+}
+.pill-nav::-webkit-scrollbar { display: none; }
+.pill-nav-item {
+  flex-shrink: 0;
+  height: 32px;
+  padding: 0 16px;
+  border-radius: 999px;
+  font-size: 13px;
+  font-weight: 500;
+  border: none;
+  cursor: pointer;
+  background: var(--cream);
+  color: var(--muted);
+  border: 0.5px solid rgba(58,44,26,0.2);
+  font-family: inherit;
+  transition: all 0.2s;
+  white-space: nowrap;
+}
+.pill-nav-item.active {
+  background: var(--gold);
+  color: var(--cream);
+  font-weight: 600;
+  border-color: transparent;
+}
+.pill-nav-item.done {
+  background: var(--sage);
+  color: white;
+  font-weight: 600;
+  border-color: transparent;
+}
 
-  /* CARDS AREA */
-  .cards-viewport {
-    position: relative;
-    overflow: hidden;
-    touch-action: pan-y;
-    min-height: 380px;
-  }
-  .cards-track {
-    display: flex;
-    transition: transform 0.35s cubic-bezier(0.32,0.72,0,1);
-    will-change: transform;
-  }
-  .log-card {
-    min-width: 100%;
-    padding: 0 18px 24px;
-    flex-shrink: 0;
-  }
+/* ─── CARD DECK ─── */
+.card-deck-wrap {
+  position: relative;
+  height: 420px;
+  overflow: visible;
+  margin: 0 -20px;
+  padding: 0 20px;
+}
 
-  /* CARD SECTIONS */
-  .section {
-    margin-bottom: 14px;
-  }
-  .section-label {
-    font-size: 9px;
-    font-weight: 700;
-    letter-spacing: 0.1em;
-    text-transform: uppercase;
-    color: var(--muted);
-    margin-bottom: 7px;
-  }
-  .chips-row {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 6px;
-  }
-  .chip {
-    padding: 6px 13px;
-    border-radius: 20px;
-    background: rgba(58,44,26,0.07);
-    color: var(--espresso);
-    font-size: 12px;
-    font-weight: 500;
-    border: none;
-    cursor: pointer;
-    transition: background 0.15s, color 0.15s, transform 0.1s;
-  }
-  .chip:active { transform: scale(0.95); }
-  .chip.selected-gold { background: var(--gold); color: var(--espresso); font-weight: 600; }
-  .chip.selected-sage { background: var(--sage); color: white; font-weight: 600; }
+.log-card {
+  position: absolute;
+  top: 0;
+  left: 20px;
+  right: 20px;
+  bottom: 0;
+  background: var(--cream);
+  border-radius: 20px;
+  border: 1px solid rgba(58,44,26,0.08);
+  padding: 20px;
+  overflow-y: auto;
+  overflow-x: hidden;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  transition: transform 0.38s cubic-bezier(0.23, 1, 0.32, 1), opacity 0.38s ease;
+  will-change: transform, opacity;
+  -webkit-overflow-scrolling: touch;
+}
+.log-card::-webkit-scrollbar { display: none; }
 
-  /* ENERGY/STRESS DOTS */
-  .two-col {
-    display: flex;
-    gap: 12px;
-  }
-  .dot-col {
-    flex: 1;
-  }
-  .dot-col-label {
-    font-size: 10px;
-    font-weight: 600;
-    color: var(--muted);
-    margin-bottom: 5px;
-    letter-spacing: 0.04em;
-    text-transform: uppercase;
-  }
-  .dots-row {
-    display: flex;
-    gap: 6px;
-  }
-  .dot {
-    width: 30px;
-    height: 30px;
-    border-radius: 50%;
-    background: rgba(58,44,26,0.08);
-    border: none;
-    cursor: pointer;
-    font-size: 11px;
-    font-weight: 600;
-    color: var(--muted);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    transition: background 0.15s, color 0.15s;
-  }
-  .dot.selected { background: var(--espresso); color: var(--cream); }
+.log-card[data-pos="active"] {
+  transform: translateX(0) scale(1);
+  opacity: 1;
+  z-index: 10;
+  box-shadow: 0 8px 32px rgba(58,44,26,0.14), 0 2px 8px rgba(58,44,26,0.08);
+}
+.log-card[data-pos="next"] {
+  transform: translateX(82%) scale(0.92);
+  opacity: 0.65;
+  z-index: 9;
+  box-shadow: 0 4px 16px rgba(58,44,26,0.08);
+  pointer-events: none;
+}
+.log-card[data-pos="next2"] {
+  transform: translateX(164%) scale(0.85);
+  opacity: 0.3;
+  z-index: 8;
+  pointer-events: none;
+}
+.log-card[data-pos="prev"] {
+  transform: translateX(-105%) scale(0.95);
+  opacity: 0;
+  z-index: 7;
+  pointer-events: none;
+}
 
-  /* STEPPER */
-  .stepper-row {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-  }
-  .stepper-btn {
-    width: 32px;
-    height: 32px;
-    border-radius: 50%;
-    background: rgba(58,44,26,0.1);
-    border: none;
-    cursor: pointer;
-    font-size: 18px;
-    color: var(--espresso);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-weight: 300;
-    transition: background 0.15s;
-  }
-  .stepper-btn:active { background: rgba(58,44,26,0.2); }
-  .stepper-value {
-    font-size: 14px;
-    font-weight: 600;
-    color: var(--espresso);
-    min-width: 60px;
-    text-align: center;
-  }
+/* Card header */
+.card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-shrink: 0;
+}
+.card-header-left {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.card-icon {
+  width: 16px;
+  height: 16px;
+  color: var(--espresso);
+}
+.card-name {
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--espresso);
+}
+.card-next-btn {
+  background: none;
+  border: none;
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--gold);
+  cursor: pointer;
+  font-family: inherit;
+  padding: 4px 0;
+}
 
-  /* WATER PROGRESS */
-  .water-bar-bg {
-    height: 5px;
-    background: rgba(143,175,143,0.2);
-    border-radius: 3px;
-    margin-top: 7px;
-    overflow: hidden;
-  }
-  .water-bar-fill {
-    height: 100%;
-    background: var(--sage);
-    border-radius: 3px;
-    transition: width 0.3s;
-  }
+/* ─── CARD CONTENT COMPONENTS ─── */
+.kicker {
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  color: var(--espresso);
+  text-transform: uppercase;
+  margin-bottom: 6px;
+}
 
-  /* PERIOD FLOW */
-  .flow-chips {
-    margin-top: 7px;
-    display: flex;
-    flex-wrap: wrap;
-    gap: 6px;
-  }
+.mood-pills {
+  display: flex;
+  gap: 6px;
+  flex-wrap: nowrap;
+}
+.mood-pill {
+  flex: 1;
+  height: 36px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 500;
+  border: 0.5px solid rgba(58,44,26,0.2);
+  background: var(--cream);
+  color: var(--espresso);
+  cursor: pointer;
+  font-family: inherit;
+  transition: all 0.18s;
+  white-space: nowrap;
+  padding: 0;
+}
+.mood-pill.selected {
+  background: var(--gold);
+  color: var(--cream);
+  border-color: transparent;
+  font-weight: 600;
+}
 
-  /* COLLAPSIBLE */
-  .collapsible-btn {
-    width: 100%;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    background: rgba(58,44,26,0.05);
-    border: none;
-    border-radius: 10px;
-    padding: 8px 12px;
-    cursor: pointer;
-    font-size: 12px;
-    color: var(--muted);
-    font-weight: 500;
-  }
-  .collapsible-arrow { transition: transform 0.25s; font-size: 10px; }
-  .collapsible-arrow.open { transform: rotate(180deg); }
+.two-col { display: flex; gap: 12px; }
+.two-col > * { flex: 1; }
 
-  /* NOURISH MEAL TABS */
-  .meal-tabs {
-    display: flex;
-    gap: 5px;
-    margin-bottom: 10px;
-  }
-  .meal-tab {
-    flex: 1;
-    padding: 6px 0;
-    border-radius: 10px;
-    background: rgba(58,44,26,0.07);
-    color: var(--muted);
-    font-size: 11px;
-    font-weight: 600;
-    border: none;
-    cursor: pointer;
-    text-align: center;
-    transition: background 0.15s, color 0.15s;
-  }
-  .meal-tab.active { background: var(--espresso); color: var(--cream); }
+.dot-row { display: flex; gap: 6px; margin-top: 6px; }
+.dot-btn {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  border: 1.5px solid rgba(58,44,26,0.3);
+  background: transparent;
+  cursor: pointer;
+  transition: all 0.18s;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--muted);
+  font-family: inherit;
+}
+.dot-btn.filled {
+  background: var(--espresso);
+  border-color: var(--espresso);
+  color: var(--cream);
+}
 
-  .meal-form { display: none; }
-  .meal-form.visible { display: block; }
+.counter-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.counter-btn {
+  width: 36px;
+  height: 36px;
+  border-radius: 8px;
+  border: 1px solid rgba(58,44,26,0.2);
+  background: var(--cream);
+  color: var(--espresso);
+  font-size: 20px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: inherit;
+  font-weight: 300;
+  transition: background 0.15s;
+}
+.counter-btn:hover { background: rgba(58,44,26,0.06); }
+.counter-val {
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--espresso);
+  min-width: 60px;
+  text-align: center;
+}
+.counter-unit { font-size: 14px; font-weight: 400; color: var(--muted); }
 
-  .textarea-field {
-    width: 100%;
-    border: 1.5px solid rgba(58,44,26,0.15);
-    border-radius: 10px;
-    padding: 8px 10px;
-    font-size: 13px;
-    color: var(--espresso);
-    background: white;
-    resize: none;
-    font-family: system-ui;
-    outline: none;
-    transition: border-color 0.2s;
-    margin-bottom: 7px;
-  }
-  .textarea-field:focus { border-color: var(--gold); }
+.water-bar-wrap {
+  height: 6px;
+  background: rgba(58,44,26,0.1);
+  border-radius: 3px;
+  margin-top: 8px;
+  overflow: hidden;
+}
+.water-bar-fill {
+  height: 100%;
+  background: var(--sage);
+  border-radius: 3px;
+  transition: width 0.3s ease;
+}
 
-  .btn-espresso {
-    background: var(--espresso);
-    color: var(--cream);
-    border: none;
-    border-radius: 10px;
-    padding: 8px 16px;
-    font-size: 12px;
-    font-weight: 600;
-    cursor: pointer;
-    transition: opacity 0.15s;
-  }
-  .btn-espresso:active { opacity: 0.8; }
+.chip-row {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+.chip {
+  height: 30px;
+  padding: 0 10px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 500;
+  border: 0.5px solid rgba(58,44,26,0.2);
+  background: var(--cream);
+  color: var(--espresso);
+  cursor: pointer;
+  font-family: inherit;
+  transition: all 0.18s;
+  white-space: nowrap;
+}
+.chip.selected {
+  background: var(--gold);
+  color: var(--cream);
+  border-color: transparent;
+  font-weight: 600;
+}
+.chip.period-selected {
+  background: var(--blush);
+  color: var(--espresso);
+  border-color: transparent;
+}
 
-  .logged-chips { display: flex; flex-wrap: wrap; gap: 5px; margin-top: 8px; }
-  .logged-chip {
-    padding: 4px 10px;
-    border-radius: 20px;
-    background: var(--sage);
-    color: white;
-    font-size: 10px;
-    font-weight: 600;
-  }
+.collapsible-toggle {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  cursor: pointer;
+  padding: 4px 0;
+}
+.collapsible-label {
+  font-size: 13px;
+  color: var(--muted);
+}
+.chevron {
+  font-size: 12px;
+  color: var(--muted);
+  transition: transform 0.2s;
+}
+.chevron.open { transform: rotate(180deg); }
 
-  .drinks-scroll {
-    display: flex;
-    gap: 7px;
-    overflow-x: auto;
-    padding-bottom: 4px;
-    scrollbar-width: none;
-  }
-  .drinks-scroll::-webkit-scrollbar { display: none; }
-  .drink-chip {
-    flex-shrink: 0;
-    padding: 6px 12px;
-    border-radius: 20px;
-    background: rgba(143,175,143,0.15);
-    color: var(--espresso);
-    font-size: 11px;
-    font-weight: 600;
-    border: none;
-    cursor: pointer;
-    white-space: nowrap;
-    transition: background 0.15s;
-  }
-  .drink-chip.added { background: var(--sage); color: white; }
+/* Nourish card */
+.meal-tabs {
+  display: flex;
+  gap: 4px;
+  background: rgba(58,44,26,0.06);
+  border-radius: 10px;
+  padding: 3px;
+}
+.meal-tab {
+  flex: 1;
+  height: 30px;
+  border-radius: 8px;
+  border: none;
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+  background: transparent;
+  color: var(--muted);
+  font-family: inherit;
+  transition: all 0.2s;
+}
+.meal-tab.active {
+  background: var(--espresso);
+  color: var(--cream);
+  font-weight: 600;
+}
 
-  /* HEALTH */
-  .checkbox-row {
-    display: flex;
-    align-items: center;
-    gap: 9px;
-    padding: 6px 0;
-    cursor: pointer;
-    border-bottom: 1px solid rgba(58,44,26,0.06);
-  }
-  .checkbox-row:last-child { border-bottom: none; }
-  .checkbox-box {
-    width: 20px;
-    height: 20px;
-    border-radius: 6px;
-    border: 2px solid rgba(58,44,26,0.2);
-    background: white;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    flex-shrink: 0;
-    transition: background 0.15s, border-color 0.15s;
-  }
-  .checkbox-box.checked { background: var(--sage); border-color: var(--sage); }
-  .checkbox-label { font-size: 13px; color: var(--espresso); font-weight: 500; }
+.field-textarea {
+  width: 100%;
+  background: var(--cream);
+  border: 0.5px solid rgba(58,44,26,0.2);
+  border-radius: 12px;
+  padding: 10px 12px;
+  font-size: 13px;
+  color: var(--espresso);
+  font-family: inherit;
+  resize: none;
+  outline: none;
+  transition: border-color 0.2s;
+  line-height: 1.5;
+}
+.field-textarea::placeholder { color: var(--muted); }
+.field-textarea:focus { border-color: rgba(58,44,26,0.4); }
 
-  .inline-add-row {
-    display: flex;
-    gap: 6px;
-    margin-top: 8px;
-  }
-  .inline-input {
-    flex: 1;
-    border: 1.5px solid rgba(58,44,26,0.15);
-    border-radius: 10px;
-    padding: 7px 10px;
-    font-size: 12px;
-    color: var(--espresso);
-    background: white;
-    outline: none;
-    font-family: system-ui;
-    transition: border-color 0.2s;
-  }
-  .inline-input:focus { border-color: var(--gold); }
-  .btn-small {
-    background: var(--espresso);
-    color: var(--cream);
-    border: none;
-    border-radius: 10px;
-    padding: 7px 12px;
-    font-size: 11px;
-    font-weight: 600;
-    cursor: pointer;
-    white-space: nowrap;
-  }
+.btn-full {
+  width: 100%;
+  height: 40px;
+  border-radius: 999px;
+  border: none;
+  background: var(--espresso);
+  color: var(--cream);
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  font-family: inherit;
+  transition: opacity 0.2s;
+}
+.btn-full:hover { opacity: 0.85; }
 
-  /* TONIGHT GRID */
-  .grid-2col { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
+.logged-meals {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+.logged-chip {
+  background: var(--sage);
+  color: white;
+  font-size: 12px;
+  font-weight: 500;
+  padding: 4px 10px;
+  border-radius: 999px;
+}
 
-  /* ADD TAB */
-  .voice-row {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    background: white;
-    border-radius: 14px;
-    padding: 12px 14px;
-    margin: 0 18px 14px;
-    border: 1.5px solid rgba(58,44,26,0.1);
-    cursor: pointer;
-    transition: border-color 0.2s;
-  }
-  .voice-row:active { border-color: var(--gold); }
-  .voice-btn {
-    width: 40px;
-    height: 40px;
-    border-radius: 50%;
-    background: var(--blush);
-    border: none;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    flex-shrink: 0;
-    cursor: pointer;
-  }
-  .voice-text { font-size: 12px; color: var(--muted); font-weight: 500; line-height: 1.4; }
-  .voice-label { font-size: 13px; font-weight: 600; color: var(--espresso); }
+/* Health card */
+.checkbox-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 6px 0;
+}
+.checkbox-box {
+  width: 20px;
+  height: 20px;
+  border-radius: 4px;
+  border: 1.5px solid rgba(58,44,26,0.3);
+  background: var(--cream);
+  cursor: pointer;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.18s;
+}
+.checkbox-box.checked {
+  background: var(--sage);
+  border-color: var(--sage);
+}
+.checkbox-box.checked::after {
+  content: '';
+  width: 10px;
+  height: 7px;
+  border-left: 2px solid white;
+  border-bottom: 2px solid white;
+  transform: rotate(-45deg) translateY(-2px);
+  display: block;
+}
+.checkbox-label {
+  font-size: 13px;
+  color: var(--espresso);
+}
 
-  .add-section-label {
-    padding: 0 18px;
-    font-size: 10px;
-    font-weight: 700;
-    letter-spacing: 0.08em;
-    text-transform: uppercase;
-    color: var(--muted);
-    margin-bottom: 10px;
-  }
+.inline-add {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+.inline-input {
+  flex: 1;
+  height: 36px;
+  border: 0.5px solid rgba(58,44,26,0.2);
+  border-radius: 8px;
+  background: var(--cream);
+  color: var(--espresso);
+  font-size: 13px;
+  font-family: inherit;
+  padding: 0 10px;
+  outline: none;
+}
+.inline-input::placeholder { color: var(--muted); }
+.inline-input:focus { border-color: rgba(58,44,26,0.4); }
+.inline-add-btn {
+  height: 32px;
+  padding: 0 14px;
+  border-radius: 8px;
+  border: none;
+  background: var(--gold);
+  color: var(--cream);
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  font-family: inherit;
+}
 
-  .type-grid {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 8px;
-    padding: 0 18px;
-  }
-  .type-card {
-    background: white;
-    border-radius: 14px;
-    padding: 12px;
-    cursor: pointer;
-    border: 2px solid transparent;
-    transition: border-color 0.2s, transform 0.1s;
-    display: flex;
-    flex-direction: column;
-    gap: 6px;
-  }
-  .type-card:active { transform: scale(0.97); }
-  .type-card.selected { border-color: var(--gold); background: #FFFBEF; }
-  .type-icon { font-size: 24px; margin-bottom: 2px; }
-  .type-name { font-size: 13px; font-weight: 600; color: var(--espresso); }
-  .type-sub { font-size: 10px; color: var(--muted); line-height: 1.3; }
+.duration-stepper {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 8px;
+}
+.step-btn {
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  border: 1px solid rgba(58,44,26,0.2);
+  background: var(--cream);
+  color: var(--espresso);
+  font-size: 18px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 300;
+  font-family: inherit;
+}
+.step-val {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--espresso);
+  min-width: 56px;
+  text-align: center;
+}
 
-  /* QUICK FORM */
-  .quick-form-wrap {
-    margin: 10px 18px 0;
-    overflow: hidden;
-    max-height: 0;
-    transition: max-height 0.35s cubic-bezier(0.32,0.72,0,1), opacity 0.25s;
-    opacity: 0;
-  }
-  .quick-form-wrap.open {
-    max-height: 300px;
-    opacity: 1;
-  }
-  .quick-form {
-    background: white;
-    border-radius: 14px;
-    padding: 14px;
-    border: 1.5px solid rgba(212,175,55,0.3);
-  }
-  .quick-form-title {
-    font-size: 13px;
-    font-weight: 700;
-    color: var(--espresso);
-    margin-bottom: 10px;
-  }
-  .field-label {
-    font-size: 10px;
-    font-weight: 700;
-    letter-spacing: 0.06em;
-    text-transform: uppercase;
-    color: var(--muted);
-    margin-bottom: 4px;
-  }
-  .field-group { margin-bottom: 10px; }
-  .quick-chips { display: flex; gap: 5px; flex-wrap: wrap; }
-  .quick-chip {
-    padding: 5px 11px;
-    border-radius: 20px;
-    background: rgba(58,44,26,0.07);
-    color: var(--espresso);
-    font-size: 11px;
-    font-weight: 500;
-    border: none;
-    cursor: pointer;
-    transition: background 0.15s, color 0.15s;
-  }
-  .quick-chip.selected { background: var(--espresso); color: var(--cream); }
-  .quick-form-actions { display: flex; gap: 6px; margin-top: 4px; }
-  .btn-add {
-    background: var(--gold);
-    color: var(--espresso);
-    border: none;
-    border-radius: 10px;
-    padding: 9px 18px;
-    font-size: 13px;
-    font-weight: 700;
-    cursor: pointer;
-    transition: opacity 0.15s;
-  }
-  .btn-add:active { opacity: 0.8; }
-  .btn-cancel {
-    background: transparent;
-    color: var(--muted);
-    border: none;
-    border-radius: 10px;
-    padding: 9px 12px;
-    font-size: 13px;
-    font-weight: 500;
-    cursor: pointer;
-  }
+/* Mind card */
+.journal-prompt {
+  font-size: 14px;
+  font-style: italic;
+  color: var(--muted);
+  line-height: 1.5;
+  margin-bottom: 4px;
+}
 
-  /* TOAST */
-  .toast {
-    position: absolute;
-    bottom: 80px;
-    left: 50%;
-    transform: translateX(-50%) translateY(10px);
-    background: var(--espresso);
-    color: var(--cream);
-    padding: 7px 16px;
-    border-radius: 20px;
-    font-size: 12px;
-    font-weight: 600;
-    opacity: 0;
-    pointer-events: none;
-    transition: opacity 0.2s, transform 0.2s;
-    z-index: 50;
-    white-space: nowrap;
-  }
-  .toast.show {
-    opacity: 1;
-    transform: translateX(-50%) translateY(0);
-  }
+.two-col-check { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
 
-  /* DEMO LABEL */
-  .demo-label {
-    margin-top: 20px;
-    text-align: center;
-    color: rgba(255,255,255,0.5);
-    font-size: 11px;
-    font-weight: 700;
-    letter-spacing: 0.12em;
-    text-transform: uppercase;
-    line-height: 1.6;
-  }
-  .demo-sub {
-    font-size: 10px;
-    color: rgba(255,255,255,0.3);
-    font-weight: 400;
-    text-transform: none;
-    letter-spacing: 0;
-    margin-top: 3px;
-  }
+.tomorrow-row {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+.tomorrow-input {
+  flex: 1;
+  height: 36px;
+  border: 0.5px solid rgba(58,44,26,0.2);
+  border-radius: 8px;
+  background: var(--cream);
+  color: var(--espresso);
+  font-size: 13px;
+  font-family: inherit;
+  padding: 0 10px;
+  outline: none;
+}
+.tomorrow-input::placeholder { color: var(--muted); }
+.tomorrow-add-btn {
+  height: 32px;
+  padding: 0 14px;
+  border-radius: 8px;
+  border: none;
+  background: var(--espresso);
+  color: var(--cream);
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  font-family: inherit;
+}
 
-  /* SECTION DIVIDER */
-  .divider { height: 1px; background: rgba(58,44,26,0.07); margin: 10px 0; }
+/* ─── ADD TAB ─── */
+.voice-row {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 14px 16px;
+  background: rgba(58,44,26,0.04);
+  border-radius: 16px;
+  margin-bottom: 18px;
+  border: 1px solid rgba(58,44,26,0.08);
+}
+.voice-circle {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  background: var(--espresso);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+.voice-text {
+  font-size: 13px;
+  color: var(--muted);
+  line-height: 1.4;
+}
 
-  /* JOURNAL TEXTAREA */
-  .journal-prompt {
-    font-size: 12px;
-    font-style: italic;
-    color: var(--muted);
-    margin-bottom: 8px;
-    line-height: 1.5;
-  }
-  .autosave-note {
-    font-size: 10px;
-    color: var(--sage);
-    font-weight: 600;
-    opacity: 0;
-    transition: opacity 0.3s;
-    margin-top: 4px;
-  }
-  .autosave-note.show { opacity: 1; }
+.type-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+.type-card {
+  background: var(--cream);
+  border: 1px solid rgba(58,44,26,0.12);
+  border-radius: 16px;
+  padding: 16px;
+  cursor: pointer;
+  transition: border-color 0.2s, background 0.2s;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.type-card:hover { border-color: rgba(212,175,55,0.5); }
+.type-card.selected {
+  border-color: var(--gold);
+  background: rgba(212,175,55,0.06);
+}
+.type-card-icon {
+  width: 28px;
+  height: 28px;
+  color: var(--espresso);
+}
+.type-card-name {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--espresso);
+}
+.type-card-sub {
+  font-size: 11px;
+  color: var(--muted);
+  line-height: 1.3;
+}
 
-  /* Card section box */
-  .card-box {
-    background: white;
-    border-radius: 12px;
-    padding: 11px 12px;
-    margin-bottom: 8px;
-  }
+/* Quick form */
+.quick-form {
+  margin-top: 16px;
+  background: rgba(58,44,26,0.04);
+  border-radius: 16px;
+  padding: 16px;
+  border: 1px solid rgba(58,44,26,0.1);
+  animation: slideUpForm 0.25s cubic-bezier(0.23, 1, 0.32, 1);
+}
+@keyframes slideUpForm {
+  from { opacity: 0; transform: translateY(12px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.quick-form-title {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--espresso);
+  margin-bottom: 12px;
+}
+.quick-field {
+  margin-bottom: 10px;
+}
+.quick-field label {
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  color: var(--muted);
+  text-transform: uppercase;
+  display: block;
+  margin-bottom: 4px;
+}
+.quick-field input {
+  width: 100%;
+  height: 38px;
+  border: 0.5px solid rgba(58,44,26,0.2);
+  border-radius: 10px;
+  background: var(--cream);
+  color: var(--espresso);
+  font-size: 13px;
+  font-family: inherit;
+  padding: 0 12px;
+  outline: none;
+}
+.quick-field input::placeholder { color: var(--muted); }
+.quick-field input:focus { border-color: rgba(58,44,26,0.4); }
+.quick-submit {
+  width: 100%;
+  height: 40px;
+  border-radius: 999px;
+  border: none;
+  background: var(--gold);
+  color: var(--cream);
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  font-family: inherit;
+  margin-top: 4px;
+}
+
+/* ─── TOAST ─── */
+.toast {
+  position: absolute;
+  bottom: 80px;
+  left: 50%;
+  transform: translateX(-50%) translateY(20px);
+  background: var(--espresso);
+  color: var(--cream);
+  font-size: 12px;
+  font-weight: 500;
+  padding: 8px 20px;
+  border-radius: 999px;
+  z-index: 200;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.2s, transform 0.2s;
+  white-space: nowrap;
+  font-family: inherit;
+}
+.toast.show {
+  opacity: 1;
+  transform: translateX(-50%) translateY(0);
+}
+
+/* ─── DEMO LABEL ─── */
+.demo-label {
+  font-size: 12px;
+  color: rgba(255,255,255,0.3);
+  font-style: italic;
+  text-align: center;
+  letter-spacing: 0.08em;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+}
+
+/* Divider */
+.divider {
+  height: 1px;
+  background: rgba(58,44,26,0.08);
+  margin: 2px 0;
+}
+
+/* Section block */
+.section-block { display: flex; flex-direction: column; gap: 4px; }
 </style>
 </head>
 <body>
 
-<div class="phone-frame" id="phoneFrame">
-  <!-- NOTCH -->
-  <div style="display:flex;justify-content:center;flex-shrink:0;">
-    <div class="notch"></div>
-  </div>
+<div class="phone-frame">
+  <div class="notch"></div>
 
-  <!-- STATUS BAR -->
-  <div class="status-bar">
-    <span>9:41</span>
-    <span>●●●  WiFi ■■■</span>
-  </div>
-
-  <!-- PAGE CONTENT -->
-  <div class="page-content">
-    <div class="page-header">
-      <div class="page-date">Tuesday, 20 May 2026</div>
-      <div class="page-title">Your Planner</div>
+  <!-- PLANNER BACKGROUND -->
+  <div class="planner-bg">
+    <div class="planner-header">
+      <div class="date-label">Today</div>
+      <div class="date-big">Wednesday 21 May</div>
     </div>
-
-    <!-- Planner rows (background content) -->
-    <div class="planner-row">
-      <div class="planner-row-label">Body Today</div>
-      <div class="planner-row-title">Good morning, Halli</div>
-      <div class="planner-row-sub">Cycle day 12 · Follicular phase</div>
-      <div class="mini-chips">
-        <span class="mini-chip blush">🌙 Well rested</span>
-        <span class="mini-chip sage">💧 4/8 glasses</span>
+    <div class="planner-rows">
+      <div class="planner-row">
+        <div class="planner-row-dot gold"></div>
+        <div class="planner-row-label">Schedule &amp; Cycle</div>
+        <div class="planner-row-sub">Day 14</div>
+      </div>
+      <div class="planner-row">
+        <div class="planner-row-dot"></div>
+        <div class="planner-row-label">Your Day</div>
+        <div class="planner-row-sub">3 tasks</div>
+      </div>
+      <div class="planner-row">
+        <div class="planner-row-dot sage"></div>
+        <div class="planner-row-label">Body Today</div>
+        <div class="planner-row-sub">2 logged</div>
+      </div>
+      <div class="planner-row">
+        <div class="planner-row-dot"></div>
+        <div class="planner-row-label">Nourishment</div>
+        <div class="planner-row-sub">Lunch logged</div>
+      </div>
+      <div class="planner-row">
+        <div class="planner-row-dot"></div>
+        <div class="planner-row-label">Mind &amp; Insight</div>
+        <div class="planner-row-sub">—</div>
+      </div>
+      <div class="divider" style="margin: 4px 20px;"></div>
+      <div class="planner-row">
+        <div class="planner-row-dot" style="background:var(--blush)"></div>
+        <div class="planner-row-label">Rituals</div>
+        <div class="planner-row-sub">1 of 3</div>
+      </div>
+      <div class="planner-row">
+        <div class="planner-row-dot" style="background:var(--blush)"></div>
+        <div class="planner-row-label">Care</div>
+        <div class="planner-row-sub">Meds due</div>
       </div>
     </div>
 
-    <div class="planner-row">
-      <div class="planner-row-label">My Lists</div>
-      <div class="planner-row-title">3 tasks today</div>
-      <div class="mini-chips">
-        <span class="mini-chip">Book GP appointment</span>
-        <span class="mini-chip sage">✓ Morning walk</span>
-        <span class="mini-chip">Take iron supplement</span>
+    <!-- Bottom Nav -->
+    <div class="bottom-nav">
+      <div class="nav-item active">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color:var(--gold)">
+          <rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/>
+        </svg>
+        <span>Planner</span>
       </div>
-    </div>
-
-    <div class="planner-row">
-      <div class="planner-row-label">Nourishment</div>
-      <div class="planner-row-title">Breakfast logged</div>
-      <div class="planner-row-sub">Porridge with berries · Medium · 8:30am</div>
-      <div class="mini-chips">
-        <span class="mini-chip sage">Lunch due</span>
-        <span class="mini-chip">Dinner upcoming</span>
+      <div class="nav-item">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color:var(--espresso)">
+          <path d="M22 12h-4l-3 9L9 3l-3 9H2"/>
+        </svg>
+        <span>Track</span>
       </div>
-    </div>
-
-    <div class="planner-row">
-      <div class="planner-row-label">Mind & Insight</div>
-      <div class="planner-row-title">Journal</div>
-      <div class="planner-row-sub">Tap to write today's entry</div>
-    </div>
-
-    <div class="planner-row">
-      <div class="planner-row-label">Care</div>
-      <div class="planner-row-title">Medications</div>
-      <div class="mini-chips">
-        <span class="mini-chip sage">✓ Iron supplement</span>
-        <span class="mini-chip">Vitamin D due</span>
+      <div class="nav-item">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color:var(--espresso)">
+          <circle cx="12" cy="12" r="10"/><path d="M12 8v4l3 3"/>
+        </svg>
+        <span>Insights</span>
       </div>
-    </div>
-  </div>
-
-  <!-- BOTTOM NAV -->
-  <div class="bottom-nav">
-    <div class="nav-item">
-      <div class="nav-icon">🏠</div>
-      <div class="nav-label">Home</div>
-    </div>
-    <div class="nav-item active">
-      <div class="nav-icon" style="color:var(--gold);">📋</div>
-      <div class="nav-label">Planner</div>
-    </div>
-    <div class="nav-item" style="opacity:0;"><!-- space for FAB --></div>
-    <div class="nav-item">
-      <div class="nav-icon">📊</div>
-      <div class="nav-label">Insights</div>
-    </div>
-    <div class="nav-item">
-      <div class="nav-icon">👤</div>
-      <div class="nav-label">Profile</div>
+      <div class="nav-item">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color:var(--espresso)">
+          <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/>
+        </svg>
+        <span>Profile</span>
+      </div>
+      <div class="nav-item">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color:var(--espresso)">
+          <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+        </svg>
+        <span>Explore</span>
+      </div>
     </div>
   </div>
 
   <!-- FAB -->
-  <button class="fab" id="fab" onclick="toggleSheet()" aria-label="Open logger">
-    <svg viewBox="0 0 24 24" fill="none" stroke="#3A2C1A" stroke-width="2.5" stroke-linecap="round">
+  <button class="fab" id="fab" onclick="toggleSheet()">
+    <svg viewBox="0 0 24 24" id="fab-icon">
       <line x1="12" y1="5" x2="12" y2="19"/>
       <line x1="5" y1="12" x2="19" y2="12"/>
     </svg>
   </button>
 
-  <!-- OVERLAY -->
-  <div class="sheet-overlay" id="overlay" onclick="closeSheet()"></div>
+  <!-- BACKDROP -->
+  <div class="backdrop" id="backdrop" onclick="closeSheet()"></div>
 
   <!-- BOTTOM SHEET -->
-  <div class="bottom-sheet" id="bottomSheet">
+  <div class="sheet" id="sheet">
     <div class="sheet-handle"></div>
 
+    <!-- Header -->
     <div class="sheet-header">
       <div class="sheet-title">Daily Hub</div>
       <button class="sheet-close" onclick="closeSheet()">✕</button>
     </div>
 
-    <!-- TABS -->
-    <div class="tab-pills">
-      <button class="tab-pill log-active" id="tabLog" onclick="switchTab('log')">Log</button>
-      <button class="tab-pill add-inactive" id="tabAdd" onclick="switchTab('add')">Add</button>
+    <!-- Tab Row -->
+    <div class="tab-row">
+      <button class="tab-pill log active" id="tab-log" onclick="switchTab('log')">Log</button>
+      <button class="tab-pill add" id="tab-add" onclick="switchTab('add')">Add</button>
     </div>
 
-    <!-- SHEET BODY -->
-    <div class="sheet-body" id="sheetBody">
+    <!-- Sheet Body -->
+    <div class="sheet-body">
 
-      <!-- LOG PANEL -->
-      <div class="tab-panel active" id="panelLog">
-
-        <!-- Card Nav Chips -->
-        <div class="card-nav" id="cardNav">
-          <button class="card-nav-chip active" onclick="goToCard(0)" id="chip0">Check-in</button>
-          <button class="card-nav-chip" onclick="goToCard(1)" id="chip1">Nourish</button>
-          <button class="card-nav-chip" onclick="goToCard(2)" id="chip2">Health</button>
-          <button class="card-nav-chip" onclick="goToCard(3)" id="chip3">Mind &amp; Life</button>
-        </div>
+      <!-- ═══════════════════════ LOG TAB ═══════════════════════ -->
+      <div class="tab-pane active" id="pane-log">
 
         <!-- Progress Bar -->
-        <div class="progress-wrap">
-          <div class="progress-bar-bg">
-            <div class="progress-seg" id="seg0"></div>
-            <div class="progress-seg" id="seg1"></div>
-            <div class="progress-seg" id="seg2"></div>
-            <div class="progress-seg" id="seg3"></div>
+        <div class="progress-section">
+          <div class="progress-bar" id="progress-bar">
+            <div class="progress-seg" id="seg-0"></div>
+            <div class="progress-seg" id="seg-1"></div>
+            <div class="progress-seg" id="seg-2"></div>
+            <div class="progress-seg" id="seg-3"></div>
           </div>
-          <div class="progress-label" id="progressLabel">Start logging</div>
+          <div class="progress-copy" id="progress-copy">Start logging</div>
         </div>
 
-        <!-- Cards Viewport -->
-        <div class="cards-viewport" id="cardsViewport">
-          <div class="cards-track" id="cardsTrack">
-
-            <!-- CARD 0: CHECK-IN -->
-            <div class="log-card" id="card0">
-
-              <div class="card-box">
-                <div class="section-label">How are you?</div>
-                <div class="chips-row" id="moodChips">
-                  <button class="chip" onclick="selectChip(this,'mood')">Awful</button>
-                  <button class="chip" onclick="selectChip(this,'mood')">Low</button>
-                  <button class="chip" onclick="selectChip(this,'mood')">Okay</button>
-                  <button class="chip" onclick="selectChip(this,'mood')">Good</button>
-                  <button class="chip" onclick="selectChip(this,'mood')">Great</button>
-                </div>
-              </div>
-
-              <div class="card-box">
-                <div class="section-label">Energy · Stress</div>
-                <div class="two-col">
-                  <div class="dot-col">
-                    <div class="dot-col-label">Energy</div>
-                    <div class="dots-row" id="energyDots">
-                      <button class="dot" onclick="selectDot(this,'energy')">1</button>
-                      <button class="dot" onclick="selectDot(this,'energy')">2</button>
-                      <button class="dot" onclick="selectDot(this,'energy')">3</button>
-                      <button class="dot" onclick="selectDot(this,'energy')">4</button>
-                      <button class="dot" onclick="selectDot(this,'energy')">5</button>
-                    </div>
-                  </div>
-                  <div class="dot-col">
-                    <div class="dot-col-label">Stress</div>
-                    <div class="dots-row" id="stressDots">
-                      <button class="dot" onclick="selectDot(this,'stress')">1</button>
-                      <button class="dot" onclick="selectDot(this,'stress')">2</button>
-                      <button class="dot" onclick="selectDot(this,'stress')">3</button>
-                      <button class="dot" onclick="selectDot(this,'stress')">4</button>
-                      <button class="dot" onclick="selectDot(this,'stress')">5</button>
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              <div class="card-box">
-                <div class="section-label">Sleep Last Night</div>
-                <div class="stepper-row">
-                  <button class="stepper-btn" onclick="stepSleep(-0.5)">−</button>
-                  <div class="stepper-value" id="sleepVal">7h 0m</div>
-                  <button class="stepper-btn" onclick="stepSleep(0.5)">+</button>
-                </div>
-              </div>
-
-              <div class="card-box">
-                <div class="section-label">Water Today</div>
-                <div class="stepper-row">
-                  <button class="stepper-btn" onclick="stepWater(-1)">−</button>
-                  <div class="stepper-value" id="waterVal">4 glasses</div>
-                  <button class="stepper-btn" onclick="stepWater(1)">+</button>
-                </div>
-                <div class="water-bar-bg">
-                  <div class="water-bar-fill" id="waterBar" style="width:50%"></div>
-                </div>
-              </div>
-
-              <div class="card-box">
-                <div class="section-label">Period</div>
-                <div class="chips-row" id="periodChips">
-                  <button class="chip" onclick="selectPeriod(this)">Period start</button>
-                  <button class="chip" onclick="selectPeriod(this)">Ongoing</button>
-                  <button class="chip" onclick="selectPeriod(this)">Period end</button>
-                  <button class="chip" onclick="selectPeriod(this)">Spotting</button>
-                  <button class="chip" onclick="selectPeriod(this)">No period</button>
-                </div>
-                <div class="flow-chips" id="flowChips" style="display:none;">
-                  <div class="section-label" style="width:100%;margin-bottom:4px;">Flow</div>
-                  <button class="chip" onclick="selectChip(this,'flow')">Light</button>
-                  <button class="chip" onclick="selectChip(this,'flow')">Medium</button>
-                  <button class="chip" onclick="selectChip(this,'flow')">Heavy</button>
-                  <button class="chip" onclick="selectChip(this,'flow')">Very heavy</button>
-                </div>
-              </div>
-
-              <div class="card-box">
-                <div class="section-label">Symptoms</div>
-                <div class="chips-row" id="symptomChips">
-                  <button class="chip" onclick="toggleChip(this,'sage')">Cramps</button>
-                  <button class="chip" onclick="toggleChip(this,'sage')">Bloating</button>
-                  <button class="chip" onclick="toggleChip(this,'sage')">Headache</button>
-                  <button class="chip" onclick="toggleChip(this,'sage')">Fatigue</button>
-                  <button class="chip" onclick="toggleChip(this,'sage')">Nausea</button>
-                  <button class="chip" onclick="toggleChip(this,'sage')">Brain fog</button>
-                  <button class="chip" onclick="toggleChip(this,'sage')">Mood swings</button>
-                  <button class="chip" onclick="toggleChip(this,'sage')">Back pain</button>
-                </div>
-              </div>
-
-              <button class="collapsible-btn" onclick="toggleCollapsible()">
-                <span>What's influencing you?</span>
-                <span class="collapsible-arrow" id="collArrow">▼</span>
-              </button>
-              <div id="collapsibleContent" style="display:none;padding:8px 0;">
-                <div class="chips-row">
-                  <button class="chip" onclick="toggleChip(this,'gold')">Poor sleep</button>
-                  <button class="chip" onclick="toggleChip(this,'gold')">Stress at work</button>
-                  <button class="chip" onclick="toggleChip(this,'gold')">Exercise</button>
-                  <button class="chip" onclick="toggleChip(this,'gold')">Social event</button>
-                  <button class="chip" onclick="toggleChip(this,'gold')">Diet change</button>
-                  <button class="chip" onclick="toggleChip(this,'gold')">Travel</button>
-                </div>
-              </div>
-
-            </div><!-- /card0 -->
-
-            <!-- CARD 1: NOURISH -->
-            <div class="log-card" id="card1">
-
-              <div class="card-box">
-                <div class="section-label">Meals</div>
-                <div class="meal-tabs">
-                  <button class="meal-tab active" onclick="selectMeal(this,'Breakfast')">Breakfast</button>
-                  <button class="meal-tab" onclick="selectMeal(this,'Lunch')">Lunch</button>
-                  <button class="meal-tab" onclick="selectMeal(this,'Dinner')">Dinner</button>
-                  <button class="meal-tab" onclick="selectMeal(this,'Snack')">Snack</button>
-                </div>
-                <div class="meal-form visible" id="mealForm">
-                  <textarea class="textarea-field" id="mealText" rows="2" placeholder="What did you eat?"></textarea>
-                  <div class="chips-row" style="margin-bottom:8px;" id="portionChips">
-                    <button class="chip" onclick="selectChip(this,'portion')">Small</button>
-                    <button class="chip selected-gold" onclick="selectChip(this,'portion')">Medium</button>
-                    <button class="chip" onclick="selectChip(this,'portion')">Large</button>
-                  </div>
-                  <button class="btn-espresso" onclick="logMeal()">Log meal</button>
-                </div>
-                <div class="logged-chips" id="loggedMeals">
-                  <span class="logged-chip">Breakfast · Porridge · M</span>
-                </div>
-              </div>
-
-              <div class="card-box">
-                <div class="section-label">Drinks</div>
-                <div class="drinks-scroll">
-                  <button class="drink-chip added" onclick="toggleDrink(this)">💧 Water +250ml</button>
-                  <button class="drink-chip" onclick="toggleDrink(this)">☕ Coffee</button>
-                  <button class="drink-chip" onclick="toggleDrink(this)">🍵 Tea</button>
-                  <button class="drink-chip" onclick="toggleDrink(this)">🧃 Juice</button>
-                  <button class="drink-chip" onclick="toggleDrink(this)">🍷 Alcohol</button>
-                  <button class="drink-chip" onclick="toggleDrink(this)">🥤 Smoothie</button>
-                </div>
-              </div>
-
-            </div><!-- /card1 -->
-
-            <!-- CARD 2: HEALTH -->
-            <div class="log-card" id="card2">
-
-              <div class="card-box">
-                <div class="section-label">Medications</div>
-                <div onclick="toggleCheckbox(this)" class="checkbox-row">
-                  <div class="checkbox-box checked">✓</div>
-                  <span class="checkbox-label">Iron supplement</span>
-                </div>
-                <div onclick="toggleCheckbox(this)" class="checkbox-row">
-                  <div class="checkbox-box"></div>
-                  <span class="checkbox-label">Vitamin D</span>
-                </div>
-                <div onclick="toggleCheckbox(this)" class="checkbox-row">
-                  <div class="checkbox-box"></div>
-                  <span class="checkbox-label">Magnesium</span>
-                </div>
-                <div class="inline-add-row">
-                  <input class="inline-input" type="text" placeholder="Add medication..." id="medInput">
-                  <button class="btn-small" onclick="addMed()">Add</button>
-                </div>
-              </div>
-
-              <div class="card-box">
-                <div class="section-label">Movement</div>
-                <div class="chips-row" id="movementChips" style="margin-bottom:8px;">
-                  <button class="chip" onclick="selectChip(this,'movement')">Walk</button>
-                  <button class="chip" onclick="selectChip(this,'movement')">Yoga</button>
-                  <button class="chip" onclick="selectChip(this,'movement')">Gym</button>
-                  <button class="chip" onclick="selectChip(this,'movement')">Rest</button>
-                </div>
-                <div class="stepper-row">
-                  <button class="stepper-btn" onclick="stepDuration(-5)">−</button>
-                  <div class="stepper-value" id="durationVal">30 min</div>
-                  <button class="stepper-btn" onclick="stepDuration(5)">+</button>
-                </div>
-              </div>
-
-            </div><!-- /card2 -->
-
-            <!-- CARD 3: MIND & LIFE -->
-            <div class="log-card" id="card3">
-
-              <div class="card-box">
-                <div class="section-label">Journal</div>
-                <div class="journal-prompt">"What is your body asking for most right now?"</div>
-                <textarea class="textarea-field" rows="3" placeholder="Write freely..." id="journalText" oninput="journalInput()"></textarea>
-                <div class="autosave-note" id="autosaveNote">✓ Saved</div>
-              </div>
-
-              <div class="card-box">
-                <div class="section-label">Tonight</div>
-                <div class="grid-2col">
-                  <div onclick="toggleCheckbox(this)" class="checkbox-row" style="border:none;padding:4px 0;">
-                    <div class="checkbox-box"></div>
-                    <span class="checkbox-label" style="font-size:12px;">🌙 Moon wind-down</span>
-                  </div>
-                  <div onclick="toggleCheckbox(this)" class="checkbox-row" style="border:none;padding:4px 0;">
-                    <div class="checkbox-box"></div>
-                    <span class="checkbox-label" style="font-size:12px;">📖 10 min reading</span>
-                  </div>
-                  <div onclick="toggleCheckbox(this)" class="checkbox-row" style="border:none;padding:4px 0;">
-                    <div class="checkbox-box"></div>
-                    <span class="checkbox-label" style="font-size:12px;">🌬 Breathwork</span>
-                  </div>
-                  <div onclick="toggleCheckbox(this)" class="checkbox-row" style="border:none;padding:4px 0;">
-                    <div class="checkbox-box"></div>
-                    <span class="checkbox-label" style="font-size:12px;">💊 Supplements</span>
-                  </div>
-                </div>
-              </div>
-
-              <div class="card-box">
-                <div class="section-label">Tomorrow</div>
-                <div class="inline-add-row">
-                  <input class="inline-input" type="text" placeholder="Add a task for tomorrow..." id="tomorrowInput">
-                  <button class="btn-small" onclick="addTomorrow()">Add</button>
-                </div>
-                <div class="logged-chips" id="tomorrowTasks"></div>
-              </div>
-
-            </div><!-- /card3 -->
-
-          </div><!-- /cards-track -->
-        </div><!-- /cards-viewport -->
-
-      </div><!-- /panelLog -->
-
-      <!-- ADD PANEL -->
-      <div class="tab-panel" id="panelAdd">
-        <div style="padding-bottom:24px;">
-
-          <!-- Voice row -->
-          <div class="voice-row" onclick="tapVoice()">
-            <div class="voice-btn">
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#3A2C1A" stroke-width="2" stroke-linecap="round">
-                <rect x="9" y="2" width="6" height="11" rx="3"/>
-                <path d="M5 10a7 7 0 0 0 14 0"/>
-                <line x1="12" y1="19" x2="12" y2="22"/>
-                <line x1="9" y1="22" x2="15" y2="22"/>
-              </svg>
-            </div>
-            <div>
-              <div class="voice-label">Voice schedule</div>
-              <div class="voice-text">Tap and tell me what to add</div>
-            </div>
-          </div>
-
-          <div class="add-section-label">Or pick a type</div>
-
-          <!-- Type Grid -->
-          <div class="type-grid" id="typeGrid">
-
-            <div class="type-card" onclick="selectType(this,'habit')">
-              <div class="type-icon">🔄</div>
-              <div class="type-name">Habit</div>
-              <div class="type-sub">Movement or recurring action</div>
-            </div>
-
-            <div class="type-card" onclick="selectType(this,'task')">
-              <div class="type-icon">✅</div>
-              <div class="type-name">Task</div>
-              <div class="type-sub">Plan or personal to-do</div>
-            </div>
-
-            <div class="type-card" onclick="selectType(this,'medication')">
-              <div class="type-icon">💊</div>
-              <div class="type-name">Medication</div>
-              <div class="type-sub">Meds or supplements</div>
-            </div>
-
-            <div class="type-card" onclick="selectType(this,'meal')">
-              <div class="type-icon">🍽</div>
-              <div class="type-name">Meal</div>
-              <div class="type-sub">Food or drink log</div>
-            </div>
-
-            <div class="type-card" onclick="selectType(this,'event')">
-              <div class="type-icon">📅</div>
-              <div class="type-name">Event</div>
-              <div class="type-sub">Appointment or occasion</div>
-            </div>
-
-            <div class="type-card" onclick="selectType(this,'ritual')">
-              <div class="type-icon">✨</div>
-              <div class="type-name">Ritual</div>
-              <div class="type-sub">Self-care or wellness ritual</div>
-            </div>
-
-            <div class="type-card" onclick="selectType(this,'hydration')">
-              <div class="type-icon">💧</div>
-              <div class="type-name">Hydration</div>
-              <div class="type-sub">Water or fluid intake</div>
-            </div>
-
-            <div class="type-card" onclick="selectType(this,'note')">
-              <div class="type-icon">📝</div>
-              <div class="type-name">Note</div>
-              <div class="type-sub">Quick journal or memo</div>
-            </div>
-
-            <div class="type-card" onclick="selectType(this,'checkin')">
-              <div class="type-icon">❤️</div>
-              <div class="type-name">Check-in</div>
-              <div class="type-sub">Mood, energy or wellbeing</div>
-            </div>
-
-            <div class="type-card" onclick="selectType(this,'symptom')">
-              <div class="type-icon">🫀</div>
-              <div class="type-name">Symptom</div>
-              <div class="type-sub">Track a physical symptom</div>
-            </div>
-
-          </div><!-- /type-grid -->
-
-          <!-- Quick Form -->
-          <div class="quick-form-wrap" id="quickFormWrap">
-            <div class="quick-form" id="quickFormInner">
-              <!-- Populated by JS -->
-            </div>
-          </div>
-
+        <!-- Pill Nav -->
+        <div class="pill-nav">
+          <button class="pill-nav-item active" id="pill-0" onclick="goToCard(0)">Check-in</button>
+          <button class="pill-nav-item" id="pill-1" onclick="goToCard(1)">Nourish</button>
+          <button class="pill-nav-item" id="pill-2" onclick="goToCard(2)">Health</button>
+          <button class="pill-nav-item" id="pill-3" onclick="goToCard(3)">Mind &amp; Life</button>
         </div>
-      </div><!-- /panelAdd -->
+
+        <!-- Card Deck -->
+        <div class="card-deck-wrap" id="card-deck">
+
+          <!-- CARD 0: CHECK-IN -->
+          <div class="log-card" data-card="0" data-pos="active">
+            <div class="card-header">
+              <div class="card-header-left">
+                <svg class="card-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
+                </svg>
+                <span class="card-name">Check-in</span>
+              </div>
+              <button class="card-next-btn" onclick="goToCard(1)">Nourish →</button>
+            </div>
+
+            <!-- Mood -->
+            <div class="section-block">
+              <div class="kicker">How Are You?</div>
+              <div class="mood-pills">
+                <button class="mood-pill" onclick="selectMood(this,'awful')">Awful</button>
+                <button class="mood-pill" onclick="selectMood(this,'low')">Low</button>
+                <button class="mood-pill" onclick="selectMood(this,'okay')">Okay</button>
+                <button class="mood-pill" onclick="selectMood(this,'good')">Good</button>
+                <button class="mood-pill" onclick="selectMood(this,'great')">Great</button>
+              </div>
+            </div>
+
+            <!-- Energy & Stress -->
+            <div class="section-block">
+              <div class="kicker">Energy · Stress</div>
+              <div class="two-col">
+                <div>
+                  <div style="font-size:11px;color:var(--muted);margin-bottom:4px;">Energy</div>
+                  <div class="dot-row" id="energy-dots">
+                    <button class="dot-btn" onclick="selectDots('energy-dots',0)">1</button>
+                    <button class="dot-btn" onclick="selectDots('energy-dots',1)">2</button>
+                    <button class="dot-btn" onclick="selectDots('energy-dots',2)">3</button>
+                    <button class="dot-btn" onclick="selectDots('energy-dots',3)">4</button>
+                    <button class="dot-btn" onclick="selectDots('energy-dots',4)">5</button>
+                  </div>
+                </div>
+                <div>
+                  <div style="font-size:11px;color:var(--muted);margin-bottom:4px;">Stress</div>
+                  <div class="dot-row" id="stress-dots">
+                    <button class="dot-btn" onclick="selectDots('stress-dots',0)">1</button>
+                    <button class="dot-btn" onclick="selectDots('stress-dots',1)">2</button>
+                    <button class="dot-btn" onclick="selectDots('stress-dots',2)">3</button>
+                    <button class="dot-btn" onclick="selectDots('stress-dots',3)">4</button>
+                    <button class="dot-btn" onclick="selectDots('stress-dots',4)">5</button>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Sleep -->
+            <div class="section-block">
+              <div class="kicker">Sleep Last Night</div>
+              <div class="counter-row">
+                <button class="counter-btn" onclick="adjustCounter('sleep',-1)">−</button>
+                <div class="counter-val"><span id="sleep-val">7</span><span class="counter-unit">h</span></div>
+                <button class="counter-btn" onclick="adjustCounter('sleep',1)">+</button>
+              </div>
+            </div>
+
+            <!-- Water -->
+            <div class="section-block">
+              <div class="kicker">Water Today</div>
+              <div class="counter-row">
+                <button class="counter-btn" onclick="adjustCounter('water',-1)">−</button>
+                <div class="counter-val"><span id="water-val">4</span><span class="counter-unit"> glasses</span></div>
+                <button class="counter-btn" onclick="adjustCounter('water',1)">+</button>
+              </div>
+              <div class="water-bar-wrap">
+                <div class="water-bar-fill" id="water-bar" style="width:50%"></div>
+              </div>
+            </div>
+
+            <!-- Period -->
+            <div class="section-block">
+              <div class="kicker">Period</div>
+              <div class="chip-row">
+                <button class="chip" onclick="toggleChip(this,'period')">Period start</button>
+                <button class="chip" onclick="toggleChip(this,'period')">Ongoing</button>
+                <button class="chip" onclick="toggleChip(this,'period')">Period end</button>
+                <button class="chip" onclick="toggleChip(this,'period')">Spotting</button>
+                <button class="chip" onclick="toggleChip(this,'period')">No period</button>
+              </div>
+            </div>
+
+            <!-- Symptoms -->
+            <div class="section-block">
+              <div class="kicker">Symptoms</div>
+              <div class="chip-row">
+                <button class="chip" onclick="toggleChip(this)">Cramps</button>
+                <button class="chip" onclick="toggleChip(this)">Bloating</button>
+                <button class="chip" onclick="toggleChip(this)">Headache</button>
+                <button class="chip" onclick="toggleChip(this)">Fatigue</button>
+                <button class="chip" onclick="toggleChip(this)">Nausea</button>
+                <button class="chip" onclick="toggleChip(this)">Brain fog</button>
+                <button class="chip" onclick="toggleChip(this)">Mood swings</button>
+                <button class="chip" onclick="toggleChip(this)">Back pain</button>
+              </div>
+            </div>
+
+            <!-- Influences -->
+            <div class="collapsible-toggle" onclick="toggleCollapse(this)">
+              <span class="collapsible-label">What's influencing you?</span>
+              <span class="chevron">▾</span>
+            </div>
+          </div><!-- /card-0 -->
+
+          <!-- CARD 1: NOURISH -->
+          <div class="log-card" data-card="1" data-pos="next">
+            <div class="card-header">
+              <div class="card-header-left">
+                <svg class="card-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M18 8h1a4 4 0 0 1 0 8h-1"/><path d="M2 8h16v9a4 4 0 0 1-4 4H6a4 4 0 0 1-4-4V8z"/><line x1="6" y1="1" x2="6" y2="4"/><line x1="10" y1="1" x2="10" y2="4"/><line x1="14" y1="1" x2="14" y2="4"/>
+                </svg>
+                <span class="card-name">Nourish</span>
+              </div>
+              <button class="card-next-btn" onclick="goToCard(2)">Health →</button>
+            </div>
+
+            <div class="meal-tabs">
+              <button class="meal-tab active" onclick="selectMealTab(this)">Breakfast</button>
+              <button class="meal-tab" onclick="selectMealTab(this)">Lunch</button>
+              <button class="meal-tab" onclick="selectMealTab(this)">Dinner</button>
+              <button class="meal-tab" onclick="selectMealTab(this)">Snack</button>
+            </div>
+
+            <textarea class="field-textarea" rows="2" placeholder="What did you eat?"></textarea>
+
+            <div class="section-block">
+              <div class="kicker">Portion</div>
+              <div class="chip-row">
+                <button class="chip" onclick="toggleChip(this)">Small</button>
+                <button class="chip selected" onclick="toggleChip(this)">Medium</button>
+                <button class="chip" onclick="toggleChip(this)">Large</button>
+              </div>
+            </div>
+
+            <button class="btn-full" onclick="logMeal()">Log meal</button>
+
+            <div class="logged-meals" id="logged-meals">
+              <div class="logged-chip">Overnight oats</div>
+              <div class="logged-chip">Green smoothie</div>
+            </div>
+
+            <div class="section-block">
+              <div class="kicker">Drinks</div>
+              <div class="pill-nav" style="margin-bottom:0">
+                <button class="chip" onclick="toggleChip(this)">Water</button>
+                <button class="chip selected" onclick="toggleChip(this)">Coffee</button>
+                <button class="chip" onclick="toggleChip(this)">Tea</button>
+                <button class="chip" onclick="toggleChip(this)">Juice</button>
+                <button class="chip" onclick="toggleChip(this)">Herbal tea</button>
+                <button class="chip" onclick="toggleChip(this)">Soda</button>
+              </div>
+            </div>
+          </div><!-- /card-1 -->
+
+          <!-- CARD 2: HEALTH -->
+          <div class="log-card" data-card="2" data-pos="next2">
+            <div class="card-header">
+              <div class="card-header-left">
+                <svg class="card-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+                </svg>
+                <span class="card-name">Health</span>
+              </div>
+              <button class="card-next-btn" onclick="goToCard(3)">Mind →</button>
+            </div>
+
+            <div class="section-block">
+              <div class="kicker">Medications</div>
+              <div class="checkbox-row">
+                <div class="checkbox-box checked" onclick="toggleCheck(this)"></div>
+                <span class="checkbox-label">Iron supplement</span>
+              </div>
+              <div class="checkbox-row">
+                <div class="checkbox-box" onclick="toggleCheck(this)"></div>
+                <span class="checkbox-label">Vitamin D</span>
+              </div>
+              <div class="checkbox-row">
+                <div class="checkbox-box" onclick="toggleCheck(this)"></div>
+                <span class="checkbox-label">Magnesium</span>
+              </div>
+              <div class="inline-add">
+                <input type="text" class="inline-input" placeholder="Add medication…">
+                <button class="inline-add-btn" onclick="showToast()">Add</button>
+              </div>
+            </div>
+
+            <div class="section-block">
+              <div class="kicker">Movement</div>
+              <div class="chip-row">
+                <button class="chip" onclick="toggleChip(this)">Walk</button>
+                <button class="chip selected" onclick="toggleChip(this)">Yoga</button>
+                <button class="chip" onclick="toggleChip(this)">Gym</button>
+                <button class="chip" onclick="toggleChip(this)">Rest</button>
+              </div>
+              <div class="duration-stepper">
+                <button class="step-btn" onclick="adjustCounter('duration',-5)">−</button>
+                <div class="step-val"><span id="duration-val">30</span> min</div>
+                <button class="step-btn" onclick="adjustCounter('duration',5)">+</button>
+              </div>
+            </div>
+          </div><!-- /card-2 -->
+
+          <!-- CARD 3: MIND & LIFE -->
+          <div class="log-card" data-card="3" data-pos="prev">
+            <div class="card-header">
+              <div class="card-header-left">
+                <svg class="card-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M12 2a10 10 0 1 0 10 10A10 10 0 0 0 12 2zm0 18a8 8 0 1 1 8-8 8 8 0 0 1-8 8z"/><path d="M12 6v6l4 2"/>
+                </svg>
+                <span class="card-name">Mind &amp; Life</span>
+              </div>
+              <button class="card-next-btn" onclick="goToCard(0)">Back ↩</button>
+            </div>
+
+            <div class="section-block">
+              <p class="journal-prompt">"What is your body asking for most right now?"</p>
+              <textarea class="field-textarea" rows="3" placeholder="Write freely…"></textarea>
+            </div>
+
+            <div class="section-block">
+              <div class="kicker">Tonight</div>
+              <div class="two-col-check">
+                <div class="checkbox-row">
+                  <div class="checkbox-box" onclick="toggleCheck(this)"></div>
+                  <span class="checkbox-label" style="font-size:12px">Moon wind-down</span>
+                </div>
+                <div class="checkbox-row">
+                  <div class="checkbox-box checked" onclick="toggleCheck(this)"></div>
+                  <span class="checkbox-label" style="font-size:12px">10 min reading</span>
+                </div>
+                <div class="checkbox-row">
+                  <div class="checkbox-box" onclick="toggleCheck(this)"></div>
+                  <span class="checkbox-label" style="font-size:12px">Breathwork</span>
+                </div>
+                <div class="checkbox-row">
+                  <div class="checkbox-box" onclick="toggleCheck(this)"></div>
+                  <span class="checkbox-label" style="font-size:12px">Supplements</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="section-block">
+              <div class="kicker">Add task for tomorrow</div>
+              <div class="tomorrow-row">
+                <input type="text" class="tomorrow-input" placeholder="Task or intention…">
+                <button class="tomorrow-add-btn" onclick="showToast()">Add</button>
+              </div>
+            </div>
+          </div><!-- /card-3 -->
+
+        </div><!-- /card-deck-wrap -->
+      </div><!-- /pane-log -->
+
+      <!-- ═══════════════════════ ADD TAB ═══════════════════════ -->
+      <div class="tab-pane" id="pane-add">
+
+        <!-- Voice Row -->
+        <div class="voice-row">
+          <div class="voice-circle">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/>
+              <path d="M19 10v2a7 7 0 0 1-14 0v-2"/>
+              <line x1="12" y1="19" x2="12" y2="23"/>
+              <line x1="8" y1="23" x2="16" y2="23"/>
+            </svg>
+          </div>
+          <div class="voice-text">Voice schedule — tap and tell me what to add</div>
+        </div>
+
+        <div class="kicker" style="margin-bottom:12px">Or Pick a Type</div>
+
+        <div class="type-grid" id="type-grid">
+
+          <div class="type-card" onclick="selectType(this,'Habit')">
+            <svg class="type-card-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 .49-3.78"/>
+            </svg>
+            <div class="type-card-name">Habit</div>
+            <div class="type-card-sub">Track daily streaks</div>
+          </div>
+
+          <div class="type-card" onclick="selectType(this,'Task')">
+            <svg class="type-card-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="9 11 12 14 22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/>
+            </svg>
+            <div class="type-card-name">Task</div>
+            <div class="type-card-sub">Add to your list</div>
+          </div>
+
+          <div class="type-card" onclick="selectType(this,'Medication')">
+            <svg class="type-card-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M10.5 20H4a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v7"/><path d="M15 3v4"/><path d="M7 3v4"/><path d="M3 11h16"/><path d="m16 19 2 2 4-4"/>
+            </svg>
+            <div class="type-card-name">Medication</div>
+            <div class="type-card-sub">Log a dose taken</div>
+          </div>
+
+          <div class="type-card" onclick="selectType(this,'Meal')">
+            <svg class="type-card-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M3 2v7c0 1.1.9 2 2 2h4a2 2 0 0 0 2-2V2"/><path d="M7 2v20"/><path d="M21 15V2a5 5 0 0 0-5 5v6c0 1.1.9 2 2 2h3zm0 0v7"/>
+            </svg>
+            <div class="type-card-name">Meal</div>
+            <div class="type-card-sub">Log food &amp; nutrition</div>
+          </div>
+
+          <div class="type-card" onclick="selectType(this,'Event')">
+            <svg class="type-card-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/>
+            </svg>
+            <div class="type-card-name">Event</div>
+            <div class="type-card-sub">Add to schedule</div>
+          </div>
+
+          <div class="type-card" onclick="selectType(this,'Ritual')">
+            <svg class="type-card-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
+            </svg>
+            <div class="type-card-name">Ritual</div>
+            <div class="type-card-sub">Wellness bundle</div>
+          </div>
+
+          <div class="type-card" onclick="selectType(this,'Hydration')">
+            <svg class="type-card-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M12 2.69l5.66 5.66a8 8 0 1 1-11.31 0z"/>
+            </svg>
+            <div class="type-card-name">Hydration</div>
+            <div class="type-card-sub">Log water intake</div>
+          </div>
+
+          <div class="type-card" onclick="selectType(this,'Note')">
+            <svg class="type-card-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/>
+            </svg>
+            <div class="type-card-name">Note</div>
+            <div class="type-card-sub">Quick journal note</div>
+          </div>
+
+          <div class="type-card" onclick="selectType(this,'Check-in')">
+            <svg class="type-card-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
+            </svg>
+            <div class="type-card-name">Check-in</div>
+            <div class="type-card-sub">Daily body check</div>
+          </div>
+
+          <div class="type-card" onclick="selectType(this,'Symptom')">
+            <svg class="type-card-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>
+            </svg>
+            <div class="type-card-name">Symptom</div>
+            <div class="type-card-sub">Log how you feel</div>
+          </div>
+
+        </div><!-- /type-grid -->
+
+        <!-- Quick Form (hidden by default) -->
+        <div class="quick-form" id="quick-form" style="display:none">
+          <div class="quick-form-title" id="quick-form-title">Log Habit</div>
+          <div class="quick-field">
+            <label>Name</label>
+            <input type="text" placeholder="e.g. Morning walk" id="quick-name">
+          </div>
+          <div class="quick-field">
+            <label>Notes (optional)</label>
+            <input type="text" placeholder="Any details…" id="quick-notes">
+          </div>
+          <button class="quick-submit" onclick="submitQuickForm()">Add ✓</button>
+        </div>
+
+      </div><!-- /pane-add -->
 
     </div><!-- /sheet-body -->
-  </div><!-- /bottom-sheet -->
+  </div><!-- /sheet -->
 
   <!-- TOAST -->
   <div class="toast" id="toast">✓ Saved</div>
+
 </div><!-- /phone-frame -->
 
-<!-- DEMO LABEL -->
-<div class="demo-label">
-  UNIFIED LOGGER · TAB SHEET V2
-  <div class="demo-sub">One + button. Log tab = body tracking. Add tab = planning &amp; scheduling.</div>
-</div>
+<div class="demo-label">UNIFIED LOGGER · TAB SHEET V2 — FemWell Design Lab</div>
 
 <script>
-  // === STATE ===
-  let sheetOpen = false;
-  let activeTab = 'log';
-  let currentCard = 0;
-  let sleepHours = 7;
-  let waterGlasses = 4;
-  let durationMin = 30;
-  let cardsDone = [false, false, false, false];
-  let touchStartX = 0;
-  let touchStartY = 0;
-  let selectedMeal = 'Breakfast';
-  let journalTimer = null;
-  let activeType = null;
+// ─── STATE ───
+let sheetOpen = false;
+let activeTab = 'log';
+let currentCard = 0;
+const cardCount = 4;
 
-  // === SHEET ===
-  function toggleSheet() {
-    if (sheetOpen) closeSheet();
-    else openSheet();
+// Counter state
+const counters = { sleep: 7, water: 4, duration: 30 };
+
+// Progress state (which cards have been interacted with)
+const cardInteracted = [false, false, false, false];
+
+// ─── SHEET ───
+function toggleSheet() {
+  if (sheetOpen) {
+    closeSheet();
+  } else {
+    openSheet();
   }
+}
 
-  function openSheet() {
-    sheetOpen = true;
-    document.getElementById('bottomSheet').classList.add('open');
-    document.getElementById('overlay').classList.add('visible');
-    document.getElementById('fab').classList.add('open');
-  }
+function openSheet() {
+  sheetOpen = true;
+  document.getElementById('sheet').classList.add('open');
+  document.getElementById('backdrop').classList.add('visible');
+  document.getElementById('fab').classList.add('open');
+}
 
-  function closeSheet() {
-    sheetOpen = false;
-    document.getElementById('bottomSheet').classList.remove('open');
-    document.getElementById('overlay').classList.remove('visible');
-    document.getElementById('fab').classList.remove('open');
-    // Close quick form
-    document.getElementById('quickFormWrap').classList.remove('open');
-    if (activeType) {
-      document.querySelectorAll('.type-card').forEach(c => c.classList.remove('selected'));
-      activeType = null;
-    }
-  }
+function closeSheet() {
+  sheetOpen = false;
+  document.getElementById('sheet').classList.remove('open');
+  document.getElementById('backdrop').classList.remove('visible');
+  document.getElementById('fab').classList.remove('open');
+}
 
-  // === TABS ===
-  function switchTab(tab) {
-    activeTab = tab;
-    const logPanel = document.getElementById('panelLog');
-    const addPanel = document.getElementById('panelAdd');
-    const tabLog = document.getElementById('tabLog');
-    const tabAdd = document.getElementById('tabAdd');
+// ─── TABS ───
+function switchTab(tab) {
+  activeTab = tab;
+  document.getElementById('tab-log').classList.toggle('active', tab === 'log');
+  document.getElementById('tab-add').classList.toggle('active', tab === 'add');
+  document.getElementById('pane-log').classList.toggle('active', tab === 'log');
+  document.getElementById('pane-add').classList.toggle('active', tab === 'add');
+}
 
-    if (tab === 'log') {
-      logPanel.classList.add('active');
-      addPanel.classList.remove('active');
-      tabLog.className = 'tab-pill log-active';
-      tabAdd.className = 'tab-pill add-inactive';
+// ─── CARD DECK ───
+function updateCardPositions() {
+  const cards = document.querySelectorAll('.log-card');
+  cards.forEach(card => {
+    const idx = parseInt(card.dataset.card);
+    let pos;
+    if (idx === currentCard) {
+      pos = 'active';
+    } else if (idx === currentCard + 1) {
+      pos = 'next';
+    } else if (idx === currentCard + 2) {
+      pos = 'next2';
     } else {
-      addPanel.classList.add('active');
-      logPanel.classList.remove('active');
-      tabLog.className = 'tab-pill log-inactive';
-      tabAdd.className = 'tab-pill add-active';
+      pos = 'prev';
     }
-  }
+    card.dataset.pos = pos;
+  });
 
-  // === CARD NAV ===
-  function goToCard(idx) {
-    currentCard = idx;
-    updateTrack();
-    updateChips();
-  }
-
-  function updateTrack() {
-    const track = document.getElementById('cardsTrack');
-    track.style.transform = `translateX(${-currentCard * 100}%)`;
-  }
-
-  function updateChips() {
-    for (let i = 0; i < 4; i++) {
-      const chip = document.getElementById('chip' + i);
-      chip.className = 'card-nav-chip';
-      if (cardsDone[i]) chip.classList.add('done');
-      if (i === currentCard) chip.classList.add('active');
-    }
-  }
-
-  // Progress
-  function updateProgress() {
-    const labels = ['Start logging', 'Keep going', 'Almost there', 'All done today ✓'];
-    const filled = cardsDone.filter(Boolean).length;
-    for (let i = 0; i < 4; i++) {
-      const seg = document.getElementById('seg' + i);
-      seg.className = 'progress-seg' + (i < filled ? ' filled' : '');
-    }
-    document.getElementById('progressLabel').textContent = labels[filled] || labels[0];
-    updateChips();
-  }
-
-  function markCardDone(idx) {
-    cardsDone[idx] = true;
-    updateProgress();
-  }
-
-  // === SWIPE ===
-  const viewport = document.getElementById('cardsViewport');
-  viewport.addEventListener('touchstart', e => {
-    touchStartX = e.touches[0].clientX;
-    touchStartY = e.touches[0].clientY;
-  }, { passive: true });
-
-  viewport.addEventListener('touchend', e => {
-    const dx = e.changedTouches[0].clientX - touchStartX;
-    const dy = e.changedTouches[0].clientY - touchStartY;
-    if (Math.abs(dx) > Math.abs(dy) && Math.abs(dx) > 30) {
-      if (dx < 0 && currentCard < 3) goToCard(currentCard + 1);
-      else if (dx > 0 && currentCard > 0) goToCard(currentCard - 1);
-    }
-  }, { passive: true });
-
-  // === INTERACTIONS ===
-  let toastTimer;
-  function showToast(msg) {
-    const t = document.getElementById('toast');
-    t.textContent = msg || '✓ Saved';
-    t.classList.add('show');
-    clearTimeout(toastTimer);
-    toastTimer = setTimeout(() => t.classList.remove('show'), 1600);
-    markCardDone(currentCard);
-  }
-
-  function selectChip(btn, group) {
-    const parent = btn.parentElement;
-    parent.querySelectorAll('.chip').forEach(c => {
-      c.classList.remove('selected-gold', 'selected-sage');
-    });
-    btn.classList.add('selected-gold');
-    showToast();
-  }
-
-  function toggleChip(btn, type) {
-    const cls = type === 'sage' ? 'selected-sage' : 'selected-gold';
-    btn.classList.toggle(cls);
-    showToast();
-  }
-
-  function selectDot(btn, group) {
-    const parent = btn.parentElement;
-    parent.querySelectorAll('.dot').forEach(d => d.classList.remove('selected'));
-    btn.classList.add('selected');
-    showToast();
-  }
-
-  // Sleep
-  function stepSleep(delta) {
-    sleepHours = Math.max(0, Math.min(12, sleepHours + delta));
-    const h = Math.floor(sleepHours);
-    const m = (sleepHours % 1) === 0.5 ? '30m' : '0m';
-    document.getElementById('sleepVal').textContent = h + 'h ' + m;
-    showToast();
-  }
-
-  // Water
-  function stepWater(delta) {
-    waterGlasses = Math.max(0, Math.min(12, waterGlasses + delta));
-    document.getElementById('waterVal').textContent = waterGlasses + (waterGlasses === 1 ? ' glass' : ' glasses');
-    document.getElementById('waterBar').style.width = Math.min(100, (waterGlasses / 8) * 100) + '%';
-    showToast();
-  }
-
-  // Period
-  function selectPeriod(btn) {
-    document.querySelectorAll('#periodChips .chip').forEach(c => c.classList.remove('selected-gold', 'selected-sage'));
-    btn.classList.add('selected-gold');
-    const hasFlow = btn.textContent !== 'No period' && btn.textContent !== 'Period end';
-    document.getElementById('flowChips').style.display = hasFlow ? 'flex' : 'none';
-    showToast();
-  }
-
-  // Collapsible
-  function toggleCollapsible() {
-    const content = document.getElementById('collapsibleContent');
-    const arrow = document.getElementById('collArrow');
-    const isOpen = content.style.display !== 'none';
-    content.style.display = isOpen ? 'none' : 'block';
-    arrow.classList.toggle('open', !isOpen);
-  }
-
-  // Duration
-  function stepDuration(delta) {
-    durationMin = Math.max(5, Math.min(180, durationMin + delta));
-    document.getElementById('durationVal').textContent = durationMin + ' min';
-    showToast();
-  }
-
-  // Meal
-  function selectMeal(btn, name) {
-    selectedMeal = name;
-    document.querySelectorAll('.meal-tab').forEach(t => t.classList.remove('active'));
-    btn.classList.add('active');
-    document.getElementById('mealForm').classList.add('visible');
-  }
-
-  function logMeal() {
-    const text = document.getElementById('mealText').value.trim();
-    const portion = document.querySelector('#portionChips .selected-gold');
-    const p = portion ? portion.textContent[0] : 'M';
-    const label = text || 'Meal';
-    const chip = document.createElement('span');
-    chip.className = 'logged-chip';
-    chip.textContent = selectedMeal + ' · ' + label.substring(0,12) + ' · ' + p;
-    document.getElementById('loggedMeals').appendChild(chip);
-    document.getElementById('mealText').value = '';
-    showToast('✓ Meal logged');
-    markCardDone(1);
-  }
-
-  function toggleDrink(btn) {
-    btn.classList.toggle('added');
-    showToast('✓ Saved');
-  }
-
-  // Checkbox
-  function toggleCheckbox(row) {
-    const box = row.querySelector('.checkbox-box');
-    const isChecked = box.classList.contains('checked');
-    if (isChecked) {
-      box.classList.remove('checked');
-      box.textContent = '';
+  // Update pill nav
+  for (let i = 0; i < cardCount; i++) {
+    const pill = document.getElementById('pill-' + i);
+    if (!pill) continue;
+    if (cardInteracted[i] && i !== currentCard) {
+      pill.className = 'pill-nav-item done';
+    } else if (i === currentCard) {
+      pill.className = 'pill-nav-item active';
     } else {
-      box.classList.add('checked');
-      box.textContent = '✓';
+      pill.className = 'pill-nav-item';
     }
-    showToast();
   }
+}
 
-  // Med add
-  function addMed() {
-    const input = document.getElementById('medInput');
-    const val = input.value.trim();
-    if (!val) return;
-    const row = document.createElement('div');
-    row.className = 'checkbox-row';
-    row.onclick = function() { toggleCheckbox(this); };
-    row.innerHTML = '<div class="checkbox-box"></div><span class="checkbox-label">' + val + '</span>';
-    input.parentElement.parentElement.insertBefore(row, input.parentElement);
-    input.value = '';
-    showToast('✓ Added');
+function goToCard(idx) {
+  if (idx < 0 || idx >= cardCount) return;
+  cardInteracted[currentCard] = true;
+  currentCard = idx;
+  updateCardPositions();
+  updateProgress();
+  showToast();
+}
+
+function updateProgress() {
+  const filled = cardInteracted.filter(Boolean).length;
+  for (let i = 0; i < 4; i++) {
+    const seg = document.getElementById('seg-' + i);
+    seg.classList.toggle('filled', i < filled);
   }
+  const copy = document.getElementById('progress-copy');
+  const msgs = ['Start logging', 'Keep going', 'Almost there', 'All done today ✨'];
+  copy.textContent = msgs[Math.min(filled, 3)];
+}
 
-  // Journal
-  function journalInput() {
-    clearTimeout(journalTimer);
-    const note = document.getElementById('autosaveNote');
-    note.classList.remove('show');
-    journalTimer = setTimeout(() => {
-      note.classList.add('show');
-      markCardDone(3);
-      setTimeout(() => note.classList.remove('show'), 2000);
-    }, 800);
+// ─── INTERACTIONS ───
+function selectMood(btn, mood) {
+  const siblings = btn.closest('.mood-pills').querySelectorAll('.mood-pill');
+  siblings.forEach(s => s.classList.remove('selected'));
+  btn.classList.add('selected');
+  showToast();
+}
+
+function selectDots(groupId, idx) {
+  const dots = document.getElementById(groupId).querySelectorAll('.dot-btn');
+  dots.forEach((d, i) => {
+    d.classList.toggle('filled', i <= idx);
+  });
+  showToast();
+}
+
+function adjustCounter(key, delta) {
+  const limits = { sleep: [0, 14], water: [0, 20], duration: [5, 180] };
+  const lim = limits[key] || [0, 100];
+  counters[key] = Math.max(lim[0], Math.min(lim[1], counters[key] + delta));
+
+  const valEl = document.getElementById(key + '-val');
+  if (valEl) valEl.textContent = counters[key];
+
+  if (key === 'water') {
+    const pct = Math.min(100, (counters.water / 8) * 100);
+    document.getElementById('water-bar').style.width = pct + '%';
   }
+  showToast();
+}
 
-  // Tomorrow tasks
-  function addTomorrow() {
-    const input = document.getElementById('tomorrowInput');
-    const val = input.value.trim();
-    if (!val) return;
-    const chip = document.createElement('span');
-    chip.className = 'logged-chip';
-    chip.textContent = val;
-    document.getElementById('tomorrowTasks').appendChild(chip);
-    input.value = '';
-    showToast('✓ Added for tomorrow');
-  }
-
-  // === ADD TAB ===
-  function tapVoice() {
-    showToast('🎤 Listening...');
-  }
-
-  const typeForms = {
-    habit: {
-      title: 'New Habit',
-      fields: `
-        <div class="field-group">
-          <div class="field-label">Habit name</div>
-          <input class="inline-input" style="width:100%" type="text" placeholder="e.g. Morning walk">
-        </div>
-        <div class="field-group">
-          <div class="field-label">Frequency</div>
-          <div class="quick-chips">
-            <button class="quick-chip selected" onclick="toggleQuickChip(this)">Daily</button>
-            <button class="quick-chip" onclick="toggleQuickChip(this)">Weekdays</button>
-            <button class="quick-chip" onclick="toggleQuickChip(this)">Weekends</button>
-          </div>
-        </div>
-      `
-    },
-    task: {
-      title: 'New Task',
-      fields: `
-        <div class="field-group">
-          <div class="field-label">Task name</div>
-          <input class="inline-input" style="width:100%" type="text" placeholder="e.g. Book GP appointment">
-        </div>
-        <div class="field-group">
-          <div class="field-label">Due</div>
-          <div class="quick-chips">
-            <button class="quick-chip selected" onclick="toggleQuickChip(this)">Today</button>
-            <button class="quick-chip" onclick="toggleQuickChip(this)">Tomorrow</button>
-            <button class="quick-chip" onclick="toggleQuickChip(this)">This week</button>
-          </div>
-        </div>
-      `
-    },
-    medication: {
-      title: 'Add Medication',
-      fields: `
-        <div class="field-group">
-          <div class="field-label">Medication name</div>
-          <input class="inline-input" style="width:100%" type="text" placeholder="e.g. Iron supplement">
-        </div>
-        <div class="field-group">
-          <div class="field-label">When to take</div>
-          <div class="quick-chips">
-            <button class="quick-chip selected" onclick="toggleQuickChip(this)">Morning</button>
-            <button class="quick-chip" onclick="toggleQuickChip(this)">Afternoon</button>
-            <button class="quick-chip" onclick="toggleQuickChip(this)">Evening</button>
-            <button class="quick-chip" onclick="toggleQuickChip(this)">With food</button>
-          </div>
-        </div>
-      `
-    },
-    meal: {
-      title: 'Log a Meal',
-      fields: `
-        <div class="field-group">
-          <div class="field-label">Meal type</div>
-          <div class="quick-chips">
-            <button class="quick-chip selected" onclick="toggleQuickChip(this)">Breakfast</button>
-            <button class="quick-chip" onclick="toggleQuickChip(this)">Lunch</button>
-            <button class="quick-chip" onclick="toggleQuickChip(this)">Dinner</button>
-            <button class="quick-chip" onclick="toggleQuickChip(this)">Snack</button>
-          </div>
-        </div>
-        <div class="field-group">
-          <div class="field-label">What did you eat?</div>
-          <input class="inline-input" style="width:100%" type="text" placeholder="e.g. Salmon salad">
-        </div>
-      `
-    },
-    event: {
-      title: 'Add Event',
-      fields: `
-        <div class="field-group">
-          <div class="field-label">Event name</div>
-          <input class="inline-input" style="width:100%" type="text" placeholder="e.g. GP appointment">
-        </div>
-        <div class="field-group">
-          <div class="field-label">When</div>
-          <div class="quick-chips">
-            <button class="quick-chip selected" onclick="toggleQuickChip(this)">Today</button>
-            <button class="quick-chip" onclick="toggleQuickChip(this)">Tomorrow</button>
-            <button class="quick-chip" onclick="toggleQuickChip(this)">This week</button>
-          </div>
-        </div>
-      `
-    },
-    ritual: {
-      title: 'Add Ritual',
-      fields: `
-        <div class="field-group">
-          <div class="field-label">Ritual name</div>
-          <input class="inline-input" style="width:100%" type="text" placeholder="e.g. Evening wind-down">
-        </div>
-        <div class="field-group">
-          <div class="field-label">Time of day</div>
-          <div class="quick-chips">
-            <button class="quick-chip" onclick="toggleQuickChip(this)">Morning</button>
-            <button class="quick-chip" onclick="toggleQuickChip(this)">Afternoon</button>
-            <button class="quick-chip selected" onclick="toggleQuickChip(this)">Evening</button>
-          </div>
-        </div>
-      `
-    },
-    hydration: {
-      title: 'Log Hydration',
-      fields: `
-        <div class="field-group">
-          <div class="field-label">Drink type</div>
-          <div class="quick-chips">
-            <button class="quick-chip selected" onclick="toggleQuickChip(this)">Water</button>
-            <button class="quick-chip" onclick="toggleQuickChip(this)">Tea</button>
-            <button class="quick-chip" onclick="toggleQuickChip(this)">Coffee</button>
-            <button class="quick-chip" onclick="toggleQuickChip(this)">Other</button>
-          </div>
-        </div>
-        <div class="field-group">
-          <div class="field-label">Amount</div>
-          <div class="quick-chips">
-            <button class="quick-chip" onclick="toggleQuickChip(this)">150ml</button>
-            <button class="quick-chip selected" onclick="toggleQuickChip(this)">250ml</button>
-            <button class="quick-chip" onclick="toggleQuickChip(this)">500ml</button>
-          </div>
-        </div>
-      `
-    },
-    note: {
-      title: 'Quick Note',
-      fields: `
-        <div class="field-group">
-          <div class="field-label">Note</div>
-          <textarea class="textarea-field" rows="3" placeholder="Write a quick note..."></textarea>
-        </div>
-      `
-    },
-    checkin: {
-      title: 'Quick Check-in',
-      fields: `
-        <div class="field-group">
-          <div class="field-label">How are you feeling?</div>
-          <div class="quick-chips">
-            <button class="quick-chip" onclick="toggleQuickChip(this)">Awful</button>
-            <button class="quick-chip" onclick="toggleQuickChip(this)">Low</button>
-            <button class="quick-chip selected" onclick="toggleQuickChip(this)">Okay</button>
-            <button class="quick-chip" onclick="toggleQuickChip(this)">Good</button>
-            <button class="quick-chip" onclick="toggleQuickChip(this)">Great</button>
-          </div>
-        </div>
-        <div class="field-group">
-          <div class="field-label">Energy</div>
-          <div class="quick-chips">
-            <button class="quick-chip" onclick="toggleQuickChip(this)">1</button>
-            <button class="quick-chip" onclick="toggleQuickChip(this)">2</button>
-            <button class="quick-chip selected" onclick="toggleQuickChip(this)">3</button>
-            <button class="quick-chip" onclick="toggleQuickChip(this)">4</button>
-            <button class="quick-chip" onclick="toggleQuickChip(this)">5</button>
-          </div>
-        </div>
-      `
-    },
-    symptom: {
-      title: 'Log Symptom',
-      fields: `
-        <div class="field-group">
-          <div class="field-label">Symptom</div>
-          <div class="quick-chips" style="flex-wrap:wrap;">
-            <button class="quick-chip" onclick="toggleQuickChip(this)">Cramps</button>
-            <button class="quick-chip" onclick="toggleQuickChip(this)">Bloating</button>
-            <button class="quick-chip" onclick="toggleQuickChip(this)">Headache</button>
-            <button class="quick-chip" onclick="toggleQuickChip(this)">Fatigue</button>
-            <button class="quick-chip" onclick="toggleQuickChip(this)">Nausea</button>
-            <button class="quick-chip" onclick="toggleQuickChip(this)">Brain fog</button>
-          </div>
-        </div>
-        <div class="field-group">
-          <div class="field-label">Severity</div>
-          <div class="quick-chips">
-            <button class="quick-chip" onclick="toggleQuickChip(this)">Mild</button>
-            <button class="quick-chip selected" onclick="toggleQuickChip(this)">Moderate</button>
-            <button class="quick-chip" onclick="toggleQuickChip(this)">Severe</button>
-          </div>
-        </div>
-      `
-    }
-  };
-
-  function selectType(card, type) {
-    // Deselect all
-    document.querySelectorAll('.type-card').forEach(c => c.classList.remove('selected'));
-    card.classList.add('selected');
-    activeType = type;
-
-    const form = typeForms[type];
-    const wrap = document.getElementById('quickFormWrap');
-    const inner = document.getElementById('quickFormInner');
-
-    inner.innerHTML = `
-      <div class="quick-form-title">${form.title}</div>
-      ${form.fields}
-      <div class="quick-form-actions">
-        <button class="btn-add" onclick="submitQuickForm()">Add</button>
-        <button class="btn-cancel" onclick="cancelQuickForm()">Cancel</button>
-      </div>
-    `;
-
-    wrap.classList.add('open');
-
-    // Scroll to form
-    setTimeout(() => {
-      wrap.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-    }, 100);
-  }
-
-  function toggleQuickChip(btn) {
-    // For single-select groups: deselect siblings
-    const siblings = btn.parentElement.querySelectorAll('.quick-chip');
-    const isMulti = btn.parentElement.getAttribute('data-multi') === 'true';
-    if (!isMulti) {
-      siblings.forEach(s => s.classList.remove('selected'));
-    }
+function toggleChip(btn, group) {
+  if (group === 'period') {
+    const siblings = btn.closest('.chip-row').querySelectorAll('.chip');
+    siblings.forEach(s => s.classList.remove('selected', 'period-selected'));
+    btn.classList.add('period-selected');
+  } else {
     btn.classList.toggle('selected');
   }
+  showToast();
+}
 
-  function submitQuickForm() {
-    showToast('✓ ' + (typeForms[activeType]?.title || 'Added'));
-    cancelQuickForm();
+function toggleCheck(box) {
+  box.classList.toggle('checked');
+  showToast();
+}
+
+function toggleCollapse(row) {
+  const chevron = row.querySelector('.chevron');
+  chevron.classList.toggle('open');
+  showToast();
+}
+
+function selectMealTab(btn) {
+  const siblings = btn.closest('.meal-tabs').querySelectorAll('.meal-tab');
+  siblings.forEach(s => s.classList.remove('active'));
+  btn.classList.add('active');
+}
+
+function logMeal() {
+  const ta = document.querySelector('#pane-log [data-card="1"] textarea');
+  const text = ta.value.trim();
+  if (!text) return;
+  const container = document.getElementById('logged-meals');
+  const chip = document.createElement('div');
+  chip.className = 'logged-chip';
+  chip.textContent = text;
+  container.appendChild(chip);
+  ta.value = '';
+  showToast();
+}
+
+// Add Tab
+let selectedTypeCard = null;
+function selectType(card, name) {
+  document.querySelectorAll('.type-card').forEach(c => c.classList.remove('selected'));
+  card.classList.add('selected');
+  selectedTypeCard = name;
+
+  const form = document.getElementById('quick-form');
+  form.style.display = 'block';
+  document.getElementById('quick-form-title').textContent = 'Log ' + name;
+  document.getElementById('quick-name').placeholder = getPlaceholder(name);
+  document.getElementById('quick-name').value = '';
+  document.getElementById('quick-notes').value = '';
+
+  // Scroll to form
+  setTimeout(() => form.scrollIntoView({ behavior: 'smooth', block: 'nearest' }), 50);
+}
+
+function getPlaceholder(name) {
+  const map = {
+    Habit: 'e.g. Morning walk',
+    Task: 'e.g. Call the doctor',
+    Medication: 'e.g. Vitamin D 1000IU',
+    Meal: 'e.g. Avocado toast',
+    Event: 'e.g. Yoga class',
+    Ritual: 'e.g. Evening wind-down',
+    Hydration: 'e.g. 2 glasses water',
+    Note: 'What\'s on your mind?',
+    'Check-in': 'How are you feeling?',
+    Symptom: 'e.g. Mild headache'
+  };
+  return map[name] || 'Enter details…';
+}
+
+function submitQuickForm() {
+  showToast('✓ ' + selectedTypeCard + ' added');
+  document.getElementById('quick-form').style.display = 'none';
+  document.querySelectorAll('.type-card').forEach(c => c.classList.remove('selected'));
+  document.getElementById('quick-name').value = '';
+  document.getElementById('quick-notes').value = '';
+}
+
+// ─── TOAST ───
+let toastTimer = null;
+function showToast(msg) {
+  const toast = document.getElementById('toast');
+  toast.textContent = msg || '✓ Saved';
+  toast.classList.add('show');
+  if (toastTimer) clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => {
+    toast.classList.remove('show');
+  }, 1500);
+}
+
+// ─── SWIPE TO NAVIGATE ───
+let touchStartX = 0;
+let mouseStartX = 0;
+let isMouseDown = false;
+
+const deck = document.getElementById('card-deck');
+
+deck.addEventListener('touchstart', e => {
+  touchStartX = e.touches[0].clientX;
+}, { passive: true });
+
+deck.addEventListener('touchend', e => {
+  const dx = e.changedTouches[0].clientX - touchStartX;
+  if (Math.abs(dx) > 40) {
+    if (dx < 0 && currentCard < cardCount - 1) goToCard(currentCard + 1);
+    else if (dx > 0 && currentCard > 0) goToCard(currentCard - 1);
   }
+});
 
-  function cancelQuickForm() {
-    document.getElementById('quickFormWrap').classList.remove('open');
-    document.querySelectorAll('.type-card').forEach(c => c.classList.remove('selected'));
-    activeType = null;
+deck.addEventListener('mousedown', e => {
+  mouseStartX = e.clientX;
+  isMouseDown = true;
+});
+
+deck.addEventListener('mouseup', e => {
+  if (!isMouseDown) return;
+  isMouseDown = false;
+  const dx = e.clientX - mouseStartX;
+  if (Math.abs(dx) > 40) {
+    if (dx < 0 && currentCard < cardCount - 1) goToCard(currentCard + 1);
+    else if (dx > 0 && currentCard > 0) goToCard(currentCard - 1);
   }
+});
 
-  // Init
-  updateProgress();
+deck.addEventListener('mouseleave', () => { isMouseDown = false; });
 </script>
 </body>
 </html>
