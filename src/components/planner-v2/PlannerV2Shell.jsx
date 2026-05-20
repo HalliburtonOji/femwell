@@ -1581,21 +1581,25 @@ function MorningStackCard({ user }) {
     let cancelled = false;
     (async () => {
       try {
-        // Resolve user.id from prop first (parent-passed), then fall back to
-        // User.me() so the card still works in dev contexts where the parent
-        // hasn't yet hydrated. Without this dual path the card was reading
-        // before the parent's User.me() resolved and rendering empty even
-        // when HabitLogs rows existed for today.
         let uid = user?.id;
         if (!uid) {
           const me = await base44.entities.User.me().catch(() => null);
           uid = me?.id;
         }
         if (!uid || cancelled) return;
-        const rows = await base44.entities.HabitLogs
-          .filter({ user_id: uid, date: todayISO }, null, 200).catch(() => []);
+        // Drop the date filter and trim client-side. Some HabitLogs rows
+        // (especially those backfilled or written by older code paths) have
+        // an inconsistent `date` field — sometimes ISO datetime, sometimes
+        // null, sometimes a mismatched format — so a strict server-side
+        // `date` equality filter misses real rows. Track.jsx fetches all
+        // rows for the user then filters by date in JS for this same reason.
+        const allRows = await base44.entities.HabitLogs
+          .filter({ user_id: uid }, "-updated_date", 400).catch(() => []);
         if (cancelled) return;
-        setHabits((rows || []).filter(Boolean));
+        const todayRows = (allRows || []).filter(
+          (r) => r && (r.date === todayISO || (r.date || "").startsWith(todayISO)),
+        );
+        setHabits(todayRows);
       } catch { /* silent */ }
     })();
     return () => { cancelled = true; };
