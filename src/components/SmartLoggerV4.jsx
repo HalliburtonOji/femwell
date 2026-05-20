@@ -28,7 +28,7 @@ const PROGRESS_COPY = [
   'Start logging','Getting started','Keep going','Halfway there','Looking great','Almost there','One more left','All done today',
 ];
 
-const CARD_LABELS = ['Smart & Body', 'Period & Cycle', 'Nourish', 'Health', 'Rituals', 'Mind & Life'];
+const CARD_LABELS = ['Check-in', 'Nourish', 'Health', 'Rituals', 'Mind & Life'];
 const TOTAL_CARDS = CARD_LABELS.length;
 
 const STAGES = [
@@ -74,7 +74,7 @@ const DRINK_PRESETS = [
   { id: 'milk',      label: 'Milk',       ml: 250, kcal: 120, Icon: Droplets, tone: T.cream },
 ];
 
-const CARD_ICONS = [Heart, Droplets, Utensils, Pill, Sparkles, Pen];
+const CARD_ICONS = [Heart, Utensils, Pill, Sparkles, Pen];
 
 // ── Live entity writers (best-effort, swallow errors) ────────────────────────
 const today = () => new Date().toISOString().split('T')[0];
@@ -286,8 +286,8 @@ function ProgressBar({ completed }) {
 function SectionLabel({ children }) {
   return (
     <div style={{
-      fontSize: 13, fontWeight: 700, color: T.muted, textTransform: 'uppercase',
-      letterSpacing: '0.10em', marginBottom: 10, marginTop: 6,
+      fontSize: 10, fontWeight: 700, color: T.muted, textTransform: 'uppercase',
+      letterSpacing: '0.12em', marginBottom: 8, marginTop: 4,
     }}>{children}</div>
   );
 }
@@ -299,12 +299,12 @@ function ChipRow({ options, selected, onToggle, multi = true, small = false }) {
         const active = multi ? selected.includes(opt) : selected === opt;
         return (
           <button key={opt} onClick={() => onToggle(opt)} style={{
-            padding: small ? '8px 14px' : '10px 16px', borderRadius: 16,
+            padding: small ? '6px 12px' : '8px 14px', borderRadius: 14,
             border: `1.5px solid ${active ? T.gold : T.border}`,
             background: active ? `${T.gold}22` : 'transparent',
             color: active ? T.espresso : T.espresso,
-            fontSize: small ? 12.5 : 13, fontWeight: 600, cursor: 'pointer',
-            transition: 'all 0.18s ease', minHeight: 40,
+            fontSize: 12, fontWeight: 600, cursor: 'pointer',
+            transition: 'all 0.18s ease', minHeight: 32,
           }}>{opt}</button>
         );
       })}
@@ -314,14 +314,14 @@ function ChipRow({ options, selected, onToggle, multi = true, small = false }) {
 
 function DotRating({ value, onChange, max = 5, color = T.gold }) {
   return (
-    <div style={{ display: 'flex', gap: 10 }}>
+    <div style={{ display: 'flex', gap: 6 }}>
       {Array.from({ length: max }, (_, i) => (
         <button key={i} onClick={() => onChange(i + 1)} style={{
-          width: 40, height: 40, borderRadius: '50%',
+          width: 30, height: 30, borderRadius: '50%',
           border: `2px solid ${i < value ? color : T.border}`,
           background: i < value ? color : 'transparent',
           color: i < value ? T.espresso : T.muted,
-          fontSize: 14, fontWeight: 700, cursor: 'pointer',
+          fontSize: 11, fontWeight: 700, cursor: 'pointer', padding: 0,
         }}>{i + 1}</button>
       ))}
     </div>
@@ -330,20 +330,20 @@ function DotRating({ value, onChange, max = 5, color = T.gold }) {
 
 function Counter({ value, onChange, step = 1, min = 0, max = 99, label = '' }) {
   return (
-    <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
+    <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
       <button onClick={() => onChange(Math.max(min, parseFloat((value - step).toFixed(2))))} style={{
-        width: 44, height: 44, borderRadius: '50%', border: `1.5px solid ${T.border}`,
+        width: 32, height: 32, borderRadius: '50%', border: `1.5px solid ${T.border}`,
         background: T.white, color: T.espresso, cursor: 'pointer',
         display: 'flex', alignItems: 'center', justifyContent: 'center',
-      }}><Minus size={18} /></button>
-      <span style={{ minWidth: 56, textAlign: 'center', fontWeight: 700, fontSize: 18, color: T.espresso }}>
+      }}><Minus size={14} /></button>
+      <span style={{ minWidth: 48, textAlign: 'center', fontWeight: 700, fontSize: 14, color: T.espresso }}>
         {value}{label}
       </span>
       <button onClick={() => onChange(Math.min(max, parseFloat((value + step).toFixed(2))))} style={{
-        width: 44, height: 44, borderRadius: '50%', border: `1.5px solid ${T.border}`,
+        width: 32, height: 32, borderRadius: '50%', border: `1.5px solid ${T.border}`,
         background: T.white, color: T.espresso, cursor: 'pointer',
         display: 'flex', alignItems: 'center', justifyContent: 'center',
-      }}><Plus size={18} /></button>
+      }}><Plus size={14} /></button>
     </div>
   );
 }
@@ -368,16 +368,16 @@ function Toggle({ checked, onChange, label }) {
 
 function MoodPills({ value, onChange }) {
   return (
-    <div style={{ display: 'flex', gap: 8 }}>
+    <div style={{ display: 'flex', gap: 6 }}>
       {MOOD_LABELS.map((m, i) => {
         const active = value === i + 1;
         return (
           <button key={m} onClick={() => onChange(i + 1)} style={{
-            flex: 1, padding: '12px 8px', borderRadius: 18, minHeight: 44,
+            flex: 1, padding: '8px 4px', borderRadius: 14, minHeight: 36,
             border: `1.5px solid ${active ? T.gold : T.border}`,
             background: active ? T.gold : T.paperHi,
             color: active ? T.espresso : T.muted,
-            fontSize: 14, fontWeight: 700, cursor: 'pointer',
+            fontSize: 13, fontWeight: 700, cursor: 'pointer',
           }}>{m}</button>
         );
       })}
@@ -403,15 +403,19 @@ function MiniDots({ value, onChange, color = T.gold }) {
 }
 
 // ─── Card 1: Smart & Body (compact 5-row layout, fits without scroll) ────────
-function Card1SmartBody({ stage, onSave, showToast }) {
+function Card1Checkin({ stage, onSave, showToast }) {
   const [mood, setMood] = useState(0);
   const [influences, setInfluences] = useState([]);
   const [influencesOpen, setInfluencesOpen] = useState(false);
   const [energy, setEnergy] = useState(0);
   const [stress, setStress] = useState(0);
   const [sleep, setSleep] = useState(7.0);
-  const [sleepQuality, setSleepQuality] = useState(0);
   const [symptoms, setSymptoms] = useState({}); // { name: 'mild'|'moderate'|'severe' }
+  // Period (merged in from old Card2)
+  const [periodStatus, setPeriodStatus] = useState('');
+  const [flow, setFlow] = useState('');
+  const [pain, setPain] = useState(0);
+  const showFlow = ['Period start', 'Ongoing'].includes(periodStatus);
 
   // Trimmed to the 8 most-tapped — keeps the row to two lines max.
   const QUICK_SYMPTOMS = ['Cramps','Bloating','Headache','Fatigue','Nausea','Brain fog','Mood swings','Back pain'];
@@ -420,7 +424,15 @@ function Card1SmartBody({ stage, onSave, showToast }) {
   const handleEnergy  = (v) => { setEnergy(v);  writeCheckin({ energy: v });       onSave(); };
   const handleStress  = (v) => { setStress(v);  writeCheckin({ stress: v });       onSave(); };
   const handleSleep   = (v) => { setSleep(v);   writeCheckin({ sleep_hours: v });  onSave(); };
-  const handleSleepQ  = (v) => { setSleepQuality(v); writeCheckin({ sleep_quality: v }); onSave(); };
+  const handlePeriodStatus = (opt) => {
+    setPeriodStatus(opt);
+    const map = { 'Period start': 'period_start', 'Ongoing': 'period_ongoing', 'Period end': 'period_end', 'Spotting': 'spotting', 'No period': 'no_period' };
+    if (map[opt]) writeCycleEvent(map[opt]);
+    showToast(`${opt} logged`);
+    onSave();
+  };
+  const handleFlow = (opt) => { setFlow(opt); writeCheckin({ period_flow: opt.toLowerCase().replace(' ', '_') }); showToast(`Flow: ${opt}`); onSave(); };
+  const handlePain = (v) => { setPain(v); const sev = v <= 1 ? 'mild' : v <= 3 ? 'moderate' : 'severe'; writeSymptom('Cramps', sev); onSave(); };
   const toggleInfluence = (opt) => setInfluences(prev => {
     const next = prev.includes(opt) ? prev.filter(x => x !== opt) : [...prev, opt];
     onSave(); return next;
@@ -459,10 +471,10 @@ function Card1SmartBody({ stage, onSave, showToast }) {
         <MoodPills value={mood} onChange={handleMood} />
       </div>
 
-      {/* Row 2 — Compact 3-column vitals grid */}
+      {/* Row 2 — Energy + Stress (2-col grid) */}
       <div style={{
-        display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 10,
-        marginBottom: 10, padding: '10px 8px',
+        display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10,
+        marginBottom: 10, padding: '8px 6px',
         background: 'rgba(58,44,26,0.04)', borderRadius: 12,
       }}>
         <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
@@ -473,25 +485,45 @@ function Card1SmartBody({ stage, onSave, showToast }) {
           <div style={miniLabel}>Stress</div>
           <MiniDots value={stress} onChange={handleStress} color={T.blush} />
         </div>
-        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-          <div style={miniLabel}>Sleep&nbsp;quality</div>
-          <MiniDots value={sleepQuality} onChange={handleSleepQ} color={T.plum} />
-        </div>
       </div>
 
-      {/* Row 3 — Sleep hours: single horizontal row, no stacking */}
+      {/* Row 3 — Sleep hours: single horizontal row */}
       <div style={{
         display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-        marginBottom: 10, padding: '6px 4px',
+        marginBottom: 10, padding: '4px 2px',
       }}>
         <span style={{
-          fontSize: 11, fontWeight: 700, color: T.muted,
-          textTransform: 'uppercase', letterSpacing: '0.10em',
+          fontSize: 10, fontWeight: 700, color: T.muted,
+          textTransform: 'uppercase', letterSpacing: '0.12em',
         }}>Sleep last night</span>
         <Counter value={sleep} onChange={handleSleep} step={0.5} min={0} max={16} label="h" />
       </div>
 
-      {/* Row 4 — Symptoms (compact chips, severity cycling) */}
+      {/* Row 4 — Period (merged from old Card2 — no contraception) */}
+      <SectionLabel>Period</SectionLabel>
+      <div style={{ marginBottom: 8 }}>
+        <ChipRow
+          options={['Period start','Ongoing','Period end','Spotting','No period']}
+          selected={periodStatus} onToggle={handlePeriodStatus} multi={false} small
+        />
+      </div>
+      {showFlow && (
+        <div style={{ marginBottom: 8 }}>
+          <ChipRow options={['Light','Medium','Heavy','Very heavy']} selected={flow} onToggle={handleFlow} multi={false} small />
+        </div>
+      )}
+      <div style={{
+        display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+        marginBottom: 10, padding: '2px 2px',
+      }}>
+        <span style={{
+          fontSize: 10, fontWeight: 700, color: T.muted,
+          textTransform: 'uppercase', letterSpacing: '0.12em',
+        }}>Pain level</span>
+        <DotRating value={pain} onChange={handlePain} color={T.blush} />
+      </div>
+
+      {/* Row 5 — Symptoms (compact chips, severity cycling) */}
       <SectionLabel>Symptoms</SectionLabel>
       <div style={{ marginBottom: 10, display: 'flex', flexWrap: 'wrap', gap: 5 }}>
         {QUICK_SYMPTOMS.map(s => {
@@ -559,57 +591,9 @@ function Card1SmartBody({ stage, onSave, showToast }) {
   );
 }
 
-// ─── Card 2: Period & Cycle ──────────────────────────────────────────────────
-function Card2Period({ onSave, showToast }) {
-  const [status, setStatus] = useState('');
-  const [flow, setFlow] = useState('');
-  const [pain, setPain] = useState(0);
-  const [clots, setClots] = useState(false);
-  const [pillTaken, setPillTaken] = useState(false);
-  const [patchCheck, setPatchCheck] = useState(false);
-  const [injectionDue, setInjectionDue] = useState(false);
-  const showFlow = ['Period start', 'Ongoing'].includes(status);
+// (Old Card 2: Period & Cycle merged into Card1Checkin above.)
 
-  const handleStatus = (opt) => {
-    setStatus(opt);
-    const map = { 'Period start': 'period_start', 'Ongoing': 'period_ongoing', 'Period end': 'period_end', 'Spotting': 'spotting', 'No period': 'no_period' };
-    if (map[opt]) writeCycleEvent(map[opt]);
-    showToast(`${opt} logged`);
-    onSave();
-  };
-  const handleFlow = (opt) => { setFlow(opt); writeCheckin({ period_flow: opt.toLowerCase().replace(' ', '_') }); showToast(`Flow: ${opt}`); onSave(); };
-  const handlePain = (v) => { setPain(v); const sev = v <= 1 ? 'mild' : v <= 3 ? 'moderate' : 'severe'; writeSymptom('Cramps', sev); onSave(); };
-  const handleClots = (v) => { setClots(v); if (v) writeSymptom('Clots', 'moderate'); onSave(); };
-  const togglePill = (v) => { setPillTaken(v); if (v) writeMedLog('Contraceptive pill', '1'); onSave(); };
-  const togglePatch = (v) => { setPatchCheck(v); if (v) writeMedLog('Patch / Ring', 'check'); onSave(); };
-  const toggleInjection = (v) => { setInjectionDue(v); if (v) writeMedLog('Injection', 'due reminder'); onSave(); };
-
-  return (
-    <div>
-      <SectionLabel>Period status</SectionLabel>
-      <div style={{ marginBottom: 10 }}>
-        <ChipRow options={['Period start','Ongoing','Period end','Spotting','No period']} selected={status} onToggle={handleStatus} multi={false} small />
-      </div>
-      {showFlow && (
-        <div style={{ marginBottom: 10 }}>
-          <SectionLabel>Flow</SectionLabel>
-          <ChipRow options={['Light','Medium','Heavy','Very heavy']} selected={flow} onToggle={handleFlow} multi={false} small />
-        </div>
-      )}
-      <SectionLabel>Pain level</SectionLabel>
-      <div style={{ marginBottom: 8 }}><DotRating value={pain} onChange={handlePain} color={T.blush} /></div>
-      <Toggle checked={clots} onChange={handleClots} label="Clots present" />
-      <div style={{ marginTop: 6 }}>
-        <SectionLabel>Contraception</SectionLabel>
-        <Toggle checked={pillTaken}    onChange={togglePill}      label="Pill taken today" />
-        <Toggle checked={patchCheck}   onChange={togglePatch}     label="Patch / Ring check" />
-        <Toggle checked={injectionDue} onChange={toggleInjection} label="Injection due soon" />
-      </div>
-    </div>
-  );
-}
-
-// ─── Card 3: Nourish (full meal logger + drinks rail) ────────────────────────
+// ─── Card 2: Nourish (full meal logger + drinks rail) ────────────────────────
 function Card3Nourish({ stage, onSave, showToast }) {
   const [activeMeal, setActiveMeal] = useState(null);
   const [description, setDescription] = useState('');
@@ -1216,6 +1200,32 @@ export default function SmartLoggerV4({
     if (externalOpen) setOpen(true);
   }, [mode, externalOpen]);
 
+  // Lock background page scroll while the sheet is open so iOS momentum +
+  // accidental tab swipes can't move the page underneath. Restores on close
+  // and on unmount.
+  useEffect(() => {
+    if (mode !== 'production') return;
+    const html = document.documentElement;
+    const body = document.body;
+    if (open) {
+      body.style.overflow = 'hidden';
+      body.style.position = 'fixed';
+      body.style.width = '100%';
+      html.style.overflow = 'hidden';
+    } else {
+      body.style.overflow = '';
+      body.style.position = '';
+      body.style.width = '';
+      html.style.overflow = '';
+    }
+    return () => {
+      body.style.overflow = '';
+      body.style.position = '';
+      body.style.width = '';
+      html.style.overflow = '';
+    };
+  }, [open, mode]);
+
   const closeSheet = () => {
     setOpen(false);
     if (mode === 'production' && onCloseExternal) onCloseExternal();
@@ -1256,12 +1266,11 @@ export default function SmartLoggerV4({
 
   const renderCard = (i) => {
     switch (i) {
-      case 0: return <Card1SmartBody stage={stage} onSave={makeOnSave(0)} showToast={showToast} />;
-      case 1: return <Card2Period onSave={makeOnSave(1)} showToast={showToast} />;
-      case 2: return <Card3Nourish stage={stage} onSave={makeOnSave(2)} showToast={showToast} />;
-      case 3: return <Card4Health onSave={makeOnSave(3)} showToast={showToast} />;
-      case 4: return <Card5Rituals onSave={makeOnSave(4)} showToast={showToast} />;
-      case 5: return <Card6Mind stage={stage} onSave={makeOnSave(5)} showToast={showToast} />;
+      case 0: return <Card1Checkin stage={stage} onSave={makeOnSave(0)} showToast={showToast} />;
+      case 1: return <Card3Nourish stage={stage} onSave={makeOnSave(1)} showToast={showToast} />;
+      case 2: return <Card4Health onSave={makeOnSave(2)} showToast={showToast} />;
+      case 3: return <Card5Rituals onSave={makeOnSave(3)} showToast={showToast} />;
+      case 4: return <Card6Mind stage={stage} onSave={makeOnSave(4)} showToast={showToast} />;
       default: return null;
     }
   };
@@ -1275,7 +1284,7 @@ export default function SmartLoggerV4({
           background: `${T.gold}22`, color: T.goldDeep,
           display: 'inline-flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0,
         }}><Icon size={14} /></span>
-        <span style={{ fontSize: 14.5, fontWeight: 800, color: T.espresso }}>{CARD_LABELS[i]}</span>
+        <span style={{ fontSize: 15, fontWeight: 800, color: T.espresso }}>{CARD_LABELS[i]}</span>
         <div style={{ flex: 1 }} />
         {i < TOTAL_CARDS - 1 && (
           <button onClick={() => setCurrentCard(i + 1)} style={{
@@ -1418,10 +1427,14 @@ export default function SmartLoggerV4({
       )}
       {open && (
         <>
-          <div onClick={closeSheet} style={{
-            position: 'fixed', inset: 0, background: 'rgba(26,20,16,0.45)',
-            zIndex: 998,
-          }} />
+          <div
+            onClick={closeSheet}
+            onTouchMove={(e) => e.preventDefault()}
+            style={{
+              position: 'fixed', inset: 0, background: 'rgba(26,20,16,0.45)',
+              zIndex: 998, touchAction: 'none',
+            }}
+          />
           <div style={{
             position: 'fixed', left: 0, right: 0, bottom: 0, zIndex: 999,
             display: 'flex', justifyContent: 'center',
