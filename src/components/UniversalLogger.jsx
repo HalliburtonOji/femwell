@@ -223,10 +223,15 @@ export default function UniversalLogger({ hideFAB = false } = {}) {
   }, []);
   const { open } = _state;
 
-  // Hide everything (including the FAB) on /Ideas so the page-level demo
-  // owns the surface there.
+  // Hide everything (including the FAB) on pages that own their own +
+  // button or page-level demo. /Ideas hosts the page-level Smart Logger demo;
+  // /Planner has its own native + for adding schedule items/tasks.
   if (hideFAB) return null;
-  if (typeof window !== "undefined" && /\/Ideas\b/.test(window.location.pathname)) return null;
+  if (typeof window !== "undefined") {
+    const path = window.location.pathname;
+    const HIDE_FAB_PAGES = ["/Ideas", "/Planner"];
+    if (HIDE_FAB_PAGES.some((p) => path.startsWith(p))) return null;
+  }
 
   return (
     <SmartLoggerV4
