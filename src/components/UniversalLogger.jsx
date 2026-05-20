@@ -216,6 +216,7 @@ import SmartLoggerV4 from "@/components/SmartLoggerV4";
 
 export default function UniversalLogger({ hideFAB = false } = {}) {
   const [tick, setTick] = useState(0);
+  const [plannerAddOpen, setPlannerAddOpen] = useState(false);
   useEffect(() => {
     const fn = () => setTick((t) => t + 1);
     _subs.add(fn);
@@ -223,16 +224,66 @@ export default function UniversalLogger({ hideFAB = false } = {}) {
   }, []);
   const { open } = _state;
 
-  // Hide everything (including the FAB) on pages that own their own +
-  // button or page-level demo. /Ideas hosts the page-level Smart Logger demo;
-  // /Planner has its own native + for adding schedule items/tasks.
   if (hideFAB) return null;
-  if (typeof window !== "undefined") {
-    const path = window.location.pathname;
-    const HIDE_FAB_PAGES = ["/Ideas", "/Planner"];
-    if (HIDE_FAB_PAGES.some((p) => path.startsWith(p))) return null;
+
+  // /Ideas hosts its own demo of SmartLoggerV4 — render nothing globally.
+  const path = typeof window !== "undefined" ? window.location.pathname : "";
+  if (path.startsWith("/Ideas")) return null;
+
+  // /Planner needs BOTH the Smart Logger entry AND its own + for adding
+  // PlannerItems (tasks/events). Render a dual FAB stack: smaller gold pen
+  // button for the Smart Logger, larger espresso + for the legacy add sheet.
+  const isPlanner = path.startsWith("/Planner");
+
+  if (isPlanner) {
+    return (
+      <>
+        {/* SmartLoggerV4 — sheet only (FAB hidden, dual-stack owns the entry) */}
+        <SmartLoggerV4
+          key={tick}
+          mode="production"
+          externalOpen={open}
+          onCloseExternal={closeLogger}
+          hideFAB
+        />
+
+        {/* Dual FAB stack — hide while either sheet is open so the user
+            isn't fighting two layers. */}
+        {!open && !plannerAddOpen && (
+          <div style={dualFabStack}>
+            <button
+              onClick={() => openLogger()}
+              aria-label="Open Smart Logger"
+              title="Log today"
+              style={dualFabSmartLogger}
+            >
+              <Pen size={20} strokeWidth={2.4} />
+            </button>
+            <button
+              onClick={() => setPlannerAddOpen(true)}
+              aria-label="Add to Planner"
+              title="Add to Planner"
+              style={dualFabPlannerAdd}
+            >
+              <Plus size={24} strokeWidth={2.6} />
+            </button>
+          </div>
+        )}
+
+        {/* Planner-native add flow — legacy LoggerSheet (TYPE_GRID +
+            DetailForm) that writes through to PlannerItems/PersonalTasks
+            via the existing entity-aware handleSave. */}
+        {plannerAddOpen && (
+          <LoggerSheet
+            initialType={null}
+            onClose={() => setPlannerAddOpen(false)}
+          />
+        )}
+      </>
+    );
   }
 
+  // All other pages: single SmartLoggerV4 FAB.
   return (
     <SmartLoggerV4
       key={tick}
@@ -243,12 +294,40 @@ export default function UniversalLogger({ hideFAB = false } = {}) {
   );
 }
 
-function LoggerSheet({ initialType }) {
+// ─── Planner dual-FAB styles ───────────────────────────────────────────────
+const dualFabStack = {
+  position: "fixed",
+  right: 18,
+  bottom: "calc(88px + env(safe-area-inset-bottom, 0px))",
+  display: "flex", flexDirection: "column",
+  gap: 12, alignItems: "center",
+  zIndex: 998,
+};
+const dualFabSmartLogger = {
+  width: 48, height: 48, borderRadius: "50%",
+  background: `linear-gradient(145deg, ${C.gold}, ${C.goldDeep})`,
+  color: C.cream,
+  border: "none", cursor: "pointer",
+  display: "flex", alignItems: "center", justifyContent: "center",
+  boxShadow: "0 6px 16px rgba(212,175,55,0.45), 0 0 0 3px rgba(244,237,219,0.85)",
+  padding: 0,
+};
+const dualFabPlannerAdd = {
+  width: 56, height: 56, borderRadius: "50%",
+  background: C.espresso,
+  color: "#fff",
+  border: "none", cursor: "pointer",
+  display: "flex", alignItems: "center", justifyContent: "center",
+  boxShadow: "0 8px 22px rgba(58,44,26,0.40), 0 0 0 3px rgba(244,237,219,0.85)",
+  padding: 0,
+};
+
+function LoggerSheet({ initialType, onClose = closeLogger }) {
   const [pickedId, setPickedId] = useState(initialType);
   const picked = pickedId ? TYPES.find((t) => t.id === pickedId) : null;
 
   return (
-    <div style={backdrop} onClick={closeLogger}>
+    <div style={backdrop} onClick={onClose}>
       <div style={sheet} onClick={(e) => e.stopPropagation()}>
         <div style={head}>
           {picked ? (
@@ -264,13 +343,13 @@ function LoggerSheet({ initialType }) {
               <span />
             </>
           )}
-          <button onClick={closeLogger} style={iconBtn} aria-label="Close">
+          <button onClick={onClose} style={iconBtn} aria-label="Close">
             <X size={14} />
           </button>
         </div>
 
         {!picked && <TypeGrid onPick={(id) => setPickedId(id)} />}
-        {picked  && <DetailForm type={picked} onCancel={closeLogger} onSaved={closeLogger} />}
+        {picked  && <DetailForm type={picked} onCancel={onClose} onSaved={onClose} />}
       </div>
     </div>
   );

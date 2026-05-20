@@ -1200,6 +1200,7 @@ function Card6Mind({ stage, onSave, showToast }) {
 export default function SmartLoggerV4({
   mode = 'demo',
   externalOpen, onCloseExternal,
+  hideFAB = false,
 } = {}) {
   const [open, setOpen] = useState(mode === 'demo' ? true : false);
   const [stage, setStage] = useState('luteal');
@@ -1404,8 +1405,8 @@ export default function SmartLoggerV4({
   // PRODUCTION mode — global mount: FAB always on, sheet slides up.
   return (
     <>
-      {/* FAB (always visible when sheet closed) */}
-      {!open && (
+      {/* FAB (always visible when sheet closed, unless hideFAB) */}
+      {!open && !hideFAB && (
         <button onClick={() => setOpen(true)} aria-label="Smart logger" style={{
           position: 'fixed', bottom: 88, right: 18, zIndex: 998,
           width: 56, height: 56, borderRadius: '50%',
