@@ -18,8 +18,8 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import {
   Plus, Minus, X as XIcon, Check,
-  Heart, Utensils, Pill, Pen,
-  Droplets, Coffee, Wine,
+  Heart, Utensils, Pill, Pen, Activity,
+  Droplets, Coffee, Wine, ChevronDown, ChevronUp,
 } from "lucide-react";
 import { base44 } from "@/api/base44Client";
 import {
@@ -173,6 +173,32 @@ async function writeJournal(text, entry_type) {
   } catch { /* silent */ }
 }
 
+async function upsertPregLog(patch) {
+  try {
+    const user_id = await getUserId();
+    if (!user_id) return;
+    const date = todayISO();
+    const existing = await base44.entities.PregnancyDailyLog
+      .filter({ user_id, date }, "-date", 1).catch(() => []);
+    const row = (existing || [])[0];
+    if (row?.id) await base44.entities.PregnancyDailyLog.update(row.id, patch);
+    else         await base44.entities.PregnancyDailyLog.create({ user_id, date, ...patch });
+  } catch { /* silent */ }
+}
+
+async function upsertMenoLog(patch) {
+  try {
+    const user_id = await getUserId();
+    if (!user_id) return;
+    const date = todayISO();
+    const existing = await base44.entities.MenopauseDailyLog
+      .filter({ user_id, date }, "-date", 1).catch(() => []);
+    const row = (existing || [])[0];
+    if (row?.id) await base44.entities.MenopauseDailyLog.update(row.id, patch);
+    else         await base44.entities.MenopauseDailyLog.create({ user_id, date, ...patch });
+  } catch { /* silent */ }
+}
+
 async function writeTask(title, time_of_day) {
   try {
     const user_id = await getUserId();
@@ -244,6 +270,106 @@ function Stepper({ value, onChange, step = 1, min = 0, max = 99, suffix = "" }) 
   );
 }
 
+// ─── ArcDial — semicircular 5-segment selector (Energy/Stress/Focus) ────────
+// 90×52 SVG, 5 arcs each 33° + 4 gaps × 3.75° = 180°. Tappable segments fill
+// in left-to-right as value increases. Tapping active value clears it back
+// to 0 so the user can un-set.
+function ArcDial({ label, value, onChange, colors }) {
+  const cx = 45, cy = 45, R = 36;
+  const segDeg = 33, gapDeg = 3.75;
+  const startAt = 180;
+  const segments = Array.from({ length: 5 }, (_, i) => {
+    const a0 = startAt - i * (segDeg + gapDeg);
+    const a1 = a0 - segDeg;
+    const r0 = a0 * Math.PI / 180;
+    const r1 = a1 * Math.PI / 180;
+    const x0 = cx + R * Math.cos(r0), y0 = cy - R * Math.sin(r0);
+    const x1 = cx + R * Math.cos(r1), y1 = cy - R * Math.sin(r1);
+    // sweep-flag=1 → arc curves over the top of the dial (clockwise in SVG)
+    return { i, d: `M ${x0.toFixed(2)} ${y0.toFixed(2)} A ${R} ${R} 0 0 1 ${x1.toFixed(2)} ${y1.toFixed(2)}` };
+  });
+  return (
+    <div style={{ width: 92, display: "flex", flexDirection: "column", alignItems: "center", gap: 2 }}>
+      <div style={{
+        fontSize: 9, fontWeight: 700, color: T.muted,
+        textTransform: "uppercase", letterSpacing: "0.12em",
+      }}>{label}</div>
+      <svg width="90" height="48" viewBox="0 0 90 52" style={{ overflow: "visible" }}>
+        {segments.map(seg => {
+          const active = value > seg.i;
+          return (
+            <path
+              key={seg.i}
+              d={seg.d}
+              fill="none"
+              stroke={active ? colors[seg.i] : "rgba(58,44,26,0.12)"}
+              strokeWidth="8"
+              strokeLinecap="round"
+              onClick={() => onChange(value === seg.i + 1 ? 0 : seg.i + 1)}
+              style={{ cursor: "pointer" }}
+            />
+          );
+        })}
+      </svg>
+      <div style={{
+        fontSize: 13, fontWeight: 800, color: T.espresso,
+        marginTop: -10, fontFamily: "'Inter', system-ui, sans-serif",
+      }}>{value || 0}/5</div>
+    </div>
+  );
+}
+
+const ARC_COLORS = {
+  energy: ["#C8E6C9", "#81C784", "#4CAF50", "#8FAF8F", "#D4AF37"],
+  stress: ["#FFF9C4", "#FFE082", "#FFB74D", "#FF8A65", "#E57373"],
+  focus:  ["#E3F2FD", "#90CAF9", "#64B5F6", "#42A5F5", "#3A2C1A"],
+};
+
+// ─── SliderRow — labeled 1–5 range with espresso thumb + sage fill ──────────
+function SliderRow({ label, value, onChange, min = 1, max = 5 }) {
+  return (
+    <div style={{ marginBottom: 10 }}>
+      <div style={{
+        display: "flex", justifyContent: "space-between", alignItems: "baseline",
+        marginBottom: 4,
+      }}>
+        <span style={{
+          fontSize: 10, fontWeight: 700, color: T.muted,
+          textTransform: "uppercase", letterSpacing: "0.12em",
+        }}>{label}</span>
+        <span style={{ fontSize: 12, fontWeight: 700, color: T.espresso }}>{value}/{max}</span>
+      </div>
+      <input
+        type="range" min={min} max={max} value={value}
+        onChange={(e) => onChange(Number(e.target.value))}
+        style={{ width: "100%", accentColor: T.sage, cursor: "pointer" }}
+      />
+    </div>
+  );
+}
+
+// ─── Collapsible block ──────────────────────────────────────────────────────
+function Collapsible({ title, count, children, defaultOpen = false }) {
+  const [open, setOpen] = useState(defaultOpen);
+  return (
+    <div style={{ marginBottom: 10 }}>
+      <button onClick={() => setOpen(v => !v)} style={{
+        width: "100%", padding: "8px 12px", borderRadius: 10,
+        background: open ? `${T.gold}14` : "rgba(58,44,26,0.04)",
+        border: `1px solid ${open ? T.gold : T.border}`,
+        cursor: "pointer",
+        display: "flex", alignItems: "center", justifyContent: "space-between",
+        fontSize: 11, fontWeight: 700, color: T.espresso,
+        textTransform: "uppercase", letterSpacing: "0.10em",
+      }}>
+        <span>{title}{count > 0 ? ` · ${count}` : ""}</span>
+        {open ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
+      </button>
+      {open && <div style={{ paddingTop: 8 }}>{children}</div>}
+    </div>
+  );
+}
+
 function Toast({ message, visible }) {
   return (
     <div style={{
@@ -262,90 +388,107 @@ function Toast({ message, visible }) {
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
-// CARD 1 — Check-in (mood + vitals + water + period + symptoms + influences)
+// CARD 1 — Check-in (mood tags + arc dials + sleep + water + period + influences)
 // ─────────────────────────────────────────────────────────────────────────────
-const MOOD_LABELS = ["Awful", "Low", "Okay", "Good", "Great"];
-const SYMPTOM_OPTIONS = ["Cramps", "Bloating", "Headache", "Fatigue", "Tender", "Mood swings", "Acne", "Backache"];
-const INFLUENCE_OPTIONS = ["Sleep", "Stress", "Diet", "Exercise", "Social", "Work"];
-const PERIOD_OPTIONS = ["No period", "Spotting", "Light", "Medium", "Heavy"];
+const MOOD_TAG_OPTIONS = [
+  "Calm", "Happy", "Energetic", "Frisky", "Mood swings",
+  "Irritated", "Sad", "Anxious", "Depressed", "Feeling guilty",
+  "Obsessive thoughts", "Low energy", "Apathetic", "Confused", "Very self-critical",
+];
+const SLEEP_QUALITY_OPTIONS = ["Great sleep", "Good sleep", "Restless sleep", "Couldn't sleep"];
+const PERIOD_FLOW_OPTIONS = ["No period", "Spotting", "Light", "Medium", "Heavy", "Very heavy"];
+const PERIOD_EVENT_OPTIONS = ["Period started today", "Period ended today"];
+const DISCHARGE_OPTIONS = ["No discharge", "Creamy", "Watery", "Sticky", "Egg white", "Spotting", "Unusual"];
+// Influences map to DailyCheckins.other_tags[] (matches Today's "Other" chips)
+const INFLUENCE_OPTIONS = [
+  "Stress", "Meditation", "Journaling", "Breathing exercises",
+  "Kegel exercises", "Travel", "Alcohol", "Disease or injury",
+];
 
 function CheckinCard({ showToast }) {
-  const [mood, setMood] = useState(0);
-  const [energy, setEnergy] = useState(0);
-  const [stress, setStress] = useState(0);
-  const [sleep, setSleep] = useState(7.0);
-  const [glasses, setGlasses] = useState(0);
-  const [period, setPeriod] = useState("");
-  const [symptoms, setSymptoms] = useState(new Set());
-  const [influencesOpen, setInfluencesOpen] = useState(false);
-  const [influences, setInfluences] = useState(new Set());
+  const [moodTags, setMoodTags]           = useState(new Set());
+  const [energy, setEnergy]               = useState(0);
+  const [stress, setStress]               = useState(0);
+  const [focus, setFocus]                 = useState(0);
+  const [sleep, setSleep]                 = useState(7.0);
+  const [sleepQualityTag, setSleepQTag]   = useState("");
+  const [glasses, setGlasses]             = useState(0);
+  const [periodFlow, setPeriodFlow]       = useState("");
+  const [periodEvents, setPeriodEvents]   = useState(new Set());
+  const [discharge, setDischarge]         = useState("");
+  const [influences, setInfluences]       = useState(new Set());
 
-  const tapMood = (v) => { setMood(v); writeCheckin({ mood: v }); showToast(`Mood: ${MOOD_LABELS[v-1]}`); };
-  const tapEnergy = (v) => { setEnergy(v); writeCheckin({ energy_level: v, energy: v }); showToast(`Energy ${v}/5`); };
-  const tapStress = (v) => { setStress(v); writeCheckin({ stress_level: v, stress: v }); showToast(`Stress ${v}/5`); };
-  const tapSleep = (v) => { setSleep(v); writeCheckin({ sleep_hours: v }); };
+  // ── Auto-save handlers (every interaction → DailyCheckins upsert) ─────────
+  const tapMoodTag = (m) => setMoodTags(prev => {
+    const next = new Set(prev);
+    if (next.has(m)) next.delete(m); else next.add(m);
+    writeCheckin({ mood_tags: Array.from(next) });
+    return next;
+  });
+  const tapEnergy = (v) => { setEnergy(v); writeCheckin({ energy: v }); };
+  const tapStress = (v) => { setStress(v); writeCheckin({ stress: v }); };
+  const tapFocus  = (v) => { setFocus(v);  writeCheckin({ focus: v }); };
+  const tapSleep  = (v) => { setSleep(v);  writeCheckin({ sleep_hours: v }); };
+  const tapSleepQ = (v) => {
+    setSleepQTag(prev => prev === v ? "" : v);
+    writeCheckin({ sleep_quality_tag: sleepQualityTag === v ? null : v });
+  };
   const tapGlasses = (v) => {
     if (v > glasses) writeHydration(250);
     setGlasses(v);
   };
-  const tapPeriod = (opt) => {
-    setPeriod(opt);
-    writeCycleEvent(opt);
-    showToast(`${opt} logged`);
+  const tapFlow = (opt) => {
+    const next = periodFlow === opt ? "" : opt;
+    setPeriodFlow(next);
+    writeCheckin({ period_flow: next || null });
+    if (next) {
+      writeCycleEvent(next);
+      showToast(`${opt} logged`);
+    }
   };
-  const tapSymptom = (s) => {
-    setSymptoms(prev => {
-      const next = new Set(prev);
-      if (next.has(s)) next.delete(s);
-      else { next.add(s); writeSymptom(s); showToast(`${s} logged`); }
-      return next;
-    });
+  const tapEvent = (opt) => setPeriodEvents(prev => {
+    const next = new Set(prev);
+    if (next.has(opt)) next.delete(opt); else next.add(opt);
+    writeCheckin({ period_events: Array.from(next) });
+    return next;
+  });
+  const tapDischarge = (opt) => {
+    const next = discharge === opt ? "" : opt;
+    setDischarge(next);
+    writeCheckin({ discharge: next || null, cervical_mucus: next || null });
   };
-  const tapInfluence = (s) => {
-    setInfluences(prev => {
-      const next = new Set(prev);
-      if (next.has(s)) next.delete(s); else next.add(s);
-      writeCheckin({ influences: Array.from(next) });
-      return next;
-    });
-  };
+  const tapInfluence = (s) => setInfluences(prev => {
+    const next = new Set(prev);
+    if (next.has(s)) next.delete(s); else next.add(s);
+    writeCheckin({ other_tags: Array.from(next) });
+    return next;
+  });
 
   return (
     <div>
-      <SectionLabel>How are you?</SectionLabel>
-      <div style={{ display: "flex", gap: 6, marginBottom: 10 }}>
-        {MOOD_LABELS.map((m, i) => {
-          const active = mood === i + 1;
-          return (
-            <button key={m} onClick={() => tapMood(i + 1)} style={{
-              flex: 1, padding: "8px 4px", borderRadius: 14, minHeight: 36,
-              border: `1.5px solid ${active ? T.gold : T.border}`,
-              background: active ? T.gold : T.paperHi,
-              color: active ? T.espresso : T.muted,
-              fontSize: 13, fontWeight: 700, cursor: "pointer",
-            }}>{m}</button>
-          );
-        })}
+      <SectionLabel>How are you feeling?</SectionLabel>
+      <div style={{ display: "flex", flexWrap: "wrap", gap: 5, marginBottom: 12 }}>
+        {MOOD_TAG_OPTIONS.map(m => (
+          <Chip key={m} active={moodTags.has(m)} onClick={() => tapMoodTag(m)}>{m}</Chip>
+        ))}
       </div>
 
+      {/* 3-dial row */}
       <div style={{
-        display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10,
-        marginBottom: 10, padding: "8px 6px",
+        display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 4,
+        marginBottom: 12, padding: "6px 0",
         background: "rgba(58,44,26,0.04)", borderRadius: 12,
+        justifyItems: "center",
       }}>
-        <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 5 }}>
-          <SectionLabel style={{ marginBottom: 0 }}>Energy</SectionLabel>
-          <Dots value={energy} onChange={tapEnergy} />
-        </div>
-        <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 5 }}>
-          <SectionLabel style={{ marginBottom: 0 }}>Stress</SectionLabel>
-          <Dots value={stress} onChange={tapStress} color={T.blush} />
-        </div>
+        <ArcDial label="Energy" value={energy} onChange={tapEnergy} colors={ARC_COLORS.energy} />
+        <ArcDial label="Stress" value={stress} onChange={tapStress} colors={ARC_COLORS.stress} />
+        <ArcDial label="Focus"  value={focus}  onChange={tapFocus}  colors={ARC_COLORS.focus} />
       </div>
 
+      {/* Sleep */}
       <div style={{
         display: "flex", alignItems: "center", justifyContent: "space-between",
-        marginBottom: 10, padding: "4px 2px",
+        marginBottom: 6, padding: "4px 2px",
       }}>
         <span style={{
           fontSize: 10, fontWeight: 700, color: T.muted,
@@ -353,8 +496,14 @@ function CheckinCard({ showToast }) {
         }}>Sleep last night</span>
         <Stepper value={sleep} onChange={tapSleep} step={0.5} min={0} max={16} suffix="h" />
       </div>
+      <div style={{ display: "flex", flexWrap: "wrap", gap: 5, marginBottom: 12 }}>
+        {SLEEP_QUALITY_OPTIONS.map(s => (
+          <Chip key={s} active={sleepQualityTag === s} onClick={() => tapSleepQ(s)}>{s}</Chip>
+        ))}
+      </div>
 
-      <div style={{ marginBottom: 10 }}>
+      {/* Water */}
+      <div style={{ marginBottom: 12 }}>
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 4 }}>
           <span style={{
             fontSize: 10, fontWeight: 700, color: T.muted,
@@ -370,45 +519,182 @@ function CheckinCard({ showToast }) {
         </div>
       </div>
 
-      <SectionLabel>Period</SectionLabel>
-      <div style={{ display: "flex", flexWrap: "wrap", gap: 5, marginBottom: 10 }}>
-        {PERIOD_OPTIONS.map(opt => (
-          <Chip key={opt} active={period === opt} onClick={() => tapPeriod(opt)}>{opt}</Chip>
+      {/* Period */}
+      <SectionLabel>Period — flow</SectionLabel>
+      <div style={{ display: "flex", flexWrap: "wrap", gap: 5, marginBottom: 8 }}>
+        {PERIOD_FLOW_OPTIONS.map(opt => (
+          <Chip key={opt} active={periodFlow === opt} onClick={() => tapFlow(opt)}>{opt}</Chip>
         ))}
       </div>
+      <SectionLabel>Period — start / end</SectionLabel>
+      <div style={{ display: "flex", flexWrap: "wrap", gap: 5, marginBottom: 8 }}>
+        {PERIOD_EVENT_OPTIONS.map(opt => (
+          <Chip key={opt} active={periodEvents.has(opt)} onClick={() => tapEvent(opt)}>{opt}</Chip>
+        ))}
+      </div>
+      <Collapsible title="Discharge" count={discharge ? 1 : 0}>
+        <div style={{ display: "flex", flexWrap: "wrap", gap: 5 }}>
+          {DISCHARGE_OPTIONS.map(opt => (
+            <Chip key={opt} active={discharge === opt} onClick={() => tapDischarge(opt)}>{opt}</Chip>
+          ))}
+        </div>
+      </Collapsible>
 
+      <Collapsible title="What's influencing you?" count={influences.size}>
+        <div style={{ display: "flex", flexWrap: "wrap", gap: 5 }}>
+          {INFLUENCE_OPTIONS.map(opt => (
+            <Chip key={opt} active={influences.has(opt)} onClick={() => tapInfluence(opt)}>{opt}</Chip>
+          ))}
+        </div>
+      </Collapsible>
+    </div>
+  );
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// CARD 2 — Body (symptoms + activity + pain sliders + digestion + skin + sex)
+// ─────────────────────────────────────────────────────────────────────────────
+const SYMPTOM_OPTIONS = [
+  "Everything is fine", "Cramps", "Tender breasts", "Headache", "Acne",
+  "Backache", "Fatigue", "Cravings", "Insomnia", "Abdominal pain",
+  "Bloating", "Nausea", "Vaginal dryness", "Constipation", "Diarrhea",
+];
+const ACTIVITY_OPTIONS = [
+  "Didn't exercise", "Yoga", "Gym", "Pilates", "Running",
+  "Swimming", "Cycling", "Walking", "Aerobics", "Team sports",
+];
+const DIGESTION_OPTIONS = ["Normal digestion", "Bloated", "Nausea", "Constipation", "Diarrhea"];
+const SKIN_OPTIONS = ["Clear", "Mild breakout", "Moderate breakout", "Very oily", "Very dry"];
+const HAIR_OPTIONS = ["Normal shedding", "More than usual", "A lot of shedding"];
+const SEX_OPTIONS = [
+  "Didn't have sex", "Protected sex", "Unprotected sex", "Oral sex",
+  "High sex drive", "Neutral sex drive", "Low sex drive", "Sensual touch",
+];
+
+function BodyCard() {
+  const [symptoms, setSymptoms]         = useState(new Set());
+  const [activity, setActivity]         = useState(new Set());
+  const [cramps, setCramps]             = useState(1);
+  const [pain, setPain]                 = useState(1);
+  const [digestion, setDigestion]       = useState(new Set());
+  const [skin, setSkin]                 = useState("");
+  const [hair, setHair]                 = useState("");
+  const [sex, setSex]                   = useState(new Set());
+
+  // Symptoms multi → also derive bloating/headache/breast_tenderness numerics.
+  const tapSymptom = (s) => setSymptoms(prev => {
+    const next = new Set(prev);
+    if (next.has(s)) next.delete(s); else next.add(s);
+    const patch = { symptoms: Array.from(next) };
+    if (next.has("Bloating"))      patch.bloating = 3;
+    if (next.has("Headache"))      patch.headache = 3;
+    if (next.has("Tender breasts")) patch.breast_tenderness = 3;
+    writeCheckin(patch);
+    return next;
+  });
+
+  // Activity multi → derive exercise_done + exercise_type.
+  const tapActivity = (a) => setActivity(prev => {
+    const next = new Set(prev);
+    if (next.has(a)) next.delete(a); else next.add(a);
+    const arr = Array.from(next);
+    const nonRest = arr.filter(x => x !== "Didn't exercise");
+    writeCheckin({
+      activity_tags: arr,
+      exercise_done: nonRest.length > 0,
+      exercise_type: nonRest.length > 0 ? nonRest.join(", ") : null,
+    });
+    return next;
+  });
+
+  const tapCramps = (v) => { setCramps(v); writeCheckin({ cramps: v }); };
+  const tapPain   = (v) => { setPain(v);   writeCheckin({ pain: v }); };
+
+  const tapDigestion = (d) => setDigestion(prev => {
+    const next = new Set(prev);
+    if (next.has(d)) next.delete(d); else next.add(d);
+    writeCheckin({ digestion_tags: Array.from(next) });
+    return next;
+  });
+
+  const tapSkin = (opt) => {
+    const next = skin === opt ? "" : opt;
+    setSkin(next);
+    writeCheckin({ skin_condition: next || null });
+  };
+  const tapHair = (opt) => {
+    const next = hair === opt ? "" : opt;
+    setHair(next);
+    const HAIR_MAP = { "Normal shedding": "Normal", "More than usual": "More than usual", "A lot of shedding": "A lot" };
+    writeCheckin({ hair_shedding: next ? (HAIR_MAP[next] || next) : null });
+  };
+
+  // Sex tags multi → derive libido.
+  const tapSex = (s) => setSex(prev => {
+    const next = new Set(prev);
+    if (next.has(s)) next.delete(s); else next.add(s);
+    const arr = Array.from(next);
+    const patch = { sex_tags: arr };
+    if (arr.includes("High sex drive"))      patch.libido = 5;
+    else if (arr.includes("Low sex drive"))  patch.libido = 1;
+    writeCheckin(patch);
+    return next;
+  });
+
+  return (
+    <div>
       <SectionLabel>Symptoms</SectionLabel>
-      <div style={{ display: "flex", flexWrap: "wrap", gap: 5, marginBottom: 10 }}>
+      <div style={{ display: "flex", flexWrap: "wrap", gap: 5, marginBottom: 12 }}>
         {SYMPTOM_OPTIONS.map(s => (
           <Chip key={s} active={symptoms.has(s)} onClick={() => tapSymptom(s)}>{s}</Chip>
         ))}
       </div>
 
-      <button onClick={() => setInfluencesOpen(v => !v)} style={{
-        width: "100%", padding: "10px 14px", borderRadius: 12,
-        background: influencesOpen ? `${T.gold}14` : "rgba(58,44,26,0.04)",
-        border: `1px solid ${influencesOpen ? T.gold : T.border}`,
-        cursor: "pointer",
-        display: "flex", alignItems: "center", justifyContent: "space-between",
-        fontSize: 12, fontWeight: 700, color: T.espresso,
-      }}>
-        What's influencing you?
-        <span style={{ display: "inline-flex", alignItems: "center", gap: 8 }}>
-          {influences.size > 0 && (
-            <span style={{ fontSize: 11, color: T.goldDeep, fontWeight: 700 }}>
-              {influences.size} selected
-            </span>
-          )}
-          <span style={{ fontSize: 14, color: T.muted }}>{influencesOpen ? "−" : "+"}</span>
-        </span>
-      </button>
-      {influencesOpen && (
-        <div style={{ marginTop: 8, display: "flex", flexWrap: "wrap", gap: 5 }}>
-          {INFLUENCE_OPTIONS.map(opt => (
-            <Chip key={opt} active={influences.has(opt)} onClick={() => tapInfluence(opt)}>{opt}</Chip>
+      <SectionLabel>Activity</SectionLabel>
+      <div style={{ display: "flex", flexWrap: "wrap", gap: 5, marginBottom: 12 }}>
+        {ACTIVITY_OPTIONS.map(a => (
+          <Chip key={a} active={activity.has(a)} onClick={() => tapActivity(a)}>{a}</Chip>
+        ))}
+      </div>
+
+      <SliderRow label="Cramps" value={cramps} onChange={tapCramps} />
+      <SliderRow label="Pain level" value={pain} onChange={tapPain} />
+
+      <SectionLabel>Digestion</SectionLabel>
+      <div style={{ display: "flex", flexWrap: "wrap", gap: 5, marginBottom: 12 }}>
+        {DIGESTION_OPTIONS.map(d => (
+          <Chip key={d} active={digestion.has(d)} onClick={() => tapDigestion(d)}>{d}</Chip>
+        ))}
+      </div>
+
+      <Collapsible title="Skin & Hair" count={(skin ? 1 : 0) + (hair ? 1 : 0)}>
+        <div style={{
+          fontSize: 10, fontWeight: 700, color: T.muted,
+          textTransform: "uppercase", letterSpacing: "0.12em", marginBottom: 6,
+        }}>Skin</div>
+        <div style={{ display: "flex", flexWrap: "wrap", gap: 5, marginBottom: 10 }}>
+          {SKIN_OPTIONS.map(opt => (
+            <Chip key={opt} active={skin === opt} onClick={() => tapSkin(opt)}>{opt}</Chip>
           ))}
         </div>
-      )}
+        <div style={{
+          fontSize: 10, fontWeight: 700, color: T.muted,
+          textTransform: "uppercase", letterSpacing: "0.12em", marginBottom: 6,
+        }}>Hair shedding</div>
+        <div style={{ display: "flex", flexWrap: "wrap", gap: 5 }}>
+          {HAIR_OPTIONS.map(opt => (
+            <Chip key={opt} active={hair === opt} onClick={() => tapHair(opt)}>{opt}</Chip>
+          ))}
+        </div>
+      </Collapsible>
+
+      <Collapsible title="Intimacy" count={sex.size}>
+        <div style={{ display: "flex", flexWrap: "wrap", gap: 5 }}>
+          {SEX_OPTIONS.map(opt => (
+            <Chip key={opt} active={sex.has(opt)} onClick={() => tapSex(opt)}>{opt}</Chip>
+          ))}
+        </div>
+      </Collapsible>
     </div>
   );
 }
@@ -782,31 +1068,229 @@ function MindLifeCard({ showToast }) {
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
-// LOG TAB — 4-card 3D deck (flat translateX/scale, no rotateY — labels clip)
+// LIFE STAGE — Pregnancy / Menopause daily-log card (gated by profile.life_stage)
 // ─────────────────────────────────────────────────────────────────────────────
-const CARDS = [
-  { id: "checkin",  label: "Check-in",     Icon: Heart,   Component: CheckinCard },
-  { id: "nourish",  label: "Nourish",      Icon: Utensils, Component: NourishCard },
-  { id: "health",   label: "Health",       Icon: Pill,    Component: HealthCard },
-  { id: "mindlife", label: "Mind & Life",  Icon: Pen,     Component: MindLifeCard },
-];
-const TOTAL_CARDS = CARDS.length;
+function PregnancyCard() {
+  const [hasProfile, setHasProfile] = useState(null); // null = loading
+  const [energy, setEnergy] = useState(3);
+  const [mood, setMood] = useState(3);
+  const [sleepQ, setSleepQ] = useState(3);
+  const [nausea, setNausea] = useState(1);
+  const [pelvic, setPelvic] = useState(1);
+  const [swelling, setSwelling] = useState(1);
+  const [notes, setNotes] = useState("");
+  const notesTimer = useRef(null);
 
-function PillNav({ current, onSelect }) {
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      try {
+        const user_id = await getUserId();
+        if (!user_id || cancelled) return;
+        const profiles = await base44.entities.PregnancyProfile
+          .filter({ user_id }, null, 1).catch(() => []);
+        if (cancelled) return;
+        setHasProfile(!!profiles?.[0]);
+        // Load today's log if it exists.
+        const date = todayISO();
+        const logs = await base44.entities.PregnancyDailyLog
+          .filter({ user_id, date }, "-date", 1).catch(() => []);
+        const row = logs?.[0];
+        if (row) {
+          if (row.energy)        setEnergy(row.energy);
+          if (row.mood)          setMood(row.mood);
+          if (row.sleep_quality) setSleepQ(row.sleep_quality);
+          if (row.nausea)        setNausea(row.nausea);
+          if (row.pelvic_pain)   setPelvic(row.pelvic_pain);
+          if (row.swelling)      setSwelling(row.swelling);
+          if (row.notes)         setNotes(row.notes);
+        }
+      } catch { /* silent */ }
+    })();
+    return () => { cancelled = true; };
+  }, []);
+
+  const wrap = (key, setter) => (v) => { setter(v); upsertPregLog({ [key]: v }); };
+  const handleNotes = (e) => {
+    const v = e.target.value;
+    setNotes(v);
+    clearTimeout(notesTimer.current);
+    notesTimer.current = setTimeout(() => upsertPregLog({ notes: v }), 600);
+  };
+
+  if (hasProfile === null) {
+    return <div style={{ padding: 20, color: T.muted, fontSize: 12 }}>Loading…</div>;
+  }
+  if (!hasProfile) {
+    return (
+      <div style={{ padding: "16px 8px", textAlign: "center" }}>
+        <p style={{ fontSize: 13, color: T.muted, marginBottom: 14 }}>
+          Set up pregnancy support to log here.
+        </p>
+        <a href="/LifeStageCare" style={{
+          display: "inline-block", padding: "10px 20px", borderRadius: 9999,
+          background: T.espresso, color: T.cream, textDecoration: "none",
+          fontSize: 13, fontWeight: 700,
+        }}>Set up pregnancy support</a>
+      </div>
+    );
+  }
+
+  return (
+    <div>
+      <SectionLabel>Pregnancy daily log</SectionLabel>
+      <SliderRow label="Energy"        value={energy}   onChange={wrap("energy", setEnergy)} />
+      <SliderRow label="Mood"          value={mood}     onChange={wrap("mood", setMood)} />
+      <SliderRow label="Sleep quality" value={sleepQ}   onChange={wrap("sleep_quality", setSleepQ)} />
+      <SliderRow label="Nausea (1=none, 5=severe)" value={nausea}   onChange={wrap("nausea", setNausea)} />
+      <SliderRow label="Pelvic discomfort"          value={pelvic}   onChange={wrap("pelvic_pain", setPelvic)} />
+      <SliderRow label="Swelling"      value={swelling} onChange={wrap("swelling", setSwelling)} />
+      <textarea
+        value={notes} onChange={handleNotes} placeholder="Notes (optional)"
+        rows={3}
+        style={{
+          width: "100%", boxSizing: "border-box",
+          height: 72, minHeight: 72, borderRadius: 10,
+          border: `1.5px solid ${T.border}`,
+          background: "rgba(244,237,219,0.5)", padding: "8px 10px",
+          fontSize: 12, color: T.espresso, resize: "none", outline: "none",
+          fontFamily: "inherit",
+        }}
+      />
+    </div>
+  );
+}
+
+function MenopauseCard() {
+  const [hasProfile, setHasProfile] = useState(null);
+  const [hot, setHot] = useState(1);
+  const [sweats, setSweats] = useState(1);
+  const [sleepQ, setSleepQ] = useState(3);
+  const [mood, setMood] = useState(3);
+  const [energy, setEnergy] = useState(3);
+  const [notes, setNotes] = useState("");
+  const notesTimer = useRef(null);
+
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      try {
+        const user_id = await getUserId();
+        if (!user_id || cancelled) return;
+        const profiles = await base44.entities.MenopauseProfile
+          .filter({ user_id }, null, 1).catch(() => []);
+        if (cancelled) return;
+        setHasProfile(!!profiles?.[0]);
+        const date = todayISO();
+        const logs = await base44.entities.MenopauseDailyLog
+          .filter({ user_id, date }, "-date", 1).catch(() => []);
+        const row = logs?.[0];
+        if (row) {
+          if (row.hot_flashes)   setHot(row.hot_flashes);
+          if (row.night_sweats)  setSweats(row.night_sweats);
+          if (row.sleep_quality) setSleepQ(row.sleep_quality);
+          if (row.mood)          setMood(row.mood);
+          if (row.energy)        setEnergy(row.energy);
+          if (row.notes)         setNotes(row.notes);
+        }
+      } catch { /* silent */ }
+    })();
+    return () => { cancelled = true; };
+  }, []);
+
+  const wrap = (key, setter) => (v) => { setter(v); upsertMenoLog({ [key]: v }); };
+  const handleNotes = (e) => {
+    const v = e.target.value;
+    setNotes(v);
+    clearTimeout(notesTimer.current);
+    notesTimer.current = setTimeout(() => upsertMenoLog({ notes: v }), 600);
+  };
+
+  if (hasProfile === null) {
+    return <div style={{ padding: 20, color: T.muted, fontSize: 12 }}>Loading…</div>;
+  }
+  if (!hasProfile) {
+    return (
+      <div style={{ padding: "16px 8px", textAlign: "center" }}>
+        <p style={{ fontSize: 13, color: T.muted, marginBottom: 14 }}>
+          Set up menopause support to log here.
+        </p>
+        <a href="/LifeStageCare" style={{
+          display: "inline-block", padding: "10px 20px", borderRadius: 9999,
+          background: T.espresso, color: T.cream, textDecoration: "none",
+          fontSize: 13, fontWeight: 700,
+        }}>Set up menopause support</a>
+      </div>
+    );
+  }
+
+  return (
+    <div>
+      <SectionLabel>Menopause daily log</SectionLabel>
+      <SliderRow label="Hot flashes (1=none, 5=severe)" value={hot}    onChange={wrap("hot_flashes", setHot)} />
+      <SliderRow label="Night sweats"                   value={sweats} onChange={wrap("night_sweats", setSweats)} />
+      <SliderRow label="Sleep quality"                  value={sleepQ} onChange={wrap("sleep_quality", setSleepQ)} />
+      <SliderRow label="Mood"                           value={mood}   onChange={wrap("mood", setMood)} />
+      <SliderRow label="Energy"                         value={energy} onChange={wrap("energy", setEnergy)} />
+      <textarea
+        value={notes} onChange={handleNotes} placeholder="Notes (optional)"
+        rows={3}
+        style={{
+          width: "100%", boxSizing: "border-box",
+          height: 72, minHeight: 72, borderRadius: 10,
+          border: `1.5px solid ${T.border}`,
+          background: "rgba(244,237,219,0.5)", padding: "8px 10px",
+          fontSize: 12, color: T.espresso, resize: "none", outline: "none",
+          fontFamily: "inherit",
+        }}
+      />
+    </div>
+  );
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// LOG TAB — 3D card deck (flat translateX/scale, no rotateY — labels clip)
+// ─────────────────────────────────────────────────────────────────────────────
+const BASE_CARDS = [
+  { id: "checkin",  label: "Check-in",     Icon: Heart,    Component: CheckinCard },
+  { id: "body",     label: "Body",         Icon: Activity, Component: BodyCard,
+    pillBg: T.blush, pillActiveBg: T.blush, pillActiveColor: T.espresso },
+  { id: "nourish",  label: "Nourish",      Icon: Utensils, Component: NourishCard },
+  { id: "health",   label: "Health",       Icon: Pill,     Component: HealthCard },
+  { id: "mindlife", label: "Mind & Life",  Icon: Pen,      Component: MindLifeCard },
+];
+const PREG_STAGES = new Set(["pregnant-t1", "pregnant-t2", "pregnant-t3"]);
+const MENO_STAGES = new Set(["perimenopause", "menopause", "post-menopause"]);
+function buildCards(lifeStage) {
+  if (PREG_STAGES.has(lifeStage)) {
+    return [...BASE_CARDS, { id: "pregnancy", label: "Pregnancy", Icon: Heart, Component: PregnancyCard,
+      pillBg: T.sage, pillActiveBg: T.sage, pillActiveColor: "#FFFFFF" }];
+  }
+  if (MENO_STAGES.has(lifeStage)) {
+    return [...BASE_CARDS, { id: "menopause", label: "Menopause", Icon: Heart, Component: MenopauseCard,
+      pillBg: T.plum, pillActiveBg: T.plum, pillActiveColor: "#FFFFFF" }];
+  }
+  return BASE_CARDS;
+}
+
+function PillNav({ cards, current, onSelect }) {
   return (
     <div style={{
       display: "flex", gap: 6, overflowX: "auto",
       padding: "8px 16px 6px", scrollbarWidth: "none",
     }}>
-      {CARDS.map((c, i) => {
+      {cards.map((c, i) => {
         const active = i === current;
+        const bg = active
+          ? (c.pillActiveBg || T.gold)
+          : (c.pillBg ? `${c.pillBg}40` : "rgba(58,44,26,0.10)");
+        const color = active ? (c.pillActiveColor || T.espresso) : T.muted;
         return (
           <button key={c.id} onClick={() => onSelect(i)} style={{
             flexShrink: 0, padding: "6px 14px", borderRadius: 20, border: "none",
             cursor: "pointer", fontSize: 11.5, fontWeight: 700,
             transition: "all 0.2s ease",
-            background: active ? T.gold : "rgba(58,44,26,0.10)",
-            color: active ? T.espresso : T.muted,
+            background: bg, color,
           }}>{c.label}</button>
         );
       })}
@@ -814,9 +1298,10 @@ function PillNav({ current, onSelect }) {
   );
 }
 
-function LogTab({ showToast }) {
+function LogTab({ cards, showToast }) {
   const [current, setCurrent] = useState(0);
   const dragStart = useRef(null);
+  const totalCards = cards.length;
 
   const handleDragStart = (clientX) => { dragStart.current = clientX; };
   const handleDragEnd = (clientX) => {
@@ -824,7 +1309,7 @@ function LogTab({ showToast }) {
     const delta = dragStart.current - clientX;
     dragStart.current = null;
     if (Math.abs(delta) < 40) return;
-    if (delta > 0 && current < TOTAL_CARDS - 1) setCurrent(c => c + 1);
+    if (delta > 0 && current < totalCards - 1) setCurrent(c => c + 1);
     if (delta < 0 && current > 0)                setCurrent(c => c - 1);
   };
 
@@ -840,7 +1325,7 @@ function LogTab({ showToast }) {
 
   return (
     <>
-      <PillNav current={current} onSelect={setCurrent} />
+      <PillNav cards={cards} current={current} onSelect={setCurrent} />
       <div
         style={{
           position: "relative", flex: 1, minHeight: 0,
@@ -852,7 +1337,7 @@ function LogTab({ showToast }) {
         onTouchStart={e => handleDragStart(e.touches[0].clientX)}
         onTouchEnd={e   => handleDragEnd(e.changedTouches[0].clientX)}
       >
-        {CARDS.map((c, i) => {
+        {cards.map((c, i) => {
           const { x, scale, opacity, zIndex } = cardTransform(i);
           const isActive = i === current;
           const CardCmp = c.Component;
@@ -882,7 +1367,7 @@ function LogTab({ showToast }) {
                 }}><c.Icon size={14} /></span>
                 <span style={{ fontSize: 15, fontWeight: 800, color: T.espresso }}>{c.label}</span>
                 <div style={{ flex: 1 }} />
-                {i < TOTAL_CARDS - 1 && (
+                {i < totalCards - 1 && (
                   <button onClick={() => setCurrent(i + 1)} style={{
                     fontSize: 11, color: T.muted, background: "none", border: "none",
                     cursor: "pointer", fontWeight: 600, padding: 0,
@@ -941,7 +1426,27 @@ export default function UnifiedTabLogger() {
   const [activeTab, setActiveTab] = useState("log"); // "log" | "add"
   const [initialAddType, setInitialAddType] = useState(null);
   const [toast, setToast] = useState({ message: "", visible: false });
+  const [lifeStage, setLifeStage] = useState(null);
   const toastTimer = useRef(null);
+
+  // Load UserProfile.life_stage once so we can show the Pregnancy / Menopause
+  // card when appropriate. Failure is silent — falls back to base 5 cards.
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      try {
+        const user_id = await getUserId();
+        if (!user_id || cancelled) return;
+        const rows = await base44.entities.UserProfile
+          .filter({ user_id }, null, 1).catch(() => []);
+        if (cancelled) return;
+        setLifeStage(rows?.[0]?.life_stage || null);
+      } catch { /* silent */ }
+    })();
+    return () => { cancelled = true; };
+  }, []);
+
+  const cards = buildCards(lifeStage);
 
   // Subscribe to the openLogger() singleton in UniversalLogger so every
   // existing call site (50+ across PlannerV2Shell, Today checkin tiles, etc.)
@@ -1106,7 +1611,7 @@ export default function UnifiedTabLogger() {
 
                 {/* Content */}
                 {activeTab === "log" ? (
-                  <LogTab showToast={showToast} />
+                  <LogTab cards={cards} showToast={showToast} />
                 ) : (
                   <AddTab initialTypeId={initialAddType} onClose={closeSheet} />
                 )}
