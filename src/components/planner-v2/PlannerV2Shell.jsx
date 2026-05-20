@@ -599,7 +599,7 @@ export default function PlannerV2Shell({
       />
 
       <Row label="Rituals">
-        <MorningStackCard />
+        <MorningStackCard user={user} />
         <CreateRitualCard />
         {ritualBundles.map((b) => <RitualBundleCard key={b.id} bundle={b} user={user} />)}
       </Row>
@@ -1573,7 +1573,7 @@ function CycleZoneCard({ onOpen }) {
 }
 
 // ── Morning stack + Consistency ────────────────────────────────────────────
-function MorningStackCard() {
+function MorningStackCard({ user }) {
   // Live habit data from HabitLogs, grouped by time_of_day.
   const [habits, setHabits] = useState([]);
 
@@ -1581,16 +1581,25 @@ function MorningStackCard() {
     let cancelled = false;
     (async () => {
       try {
-        const me = await base44.entities.User.me().catch(() => null);
-        if (!me?.id || cancelled) return;
+        // Resolve user.id from prop first (parent-passed), then fall back to
+        // User.me() so the card still works in dev contexts where the parent
+        // hasn't yet hydrated. Without this dual path the card was reading
+        // before the parent's User.me() resolved and rendering empty even
+        // when HabitLogs rows existed for today.
+        let uid = user?.id;
+        if (!uid) {
+          const me = await base44.entities.User.me().catch(() => null);
+          uid = me?.id;
+        }
+        if (!uid || cancelled) return;
         const rows = await base44.entities.HabitLogs
-          .filter({ user_id: me.id, date: todayISO }, null, 200).catch(() => []);
+          .filter({ user_id: uid, date: todayISO }, null, 200).catch(() => []);
         if (cancelled) return;
         setHabits((rows || []).filter(Boolean));
       } catch { /* silent */ }
     })();
     return () => { cancelled = true; };
-  }, []);
+  }, [user?.id]);
 
   // Group: morning / evening / anytime (no time_of_day = anytime).
   const morning  = habits.filter(h => (h.time_of_day || "").toLowerCase() === "morning");
