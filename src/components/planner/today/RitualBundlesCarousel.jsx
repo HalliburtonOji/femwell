@@ -190,13 +190,15 @@ export default function RitualBundlesCarousel({ userId, selectedDateStr, current
       );
       for (const r of toCreate) {
         try {
+          const nowISO = new Date().toISOString();
           await base44.entities.HabitLogs.create({
             user_id: userId,
-            habit_name: r.name,
+            habit_type: r.name, habit_name: r.name,
+            habit_category: "mindfulness",
             date: selectedDateStr,
-            is_completed: false,
+            completed: false, is_completed: false,
             time_of_day: r.timeOfDay || "morning",
-            created_at: new Date().toISOString(),
+            created_at: nowISO, updated_at: nowISO,
           });
         } catch { /* silent — entity may not be migrated */ }
       }

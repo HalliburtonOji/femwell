@@ -1048,13 +1048,16 @@ export default function Planner() {
     const targetDate = newItem.date || selectedStr;
     if (addMode === "habit") {
       try {
+        const name = newItem.title.trim();
+        const nowISO = new Date().toISOString();
         await base44.entities.HabitLogs.create({
           user_id: user.id,
-          habit_name: newItem.title.trim(),
+          habit_type: name, habit_name: name,
+          habit_category: "other",
           date: targetDate,
-          is_completed: false,
+          completed: false, is_completed: false,
           time_of_day: newItem.time && Number(newItem.time.split(":")[0] || 12) >= 17 ? "evening" : "morning",
-          created_at: new Date().toISOString(),
+          created_at: nowISO, updated_at: nowISO,
         });
       } catch { /* surface silently — user can retry */ }
       setNewItem({ title: "", category: "reminder", time: "", repeat: "once", notes: "", date: "" });
@@ -1143,24 +1146,30 @@ export default function Planner() {
     // Optimistic; persist a new HabitLog row if turning on, mark existing if off.
     if (!wasOn) {
       try {
+        const nowISO = new Date().toISOString();
         const payload = {
           user_id: user.id,
-          habit_name: habitName,
+          habit_type: habitName, habit_name: habitName,
+          habit_category: "other",
           date: selectedStr,
-          is_completed: true,
-          created_at: new Date().toISOString(),
+          completed: true, is_completed: true,
+          created_at: nowISO, updated_at: nowISO,
         };
-        // Phase 2 BUILD 2 — stamp time_of_day when toggled from the evening
-        // stack so future renders route correctly. The field is optional on
-        // the entity; older rows without it still infer via name pattern.
         if (timeOfDay) payload.time_of_day = timeOfDay;
         await base44.entities.HabitLogs.create(payload);
       } catch { /* silent */ }
     } else {
+      // Find today's row by name (read both fields), update both completion fields.
       try {
-        const rows = await base44.entities.HabitLogs.filter({ user_id: user.id, habit_name: habitName, date: selectedStr }, null, 1);
-        if (rows?.[0]?.id) {
-          await base44.entities.HabitLogs.update(rows[0].id, { is_completed: false });
+        const rows = await base44.entities.HabitLogs.filter({ user_id: user.id, date: selectedStr }, null, 100);
+        const match = (rows || []).find(r =>
+          (r.habit_name === habitName) || (r.habit_type === habitName)
+        );
+        if (match?.id) {
+          await base44.entities.HabitLogs.update(match.id, {
+            completed: false, is_completed: false,
+            updated_at: new Date().toISOString(),
+          });
         }
       } catch { /* silent */ }
     }

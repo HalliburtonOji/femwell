@@ -30,6 +30,10 @@ import {
   StickyNote, Smile, Stethoscope, Check, Frown, Meh, Heart, Zap,
 } from "lucide-react";
 import { base44 } from "@/api/base44Client";
+import {
+  inferMealTypeFromTime,
+  readAiAnalysis,
+} from "@/utils/nutritionAiAnalysis";
 
 // ── Tokens ─────────────────────────────────────────────────────────────────
 const C = {
@@ -133,14 +137,12 @@ const TYPE_CONFIG = {
   meal: {
     title: "Log a meal",
     fields: [
-      { key: "name", label: "Meal name", type: "text", required: true, placeholder: "e.g. Salmon + greens" },
-      { key: "kind", label: "Type", type: "chips", options: ["Breakfast","Lunch","Dinner","Snack"] },
-      { key: "time", label: "Time", type: "time" },
-      { key: "cal",  label: "Calories", type: "number", unit: "kcal", optional: true },
-      { key: "p",    label: "Protein",  type: "number", unit: "g",    optional: true },
-      { key: "carbs",label: "Carbs",    type: "number", unit: "g",    optional: true },
-      { key: "fat",  label: "Fat",      type: "number", unit: "g",    optional: true },
-      { key: "notes",label: "Notes",    type: "textarea", optional: true },
+      { key: "raw_text", label: "What did you eat?", type: "textarea", required: true,
+        placeholder: "Describe naturally…" },
+      { key: "kind", label: "Meal", type: "chips",
+        options: ["Morning", "Midday", "Evening", "Snack"] },
+      { key: "portion_size", label: "Portion", type: "chips",
+        options: ["Small", "Medium", "Large"] },
     ],
   },
   event: {
@@ -450,9 +452,12 @@ export function DetailForm({ type, onCancel, onSaved }) {
           break;
         }
         case "habit": {
+          const name = values.name || "Habit";
           await base44.entities.HabitLogs.create({
-            user_id, date: todayISO, habit_type: values.name || "Habit",
-            habit_category: "other", completed: false,
+            user_id, date: todayISO,
+            habit_type: name, habit_name: name,
+            habit_category: "other",
+            completed: false, is_completed: false,
             created_at: nowISO, updated_at: nowISO,
           });
           break;
@@ -466,14 +471,136 @@ export function DetailForm({ type, onCancel, onSaved }) {
           break;
         }
         case "meal": {
-          const kind = (values.kind || "Lunch").toLowerCase();
-          const meal_type = ["breakfast", "lunch", "dinner", "snack"].includes(kind) ? kind : "lunch";
-          await base44.entities.MealLog.create({
+          // Match the Nourish card pipeline: immediate write + background
+          // analyzeMeal + ai_analysis update + NutritionInsight side row.
+          const LABEL_TO_ID = { Morning: "breakfast", Midday: "lunch", Evening: "dinner", Snack: "snack" };
+          const meal_type = LABEL_TO_ID[values.kind] || inferMealTypeFromTime();
+          const portion_size = (values.portion_size || "Medium").toLowerCase();
+          const raw_text = (values.raw_text || "").trim();
+          if (!raw_text) break;
+
+          // Resolve cycle phase from UserProfile (same inline derivation).
+          let cyclePhase = null;
+          try {
+            const profiles = await base44.entities.UserProfile
+              .filter({ user_id }).catch(() => []);
+            const p = profiles?.[0];
+            if (p?.last_period_start_date) {
+              const cycleLen = p.cycle_avg_length || 28;
+              const periodLen = p.period_length || 5;
+              const daysSince = Math.floor((Date.now() - new Date(p.last_period_start_date).getTime()) / 86_400_000);
+              const dayOfCycle = (daysSince % cycleLen) + 1;
+              cyclePhase = dayOfCycle <= periodLen ? "menstrual"
+                : dayOfCycle <= Math.round(cycleLen * 0.4)  ? "follicular"
+                : dayOfCycle <= Math.round(cycleLen * 0.55) ? "ovulatory"
+                : "luteal";
+            }
+          } catch { /* silent */ }
+
+          // 1. Immediate write.
+          const log = await base44.entities.MealLog.create({
             user_id, logged_at: nowISO, day_key: todayISO,
             meal_type, method: "text",
-            raw_text: values.name || "",
-            notes: values.notes || "",
+            raw_text, portion_size,
+            cycle_phase_at_log: cyclePhase,
           });
+
+          // 2. Background analyzeMeal — never blocks close.
+          (async () => {
+            try {
+              let excluded = [];
+              try {
+                const recent = await base44.entities.MealLog
+                  .filter({ user_id }, "-created_date", 7);
+                excluded = (recent || [])
+                  .flatMap(m => {
+                    const a = readAiAnalysis(m);
+                    const list = [...(a?.smart_swaps || [])];
+                    if (a?.insight?.smart_swap) list.push(a.insight.smart_swap);
+                    return list;
+                  })
+                  .filter(Boolean).map(s => String(s).trim().toLowerCase());
+              } catch { /* ignore */ }
+
+              const phasePromptAppend = cyclePhase
+                ? ` The user is currently in their ${cyclePhase} phase.` : "";
+              const shortInput = raw_text.length <= 8;
+              const response = await base44.functions.invoke("analyzeMeal", {
+                raw_text,
+                wellness_goal: "general wellness",
+                prompt_append: phasePromptAppend,
+                short_input: shortInput,
+                meal_log_id: log.id,
+                cycle_phase: cyclePhase,
+                excluded_swaps: excluded,
+              });
+              const res = response?.data || response;
+              if (!res || typeof res !== "object") return;
+              if (!(res.summary || res.nutritional_summary || res.items)) return;
+
+              const structured = { ...res, summary: res.summary || res.nutritional_summary };
+              delete structured.nutritional_summary;
+
+              // Zero-fallback macro recompute.
+              const s = structured.summary || {};
+              const zeroish = !(s.calories || s.protein_g || s.carbs_g || s.fat_g);
+              if (zeroish && (structured.items || []).length > 0) {
+                const summed = structured.items.reduce((acc, it) => ({
+                  calories:  acc.calories  + (Number(it.calories)  || 0),
+                  protein_g: acc.protein_g + (Number(it.protein_g) || 0),
+                  carbs_g:   acc.carbs_g   + (Number(it.carbs_g)   || 0),
+                  fat_g:     acc.fat_g     + (Number(it.fat_g)     || 0),
+                  fiber_g:   acc.fiber_g   + (Number(it.fiber_g)   || 0),
+                }), { calories: 0, protein_g: 0, carbs_g: 0, fat_g: 0, fiber_g: 0 });
+                structured.summary = {
+                  calories:  Math.round(summed.calories),
+                  protein_g: Math.round(summed.protein_g),
+                  carbs_g:   Math.round(summed.carbs_g),
+                  fat_g:     Math.round(summed.fat_g),
+                  fiber_g:   Math.round(summed.fiber_g),
+                };
+              }
+
+              if (Array.isArray(structured.smart_swaps)) {
+                structured.smart_swaps = structured.smart_swaps.filter(
+                  sw => sw && !excluded.includes(String(sw).trim().toLowerCase())
+                );
+              }
+              if (structured.insight?.smart_swap
+                  && excluded.includes(String(structured.insight.smart_swap).trim().toLowerCase())) {
+                structured.insight = { ...structured.insight, smart_swap: null };
+              }
+
+              let overall = null;
+              if (typeof structured.meal_score === "number") {
+                overall = structured.meal_score <= 5
+                  ? Math.min(10, Math.round(structured.meal_score * 2))
+                  : Math.round(structured.meal_score);
+              } else if (structured.meal_score && typeof structured.meal_score === "object") {
+                const vals = ["protein", "veg_fiber", "balance"]
+                  .map(k => Number(structured.meal_score[k]))
+                  .filter(Number.isFinite);
+                if (vals.length) {
+                  const avg = vals.reduce((a, b) => a + b, 0) / vals.length;
+                  overall = Math.min(10, Math.max(1, Math.round(avg * 2)));
+                }
+              }
+
+              const updatePayload = { ai_analysis: structured };
+              if (overall != null) updatePayload.meal_score = overall;
+              await base44.entities.MealLog.update(log.id, updatePayload).catch(() => {});
+
+              if (structured.insight) {
+                const { headline, wellness_impact, action_items, smart_swap, confidence, tone_safety_note } = structured.insight;
+                await base44.entities.NutritionInsight.create({
+                  user_id, meal_log_id: log.id, day_key: todayISO,
+                  meal_description: raw_text, wellness_goal: "general wellness",
+                  headline, wellness_impact, action_items, smart_swap,
+                  confidence: confidence || "medium", tone_safety_note, user_feedback: "none",
+                }).catch(() => {});
+              }
+            } catch { /* silent */ }
+          })();
           break;
         }
         case "event": {
@@ -548,17 +675,23 @@ export function DetailForm({ type, onCancel, onSaved }) {
         }
         case "ritual": {
           // Build a HabitLogs row per item in the ritual list, tagged by
-          // the ritual's chosen time of day.
+          // the ritual's chosen time of day. Uses the canonical shape:
+          // habit_type + habit_name mirror, completed + is_completed mirror.
           const items = Array.isArray(values.items) ? values.items : [];
+          const time = (values.time || "").toLowerCase();
+          const time_of_day = time === "morning" || time === "evening" || time === "afternoon" ? time : undefined;
           for (const step of items) {
             try {
-              await base44.entities.HabitLogs.create({
+              const name = String(step);
+              const payload = {
                 user_id, date: todayISO,
-                habit_type: String(step),
-                habit_category: "other",
-                completed: false,
+                habit_type: name, habit_name: name,
+                habit_category: "mindfulness",
+                completed: false, is_completed: false,
                 created_at: nowISO, updated_at: nowISO,
-              });
+              };
+              if (time_of_day) payload.time_of_day = time_of_day;
+              await base44.entities.HabitLogs.create(payload);
             } catch { /* silent */ }
           }
           break;

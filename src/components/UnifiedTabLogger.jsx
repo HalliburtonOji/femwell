@@ -18,7 +18,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import {
   Plus, Minus, X as XIcon, Check,
-  Heart, Utensils, Pill, Pen, Activity,
+  Heart, Utensils, Pill, Pen, Activity, Sparkles,
   Droplets, Coffee, Wine, ChevronDown, ChevronUp,
 } from "lucide-react";
 import { base44 } from "@/api/base44Client";
@@ -1892,6 +1892,195 @@ function MenopauseCard() {
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
+// CARD 6 — Rituals (today's HabitLogs, grouped by time_of_day)
+// ─────────────────────────────────────────────────────────────────────────────
+const RITUAL_TIMES = [
+  { id: "morning", label: "Morning" },
+  { id: "evening", label: "Evening" },
+  { id: "anytime", label: "Anytime" },
+];
+
+function RitualsCard({ showToast }) {
+  const [userId, setUserId]   = useState(null);
+  const [rituals, setRituals] = useState([]);
+  const [newName, setNewName] = useState("");
+  const [newTime, setNewTime] = useState("morning");
+
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      try {
+        const me = await base44.entities.User.me().catch(() => null);
+        if (!me?.id || cancelled) return;
+        setUserId(me.id);
+        const rows = await base44.entities.HabitLogs
+          .filter({ user_id: me.id, date: todayISO() }, null, 200).catch(() => []);
+        if (cancelled) return;
+        setRituals((rows || []).filter(Boolean));
+      } catch { /* silent */ }
+    })();
+    return () => { cancelled = true; };
+  }, []);
+
+  const nameOf = (r) => r.habit_name || r.habit_type || "Ritual";
+  const isDone = (r) => !!(r.completed || r.is_completed);
+
+  const morning = rituals.filter(r => (r.time_of_day || "").toLowerCase() === "morning");
+  const evening = rituals.filter(r => (r.time_of_day || "").toLowerCase() === "evening");
+  const anytime = rituals.filter(r => {
+    const t = (r.time_of_day || "").toLowerCase();
+    return !t || (t !== "morning" && t !== "evening" && t !== "afternoon");
+  });
+
+  const toggle = async (r) => {
+    const next = !isDone(r);
+    setRituals(prev => prev.map(x => x.id === r.id ? { ...x, completed: next, is_completed: next } : x));
+    try {
+      await base44.entities.HabitLogs.update(r.id, {
+        completed: next, is_completed: next,
+        updated_at: nowISO(),
+      });
+      if (next) showToast(`${nameOf(r)} done`);
+    } catch {
+      // Revert.
+      setRituals(prev => prev.map(x => x.id === r.id ? r : x));
+    }
+  };
+
+  const addRitual = async () => {
+    const name = newName.trim();
+    if (!name || !userId) return;
+    const time_of_day = newTime === "anytime" ? undefined : newTime;
+    const payload = {
+      user_id: userId,
+      habit_type: name, habit_name: name,
+      habit_category: "other",
+      date: todayISO(),
+      completed: false, is_completed: false,
+      created_at: nowISO(), updated_at: nowISO(),
+    };
+    if (time_of_day) payload.time_of_day = time_of_day;
+    try {
+      const created = await base44.entities.HabitLogs.create(payload);
+      setRituals(prev => [...prev, created]);
+      setNewName("");
+      showToast(`${name} added`);
+    } catch { /* silent */ }
+  };
+
+  const renderRow = (r) => {
+    const done = isDone(r);
+    return (
+      <div key={r.id} onClick={() => toggle(r)} style={{
+        display: "flex", alignItems: "center", gap: 10, padding: "6px 0",
+        borderBottom: `1px solid ${T.border}`, cursor: "pointer",
+      }}>
+        <div style={{
+          width: 18, height: 18, borderRadius: 5,
+          border: `2px solid ${done ? T.sage : T.border}`,
+          background: done ? T.sage : "transparent",
+          display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0,
+        }}>
+          {done && <Check size={10} strokeWidth={3} style={{ color: "#FFFFFF" }} />}
+        </div>
+        <span style={{
+          flex: 1, fontSize: 12.5, color: T.espresso, fontWeight: 500,
+          textDecoration: done ? "line-through" : "none",
+          opacity: done ? 0.6 : 1,
+        }}>{nameOf(r)}</span>
+        {r.time_of_day && (
+          <span style={{
+            fontSize: 9, fontWeight: 700, color: T.muted,
+            background: "rgba(58,44,26,0.06)", padding: "2px 6px", borderRadius: 8,
+            textTransform: "uppercase", letterSpacing: "0.08em",
+          }}>{r.time_of_day}</span>
+        )}
+      </div>
+    );
+  };
+
+  const empty = rituals.length === 0;
+
+  return (
+    <div>
+      <SectionLabel>Today's rituals</SectionLabel>
+
+      {empty && (
+        <div style={{
+          padding: "10px 12px", borderRadius: 10,
+          background: "rgba(58,44,26,0.04)", border: `1px dashed ${T.border}`,
+          fontSize: 11.5, color: T.muted, fontStyle: "italic", marginBottom: 10,
+        }}>
+          Add rituals from the Add tab or Planner.
+        </div>
+      )}
+
+      {morning.length > 0 && (
+        <div style={{ marginBottom: 10 }}>
+          <div style={{
+            fontSize: 9, fontWeight: 700, color: T.muted,
+            textTransform: "uppercase", letterSpacing: "0.10em", marginBottom: 4,
+          }}>Morning</div>
+          {morning.map(renderRow)}
+        </div>
+      )}
+      {anytime.length > 0 && (
+        <div style={{ marginBottom: 10 }}>
+          <div style={{
+            fontSize: 9, fontWeight: 700, color: T.muted,
+            textTransform: "uppercase", letterSpacing: "0.10em", marginBottom: 4,
+          }}>Anytime</div>
+          {anytime.map(renderRow)}
+        </div>
+      )}
+      {evening.length > 0 && (
+        <div style={{ marginBottom: 10 }}>
+          <div style={{
+            fontSize: 9, fontWeight: 700, color: T.muted,
+            textTransform: "uppercase", letterSpacing: "0.10em", marginBottom: 4,
+          }}>Evening</div>
+          {evening.map(renderRow)}
+        </div>
+      )}
+
+      <div style={{
+        marginTop: 12, padding: "10px 12px", borderRadius: 10,
+        border: `1px dashed ${T.sage}66`, background: `${T.sage}10`,
+      }}>
+        <SectionLabel>Add ritual</SectionLabel>
+        <input
+          value={newName} onChange={e => setNewName(e.target.value)}
+          onKeyDown={e => e.key === "Enter" && addRitual()}
+          placeholder="e.g. Morning walk"
+          style={{
+            width: "100%", boxSizing: "border-box",
+            padding: "8px 10px", borderRadius: 8,
+            border: `1px solid ${T.border}`, background: T.paperHi,
+            fontSize: 12, color: T.espresso, outline: "none", marginBottom: 8,
+          }}
+        />
+        <div style={{ display: "flex", gap: 5, marginBottom: 8 }}>
+          {RITUAL_TIMES.map(t => (
+            <Chip key={t.id} active={newTime === t.id} onClick={() => setNewTime(t.id)} color={T.sage}>
+              {t.label}
+            </Chip>
+          ))}
+        </div>
+        <button
+          onClick={addRitual} disabled={!newName.trim() || !userId}
+          style={{
+            width: "100%", padding: "8px 14px", borderRadius: 9999, border: "none",
+            background: newName.trim() ? T.espresso : "rgba(58,44,26,0.18)",
+            color: T.cream, fontSize: 12, fontWeight: 700,
+            cursor: newName.trim() ? "pointer" : "not-allowed",
+          }}
+        >Add ritual</button>
+      </div>
+    </div>
+  );
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
 // LOG TAB — 3D card deck (flat translateX/scale, no rotateY — labels clip)
 // ─────────────────────────────────────────────────────────────────────────────
 const BASE_CARDS = [
@@ -1901,6 +2090,8 @@ const BASE_CARDS = [
   { id: "nourish",  label: "Nourish",      Icon: Utensils, Component: NourishCard },
   { id: "health",   label: "Health",       Icon: Pill,     Component: HealthCard },
   { id: "mindlife", label: "Mind & Life",  Icon: Pen,      Component: MindLifeCard },
+  { id: "rituals",  label: "Rituals",      Icon: Sparkles, Component: RitualsCard,
+    pillBg: T.sage, pillActiveBg: T.sage, pillActiveColor: "#FFFFFF" },
 ];
 const PREG_STAGES = new Set(["pregnant-t1", "pregnant-t2", "pregnant-t3"]);
 const MENO_STAGES = new Set(["perimenopause", "menopause", "post-menopause"]);

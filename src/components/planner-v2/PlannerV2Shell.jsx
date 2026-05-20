@@ -1573,67 +1573,88 @@ function CycleZoneCard({ onOpen }) {
 
 // ── Morning stack + Consistency ────────────────────────────────────────────
 function MorningStackCard() {
-  const [stack, setStack] = useState(() => {
-    try {
-      const raw = localStorage.getItem("femwell_unified_stack");
-      if (raw) return JSON.parse(raw);
-    } catch {}
-    return initialStack;
-  });
-  const [tasks, setTasks] = useState([
-    { id: "tk1", text: "Team standup", done: false, source: "Work" },
-    { id: "tk2", text: "Draft investor update", done: false, source: "Work" },
-    { id: "tk3", text: "Call pharmacy", done: true, source: "Personal" },
-  ]);
-  const [newTask, setNewTask] = useState("");
+  // Live habit data from HabitLogs, grouped by time_of_day.
+  const [habits, setHabits] = useState([]);
+
   useEffect(() => {
-    try { localStorage.setItem("femwell_unified_stack", JSON.stringify(stack)); } catch {}
-  }, [stack]);
-  function toggle(section, id) {
-    setStack((s) => ({ ...s, [section]: s[section].map((it) => it.id === id ? { ...it, done: !it.done } : it) }));
-  }
-  function toggleTask(id) { setTasks((ts) => ts.map((t) => t.id === id ? { ...t, done: !t.done } : t)); }
-  function addTask() {
-    const v = newTask.trim(); if (!v) return;
-    setTasks((ts) => [...ts, { id: `tk_${Date.now()}`, text: v, done: false, source: "Today" }]);
-    setNewTask("");
-  }
+    let cancelled = false;
+    (async () => {
+      try {
+        const me = await base44.entities.User.me().catch(() => null);
+        if (!me?.id || cancelled) return;
+        const rows = await base44.entities.HabitLogs
+          .filter({ user_id: me.id, date: todayISO }, null, 200).catch(() => []);
+        if (cancelled) return;
+        setHabits((rows || []).filter(Boolean));
+      } catch { /* silent */ }
+    })();
+    return () => { cancelled = true; };
+  }, []);
+
+  // Group: morning / evening / anytime (no time_of_day = anytime).
+  const morning  = habits.filter(h => (h.time_of_day || "").toLowerCase() === "morning");
+  const evening  = habits.filter(h => (h.time_of_day || "").toLowerCase() === "evening");
+  const anytime  = habits.filter(h => !h.time_of_day || !["morning", "evening", "afternoon"].includes((h.time_of_day || "").toLowerCase()));
+
+  const toggleRow = async (row) => {
+    const isDone = !!(row.completed || row.is_completed);
+    const next = !isDone;
+    // Optimistic flip.
+    setHabits(prev => prev.map(h => h.id === row.id
+      ? { ...h, completed: next, is_completed: next }
+      : h));
+    try {
+      await base44.entities.HabitLogs.update(row.id, {
+        completed: next, is_completed: next,
+        updated_at: new Date().toISOString(),
+      });
+    } catch {
+      // Revert on failure.
+      setHabits(prev => prev.map(h => h.id === row.id
+        ? { ...h, completed: isDone, is_completed: isDone }
+        : h));
+    }
+  };
+
+  const rowText = (h) => h.habit_name || h.habit_type || "Habit";
+
+  const renderRow = (h) => (
+    <CheckboxRow
+      key={h.id}
+      checked={!!(h.completed || h.is_completed)}
+      onChange={() => toggleRow(h)}
+      text={rowText(h)}
+    />
+  );
+
+  const empty = morning.length === 0 && evening.length === 0 && anytime.length === 0;
+
   return (
     <article style={cardStyle}>
       <h3 style={cardTitle}>Morning stack</h3>
-      <Section name="HABITS">
-        {stack.habits.map((h) => (
-          <CheckboxRow key={h.id} checked={h.done} onChange={() => toggle("habits", h.id)} text={h.text}>
-            <span style={streakRow}>
-              {Array.from({ length: Math.min(4, Math.floor(h.streak / 7)) }).map((_, i) => <span key={i} style={streakDot} />)}
-              <span style={streakLabel}>{h.streak}d</span>
-            </span>
-          </CheckboxRow>
-        ))}
-      </Section>
-      <Section name="TASKS">
-        {tasks.map((t) => (
-          <CheckboxRow key={t.id} checked={t.done} onChange={() => toggleTask(t.id)} text={t.text}>
-            {t.source && <span style={sourceChip}>{t.source}</span>}
-          </CheckboxRow>
-        ))}
-        <input type="text" value={newTask} onChange={(e) => setNewTask(e.target.value)}
-          onKeyDown={(e) => e.key === "Enter" && addTask()} placeholder="+ Add task" style={addTaskInput} />
-      </Section>
-      <Section name="MEALS">
-        {stack.meals.slice(0, 1).map((m) => (
-          <CheckboxRow key={m.id} checked={m.done} onChange={() => toggle("meals", m.id)} text={m.text}>
-            {m.note && <span style={sourceChip}>{m.note}</span>}
-          </CheckboxRow>
-        ))}
-      </Section>
-      <Section name="MEDICATIONS">
-        {stack.meds.map((m) => (
-          <CheckboxRow key={m.id} checked={m.done} onChange={() => toggle("meds", m.id)} text={m.text}>
-            <span style={medTimeChip}>{m.time}</span>
-          </CheckboxRow>
-        ))}
-      </Section>
+      {empty && (
+        <p style={{
+          fontFamily: "'Inter', sans-serif", fontSize: 12, color: C.muted,
+          padding: "12px 0",
+        }}>
+          No rituals for today — add some from the logger or the Rituals carousel below.
+        </p>
+      )}
+      {morning.length > 0 && (
+        <Section name="MORNING">
+          {morning.map(renderRow)}
+        </Section>
+      )}
+      {anytime.length > 0 && (
+        <Section name="ANYTIME">
+          {anytime.map(renderRow)}
+        </Section>
+      )}
+      {evening.length > 0 && (
+        <Section name="EVENING">
+          {evening.map(renderRow)}
+        </Section>
+      )}
     </article>
   );
 }
@@ -1727,13 +1748,15 @@ function RitualBundleCard({ bundle, user }) {
         for (const name of bundle.rituals) {
           if (have.has(String(name).toLowerCase())) continue;
           try {
+            const nowISO = new Date().toISOString();
             await base44.entities.HabitLogs.create({
               user_id: user.id,
-              habit_name: name,
+              habit_type: name, habit_name: name,
+              habit_category: "mindfulness",
               date: todayISO,
-              is_completed: false,
+              completed: false, is_completed: false,
               time_of_day: (bundle.time || "morning").toLowerCase(),
-              created_at: new Date().toISOString(),
+              created_at: nowISO, updated_at: nowISO,
             });
           } catch { /* silent */ }
         }
