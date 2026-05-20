@@ -30,7 +30,7 @@ import Upgrade from './pages/Upgrade';
 import Planner from './pages/Planner';
 import SealedLetters from './pages/SealedLetters';
 import BookReader from './pages/BookReader';
-import UniversalLogger from './components/UniversalLogger';
+import UnifiedTabLogger from './components/UnifiedTabLogger';
 
 
 const { Pages, Layout, mainPage } = pagesConfig;
@@ -158,7 +158,7 @@ function App() {
         <Toaster />
         {/* Universal Logger — global gold + FAB available on every page.
             Module-level openLogger() lets any component trigger it. */}
-        <UniversalLogger />
+        <UnifiedTabLogger />
       </QueryClientProvider>
     </AuthProvider>
   );

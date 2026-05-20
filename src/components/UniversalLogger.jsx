@@ -69,11 +69,20 @@ export function closeLogger() {
   _state = { open: false, type: null };
   _notify();
 }
+/** External subscription to the logger singleton. Returns an unsubscribe fn. */
+export function subscribeLoggerState(fn) {
+  _subs.add(fn);
+  return () => _subs.delete(fn);
+}
+/** Read the current logger singleton state. */
+export function getLoggerState() {
+  return _state;
+}
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Type catalogue + field configs
 // ─────────────────────────────────────────────────────────────────────────────
-const TYPES = [
+export const TYPES = [
   { id: "habit",     label: "Habit",      sub: "Movement or recurring action", Icon: Footprints,    tone: C.sage },
   { id: "task",      label: "Task",       sub: "Work or personal to-do",       Icon: ListChecks,    tone: C.espresso },
   { id: "med",       label: "Medication", sub: "Med or supplement",            Icon: Pill,          tone: C.blush },
@@ -356,7 +365,7 @@ function LoggerSheet({ initialType, onClose = closeLogger }) {
 }
 
 // ─── Type grid (initial state) ──────────────────────────────────────────────
-function TypeGrid({ onPick }) {
+export function TypeGrid({ onPick }) {
   const [voiceState, setVoiceState] = useState("idle");
   const [transcript, setTranscript] = useState("");
   function startVoice() {
@@ -408,7 +417,7 @@ function TypeGrid({ onPick }) {
 }
 
 // ─── Detail form (per-type fields) ──────────────────────────────────────────
-function DetailForm({ type, onCancel, onSaved }) {
+export function DetailForm({ type, onCancel, onSaved }) {
   const config = TYPE_CONFIG[type.id];
   const [values, setValues] = useState({});
   const [saving, setSaving] = useState(false);
