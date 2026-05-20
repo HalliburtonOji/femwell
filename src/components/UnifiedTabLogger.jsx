@@ -23,6 +23,11 @@ import {
 } from "lucide-react";
 import { base44 } from "@/api/base44Client";
 import {
+  inferMealTypeFromTime,
+  readAiAnalysis,
+  getMealSummary,
+} from "@/utils/nutritionAiAnalysis";
+import {
   openLogger,
   closeLogger,
   subscribeLoggerState,
@@ -700,145 +705,783 @@ function BodyCard() {
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
-// CARD 2 — Nourish (meals + drinks)
+// CARD 2 — Nourish (full Nutrition-page pipeline: meal logger with analyzeMeal,
+// drinks with size scaling, hydration tracker, daily calorie + macro totals)
 // ─────────────────────────────────────────────────────────────────────────────
-const MEAL_TYPES = ["Breakfast", "Lunch", "Dinner", "Snack"];
-const PORTION_SIZES = ["Small", "Medium", "Large"];
-const DRINK_TYPES = [
-  { label: "Water",    Icon: Droplets, tone: "#60B4FA" },
-  { label: "Coffee",   Icon: Coffee,   tone: T.espresso },
-  { label: "Tea",      Icon: Coffee,   tone: T.muted },
-  { label: "Juice",    Icon: Droplets, tone: T.blush },
-  { label: "Smoothie", Icon: Droplets, tone: T.sage },
-  { label: "Soda",     Icon: Droplets, tone: T.gold },
-  { label: "Alcohol",  Icon: Wine,     tone: T.plum },
-  { label: "Other",    Icon: Droplets, tone: T.muted },
+const NOURISH_MEAL_TYPES = [
+  { id: "breakfast", label: "Morning" },
+  { id: "lunch",     label: "Midday" },
+  { id: "dinner",    label: "Evening" },
+  { id: "snack",     label: "Snack" },
 ];
+const NOURISH_PORTIONS = [
+  { id: "small",  label: "Small",  mult: 0.7 },
+  { id: "medium", label: "Medium", mult: 1.0 },
+  { id: "large",  label: "Large",  mult: 1.4 },
+];
+const WELLNESS_GOALS = [
+  { id: "energy",            label: "Energy" },
+  { id: "hormone_support",   label: "Hormone Support" },
+  { id: "gut_health",        label: "Gut Health" },
+  { id: "weight_balance",    label: "Weight Balance" },
+  { id: "anti_inflammatory", label: "Anti-inflammatory" },
+  { id: "mood_support",      label: "Mood Support" },
+  { id: "general_wellness",  label: "General Wellness" },
+];
+const NOURISH_DRINK_TYPES = [
+  { id: "water",      label: "Water",      ml: 250, Icon: Droplets, tone: "#60B4FA" },
+  { id: "coffee",     label: "Coffee",     ml: 240, Icon: Coffee,   tone: T.espresso },
+  { id: "tea",        label: "Tea",        ml: 240, Icon: Coffee,   tone: T.muted },
+  { id: "soft_drink", label: "Soft drink", ml: 330, Icon: Droplets, tone: T.gold },
+  { id: "juice",      label: "Juice",      ml: 250, Icon: Droplets, tone: T.blush },
+  { id: "alcohol",    label: "Alcohol",    ml: 250, Icon: Wine,     tone: T.plum },
+  { id: "smoothie",   label: "Smoothie",   ml: 300, Icon: Droplets, tone: T.sage },
+  { id: "milk",       label: "Milk",       ml: 200, Icon: Droplets, tone: "#D4C8A8" },
+];
+const DRINK_KCAL = {
+  water: 0, coffee: 5, tea: 2, soft_drink: 140,
+  juice: 110, alcohol: 180, smoothie: 200, milk: 120,
+};
+const DRINK_SIZE_MULT = { small: 0.6, medium: 1.0, large: 1.6 };
+const HYDRATION_DRINK_TYPES = new Set(["water", "tea", "coffee", "juice", "smoothie", "milk"]);
+const PORTION_MULT_MAP = { small: 0.7, medium: 1.0, large: 1.4 };
+const DISCLAIMER_WINDOW_MS = 7 * 24 * 60 * 60 * 1000;
+
+function deriveCyclePhase(profile) {
+  if (!profile?.last_period_start_date) return null;
+  const cycleLen = profile.cycle_avg_length || 28;
+  const periodLen = profile.period_length || 5;
+  const daysSince = Math.floor(
+    (Date.now() - new Date(profile.last_period_start_date).getTime()) / 86_400_000
+  );
+  const dayOfCycle = (daysSince % cycleLen) + 1;
+  if (dayOfCycle <= periodLen) return "menstrual";
+  if (dayOfCycle <= Math.round(cycleLen * 0.4))  return "follicular";
+  if (dayOfCycle <= Math.round(cycleLen * 0.55)) return "ovulatory";
+  return "luteal";
+}
 
 function NourishCard({ showToast }) {
-  const [mealType, setMealType] = useState("");
-  const [description, setDescription] = useState("");
-  const [portion, setPortion] = useState("Medium");
-  const [kcal, setKcal] = useState("");
-  const [loggedMeals, setLoggedMeals] = useState([]);
-  const [waterCount, setWaterCount] = useState(0);
+  // ── Loaded data ───────────────────────────────────────────────────────────
+  const [userId, setUserId]             = useState(null);
+  const [profile, setProfile]           = useState(null);
+  const [nutProfile, setNutProfile]     = useState(null);
+  const [checkin, setCheckin]           = useState(null);
+  const [meals, setMeals]               = useState([]);
+  const [drinkLogs, setDrinkLogs]       = useState([]);
+  const [hydrationLogs, setHydrationLogs] = useState([]);
 
-  const logMeal = () => {
-    if (!description.trim() || !mealType) return;
-    const meal = { meal_type: mealType, description: description.trim(), portion_size: portion, estimated_calories: kcal };
-    writeMeal(meal);
-    setLoggedMeals(prev => [...prev, meal]);
-    showToast(`${mealType} logged`);
-    setDescription(""); setKcal(""); setMealType("");
+  // ── Meal-logger form state ────────────────────────────────────────────────
+  const [mealText, setMealText]         = useState("");
+  const [mealType, setMealType]         = useState(() => inferMealTypeFromTime());
+  const [userToggledType, setUserToggledType] = useState(false);
+  const [portionSize, setPortionSize]   = useState("medium");
+  const [selectedGoal, setSelectedGoal] = useState(null);
+  const [showGoalPicker, setShowGoalPicker] = useState(false);
+  const [logging, setLogging]           = useState(false);
+  const [quickCheck, setQuickCheck]     = useState(null); // last analysis result
+  const [showTimeline, setShowTimeline] = useState(true);
+
+  // ── Drinks ────────────────────────────────────────────────────────────────
+  const [drinkPicker, setDrinkPicker]   = useState(null); // { typeId, size: "medium" }
+  const [showCustom, setShowCustom]     = useState(false);
+  const [customName, setCustomName]     = useState("");
+  const [customMl, setCustomMl]         = useState(250);
+  const [customKcal, setCustomKcal]     = useState(0);
+
+  // ── Initial load ──────────────────────────────────────────────────────────
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      try {
+        const me = await base44.entities.User.me().catch(() => null);
+        if (!me?.id || cancelled) return;
+        const date = todayISO();
+        const [profiles, nutProfiles, checkins, mealLogs, drinks, hydration] = await Promise.all([
+          base44.entities.UserProfile.filter({ user_id: me.id }).catch(() => []),
+          base44.entities.NutritionProfile.filter({ user_id: me.id }).catch(() => []),
+          base44.entities.DailyCheckins.filter({ user_id: me.id, date }, "-updated_at", 1).catch(() => []),
+          base44.entities.MealLog.filter({ user_id: me.id, day_key: date }).catch(() => []),
+          base44.entities.DrinkLog.filter({ user_id: me.id, day_key: date }).catch(() => []),
+          base44.entities.HydrationLog.filter({ user_id: me.id, day_key: date }).catch(() => []),
+        ]);
+        if (cancelled) return;
+        setUserId(me.id);
+        setProfile(profiles[0] || null);
+        setNutProfile(nutProfiles[0] || null);
+        setCheckin(checkins[0] || null);
+        setMeals((mealLogs || []).filter(Boolean));
+        setDrinkLogs((drinks || []).filter(Boolean));
+        setHydrationLogs((hydration || []).filter(Boolean));
+      } catch { /* silent */ }
+    })();
+    return () => { cancelled = true; };
+  }, []);
+
+  // ── Derived totals (memo not strictly needed at this size) ────────────────
+  const totalDrinkCal = drinkLogs.reduce((s, d) => s + (d.calories || 0), 0);
+  const totalMealCal = meals.reduce((s, m) => {
+    const sum = getMealSummary(m).summary;
+    const mult = PORTION_MULT_MAP[m.portion_size] || 1.0;
+    return s + Math.round((sum?.calories || 0) * mult);
+  }, 0);
+  const totalCal = totalMealCal + totalDrinkCal;
+  const totalProtein = meals.reduce((s, m) => {
+    const sum = getMealSummary(m).summary;
+    const mult = PORTION_MULT_MAP[m.portion_size] || 1.0;
+    return s + Math.round((sum?.protein_g || 0) * mult);
+  }, 0);
+  const totalCarbs = meals.reduce((s, m) => {
+    const sum = getMealSummary(m).summary;
+    const mult = PORTION_MULT_MAP[m.portion_size] || 1.0;
+    return s + Math.round((sum?.carbs_g || 0) * mult);
+  }, 0);
+  const calTarget = nutProfile?.calories_target || nutProfile?.calorie_target || 2000;
+  const calPct = Math.min(100, Math.round((totalCal / calTarget) * 100));
+  const totalHydrationMl = hydrationLogs.reduce((s, l) => s + (l.amount_ml || 0), 0)
+    + drinkLogs.filter(d => HYDRATION_DRINK_TYPES.has(d.drink_type)).reduce((s, d) => s + (d.amount_ml || 0), 0);
+  const hydrationTarget = nutProfile?.hydration_target_ml || 2000;
+  const glassDots = Math.max(8, Math.round(hydrationTarget / 250));
+  const glassesLit = Math.min(glassDots, Math.round(totalHydrationMl / 250));
+
+  // ── Auto-mirror hydration_glasses to today's DailyCheckins ───────────────
+  const mirrorHydration = async (newTotalMl) => {
+    if (!userId) return;
+    const glasses = Math.round(newTotalMl / 250);
+    try {
+      if (checkin?.id) {
+        await base44.entities.DailyCheckins.update(checkin.id, { hydration_glasses: glasses });
+      } else {
+        const created = await base44.entities.DailyCheckins.create({
+          user_id: userId, date: todayISO(), hydration_glasses: glasses, updated_at: nowISO(),
+        });
+        setCheckin(created);
+      }
+    } catch { /* silent */ }
   };
 
-  const addWater = () => {
-    setWaterCount(c => c + 1);
-    writeHydration(250);
-    showToast("+250 ml water");
+  // ── logMeal pipeline (mirrors NutritionTodayTab) ─────────────────────────
+  const logMeal = async () => {
+    const trimmed = mealText.trim();
+    if (!trimmed || !userId || logging) return;
+    setLogging(true);
+
+    const resolvedType = userToggledType ? mealType : inferMealTypeFromTime();
+    const cyclePhase = deriveCyclePhase(profile);
+    const shortInput = trimmed.length <= 8;
+    const date = todayISO();
+
+    let log;
+    try {
+      log = await base44.entities.MealLog.create({
+        user_id: userId, day_key: date, logged_at: nowISO(),
+        meal_type: resolvedType, method: "text", raw_text: trimmed,
+        wellness_goal: selectedGoal || undefined,
+        portion_size: portionSize,
+        cycle_phase_at_log: cyclePhase,
+      });
+      setMeals(prev => [...prev, log]);
+      setMealText("");
+      showToast("Meal logged");
+    } catch {
+      setLogging(false);
+      return;
+    }
+
+    // Background analyzeMeal — never blocks the user.
+    try {
+      // Dedupe smart-swaps against recent 7 meals.
+      let excluded = [];
+      try {
+        const recent = await base44.entities.MealLog.filter({ user_id: userId }, "-created_date", 7);
+        excluded = (recent || [])
+          .flatMap(m => {
+            const a = readAiAnalysis(m);
+            const list = [...(a?.smart_swaps || [])];
+            if (a?.insight?.smart_swap) list.push(a.insight.smart_swap);
+            return list;
+          })
+          .filter(Boolean).map(s => String(s).trim().toLowerCase());
+      } catch { /* ignore */ }
+
+      const phasePromptAppend = cyclePhase ? ` The user is currently in their ${cyclePhase} phase.` : "";
+      const response = await base44.functions.invoke("analyzeMeal", {
+        raw_text: trimmed,
+        energy_level: checkin?.energy,
+        digestion_score: checkin?.digestion,
+        wellness_goal: selectedGoal || "general wellness",
+        prompt_append: phasePromptAppend,
+        short_input: shortInput,
+        meal_log_id: log.id,
+        cycle_phase: cyclePhase,
+        excluded_swaps: excluded,
+      });
+      const res = response?.data || response;
+      if (!res || typeof res !== "object") { setLogging(false); return; }
+      if (!(res.summary || res.nutritional_summary || res.items)) { setLogging(false); return; }
+
+      const structured = { ...res, summary: res.summary || res.nutritional_summary };
+      delete structured.nutritional_summary;
+
+      // Zero-fallback macro recompute.
+      const s = structured.summary || {};
+      const zeroish = !(s.calories || s.protein_g || s.carbs_g || s.fat_g);
+      if (zeroish && (structured.items || []).length > 0) {
+        const summed = structured.items.reduce((acc, it) => ({
+          calories:  acc.calories  + (Number(it.calories) || 0),
+          protein_g: acc.protein_g + (Number(it.protein_g) || 0),
+          carbs_g:   acc.carbs_g   + (Number(it.carbs_g)   || 0),
+          fat_g:     acc.fat_g     + (Number(it.fat_g)     || 0),
+          fiber_g:   acc.fiber_g   + (Number(it.fiber_g)   || 0),
+        }), { calories: 0, protein_g: 0, carbs_g: 0, fat_g: 0, fiber_g: 0 });
+        structured.summary = {
+          calories:  Math.round(summed.calories),
+          protein_g: Math.round(summed.protein_g),
+          carbs_g:   Math.round(summed.carbs_g),
+          fat_g:     Math.round(summed.fat_g),
+          fiber_g:   Math.round(summed.fiber_g),
+        };
+      }
+
+      // Smart-swap dedupe.
+      if (Array.isArray(structured.smart_swaps)) {
+        structured.smart_swaps = structured.smart_swaps.filter(
+          sw => sw && !excluded.includes(String(sw).trim().toLowerCase())
+        );
+      }
+      if (structured.insight?.smart_swap
+          && excluded.includes(String(structured.insight.smart_swap).trim().toLowerCase())) {
+        structured.insight = { ...structured.insight, smart_swap: null };
+      }
+
+      // Normalize meal_score → 1-10.
+      let overall = null;
+      if (typeof structured.meal_score === "number") {
+        overall = structured.meal_score <= 5
+          ? Math.min(10, Math.round(structured.meal_score * 2))
+          : Math.round(structured.meal_score);
+      } else if (structured.meal_score && typeof structured.meal_score === "object") {
+        const vals = ["protein", "veg_fiber", "balance"]
+          .map(k => Number(structured.meal_score[k]))
+          .filter(Number.isFinite);
+        if (vals.length) {
+          const avg = vals.reduce((a, b) => a + b, 0) / vals.length;
+          overall = Math.min(10, Math.max(1, Math.round(avg * 2)));
+        }
+      }
+
+      // Disclaimer throttle (7-day window per user).
+      const lastShown = profile?.last_disclaimer_shown_at ? new Date(profile.last_disclaimer_shown_at).getTime() : 0;
+      const withinWindow = lastShown && (Date.now() - lastShown) < DISCLAIMER_WINDOW_MS;
+      if (withinWindow) {
+        if (structured.tone_safety_note) structured.tone_safety_note = null;
+        if (structured.insight?.tone_safety_note) {
+          structured.insight = { ...structured.insight, tone_safety_note: null };
+        }
+      } else if (structured.tone_safety_note || structured.insight?.tone_safety_note) {
+        if (profile?.id) {
+          base44.entities.UserProfile
+            .update(profile.id, { last_disclaimer_shown_at: new Date().toISOString() })
+            .catch(() => {});
+        }
+      }
+
+      // Update the MealLog row + local state.
+      const updatePayload = { ai_analysis: structured };
+      if (overall != null) updatePayload.meal_score = overall;
+      await base44.entities.MealLog.update(log.id, updatePayload);
+      setMeals(prev => prev.map(m => m.id === log.id ? { ...m, ...updatePayload } : m));
+
+      // Inline Quick Check result.
+      setQuickCheck({
+        headline: structured.insight?.headline,
+        smart_swap: structured.insight?.smart_swap,
+        wellness_impact: structured.insight?.wellness_impact,
+        overall,
+      });
+
+      // Side-row NutritionInsight write.
+      if (structured.insight) {
+        const { headline, wellness_impact, action_items, smart_swap, confidence, tone_safety_note } = structured.insight;
+        await base44.entities.NutritionInsight.create({
+          user_id: userId, meal_log_id: log.id, day_key: date,
+          meal_description: trimmed, wellness_goal: selectedGoal || "general wellness",
+          headline, wellness_impact, action_items, smart_swap,
+          confidence: confidence || "medium", tone_safety_note, user_feedback: "none",
+        }).catch(() => {});
+      }
+    } catch { /* silent */ }
+    setLogging(false);
   };
 
-  const tapDrink = (d) => {
-    writeDrink(d.label, 250);
-    showToast(`${d.label} logged`);
+  const deleteMeal = async (id) => {
+    try { await base44.entities.MealLog.delete(id); } catch {}
+    setMeals(prev => prev.filter(m => m.id !== id));
   };
+
+  // ── Drinks ────────────────────────────────────────────────────────────────
+  const openDrinkPicker = (typeId) => setDrinkPicker({ typeId, size: "medium" });
+  const confirmDrink = async () => {
+    if (!drinkPicker || !userId) return;
+    const info = NOURISH_DRINK_TYPES.find(d => d.id === drinkPicker.typeId);
+    const mult = DRINK_SIZE_MULT[drinkPicker.size] || 1.0;
+    const amount_ml = Math.round((info?.ml || 250) * mult);
+    const calories = Math.round((DRINK_KCAL[drinkPicker.typeId] || 0) * mult);
+    try {
+      const log = await base44.entities.DrinkLog.create({
+        user_id: userId, day_key: todayISO(),
+        drink_type: drinkPicker.typeId, amount_ml, calories,
+        logged_at: nowISO(),
+      });
+      setDrinkLogs(prev => [...prev, log]);
+      if (HYDRATION_DRINK_TYPES.has(drinkPicker.typeId)) {
+        mirrorHydration(totalHydrationMl + amount_ml);
+      }
+      showToast(`${info?.label || drinkPicker.typeId} logged`);
+    } catch { /* silent */ }
+    setDrinkPicker(null);
+  };
+  const deleteDrink = async (id) => {
+    try { await base44.entities.DrinkLog.delete(id); } catch {}
+    setDrinkLogs(prev => prev.filter(d => d.id !== id));
+  };
+  const logCustomDrink = async () => {
+    const name = customName.trim();
+    if (!name || !userId) return;
+    try {
+      const log = await base44.entities.DrinkLog.create({
+        user_id: userId, day_key: todayISO(),
+        drink_type: name, amount_ml: Number(customMl) || 250, calories: Number(customKcal) || 0,
+        logged_at: nowISO(),
+      });
+      setDrinkLogs(prev => [...prev, log]);
+      setCustomName(""); setCustomMl(250); setCustomKcal(0);
+      setShowCustom(false);
+      showToast(`${name} logged`);
+    } catch { /* silent */ }
+  };
+
+  // ── Hydration ─────────────────────────────────────────────────────────────
+  const addWater = async (ml) => {
+    if (!userId) return;
+    try {
+      const log = await base44.entities.HydrationLog.create({
+        user_id: userId, day_key: todayISO(), amount_ml: ml, logged_at: nowISO(),
+      });
+      setHydrationLogs(prev => [...prev, log]);
+      mirrorHydration(totalHydrationMl + ml);
+      showToast(`+${ml}ml water`);
+    } catch { /* silent */ }
+  };
+
+  // ── Group meals by type for the timeline ──────────────────────────────────
+  const mealsByType = NOURISH_MEAL_TYPES.reduce((acc, t) => {
+    acc[t.id] = meals.filter(m => m.meal_type === t.id);
+    return acc;
+  }, {});
+  const visibleMealCount = showTimeline ? 999 : 4;
+  const totalMealsLogged = meals.length;
+
+  const selectedGoalObj = WELLNESS_GOALS.find(g => g.id === selectedGoal);
 
   return (
     <div>
-      <SectionLabel>Meal</SectionLabel>
-      <div style={{ display: "flex", flexWrap: "wrap", gap: 5, marginBottom: 10 }}>
-        {MEAL_TYPES.map(m => (
-          <Chip key={m} active={mealType === m} onClick={() => setMealType(mealType === m ? "" : m)}>{m}</Chip>
+      {/* ── Calorie summary bar ──────────────────────────────────────────── */}
+      <div style={{
+        background: "rgba(58,44,26,0.04)", borderRadius: 12,
+        padding: "10px 12px", marginBottom: 12,
+      }}>
+        <div style={{ display: "flex", alignItems: "baseline", justifyContent: "space-between", marginBottom: 6 }}>
+          <span style={{
+            fontSize: 10, fontWeight: 700, color: T.muted,
+            textTransform: "uppercase", letterSpacing: "0.12em",
+          }}>Today</span>
+          <span style={{ fontSize: 11, color: T.muted }}>
+            {totalCal > 0 ? `${Math.max(0, calTarget - totalCal)} kcal left` : `target ${calTarget}`}
+          </span>
+        </div>
+        <div style={{ height: 6, borderRadius: 4, background: "rgba(58,44,26,0.10)", overflow: "hidden", marginBottom: 8 }}>
+          <div style={{
+            height: "100%", borderRadius: 4,
+            width: `${calPct}%`,
+            background: totalCal > calTarget ? T.rose : T.sage,
+            transition: "width 0.4s ease",
+          }} />
+        </div>
+        <div style={{ display: "flex", gap: 6 }}>
+          {[
+            { label: "kcal",    value: totalCal },
+            { label: "Protein", value: `${totalProtein}g` },
+            { label: "Carbs",   value: `${totalCarbs}g` },
+            { label: "Drinks",  value: totalDrinkCal },
+          ].map(c => (
+            <div key={c.label} style={{
+              flex: 1, background: T.paperHi, border: `1px solid ${T.border}`,
+              borderRadius: 8, padding: "5px 4px", textAlign: "center",
+            }}>
+              <div style={{
+                fontSize: 9, fontWeight: 700, color: T.muted,
+                textTransform: "uppercase", letterSpacing: "0.10em",
+              }}>{c.label}</div>
+              <div style={{ fontSize: 12, fontWeight: 700, color: T.espresso, marginTop: 2 }}>{c.value}</div>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* ── Meal logger ──────────────────────────────────────────────────── */}
+      <SectionLabel>Log a meal</SectionLabel>
+      <textarea
+        value={mealText} onChange={e => setMealText(e.target.value)}
+        placeholder="What did you eat? Describe naturally…"
+        rows={2}
+        style={{
+          width: "100%", boxSizing: "border-box",
+          padding: "8px 12px", borderRadius: 10, minHeight: 56,
+          border: `1.5px solid ${T.border}`, background: T.paperHi,
+          fontSize: 13, color: T.espresso, outline: "none", marginBottom: 8,
+          resize: "vertical", fontFamily: "inherit",
+        }}
+      />
+
+      <div style={{ display: "flex", flexWrap: "wrap", gap: 5, marginBottom: 8 }}>
+        {NOURISH_MEAL_TYPES.map(t => {
+          const effective = userToggledType ? mealType : inferMealTypeFromTime();
+          return (
+            <Chip key={t.id} active={effective === t.id}
+              onClick={() => { setMealType(t.id); setUserToggledType(true); }}>
+              {t.label}
+            </Chip>
+          );
+        })}
+      </div>
+
+      <div style={{ display: "flex", gap: 6, marginBottom: 8 }}>
+        {NOURISH_PORTIONS.map(p => (
+          <button key={p.id} onClick={() => setPortionSize(p.id)} style={{
+            flex: 1, padding: "6px 10px", borderRadius: 14, minHeight: 32,
+            border: `1.5px solid ${portionSize === p.id ? T.gold : T.border}`,
+            background: portionSize === p.id ? `${T.gold}22` : T.paperHi,
+            color: T.espresso, fontSize: 12, fontWeight: 600, cursor: "pointer",
+          }}>{p.label}</button>
         ))}
       </div>
 
-      {mealType && (
-        <div style={{ marginBottom: 12 }}>
-          <textarea
-            value={description} onChange={e => setDescription(e.target.value)}
-            placeholder={`What did you eat for ${mealType.toLowerCase()}?`}
-            rows={2}
-            style={{
-              width: "100%", boxSizing: "border-box",
-              padding: "8px 12px", borderRadius: 10, minHeight: 60, height: 60,
-              border: `1.5px solid ${T.border}`, background: T.paperHi,
-              fontSize: 13, color: T.espresso, outline: "none", marginBottom: 8,
-              resize: "none", fontFamily: "inherit",
-            }}
-          />
-          <div style={{ display: "flex", gap: 6, marginBottom: 8 }}>
-            {PORTION_SIZES.map(p => (
-              <button key={p} onClick={() => setPortion(p)} style={{
-                flex: 1, padding: "6px 10px", borderRadius: 14, minHeight: 34,
-                border: `1.5px solid ${portion === p ? T.gold : T.border}`,
-                background: portion === p ? `${T.gold}22` : T.paperHi,
-                color: T.espresso, fontSize: 12, fontWeight: 600, cursor: "pointer",
-              }}>{p}</button>
-            ))}
-          </div>
-          <div style={{ display: "flex", gap: 8, alignItems: "center", marginBottom: 8 }}>
-            <input
-              value={kcal} onChange={e => setKcal(e.target.value)}
-              placeholder="Calories (optional)" type="number"
-              style={{
-                flex: 1, padding: "8px 12px", borderRadius: 10,
-                border: `1px solid ${T.border}`, background: T.paperHi,
-                fontSize: 12, color: T.espresso, outline: "none",
-              }}
-            />
-            <button onClick={logMeal} disabled={!description.trim()} style={{
-              padding: "8px 20px", borderRadius: 9999, border: "none",
-              background: description.trim() ? T.espresso : "rgba(58,44,26,0.20)",
-              color: T.cream, fontWeight: 600, fontSize: 13,
-              cursor: description.trim() ? "pointer" : "not-allowed",
-              minHeight: 36,
-            }}>Log meal</button>
-          </div>
-        </div>
-      )}
-
-      {loggedMeals.length > 0 && (
-        <div style={{ marginBottom: 10, display: "flex", flexWrap: "wrap", gap: 5 }}>
-          {loggedMeals.slice(0, 4).map((m, i) => (
-            <span key={i} style={{
-              padding: "4px 10px", borderRadius: 14, background: T.sage,
-              color: "#fff", fontSize: 11.5, fontWeight: 600,
-              display: "inline-flex", alignItems: "center", gap: 5,
-            }}>
-              <Check size={11} strokeWidth={3} />
-              {m.meal_type[0] + m.meal_type.slice(1).toLowerCase()} · {m.description.slice(0, 18)}{m.description.length > 18 ? "…" : ""}
-            </span>
+      <button onClick={() => setShowGoalPicker(v => !v)} style={{
+        background: "none", border: "none", padding: "4px 0", cursor: "pointer",
+        color: selectedGoal ? T.goldDeep : T.muted,
+        fontSize: 11.5, fontWeight: 600, marginBottom: 6,
+        display: "inline-flex", alignItems: "center", gap: 4,
+      }}>
+        {selectedGoalObj ? selectedGoalObj.label : "Optional: your goal"}
+        {showGoalPicker ? <ChevronUp size={12} /> : <ChevronDown size={12} />}
+      </button>
+      {showGoalPicker && (
+        <div style={{ display: "flex", flexWrap: "wrap", gap: 5, marginBottom: 8 }}>
+          {WELLNESS_GOALS.map(g => (
+            <Chip key={g.id} active={selectedGoal === g.id}
+              onClick={() => { setSelectedGoal(selectedGoal === g.id ? null : g.id); setShowGoalPicker(false); }}>
+              {g.label}
+            </Chip>
           ))}
         </div>
       )}
 
-      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 10 }}>
-        <span style={{
-          fontSize: 10, fontWeight: 700, color: T.muted,
-          textTransform: "uppercase", letterSpacing: "0.12em",
-        }}>Water · {waterCount} glasses</span>
-        <button onClick={addWater} style={{
-          padding: "6px 14px", borderRadius: 14,
-          border: `1.5px solid #60B4FA55`, background: "#60B4FA1F",
-          color: T.espresso, fontSize: 12, fontWeight: 700, cursor: "pointer",
-          display: "inline-flex", alignItems: "center", gap: 6,
-        }}>
-          <Droplets size={14} color="#60B4FA" /> +1 glass
-        </button>
-      </div>
+      <button onClick={logMeal} disabled={!mealText.trim() || logging || !userId} style={{
+        width: "100%", padding: "10px 18px", borderRadius: 10, border: "none",
+        background: (mealText.trim() && !logging) ? T.espresso : "rgba(58,44,26,0.20)",
+        color: T.cream, fontWeight: 700, fontSize: 13,
+        cursor: (mealText.trim() && !logging) ? "pointer" : "not-allowed",
+        minHeight: 40, marginBottom: 10,
+        display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 8,
+      }}>
+        {logging ? "Analysing…" : "Log meal"}
+      </button>
 
+      {/* ── Quick Check result ───────────────────────────────────────────── */}
+      {quickCheck && (
+        <div style={{
+          background: "#F0FAF5", border: "1px solid #C3E6D4",
+          borderRadius: 12, padding: "10px 12px", marginBottom: 12, position: "relative",
+        }}>
+          <button onClick={() => setQuickCheck(null)} style={{
+            position: "absolute", top: 6, right: 8,
+            background: "none", border: "none", cursor: "pointer", color: T.muted, padding: 0,
+          }}><XIcon size={12} /></button>
+          {quickCheck.headline && (
+            <div style={{
+              fontSize: 12, fontWeight: 700, color: "#1A6645", marginBottom: 4,
+              fontFamily: "'Fraunces', Georgia, serif",
+            }}>{quickCheck.headline}</div>
+          )}
+          {quickCheck.wellness_impact && (
+            <div style={{ fontSize: 11, color: "#2D5540", lineHeight: 1.4, marginBottom: 6 }}>
+              {quickCheck.wellness_impact}
+            </div>
+          )}
+          {quickCheck.smart_swap && (
+            <div style={{
+              fontSize: 11, color: "#7A5A20",
+              background: "#FFF8EE", border: "1px solid #F5DFA8",
+              borderRadius: 8, padding: "5px 8px", marginBottom: 4,
+            }}>
+              <strong>Swap idea:</strong> {quickCheck.smart_swap}
+            </div>
+          )}
+          {quickCheck.overall != null && (
+            <div style={{ fontSize: 10, color: "#2D5540", marginTop: 4 }}>
+              Score: <strong>{quickCheck.overall}/10</strong>
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* ── Today's meal timeline ────────────────────────────────────────── */}
+      {totalMealsLogged > 0 && (
+        <>
+          <button onClick={() => setShowTimeline(v => !v)} style={{
+            width: "100%", padding: "8px 12px", borderRadius: 10,
+            background: showTimeline ? `${T.gold}14` : "rgba(58,44,26,0.04)",
+            border: `1px solid ${showTimeline ? T.gold : T.border}`,
+            cursor: "pointer", marginBottom: 8,
+            display: "flex", alignItems: "center", justifyContent: "space-between",
+            fontSize: 11, fontWeight: 700, color: T.espresso,
+            textTransform: "uppercase", letterSpacing: "0.10em",
+          }}>
+            <span>Today's meals · {totalMealsLogged}</span>
+            {showTimeline ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
+          </button>
+          {showTimeline && (
+            <div style={{ marginBottom: 12 }}>
+              {NOURISH_MEAL_TYPES.map(t => {
+                const typeMeals = (mealsByType[t.id] || []).slice(0, visibleMealCount);
+                if (typeMeals.length === 0) return null;
+                return (
+                  <div key={t.id} style={{ marginBottom: 8 }}>
+                    <div style={{
+                      fontSize: 9, fontWeight: 700, color: T.muted,
+                      textTransform: "uppercase", letterSpacing: "0.10em", marginBottom: 4,
+                    }}>{t.label}</div>
+                    {typeMeals.map(m => {
+                      const summary = getMealSummary(m).summary;
+                      const mult = PORTION_MULT_MAP[m.portion_size] || 1.0;
+                      const kcal = Math.round((summary?.calories || 0) * mult);
+                      const score = m.meal_score;
+                      return (
+                        <div key={m.id} style={{
+                          background: T.paperHi, border: `1px solid ${T.border}`,
+                          borderRadius: 10, padding: "6px 10px", marginBottom: 4,
+                          display: "flex", alignItems: "center", gap: 8,
+                        }}>
+                          <div style={{ flex: 1, minWidth: 0 }}>
+                            <div style={{
+                              fontSize: 12, color: T.espresso, fontWeight: 500,
+                              whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis",
+                            }}>{m.raw_text}</div>
+                            <div style={{ fontSize: 10, color: T.muted, marginTop: 2,
+                              display: "inline-flex", alignItems: "center", gap: 6, flexWrap: "wrap" }}>
+                              {m.portion_size && m.portion_size !== "medium" && (
+                                <span>{m.portion_size}</span>
+                              )}
+                              {kcal > 0 && <span>~{kcal} kcal</span>}
+                              {score != null && (
+                                <span style={{
+                                  background: `${T.gold}22`, color: T.goldDeep,
+                                  padding: "1px 6px", borderRadius: 8, fontWeight: 700,
+                                }}>{score}/10</span>
+                              )}
+                            </div>
+                            {readAiAnalysis(m)?.insight?.headline && (
+                              <div style={{
+                                fontSize: 10, color: T.sageDeep, fontStyle: "italic", marginTop: 2,
+                                whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis",
+                              }}>{readAiAnalysis(m).insight.headline}</div>
+                            )}
+                          </div>
+                          <button onClick={() => deleteMeal(m.id)} style={{
+                            background: "none", border: "none", color: T.muted, cursor: "pointer",
+                            padding: 4,
+                          }}><XIcon size={12} /></button>
+                        </div>
+                      );
+                    })}
+                  </div>
+                );
+              })}
+            </div>
+          )}
+        </>
+      )}
+
+      {/* ── Drinks ───────────────────────────────────────────────────────── */}
       <SectionLabel>Drinks</SectionLabel>
-      <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
-        {DRINK_TYPES.map(d => (
-          <button key={d.label} onClick={() => tapDrink(d)} style={{
-            padding: "6px 12px", borderRadius: 14, minHeight: 36,
+      <div style={{ display: "flex", flexWrap: "wrap", gap: 6, marginBottom: 8 }}>
+        {NOURISH_DRINK_TYPES.map(d => (
+          <button key={d.id} onClick={() => openDrinkPicker(d.id)} style={{
+            padding: "6px 12px", borderRadius: 14, minHeight: 34,
             background: `${d.tone}1F`, border: `1.5px solid ${d.tone}55`,
-            color: T.espresso, fontSize: 12, fontWeight: 700, cursor: "pointer",
-            display: "inline-flex", alignItems: "center", gap: 6,
+            color: T.espresso, fontSize: 11.5, fontWeight: 700, cursor: "pointer",
+            display: "inline-flex", alignItems: "center", gap: 5,
           }}>
             <d.Icon size={12} color={d.tone} />
             {d.label}
+            {DRINK_KCAL[d.id] > 0 && (
+              <span style={{ fontSize: 9, color: T.muted, fontWeight: 600, marginLeft: 2 }}>
+                ~{DRINK_KCAL[d.id]}kcal
+              </span>
+            )}
           </button>
+        ))}
+        <button onClick={() => setShowCustom(v => !v)} style={{
+          padding: "6px 12px", borderRadius: 14, minHeight: 34,
+          background: `${T.blush}1F`, border: `1px dashed ${T.blush}77`,
+          color: T.blush, fontSize: 11.5, fontWeight: 700, cursor: "pointer",
+        }}>+ Custom</button>
+      </div>
+
+      {/* Size-picker for selected drink */}
+      {drinkPicker && (() => {
+        const info = NOURISH_DRINK_TYPES.find(d => d.id === drinkPicker.typeId);
+        return (
+          <div style={{
+            background: "rgba(58,44,26,0.04)", border: `1px solid ${T.border}`,
+            borderRadius: 10, padding: "8px 10px", marginBottom: 10,
+          }}>
+            <div style={{
+              fontSize: 11, fontWeight: 700, color: T.espresso, marginBottom: 6,
+            }}>{info?.label} — pick a size</div>
+            <div style={{ display: "flex", gap: 6, marginBottom: 8 }}>
+              {[
+                { id: "small",  label: "Small",  mult: 0.6 },
+                { id: "medium", label: "Medium", mult: 1.0 },
+                { id: "large",  label: "Large",  mult: 1.6 },
+              ].map(s => {
+                const ml = Math.round((info?.ml || 250) * s.mult);
+                const cal = Math.round((DRINK_KCAL[drinkPicker.typeId] || 0) * s.mult);
+                return (
+                  <button key={s.id} onClick={() => setDrinkPicker(p => ({ ...p, size: s.id }))} style={{
+                    flex: 1, padding: "6px 4px", borderRadius: 10,
+                    border: `1.5px solid ${drinkPicker.size === s.id ? T.espresso : T.border}`,
+                    background: drinkPicker.size === s.id ? T.espresso : T.paperHi,
+                    color: drinkPicker.size === s.id ? T.cream : T.espresso,
+                    fontSize: 11, fontWeight: 600, cursor: "pointer",
+                  }}>
+                    <div>{s.label}</div>
+                    <div style={{ fontSize: 9, opacity: 0.8 }}>{ml}ml{cal > 0 ? ` · ${cal}kcal` : ""}</div>
+                  </button>
+                );
+              })}
+            </div>
+            <div style={{ display: "flex", gap: 6 }}>
+              <button onClick={() => setDrinkPicker(null)} style={{
+                flex: 1, padding: "8px", borderRadius: 9999,
+                background: "transparent", border: `1px solid ${T.border}`,
+                color: T.muted, fontSize: 12, fontWeight: 600, cursor: "pointer",
+              }}>Cancel</button>
+              <button onClick={confirmDrink} style={{
+                flex: 1, padding: "8px", borderRadius: 9999, border: "none",
+                background: T.espresso, color: T.cream,
+                fontSize: 12, fontWeight: 700, cursor: "pointer",
+              }}>Log drink</button>
+            </div>
+          </div>
+        );
+      })()}
+
+      {/* Custom drink form */}
+      {showCustom && (
+        <div style={{
+          background: "rgba(58,44,26,0.04)", border: `1px dashed ${T.gold}55`,
+          borderRadius: 10, padding: "8px 10px", marginBottom: 10,
+        }}>
+          <input value={customName} onChange={e => setCustomName(e.target.value)}
+            placeholder="Drink name (e.g. matcha latte)"
+            style={{
+              width: "100%", boxSizing: "border-box", padding: "6px 10px", borderRadius: 8,
+              border: `1px solid ${T.border}`, background: T.paperHi,
+              fontSize: 12, color: T.espresso, outline: "none", marginBottom: 6,
+            }}
+          />
+          <div style={{ display: "flex", gap: 6, marginBottom: 6 }}>
+            <input type="number" value={customMl} onChange={e => setCustomMl(e.target.value)}
+              placeholder="ml"
+              style={{
+                flex: 1, padding: "6px 8px", borderRadius: 8,
+                border: `1px solid ${T.border}`, background: T.paperHi,
+                fontSize: 12, color: T.espresso, outline: "none", boxSizing: "border-box",
+              }}
+            />
+            <input type="number" value={customKcal} onChange={e => setCustomKcal(e.target.value)}
+              placeholder="kcal"
+              style={{
+                flex: 1, padding: "6px 8px", borderRadius: 8,
+                border: `1px solid ${T.border}`, background: T.paperHi,
+                fontSize: 12, color: T.espresso, outline: "none", boxSizing: "border-box",
+              }}
+            />
+            <button onClick={logCustomDrink} disabled={!customName.trim()} style={{
+              padding: "6px 12px", borderRadius: 8, border: "none",
+              background: customName.trim() ? T.espresso : "rgba(58,44,26,0.18)",
+              color: T.cream, fontSize: 12, fontWeight: 700,
+              cursor: customName.trim() ? "pointer" : "not-allowed",
+            }}>Log</button>
+          </div>
+        </div>
+      )}
+
+      {/* Today's drinks chips */}
+      {drinkLogs.length > 0 && (
+        <div style={{ display: "flex", flexWrap: "wrap", gap: 5, marginBottom: 10 }}>
+          {drinkLogs.map(d => {
+            const info = NOURISH_DRINK_TYPES.find(x => x.id === d.drink_type);
+            const label = info?.label || d.drink_type;
+            return (
+              <span key={d.id} style={{
+                padding: "3px 9px", borderRadius: 14, background: T.cardBg,
+                border: `1px solid ${T.border}`, color: T.espresso,
+                fontSize: 11, fontWeight: 600,
+                display: "inline-flex", alignItems: "center", gap: 5, textTransform: "capitalize",
+              }}>
+                {label}
+                {d.calories > 0 && <span style={{ color: T.muted }}>· {d.calories}kcal</span>}
+                <button onClick={() => deleteDrink(d.id)} style={{
+                  background: "none", border: "none", color: T.muted, cursor: "pointer", padding: 0,
+                  display: "inline-flex", alignItems: "center",
+                }}><XIcon size={10} /></button>
+              </span>
+            );
+          })}
+        </div>
+      )}
+
+      {/* ── Hydration tracker ────────────────────────────────────────────── */}
+      <SectionLabel>Hydration</SectionLabel>
+      <div style={{ display: "flex", alignItems: "baseline", justifyContent: "space-between", marginBottom: 4 }}>
+        <span style={{ fontSize: 12, fontWeight: 600, color: T.espresso }}>
+          {totalHydrationMl} ml
+          <span style={{ color: T.muted, fontSize: 10, marginLeft: 4 }}>of {hydrationTarget}ml</span>
+        </span>
+        <span style={{
+          fontSize: 11, fontWeight: 700,
+          color: glassesLit >= glassDots ? T.sageDeep : T.muted,
+        }}>{Math.min(100, Math.round((totalHydrationMl / hydrationTarget) * 100))}%</span>
+      </div>
+      <div style={{ display: "flex", flexWrap: "wrap", gap: 4, marginBottom: 8 }}>
+        {Array.from({ length: glassDots }).map((_, i) => (
+          <div key={i} style={{
+            width: 14, height: 14, borderRadius: 4,
+            background: i < glassesLit ? `${T.sage}55` : "transparent",
+            border: `1.5px solid ${i < glassesLit ? T.sage : T.border}`,
+          }} />
+        ))}
+      </div>
+      <div style={{ display: "flex", gap: 6 }}>
+        {[250, 500, 750].map(ml => (
+          <button key={ml} onClick={() => addWater(ml)} style={{
+            flex: 1, padding: "8px", borderRadius: 10,
+            border: `1px solid ${T.sage}66`, background: `${T.sage}22`,
+            color: T.sageDeep, fontSize: 12, fontWeight: 700, cursor: "pointer",
+          }}>+{ml}ml</button>
         ))}
       </div>
     </div>
