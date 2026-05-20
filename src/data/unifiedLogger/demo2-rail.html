@@ -1,0 +1,1293 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>FemWell Demo 2 — Inline Rail</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+
+  :root {
+    --cream: #F4EDDB;
+    --espresso: #3A2C1A;
+    --blush: #E8B4B8;
+    --sage: #8FAF8F;
+    --muted: #9B8B7A;
+    --gold: #D4AF37;
+    --cream-dark: #EAE0C8;
+    --espresso-light: #6B5240;
+    --cream-mid: #DDD5C0;
+    --rail-bg: #F0E8D2;
+  }
+
+  body {
+    background: #1A1510;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-start;
+    padding: 32px 16px 48px;
+    font-family: -apple-system, BlinkMacSystemFont, 'Helvetica Neue', Arial, sans-serif;
+  }
+
+  .demo-title {
+    color: var(--cream);
+    font-size: 13px;
+    font-weight: 500;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    margin-bottom: 24px;
+    opacity: 0.7;
+  }
+
+  .phone-frame {
+    width: 375px;
+    height: 780px;
+    background: var(--cream);
+    border-radius: 44px;
+    border: 2px solid #2E2520;
+    position: relative;
+    overflow: hidden;
+    box-shadow: 0 0 0 6px #111, 0 30px 80px rgba(0,0,0,0.7);
+    display: flex;
+    flex-direction: column;
+  }
+
+  .phone-notch {
+    position: absolute;
+    top: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 120px;
+    height: 30px;
+    background: #111;
+    border-radius: 0 0 18px 18px;
+    z-index: 100;
+  }
+
+  .status-bar {
+    height: 44px;
+    background: var(--cream);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 24px;
+    padding-top: 8px;
+    flex-shrink: 0;
+    z-index: 10;
+  }
+  .status-time { font-size: 12px; font-weight: 600; color: var(--espresso); }
+  .status-icons { display: flex; align-items: center; gap: 5px; }
+  .status-icons svg { opacity: 0.7; }
+
+  .page-content {
+    flex: 1;
+    overflow-y: auto;
+    overflow-x: hidden;
+    background: var(--cream);
+    padding-bottom: 0;
+    scrollbar-width: none;
+  }
+  .page-content::-webkit-scrollbar { display: none; }
+
+  .page-header {
+    padding: 12px 20px 8px;
+    background: var(--cream);
+  }
+  .page-header-top {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 12px;
+  }
+  .page-title {
+    font-size: 22px;
+    font-weight: 600;
+    color: var(--espresso);
+    letter-spacing: -0.3px;
+  }
+  .page-subtitle {
+    font-size: 12px;
+    color: var(--muted);
+    margin-top: 1px;
+  }
+  .avatar-circle {
+    width: 34px;
+    height: 34px;
+    border-radius: 50%;
+    background: var(--blush);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--espresso);
+  }
+
+  .week-strip {
+    display: flex;
+    gap: 4px;
+    padding: 0 20px 12px;
+    background: var(--cream);
+  }
+  .week-day {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+    padding: 6px 0;
+    border-radius: 10px;
+    cursor: pointer;
+  }
+  .week-day.today {
+    background: var(--espresso);
+  }
+  .week-day-label {
+    font-size: 10px;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+  .week-day.today .week-day-label { color: var(--cream-dark); }
+  .week-day-num {
+    font-size: 15px;
+    font-weight: 600;
+    color: var(--espresso);
+  }
+  .week-day.today .week-day-num { color: var(--cream); }
+  .week-day-dot {
+    width: 5px;
+    height: 5px;
+    border-radius: 50%;
+    background: var(--sage);
+  }
+  .week-day.today .week-day-dot { background: var(--gold); }
+
+  .section-label {
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    padding: 0 20px 8px;
+  }
+
+  .planner-rows {
+    padding: 0 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+  }
+
+  .planner-row {
+    background: #F0E8D2;
+    border-radius: 12px;
+    padding: 12px 14px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 6px;
+  }
+  .planner-row-icon {
+    width: 32px;
+    height: 32px;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+  }
+  .planner-row-icon.sage-bg { background: rgba(143,175,143,0.25); }
+  .planner-row-icon.blush-bg { background: rgba(232,180,184,0.3); }
+  .planner-row-icon.gold-bg { background: rgba(212,175,55,0.2); }
+  .planner-row-text { flex: 1; }
+  .planner-row-title { font-size: 14px; font-weight: 500; color: var(--espresso); }
+  .planner-row-sub { font-size: 12px; color: var(--muted); margin-top: 1px; }
+  .planner-row-badge {
+    font-size: 11px;
+    color: var(--espresso);
+    background: var(--cream-dark);
+    border-radius: 6px;
+    padding: 2px 7px;
+    font-weight: 500;
+  }
+
+  .cycle-strip {
+    margin: 4px 20px 8px;
+    background: #EEE5CE;
+    border-radius: 12px;
+    padding: 10px 14px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .cycle-phase-dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background: var(--sage);
+    flex-shrink: 0;
+  }
+  .cycle-text { flex: 1; font-size: 12px; color: var(--espresso-light); }
+  .cycle-day-badge {
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--sage);
+    background: rgba(143,175,143,0.2);
+    padding: 2px 7px;
+    border-radius: 6px;
+  }
+
+  .rail-wrapper {
+    flex-shrink: 0;
+    position: relative;
+    z-index: 50;
+  }
+
+  .rail {
+    background: var(--rail-bg);
+    border-top: 1px solid var(--cream-mid);
+    transition: height 0.38s cubic-bezier(0.4, 0, 0.2, 1);
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .rail-handle {
+    height: 52px;
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    padding: 0 16px;
+    cursor: pointer;
+    gap: 10px;
+    user-select: none;
+  }
+
+  .rail-handle-pill {
+    width: 32px;
+    height: 3px;
+    border-radius: 2px;
+    background: var(--muted);
+    opacity: 0.35;
+    position: absolute;
+    top: 6px;
+    left: 50%;
+    transform: translateX(-50%);
+  }
+
+  .rail-progress-wrap {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+  }
+  .rail-progress-label {
+    font-size: 11px;
+    color: var(--muted);
+    margin-bottom: 4px;
+    font-weight: 500;
+  }
+  .rail-progress-bar-bg {
+    height: 3px;
+    background: var(--cream-mid);
+    border-radius: 2px;
+    width: 100px;
+  }
+  .rail-progress-bar-fill {
+    height: 3px;
+    background: var(--sage);
+    border-radius: 2px;
+    width: 37.5%;
+    transition: width 0.4s ease;
+  }
+
+  .rail-quick-icons {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin-left: auto;
+  }
+  .quick-icon-btn {
+    width: 32px;
+    height: 32px;
+    border-radius: 10px;
+    background: var(--cream);
+    border: 1px solid var(--cream-mid);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: transform 0.15s, background 0.15s;
+  }
+  .quick-icon-btn:active { transform: scale(0.9); }
+  .quick-icon-btn.tapped { background: var(--sage); border-color: var(--sage); }
+
+  .rail-body {
+    flex: 1;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .rail-cards-scroll {
+    padding: 4px 16px 12px;
+    display: flex;
+    gap: 10px;
+    overflow-x: auto;
+    scrollbar-width: none;
+    flex-shrink: 0;
+    transition: height 0.3s ease;
+  }
+  .rail-cards-scroll::-webkit-scrollbar { display: none; }
+
+  .log-card {
+    width: 128px;
+    min-width: 128px;
+    border-radius: 14px;
+    padding: 12px;
+    cursor: pointer;
+    border: 1.5px solid var(--cream-mid);
+    background: var(--cream);
+    transition: border-color 0.2s, transform 0.15s;
+    display: flex;
+    flex-direction: column;
+    flex-shrink: 0;
+    position: relative;
+    overflow: hidden;
+  }
+  .log-card.active {
+    border-color: var(--espresso);
+    box-shadow: none;
+  }
+  .log-card.plan-card {
+    background: var(--espresso);
+    border-color: var(--espresso);
+  }
+  .log-card:active { transform: scale(0.97); }
+
+  .card-icon-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 8px;
+  }
+  .card-icon {
+    width: 28px;
+    height: 28px;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .card-icon.sage-fill { background: rgba(143,175,143,0.2); }
+  .card-icon.blush-fill { background: rgba(232,180,184,0.2); }
+  .card-icon.gold-fill { background: rgba(212,175,55,0.2); }
+  .card-icon.cream-fill { background: rgba(244,237,219,0.15); }
+
+  .card-title {
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--espresso);
+    margin-bottom: 6px;
+    letter-spacing: 0.01em;
+  }
+  .plan-card .card-title { color: var(--cream); }
+
+  .card-badge {
+    font-size: 10px;
+    color: var(--muted);
+    background: var(--cream-dark);
+    border-radius: 5px;
+    padding: 1px 5px;
+  }
+
+  .card-body { flex: 1; display: flex; flex-direction: column; gap: 4px; }
+
+  .mood-dots {
+    display: flex;
+    gap: 4px;
+    margin-bottom: 6px;
+    flex-wrap: wrap;
+  }
+  .mood-dot {
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 11px;
+    border: 1.5px solid var(--cream-mid);
+    background: transparent;
+    cursor: pointer;
+    transition: border-color 0.15s, background 0.15s;
+  }
+  .mood-dot.selected {
+    background: var(--blush);
+    border-color: var(--blush);
+  }
+  .mood-dot-label { font-size: 10px; color: var(--muted); margin-bottom: 4px; }
+
+  .energy-row { display: flex; gap: 3px; margin-bottom: 4px; }
+  .energy-pip {
+    flex: 1;
+    height: 4px;
+    border-radius: 2px;
+    background: var(--cream-mid);
+  }
+  .energy-pip.filled { background: var(--gold); }
+
+  .card-pill {
+    background: var(--cream-dark);
+    border-radius: 6px;
+    padding: 3px 7px;
+    font-size: 10px;
+    color: var(--espresso);
+    display: inline-block;
+    margin-bottom: 3px;
+    align-self: flex-start;
+  }
+  .plan-card .card-pill {
+    background: rgba(244,237,219,0.15);
+    color: var(--cream);
+  }
+
+  .check-row {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    font-size: 10px;
+    color: var(--espresso);
+    margin-bottom: 3px;
+  }
+  .check-box {
+    width: 13px;
+    height: 13px;
+    border-radius: 3px;
+    border: 1.5px solid var(--cream-mid);
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: background 0.15s, border-color 0.15s;
+  }
+  .check-box.checked {
+    background: var(--sage);
+    border-color: var(--sage);
+  }
+  .check-row.done .check-text { text-decoration: line-through; opacity: 0.5; }
+
+  .mini-input-wrap {
+    margin-top: 6px;
+    display: flex;
+    gap: 4px;
+    align-items: center;
+  }
+  .mini-input {
+    flex: 1;
+    background: var(--cream-dark);
+    border: 1px solid var(--cream-mid);
+    border-radius: 6px;
+    padding: 4px 6px;
+    font-size: 10px;
+    color: var(--espresso);
+    outline: none;
+    font-family: inherit;
+    min-width: 0;
+  }
+  .mini-input:focus { border-color: var(--sage); }
+  .mini-add-btn {
+    width: 20px;
+    height: 20px;
+    border-radius: 5px;
+    background: var(--sage);
+    border: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    flex-shrink: 0;
+  }
+
+  .period-row {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    font-size: 10px;
+    color: var(--muted);
+    margin-top: 4px;
+  }
+  .period-indicator {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: var(--blush);
+  }
+
+  .plan-date-label {
+    font-size: 10px;
+    color: rgba(244,237,219,0.6);
+    margin-bottom: 6px;
+  }
+  .plan-task-row {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    font-size: 10px;
+    color: var(--cream);
+    margin-bottom: 3px;
+  }
+  .plan-dot {
+    width: 4px;
+    height: 4px;
+    border-radius: 50%;
+    background: var(--gold);
+    flex-shrink: 0;
+  }
+
+  .toast {
+    position: absolute;
+    top: 60px;
+    left: 50%;
+    transform: translateX(-50%) translateY(-10px);
+    background: var(--espresso);
+    color: var(--cream);
+    font-size: 12px;
+    font-weight: 500;
+    padding: 7px 16px;
+    border-radius: 20px;
+    white-space: nowrap;
+    opacity: 0;
+    transition: opacity 0.2s, transform 0.2s;
+    z-index: 200;
+    pointer-events: none;
+  }
+  .toast.show {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+  }
+
+  .bottom-nav {
+    height: 68px;
+    background: var(--cream);
+    border-top: 1px solid var(--cream-mid);
+    display: flex;
+    align-items: center;
+    padding: 0 8px 8px;
+    flex-shrink: 0;
+    z-index: 60;
+  }
+  .nav-item {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 3px;
+    cursor: pointer;
+    padding: 6px 0;
+    border-radius: 10px;
+    transition: background 0.15s;
+  }
+  .nav-item:active { background: var(--cream-dark); }
+  .nav-label {
+    font-size: 10px;
+    color: var(--muted);
+    font-weight: 500;
+  }
+  .nav-item.active .nav-label { color: var(--espresso); }
+  .nav-jess {
+    width: 46px;
+    height: 46px;
+    border-radius: 50%;
+    background: var(--espresso);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 4px;
+    cursor: pointer;
+    transition: transform 0.15s;
+    flex-shrink: 0;
+  }
+  .nav-jess:active { transform: scale(0.93); }
+
+  .demo-label-strip {
+    margin-top: 28px;
+    width: 375px;
+    text-align: center;
+  }
+  .demo-label-main {
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--gold);
+    margin-bottom: 6px;
+  }
+  .demo-label-desc {
+    font-size: 12px;
+    color: rgba(244,237,219,0.55);
+    line-height: 1.5;
+    max-width: 340px;
+    margin: 0 auto;
+  }
+</style>
+</head>
+<body>
+
+<div class="demo-title">FemWell — Interactive Feature Demo</div>
+
+<div class="phone-frame" id="phoneFrame">
+  <div class="phone-notch"></div>
+
+  <div class="toast" id="toast"></div>
+
+  <div class="status-bar">
+    <span class="status-time">9:41</span>
+    <div class="status-icons">
+      <svg width="16" height="11" viewBox="0 0 16 11" fill="none">
+        <rect x="0" y="3" width="3" height="8" rx="1" fill="#3A2C1A"/>
+        <rect x="4.5" y="2" width="3" height="9" rx="1" fill="#3A2C1A"/>
+        <rect x="9" y="0" width="3" height="11" rx="1" fill="#3A2C1A"/>
+        <rect x="13.5" y="0" width="2.5" height="11" rx="1" fill="#3A2C1A" opacity="0.3"/>
+      </svg>
+      <svg width="16" height="11" viewBox="0 0 16 11" fill="none">
+        <path d="M8 2.5C10.2 2.5 12.1 3.5 13.4 5L15 3.3C13.2 1.3 10.7 0 8 0C5.3 0 2.8 1.3 1 3.3L2.6 5C3.9 3.5 5.8 2.5 8 2.5Z" fill="#3A2C1A"/>
+        <path d="M8 5.5C9.5 5.5 10.9 6.2 11.8 7.3L13.4 5.6C12 4.1 10.1 3.2 8 3.2C5.9 3.2 4 4.1 2.6 5.6L4.2 7.3C5.1 6.2 6.5 5.5 8 5.5Z" fill="#3A2C1A"/>
+        <circle cx="8" cy="10" r="1.5" fill="#3A2C1A"/>
+      </svg>
+      <svg width="26" height="13" viewBox="0 0 26 13" fill="none">
+        <rect x="0.5" y="0.5" width="22" height="12" rx="3.5" stroke="#3A2C1A" stroke-opacity="0.35"/>
+        <rect x="2" y="2" width="16" height="9" rx="2" fill="#3A2C1A"/>
+        <path d="M24 4.5V8.5C24.8 8.2 25.5 7.5 25.5 6.5C25.5 5.5 24.8 4.8 24 4.5Z" fill="#3A2C1A" opacity="0.4"/>
+      </svg>
+    </div>
+  </div>
+
+  <div class="page-content" id="pageContent">
+    <div class="page-header">
+      <div class="page-header-top">
+        <div>
+          <div class="page-title">Planner</div>
+          <div class="page-subtitle">Tuesday, 20 May</div>
+        </div>
+        <div class="avatar-circle">H</div>
+      </div>
+    </div>
+
+    <div class="week-strip">
+      <div class="week-day"><div class="week-day-label">M</div><div class="week-day-num">17</div><div class="week-day-dot"></div></div>
+      <div class="week-day"><div class="week-day-label">Tu</div><div class="week-day-num">18</div><div class="week-day-dot"></div></div>
+      <div class="week-day"><div class="week-day-label">W</div><div class="week-day-num">19</div><div class="week-day-dot"></div></div>
+      <div class="week-day today"><div class="week-day-label">Th</div><div class="week-day-num">20</div><div class="week-day-dot"></div></div>
+      <div class="week-day"><div class="week-day-label">F</div><div class="week-day-num">21</div><div class="week-day-dot"></div></div>
+      <div class="week-day"><div class="week-day-label">Sa</div><div class="week-day-num">22</div><div class="week-day-dot"></div></div>
+      <div class="week-day"><div class="week-day-label">Su</div><div class="week-day-num">23</div><div class="week-day-dot"></div></div>
+    </div>
+
+    <div class="cycle-strip">
+      <div class="cycle-phase-dot"></div>
+      <div class="cycle-text">Follicular phase · Day 8</div>
+      <div class="cycle-day-badge">Day 8</div>
+    </div>
+
+    <div class="section-label" style="margin-top:10px;">Your day</div>
+    <div class="planner-rows">
+      <div class="planner-row">
+        <div class="planner-row-icon sage-bg">
+          <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+            <circle cx="8" cy="5" r="3" stroke="#8FAF8F" stroke-width="1.5"/>
+            <path d="M2 14c0-3.3 2.7-6 6-6s6 2.7 6 6" stroke="#8FAF8F" stroke-width="1.5" stroke-linecap="round"/>
+          </svg>
+        </div>
+        <div class="planner-row-text">
+          <div class="planner-row-title">Morning ritual</div>
+          <div class="planner-row-sub">2 of 4 complete</div>
+        </div>
+        <div class="planner-row-badge">2/4</div>
+      </div>
+      <div class="planner-row">
+        <div class="planner-row-icon blush-fill">
+          <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+            <path d="M8 2C8 2 3 6 3 10a5 5 0 0010 0c0-4-5-8-5-8z" stroke="#E8B4B8" stroke-width="1.5" stroke-linejoin="round"/>
+          </svg>
+        </div>
+        <div class="planner-row-text">
+          <div class="planner-row-title">Nourishment</div>
+          <div class="planner-row-sub">1.8L water · 2 meals</div>
+        </div>
+        <div class="planner-row-badge">On track</div>
+      </div>
+      <div class="planner-row">
+        <div class="planner-row-icon gold-bg">
+          <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+            <rect x="2" y="3" width="12" height="11" rx="2" stroke="#D4AF37" stroke-width="1.5"/>
+            <path d="M5 2v2M11 2v2" stroke="#D4AF37" stroke-width="1.5" stroke-linecap="round"/>
+            <path d="M2 7h12" stroke="#D4AF37" stroke-width="1.5"/>
+            <rect x="5" y="9.5" width="2" height="2" rx="0.5" fill="#D4AF37"/>
+            <rect x="9" y="9.5" width="2" height="2" rx="0.5" fill="#D4AF37"/>
+          </svg>
+        </div>
+        <div class="planner-row-text">
+          <div class="planner-row-title">Schedule</div>
+          <div class="planner-row-sub">2pm GP appointment</div>
+        </div>
+        <div class="planner-row-badge">1 event</div>
+      </div>
+      <div class="planner-row">
+        <div class="planner-row-icon sage-bg">
+          <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+            <path d="M2 4h12M2 8h8M2 12h6" stroke="#8FAF8F" stroke-width="1.5" stroke-linecap="round"/>
+          </svg>
+        </div>
+        <div class="planner-row-text">
+          <div class="planner-row-title">Tasks</div>
+          <div class="planner-row-sub">3 tasks remaining</div>
+        </div>
+        <div class="planner-row-badge">5/8</div>
+      </div>
+    </div>
+
+    <div style="height: 20px;"></div>
+  </div>
+
+  <div class="rail-wrapper">
+    <div class="rail" id="rail">
+      <div class="rail-handle" id="railHandle">
+        <div class="rail-handle-pill"></div>
+
+        <div class="rail-progress-wrap">
+          <div class="rail-progress-label" id="progressLabel">Today's log: 3 / 8</div>
+          <div class="rail-progress-bar-bg">
+            <div class="rail-progress-bar-fill" id="progressFill" style="width: 37.5%;"></div>
+          </div>
+        </div>
+
+        <div class="rail-quick-icons">
+          <div class="quick-icon-btn" id="quickMood" title="Log mood">
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+              <circle cx="8" cy="8" r="6" stroke="#9B8B7A" stroke-width="1.3"/>
+              <circle cx="5.5" cy="7" r="1" fill="#9B8B7A"/>
+              <circle cx="10.5" cy="7" r="1" fill="#9B8B7A"/>
+              <path d="M5.5 10.5q2.5 2 5 0" stroke="#9B8B7A" stroke-width="1.3" stroke-linecap="round"/>
+            </svg>
+          </div>
+          <div class="quick-icon-btn" id="quickWater" title="Log water">
+            <svg width="14" height="16" viewBox="0 0 14 16" fill="none">
+              <path d="M7 1C7 1 1.5 7 1.5 10.5a5.5 5.5 0 0011 0C12.5 7 7 1 7 1z" stroke="#9B8B7A" stroke-width="1.3" stroke-linejoin="round"/>
+              <path d="M4.5 12a3 3 0 004 1" stroke="#9B8B7A" stroke-width="1.1" stroke-linecap="round" opacity="0.6"/>
+            </svg>
+          </div>
+          <div class="quick-icon-btn" id="quickAdd" title="Quick add">
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+              <circle cx="8" cy="8" r="6" stroke="#9B8B7A" stroke-width="1.3"/>
+              <path d="M8 5v6M5 8h6" stroke="#9B8B7A" stroke-width="1.3" stroke-linecap="round"/>
+            </svg>
+          </div>
+        </div>
+      </div>
+
+      <div class="rail-body" id="railBody">
+        <div class="rail-cards-scroll" id="cardsScroll">
+
+          <div class="log-card" id="card-checkin" data-card="checkin">
+            <div class="card-icon-row">
+              <div class="card-icon blush-fill">
+                <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+                  <circle cx="7" cy="7" r="5.5" stroke="#E8B4B8" stroke-width="1.2"/>
+                  <circle cx="4.5" cy="6.5" r="0.8" fill="#E8B4B8"/>
+                  <circle cx="9.5" cy="6.5" r="0.8" fill="#E8B4B8"/>
+                  <path d="M4.5 9.5q2.5 2 5 0" stroke="#E8B4B8" stroke-width="1.2" stroke-linecap="round"/>
+                </svg>
+              </div>
+              <div class="card-badge" id="checkin-badge">+</div>
+            </div>
+            <div class="card-title">Check-in</div>
+            <div class="card-body" id="checkin-body">
+              <div class="mood-dot-label">Mood</div>
+              <div class="mood-dots" id="moodDots">
+                <div class="mood-dot" data-mood="1">
+                  <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
+                    <circle cx="6" cy="6" r="5" stroke="#9B8B7A" stroke-width="1"/>
+                    <circle cx="4" cy="5.5" r="0.7" fill="#9B8B7A"/>
+                    <circle cx="8" cy="5.5" r="0.7" fill="#9B8B7A"/>
+                    <path d="M3.5 7.5q2.5 1.5 5 0" stroke="#9B8B7A" stroke-width="0.9" stroke-linecap="round"/>
+                  </svg>
+                </div>
+                <div class="mood-dot selected" data-mood="2">
+                  <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
+                    <circle cx="6" cy="6" r="5" stroke="#3A2C1A" stroke-width="1"/>
+                    <circle cx="4" cy="5" r="0.7" fill="#3A2C1A"/>
+                    <circle cx="8" cy="5" r="0.7" fill="#3A2C1A"/>
+                    <path d="M3.5 7.5q2.5 2 5 0" stroke="#3A2C1A" stroke-width="0.9" stroke-linecap="round"/>
+                  </svg>
+                </div>
+                <div class="mood-dot" data-mood="3">
+                  <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
+                    <circle cx="6" cy="6" r="5" stroke="#9B8B7A" stroke-width="1"/>
+                    <circle cx="4" cy="5.5" r="0.7" fill="#9B8B7A"/>
+                    <circle cx="8" cy="5.5" r="0.7" fill="#9B8B7A"/>
+                    <path d="M3.5 8q2.5 0.5 5 0" stroke="#9B8B7A" stroke-width="0.9" stroke-linecap="round"/>
+                  </svg>
+                </div>
+                <div class="mood-dot" data-mood="4">
+                  <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
+                    <circle cx="6" cy="6" r="5" stroke="#9B8B7A" stroke-width="1"/>
+                    <circle cx="4" cy="5.5" r="0.7" fill="#9B8B7A"/>
+                    <circle cx="8" cy="5.5" r="0.7" fill="#9B8B7A"/>
+                    <path d="M3.5 8q2.5-1 5 0" stroke="#9B8B7A" stroke-width="0.9" stroke-linecap="round"/>
+                  </svg>
+                </div>
+              </div>
+              <div class="mood-dot-label">Energy</div>
+              <div class="energy-row" id="energyRow">
+                <div class="energy-pip filled"></div>
+                <div class="energy-pip filled"></div>
+                <div class="energy-pip filled"></div>
+                <div class="energy-pip"></div>
+                <div class="energy-pip"></div>
+              </div>
+              <div class="period-row">
+                <div class="period-indicator"></div>
+                <span>Period: Day 8</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="log-card" id="card-meals" data-card="meals">
+            <div class="card-icon-row">
+              <div class="card-icon sage-fill">
+                <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+                  <path d="M3 2v4c0 1.7 1.3 3 3 3M9 2v10M11 2c0 0-1 2-1 4s1 4 1 4" stroke="#8FAF8F" stroke-width="1.2" stroke-linecap="round"/>
+                </svg>
+              </div>
+              <div class="card-badge">3</div>
+            </div>
+            <div class="card-title">Meals</div>
+            <div class="card-body" id="meals-body">
+              <div class="card-pill">Oats + berries</div>
+              <div class="card-pill">Salmon salad</div>
+              <div class="card-pill" id="meal3pill">+ Add</div>
+              <div class="mini-input-wrap" id="mealInputWrap" style="display:none;">
+                <input class="mini-input" id="mealInput" placeholder="Add meal..." maxlength="20">
+                <button class="mini-add-btn" id="mealAddBtn">
+                  <svg width="10" height="10" viewBox="0 0 10 10" fill="none">
+                    <path d="M5 1v8M1 5h8" stroke="#fff" stroke-width="1.5" stroke-linecap="round"/>
+                  </svg>
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <div class="log-card" id="card-tasks" data-card="tasks">
+            <div class="card-icon-row">
+              <div class="card-icon gold-fill">
+                <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+                  <path d="M2.5 7l3 3 6-6" stroke="#D4AF37" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+              </div>
+              <div class="card-badge">5/8</div>
+            </div>
+            <div class="card-title">Tasks</div>
+            <div class="card-body" id="tasks-body">
+              <div class="check-row done" id="task1">
+                <div class="check-box checked" data-task="1">
+                  <svg width="8" height="8" viewBox="0 0 8 8" fill="none"><path d="M1.5 4l2 2 3-3" stroke="#fff" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                </div>
+                <span class="check-text">Book GP follow-up</span>
+              </div>
+              <div class="check-row" id="task2">
+                <div class="check-box" data-task="2"></div>
+                <span class="check-text">Meditation 10 min</span>
+              </div>
+              <div class="check-row" id="task3">
+                <div class="check-box" data-task="3"></div>
+                <span class="check-text">Evening walk</span>
+              </div>
+              <div class="mini-input-wrap">
+                <input class="mini-input" id="taskInput" placeholder="Add task...">
+                <button class="mini-add-btn" id="taskAddBtn">
+                  <svg width="10" height="10" viewBox="0 0 10 10" fill="none">
+                    <path d="M5 1v8M1 5h8" stroke="#fff" stroke-width="1.5" stroke-linecap="round"/>
+                  </svg>
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <div class="log-card" id="card-rituals" data-card="rituals">
+            <div class="card-icon-row">
+              <div class="card-icon blush-fill">
+                <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+                  <path d="M7 1l1.5 4H13L9.5 7.5 11 12 7 9.5 3 12l1.5-4.5L1 5h4.5z" stroke="#E8B4B8" stroke-width="1.1" stroke-linejoin="round"/>
+                </svg>
+              </div>
+              <div class="card-badge">2/4</div>
+            </div>
+            <div class="card-title">Rituals</div>
+            <div class="card-body">
+              <div class="check-row done" id="ritual1">
+                <div class="check-box checked" data-ritual="1">
+                  <svg width="8" height="8" viewBox="0 0 8 8" fill="none"><path d="M1.5 4l2 2 3-3" stroke="#fff" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                </div>
+                <span class="check-text">Morning pages</span>
+              </div>
+              <div class="check-row done" id="ritual2">
+                <div class="check-box checked" data-ritual="2">
+                  <svg width="8" height="8" viewBox="0 0 8 8" fill="none"><path d="M1.5 4l2 2 3-3" stroke="#fff" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                </div>
+                <span class="check-text">Cold splash</span>
+              </div>
+              <div class="check-row" id="ritual3">
+                <div class="check-box" data-ritual="3"></div>
+                <span class="check-text">Breathwork</span>
+              </div>
+              <div class="check-row" id="ritual4">
+                <div class="check-box" data-ritual="4"></div>
+                <span class="check-text">Evening wind-down</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="log-card plan-card" id="card-plan" data-card="plan">
+            <div class="card-icon-row">
+              <div class="card-icon cream-fill">
+                <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+                  <rect x="1.5" y="2" width="11" height="10" rx="2" stroke="rgba(244,237,219,0.7)" stroke-width="1.2"/>
+                  <path d="M4 1.5v2M10 1.5v2" stroke="rgba(244,237,219,0.7)" stroke-width="1.2" stroke-linecap="round"/>
+                  <path d="M1.5 6h11" stroke="rgba(244,237,219,0.7)" stroke-width="1.2"/>
+                  <rect x="4" y="8" width="2" height="2" rx="0.5" fill="rgba(244,237,219,0.5)"/>
+                  <rect x="8" y="8" width="2" height="2" rx="0.5" fill="rgba(244,237,219,0.5)"/>
+                </svg>
+              </div>
+              <div class="card-badge" style="background:rgba(244,237,219,0.15);color:rgba(244,237,219,0.8);">Fri</div>
+            </div>
+            <div class="card-title">Plan tomorrow</div>
+            <div class="card-body">
+              <div class="plan-date-label">Friday, 21 May</div>
+              <div class="plan-task-row"><div class="plan-dot"></div><span>Yoga class 7am</span></div>
+              <div class="plan-task-row"><div class="plan-dot"></div><span>Blood test results</span></div>
+              <div class="mini-input-wrap" style="margin-top:4px;">
+                <input class="mini-input" id="planInput" placeholder="Add task..." style="background:rgba(244,237,219,0.12);border-color:rgba(244,237,219,0.2);color:var(--cream);">
+                <button class="mini-add-btn" id="planAddBtn" style="background:rgba(212,175,55,0.7);">
+                  <svg width="10" height="10" viewBox="0 0 10 10" fill="none">
+                    <path d="M5 1v8M1 5h8" stroke="#3A2C1A" stroke-width="1.5" stroke-linecap="round"/>
+                  </svg>
+                </button>
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="bottom-nav" id="bottomNav">
+    <div class="nav-item" onclick="closeRail()">
+      <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+        <rect x="3" y="3" width="6" height="6" rx="1.5" stroke="#9B8B7A" stroke-width="1.4"/>
+        <rect x="11" y="3" width="6" height="6" rx="1.5" stroke="#9B8B7A" stroke-width="1.4"/>
+        <rect x="3" y="11" width="6" height="6" rx="1.5" stroke="#9B8B7A" stroke-width="1.4"/>
+        <rect x="11" y="11" width="6" height="6" rx="1.5" stroke="#9B8B7A" stroke-width="1.4"/>
+      </svg>
+      <span class="nav-label">Today</span>
+    </div>
+    <div class="nav-item" onclick="closeRail()">
+      <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+        <path d="M4 10s2-6 6-6 6 6 6 6-2 6-6 6-6-6-6-6z" stroke="#9B8B7A" stroke-width="1.4"/>
+        <circle cx="10" cy="10" r="2" stroke="#9B8B7A" stroke-width="1.4"/>
+      </svg>
+      <span class="nav-label">Lifestyle</span>
+    </div>
+    <div class="nav-jess" id="jessBtn">
+      <svg width="22" height="22" viewBox="0 0 22 22" fill="none">
+        <path d="M11 3C7 3 4 6 4 10c0 2 0.8 3.8 2 5l-1 3 3.5-1.5A7 7 0 1011 3z" stroke="#F4EDDB" stroke-width="1.5" stroke-linejoin="round"/>
+        <circle cx="8" cy="10" r="1" fill="#F4EDDB"/>
+        <circle cx="11" cy="10" r="1" fill="#F4EDDB"/>
+        <circle cx="14" cy="10" r="1" fill="#F4EDDB"/>
+      </svg>
+    </div>
+    <div class="nav-item active" onclick="void(0)">
+      <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+        <path d="M3 5h14M3 10h14M3 15h14" stroke="#3A2C1A" stroke-width="1.5" stroke-linecap="round"/>
+      </svg>
+      <span class="nav-label" style="color:var(--espresso)">Planner</span>
+    </div>
+    <div class="nav-item" onclick="closeRail()">
+      <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+        <circle cx="10" cy="7" r="3.5" stroke="#9B8B7A" stroke-width="1.4"/>
+        <path d="M3 18c0-3.9 3.1-7 7-7s7 3.1 7 7" stroke="#9B8B7A" stroke-width="1.4" stroke-linecap="round"/>
+      </svg>
+      <span class="nav-label">Profile</span>
+    </div>
+  </div>
+
+</div>
+
+<div class="demo-label-strip">
+  <div class="demo-label-main">Demo 2 — Inline Rail</div>
+  <div class="demo-label-desc">No modal. Logging lives in a persistent bottom rail. Pull up to log or plan — never leaves the page context.</div>
+</div>
+
+<script>
+const rail = document.getElementById('rail');
+const railHandle = document.getElementById('railHandle');
+const railBody = document.getElementById('railBody');
+const toast = document.getElementById('toast');
+const progressFill = document.getElementById('progressFill');
+const progressLabel = document.getElementById('progressLabel');
+
+let railOpen = false;
+let logCount = 3;
+const totalLogs = 8;
+
+const COLLAPSED_H = 52;
+const EXPANDED_H = 300;
+
+function setRailHeight(h, animate) {
+  if (!animate) rail.style.transition = 'none';
+  else rail.style.transition = 'height 0.38s cubic-bezier(0.4, 0, 0.2, 1)';
+  rail.style.height = h + 'px';
+}
+
+function openRail() {
+  railOpen = true;
+  setRailHeight(EXPANDED_H, true);
+}
+
+function closeRail() {
+  railOpen = false;
+  setRailHeight(COLLAPSED_H, true);
+  document.querySelectorAll('.log-card').forEach(c => c.classList.remove('active'));
+}
+
+function showToast(msg) {
+  toast.textContent = msg;
+  toast.classList.add('show');
+  setTimeout(() => toast.classList.remove('show'), 2000);
+}
+
+function updateProgress() {
+  const pct = (logCount / totalLogs) * 100;
+  progressFill.style.width = pct + '%';
+  progressLabel.textContent = 'Today\'s log: ' + logCount + ' / ' + totalLogs;
+}
+
+railHandle.addEventListener('click', (e) => {
+  if (e.target.closest('.quick-icon-btn')) return;
+  if (railOpen) closeRail();
+  else openRail();
+});
+
+document.getElementById('quickMood').addEventListener('click', (e) => {
+  e.stopPropagation();
+  const btn = document.getElementById('quickMood');
+  btn.classList.add('tapped');
+  logCount = Math.min(totalLogs, logCount + 1);
+  updateProgress();
+  showToast('Mood logged');
+  setTimeout(() => btn.classList.remove('tapped'), 600);
+});
+
+document.getElementById('quickWater').addEventListener('click', (e) => {
+  e.stopPropagation();
+  const btn = document.getElementById('quickWater');
+  btn.classList.add('tapped');
+  logCount = Math.min(totalLogs, logCount + 1);
+  updateProgress();
+  showToast('+250ml water logged');
+  setTimeout(() => btn.classList.remove('tapped'), 600);
+});
+
+document.getElementById('quickAdd').addEventListener('click', (e) => {
+  e.stopPropagation();
+  if (!railOpen) openRail();
+  else closeRail();
+});
+
+document.querySelectorAll('.log-card').forEach(card => {
+  card.addEventListener('click', (e) => {
+    if (e.target.closest('.check-box') || e.target.closest('.mini-input') || e.target.closest('.mini-add-btn') || e.target.closest('.mood-dot')) return;
+    if (!railOpen) { openRail(); return; }
+    const wasActive = card.classList.contains('active');
+    document.querySelectorAll('.log-card').forEach(c => c.classList.remove('active'));
+    if (!wasActive) card.classList.add('active');
+  });
+});
+
+document.querySelectorAll('.mood-dot').forEach(dot => {
+  dot.addEventListener('click', (e) => {
+    e.stopPropagation();
+    document.querySelectorAll('.mood-dot').forEach(d => d.classList.remove('selected'));
+    dot.classList.add('selected');
+    logCount = Math.min(totalLogs, logCount + 1);
+    updateProgress();
+    showToast('Mood saved');
+  });
+});
+
+document.querySelectorAll('.energy-pip').forEach((pip, i) => {
+  pip.addEventListener('click', () => {
+    document.querySelectorAll('.energy-pip').forEach((p, j) => {
+      p.classList.toggle('filled', j <= i);
+    });
+    showToast('Energy updated');
+  });
+});
+
+function setupCheck(boxSelector, rowId, label) {
+  const box = document.querySelector('[data-' + boxSelector + ']');
+  if (!box) return;
+  box.addEventListener('click', (e) => {
+    e.stopPropagation();
+    const row = document.getElementById(rowId);
+    const isChecked = box.classList.contains('checked');
+    if (isChecked) {
+      box.classList.remove('checked');
+      box.innerHTML = '';
+      row.classList.remove('done');
+    } else {
+      box.classList.add('checked');
+      box.innerHTML = '<svg width="8" height="8" viewBox="0 0 8 8" fill="none"><path d="M1.5 4l2 2 3-3" stroke="#fff" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+      row.classList.add('done');
+      logCount = Math.min(totalLogs, logCount + 1);
+      updateProgress();
+      showToast(label + ' complete');
+    }
+  });
+}
+
+document.querySelectorAll('[data-task]').forEach(box => {
+  box.addEventListener('click', (e) => {
+    e.stopPropagation();
+    const row = box.closest('.check-row');
+    const isChecked = box.classList.contains('checked');
+    if (isChecked) {
+      box.classList.remove('checked');
+      box.innerHTML = '';
+      row.classList.remove('done');
+    } else {
+      box.classList.add('checked');
+      box.innerHTML = '<svg width="8" height="8" viewBox="0 0 8 8" fill="none"><path d="M1.5 4l2 2 3-3" stroke="#fff" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+      row.classList.add('done');
+      logCount = Math.min(totalLogs, logCount + 1);
+      updateProgress();
+      showToast('Task done');
+    }
+  });
+});
+
+document.querySelectorAll('[data-ritual]').forEach(box => {
+  box.addEventListener('click', (e) => {
+    e.stopPropagation();
+    const row = box.closest('.check-row');
+    const isChecked = box.classList.contains('checked');
+    if (isChecked) {
+      box.classList.remove('checked');
+      box.innerHTML = '';
+      row.classList.remove('done');
+    } else {
+      box.classList.add('checked');
+      box.innerHTML = '<svg width="8" height="8" viewBox="0 0 8 8" fill="none"><path d="M1.5 4l2 2 3-3" stroke="#fff" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+      row.classList.add('done');
+      logCount = Math.min(totalLogs, logCount + 1);
+      updateProgress();
+      showToast('Ritual complete');
+    }
+  });
+});
+
+document.getElementById('meal3pill').addEventListener('click', (e) => {
+  e.stopPropagation();
+  document.getElementById('meal3pill').style.display = 'none';
+  document.getElementById('mealInputWrap').style.display = 'flex';
+  setTimeout(() => document.getElementById('mealInput').focus(), 50);
+});
+
+document.getElementById('mealAddBtn').addEventListener('click', (e) => {
+  e.stopPropagation();
+  const val = document.getElementById('mealInput').value.trim();
+  if (!val) return;
+  const pill = document.createElement('div');
+  pill.className = 'card-pill';
+  pill.textContent = val;
+  document.getElementById('meals-body').insertBefore(pill, document.getElementById('mealInputWrap'));
+  document.getElementById('mealInput').value = '';
+  document.getElementById('mealInputWrap').style.display = 'none';
+  document.getElementById('meal3pill').style.display = 'inline-block';
+  logCount = Math.min(totalLogs, logCount + 1);
+  updateProgress();
+  showToast('Meal logged');
+});
+
+document.getElementById('mealInput').addEventListener('keydown', (e) => {
+  if (e.key === 'Enter') document.getElementById('mealAddBtn').click();
+});
+
+document.getElementById('taskAddBtn').addEventListener('click', (e) => {
+  e.stopPropagation();
+  const val = document.getElementById('taskInput').value.trim();
+  if (!val) return;
+  const row = document.createElement('div');
+  row.className = 'check-row';
+  row.innerHTML = '<div class="check-box" style="border-color:var(--cream-mid)"></div><span class="check-text">' + val + '</span>';
+  const body = document.getElementById('tasks-body');
+  const wrap = body.querySelector('.mini-input-wrap');
+  body.insertBefore(row, wrap);
+  document.getElementById('taskInput').value = '';
+  row.querySelector('.check-box').addEventListener('click', (e2) => {
+    e2.stopPropagation();
+    const box = row.querySelector('.check-box');
+    const isChecked = box.classList.contains('checked');
+    if (isChecked) {
+      box.classList.remove('checked');
+      box.innerHTML = '';
+      row.classList.remove('done');
+    } else {
+      box.classList.add('checked');
+      box.innerHTML = '<svg width="8" height="8" viewBox="0 0 8 8" fill="none"><path d="M1.5 4l2 2 3-3" stroke="#fff" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+      row.classList.add('done');
+      showToast('Task done');
+    }
+  });
+  logCount = Math.min(totalLogs, logCount + 1);
+  updateProgress();
+  showToast('Task added');
+});
+
+document.getElementById('taskInput').addEventListener('keydown', (e) => {
+  if (e.key === 'Enter') document.getElementById('taskAddBtn').click();
+});
+
+document.getElementById('planAddBtn').addEventListener('click', (e) => {
+  e.stopPropagation();
+  const val = document.getElementById('planInput').value.trim();
+  if (!val) return;
+  const row = document.createElement('div');
+  row.className = 'plan-task-row';
+  row.innerHTML = '<div class="plan-dot"></div><span>' + val + '</span>';
+  const card = document.getElementById('card-plan');
+  card.querySelector('.mini-input-wrap').before(row);
+  document.getElementById('planInput').value = '';
+  showToast('Added to tomorrow');
+});
+
+document.getElementById('planInput').addEventListener('keydown', (e) => {
+  if (e.key === 'Enter') document.getElementById('planAddBtn').click();
+});
+
+document.getElementById('jessBtn').addEventListener('click', () => {
+  closeRail();
+  showToast('Jess is listening...');
+});
+
+setRailHeight(COLLAPSED_H, false);
+setTimeout(() => openRail(), 500);
+</script>
+</body>
+</html>

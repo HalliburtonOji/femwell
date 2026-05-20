@@ -1,0 +1,1561 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>FemWell — Command Dial Demo</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: #1a1a1a;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-start;
+    min-height: 100vh;
+    padding: 32px 16px 48px;
+    font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Segoe UI', sans-serif;
+  }
+
+  .phone-frame {
+    width: 375px;
+    height: 780px;
+    background: #F4EDDB;
+    border-radius: 48px;
+    border: 10px solid #2a2a2a;
+    position: relative;
+    overflow: hidden;
+    box-shadow:
+      0 0 0 1px #444,
+      0 40px 80px rgba(0,0,0,0.6),
+      inset 0 1px 0 rgba(255,255,255,0.08);
+  }
+
+  .phone-notch {
+    position: absolute;
+    top: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 120px;
+    height: 30px;
+    background: #2a2a2a;
+    border-radius: 0 0 20px 20px;
+    z-index: 100;
+  }
+
+  .status-bar {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 44px;
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    padding: 0 20px 6px;
+    z-index: 99;
+  }
+
+  .status-time {
+    font-size: 13px;
+    font-weight: 600;
+    color: #3A2C1A;
+    letter-spacing: -0.2px;
+  }
+
+  .status-icons {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+  }
+
+  .scroll-content {
+    position: absolute;
+    top: 44px;
+    left: 0;
+    right: 0;
+    bottom: 84px;
+    overflow-y: auto;
+    overflow-x: hidden;
+    padding: 16px 16px 20px;
+    scrollbar-width: none;
+  }
+  .scroll-content::-webkit-scrollbar { display: none; }
+
+  .greeting-section {
+    margin-bottom: 16px;
+  }
+
+  .greeting-text {
+    font-size: 22px;
+    font-weight: 600;
+    color: #3A2C1A;
+    letter-spacing: -0.5px;
+    line-height: 1.2;
+  }
+
+  .greeting-sub {
+    font-size: 13px;
+    color: #9B8B7A;
+    margin-top: 3px;
+  }
+
+  .phase-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: rgba(58,44,26,0.08);
+    border: 1px solid rgba(58,44,26,0.12);
+    border-radius: 20px;
+    padding: 5px 12px;
+    margin-top: 10px;
+  }
+
+  .phase-dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: #E8B4B8;
+  }
+
+  .phase-text {
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.8px;
+    color: #3A2C1A;
+  }
+
+  .ring-progress-inline {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    margin-top: 10px;
+    margin-left: 8px;
+  }
+
+  .ring-label {
+    font-size: 11px;
+    color: #9B8B7A;
+  }
+
+  .tiles-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    margin-bottom: 12px;
+  }
+
+  .tile {
+    background: #fff;
+    border-radius: 16px;
+    padding: 14px;
+    border: 1px solid rgba(58,44,26,0.06);
+  }
+
+  .tile-label {
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 0.6px;
+    color: #9B8B7A;
+    text-transform: uppercase;
+    margin-bottom: 6px;
+  }
+
+  .tile-value {
+    font-size: 18px;
+    font-weight: 600;
+    color: #3A2C1A;
+    letter-spacing: -0.3px;
+  }
+
+  .tile-sub {
+    font-size: 11px;
+    color: #9B8B7A;
+    margin-top: 2px;
+  }
+
+  .tile-icon-row {
+    display: flex;
+    gap: 4px;
+    margin-top: 6px;
+  }
+
+  .mood-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+  }
+
+  .tile-wide {
+    grid-column: span 2;
+    background: #fff;
+    border-radius: 16px;
+    padding: 14px;
+    border: 1px solid rgba(58,44,26,0.06);
+  }
+
+  .hydration-bar {
+    height: 6px;
+    background: rgba(143,175,143,0.2);
+    border-radius: 3px;
+    margin-top: 8px;
+    overflow: hidden;
+  }
+
+  .hydration-fill {
+    height: 100%;
+    width: 55%;
+    background: #8FAF8F;
+    border-radius: 3px;
+  }
+
+  .section-label {
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.8px;
+    color: #9B8B7A;
+    text-transform: uppercase;
+    margin-bottom: 8px;
+  }
+
+  .habit-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 8px 0;
+    border-bottom: 1px solid rgba(58,44,26,0.06);
+  }
+
+  .habit-row:last-child { border-bottom: none; }
+
+  .habit-check {
+    width: 20px;
+    height: 20px;
+    border-radius: 6px;
+    border: 1.5px solid rgba(58,44,26,0.2);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+  }
+
+  .habit-check.done {
+    background: #8FAF8F;
+    border-color: #8FAF8F;
+  }
+
+  .habit-name {
+    font-size: 13px;
+    color: #3A2C1A;
+    flex: 1;
+  }
+
+  .habit-streak {
+    font-size: 11px;
+    color: #9B8B7A;
+  }
+
+  .bottom-nav {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 84px;
+    background: rgba(244,237,219,0.95);
+    border-top: 1px solid rgba(58,44,26,0.1);
+    display: flex;
+    align-items: center;
+    justify-content: space-around;
+    padding: 0 8px 16px;
+    z-index: 50;
+    transition: opacity 0.3s ease;
+  }
+
+  .nav-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 3px;
+    padding: 4px 12px;
+    cursor: pointer;
+    flex: 1;
+  }
+
+  .nav-icon {
+    width: 22px;
+    height: 22px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .nav-label {
+    font-size: 10px;
+    color: #9B8B7A;
+    letter-spacing: 0.3px;
+  }
+
+  .nav-label.active {
+    color: #3A2C1A;
+    font-weight: 600;
+  }
+
+  .center-btn-wrap {
+    position: relative;
+    width: 64px;
+    height: 64px;
+    flex-shrink: 0;
+    cursor: pointer;
+    margin-top: -20px;
+  }
+
+  .center-btn {
+    width: 56px;
+    height: 56px;
+    border-radius: 50%;
+    background: #3A2C1A;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    z-index: 2;
+    transition: transform 0.15s ease;
+    user-select: none;
+    -webkit-user-select: none;
+  }
+
+  .center-btn:active {
+    transform: scale(0.93);
+  }
+
+  .ring-svg {
+    position: absolute;
+    top: -4px;
+    left: -4px;
+    width: 64px;
+    height: 64px;
+    z-index: 3;
+    pointer-events: none;
+  }
+
+  .ripple-ring {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%) scale(0);
+    width: 56px;
+    height: 56px;
+    border-radius: 50%;
+    background: rgba(212,175,55,0.25);
+    z-index: 1;
+    pointer-events: none;
+    opacity: 0;
+  }
+
+  .ripple-ring.animate {
+    animation: rippleGrow 0.6s ease-out forwards;
+  }
+
+  .ripple-ring-2 {
+    animation-delay: 0.2s !important;
+    background: rgba(212,175,55,0.15);
+  }
+
+  @keyframes rippleGrow {
+    0% { transform: translate(-50%, -50%) scale(0.8); opacity: 0.8; }
+    100% { transform: translate(-50%, -50%) scale(2.2); opacity: 0; }
+  }
+
+  .overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(58,44,26,0);
+    z-index: 60;
+    pointer-events: none;
+    transition: background 0.35s ease;
+  }
+
+  .overlay.active {
+    background: rgba(58,44,26,0.45);
+    pointer-events: auto;
+  }
+
+  .dial-container {
+    position: absolute;
+    bottom: 84px;
+    left: 0;
+    right: 0;
+    height: 300px;
+    z-index: 70;
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 0.2s ease;
+  }
+
+  .dial-container.active {
+    opacity: 1;
+    pointer-events: auto;
+  }
+
+  .dial-btn {
+    position: absolute;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+    cursor: pointer;
+    transform: scale(0) translateY(20px);
+    opacity: 0;
+    transition: transform 0.35s cubic-bezier(0.34, 1.56, 0.64, 1), opacity 0.25s ease;
+  }
+
+  .dial-btn.visible {
+    transform: scale(1) translateY(0);
+    opacity: 1;
+  }
+
+  .dial-circle {
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    background: rgba(244,237,219,0.97);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 1.5px solid rgba(58,44,26,0.1);
+    transition: transform 0.15s ease, background 0.15s ease;
+    box-shadow: 0 4px 16px rgba(58,44,26,0.15);
+  }
+
+  .dial-circle:active, .dial-btn:active .dial-circle {
+    transform: scale(0.9);
+    background: rgba(212,175,55,0.15);
+  }
+
+  .dial-btn-label {
+    font-size: 9.5px;
+    font-weight: 600;
+    letter-spacing: 0.3px;
+    color: rgba(244,237,219,0.9);
+    text-align: center;
+    white-space: nowrap;
+    text-shadow: 0 1px 4px rgba(0,0,0,0.4);
+  }
+
+  .recent-strip {
+    position: absolute;
+    bottom: 80px;
+    left: 0;
+    right: 0;
+    display: flex;
+    justify-content: center;
+    gap: 6px;
+    padding: 0 20px;
+    z-index: 71;
+    opacity: 0;
+    transform: translateY(8px);
+    transition: opacity 0.3s ease 0.25s, transform 0.3s ease 0.25s;
+  }
+
+  .recent-strip.active {
+    opacity: 1;
+    transform: translateY(0);
+  }
+
+  .recent-pill {
+    background: rgba(244,237,219,0.15);
+    border: 1px solid rgba(244,237,219,0.3);
+    border-radius: 12px;
+    padding: 4px 8px;
+    font-size: 9px;
+    color: rgba(244,237,219,0.85);
+    white-space: nowrap;
+    letter-spacing: 0.2px;
+  }
+
+  .recent-pill.updated {
+    background: rgba(212,175,55,0.25);
+    border-color: rgba(212,175,55,0.5);
+    color: #D4AF37;
+  }
+
+  .mini-card-wrap {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 80;
+    pointer-events: none;
+    opacity: 0;
+    transform: scale(0.85) translateY(20px);
+    transition: opacity 0.3s cubic-bezier(0.34, 1.56, 0.64, 1), transform 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
+  }
+
+  .mini-card-wrap.visible {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+    pointer-events: auto;
+  }
+
+  .mini-card-wrap.dismissing {
+    opacity: 0;
+    transform: scale(0.88) translateY(10px);
+    transition: opacity 0.2s ease, transform 0.2s ease;
+  }
+
+  .mini-card {
+    width: 320px;
+    background: #F4EDDB;
+    border-radius: 24px;
+    padding: 20px;
+    border: 1px solid rgba(58,44,26,0.1);
+    box-shadow: 0 24px 60px rgba(0,0,0,0.35);
+  }
+
+  .mini-card-title {
+    font-size: 13px;
+    font-weight: 700;
+    letter-spacing: 0.8px;
+    color: #9B8B7A;
+    text-transform: uppercase;
+    margin-bottom: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .mini-close {
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    background: rgba(58,44,26,0.08);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: background 0.15s;
+  }
+
+  .mini-close:hover { background: rgba(58,44,26,0.15); }
+
+  .chips-row {
+    display: flex;
+    gap: 6px;
+    flex-wrap: wrap;
+    margin-bottom: 14px;
+  }
+
+  .chip {
+    padding: 7px 13px;
+    border-radius: 20px;
+    border: 1.5px solid rgba(58,44,26,0.15);
+    font-size: 12px;
+    font-weight: 500;
+    color: #3A2C1A;
+    cursor: pointer;
+    transition: all 0.15s ease;
+    background: transparent;
+    user-select: none;
+  }
+
+  .chip:hover {
+    background: rgba(58,44,26,0.06);
+  }
+
+  .chip.selected {
+    background: #3A2C1A;
+    border-color: #3A2C1A;
+    color: #F4EDDB;
+  }
+
+  .chip.blush-selected {
+    background: #E8B4B8;
+    border-color: #E8B4B8;
+    color: #3A2C1A;
+  }
+
+  .chip.sage-selected {
+    background: #8FAF8F;
+    border-color: #8FAF8F;
+    color: #fff;
+  }
+
+  .chip.gold-selected {
+    background: #D4AF37;
+    border-color: #D4AF37;
+    color: #fff;
+  }
+
+  .energy-row {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 14px;
+    align-items: center;
+  }
+
+  .energy-label {
+    font-size: 11px;
+    color: #9B8B7A;
+    letter-spacing: 0.4px;
+    font-weight: 600;
+    width: 50px;
+    flex-shrink: 0;
+  }
+
+  .energy-dots {
+    display: flex;
+    gap: 6px;
+    align-items: center;
+  }
+
+  .e-dot {
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    border: 1.5px solid rgba(58,44,26,0.15);
+    cursor: pointer;
+    transition: all 0.15s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .e-dot-1.selected { background: #E8B4B8; border-color: #E8B4B8; }
+  .e-dot-2.selected { background: #D4B896; border-color: #D4B896; }
+  .e-dot-3.selected { background: #D4AF37; border-color: #D4AF37; }
+  .e-dot-4.selected { background: #8FAF8F; border-color: #8FAF8F; }
+  .e-dot-5.selected { background: #3A2C1A; border-color: #3A2C1A; }
+
+  .done-btn {
+    width: 100%;
+    height: 44px;
+    border-radius: 14px;
+    background: #3A2C1A;
+    border: none;
+    color: #F4EDDB;
+    font-size: 14px;
+    font-weight: 600;
+    letter-spacing: 0.3px;
+    cursor: pointer;
+    margin-top: 4px;
+    transition: transform 0.1s ease, background 0.15s;
+  }
+
+  .done-btn:active { transform: scale(0.97); }
+  .done-btn:hover { background: #4a3820; }
+
+  .done-btn.gold {
+    background: #D4AF37;
+    color: #3A2C1A;
+  }
+
+  .done-btn.sage {
+    background: #8FAF8F;
+    color: #fff;
+  }
+
+  .mini-input {
+    width: 100%;
+    background: rgba(58,44,26,0.05);
+    border: 1.5px solid rgba(58,44,26,0.12);
+    border-radius: 12px;
+    padding: 10px 14px;
+    font-size: 13px;
+    color: #3A2C1A;
+    font-family: inherit;
+    outline: none;
+    margin-bottom: 14px;
+    transition: border-color 0.15s;
+  }
+
+  .mini-input:focus {
+    border-color: rgba(58,44,26,0.35);
+  }
+
+  .mini-input::placeholder {
+    color: #9B8B7A;
+  }
+
+  .toggle-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 14px;
+  }
+
+  .toggle-label {
+    font-size: 12px;
+    color: #9B8B7A;
+    font-weight: 500;
+  }
+
+  .toggle {
+    width: 36px;
+    height: 20px;
+    border-radius: 10px;
+    background: rgba(58,44,26,0.15);
+    position: relative;
+    cursor: pointer;
+    transition: background 0.2s;
+  }
+
+  .toggle.on { background: #8FAF8F; }
+
+  .toggle-thumb {
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    background: white;
+    position: absolute;
+    top: 2px;
+    left: 2px;
+    transition: transform 0.2s cubic-bezier(0.34,1.56,0.64,1);
+    box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+  }
+
+  .toggle.on .toggle-thumb {
+    transform: translateX(16px);
+  }
+
+  .toast {
+    position: absolute;
+    top: 60px;
+    left: 50%;
+    transform: translateX(-50%) translateY(-10px);
+    background: #3A2C1A;
+    color: #F4EDDB;
+    font-size: 12px;
+    font-weight: 500;
+    padding: 8px 16px;
+    border-radius: 20px;
+    z-index: 200;
+    opacity: 0;
+    transition: opacity 0.25s ease, transform 0.25s ease;
+    white-space: nowrap;
+    pointer-events: none;
+    letter-spacing: 0.2px;
+  }
+
+  .toast.show {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+  }
+
+  .demo-footer {
+    margin-top: 28px;
+    text-align: center;
+    max-width: 375px;
+  }
+
+  .demo-tag {
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 2px;
+    color: #D4AF37;
+    text-transform: uppercase;
+    margin-bottom: 8px;
+  }
+
+  .demo-desc {
+    font-size: 13px;
+    color: #888;
+    line-height: 1.6;
+    max-width: 320px;
+    margin: 0 auto;
+  }
+
+  .hold-hint {
+    position: absolute;
+    bottom: 92px;
+    left: 50%;
+    transform: translateX(-50%);
+    font-size: 10px;
+    color: rgba(58,44,26,0.4);
+    letter-spacing: 0.5px;
+    white-space: nowrap;
+    pointer-events: none;
+    z-index: 55;
+    transition: opacity 0.3s;
+  }
+
+  .hold-hint.hidden { opacity: 0; }
+
+</style>
+</head>
+<body>
+
+<div class="phone-frame" id="phone">
+  <div class="phone-notch"></div>
+
+  <div class="status-bar">
+    <span class="status-time">9:41</span>
+    <div class="status-icons">
+      <svg width="16" height="11" viewBox="0 0 16 11" fill="none">
+        <rect x="0" y="4" width="3" height="7" rx="1" fill="#3A2C1A" opacity="0.4"/>
+        <rect x="4.5" y="2.5" width="3" height="8.5" rx="1" fill="#3A2C1A" opacity="0.6"/>
+        <rect x="9" y="0.5" width="3" height="10.5" rx="1" fill="#3A2C1A"/>
+      </svg>
+      <svg width="15" height="11" viewBox="0 0 15 11" fill="none">
+        <path d="M7.5 2.5C9.8 2.5 11.9 3.4 13.4 4.9L14.5 3.8C12.7 2 10.2 1 7.5 1C4.8 1 2.3 2 0.5 3.8L1.6 4.9C3.1 3.4 5.2 2.5 7.5 2.5Z" fill="#3A2C1A" opacity="0.4"/>
+        <path d="M7.5 5C9 5 10.4 5.6 11.4 6.6L12.5 5.5C11.2 4.2 9.4 3.4 7.5 3.4C5.6 3.4 3.8 4.2 2.5 5.5L3.6 6.6C4.6 5.6 6 5 7.5 5Z" fill="#3A2C1A" opacity="0.7"/>
+        <circle cx="7.5" cy="9" r="1.5" fill="#3A2C1A"/>
+      </svg>
+      <svg width="25" height="12" viewBox="0 0 25 12" fill="none">
+        <rect x="0.5" y="0.5" width="21" height="11" rx="3.5" stroke="#3A2C1A" stroke-opacity="0.35"/>
+        <rect x="2" y="2" width="16" height="8" rx="2" fill="#3A2C1A"/>
+        <path d="M23 4.5V7.5C23.8 7.2 24.5 6.5 24.5 6C24.5 5.5 23.8 4.8 23 4.5Z" fill="#3A2C1A" opacity="0.4"/>
+      </svg>
+    </div>
+  </div>
+
+  <div class="scroll-content" id="scrollContent">
+    <div class="greeting-section">
+      <div class="greeting-text">Good morning, Halli</div>
+      <div class="greeting-sub">Tuesday, 20 May — your luteal phase</div>
+      <div style="display:flex; align-items:center; gap:10px; flex-wrap:wrap; margin-top:8px;">
+        <div class="phase-pill">
+          <div class="phase-dot"></div>
+          <span class="phase-text">LUTEAL · DAY 25</span>
+        </div>
+        <div class="ring-progress-inline">
+          <svg width="22" height="22" viewBox="0 0 22 22">
+            <circle cx="11" cy="11" r="8" fill="none" stroke="rgba(58,44,26,0.1)" stroke-width="2.5"/>
+            <circle cx="11" cy="11" r="8" fill="none" stroke="#D4AF37" stroke-width="2.5"
+              stroke-dasharray="50.3"
+              stroke-dashoffset="30"
+              stroke-linecap="round"
+              transform="rotate(-90 11 11)"/>
+          </svg>
+          <span class="ring-label">3 of 8 logged</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="tiles-grid">
+      <div class="tile">
+        <div class="tile-label">Mood</div>
+        <div class="tile-value" style="color:#E8B4B8;">Good</div>
+        <div class="tile-icon-row">
+          <div class="mood-dot" style="background:#E8B4B8;"></div>
+          <div class="mood-dot" style="background:#E8B4B8;"></div>
+          <div class="mood-dot" style="background:#E8B4B8;"></div>
+          <div class="mood-dot" style="background:rgba(58,44,26,0.1);"></div>
+          <div class="mood-dot" style="background:rgba(58,44,26,0.1);"></div>
+        </div>
+      </div>
+      <div class="tile">
+        <div class="tile-label">Energy</div>
+        <div class="tile-value" style="color:#D4AF37;">Medium</div>
+        <div class="tile-sub">Logged 8am</div>
+      </div>
+      <div class="tile">
+        <div class="tile-label">Hydration</div>
+        <div class="tile-value" style="font-size:16px; color:#8FAF8F;">1.1L <span style="font-size:12px; color:#9B8B7A;">/ 2L</span></div>
+        <div class="hydration-bar"><div class="hydration-fill"></div></div>
+      </div>
+      <div class="tile">
+        <div class="tile-label">Cycle day</div>
+        <div class="tile-value">25</div>
+        <div class="tile-sub">10 days left</div>
+      </div>
+    </div>
+
+    <div class="tile-wide" style="margin-bottom:12px;">
+      <div class="section-label">Today's rituals</div>
+      <div class="habit-row">
+        <div class="habit-check done">
+          <svg width="10" height="8" viewBox="0 0 10 8"><path d="M1 4L3.5 6.5L9 1" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </div>
+        <span class="habit-name">Morning hydration</span>
+        <span class="habit-streak">12 days</span>
+      </div>
+      <div class="habit-row">
+        <div class="habit-check done">
+          <svg width="10" height="8" viewBox="0 0 10 8"><path d="M1 4L3.5 6.5L9 1" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </div>
+        <span class="habit-name">5-minute journal</span>
+        <span class="habit-streak">7 days</span>
+      </div>
+      <div class="habit-row">
+        <div class="habit-check"></div>
+        <span class="habit-name">Evening stretch</span>
+        <span class="habit-streak">3 days</span>
+      </div>
+    </div>
+
+    <div class="tile-wide" style="margin-bottom:12px;">
+      <div class="section-label">Meals today</div>
+      <div style="display:flex; gap:8px; align-items:center;">
+        <div style="background:rgba(212,175,55,0.15); border-radius:10px; padding:8px 12px; text-align:center;">
+          <div style="font-size:10px; color:#9B8B7A; font-weight:600; letter-spacing:0.5px;">BREAKFAST</div>
+          <div style="font-size:12px; color:#3A2C1A; font-weight:500; margin-top:2px;">Oatmeal</div>
+        </div>
+        <div style="background:rgba(58,44,26,0.04); border-radius:10px; padding:8px 12px; text-align:center; border:1px dashed rgba(58,44,26,0.15);">
+          <div style="font-size:10px; color:#9B8B7A; font-weight:600; letter-spacing:0.5px;">LUNCH</div>
+          <div style="font-size:12px; color:rgba(58,44,26,0.3); margin-top:2px;">+ add</div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <div class="bottom-nav" id="bottomNav">
+    <div class="nav-item" onclick="void(0)">
+      <div class="nav-icon">
+        <svg width="22" height="22" viewBox="0 0 22 22" fill="none" stroke="#3A2C1A" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" opacity="0.9">
+          <circle cx="11" cy="8" r="3"/>
+          <path d="M4 19c0-3.9 3.1-7 7-7h0c3.9 0 7 3.1 7 7"/>
+        </svg>
+      </div>
+      <span class="nav-label active">Today</span>
+    </div>
+    <div class="nav-item" onclick="void(0)">
+      <div class="nav-icon">
+        <svg width="22" height="22" viewBox="0 0 22 22" fill="none" stroke="#9B8B7A" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+          <rect x="3" y="4" width="16" height="15" rx="2"/>
+          <path d="M7 2v4M15 2v4M3 9h16"/>
+          <circle cx="7.5" cy="13.5" r="1" fill="#9B8B7A"/>
+          <circle cx="11" cy="13.5" r="1" fill="#9B8B7A"/>
+          <circle cx="14.5" cy="13.5" r="1" fill="#9B8B7A"/>
+        </svg>
+      </div>
+      <span class="nav-label">Plan</span>
+    </div>
+
+    <div class="center-btn-wrap" id="centerBtnWrap">
+      <div class="ripple-ring" id="ripple1"></div>
+      <div class="ripple-ring ripple-ring-2" id="ripple2"></div>
+      <div class="center-btn" id="centerBtn">
+        <svg width="22" height="22" viewBox="0 0 22 22" fill="none">
+          <path d="M11 3L12.5 7.5H17.5L13.5 10.2L15 14.5L11 11.8L7 14.5L8.5 10.2L4.5 7.5H9.5L11 3Z" stroke="#F4EDDB" stroke-width="1.5" stroke-linejoin="round" fill="rgba(212,175,55,0.3)"/>
+        </svg>
+      </div>
+      <svg class="ring-svg" viewBox="0 0 64 64">
+        <circle cx="32" cy="32" r="29" fill="none" stroke="rgba(212,175,55,0.2)" stroke-width="2"/>
+        <circle cx="32" cy="32" r="29" fill="none" stroke="#D4AF37" stroke-width="2"
+          stroke-dasharray="182"
+          stroke-dashoffset="109"
+          stroke-linecap="round"
+          transform="rotate(-90 32 32)"
+          id="progressRing"/>
+      </svg>
+    </div>
+
+    <div class="nav-item" onclick="void(0)">
+      <div class="nav-icon">
+        <svg width="22" height="22" viewBox="0 0 22 22" fill="none" stroke="#9B8B7A" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M3 5h16M3 11h16M3 17h16"/>
+        </svg>
+      </div>
+      <span class="nav-label">Pulse</span>
+    </div>
+    <div class="nav-item" onclick="void(0)">
+      <div class="nav-icon">
+        <svg width="22" height="22" viewBox="0 0 22 22" fill="none" stroke="#9B8B7A" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+          <rect x="3" y="3" width="16" height="16" rx="3"/>
+          <path d="M7 9l4 4 4-4"/>
+        </svg>
+      </div>
+      <span class="nav-label">More</span>
+    </div>
+  </div>
+
+  <div class="hold-hint" id="holdHint">Hold center button to open quick log</div>
+
+  <div class="overlay" id="overlay"></div>
+
+  <div class="dial-container" id="dialContainer"></div>
+
+  <div class="recent-strip" id="recentStrip">
+    <div class="recent-pill" id="recentPill0">Mood · Good · 2h ago</div>
+    <div class="recent-pill" id="recentPill1">Breakfast · Oatmeal · 8am</div>
+    <div class="recent-pill" id="recentPill2">Task · Call Maya · Done</div>
+  </div>
+
+  <div class="mini-card-wrap" id="miniCardWrap"></div>
+
+  <div class="toast" id="toast"></div>
+</div>
+
+<div class="demo-footer">
+  <div class="demo-tag">DEMO 3 — Command Dial</div>
+  <div class="demo-desc">Hold the center button to open a radial action dial. Each action opens a focused micro-card — one thing at a time, no overwhelm.</div>
+</div>
+
+<script>
+const phone = document.getElementById('phone');
+const centerBtnWrap = document.getElementById('centerBtnWrap');
+const centerBtn = document.getElementById('centerBtn');
+const overlay = document.getElementById('overlay');
+const dialContainer = document.getElementById('dialContainer');
+const recentStrip = document.getElementById('recentStrip');
+const miniCardWrap = document.getElementById('miniCardWrap');
+const toast = document.getElementById('toast');
+const bottomNav = document.getElementById('bottomNav');
+const holdHint = document.getElementById('holdHint');
+const ripple1 = document.getElementById('ripple1');
+const ripple2 = document.getElementById('ripple2');
+
+let holdTimer = null;
+let isDialOpen = false;
+let isMiniCardOpen = false;
+let activeCard = null;
+let currentMoodSelection = null;
+let currentEnergySelection = null;
+
+const DIAL_OPTIONS = [
+  { id: 'checkin', label: 'Check-in', color: '#E8B4B8', icon: clipboardIcon },
+  { id: 'period', label: 'Period', color: '#E8B4B8', icon: dropIcon },
+  { id: 'meal', label: 'Meal', color: '#D4AF37', icon: forkIcon },
+  { id: 'task', label: 'Task', color: '#3A2C1A', icon: checkboxIcon },
+  { id: 'event', label: 'Event', color: '#9B8B7A', icon: calendarIcon },
+  { id: 'ritual', label: 'Ritual', color: '#D4AF37', icon: sparkleIcon },
+  { id: 'water', label: 'Water', color: '#8FAF8F', icon: waterIcon },
+  { id: 'journal', label: 'Journal', color: '#8FAF8F', icon: penIcon },
+];
+
+function clipboardIcon(color) {
+  return `<svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="${color}" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+    <rect x="5" y="3" width="10" height="14" rx="2"/>
+    <path d="M8 3V2h4v1M7 9h6M7 12h4"/>
+  </svg>`;
+}
+
+function dropIcon(color) {
+  return `<svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="${color}" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M10 3C10 3 4.5 9 4.5 12.5a5.5 5.5 0 0011 0C15.5 9 10 3 10 3Z"/>
+  </svg>`;
+}
+
+function forkIcon(color) {
+  return `<svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="${color}" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M7 3v4c0 1.7 1.3 3 3 3s3-1.3 3-3V3M10 10v7M7 3v2M13 3v2"/>
+  </svg>`;
+}
+
+function checkboxIcon(color) {
+  return `<svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="${color}" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+    <rect x="3" y="3" width="9" height="9" rx="2"/>
+    <path d="M5.5 7.5L7 9l2.5-2.5M14 7h3M14 11h3M14 15h3M3 15h7"/>
+  </svg>`;
+}
+
+function calendarIcon(color) {
+  return `<svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="${color}" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+    <rect x="3" y="4" width="14" height="13" rx="2"/>
+    <path d="M7 2v4M13 2v4M3 9h14"/>
+    <circle cx="7" cy="13" r="1" fill="${color}"/>
+    <circle cx="10" cy="13" r="1" fill="${color}"/>
+  </svg>`;
+}
+
+function sparkleIcon(color) {
+  return `<svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="${color}" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M10 2L11.5 7.5H17L12.5 10.8L14 16L10 12.8L6 16L7.5 10.8L3 7.5H8.5L10 2Z"/>
+  </svg>`;
+}
+
+function waterIcon(color) {
+  return `<svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="${color}" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M10 3C10 3 4.5 9 4.5 12.5a5.5 5.5 0 0011 0C15.5 9 10 3 10 3Z"/>
+    <path d="M7.5 13.5a3 3 0 003-2" stroke="${color}" stroke-opacity="0.5"/>
+  </svg>`;
+}
+
+function penIcon(color) {
+  return `<svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="${color}" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M3 17l4-1L16.5 6.5a2.1 2.1 0 00-3-3L4 14l-1 3Z"/>
+    <path d="M13.5 3.5l3 3"/>
+  </svg>`;
+}
+
+function getPhoneRect() {
+  return phone.getBoundingClientRect();
+}
+
+function getButtonCenter() {
+  const phoneRect = getPhoneRect();
+  const btnRect = centerBtnWrap.getBoundingClientRect();
+  return {
+    x: btnRect.left - phoneRect.left + btnRect.width / 2,
+    y: btnRect.top - phoneRect.top + btnRect.height / 2
+  };
+}
+
+function buildDial() {
+  dialContainer.innerHTML = '';
+  const btnCenter = getButtonCenter();
+  const count = DIAL_OPTIONS.length;
+  const radius = 110;
+  const startAngle = -175;
+  const endAngle = -5;
+
+  DIAL_OPTIONS.forEach((opt, i) => {
+    const t = i / (count - 1);
+    const angle = startAngle + t * (endAngle - startAngle);
+    const rad = angle * Math.PI / 180;
+    const cx = btnCenter.x + Math.cos(rad) * radius;
+    const cy = btnCenter.y + Math.sin(rad) * radius;
+
+    const btn = document.createElement('div');
+    btn.className = 'dial-btn';
+    btn.style.left = (cx - 24) + 'px';
+    btn.style.bottom = (dialContainer.offsetHeight - cy) + 'px';
+
+    const circle = document.createElement('div');
+    circle.className = 'dial-circle';
+    circle.innerHTML = opt.icon(opt.color);
+
+    const label = document.createElement('div');
+    label.className = 'dial-btn-label';
+    label.textContent = opt.label;
+
+    btn.appendChild(circle);
+    btn.appendChild(label);
+
+    btn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      openMiniCard(opt.id);
+    });
+
+    dialContainer.appendChild(btn);
+
+    setTimeout(() => {
+      btn.classList.add('visible');
+    }, 40 + i * 45);
+  });
+}
+
+function openDial() {
+  if (isDialOpen) return;
+  isDialOpen = true;
+  holdHint.classList.add('hidden');
+
+  overlay.classList.add('active');
+  bottomNav.style.opacity = '0.4';
+  dialContainer.classList.add('active');
+  recentStrip.classList.add('active');
+  buildDial();
+
+  overlay.addEventListener('click', closeDial, { once: true });
+}
+
+function closeDial() {
+  if (!isDialOpen) return;
+  isDialOpen = false;
+
+  overlay.classList.remove('active');
+  bottomNav.style.opacity = '1';
+  dialContainer.classList.remove('active');
+  recentStrip.classList.remove('active');
+
+  setTimeout(() => {
+    dialContainer.innerHTML = '';
+  }, 300);
+}
+
+function showToast(msg, duration) {
+  toast.textContent = msg;
+  toast.classList.add('show');
+  clearTimeout(window._toastTimer);
+  window._toastTimer = setTimeout(() => {
+    toast.classList.remove('show');
+  }, duration || 1800);
+}
+
+function openMiniCard(type) {
+  closeDial();
+  activeCard = type;
+  isMiniCardOpen = true;
+
+  let html = '';
+  if (type === 'checkin') html = buildCheckinCard();
+  else if (type === 'period') html = buildPeriodCard();
+  else if (type === 'meal') html = buildMealCard();
+  else if (type === 'task') html = buildTaskCard();
+  else if (type === 'event') html = buildEventCard();
+  else if (type === 'ritual') html = buildRitualCard();
+  else if (type === 'water') html = buildWaterCard();
+  else if (type === 'journal') html = buildJournalCard();
+
+  miniCardWrap.innerHTML = html;
+  overlay.classList.add('active');
+  overlay.style.background = 'rgba(58,44,26,0.5)';
+
+  requestAnimationFrame(() => {
+    miniCardWrap.classList.add('visible');
+  });
+
+  overlay.addEventListener('click', closeMiniCard, { once: true });
+
+  miniCardWrap.querySelectorAll('.chip').forEach(chip => {
+    chip.addEventListener('click', (e) => {
+      e.stopPropagation();
+      const group = chip.dataset.group;
+      if (group) {
+        miniCardWrap.querySelectorAll(`.chip[data-group="${group}"]`).forEach(c => {
+          c.classList.remove('selected','blush-selected','sage-selected','gold-selected');
+        });
+      }
+      const cls = chip.dataset.sel || 'selected';
+      chip.classList.add(cls);
+    });
+  });
+
+  miniCardWrap.querySelectorAll('.e-dot').forEach((dot, i) => {
+    dot.addEventListener('click', (e) => {
+      e.stopPropagation();
+      miniCardWrap.querySelectorAll('.e-dot').forEach(d => {
+        d.className = d.className.replace(' selected','');
+      });
+      dot.classList.add('selected');
+    });
+  });
+
+  const toggle = miniCardWrap.querySelector('.toggle');
+  if (toggle) {
+    toggle.addEventListener('click', (e) => {
+      e.stopPropagation();
+      toggle.classList.toggle('on');
+    });
+  }
+
+  const doneBtn = miniCardWrap.querySelector('.done-btn');
+  if (doneBtn) {
+    doneBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      handleDone(type);
+    });
+  }
+
+  const closeBtn = miniCardWrap.querySelector('.mini-close');
+  if (closeBtn) {
+    closeBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      closeMiniCard();
+    });
+  }
+}
+
+function closeMiniCard() {
+  if (!isMiniCardOpen) return;
+  isMiniCardOpen = false;
+  miniCardWrap.classList.remove('visible');
+  miniCardWrap.classList.add('dismissing');
+  overlay.classList.remove('active');
+  overlay.style.background = '';
+  setTimeout(() => {
+    miniCardWrap.innerHTML = '';
+    miniCardWrap.classList.remove('dismissing');
+  }, 250);
+}
+
+function handleDone(type) {
+  const labels = {
+    checkin: ['Check-in saved', 'Mood · Great · just now'],
+    period: ['Period logged', 'Period · Light · just now'],
+    meal: ['Meal logged', 'Lunch · just now'],
+    task: ['Task added', 'Task · added · just now'],
+    event: ['Event saved', 'Event · added · today'],
+    ritual: ['Ritual checked', 'Ritual · done · just now'],
+    water: ['Water logged', 'Water · 250ml · just now'],
+    journal: ['Journal saved', 'Journal · just now'],
+  };
+  const [msg, recent] = labels[type] || ['Saved', 'Logged · just now'];
+
+  miniCardWrap.classList.remove('visible');
+  miniCardWrap.classList.add('dismissing');
+  overlay.classList.remove('active');
+  overlay.style.background = '';
+
+  setTimeout(() => {
+    miniCardWrap.innerHTML = '';
+    miniCardWrap.classList.remove('dismissing');
+    isMiniCardOpen = false;
+  }, 200);
+
+  setTimeout(() => {
+    showToast(msg, 2000);
+    const pill = document.getElementById('recentPill0');
+    if (pill) {
+      pill.textContent = recent;
+      pill.classList.add('updated');
+      recentStrip.classList.add('active');
+      setTimeout(() => {
+        pill.classList.remove('updated');
+        recentStrip.classList.remove('active');
+      }, 2500);
+    }
+  }, 150);
+}
+
+function buildCheckinCard() {
+  return `<div class="mini-card">
+    <div class="mini-card-title">
+      <span>How are you feeling?</span>
+      <div class="mini-close" aria-label="Close">
+        <svg width="10" height="10" viewBox="0 0 10 10" fill="none" stroke="#3A2C1A" stroke-width="1.8" stroke-linecap="round"><path d="M1 1l8 8M9 1l-8 8"/></svg>
+      </div>
+    </div>
+    <div class="chips-row">
+      <div class="chip" data-group="mood" data-sel="blush-selected">Awful</div>
+      <div class="chip" data-group="mood" data-sel="blush-selected">Low</div>
+      <div class="chip" data-group="mood" data-sel="blush-selected">Okay</div>
+      <div class="chip selected" data-group="mood" data-sel="selected">Good</div>
+      <div class="chip" data-group="mood" data-sel="gold-selected">Great</div>
+    </div>
+    <div class="energy-row">
+      <span class="energy-label">Energy</span>
+      <div class="energy-dots">
+        <div class="e-dot e-dot-1" style="background:rgba(232,180,184,0.2);"></div>
+        <div class="e-dot e-dot-2" style="background:rgba(212,184,150,0.2);"></div>
+        <div class="e-dot e-dot-3 selected" style="background:#D4AF37; border-color:#D4AF37;"></div>
+        <div class="e-dot e-dot-4" style="background:rgba(143,175,143,0.2);"></div>
+        <div class="e-dot e-dot-5" style="background:rgba(58,44,26,0.1);"></div>
+      </div>
+    </div>
+    <button class="done-btn">Done</button>
+  </div>`;
+}
+
+function buildPeriodCard() {
+  return `<div class="mini-card">
+    <div class="mini-card-title">
+      <span>Period log</span>
+      <div class="mini-close" aria-label="Close">
+        <svg width="10" height="10" viewBox="0 0 10 10" fill="none" stroke="#3A2C1A" stroke-width="1.8" stroke-linecap="round"><path d="M1 1l8 8M9 1l-8 8"/></svg>
+      </div>
+    </div>
+    <div style="font-size:11px; color:#9B8B7A; font-weight:600; letter-spacing:0.5px; margin-bottom:8px;">STATUS</div>
+    <div class="chips-row" style="margin-bottom:16px;">
+      <div class="chip" data-group="pstatus" data-sel="blush-selected">Started</div>
+      <div class="chip blush-selected" data-group="pstatus" data-sel="blush-selected">Ongoing</div>
+      <div class="chip" data-group="pstatus" data-sel="blush-selected">Spotting</div>
+      <div class="chip" data-group="pstatus" data-sel="blush-selected">Ended</div>
+      <div class="chip" data-group="pstatus" data-sel="selected">None</div>
+    </div>
+    <div style="font-size:11px; color:#9B8B7A; font-weight:600; letter-spacing:0.5px; margin-bottom:8px;">FLOW</div>
+    <div class="chips-row">
+      <div class="chip" data-group="flow" data-sel="blush-selected">Spotting</div>
+      <div class="chip blush-selected" data-group="flow" data-sel="blush-selected">Light</div>
+      <div class="chip" data-group="flow" data-sel="blush-selected">Medium</div>
+      <div class="chip" data-group="flow" data-sel="blush-selected">Heavy</div>
+    </div>
+    <button class="done-btn" style="background:#E8B4B8; color:#3A2C1A;">Done</button>
+  </div>`;
+}
+
+function buildMealCard() {
+  return `<div class="mini-card">
+    <div class="mini-card-title">
+      <span>Log a meal</span>
+      <div class="mini-close" aria-label="Close">
+        <svg width="10" height="10" viewBox="0 0 10 10" fill="none" stroke="#3A2C1A" stroke-width="1.8" stroke-linecap="round"><path d="M1 1l8 8M9 1l-8 8"/></svg>
+      </div>
+    </div>
+    <div class="chips-row">
+      <div class="chip" data-group="meal" data-sel="gold-selected">Breakfast</div>
+      <div class="chip gold-selected" data-group="meal" data-sel="gold-selected">Lunch</div>
+      <div class="chip" data-group="meal" data-sel="gold-selected">Dinner</div>
+      <div class="chip" data-group="meal" data-sel="gold-selected">Snack</div>
+    </div>
+    <input class="mini-input" type="text" placeholder="What did you eat?" />
+    <button class="done-btn gold">Log meal</button>
+  </div>`;
+}
+
+function buildTaskCard() {
+  return `<div class="mini-card">
+    <div class="mini-card-title">
+      <span>Add a task</span>
+      <div class="mini-close" aria-label="Close">
+        <svg width="10" height="10" viewBox="0 0 10 10" fill="none" stroke="#3A2C1A" stroke-width="1.8" stroke-linecap="round"><path d="M1 1l8 8M9 1l-8 8"/></svg>
+      </div>
+    </div>
+    <input class="mini-input" type="text" placeholder="What needs doing?" />
+    <div class="toggle-row">
+      <span class="toggle-label">Due today</span>
+      <div class="toggle on"><div class="toggle-thumb"></div></div>
+    </div>
+    <div class="toggle-row" style="margin-bottom:14px;">
+      <span class="toggle-label">High priority</span>
+      <div class="toggle"><div class="toggle-thumb"></div></div>
+    </div>
+    <button class="done-btn">Add task</button>
+  </div>`;
+}
+
+function buildEventCard() {
+  return `<div class="mini-card">
+    <div class="mini-card-title">
+      <span>Add event</span>
+      <div class="mini-close" aria-label="Close">
+        <svg width="10" height="10" viewBox="0 0 10 10" fill="none" stroke="#3A2C1A" stroke-width="1.8" stroke-linecap="round"><path d="M1 1l8 8M9 1l-8 8"/></svg>
+      </div>
+    </div>
+    <input class="mini-input" type="text" placeholder="Event name" />
+    <div class="chips-row">
+      <div class="chip selected" data-group="etime" data-sel="selected">Today</div>
+      <div class="chip" data-group="etime" data-sel="selected">Tomorrow</div>
+      <div class="chip" data-group="etime" data-sel="selected">This week</div>
+    </div>
+    <div class="chips-row">
+      <div class="chip selected" data-group="ehour" data-sel="gold-selected">Morning</div>
+      <div class="chip" data-group="ehour" data-sel="gold-selected">Afternoon</div>
+      <div class="chip" data-group="ehour" data-sel="gold-selected">Evening</div>
+    </div>
+    <button class="done-btn" style="margin-top:4px;">Save event</button>
+  </div>`;
+}
+
+function buildRitualCard() {
+  return `<div class="mini-card">
+    <div class="mini-card-title">
+      <span>Mark ritual done</span>
+      <div class="mini-close" aria-label="Close">
+        <svg width="10" height="10" viewBox="0 0 10 10" fill="none" stroke="#3A2C1A" stroke-width="1.8" stroke-linecap="round"><path d="M1 1l8 8M9 1l-8 8"/></svg>
+      </div>
+    </div>
+    <div style="display:flex; flex-direction:column; gap:8px; margin-bottom:16px;">
+      ${['Morning hydration','5-minute journal','Evening stretch','Breathwork'].map((r, i) => `
+        <div style="display:flex; align-items:center; gap:10px; padding:8px 12px; background:rgba(58,44,26,0.04); border-radius:10px; cursor:pointer;"
+          onclick="this.querySelector('.rc').classList.toggle('done'); this.style.background = this.querySelector('.rc').classList.contains('done') ? 'rgba(143,175,143,0.1)' : 'rgba(58,44,26,0.04)'">
+          <div class="rc habit-check ${i<2?'done':''}" style="flex-shrink:0;">${i<2?`<svg width="10" height="8" viewBox="0 0 10 8"><path d="M1 4L3.5 6.5L9 1" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>`:''}</div>
+          <span style="font-size:13px; color:#3A2C1A;">${r}</span>
+        </div>
+      `).join('')}
+    </div>
+    <button class="done-btn sage">Done</button>
+  </div>`;
+}
+
+function buildWaterCard() {
+  return `<div class="mini-card">
+    <div class="mini-card-title">
+      <span>Log water</span>
+      <div class="mini-close" aria-label="Close">
+        <svg width="10" height="10" viewBox="0 0 10 10" fill="none" stroke="#3A2C1A" stroke-width="1.8" stroke-linecap="round"><path d="M1 1l8 8M9 1l-8 8"/></svg>
+      </div>
+    </div>
+    <div style="text-align:center; margin-bottom:16px;">
+      <div style="font-size:11px; color:#9B8B7A; font-weight:600; letter-spacing:0.5px; margin-bottom:8px;">TODAY</div>
+      <div style="font-size:32px; font-weight:600; color:#8FAF8F; letter-spacing:-1px;" id="waterAmt">1.1L</div>
+      <div style="font-size:11px; color:#9B8B7A; margin-top:2px;">of 2L goal</div>
+      <div style="height:6px; background:rgba(143,175,143,0.15); border-radius:3px; margin-top:10px; overflow:hidden;">
+        <div style="height:100%; width:55%; background:#8FAF8F; border-radius:3px; transition:width 0.4s ease;" id="waterBar"></div>
+      </div>
+    </div>
+    <div class="chips-row" style="justify-content:center;">
+      <div class="chip" data-group="water" data-sel="sage-selected" onclick="addWater(100)">100ml</div>
+      <div class="chip" data-group="water" data-sel="sage-selected" onclick="addWater(200)">200ml</div>
+      <div class="chip sage-selected" data-group="water" data-sel="sage-selected" onclick="addWater(250)">250ml</div>
+      <div class="chip" data-group="water" data-sel="sage-selected" onclick="addWater(500)">500ml</div>
+    </div>
+    <button class="done-btn sage" style="margin-top:14px;">Log water</button>
+  </div>`;
+}
+
+let waterMl = 1100;
+function addWater(ml) {
+  waterMl += ml;
+  const el = document.getElementById('waterAmt');
+  const bar = document.getElementById('waterBar');
+  if (el) el.textContent = (waterMl / 1000).toFixed(1) + 'L';
+  if (bar) bar.style.width = Math.min(100, (waterMl/2000)*100) + '%';
+}
+
+function buildJournalCard() {
+  return `<div class="mini-card">
+    <div class="mini-card-title">
+      <span>Quick journal</span>
+      <div class="mini-close" aria-label="Close">
+        <svg width="10" height="10" viewBox="0 0 10 10" fill="none" stroke="#3A2C1A" stroke-width="1.8" stroke-linecap="round"><path d="M1 1l8 8M9 1l-8 8"/></svg>
+      </div>
+    </div>
+    <div style="font-size:12px; color:#9B8B7A; margin-bottom:10px; line-height:1.5; font-style:italic;">
+      "What's on your mind today?"
+    </div>
+    <textarea class="mini-input" rows="3" placeholder="Write freely — this is just for you..." style="resize:none; height:80px;"></textarea>
+    <div class="chips-row" style="margin-bottom:14px;">
+      <div class="chip" data-group="jtype" data-sel="selected">Reflection</div>
+      <div class="chip selected" data-group="jtype" data-sel="selected">Gratitude</div>
+      <div class="chip" data-group="jtype" data-sel="selected">Intention</div>
+    </div>
+    <button class="done-btn" style="background:#8FAF8F; color:#fff;">Save entry</button>
+  </div>`;
+}
+
+let holdStartTime = null;
+let holdActive = false;
+
+function startHold(e) {
+  if (isDialOpen || isMiniCardOpen) return;
+  holdActive = true;
+  holdStartTime = Date.now();
+
+  ripple1.classList.remove('animate');
+  ripple2.classList.remove('animate');
+  void ripple1.offsetWidth;
+  void ripple2.offsetWidth;
+  ripple1.classList.add('animate');
+  ripple2.classList.add('animate');
+
+  holdTimer = setTimeout(() => {
+    if (holdActive) {
+      openDial();
+    }
+  }, 600);
+}
+
+function endHold(e) {
+  if (!holdActive) return;
+  const elapsed = Date.now() - holdStartTime;
+  holdActive = false;
+  clearTimeout(holdTimer);
+  ripple1.classList.remove('animate');
+  ripple2.classList.remove('animate');
+
+  if (elapsed < 400 && !isDialOpen) {
+    showToast('Opening Jess...', 1500);
+  }
+}
+
+centerBtnWrap.addEventListener('mousedown', startHold);
+centerBtnWrap.addEventListener('touchstart', (e) => { e.preventDefault(); startHold(e); }, { passive: false });
+document.addEventListener('mouseup', endHold);
+document.addEventListener('touchend', endHold);
+centerBtnWrap.addEventListener('mouseleave', () => {
+  if (holdActive && !isDialOpen) {
+    holdActive = false;
+    clearTimeout(holdTimer);
+    ripple1.classList.remove('animate');
+    ripple2.classList.remove('animate');
+  }
+});
+
+setTimeout(() => {
+  openDial();
+  setTimeout(() => {
+    const btns = dialContainer.querySelectorAll('.dial-btn');
+    let delay = 0;
+    btns.forEach(btn => {
+      setTimeout(() => btn.classList.add('visible'), delay);
+      delay += 50;
+    });
+    setTimeout(() => {
+      openMiniCard('checkin');
+    }, 600);
+  }, 100);
+}, 800);
+
+</script>
+</body>
+</html>

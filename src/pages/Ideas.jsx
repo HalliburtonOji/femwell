@@ -23,8 +23,13 @@ import UnifiedPlannerDemo from "@/components/UnifiedPlannerDemo";
 import SmartLoggerDemo from "@/components/SmartLoggerDemo";   // v3
 import SmartLoggerV4 from "@/components/SmartLoggerV4";       // v4 (new)
 
+// Unified Logger demo HTML — raw strings (Vite ?raw suffix returns file as string).
+import unifiedDemo1Html from "@/data/unifiedLogger/demo1-tabs.html?raw";
+import unifiedDemo2Html from "@/data/unifiedLogger/demo2-rail.html?raw";
+import unifiedDemo3Html from "@/data/unifiedLogger/demo3-dial.html?raw";
+
 import {
-  Sparkles, CalendarClock, BookOpen, MessageCircle, ChevronRight, Layers,
+  Sparkles, CalendarClock, BookOpen, MessageCircle, ChevronRight, Layers, Zap,
 } from "lucide-react";
 
 // ── Design tokens ────────────────────────────────────────────────────────────
@@ -60,6 +65,14 @@ const FEATURES = [
     desc: "Unified FAB + sheet that replaces today's per-page loggers.",
   },
   {
+    id: "unifiedlogger",
+    name: "Unified Logger",
+    Icon: Zap,
+    status: "exploring",
+    latest: "3 demos",
+    desc: "One button. Log and plan from anywhere in the app.",
+  },
+  {
     id: "planner",
     name: "Planner",
     Icon: CalendarClock,
@@ -86,12 +99,13 @@ const FEATURES = [
 ];
 
 const FEATURE_TABS = [
-  { id: "overview",    label: "Overview" },
-  { id: "smartlogger", label: "Smart Logger" },
-  { id: "planner",     label: "Planner" },
-  { id: "journal",     label: "Journal" },
-  { id: "jessai",      label: "Jess AI" },
-  { id: "more",        label: "More coming", muted: true },
+  { id: "overview",      label: "Overview" },
+  { id: "smartlogger",   label: "Smart Logger" },
+  { id: "unifiedlogger", label: "Unified Logger" },
+  { id: "planner",       label: "Planner" },
+  { id: "journal",       label: "Journal" },
+  { id: "jessai",        label: "Jess AI" },
+  { id: "more",          label: "More coming", muted: true },
 ];
 
 // ── Smart Logger version registry ───────────────────────────────────────────
@@ -100,6 +114,28 @@ const SMARTLOGGER_VERSIONS = [
   { id: "v3", label: "v3", sub: "Quick log",         active: false, render: () => <SmartLoggerDemo /> },
   { id: "v2", label: "v2", sub: "Grouped sections",  active: false, render: () => <ArchiveCard version={2} /> },
   { id: "v1", label: "v1", sub: "Initial concept",   active: false, render: () => <ArchiveCard version={1} /> },
+];
+
+// ── Unified Logger version registry ─────────────────────────────────────────
+// Three interactive HTML demos rendered inside iframes via srcDoc.
+function UnifiedLoggerIframe({ html, title }) {
+  return (
+    <iframe
+      srcDoc={html}
+      title={title}
+      sandbox="allow-scripts allow-same-origin allow-forms"
+      style={{
+        width: "100%", height: 760, border: "none",
+        borderRadius: 16, background: C.paper,
+        boxShadow: "0 1px 0 rgba(58,44,26,0.06)",
+      }}
+    />
+  );
+}
+const UNIFIEDLOGGER_VERSIONS = [
+  { id: "demo1", label: "Demo 1", sub: "Tab Sheet",     active: true,  render: () => <UnifiedLoggerIframe html={unifiedDemo1Html} title="Unified Logger — Tab Sheet" /> },
+  { id: "demo2", label: "Demo 2", sub: "Inline Rail",   active: false, render: () => <UnifiedLoggerIframe html={unifiedDemo2Html} title="Unified Logger — Inline Rail" /> },
+  { id: "demo3", label: "Demo 3", sub: "Command Dial",  active: false, render: () => <UnifiedLoggerIframe html={unifiedDemo3Html} title="Unified Logger — Command Dial" /> },
 ];
 
 // ── Planner version registry ───────────────────────────────────────────────
@@ -120,6 +156,7 @@ const PLANNER_VERSIONS = [
 export default function Ideas() {
   const [feature, setFeature] = useState("overview");
   const [smartVersion,   setSmartVersion]   = useState("v4");
+  const [unifiedVersion, setUnifiedVersion] = useState("demo1");
   const [plannerVersion, setPlannerVersion] = useState("unified");
 
   return (
@@ -207,6 +244,16 @@ export default function Ideas() {
             versions={SMARTLOGGER_VERSIONS}
             activeId={smartVersion}
             onPick={setSmartVersion}
+          />
+        )}
+        {feature === "unifiedlogger" && (
+          <FeatureBody
+            title="Unified Logger"
+            kicker="ONE BUTTON · LOG + PLAN"
+            description="Three concept directions for a single, anywhere-in-the-app entry point that handles both logging and planning. Each demo is a fully interactive prototype."
+            versions={UNIFIEDLOGGER_VERSIONS}
+            activeId={unifiedVersion}
+            onPick={setUnifiedVersion}
           />
         )}
         {feature === "planner" && (

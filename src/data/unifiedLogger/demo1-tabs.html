@@ -1,0 +1,1463 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>FemWell Demo 1 — Two-Tab Sheet</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --cream: #F4EDDB;
+    --espresso: #3A2C1A;
+    --blush: #E8B4B8;
+    --sage: #8FAF8F;
+    --muted: #9B8B7A;
+    --gold: #D4AF37;
+    --gold-light: #F0DFA0;
+    --gold-dim: rgba(212,175,55,0.15);
+    --sheet-bg: #FEFAF3;
+    --border: rgba(58,44,26,0.12);
+    --border-med: rgba(58,44,26,0.2);
+  }
+
+  body {
+    background: #E8E0D0;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-start;
+    padding: 32px 16px 0;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif;
+  }
+
+  .scene {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0;
+    width: 100%;
+    max-width: 420px;
+  }
+
+  .phone-frame {
+    width: 375px;
+    height: 780px;
+    background: #1A1A1A;
+    border-radius: 48px;
+    padding: 12px;
+    box-shadow:
+      0 0 0 1px rgba(255,255,255,0.08),
+      0 40px 80px rgba(0,0,0,0.45),
+      inset 0 0 0 1px rgba(255,255,255,0.05);
+    position: relative;
+    flex-shrink: 0;
+  }
+
+  .phone-screen {
+    width: 100%;
+    height: 100%;
+    background: var(--cream);
+    border-radius: 38px;
+    overflow: hidden;
+    position: relative;
+  }
+
+  .notch {
+    position: absolute;
+    top: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 120px;
+    height: 34px;
+    background: #1A1A1A;
+    border-radius: 0 0 20px 20px;
+    z-index: 20;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+  }
+
+  .notch-camera {
+    width: 10px;
+    height: 10px;
+    background: #2A2A2A;
+    border-radius: 50%;
+    border: 1px solid #333;
+  }
+
+  .notch-speaker {
+    width: 48px;
+    height: 5px;
+    background: #2A2A2A;
+    border-radius: 3px;
+  }
+
+  .status-bar {
+    position: absolute;
+    top: 34px;
+    left: 0;
+    right: 0;
+    height: 24px;
+    padding: 0 24px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    z-index: 15;
+  }
+
+  .status-time {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--espresso);
+    letter-spacing: 0.3px;
+  }
+
+  .status-icons {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+  }
+
+  .status-icons svg {
+    fill: var(--espresso);
+    opacity: 0.7;
+  }
+
+  .app-header {
+    position: absolute;
+    top: 58px;
+    left: 0;
+    right: 0;
+    height: 52px;
+    padding: 0 20px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    border-bottom: 0.5px solid var(--border);
+    background: var(--cream);
+    z-index: 10;
+  }
+
+  .app-header-title {
+    font-size: 18px;
+    font-weight: 600;
+    color: var(--espresso);
+    letter-spacing: -0.3px;
+  }
+
+  .app-header-date {
+    font-size: 12px;
+    color: var(--muted);
+    font-weight: 400;
+  }
+
+  .header-avatar {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    background: var(--blush);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--espresso);
+  }
+
+  .planner-content {
+    position: absolute;
+    top: 110px;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    overflow-y: auto;
+    padding: 12px 16px 100px;
+    scrollbar-width: none;
+  }
+
+  .planner-content::-webkit-scrollbar { display: none; }
+
+  .planner-section {
+    margin-bottom: 16px;
+  }
+
+  .planner-section-label {
+    font-size: 10px;
+    font-weight: 600;
+    color: var(--muted);
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    margin-bottom: 8px;
+    padding: 0 2px;
+  }
+
+  .planner-row {
+    background: white;
+    border-radius: 12px;
+    padding: 12px 14px;
+    margin-bottom: 6px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    border: 0.5px solid var(--border);
+  }
+
+  .planner-row-check {
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    border: 1.5px solid var(--border-med);
+    flex-shrink: 0;
+  }
+
+  .planner-row-check.done {
+    background: var(--sage);
+    border-color: var(--sage);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .planner-row-text {
+    flex: 1;
+  }
+
+  .planner-row-title {
+    font-size: 14px;
+    color: var(--espresso);
+    font-weight: 500;
+  }
+
+  .planner-row-sub {
+    font-size: 11px;
+    color: var(--muted);
+    margin-top: 1px;
+  }
+
+  .planner-row-time {
+    font-size: 11px;
+    color: var(--muted);
+    font-weight: 500;
+  }
+
+  .planner-cycle-bar {
+    background: white;
+    border-radius: 12px;
+    padding: 12px 14px;
+    border: 0.5px solid var(--border);
+    margin-bottom: 6px;
+  }
+
+  .cycle-bar-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 8px;
+  }
+
+  .cycle-bar-label {
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--espresso);
+  }
+
+  .cycle-day-badge {
+    font-size: 11px;
+    color: var(--gold);
+    font-weight: 600;
+    background: var(--gold-dim);
+    padding: 2px 8px;
+    border-radius: 10px;
+  }
+
+  .cycle-track {
+    height: 5px;
+    background: var(--cream);
+    border-radius: 3px;
+    overflow: hidden;
+    border: 0.5px solid var(--border);
+  }
+
+  .cycle-fill {
+    height: 100%;
+    width: 38%;
+    background: var(--blush);
+    border-radius: 3px;
+  }
+
+  .fab {
+    position: absolute;
+    bottom: 24px;
+    right: 20px;
+    width: 56px;
+    height: 56px;
+    border-radius: 50%;
+    background: var(--gold);
+    border: none;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 30;
+    transition: transform 0.2s ease, background 0.2s ease;
+    box-shadow: 0 4px 16px rgba(212,175,55,0.4);
+  }
+
+  .fab:active { transform: scale(0.92); }
+  .fab.open { transform: rotate(45deg); }
+  .fab.open:active { transform: rotate(45deg) scale(0.92); }
+
+  .fab svg {
+    transition: transform 0.2s ease;
+  }
+
+  .backdrop {
+    position: absolute;
+    inset: 0;
+    background: rgba(0,0,0,0);
+    z-index: 40;
+    border-radius: 38px;
+    transition: background 0.3s ease;
+    pointer-events: none;
+  }
+
+  .backdrop.visible {
+    background: rgba(0,0,0,0.38);
+    pointer-events: auto;
+  }
+
+  .bottom-sheet {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background: var(--sheet-bg);
+    border-radius: 24px 24px 0 0;
+    z-index: 50;
+    transform: translateY(100%);
+    transition: transform 0.38s cubic-bezier(0.32, 0.72, 0, 1);
+    max-height: 82%;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
+
+  .bottom-sheet.open {
+    transform: translateY(0);
+  }
+
+  .sheet-handle-area {
+    padding: 10px 0 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    cursor: grab;
+    flex-shrink: 0;
+  }
+
+  .sheet-handle {
+    width: 36px;
+    height: 4px;
+    background: var(--border-med);
+    border-radius: 2px;
+  }
+
+  .progress-track {
+    width: calc(100% - 32px);
+    height: 3px;
+    background: var(--border);
+    border-radius: 2px;
+    margin: 10px 16px 0;
+    overflow: hidden;
+    flex-shrink: 0;
+  }
+
+  .progress-fill {
+    height: 100%;
+    width: 0%;
+    background: var(--gold);
+    border-radius: 2px;
+    transition: width 0.4s ease;
+  }
+
+  .sheet-tabs {
+    display: flex;
+    padding: 0 16px;
+    margin-top: 12px;
+    border-bottom: 1px solid var(--border);
+    flex-shrink: 0;
+  }
+
+  .sheet-tab {
+    flex: 1;
+    padding: 10px 0 8px;
+    text-align: center;
+    font-size: 15px;
+    font-weight: 500;
+    color: var(--muted);
+    cursor: pointer;
+    border-bottom: 2px solid transparent;
+    transition: color 0.2s, border-color 0.2s;
+    letter-spacing: -0.2px;
+    position: relative;
+    bottom: -1px;
+    user-select: none;
+  }
+
+  .sheet-tab.active {
+    color: var(--espresso);
+    border-bottom-color: var(--gold);
+  }
+
+  .sheet-body {
+    flex: 1;
+    overflow-y: auto;
+    scrollbar-width: none;
+    position: relative;
+  }
+
+  .sheet-body::-webkit-scrollbar { display: none; }
+
+  .tab-panel {
+    display: none;
+    padding: 16px 16px 32px;
+  }
+
+  .tab-panel.active {
+    display: block;
+  }
+
+  .pill-nav-scroll {
+    overflow-x: auto;
+    scrollbar-width: none;
+    margin: 0 -16px;
+    padding: 0 16px;
+  }
+
+  .pill-nav-scroll::-webkit-scrollbar { display: none; }
+
+  .pill-nav {
+    display: flex;
+    gap: 8px;
+    width: max-content;
+    padding-bottom: 2px;
+  }
+
+  .pill-nav-item {
+    padding: 7px 14px;
+    border-radius: 20px;
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    white-space: nowrap;
+    border: 1px solid var(--border-med);
+    color: var(--muted);
+    background: white;
+    transition: all 0.18s;
+    user-select: none;
+  }
+
+  .pill-nav-item.active {
+    background: var(--espresso);
+    color: var(--cream);
+    border-color: var(--espresso);
+  }
+
+  .log-card {
+    background: white;
+    border-radius: 16px;
+    border: 0.5px solid var(--border);
+    padding: 16px;
+    margin-top: 12px;
+  }
+
+  .log-card-title {
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--muted);
+    letter-spacing: 0.8px;
+    text-transform: uppercase;
+    margin-bottom: 12px;
+  }
+
+  .mood-row {
+    display: flex;
+    gap: 6px;
+    margin-bottom: 0;
+  }
+
+  .mood-pill {
+    flex: 1;
+    padding: 8px 4px;
+    border-radius: 10px;
+    text-align: center;
+    font-size: 12px;
+    font-weight: 500;
+    cursor: pointer;
+    border: 1px solid var(--border-med);
+    color: var(--muted);
+    background: white;
+    transition: all 0.18s;
+    user-select: none;
+    line-height: 1.2;
+  }
+
+  .mood-pill.selected {
+    background: var(--gold);
+    color: var(--espresso);
+    border-color: var(--gold);
+    font-weight: 600;
+  }
+
+  .dot-grid-section {
+    margin-top: 14px;
+  }
+
+  .dot-grid-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    margin-top: 8px;
+  }
+
+  .dot-grid-item {
+    background: var(--cream);
+    border-radius: 10px;
+    padding: 10px 12px;
+    border: 0.5px solid var(--border);
+  }
+
+  .dot-grid-label {
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--muted);
+    margin-bottom: 6px;
+    text-transform: uppercase;
+    letter-spacing: 0.6px;
+  }
+
+  .dot-row {
+    display: flex;
+    gap: 5px;
+  }
+
+  .dot {
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    border: 1.5px solid var(--border-med);
+    cursor: pointer;
+    transition: all 0.15s;
+    flex-shrink: 0;
+  }
+
+  .dot.filled {
+    border-color: transparent;
+  }
+
+  .dot.energy-filled { background: var(--sage); }
+  .dot.stress-filled { background: var(--blush); }
+
+  .sleep-row {
+    display: flex;
+    align-items: center;
+    gap: 0;
+    margin-top: 14px;
+    background: var(--cream);
+    border-radius: 10px;
+    border: 0.5px solid var(--border);
+    overflow: hidden;
+  }
+
+  .sleep-btn {
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    background: white;
+    border: none;
+    font-size: 18px;
+    color: var(--espresso);
+    flex-shrink: 0;
+    transition: background 0.15s;
+    user-select: none;
+  }
+
+  .sleep-btn:active { background: var(--cream); }
+
+  .sleep-display {
+    flex: 1;
+    text-align: center;
+  }
+
+  .sleep-value {
+    font-size: 16px;
+    font-weight: 600;
+    color: var(--espresso);
+  }
+
+  .sleep-unit {
+    font-size: 11px;
+    color: var(--muted);
+    display: block;
+    margin-top: 0px;
+  }
+
+  .period-section {
+    margin-top: 14px;
+  }
+
+  .period-chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin-top: 8px;
+  }
+
+  .period-chip {
+    padding: 6px 12px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 500;
+    cursor: pointer;
+    border: 1px solid var(--border-med);
+    color: var(--muted);
+    background: white;
+    transition: all 0.18s;
+    user-select: none;
+  }
+
+  .period-chip.selected {
+    background: var(--blush);
+    color: var(--espresso);
+    border-color: var(--blush);
+    font-weight: 600;
+  }
+
+  .symptom-section {
+    margin-top: 14px;
+  }
+
+  .symptom-chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin-top: 8px;
+  }
+
+  .symptom-chip {
+    padding: 5px 11px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 500;
+    cursor: pointer;
+    border: 1px solid var(--border-med);
+    color: var(--muted);
+    background: white;
+    transition: all 0.18s;
+    user-select: none;
+  }
+
+  .symptom-chip.selected {
+    background: var(--gold-dim);
+    color: var(--espresso);
+    border-color: var(--gold);
+  }
+
+  .section-sublabel {
+    font-size: 11px;
+    color: var(--muted);
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.7px;
+  }
+
+  .save-btn {
+    width: 100%;
+    margin-top: 16px;
+    padding: 13px;
+    background: var(--espresso);
+    color: var(--cream);
+    border: none;
+    border-radius: 12px;
+    font-size: 15px;
+    font-weight: 600;
+    cursor: pointer;
+    letter-spacing: -0.2px;
+    transition: background 0.2s;
+  }
+
+  .save-btn:active { background: #2A1E0E; }
+
+  .voice-bar {
+    background: var(--gold-dim);
+    border: 1px solid rgba(212,175,55,0.3);
+    border-radius: 12px;
+    padding: 11px 14px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 16px;
+    cursor: pointer;
+  }
+
+  .voice-bar-text {
+    font-size: 13px;
+    color: var(--muted);
+    flex: 1;
+    line-height: 1.3;
+  }
+
+  .voice-bar-text strong {
+    color: var(--espresso);
+    font-weight: 500;
+  }
+
+  .voice-icon {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    background: var(--gold);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+  }
+
+  .add-section-label {
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--muted);
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    margin-bottom: 10px;
+  }
+
+  .plan-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+    margin-bottom: 20px;
+  }
+
+  .plan-card {
+    background: white;
+    border: 0.5px solid var(--border);
+    border-radius: 14px;
+    padding: 14px 12px;
+    cursor: pointer;
+    transition: all 0.18s;
+    user-select: none;
+  }
+
+  .plan-card:active {
+    background: var(--cream);
+    transform: scale(0.97);
+  }
+
+  .plan-card-icon {
+    width: 36px;
+    height: 36px;
+    border-radius: 10px;
+    background: var(--cream);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 8px;
+  }
+
+  .plan-card-name {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--espresso);
+    margin-bottom: 2px;
+  }
+
+  .plan-card-desc {
+    font-size: 11px;
+    color: var(--muted);
+    line-height: 1.3;
+  }
+
+  .quick-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+  }
+
+  .quick-card {
+    background: white;
+    border: 0.5px solid var(--border);
+    border-radius: 12px;
+    padding: 12px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    transition: all 0.18s;
+    user-select: none;
+  }
+
+  .quick-card:active {
+    background: var(--cream);
+    transform: scale(0.97);
+  }
+
+  .quick-card-icon {
+    width: 28px;
+    height: 28px;
+    border-radius: 8px;
+    background: var(--cream);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+  }
+
+  .quick-card-name {
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--espresso);
+  }
+
+  .demo-label {
+    width: 375px;
+    margin-top: 20px;
+    padding: 16px 20px 24px;
+    border-top: 1.5px solid rgba(58,44,26,0.2);
+  }
+
+  .demo-tag {
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 2px;
+    color: var(--gold);
+    text-transform: uppercase;
+    margin-bottom: 4px;
+  }
+
+  .demo-title {
+    font-size: 15px;
+    font-weight: 600;
+    color: var(--espresso);
+    margin-bottom: 5px;
+  }
+
+  .demo-desc {
+    font-size: 13px;
+    color: var(--muted);
+    line-height: 1.5;
+  }
+
+  .dot-grid-title {
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--espresso);
+    margin-bottom: 4px;
+  }
+</style>
+</head>
+<body>
+
+<div class="scene">
+
+  <div class="phone-frame">
+    <div class="phone-screen" id="screen">
+
+      <div class="notch">
+        <div class="notch-speaker"></div>
+        <div class="notch-camera"></div>
+      </div>
+
+      <div class="status-bar">
+        <span class="status-time">9:41</span>
+        <div class="status-icons">
+          <svg width="15" height="11" viewBox="0 0 15 11">
+            <rect x="0" y="3" width="3" height="8" rx="1" opacity="0.4"/>
+            <rect x="4" y="2" width="3" height="9" rx="1" opacity="0.6"/>
+            <rect x="8" y="0" width="3" height="11" rx="1" opacity="0.8"/>
+            <rect x="12" y="0" width="3" height="11" rx="1"/>
+          </svg>
+          <svg width="15" height="11" viewBox="0 0 15 11">
+            <path d="M7.5 2.5 C5 2.5 2.5 4 1 6L2.5 7.5C3.5 6 5.4 5 7.5 5C9.6 5 11.5 6 12.5 7.5L14 6C12.5 4 10 2.5 7.5 2.5Z" opacity="0.5"/>
+            <path d="M7.5 5C5.8 5 4.3 5.8 3.3 7L4.8 8.5C5.4 7.7 6.4 7.2 7.5 7.2C8.6 7.2 9.6 7.7 10.2 8.5L11.7 7C10.7 5.8 9.2 5 7.5 5Z" opacity="0.7"/>
+            <circle cx="7.5" cy="10" r="1.2"/>
+          </svg>
+          <svg width="25" height="12" viewBox="0 0 25 12">
+            <rect x="0" y="1" width="22" height="10" rx="2.5" stroke="#3A2C1A" stroke-width="1" fill="none" opacity="0.7"/>
+            <rect x="22.5" y="3.5" width="2" height="5" rx="1" fill="#3A2C1A" opacity="0.5"/>
+            <rect x="1.5" y="2.5" width="16" height="7" rx="1.5" fill="#3A2C1A" opacity="0.7"/>
+          </svg>
+        </div>
+      </div>
+
+      <div class="app-header">
+        <div>
+          <div class="app-header-title">Planner</div>
+          <div class="app-header-date">Tuesday, 20 May</div>
+        </div>
+        <div class="header-avatar">H</div>
+      </div>
+
+      <div class="planner-content">
+
+        <div class="planner-section">
+          <div class="planner-cycle-bar">
+            <div class="cycle-bar-top">
+              <span class="cycle-bar-label">Cycle day 9 — Follicular</span>
+              <span class="cycle-day-badge">Day 9</span>
+            </div>
+            <div class="cycle-track"><div class="cycle-fill"></div></div>
+          </div>
+        </div>
+
+        <div class="planner-section">
+          <div class="planner-section-label">Morning</div>
+          <div class="planner-row">
+            <div class="planner-row-check done">
+              <svg width="10" height="8" viewBox="0 0 10 8" fill="none">
+                <path d="M1 4L3.5 6.5L9 1" stroke="white" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+            </div>
+            <div class="planner-row-text">
+              <div class="planner-row-title">Morning walk</div>
+              <div class="planner-row-sub">20 min outdoors</div>
+            </div>
+            <div class="planner-row-time">7:30</div>
+          </div>
+          <div class="planner-row">
+            <div class="planner-row-check"></div>
+            <div class="planner-row-text">
+              <div class="planner-row-title">Vitamin D &amp; Omega-3</div>
+              <div class="planner-row-sub">With breakfast</div>
+            </div>
+            <div class="planner-row-time">8:00</div>
+          </div>
+          <div class="planner-row">
+            <div class="planner-row-check"></div>
+            <div class="planner-row-text">
+              <div class="planner-row-title">Drink water — 500ml</div>
+              <div class="planner-row-sub">Hydration log</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="planner-section">
+          <div class="planner-section-label">Afternoon</div>
+          <div class="planner-row">
+            <div class="planner-row-check"></div>
+            <div class="planner-row-text">
+              <div class="planner-row-title">Team call</div>
+              <div class="planner-row-sub">Weekly sync</div>
+            </div>
+            <div class="planner-row-time">2:00 pm</div>
+          </div>
+          <div class="planner-row">
+            <div class="planner-row-check"></div>
+            <div class="planner-row-text">
+              <div class="planner-row-title">Midday walk or stretch</div>
+              <div class="planner-row-sub">Follicular phase boost</div>
+            </div>
+            <div class="planner-row-time">1:00 pm</div>
+          </div>
+        </div>
+
+        <div class="planner-section">
+          <div class="planner-section-label">Evening</div>
+          <div class="planner-row">
+            <div class="planner-row-check"></div>
+            <div class="planner-row-text">
+              <div class="planner-row-title">Journal — 5 min</div>
+              <div class="planner-row-sub">Evening reflection</div>
+            </div>
+            <div class="planner-row-time">9:00 pm</div>
+          </div>
+        </div>
+
+      </div>
+
+      <button class="fab" id="fab" aria-label="Open quick-add sheet">
+        <svg width="22" height="22" viewBox="0 0 22 22" fill="none">
+          <path d="M11 4V18M4 11H18" stroke="white" stroke-width="2.2" stroke-linecap="round"/>
+        </svg>
+      </button>
+
+      <div class="backdrop" id="backdrop"></div>
+
+      <div class="bottom-sheet" id="sheet">
+        <div class="sheet-handle-area" id="sheetHandle">
+          <div class="sheet-handle"></div>
+        </div>
+        <div class="progress-track">
+          <div class="progress-fill" id="progressFill"></div>
+        </div>
+        <div class="sheet-tabs">
+          <div class="sheet-tab active" id="tabLog" data-tab="log">Log</div>
+          <div class="sheet-tab" id="tabAdd" data-tab="add">Add</div>
+        </div>
+        <div class="sheet-body">
+
+          <div class="tab-panel active" id="panelLog">
+            <div class="pill-nav-scroll">
+              <div class="pill-nav" id="pillNav">
+                <div class="pill-nav-item active" data-card="checkin">Check-in</div>
+                <div class="pill-nav-item" data-card="nourish">Nourish</div>
+                <div class="pill-nav-item" data-card="health">Health</div>
+                <div class="pill-nav-item" data-card="rituals">Rituals</div>
+                <div class="pill-nav-item" data-card="mind">Mind &amp; Life</div>
+              </div>
+            </div>
+
+            <div class="log-card" id="cardCheckin">
+              <div class="log-card-title">How are you feeling?</div>
+
+              <div class="mood-row" id="moodRow">
+                <div class="mood-pill" data-mood="awful">Awful</div>
+                <div class="mood-pill" data-mood="low">Low</div>
+                <div class="mood-pill" data-mood="okay">Okay</div>
+                <div class="mood-pill" data-mood="good">Good</div>
+                <div class="mood-pill" data-mood="great">Great</div>
+              </div>
+
+              <div class="dot-grid-section">
+                <div class="dot-grid-row">
+                  <div class="dot-grid-item">
+                    <div class="dot-grid-label">Energy</div>
+                    <div class="dot-row" id="energyDots">
+                      <div class="dot" data-index="0" data-type="energy"></div>
+                      <div class="dot" data-index="1" data-type="energy"></div>
+                      <div class="dot" data-index="2" data-type="energy"></div>
+                      <div class="dot" data-index="3" data-type="energy"></div>
+                      <div class="dot" data-index="4" data-type="energy"></div>
+                    </div>
+                  </div>
+                  <div class="dot-grid-item">
+                    <div class="dot-grid-label">Stress</div>
+                    <div class="dot-row" id="stressDots">
+                      <div class="dot" data-index="0" data-type="stress"></div>
+                      <div class="dot" data-index="1" data-type="stress"></div>
+                      <div class="dot" data-index="2" data-type="stress"></div>
+                      <div class="dot" data-index="3" data-type="stress"></div>
+                      <div class="dot" data-index="4" data-type="stress"></div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="sleep-row">
+                <button class="sleep-btn" id="sleepMinus">
+                  <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+                    <path d="M3 8H13" stroke="#3A2C1A" stroke-width="1.8" stroke-linecap="round"/>
+                  </svg>
+                </button>
+                <div class="sleep-display">
+                  <span class="sleep-value" id="sleepVal">7h</span>
+                  <span class="sleep-unit">sleep last night</span>
+                </div>
+                <button class="sleep-btn" id="sleepPlus">
+                  <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+                    <path d="M8 3V13M3 8H13" stroke="#3A2C1A" stroke-width="1.8" stroke-linecap="round"/>
+                  </svg>
+                </button>
+              </div>
+
+              <div class="period-section">
+                <div class="section-sublabel">Period status</div>
+                <div class="period-chips" id="periodChips">
+                  <div class="period-chip" data-period="start">Period start</div>
+                  <div class="period-chip" data-period="ongoing">Ongoing</div>
+                  <div class="period-chip" data-period="end">Period end</div>
+                  <div class="period-chip" data-period="spotting">Spotting</div>
+                  <div class="period-chip" data-period="none">No period</div>
+                </div>
+              </div>
+
+              <div class="symptom-section">
+                <div class="section-sublabel">Symptoms</div>
+                <div class="symptom-chips" id="symptomChips">
+                  <div class="symptom-chip" data-symptom="cramps">Cramps</div>
+                  <div class="symptom-chip" data-symptom="bloating">Bloating</div>
+                  <div class="symptom-chip" data-symptom="headache">Headache</div>
+                  <div class="symptom-chip" data-symptom="fatigue">Fatigue</div>
+                  <div class="symptom-chip" data-symptom="tender">Tenderness</div>
+                  <div class="symptom-chip" data-symptom="mood-swings">Mood swings</div>
+                  <div class="symptom-chip" data-symptom="brain-fog">Brain fog</div>
+                  <div class="symptom-chip" data-symptom="nausea">Nausea</div>
+                </div>
+              </div>
+
+              <button class="save-btn">Save check-in</button>
+            </div>
+
+            <div class="log-card" id="cardNourish" style="display:none;">
+              <div class="log-card-title">Nourishment</div>
+              <div style="color:var(--muted);font-size:14px;text-align:center;padding:24px 0;">Tap to log a meal, snack, or hydration</div>
+            </div>
+
+            <div class="log-card" id="cardHealth" style="display:none;">
+              <div class="log-card-title">Health</div>
+              <div style="color:var(--muted);font-size:14px;text-align:center;padding:24px 0;">Log medications, supplements, or measurements</div>
+            </div>
+
+            <div class="log-card" id="cardRituals" style="display:none;">
+              <div class="log-card-title">Rituals</div>
+              <div style="color:var(--muted);font-size:14px;text-align:center;padding:24px 0;">Mark habits and rituals complete</div>
+            </div>
+
+            <div class="log-card" id="cardMind" style="display:none;">
+              <div class="log-card-title">Mind &amp; Life</div>
+              <div style="color:var(--muted);font-size:14px;text-align:center;padding:24px 0;">Journal entries, gratitude, and life notes</div>
+            </div>
+
+          </div>
+
+          <div class="tab-panel" id="panelAdd">
+
+            <div class="voice-bar">
+              <div class="voice-icon">
+                <svg width="14" height="18" viewBox="0 0 14 18" fill="none">
+                  <rect x="4" y="1" width="6" height="10" rx="3" fill="white"/>
+                  <path d="M1 8.5C1 12 3.5 14.5 7 14.5C10.5 14.5 13 12 13 8.5" stroke="white" stroke-width="1.6" stroke-linecap="round" fill="none"/>
+                  <line x1="7" y1="14.5" x2="7" y2="17" stroke="white" stroke-width="1.6" stroke-linecap="round"/>
+                </svg>
+              </div>
+              <div class="voice-bar-text">
+                <strong>Or speak:</strong> "Add gym at 3pm" or "I feel tired"
+              </div>
+            </div>
+
+            <div class="add-section-label">Plan</div>
+            <div class="plan-grid">
+              <div class="plan-card">
+                <div class="plan-card-icon">
+                  <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+                    <rect x="2" y="3" width="16" height="14" rx="2.5" stroke="#3A2C1A" stroke-width="1.5"/>
+                    <path d="M5 8H15M5 12H11" stroke="#3A2C1A" stroke-width="1.5" stroke-linecap="round"/>
+                  </svg>
+                </div>
+                <div class="plan-card-name">Task</div>
+                <div class="plan-card-desc">Personal to-do</div>
+              </div>
+              <div class="plan-card">
+                <div class="plan-card-icon">
+                  <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+                    <rect x="2" y="3" width="16" height="15" rx="2.5" stroke="#3A2C1A" stroke-width="1.5"/>
+                    <path d="M6 2V5M14 2V5" stroke="#3A2C1A" stroke-width="1.5" stroke-linecap="round"/>
+                    <path d="M2 8H18" stroke="#3A2C1A" stroke-width="1.5"/>
+                    <rect x="6" y="11" width="3" height="3" rx="0.8" fill="#3A2C1A" opacity="0.5"/>
+                  </svg>
+                </div>
+                <div class="plan-card-name">Event</div>
+                <div class="plan-card-desc">Appointment or calendar</div>
+              </div>
+              <div class="plan-card">
+                <div class="plan-card-icon">
+                  <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+                    <path d="M10 2L12 7H17L13 10.5L14.5 15.5L10 12.5L5.5 15.5L7 10.5L3 7H8L10 2Z" stroke="#3A2C1A" stroke-width="1.5" stroke-linejoin="round"/>
+                  </svg>
+                </div>
+                <div class="plan-card-name">Ritual</div>
+                <div class="plan-card-desc">For this phase</div>
+              </div>
+              <div class="plan-card">
+                <div class="plan-card-icon">
+                  <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+                    <path d="M10 4C10 4 7 6 7 10C7 12 8.5 13.5 10 14C11.5 13.5 13 12 13 10C13 6 10 4 10 4Z" stroke="#3A2C1A" stroke-width="1.5" stroke-linejoin="round"/>
+                    <path d="M7 10C5.5 10.5 4 12 4 14C4 16 5.8 17 7.5 17" stroke="#3A2C1A" stroke-width="1.5" stroke-linecap="round"/>
+                    <path d="M13 10C14.5 10.5 16 12 16 14C16 16 14.2 17 12.5 17" stroke="#3A2C1A" stroke-width="1.5" stroke-linecap="round"/>
+                  </svg>
+                </div>
+                <div class="plan-card-name">Habit</div>
+                <div class="plan-card-desc">Recurring action</div>
+              </div>
+            </div>
+
+            <div class="add-section-label">Log quick</div>
+            <div class="quick-grid">
+              <div class="quick-card">
+                <div class="quick-card-icon">
+                  <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+                    <path d="M4 6C4 4 5 2 8 2C11 2 12 4 12 6C12 9 10 11 8 13C6 11 4 9 4 6Z" stroke="#3A2C1A" stroke-width="1.4"/>
+                    <path d="M6 6C6 5 7 4 8 4" stroke="#3A2C1A" stroke-width="1.2" stroke-linecap="round" opacity="0.5"/>
+                  </svg>
+                </div>
+                <div class="quick-card-name">Meal</div>
+              </div>
+              <div class="quick-card">
+                <div class="quick-card-icon">
+                  <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+                    <rect x="5" y="1" width="6" height="9" rx="2" stroke="#3A2C1A" stroke-width="1.4"/>
+                    <path d="M5.5 10V12C5.5 13 6.2 14 8 14C9.8 14 10.5 13 10.5 12V10" stroke="#3A2C1A" stroke-width="1.4"/>
+                    <path d="M7 5H9" stroke="#3A2C1A" stroke-width="1.3" stroke-linecap="round"/>
+                  </svg>
+                </div>
+                <div class="quick-card-name">Medication</div>
+              </div>
+              <div class="quick-card">
+                <div class="quick-card-icon">
+                  <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+                    <path d="M8 2C6 2 4.5 4 4.5 7C4.5 10 6 13 8 14C10 13 11.5 10 11.5 7C11.5 4 10 2 8 2Z" stroke="#3A2C1A" stroke-width="1.4"/>
+                    <line x1="8" y1="2" x2="8" y2="1" stroke="#3A2C1A" stroke-width="1.4" stroke-linecap="round"/>
+                  </svg>
+                </div>
+                <div class="quick-card-name">Hydration</div>
+              </div>
+              <div class="quick-card">
+                <div class="quick-card-icon">
+                  <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+                    <path d="M2 12L5 9L8 11L13 5" stroke="#3A2C1A" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/>
+                    <path d="M11 5H13V7" stroke="#3A2C1A" stroke-width="1.4" stroke-linecap="round"/>
+                  </svg>
+                </div>
+                <div class="quick-card-name">Note</div>
+              </div>
+            </div>
+
+          </div>
+
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <div class="demo-label">
+    <div class="demo-tag">Demo 1 — Two-Tab Sheet</div>
+    <div class="demo-title">One + button everywhere. Context-aware default tab.</div>
+    <div class="demo-desc">Log and Plan coexist in the same sheet. Tap the + to open, switch tabs, interact with mood pills, dots, sleep, period, and symptom chips.</div>
+  </div>
+
+</div>
+
+<script>
+  const fab = document.getElementById('fab');
+  const sheet = document.getElementById('sheet');
+  const backdrop = document.getElementById('backdrop');
+  const tabLog = document.getElementById('tabLog');
+  const tabAdd = document.getElementById('tabAdd');
+  const panelLog = document.getElementById('panelLog');
+  const panelAdd = document.getElementById('panelAdd');
+  const progressFill = document.getElementById('progressFill');
+
+  let sheetOpen = false;
+  let sleepHours = 7;
+  let energyLevel = 0;
+  let stressLevel = 0;
+  let selectedMood = null;
+  let selectedPeriod = null;
+  let selectedSymptoms = new Set();
+  let activeTab = 'log';
+
+  function updateProgress() {
+    let score = 0;
+    if (selectedMood) score += 25;
+    if (energyLevel > 0) score += 15;
+    if (stressLevel > 0) score += 15;
+    if (selectedPeriod) score += 25;
+    if (selectedSymptoms.size > 0) score += 20;
+    progressFill.style.width = score + '%';
+  }
+
+  function openSheet() {
+    sheetOpen = true;
+    sheet.classList.add('open');
+    backdrop.classList.add('visible');
+    fab.classList.add('open');
+  }
+
+  function closeSheet() {
+    sheetOpen = false;
+    sheet.classList.remove('open');
+    backdrop.classList.remove('visible');
+    fab.classList.remove('open');
+  }
+
+  fab.addEventListener('click', () => {
+    if (sheetOpen) closeSheet();
+    else openSheet();
+  });
+
+  backdrop.addEventListener('click', closeSheet);
+
+  function switchTab(tab) {
+    activeTab = tab;
+    if (tab === 'log') {
+      tabLog.classList.add('active');
+      tabAdd.classList.remove('active');
+      panelLog.classList.add('active');
+      panelAdd.classList.remove('active');
+    } else {
+      tabAdd.classList.add('active');
+      tabLog.classList.remove('active');
+      panelAdd.classList.add('active');
+      panelLog.classList.remove('active');
+    }
+  }
+
+  tabLog.addEventListener('click', () => switchTab('log'));
+  tabAdd.addEventListener('click', () => switchTab('add'));
+
+  const pillNavItems = document.querySelectorAll('.pill-nav-item');
+  const cards = {
+    checkin: document.getElementById('cardCheckin'),
+    nourish: document.getElementById('cardNourish'),
+    health: document.getElementById('cardHealth'),
+    rituals: document.getElementById('cardRituals'),
+    mind: document.getElementById('cardMind'),
+  };
+
+  pillNavItems.forEach(item => {
+    item.addEventListener('click', () => {
+      pillNavItems.forEach(p => p.classList.remove('active'));
+      item.classList.add('active');
+      const card = item.dataset.card;
+      Object.keys(cards).forEach(k => {
+        cards[k].style.display = k === card ? 'block' : 'none';
+      });
+    });
+  });
+
+  const moodPills = document.querySelectorAll('.mood-pill');
+  moodPills.forEach(pill => {
+    pill.addEventListener('click', () => {
+      moodPills.forEach(p => p.classList.remove('selected'));
+      pill.classList.add('selected');
+      selectedMood = pill.dataset.mood;
+      updateProgress();
+    });
+  });
+
+  function setupDots(containerId, type, fillClass) {
+    const dots = document.querySelectorAll(`[data-type="${type}"]`);
+    let currentLevel = 0;
+    dots.forEach(dot => {
+      dot.addEventListener('click', () => {
+        const idx = parseInt(dot.dataset.index);
+        const newLevel = currentLevel === idx + 1 ? 0 : idx + 1;
+        currentLevel = newLevel;
+        if (type === 'energy') energyLevel = newLevel;
+        else stressLevel = newLevel;
+        dots.forEach((d, i) => {
+          d.classList.remove('filled', fillClass);
+          if (i < currentLevel) {
+            d.classList.add('filled', fillClass);
+          }
+        });
+        updateProgress();
+      });
+    });
+  }
+
+  setupDots('energyDots', 'energy', 'energy-filled');
+  setupDots('stressDots', 'stress', 'stress-filled');
+
+  document.getElementById('sleepMinus').addEventListener('click', () => {
+    if (sleepHours > 0) sleepHours -= 0.5;
+    const display = sleepHours % 1 === 0 ? sleepHours + 'h' : sleepHours + 'h';
+    document.getElementById('sleepVal').textContent = display;
+  });
+
+  document.getElementById('sleepPlus').addEventListener('click', () => {
+    if (sleepHours < 12) sleepHours += 0.5;
+    const display = sleepHours % 1 === 0 ? sleepHours + 'h' : sleepHours + 'h';
+    document.getElementById('sleepVal').textContent = display;
+  });
+
+  const periodChips = document.querySelectorAll('.period-chip');
+  periodChips.forEach(chip => {
+    chip.addEventListener('click', () => {
+      periodChips.forEach(c => c.classList.remove('selected'));
+      if (selectedPeriod !== chip.dataset.period) {
+        chip.classList.add('selected');
+        selectedPeriod = chip.dataset.period;
+      } else {
+        selectedPeriod = null;
+      }
+      updateProgress();
+    });
+  });
+
+  const symptomChips = document.querySelectorAll('.symptom-chip');
+  symptomChips.forEach(chip => {
+    chip.addEventListener('click', () => {
+      const s = chip.dataset.symptom;
+      if (selectedSymptoms.has(s)) {
+        selectedSymptoms.delete(s);
+        chip.classList.remove('selected');
+      } else {
+        selectedSymptoms.add(s);
+        chip.classList.add('selected');
+      }
+      updateProgress();
+    });
+  });
+
+  let dragStartY = 0;
+  let dragStartTime = 0;
+  const handle = document.getElementById('sheetHandle');
+
+  handle.addEventListener('touchstart', (e) => {
+    dragStartY = e.touches[0].clientY;
+    dragStartTime = Date.now();
+    sheet.style.transition = 'none';
+  }, { passive: true });
+
+  handle.addEventListener('touchmove', (e) => {
+    const delta = e.touches[0].clientY - dragStartY;
+    if (delta > 0) {
+      sheet.style.transform = `translateY(${delta}px)`;
+    }
+  }, { passive: true });
+
+  handle.addEventListener('touchend', (e) => {
+    const delta = e.changedTouches[0].clientY - dragStartY;
+    const duration = Date.now() - dragStartTime;
+    const velocity = delta / duration;
+    sheet.style.transition = '';
+    if (delta > 80 || velocity > 0.4) {
+      closeSheet();
+    } else {
+      sheet.style.transform = 'translateY(0)';
+    }
+  });
+
+  handle.addEventListener('mousedown', (e) => {
+    dragStartY = e.clientY;
+    dragStartTime = Date.now();
+    sheet.style.transition = 'none';
+    const onMove = (e) => {
+      const delta = e.clientY - dragStartY;
+      if (delta > 0) sheet.style.transform = `translateY(${delta}px)`;
+    };
+    const onUp = (e) => {
+      const delta = e.clientY - dragStartY;
+      const duration = Date.now() - dragStartTime;
+      const velocity = delta / duration;
+      sheet.style.transition = '';
+      if (delta > 80 || velocity > 0.4) closeSheet();
+      else sheet.style.transform = 'translateY(0)';
+      document.removeEventListener('mousemove', onMove);
+      document.removeEventListener('mouseup', onUp);
+    };
+    document.addEventListener('mousemove', onMove);
+    document.addEventListener('mouseup', onUp);
+  });
+
+  document.querySelector('.save-btn').addEventListener('click', () => {
+    const btn = document.querySelector('.save-btn');
+    btn.textContent = 'Saved';
+    btn.style.background = 'var(--sage)';
+    setTimeout(() => {
+      btn.textContent = 'Save check-in';
+      btn.style.background = '';
+      closeSheet();
+    }, 1200);
+  });
+</script>
+</body>
+</html>
