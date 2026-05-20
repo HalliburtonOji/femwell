@@ -24,6 +24,7 @@ import SmartLoggerDemo from "@/components/SmartLoggerDemo";   // v3
 import SmartLoggerV4 from "@/components/SmartLoggerV4";       // v4 (new)
 
 // Unified Logger demo HTML — raw strings (Vite ?raw suffix returns file as string).
+import unifiedTabsV2Html from "@/data/unifiedLogger/tabs-v2.html?raw";
 import unifiedDemo1Html from "@/data/unifiedLogger/demo1-tabs.html?raw";
 import unifiedDemo2Html from "@/data/unifiedLogger/demo2-rail.html?raw";
 import unifiedDemo3Html from "@/data/unifiedLogger/demo3-dial.html?raw";
@@ -69,7 +70,7 @@ const FEATURES = [
     name: "Unified Logger",
     Icon: Zap,
     status: "exploring",
-    latest: "3 demos",
+    latest: "Tab Sheet v2",
     desc: "One button. Log and plan from anywhere in the app.",
   },
   {
@@ -133,9 +134,10 @@ function UnifiedLoggerIframe({ html, title }) {
   );
 }
 const UNIFIEDLOGGER_VERSIONS = [
-  { id: "demo1", label: "Demo 1", sub: "Tab Sheet",     active: true,  render: () => <UnifiedLoggerIframe html={unifiedDemo1Html} title="Unified Logger — Tab Sheet" /> },
-  { id: "demo2", label: "Demo 2", sub: "Inline Rail",   active: false, render: () => <UnifiedLoggerIframe html={unifiedDemo2Html} title="Unified Logger — Inline Rail" /> },
-  { id: "demo3", label: "Demo 3", sub: "Command Dial",  active: false, render: () => <UnifiedLoggerIframe html={unifiedDemo3Html} title="Unified Logger — Command Dial" /> },
+  { id: "tabsv2", label: "Tab Sheet v2", sub: "Latest",      active: true,  render: () => <UnifiedLoggerIframe html={unifiedTabsV2Html} title="Unified Logger — Tab Sheet v2" /> },
+  { id: "demo1",  label: "Demo 1",       sub: "Tab Sheet",   active: false, render: () => <UnifiedLoggerIframe html={unifiedDemo1Html}  title="Unified Logger — Tab Sheet" /> },
+  { id: "demo2",  label: "Demo 2",       sub: "Inline Rail", active: false, render: () => <UnifiedLoggerIframe html={unifiedDemo2Html}  title="Unified Logger — Inline Rail" /> },
+  { id: "demo3",  label: "Demo 3",       sub: "Command Dial",active: false, render: () => <UnifiedLoggerIframe html={unifiedDemo3Html}  title="Unified Logger — Command Dial" /> },
 ];
 
 // ── Planner version registry ───────────────────────────────────────────────
@@ -156,7 +158,7 @@ const PLANNER_VERSIONS = [
 export default function Ideas() {
   const [feature, setFeature] = useState("overview");
   const [smartVersion,   setSmartVersion]   = useState("v4");
-  const [unifiedVersion, setUnifiedVersion] = useState("demo1");
+  const [unifiedVersion, setUnifiedVersion] = useState("tabsv2");
   const [plannerVersion, setPlannerVersion] = useState("unified");
 
   return (
