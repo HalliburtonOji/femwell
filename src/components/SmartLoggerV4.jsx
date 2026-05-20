@@ -1,7 +1,7 @@
 import { useState, useCallback, useRef, useEffect, useMemo } from 'react';
 import {
   Heart, Droplets, Utensils, Pill, Sparkles, Pen,
-  Headphones, BookOpen, Thermometer, X as XIcon, Check, Plus, Minus,
+  X as XIcon, Check, Plus, Minus,
   Activity, Coffee, Wine, Bed, Footprints, Sun, Moon, Flame,
 } from 'lucide-react';
 import { base44 } from '@/api/base44Client';
@@ -73,33 +73,6 @@ const DRINK_PRESETS = [
   { id: 'smoothie',  label: 'Smoothie',   ml: 350, kcal: 200, Icon: Droplets, tone: T.sage },
   { id: 'milk',      label: 'Milk',       ml: 250, kcal: 120, Icon: Droplets, tone: T.cream },
 ];
-
-const ENGAGEMENT_RAIL = {
-  luteal: [
-    { Icon: Headphones, type: 'PODCAST', title: 'Cycle & Mood',     sub: 'Luteal Phase Nutrition',  grad: ['#3D2E5C', '#1F1733'] },
-    { Icon: Pen,        type: 'JOURNAL', title: 'Journal prompt',   sub: 'What does your body need?', grad: ['#1F3D2E', '#0E1F17'] },
-    { Icon: BookOpen,   type: 'READING', title: 'Iron + luteal',    sub: 'The Atlas · 6 min',        grad: ['#1F3A5C', '#0E1A33'] },
-    { Icon: Sparkles,   type: 'JESS TIP',title: 'Magnesium',        sub: 'Before bed eases cramps',  grad: ['#4A3520', '#1A1410'] },
-  ],
-  pregnant: [
-    { Icon: Headphones, type: 'PODCAST', title: 'T2 energy slumps', sub: 'Mother & Baby · 38 min',  grad: ['#3D2E5C', '#1F1733'] },
-    { Icon: Pen,        type: 'JOURNAL', title: 'Letter to baby',   sub: 'Pregnancy diary',          grad: ['#1F3D2E', '#0E1F17'] },
-    { Icon: BookOpen,   type: 'READING', title: '20-week scan',     sub: 'NHS guide · 8 min',        grad: ['#1F3A5C', '#0E1A33'] },
-    { Icon: Sparkles,   type: 'JESS TIP',title: 'Left-side sleep',  sub: 'Improves circulation',     grad: ['#4A3520', '#1A1410'] },
-  ],
-  perimenopause: [
-    { Icon: Headphones, type: 'PODCAST', title: 'HRT myths',        sub: 'Dr Louise Newson · 55 min',grad: ['#3D2E5C', '#1F1733'] },
-    { Icon: Pen,        type: 'JOURNAL', title: 'What surprised you?',sub: 'Peri reflection',         grad: ['#1F3D2E', '#0E1F17'] },
-    { Icon: BookOpen,   type: 'READING', title: 'Hot flashes',      sub: 'The Atlas · 5 min',        grad: ['#1F3A5C', '#0E1A33'] },
-    { Icon: Sparkles,   type: 'JESS TIP',title: 'Cool the room 2°C',sub: 'Halves flash frequency',   grad: ['#4A3520', '#1A1410'] },
-  ],
-  ttc: [
-    { Icon: Headphones, type: 'PODCAST', title: 'Fertile window',   sub: 'Modern Fertility · 47 min',grad: ['#3D2E5C', '#1F1733'] },
-    { Icon: Pen,        type: 'JOURNAL', title: 'About this cycle', sub: 'TTC reflection',           grad: ['#1F3D2E', '#0E1F17'] },
-    { Icon: BookOpen,   type: 'READING', title: 'BBT charting',     sub: 'The Atlas · 7 min',        grad: ['#1F3A5C', '#0E1A33'] },
-    { Icon: Sparkles,   type: 'JESS TIP',title: 'Stress + ovulation',sub: 'Can delay 3 days',        grad: ['#4A3520', '#1A1410'] },
-  ],
-};
 
 const CARD_ICONS = [Heart, Droplets, Utensils, Pill, Sparkles, Pen];
 
@@ -313,25 +286,25 @@ function ProgressBar({ completed }) {
 function SectionLabel({ children }) {
   return (
     <div style={{
-      fontSize: 10.5, fontWeight: 700, color: T.muted, textTransform: 'uppercase',
-      letterSpacing: '0.10em', marginBottom: 6, marginTop: 4,
+      fontSize: 13, fontWeight: 700, color: T.muted, textTransform: 'uppercase',
+      letterSpacing: '0.10em', marginBottom: 10, marginTop: 6,
     }}>{children}</div>
   );
 }
 
 function ChipRow({ options, selected, onToggle, multi = true, small = false }) {
   return (
-    <div style={{ display: 'flex', flexWrap: 'wrap', gap: 5 }}>
+    <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
       {options.map(opt => {
         const active = multi ? selected.includes(opt) : selected === opt;
         return (
           <button key={opt} onClick={() => onToggle(opt)} style={{
-            padding: small ? '4px 10px' : '5px 11px', borderRadius: 14,
+            padding: small ? '8px 14px' : '10px 16px', borderRadius: 16,
             border: `1.5px solid ${active ? T.gold : T.border}`,
             background: active ? `${T.gold}22` : 'transparent',
-            color: active ? T.espresso : T.muted,
-            fontSize: small ? 11 : 11.5, fontWeight: 600, cursor: 'pointer',
-            transition: 'all 0.18s ease',
+            color: active ? T.espresso : T.espresso,
+            fontSize: small ? 12.5 : 13, fontWeight: 600, cursor: 'pointer',
+            transition: 'all 0.18s ease', minHeight: 40,
           }}>{opt}</button>
         );
       })}
@@ -341,14 +314,14 @@ function ChipRow({ options, selected, onToggle, multi = true, small = false }) {
 
 function DotRating({ value, onChange, max = 5, color = T.gold }) {
   return (
-    <div style={{ display: 'flex', gap: 6 }}>
+    <div style={{ display: 'flex', gap: 10 }}>
       {Array.from({ length: max }, (_, i) => (
         <button key={i} onClick={() => onChange(i + 1)} style={{
-          width: 28, height: 28, borderRadius: '50%',
+          width: 40, height: 40, borderRadius: '50%',
           border: `2px solid ${i < value ? color : T.border}`,
           background: i < value ? color : 'transparent',
           color: i < value ? T.espresso : T.muted,
-          fontSize: 11, fontWeight: 700, cursor: 'pointer',
+          fontSize: 14, fontWeight: 700, cursor: 'pointer',
         }}>{i + 1}</button>
       ))}
     </div>
@@ -357,20 +330,20 @@ function DotRating({ value, onChange, max = 5, color = T.gold }) {
 
 function Counter({ value, onChange, step = 1, min = 0, max = 99, label = '' }) {
   return (
-    <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+    <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
       <button onClick={() => onChange(Math.max(min, parseFloat((value - step).toFixed(2))))} style={{
-        width: 28, height: 28, borderRadius: '50%', border: `1.5px solid ${T.border}`,
-        background: 'transparent', color: T.espresso, cursor: 'pointer',
+        width: 44, height: 44, borderRadius: '50%', border: `1.5px solid ${T.border}`,
+        background: T.white, color: T.espresso, cursor: 'pointer',
         display: 'flex', alignItems: 'center', justifyContent: 'center',
-      }}><Minus size={13} /></button>
-      <span style={{ minWidth: 44, textAlign: 'center', fontWeight: 700, fontSize: 15, color: T.espresso }}>
+      }}><Minus size={18} /></button>
+      <span style={{ minWidth: 56, textAlign: 'center', fontWeight: 700, fontSize: 18, color: T.espresso }}>
         {value}{label}
       </span>
       <button onClick={() => onChange(Math.min(max, parseFloat((value + step).toFixed(2))))} style={{
-        width: 28, height: 28, borderRadius: '50%', border: `1.5px solid ${T.border}`,
-        background: 'transparent', color: T.espresso, cursor: 'pointer',
+        width: 44, height: 44, borderRadius: '50%', border: `1.5px solid ${T.border}`,
+        background: T.white, color: T.espresso, cursor: 'pointer',
         display: 'flex', alignItems: 'center', justifyContent: 'center',
-      }}><Plus size={13} /></button>
+      }}><Plus size={18} /></button>
     </div>
   );
 }
@@ -395,16 +368,16 @@ function Toggle({ checked, onChange, label }) {
 
 function MoodPills({ value, onChange }) {
   return (
-    <div style={{ display: 'flex', gap: 6 }}>
+    <div style={{ display: 'flex', gap: 8 }}>
       {MOOD_LABELS.map((m, i) => {
         const active = value === i + 1;
         return (
           <button key={m} onClick={() => onChange(i + 1)} style={{
-            flex: 1, padding: '8px 4px', borderRadius: 14,
+            flex: 1, padding: '12px 8px', borderRadius: 18, minHeight: 44,
             border: `1.5px solid ${active ? T.gold : T.border}`,
             background: active ? T.gold : T.paperHi,
             color: active ? T.espresso : T.muted,
-            fontSize: 12, fontWeight: 700, cursor: 'pointer',
+            fontSize: 14, fontWeight: 700, cursor: 'pointer',
           }}>{m}</button>
         );
       })}
@@ -711,17 +684,17 @@ function Card3Nourish({ stage, onSave, showToast }) {
       </div>
 
       <SectionLabel>Drinks rail</SectionLabel>
-      <div style={{ display: 'flex', gap: 6, overflowX: 'auto', paddingBottom: 4, marginBottom: 8, scrollbarWidth: 'none' }}>
+      <div style={{ display: 'flex', gap: 8, overflowX: 'auto', paddingBottom: 6, marginBottom: 10, scrollbarWidth: 'none', flexWrap: 'wrap' }}>
         {DRINK_PRESETS.map(d => (
           <button key={d.id} onClick={() => tapDrink(d)} style={{
-            flexShrink: 0, padding: '6px 10px', borderRadius: 14,
-            background: `${d.tone}1F`, border: `1px solid ${d.tone}55`,
-            color: T.espresso, fontSize: 11, fontWeight: 700, cursor: 'pointer',
-            display: 'inline-flex', alignItems: 'center', gap: 5,
+            flexShrink: 0, padding: '10px 16px', borderRadius: 16, minHeight: 44,
+            background: `${d.tone}1F`, border: `1.5px solid ${d.tone}55`,
+            color: T.espresso, fontSize: 13, fontWeight: 700, cursor: 'pointer',
+            display: 'inline-flex', alignItems: 'center', gap: 8,
           }}>
-            <d.Icon size={11} style={{ color: d.tone }} />
+            <d.Icon size={14} style={{ color: d.tone }} />
             {d.label}
-            <span style={{ fontSize: 9.5, color: T.muted, fontWeight: 600 }}>+{d.ml}ml</span>
+            <span style={{ fontSize: 11, color: T.muted, fontWeight: 600 }}>+{d.ml}ml</span>
           </button>
         ))}
       </div>
@@ -1235,61 +1208,6 @@ function Card6Mind({ stage, onSave, showToast }) {
   );
 }
 
-// ─── Engagement strip ────────────────────────────────────────────────────────
-function EngagementStrip({ stage }) {
-  const cards = ENGAGEMENT_RAIL[stage] || ENGAGEMENT_RAIL.luteal;
-  return (
-    <div style={{
-      padding: '8px 16px 10px',
-      borderTop: `1px solid ${T.border}`,
-      background: 'rgba(58,44,26,0.03)',
-    }}>
-      <div style={{
-        fontSize: 9.5, fontWeight: 800, color: T.muted, textTransform: 'uppercase',
-        letterSpacing: '0.16em', marginBottom: 6,
-      }}>From across your app</div>
-      <div style={{
-        display: 'flex', gap: 8, overflowX: 'auto', scrollbarWidth: 'none',
-        paddingBottom: 2,
-      }}>
-        {cards.map((c, i) => {
-          const Glyph = c.Icon;
-          return (
-            <button key={i} style={{
-              flexShrink: 0, width: 140, height: 72,
-              padding: '8px 10px', borderRadius: 10,
-              background: `linear-gradient(135deg, ${c.grad[0]}, ${c.grad[1]})`,
-              color: T.cream, cursor: 'pointer', border: 'none', textAlign: 'left',
-              display: 'flex', flexDirection: 'column', justifyContent: 'space-between',
-              position: 'relative', overflow: 'hidden',
-              boxShadow: '0 3px 8px rgba(0,0,0,0.20)',
-            }}>
-              <Glyph size={48} style={{
-                position: 'absolute', right: -10, bottom: -10,
-                color: 'rgba(244,237,219,0.18)',
-              }} />
-              <div style={{ position: 'relative', zIndex: 1 }}>
-                <div style={{
-                  fontSize: 8, letterSpacing: '0.14em', fontWeight: 800,
-                  color: 'rgba(244,237,219,0.72)', textTransform: 'uppercase',
-                }}>{c.type}</div>
-                <div style={{
-                  fontSize: 11.5, fontWeight: 700, color: T.cream, marginTop: 2,
-                  lineHeight: 1.2,
-                }}>{c.title}</div>
-              </div>
-              <div style={{
-                position: 'relative', zIndex: 1,
-                fontSize: 9.5, color: 'rgba(244,237,219,0.72)',
-              }}>{c.sub}</div>
-            </button>
-          );
-        })}
-      </div>
-    </div>
-  );
-}
-
 // ─── Main SmartLoggerV4 ──────────────────────────────────────────────────────
 // Props:
 //   mode: 'demo' (open inline, stage tabs above) | 'production' (FAB + bottom-sheet)
@@ -1390,6 +1308,7 @@ export default function SmartLoggerV4({
       border: `1px solid ${T.border}`,
       display: 'flex', flexDirection: 'column',
       overflow: 'hidden',
+      maxHeight: '92vh', height: '92vh',
     }}>
       <div style={{
         display: 'flex', alignItems: 'center', justifyContent: 'space-between',
@@ -1407,7 +1326,7 @@ export default function SmartLoggerV4({
       <PillNav current={currentCard} completed={completed} onSelect={setCurrentCard} />
       <div
         style={{
-          position: 'relative', height: 340, margin: '8px 0 4px',
+          position: 'relative', flex: 1, minHeight: 460, margin: '12px 0 12px',
           overflow: 'hidden',
           perspective: '1200px', perspectiveOrigin: '50% 30%',
         }}
@@ -1427,12 +1346,12 @@ export default function SmartLoggerV4({
               transformStyle: 'preserve-3d',
               opacity, zIndex,
               transition: 'transform 0.4s cubic-bezier(0.23, 1, 0.32, 1), opacity 0.4s ease',
-              background: T.cardBg, borderRadius: 16, padding: '12px 14px',
+              background: T.cardBg, borderRadius: 18, padding: '20px 20px',
               boxShadow: isActive
                 ? '0 20px 60px rgba(58,44,26,0.18), 0 4px 16px rgba(58,44,26,0.12)'
                 : '0 6px 18px rgba(58,44,26,0.08)',
               border: `1px solid ${T.border}`,
-              overflowY: 'auto', maxHeight: 324,
+              overflowY: 'auto', maxHeight: '100%',
               pointerEvents: isActive ? 'auto' : 'none',
             }}>
               {cardTitle(i)}
@@ -1441,7 +1360,6 @@ export default function SmartLoggerV4({
           );
         })}
       </div>
-      <EngagementStrip stage={stage} />
       <Toast message={toast.message} visible={toast.visible} />
     </div>
   );
