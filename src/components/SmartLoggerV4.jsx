@@ -471,22 +471,23 @@ function Card1SmartBody({ stage, onSave, showToast }) {
       </div>
 
       <SectionLabel>Symptoms (tap to cycle: mild → moderate → severe → off)</SectionLabel>
-      <div style={{ marginBottom: 10, display: 'flex', flexWrap: 'wrap', gap: 5 }}>
+      <div style={{ marginBottom: 14, display: 'flex', flexWrap: 'wrap', gap: 8 }}>
         {ALL_SYMPTOMS.map(s => {
           const sev = symptoms[s];
           const active = !!sev;
           const color = active ? SEVERITY_COLOR[sev] : T.border;
           return (
             <button key={s} onClick={() => cycleSeverity(s)} style={{
-              padding: '4px 9px', borderRadius: 14, border: `1.5px solid ${color}`,
+              padding: '10px 16px', borderRadius: 16, minHeight: 44,
+              border: `1.5px solid ${color}`,
               background: active ? `${color}22` : 'transparent',
-              color: active ? T.espresso : T.muted,
-              fontSize: 11, fontWeight: 600, cursor: 'pointer',
-              display: 'inline-flex', alignItems: 'center', gap: 4,
+              color: active ? T.espresso : T.espresso,
+              fontSize: 13, fontWeight: 600, cursor: 'pointer',
+              display: 'inline-flex', alignItems: 'center', gap: 6,
             }}>
               {s}
               {active && <span style={{
-                fontSize: 8.5, padding: '1px 5px', borderRadius: 8,
+                fontSize: 10, padding: '2px 7px', borderRadius: 9,
                 background: color, color: T.white, fontWeight: 800, letterSpacing: '0.04em',
                 textTransform: 'uppercase',
               }}>{sev}</span>}
