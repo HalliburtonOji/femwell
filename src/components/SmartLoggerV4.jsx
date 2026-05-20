@@ -600,76 +600,80 @@ function Card3Nourish({ stage, onSave, showToast }) {
 
   return (
     <div>
-      <SectionLabel>Log a meal</SectionLabel>
-      <div style={{ display: 'flex', gap: 5, marginBottom: 8, flexWrap: 'wrap' }}>
+      {/* Meal logger — matches Today CheckinModal pattern: uppercase kicker,
+          pill meal-type buttons, textarea, "Log meal" CTA. */}
+      <SectionLabel>Meal</SectionLabel>
+      <div style={{ display: 'flex', gap: 8, marginBottom: 12, flexWrap: 'wrap' }}>
         {['Breakfast','Lunch','Dinner','Snack'].map(m => {
           const active = activeMeal === m;
           return (
             <button key={m} onClick={() => setActiveMeal(active ? null : m)} style={{
-              padding: '5px 12px', borderRadius: 14,
-              border: `1.5px solid ${active ? T.gold : T.border}`,
-              background: active ? T.gold : T.paperHi,
-              color: active ? T.espresso : T.muted, fontSize: 11.5, fontWeight: 700, cursor: 'pointer',
+              padding: '10px 18px', borderRadius: 9999, minHeight: 44,
+              border: 'none',
+              background: active ? T.espresso : 'rgba(58,44,26,0.08)',
+              color: active ? T.white : T.muted,
+              fontSize: 13, fontWeight: 600, cursor: 'pointer',
+              textTransform: 'capitalize',
+              transition: 'all 0.18s ease',
             }}>{m}</button>
           );
         })}
       </div>
 
       {activeMeal && (
-        <div style={{
-          background: `${T.gold}10`, border: `1px dashed ${T.gold}55`, borderRadius: 10,
-          padding: '10px 11px', marginBottom: 10,
-        }}>
-          <input
+        <div style={{ marginBottom: 16 }}>
+          <textarea
             value={description} onChange={e => setDescription(e.target.value)}
             placeholder={`What did you eat for ${activeMeal.toLowerCase()}?`}
-            onKeyDown={e => e.key === 'Enter' && logMeal()}
+            rows={2}
             style={{
               width: '100%', boxSizing: 'border-box',
-              padding: '8px 10px', borderRadius: 8,
-              border: `1px solid ${T.border}`, background: T.white,
-              fontSize: 12.5, color: T.espresso, outline: 'none', marginBottom: 8,
+              padding: '12px 14px', borderRadius: 12, minHeight: 60,
+              border: `1.5px solid ${T.border}`, background: T.white,
+              fontSize: 14, color: T.espresso, outline: 'none', marginBottom: 10,
+              resize: 'vertical', fontFamily: 'inherit',
             }}
           />
-          <div style={{ display: 'flex', gap: 5, marginBottom: 8 }}>
+          <div style={{ display: 'flex', gap: 6, marginBottom: 10 }}>
             {['Small','Medium','Large'].map(p2 => (
               <button key={p2} onClick={() => setPortion(p2)} style={{
-                flex: 1, padding: '4px 8px', borderRadius: 10,
+                flex: 1, padding: '10px 12px', borderRadius: 16, minHeight: 44,
                 border: `1.5px solid ${portion === p2 ? T.gold : T.border}`,
                 background: portion === p2 ? `${T.gold}22` : T.white,
-                color: T.espresso, fontSize: 11, fontWeight: 600, cursor: 'pointer',
+                color: T.espresso, fontSize: 13, fontWeight: 600, cursor: 'pointer',
               }}>{p2}</button>
             ))}
           </div>
-          <div style={{ display: 'flex', gap: 5, marginBottom: 8 }}>
+          <div style={{ display: 'flex', gap: 6, marginBottom: 12 }}>
             <input value={cal} onChange={e => setCal(e.target.value)} placeholder="kcal" type="number"
-              style={{ flex: 1, padding: '6px 8px', borderRadius: 8, border: `1px solid ${T.border}`, background: T.white, fontSize: 11.5, color: T.espresso, outline: 'none', minWidth: 0 }} />
+              style={{ flex: 1, padding: '10px 12px', borderRadius: 10, border: `1.5px solid ${T.border}`, background: T.white, fontSize: 14, color: T.espresso, outline: 'none', minWidth: 0, minHeight: 44, boxSizing: 'border-box' }} />
             <input value={p}   onChange={e => setP(e.target.value)}   placeholder="P g" type="number"
-              style={{ width: 56, padding: '6px 8px', borderRadius: 8, border: `1px solid ${T.border}`, background: T.white, fontSize: 11.5, color: T.espresso, outline: 'none' }} />
+              style={{ width: 70, padding: '10px 12px', borderRadius: 10, border: `1.5px solid ${T.border}`, background: T.white, fontSize: 14, color: T.espresso, outline: 'none', minHeight: 44, boxSizing: 'border-box' }} />
             <input value={c}   onChange={e => setC(e.target.value)}   placeholder="C g" type="number"
-              style={{ width: 56, padding: '6px 8px', borderRadius: 8, border: `1px solid ${T.border}`, background: T.white, fontSize: 11.5, color: T.espresso, outline: 'none' }} />
+              style={{ width: 70, padding: '10px 12px', borderRadius: 10, border: `1.5px solid ${T.border}`, background: T.white, fontSize: 14, color: T.espresso, outline: 'none', minHeight: 44, boxSizing: 'border-box' }} />
             <input value={f}   onChange={e => setF(e.target.value)}   placeholder="F g" type="number"
-              style={{ width: 56, padding: '6px 8px', borderRadius: 8, border: `1px solid ${T.border}`, background: T.white, fontSize: 11.5, color: T.espresso, outline: 'none' }} />
+              style={{ width: 70, padding: '10px 12px', borderRadius: 10, border: `1.5px solid ${T.border}`, background: T.white, fontSize: 14, color: T.espresso, outline: 'none', minHeight: 44, boxSizing: 'border-box' }} />
           </div>
           <button onClick={logMeal} disabled={!description.trim()} style={{
-            width: '100%', padding: '8px 12px', borderRadius: 8, border: 'none',
-            background: description.trim() ? T.espresso : 'rgba(58,44,26,0.18)',
-            color: T.cream, fontWeight: 700, fontSize: 12.5, cursor: description.trim() ? 'pointer' : 'not-allowed',
+            padding: '12px 24px', borderRadius: 9999, border: 'none',
+            background: description.trim() ? T.espresso : 'rgba(58,44,26,0.20)',
+            color: T.cream, fontWeight: 600, fontSize: 14, cursor: description.trim() ? 'pointer' : 'not-allowed',
+            minHeight: 44,
           }}>Log meal</button>
         </div>
       )}
 
       {loggedMeals.length > 0 && (
-        <div style={{ marginBottom: 10, display: 'flex', flexWrap: 'wrap', gap: 4 }}>
+        <div style={{ marginBottom: 16, display: 'flex', flexWrap: 'wrap', gap: 6 }}>
           {loggedMeals.map((m, i) => (
             <button key={i} onClick={() => removeMeal(i)} style={{
-              padding: '3px 8px', borderRadius: 12, background: T.sage,
-              color: T.white, fontSize: 10.5, fontWeight: 600, border: 'none', cursor: 'pointer',
-              display: 'inline-flex', alignItems: 'center', gap: 4,
+              padding: '8px 14px', borderRadius: 16, background: T.sage,
+              color: T.white, fontSize: 12.5, fontWeight: 600, border: 'none', cursor: 'pointer',
+              display: 'inline-flex', alignItems: 'center', gap: 6, minHeight: 36,
             }}>
-              <Check size={10} strokeWidth={3} />
-              {m.meal_type[0].toUpperCase() + m.meal_type.slice(1)} · {m.description.slice(0, 24)}{m.description.length > 24 ? '…' : ''} · {m.portion[0]}{m.cal ? ` · ${m.cal}kcal` : ''}
-              <XIcon size={10} style={{ marginLeft: 2 }} />
+              <Check size={12} strokeWidth={3} />
+              {m.meal_type[0].toUpperCase() + m.meal_type.slice(1)} · {m.description.slice(0, 28)}{m.description.length > 28 ? '…' : ''} · {m.portion[0]}{m.cal ? ` · ${m.cal}kcal` : ''}
+              <XIcon size={12} style={{ marginLeft: 2 }} />
             </button>
           ))}
         </div>
@@ -1259,13 +1263,15 @@ export default function SmartLoggerV4({
     if (delta < 0 && currentCard > 0)                setCurrentCard(c => c - 1);
   };
 
+  // Flat horizontal-translate deck (no 3D rotateY — that was causing
+  // sub-pixel render shifts that clipped the left edge of section labels).
   const cardTransform = (pos) => {
     const diff = pos - currentCard;
-    if (diff === 0)  return { x: '0%',     scale: 1,    opacity: 1,    rotateY: 0,   zIndex: 10 };
-    if (diff === 1)  return { x: '75%',    scale: 0.92, opacity: 0.65, rotateY: -8,  zIndex: 9 };
-    if (diff >= 2)   return { x: '150%',   scale: 0.85, opacity: 0,    rotateY: -10, zIndex: 8 };
-    if (diff === -1) return { x: '-105%',  scale: 0.88, opacity: 0,    rotateY: 12,  zIndex: 7 };
-    return            { x: '-200%',  scale: 0.85, opacity: 0,    rotateY: 14,  zIndex: 6 };
+    if (diff === 0)  return { x: '0%',     scale: 1,    opacity: 1,    zIndex: 10 };
+    if (diff === 1)  return { x: '88%',    scale: 0.94, opacity: 0.55, zIndex: 9 };
+    if (diff >= 2)   return { x: '160%',   scale: 0.88, opacity: 0,    zIndex: 8 };
+    if (diff === -1) return { x: '-100%',  scale: 0.94, opacity: 0,    zIndex: 7 };
+    return            { x: '-200%',  scale: 0.88, opacity: 0,    zIndex: 6 };
   };
 
   const renderCard = (i) => {
@@ -1309,7 +1315,7 @@ export default function SmartLoggerV4({
       border: `1px solid ${T.border}`,
       display: 'flex', flexDirection: 'column',
       overflow: 'hidden',
-      maxHeight: '92vh', height: '92vh',
+      maxHeight: '88vh', height: '88vh',
     }}>
       <div style={{
         display: 'flex', alignItems: 'center', justifyContent: 'space-between',
@@ -1327,9 +1333,9 @@ export default function SmartLoggerV4({
       <PillNav current={currentCard} completed={completed} onSelect={setCurrentCard} />
       <div
         style={{
-          position: 'relative', flex: 1, minHeight: 460, margin: '12px 0 12px',
+          position: 'relative', flex: 1, minHeight: 0,
+          margin: '12px 12px 16px',
           overflow: 'hidden',
-          perspective: '1200px', perspectiveOrigin: '50% 30%',
         }}
         onMouseDown={e => handleDragStart(e.clientX)}
         onMouseUp={e   => handleDragEnd(e.clientX)}
@@ -1337,26 +1343,33 @@ export default function SmartLoggerV4({
         onTouchEnd={e   => handleDragEnd(e.changedTouches[0].clientX)}
       >
         {Array.from({ length: TOTAL_CARDS }, (_, i) => {
-          const { x, scale, opacity, rotateY, zIndex } = cardTransform(i);
+          const { x, scale, opacity, zIndex } = cardTransform(i);
           const isActive = i === currentCard;
           return (
             <div key={i} style={{
-              position: 'absolute', top: 0, left: '50%',
-              width: 'calc(100% - 32px)',
-              transform: `translateX(calc(-50% + ${x})) scale(${scale}) rotateY(${rotateY}deg)`,
-              transformStyle: 'preserve-3d',
+              position: 'absolute', top: 0, left: 0, right: 0, bottom: 0,
+              transform: `translateX(${x}) scale(${scale})`,
+              transformOrigin: '50% 50%',
               opacity, zIndex,
-              transition: 'transform 0.4s cubic-bezier(0.23, 1, 0.32, 1), opacity 0.4s ease',
-              background: T.cardBg, borderRadius: 18, padding: '20px 20px',
+              transition: 'transform 0.35s cubic-bezier(0.23, 1, 0.32, 1), opacity 0.35s ease',
+              background: T.cardBg, borderRadius: 18,
               boxShadow: isActive
                 ? '0 20px 60px rgba(58,44,26,0.18), 0 4px 16px rgba(58,44,26,0.12)'
                 : '0 6px 18px rgba(58,44,26,0.08)',
               border: `1px solid ${T.border}`,
-              overflowY: 'auto', maxHeight: '100%',
               pointerEvents: isActive ? 'auto' : 'none',
+              display: 'flex', flexDirection: 'column',
+              overflow: 'hidden',
             }}>
-              {cardTitle(i)}
-              {renderCard(i)}
+              <div style={{ padding: '20px 20px 12px', flexShrink: 0 }}>
+                {cardTitle(i)}
+              </div>
+              <div style={{
+                padding: '0 20px 20px',
+                flex: 1, overflowY: 'auto', overflowX: 'hidden',
+              }}>
+                {renderCard(i)}
+              </div>
             </div>
           );
         })}
