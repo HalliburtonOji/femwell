@@ -1,10 +1,8 @@
 // ─────────────────────────────────────────────────────────────────────────────
-// UnifiedPlannerDemo — v3 (revert to single-page slider layout per Halli).
+// PlannerV2Shell — production Planner page (mounted by Planner.jsx, was
+// originally /Ideas "Unified" demo; promoted to production).
 //
-// DEMO ONLY. Lives at /Ideas → "Unified" tab. Does NOT touch Planner.jsx,
-// Today.jsx, or any production file.
-//
-// v3 STRUCTURE (one long scrollable page, horizontal swipe rows):
+// STRUCTURE (one long scrollable page, horizontal swipe rows):
 //   · Header (greeting only — no icon buttons)
 //   · My Lists chip row
 //   · SCHEDULE & CYCLE row — 2 cards. Each is a compact preview that
@@ -102,6 +100,57 @@ const PHASE_SOFT = {
   ovulatory:  C.softOvulatory,
   luteal:     C.softLuteal,
 };
+
+// ── Real-phase derivation ─────────────────────────────────────────────────
+// Mirrors Nutrition page's deriveCyclePhase: computes day-in-cycle from
+// last_period_start_date + cycle_avg_length, then bucket-classifies into
+// menstrual / follicular / ovulatory / luteal. Returns phase + dayInCycle
+// + daysUntilPeriod so the phase-keyed copy maps can present cycle-accurate
+// content (instead of the original demo's hardcoded luteal strings).
+function derivePlannerPhase(prof) {
+  if (!prof?.last_period_start_date) {
+    return { phase: "follicular", dayInCycle: 1, daysUntilPeriod: null, periodLen: 5, cycleLen: 28 };
+  }
+  const cycleLen  = prof.cycle_avg_length || 28;
+  const periodLen = prof.period_length    || 5;
+  const start     = new Date(prof.last_period_start_date);
+  const t         = new Date(); t.setHours(0, 0, 0, 0);
+  const startDay  = new Date(start); startDay.setHours(0, 0, 0, 0);
+  const dayInCycleRaw = Math.floor((t - startDay) / 86400000) + 1;
+  const normDay   = ((dayInCycleRaw - 1) % cycleLen + cycleLen) % cycleLen + 1;
+  const daysUntilPeriod = cycleLen - normDay + 1;
+  let phase;
+  if (normDay <= periodLen) phase = "menstrual";
+  else if (normDay <= Math.floor(cycleLen * 0.43)) phase = "follicular";
+  else if (normDay <= Math.floor(cycleLen * 0.5))  phase = "ovulatory";
+  else phase = "luteal";
+  return { phase, dayInCycle: normDay, daysUntilPeriod, periodLen, cycleLen };
+}
+
+// ── Phase-keyed copy ──────────────────────────────────────────────────────
+const PHASE_LABEL = {
+  menstrual: "Menstrual", follicular: "Follicular",
+  ovulatory: "Ovulatory", luteal:     "Luteal",
+};
+const ASTRA_READINGS = {
+  menstrual:  { eyebrow: "ASTRA · MENSTRUAL INSIGHT",  title: "Rest is the strategy right now",     body: "Day 1 energy is lowest — warmth, gentle movement and iron-rich food support your body today." },
+  follicular: { eyebrow: "ASTRA · FOLLICULAR INSIGHT", title: "Your energy is building",             body: "Oestrogen is rising. A great time to start new habits, social plans and strength work." },
+  ovulatory:  { eyebrow: "ASTRA · OVULATORY INSIGHT",  title: "Your peak window is open",            body: "LH surge detected — communication, visibility and high-output work land best right now." },
+  luteal:     { eyebrow: "ASTRA · LUTEAL INSIGHT",     title: "Your body is finishing the cycle",    body: "Progesterone is doing the heavy lifting. Magnesium, early bed and warm food make luteal kinder." },
+};
+const RECOVERY_NOTES = {
+  menstrual:  { title: "Sleep is medicine today",         body: "Bed by 10pm protects day 1 & 2 energy. Heat, magnesium and a slow morning matter most." },
+  follicular: { title: "Use the energy surge wisely",     body: "Sleep quality improves with oestrogen. Late nights are fine — your body recovers faster now." },
+  ovulatory:  { title: "Peak output needs peak recovery", body: "Match your high-output days with 7–8 hrs. Recovery fuels the next follicular sprint." },
+  luteal:     { title: "Sleep is the work this week",     body: "Progesterone is doing the heavy lifting. Bed by 10:30 protects tomorrow's mood." },
+};
+const SMART_VIEW_BULLETS = {
+  menstrual:  ["Rest is an active strategy — protect your energy today", "Warm cooked food and iron support replenishment", "Gentle heat, slow movement and early rest"],
+  follicular: ["Rising oestrogen means new habits land well — start something", "Higher-intensity workouts and social plans are energetically aligned", "Fresh, lighter foods and hydration support the building phase"],
+  ovulatory:  ["Your communication and output capacity is at its peak", "High-protein, anti-inflammatory foods fuel the surge", "Match peak output with adequate recovery tonight"],
+  luteal:     ["Lower the activity bar — your body is finishing the cycle", "Magnesium and warm cooked food make luteal kinder", "Bed by 10:30 protects tomorrow's mood"],
+};
+// CycleZone (chips + subline) derived in component since they reference dayInCycle/daysUntilPeriod.
 const phaseChapter = { menstrual: "I", follicular: "II", ovulatory: "III", luteal: "IV" };
 const phaseInsights = {
   menstrual:  { title: "A week to soften", body: "Your body is doing important work. Lower the bar, lower the lights, and let this week be small." },
@@ -463,8 +512,18 @@ export default function PlannerV2Shell({
   );
 
   // Phase + cycle day used by StageRow / ConditionRow.
-  const phase    = selectedPhase     || profileProp?.current_phase || profile.phase;
-  const cycleDay = selectedCycleDay  || profileProp?.cycle_day     || profile.cycleDay;
+  // Prefer derived-from-last-period over stored fields so the entire page
+  // stays internally consistent (greeting "Menstrual Day 1" was inconsistent
+  // with hardcoded "Luteal week" / "OVULATORY READING" strings throughout).
+  const derived = useMemo(() => derivePlannerPhase(profileProp), [
+    profileProp?.last_period_start_date,
+    profileProp?.cycle_avg_length,
+    profileProp?.period_length,
+  ]);
+  const phase    = selectedPhase     || derived.phase    || profileProp?.current_phase || profile.phase;
+  const cycleDay = selectedCycleDay  || derived.dayInCycle || profileProp?.cycle_day   || profile.cycleDay;
+  const daysUntilPeriod = derived.daysUntilPeriod;
+  const periodLen = derived.periodLen;
 
   // ── Phase B1: real profile + greeting wiring ──────────────────────────────
   // The demo's many child components read from the module-level `profile`
@@ -566,21 +625,33 @@ export default function PlannerV2Shell({
       <Header greeting={greeting} onOpenPlan={() => setPlanOpen(true)} lifeStage={profileProp?.life_stage || realLifeStage} />
 
       {/* INSIGHTS hero — first horizontal slider on the page */}
-      <InsightsHeroRow />
+      <InsightsHeroRow phase={phase} dayInCycle={cycleDay} />
 
       <ListsSection user={user} />
 
       <Row label="Schedule & cycle">
         <SchedulePreviewCard blocks={blocks} onExpand={() => setScheduleOpen(true)} />
-        <CyclePreviewCard onExpand={() => setCycleOpen(true)} />
+        <CyclePreviewCard
+          onExpand={() => setCycleOpen(true)}
+          phase={phase}
+          dayInCycle={cycleDay}
+          daysUntilPeriod={daysUntilPeriod}
+          periodLen={periodLen}
+          profileProp={profileProp}
+        />
       </Row>
 
       <YourDayRow />
 
       <Row label="Your body today">
         <BodyTodayCard user={user} />
-        <SmartViewCard />
-        <CycleZoneCard onOpen={() => setCycleOpen(true)} />
+        <SmartViewCard phase={phase} />
+        <CycleZoneCard
+          onOpen={() => setCycleOpen(true)}
+          phase={phase}
+          dayInCycle={cycleDay}
+          daysUntilPeriod={daysUntilPeriod}
+        />
       </Row>
 
       {/* Stage + condition rows — only render when relevant; StageRow + ConditionRow
@@ -632,7 +703,8 @@ export default function PlannerV2Shell({
         <CycleReflectionCard />
       </Row>
 
-      <DemoFooter />
+      {/* DemoFooter removed from production render — the function is kept
+          intact below for now but no longer mounted. */}
 
       <PlanADaySheet open={planOpen} onClose={() => setPlanOpen(false)} />
 
@@ -914,16 +986,24 @@ function SunIllustration({ tone = C.gold, size = 70 }) {
 }
 
 // ── Insights hero slider row (NEW) ────────────────────────────────────────
-function InsightsHeroRow() {
-  const phase = profile.phase;
+function InsightsHeroRow({ phase: phaseProp, dayInCycle }) {
+  // Phase + cycleDay propagated from PlannerV2Shell so this row reflects
+  // the user's actual position in their cycle. Falls back to module-level
+  // mock (profile.phase) only if the prop hasn't been wired (legacy guard).
+  const phase  = phaseProp || profile.phase;
+  const day    = dayInCycle || profile.cycleDay;
   const accent = PHASE_DEEP[phase];
-  const soft = PHASE_SOFT[phase];
-  const insight = phaseInsights[phase];
-  const chapter = phaseChapter[phase];
+  const soft   = PHASE_SOFT[phase];
+  const insight = phaseInsights[phase] || phaseInsights.luteal;
+  const chapter = phaseChapter[phase] || "—";
+  // Phase-keyed Astra reading + recovery note — replaces the original
+  // demo's hardcoded "OVULATORY READING" + "luteal sleep note" strings.
+  const astra    = ASTRA_READINGS[phase]   || ASTRA_READINGS.follicular;
+  const recovery = RECOVERY_NOTES[phase]   || RECOVERY_NOTES.follicular;
   return (
     <Row label="">
       <HeroInsightCard
-        eyebrow={`CHAPTER ${chapter} · ${phase.toUpperCase()} · DAY ${profile.cycleDay}`}
+        eyebrow={`CHAPTER ${chapter} · ${phase.toUpperCase()} · DAY ${day}`}
         title={insight.title}
         body={insight.body}
         footer="From Jess · this week"
@@ -931,17 +1011,17 @@ function InsightsHeroRow() {
         soft={soft}
       />
       <HeroInsightCard
-        eyebrow={`ASTRA · OVULATORY READING`}
-        title="Your peak window is closing"
-        body="You're at day 25 — luteal is in motion. The bold output of the last fortnight has done its work; this week the rooms you walk into want softness, not push. Listen for what's narrowing."
+        eyebrow={astra.eyebrow}
+        title={astra.title}
+        body={astra.body}
         footer="From Astra · today"
         accent={C.gold}
         soft="#F0E0B0"
       />
       <HeroInsightCard
         eyebrow={`PHASE · GENTLE NOTE`}
-        title="Sleep is the work this week"
-        body="In luteal, progesterone is doing the heavy lifting. Bed by 10:30. The rest of your day will thank you tomorrow."
+        title={recovery.title}
+        body={recovery.body}
         footer="From your body · always"
         accent={C.sage}
         soft="#D8E5D3"
@@ -1329,37 +1409,89 @@ function SchedulePreviewCard({ blocks, onExpand }) {
 }
 
 // ── Cycle preview card ────────────────────────────────────────────────────
-function CyclePreviewCard({ onExpand }) {
-  const tone = PHASE_DEEP[profile.phase];
+function CyclePreviewCard({ onExpand, phase: phaseProp, dayInCycle, daysUntilPeriod, periodLen, profileProp }) {
+  const phase = phaseProp || profile.phase;
+  const day   = dayInCycle || profile.cycleDay;
+  const tone  = PHASE_DEEP[phase];
+
+  // Title: "<Month Year> · <Phase> day <N>"
+  const now = new Date();
+  const monthYear = now.toLocaleDateString(undefined, { month: "long", year: "numeric" });
+  const phaseLabel = PHASE_LABEL[phase] || "Cycle";
+  const title = `${monthYear} · ${phaseLabel} day ${day}`;
+
+  // Compute 7-day strip centred on today (today − 3 … today + 3). Each cell's
+  // phase is derived from where it lands in the cycle, so the strip stays in
+  // sync with the phase legend even across phase boundaries.
+  const startISO = profileProp?.last_period_start_date;
+  const cycleLen = profileProp?.cycle_avg_length || 28;
+  const pLen     = periodLen || profileProp?.period_length || 5;
+  const periodStart = startISO ? new Date(startISO) : null;
+  if (periodStart) periodStart.setHours(0, 0, 0, 0);
+  const todayMid = new Date(now); todayMid.setHours(0, 0, 0, 0);
+  const DAY_LETTERS = ["S", "M", "T", "W", "T", "F", "S"];
+  const weekDays = Array.from({ length: 7 }, (_, i) => {
+    const d = new Date(todayMid); d.setDate(todayMid.getDate() + (i - 3));
+    let cellPhase = "follicular", cellDay = 1;
+    if (periodStart) {
+      const diff = Math.floor((d - periodStart) / 86400000) + 1;
+      cellDay = ((diff - 1) % cycleLen + cycleLen) % cycleLen + 1;
+      if (cellDay <= pLen) cellPhase = "menstrual";
+      else if (cellDay <= Math.floor(cycleLen * 0.43)) cellPhase = "follicular";
+      else if (cellDay <= Math.floor(cycleLen * 0.5))  cellPhase = "ovulatory";
+      else cellPhase = "luteal";
+    }
+    return {
+      letter: DAY_LETTERS[d.getDay()],
+      date: d.getDate(),
+      phase: cellPhase,
+      isToday: d.getTime() === todayMid.getTime(),
+    };
+  });
+
+  // Subline reflects real cycle math.
+  let subline;
+  if (!startISO) {
+    subline = "Log your period to see predictions";
+  } else if (phase === "menstrual") {
+    subline = <>Period day <b>{day}</b> of <b>{pLen}</b></>;
+  } else if (daysUntilPeriod != null && daysUntilPeriod <= 1) {
+    subline = "Period expected tomorrow";
+  } else if (daysUntilPeriod != null) {
+    subline = <>Period expected in <b>{daysUntilPeriod} days</b></>;
+  } else {
+    subline = `${phaseLabel} phase`;
+  }
+
   return (
     <article style={cardStyle}>
       <div style={cardHeadRow}>
         <span style={{ ...iconChip, background: `${tone}1F`, color: tone }}><Calendar size={13} /></span>
         <div style={{ flex: 1 }}>
           <span style={kicker}>CYCLE</span>
-          <h3 style={{ ...cardTitle, margin: "2px 0 0" }}>May 2026 · Luteal week</h3>
+          <h3 style={{ ...cardTitle, margin: "2px 0 0" }}>{title}</h3>
         </div>
         <button onClick={onExpand} style={expandIconBtn} aria-label="Expand calendar">
           <Maximize2 size={13} />
         </button>
       </div>
       <div style={miniWeekRow}>
-        {weekStrip.map((d, i) => {
+        {weekDays.map((d, i) => {
           const phaseDeep = PHASE_DEEP[d.phase];
           return (
             <div key={i} style={{
               ...miniWeekCell,
-              background: d.today ? "#FFFFFF" : phaseDeep,
-              boxShadow: d.today ? "0 2px 8px rgba(58,44,26,0.15)" : "none",
-              border: d.today ? `1px solid rgba(58,44,26,0.12)` : `1px solid transparent`,
+              background: d.isToday ? "#FFFFFF" : phaseDeep,
+              boxShadow: d.isToday ? "0 2px 8px rgba(58,44,26,0.15)" : "none",
+              border: d.isToday ? `1px solid rgba(58,44,26,0.12)` : `1px solid transparent`,
             }}>
-              <span style={{ ...miniWeekLetter, color: d.today ? C.muted : "rgba(255,255,255,0.85)" }}>{d.d}</span>
-              <span style={{ ...miniWeekNum, color: d.today ? C.espresso : "rgba(255,255,255,0.95)" }}>{d.date}</span>
+              <span style={{ ...miniWeekLetter, color: d.isToday ? C.muted : "rgba(255,255,255,0.85)" }}>{d.letter}</span>
+              <span style={{ ...miniWeekNum, color: d.isToday ? C.espresso : "rgba(255,255,255,0.95)" }}>{d.date}</span>
             </div>
           );
         })}
       </div>
-      <p style={cardSub}>Period predicted in <b>3 days</b> · 84% confidence</p>
+      <p style={cardSub}>{subline}</p>
       <button onClick={onExpand} style={openFullBtn}>
         Open month view <ChevronRight size={12} />
       </button>
@@ -1527,12 +1659,10 @@ function BodyTodayCard({ user }) {
   );
 }
 
-function SmartViewCard() {
-  const bullets = [
-    "Lower the activity bar — your body is finishing the cycle",
-    "Magnesium + warm cooked food make luteal kinder",
-    "Bed by 10:30 protects tomorrow's mood",
-  ];
+function SmartViewCard({ phase: phaseProp }) {
+  // Phase-keyed bullets — was hardcoded to luteal advice for every user.
+  const phase = phaseProp || profile.phase;
+  const bullets = SMART_VIEW_BULLETS[phase] || SMART_VIEW_BULLETS.follicular;
   return (
     <article style={cardStyle}>
       <div style={cardHeadRow}>
@@ -1549,20 +1679,45 @@ function SmartViewCard() {
   );
 }
 
-function CycleZoneCard({ onOpen }) {
-  const tone = PHASE_DEEP[profile.phase];
+function CycleZoneCard({ onOpen, phase: phaseProp, dayInCycle, daysUntilPeriod }) {
+  // Phase-keyed banner subline + chip set — was hardcoded "period in 3 days"
+  // + "Energy easing / PMS rising / Inner autumn" (luteal-only) for every
+  // user regardless of actual phase.
+  const phase = phaseProp || profile.phase;
+  const day   = dayInCycle || profile.cycleDay;
+  const tone  = PHASE_DEEP[phase];
+  const len   = profile.cycleLen;
+
+  let chips;
+  let bannerSub;
+  if (phase === "menstrual") {
+    chips = ["Rest & restore", "Bleed phase", "Inner winter"];
+    bannerSub = day === 1 ? `Day ${day} of ${len} · honour the pause` : `Period day ${day}`;
+  } else if (phase === "follicular") {
+    chips = ["Energy rising", "New beginnings", "Inner spring"];
+    bannerSub = `Day ${day} of ${len} · ovulation approaching`;
+  } else if (phase === "ovulatory") {
+    chips = ["Peak energy", "Fertile window", "Inner summer"];
+    bannerSub = `Day ${day} of ${len} · fertile window`;
+  } else {
+    chips = ["Energy easing", daysUntilPeriod != null && daysUntilPeriod <= 7 ? "PMS window" : "Nesting phase", "Inner autumn"];
+    bannerSub = daysUntilPeriod != null && daysUntilPeriod <= 3
+      ? `Day ${day} of ${len} · period in ${daysUntilPeriod} days`
+      : `Day ${day} of ${len} · luteal`;
+  }
+
   return (
     <article style={{ ...cardStyle, padding: 0, overflow: "hidden" }}>
       <div style={{ ...cycleBanner, background: `linear-gradient(135deg, ${tone}22 0%, ${tone}08 100%)`, borderBottom: `1px solid ${tone}33` }}>
-        <span style={cycleBannerLabel}>{profile.phase.toUpperCase()}</span>
-        <p style={cycleBannerSub}>Day {profile.cycleDay} of {profile.cycleLen} · period in 3 days</p>
+        <span style={cycleBannerLabel}>{phase.toUpperCase()}</span>
+        <p style={cycleBannerSub}>{bannerSub}</p>
       </div>
       <div style={{ padding: "12px 14px" }}>
         <span style={kicker}>PREDICTED TODAY</span>
         <div style={chipBowl}>
-          <span style={softChip}><span style={{ ...softChipDot, background: C.muted }} /> Energy easing</span>
-          <span style={softChip}><span style={{ ...softChipDot, background: C.blush }} /> PMS rising</span>
-          <span style={softChip}><span style={{ ...softChipDot, background: tone }} /> Inner autumn</span>
+          <span style={softChip}><span style={{ ...softChipDot, background: C.muted }} /> {chips[0]}</span>
+          <span style={softChip}><span style={{ ...softChipDot, background: C.blush }} /> {chips[1]}</span>
+          <span style={softChip}><span style={{ ...softChipDot, background: tone }} /> {chips[2]}</span>
         </div>
         <button onClick={onOpen} style={openCycleBtn}>
           Open cycle calendar <ChevronRight size={12} />
