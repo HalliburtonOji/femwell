@@ -654,20 +654,43 @@ export default function PlannerV2Shell({
         />
       </Row>
 
-      {/* Stage + condition rows — only render when relevant; StageRow + ConditionRow
-          internally short-circuit when stage = "reproductive" / no conditions. */}
-      <StageRow
-        stage={effectiveLifeStage}
-        profile={profileProp}
-        phase={phase}
-        cycleDay={cycleDay}
-      />
-      <ConditionRow
-        conditions={effectiveConditions}
-        profile={profileProp}
-        phase={phase}
-        cycleDay={cycleDay}
-      />
+      {/* Stage + condition rows — #13: suppress cycle-driven conditions during
+          pregnancy / postpartum because they're not biologically active. */}
+      {(() => {
+        const PREGNANCY_STAGES = ["pregnant-t1", "pregnant-t2", "pregnant-t3", "postpartum"];
+        const CYCLE_CONDITIONS = ["pmdd", "pcos", "endometriosis", "fibroids"];
+        const isPregOrPP = PREGNANCY_STAGES.includes(String(effectiveLifeStage || "").toLowerCase());
+        const conds = (effectiveConditions || []).map((c) => String(c || "").toLowerCase());
+        const suppressed = isPregOrPP ? conds.filter((c) => CYCLE_CONDITIONS.includes(c)) : [];
+        const visible    = conds.filter((c) => !suppressed.includes(c));
+        return (
+          <>
+            {suppressed.length > 0 && (
+              <div style={{
+                padding: "8px 16px", margin: "8px 16px 0",
+                background: "rgba(58,44,26,0.04)", borderRadius: 10,
+                fontSize: 12, color: C.muted, fontStyle: "italic",
+              }}>
+                Cycle-linked conditions ({suppressed.map((c) => c.toUpperCase()).join(", ")}) are paused during pregnancy.
+              </div>
+            )}
+            <StageRow
+              stage={effectiveLifeStage}
+              profile={profileProp}
+              phase={phase}
+              cycleDay={cycleDay}
+            />
+            {visible.length > 0 && (
+              <ConditionRow
+                conditions={visible}
+                profile={profileProp}
+                phase={phase}
+                cycleDay={cycleDay}
+              />
+            )}
+          </>
+        );
+      })()}
 
       <Row label="Rituals">
         <MorningStackCard user={user} />
@@ -694,19 +717,22 @@ export default function PlannerV2Shell({
         <MedsAndSuppsCard user={user} />
         <SymptomLogCard />
         <BodyScanCard />
-        <GPReportCardSmall />
+        <GPReportCardSmall profile={profileProp} />
       </Row>
 
       <Row label="Tonight">
         <TonightReflectionCard user={user} />
         <TomorrowPreviewCard user={user} />
-        <CycleReflectionCard />
+        {/* #11: CycleReflectionCard removed (duplicated BodyTodayCard's
+            mood/energy/symptoms check-in). Replaced by EndOfDayNoteCard —
+            a single reflective text field persisted to JournalEntries. */}
+        <EndOfDayNoteCard user={user} />
       </Row>
 
       {/* DemoFooter removed from production render — the function is kept
           intact below for now but no longer mounted. */}
 
-      <PlanADaySheet open={planOpen} onClose={() => setPlanOpen(false)} />
+      <PlanADaySheet open={planOpen} onClose={() => setPlanOpen(false)} user={user} />
 
       <FullScheduleOverlay
         open={scheduleOpen}
@@ -789,17 +815,84 @@ function Header({ greeting, onOpenPlan, lifeStage }) {
 }
 
 // ── Plan a day — compact bottom sheet ─────────────────────────────────────
-function PlanADaySheet({ open, onClose }) {
+function PlanADaySheet({ open, onClose, user }) {
   const [mode, setMode] = useState("none");
   const dateRef = useRef(null);
   const [bpStep, setBpStep] = useState(0);
   const [bpDate, setBpDate] = useState(null);
-  const [todayPlan, setTodayPlan] = useState([
-    "Deep work · investor update", "Lunch with Sam", "Wind-down · journal",
-  ]);
+  // #9 — Real PlannerItems for today instead of the mock seed.
+  // Each row: { id, time, title, done }.
+  const [todayPlan, setTodayPlan]     = useState([]);
+  const [loading, setLoading]         = useState(false);
+  const [newTitle, setNewTitle]       = useState("");
+  const [newTime,  setNewTime]        = useState("");
   useEffect(() => {
-    if (!open) { setMode("none"); setBpStep(0); setBpDate(null); }
-  }, [open]);
+    if (!open) { setMode("none"); setBpStep(0); setBpDate(null); return; }
+    if (!user?.id) return;
+    let cancelled = false;
+    setLoading(true);
+    (async () => {
+      try {
+        const rows = await base44.entities.PlannerItems.filter(
+          { user_id: user.id }, "-created_date", 80,
+        ).catch(() => []);
+        if (cancelled) return;
+        const todays = (rows || [])
+          .filter((r) => {
+            const d = (r.date_str || r.date || "").toString().split("T")[0];
+            return d === todayISO;
+          })
+          .map((r) => ({
+            id: r.id,
+            time: (r.start_time || r.time || "").toString().slice(0, 5),
+            title: r.title || "Untitled",
+            done: !!(r.completed || r.is_completed),
+          }))
+          .sort((a, b) => String(a.time || "99:99").localeCompare(String(b.time || "99:99")));
+        setTodayPlan(todays);
+      } finally {
+        if (!cancelled) setLoading(false);
+      }
+    })();
+    return () => { cancelled = true; };
+  }, [open, user?.id]);
+
+  async function addPlanItem() {
+    const title = (newTitle || "").trim();
+    if (!title || !user?.id) return;
+    try {
+      const created = await base44.entities.PlannerItems.create({
+        user_id: user.id, title,
+        start_time: newTime || null,
+        date_str: todayISO, date: todayISO,
+        completed: false, is_completed: false,
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
+      });
+      if (created?.id) {
+        setTodayPlan((prev) => [...prev, {
+          id: created.id, time: newTime, title, done: false,
+        }].sort((a, b) => String(a.time || "99:99").localeCompare(String(b.time || "99:99"))));
+      }
+      setNewTitle(""); setNewTime("");
+    } catch { /* silent */ }
+  }
+  async function togglePlanItem(id) {
+    let nextDone = false;
+    setTodayPlan((prev) => prev.map((p) => {
+      if (p.id !== id) return p;
+      nextDone = !p.done;
+      return { ...p, done: nextDone };
+    }));
+    try {
+      await base44.entities.PlannerItems.update(id, {
+        completed: nextDone, is_completed: nextDone,
+        updated_at: new Date().toISOString(),
+      });
+    } catch {
+      setTodayPlan((prev) => prev.map((p) => p.id === id ? { ...p, done: !nextDone } : p));
+    }
+  }
 
   function openDatePicker() {
     const el = dateRef.current; if (!el) return;
@@ -840,17 +933,72 @@ function PlanADaySheet({ open, onClose }) {
         {mode === "today" && (
           <>
             <h3 style={modalTitle}>Today's plan</h3>
-            <ul style={todayPlanList}>
-              {todayPlan.map((p, i) => (
-                <li key={i} style={todayPlanLine}>
-                  <span style={todayPlanDot} />
-                  <span style={todayPlanText}>{p}</span>
-                </li>
-              ))}
-            </ul>
-            <button onClick={() => setTodayPlan((arr) => [...arr, "New plan item"])} style={addPlanLineBtn}>
-              <Plus size={11} /> Add item
-            </button>
+            {loading && (
+              <p style={{ fontSize: 12, color: C.muted, fontStyle: "italic", margin: "8px 0" }}>
+                Loading…
+              </p>
+            )}
+            {!loading && todayPlan.length === 0 && (
+              <p style={{ fontSize: 13, color: C.muted, margin: "8px 0 4px" }}>
+                Your day is unplanned. Add your first block.
+              </p>
+            )}
+            {todayPlan.length > 0 && (
+              <ul style={todayPlanList}>
+                {todayPlan.map((p) => (
+                  <li key={p.id} style={{ ...todayPlanLine, gap: 8 }}>
+                    <input
+                      type="checkbox"
+                      checked={p.done}
+                      onChange={() => togglePlanItem(p.id)}
+                      style={{ accentColor: C.sage, flexShrink: 0 }}
+                    />
+                    {p.time && (
+                      <span style={{ ...todayPlanDot, width: "auto", height: "auto", borderRadius: 0, background: "transparent", fontSize: 11, color: C.muted, fontWeight: 700, minWidth: 38 }}>
+                        {p.time}
+                      </span>
+                    )}
+                    <span style={{
+                      ...todayPlanText,
+                      textDecoration: p.done ? "line-through" : "none",
+                      opacity: p.done ? 0.5 : 1,
+                    }}>{p.title}</span>
+                  </li>
+                ))}
+              </ul>
+            )}
+            <div style={{ display: "flex", gap: 6, marginTop: 8 }}>
+              <input
+                type="time"
+                value={newTime}
+                onChange={(e) => setNewTime(e.target.value)}
+                style={{
+                  flex: "0 0 96px", padding: "8px 10px", borderRadius: 9,
+                  border: "1px solid rgba(58,44,26,0.18)", fontSize: 13,
+                  fontFamily: "inherit", color: C.espresso, background: C.paperHi,
+                  outline: "none",
+                }}
+              />
+              <input
+                type="text"
+                value={newTitle}
+                onChange={(e) => setNewTitle(e.target.value)}
+                onKeyDown={(e) => { if (e.key === "Enter") addPlanItem(); }}
+                placeholder="What's the block?"
+                style={{
+                  flex: 1, padding: "8px 12px", borderRadius: 9,
+                  border: "1px solid rgba(58,44,26,0.18)", fontSize: 13,
+                  fontFamily: "inherit", color: C.espresso, background: C.paperHi,
+                  outline: "none",
+                }}
+              />
+              <button onClick={addPlanItem} disabled={!newTitle.trim()} style={{
+                ...addPlanLineBtn, opacity: newTitle.trim() ? 1 : 0.4,
+                cursor: newTitle.trim() ? "pointer" : "not-allowed",
+              }}>
+                <Plus size={11} /> Add
+              </button>
+            </div>
           </>
         )}
 
@@ -1651,6 +1799,17 @@ function ListsSection({ user }) {
     }
   }
 
+  // #8 — Per-chip counts + a peek at the most-imminent task so the user
+  // can see what's inside without tapping. The preview shows the active
+  // chip's top task, or — if no chip is expanded — the top task from the
+  // first non-empty bucket.
+  const _fallbackList = lists.find((l) => l.tasks.length > 0) || null;
+  const activeList    = lists.find((l) => l.id === expanded) || _fallbackList;
+  const topTask       = activeList
+    ? (activeList.tasks.find((t) => !t.done) || activeList.tasks[0] || null)
+    : null;
+  const previewText   = topTask ? (topTask.text || "").slice(0, 40) : null;
+
   return (
     <section style={listsShell} aria-label="My lists">
       <div style={listsHead}>
@@ -1659,7 +1818,9 @@ function ListsSection({ user }) {
       </div>
       <div style={listsChipRow}>
         {lists.map((l) => {
-          const open = expanded === l.id;
+          const open  = expanded === l.id;
+          const count = l.tasks.length;
+          const empty = count === 0;
           return (
             <button key={l.id} onClick={() => setExpanded(open ? null : l.id)} style={{
               ...listsChip,
@@ -1668,11 +1829,28 @@ function ListsSection({ user }) {
             }}>
               <span style={{ width: 7, height: 7, borderRadius: 9999, background: l.colour }} />
               {l.name}
+              <span style={{
+                display: "inline-flex", alignItems: "center", justifyContent: "center",
+                minWidth: 18, height: 18, padding: "0 5px", marginLeft: 4,
+                borderRadius: 9999,
+                background: empty ? "transparent" : C.espresso,
+                color:      empty ? C.muted     : C.cream,
+                fontSize: 10, fontWeight: 700,
+                border: empty ? "1px solid rgba(58,44,26,0.18)" : "none",
+              }}>{count}</span>
               {open ? <ChevronUp size={11} /> : <ChevronDown size={11} />}
             </button>
           );
         })}
       </div>
+      {previewText && (
+        <p style={{
+          fontSize: 11, color: C.muted, margin: "6px 16px 0",
+          fontStyle: "italic",
+        }}>
+          {activeList ? `${activeList.name}: ` : ""}{previewText}{(topTask?.text || "").length > 40 ? "…" : ""}
+        </p>
+      )}
       {expanded && (
         <div style={listsAccordion}>
           {(lists.find((l) => l.id === expanded)?.tasks || []).map((t) => (
@@ -3081,8 +3259,40 @@ function BodyScanCard() {
   );
 }
 
-function GPReportCardSmall() {
-  const [open, setOpen] = useState(false);
+// #12 — Relative-time helper for "Last exported" copy.
+function _gpTimeAgo(iso) {
+  if (!iso) return { text: "Never exported", stale: false };
+  const then = new Date(iso); if (Number.isNaN(then.getTime())) return { text: "Never exported", stale: false };
+  const days = Math.max(0, Math.floor((Date.now() - then.getTime()) / 86400000));
+  if (days === 0) return { text: "Exported today", stale: false };
+  if (days === 1) return { text: "Exported yesterday", stale: false };
+  if (days < 7)   return { text: `Exported ${days} days ago`, stale: false };
+  if (days < 90)  return { text: `Exported ${Math.round(days / 7)} weeks ago`, stale: false };
+  return { text: `Exported ${Math.round(days / 30)} months ago · Consider updating`, stale: true };
+}
+
+function GPReportCardSmall({ profile: profileProp }) {
+  const [open, setOpen]               = useState(false);
+  const [lastExport, setLastExport]   = useState(profileProp?.last_gp_export_at || null);
+  const [exporting, setExporting]     = useState(false);
+  useEffect(() => { setLastExport(profileProp?.last_gp_export_at || null); }, [profileProp?.last_gp_export_at]);
+  const exportInfo = _gpTimeAgo(lastExport);
+
+  async function handleExport() {
+    if (exporting) return;
+    setExporting(true);
+    try {
+      const now = new Date().toISOString();
+      if (profileProp?.id) {
+        await base44.entities.UserProfile.update(profileProp.id, { last_gp_export_at: now }).catch(() => {});
+      }
+      setLastExport(now);
+    } finally {
+      setExporting(false);
+      setOpen(false);
+    }
+  }
+
   return (
     <>
       <article style={{ ...cardStyle, minHeight: 160 }}>
@@ -3098,7 +3308,15 @@ function GPReportCardSmall() {
         <button onClick={() => setOpen(true)} style={{ ...modalSaveBtn, alignSelf: "flex-start", marginTop: 8 }}>
           Open <ChevronRight size={11} />
         </button>
-        <p style={reportLastExport}>Last exported: Never</p>
+        <p style={{ ...reportLastExport, display: "inline-flex", alignItems: "center", gap: 6 }}>
+          {exportInfo.stale && (
+            <span style={{
+              width: 7, height: 7, borderRadius: 9999,
+              background: C.gold, display: "inline-block",
+            }} />
+          )}
+          {exportInfo.text}
+        </p>
       </article>
       {open && (
         <div style={modalBackdrop} onClick={() => setOpen(false)}>
@@ -3119,7 +3337,9 @@ function GPReportCardSmall() {
             </div>
             <div style={modalFoot}>
               <button onClick={() => setOpen(false)} style={modalCancelBtn}>Cancel</button>
-              <button onClick={() => setOpen(false)} style={modalSaveBtn}>Export PDF</button>
+              <button onClick={handleExport} disabled={exporting} style={modalSaveBtn}>
+                {exporting ? "Exporting…" : "Export PDF"}
+              </button>
             </div>
           </div>
         </div>
@@ -3137,41 +3357,53 @@ function TomorrowPreviewCard({ user }) {
   const key = `femwell_tomorrow_priority_${tomorrowStr}`;
   const [pri, setPri] = useState(() => { try { return localStorage.getItem(key) || ""; } catch { return ""; } });
   function save(v) { setPri(v); try { localStorage.setItem(key, v); } catch {} }
-  // Phase B6 — tomorrow's bullets pulled from PlannerItems + PersonalTasks
-  // for the next day. Falls back to a single italic prompt when nothing
-  // is scheduled yet.
-  const [tomorrowBullets, setTomorrowBullets] = useState([]);
+  // #10 — Tomorrow's items pulled from PlannerItems (sorted by start_time)
+  // + PersonalTasks filtered to tomorrow's date. Top 3 items rendered as
+  // a `time · title` list. Count surfaced in the section label.
+  const [tmItems, setTmItems] = useState([]);
   useEffect(() => {
     let cancelled = false;
     if (!user?.id) return;
     (async () => {
       try {
         const [evts, tks] = await Promise.all([
-          base44.entities.PlannerItems.filter({ user_id: user.id, date: tomorrowStr }, "-created_date", 30).catch(() => []),
-          base44.entities.PersonalTasks.filter({ user_id: user.id, date: tomorrowStr }, "-created_date", 30).catch(() => []),
+          base44.entities.PlannerItems.filter({ user_id: user.id }, "-created_date", 80).catch(() => []),
+          base44.entities.PersonalTasks.filter({ user_id: user.id }, "-created_date", 80).catch(() => []),
         ]);
         if (cancelled) return;
-        const evList = (evts || []).slice().sort((a, b) => String(a?.time || "99:99").localeCompare(String(b?.time || "99:99")));
-        const out = [];
-        for (const e of evList) {
-          const h = e.time ? String(e.time).slice(0, 5) : "";
-          out.push(h ? `${h} — ${e.title || "Event"}` : (e.title || "Event"));
-          if (out.length >= 2) break;
-        }
-        if (out.length < 2) {
-          for (const t of tks || []) {
-            out.push(t.title || "Task");
-            if (out.length >= 2) break;
-          }
-        }
-        setTomorrowBullets(out);
+        const tomorrowItems = (evts || []).filter((e) => {
+          const d = (e.date_str || e.date || "").toString().split("T")[0];
+          return d === tomorrowStr;
+        }).slice().sort((a, b) => String(a?.start_time || a?.time || "99:99").localeCompare(String(b?.start_time || b?.time || "99:99")));
+        const tomorrowTasks = (tks || []).filter((t) => {
+          const d = (t.date || "").toString().split("T")[0];
+          return d === tomorrowStr;
+        });
+        const merged = [
+          ...tomorrowItems.map((e) => ({
+            id: `pi-${e.id}`,
+            time: (e.start_time || e.time || "").toString().slice(0, 5),
+            title: e.title || "Event",
+            kind: "event",
+          })),
+          ...tomorrowTasks.map((t) => ({
+            id: `pt-${t.id}`,
+            time: (t.time || "").toString().slice(0, 5),
+            title: t.title || "Task",
+            kind: "task",
+          })),
+        ].slice(0, 3);
+        setTmItems(merged);
       } catch { /* silent */ }
     })();
     return () => { cancelled = true; };
   }, [user?.id, tomorrowStr]);
+  const itemCount = tmItems.length;
   return (
     <article style={cardStyle}>
-      <span style={kicker}>TOMORROW</span>
+      <span style={kicker}>
+        {itemCount > 0 ? `TOMORROW · ${itemCount} ${itemCount === 1 ? "ITEM" : "ITEMS"}` : "TOMORROW"}
+      </span>
       <h3 style={cardTitle}>{tomorrowDate.toLocaleDateString(undefined, { weekday: "long", month: "long", day: "numeric" })}</h3>
       <div style={{ display: "flex", alignItems: "center", gap: 8, padding: "8px 12px", borderRadius: 10, background: `${PHASE_LIGHT[tmPhase]}22`, border: `1px solid ${PHASE_LIGHT[tmPhase]}55` }}>
         <span style={{ width: 10, height: 10, borderRadius: 9999, background: PHASE_LIGHT[tmPhase] }} />
@@ -3192,14 +3424,25 @@ function TomorrowPreviewCard({ user }) {
         <span style={miniLabel}>TOP PRIORITY TOMORROW</span>
         <input type="text" value={pri} onChange={(e) => save(e.target.value)} placeholder="The one thing" style={miniInput} />
       </label>
-      <ul style={{ ...bulletList, gap: 4, marginTop: 4 }}>
-        {tomorrowBullets.length === 0 ? (
-          <li style={bulletLine}><span style={bulletDot} /> <span style={{ fontStyle: "italic", color: C.muted }}>Nothing planned yet</span></li>
-        ) : tomorrowBullets.map((b, i) => (
-          <li key={i} style={bulletLine}><span style={bulletDot} /> {b}</li>
-        ))}
-      </ul>
-      <p style={tipText}>Luteal tomorrow — front-load your morning.</p>
+      {itemCount === 0 ? (
+        <p style={{ ...tipText, marginTop: 6, fontStyle: "italic", color: C.muted }}>
+          Nothing planned yet for tomorrow.
+        </p>
+      ) : (
+        <ul style={{ ...bulletList, gap: 4, marginTop: 4 }}>
+          {tmItems.map((it) => (
+            <li key={it.id} style={bulletLine}>
+              <span style={bulletDot} />
+              <span style={{ fontSize: 13, color: C.espresso }}>
+                {it.time && (
+                  <b style={{ fontWeight: 700, marginRight: 6 }}>{it.time}</b>
+                )}
+                {it.title}
+              </span>
+            </li>
+          ))}
+        </ul>
+      )}
       <button
         type="button"
         onClick={() => { try { openLogger("event"); } catch {} }}
@@ -3259,6 +3502,88 @@ function CycleReflectionCard() {
       <button onClick={handleSave} style={{ ...modalSaveBtn, alignSelf: "flex-start", marginTop: 4 }}>
         Save reflection <ChevronRight size={11} />
       </button>
+    </article>
+  );
+}
+
+// #11 — End of Day Note: replaces CycleReflectionCard in the Tonight row.
+// Persists a single reflective note to JournalEntries (distinct from Body
+// check-in which captures mood/energy/symptoms). Saves on blur.
+function EndOfDayNoteCard({ user }) {
+  const [text, setText]   = useState("");
+  const [entryId, setEntryId] = useState(null);
+  const [saved, setSaved] = useState(false);
+  const [loading, setLoading] = useState(true);
+
+  // Load today's existing end-of-day journal entry, if any.
+  useEffect(() => {
+    let cancelled = false;
+    if (!user?.id) return;
+    (async () => {
+      try {
+        const rows = await base44.entities.JournalEntries.filter(
+          { user_id: user.id, session_date: todayISO }, "-updated_date", 40,
+        ).catch(() => []);
+        if (cancelled) return;
+        const list = Array.isArray(rows) ? rows : [];
+        const row  = list.find((r) => Array.isArray(r?.tags) && r.tags.includes("end_of_day"));
+        if (row?.id) setEntryId(row.id);
+        if (row?.text) setText(row.text);
+      } finally {
+        if (!cancelled) setLoading(false);
+      }
+    })();
+    return () => { cancelled = true; };
+  }, [user?.id]);
+
+  async function persist() {
+    if (!user?.id) return;
+    const value = (text || "").trim();
+    if (!value) return;
+    try {
+      if (entryId) {
+        await base44.entities.JournalEntries.update(entryId, {
+          text: value, updated_at: new Date().toISOString(),
+        });
+      } else {
+        const created = await base44.entities.JournalEntries.create({
+          user_id: user.id, session_date: todayISO, text: value,
+          tags: ["end_of_day"], created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString(),
+        });
+        if (created?.id) setEntryId(created.id);
+      }
+      setSaved(true);
+      setTimeout(() => setSaved(false), 1800);
+    } catch { /* silent */ }
+  }
+
+  return (
+    <article style={cardStyle}>
+      <span style={kicker}>END OF DAY</span>
+      <h3 style={cardTitle}>One thing today</h3>
+      <textarea
+        value={text}
+        onChange={(e) => setText(e.target.value)}
+        onBlur={persist}
+        placeholder="One thing that went well today…"
+        rows={3}
+        disabled={loading}
+        style={{
+          width: "100%", boxSizing: "border-box",
+          padding: "10px 12px", borderRadius: 10, minHeight: 64,
+          border: "1.5px solid rgba(58,44,26,0.15)", background: C.paperHi,
+          fontSize: 13, color: C.espresso, outline: "none",
+          resize: "vertical", fontFamily: "inherit", marginTop: 6,
+        }}
+      />
+      {saved && (
+        <span style={{
+          ...savedChip, marginTop: 6, alignSelf: "flex-start",
+        }}>
+          <Check size={11} style={{ color: C.sage }} /> Saved
+        </span>
+      )}
     </article>
   );
 }
