@@ -641,7 +641,7 @@ export default function PlannerV2Shell({
         />
       </Row>
 
-      <YourDayRow />
+      <YourDayRow user={user} />
 
       <Row label="Your body today">
         <BodyTodayCard user={user} />
@@ -1126,12 +1126,153 @@ const YOUR_DAY_VARIANTS = [
   },
 ];
 
-function YourDayRow() {
+// ── YOUR DAY — Phase 2: replace YOUR_DAY_VARIANTS hardcoded mock with
+// live HabitLogs / PersonalTasks / MealLog / MedicationLogs.
+// YourDayRow loads once at mount, buckets by time-of-day, and passes
+// the bucket + streak data into 3 YourDayCard mounts.
+// ─────────────────────────────────────────────────────────────────────────
+const YOUR_DAY_SLOTS = [
+  { id: "morning",   label: "MORNING",   Icon: Sun,      accent: C.gold },
+  { id: "afternoon", label: "AFTERNOON", Icon: Activity, accent: C.sage },
+  { id: "evening",   label: "EVENING",   Icon: Moon,     accent: C.blush },
+];
+
+function _slotForTime(timeStr) {
+  if (!timeStr) return null;
+  const t = String(timeStr);
+  if (t < "12:00") return "morning";
+  if (t < "17:00") return "afternoon";
+  return "evening";
+}
+
+function _slotForMealType(meal_type) {
+  const m = String(meal_type || "").toLowerCase();
+  if (m === "breakfast") return "morning";
+  if (m === "lunch")     return "morning"; // lunch logged before afternoon by convention; spec says breakfast/lunch → morning
+  if (m === "dinner")    return "evening";
+  if (m === "snack")     return "afternoon";
+  return null;
+}
+
+function _computeStreaks(allHabits) {
+  // Group by name (habit_type || habit_name)
+  const byName = {};
+  (allHabits || []).forEach((h) => {
+    const name = h?.habit_type || h?.habit_name;
+    if (!name) return;
+    if (!byName[name]) byName[name] = [];
+    byName[name].push(h);
+  });
+  const streaks = {};
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  const toDateStr = (d) => {
+    const dd = new Date(d); dd.setHours(0, 0, 0, 0);
+    return dd.toISOString().split("T")[0];
+  };
+  Object.entries(byName).forEach(([name, rows]) => {
+    // Build set of completed-day-strings for fast lookup.
+    const doneSet = new Set();
+    rows.forEach((r) => {
+      const dateStr = (r?.date || "").split("T")[0];
+      if (dateStr && (r.completed || r.is_completed)) doneSet.add(dateStr);
+    });
+    // Walk backwards from today; if today isn't completed, walk from yesterday.
+    let streak = 0;
+    const cursor = new Date(today);
+    if (!doneSet.has(toDateStr(cursor))) cursor.setDate(cursor.getDate() - 1);
+    for (let i = 0; i < 365; i++) {
+      const ds = toDateStr(cursor);
+      if (doneSet.has(ds)) {
+        streak++;
+        cursor.setDate(cursor.getDate() - 1);
+      } else break;
+    }
+    streaks[name] = streak;
+  });
+  return streaks;
+}
+
+function _bucketAll({ tasks, meals, habits, meds }) {
+  const buckets = {
+    morning:   { tasks: [], habits: [], meals: [], meds: [] },
+    afternoon: { tasks: [], habits: [], meals: [], meds: [] },
+    evening:   { tasks: [], habits: [], meals: [], meds: [] },
+  };
+  // Tasks: prefer explicit time_of_day, fall back to time-of-day from `time`,
+  // else go to morning (the spec maps anytime tasks into morning).
+  (tasks || []).forEach((t) => {
+    const slot = (t.time_of_day || _slotForTime(t.time) || "morning").toLowerCase();
+    if (buckets[slot]) buckets[slot].tasks.push(t);
+  });
+  // Habits: time_of_day (morning/afternoon/evening) → bucket; else morning.
+  (habits || []).forEach((h) => {
+    const slot = (h.time_of_day || "morning").toLowerCase();
+    if (buckets[slot]) buckets[slot].habits.push(h);
+  });
+  // Meals: meal_type → slot.
+  (meals || []).forEach((m) => {
+    const slot = _slotForMealType(m.meal_type) || "morning";
+    if (buckets[slot]) buckets[slot].meals.push(m);
+  });
+  // Meds: any taken-today rows go to morning (collated info display).
+  (meds || []).forEach((m) => {
+    if (m && m.taken) buckets.morning.meds.push(m);
+  });
+  return buckets;
+}
+
+function YourDayRow({ user }) {
   const [active, setActive] = useState(0);
   const trackRef = useRef(null);
 
+  // Live data state. null while loading; {} when ready.
+  const [data, setData]       = useState(null);
+  const [streaks, setStreaks] = useState({});
+  const [refreshKey, setRefreshKey] = useState(0);
+
+  useEffect(() => {
+    if (!user?.id) return;
+    let cancelled = false;
+    (async () => {
+      try {
+        const [tasksAll, mealsToday, habitsAll, medsAll] = await Promise.all([
+          base44.entities.PersonalTasks.filter({ user_id: user.id }).catch(() => []),
+          base44.entities.MealLog.filter({ user_id: user.id, day_key: todayISO }).catch(() => []),
+          base44.entities.HabitLogs.filter({ user_id: user.id }, "-date", 300).catch(() => []),
+          base44.entities.MedicationLogs.filter({ user_id: user.id }, "-date", 60).catch(() => []),
+        ]);
+        if (cancelled) return;
+        // Today-only slices (date field tolerant to ISO-datetime).
+        const todayTasks = (tasksAll || []).filter((t) => {
+          if (!t.date) return true; // undated tasks surface today
+          const d = String(t.date).split("T")[0];
+          return d === todayISO;
+        });
+        const todayHabits = (habitsAll || []).filter((h) => {
+          const d = String(h.date || "").split("T")[0];
+          return d === todayISO;
+        });
+        const todayMeds = (medsAll || []).filter((m) => {
+          const d = String(m.date || m.day_key || "").split("T")[0];
+          return d === todayISO;
+        });
+        setData({
+          tasks:  todayTasks,
+          meals:  mealsToday || [],
+          habits: todayHabits,
+          meds:   todayMeds,
+        });
+        setStreaks(_computeStreaks(habitsAll || []));
+      } catch {
+        if (!cancelled) setData({ tasks: [], meals: [], habits: [], meds: [] });
+      }
+    })();
+    return () => { cancelled = true; };
+  }, [user?.id, refreshKey]);
+
   function jumpTo(i) {
-    const clamped = Math.max(0, Math.min(YOUR_DAY_VARIANTS.length - 1, i));
+    const clamped = Math.max(0, Math.min(YOUR_DAY_SLOTS.length - 1, i));
     setActive(clamped);
     const track = trackRef.current; if (!track) return;
     const child = track.children[clamped];
@@ -1148,7 +1289,8 @@ function YourDayRow() {
     setActive(best);
   }
 
-  const activeAccent = YOUR_DAY_VARIANTS[active].accent;
+  const buckets = data ? _bucketAll(data) : null;
+  const refresh = () => setRefreshKey((k) => k + 1);
 
   return (
     <section style={rowShell} aria-label="Your day">
@@ -1156,20 +1298,27 @@ function YourDayRow() {
         <span style={kicker}>YOUR DAY</span>
         <div style={rowNav}>
           <button onClick={() => jumpTo(active - 1)} style={rowArrow}><ChevronLeft size={14} /></button>
-          {YOUR_DAY_VARIANTS.map((v, i) => (
-            <span key={i} style={{
+          {YOUR_DAY_SLOTS.map((s, i) => (
+            <span key={s.id} style={{
               ...rowDot,
-              background: i === active ? v.accent : "rgba(58,44,26,0.20)",
+              background: i === active ? s.accent : "rgba(58,44,26,0.20)",
               transform: i === active ? "scale(1.4)" : "scale(1)",
             }} />
           ))}
           <button onClick={() => jumpTo(active + 1)} style={rowArrow}><ChevronRight size={14} /></button>
         </div>
       </div>
+      <style>{`@keyframes femwellShimmer { 0%{opacity:.4} 50%{opacity:.9} 100%{opacity:.4} }`}</style>
       <div ref={trackRef} onScroll={onScroll} style={rowTrack}>
-        {YOUR_DAY_VARIANTS.map((v) => (
-          <div key={v.id} style={rowSlot}>
-            <YourDayCard variant={v} />
+        {YOUR_DAY_SLOTS.map((s) => (
+          <div key={s.id} style={rowSlot}>
+            <YourDayCard
+              slot={s}
+              loading={!data}
+              bucket={buckets ? buckets[s.id] : null}
+              streaks={streaks}
+              onRefresh={refresh}
+            />
           </div>
         ))}
       </div>
@@ -1177,66 +1326,232 @@ function YourDayRow() {
   );
 }
 
-function YourDayCard({ variant }) {
-  const [sections, setSections] = useState(variant.sections);
-  function toggle(secName, id) {
-    setSections((sx) => sx.map((s) => s.name === secName
-      ? { ...s, items: s.items.map((it) => it.id === id ? { ...it, done: !it.done } : it) }
-      : s));
+function YourDayCard({ slot, loading, bucket, streaks, onRefresh }) {
+  // Local optimistic toggle state — keys: `task-<id>` / `habit-<id>`.
+  const [doneOverride, setDoneOverride] = useState({});
+
+  async function toggleTask(t) {
+    const key = `task-${t.id}`;
+    const next = !(doneOverride[key] ?? t.completed);
+    setDoneOverride((p) => ({ ...p, [key]: next }));
+    try {
+      await base44.entities.PersonalTasks.update(t.id, { completed: next });
+    } catch {
+      setDoneOverride((p) => ({ ...p, [key]: !next }));
+    }
   }
+  async function toggleHabit(h) {
+    const key = `habit-${h.id}`;
+    const cur = doneOverride[key] ?? !!(h.completed || h.is_completed);
+    const next = !cur;
+    setDoneOverride((p) => ({ ...p, [key]: next }));
+    try {
+      await base44.entities.HabitLogs.update(h.id, {
+        completed: next, is_completed: next,
+        updated_at: new Date().toISOString(),
+      });
+    } catch {
+      setDoneOverride((p) => ({ ...p, [key]: cur }));
+    }
+  }
+
+  const accent = slot.accent;
+  const isEmpty = bucket
+    ? (bucket.habits.length === 0 && bucket.tasks.length === 0 &&
+       bucket.meals.length === 0 && bucket.meds.length === 0)
+    : false;
+
   return (
     <article style={{
       ...yourDayCard,
-      borderLeft: `4px solid ${variant.accent}`,
+      borderLeft: `4px solid ${accent}`,
     }}>
       <div style={yourDayHead}>
-        <span style={{ ...yourDayIconChip, background: `${variant.accent}1F`, color: variant.accent }}>
-          <variant.Icon size={14} />
+        <span style={{ ...yourDayIconChip, background: `${accent}1F`, color: accent }}>
+          <slot.Icon size={14} />
         </span>
-        <span style={{ ...yourDayLabel, color: variant.accent }}>{variant.label}</span>
+        <span style={{ ...yourDayLabel, color: accent }}>{slot.label}</span>
       </div>
-      {sections.map((sec) => (
-        <div key={sec.name} style={{ marginTop: 10 }}>
-          <div style={yourDaySectionLine}>
-            <span style={yourDaySectionRule} />
-            <span style={yourDaySectionName}>{sec.name}</span>
-            <span style={yourDaySectionRule} />
-          </div>
-          <ul style={{ ...bulletList, gap: 4, marginTop: 4 }}>
-            {sec.items.map((it) => (
-              <li key={it.id} style={yourDayItemRow}>
-                {!it.reflection && !it.info ? (
-                  <input type="checkbox" checked={it.done} onChange={() => toggle(sec.name, it.id)}
-                    style={{ accentColor: variant.accent, flexShrink: 0 }} />
-                ) : it.reflection ? (
-                  <span style={{ width: 16, height: 16, flexShrink: 0 }} />
-                ) : (
-                  <Moon size={14} style={{ color: C.muted, flexShrink: 0 }} />
-                )}
-                <span style={{
-                  fontSize: 12.5, flex: 1, color: C.espresso,
-                  textDecoration: it.done ? "line-through" : "none",
-                  opacity: it.done ? 0.5 : 1,
-                }}>{it.text}</span>
-                {it.meta && (
-                  <span style={{
-                    ...yourDayItemMeta,
-                    color: it.empty ? variant.accent : C.muted,
-                    fontStyle: it.empty ? "normal" : "normal",
-                    fontWeight: it.empty ? 700 : 600,
-                  }}>{it.meta}</span>
-                )}
-              </li>
-            ))}
-          </ul>
+
+      {loading && (
+        <div style={{ marginTop: 10 }}>
+          {[0, 1, 2].map((i) => (
+            <div key={i} style={{
+              height: 18, marginBottom: 6, borderRadius: 4,
+              background: "rgba(58,44,26,0.08)",
+              animation: "femwellShimmer 1.2s ease-in-out infinite",
+              animationDelay: `${i * 0.15}s`,
+            }} />
+          ))}
         </div>
-      ))}
-      <button
-        onClick={() => openLogger()}
-        style={{ ...yourDayAddBtn, color: variant.accent, borderColor: `${variant.accent}55` }}
-      >
-        <Plus size={12} /> Add
-      </button>
+      )}
+
+      {!loading && bucket && (
+        <>
+          {/* HABITS */}
+          {bucket.habits.length > 0 && (
+            <div style={{ marginTop: 10 }}>
+              <div style={yourDaySectionLine}>
+                <span style={yourDaySectionRule} />
+                <span style={yourDaySectionName}>HABITS</span>
+                <span style={yourDaySectionRule} />
+              </div>
+              <ul style={{ ...bulletList, gap: 4, marginTop: 4 }}>
+                {bucket.habits.map((h) => {
+                  const name = h.habit_type || h.habit_name || "Habit";
+                  const key  = `habit-${h.id}`;
+                  const done = doneOverride[key] ?? !!(h.completed || h.is_completed);
+                  const streak = streaks[name] || 0;
+                  return (
+                    <li key={h.id} style={yourDayItemRow}>
+                      <input
+                        type="checkbox"
+                        checked={done}
+                        onChange={() => toggleHabit(h)}
+                        style={{ accentColor: accent, flexShrink: 0 }}
+                      />
+                      <span style={{
+                        fontSize: 12.5, flex: 1, color: C.espresso,
+                        textDecoration: done ? "line-through" : "none",
+                        opacity: done ? 0.5 : 1,
+                      }}>{name}</span>
+                      {streak > 0 && (
+                        <span style={{
+                          ...yourDayItemMeta,
+                          color: C.muted, fontWeight: 600,
+                        }}>{streak}d streak</span>
+                      )}
+                    </li>
+                  );
+                })}
+              </ul>
+            </div>
+          )}
+
+          {/* TASKS */}
+          {bucket.tasks.length > 0 && (
+            <div style={{ marginTop: 10 }}>
+              <div style={yourDaySectionLine}>
+                <span style={yourDaySectionRule} />
+                <span style={yourDaySectionName}>TASKS</span>
+                <span style={yourDaySectionRule} />
+              </div>
+              <ul style={{ ...bulletList, gap: 4, marginTop: 4 }}>
+                {bucket.tasks.map((t) => {
+                  const key  = `task-${t.id}`;
+                  const done = doneOverride[key] ?? !!t.completed;
+                  return (
+                    <li key={t.id} style={yourDayItemRow}>
+                      <input
+                        type="checkbox"
+                        checked={done}
+                        onChange={() => toggleTask(t)}
+                        style={{ accentColor: accent, flexShrink: 0 }}
+                      />
+                      <span style={{
+                        fontSize: 12.5, flex: 1, color: C.espresso,
+                        textDecoration: done ? "line-through" : "none",
+                        opacity: done ? 0.5 : 1,
+                      }}>{t.title || "Task"}</span>
+                      {t.time && (
+                        <span style={{ ...yourDayItemMeta, color: C.muted, fontWeight: 600 }}>
+                          {t.time}
+                        </span>
+                      )}
+                    </li>
+                  );
+                })}
+              </ul>
+            </div>
+          )}
+
+          {/* MEALS */}
+          {bucket.meals.length > 0 && (
+            <div style={{ marginTop: 10 }}>
+              <div style={yourDaySectionLine}>
+                <span style={yourDaySectionRule} />
+                <span style={yourDaySectionName}>MEALS</span>
+                <span style={yourDaySectionRule} />
+              </div>
+              <ul style={{ ...bulletList, gap: 4, marginTop: 4 }}>
+                {bucket.meals.map((m) => {
+                  const desc = (m.raw_text || m.description || "Meal").slice(0, 35);
+                  const cal  = m.ai_analysis?.summary?.calories
+                    || m.ai_analysis?.calories
+                    || null;
+                  return (
+                    <li key={m.id} style={yourDayItemRow} title={m.raw_text || ""}>
+                      <Utensils size={12} style={{ color: accent, flexShrink: 0 }} />
+                      <span style={{ fontSize: 12.5, flex: 1, color: C.espresso }}>
+                        {desc}{desc.length === 35 ? "…" : ""}
+                      </span>
+                      {cal && (
+                        <span style={{ ...yourDayItemMeta, color: C.muted, fontWeight: 600 }}>
+                          {Math.round(cal)} kcal
+                        </span>
+                      )}
+                    </li>
+                  );
+                })}
+              </ul>
+            </div>
+          )}
+
+          {/* MEDS (morning column only — Health card handles logging) */}
+          {bucket.meds.length > 0 && (
+            <div style={{ marginTop: 10 }}>
+              <div style={yourDaySectionLine}>
+                <span style={yourDaySectionRule} />
+                <span style={yourDaySectionName}>MEDS</span>
+                <span style={yourDaySectionRule} />
+              </div>
+              <ul style={{ ...bulletList, gap: 4, marginTop: 4 }}>
+                {bucket.meds.slice(0, 4).map((m) => (
+                  <li key={m.id} style={yourDayItemRow}>
+                    <Pill size={12} style={{ color: accent, flexShrink: 0 }} />
+                    <span style={{ fontSize: 12.5, flex: 1, color: C.espresso }}>
+                      {m.item_name || m.medication_name || "Medication"}
+                    </span>
+                    <span style={{ ...yourDayItemMeta, color: C.sage, fontWeight: 700 }}>
+                      Taken
+                    </span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
+
+          {/* EMPTY STATE — soft prompt when nothing in this slot */}
+          {isEmpty && (
+            <div style={{
+              marginTop: 14, padding: "12px 10px",
+              border: `1px dashed ${accent}55`, borderRadius: 10,
+              textAlign: "center",
+            }}>
+              <p style={{
+                fontSize: 12, color: C.muted, margin: "0 0 8px",
+                fontStyle: "italic",
+              }}>Nothing yet for this slot.</p>
+              <button
+                onClick={() => openLogger()}
+                style={{ ...yourDayAddBtn, color: accent, borderColor: `${accent}55`, marginTop: 0 }}
+              >
+                <Plus size={12} /> Add to {slot.label.charAt(0) + slot.label.slice(1).toLowerCase()}
+              </button>
+            </div>
+          )}
+        </>
+      )}
+
+      {/* Always-available + button at the bottom of the column */}
+      {!isEmpty && (
+        <button
+          onClick={() => openLogger()}
+          style={{ ...yourDayAddBtn, color: accent, borderColor: `${accent}55` }}
+        >
+          <Plus size={12} /> Add
+        </button>
+      )}
     </article>
   );
 }
