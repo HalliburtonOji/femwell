@@ -23,7 +23,7 @@
 // Brand rule: no emoji codepoints — Lucide icons throughout.
 // ─────────────────────────────────────────────────────────────────────────────
 
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import {
   Plus, X, ArrowLeft, Mic, Sparkles, Pen, ChevronRight,
   Footprints, ListChecks, Pill, Utensils, CalendarClock, Droplets,
@@ -366,37 +366,336 @@ function LoggerSheet({ initialType, onClose = closeLogger }) {
   );
 }
 
+// ─── Voice → intent parse via base44 LLM integration ───────────────────────
+// Same invocation pattern used by WeeklyInsightCard (Core.InvokeLLM). The
+// model returns JSON-only; we parse it, show a confirmation card, and let the
+// user Save or Edit. Save dispatches to the correct entity create; Edit
+// resets the voice state so the user can fall through to the manual TypeGrid
+// and use the standard DetailForm.
+const VOICE_SYSTEM_PROMPT = `You are a health and wellness scheduler assistant. The user has spoken a natural language instruction. Extract structured intent from it.
+
+Respond with JSON only — no markdown fences, no prose. Use this exact shape:
+{
+  "intent": "add_task" | "add_event" | "add_meal" | "log_water" | "log_symptom" | "add_habit" | "log_medication" | "unknown",
+  "title": "string — the main item name or description",
+  "time": "HH:MM or null — 24hr format if mentioned",
+  "date": "today | tomorrow | YYYY-MM-DD or null",
+  "meal_type": "breakfast | lunch | dinner | snack | null",
+  "time_of_day": "morning | afternoon | evening | null",
+  "amount": "number or null",
+  "unit": "string or null",
+  "notes": "string or null",
+  "confidence": 0.0
+}`;
+
+const INTENT_LABELS = {
+  add_task:       "Add task",
+  add_event:      "Add event",
+  add_meal:       "Log meal",
+  log_water:      "Log water",
+  log_symptom:    "Log symptom",
+  add_habit:      "Add habit",
+  log_medication: "Log medication",
+  unknown:        "Not sure",
+};
+
+function _resolveDate(s) {
+  const today = new Date();
+  const todayStr = today.toISOString().split("T")[0];
+  if (!s || s === "today") return todayStr;
+  if (s === "tomorrow") {
+    const t = new Date(today); t.setDate(t.getDate() + 1);
+    return t.toISOString().split("T")[0];
+  }
+  if (/^\d{4}-\d{2}-\d{2}$/.test(s)) return s;
+  return todayStr;
+}
+
+async function saveVoiceIntent(intent) {
+  const todayISO = new Date().toISOString().split("T")[0];
+  const nowISO   = new Date().toISOString();
+  const me = await base44.entities.User.me().catch(() => null);
+  const user_id = me?.id;
+  if (!user_id) return { ok: false, reason: "auth" };
+  const date = _resolveDate(intent.date);
+  const title = (intent.title || "").trim();
+  if (!title && intent.intent !== "log_water") return { ok: false, reason: "empty" };
+
+  try {
+    switch (intent.intent) {
+      case "add_task":
+        await base44.entities.PersonalTasks.create({
+          user_id, date, title, category: "personal",
+          time_of_day: intent.time_of_day || null,
+          completed: false, notes: intent.notes || "",
+          created_at: nowISO, updated_at: nowISO,
+        });
+        break;
+      case "add_event":
+        await base44.entities.PlannerItems.create({
+          user_id, date_str: date, title,
+          time: intent.time || null,
+          item_type: "event",
+          created_at: nowISO, updated_at: nowISO,
+        }).catch(async () => {
+          // Fallback: PersonalTasks if PlannerItems schema rejects.
+          await base44.entities.PersonalTasks.create({
+            user_id, date, title, category: "personal",
+            completed: false, notes: intent.notes || "",
+            created_at: nowISO, updated_at: nowISO,
+          });
+        });
+        break;
+      case "add_meal": {
+        const mealTypeMap = { breakfast: "breakfast", lunch: "lunch", dinner: "dinner", snack: "snack" };
+        const meal_type = mealTypeMap[intent.meal_type] || inferMealTypeFromTime();
+        const log = await base44.entities.MealLog.create({
+          user_id, day_key: date, raw_text: title,
+          meal_type, portion_size: "medium",
+          created_at: nowISO, updated_at: nowISO,
+        });
+        // Fire-and-forget analyzeMeal (same pattern as Nourish card).
+        base44.functions.invoke("analyzeMeal", { raw_text: title, meal_log_id: log?.id }).catch(() => {});
+        break;
+      }
+      case "log_water": {
+        const amount_ml = intent.amount ? Math.round(Number(intent.amount)) : 250;
+        await base44.entities.HydrationLog.create({
+          user_id, day_key: date, amount_ml,
+          logged_at: nowISO, created_at: nowISO, updated_at: nowISO,
+        });
+        break;
+      }
+      case "log_symptom":
+        await base44.entities.SymptomLogs.create({
+          user_id, date, symptom_name: title,
+          severity: "mild", notes: intent.notes || "",
+          created_at: nowISO, updated_at: nowISO,
+        });
+        break;
+      case "add_habit":
+        await base44.entities.HabitLogs.create({
+          user_id, date,
+          habit_type: title, habit_name: title,
+          habit_category: "other",
+          completed: false, is_completed: false,
+          time_of_day: intent.time_of_day || null,
+          created_at: nowISO, updated_at: nowISO,
+        });
+        break;
+      case "log_medication":
+        await base44.entities.MedicationLogs.create({
+          user_id, date, item_name: title,
+          taken: true, notes: intent.notes || "",
+          created_at: nowISO, updated_at: nowISO,
+        });
+        break;
+      default:
+        return { ok: false, reason: "unknown" };
+    }
+    return { ok: true };
+  } catch (e) {
+    return { ok: false, reason: "create_failed" };
+  }
+}
+
+async function parseVoiceIntent(transcript) {
+  const prompt = `${VOICE_SYSTEM_PROMPT}\n\nUser said: """${transcript}"""\n\nRespond with JSON only.`;
+  const result = await base44.integrations.Core
+    .InvokeLLM({ prompt, model: "claude_sonnet_4_6" })
+    .catch(() => null);
+  const text = typeof result === "string"
+    ? result
+    : (result?.text || result?.content || (typeof result === "object" ? JSON.stringify(result) : String(result || "")));
+  if (!text) return null;
+  // Tolerate fenced code blocks.
+  const cleaned = text.replace(/^```(?:json)?\s*|\s*```$/g, "").trim();
+  // Find the first JSON object.
+  const m = cleaned.match(/\{[\s\S]*\}/);
+  if (!m) return null;
+  try { return JSON.parse(m[0]); } catch { return null; }
+}
+
 // ─── Type grid (initial state) ──────────────────────────────────────────────
 export function TypeGrid({ onPick }) {
+  // States: idle → listening → processing → confirm → saving → saved → idle
+  // Or: idle → listening → error.
   const [voiceState, setVoiceState] = useState("idle");
   const [transcript, setTranscript] = useState("");
+  const [interim, setInterim]       = useState("");
+  const [intent, setIntent]         = useState(null);
+  const recRef = useRef(null);
+
   function startVoice() {
     const SR = typeof window !== "undefined" && (window.SpeechRecognition || window.webkitSpeechRecognition);
     if (!SR) { setVoiceState("error"); setTranscript("Voice isn't available in this browser."); return; }
     const rec = new SR();
-    rec.lang = "en-GB"; rec.interimResults = false;
-    rec.onresult = (e) => { setTranscript(e.results[0][0].transcript); setVoiceState("parsed"); };
-    rec.onerror = () => { setVoiceState("error"); setTranscript("Couldn't hear that — try again."); };
-    setVoiceState("listening"); setTranscript("");
-    rec.start();
+    rec.lang = "en-GB";
+    rec.interimResults = true;
+    rec.continuous = false;
+    let finalText = "";
+    rec.onresult = (e) => {
+      let interimText = "";
+      for (let i = e.resultIndex; i < e.results.length; i++) {
+        const r = e.results[i];
+        if (r.isFinal) finalText += r[0].transcript;
+        else interimText += r[0].transcript;
+      }
+      if (interimText) setInterim(interimText);
+      if (finalText) setTranscript(finalText);
+    };
+    rec.onerror = () => {
+      setVoiceState("error");
+      setTranscript("Couldn't hear that — try again.");
+    };
+    rec.onend = async () => {
+      const text = (finalText || "").trim();
+      if (!text) {
+        setVoiceState("error");
+        setTranscript("Didn't catch anything — try again.");
+        return;
+      }
+      setVoiceState("processing");
+      setInterim("");
+      const parsed = await parseVoiceIntent(text);
+      if (!parsed || parsed.intent === "unknown") {
+        setIntent(parsed || null);
+        setVoiceState("error");
+        setTranscript("I didn't catch that — try again or pick a type below.");
+        return;
+      }
+      setIntent(parsed);
+      setVoiceState("confirm");
+    };
+    recRef.current = rec;
+    setVoiceState("listening");
+    setTranscript("");
+    setInterim("");
+    setIntent(null);
+    try { rec.start(); } catch { /* already running */ }
   }
+
+  function stopVoice() {
+    try { recRef.current?.stop(); } catch { /* noop */ }
+  }
+
+  async function confirmSave() {
+    if (!intent) return;
+    setVoiceState("saving");
+    const res = await saveVoiceIntent(intent);
+    if (res.ok) {
+      setVoiceState("saved");
+      // Auto-reset after a short success flash.
+      setTimeout(() => {
+        setVoiceState("idle"); setTranscript(""); setIntent(null);
+      }, 1400);
+    } else {
+      setVoiceState("error");
+      setTranscript(res.reason === "auth" ? "Sign in to save." : "Couldn't save — try again or use the form below.");
+    }
+  }
+
+  function editIntent() {
+    // Drop to manual flow with the best-guess type id pre-selected so the user
+    // lands in DetailForm immediately rather than the picker.
+    const TYPE_FROM_INTENT = {
+      add_task:       "task",
+      add_event:      "event",
+      add_meal:       "meal",
+      log_water:      "hydration",
+      log_symptom:    "symptom",
+      add_habit:      "habit",
+      log_medication: "med",
+    };
+    const id = TYPE_FROM_INTENT[intent?.intent];
+    setVoiceState("idle"); setTranscript(""); setIntent(null);
+    if (id) onPick(id);
+  }
+
+  const summary = intent ? (() => {
+    const parts = [INTENT_LABELS[intent.intent] || "Item", intent.title].filter(Boolean);
+    let s = parts.join(": ");
+    if (intent.time)     s += ` at ${intent.time}`;
+    if (intent.amount && intent.unit) s += ` (${intent.amount} ${intent.unit})`;
+    if (intent.date && intent.date !== "today") s += ` · ${intent.date}`;
+    return s;
+  })() : "";
+
   return (
     <div style={addGrid}>
       <div style={voicePane}>
-        <button onClick={startVoice} style={{
-          ...voiceMicWrap,
-          background: voiceState === "listening" ? `${C.gold}33` : `${C.gold}1F`,
-          border: `1.5px solid ${C.gold}`,
-        }}>
-          <Mic size={32} style={{ color: C.goldDeep }} />
+        <button
+          onClick={voiceState === "listening" ? stopVoice : startVoice}
+          disabled={voiceState === "processing" || voiceState === "saving"}
+          style={{
+            ...voiceMicWrap,
+            background: voiceState === "listening" ? `${C.rose}33`
+                      : voiceState === "saved"     ? `${C.sage}33`
+                      : `${C.gold}1F`,
+            border: `1.5px solid ${voiceState === "listening" ? C.rose : voiceState === "saved" ? C.sage : C.gold}`,
+            animation: voiceState === "listening" ? "femwellPulse 1.4s ease-in-out infinite" : "none",
+            cursor: (voiceState === "processing" || voiceState === "saving") ? "wait" : "pointer",
+          }}>
+          {voiceState === "saved" ? (
+            <Check size={32} style={{ color: C.sage }} />
+          ) : (
+            <Mic size={32} style={{
+              color: voiceState === "listening" ? C.rose : C.goldDeep,
+            }} />
+          )}
         </button>
-        <h3 style={voiceTitle}>Voice schedule</h3>
+        <style>{`@keyframes femwellPulse { 0%,100% { box-shadow: 0 0 0 0 rgba(212,94,82,0.50); } 50% { box-shadow: 0 0 0 16px rgba(212,94,82,0); } }`}</style>
+        <h3 style={voiceTitle}>
+          {voiceState === "saving" ? "Saving…"
+            : voiceState === "saved" ? "Saved"
+            : voiceState === "confirm" ? "Did you mean…"
+            : "Voice schedule"}
+        </h3>
         <p style={voiceSub}>
-          {voiceState === "idle"      && "Tap and tell me what to add"}
-          {voiceState === "listening" && "Listening…"}
-          {voiceState === "parsed"    && (transcript ? `"${transcript}"` : "")}
-          {voiceState === "error"     && transcript}
+          {voiceState === "idle"       && "Tap and tell me what to add"}
+          {voiceState === "listening"  && (interim ? `"${interim}…"` : "Listening…")}
+          {voiceState === "processing" && (transcript ? `Understanding "${transcript}"…` : "Understanding…")}
+          {voiceState === "saving"     && ""}
+          {voiceState === "saved"      && ""}
+          {voiceState === "error"      && transcript}
         </p>
+
+        {voiceState === "confirm" && intent && (
+          <div style={{
+            width: "100%", marginTop: 8,
+            background: C.paperHi, border: `1px solid ${C.gold}55`,
+            borderRadius: 12, padding: "10px 12px", textAlign: "left",
+          }}>
+            <div style={{
+              fontSize: 10, fontWeight: 700, letterSpacing: "0.12em",
+              textTransform: "uppercase", color: C.goldDeep, marginBottom: 4,
+            }}>{INTENT_LABELS[intent.intent] || "Item"}</div>
+            <div style={{ fontSize: 13, fontWeight: 600, color: C.espresso, lineHeight: 1.3 }}>
+              {summary}
+            </div>
+            {transcript && (
+              <div style={{ fontSize: 10, color: C.muted, marginTop: 6, fontStyle: "italic" }}>
+                "{transcript}"
+              </div>
+            )}
+            <div style={{ display: "flex", gap: 6, marginTop: 10 }}>
+              <button onClick={editIntent} style={{
+                flex: 1, padding: "8px 10px", borderRadius: 9999,
+                background: "transparent", color: C.espresso,
+                border: `1px solid rgba(58,44,26,0.18)`,
+                fontSize: 11, fontWeight: 700, letterSpacing: "0.04em",
+                cursor: "pointer",
+              }}>Edit</button>
+              <button onClick={confirmSave} style={{
+                flex: 1, padding: "8px 10px", borderRadius: 9999,
+                background: C.espresso, color: C.cream,
+                border: `1px solid ${C.espresso}`,
+                fontSize: 11, fontWeight: 700, letterSpacing: "0.04em",
+                cursor: "pointer",
+              }}>Save</button>
+            </div>
+          </div>
+        )}
       </div>
       <div style={manualPane}>
         <span style={kicker}>OR PICK A TYPE</span>
@@ -717,6 +1016,84 @@ export function DetailForm({ type, onCancel, onSaved }) {
       return v != null && v !== "";
     });
   }, [config, values]);
+
+  // Meal type gets a special render path that mirrors the NourishCard meal
+  // logger pixel-for-pixel: textarea + meal-type pill row + portion pill row +
+  // full-width espresso "Log meal" button. The generic Field renderer can't
+  // match Nourish's exact chip styling (gold-tint active state for portion,
+  // espresso-fill for meal type, button-style instead of cancel/save row).
+  if (type.id === "meal") {
+    const KINDS = ["Morning", "Midday", "Evening", "Snack"];
+    const PORTIONS = ["Small", "Medium", "Large"];
+    const rawText = (values.raw_text || "").trim();
+    const canSave = rawText.length > 0 && !saving;
+    return (
+      <div style={formShell}>
+        <div style={formTypeRow}>
+          <span style={{ ...iconChip, background: `${type.tone}1F`, color: type.tone, width: 36, height: 36 }}>
+            <type.Icon size={16} />
+          </span>
+          <h2 style={formTitle}>Log a meal</h2>
+        </div>
+
+        <textarea
+          value={values.raw_text || ""}
+          onChange={(e) => set("raw_text", e.target.value)}
+          placeholder="What did you eat? Describe naturally…"
+          rows={2}
+          style={{
+            width: "100%", boxSizing: "border-box",
+            padding: "8px 12px", borderRadius: 10, minHeight: 56,
+            border: `1.5px solid rgba(58,44,26,0.15)`, background: C.paperHi,
+            fontSize: 13, color: C.espresso, outline: "none",
+            resize: "vertical", fontFamily: "inherit",
+          }}
+        />
+
+        <div style={{ display: "flex", flexWrap: "wrap", gap: 5 }}>
+          {KINDS.map((k) => {
+            const on = (values.kind || "") === k;
+            return (
+              <button key={k} onClick={() => set("kind", k)} style={{
+                display: "inline-flex", alignItems: "center",
+                padding: "6px 12px", borderRadius: 9999,
+                border: `1px solid ${on ? C.espresso : "rgba(58,44,26,0.15)"}`,
+                background: on ? C.espresso : C.paperHi,
+                color: on ? C.cream : C.muted,
+                fontFamily: "'Inter', sans-serif",
+                fontSize: 11.5, fontWeight: 600, cursor: "pointer",
+              }}>{k}</button>
+            );
+          })}
+        </div>
+
+        <div style={{ display: "flex", gap: 6 }}>
+          {PORTIONS.map((p) => {
+            const on = (values.portion_size || "Medium") === p;
+            return (
+              <button key={p} onClick={() => set("portion_size", p)} style={{
+                flex: 1, padding: "6px 10px", borderRadius: 14, minHeight: 32,
+                border: `1.5px solid ${on ? C.gold : "rgba(58,44,26,0.15)"}`,
+                background: on ? `${C.gold}22` : C.paperHi,
+                color: C.espresso, fontSize: 12, fontWeight: 600, cursor: "pointer",
+              }}>{p}</button>
+            );
+          })}
+        </div>
+
+        <button onClick={handleSave} disabled={!canSave} style={{
+          width: "100%", padding: "10px 18px", borderRadius: 10, border: "none",
+          background: canSave ? C.espresso : "rgba(58,44,26,0.20)",
+          color: C.cream, fontWeight: 700, fontSize: 13,
+          cursor: canSave ? "pointer" : "not-allowed",
+          minHeight: 40,
+          display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 8,
+        }}>
+          {saving ? "Analysing…" : "Log meal"}
+        </button>
+      </div>
+    );
+  }
 
   return (
     <div style={formShell}>

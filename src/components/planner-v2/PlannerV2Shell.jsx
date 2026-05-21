@@ -4324,7 +4324,11 @@ const heroCard = {
   borderRadius: 20,
   padding: "20px 22px 18px",
   display: "flex", flexDirection: "column", gap: 8,
-  minHeight: 220,
+  // Fixed height so all hero cards in the slider deck render the same size
+  // regardless of body length. Tallest content is the Astra reading at ~3
+  // lines body + sun illustration; 270 accommodates that with breathing room.
+  height: 270,
+  overflow: "hidden",
   position: "relative",
   boxSizing: "border-box",
   boxShadow: "0 2px 12px rgba(58,44,26,0.08)",
