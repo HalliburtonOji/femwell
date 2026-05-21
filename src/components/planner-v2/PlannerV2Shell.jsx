@@ -1132,50 +1132,242 @@ function SunIllustration({ tone = C.gold, size = 70 }) {
   );
 }
 
-// ── Insights hero slider row (NEW) ────────────────────────────────────────
+// ── Insights hero deck (3D swipeable card stack) ──────────────────────────
+// Replaces the original horizontal-snap slider with a stacked deck:
+// the active card sits flat on top; the next two cards peek out behind it
+// with offset translateX/translateY + scale (no rotateY — clips on mobile).
+// Touch-swipe + arrow buttons + gold dot indicators. Premium tarot-card feel.
 function InsightsHeroRow({ phase: phaseProp, dayInCycle }) {
-  // Phase + cycleDay propagated from PlannerV2Shell so this row reflects
-  // the user's actual position in their cycle. Falls back to module-level
-  // mock (profile.phase) only if the prop hasn't been wired (legacy guard).
   const phase  = phaseProp || profile.phase;
   const day    = dayInCycle || profile.cycleDay;
   const accent = PHASE_DEEP[phase];
   const soft   = PHASE_SOFT[phase];
   const insight = phaseInsights[phase] || phaseInsights.luteal;
   const chapter = phaseChapter[phase] || "—";
-  // Phase-keyed Astra reading + recovery note — replaces the original
-  // demo's hardcoded "OVULATORY READING" + "luteal sleep note" strings.
   const astra    = ASTRA_READINGS[phase]   || ASTRA_READINGS.follicular;
   const recovery = RECOVERY_NOTES[phase]   || RECOVERY_NOTES.follicular;
+
+  const cards = useMemo(() => ([
+    {
+      eyebrow: `CHAPTER ${chapter} · ${phase.toUpperCase()} · DAY ${day}`,
+      title:   insight.title,
+      body:    insight.body,
+      footer:  "From Jess · this week",
+      accent,
+      soft,
+    },
+    {
+      eyebrow: astra.eyebrow,
+      title:   astra.title,
+      body:    astra.body,
+      footer:  "From Astra · today",
+      accent:  C.gold,
+      soft:    "#F0E0B0",
+    },
+    {
+      eyebrow: `PHASE · GENTLE NOTE`,
+      title:   recovery.title,
+      body:    recovery.body,
+      footer:  "From your body · always",
+      accent:  C.sage,
+      soft:    "#D8E5D3",
+    },
+  ]), [
+    chapter, phase, day, accent, soft,
+    insight.title, insight.body,
+    astra.eyebrow, astra.title, astra.body,
+    recovery.title, recovery.body,
+  ]);
+
+  const [activeIdx, setActiveIdx] = useState(0);
+  const [dragX, setDragX] = useState(0);
+  const [isDragging, setIsDragging] = useState(false);
+  const startXRef = useRef(null);
+  const mouseDownRef = useRef(false);
+  const count = cards.length;
+
+  const goNext = () => setActiveIdx((i) => (i + 1) % count);
+  const goPrev = () => setActiveIdx((i) => (i - 1 + count) % count);
+
+  // Stack offset — 0 = active (on top), 1 = first peek (behind right/down),
+  // 2 = second peek (further behind). Wraps cyclically so cards rotate
+  // through positions as the user swipes.
+  function offsetOf(i) {
+    return (i - activeIdx + count) % count;
+  }
+
+  function commitSwipe(delta) {
+    if (Math.abs(delta) > 40) {
+      if (delta < 0) goNext(); else goPrev();
+    }
+  }
+
+  // Touch handlers (mobile)
+  function onTouchStart(e) {
+    startXRef.current = e.touches[0].clientX;
+    setIsDragging(true);
+  }
+  function onTouchMove(e) {
+    if (startXRef.current == null) return;
+    setDragX(e.touches[0].clientX - startXRef.current);
+  }
+  function onTouchEnd() {
+    commitSwipe(dragX);
+    startXRef.current = null;
+    setDragX(0);
+    setIsDragging(false);
+  }
+
+  // Mouse handlers (desktop)
+  function onMouseDown(e) {
+    startXRef.current = e.clientX;
+    mouseDownRef.current = true;
+    setIsDragging(true);
+  }
+  function onMouseMove(e) {
+    if (!mouseDownRef.current || startXRef.current == null) return;
+    setDragX(e.clientX - startXRef.current);
+  }
+  function onMouseUp() {
+    if (!mouseDownRef.current) return;
+    commitSwipe(dragX);
+    startXRef.current = null;
+    mouseDownRef.current = false;
+    setDragX(0);
+    setIsDragging(false);
+  }
+
   return (
-    <Row label="">
-      <HeroInsightCard
-        eyebrow={`CHAPTER ${chapter} · ${phase.toUpperCase()} · DAY ${day}`}
-        title={insight.title}
-        body={insight.body}
-        footer="From Jess · this week"
-        accent={accent}
-        soft={soft}
-      />
-      <HeroInsightCard
-        eyebrow={astra.eyebrow}
-        title={astra.title}
-        body={astra.body}
-        footer="From Astra · today"
-        accent={C.gold}
-        soft="#F0E0B0"
-      />
-      <HeroInsightCard
-        eyebrow={`PHASE · GENTLE NOTE`}
-        title={recovery.title}
-        body={recovery.body}
-        footer="From your body · always"
-        accent={C.sage}
-        soft="#D8E5D3"
-      />
-    </Row>
+    <section style={{ marginBottom: 18, padding: "4px 16px" }} aria-label="Insights">
+      <div
+        style={{
+          position: "relative",
+          width: "100%",
+          maxWidth: 520,
+          margin: "0 auto",
+          height: 296, // heroCard 270 + peek translateY 14 + breathing room
+          touchAction: "pan-y",
+          userSelect: "none",
+        }}
+        onTouchStart={onTouchStart}
+        onTouchMove={onTouchMove}
+        onTouchEnd={onTouchEnd}
+        onMouseDown={onMouseDown}
+        onMouseMove={onMouseMove}
+        onMouseUp={onMouseUp}
+        onMouseLeave={onMouseUp}
+      >
+        {cards.map((c, i) => {
+          const off = offsetOf(i);
+          const isActive = off === 0;
+          // Three layered positions — active flat, then two peek-back cards.
+          const tx = off === 0 ? 0 : off === 1 ? 10 : 18;
+          const ty = off === 0 ? 0 : off === 1 ? 8  : 14;
+          const sc = off === 0 ? 1 : off === 1 ? 0.95 : 0.90;
+          const op = off === 0 ? 1 : off === 1 ? 0.7  : 0.42;
+          const zIdx = count - off;
+          // Active card follows finger; small 2D tilt for tactile feedback
+          // (z-axis rotate is fine; spec only bans rotateY).
+          const dragTx = isActive ? dragX : 0;
+          const dragRot = isActive ? Math.max(-4, Math.min(4, dragX * 0.04)) : 0;
+          const shadow = isActive
+            ? "0 16px 36px rgba(58,44,26,0.20), 0 4px 10px rgba(58,44,26,0.10)"
+            : "0 4px 14px rgba(58,44,26,0.10)";
+          return (
+            <article
+              key={i}
+              style={{
+                ...heroCard,
+                background: `linear-gradient(135deg, ${c.soft} 0%, ${C.cream} 100%)`,
+                borderLeft: `4px solid ${c.accent}`,
+                position: "absolute",
+                top: 0,
+                left: 0,
+                right: 0,
+                margin: "0 auto",
+                transform: `translateX(${tx + dragTx}px) translateY(${ty}px) scale(${sc}) rotate(${dragRot}deg)`,
+                transformOrigin: "50% 60%",
+                opacity: op,
+                zIndex: zIdx,
+                transition: isDragging
+                  ? "none"
+                  : "transform 360ms cubic-bezier(0.22, 1, 0.36, 1), opacity 360ms ease, box-shadow 360ms ease",
+                boxShadow: shadow,
+                cursor: isActive ? (isDragging ? "grabbing" : "grab") : "default",
+                pointerEvents: isActive ? "auto" : "none",
+              }}
+            >
+              <div style={heroCardRow}>
+                <p style={{ ...heroEyebrow, color: c.accent }}>{c.eyebrow}</p>
+                <div style={heroSunWrap}>
+                  <SunIllustration tone={c.accent} size={70} />
+                </div>
+              </div>
+              <h2 style={heroTitle}>{c.title}</h2>
+              <p style={heroBody}>{c.body}</p>
+              <div style={heroFootRow}>
+                <Sparkles size={11} style={{ color: c.accent }} />
+                <span style={heroFootText}>{c.footer}</span>
+              </div>
+            </article>
+          );
+        })}
+      </div>
+      {/* Dot indicators + arrow buttons */}
+      <div style={{
+        display: "flex", alignItems: "center", justifyContent: "center",
+        gap: 12, marginTop: 16,
+      }}>
+        <button
+          type="button"
+          onClick={goPrev}
+          aria-label="Previous card"
+          style={deckArrowBtn}
+        ><ChevronLeft size={16} /></button>
+        <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+          {cards.map((_, i) => {
+            const active = i === activeIdx;
+            return (
+              <button
+                key={i}
+                type="button"
+                onClick={() => setActiveIdx(i)}
+                aria-label={`Go to card ${i + 1}`}
+                aria-current={active ? "true" : undefined}
+                style={{
+                  width: active ? 9 : 7,
+                  height: active ? 9 : 7,
+                  borderRadius: 9999,
+                  background: active ? C.gold : "transparent",
+                  border: active
+                    ? `1px solid ${C.gold}`
+                    : "1px solid rgba(58,44,26,0.28)",
+                  padding: 0,
+                  cursor: "pointer",
+                  transition: "width 200ms ease, height 200ms ease, background 200ms ease, border 200ms ease",
+                }}
+              />
+            );
+          })}
+        </div>
+        <button
+          type="button"
+          onClick={goNext}
+          aria-label="Next card"
+          style={deckArrowBtn}
+        ><ChevronRight size={16} /></button>
+      </div>
+    </section>
   );
 }
+
+const deckArrowBtn = {
+  width: 30, height: 30, borderRadius: 9999,
+  background: "rgba(58,44,26,0.06)",
+  border: "1px solid rgba(58,44,26,0.10)",
+  color: C.espresso, cursor: "pointer",
+  display: "inline-flex", alignItems: "center", justifyContent: "center", padding: 0,
+};
 
 function HeroInsightCard({ eyebrow, title, body, footer, accent, soft }) {
   return (
