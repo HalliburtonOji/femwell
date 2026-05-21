@@ -4,14 +4,17 @@ import { QueryClientProvider } from '@tanstack/react-query'
 import { queryClientInstance } from '@/lib/query-client'
 import { pagesConfig } from './pages.config'
 import { BrowserRouter as Router, Route, Routes, Navigate, useLocation, useNavigate } from 'react-router-dom';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { base44 } from '@/api/base44Client';
+import { flushPending } from '@/utils/pendingQueue';
+import { scheduleNotifications } from '@/utils/notifications';
 // next-themes removed — caused duplicate React instance (invalid hook call)
 import { motion, AnimatePresence } from 'framer-motion';
 import PageNotFound from './lib/PageNotFound';
 import { AuthProvider, useAuth } from '@/lib/AuthContext';
 import UserNotRegisteredError from '@/components/UserNotRegisteredError';
 import Saved from './pages/Saved';
+import Search from './pages/Search';
 import Deals from './pages/Deals';
 import Events from './pages/Events';
 import WeeklyInsights from './pages/WeeklyInsights';
@@ -137,6 +140,8 @@ const AuthenticatedApp = () => {
           <Route path="/privacy" element={<LayoutWrapper currentPageName="Privacy"><Privacy /></LayoutWrapper>} />
           <Route path="/Upgrade" element={<LayoutWrapper currentPageName="Upgrade"><Upgrade /></LayoutWrapper>} />
           <Route path="/Planner" element={<LayoutWrapper currentPageName="Planner"><Planner /></LayoutWrapper>} />
+          {/* V3 sprint Task 4 — Search across journal/symptoms/meals/tasks. */}
+          <Route path="/Search" element={<LayoutWrapper currentPageName="Search"><Search /></LayoutWrapper>} />
           <Route path="/SealedLetters" element={<LayoutWrapper currentPageName="SealedLetters"><SealedLetters /></LayoutWrapper>} />
           <Route path="/BookReader" element={<LayoutWrapper currentPageName="BookReader"><BookReader /></LayoutWrapper>} />
           <Route path="*" element={<PageNotFound />} />
@@ -148,11 +153,58 @@ const AuthenticatedApp = () => {
 
 
 function App() {
+  // V3 sprint Task 6 — online/offline tracking + queue flush on reconnect.
+  const [online, setOnline] = useState(() => typeof navigator !== "undefined" ? navigator.onLine : true);
+  useEffect(() => {
+    const onOnline  = () => { setOnline(true);  flushPending(base44).catch(() => {}); };
+    const onOffline = () => setOnline(false);
+    window.addEventListener("online", onOnline);
+    window.addEventListener("offline", onOffline);
+    // Best-effort initial flush in case there's still a queue from a prior
+    // offline session.
+    if (navigator.onLine) flushPending(base44).catch(() => {});
+    return () => {
+      window.removeEventListener("online", onOnline);
+      window.removeEventListener("offline", onOffline);
+    };
+  }, []);
+
+  // V3 sprint Task 7 — schedule notifications on profile load. Fires when
+  // the authenticated user's profile resolves and reschedules if the
+  // notification_prefs JSON changes.
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      try {
+        const me = await base44.auth.me().catch(() => null);
+        if (!me?.id || cancelled) return;
+        const profiles = await base44.entities.UserProfile.filter({ user_id: me.id }).catch(() => []);
+        if (cancelled) return;
+        await scheduleNotifications(profiles?.[0] || null);
+      } catch { /* silent */ }
+    })();
+    return () => { cancelled = true; };
+  }, []);
 
   return (
     <AuthProvider>
       <QueryClientProvider client={queryClientInstance}>
         <Router>
+          {!online && (
+            <div
+              role="status"
+              aria-live="polite"
+              style={{
+                position: "fixed", top: 0, left: 0, right: 0, zIndex: 9999,
+                padding: "10px 16px", background: "#FFF1D6",
+                borderBottom: "1px solid #F4B860", color: "#7A4A0A",
+                fontFamily: "'Inter', system-ui, sans-serif", fontSize: 13,
+                textAlign: "center", fontWeight: 600,
+              }}
+            >
+              You're offline — your logs are saved and will sync automatically.
+            </div>
+          )}
           <AuthenticatedApp />
         </Router>
         <Toaster />

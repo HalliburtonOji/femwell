@@ -22,6 +22,8 @@ import {
   Droplets, Coffee, Wine, ChevronDown, ChevronUp,
 } from "lucide-react";
 import { base44 } from "@/api/base44Client";
+import { computeStreaks } from "@/utils/habitStreaks";
+import { addToPending, genQueueId } from "@/utils/pendingQueue";
 import {
   inferMealTypeFromTime,
   readAiAnalysis,
@@ -77,8 +79,22 @@ async function writeCheckin(patch) {
       .filter({ user_id, date }, "-updated_at", 1).catch(() => []);
     const row = (existing || [])[0];
     const body = { ...patch, updated_at: nowISO() };
-    if (row?.id) await base44.entities.DailyCheckins.update(row.id, body);
-    else         await base44.entities.DailyCheckins.create({ user_id, date, ...body });
+    try {
+      if (row?.id) await base44.entities.DailyCheckins.update(row.id, body);
+      else         await base44.entities.DailyCheckins.create({ user_id, date, ...body });
+    } catch (err) {
+      // V3 sprint Task 6: stash a creation intent in the offline queue so
+      // it replays when the user comes back online.
+      if (!row?.id) {
+        addToPending(genQueueId(), "DailyCheckins", "create", { user_id, date, ...body });
+        try { window.dispatchEvent(new CustomEvent("femwell:offline-queued", { detail: { entity: "DailyCheckins" } })); } catch {}
+      }
+      throw err;
+    }
+    // V3 sprint Task 1a: emit a global event so CheckinCard can pulse a
+    // success checkmark (the card itself auto-saves on every interaction,
+    // so there's no single "submit" moment to hook into locally).
+    try { window.dispatchEvent(new CustomEvent("femwell:checkin-saved")); } catch {}
   } catch { /* silent */ }
 }
 
@@ -86,10 +102,18 @@ async function writeSymptom(symptom_type) {
   try {
     const user_id = await getUserId();
     if (!user_id) return;
-    await base44.entities.SymptomLogs.create({
+    const payload = {
       user_id, date: todayISO(), symptom_type, severity: 3,
       created_at: nowISO(), updated_at: nowISO(),
-    });
+    };
+    try {
+      await base44.entities.SymptomLogs.create(payload);
+    } catch (err) {
+      // V3 sprint Task 6: queue the write for replay when online.
+      addToPending(genQueueId(), "SymptomLogs", "create", payload);
+      try { window.dispatchEvent(new CustomEvent("femwell:offline-queued", { detail: { entity: "SymptomLogs" } })); } catch {}
+      throw err;
+    }
   } catch { /* silent */ }
 }
 
@@ -425,6 +449,24 @@ function CheckinCard({ showToast }) {
   const [discharge, setDischarge]         = useState("");
   const [influences, setInfluences]       = useState(new Set());
 
+  // V3 sprint Task 1a — show a 1500ms green-checkmark pulse whenever any
+  // writeCheckin succeeds. The card auto-saves on every tap, so we hook
+  // into the global "femwell:checkin-saved" event emitted from writeCheckin.
+  const [savedPulse, setSavedPulse] = useState(false);
+  useEffect(() => {
+    let t;
+    const onSaved = () => {
+      setSavedPulse(true);
+      clearTimeout(t);
+      t = setTimeout(() => setSavedPulse(false), 1500);
+    };
+    window.addEventListener("femwell:checkin-saved", onSaved);
+    return () => {
+      window.removeEventListener("femwell:checkin-saved", onSaved);
+      clearTimeout(t);
+    };
+  }, []);
+
   // ── Auto-save handlers (every interaction → DailyCheckins upsert) ─────────
   const tapMoodTag = (m) => setMoodTags(prev => {
     const next = new Set(prev);
@@ -472,7 +514,31 @@ function CheckinCard({ showToast }) {
   });
 
   return (
-    <div>
+    <div style={{ position: "relative" }}>
+      {/* V3 sprint Task 1a — centred green checkmark pulse on save. */}
+      <style>{`
+        @keyframes femwell-checkin-pulse {
+          0%   { transform: translate(-50%, -50%) scale(0); opacity: 0; }
+          40%  { transform: translate(-50%, -50%) scale(1.15); opacity: 1; }
+          70%  { transform: translate(-50%, -50%) scale(1.00); opacity: 1; }
+          100% { transform: translate(-50%, -50%) scale(1.00); opacity: 0; }
+        }
+      `}</style>
+      {savedPulse && (
+        <div aria-hidden style={{
+          position: "absolute", top: 80, left: "50%",
+          transform: "translate(-50%, -50%)",
+          width: 64, height: 64, borderRadius: 9999,
+          background: "rgba(143,175,143,0.18)",
+          border: "2px solid #8FAF8F",
+          display: "flex", alignItems: "center", justifyContent: "center",
+          color: "#3D6B3D", zIndex: 5,
+          animation: "femwell-checkin-pulse 1500ms ease-out forwards",
+          pointerEvents: "none",
+        }}>
+          <Check size={32} strokeWidth={3} />
+        </div>
+      )}
       <SectionLabel>How are you feeling?</SectionLabel>
       <div style={{ display: "flex", flexWrap: "wrap", gap: 5, marginBottom: 12 }}>
         {MOOD_TAG_OPTIONS.map(m => (
@@ -1912,6 +1978,7 @@ const RITUAL_TIMES = [
 function RitualsCard({ showToast }) {
   const [userId, setUserId]   = useState(null);
   const [rituals, setRituals] = useState([]);
+  const [streaks, setStreaks] = useState({}); // V3 Task 1b — { habit_name → N }
   const [newName, setNewName] = useState("");
   const [newTime, setNewTime] = useState("morning");
 
@@ -1922,10 +1989,13 @@ function RitualsCard({ showToast }) {
         const me = await base44.entities.User.me().catch(() => null);
         if (!me?.id || cancelled) return;
         setUserId(me.id);
-        const rows = await base44.entities.HabitLogs
-          .filter({ user_id: me.id, date: todayISO() }, null, 200).catch(() => []);
+        const [today, history] = await Promise.all([
+          base44.entities.HabitLogs.filter({ user_id: me.id, date: todayISO() }, null, 200).catch(() => []),
+          base44.entities.HabitLogs.filter({ user_id: me.id }, "-date", 400).catch(() => []),
+        ]);
         if (cancelled) return;
-        setRituals((rows || []).filter(Boolean));
+        setRituals((today || []).filter(Boolean));
+        setStreaks(computeStreaks(history || []));
       } catch { /* silent */ }
     })();
     return () => { cancelled = true; };
@@ -1997,6 +2067,17 @@ function RitualsCard({ showToast }) {
           textDecoration: done ? "line-through" : "none",
           opacity: done ? 0.6 : 1,
         }}>{nameOf(r)}</span>
+        {/* V3 sprint Task 1b — 🔥 streak badge when streak ≥ 2. */}
+        {(streaks[nameOf(r)] || 0) >= 2 && (
+          <span style={{
+            display: "inline-flex", alignItems: "center", gap: 2,
+            fontSize: 11, fontWeight: 700, color: "#A8580A",
+            background: "#FFF1E6", padding: "2px 6px", borderRadius: 9999,
+            border: "1px solid #F4B860",
+          }} aria-label={`${streaks[nameOf(r)]} day streak`}>
+            <span aria-hidden>🔥</span>{streaks[nameOf(r)]}
+          </span>
+        )}
         {r.time_of_day && (
           <span style={{
             fontSize: 9, fontWeight: 700, color: T.muted,

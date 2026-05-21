@@ -676,9 +676,9 @@ export function TypeGrid({ onPick }) {
               {summary}
             </div>
             {transcript && (
-              <div style={{ fontSize: 10, color: C.muted, marginTop: 6, fontStyle: "italic" }}>
-                "{transcript}"
-              </div>
+              <p style={{ fontSize: 12, color: "#9B8B7A", fontStyle: "italic", marginTop: 6 }}>
+                Heard: "{transcript}"
+              </p>
             )}
             <div style={{ display: "flex", gap: 6, marginTop: 10 }}>
               <button onClick={editIntent} style={{

@@ -31,7 +31,7 @@ import {
   Heart, Droplets, Footprints, CircleDot, Pill, BedDouble, FileText,
   GripVertical, ArrowUpRight, Smile, Mic, Utensils, CalendarClock,
   StickyNote, Stethoscope, ListChecks, ArrowLeft, ArrowRight,
-  Maximize2,
+  Maximize2, Search as SearchIcon,
 } from "lucide-react";
 // Real production cycle calendar — same component Planner.jsx mounts on the
 // Cycle tab. Imported so the demo doesn't drift from production visuals.
@@ -44,6 +44,7 @@ import { base44 } from "@/api/base44Client";
 import StageRow from "@/components/planner-v2/StageRows";
 import ConditionRow from "@/components/planner-v2/ConditionRows";
 import AiDisclaimer from "@/components/compliance/AiDisclaimer";
+import { computeStreaks } from "@/utils/habitStreaks";
 
 // Layers + X imported separately so the DEV pill below can use them
 // without colliding with the demo's existing import list above.
@@ -801,6 +802,20 @@ function Header({ greeting, onOpenPlan, lifeStage }) {
       <div style={greetingRow}>
         <h1 style={greetingText}>{greeting}, {profile.name}</h1>
         <Sun size={18} style={{ color: C.gold, flexShrink: 0 }} />
+        {/* V3 sprint Task 4 — navigate to /Search from the Planner header. */}
+        <a
+          href="/Search"
+          aria-label="Search your logs"
+          style={{
+            marginLeft: "auto",
+            width: 36, height: 36, borderRadius: 9999,
+            display: "inline-flex", alignItems: "center", justifyContent: "center",
+            background: "rgba(58,44,26,0.06)", color: C.espresso,
+            textDecoration: "none", flexShrink: 0,
+          }}
+        >
+          <SearchIcon size={16} />
+        </a>
       </div>
       <div style={headerSubRow}>
         <span style={greetingSub}>
@@ -2652,6 +2667,9 @@ function CreateRitualCard() {
 function RitualBundleCard({ bundle, user }) {
   const [added, setAdded] = useState(false);
   const [adding, setAdding] = useState(false);
+  // V3 sprint Task 3 — per-bundle max streak across its constituent rituals.
+  // We surface the longest streak ≥ 2 inside the bundle as a 🔥 badge.
+  const [bestStreak, setBestStreak] = useState(0);
 
   // Comprehensive audit: on mount, check whether all of this bundle's
   // rituals already exist in today's HabitLogs. If so, mark Added so the
@@ -2672,6 +2690,17 @@ function RitualBundleCard({ bundle, user }) {
           .filter(Boolean));
         const allPresent = bundle.rituals.every((name) => have.has(String(name).toLowerCase()));
         if (allPresent) setAdded(true);
+        // Also pull the last 30 days for streak computation.
+        const all = await base44.entities.HabitLogs
+          .filter({ user_id: user.id }, "-date", 400).catch(() => []);
+        if (cancelled) return;
+        const streaks = computeStreaks(all);
+        let max = 0;
+        for (const name of bundle.rituals) {
+          const v = streaks[name] || 0;
+          if (v > max) max = v;
+        }
+        setBestStreak(max);
       } catch { /* silent */ }
     })();
     return () => { cancelled = true; };
@@ -2713,9 +2742,23 @@ function RitualBundleCard({ bundle, user }) {
     <article style={{ ...cardStyle, borderTop: `3px solid ${bundle.accent}` }}>
       <div style={cardHeadRow}>
         <h3 style={{ ...cardTitle, margin: 0 }}>{bundle.title}</h3>
-        <span style={{ ...countChip, color: bundle.accent, border: `1px solid ${bundle.accent}55`, background: `${bundle.accent}1F` }}>
-          {bundle.count} items
-        </span>
+        <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+          {/* V3 sprint Task 3 — 🔥 streak badge inline on the bundle card. */}
+          {bestStreak >= 2 && (
+            <span style={{
+              display: "inline-flex", alignItems: "center", gap: 2,
+              padding: "2px 6px", borderRadius: 9999,
+              background: "#FFF1E6", border: "1px solid #F4B860",
+              color: "#A8580A", fontSize: 11, fontWeight: 700,
+              fontFamily: "'Inter', sans-serif",
+            }} aria-label={`Streak ${bestStreak} days`}>
+              <span aria-hidden>🔥</span>{bestStreak}
+            </span>
+          )}
+          <span style={{ ...countChip, color: bundle.accent, border: `1px solid ${bundle.accent}55`, background: `${bundle.accent}1F` }}>
+            {bundle.count} items
+          </span>
+        </div>
       </div>
       <div style={metaRow}>
         <span style={timeChip}><Sun size={10} /> {bundle.time}</span>

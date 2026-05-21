@@ -318,6 +318,8 @@ function NotificationsSection({ user, profile, onProfileChange }) {
 // component plug into this section directly.
 import ConsentSettingsCard from "@/components/compliance/ConsentSettingsCard";
 import AccountDeletionCard from "@/components/compliance/AccountDeletionCard";
+import DataExportCard from "@/components/DataExportCard";
+import RemindersCard from "@/components/RemindersCard";
 
 function PrivacySection({ user, profile, onProfileChange, onDownloadData }) {
   const [prefs, setPrefs] = useState({
@@ -398,16 +400,12 @@ function PrivacySection({ user, profile, onProfileChange, onDownloadData }) {
       {/* Sprint C C2 — six GDPR consent toggles, persisted to UserProfile. */}
       <ConsentSettingsCard user={user} profile={profile} onChange={onProfileChange} />
 
-      <SettingsCard
-        title="Your data"
-        description="Download a copy of everything FemWell has on you."
-      >
-        <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
-          <button onClick={onDownloadData} style={{ ...secondaryBtn, justifyContent: "center" }}>
-            <Download className="w-4 h-4" /> Download My Data
-          </button>
-        </div>
-      </SettingsCard>
+      {/* V3 sprint Task 7 — notification preferences + scheduling. */}
+      <RemindersCard user={user} profile={profile} onProfileChange={onProfileChange} />
+
+      {/* V3 sprint Task 5 — full GDPR data export (replaces legacy single-
+          button download). Emits a JSON + an HTML summary in one click. */}
+      <DataExportCard user={user} />
 
       {/* Sprint C C4 — real cascade-deletion: type DELETE, removes every
           personal-data row, deletes UserProfile, signs out, redirects. */}

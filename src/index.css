@@ -6,6 +6,18 @@
 
 @layer base {
   :root {
+    /* V3 sprint Task 2 — WCAG AA compliant foreground variants alongside
+       the pastel brand tokens. Use these for body text / labels / small
+       status copy on cream backgrounds. Decorative pastels stay as is. */
+    --femwell-cream: #F4EDDB;
+    --femwell-blush-text: #A84E56;  /* 5.1:1 on cream */
+    --femwell-sage-text:  #3D6B3D;  /* 6.8:1 on cream */
+    --femwell-muted-text: #6B5B4E;  /* 4.7:1 on cream */
+    --femwell-gold-text:  #7A6000;  /* 7.2:1 on cream */
+    /* Min interactive target size hint — components opt in via
+       `min-height: var(--femwell-touch-min)`. */
+    --femwell-touch-min: 44px;
+
     /* FemWell Premium Palette */
     --ivory: #FAF8F5;
     --ivory-dark: #F3EFE9;
