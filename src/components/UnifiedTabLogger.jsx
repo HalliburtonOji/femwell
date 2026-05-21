@@ -571,8 +571,10 @@ const ACTIVITY_OPTIONS = [
   "Swimming", "Cycling", "Walking", "Aerobics", "Team sports",
 ];
 const DIGESTION_OPTIONS = ["Normal digestion", "Bloated", "Nausea", "Constipation", "Diarrhea"];
-const SKIN_OPTIONS = ["Clear", "Mild breakout", "Moderate breakout", "Very oily", "Very dry"];
-const HAIR_OPTIONS = ["Normal shedding", "More than usual", "A lot of shedding"];
+// V3 Task 3b: expanded skin + hair chip lists. Persisted shape unchanged —
+// the HAIR_MAP below normalises display labels back to canonical values.
+const SKIN_OPTIONS = ["Oily", "Dry", "Combination", "Breakout", "Clear", "Glowing"];
+const HAIR_OPTIONS = ["Shedding", "Thinning", "Normal", "Healthy"];
 const SEX_OPTIONS = [
   "Didn't have sex", "Protected sex", "Unprotected sex", "Oral sex",
   "High sex drive", "Neutral sex drive", "Low sex drive", "Sensual touch",
@@ -632,7 +634,12 @@ function BodyCard() {
   const tapHair = (opt) => {
     const next = hair === opt ? "" : opt;
     setHair(next);
-    const HAIR_MAP = { "Normal shedding": "Normal", "More than usual": "More than usual", "A lot of shedding": "A lot" };
+    // V3 Task 3b: HAIR_MAP now covers both legacy and new chip labels so
+    // either set persists consistently to hair_shedding.
+    const HAIR_MAP = {
+      "Normal shedding": "Normal", "More than usual": "More than usual", "A lot of shedding": "A lot",
+      Shedding: "Shedding", Thinning: "Thinning", Normal: "Normal", Healthy: "Healthy",
+    };
     writeCheckin({ hair_shedding: next ? (HAIR_MAP[next] || next) : null });
   };
 

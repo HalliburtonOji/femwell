@@ -28,6 +28,7 @@ import {
   Plus, X, ArrowLeft, Mic, Sparkles, Pen, ChevronRight,
   Footprints, ListChecks, Pill, Utensils, CalendarClock, Droplets,
   StickyNote, Smile, Stethoscope, Check, Frown, Meh, Heart, Zap,
+  Coffee, Wine,
 } from "lucide-react";
 import { base44 } from "@/api/base44Client";
 import {
@@ -1023,6 +1024,7 @@ export function DetailForm({ type, onCancel, onSaved }) {
   // full-width espresso "Log meal" button. The generic Field renderer can't
   // match Nourish's exact chip styling (gold-tint active state for portion,
   // espresso-fill for meal type, button-style instead of cancel/save row).
+  // V3 Task 1 + 3f: TODAY macro bar + DRINKS chip row inlined below.
   if (type.id === "meal") {
     const KINDS = ["Morning", "Midday", "Evening", "Snack"];
     const PORTIONS = ["Small", "Medium", "Large"];
@@ -1036,6 +1038,11 @@ export function DetailForm({ type, onCancel, onSaved }) {
           </span>
           <h2 style={formTitle}>Log a meal</h2>
         </div>
+
+        {/* V3 Task 1: TODAY macro summary bar — KCAL / PROTEIN / CARBS /
+            DRINKS. Mirrors the Nourish tab's live totals so the Add-tab
+            meal form has feature parity. */}
+        <MealMacroBar />
 
         <textarea
           value={values.raw_text || ""}
@@ -1092,6 +1099,9 @@ export function DetailForm({ type, onCancel, onSaved }) {
         }}>
           {saving ? "Analysing…" : "Log meal"}
         </button>
+
+        {/* V3 Task 1 + Task 3f: DRINKS row — one-tap log + +1 toast animation. */}
+        <DrinkChipsRow />
       </div>
     );
   }
@@ -1532,3 +1542,146 @@ const saveBtn = {
   background: C.espresso, color: C.cream, border: "1px solid " + C.espresso,
   fontSize: 13, fontWeight: 700, letterSpacing: "0.04em",
 };
+
+// ─── V3 Task 1: TODAY macro summary bar ─────────────────────────────────────
+// Compact KCAL / PROTEIN / CARBS / DRINKS counter row. Loads today's MealLog
+// + DrinkLog rows on mount and exposes a window-level "femwell:meal-logged"
+// CustomEvent to nudge refresh from sibling components. Read-only display.
+function MealMacroBar() {
+  const [stats, setStats] = useState({ kcal: null, protein: null, carbs: null, drinks: null });
+  const loadStats = useMemo(() => async () => {
+    try {
+      const me = await base44.entities.User.me().catch(() => null);
+      if (!me?.id) return;
+      const day = todayISO;
+      const [meals, drinks] = await Promise.all([
+        base44.entities.MealLog.filter({ user_id: me.id, day_key: day }).catch(() => []),
+        base44.entities.DrinkLog.filter({ user_id: me.id, day_key: day }).catch(() => []),
+      ]);
+      const sum = (meals || []).reduce((a, m) => {
+        const ai = m?.ai_analysis?.summary || m?.ai_analysis?.nutritional_summary || {};
+        return {
+          kcal:    a.kcal    + (Number(ai.calories)   || 0),
+          protein: a.protein + (Number(ai.protein_g)  || 0),
+          carbs:   a.carbs   + (Number(ai.carbs_g)    || 0),
+        };
+      }, { kcal: 0, protein: 0, carbs: 0 });
+      sum.kcal    += (drinks || []).reduce((a, d) => a + (Number(d?.calories) || 0), 0);
+      const drinkCount = (drinks || []).length;
+      setStats({
+        kcal:    Math.round(sum.kcal),
+        protein: Math.round(sum.protein),
+        carbs:   Math.round(sum.carbs),
+        drinks:  drinkCount,
+      });
+    } catch { /* silent */ }
+  }, []);
+  useEffect(() => {
+    loadStats();
+    const onLogged = () => loadStats();
+    window.addEventListener("femwell:meal-logged", onLogged);
+    return () => window.removeEventListener("femwell:meal-logged", onLogged);
+  }, [loadStats]);
+  const Pill = ({ label, value, unit }) => (
+    <div style={{
+      flex: 1, minWidth: 0, padding: "6px 8px", borderRadius: 10,
+      background: C.paperHi, border: "1px solid rgba(58,44,26,0.12)",
+      textAlign: "center",
+    }}>
+      <div style={{ fontSize: 9, fontWeight: 700, letterSpacing: "0.12em",
+        textTransform: "uppercase", color: C.muted }}>{label}</div>
+      <div style={{ fontSize: 13, fontWeight: 700, color: C.espresso, marginTop: 2 }}>
+        {value == null ? "—" : `${value}${unit || ""}`}
+      </div>
+    </div>
+  );
+  return (
+    <div style={{ display: "flex", gap: 6, marginBottom: 2 }} aria-label="Today's nutrition summary">
+      <Pill label="Kcal" value={stats.kcal} />
+      <Pill label="Protein" value={stats.protein} unit="g" />
+      <Pill label="Carbs" value={stats.carbs} unit="g" />
+      <Pill label="Drinks" value={stats.drinks} />
+    </div>
+  );
+}
+
+// ─── V3 Task 1 + 3f: DRINKS chip row with +1 toast animation ────────────────
+// One-tap drink logging — creates a DrinkLog row with the canonical drink
+// metadata from the Nourish tab (same ml + kcal pairings). On successful
+// log, a "+1" badge floats up from the tapped chip for 600ms.
+const QUICK_DRINKS = [
+  { id: "water",      label: "Water",      ml: 250, kcal: 0,   Icon: Droplets, tone: "#60B4FA" },
+  { id: "coffee",     label: "Coffee",     ml: 240, kcal: 5,   Icon: Coffee,   tone: C.espresso },
+  { id: "tea",        label: "Tea",        ml: 240, kcal: 2,   Icon: Coffee,   tone: C.muted },
+  { id: "soft_drink", label: "Soft drink", ml: 330, kcal: 140, Icon: Droplets, tone: C.gold },
+  { id: "juice",      label: "Juice",      ml: 250, kcal: 110, Icon: Droplets, tone: C.blush },
+  { id: "alcohol",    label: "Alcohol",    ml: 250, kcal: 180, Icon: Wine,     tone: C.plum },
+  { id: "smoothie",   label: "Smoothie",   ml: 300, kcal: 200, Icon: Droplets, tone: C.sage },
+];
+function DrinkChipsRow() {
+  const [popping, setPopping] = useState({});
+  async function logDrink(d) {
+    try {
+      const me = await base44.entities.User.me().catch(() => null);
+      if (!me?.id) return;
+      await base44.entities.DrinkLog.create({
+        user_id: me.id,
+        day_key: todayISO,
+        drink_type: d.id,
+        amount_ml: d.ml,
+        calories: d.kcal,
+        logged_at: nowISO,
+      });
+      // +1 toast pop
+      setPopping((p) => ({ ...p, [d.id]: true }));
+      setTimeout(() => setPopping((p) => ({ ...p, [d.id]: false })), 700);
+      try { window.dispatchEvent(new CustomEvent("femwell:meal-logged")); } catch {}
+    } catch { /* silent */ }
+  }
+  return (
+    <div style={{ marginTop: 6 }} aria-label="Quick drink log">
+      <div style={{ fontSize: 9, fontWeight: 700, letterSpacing: "0.18em",
+        textTransform: "uppercase", color: C.muted, marginBottom: 6 }}>Drinks</div>
+      <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
+        <style>{`
+          @keyframes femwell-drink-pop {
+            0%   { transform: translate(-50%, 0) scale(0.6); opacity: 0; }
+            20%  { transform: translate(-50%, -8px) scale(1); opacity: 1; }
+            100% { transform: translate(-50%, -28px) scale(1); opacity: 0; }
+          }
+        `}</style>
+        {QUICK_DRINKS.map((d) => (
+          <button
+            key={d.id}
+            onClick={() => logDrink(d)}
+            aria-label={`Log ${d.label}`}
+            style={{
+              position: "relative",
+              display: "inline-flex", alignItems: "center", gap: 6,
+              padding: "6px 10px", borderRadius: 9999,
+              border: `1px solid ${d.tone}55`,
+              background: `${d.tone}1A`,
+              color: C.espresso, fontSize: 11, fontWeight: 700,
+              cursor: "pointer", fontFamily: "'Inter', sans-serif",
+            }}
+          >
+            <d.Icon size={11} style={{ color: d.tone }} />
+            {d.label}
+            {d.kcal > 0 && (
+              <span style={{ color: C.muted, fontWeight: 500 }}>~{d.kcal}kcal</span>
+            )}
+            {popping[d.id] && (
+              <span aria-hidden style={{
+                position: "absolute",
+                left: "50%", bottom: "calc(100% + 2px)",
+                fontSize: 12, fontWeight: 800, color: d.tone,
+                pointerEvents: "none",
+                animation: "femwell-drink-pop 600ms ease-out",
+              }}>+1</span>
+            )}
+          </button>
+        ))}
+      </div>
+    </div>
+  );
+}

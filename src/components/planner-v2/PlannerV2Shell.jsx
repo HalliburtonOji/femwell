@@ -1239,16 +1239,20 @@ function InsightsHeroRow({ phase: phaseProp, dayInCycle }) {
   }
 
   return (
-    <section style={{ marginBottom: 18, padding: "4px 16px" }} aria-label="Insights">
+    <section style={{ marginBottom: 22, padding: "8px 16px" }} aria-label="Insights">
       <div
         style={{
           position: "relative",
           width: "100%",
           maxWidth: 520,
           margin: "0 auto",
-          height: 296, // heroCard 270 + peek translateY 14 + breathing room
+          height: 300, // heroCard 270 + peek translateY 18 + breathing room
           touchAction: "pan-y",
           userSelect: "none",
+          // V3 Task 2: perspective + transform-style on the wrapper unlocks
+          // genuine depth without rotateY (which clips on mobile).
+          perspective: 1200,
+          transformStyle: "preserve-3d",
         }}
         onTouchStart={onTouchStart}
         onTouchMove={onTouchMove}
@@ -1261,19 +1265,28 @@ function InsightsHeroRow({ phase: phaseProp, dayInCycle }) {
         {cards.map((c, i) => {
           const off = offsetOf(i);
           const isActive = off === 0;
-          // Three layered positions — active flat, then two peek-back cards.
-          const tx = off === 0 ? 0 : off === 1 ? 10 : 18;
-          const ty = off === 0 ? 0 : off === 1 ? 8  : 14;
-          const sc = off === 0 ? 1 : off === 1 ? 0.95 : 0.90;
-          const op = off === 0 ? 1 : off === 1 ? 0.7  : 0.42;
+          // V3 Task 2: deeper layered positions, parallax shift on rear
+          // cards proportional to active-card drag for true physical feel.
+          const tx = off === 0 ? 0 : off === 1 ? 12 : 22;
+          const ty = off === 0 ? 0 : off === 1 ? 10 : 18;
+          const sc = off === 0 ? 1 : off === 1 ? 0.94 : 0.88;
+          const op = off === 0 ? 1 : off === 1 ? 0.72 : 0.44;
           const zIdx = count - off;
-          // Active card follows finger; small 2D tilt for tactile feedback
-          // (z-axis rotate is fine; spec only bans rotateY).
-          const dragTx = isActive ? dragX : 0;
-          const dragRot = isActive ? Math.max(-4, Math.min(4, dragX * 0.04)) : 0;
+          // Active card follows finger with a subtle rotate-Z tilt (max ±1.5°)
+          // and a small translateZ to push the active layer forward; rear
+          // cards parallax-shift a fraction of the drag distance.
+          const dragTx = isActive
+            ? dragX
+            : off === 1
+              ? dragX * 0.06
+              : dragX * 0.03;
+          const dragRot = isActive ? Math.max(-1.5, Math.min(1.5, dragX * 0.018)) : 0;
+          const tz = isActive ? 0 : -10 * off;
           const shadow = isActive
-            ? "0 16px 36px rgba(58,44,26,0.20), 0 4px 10px rgba(58,44,26,0.10)"
-            : "0 4px 14px rgba(58,44,26,0.10)";
+            ? "0 20px 60px rgba(58,44,26,0.18), 0 8px 24px rgba(58,44,26,0.10)"
+            : off === 1
+              ? "0 12px 32px rgba(58,44,26,0.12)"
+              : "0 6px 16px rgba(58,44,26,0.08)";
           return (
             <article
               key={i}
@@ -1281,18 +1294,21 @@ function InsightsHeroRow({ phase: phaseProp, dayInCycle }) {
                 ...heroCard,
                 background: `linear-gradient(135deg, ${c.soft} 0%, ${C.cream} 100%)`,
                 borderLeft: `4px solid ${c.accent}`,
+                // V3 Task 2: gold foil edge on active card only.
+                borderTop: isActive ? "2px solid rgba(212,175,55,0.30)" : "none",
                 position: "absolute",
                 top: 0,
                 left: 0,
                 right: 0,
                 margin: "0 auto",
-                transform: `translateX(${tx + dragTx}px) translateY(${ty}px) scale(${sc}) rotate(${dragRot}deg)`,
+                transform: `translate3d(${tx + dragTx}px, ${ty}px, ${tz}px) scale(${sc}) rotate(${dragRot}deg)`,
+                transformStyle: "preserve-3d",
                 transformOrigin: "50% 60%",
                 opacity: op,
                 zIndex: zIdx,
                 transition: isDragging
                   ? "none"
-                  : "transform 360ms cubic-bezier(0.22, 1, 0.36, 1), opacity 360ms ease, box-shadow 360ms ease",
+                  : "transform 420ms cubic-bezier(0.16, 1, 0.3, 1), opacity 420ms ease, box-shadow 420ms ease",
                 boxShadow: shadow,
                 cursor: isActive ? (isDragging ? "grabbing" : "grab") : "default",
                 pointerEvents: isActive ? "auto" : "none",
@@ -2056,14 +2072,31 @@ function ListsSection({ user }) {
       )}
       {expanded && (
         <div style={listsAccordion}>
-          {(lists.find((l) => l.id === expanded)?.tasks || []).map((t) => (
-            <label key={t.id} style={listsTaskRow}>
-              <input type="checkbox" checked={t.done} onChange={() => toggleTask(expanded, t.id)} style={{ accentColor: C.sage }} />
-              <span style={{ fontSize: 13, color: C.espresso,
-                textDecoration: t.done ? "line-through" : "none", opacity: t.done ? 0.5 : 1 }}>{t.text}</span>
-              {t.due && <span style={listsDueChip}>today</span>}
-            </label>
-          ))}
+          {(lists.find((l) => l.id === expanded)?.tasks || []).map((t) => {
+            // V3 Task 4a: priority dot — red if overdue (due_date past),
+            // amber if due today, none otherwise. `t.due` carries the
+            // canonical PersonalTasks.date (YYYY-MM-DD).
+            let priorityTone = null;
+            if (t.due && !t.done) {
+              const todayStr = todayISO;
+              if (t.due < todayStr)      priorityTone = "#B91C1C"; // red — overdue
+              else if (t.due === todayStr) priorityTone = "#D4AF37"; // amber/gold — due today
+            }
+            return (
+              <label key={t.id} style={listsTaskRow}>
+                <input type="checkbox" checked={t.done} onChange={() => toggleTask(expanded, t.id)} style={{ accentColor: C.sage }} />
+                {priorityTone && (
+                  <span aria-hidden style={{
+                    width: 6, height: 6, borderRadius: 9999,
+                    background: priorityTone, flexShrink: 0,
+                  }} />
+                )}
+                <span style={{ fontSize: 13, color: C.espresso,
+                  textDecoration: t.done ? "line-through" : "none", opacity: t.done ? 0.5 : 1 }}>{t.text}</span>
+                {t.due && <span style={listsDueChip}>today</span>}
+              </label>
+            );
+          })}
           <button
             onClick={() => openLogger("task")}
             style={{
@@ -2269,6 +2302,33 @@ function sleepLabel(hours) {
   const mins = Math.round((h - whole) * 60);
   return mins > 0 ? `${whole}h ${String(mins).padStart(2, "0")}m` : `${whole}h`;
 }
+// V3 Task 4b: compact 0-5 semicircle arc used inline in Body Today chips.
+// 48px wide; renders a 180° semicircle filled proportionally with `tone`.
+function ScaleArc({ value, tone = "#8FAF8F" }) {
+  const v = Math.max(0, Math.min(5, Number(value) || 0));
+  const pct = v / 5;
+  // Semicircle path along the top half of a 24-radius circle centred at (24,24).
+  const R = 18;
+  const CIRC = Math.PI * R; // half circumference (semicircle)
+  const dash = CIRC * pct;
+  return (
+    <svg width={32} height={18} viewBox="0 0 48 24" style={{ marginLeft: 4 }} aria-hidden>
+      <path d="M 6 24 A 18 18 0 0 1 42 24" fill="none" stroke="rgba(58,44,26,0.12)" strokeWidth="3" strokeLinecap="round" />
+      <path
+        d="M 6 24 A 18 18 0 0 1 42 24"
+        fill="none"
+        stroke={tone}
+        strokeWidth="3"
+        strokeLinecap="round"
+        strokeDasharray={`${dash} ${CIRC}`}
+      />
+      <text x="24" y="22" textAnchor="middle" fontFamily="'Inter', sans-serif" fontSize="9" fontWeight="700" fill="#3A2C1A">
+        {Math.round(v)}
+      </text>
+    </svg>
+  );
+}
+
 function BodyTodayCard({ user }) {
   const [expanded, setExpanded] = useState(() => {
     try { return localStorage.getItem("femwell_body_strip_expanded") === "1"; } catch { return false; }
@@ -2340,8 +2400,14 @@ function BodyTodayCard({ user }) {
         </div>
       </div>
       <div style={miniChipRow}>
-        <button onClick={() => openLogger("checkin")} style={miniChip}><Smile size={12} style={{ color: C.rose }} /> Mood {moodNum ?? ""}</button>
-        <button onClick={() => openLogger("checkin")} style={miniChip}><Zap size={12} style={{ color: C.goldDeep }} /> Energy {energyNum ?? ""}</button>
+        <button onClick={() => openLogger("checkin")} style={miniChip}>
+          <Smile size={12} style={{ color: C.rose }} /> Mood
+          {moodNum != null ? <ScaleArc value={moodNum} tone="#8FAF8F" /> : <span style={{ marginLeft: 4 }}>—</span>}
+        </button>
+        <button onClick={() => openLogger("checkin")} style={miniChip}>
+          <Zap size={12} style={{ color: C.goldDeep }} /> Energy
+          {energyNum != null ? <ScaleArc value={energyNum} tone="#E8B4B8" /> : <span style={{ marginLeft: 4 }}>—</span>}
+        </button>
         <button onClick={() => openLogger("checkin")} style={miniChip}><Moon size={12} style={{ color: C.muted }} /> Sleep {sleepHrs != null ? `${sleepHrs}h` : "—"}</button>
       </div>
       {expanded && (
@@ -3725,12 +3791,16 @@ function TomorrowPreviewCard({ user }) {
     return () => { cancelled = true; };
   }, [user?.id, tomorrowStr]);
   const itemCount = tmItems.length;
+  // V3 Task 4d: format as "Tomorrow, Fri 23 May" (short weekday + day + month).
+  const tomorrowLabel = `Tomorrow, ${tomorrowDate.toLocaleDateString("en-GB", {
+    weekday: "short", day: "numeric", month: "short",
+  })}`;
   return (
     <article style={cardStyle}>
       <span style={kicker}>
         {itemCount > 0 ? `TOMORROW · ${itemCount} ${itemCount === 1 ? "ITEM" : "ITEMS"}` : "TOMORROW"}
       </span>
-      <h3 style={cardTitle}>{tomorrowDate.toLocaleDateString(undefined, { weekday: "long", month: "long", day: "numeric" })}</h3>
+      <h3 style={cardTitle}>{tomorrowLabel}</h3>
       <div style={{ display: "flex", alignItems: "center", gap: 8, padding: "8px 12px", borderRadius: 10, background: `${PHASE_LIGHT[tmPhase]}22`, border: `1px solid ${PHASE_LIGHT[tmPhase]}55` }}>
         <span style={{ width: 10, height: 10, borderRadius: 9999, background: PHASE_LIGHT[tmPhase] }} />
         <span style={{ fontFamily: "'Fraunces', Georgia, serif", fontSize: 15, fontWeight: 500, color: C.espresso }}>
