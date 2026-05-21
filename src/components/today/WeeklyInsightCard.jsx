@@ -7,6 +7,7 @@ import { Link } from "react-router-dom";
 import { getPlannerConfig, isCycleLifeStage } from "@/utils/plannerAdapter";
 import { readDevStage, subscribeDevStage } from "@/utils/devStageStore";
 import { buildJessContext } from "@/utils/jessContext";
+import AiDisclaimer from "@/components/compliance/AiDisclaimer";
 
 // ────────────────────────────────────────────────────────────────────────────
 // scrubCycleCopyForNonCycleStage — Phase 2 QA-fix-bundle-3 (#5).
@@ -459,6 +460,9 @@ Honour the STAGE GUARD above without exception. Highlight patterns, celebrate wi
           {displayText?.replace(/[#*_]/g, "").slice(0, 120)}…
         </p>
       )}
+
+      {/* Sprint C C1 — MHRA disclaimer on AI-generated insight text. */}
+      {insight && <AiDisclaimer />}
 
     </div>
   );

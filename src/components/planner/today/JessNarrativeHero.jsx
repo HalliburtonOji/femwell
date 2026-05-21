@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { Sparkles } from "lucide-react";
 import { base44 } from "@/api/base44Client";
+import AiDisclaimer from "@/components/compliance/AiDisclaimer";
 
 // ─────────────────────────────────────────────────────────────────────────────
 // JessNarrativeHero — Today-A T-A2 (MP-Today-A).
@@ -421,6 +422,8 @@ export default function JessNarrativeHero({ profile, cycleInfo, plannerConfig, e
           <Sparkles size={11} strokeWidth={1.6} aria-hidden="true" />
           <span>From Jess · this week</span>
         </div>
+        {/* Sprint C C1 — MHRA disclaimer below Jess hero body. */}
+        <AiDisclaimer style={{ marginTop: 6, color: "#8A7458" }} />
       </div>
     </section>
   );

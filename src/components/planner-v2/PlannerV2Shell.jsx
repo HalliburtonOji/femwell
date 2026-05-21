@@ -43,6 +43,7 @@ import { openLogger } from "@/components/UniversalLogger";
 import { base44 } from "@/api/base44Client";
 import StageRow from "@/components/planner-v2/StageRows";
 import ConditionRow from "@/components/planner-v2/ConditionRows";
+import AiDisclaimer from "@/components/compliance/AiDisclaimer";
 
 // Layers + X imported separately so the DEV pill below can use them
 // without colliding with the demo's existing import list above.
@@ -2901,6 +2902,8 @@ function AstraCard({ profile: profileProp }) {
             </div>
             <h3 style={modalTitle}>{reading.title}</h3>
             <p style={astraSheetText}>{reading.full}</p>
+            {/* Sprint C C1 — MHRA disclaimer on Astra reading. */}
+            <AiDisclaimer />
           </div>
         </div>
       )}

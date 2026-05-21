@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { base44 } from "@/api/base44Client";
 import { ArrowLeft } from "lucide-react";
+import TeenSafetyNudge from "@/components/compliance/TeenSafetyNudge";
 
 const card = {
   backgroundColor: "var(--surface)", border: "1px solid var(--border)",
@@ -77,6 +78,10 @@ export default function CycleSettings() {
             Cycle Settings
           </h1>
         </div>
+
+        {/* Sprint C C3 — teen safety nudge for cycle surface (exact period
+            dates fall under "particularly sensitive data" for under-18s). */}
+        <TeenSafetyNudge profile={profile} surface="cycle" />
 
         <div style={{ ...card, padding: "24px" }} className="space-y-6">
 

@@ -3,6 +3,7 @@ import { base44 } from "@/api/base44Client";
 import { format, parseISO, subDays, differenceInDays } from "date-fns";
 import { Loader2, RefreshCw } from "lucide-react";
 import CycleMoodPatternChart from "./CycleMoodPatternChart";
+import AiDisclaimer from "@/components/compliance/AiDisclaimer";
 
 const MOOD_MAP = {
   1: { label: "Calm",      accent: "var(--sage)"       },
@@ -168,6 +169,8 @@ Return as plain text, no markdown.`,
           {cyclePatternSummary && (
             <div className="mt-4 rounded-2xl p-4" style={{ backgroundColor: "var(--rose-dust-subtle)", border: "1px solid var(--rose-dust-light)" }}>
               <p className="text-sm leading-relaxed" style={{ color: "var(--plum)", fontFamily: "'Inter', sans-serif" }}>{cyclePatternSummary}</p>
+              {/* Sprint C C1 — MHRA disclaimer below AI summary. */}
+              <AiDisclaimer style={{ marginTop: 8 }} />
             </div>
           )}
         </div>

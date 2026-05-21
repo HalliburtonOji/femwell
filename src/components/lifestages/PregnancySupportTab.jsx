@@ -7,6 +7,7 @@ import { Baby, Heart, Zap, Moon, AlertCircle, Plus, Check, X, ChevronDown, Chevr
 import PregnancyWeekCard from "./PregnancyWeekCard";
 import KickTrackerSection from "./KickTrackerSection";
 import ContractionTimerSection from "./ContractionTimerSection";
+import TeenSafetyNudge from "@/components/compliance/TeenSafetyNudge";
 import { toast } from "sonner";
 
 const FOCUSES = ["Sleep", "Nausea", "Movement", "Nutrition", "Birth prep", "Calm", "Pelvic health", "Breastfeeding prep"];
@@ -207,6 +208,10 @@ export default function PregnancySupportTab({ user, profile, setProfile, logs, s
 
   return (
     <div className="space-y-4">
+      {/* Sprint C C3 — teen safety nudge for pregnancy surface. Sits at top
+          so under-18 users see the trusted-adult prompt before any week-by-
+          week pregnancy detail loads. */}
+      <TeenSafetyNudge profile={profile} surface="pregnancy" />
       {/* Hero stats */}
       <div className="grid gap-3 grid-cols-2 md:grid-cols-4">
         {[

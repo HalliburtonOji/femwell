@@ -9,10 +9,16 @@
 // ─────────────────────────────────────────────────────────────────────────────
 
 import { base44 } from "@/api/base44Client";
+import { hasAiConsent } from "@/utils/consent";
 
 function todayKey() {
   return new Date().toISOString().split("T")[0];
 }
+
+// Sprint C C2 — Default copy shown when consent_ai_processing is false.
+// LLM callers should detect `{ blocked: true }` and render this instead
+// of invoking the model.
+export const AI_BLOCKED_MESSAGE = "Enable AI insights in Settings to let Jess and Astra read your data.";
 
 // Mirrors derivePlannerPhase in PlannerV2Shell.jsx — duplicated here so
 // utils/ doesn't take a component dependency.
@@ -42,6 +48,20 @@ export function deriveCyclePhase(profile) {
  * gracefully and still returns a usable string ("User context unavailable").
  */
 export async function buildJessContext({ user, profile } = {}) {
+  // Sprint C C2 — default-deny AI consent. If the user has not opted in,
+  // return a blocked context that callers detect via `blocked: true`.
+  if (!hasAiConsent(profile)) {
+    return {
+      blocked: true,
+      reason: "consent_ai_processing is not enabled",
+      message: AI_BLOCKED_MESSAGE,
+      lifeStage: profile?.life_stage || "reproductive",
+      phase: null, dayInCycle: null,
+      todayMood: null, todayEnergy: null, todaySymptoms: [],
+      prompt: "",
+    };
+  }
+
   const lifeStage = profile?.life_stage || "reproductive";
   const { phase, dayInCycle } = deriveCyclePhase(profile);
 

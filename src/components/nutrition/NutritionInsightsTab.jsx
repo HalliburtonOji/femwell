@@ -4,6 +4,7 @@ import { Loader2, RefreshCw, ChevronDown, ChevronUp } from "lucide-react";
 import { format, subDays, startOfWeek, endOfWeek, parseISO } from "date-fns";
 import ReactMarkdown from "react-markdown";
 import NutritionTrendDashboard from "./NutritionTrendDashboard";
+import AiDisclaimer from "@/components/compliance/AiDisclaimer";
 
 const card = {
   backgroundColor: "var(--surface)",
@@ -366,13 +367,17 @@ Guidelines:
           </div>
         )}
         {weekInsight && !generating && (
-          <ReactMarkdown className="text-xs leading-relaxed prose prose-sm max-w-none"
-            components={{
-              p: ({ children }) => <p className="my-1.5" style={{ color: "var(--plum)", fontFamily: "'Inter', sans-serif" }}>{children}</p>,
-              strong: ({ children }) => <strong style={{ color: "var(--plum)", fontWeight: 600 }}>{children}</strong>,
-            }}>
-            {weekInsight.insight_text}
-          </ReactMarkdown>
+          <>
+            <ReactMarkdown className="text-xs leading-relaxed prose prose-sm max-w-none"
+              components={{
+                p: ({ children }) => <p className="my-1.5" style={{ color: "var(--plum)", fontFamily: "'Inter', sans-serif" }}>{children}</p>,
+                strong: ({ children }) => <strong style={{ color: "var(--plum)", fontWeight: 600 }}>{children}</strong>,
+              }}>
+              {weekInsight.insight_text}
+            </ReactMarkdown>
+            {/* Sprint C C1 — MHRA disclaimer on AI-generated weekly summary. */}
+            <AiDisclaimer />
+          </>
         )}
         {!weekInsight && !generating && (
           <p className="text-xs" style={{ color: "var(--mauve)" }}>

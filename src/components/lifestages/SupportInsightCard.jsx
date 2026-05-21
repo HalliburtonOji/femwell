@@ -3,6 +3,7 @@ import ReactMarkdown from "react-markdown";
 import { Sparkles, RefreshCw } from "lucide-react";
 import { base44 } from "@/api/base44Client";
 import { buildJessContext } from "@/utils/jessContext";
+import AiDisclaimer from "@/components/compliance/AiDisclaimer";
 
 export default function SupportInsightCard({ mode, profile, logs, user }) {
   const [summary, setSummary] = useState("");
@@ -60,7 +61,8 @@ export default function SupportInsightCard({ mode, profile, logs, user }) {
         </div>
       )}
 
-      <p className="mt-3 text-[11px]" style={{ color: "var(--mauve)" }}>Supportive guidance only — not medical advice.</p>
+      {/* Sprint C C1 — MHRA-aligned disclaimer (canonical wording). */}
+      {!!summary && <AiDisclaimer />}
     </div>
   );
 }

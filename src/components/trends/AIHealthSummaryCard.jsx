@@ -2,6 +2,7 @@ import { useState } from "react";
 import ReactMarkdown from "react-markdown";
 import { Sparkles, RefreshCw } from "lucide-react";
 import { base44 } from "@/api/base44Client";
+import AiDisclaimer from "@/components/compliance/AiDisclaimer";
 
 const average = (values) => {
   const valid = values.filter((value) => value != null);
@@ -99,6 +100,8 @@ export default function AIHealthSummaryCard({ timeRange, checkins, symptomLogs, 
       {!!summary && !loading && (
         <div className="prose prose-sm max-w-none prose-p:my-1.5 text-sm" style={{ color: "var(--mauve)" }}>
           <ReactMarkdown>{summary}</ReactMarkdown>
+          {/* Sprint C C1 — MHRA disclaimer on AI-generated health summary. */}
+          <AiDisclaimer />
         </div>
       )}
     </div>

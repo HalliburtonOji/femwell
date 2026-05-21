@@ -314,6 +314,11 @@ function NotificationsSection({ user, profile, onProfileChange }) {
 }
 
 // ── Privacy section ──────────────────────────────────────────────────────────
+// Sprint C C2 + C4 — consent settings card and real cascade-deletion
+// component plug into this section directly.
+import ConsentSettingsCard from "@/components/compliance/ConsentSettingsCard";
+import AccountDeletionCard from "@/components/compliance/AccountDeletionCard";
+
 function PrivacySection({ user, profile, onProfileChange, onDownloadData }) {
   const [prefs, setPrefs] = useState({
     profile_is_public:               !!profile?.profile_is_public,
@@ -322,7 +327,6 @@ function PrivacySection({ user, profile, onProfileChange, onDownloadData }) {
   });
   const [saving, setSaving] = useState(false);
   const [saved, setSaved]   = useState(false);
-  const [showDelete, setShowDelete] = useState(false);
 
   useEffect(() => {
     setPrefs({
@@ -391,53 +395,23 @@ function PrivacySection({ user, profile, onProfileChange, onDownloadData }) {
         </div>
       </SettingsCard>
 
+      {/* Sprint C C2 — six GDPR consent toggles, persisted to UserProfile. */}
+      <ConsentSettingsCard user={user} profile={profile} onChange={onProfileChange} />
+
       <SettingsCard
         title="Your data"
-        description="Download or request deletion of your account."
+        description="Download a copy of everything FemWell has on you."
       >
         <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
           <button onClick={onDownloadData} style={{ ...secondaryBtn, justifyContent: "center" }}>
             <Download className="w-4 h-4" /> Download My Data
           </button>
-          <button
-            onClick={() => setShowDelete(true)}
-            style={{
-              ...primaryBtn,
-              backgroundColor: "white",
-              color: "#B91C1C",
-              border: "1.5px solid #FCA5A5",
-              justifyContent: "center",
-            }}
-          >
-            <Trash2 className="w-4 h-4" /> Delete My Account
-          </button>
         </div>
       </SettingsCard>
 
-      {showDelete && (
-        <>
-          <div onClick={() => setShowDelete(false)}
-            style={{ position: "fixed", inset: 0, zIndex: 40, backgroundColor: "rgba(42,32,53,0.5)", backdropFilter: "blur(5px)" }} />
-          <div role="dialog" aria-label="Delete account"
-            style={{ position: "fixed", left: "50%", top: "50%", transform: "translate(-50%,-50%)", zIndex: 50, width: "min(90vw, 420px)", backgroundColor: "white", borderRadius: 20, padding: "22px 22px 20px", boxShadow: "var(--shadow-lg)" }}>
-            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 10 }}>
-              <h3 style={{ fontFamily: "'Fraunces', serif", fontSize: 18, fontWeight: 700, color: "var(--plum)", margin: 0 }}>Delete your account</h3>
-              <button onClick={() => setShowDelete(false)} aria-label="Close"
-                style={{ width: 30, height: 30, borderRadius: 9999, backgroundColor: "#FFF1F2", border: "none", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center" }}>
-                <X className="w-4 h-4" style={{ color: "#E11D48" }} />
-              </button>
-            </div>
-            <p style={{ fontSize: 13, color: "var(--plum)", fontFamily: "'Inter', sans-serif", lineHeight: 1.6, marginBottom: 16 }}>
-              To permanently delete your account and all associated data, please email{" "}
-              <a href="mailto:support@femwells.com" style={{ color: "#E11D48", fontWeight: 600 }}>support@femwells.com</a>{" "}
-              from the address attached to your account. Our team will confirm and complete the deletion within 7 days.
-            </p>
-            <button onClick={() => setShowDelete(false)} style={{ ...primaryBtn, width: "100%", justifyContent: "center" }}>
-              OK, got it
-            </button>
-          </div>
-        </>
-      )}
+      {/* Sprint C C4 — real cascade-deletion: type DELETE, removes every
+          personal-data row, deletes UserProfile, signs out, redirects. */}
+      <AccountDeletionCard user={user} profile={profile} />
     </>
   );
 }

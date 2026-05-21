@@ -155,6 +155,38 @@
     "mature_confirmed_at": {
       "type": "string"
     },
+    // Sprint C C3 — under-18 flag. Mirrored from life_stage === "teen" by
+    // Profile.updateLifeStage. Components default-deny when reading consent
+    // flags (see src/utils/consent.js) so a missing field is treated safely.
+    "is_under_18": {
+      "type": "boolean",
+      "default": false
+    },
+    // Sprint C C2 — GDPR consent flags, default-deny. See src/utils/consent.js.
+    "consent_health_data": {
+      "type": "boolean",
+      "default": false
+    },
+    "consent_cycle_data": {
+      "type": "boolean",
+      "default": false
+    },
+    "consent_mood_data": {
+      "type": "boolean",
+      "default": false
+    },
+    "consent_location_data": {
+      "type": "boolean",
+      "default": false
+    },
+    "consent_ai_processing": {
+      "type": "boolean",
+      "default": false
+    },
+    "consent_marketing": {
+      "type": "boolean",
+      "default": false
+    },
     "life_stage": {
       "type": "string",
       "enum": [

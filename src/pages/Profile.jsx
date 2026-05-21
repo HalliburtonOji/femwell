@@ -166,8 +166,14 @@ export default function Profile() {
 
   const updateLifeStage = async (stage) => {
     if (!profile) return;
-    await base44.entities.UserProfile.update(profile.id, { life_stage: stage });
-    setProfile(p => ({ ...p, life_stage: stage }));
+    // Sprint C C3 — set is_under_18 alongside life_stage so any future
+    // consumer can read it without inferring from life_stage.
+    const isUnder18 = stage === "teen";
+    await base44.entities.UserProfile.update(profile.id, {
+      life_stage: stage,
+      is_under_18: isUnder18,
+    });
+    setProfile(p => ({ ...p, life_stage: stage, is_under_18: isUnder18 }));
     setEditLifeStage(false);
     // Notify any other tab/route (esp. /Planner) that the profile changed
     // so they re-fetch and reshape stage-gated cards immediately rather

@@ -20,6 +20,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { base44 } from "@/api/base44Client";
 import { Shield, Plus, Pencil, X, Check, ChevronLeft, Star, Clock } from "lucide-react";
+import TeenSafetyNudge, { isUnder18 } from "@/components/compliance/TeenSafetyNudge";
 
 const TYPES = [
   { key: "pill",      label: "Combined pill" },
@@ -151,6 +152,25 @@ export default function ContraceptionCard({ profile }) {
   };
 
   const loading = logs === null;
+
+  // Sprint C C3 — under-18 guard. For teen users, replace the detailed
+  // contraception flow with a "talk to a trusted adult or clinician" nudge.
+  if (isUnder18(profile)) {
+    return (
+      <section style={wrap} aria-label="Contraception — talk to a trusted adult">
+        <header style={headRow}>
+          <div style={iconRow}>
+            <span style={iconWrap}><Shield size={14} strokeWidth={1.8} /></span>
+            <div>
+              <p style={eyebrowStyle}>CONTRACEPTION</p>
+              <p style={titleStyle}>This belongs with a clinician</p>
+            </div>
+          </div>
+        </header>
+        <TeenSafetyNudge profile={profile} surface="contraception" />
+      </section>
+    );
+  }
 
   // ── Render branches ──────────────────────────────────────────────────────
   if (entityMissing) {
