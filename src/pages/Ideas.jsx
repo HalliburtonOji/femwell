@@ -22,9 +22,9 @@ import CardDeckPlanner from "@/components/CardDeckPlanner";
 // Sprint B B6: UnifiedPlannerDemo + its 9 row dependencies deleted as dead
 // code. PlannerV2Shell (production Planner) is the surviving v2 surface.
 import SmartLoggerDemo from "@/components/SmartLoggerDemo";   // v3
-// Jess AI tab — mount the real AssistantPanel in embedded mode (hides the
-// thread sidebar so the /Ideas tab gets a clean single-thread chat surface).
-import AssistantPanel from "@/components/assistant/AssistantPanel";
+// Jess AI tab — JessDemoPanel is the rebuilt phase-aware experience with
+// the botanical avatar, memory bar, context strip, and 3-tab shell.
+import JessDemoPanel from "@/components/assistant/JessDemoPanel";
 import SmartLoggerV4 from "@/components/SmartLoggerV4";       // v4 (new)
 
 // Unified Logger demo HTML — raw strings (Vite ?raw suffix returns file as string).
@@ -277,16 +277,14 @@ export default function Ideas() {
         {feature === "journal" && <ComingSoonView name="Journal" />}
         {feature === "jessai"  && (
           <div style={{
-            height: "min(78vh, 760px)",
+            height: "min(82vh, 820px)",
             background: "#F4EDDB",
             border: "1px solid rgba(58,44,26,0.12)",
             borderRadius: 18,
             overflow: "hidden",
+            display: "flex",
           }}>
-            <AssistantPanel
-              embedded
-              initialPrompt="Hello, I'm Jess. I'm here to help you understand your body, your cycle, and your wellbeing. What's on your mind today?"
-            />
+            <JessDemoPanel />
           </div>
         )}
       </main>
