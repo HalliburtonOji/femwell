@@ -2,8 +2,9 @@ import { useState } from "react";
 import ReactMarkdown from "react-markdown";
 import { Sparkles, RefreshCw } from "lucide-react";
 import { base44 } from "@/api/base44Client";
+import { buildJessContext } from "@/utils/jessContext";
 
-export default function SupportInsightCard({ mode, profile, logs }) {
+export default function SupportInsightCard({ mode, profile, logs, user }) {
   const [summary, setSummary] = useState("");
   const [loading, setLoading] = useState(false);
 
@@ -12,7 +13,10 @@ export default function SupportInsightCard({ mode, profile, logs }) {
     const recentLogs = logs.slice(0, 10).map((log) => JSON.stringify(log)).join("\n") || "No logs yet.";
     const profileText = profile ? JSON.stringify(profile) : "No profile yet.";
     const modeTitle = mode === "pregnancy" ? "pregnancy" : "menopause";
-    const prompt = `You are a warm, careful women's health support coach. Based on the ${modeTitle} profile and recent logs below, write a short markdown support summary. Use exactly 3 short sections: Wins, Patterns, Gentle next step. Stay supportive, specific, and non-diagnostic. Avoid medical claims or urgent language.\n\nPROFILE\n${profileText}\n\nRECENT LOGS\n${recentLogs}`;
+    // Sprint B B4: prepend today's real cycle/check-in/symptom context so
+    // Jess's reflection lands on the user's actual state instead of guessing.
+    const ctx = await buildJessContext({ user, profile });
+    const prompt = `${ctx.prompt}You are a warm, careful women's health support coach. Based on the ${modeTitle} profile and recent logs below, write a short markdown support summary. Use exactly 3 short sections: Wins, Patterns, Gentle next step. Stay supportive, specific, and non-diagnostic. Avoid medical claims or urgent language.\n\nPROFILE\n${profileText}\n\nRECENT LOGS\n${recentLogs}`;
     const result = await base44.integrations.Core.InvokeLLM({ prompt });
     setSummary(typeof result === "string" ? result : result?.text || result?.content || "No summary generated.");
     setLoading(false);

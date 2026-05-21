@@ -19,7 +19,8 @@ import AccordionPlanner from "@/components/AccordionPlanner";
 import MorningDashboard from "@/components/MorningDashboard";
 import TimeOfDayFlow from "@/components/TimeOfDayFlow";
 import CardDeckPlanner from "@/components/CardDeckPlanner";
-import UnifiedPlannerDemo from "@/components/UnifiedPlannerDemo";
+// Sprint B B6: UnifiedPlannerDemo + its 9 row dependencies deleted as dead
+// code. PlannerV2Shell (production Planner) is the surviving v2 surface.
 import SmartLoggerDemo from "@/components/SmartLoggerDemo";   // v3
 import SmartLoggerV4 from "@/components/SmartLoggerV4";       // v4 (new)
 
@@ -143,7 +144,9 @@ const UNIFIEDLOGGER_VERSIONS = [
 // ── Planner version registry ───────────────────────────────────────────────
 // Surface the existing planner demos as a version row.
 const PLANNER_VERSIONS = [
-  { id: "unified",   label: "v2", sub: "Unified",        render: () => <UnifiedPlannerDemo /> },
+  // Sprint B B6: removed legacy "v2 / Unified" entry. UnifiedPlannerDemo
+  // and its 9 row dependencies were deleted as dead code — production
+  // Planner is now PlannerV2Shell, viewable at /Planner.
   { id: "deck",      label: "Deck",       sub: "Card deck",     render: () => <CardDeckPlanner /> },
   { id: "flow",      label: "Flow",       sub: "Time of day",   render: () => <TimeOfDayFlow /> },
   { id: "dashboard", label: "Dashboard",  sub: "Morning brief", render: () => <MorningDashboard /> },

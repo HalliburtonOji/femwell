@@ -6,6 +6,7 @@ import { createPageUrl } from "@/utils";
 import { Link } from "react-router-dom";
 import { getPlannerConfig, isCycleLifeStage } from "@/utils/plannerAdapter";
 import { readDevStage, subscribeDevStage } from "@/utils/devStageStore";
+import { buildJessContext } from "@/utils/jessContext";
 
 // ────────────────────────────────────────────────────────────────────────────
 // scrubCycleCopyForNonCycleStage — Phase 2 QA-fix-bundle-3 (#5).
@@ -155,7 +156,13 @@ export default function WeeklyInsightCard({ user }) {
       ? "Cycle framing is appropriate for this user."
       : "DO NOT reference cycle phases, ovulation, or 'approaching menstrual phase'. The cycle frame is wrong for this user's life stage — speak only in terms of energy, sleep, recovery, mood, and stage-appropriate concerns.";
 
-    const prompt = `You are a compassionate women's wellness coach. Analyse the following data from the past 7 days (${weekStart} to ${today}) and write a concise, warm "Weekly Wellness Insight" report.
+    // Sprint B B4: prepend the shared Jess context block (today's mood +
+    // energy + symptoms + derived cycle phase + life stage) so the model
+    // anchors on the user's actual state right now, not just the 7-day
+    // history that follows.
+    const jessCtx = await buildJessContext({ user, profile });
+
+    const prompt = `${jessCtx.prompt}You are a compassionate women's wellness coach. Analyse the following data from the past 7 days (${weekStart} to ${today}) and write a concise, warm "Weekly Wellness Insight" report.
 
 CRITICAL FORMATTING RULES:
 - Output 3-5 SHORT paragraphs.

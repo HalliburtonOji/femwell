@@ -698,14 +698,14 @@ export default function PlannerV2Shell({
 
       <Row label="Mind & insight">
         <IntentionCard user={user} />
-        <AstraCard />
+        <AstraCard profile={profileProp} />
         <MoodMentalHealthCard user={user} />
         <BreathworkCard />
         <CyclePsychologyCard />
       </Row>
 
       <Row label="Nourishment">
-        <MacroTrackerCard />
+        <MacroTrackerCard user={user} profile={profileProp} />
         <HydrationCard user={user} />
         <AIMealPlanCard />
         <PhaseRecipesCard />
@@ -713,8 +713,8 @@ export default function PlannerV2Shell({
 
       <Row label="Care">
         <MedsAndSuppsCard user={user} />
-        <SymptomLogCard />
-        <BodyScanCard />
+        <SymptomLogCard user={user} />
+        <BodyScanCard user={user} />
         <GPReportCardSmall profile={profileProp} />
       </Row>
 
@@ -1684,7 +1684,15 @@ function YourDayCard({ slot, loading, bucket, streaks, onRefresh }) {
     const next = !(doneOverride[key] ?? t.completed);
     setDoneOverride((p) => ({ ...p, [key]: next }));
     try {
-      await base44.entities.PersonalTasks.update(t.id, { completed: next });
+      // Sprint B B5: canonical PersonalTasks shape carries the boolean on
+      // both `completed` and `is_completed` mirrors so downstream consumers
+      // (and any future server-side filters keyed on either field) stay
+      // consistent regardless of which name they read.
+      await base44.entities.PersonalTasks.update(t.id, {
+        completed: next,
+        is_completed: next,
+        updated_at: new Date().toISOString(),
+      });
     } catch {
       setDoneOverride((p) => ({ ...p, [key]: !next }));
     }
@@ -1975,14 +1983,20 @@ function ListsSection({ user }) {
     setRawTasks((prev) => prev.map((t) => {
       if (t.id !== taskId) return t;
       nextCompleted = !t.completed;
-      return { ...t, completed: nextCompleted };
+      return { ...t, completed: nextCompleted, is_completed: nextCompleted };
     }));
     try {
-      await base44.entities.PersonalTasks.update(taskId, { completed: nextCompleted });
+      // Sprint B B5: write both `completed` and `is_completed` mirrors so
+      // PersonalTasks rows stay canonically consistent with HabitLogs.
+      await base44.entities.PersonalTasks.update(taskId, {
+        completed: nextCompleted,
+        is_completed: nextCompleted,
+        updated_at: new Date().toISOString(),
+      });
     } catch {
       // Revert on failure.
       setRawTasks((prev) => prev.map((t) =>
-        t.id === taskId ? { ...t, completed: !nextCompleted } : t,
+        t.id === taskId ? { ...t, completed: !nextCompleted, is_completed: !nextCompleted } : t,
       ));
     }
   }
@@ -2815,8 +2829,39 @@ function IntentionCard({ user }) {
   );
 }
 
-function AstraCard() {
+// Sprint B B3: phase-aware Astra readings. Lookup keyed by the user's real
+// derived phase (last_period_start_date + cycle_avg_length). Falls back to
+// the legacy luteal mock when the profile isn't available.
+const ASTRA_FULL_READINGS = {
+  menstrual: {
+    title: "Your Menstrual Reading",
+    short: "Day 1 energy is lowest. Rest is the strategy — small acts, slow morning, warm food.",
+    full: "Day 1. Your body is doing important interior work — iron, warmth and gentle movement support today. The week ahead will lift, but right now lowering the bar is the work. Choose one quiet thing. Decline one unnecessary thing. The rooms you walk into this week want you softer.",
+  },
+  follicular: {
+    title: "Your Follicular Reading",
+    short: "Oestrogen is rising — start something new this week. Habits stick easier now.",
+    full: "Your spring has arrived. Energy is climbing day on day; new ideas will catch your eye — let yourself follow one or two of them. Strength training lands well this fortnight. Late nights are forgivable. Lighter, fresher foods feed the build. This is the week to plant — the bold output comes next.",
+  },
+  ovulatory: {
+    title: "Your Ovulatory Reading",
+    short: "Your peak window is open — visibility, bold asks and creative output land easily.",
+    full: "LH surge week. Communication, visibility and high-output work land with the least friction this week. Spend the energy you have — it doesn't carry over. Protein and anti-inflammatory food fuel the peak. Match peak output with adequate recovery: 7–8 hrs of sleep tonight protects the next fortnight.",
+  },
+  luteal: {
+    title: "Your Luteal Reading",
+    short: "Your peak window is closing — the bold output of the last fortnight has done its work. This week wants softness, not push.",
+    full: "Progesterone is doing the heavy lifting. Your body is winding the cycle down — and the work you did at ovulation is now consolidating. This is a finishing week, not a starting week. Close loops you've left open. Say no to one thing that doesn't need you. The rooms you walk into this week want you softer, not louder.",
+  },
+};
+function AstraCard({ profile: profileProp }) {
   const [open, setOpen] = useState(false);
+  const derived = useMemo(() => derivePlannerPhase(profileProp), [
+    profileProp?.last_period_start_date,
+    profileProp?.cycle_avg_length,
+    profileProp?.period_length,
+  ]);
+  const reading = ASTRA_FULL_READINGS[derived.phase] || ASTRA_FULL_READINGS.luteal;
   return (
     <>
       <article
@@ -2828,8 +2873,8 @@ function AstraCard() {
       >
         <div style={astraAvatar}><Sparkles size={14} style={{ color: C.gold }} /></div>
         <span style={kicker}>ASTRA · READING</span>
-        <h3 style={cardTitle}>{astraReading.title}</h3>
-        <p style={astraShort}>{astraReading.short}</p>
+        <h3 style={cardTitle}>{reading.title}</h3>
+        <p style={astraShort}>{reading.short}</p>
         <button
           onClick={(e) => { e.stopPropagation(); setOpen(true); }}
           style={astraOpenBtn}
@@ -2854,8 +2899,8 @@ function AstraCard() {
               <span style={kicker}>ASTRA · FULL READING</span>
               <button onClick={() => setOpen(false)} style={drawerCloseBtn}><X size={14} /></button>
             </div>
-            <h3 style={modalTitle}>{astraReading.title}</h3>
-            <p style={astraSheetText}>{astraReading.full}</p>
+            <h3 style={modalTitle}>{reading.title}</h3>
+            <p style={astraSheetText}>{reading.full}</p>
           </div>
         </div>
       )}
@@ -3090,11 +3135,45 @@ function CyclePsychologyCard() {
 }
 
 // ── Nourishment (4 new cards) ─────────────────────────────────────────────
-function MacroTrackerCard() {
+function MacroTrackerCard({ user, profile: profileProp }) {
+  // Sprint B B2: sum protein_g / carbs_g / fat_g across today's MealLog rows.
+  // Targets are life_stage aware — pregnant bumps protein to 71g (per NICE
+  // antenatal nutrition guidance). Display "—/[target]g" when no logs yet.
+  const lifeStage = profileProp?.life_stage || "reproductive";
+  const targets = (() => {
+    if (lifeStage.startsWith("pregnant")) return { protein: 71, carbs: 230, fat: 70 };
+    if (lifeStage === "postpartum")        return { protein: 71, carbs: 220, fat: 70 };
+    if (lifeStage === "perimenopause" || lifeStage === "menopause" || lifeStage === "post-menopause") {
+      return { protein: 60, carbs: 180, fat: 60 };
+    }
+    return { protein: 50, carbs: 200, fat: 65 };
+  })();
+  const [totals, setTotals] = useState({ protein: null, carbs: null, fat: null });
+  useEffect(() => {
+    let cancelled = false;
+    if (!user?.id) return;
+    (async () => {
+      try {
+        const rows = await base44.entities.MealLog
+          .filter({ user_id: user.id, day_key: todayISO }).catch(() => []);
+        if (cancelled) return;
+        const sum = (rows || []).reduce((a, r) => ({
+          protein: a.protein + (Number(r?.protein_g) || 0),
+          carbs:   a.carbs   + (Number(r?.carbs_g)   || 0),
+          fat:     a.fat     + (Number(r?.fat_g)     || 0),
+        }), { protein: 0, carbs: 0, fat: 0 });
+        const hasAny = (rows || []).length > 0;
+        setTotals(hasAny
+          ? { protein: Math.round(sum.protein), carbs: Math.round(sum.carbs), fat: Math.round(sum.fat) }
+          : { protein: null, carbs: null, fat: null });
+      } catch { /* silent */ }
+    })();
+    return () => { cancelled = true; };
+  }, [user?.id]);
   const macros = [
-    { label: "Protein", value: 62, target: 80, tone: C.sage,  unit: "g" },
-    { label: "Carbs",   value: 145, target: 200, tone: C.gold,  unit: "g" },
-    { label: "Fat",     value: 48, target: 65, tone: C.blush, unit: "g" },
+    { label: "Protein", value: totals.protein, target: targets.protein, tone: C.sage,  unit: "g" },
+    { label: "Carbs",   value: totals.carbs,   target: targets.carbs,   tone: C.gold,  unit: "g" },
+    { label: "Fat",     value: totals.fat,     target: targets.fat,     tone: C.blush, unit: "g" },
   ];
   return (
     <article style={cardStyle}>
@@ -3103,8 +3182,10 @@ function MacroTrackerCard() {
       <div style={macroRingRow}>
         {macros.map((m) => {
           const R = 24, CIRC = 2 * Math.PI * R;
-          const pct = Math.min(1, m.value / m.target);
+          const hasVal = m.value !== null && m.value !== undefined;
+          const pct = hasVal ? Math.min(1, m.value / m.target) : 0;
           const offset = CIRC * (1 - pct);
+          const display = hasVal ? String(m.value) : "—";
           return (
             <div key={m.label} style={macroCol}>
               <svg width={64} height={64} viewBox="0 0 64 64">
@@ -3112,9 +3193,9 @@ function MacroTrackerCard() {
                 <circle cx={32} cy={32} r={R} fill="none" stroke={m.tone} strokeWidth={5}
                   strokeLinecap="round" strokeDasharray={CIRC} strokeDashoffset={offset}
                   transform="rotate(-90 32 32)" />
-                <text x={32} y={36} textAnchor="middle" fontFamily="'Fraunces', Georgia, serif" fontSize={15} fontWeight="500" fill={C.espresso}>{m.value}</text>
+                <text x={32} y={36} textAnchor="middle" fontFamily="'Fraunces', Georgia, serif" fontSize={15} fontWeight="500" fill={C.espresso}>{display}</text>
               </svg>
-              <div style={macroLabel}>{m.value}/{m.target}{m.unit}</div>
+              <div style={macroLabel}>{display}/{m.target}{m.unit}</div>
               <div style={macroSub}>{m.label}</div>
             </div>
           );
@@ -3364,9 +3445,10 @@ const SYMPTOMS = [
   "Skin changes", "Other",
 ];
 
-function SymptomLogCard() {
+function SymptomLogCard({ user }) {
   const [selected, setSelected] = useState(new Set());
   const [saved, setSaved] = useState(false);
+  const [saving, setSaving] = useState(false);
   function toggle(s) {
     setSelected((p) => {
       const n = new Set(p);
@@ -3374,10 +3456,36 @@ function SymptomLogCard() {
       return n;
     });
   }
-  function save() {
-    if (selected.size === 0) return;
-    setSaved(true);
-    setTimeout(() => setSaved(false), 2000);
+  // Sprint B B1: persist one SymptomLogs row per chip selected. Severity
+  // defaults to 2 (mild→moderate). Mirrors the canonical symptom_type +
+  // symptom_name shape used elsewhere in the app.
+  async function save() {
+    if (selected.size === 0 || saving) return;
+    setSaving(true);
+    const nowISO = new Date().toISOString();
+    try {
+      if (user?.id) {
+        const rows = Array.from(selected);
+        await Promise.all(rows.map((s) =>
+          base44.entities.SymptomLogs.create({
+            user_id: user.id,
+            date: todayISO,
+            symptom_type: s,
+            symptom_name: s,
+            severity: 2,
+            notes: "",
+            logged_at: nowISO,
+            created_at: nowISO,
+            updated_at: nowISO,
+          }).catch(() => {})
+        ));
+      }
+    } finally {
+      setSaving(false);
+      setSaved(true);
+      setSelected(new Set());
+      setTimeout(() => setSaved(false), 2200);
+    }
   }
   return (
     <article style={cardStyle}>
@@ -3409,10 +3517,12 @@ function SymptomLogCard() {
   );
 }
 
-function BodyScanCard() {
+function BodyScanCard({ user }) {
   const [pain, setPain] = useState(2);
   const [crash, setCrash] = useState(3);
   const [emo, setEmo] = useState(3);
+  const [saving, setSaving] = useState(false);
+  const [saved, setSaved] = useState(false);
   const Slider = ({ value, set, lo, hi }) => (
     <div style={scanRow}>
       <span style={scanLabel}>{lo}</span>
@@ -3439,10 +3549,35 @@ function BodyScanCard() {
       <p style={miniLabel}>EMOTIONAL LOAD</p>
       <Slider value={emo} set={setEmo} lo="Light" hi="Heavy" />
       <p style={tipText}>This data helps Jess understand your patterns.</p>
+      {/* Sprint B B1: persist body-scan slider values via DailyCheckins upsert.
+          pain/crash/emo land on canonical DailyCheckins fields (pain, energy,
+          stress) — mirrors the existing BodyCard wiring in UnifiedTabLogger. */}
+      {saved && <span style={savedChip}><Check size={11} style={{ color: C.sage }} /> body scan saved</span>}
       <button
-        style={modalSaveBtn}
-        onClick={() => { try { openLogger("symptom"); } catch {} }}
-      >Save</button>
+        style={{ ...modalSaveBtn, opacity: saving ? 0.6 : 1 }}
+        disabled={saving}
+        onClick={async () => {
+          if (!user?.id || saving) return;
+          setSaving(true);
+          const nowISO = new Date().toISOString();
+          try {
+            // Upsert today's DailyCheckins row.
+            const existing = await base44.entities.DailyCheckins
+              .filter({ user_id: user.id, date: todayISO }).catch(() => []);
+            const row = (existing || [])[0];
+            const patch = {
+              user_id: user.id, date: todayISO,
+              pain, energy: 6 - crash, stress: emo,
+              updated_at: nowISO,
+            };
+            if (row?.id) await base44.entities.DailyCheckins.update(row.id, patch);
+            else await base44.entities.DailyCheckins.create({ ...patch, created_at: nowISO });
+            setSaved(true);
+            setTimeout(() => setSaved(false), 2200);
+          } catch { /* silent */ }
+          setSaving(false);
+        }}
+      >{saving ? "Saving…" : "Save"}</button>
     </article>
   );
 }
