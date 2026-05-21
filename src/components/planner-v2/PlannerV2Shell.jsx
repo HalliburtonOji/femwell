@@ -1193,27 +1193,40 @@ function _computeStreaks(allHabits) {
   return streaks;
 }
 
+// Canonical buckets — anything outside this set (e.g. "any", "anytime") falls
+// back to morning so habit rows from ritual bundles with time: "Any" still
+// surface in the YourDay row instead of being silently dropped.
+const _CANONICAL_SLOTS = new Set(["morning", "afternoon", "evening"]);
+function _normalizeSlot(raw, fallback = "morning") {
+  const v = String(raw || "").toLowerCase();
+  return _CANONICAL_SLOTS.has(v) ? v : fallback;
+}
+
 function _bucketAll({ tasks, meals, habits, meds }) {
   const buckets = {
     morning:   { tasks: [], habits: [], meals: [], meds: [] },
     afternoon: { tasks: [], habits: [], meals: [], meds: [] },
     evening:   { tasks: [], habits: [], meals: [], meds: [] },
   };
-  // Tasks: prefer explicit time_of_day, fall back to time-of-day from `time`,
-  // else go to morning (the spec maps anytime tasks into morning).
+  // Tasks: prefer explicit time_of_day (if canonical), fall back to time-of-day
+  // from `time`, else go to morning (the spec maps anytime tasks into morning).
   (tasks || []).forEach((t) => {
-    const slot = (t.time_of_day || _slotForTime(t.time) || "morning").toLowerCase();
-    if (buckets[slot]) buckets[slot].tasks.push(t);
+    const fromField = _CANONICAL_SLOTS.has(String(t.time_of_day || "").toLowerCase())
+      ? String(t.time_of_day).toLowerCase()
+      : _slotForTime(t.time) || "morning";
+    buckets[fromField].tasks.push(t);
   });
-  // Habits: time_of_day (morning/afternoon/evening) → bucket; else morning.
+  // Habits: time_of_day morning/afternoon/evening → bucket; anything else
+  // (including "any", "anytime", null) falls to morning so bundle rituals
+  // still render.
   (habits || []).forEach((h) => {
-    const slot = (h.time_of_day || "morning").toLowerCase();
-    if (buckets[slot]) buckets[slot].habits.push(h);
+    const slot = _normalizeSlot(h.time_of_day, "morning");
+    buckets[slot].habits.push(h);
   });
   // Meals: meal_type → slot.
   (meals || []).forEach((m) => {
     const slot = _slotForMealType(m.meal_type) || "morning";
-    if (buckets[slot]) buckets[slot].meals.push(m);
+    buckets[slot].meals.push(m);
   });
   // Meds: any taken-today rows go to morning (collated info display).
   (meds || []).forEach((m) => {
