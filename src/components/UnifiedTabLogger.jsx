@@ -208,10 +208,12 @@ async function writeTask(title, time_of_day) {
   try {
     const user_id = await getUserId();
     if (!user_id) return;
+    const slot = time_of_day ? String(time_of_day).toLowerCase() : null;
     await base44.entities.PersonalTasks.create({
       user_id, date: todayISO(), title,
       category: "personal", completed: false,
-      notes: time_of_day ? `time:${time_of_day.toLowerCase()}` : "",
+      time_of_day: slot,
+      notes: "",
       created_at: nowISO(), updated_at: nowISO(),
     });
   } catch { /* silent */ }

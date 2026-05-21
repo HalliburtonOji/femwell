@@ -300,9 +300,15 @@ export default function Today() {
           if (ci.energy) setEnergy(ci.energy - 1);
         }
         setTodayCompletions(completions.filter(c => !c.is_deleted));
-        const hl = hydrationLogs[0] || null;
-        setHydrationLog(hl);
-        setGlasses(hl?.glasses_count || 0);
+        // Sprint A fix 8: hydration is one-row-per-log-action. Total amount
+        // is the SUM of amount_ml across today's rows; glasses display as
+        // round(totalMl / 250). The legacy single-row + glasses_count
+        // pattern is gone; rely solely on amount_ml.
+        const totalMl = (hydrationLogs || []).reduce(
+          (a, h) => a + (Number(h?.amount_ml) || 0), 0,
+        );
+        setHydrationLog({ totalMl, rows: hydrationLogs || [] });
+        setGlasses(Math.round(totalMl / 250));
         if (dailyPlans[0]) setDailyPlan(dailyPlans[0]);
       } finally {
         setLoading(false);
@@ -396,26 +402,49 @@ export default function Today() {
     if (mood !== null) saveMoodEnergy(mood, i);
   };
 
+  // Sprint A fix 8: hydration is now one row per add. amount_ml = 250 per
+  // glass. Display glasses = round(totalMl / 250). Remove deletes the most
+  // recently created row so undo behaves naturally.
   const handleHydrationAdd = async () => {
-    const next = glasses + 1;
-    setGlasses(next);
-    if (hydrationLog) {
-      await base44.entities.HydrationLog.update(hydrationLog.id, { glasses_count: next, amount_ml: next * 250 });
-      setHydrationLog(prev => ({ ...prev, glasses_count: next, amount_ml: next * 250 }));
-    } else {
-      const created = await base44.entities.HydrationLog.create({ user_id: user.id, day_key: todayStr, glasses_count: next, amount_ml: next * 250 });
-      setHydrationLog(created);
-    }
+    if (!user?.id) return;
+    const nowISO = new Date().toISOString();
+    const created = await base44.entities.HydrationLog.create({
+      user_id: user.id,
+      day_key: todayStr,
+      amount_ml: 250,
+      logged_at: nowISO,
+      created_at: nowISO,
+      updated_at: nowISO,
+    });
+    setHydrationLog((prev) => {
+      const rows = [ ...(prev?.rows || []), created ];
+      const totalMl = rows.reduce((a, r) => a + (Number(r?.amount_ml) || 0), 0);
+      setGlasses(Math.round(totalMl / 250));
+      return { totalMl, rows };
+    });
   };
 
   const handleHydrationRemove = async () => {
     if (glasses <= 0) return;
-    const next = glasses - 1;
-    setGlasses(next);
-    if (hydrationLog) {
-      await base44.entities.HydrationLog.update(hydrationLog.id, { glasses_count: next });
-      setHydrationLog(prev => ({ ...prev, glasses_count: next }));
-    }
+    const rows = hydrationLog?.rows || [];
+    if (rows.length === 0) return;
+    // Remove the most recent row.
+    const sorted = [...rows].sort((a, b) => {
+      const ta = new Date(a?.logged_at || a?.created_at || 0).getTime();
+      const tb = new Date(b?.logged_at || b?.created_at || 0).getTime();
+      return ta - tb;
+    });
+    const last = sorted[sorted.length - 1];
+    if (!last?.id) return;
+    try {
+      await base44.entities.HydrationLog.delete(last.id);
+    } catch { /* silent — keep UI optimistic */ }
+    setHydrationLog((prev) => {
+      const nextRows = (prev?.rows || []).filter((r) => r.id !== last.id);
+      const totalMl = nextRows.reduce((a, r) => a + (Number(r?.amount_ml) || 0), 0);
+      setGlasses(Math.round(totalMl / 250));
+      return { totalMl, rows: nextRows };
+    });
   };
 
   const handleSaveCheckin = async (data) => {

@@ -12,7 +12,7 @@
 // rest of the app. v1 of these cards uses local state for tap-feedback;
 // real entity wiring lands in a follow-up commit per stage.
 
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   Baby, Stethoscope, Calendar, Activity, Moon as MoonIcon,
   Heart, Droplets, Plus, Check, ChevronRight, ListChecks,
@@ -23,6 +23,7 @@ import {
 import Row from "./Row";
 import { C, PHASE_DEEP, card, kicker, cardTitle, cardSub } from "./tokens";
 import { openLogger } from "@/components/UniversalLogger";
+import { base44 } from "@/api/base44Client";
 
 // Phase B follow-up: shared nav helper for "Talk to Jess" CTAs.
 function goToJess() { try { window.location.href = "/Jess"; } catch {} }
@@ -173,14 +174,58 @@ function BabyThisWeekCard({ profile, trimester }) {
   );
 }
 
-function KickCounterCard({ trimester }) {
+function KickCounterCard({ trimester, user }) {
+  // Sprint A fix 2: wire to PregnancyKickSession entity. Mirrors the
+  // canonical pattern in components/lifestages/KickTrackerSection.jsx.
+  // Each "session" is a discrete row started by the first tap and saved
+  // when the user resets (or when the page unmounts via best-effort).
   const [count, setCount] = useState(0);
-  const [started, setStarted] = useState(null);
+  const [startedMs, setStartedMs] = useState(null);
+  const [todayKicks, setTodayKicks] = useState(0);
+  const [saving, setSaving] = useState(false);
+
+  const todayStr = new Date().toISOString().split("T")[0];
+
+  useEffect(() => {
+    let cancelled = false;
+    async function loadToday() {
+      if (!user?.id) return;
+      const sessions = await base44.entities.PregnancyKickSession
+        .filter({ user_id: user.id, day_key: todayStr }).catch(() => []);
+      if (cancelled) return;
+      const total = (sessions || []).reduce((a, s) => a + (s?.kicks || 0), 0);
+      setTodayKicks(total);
+    }
+    loadToday();
+    return () => { cancelled = true; };
+  }, [user?.id, todayStr]);
+
   function tap() {
     setCount((c) => c + 1);
-    if (!started) setStarted(Date.now());
+    if (!startedMs) setStartedMs(Date.now());
   }
-  function reset() { setCount(0); setStarted(null); }
+
+  async function saveSession() {
+    if (!user?.id || !startedMs || count === 0) {
+      setCount(0); setStartedMs(null); return;
+    }
+    setSaving(true);
+    try {
+      const now = Date.now();
+      await base44.entities.PregnancyKickSession.create({
+        user_id: user.id,
+        day_key: todayStr,
+        started_at: new Date(startedMs).toISOString(),
+        ended_at: new Date(now).toISOString(),
+        kicks: count,
+        duration_seconds: Math.floor((now - startedMs) / 1000),
+      });
+      setTodayKicks((t) => t + count);
+    } catch { /* silent */ }
+    setSaving(false);
+    setCount(0); setStartedMs(null);
+  }
+
   if (trimester === 1) {
     return (
       <article style={{ ...card, alignItems: "center", justifyContent: "center", textAlign: "center" }}>
@@ -190,7 +235,8 @@ function KickCounterCard({ trimester }) {
       </article>
     );
   }
-  const minutes = started ? Math.floor((Date.now() - started) / 60000) : 0;
+  const minutes = startedMs ? Math.floor((Date.now() - startedMs) / 60000) : 0;
+  const displayCount = startedMs ? count : todayKicks;
   return (
     <article style={card}>
       <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
@@ -201,18 +247,20 @@ function KickCounterCard({ trimester }) {
         }}><Activity size={13} /></span>
         <div style={{ flex: 1 }}>
           <span style={kicker}>KICK COUNTER</span>
-          <h3 style={{ ...cardTitle, margin: "2px 0 0" }}>{count} / 10 today</h3>
+          <h3 style={{ ...cardTitle, margin: "2px 0 0" }}>{displayCount} / 10 today</h3>
         </div>
       </div>
-      <button onClick={tap} style={{
+      <button onClick={tap} disabled={saving} style={{
         marginTop: 10, padding: "22px 16px", borderRadius: 16,
-        background: C.espresso, color: C.cream, border: "none", cursor: "pointer",
+        background: C.espresso, color: C.cream, border: "none", cursor: saving ? "default" : "pointer",
         fontFamily: "'Fraunces', Georgia, serif", fontSize: 18, fontWeight: 500,
-        boxShadow: "0 2px 12px rgba(58,44,26,0.18)",
+        boxShadow: "0 2px 12px rgba(58,44,26,0.18)", opacity: saving ? 0.6 : 1,
       }}>Tap when baby kicks</button>
-      <p style={cardSub}>{started ? `Started ${minutes} min ago` : "Aim for 10 kicks in 2 hours"}</p>
+      <p style={cardSub}>{startedMs ? `Started ${minutes} min ago` : "Aim for 10 kicks in 2 hours"}</p>
       {count > 0 && (
-        <button onClick={reset} style={ctaLink}>Reset session <ChevronRight size={11} /></button>
+        <button onClick={saveSession} disabled={saving} style={ctaLink}>
+          {saving ? "Saving…" : "End + save session"} <ChevronRight size={11} />
+        </button>
       )}
     </article>
   );
@@ -330,12 +378,12 @@ function BirthPrepCard() {
   );
 }
 
-export function PregnancyRow({ stage, profile }) {
+export function PregnancyRow({ stage, profile, user }) {
   const trimester = trimesterOf(stage);
   return (
     <Row label="Your pregnancy">
       <BabyThisWeekCard profile={profile} trimester={trimester} />
-      <KickCounterCard trimester={trimester} />
+      <KickCounterCard trimester={trimester} user={user} />
       <AntenatalTrackerCard />
       <PregnancySymptomsCard />
       {trimester === 3 && <BirthPrepCard />}
@@ -1312,9 +1360,9 @@ export function TeenRow({ phase }) {
 // Returns the matching stage row, or null for stages without a dedicated
 // row (e.g. reproductive — the base experience already covers it).
 
-function StageRow({ stage, profile, phase, cycleDay }) {
+function StageRow({ stage, profile, phase, cycleDay, user }) {
   if (!stage) return null;
-  if (stage.startsWith("pregnant"))                   return <PregnancyRow stage={stage} profile={profile} />;
+  if (stage.startsWith("pregnant"))                   return <PregnancyRow stage={stage} profile={profile} user={user} />;
   if (stage === "postpartum")                          return <PostpartumRow />;
   if (stage === "ttc")                                 return <TtcRow phase={phase} cycleDay={cycleDay} />;
   if (stage === "pre-ttc")                             return <PreTtcRow phase={phase} />;

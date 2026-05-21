@@ -193,10 +193,7 @@ const initialStack = {
     { id: "m2", text: "Lunch — Salmon + greens",          done: false, note: "planned" },
     { id: "m3", text: "Dinner — Not planned",             done: false, note: null },
   ],
-  meds: [
-    { id: "rx1", text: "Progesterone 200mg", time: "9:00am", done: true  },
-    { id: "rx2", text: "Vitamin D 2000IU",   time: "9:00am", done: false },
-  ],
+  meds: [],
 };
 
 const ritualBundles = [
@@ -679,6 +676,7 @@ export default function PlannerV2Shell({
               profile={profileProp}
               phase={phase}
               cycleDay={cycleDay}
+              user={user}
             />
             {visible.length > 0 && (
               <ConditionRow
@@ -744,6 +742,7 @@ export default function PlannerV2Shell({
         open={cycleOpen}
         onClose={() => setCycleOpen(false)}
         onDayTap={(iso) => setDayDetail(iso)}
+        realProfile={profileProp}
       />
       <DayDetailSheet iso={dayDetail} onClose={() => setDayDetail(null)} />
       <BlockEditSheet
@@ -1218,10 +1217,7 @@ const YOUR_DAY_VARIANTS = [
       { name: "NOURISHMENT", items: [
         { id: "n1", text: "Breakfast — Avocado toast + eggs", meta: "380 cal · P:18g C:32g F:22g", done: true },
       ]},
-      { name: "CARE", items: [
-        { id: "c1", text: "Progesterone 200mg", meta: "9:00am", done: true },
-        { id: "c2", text: "Vitamin D 2000IU",   meta: "9:00am", done: false },
-      ]},
+      { name: "CARE", items: [] },
       { name: "TASKS", items: [
         { id: "t1", text: "Team standup",          meta: "Work", done: false },
         { id: "t2", text: "Draft investor update", meta: "Work", done: false },
@@ -3905,7 +3901,7 @@ function ScheduleBlock({ block, onTap }) {
   );
 }
 
-function FullCycleOverlay({ open, onClose, onDayTap }) {
+function FullCycleOverlay({ open, onClose, onDayTap, realProfile }) {
   if (!open) return null;
   return (
     <div style={overlayShell} role="dialog" aria-modal="true">
@@ -3922,7 +3918,13 @@ function FullCycleOverlay({ open, onClose, onDayTap }) {
             the Cycle tab. Phase gradient ribbons, activity bars per day, plum
             today marker, all sourced from the production palette. */}
         <MonthRibbon
-          profile={mockMonthRibbonProfile}
+          profile={realProfile && realProfile.last_period_start_date
+            ? {
+                last_period_start_date: realProfile.last_period_start_date,
+                cycle_avg_length: realProfile.cycle_avg_length || 28,
+                period_length: realProfile.period_length || 5,
+              }
+            : mockMonthRibbonProfile}
           habitLogs={[]}
           onNavigateToToday={(iso) => onDayTap(iso)}
         />

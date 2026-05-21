@@ -55,6 +55,12 @@ import {
   subscribeDevConditions,
 } from "@/utils/devStageStore";
 
+// Sprint A fix 7: module-level frozen empty array shared by every render
+// branch that falls back to "no conditions". Reusing one reference stops
+// the array-identity churn that made downstream useMemo deps re-fire on
+// every Planner render.
+const EMPTY_CONDITIONS = Object.freeze([]);
+
 // ── Stage-specific ribbon placeholder cards ─────────────────────────────────
 // Replace MonthRibbon (a cycle-phase grid + "Log your last period" CTA) for
 // stages where the cycle frame is wrong: pregnancy ("Journey"), PCOS / HA
@@ -641,7 +647,14 @@ export default function Planner() {
     window.addEventListener("focus", handler);
     document.addEventListener("visibilitychange", visHandler);
     window.addEventListener("femwell:profile-updated", handler);
-    const poll = window.setInterval(handler, 6000);
+    // Sprint A fix 7: gate the safety-net poll on document.visibilityState
+    // and step from 6s → 60s. The tight 6s interval re-rendered the entire
+    // Planner tree every six seconds even when the tab was hidden, which
+    // compounded with the 500ms localStorage poll into the 30s freeze users
+    // saw when toggling DEV conditions.
+    const poll = window.setInterval(() => {
+      if (document.visibilityState === "visible") handler();
+    }, 60000);
     return () => {
       window.removeEventListener("focus", handler);
       document.removeEventListener("visibilitychange", visHandler);
@@ -903,16 +916,12 @@ export default function Planner() {
       }
     };
     window.addEventListener("storage", onStorage);
-    // Phase 2 QA-fix-bundle-10 — 500ms poll on localStorage as a final
-    // defensive layer. Catches the case where someone (QA, devtools
-    // console, a future surface) writes femwell_dev_life_stage directly
-    // via localStorage.setItem without going through writeDevStage. The
-    // raw setItem doesn't fire store subscribers OR the native "storage"
-    // event (which only fires in OTHER tabs), so without this poll the
-    // override is invisible to React until something else triggers a
-    // re-render. 500ms cadence is cheap (one localStorage.getItem) and
-    // imperceptible for a preview-mode dev tool.
-    const pollRef = window.setInterval(() => {
+    // Sprint A fix 7: replaced the 500ms localStorage poll with the
+    // existing DEV_STAGE_EVENT CustomEvent dispatched by writeDevStage.
+    // Pairing subscribeDevStage (same-tab) + "storage" (cross-tab) +
+    // the legacy CustomEvent is enough; the half-second poll was the
+    // root cause of the 30s condition-toggle freeze.
+    const onDevStageChanged = () => {
       const current = readDevStage();
       setDevStageOverride((prev) => {
         if (current !== (prev || "")) {
@@ -921,13 +930,14 @@ export default function Planner() {
         }
         return prev;
       });
-    }, 500);
+    };
+    window.addEventListener("femwell_dev_stage_change", onDevStageChanged);
     console.log("[Planner] devStageStore listeners attached. Initial:", readDevStage(), readDevConditions());
     return () => {
       unsubStage();
       unsubCond();
       window.removeEventListener("storage", onStorage);
-      window.clearInterval(pollRef);
+      window.removeEventListener("femwell_dev_stage_change", onDevStageChanged);
     };
   }, []);
   const realLifeStage = profile?.life_stage ?? null;
@@ -948,7 +958,17 @@ export default function Planner() {
     return null;
   })();
   const effectiveLifeStage = liveLocalOverride || devStageOverride || realLifeStage || "reproductive";
-  const realConditions = profile?.conditions ?? profile?.condition_flags ?? [];
+  // Sprint A fix 7: memoise realConditions against its CONTENTS (joined key)
+  // so a fresh `[]` reference each render doesn't bust downstream useMemo
+  // dependencies. Previously this was the root of the array-identity churn
+  // that compounded with the 500ms poll into the 30s condition-toggle freeze.
+  const rawConditions = profile?.conditions ?? profile?.condition_flags ?? EMPTY_CONDITIONS;
+  const conditionsKey = Array.isArray(rawConditions) ? rawConditions.join("|") : "";
+  const realConditions = useMemo(
+    () => (Array.isArray(rawConditions) ? rawConditions : EMPTY_CONDITIONS),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [conditionsKey],
+  );
   // DEV conditions override: explicit (even empty) wins over the real list.
   // readDevConditionsOverride() returns null when no override is set.
   const effectiveConditions = devConditionsOverride !== null ? devConditionsOverride : realConditions;

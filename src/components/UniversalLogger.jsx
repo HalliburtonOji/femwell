@@ -468,8 +468,9 @@ async function saveVoiceIntent(intent) {
       }
       case "log_symptom":
         await base44.entities.SymptomLogs.create({
-          user_id, date, symptom_name: title,
-          severity: "mild", notes: intent.notes || "",
+          user_id, date,
+          symptom_type: title, symptom_name: title,
+          severity: 2, notes: intent.notes || "",
           created_at: nowISO, updated_at: nowISO,
         });
         break;
@@ -764,7 +765,7 @@ export function DetailForm({ type, onCancel, onSaved }) {
         case "med": {
           await base44.entities.MedicationLogs.create({
             user_id, date: todayISO, item_name: values.name || "Medication",
-            dose: values.dose ? String(values.dose) : "", taken: false,
+            dose: values.dose ? String(values.dose) : "", taken: true,
             notes: "", created_at: nowISO, updated_at: nowISO,
           });
           break;
