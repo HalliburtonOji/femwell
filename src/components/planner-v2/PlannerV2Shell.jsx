@@ -43,6 +43,7 @@ import { openLogger } from "@/components/UniversalLogger";
 import { base44 } from "@/api/base44Client";
 import StageRow from "@/components/planner-v2/StageRows";
 import ConditionRow from "@/components/planner-v2/ConditionRows";
+import CardStack from "@/components/planner-v2/CardStack";
 import AiDisclaimer from "@/components/compliance/AiDisclaimer";
 import { computeStreaks } from "@/utils/habitStreaks";
 
@@ -1610,9 +1611,7 @@ function _bucketAll({ tasks, meals, habits, meds }) {
 }
 
 function YourDayRow({ user }) {
-  const [active, setActive] = useState(0);
-  const trackRef = useRef(null);
-
+  // CardStack owns its own active-card state now — no local idx needed.
   // Live data state. null while loading; {} when ready.
   const [data, setData]       = useState(null);
   const [streaks, setStreaks] = useState({});
@@ -1658,58 +1657,30 @@ function YourDayRow({ user }) {
     return () => { cancelled = true; };
   }, [user?.id, refreshKey]);
 
-  function jumpTo(i) {
-    const clamped = Math.max(0, Math.min(YOUR_DAY_SLOTS.length - 1, i));
-    setActive(clamped);
-    const track = trackRef.current; if (!track) return;
-    const child = track.children[clamped];
-    if (child) track.scrollTo({ left: child.offsetLeft - track.offsetLeft, behavior: "smooth" });
-  }
-  function onScroll() {
-    const track = trackRef.current; if (!track) return;
-    let best = 0, bestDist = Infinity;
-    Array.from(track.children).forEach((el, i) => {
-      const left = el.offsetLeft - track.offsetLeft;
-      const dist = Math.abs(left - track.scrollLeft);
-      if (dist < bestDist) { bestDist = dist; best = i; }
-    });
-    setActive(best);
-  }
-
   const buckets = data ? _bucketAll(data) : null;
   const refresh = () => setRefreshKey((k) => k + 1);
 
   return (
-    <section style={rowShell} aria-label="Your day">
-      <div style={rowHead}>
-        <span style={kicker}>YOUR DAY</span>
-        <div style={rowNav}>
-          <button onClick={() => jumpTo(active - 1)} style={rowArrow}><ChevronLeft size={14} /></button>
-          {YOUR_DAY_SLOTS.map((s, i) => (
-            <span key={s.id} style={{
-              ...rowDot,
-              background: i === active ? s.accent : "rgba(58,44,26,0.20)",
-              transform: i === active ? "scale(1.4)" : "scale(1)",
-            }} />
-          ))}
-          <button onClick={() => jumpTo(active + 1)} style={rowArrow}><ChevronRight size={14} /></button>
-        </div>
-      </div>
+    <>
       <style>{`@keyframes femwellShimmer { 0%{opacity:.4} 50%{opacity:.9} 100%{opacity:.4} }`}</style>
-      <div ref={trackRef} onScroll={onScroll} style={rowTrack}>
-        {YOUR_DAY_SLOTS.map((s, i) => (
-          <div key={s.id} style={i === active ? { ...rowSlot, ...rowSlotActive } : rowSlot}>
-            <YourDayCard
-              slot={s}
-              loading={!data}
-              bucket={buckets ? buckets[s.id] : null}
-              streaks={streaks}
-              onRefresh={refresh}
-            />
-          </div>
+      {/* YourDay used to use a bespoke scroll-snap track with custom
+          per-slot accent dots. The CardStack now provides the
+          physical-deck visual (tap/swipe to advance, dots underneath).
+          Per-slot accent reads from each YourDayCard's left border, so
+          the stack's gold pagination dots are fine. */}
+      <CardStack label="Your day">
+        {YOUR_DAY_SLOTS.map((s) => (
+          <YourDayCard
+            key={s.id}
+            slot={s}
+            loading={!data}
+            bucket={buckets ? buckets[s.id] : null}
+            streaks={streaks}
+            onRefresh={refresh}
+          />
         ))}
-      </div>
-    </section>
+      </CardStack>
+    </>
   );
 }
 
@@ -4752,55 +4723,11 @@ function GenericAddSheet({ type, onClose, onSaved }) {
 // ─────────────────────────────────────────────────────────────────────────────
 // Generic primitives
 // ─────────────────────────────────────────────────────────────────────────────
+// Row is now a thin wrapper around CardStack — the actual stacked-deck
+// visuals + tap/swipe advance + dot pagination all live in CardStack so
+// every horizontal slider in the Planner stays consistent.
 function Row({ label, children }) {
-  const trackRef = useRef(null);
-  const [idx, setIdx] = useState(0);
-  const count = Children.count(children);
-  function jumpTo(i) {
-    const clamped = Math.max(0, Math.min(count - 1, i));
-    setIdx(clamped);
-    const track = trackRef.current; if (!track) return;
-    const child = track.children[clamped];
-    if (child) track.scrollTo({ left: child.offsetLeft - track.offsetLeft, behavior: "smooth" });
-  }
-  function onScroll() {
-    const track = trackRef.current; if (!track) return;
-    let best = 0, bestDist = Infinity;
-    Array.from(track.children).forEach((el, i) => {
-      const left = el.offsetLeft - track.offsetLeft;
-      const dist = Math.abs(left - track.scrollLeft);
-      if (dist < bestDist) { bestDist = dist; best = i; }
-    });
-    setIdx(best);
-  }
-  return (
-    <section style={rowShell} aria-label={label || "row"}>
-      {(label || count > 1) && (
-        <div style={rowHead}>
-          <span style={kicker}>{label ? label.toUpperCase() : ""}</span>
-          {count > 1 && (
-            <div style={rowNav}>
-              <button onClick={() => jumpTo(idx - 1)} style={rowArrow}><ChevronLeft size={14} /></button>
-              {Array.from({ length: count }).map((_, i) => (
-                <span key={i} style={{
-                  ...rowDot,
-                  background: i === idx ? C.gold : "#D4C9B4",
-                  transform: i === idx ? "scale(1.25)" : "scale(1)",
-                  transition: "background 200ms ease, transform 200ms ease",
-                }} />
-              ))}
-              <button onClick={() => jumpTo(idx + 1)} style={rowArrow}><ChevronRight size={14} /></button>
-            </div>
-          )}
-        </div>
-      )}
-      <div ref={trackRef} onScroll={onScroll} style={rowTrack}>
-        {Children.map(children, (child, i) => (
-          <div key={i} style={i === idx ? { ...rowSlot, ...rowSlotActive } : rowSlot}>{child}</div>
-        ))}
-      </div>
-    </section>
-  );
+  return <CardStack label={label}>{children}</CardStack>;
 }
 
 function Section({ name, children }) {
