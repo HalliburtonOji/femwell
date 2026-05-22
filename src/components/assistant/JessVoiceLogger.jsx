@@ -679,27 +679,35 @@ async function runExtractor(transcript) {
 async function saveExtractedItems(items, userId) {
   if (!Array.isArray(items) || !userId) return;
   const today = new Date().toISOString().split("T")[0];
+  // Most FemWell entity backends key off `day_key` (YYYY-MM-DD) for
+  // their daily-grain aggregation. The Pydantic models on the server
+  // side reject writes missing `day_key` with 422 Field required. We
+  // also keep `date` and `logged_at` to stay compatible with surfaces
+  // that read those legacy field names (Track tab + Today checkin
+  // modal both write all three). Voice logger is a write-only path,
+  // so the cost of a few duplicated date fields is zero.
+  const loggedAt = new Date().toISOString();
   for (const item of items) {
     if (!item?.type || !item?.data) continue;
     try {
       switch (item.type) {
         case "mood":
           await safeCreate("DailyCheckins", {
-            user_id: userId, date: today,
+            user_id: userId, date: today, day_key: today,
             mood: Number(item.data.mood_level) || null,
             mood_level: Number(item.data.mood_level) || null,
           });
           break;
         case "energy":
           await safeCreate("DailyCheckins", {
-            user_id: userId, date: today,
+            user_id: userId, date: today, day_key: today,
             energy: Number(item.data.energy_level) || null,
             energy_level: Number(item.data.energy_level) || null,
           });
           break;
         case "symptom":
           await safeCreate("SymptomLogs", {
-            user_id: userId, date: today,
+            user_id: userId, date: today, day_key: today,
             symptom_name: String(item.data.symptom_name || ""),
             symptom_type: String(item.data.symptom_name || ""),
             severity: Number(item.data.severity) || null,
@@ -707,29 +715,33 @@ async function saveExtractedItems(items, userId) {
           break;
         case "meal":
           await safeCreate("MealLog", {
-            user_id: userId, date: today,
+            user_id: userId, date: today, day_key: today,
             meal_type: String(item.data.meal_type || "snack"),
             description: String(item.data.description || ""),
             calories: item.data.calories != null ? Number(item.data.calories) : null,
+            logged_at: loggedAt,
           });
           break;
         case "water":
           await safeCreate("HydrationLog", {
-            user_id: userId, date: today,
+            user_id: userId, date: today, day_key: today,
             amount_ml: Number(item.data.amount_ml) || 0,
+            logged_at: loggedAt,
+            source: "voice",
           });
           break;
         case "medication":
           await safeCreate("MedicationLogs", {
-            user_id: userId, date: today,
+            user_id: userId, date: today, day_key: today,
             medication_name: String(item.data.medication_name || ""),
             dosage: item.data.dosage ? String(item.data.dosage) : null,
             taken: true,
+            logged_at: loggedAt,
           });
           break;
         case "supplement":
           await safeCreate("SupplementLog", {
-            user_id: userId, date: today,
+            user_id: userId, date: today, day_key: today,
             supplement_name: String(item.data.supplement_name || ""),
             dosage: item.data.dosage ? String(item.data.dosage) : null,
             taken: true,
@@ -741,6 +753,7 @@ async function saveExtractedItems(items, userId) {
             title: String(item.data.title || ""),
             time_of_day: item.data.time_of_day || null,
             date: today,
+            day_key: today,
           });
           break;
         case "journal":
@@ -749,6 +762,7 @@ async function saveExtractedItems(items, userId) {
             content: String(item.data.content || ""),
             text: String(item.data.content || ""),
             date: today,
+            day_key: today,
           });
           break;
         default:

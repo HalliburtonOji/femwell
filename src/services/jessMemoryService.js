@@ -18,14 +18,35 @@
 // Defensive guards: every base44.entities.JessMemory.* call is wrapped
 // in try/catch so the feature degrades cleanly if the entity isn't
 // provisioned in the schema yet.
+//
+// QA Fix 4 — extraction wasn't firing reliably. Two fixes:
+//   • Resolve the LLM wait early as soon as a *complete* JSON array is
+//     present in the streamed reply (otherwise the 8 s budget often
+//     truncated a still-streaming response and we hit `parse-error`).
+//   • Tag every return with a console.info so we can see, in production
+//     dev-tools, exactly where each attempt landed (no-input, too-short,
+//     no-entity, no-llm-reply, parse-error, extracted-N).
 
 import { base44 } from "@/api/base44Client";
+
+// One-line dev breadcrumb so devs can grep `[jess-memory]` in the
+// console after a thread closes and see what happened.
+function trace(stage, payload) {
+  try {
+    // eslint-disable-next-line no-console
+    console.info(`[jess-memory] ${stage}`, payload || "");
+  } catch { /* console may be unavailable in some envs */ }
+}
 
 // ─── Extraction ───────────────────────────────────────────────────────────
 // Build a transcript of the user ↔ Jess turns, feed it to a one-shot
 // base44.agents conversation, parse the JSON array reply, persist rows.
 export async function extractMemoriesFromConversation(messages, userId, convId, jessName = "Jess") {
-  if (!Array.isArray(messages) || !userId) return { extracted: 0, reason: "no-input" };
+  if (!Array.isArray(messages) || !userId) {
+    const r = { extracted: 0, reason: "no-input" };
+    trace("skip", r);
+    return r;
+  }
   // Filter to user + jess bubble messages only; skip dividers, opener
   // chips, the hidden [JESS CONTEXT] block, etc.
   const turns = messages
@@ -33,24 +54,32 @@ export async function extractMemoriesFromConversation(messages, userId, convId, 
     .map((m) => {
       const speaker = m.role === "user" ? "User" : jessName;
       const text = String(m.text || m.content || "").trim();
+      // Belt-and-braces — drop the hidden context block if it ever
+      // slipped into the local message list (it shouldn't, but).
+      if (text.startsWith("[JESS CONTEXT")) return "";
       return text ? `${speaker}: ${text}` : "";
     })
     .filter(Boolean)
     .join("\n");
 
   // Too short → not worth a roundtrip.
-  if (turns.length < 50) return { extracted: 0, reason: "too-short" };
+  if (turns.length < 50) {
+    const r = { extracted: 0, reason: "too-short", chars: turns.length };
+    trace("skip", r);
+    return r;
+  }
 
   const Entity = base44?.entities?.JessMemory;
   // If the entity doesn't exist yet, run the LLM call anyway so we can
   // surface what *would* be remembered for debugging — but skip the
   // writes.
   const hasEntity = !!Entity;
+  trace("start", { userId, convId, hasEntity, transcriptChars: turns.length });
 
   const systemLine =
     `You are a memory extractor for a women's health AI companion called ${jessName}. ` +
     `Extract memorable facts from this conversation that ${jessName} should remember for future conversations.\n\n` +
-    `Return ONLY a JSON array (no other text). Each item must have keys: memory_type, content, importance_score, tags. ` +
+    `Return ONLY a JSON array (no other text, no markdown fences). Each item must have keys: memory_type, content, importance_score, tags. ` +
     `memory_type is one of: preference | health_pattern | emotional_context | explicit_statement | goal | follow_up. ` +
     `content is a concise 1-sentence memory. importance_score is 1-10. tags is a comma-separated keyword list. ` +
     `Only extract things genuinely worth remembering (importance >= 5). Return [] if nothing is memorable.`;
@@ -58,8 +87,12 @@ export async function extractMemoriesFromConversation(messages, userId, convId, 
   let convo = null;
   try {
     convo = await base44.agents.createConversation({ agent_name: "personal_assistant" }).catch(() => null);
-  } catch { /* swallow */ }
-  if (!convo?.id) return { extracted: 0, reason: "no-agent-convo" };
+  } catch (e) { trace("create-convo-throw", String(e?.message || e)); }
+  if (!convo?.id) {
+    const r = { extracted: 0, reason: "no-agent-convo" };
+    trace("fail", r);
+    return r;
+  }
 
   let fullText = "";
   let unsub = null;
@@ -70,11 +103,18 @@ export async function extractMemoriesFromConversation(messages, userId, convId, 
       content: `[SYSTEM]\n${systemLine}\n\n[CONVERSATION]\n${turns}`,
     });
     // Collect the streamed reply. Each event delivers the FULL message
-    // list, so we grab the last assistant message's content.
+    // list, so we grab the last assistant message's content. Resolve
+    // early once we see what looks like a *complete* JSON array
+    // (balanced brackets) — otherwise the 8 s timer used to truncate
+    // mid-stream responses and we'd hit parse-error.
     fullText = await new Promise((resolve) => {
-      const seen = new Set();
       let latest = "";
       let settled = false;
+      const finish = (value) => {
+        if (settled) return;
+        settled = true;
+        resolve(value);
+      };
       unsub = base44.agents.subscribeToConversation(convo.id, (data) => {
         const list = data?.messages || [];
         for (const m of list) {
@@ -83,40 +123,59 @@ export async function extractMemoriesFromConversation(messages, userId, convId, 
           if (!txt) continue;
           latest = txt;
         }
+        // Early-resolve heuristic: a complete JSON array — first `[`
+        // matches a balanced `]` somewhere later. This is the cheap
+        // version that doesn't try to JSON.parse the partial.
+        if (hasBalancedJsonArray(latest)) {
+          finish(latest);
+        }
       });
-      // 8 s budget — extractor usually returns in <3 s.
-      window.setTimeout(() => {
-        if (settled) return;
-        settled = true;
-        resolve(latest);
-      }, 8000);
+      // 12 s ceiling — slow agent days were still timing out at 8.
+      window.setTimeout(() => finish(latest), 12000);
     });
-  } catch { /* swallow — fullText stays "" */ }
+  } catch (e) { trace("agent-throw", String(e?.message || e)); }
   finally { try { unsub?.(); } catch {} }
 
-  if (!fullText) return { extracted: 0, reason: "no-llm-reply" };
+  if (!fullText) {
+    const r = { extracted: 0, reason: "no-llm-reply" };
+    trace("fail", r);
+    return r;
+  }
 
   // Parse — the model may wrap the array in prose, so extract the first
-  // [ ... ] block.
+  // [ ... ] block. Strip ```json fences if present.
   let memories = [];
   try {
-    const m = fullText.match(/\[[\s\S]*\]/);
+    const cleaned = fullText.replace(/```(?:json)?/gi, "").trim();
+    const m = cleaned.match(/\[[\s\S]*\]/);
     if (!m) throw new Error("no JSON array");
     memories = JSON.parse(m[0]);
     if (!Array.isArray(memories)) throw new Error("not an array");
   } catch (e) {
-    return { extracted: 0, reason: "parse-error", err: String(e), raw: fullText.slice(0, 200) };
+    const r = { extracted: 0, reason: "parse-error", err: String(e), raw: fullText.slice(0, 200) };
+    trace("fail", r);
+    return r;
   }
 
-  if (!memories.length) return { extracted: 0, reason: "empty-array" };
-  if (!hasEntity) return { extracted: 0, reason: "no-entity", queued: memories.length };
+  if (!memories.length) {
+    const r = { extracted: 0, reason: "empty-array" };
+    trace("done", r);
+    return r;
+  }
+  if (!hasEntity) {
+    const r = { extracted: 0, reason: "no-entity", queued: memories.length };
+    trace("fail", r);
+    return r;
+  }
 
   let written = 0;
+  let skippedLow = 0;
+  let writeErrors = 0;
   for (const m of memories) {
     const score = Number(m?.importance_score);
-    if (!Number.isFinite(score) || score < 5) continue;
+    if (!Number.isFinite(score) || score < 5) { skippedLow += 1; continue; }
     const content = String(m?.content || "").trim();
-    if (!content) continue;
+    if (!content) { skippedLow += 1; continue; }
     try {
       await Entity.create({
         user_id: userId,
@@ -128,9 +187,43 @@ export async function extractMemoriesFromConversation(messages, userId, convId, 
         tags: String(m?.tags || ""),
       });
       written += 1;
-    } catch { /* swallow per-row failure; continue */ }
+    } catch (e) {
+      writeErrors += 1;
+      trace("write-error", String(e?.message || e));
+    }
   }
-  return { extracted: written, considered: memories.length };
+  const r = { extracted: written, considered: memories.length, skippedLow, writeErrors };
+  trace("done", r);
+  return r;
+}
+
+// Cheap heuristic: does the text contain at least one fully-balanced
+// JSON array (first unescaped `[` matches a later unescaped `]`)? We
+// don't JSON.parse — that's too expensive to do on every stream event.
+function hasBalancedJsonArray(text) {
+  if (typeof text !== "string") return false;
+  const start = text.indexOf("[");
+  if (start < 0) return false;
+  let depth = 0;
+  let inStr = false;
+  let strChar = "";
+  let escape = false;
+  for (let i = start; i < text.length; i++) {
+    const ch = text[i];
+    if (escape) { escape = false; continue; }
+    if (inStr) {
+      if (ch === "\\") { escape = true; continue; }
+      if (ch === strChar) inStr = false;
+      continue;
+    }
+    if (ch === '"' || ch === "'") { inStr = true; strChar = ch; continue; }
+    if (ch === "[") depth++;
+    else if (ch === "]") {
+      depth--;
+      if (depth === 0) return true;
+    }
+  }
+  return false;
 }
 
 // ─── Read ─────────────────────────────────────────────────────────────────

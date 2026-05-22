@@ -541,6 +541,66 @@ function fmtTimeAmPm(d = new Date()) {
   return `${h}:${String(m).padStart(2, "0")}${ampm}`;
 }
 
+// QA found assistant replies sometimes end with a JSON array of
+// suggestion chips, e.g. `["Try journaling", "Take a walk"]`. The
+// MessageNode already renders msg.chips as tappable buttons, but the
+// raw JSON was bleeding into the bubble text. Detect a trailing array
+// of short strings, pull it into chips, and return the prose without
+// it. We only return chips when we're confident we parsed a complete
+// array (closing bracket present, length ≤ 8, each item ≤ 60 chars),
+// so partial streaming chunks (`[`, `["Try`, etc.) don't get treated
+// as chips — they stay in text and get replaced next stream tick.
+function splitChipsFromText(raw) {
+  const text = String(raw || "");
+  // Walk back from the end skipping trailing whitespace to find the
+  // last non-space char. If it's `]`, look for a matching `[` and try
+  // to JSON.parse the slice.
+  const trimmed = text.trimEnd();
+  if (!trimmed.endsWith("]")) return { text, chips: null };
+  // Find the matching opening bracket — naive scan from the end is
+  // fine because chip arrays are short. Skip strings.
+  let depth = 0;
+  let inStr = false;
+  let strChar = "";
+  let openIdx = -1;
+  for (let i = trimmed.length - 1; i >= 0; i--) {
+    const ch = trimmed[i];
+    if (inStr) {
+      if (ch === strChar && trimmed[i - 1] !== "\\") inStr = false;
+      continue;
+    }
+    if (ch === '"' || ch === "'") { inStr = true; strChar = ch; continue; }
+    if (ch === "]") depth++;
+    else if (ch === "[") {
+      depth--;
+      if (depth === 0) { openIdx = i; break; }
+    }
+  }
+  if (openIdx < 0) return { text, chips: null };
+  const jsonSlice = trimmed.slice(openIdx);
+  let parsed = null;
+  try { parsed = JSON.parse(jsonSlice); } catch { return { text, chips: null }; }
+  if (!Array.isArray(parsed) || parsed.length === 0 || parsed.length > 8) {
+    return { text, chips: null };
+  }
+  // Every item must be a short non-empty string.
+  const chips = [];
+  for (const v of parsed) {
+    if (typeof v !== "string") return { text, chips: null };
+    const s = v.trim();
+    if (!s || s.length > 60) return { text, chips: null };
+    chips.push(s);
+  }
+  // Strip the array (and any preceding whitespace / newline / "Chips:" label
+  // / trailing ".") from the visible text.
+  let head = trimmed.slice(0, openIdx).trimEnd();
+  // Common LLM prefixes that introduce the chip list.
+  head = head.replace(/\b(?:Suggestions?|Chips?|Quick replies?|Options?)\s*[:\-—]\s*$/i, "").trimEnd();
+  // Trailing colon or dash left behind after the prefix strip.
+  head = head.replace(/[:\-—]\s*$/, "").trimEnd();
+  return { text: head, chips };
+}
+
 // ─── Main panel ───────────────────────────────────────────────────────────
 export default function JessDemoPanel() {
   const [user, setUser] = useState(null);
@@ -941,12 +1001,24 @@ export default function JessDemoPanel() {
         const next = [...prev];
         let sawText = false;
         for (const m of live) {
-          const content = String(m.content ?? "");
+          const raw = String(m.content ?? "");
+          // Strip trailing JSON suggestion-chip array (e.g. the model
+          // ends its reply with `["Try journaling","Take a walk"]`).
+          // The chips themselves render as tappable buttons under the
+          // bubble; only the prose above belongs in the bubble text.
+          const { text: content, chips } = splitChipsFromText(raw);
           if (byId.has(m.id)) {
             // Replace text on the existing bubble — streaming update.
             const i = byId.get(m.id);
             // Preserve the original bubble's time so it doesn't jump.
-            next[i] = { ...next[i], text: content };
+            // Only overwrite chips when we actually parsed some this
+            // round, so a partial stream chunk doesn't clear a chip
+            // array that was already settled.
+            next[i] = {
+              ...next[i],
+              text: content,
+              ...(chips ? { chips } : {}),
+            };
             if (content.trim()) sawText = true;
           } else {
             // First time we see this id — append a new bubble.
@@ -956,6 +1028,7 @@ export default function JessDemoPanel() {
               type: "bubble",
               text: content,
               time: fmtTimeAmPm(),
+              ...(chips ? { chips } : {}),
             });
             byId.set(m.id, next.length - 1);
             if (content.trim()) sawText = true;
@@ -1040,16 +1113,33 @@ export default function JessDemoPanel() {
   // On unmount (user navigates away from /Ideas, closes the panel, or
   // Jess hot-reloads), fire-and-forget the memory extractor against the
   // most-recent thread snapshot. Defensive: only if a user turn exists.
+  // QA Fix 4 — log skip/fire so we can verify in dev tools that the
+  // unmount actually triggers extraction.
   useEffect(() => () => {
     try {
       const snap = closingThreadRef.current;
-      if (!snap?.userId || !Array.isArray(snap.messages)) return;
+      if (!snap?.userId || !Array.isArray(snap.messages)) {
+        // eslint-disable-next-line no-console
+        console.info("[jess-memory] unmount: skip (no snap)", snap);
+        return;
+      }
       const hasUserTurn = snap.messages.some((m) => m?.role === "user");
-      if (!hasUserTurn || snap.messages.length < 2) return;
+      if (!hasUserTurn || snap.messages.length < 2) {
+        // eslint-disable-next-line no-console
+        console.info("[jess-memory] unmount: skip (insufficient turns)",
+          { count: snap.messages.length, hasUserTurn });
+        return;
+      }
+      // eslint-disable-next-line no-console
+      console.info("[jess-memory] unmount: firing extractor",
+        { messageCount: snap.messages.length, convId: snap.convId });
       // Don't await — the component is tearing down. Service has its
       // own guards.
       extractMemoriesFromConversation(snap.messages, snap.userId, snap.convId, snap.name);
-    } catch { /* swallow */ }
+    } catch (e) {
+      // eslint-disable-next-line no-console
+      console.warn("[jess-memory] unmount: threw", e?.message || e);
+    }
   }, []);
 
   useEffect(() => {
@@ -1072,12 +1162,24 @@ export default function JessDemoPanel() {
     if (user?.id && hasUserTurn && closingMessages.length >= 2) {
       // Fire-and-forget — don't block the new-convo creation on the
       // extractor's LLM round-trip. reloadMemories() runs after.
+      // eslint-disable-next-line no-console
+      console.info("[jess-memory] new-convo: firing extractor",
+        { messageCount: closingMessages.length, convId: closingConvId });
       (async () => {
         try {
-          await extractMemoriesFromConversation(closingMessages, user.id, closingConvId, assistantName);
+          const result = await extractMemoriesFromConversation(closingMessages, user.id, closingConvId, assistantName);
+          // eslint-disable-next-line no-console
+          console.info("[jess-memory] new-convo: extractor returned", result);
           await reloadMemories();
-        } catch { /* swallow */ }
+        } catch (e) {
+          // eslint-disable-next-line no-console
+          console.warn("[jess-memory] new-convo: extractor threw", e?.message || e);
+        }
       })();
+    } else {
+      // eslint-disable-next-line no-console
+      console.info("[jess-memory] new-convo: skip extraction",
+        { hasUserId: !!user?.id, hasUserTurn, messageCount: closingMessages.length });
     }
     if (unsubRef.current) { unsubRef.current(); unsubRef.current = null; }
     seenAgentIdsRef.current = new Set();
@@ -1964,11 +2066,21 @@ function DrawerRow({ row, isActive, onSelect, onDelete }) {
       overflow: "hidden",
       background: "transparent",
     }}>
-      {/* Delete button — revealed behind the row on left-swipe */}
+      {/* Delete button — revealed behind the row on left-swipe.
+          stopPropagation so the click doesn't also fire the parent
+          row's onSelect (which would re-open the convo we just
+          deleted). Same for the Delete-key fallback. */}
       <button
         type="button"
         aria-label={`Delete ${name}`}
-        onClick={() => { onDelete?.(row.id); setDx(0); }}
+        onClick={(e) => {
+          e.stopPropagation();
+          e.preventDefault();
+          onDelete?.(row.id);
+          setDx(0);
+        }}
+        onMouseDown={(e) => e.stopPropagation()}
+        onTouchStart={(e) => e.stopPropagation()}
         style={{
           position: "absolute", top: 0, right: 0, bottom: 0,
           width: 96,
