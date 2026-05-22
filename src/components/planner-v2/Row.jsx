@@ -4,9 +4,9 @@
 import React, { useRef, useState, Children } from "react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 
-const C = { espresso: "#3A2C1A", muted: "#9B8B7A" };
+const C = { espresso: "#3A2C1A", muted: "#9B8B7A", gold: "#D4AF37", dotIdle: "#D4C9B4" };
 
-function Row({ label, children, slotWidth = "calc(100% - 32px)", maxSlotWidth = 520 }) {
+function Row({ label, children, slotWidth = "calc(100% - 48px)", maxSlotWidth = 520 }) {
   const trackRef = useRef(null);
   const [idx, setIdx] = useState(0);
   const count = Children.count(children);
@@ -46,7 +46,9 @@ function Row({ label, children, slotWidth = "calc(100% - 32px)", maxSlotWidth = 
               {Array.from({ length: count }).map((_, i) => (
                 <span key={i} style={{
                   width: 6, height: 6, borderRadius: 9999,
-                  background: i === idx ? C.espresso : "rgba(58,44,26,0.20)",
+                  background: i === idx ? C.gold : C.dotIdle,
+                  transform: i === idx ? "scale(1.25)" : "scale(1)",
+                  transition: "background 200ms ease, transform 200ms ease",
                 }} />
               ))}
               <button onClick={() => jumpTo(idx + 1)} style={arrowBtn}><ChevronRight size={14} /></button>
@@ -57,16 +59,29 @@ function Row({ label, children, slotWidth = "calc(100% - 32px)", maxSlotWidth = 
       <div ref={trackRef} onScroll={onScroll} style={{
         display: "flex", overflowX: "auto",
         scrollSnapType: "x mandatory", gap: 12,
-        padding: "4px 16px",
+        // Right padding lets the next card peek in — telegraphs "swipe for more".
+        padding: "8px 40px 8px 16px",
         scrollbarWidth: "none", WebkitOverflowScrolling: "touch",
+        perspective: 1200,
       }}>
-        {Children.map(children, (child, i) => (
-          <div key={i} style={{
-            flex: `0 0 ${slotWidth}`,
-            maxWidth: maxSlotWidth,
-            scrollSnapAlign: "start",
-          }}>{child}</div>
-        ))}
+        {Children.map(children, (child, i) => {
+          const isActive = i === idx;
+          return (
+            <div key={i} style={{
+              flex: `0 0 ${slotWidth}`,
+              maxWidth: maxSlotWidth,
+              scrollSnapAlign: "start",
+              borderRadius: 16,
+              transform: isActive ? "scale(1) translateZ(0)" : "scale(0.96) translateZ(0)",
+              opacity: isActive ? 1 : 0.86,
+              boxShadow: isActive
+                ? "0 6px 28px rgba(58,44,26,0.15), 0 2px 6px rgba(58,44,26,0.10), 0 -1px 0 rgba(212,175,55,0.22), inset 0 1px 0 rgba(255,255,255,0.7)"
+                : "0 2px 10px rgba(58,44,26,0.08), inset 0 1px 0 rgba(255,255,255,0.5)",
+              transition: "transform 320ms cubic-bezier(0.16,1,0.3,1), opacity 320ms ease, box-shadow 320ms ease",
+              willChange: "transform, opacity",
+            }}>{child}</div>
+          );
+        })}
       </div>
     </section>
   );
