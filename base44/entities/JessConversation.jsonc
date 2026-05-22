@@ -1,0 +1,40 @@
+{
+  "name": "JessConversation",
+  "type": "object",
+  "properties": {
+    "user_id": {
+      "type": "string",
+      "description": "ID of the user who owns this conversation"
+    },
+    "agent_conv_id": {
+      "type": "string",
+      "description": "Base44 agent conversation ID"
+    },
+    "name": {
+      "type": "string",
+      "description": "Human-readable name for this conversation thread"
+    },
+    "name_status": {
+      "type": "string",
+      "default": "pending",
+      "description": "Status of the conversation name generation (pending, done)"
+    },
+    "preview_text": {
+      "type": "string",
+      "description": "Short preview of the last message in the thread"
+    },
+    "message_count": {
+      "type": "number",
+      "default": 0,
+      "description": "Total number of messages in this thread"
+    },
+    "is_deleted": {
+      "type": "boolean",
+      "default": false,
+      "description": "Soft delete flag"
+    }
+  },
+  "required": [
+    "user_id"
+  ]
+}

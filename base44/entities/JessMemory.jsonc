@@ -1,0 +1,52 @@
+{
+  "name": "JessMemory",
+  "type": "object",
+  "properties": {
+    "user_id": {
+      "type": "string",
+      "description": "ID of the user this memory belongs to"
+    },
+    "memory_type": {
+      "type": "string",
+      "enum": [
+        "preference",
+        "health_pattern",
+        "emotional_context",
+        "explicit_statement",
+        "goal",
+        "follow_up"
+      ],
+      "description": "Category of memory"
+    },
+    "content": {
+      "type": "string",
+      "description": "The memory content text"
+    },
+    "source_conv_id": {
+      "type": "string",
+      "description": "JessConversation ID where this memory was extracted from"
+    },
+    "importance_score": {
+      "type": "number",
+      "default": 5,
+      "description": "Relevance score 1-10, higher = more important"
+    },
+    "is_active": {
+      "type": "boolean",
+      "default": true,
+      "description": "Whether this memory is still active/relevant"
+    },
+    "date_last_referenced": {
+      "type": "string",
+      "description": "ISO date when this memory was last surfaced in a conversation"
+    },
+    "tags": {
+      "type": "string",
+      "description": "Comma-separated tags for filtering/retrieval"
+    }
+  },
+  "required": [
+    "user_id",
+    "content"
+  ]
+}
