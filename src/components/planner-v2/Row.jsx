@@ -71,12 +71,12 @@ function Row({ label, children, slotWidth = "calc(100% - 48px)", maxSlotWidth = 
               flex: `0 0 ${slotWidth}`,
               maxWidth: maxSlotWidth,
               scrollSnapAlign: "start",
-              borderRadius: 16,
+              borderRadius: 20,
               transform: isActive ? "scale(1) translateZ(0)" : "scale(0.96) translateZ(0)",
-              opacity: isActive ? 1 : 0.86,
+              opacity: isActive ? 1 : 0.85,
               boxShadow: isActive
-                ? "0 6px 28px rgba(58,44,26,0.15), 0 2px 6px rgba(58,44,26,0.10), 0 -1px 0 rgba(212,175,55,0.22), inset 0 1px 0 rgba(255,255,255,0.7)"
-                : "0 2px 10px rgba(58,44,26,0.08), inset 0 1px 0 rgba(255,255,255,0.5)",
+                ? "0 8px 32px rgba(58,44,26,0.18), 0 2px 8px rgba(58,44,26,0.10), 0 -1px 0 rgba(212,175,55,0.22), inset 0 1px 0 rgba(255,255,255,0.7)"
+                : "0 4px 20px rgba(58,44,26,0.12), 0 1px 4px rgba(58,44,26,0.08), inset 0 1px 0 rgba(255,255,255,0.5)",
               transition: "transform 320ms cubic-bezier(0.16,1,0.3,1), opacity 320ms ease, box-shadow 320ms ease",
               willChange: "transform, opacity",
             }}>{child}</div>

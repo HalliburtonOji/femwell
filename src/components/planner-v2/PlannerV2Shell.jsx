@@ -1916,22 +1916,48 @@ function YourDayCard({ slot, loading, bucket, streaks, onRefresh }) {
             </div>
           )}
 
-          {/* EMPTY STATE — soft prompt when nothing in this slot */}
+          {/* EMPTY STATE — soft filled tile (no dashed dev-placeholder).
+              cream-dark background + accent icon ring + warm copy + a
+              proper solid Add button. Reads as "an inviting empty slot",
+              not "broken element". */}
           {isEmpty && (
             <div style={{
-              marginTop: 14, padding: "12px 10px",
-              border: `1px dashed ${accent}55`, borderRadius: 10,
-              textAlign: "center",
+              marginTop: 14, padding: "18px 14px",
+              background: "#EDE6D5",
+              border: "1px solid rgba(212,193,180,0.5)",
+              borderRadius: 14,
+              display: "flex", flexDirection: "column", alignItems: "center", gap: 10,
             }}>
+              <span aria-hidden style={{
+                width: 36, height: 36, borderRadius: 9999,
+                background: `${accent}1F`, color: accent,
+                display: "inline-flex", alignItems: "center", justifyContent: "center",
+                flexShrink: 0,
+              }}>
+                <slot.Icon size={16} />
+              </span>
               <p style={{
-                fontSize: 12, color: C.muted, margin: "0 0 8px",
-                fontStyle: "italic",
-              }}>Nothing yet for this slot.</p>
+                fontSize: 12.5, color: C.muted, margin: 0,
+                fontFamily: "'Inter', sans-serif", lineHeight: 1.45, textAlign: "center",
+              }}>
+                Nothing logged yet for{" "}
+                <span style={{ color: C.espresso, fontWeight: 700 }}>
+                  {slot.label.charAt(0) + slot.label.slice(1).toLowerCase()}
+                </span>
+              </p>
               <button
                 onClick={() => openLogger()}
-                style={{ ...yourDayAddBtn, color: accent, borderColor: `${accent}55`, marginTop: 0 }}
+                style={{
+                  display: "inline-flex", alignItems: "center", gap: 5,
+                  padding: "8px 14px", borderRadius: 9999,
+                  background: accent, color: C.paperHi,
+                  border: "none", cursor: "pointer",
+                  fontFamily: "'Inter', sans-serif",
+                  fontSize: 11.5, fontWeight: 700, letterSpacing: "0.04em",
+                  boxShadow: "0 2px 6px rgba(58,44,26,0.10)",
+                }}
               >
-                <Plus size={12} /> Add to {slot.label.charAt(0) + slot.label.slice(1).toLowerCase()}
+                <Plus size={12} /> Tap + to add
               </button>
             </div>
           )}
@@ -4886,16 +4912,20 @@ const rowTrack = {
   scrollbarWidth: "none", WebkitOverflowScrolling: "touch",
   perspective: 1200,
 };
-// Base slot — inactive "behind the deck" state. Slightly scaled down + dimmed
-// so the active card reads as forward, the next as peeking from behind.
+// Base slot — inactive "behind the deck" state. Slightly scaled down +
+// dimmed so the active card reads as forward, the next as peeking from
+// behind. Shadow values come from Halli's polish spec:
+//   inactive: 0 4px 20px rgba(58,44,26,0.12), 0 1px 4px rgba(58,44,26,0.08)
+//   active:   0 8px 32px rgba(58,44,26,0.18), 0 2px 8px rgba(58,44,26,0.10)
 const rowSlot = {
   flex: "0 0 calc(100% - 48px)", maxWidth: 520,
   scrollSnapAlign: "start",
-  borderRadius: 16,
+  borderRadius: 20,
   transform: "scale(0.96) translateZ(0)",
-  opacity: 0.86,
+  opacity: 0.85,
   transition: "transform 320ms cubic-bezier(0.16,1,0.3,1), opacity 320ms ease, box-shadow 320ms ease",
-  boxShadow: "0 2px 10px rgba(58,44,26,0.08), inset 0 1px 0 rgba(255,255,255,0.5)",
+  boxShadow:
+    "0 4px 20px rgba(58,44,26,0.12), 0 1px 4px rgba(58,44,26,0.08), inset 0 1px 0 rgba(255,255,255,0.5)",
   willChange: "transform, opacity",
 };
 // Active slot — full scale, gold rim, deeper shadow.
@@ -4903,14 +4933,18 @@ const rowSlotActive = {
   transform: "scale(1) translateZ(0)",
   opacity: 1,
   boxShadow:
-    "0 6px 28px rgba(58,44,26,0.15), 0 2px 6px rgba(58,44,26,0.10), 0 -1px 0 rgba(212,175,55,0.22), inset 0 1px 0 rgba(255,255,255,0.7)",
+    "0 8px 32px rgba(58,44,26,0.18), 0 2px 8px rgba(58,44,26,0.10), 0 -1px 0 rgba(212,175,55,0.22), inset 0 1px 0 rgba(255,255,255,0.7)",
 };
 
-// Card primitive
+// Card primitive — used by SchedulePreviewCard, CyclePreviewCard, Mind
+// & insight Row children, Care Row children, etc. Bumped to 20px corners
+// + subtle 0.5 alpha border + a deeper shadow stack so cards feel solid
+// against the cream backdrop instead of paper-thin.
 const cardStyle = {
   background: C.paperHi,
-  borderRadius: 16, padding: 16,
-  boxShadow: "0 2px 8px rgba(58,44,26,0.08)",
+  borderRadius: 20, padding: 16,
+  border: "1px solid rgba(212,193,180,0.5)",
+  boxShadow: "0 4px 20px rgba(58,44,26,0.12), 0 1px 4px rgba(58,44,26,0.08)",
   display: "flex", flexDirection: "column", gap: 8,
   boxSizing: "border-box",
   height: "100%",
@@ -5646,10 +5680,11 @@ const heroFootText = {
 
 // ── Your Day card (tall) ──────────────────────────────────────────────────
 const yourDayCard = {
-  background: C.cream,
-  borderRadius: 18,
+  background: C.paperHi,
+  borderRadius: 20,
   padding: "16px 18px 16px 14px",
-  boxShadow: "0 2px 12px rgba(58,44,26,0.08)",
+  border: "1px solid rgba(212,193,180,0.5)",
+  boxShadow: "0 4px 20px rgba(58,44,26,0.12), 0 1px 4px rgba(58,44,26,0.08)",
   minHeight: 380,
   height: "100%",
   display: "flex", flexDirection: "column", gap: 4,
@@ -5674,8 +5709,12 @@ const yourDaySectionRule = {
   flex: 1, height: 1, background: "rgba(58,44,26,0.10)",
 };
 const yourDaySectionName = {
-  fontSize: 9, fontWeight: 700, letterSpacing: "0.18em",
+  // Bumped from 9 → 10 px so HABITS / TASKS / MEALS / MEDS labels read
+  // clearly inside the card. Still uppercase + muted, still small enough
+  // to feel like a section rule rather than content.
+  fontSize: 10, fontWeight: 700, letterSpacing: "0.18em",
   color: C.muted,
+  fontFamily: "'Inter', sans-serif",
 };
 const yourDayItemRow = {
   display: "flex", alignItems: "center", gap: 8,
