@@ -340,6 +340,36 @@ export default function MonthRibbon({ profile, habitLogs = [], today = new Date(
                     >
                       {cell.dayNum}
                     </span>
+                    {/* Period / Ovulation marker dot. Sits between the day
+                        number and the activity bar at the bottom of the
+                        cell. Period days = blush (#E8B4B8) 5px circle.
+                        Ovulation days = gold (#D4AF37). For dates that
+                        fall in the FUTURE (predicted, not yet
+                        observed), period dots get a dashed cream-tone
+                        outline + lower opacity to read as "forecast". */}
+                    {!cell.isOff && (phase === "menstrual" || phase === "ovulatory") && (
+                      <span
+                        aria-hidden="true"
+                        style={{
+                          position: "absolute",
+                          bottom: 11,
+                          left: "50%",
+                          transform: "translateX(-50%)",
+                          width: 5, height: 5, borderRadius: 9999,
+                          background:
+                            phase === "ovulatory" ? "#D4AF37" : "#E8B4B8",
+                          opacity: cell.dateISO > todayISO ? 0.55 : 1,
+                          border:
+                            cell.dateISO > todayISO
+                              ? "1px dashed rgba(244,237,219,0.85)"
+                              : "none",
+                          // Inflate the visible size slightly when dashed
+                          // so the border doesn't eat the entire dot.
+                          boxSizing: cell.dateISO > todayISO ? "content-box" : "border-box",
+                          zIndex: 3,
+                        }}
+                      />
+                    )}
                     {barWidth && (
                       <span
                         aria-hidden="true"

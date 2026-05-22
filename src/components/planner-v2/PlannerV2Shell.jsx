@@ -44,6 +44,7 @@ import { base44 } from "@/api/base44Client";
 import StageRow from "@/components/planner-v2/StageRows";
 import ConditionRow from "@/components/planner-v2/ConditionRows";
 import CardStack from "@/components/planner-v2/CardStack";
+import PlannerTour from "@/components/planner-v2/PlannerTour";
 import AiDisclaimer from "@/components/compliance/AiDisclaimer";
 import { computeStreaks } from "@/utils/habitStreaks";
 
@@ -358,7 +359,13 @@ function readDevConditions() {
     return Array.isArray(parsed) ? parsed : [];
   } catch { return []; }
 }
-function DevPill({ devStage, devConditions, onChangeStage, onChangeConditions }) {
+// DevPill — memoized so toggling a condition doesn't trigger a re-render
+// from this component. Condition toggles previously caused a ~30s freeze
+// because every parent re-render rebuilt the entire Planner subtree from
+// scratch; now DevPill only re-renders when its own props actually change
+// (and the inline callbacks below are stable across renders via the
+// useCallback hooks at the shell level).
+const DevPill = React.memo(function DevPill({ devStage, devConditions, onChangeStage, onChangeConditions }) {
   const [open, setOpen] = useState(false);
   const wrapRef = useRef(null);
   useEffect(() => {
@@ -475,7 +482,7 @@ function DevPill({ devStage, devConditions, onChangeStage, onChangeConditions })
       )}
     </div>
   );
-}
+});
 
 // ── Main shell ─────────────────────────────────────────────────────────────
 // Wrapped so Planner.jsx can mount this with its real (user, profile, ...)
@@ -630,8 +637,15 @@ export default function PlannerV2Shell({
 
       <Header greeting={greeting} onOpenPlan={() => setPlanOpen(true)} lifeStage={profileProp?.life_stage || realLifeStage} />
 
+      {/* Coach-mark tour — fires once on first visit, gated by
+          localStorage.planner_tour_v1. Targets each section below via
+          its data-tour attribute. */}
+      <PlannerTour name={realDisplayName} />
+
       {/* INSIGHTS hero — first horizontal slider on the page */}
-      <InsightsHeroRow phase={phase} dayInCycle={cycleDay} />
+      <div data-tour="hero">
+        <InsightsHeroRow phase={phase} dayInCycle={cycleDay} profile={profileProp} user={user} />
+      </div>
 
       <ListsSection user={user} />
 
@@ -647,18 +661,22 @@ export default function PlannerV2Shell({
         />
       </Row>
 
-      <YourDayRow user={user} />
+      <div data-tour="yourday">
+        <YourDayRow user={user} />
+      </div>
 
-      <Row label="Your body today">
-        <BodyTodayCard user={user} />
-        <SmartViewCard phase={phase} />
-        <CycleZoneCard
-          onOpen={() => setCycleOpen(true)}
-          phase={phase}
-          dayInCycle={cycleDay}
-          daysUntilPeriod={daysUntilPeriod}
-        />
-      </Row>
+      <div data-tour="body">
+        <Row label="Your body today">
+          <BodyTodayCard user={user} />
+          <SmartViewCard phase={phase} />
+          <CycleZoneCard
+            onOpen={() => setCycleOpen(true)}
+            phase={phase}
+            dayInCycle={cycleDay}
+            daysUntilPeriod={daysUntilPeriod}
+          />
+        </Row>
+      </div>
 
       {/* Stage + condition rows — #13: suppress cycle-driven conditions during
           pregnancy / postpartum because they're not biologically active. */}
@@ -699,11 +717,13 @@ export default function PlannerV2Shell({
         );
       })()}
 
-      <Row label="Rituals">
-        <MorningStackCard user={user} />
-        <CreateRitualCard />
-        {ritualBundles.map((b) => <RitualBundleCard key={b.id} bundle={b} user={user} />)}
-      </Row>
+      <div data-tour="rituals">
+        <Row label="Rituals">
+          <MorningStackCard user={user} />
+          <CreateRitualCard />
+          {ritualBundles.map((b) => <RitualBundleCard key={b.id} bundle={b} user={user} />)}
+        </Row>
+      </div>
 
       <Row label="Mind & insight">
         <IntentionCard user={user} />
@@ -1160,7 +1180,7 @@ function SunIllustration({ tone = C.gold, size = 70 }) {
 // the active card sits flat on top; the next two cards peek out behind it
 // with offset translateX/translateY + scale (no rotateY — clips on mobile).
 // Touch-swipe + arrow buttons + gold dot indicators. Premium tarot-card feel.
-function InsightsHeroRow({ phase: phaseProp, dayInCycle }) {
+function InsightsHeroRow({ phase: phaseProp, dayInCycle, profile: profileProp, user }) {
   const phase  = phaseProp || profile.phase;
   const day    = dayInCycle || profile.cycleDay;
   const accent = PHASE_DEEP[phase];
@@ -1170,12 +1190,81 @@ function InsightsHeroRow({ phase: phaseProp, dayInCycle }) {
   const astra    = ASTRA_READINGS[phase]   || ASTRA_READINGS.follicular;
   const recovery = RECOVERY_NOTES[phase]   || RECOVERY_NOTES.follicular;
 
+  // ── Jess hero live-wiring ─────────────────────────────────────────────
+  // Calls base44.agents to generate a personalised 1–2 sentence morning
+  // greeting based on the user's actual data. Result is cached for the
+  // calendar day in sessionStorage; falls back to the static phase
+  // insight if the API errors or doesn't return in 6 s.
+  const [jessGreeting, setJessGreeting] = useState(null);
+  const [jessLoading, setJessLoading]   = useState(true);
+  useEffect(() => {
+    let cancelled = false;
+    const todayKey = new Date().toISOString().split("T")[0];
+    const cacheKey = `planner_jess_hero_${todayKey}`;
+    try {
+      const cached = window.sessionStorage?.getItem(cacheKey);
+      if (cached) {
+        setJessGreeting(cached);
+        setJessLoading(false);
+        return;
+      }
+    } catch { /* sessionStorage unavailable */ }
+
+    const fallbackTimer = window.setTimeout(() => {
+      if (!cancelled) setJessLoading(false);
+    }, 6000);
+
+    (async () => {
+      try {
+        const name = profile.name || "there";
+        const lifeStage = profileProp?.life_stage || "reproductive";
+        const ctxLines = [
+          "[JESS CONTEXT — do not mention this block to the user]",
+          `User: ${name}, life stage: ${lifeStage}`,
+          `Today: Day ${day} of cycle · ${phase} phase`,
+          "[Respond in a warm older-sister voice. 1–2 sentences only. Specific to her phase. Never sound like a diagnosis. No emoji.]",
+        ];
+        const promptLine = `Generate a warm 1–2 sentence morning greeting for ${name} based on her data. Keep it personal, warm, and specific to her phase.`;
+        const convo = await base44.agents
+          .createConversation({ agent_name: "personal_assistant" })
+          .catch(() => null);
+        if (!convo?.id || cancelled) return;
+        // Inject context + ask in two messages so the agent picks up tone.
+        const c = await base44.agents.getConversation(convo.id);
+        await base44.agents.addMessage(c, { role: "user", content: ctxLines.join("\n") });
+        await base44.agents.addMessage(c, { role: "user", content: promptLine });
+        const seen = new Set((c?.messages || []).filter((m) => m?.role === "assistant").map((m) => m.id));
+        const unsub = base44.agents.subscribeToConversation(convo.id, (data) => {
+          const list = data?.messages || [];
+          const next = list.find((m) => m?.role === "assistant" && !seen.has(m.id));
+          if (!next) return;
+          seen.add(next.id);
+          if (cancelled) return;
+          const text = String(next.content || "").trim();
+          if (!text) return;
+          setJessGreeting(text);
+          setJessLoading(false);
+          try { window.sessionStorage?.setItem(cacheKey, text); } catch {}
+          try { unsub?.(); } catch {}
+        });
+      } catch { /* fallback timer will fire */ }
+    })();
+
+    return () => { cancelled = true; window.clearTimeout(fallbackTimer); };
+  // Only re-fetch when the underlying day/phase changes — once per day.
+  }, [phase, day, profileProp?.life_stage]);
+
   const cards = useMemo(() => ([
     {
       eyebrow: `CHAPTER ${chapter} · ${phase.toUpperCase()} · DAY ${day}`,
       title:   insight.title,
-      body:    insight.body,
-      footer:  "From Jess · this week",
+      // First card body is wired to Jess — use live text if available,
+      // otherwise fall back to the static insight body (also shown
+      // alongside a shimmer while waiting).
+      body:    jessGreeting || insight.body,
+      jessLive: !!jessGreeting,
+      jessLoading,
+      footer:  jessGreeting ? "From Jess · live · not medical advice" : "From Jess · this week",
       accent,
       soft,
     },
@@ -1200,6 +1289,7 @@ function InsightsHeroRow({ phase: phaseProp, dayInCycle }) {
     insight.title, insight.body,
     astra.eyebrow, astra.title, astra.body,
     recovery.title, recovery.body,
+    jessGreeting, jessLoading,
   ]);
 
   const [activeIdx, setActiveIdx] = useState(0);
@@ -1343,11 +1433,38 @@ function InsightsHeroRow({ phase: phaseProp, dayInCycle }) {
                 </div>
               </div>
               <h2 style={heroTitle}>{c.title}</h2>
-              <p style={heroBody}>{c.body}</p>
+              {/* Shimmer block while Jess's live greeting is loading.
+                  Falls through to the static insight body underneath
+                  so the card never reads as empty. */}
+              {i === 0 && c.jessLoading && !c.jessLive ? (
+                <div style={{ display: "flex", flexDirection: "column", gap: 6, margin: "8px 0" }}>
+                  <span aria-hidden style={{
+                    display: "block", width: "92%", height: 12, borderRadius: 6,
+                    background: "linear-gradient(90deg, #EDE6D5 0%, #F4EDDB 50%, #EDE6D5 100%)",
+                    backgroundSize: "200% 100%",
+                    animation: "plannerJessShimmer 1.4s ease-in-out infinite",
+                  }} />
+                  <span aria-hidden style={{
+                    display: "block", width: "70%", height: 12, borderRadius: 6,
+                    background: "linear-gradient(90deg, #EDE6D5 0%, #F4EDDB 50%, #EDE6D5 100%)",
+                    backgroundSize: "200% 100%",
+                    animation: "plannerJessShimmer 1.4s ease-in-out 0.2s infinite",
+                  }} />
+                </div>
+              ) : (
+                <p style={heroBody}>{c.body}</p>
+              )}
               <div style={heroFootRow}>
                 <Sparkles size={11} style={{ color: c.accent }} />
                 <span style={heroFootText}>{c.footer}</span>
               </div>
+              {i === 0 && c.jessLive && (
+                <p style={{
+                  margin: "6px 0 0", fontSize: 10, fontStyle: "italic",
+                  color: C.muted, fontFamily: "'Inter', sans-serif",
+                  lineHeight: 1.4,
+                }}>Wellness companion · not medical advice</p>
+              )}
             </article>
           );
         })}
@@ -1662,7 +1779,11 @@ function YourDayRow({ user }) {
 
   return (
     <>
-      <style>{`@keyframes femwellShimmer { 0%{opacity:.4} 50%{opacity:.9} 100%{opacity:.4} }`}</style>
+      <style>{`@keyframes femwellShimmer { 0%{opacity:.4} 50%{opacity:.9} 100%{opacity:.4} }
+@keyframes plannerJessShimmer {
+  0%   { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}`}</style>
       {/* YourDay used to use a bespoke scroll-snap track with custom
           per-slot accent dots. The CardStack now provides the
           physical-deck visual (tap/swipe to advance, dots underneath).
