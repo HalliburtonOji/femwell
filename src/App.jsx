@@ -21,7 +21,10 @@ import WeeklyInsights from './pages/WeeklyInsights';
 import LifestyleDetail from './pages/LifestyleDetail';
 import SkinHair from './pages/SkinHair';
 import AdminMigrations from './pages/AdminMigrations';
-import AdminJessConversations from './pages/AdminJessConversations';
+// Note: AdminJessConversations page still exists in src/pages/ but its
+// route is removed while the JessConversation entity is being provisioned
+// in the Base44 registry. Re-add the import + route once the entity is
+// live so the admin view doesn't crash on first load.
 import DoctorExport from './pages/DoctorExport';
 import PartnerSettings from './pages/PartnerSettings';
 import PartnerView from './pages/PartnerView';
@@ -131,7 +134,9 @@ const AuthenticatedApp = () => {
           <Route path="/LifestyleDetail" element={<LayoutWrapper currentPageName="LifestyleDetail"><LifestyleDetail /></LayoutWrapper>} />
           <Route path="/SkinHair" element={<LayoutWrapper currentPageName="SkinHair"><SkinHair /></LayoutWrapper>} />
           <Route path="/admin/migrations" element={<AdminMigrations />} />
-          <Route path="/admin/jess-conversations" element={<AdminJessConversations />} />
+          {/* /admin/jess-conversations route disabled — see comment near
+              AdminJessConversations import. Re-enable when the
+              JessConversation entity registers in the runtime registry. */}
           <Route path="/DoctorExport" element={<LayoutWrapper currentPageName="DoctorExport"><DoctorExport /></LayoutWrapper>} />
           <Route path="/PartnerSettings" element={<LayoutWrapper currentPageName="PartnerSettings"><PartnerSettings /></LayoutWrapper>} />
           <Route path="/PartnerView" element={<PartnerView />} />
