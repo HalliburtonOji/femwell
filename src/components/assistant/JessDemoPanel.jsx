@@ -20,7 +20,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { base44 } from "@/api/base44Client";
 import {
   Mic, Send, Settings, Check, ChevronRight,
-  MessageCircle, Sun, LineChart, Sparkles, History, X, Plus,
+  MessageCircle, Sun, LineChart, Sparkles, History, X,
   Search, Trash2,
 } from "lucide-react";
 import ReactMarkdown from "react-markdown";
@@ -874,30 +874,56 @@ export default function JessDemoPanel() {
   );
 
   // ── Live base44.agents conversation — used only for free text ──────────
-  // Subscribe to the active agent conversation; append assistant
-  // messages as they stream in. Auto-naming has moved to the
-  // JessConversation-backed flow (autoNameConversation), so this
-  // callback now only handles bubble rendering.
+  // Subscribe to the active agent conversation. Each stream event delivers
+  // the FULL message list for the conversation; the same assistant id can
+  // appear across multiple events with progressively more text as the
+  // model streams. So we update existing bubbles by id rather than skip
+  // them — otherwise the first (often empty) event locks in an empty
+  // bubble. seenAgentIdsRef is used only to mute messages that were
+  // already in the transcript when we attached (set in loadConversation
+  // and ensureConversation), so we don't replay history into chat.
   const subscribeToConversation = useCallback((id) => {
     if (unsubRef.current) unsubRef.current();
     unsubRef.current = base44.agents.subscribeToConversation(id, (data) => {
       const list = data?.messages || [];
-      const newAssistants = list.filter((m) =>
-        m?.role === "assistant" && !seenAgentIdsRef.current.has(m.id)
+      // Only the assistants we DIDN'T pre-mark as already-replayed.
+      const live = list.filter((m) =>
+        m?.role === "assistant" && m?.id && !seenAgentIdsRef.current.has(m.id)
       );
-      if (newAssistants.length === 0) return;
-      for (const m of newAssistants) seenAgentIdsRef.current.add(m.id);
-      setMessages((prev) => [
-        ...prev,
-        ...newAssistants.map((m) => ({
-          id: m.id || uid(),
-          role: "jess",
-          type: "bubble",
-          text: m.content,
-          time: fmtTimeAmPm(),
-        })),
-      ]);
-      setAssistantTyping(false);
+      if (live.length === 0) return;
+      setMessages((prev) => {
+        // Index of existing entries by id so we can update in place when
+        // streaming chunks bring more text for an id we've already added.
+        const byId = new Map();
+        prev.forEach((m, i) => { if (m?.id) byId.set(m.id, i); });
+        const next = [...prev];
+        let sawText = false;
+        for (const m of live) {
+          const content = String(m.content ?? "");
+          if (byId.has(m.id)) {
+            // Replace text on the existing bubble — streaming update.
+            const i = byId.get(m.id);
+            // Preserve the original bubble's time so it doesn't jump.
+            next[i] = { ...next[i], text: content };
+            if (content.trim()) sawText = true;
+          } else {
+            // First time we see this id — append a new bubble.
+            next.push({
+              id: m.id,
+              role: "jess",
+              type: "bubble",
+              text: content,
+              time: fmtTimeAmPm(),
+            });
+            byId.set(m.id, next.length - 1);
+            if (content.trim()) sawText = true;
+          }
+        }
+        // Only hide the typing indicator once we've actually rendered
+        // text — empty stream events shouldn't dismiss the dots.
+        if (sawText) setAssistantTyping(false);
+        return next;
+      });
     });
   }, []);
 
@@ -1711,7 +1737,7 @@ function HistoryDrawer({
             fontSize: 13, fontWeight: 700,
           }}
         >
-          <Plus size={14} aria-hidden />
+          <span aria-hidden style={{ fontSize: 14, lineHeight: 1, color: C.gold }}>✦</span>
           New conversation
         </button>
 
@@ -1924,7 +1950,7 @@ function DrawerEmpty({ hasQuery }) {
       }}>
         {hasQuery
           ? "No conversations match that search."
-          : "Your conversations with Jess will appear here once you've chatted."}
+          : "No past conversations yet"}
       </p>
     </div>
   );
