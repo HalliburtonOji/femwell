@@ -253,6 +253,167 @@ function buildProactiveChips({ todayCheckin, recentCheckins, symptoms, lastJourn
   return out.slice(0, 3);
 }
 
+// ─── Scripted-response library — sourced from the signed-off Jess demos ─
+// These are the substantive, hormone-aware replies. Each chip in
+// SUGGESTION_CHIPS maps to one entry in SUGGESTION_RESPONSES. Templates
+// substitute {placeholders} via fillTemplate() with phase-aware context.
+
+const SUGGESTION_CHIPS = [
+  "What should I eat today?",
+  "Best movement for right now",
+  "Why am I so tired?",
+  "What's coming in my cycle?",
+  "Help me sleep tonight",
+  "How do I manage cramps?",
+  "What's my energy like this week?",
+  "Tell me about tomorrow",
+];
+
+const PHASE_OPENING_LINE = {
+  menstrual:  "your body is working hard today",
+  follicular: "your energy is starting to build",
+  ovulatory:  "you're in your peak window",
+  luteal:     "your body is winding down toward rest",
+};
+
+const PROGESTERONE_CONTEXT = {
+  menstrual:  "dropped steeply, hitting its lowest point",
+  follicular: "rising steadily with estrogen",
+  ovulatory:  "at its baseline ahead of the surge",
+  luteal:     "peaked and now beginning to drop",
+};
+
+const ENERGY_RETURN_DAY = {
+  menstrual:  "3–4",
+  follicular: "stays strong through day 13",
+  ovulatory:  "this is your peak",
+  luteal:     "the next follicular phase",
+};
+
+const HORMONE_STATE = {
+  menstrual:  "at their lowest",
+  follicular: "rising steadily",
+  ovulatory:  "at their peak",
+  luteal:     "beginning to drop",
+};
+
+const PHASE_FEELING = {
+  menstrual:  "like a lot",
+  follicular: "energising but also restless",
+  ovulatory:  "bright but full-on",
+  luteal:     "heavy and inward",
+};
+
+const NEXT_PHASE_INFO = {
+  menstrual: {
+    label: "Follicular phase",
+    description: "Energy returns from day 6 — strength training and harder tasks land best.",
+    ovulatoryNote: "Ovulation typically arrives around day 14 — your social and creative peak.",
+    lutealNote:    "Luteal returns around day 17 — Jess will help you wind down then.",
+  },
+  follicular: {
+    label: "Ovulatory window",
+    description: "Days 12–16 are your social and communication peak — schedule big asks here.",
+    ovulatoryNote: "Cervical mucus and energy lift over the next 4–5 days.",
+    lutealNote:    "Luteal lands around day 17 — magnesium and earlier nights protect that week.",
+  },
+  ovulatory: {
+    label: "Luteal phase",
+    description: "Energy eases from day 17 — batch admin, batch cook, batch rest.",
+    ovulatoryNote: "Today is your output peak — use it for the bold message, the lead.",
+    lutealNote:    "PMS most often shows up between days 24 and 28 — soft scaffolding helps.",
+  },
+  luteal: {
+    label: "Menstrual phase",
+    description: "Period likely begins between days 28–30 — clear the calendar where you can.",
+    ovulatoryNote: "Ovulation has passed; the body is preparing the lining either way.",
+    lutealNote:    "This is the harder week — Jess will surface gentler suggestions automatically.",
+  },
+};
+
+const SUGGESTION_RESPONSES = {
+  "What should I eat today?":
+    "On day {cycleDay}, your body needs:\n\n🩸 Iron-rich foods — lentils, spinach, dark chocolate, red meat if you eat it — to replenish what you're losing\n\n🌿 Omega-3s — salmon, walnuts, flaxseed — reduce prostaglandin activity which is causing your cramps\n\n🍫 Magnesium — dark chocolate, pumpkin seeds, avocado — eases muscle tension including the back ache\n\nAvoid alcohol and excess caffeine today — they increase inflammation and can worsen cramping.",
+
+  "Best movement for right now":
+    "Day {cycleDay} in your {phase} phase calls for something specific.\n\nWhat actually helps:\n\n🚶‍♀️ A 10–15 minute walk — enough to release endorphins and ease cramping through improved circulation\n\n🧘‍♀️ Yin yoga or gentle stretching — especially hip openers and child's pose\n\n💆‍♀️ A heating pad while you rest — this is movement's peer right now\n\nThe research is clear: light movement beats rest for period pain, but don't push. Listen to what your body is telling you today.",
+
+  "Why am I so tired?":
+    "Three things converge in your {phase} phase to affect your energy:\n\n1️⃣ Progesterone shift — your progesterone is {progesteroneContext} which directly impacts energy levels.\n\n2️⃣ Your body is doing significant work internally right now — that's metabolically costly.\n\n3️⃣ Prostaglandins — the chemicals that regulate your cycle also trigger systemic inflammation, which makes you feel heavy and fatigued.\n\nThis is your body doing exactly what it should. Energy typically shifts again around day {energyReturnDay}.",
+
+  "What's coming in my cycle?":
+    "Based on your profile:\n\n📍 You're on day {cycleDay} of your {phase} phase.\n\n✨ {nextPhase}: {nextPhaseDescription}\n\n🌸 {ovulatoryNote}\n\n🌙 {lutealNote}\n\nWant me to mark any of these in your planner?",
+
+  "Help me sleep tonight":
+    "Here's what actually helps:\n\n🌡️ Warm shower or bath about an hour before bed — drops your core temperature when you get out, which signals sleep\n\n💊 200–400mg magnesium glycinate is the most evidence-backed sleep supplement — especially effective in the {phase} phase\n\n🛏️ Sleep position: fetal position (on your side, knees pulled up) reduces pressure and eases any discomfort\n\n🌡️ Warm compress on your lower abdomen if needed\n\nAvoid your phone for the last 30 mins — blue light plus stress content are a bad combination when your nervous system is activated.",
+
+  "How do I manage cramps?":
+    "Cramps come from prostaglandins — chemicals that signal your uterus to contract. A few things move that dial:\n\n🌡️ A heating pad on your lower abdomen for 20 minutes — heat dilates blood vessels and relaxes the muscle directly.\n\n💊 Ibuprofen taken at the first sign (rather than once pain has set in) is the most effective NSAID for period pain — it blocks prostaglandin production at the source.\n\n🚶‍♀️ Light walking releases endorphins, your body's own pain modulators.\n\n🧘‍♀️ Hip-opening stretches — child's pose, supine twist — give the pelvis space.\n\nIf cramps are stopping your day three months in a row, that's worth flagging to a clinician.",
+
+  "What's my energy like this week?":
+    "You're on day {cycleDay} of your {phase} phase, which means:\n\n⚡ Right now, your hormones are {hormoneState} — that's why today feels the way it does.\n\n📈 Looking ahead: {nextPhase} starts in {daysToNextPhase} day(s). {nextPhaseDescription}\n\n🌗 The rest of this week tracks the same arc — Jess will surface gentler suggestions when your body asks for them.",
+
+  "Tell me about tomorrow":
+    "Tomorrow you'll be on day {tomorrowDay} of your cycle — still in your {phase} phase.\n\n🌱 What that means in practice:\n• Energy is {hormoneState}\n• Sleep tends to {sleepTrend} in this window\n• Best work for tomorrow: {workMode}\n\nWant me to draft a soft schedule that respects this?",
+};
+
+const DEFAULT_RESPONSES = [
+  "That's a really important question for where you are right now in your cycle. On day {cycleDay} specifically, your estrogen and progesterone are both {hormoneState} — which affects everything from your mood to your pain threshold to how you process information.\n\nCan you tell me a bit more about what's on your mind?",
+  "I hear you. The {phase} phase can feel {phaseFeeling} — the hormonal shift is real and it's valid that you feel it.\n\nLet me know what you need most right now and I'll do my best to help.",
+  "Good question. I want to make sure I give you the most relevant answer — are you asking in the context of how you're feeling today, or more generally?",
+];
+
+// Substitute {placeholders} from a context object into a template string.
+function fillTemplate(template, ctx) {
+  if (typeof template !== "string") return template;
+  return template.replace(/\{(\w+)\}/g, (m, key) =>
+    Object.prototype.hasOwnProperty.call(ctx, key) ? String(ctx[key]) : m,
+  );
+}
+
+// Build the full substitution context for the current user state.
+function buildScriptedContext({ phase, dayInCycle, profile }) {
+  const cycleLen  = profile?.cycle_avg_length || 28;
+  const periodLen = profile?.period_length    || 5;
+  const next = phase === "menstrual" ? "follicular"
+            : phase === "follicular" ? "ovulatory"
+            : phase === "ovulatory" ? "luteal"
+            : "menstrual";
+  // Days to next phase boundary, given cycle length + period length.
+  const boundaries = {
+    menstrual:  periodLen + 1,
+    follicular: Math.floor(cycleLen * 0.43) + 1,
+    ovulatory:  Math.floor(cycleLen * 0.5)  + 1,
+    luteal:     cycleLen + 1,
+  };
+  const nextBoundary = boundaries[phase] || cycleLen;
+  const daysToNextPhase = Math.max(1, nextBoundary - dayInCycle);
+  const tomorrowDay = ((dayInCycle % cycleLen) + 1);
+  const sleepTrend = phase === "luteal" ? "dip" : phase === "menstrual" ? "fragment" : "stay steady";
+  const workMode = phase === "follicular" ? "starting new things"
+                : phase === "ovulatory"   ? "bold output, leading, asking"
+                : phase === "luteal"      ? "batching admin, wrapping loose threads"
+                :                            "rest-as-strategy, light reflection";
+  const info = NEXT_PHASE_INFO[phase] || NEXT_PHASE_INFO.follicular;
+  return {
+    cycleDay: dayInCycle,
+    tomorrowDay,
+    phase,
+    phaseTitle: phase.charAt(0).toUpperCase() + phase.slice(1),
+    progesteroneContext: PROGESTERONE_CONTEXT[phase],
+    energyReturnDay: ENERGY_RETURN_DAY[phase],
+    hormoneState: HORMONE_STATE[phase],
+    phaseFeeling: PHASE_FEELING[phase],
+    nextPhase: info.label,
+    nextPhaseDescription: info.description,
+    ovulatoryNote: info.ovulatoryNote,
+    lutealNote: info.lutealNote,
+    daysToNextPhase,
+    sleepTrend,
+    workMode,
+  };
+}
+
 // ─── Auto-name a conversation from its first user message ────────────────
 // Chip → topic mapping covers the proactive chips and tab-level chips.
 // Free-text falls back to title-cased first-5-words. If no user message was
@@ -332,15 +493,27 @@ function Sparkline({ data, width = 220, height = 56, stroke = C.sage, fill = `${
 }
 
 // ─── MHRA disclaimer ──────────────────────────────────────────────────────
+// Matches the signed-off demos: 10px italic muted, max-width 86%, sits
+// directly below the Jess bubble.
 function MhraNote({ style = {} }) {
   return (
     <p style={{
       fontSize: 10, color: C.muted, fontStyle: "italic",
-      margin: "4px 0 0 4px", lineHeight: 1.4,
+      margin: "4px 0 0", padding: "0 2px",
+      maxWidth: "86%", lineHeight: 1.5,
       fontFamily: "'Inter', system-ui, sans-serif",
       ...style,
-    }}>Wellness companion · not medical advice</p>
+    }}>Not medical advice. Always consult a healthcare professional.</p>
   );
+}
+
+// Format a Date as "9:03am" — matches the demo timestamp style.
+function fmtTimeAmPm(d = new Date()) {
+  let h = d.getHours();
+  const m = d.getMinutes();
+  const ampm = h >= 12 ? "pm" : "am";
+  h = h % 12; if (h === 0) h = 12;
+  return `${h}:${String(m).padStart(2, "0")}${ampm}`;
 }
 
 // ─── Main panel ───────────────────────────────────────────────────────────
@@ -361,6 +534,9 @@ export default function JessDemoPanel() {
   const [assistantTyping, setAssistantTyping] = useState(false);
   const [listeningVoice, setListeningVoice] = useState(false);
   const [followUpFired, setFollowUpFired] = useState(false);
+  // Cursor into DEFAULT_RESPONSES — cycled when the live agent isn't
+  // reachable and we need to give a believable empathetic reply.
+  const defaultResponseIdxRef = useRef(0);
   // History drawer state — opened from the header history icon, slides in
   // from the left, lists past conversations, lets the user resume any one.
   const [conversationsList, setConversationsList] = useState([]);
@@ -440,27 +616,31 @@ export default function JessDemoPanel() {
   }, [recentCheckins]);
 
   // ── Open Jess message — fires once on mount with a 1.4s delay ───────────
+  // Uses the signed-off opener template:
+  //   "Hello, {name}. I can see you're on day {N} of your {phase} phase —
+  //    {phaseOpeningLine}. How are you feeling?"
+  // The opener carries the first 5 suggestion chips for the user to tap.
   useEffect(() => {
     if (followUpFired) return;
     if (!profile && recentCheckins.length === 0) return; // wait for first data tick
     const t = setTimeout(() => {
       setFollowUpFired(true);
-      const lastEnergy = energySpark[energySpark.length - 1];
-      const trend = lastEnergy > energySpark[0] ? "trending up" : "trending down";
-      const observation = `your energy is ${trend} this week`;
-      const opener = `Morning, ${firstName}. Day ${dayInCycle} today — you're in your ${shell.label.toLowerCase()} phase. I noticed ${observation}. What's on your mind?`;
+      const opener =
+        `Hello, ${firstName}. I can see you're on day ${dayInCycle} of your ${phase} phase — ` +
+        `${PHASE_OPENING_LINE[phase] || PHASE_OPENING_LINE.follicular}. How are you feeling?`;
       setMessages([
         {
           id: uid(),
           role: "jess",
           type: "bubble",
           text: opener,
-          chips: ["Tell me more", "What should I do?", "What's ahead?"],
+          time: fmtTimeAmPm(),
+          chips: SUGGESTION_CHIPS.slice(0, 5),
         },
       ]);
     }, 1400);
     return () => clearTimeout(t);
-  }, [profile?.id, recentCheckins.length, energySpark, dayInCycle, firstName, shell.label, followUpFired]);
+  }, [profile?.id, recentCheckins.length, dayInCycle, firstName, phase, followUpFired]);
 
   // Memoised proactive chips — drive Chat tab + tab-level shortcuts.
   const proactiveChips = useMemo(
@@ -517,6 +697,7 @@ export default function JessDemoPanel() {
           role: "jess",
           type: "bubble",
           text: m.content,
+          time: fmtTimeAmPm(),
         })),
       ]);
       setAssistantTyping(false);
@@ -631,7 +812,9 @@ export default function JessDemoPanel() {
   const sendUserText = useCallback(async (text) => {
     const msg = String(text || "").trim();
     if (!msg || assistantTyping) return;
-    setMessages((prev) => [...prev, { id: uid(), role: "user", type: "bubble", text: msg }]);
+    setMessages((prev) => [...prev, {
+      id: uid(), role: "user", type: "bubble", text: msg, time: fmtTimeAmPm(),
+    }]);
     setAssistantTyping(true);
     try {
       const cid = await ensureConversation();
@@ -651,15 +834,21 @@ export default function JessDemoPanel() {
       }
       await base44.agents.addMessage(convo, { role: "user", content: msg });
     } catch {
+      // Graceful fallback — cycle through DEFAULT_RESPONSES with current
+      // phase context so the reply feels substantive instead of generic.
       setTimeout(() => {
+        const ctx = buildScriptedContext({ phase, dayInCycle, profile });
+        const idx = defaultResponseIdxRef.current % DEFAULT_RESPONSES.length;
+        defaultResponseIdxRef.current += 1;
+        const fallback = fillTemplate(DEFAULT_RESPONSES[idx], ctx);
         setMessages((prev) => [...prev, {
           id: uid(), role: "jess", type: "bubble",
-          text: "I hear you. I'm still learning the live wiring on this surface — try one of the chips above for a tailored response.",
+          text: fallback, time: fmtTimeAmPm(),
         }]);
         setAssistantTyping(false);
-      }, 1200);
+      }, 1200 + Math.random() * 1000);
     }
-  }, [assistantTyping, ensureConversation, contextBlock]);
+  }, [assistantTyping, ensureConversation, contextBlock, phase, dayInCycle, profile]);
 
   // Tap a proactive chip → send the question as the user's message.
   const handleProactiveChip = useCallback((label) => {
@@ -667,73 +856,60 @@ export default function JessDemoPanel() {
     sendUserText(label);
   }, [sendUserText]);
 
-  // ── Scripted response generators ───────────────────────────────────────
-  function jessInsightCard() {
-    return {
-      id: uid(), role: "jess", type: "insight-card",
-      title: "7-day energy",
-      sparkline: energySpark,
-      statValue: Math.round(energySpark.reduce((a, b) => a + b, 0) / energySpark.length * 10) / 10,
-      statLabel: "avg energy",
-      readout: `Your energy is ${energySpark[6] > energySpark[0] ? "lifting" : "easing"} across the week. ${phase === "follicular" ? "Right on schedule for your phase." : ""}`,
-    };
-  }
-  function jessQuickLogChips() {
-    return {
-      id: uid(), role: "jess", type: "quick-log-chips",
-      lead: "Quick win options for today:",
-      chips: ["Move 10 min", "Big glass of water", "Step outside", "Magnesium tonight"],
-    };
-  }
-  function jessPhaseCard() {
-    const next = phase === "menstrual" ? "follicular"
-              : phase === "follicular" ? "ovulatory"
-              : phase === "ovulatory" ? "luteal"
-              : "menstrual";
-    const nextCopy = PHASE_COPY[next];
-    return {
-      id: uid(), role: "jess", type: "phase-card",
-      phaseName: shell.label,
-      headerTint: shell.headerTint,
-      accent: shell.accent,
-      body: phaseCopy.blurb,
-      nextLabel: PHASE_SHELL[next].label,
-      tips: nextCopy.forYou.slice(0, 2),
-    };
-  }
-  function jessMemoryLine() {
-    const lines = [
-      "✦ Jess remembers — you've been logging consistently for 3 days in a row.",
-      `✦ Jess remembers — you tend to feel sharpest around day ${Math.max(1, dayInCycle - 2)}–${dayInCycle + 1}.`,
-      "✦ Jess remembers — your last journal entry said you wanted gentler weeks.",
-    ];
-    return {
-      id: uid(), role: "jess", type: "memory-line",
-      text: lines[Math.floor(Math.random() * lines.length)],
-    };
-  }
-
-  // ── Send a message ─────────────────────────────────────────────────────
+  // ── Scripted response handler — rich hormone-aware content ─────────────
+  // When the user taps a suggestion chip, we:
+  //   1. Append their tap as a user bubble (timestamped)
+  //   2. Mark that chip as "used" on the source message (it disappears
+  //      from that message's chip strip, and is filtered from the global
+  //      suggestion pool so it doesn't reappear)
+  //   3. Show the typing indicator for 1.2–2.2s (random) — matches the
+  //      signed-off cadence (1200 + Math.random() * 1000)
+  //   4. Look up SUGGESTION_RESPONSES[chip], run fillTemplate with the
+  //      current phase-aware context, and render as a normal Jess bubble
+  //      with the remaining suggestion chips attached as follow-ups.
   async function handleChip(chipLabel, fromMessageId) {
-    // Append user-side bubble first.
     setMessages((prev) => {
-      const next = prev.map((m) => m.id === fromMessageId ? { ...m, chipsUsed: true } : m);
-      return [...next, { id: uid(), role: "user", type: "bubble", text: chipLabel }];
+      const next = prev.map((m) => {
+        if (m.id !== fromMessageId) return m;
+        const usedSet = new Set(m.chipsUsedList || []);
+        usedSet.add(chipLabel);
+        return { ...m, chipsUsedList: Array.from(usedSet) };
+      });
+      return [
+        ...next,
+        { id: uid(), role: "user", type: "bubble", text: chipLabel, time: fmtTimeAmPm() },
+      ];
     });
     setAssistantTyping(true);
     setTimeout(() => {
-      let response;
-      if (chipLabel === "Tell me more")      response = jessInsightCard();
-      else if (chipLabel === "What should I do?") response = jessQuickLogChips();
-      else if (chipLabel === "What's ahead?") response = jessPhaseCard();
-      else response = { id: uid(), role: "jess", type: "bubble", text: "Tell me more about that." };
-      setMessages((prev) => [...prev, response]);
+      const ctx = buildScriptedContext({ phase, dayInCycle, profile });
+      const template = SUGGESTION_RESPONSES[chipLabel];
+      const text = template
+        ? fillTemplate(template, ctx)
+        : "Tell me more about that — I'm listening.";
+      // Track which chips have been used across the whole session so the
+      // follow-up strip on this new bubble shows fresh suggestions only.
+      setMessages((prev) => {
+        const used = new Set();
+        for (const m of prev) {
+          if (Array.isArray(m.chipsUsedList)) for (const c of m.chipsUsedList) used.add(c);
+        }
+        used.add(chipLabel);
+        const remaining = SUGGESTION_CHIPS.filter((c) => !used.has(c)).slice(0, 5);
+        return [
+          ...prev,
+          {
+            id: uid(),
+            role: "jess",
+            type: "bubble",
+            text,
+            time: fmtTimeAmPm(),
+            chips: remaining,
+          },
+        ];
+      });
       setAssistantTyping(false);
-      // Follow-up unprompted memory line, 1.6s later.
-      setTimeout(() => {
-        setMessages((prev) => [...prev, jessMemoryLine()]);
-      }, 1600);
-    }, 1400 + Math.random() * 600);
+    }, 1200 + Math.random() * 1000);
   }
 
   async function handleSubmitText() {
@@ -937,14 +1113,16 @@ export default function JessDemoPanel() {
             type="button"
             onClick={startMicMock}
             disabled={listeningVoice}
-            aria-label="Voice input"
+            aria-label={listeningVoice ? "Listening…" : "Voice input"}
+            aria-pressed={listeningVoice}
             style={{
-              border: `1px solid ${C.border}`,
+              border: `1px solid ${listeningVoice ? C.blush : C.border}`,
               borderRadius: 14, minWidth: 44, minHeight: 44,
-              backgroundColor: listeningVoice ? C.gold : C.paper,
-              padding: "0 12px", cursor: "pointer",
+              backgroundColor: listeningVoice ? C.blush : C.paper,
+              padding: "0 12px", cursor: listeningVoice ? "default" : "pointer",
               display: "flex", alignItems: "center", justifyContent: "center",
               flexShrink: 0,
+              transition: "background-color 200ms ease, border-color 200ms ease",
             }}
           ><Mic className="w-4 h-4" style={{ color: C.espresso }} /></button>
           <input
@@ -1024,6 +1202,10 @@ function KeyframesBlock() {
       @keyframes jess-pulse-dot {
         0%, 100% { opacity: 0.2; }
         50%      { opacity: 1; }
+      }
+      @keyframes jess-typing-bounce {
+        0%, 60%, 100% { transform: translateY(0); opacity: 0.45; }
+        30%           { transform: translateY(-5px); opacity: 1; }
       }
       @keyframes jess-drawer-in {
         from { transform: translateX(-100%); }
@@ -1273,182 +1455,76 @@ function TabChip({ chip, onTap }) {
 
 function MessageNode({ msg, shell, onChip, onToggleQuickLog }) {
   if (msg.role === "user") {
+    // user-bubble: blush #E8B4B8, espresso text, asymmetric 17px / 4px corners
     return (
       <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-end" }}>
         <div style={{
-          maxWidth: "82%",
-          borderRadius: "18px 18px 4px 18px",
-          padding: "10px 14px",
-          fontSize: 14, lineHeight: 1.6,
+          maxWidth: "86%",
+          borderRadius: "17px 17px 4px 17px",
+          padding: "10px 13px",
+          fontSize: 13.5, lineHeight: 1.6,
           fontFamily: "'Inter', sans-serif",
           background: C.blush, color: C.espresso,
           animation: "jess-bubble-enter 280ms ease-out",
         }}>{msg.text}</div>
+        {msg.time && (
+          <span style={{
+            fontSize: 10, color: C.muted, marginTop: 3,
+            fontFamily: "'Inter', sans-serif",
+          }}>{msg.time}</span>
+        )}
       </div>
     );
   }
-  // Jess sides
-  if (msg.type === "insight-card") {
-    return (
-      <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-start" }}>
-        <article style={{
-          maxWidth: "92%", width: "100%",
-          background: C.paperHi,
-          border: `1px solid ${C.border}`,
-          borderTop: `3px solid ${C.gold}`,
-          borderRadius: 14, padding: "14px 14px 12px",
-          boxShadow: "0 2px 10px rgba(58,44,26,0.08)",
-          animation: "jess-bubble-enter 280ms ease-out",
-        }}>
-          <p style={{
-            margin: "0 0 8px", fontSize: 10, fontWeight: 700,
-            letterSpacing: "0.18em", textTransform: "uppercase",
-            color: C.muted, fontFamily: "'Inter', sans-serif",
-          }}>{msg.title || "Insight"}</p>
-          <Sparkline data={msg.sparkline} width={280} height={56} stroke={C.sage} />
-          <div style={{ display: "flex", alignItems: "baseline", gap: 6, margin: "8px 0 4px" }}>
-            <span style={{
-              fontFamily: "'Fraunces', Georgia, serif", fontSize: 28, fontWeight: 600,
-              color: C.espresso, lineHeight: 1,
-            }}>{msg.statValue}</span>
-            <span style={{ fontSize: 11, color: C.mutedText }}>{msg.statLabel}</span>
-          </div>
-          <p style={{
-            margin: 0, fontSize: 13, color: C.mutedText,
-            lineHeight: 1.5, fontFamily: "'Inter', sans-serif",
-          }}>{msg.readout}</p>
-        </article>
-        <MhraNote />
-      </div>
-    );
-  }
-  if (msg.type === "quick-log-chips") {
-    const selected = msg.selectedChips || [];
-    return (
-      <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-start" }}>
-        <div style={{
-          maxWidth: "92%", width: "100%",
-          background: C.paperHi,
-          border: `1px solid ${C.border}`,
-          borderRadius: 14, padding: "12px 14px",
-          animation: "jess-bubble-enter 280ms ease-out",
-        }}>
-          <p style={{
-            margin: "0 0 10px", fontSize: 13,
-            color: C.espresso, fontFamily: "'Inter', sans-serif", lineHeight: 1.5,
-          }}>{msg.lead}</p>
-          <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
-            {msg.chips.map((label) => {
-              const on = selected.includes(label);
-              return (
-                <button
-                  key={label}
-                  type="button"
-                  onClick={() => onToggleQuickLog(msg.id, label)}
-                  aria-pressed={on}
-                  style={{
-                    display: "inline-flex", alignItems: "center", gap: 5,
-                    padding: "8px 14px", minHeight: 36, borderRadius: 9999,
-                    background: on ? C.gold : C.paper,
-                    border: on ? `1px solid ${C.goldDeep}` : `1px solid ${C.border}`,
-                    color: C.espresso,
-                    fontFamily: "'Inter', sans-serif",
-                    fontSize: 12, fontWeight: 700, cursor: "pointer",
-                  }}
-                >
-                  {on && <Check size={11} aria-hidden />}
-                  {label}
-                </button>
-              );
-            })}
-          </div>
-        </div>
-        <MhraNote />
-      </div>
-    );
-  }
-  if (msg.type === "phase-card") {
-    return (
-      <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-start" }}>
-        <article style={{
-          maxWidth: "92%", width: "100%",
-          background: msg.headerTint,
-          border: `1px solid ${msg.accent}55`,
-          borderRadius: 14, padding: "14px",
-          animation: "jess-bubble-enter 280ms ease-out",
-        }}>
-          <p style={{
-            margin: 0, fontFamily: "'Fraunces', Georgia, serif",
-            fontSize: 22, fontWeight: 600, color: C.espresso, letterSpacing: "-0.01em",
-          }}>{msg.phaseName}</p>
-          <p style={{
-            margin: "4px 0 10px", fontSize: 13, color: C.mutedText,
-            fontFamily: "'Inter', sans-serif", lineHeight: 1.5,
-          }}>{msg.body}</p>
-          <p style={{
-            margin: "0 0 6px", fontSize: 10, fontWeight: 700,
-            letterSpacing: "0.18em", textTransform: "uppercase",
-            color: C.muted, fontFamily: "'Inter', sans-serif",
-          }}>Next: {msg.nextLabel}</p>
-          <ul style={{ margin: 0, padding: 0, listStyle: "none", display: "flex", flexDirection: "column", gap: 6 }}>
-            {msg.tips.map((tip, i) => (
-              <li key={i} style={{
-                display: "flex", alignItems: "flex-start", gap: 6,
-                fontSize: 13, color: C.espresso, fontFamily: "'Inter', sans-serif", lineHeight: 1.5,
-              }}>
-                <span aria-hidden style={{ width: 5, height: 5, borderRadius: 9999, background: msg.accent, marginTop: 7, flexShrink: 0 }} />
-                {tip}
-              </li>
-            ))}
-          </ul>
-        </article>
-        <MhraNote />
-      </div>
-    );
-  }
-  if (msg.type === "memory-line") {
-    return (
-      <p style={{
-        margin: "2px 4px",
-        fontSize: 12, fontStyle: "italic",
-        color: C.mutedText, fontFamily: "'Inter', sans-serif",
-        animation: "jess-bubble-enter 280ms ease-out",
-      }}>{msg.text}</p>
-    );
-  }
-  // Default: jess-bubble
+  // Jess side — single substantive bubble. Insight-card / quick-log /
+  // phase-card variants are retired; all responses now ship as Jess text
+  // bubbles with rich, hormone-aware content from SUGGESTION_RESPONSES.
   return (
     <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-start" }}>
       <div style={{
-        maxWidth: "82%",
-        borderRadius: "14px 14px 14px 4px",
-        padding: "10px 14px",
-        fontSize: 14, lineHeight: 1.6,
+        maxWidth: "86%",
+        borderRadius: "17px 17px 17px 4px",
+        padding: "10px 13px",
+        fontSize: 13.5, lineHeight: 1.6,
         fontFamily: "'Inter', sans-serif",
-        background: C.paperHi, color: C.espresso,
-        borderLeft: `3px solid ${C.gold}`,
+        background: C.espresso, color: C.cream,
         boxShadow: "0 1px 4px rgba(58,44,26,0.06)",
         animation: "jess-bubble-enter 280ms ease-out",
+        whiteSpace: "pre-wrap",
       }}>
         <ReactMarkdown className="prose prose-sm max-w-none [&>*:first-child]:mt-0 [&>*:last-child]:mb-0">
           {msg.text || ""}
         </ReactMarkdown>
       </div>
+      {msg.time && (
+        <span style={{
+          fontSize: 10, color: C.muted, marginTop: 3,
+          fontFamily: "'Inter', sans-serif",
+        }}>Jess · {msg.time}</span>
+      )}
       <MhraNote />
-      {Array.isArray(msg.chips) && msg.chips.length > 0 && !msg.chipsUsed && (
+      {Array.isArray(msg.chips) && msg.chips.filter((c) => !(msg.chipsUsedList || []).includes(c)).length > 0 && (
         <div style={{ display: "flex", flexWrap: "wrap", gap: 6, marginTop: 8 }}>
-          {msg.chips.map((c) => (
-            <button
-              key={c}
-              type="button"
-              onClick={() => onChip(c, msg.id)}
-              style={{
-                padding: "8px 14px", minHeight: 36, borderRadius: 9999,
-                background: C.creamDark, border: `1px solid ${C.border}`,
-                color: C.espresso, fontFamily: "'Inter', sans-serif",
-                fontSize: 12, fontWeight: 700, cursor: "pointer",
-              }}
-            >{c}</button>
+          {msg.chips
+            .filter((c) => !(msg.chipsUsedList || []).includes(c))
+            .map((c) => (
+              <button
+                key={c}
+                type="button"
+                onClick={() => onChip(c, msg.id)}
+                style={{
+                  flexShrink: 0,
+                  padding: "7px 13px",
+                  background: C.creamDark,
+                  border: `1px solid ${C.border}`,
+                  borderRadius: 20,
+                  color: C.espresso,
+                  fontFamily: "'Inter', sans-serif",
+                  fontSize: 12.5, fontWeight: 500,
+                  whiteSpace: "nowrap",
+                  cursor: "pointer",
+                }}
+              >{c}</button>
           ))}
         </div>
       )}
@@ -1456,20 +1532,23 @@ function MessageNode({ msg, shell, onChip, onToggleQuickLog }) {
   );
 }
 
+// Typing indicator — three dots that pulse upward + dim, staggered.
+// Matches the demo: 7px dots on espresso bubble, 0/0.22/0.44s delays.
 function TypingIndicator() {
   return (
     <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-start" }}>
       <div style={{
-        display: "inline-flex", alignItems: "center", gap: 6,
-        padding: "8px 14px", borderRadius: "14px 14px 14px 4px",
-        background: C.paperHi, border: `1px solid ${C.border}`,
+        display: "inline-flex", alignItems: "center", gap: 5,
+        padding: "10px 13px", borderRadius: "17px 17px 17px 4px",
+        background: C.espresso,
         animation: "jess-bubble-enter 280ms ease-out",
       }} aria-label="Jess is typing">
         {[0, 0.22, 0.44].map((delay, i) => (
           <span key={i} aria-hidden style={{
-            fontSize: 14, color: C.gold,
-            animation: `jess-pulse-dot 900ms ease-in-out ${delay}s infinite`,
-          }}>✦</span>
+            width: 7, height: 7, borderRadius: "50%",
+            background: "rgba(244,237,219,0.45)",
+            animation: `jess-typing-bounce 1.3s ease-in-out ${delay}s infinite`,
+          }} />
         ))}
       </div>
     </div>
