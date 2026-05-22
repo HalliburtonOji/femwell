@@ -11,9 +11,15 @@
 // Memory delete + Clear all are local UI for now — real wiring lands in a
 // follow-up when the JessMemory entity exists.
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { X, Check, Trash2, AlertTriangle } from "lucide-react";
 import { base44 } from "@/api/base44Client";
+import {
+  loadTopMemories,
+  deactivateMemory,
+  deactivateAllMemories,
+  memoryTypeBadge,
+} from "@/services/jessMemoryService";
 
 // FemWell design tokens — locked to spec.
 const C = {
@@ -44,11 +50,8 @@ const PROACTIVITY_LEVELS = [
   { value: 3, label: "Active coaching" },
 ];
 
-const SEED_MEMORY = [
-  "You prefer light exercise during menstrual phase",
-  "You tend to feel anxious before ovulation",
-  "You aim for 8 hours sleep",
-];
+// Memory rows now come from base44.entities.JessMemory via
+// jessMemoryService.loadTopMemories(). Feature 2 — Jess Memory System.
 
 export default function JessSettingsSheet({ open, onClose, user, profile, onProfileChange }) {
   const [jessName, setJessName] = useState("");
@@ -56,8 +59,21 @@ export default function JessSettingsSheet({ open, onClose, user, profile, onProf
   const [proEnabled, setProEnabled] = useState(true);
   const [proLevel, setProLevel] = useState(2);
   const [privacy, setPrivacy] = useState({ read_journal: false, reference_past: true, share_anon: false });
-  const [memory, setMemory] = useState(SEED_MEMORY);
+  // Feature 2 — JessMemory rows for this user, sorted by importance.
+  // [] = no rows yet (either no schema or no extractions). Updated on
+  // every settings sheet open + after each delete / clear action.
+  const [memories, setMemories] = useState([]);
+  const [memoriesLoading, setMemoriesLoading] = useState(false);
   const [showClearConfirm, setShowClearConfirm] = useState(false);
+
+  const reloadMemories = useCallback(async () => {
+    if (!user?.id) { setMemories([]); return; }
+    setMemoriesLoading(true);
+    try {
+      const rows = await loadTopMemories(user.id, 10);
+      setMemories(Array.isArray(rows) ? rows : []);
+    } finally { setMemoriesLoading(false); }
+  }, [user?.id]);
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
 
@@ -81,7 +97,9 @@ export default function JessSettingsSheet({ open, onClose, user, profile, onProf
     });
     setShowClearConfirm(false);
     setSaved(false);
-  }, [open, profile?.id]);
+    // Feature 2 — pull fresh JessMemory rows when the sheet opens.
+    reloadMemories();
+  }, [open, profile?.id, reloadMemories]);
 
   // ESC to close.
   useEffect(() => {
@@ -283,47 +301,78 @@ export default function JessSettingsSheet({ open, onClose, user, profile, onProf
             </div>
           </Section>
 
-          {/* Memory */}
-          <Section title="Memory" hint="Things Jess remembers about you.">
-            <ul style={{ listStyle: "none", margin: 0, padding: 0, display: "flex", flexDirection: "column", gap: 6 }}>
-              {memory.map((m, i) => (
-                <li key={i} style={{
-                  display: "flex", alignItems: "center", gap: 10,
-                  padding: "10px 12px", borderRadius: 12,
-                  background: C.paperHi, border: `1px solid ${C.border}`,
-                }}>
-                  <span aria-hidden style={{ width: 6, height: 6, borderRadius: 9999, background: C.gold }} />
-                  <span style={{ flex: 1, fontSize: 13, color: C.espresso, fontFamily: "'Inter', sans-serif" }}>{m}</span>
-                  <button
-                    type="button"
-                    aria-label={`Forget: ${m}`}
-                    onClick={() => setMemory((p) => p.filter((_, j) => j !== i))}
-                    style={{
-                      width: 32, height: 32, borderRadius: 9999, border: "none",
-                      background: "transparent", color: C.muted, cursor: "pointer",
-                      display: "inline-flex", alignItems: "center", justifyContent: "center",
-                    }}
-                  ><X size={14} /></button>
-                </li>
-              ))}
-              {memory.length === 0 && (
+          {/* JESS REMEMBERS — Feature 2 (JessMemory entity) */}
+          <Section title="Jess Remembers" hint="Things Jess has picked up across your conversations.">
+            <ul style={{ listStyle: "none", margin: 0, padding: 0, display: "flex", flexDirection: "column", gap: 8 }}>
+              {memories.map((m) => {
+                const badge = memoryTypeBadge(m.memory_type);
+                return (
+                  <li key={m.id} style={{
+                    display: "flex", alignItems: "flex-start", gap: 10,
+                    padding: "10px 12px", borderRadius: 12,
+                    background: C.creamDark, border: `1px solid ${C.border}`,
+                  }}>
+                    <div style={{ flex: 1, minWidth: 0, display: "flex", flexDirection: "column", gap: 6 }}>
+                      <span style={{
+                        alignSelf: "flex-start",
+                        display: "inline-flex", alignItems: "center",
+                        padding: "2px 8px", borderRadius: 9999,
+                        background: badge.bg, color: badge.fg,
+                        fontFamily: "'Inter', sans-serif",
+                        fontSize: 10, fontWeight: 700, letterSpacing: "0.06em",
+                        textTransform: "uppercase",
+                      }}>{badge.label}</span>
+                      <span style={{
+                        fontSize: 13, lineHeight: 1.45, color: C.espresso,
+                        fontFamily: "'Inter', sans-serif",
+                      }}>{m.content}</span>
+                    </div>
+                    <button
+                      type="button"
+                      aria-label={`Forget: ${m.content}`}
+                      onClick={async () => {
+                        // Optimistic — drop locally, then soft-delete.
+                        setMemories((prev) => prev.filter((row) => row.id !== m.id));
+                        await deactivateMemory(m.id);
+                      }}
+                      style={{
+                        width: 32, height: 32, borderRadius: 9999, border: "none",
+                        background: "transparent", color: C.muted, cursor: "pointer",
+                        display: "inline-flex", alignItems: "center", justifyContent: "center",
+                        flexShrink: 0,
+                      }}
+                    ><X size={14} /></button>
+                  </li>
+                );
+              })}
+              {!memoriesLoading && memories.length === 0 && (
                 <li style={{
                   padding: "12px 14px", borderRadius: 12,
                   background: C.paper, border: `1px dashed ${C.border}`,
                   fontSize: 12, color: C.mutedText, fontStyle: "italic",
                   textAlign: "center",
-                }}>Jess will build her memory as you log.</li>
+                }}>Jess hasn't formed memories yet — keep chatting!</li>
+              )}
+              {memoriesLoading && (
+                <li style={{
+                  padding: "12px 14px", borderRadius: 12,
+                  background: C.paper, border: `1px dashed ${C.border}`,
+                  fontSize: 12, color: C.mutedText, textAlign: "center",
+                }}>Loading memories…</li>
               )}
             </ul>
             <button
               type="button"
               onClick={() => setShowClearConfirm(true)}
+              disabled={memories.length === 0}
               style={{
                 marginTop: 10, padding: "10px 14px", minHeight: 44,
                 background: "white", color: "#B91C1C",
                 border: "1.5px solid #FCA5A5", borderRadius: 9999,
                 display: "inline-flex", alignItems: "center", gap: 6,
-                cursor: "pointer", fontFamily: "'Inter', sans-serif",
+                cursor: memories.length === 0 ? "not-allowed" : "pointer",
+                opacity: memories.length === 0 ? 0.5 : 1,
+                fontFamily: "'Inter', sans-serif",
                 fontSize: 13, fontWeight: 700,
               }}
             ><Trash2 size={14} /> Clear all memory</button>
@@ -342,7 +391,13 @@ export default function JessSettingsSheet({ open, onClose, user, profile, onProf
                 <div style={{ display: "flex", gap: 8 }}>
                   <button
                     type="button"
-                    onClick={() => { setMemory([]); setShowClearConfirm(false); }}
+                    onClick={async () => {
+                      // Optimistic local clear, then soft-delete every
+                      // active JessMemory row server-side.
+                      setMemories([]);
+                      setShowClearConfirm(false);
+                      if (user?.id) await deactivateAllMemories(user.id);
+                    }}
                     style={{
                       flex: 1, minHeight: 40, padding: "8px 14px",
                       background: "#B91C1C", color: "white", border: "none",

@@ -25,6 +25,10 @@ import {
 } from "lucide-react";
 import ReactMarkdown from "react-markdown";
 import JessSettingsSheet from "./JessSettingsSheet";
+import {
+  extractMemoriesFromConversation,
+  loadTopMemories,
+} from "@/services/jessMemoryService";
 
 // ─── Tokens ───────────────────────────────────────────────────────────────
 // FemWell design tokens — locked to the spec Halli circulated. All
@@ -131,7 +135,7 @@ function pickFirstName(user, profile) {
 // Format is intentionally compact + machine-readable but reads as English.
 // Designed so a system-message-like prefix makes Jess respond *specifically*
 // to the user instead of generically.
-function buildJessContext({ user, profile, todayCheckin, recentCheckins, symptoms, tasks, lastJournal, phase, dayInCycle }) {
+function buildJessContext({ user, profile, todayCheckin, recentCheckins, symptoms, tasks, lastJournal, phase, dayInCycle, memories }) {
   const firstName = pickFirstName(user, profile);
   const lifeStage = profile?.life_stage || "reproductive";
   const moodToday = todayCheckin?.mood ?? null;
@@ -185,8 +189,22 @@ function buildJessContext({ user, profile, todayCheckin, recentCheckins, symptom
       ? `Last journal entry: "${journalSnip}"${journalAge != null ? ` (${journalAge} ${journalAge === 1 ? "day" : "days"} ago)` : ""}`
       : "Last journal entry: none",
     `Character preset: ${character}`,
-    "[Respond in character. Be specific to this data. Never diagnose. Frame as wellness companion.]",
   ];
+  // ── Memory injection (Feature 2 — JessMemory entity) ─────────────────
+  // Append the top-N most-important persistent memories so Jess can
+  // reference them naturally. Omit the block entirely when empty so the
+  // prompt stays clean for first-time users.
+  const memList = Array.isArray(memories) ? memories.filter((m) => m?.content) : [];
+  if (memList.length > 0) {
+    lines.push("--- JESS MEMORY ---");
+    lines.push("Things Jess remembers about this user:");
+    for (const m of memList) {
+      lines.push(`• [${m.memory_type || "memory"}] ${m.content}`);
+    }
+    lines.push("(Reference these naturally in conversation — don't list them all at once)");
+    lines.push("---");
+  }
+  lines.push("[Respond in character. Be specific to this data. Never diagnose. Frame as wellness companion.]");
   return lines.join("\n");
 }
 
@@ -559,6 +577,12 @@ export default function JessDemoPanel() {
   const [activeConvRecord, setActiveConvRecord] = useState(null);
   // Search filter (client-side) over jessConvos names + previews.
   const [historySearch, setHistorySearch] = useState("");
+  // Feature 2 — top-N persistent JessMemory rows for this user, sorted
+  // by importance_score desc. Refreshed on mount + after every
+  // extractMemoriesFromConversation run. Empty array is the no-memory
+  // baseline (no schema yet, no extractions yet) — the context block
+  // omits the memory section in that case.
+  const [memories, setMemories] = useState([]);
   // Track whether the context block has been sent for this convo so we only
   // inject it once per conversation. We also remove an id from this set when
   // the user resumes an old conversation, so we re-inject fresh context
@@ -754,6 +778,21 @@ export default function JessDemoPanel() {
 
   useEffect(() => { reloadJessConvos(); }, [reloadJessConvos]);
 
+  // ── Feature 2: Load top JessMemory rows for this user ────────────────
+  // Pulls the top 5 most-important active memories. Refreshed by
+  // reloadMemories() after the extractor runs. Failsafe when the entity
+  // schema doesn't exist yet — service returns [] and the context block
+  // omits the memory section.
+  const reloadMemories = useCallback(async () => {
+    if (!user?.id) { setMemories([]); return; }
+    try {
+      const rows = await loadTopMemories(user.id, 5);
+      setMemories(Array.isArray(rows) ? rows : []);
+    } catch { setMemories([]); }
+  }, [user?.id]);
+
+  useEffect(() => { reloadMemories(); }, [reloadMemories]);
+
   // ── Feature 1B: Auto-namer ────────────────────────────────────────
   // Fires after the user's SECOND message in a thread. Spins up a
   // separate ephemeral base44.agents conversation (so it doesn't
@@ -869,8 +908,8 @@ export default function JessDemoPanel() {
   // conversation. Recomputed when underlying data changes (so resuming a
   // convo later still gets up-to-date context).
   const contextBlock = useMemo(
-    () => buildJessContext({ user, profile, todayCheckin, recentCheckins, symptoms, tasks, lastJournal, phase, dayInCycle }),
-    [user, profile, todayCheckin, recentCheckins, symptoms, tasks, lastJournal, phase, dayInCycle],
+    () => buildJessContext({ user, profile, todayCheckin, recentCheckins, symptoms, tasks, lastJournal, phase, dayInCycle, memories }),
+    [user, profile, todayCheckin, recentCheckins, symptoms, tasks, lastJournal, phase, dayInCycle, memories],
   );
 
   // ── Live base44.agents conversation — used only for free text ──────────
@@ -982,6 +1021,34 @@ export default function JessDemoPanel() {
 
   useEffect(() => () => { if (unsubRef.current) unsubRef.current(); }, []);
 
+  // Feature 2 — keep a live ref to the closing-thread payload so the
+  // unmount cleanup can read the freshest values without forcing the
+  // entire cleanup to re-bind on every message.
+  const closingThreadRef = useRef({ messages: [], userId: null, convId: null, name: "Jess" });
+  useEffect(() => {
+    closingThreadRef.current = {
+      messages,
+      userId: user?.id || null,
+      convId: activeConvRecord?.id || conversationId || null,
+      name: assistantName,
+    };
+  }, [messages, user?.id, activeConvRecord?.id, conversationId, assistantName]);
+
+  // On unmount (user navigates away from /Ideas, closes the panel, or
+  // Jess hot-reloads), fire-and-forget the memory extractor against the
+  // most-recent thread snapshot. Defensive: only if a user turn exists.
+  useEffect(() => () => {
+    try {
+      const snap = closingThreadRef.current;
+      if (!snap?.userId || !Array.isArray(snap.messages)) return;
+      const hasUserTurn = snap.messages.some((m) => m?.role === "user");
+      if (!hasUserTurn || snap.messages.length < 2) return;
+      // Don't await — the component is tearing down. Service has its
+      // own guards.
+      extractMemoriesFromConversation(snap.messages, snap.userId, snap.convId, snap.name);
+    } catch { /* swallow */ }
+  }, []);
+
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages, assistantTyping]);
@@ -990,7 +1057,25 @@ export default function JessDemoPanel() {
   // The "✦ New" header button. Tears down any active subscription, clears
   // the chat, eagerly creates BOTH a fresh agent_conv_id and a new
   // JessConversation record so the drawer shows the thread immediately.
+  // Feature 2 — before tearing down, snapshot the current messages so we
+  // can run the memory extractor against the closing thread.
   const startNewConversation = useCallback(async () => {
+    // Snapshot the active thread for the memory extractor BEFORE we
+    // clear messages state. Skip if there's no live thread yet, or if
+    // it's just the opener (no user turn).
+    const closingMessages = messages;
+    const closingConvId = activeConvRecord?.id || conversationId || null;
+    const hasUserTurn = closingMessages.some((m) => m?.role === "user");
+    if (user?.id && hasUserTurn && closingMessages.length >= 2) {
+      // Fire-and-forget — don't block the new-convo creation on the
+      // extractor's LLM round-trip. reloadMemories() runs after.
+      (async () => {
+        try {
+          await extractMemoriesFromConversation(closingMessages, user.id, closingConvId, assistantName);
+          await reloadMemories();
+        } catch { /* swallow */ }
+      })();
+    }
     if (unsubRef.current) { unsubRef.current(); unsubRef.current = null; }
     seenAgentIdsRef.current = new Set();
     setConversationId(null);
@@ -1006,7 +1091,7 @@ export default function JessDemoPanel() {
       // ensureConversation will mint a new pair.
       window.setTimeout(() => { ensureConversation(); }, 0);
     }
-  }, [user?.id, ensureConversation]);
+  }, [user?.id, ensureConversation, messages, activeConvRecord?.id, conversationId, assistantName, reloadMemories]);
 
   // ── Resume a past conversation — fully interactive ─────────────────────
   // Takes a JessConversation record. Re-attaches to its agent_conv_id
