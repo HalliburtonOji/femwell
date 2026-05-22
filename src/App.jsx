@@ -21,6 +21,7 @@ import WeeklyInsights from './pages/WeeklyInsights';
 import LifestyleDetail from './pages/LifestyleDetail';
 import SkinHair from './pages/SkinHair';
 import AdminMigrations from './pages/AdminMigrations';
+import AdminJessConversations from './pages/AdminJessConversations';
 import DoctorExport from './pages/DoctorExport';
 import PartnerSettings from './pages/PartnerSettings';
 import PartnerView from './pages/PartnerView';
@@ -130,6 +131,7 @@ const AuthenticatedApp = () => {
           <Route path="/LifestyleDetail" element={<LayoutWrapper currentPageName="LifestyleDetail"><LifestyleDetail /></LayoutWrapper>} />
           <Route path="/SkinHair" element={<LayoutWrapper currentPageName="SkinHair"><SkinHair /></LayoutWrapper>} />
           <Route path="/admin/migrations" element={<AdminMigrations />} />
+          <Route path="/admin/jess-conversations" element={<AdminJessConversations />} />
           <Route path="/DoctorExport" element={<LayoutWrapper currentPageName="DoctorExport"><DoctorExport /></LayoutWrapper>} />
           <Route path="/PartnerSettings" element={<LayoutWrapper currentPageName="PartnerSettings"><PartnerSettings /></LayoutWrapper>} />
           <Route path="/PartnerView" element={<PartnerView />} />

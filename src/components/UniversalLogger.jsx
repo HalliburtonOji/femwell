@@ -1553,7 +1553,7 @@ function MealMacroBar() {
     try {
       const me = await base44.entities.User.me().catch(() => null);
       if (!me?.id) return;
-      const day = todayISO;
+      const day = new Date().toISOString().split("T")[0];
       const [meals, drinks] = await Promise.all([
         base44.entities.MealLog.filter({ user_id: me.id, day_key: day }).catch(() => []),
         base44.entities.DrinkLog.filter({ user_id: me.id, day_key: day }).catch(() => []),
@@ -1624,6 +1624,8 @@ function DrinkChipsRow() {
     try {
       const me = await base44.entities.User.me().catch(() => null);
       if (!me?.id) return;
+      const todayISO = new Date().toISOString().split("T")[0];
+      const nowISO   = new Date().toISOString();
       await base44.entities.DrinkLog.create({
         user_id: me.id,
         day_key: todayISO,
