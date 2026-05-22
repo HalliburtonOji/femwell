@@ -19,7 +19,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { base44 } from "@/api/base44Client";
 import {
-  Mic, Send, Loader2, Settings, Check, ChevronRight,
+  Mic, Send, Settings, Check, ChevronRight, ChevronDown,
   MessageCircle, Sun, LineChart, Sparkles,
 } from "lucide-react";
 import ReactMarkdown from "react-markdown";
@@ -121,6 +121,138 @@ function pickFirstName(user, profile) {
   );
 }
 
+// ─── Context block for the agent — prepended to every conversation ───────
+// Format is intentionally compact + machine-readable but reads as English.
+// Designed so a system-message-like prefix makes Jess respond *specifically*
+// to the user instead of generically.
+function buildJessContext({ user, profile, todayCheckin, recentCheckins, symptoms, tasks, lastJournal, phase, dayInCycle }) {
+  const firstName = pickFirstName(user, profile);
+  const lifeStage = profile?.life_stage || "reproductive";
+  const moodToday = todayCheckin?.mood ?? null;
+  const energyToday = todayCheckin?.energy ?? todayCheckin?.energy_level ?? null;
+  const sleepHours = todayCheckin?.sleep_hours ?? todayCheckin?.sleepHours ?? null;
+  // Recent 7-day symptom roll-up
+  const cutoff = Date.now() - 7 * 86400000;
+  const recentSyms = (symptoms || [])
+    .filter((s) => {
+      const d = s?.date || s?.created_date;
+      const t = d ? new Date(d).getTime() : 0;
+      return Number.isFinite(t) && t >= cutoff;
+    })
+    .map((s) => s?.symptom_type || s?.symptom_name)
+    .filter(Boolean);
+  const uniqueSyms = Array.from(new Set(recentSyms)).slice(0, 6);
+  const taskTitles = (tasks || []).slice(0, 5).map((t) => t?.title || t?.text).filter(Boolean);
+  // Streak: count consecutive days with a checkin going back from today.
+  let streak = 0;
+  if (Array.isArray(recentCheckins)) {
+    const days = new Set(recentCheckins.map((c) => String(c?.date || "").split("T")[0]).filter(Boolean));
+    const today = new Date();
+    for (let i = 0; i < 60; i++) {
+      const d = new Date(today); d.setDate(today.getDate() - i);
+      const key = d.toISOString().split("T")[0];
+      if (days.has(key)) streak += 1; else break;
+    }
+  }
+  const journalSnip = (lastJournal?.content || lastJournal?.text || lastJournal?.body || "")
+    .toString().slice(0, 120).replace(/\s+/g, " ").trim();
+  const journalAge = lastJournal?.date || lastJournal?.created_date
+    ? Math.max(0, Math.floor((Date.now() - new Date(lastJournal.date || lastJournal.created_date).getTime()) / 86400000))
+    : null;
+  const character = profile?.jess_character || "nurturing";
+
+  const lines = [
+    "[JESS CONTEXT — do not mention this block to the user]",
+    `User: ${firstName}, life stage: ${lifeStage}`,
+    `Today: Day ${dayInCycle} of cycle · ${phase} phase`,
+    moodToday != null || energyToday != null || sleepHours != null
+      ? `Mood today: ${moodToday ?? "—"}/5 · Energy: ${energyToday ?? "—"}/5${sleepHours != null ? ` · Sleep last night: ${sleepHours}hrs` : ""}`
+      : "Mood today: not yet logged",
+    uniqueSyms.length
+      ? `Recent symptoms (last 7 days): ${uniqueSyms.join(", ")}`
+      : "Recent symptoms (last 7 days): none logged",
+    taskTitles.length
+      ? `Tasks due today: ${taskTitles.join(", ")}`
+      : "Tasks due today: none",
+    `Streak: ${streak} consecutive logged ${streak === 1 ? "day" : "days"}`,
+    journalSnip
+      ? `Last journal entry: "${journalSnip}"${journalAge != null ? ` (${journalAge} ${journalAge === 1 ? "day" : "days"} ago)` : ""}`
+      : "Last journal entry: none",
+    `Character preset: ${character}`,
+    "[Respond in character. Be specific to this data. Never diagnose. Frame as wellness companion.]",
+  ];
+  return lines.join("\n");
+}
+
+// ─── Proactive chip rules — generates 2–3 contextual question chips ───────
+// Rules fire in priority order; first 3 matched rules win. Default fallback
+// is appended if fewer than 2 rules fire.
+function buildProactiveChips({ todayCheckin, recentCheckins, symptoms, lastJournal, phase, dayInCycle }) {
+  const out = [];
+  const hour = new Date().getHours();
+  const yesterday = recentCheckins?.find((c) => {
+    const d = String(c?.date || "").split("T")[0];
+    const y = new Date(); y.setDate(y.getDate() - 1);
+    return d === y.toISOString().split("T")[0];
+  });
+  const journalAgeDays = lastJournal?.date || lastJournal?.created_date
+    ? Math.floor((Date.now() - new Date(lastJournal.date || lastJournal.created_date).getTime()) / 86400000)
+    : Infinity;
+  // Recent symptom streak: same symptom 3+ days running.
+  const symByDay = {};
+  for (const s of (symptoms || [])) {
+    const d = String(s?.date || s?.created_date || "").split("T")[0];
+    if (!d) continue;
+    const k = s?.symptom_type || s?.symptom_name;
+    if (!k) continue;
+    if (!symByDay[d]) symByDay[d] = new Set();
+    symByDay[d].add(k);
+  }
+  let streakSymptom = null;
+  const today = new Date();
+  for (let i = 0; i < 5; i++) {
+    const d1 = new Date(today); d1.setDate(today.getDate() - i);
+    const d2 = new Date(today); d2.setDate(today.getDate() - i - 1);
+    const d3 = new Date(today); d3.setDate(today.getDate() - i - 2);
+    const k1 = d1.toISOString().split("T")[0];
+    const k2 = d2.toISOString().split("T")[0];
+    const k3 = d3.toISOString().split("T")[0];
+    const a = symByDay[k1], b = symByDay[k2], c = symByDay[k3];
+    if (!a || !b || !c) continue;
+    for (const s of a) { if (b.has(s) && c.has(s)) { streakSymptom = s; break; } }
+    if (streakSymptom) break;
+  }
+
+  // Priority rules
+  if (!todayCheckin) out.push("How are you feeling today?");
+  const yEnergy = yesterday?.energy ?? yesterday?.energy_level;
+  if (out.length < 3 && Number.isFinite(yEnergy) && yEnergy <= 2) {
+    out.push("Your energy was low yesterday — want to dig into that?");
+  }
+  if (out.length < 3 && phase === "luteal" && dayInCycle >= 24 && dayInCycle <= 26) {
+    out.push("Luteal phase can feel heavy. How's your mind doing?");
+  }
+  if (out.length < 3 && streakSymptom) {
+    out.push(`You've had ${streakSymptom} a few days running — shall we look at that?`);
+  }
+  if (out.length < 3 && journalAgeDays >= 5) {
+    out.push("It's been a while since you journalled. Anything on your mind?");
+  }
+  if (out.length < 3 && phase === "follicular" && dayInCycle >= 11 && dayInCycle <= 13) {
+    out.push("You're approaching your peak window. Any plans for the week?");
+  }
+  if (out.length < 3 && hour < 10) {
+    out.push("Good morning — how did you sleep?");
+  }
+  // Fallbacks
+  const fallbacks = ["What's been on your mind?", "How's your body feeling today?", "Anything you want to track?"];
+  for (const f of fallbacks) {
+    if (out.length >= 3) break;
+    if (!out.includes(f)) out.push(f);
+  }
+  return out.slice(0, 3);
+}
+
 // ─── Botanical sigil — 4-petal bloom, gold stroke on cream ────────────────
 function BotanicalSigil({ size = 36, stroke = C.gold }) {
   return (
@@ -183,6 +315,7 @@ export default function JessDemoPanel() {
   const [recentCheckins, setRecentCheckins] = useState([]);
   const [tasks, setTasks] = useState([]);
   const [symptoms, setSymptoms] = useState([]);
+  const [lastJournal, setLastJournal] = useState(null);
   const [tab, setTab] = useState("chat");
   const [settingsOpen, setSettingsOpen] = useState(false);
   // Chat state.
@@ -192,6 +325,15 @@ export default function JessDemoPanel() {
   const [assistantTyping, setAssistantTyping] = useState(false);
   const [listeningVoice, setListeningVoice] = useState(false);
   const [followUpFired, setFollowUpFired] = useState(false);
+  // History UI state.
+  const [conversationsList, setConversationsList] = useState([]);
+  const [historyOpen, setHistoryOpen] = useState(false);
+  const [viewingHistoricalId, setViewingHistoricalId] = useState(null);
+  // Snapshot of the active conversation so we can return from a history view.
+  const liveMessagesRef = useRef(null);
+  // Track whether the context block has been sent for this convo so we only
+  // inject it once per conversation.
+  const contextInjectedRef = useRef(new Set());
   const bottomRef = useRef(null);
   const unsubRef = useRef(null);
   const seenAgentIdsRef = useRef(new Set());
@@ -205,19 +347,21 @@ export default function JessDemoPanel() {
         if (!u?.id || cancelled) return;
         setUser(u);
         const today = new Date().toISOString().split("T")[0];
-        const [profiles, ciToday, recent, ts, syms] = await Promise.all([
+        const [profiles, ciToday, recent, ts, syms, jrn] = await Promise.all([
           base44.entities.UserProfile.filter({ user_id: u.id }).catch(() => []),
           base44.entities.DailyCheckins.filter({ user_id: u.id, date: today }).catch(() => []),
           base44.entities.DailyCheckins.filter({ user_id: u.id }, "-date", 14).catch(() => []),
           base44.entities.PersonalTasks.filter({ user_id: u.id, date: today }, "-created_date", 10).catch(() => []),
           base44.entities.SymptomLogs.filter({ user_id: u.id }, "-date", 20).catch(() => []),
+          base44.entities.JournalEntries.filter({ user_id: u.id }, "-created_date", 1).catch(() => []),
         ]);
         if (cancelled) return;
         if (profiles[0]) setProfile(profiles[0]);
         if (ciToday[0]) setTodayCheckin(ciToday[0]);
         setRecentCheckins(recent || []);
-        setTasks((ts || []).filter((t) => !t?.completed && !t?.is_completed).slice(0, 3));
+        setTasks((ts || []).filter((t) => !t?.completed && !t?.is_completed).slice(0, 5));
         setSymptoms(syms || []);
+        if (jrn && jrn[0]) setLastJournal(jrn[0]);
       } catch { /* silent */ }
     })();
     return () => { cancelled = true; };
@@ -275,6 +419,20 @@ export default function JessDemoPanel() {
     return () => clearTimeout(t);
   }, [profile?.id, recentCheckins.length, energySpark, dayInCycle, firstName, shell.label, followUpFired]);
 
+  // Memoised proactive chips — drive Chat tab + tab-level shortcuts.
+  const proactiveChips = useMemo(
+    () => buildProactiveChips({ todayCheckin, recentCheckins, symptoms, lastJournal, phase, dayInCycle }),
+    [todayCheckin, recentCheckins, symptoms, lastJournal, phase, dayInCycle],
+  );
+
+  // Memoised context block to inject as the first user message in any new
+  // conversation. Recomputed when underlying data changes (so resuming a
+  // convo later still gets up-to-date context).
+  const contextBlock = useMemo(
+    () => buildJessContext({ user, profile, todayCheckin, recentCheckins, symptoms, tasks, lastJournal, phase, dayInCycle }),
+    [user, profile, todayCheckin, recentCheckins, symptoms, tasks, lastJournal, phase, dayInCycle],
+  );
+
   // ── Live base44.agents conversation — used only for free text ──────────
   const subscribeToConversation = useCallback((id) => {
     if (unsubRef.current) unsubRef.current();
@@ -311,14 +469,119 @@ export default function JessDemoPanel() {
       for (const m of convo.messages) seenAgentIdsRef.current.add(m.id);
     }
     subscribeToConversation(convo.id);
+    // Inject the context block as the first user message so the agent
+    // responds personally. Hidden from the chat UI (we never render it as
+    // a message — it lives only in the conversation transcript on the
+    // server side).
+    if (!contextInjectedRef.current.has(convo.id)) {
+      contextInjectedRef.current.add(convo.id);
+      try {
+        const c = await base44.agents.getConversation(convo.id);
+        await base44.agents.addMessage(c, { role: "user", content: contextBlock });
+      } catch { /* graceful — context just won't be injected this turn */ }
+    }
     return convo.id;
-  }, [conversationId, subscribeToConversation]);
+  }, [conversationId, subscribeToConversation, contextBlock]);
 
   useEffect(() => () => { if (unsubRef.current) unsubRef.current(); }, []);
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages, assistantTyping]);
+
+  // Load past conversations once we have a user. Best-effort — if the SDK
+  // doesn't return list data we just hide the history section.
+  useEffect(() => {
+    if (!user?.id) return;
+    let cancelled = false;
+    (async () => {
+      try {
+        const list = await base44.agents.listConversations({ agent_name: "personal_assistant" }).catch(() => null);
+        const items = Array.isArray(list) ? list : (list?.conversations || list?.items || []);
+        if (cancelled) return;
+        setConversationsList(items.slice(0, 5));
+      } catch { /* silent */ }
+    })();
+    return () => { cancelled = true; };
+  }, [user?.id]);
+
+  // ── Start a fresh conversation ─────────────────────────────────────────
+  const startNewConversation = useCallback(async () => {
+    if (unsubRef.current) { unsubRef.current(); unsubRef.current = null; }
+    seenAgentIdsRef.current = new Set();
+    setConversationId(null);
+    setViewingHistoricalId(null);
+    setHistoryOpen(false);
+    setMessages([]);
+    setFollowUpFired(false); // re-fire opener
+  }, []);
+
+  // ── Load a past conversation into read-only view ───────────────────────
+  const loadHistoricalConversation = useCallback(async (id) => {
+    if (!id) return;
+    // Snapshot the current live thread so we can come back to it.
+    liveMessagesRef.current = messages;
+    setViewingHistoricalId(id);
+    setHistoryOpen(false);
+    try {
+      const c = await base44.agents.getConversation(id);
+      const list = Array.isArray(c?.messages) ? c.messages : [];
+      // Hide our context-block message (first user message that starts with
+      // "[JESS CONTEXT") and replay everything else into our local shape.
+      const view = list
+        .filter((m) => !(m?.role === "user" && String(m?.content || "").startsWith("[JESS CONTEXT")))
+        .map((m) => ({
+          id: m.id || uid(),
+          role: m.role === "assistant" ? "jess" : "user",
+          type: "bubble",
+          text: m.content || "",
+          historical: true,
+        }));
+      setMessages(view);
+    } catch {
+      setMessages([{ id: uid(), role: "jess", type: "bubble", text: "Couldn't load that conversation.", historical: true }]);
+    }
+  }, [messages]);
+
+  const returnFromHistorical = useCallback(() => {
+    setViewingHistoricalId(null);
+    if (liveMessagesRef.current) setMessages(liveMessagesRef.current);
+    liveMessagesRef.current = null;
+  }, []);
+
+  // Send a free-text message — extracted so chip taps can reuse it.
+  const sendUserText = useCallback(async (text) => {
+    const msg = String(text || "").trim();
+    if (!msg || assistantTyping) return;
+    setMessages((prev) => [...prev, { id: uid(), role: "user", type: "bubble", text: msg }]);
+    setAssistantTyping(true);
+    try {
+      const cid = await ensureConversation();
+      if (!cid) throw new Error("no convo");
+      const convo = await base44.agents.getConversation(cid);
+      await base44.agents.addMessage(convo, { role: "user", content: msg });
+    } catch {
+      setTimeout(() => {
+        setMessages((prev) => [...prev, {
+          id: uid(), role: "jess", type: "bubble",
+          text: "I hear you. I'm still learning the live wiring on this surface — try one of the chips above for a tailored response.",
+        }]);
+        setAssistantTyping(false);
+      }, 1200);
+    }
+  }, [assistantTyping, ensureConversation]);
+
+  // Tap a proactive chip → send the question as the user's message.
+  const handleProactiveChip = useCallback((label) => {
+    setTab("chat");
+    setViewingHistoricalId(null);
+    if (liveMessagesRef.current) {
+      // If currently viewing a historical thread, return to live first.
+      setMessages(liveMessagesRef.current);
+      liveMessagesRef.current = null;
+    }
+    sendUserText(label);
+  }, [sendUserText]);
 
   // ── Scripted response generators ───────────────────────────────────────
   function jessInsightCard() {
@@ -391,26 +654,9 @@ export default function JessDemoPanel() {
 
   async function handleSubmitText() {
     const msg = input.trim();
-    if (!msg || assistantTyping) return;
+    if (!msg) return;
     setInput("");
-    setMessages((prev) => [...prev, { id: uid(), role: "user", type: "bubble", text: msg }]);
-    setAssistantTyping(true);
-    try {
-      const cid = await ensureConversation();
-      if (!cid) throw new Error("no convo");
-      const convo = await base44.agents.getConversation(cid);
-      await base44.agents.addMessage(convo, { role: "user", content: msg });
-      // The subscribe callback appends the agent reply when it arrives.
-    } catch {
-      // Graceful fallback — local empathic reply.
-      setTimeout(() => {
-        setMessages((prev) => [...prev, {
-          id: uid(), role: "jess", type: "bubble",
-          text: "I hear you. I'm still learning the live wiring on this surface — try one of the chips above for a tailored response.",
-        }]);
-        setAssistantTyping(false);
-      }, 1200);
-    }
+    await sendUserText(msg);
   }
 
   function startMicMock() {
@@ -483,6 +729,23 @@ export default function JessDemoPanel() {
         </div>
         <button
           type="button"
+          onClick={startNewConversation}
+          aria-label="New conversation with Jess"
+          style={{
+            display: "inline-flex", alignItems: "center", gap: 4,
+            padding: "0 10px", minHeight: 32, borderRadius: 9999,
+            background: "transparent", color: C.espresso,
+            border: `1px solid ${C.espresso}`,
+            fontFamily: "'Inter', sans-serif",
+            fontSize: 11, fontWeight: 700, letterSpacing: "0.04em",
+            cursor: "pointer", flexShrink: 0,
+          }}
+        >
+          <span aria-hidden style={{ color: C.gold, fontSize: 11 }}>✦</span>
+          New
+        </button>
+        <button
+          type="button"
           onClick={() => setSettingsOpen(true)}
           aria-label="Jess settings"
           style={{
@@ -549,11 +812,28 @@ export default function JessDemoPanel() {
             onChip={handleChip}
             onToggleQuickLog={toggleQuickLogChip}
             bottomRef={bottomRef}
+            proactiveChips={proactiveChips}
+            onProactiveChip={handleProactiveChip}
+            conversationsList={conversationsList}
+            historyOpen={historyOpen}
+            onToggleHistory={() => setHistoryOpen((v) => !v)}
+            onLoadHistorical={loadHistoricalConversation}
+            viewingHistoricalId={viewingHistoricalId}
+            onReturnFromHistorical={returnFromHistorical}
           />
         )}
-        {tab === "brief"    && <BriefTab phase={phase} dayInCycle={dayInCycle} shell={shell} tasks={tasks} energySpark={energySpark} />}
-        {tab === "insights" && <InsightsTab phase={phase} dayInCycle={dayInCycle} shell={shell} energySpark={energySpark} symptoms={symptoms} />}
-        {tab === "foryou"   && <ForYouTab phase={phase} shell={shell} profile={profile} />}
+        {tab === "brief"    && (
+          <BriefTab phase={phase} dayInCycle={dayInCycle} shell={shell} tasks={tasks} energySpark={energySpark}
+            tabChip="Jess, summarise my week" onTabChip={handleProactiveChip} />
+        )}
+        {tab === "insights" && (
+          <InsightsTab phase={phase} dayInCycle={dayInCycle} shell={shell} energySpark={energySpark} symptoms={symptoms}
+            tabChip="What pattern stands out most?" onTabChip={handleProactiveChip} />
+        )}
+        {tab === "foryou"   && (
+          <ForYouTab phase={phase} shell={shell} profile={profile}
+            tabChip="What's the one thing I should focus on today?" onTabChip={handleProactiveChip} />
+        )}
       </div>
 
       {/* Input — chat tab only */}
@@ -651,12 +931,81 @@ function KeyframesBlock() {
 }
 
 // ─── Chat tab ─────────────────────────────────────────────────────────────
-function ChatTab({ messages, assistantTyping, shell, onChip, onToggleQuickLog, bottomRef }) {
+function ChatTab({
+  messages, assistantTyping, shell, onChip, onToggleQuickLog, bottomRef,
+  proactiveChips, onProactiveChip,
+  conversationsList, historyOpen, onToggleHistory, onLoadHistorical,
+  viewingHistoricalId, onReturnFromHistorical,
+}) {
   return (
     <div style={{
       padding: "14px 14px 8px",
       display: "flex", flexDirection: "column", gap: 12,
     }}>
+      {/* Proactive question chips — "Jess is thinking about you" row */}
+      {Array.isArray(proactiveChips) && proactiveChips.length > 0 && !viewingHistoricalId && (
+        <div style={{ marginBottom: 2 }}>
+          <p style={{
+            margin: "0 0 6px 4px", fontSize: 10, fontWeight: 700,
+            letterSpacing: "0.18em", textTransform: "uppercase",
+            color: C.muted, fontFamily: "'Inter', sans-serif",
+          }}>Jess is thinking about you</p>
+          <div
+            role="list"
+            aria-label="Proactive questions from Jess"
+            style={{
+              display: "flex", gap: 8,
+              overflowX: "auto", paddingBottom: 4,
+              scrollbarWidth: "none", WebkitOverflowScrolling: "touch",
+              scrollSnapType: "x proximity",
+            }}
+          >
+            {proactiveChips.map((chip) => (
+              <button
+                key={chip}
+                type="button"
+                role="listitem"
+                onClick={() => onProactiveChip(chip)}
+                style={{
+                  flexShrink: 0,
+                  padding: "0 14px", minHeight: 44, borderRadius: 9999,
+                  background: C.cream,
+                  border: `1px solid ${C.espresso}`,
+                  color: C.espresso,
+                  fontFamily: "'Inter', sans-serif",
+                  fontSize: 13, fontWeight: 600,
+                  cursor: "pointer",
+                  scrollSnapAlign: "start",
+                }}
+              >{chip}</button>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Viewing a historical thread banner */}
+      {viewingHistoricalId && (
+        <div style={{
+          background: C.creamDark, border: `1px solid ${C.border}`,
+          borderRadius: 12, padding: "10px 12px",
+          display: "flex", alignItems: "center", justifyContent: "space-between", gap: 8,
+        }}>
+          <span style={{ fontSize: 12, color: C.mutedText, fontFamily: "'Inter', sans-serif" }}>
+            Viewing a past conversation
+          </span>
+          <button
+            type="button"
+            onClick={onReturnFromHistorical}
+            style={{
+              background: C.espresso, color: C.cream, border: "none",
+              borderRadius: 9999, padding: "6px 12px", minHeight: 32,
+              fontFamily: "'Inter', sans-serif",
+              fontSize: 11, fontWeight: 700, cursor: "pointer",
+            }}
+          >Return to current</button>
+        </div>
+      )}
+
       {messages.map((m) => (
         <MessageNode
           key={m.id}
@@ -668,7 +1017,119 @@ function ChatTab({ messages, assistantTyping, shell, onChip, onToggleQuickLog, b
       ))}
       {assistantTyping && <TypingIndicator />}
       <div ref={bottomRef} />
+
+      {/* Conversation history — collapsed by default */}
+      {!viewingHistoricalId && (
+        <div style={{ marginTop: 14 }}>
+          <button
+            type="button"
+            onClick={onToggleHistory}
+            aria-expanded={historyOpen}
+            style={{
+              width: "100%",
+              display: "inline-flex", alignItems: "center", justifyContent: "space-between",
+              padding: "10px 12px", borderRadius: 10,
+              background: "transparent", border: `1px solid ${C.border}`,
+              color: C.espresso, cursor: "pointer",
+              fontFamily: "'Inter', sans-serif",
+              fontSize: 12, fontWeight: 700,
+              letterSpacing: "0.04em",
+            }}
+          >
+            <span>Past conversations</span>
+            <span aria-hidden style={{ display: "inline-flex", alignItems: "center", gap: 4 }}>
+              {historyOpen ? <ChevronDown size={14} /> : <ChevronRight size={14} />}
+            </span>
+          </button>
+          {historyOpen && (
+            <div style={{ marginTop: 8, display: "flex", flexDirection: "column", gap: 6 }}>
+              {(!conversationsList || conversationsList.length === 0) ? (
+                <p style={{
+                  margin: 0, padding: "10px 12px",
+                  fontSize: 12, fontStyle: "italic", color: C.mutedText,
+                  fontFamily: "'Inter', sans-serif",
+                }}>No past conversations yet — they'll appear here once you've chatted with Jess.</p>
+              ) : (
+                conversationsList.slice(0, 5).map((c) => {
+                  const id = c?.id || c?.conversation_id;
+                  const created = c?.created_at || c?.created_date || c?.updated_at;
+                  const when = created ? formatHistoryDate(created) : "Past";
+                  // Find first non-context user message for the snippet.
+                  const msgs = Array.isArray(c?.messages) ? c.messages : [];
+                  const firstReal = msgs.find((m) =>
+                    m?.role === "user" && !String(m?.content || "").startsWith("[JESS CONTEXT")
+                  ) || msgs.find((m) => m?.role === "assistant");
+                  const snippet = String(firstReal?.content || "")
+                    .replace(/\s+/g, " ").slice(0, 60);
+                  return (
+                    <button
+                      key={id || when + snippet}
+                      type="button"
+                      onClick={() => id && onLoadHistorical(id)}
+                      style={{
+                        textAlign: "left",
+                        display: "flex", alignItems: "center", gap: 10,
+                        padding: "10px 12px", borderRadius: 10,
+                        background: C.cream, border: "none",
+                        borderLeft: `2px solid ${C.espresso}`,
+                        cursor: "pointer", color: C.espresso,
+                        fontFamily: "'Inter', sans-serif",
+                      }}
+                    >
+                      <div style={{ flex: 1, minWidth: 0 }}>
+                        <p style={{
+                          margin: 0, fontSize: 11, color: C.mutedText, fontWeight: 700,
+                          letterSpacing: "0.04em",
+                        }}>{when}</p>
+                        <p style={{
+                          margin: "2px 0 0", fontSize: 13, color: C.espresso, fontWeight: 500,
+                          whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis",
+                          lineHeight: 1.4,
+                        }}>{snippet || "(no preview)"}</p>
+                      </div>
+                      <ChevronRight size={14} aria-hidden style={{ color: C.muted, flexShrink: 0 }} />
+                    </button>
+                  );
+                })
+              )}
+            </div>
+          )}
+        </div>
+      )}
     </div>
+  );
+}
+
+function formatHistoryDate(iso) {
+  try {
+    const d = new Date(iso);
+    return d.toLocaleDateString("en-GB", { weekday: "long", day: "numeric", month: "long" });
+  } catch { return "Past"; }
+}
+
+// ─── Tab-level "ask Jess" chip shown at the top of non-chat tabs ─────────
+function TabChip({ chip, onTap }) {
+  if (!chip || !onTap) return null;
+  return (
+    <button
+      type="button"
+      onClick={() => onTap(chip)}
+      style={{
+        display: "inline-flex", alignItems: "center", gap: 6,
+        padding: "0 14px", minHeight: 44, borderRadius: 9999,
+        background: C.cream,
+        border: `1px solid ${C.espresso}`,
+        color: C.espresso, cursor: "pointer",
+        fontFamily: "'Inter', sans-serif",
+        fontSize: 13, fontWeight: 600,
+        alignSelf: "flex-start",
+        marginBottom: 4,
+      }}
+      aria-label={`Ask Jess: ${chip}`}
+    >
+      <span aria-hidden style={{ color: C.gold }}>✦</span>
+      {chip}
+    </button>
   );
 }
 
@@ -878,7 +1339,7 @@ function TypingIndicator() {
 }
 
 // ─── Today's Brief tab ────────────────────────────────────────────────────
-function BriefTab({ phase, dayInCycle, shell, tasks, energySpark }) {
+function BriefTab({ phase, dayInCycle, shell, tasks, energySpark, tabChip, onTabChip }) {
   const copy = PHASE_COPY[phase] || PHASE_COPY.follicular;
   const upcomingPhase = phase === "menstrual" ? "Follicular"
                      : phase === "follicular" ? "Ovulatory · day 14"
@@ -888,6 +1349,7 @@ function BriefTab({ phase, dayInCycle, shell, tasks, energySpark }) {
   const todayEnergy = energySpark[energySpark.length - 1];
   return (
     <div style={{ padding: "14px 16px 24px", display: "flex", flexDirection: "column", gap: 12 }}>
+      <TabChip chip={tabChip} onTap={onTabChip} />
       <Card animationDelay={0}>
         <p style={kicker}>This phase</p>
         <h2 style={{
@@ -955,7 +1417,7 @@ function BriefTab({ phase, dayInCycle, shell, tasks, energySpark }) {
 }
 
 // ─── Insights tab ─────────────────────────────────────────────────────────
-function InsightsTab({ phase, dayInCycle, shell, energySpark, symptoms }) {
+function InsightsTab({ phase, dayInCycle, shell, energySpark, symptoms, tabChip, onTabChip }) {
   const symptomCount = {};
   for (const s of symptoms || []) {
     const k = (s?.symptom_type || s?.symptom_name || "").toString().trim();
@@ -965,6 +1427,7 @@ function InsightsTab({ phase, dayInCycle, shell, energySpark, symptoms }) {
   const topSymptoms = Object.entries(symptomCount).sort((a, b) => b[1] - a[1]).slice(0, 3);
   return (
     <div style={{ padding: "14px 16px 24px", display: "flex", flexDirection: "column", gap: 12 }}>
+      <TabChip chip={tabChip} onTap={onTabChip} />
       <Card animationDelay={0}>
         <p style={kicker}>Cycle pattern</p>
         <Sparkline data={energySpark} width={300} height={56} stroke={shell.tone} fill={`${shell.tone}22`} />
@@ -1063,7 +1526,7 @@ function DigDeeperRow() {
 }
 
 // ─── For You tab ──────────────────────────────────────────────────────────
-function ForYouTab({ phase, shell, profile }) {
+function ForYouTab({ phase, shell, profile, tabChip, onTabChip }) {
   const copy = PHASE_COPY[phase] || PHASE_COPY.follicular;
   const lifeStage = profile?.life_stage || "reproductive";
   const habitSuggestions = lifeStage === "perimenopause" || lifeStage === "menopause"
@@ -1086,6 +1549,7 @@ function ForYouTab({ phase, shell, profile }) {
   ];
   return (
     <div style={{ padding: "14px 16px 24px", display: "flex", flexDirection: "column", gap: 12 }}>
+      <TabChip chip={tabChip} onTap={onTabChip} />
       <Card animationDelay={0} accent={shell.accent}>
         <p style={kicker}>This week · {shell.label}</p>
         <ul style={{ margin: 0, padding: 0, listStyle: "none", display: "flex", flexDirection: "column", gap: 10 }}>
