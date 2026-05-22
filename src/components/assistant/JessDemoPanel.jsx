@@ -21,6 +21,7 @@ import { base44 } from "@/api/base44Client";
 import {
   Mic, Send, Settings, Check, ChevronRight,
   MessageCircle, Sun, LineChart, Sparkles, History, X, Plus,
+  Search, Trash2,
 } from "lucide-react";
 import ReactMarkdown from "react-markdown";
 import JessSettingsSheet from "./JessSettingsSheet";
@@ -547,21 +548,28 @@ export default function JessDemoPanel() {
   const [insightObservation, setInsightObservation] = useState(null);
   const [observationLoading, setObservationLoading] = useState(true);
   // History drawer state — opened from the header history icon, slides in
-  // from the left, lists past conversations, lets the user resume any one.
-  const [conversationsList, setConversationsList] = useState([]);
+  // from the left, lists past conversations from the JessConversation
+  // entity, lets the user resume + rename + delete any of them.
   const [drawerOpen, setDrawerOpen] = useState(false);
-  // Locally-stored auto-generated names for conversations, keyed by id.
-  // We try base44.agents.updateConversation first; if unsupported, fall
-  // back to this in-memory + localStorage mirror.
-  const [conversationNames, setConversationNames] = useState({});
+  // jessConvos: real JessConversation records loaded from base44.
+  const [jessConvos, setJessConvos] = useState([]);
+  // activeConvRecord: the JessConversation row for the current thread.
+  // conversationId is its agent_conv_id (the base44.agents conversation
+  // ID we addMessage against).
+  const [activeConvRecord, setActiveConvRecord] = useState(null);
+  // Search filter (client-side) over jessConvos names + previews.
+  const [historySearch, setHistorySearch] = useState("");
   // Track whether the context block has been sent for this convo so we only
   // inject it once per conversation. We also remove an id from this set when
   // the user resumes an old conversation, so we re-inject fresh context
   // before their next message lands.
   const contextInjectedRef = useRef(new Set());
-  // Remember the first user message of an active conversation so we can
-  // auto-name it as soon as Jess's first response arrives.
-  const firstUserMsgRef = useRef({});
+  // Remember the first two user messages per active conversation so the
+  // auto-namer (Feature 1B) has enough context after message #2 to pick
+  // a 2-4 word title.
+  const firstUserMsgRef = useRef({}); // legacy single-message cache
+  const conversationUserMsgsRef = useRef({}); // convId → [msg1, msg2]
+  const namingFiredRef = useRef(new Set()); // convIds we've already named
   const bottomRef = useRef(null);
   const unsubRef = useRef(null);
   const seenAgentIdsRef = useRef(new Set());
@@ -727,29 +735,135 @@ export default function JessDemoPanel() {
     // Re-fetch only when the user OR underlying data day window changes.
   }, [user?.id, phase, dayInCycle, recentCheckins.length]);
 
-  // Load persisted conversation names from localStorage once.
-  useEffect(() => {
+  // ── Feature 1C: Load JessConversation history from base44 ──────────
+  // Best-effort — if the entity doesn't exist yet (schema not deployed),
+  // we degrade gracefully and the drawer renders its empty state.
+  const reloadJessConvos = useCallback(async () => {
+    if (!user?.id) return;
     try {
-      const raw = window.localStorage?.getItem("jess_convo_names");
-      if (raw) setConversationNames(JSON.parse(raw) || {});
-    } catch { /* localStorage unavailable */ }
+      const Entity = base44.entities?.JessConversation;
+      if (!Entity) { setJessConvos([]); return; }
+      const rows = await Entity.filter(
+        { user_id: user.id, is_deleted: false },
+        "-updated_date",
+        50,
+      ).catch(() => []);
+      setJessConvos(Array.isArray(rows) ? rows : []);
+    } catch { setJessConvos([]); }
+  }, [user?.id]);
+
+  useEffect(() => { reloadJessConvos(); }, [reloadJessConvos]);
+
+  // ── Feature 1B: Auto-namer ────────────────────────────────────────
+  // Fires after the user's SECOND message in a thread. Spins up a
+  // separate ephemeral base44.agents conversation (so it doesn't
+  // pollute the user's thread), asks for a 2-4 word title, writes
+  // the result back to the JessConversation record.
+  const autoNameConversation = useCallback(async (record) => {
+    if (!record?.id || !user?.id) return;
+    const convId = record.id;
+    if (namingFiredRef.current.has(convId)) return;
+    namingFiredRef.current.add(convId);
+    const msgs = conversationUserMsgsRef.current[convId] || [];
+    if (msgs.length < 2) return;
+    const Entity = base44.entities?.JessConversation;
+    if (!Entity) return;
+    const fallback = (() => {
+      const d = new Date();
+      const day = d.toLocaleDateString("en-GB", { day: "numeric", month: "short" });
+      return `${day} Chat`;
+    })();
+    // Fail-safe timer — if the agent stalls we still persist a name.
+    let settled = false;
+    const stallTimer = window.setTimeout(async () => {
+      if (settled) return;
+      settled = true;
+      try { await Entity.update(convId, { name: fallback, name_status: "failed" }); }
+      catch {}
+      reloadJessConvos();
+    }, 7000);
+    try {
+      const systemLine =
+        "You are a conversation namer. Given a conversation snippet, return ONLY a 2-4 word title capturing the main topic. No punctuation, no quotes, just the words. Examples: Mood Check In, Sleep Patterns, Luteal Support, Cycle Symptoms";
+      const userLine =
+        `Name this conversation:\n${msgs[0]}\n${msgs[1]}`;
+      const namerConvo = await base44.agents
+        .createConversation({ agent_name: "personal_assistant" })
+        .catch(() => null);
+      if (!namerConvo?.id) return;
+      const c = await base44.agents.getConversation(namerConvo.id);
+      // Send the namer instructions + the snippet as a single user
+      // message (the agent API only exposes user-role addMessage).
+      await base44.agents.addMessage(c, {
+        role: "user",
+        content: `[SYSTEM]\n${systemLine}\n\n[TASK]\n${userLine}`,
+      });
+      const seen = new Set();
+      const unsub = base44.agents.subscribeToConversation(namerConvo.id, async (data) => {
+        const list = data?.messages || [];
+        const next = list.find((m) => m?.role === "assistant" && !seen.has(m.id));
+        if (!next) return;
+        seen.add(next.id);
+        if (settled) return;
+        settled = true;
+        window.clearTimeout(stallTimer);
+        // Strip punctuation + clip to 4 words; if we get junk fall
+        // back to the date-stamp default.
+        const raw = String(next.content || "").trim();
+        const cleaned = raw
+          .replace(/["'`]/g, "")
+          .replace(/[.!?…]+$/g, "")
+          .split(/\s+/)
+          .slice(0, 4)
+          .join(" ")
+          .trim();
+        const finalName = cleaned.length >= 2 ? cleaned : fallback;
+        try {
+          await Entity.update(convId, {
+            name: finalName,
+            name_status: cleaned.length >= 2 ? "named" : "failed",
+          });
+        } catch {}
+        try { unsub?.(); } catch {}
+        reloadJessConvos();
+      });
+    } catch {
+      // network blew up — fallback timer will fire.
+    }
+  }, [user?.id, reloadJessConvos]);
+
+  // ── Feature 1F: Bump message_count + preview + updated_date ────────
+  const bumpConvoMeta = useCallback(async (record, userText) => {
+    if (!record?.id) return null;
+    const Entity = base44.entities?.JessConversation;
+    if (!Entity) return null;
+    const updates = {
+      message_count: (record.message_count || 0) + 1,
+      updated_date: new Date().toISOString(),
+    };
+    if (!record.preview_text && userText) {
+      updates.preview_text = String(userText).slice(0, 80);
+    }
+    const next = { ...record, ...updates };
+    setActiveConvRecord(next);
+    try { await Entity.update(record.id, updates); } catch {}
+    return next;
   }, []);
 
-  const persistConvoName = useCallback((id, name) => {
-    if (!id || !name) return;
-    setConversationNames((prev) => {
-      const next = { ...prev, [id]: name };
-      try { window.localStorage?.setItem("jess_convo_names", JSON.stringify(next)); } catch {}
-      return next;
-    });
-    // Best-effort: try to update on the server too — if the SDK doesn't
-    // support this it's fine, our local mirror covers it.
-    try {
-      if (typeof base44.agents?.updateConversation === "function") {
-        base44.agents.updateConversation({ id, name }).catch(() => {});
-      }
-    } catch { /* fine */ }
-  }, []);
+  // ── Feature 1C extra: soft-delete from the drawer ──────────────────
+  const softDeleteConvo = useCallback(async (jessConvoId) => {
+    if (!jessConvoId) return;
+    const Entity = base44.entities?.JessConversation;
+    if (!Entity) return;
+    setJessConvos((prev) => prev.filter((c) => c.id !== jessConvoId));
+    try { await Entity.update(jessConvoId, { is_deleted: true }); } catch {}
+    if (activeConvRecord?.id === jessConvoId) {
+      setActiveConvRecord(null);
+      setConversationId(null);
+      setMessages([]);
+      setFollowUpFired(false);
+    }
+  }, [activeConvRecord?.id]);
 
   // Memoised context block to inject as the first user message in any new
   // conversation. Recomputed when underlying data changes (so resuming a
@@ -760,6 +874,10 @@ export default function JessDemoPanel() {
   );
 
   // ── Live base44.agents conversation — used only for free text ──────────
+  // Subscribe to the active agent conversation; append assistant
+  // messages as they stream in. Auto-naming has moved to the
+  // JessConversation-backed flow (autoNameConversation), so this
+  // callback now only handles bubble rendering.
   const subscribeToConversation = useCallback((id) => {
     if (unsubRef.current) unsubRef.current();
     unsubRef.current = base44.agents.subscribeToConversation(id, (data) => {
@@ -780,32 +898,52 @@ export default function JessDemoPanel() {
         })),
       ]);
       setAssistantTyping(false);
-      // Auto-name once Jess has responded for the first time in this convo.
-      const firstUser = firstUserMsgRef.current[id];
-      if (firstUser !== undefined && !conversationNames[id]) {
-        const name = deriveConversationName(firstUser);
-        persistConvoName(id, name);
-      }
     });
-  }, [conversationNames, persistConvoName]);
+  }, []);
 
+  // ── ensureConversation ─────────────────────────────────────────────────
+  // If there's no active thread yet, create BOTH the base44.agents
+  // conversation (for streaming chat) and a JessConversation entity row
+  // (for history, naming, message_count). Returns { convoId, record } so
+  // sendUserText can bump the record after addMessage succeeds.
   const ensureConversation = useCallback(async () => {
-    if (conversationId) return conversationId;
+    if (conversationId && activeConvRecord) {
+      return { convoId: conversationId, record: activeConvRecord };
+    }
     const convo = await base44.agents
       .createConversation({ agent_name: "personal_assistant" })
       .catch(() => null);
-    if (!convo?.id) return null;
+    if (!convo?.id) return { convoId: null, record: null };
     setConversationId(convo.id);
-    // Don't replay agent's first reply into the chat — our local opener owns
-    // that slot. Mark any current messages as "seen".
+    // Don't replay agent's first reply into the chat — our local opener
+    // owns that slot. Mark any current messages as "seen".
     if (Array.isArray(convo.messages)) {
       for (const m of convo.messages) seenAgentIdsRef.current.add(m.id);
     }
     subscribeToConversation(convo.id);
+    // Eager JessConversation record creation — name_status: 'pending', so
+    // the drawer can show this thread immediately.
+    let record = null;
+    try {
+      const Entity = base44.entities?.JessConversation;
+      if (Entity && user?.id) {
+        record = await Entity.create({
+          user_id: user.id,
+          agent_conv_id: convo.id,
+          name: null,
+          name_status: "pending",
+          preview_text: "",
+          message_count: 0,
+          is_deleted: false,
+        });
+        if (record) {
+          setActiveConvRecord(record);
+          setJessConvos((prev) => [record, ...prev]);
+        }
+      }
+    } catch { /* swallow — chat still works without history row */ }
     // Inject the context block as the first user message so the agent
-    // responds personally. Hidden from the chat UI (we never render it as
-    // a message — it lives only in the conversation transcript on the
-    // server side).
+    // responds personally. Hidden from the chat UI.
     if (!contextInjectedRef.current.has(convo.id)) {
       contextInjectedRef.current.add(convo.id);
       try {
@@ -813,8 +951,8 @@ export default function JessDemoPanel() {
         await base44.agents.addMessage(c, { role: "user", content: contextBlock });
       } catch { /* graceful — context just won't be injected this turn */ }
     }
-    return convo.id;
-  }, [conversationId, subscribeToConversation, contextBlock]);
+    return { convoId: convo.id, record };
+  }, [conversationId, activeConvRecord, subscribeToConversation, contextBlock, user?.id]);
 
   useEffect(() => () => { if (unsubRef.current) unsubRef.current(); }, []);
 
@@ -822,46 +960,44 @@ export default function JessDemoPanel() {
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages, assistantTyping]);
 
-  // Load past conversations once we have a user. Best-effort — if the SDK
-  // doesn't return list data we just hide the history section.
-  useEffect(() => {
-    if (!user?.id) return;
-    let cancelled = false;
-    (async () => {
-      try {
-        const list = await base44.agents.listConversations({ agent_name: "personal_assistant" }).catch(() => null);
-        const items = Array.isArray(list) ? list : (list?.conversations || list?.items || []);
-        if (cancelled) return;
-        setConversationsList(items.slice(0, 5));
-      } catch { /* silent */ }
-    })();
-    return () => { cancelled = true; };
-  }, [user?.id]);
-
   // ── Start a fresh conversation ─────────────────────────────────────────
+  // The "✦ New" header button. Tears down any active subscription, clears
+  // the chat, eagerly creates BOTH a fresh agent_conv_id and a new
+  // JessConversation record so the drawer shows the thread immediately.
   const startNewConversation = useCallback(async () => {
     if (unsubRef.current) { unsubRef.current(); unsubRef.current = null; }
     seenAgentIdsRef.current = new Set();
     setConversationId(null);
+    setActiveConvRecord(null);
     setDrawerOpen(false);
     setMessages([]);
     setFollowUpFired(false); // re-fire opener
-  }, []);
+    // Eager creation happens in ensureConversation — fire it immediately
+    // so the new thread row lands in the drawer without waiting for the
+    // user's first message.
+    if (user?.id) {
+      // Run after state flushes — conversationId is now null, so
+      // ensureConversation will mint a new pair.
+      window.setTimeout(() => { ensureConversation(); }, 0);
+    }
+  }, [user?.id, ensureConversation]);
 
   // ── Resume a past conversation — fully interactive ─────────────────────
-  // The user can continue chatting; we re-use the same conversationId for
-  // addMessage. Before their next message, we re-inject a fresh context
-  // block so Jess has current state even in old threads (handled by
-  // sendUserText via the contextInjectedRef gate).
-  const loadConversation = useCallback(async (id) => {
-    if (!id) return;
+  // Takes a JessConversation record. Re-attaches to its agent_conv_id
+  // (NOT createConversation), replays history, and shows a "Conversation
+  // resumed" divider chip so the user knows they're back in an old thread.
+  const loadConversation = useCallback(async (record) => {
+    if (!record?.agent_conv_id) return;
+    const id = record.agent_conv_id;
     setDrawerOpen(false);
     // Tear down any existing subscription before swapping conversation id.
     if (unsubRef.current) { unsubRef.current(); unsubRef.current = null; }
     seenAgentIdsRef.current = new Set();
     // Force a fresh context block on the next user message in this thread.
     contextInjectedRef.current.delete(id);
+    setActiveConvRecord(record);
     setConversationId(id);
+    setFollowUpFired(true); // suppress the auto-opener for resumed threads
     try {
       const c = await base44.agents.getConversation(id);
       const list = Array.isArray(c?.messages) ? c.messages : [];
@@ -880,7 +1016,11 @@ export default function JessDemoPanel() {
           type: "bubble",
           text: m.content || "",
         }));
-      setMessages(view);
+      // Prepend a "Conversation resumed" divider chip so the user can tell.
+      setMessages([
+        { id: uid(), role: "divider", type: "divider", text: "Conversation resumed" },
+        ...view,
+      ]);
       subscribeToConversation(id);
     } catch {
       setMessages([{ id: uid(), role: "jess", type: "bubble", text: "Couldn't load that conversation." }]);
@@ -896,12 +1036,21 @@ export default function JessDemoPanel() {
     }]);
     setAssistantTyping(true);
     try {
-      const cid = await ensureConversation();
+      const { convoId: cid, record } = await ensureConversation();
       if (!cid) throw new Error("no convo");
       // Record this as the "first user message" if we don't have one yet —
-      // drives auto-naming when Jess responds.
+      // legacy single-message cache (kept for any downstream callers).
       if (firstUserMsgRef.current[cid] === undefined) {
         firstUserMsgRef.current[cid] = msg;
+      }
+      // Per-record cache of the first 2 user messages — drives the
+      // auto-namer once message #2 lands.
+      if (record?.id) {
+        const arr = conversationUserMsgsRef.current[record.id] || [];
+        if (arr.length < 2) {
+          arr.push(msg);
+          conversationUserMsgsRef.current[record.id] = arr;
+        }
       }
       const convo = await base44.agents.getConversation(cid);
       // Re-inject a fresh context block if this conversation was just
@@ -912,6 +1061,17 @@ export default function JessDemoPanel() {
         catch { /* fine, just won't be re-injected this turn */ }
       }
       await base44.agents.addMessage(convo, { role: "user", content: msg });
+      // Feature 1F — bump message_count, updated_date, preview_text.
+      if (record?.id) {
+        const bumped = await bumpConvoMeta(record, msg);
+        // Feature 1B — fire the auto-namer after the user's 2nd message.
+        const userMsgs = conversationUserMsgsRef.current[record.id] || [];
+        if (userMsgs.length >= 2) {
+          // Use the freshest record so message_count / preview_text are
+          // current when the namer writes back.
+          autoNameConversation(bumped || record);
+        }
+      }
     } catch {
       // Graceful fallback — cycle through DEFAULT_RESPONSES with current
       // phase context so the reply feels substantive instead of generic.
@@ -927,7 +1087,7 @@ export default function JessDemoPanel() {
         setAssistantTyping(false);
       }, 1200 + Math.random() * 1000);
     }
-  }, [assistantTyping, ensureConversation, contextBlock, phase, dayInCycle, profile]);
+  }, [assistantTyping, ensureConversation, contextBlock, phase, dayInCycle, profile, bumpConvoMeta, autoNameConversation]);
 
   // Tap a proactive chip → send the question as the user's message.
   const handleProactiveChip = useCallback((label) => {
@@ -1254,10 +1414,12 @@ export default function JessDemoPanel() {
       <HistoryDrawer
         open={drawerOpen}
         onClose={() => setDrawerOpen(false)}
-        conversations={conversationsList}
-        conversationNames={conversationNames}
-        activeId={conversationId}
+        conversations={jessConvos}
+        activeId={activeConvRecord?.id || null}
+        search={historySearch}
+        onSearchChange={setHistorySearch}
         onSelect={loadConversation}
+        onDelete={softDeleteConvo}
         onNew={startNewConversation}
       />
 
@@ -1382,17 +1544,62 @@ function ChatTab({
   );
 }
 
-function formatHistoryDate(iso) {
+// Bucket a row by its updated_date — Today / This week / Earlier.
+function groupByRecency(rows) {
+  const now = new Date();
+  const startOfToday = new Date(now);
+  startOfToday.setHours(0, 0, 0, 0);
+  // 7 days ago at midnight — "this week" is the past 7 days excluding today.
+  const startOfWeek = new Date(startOfToday);
+  startOfWeek.setDate(startOfToday.getDate() - 6); // includes today's start
+  const buckets = { today: [], week: [], earlier: [] };
+  for (const r of rows) {
+    const when = new Date(r.updated_date || r.created_date || 0).getTime();
+    if (Number.isNaN(when) || when === 0) { buckets.earlier.push(r); continue; }
+    if (when >= startOfToday.getTime()) buckets.today.push(r);
+    else if (when >= startOfWeek.getTime()) buckets.week.push(r);
+    else buckets.earlier.push(r);
+  }
+  return buckets;
+}
+
+// Short relative time-stamp shown next to each row (e.g. "9:14am", "Mon",
+// "12 May"). Today → time, this week → weekday, earlier → DD Mon.
+function relativeStamp(iso) {
   try {
     const d = new Date(iso);
-    return d.toLocaleDateString("en-GB", { weekday: "long", day: "numeric", month: "long" });
-  } catch { return "Past"; }
+    if (Number.isNaN(d.getTime())) return "";
+    const now = new Date();
+    const startOfToday = new Date(now); startOfToday.setHours(0, 0, 0, 0);
+    const sixDaysAgo = new Date(startOfToday); sixDaysAgo.setDate(startOfToday.getDate() - 6);
+    if (d.getTime() >= startOfToday.getTime()) {
+      return d.toLocaleTimeString("en-GB", { hour: "numeric", minute: "2-digit", hour12: true })
+        .toLowerCase().replace(" ", "");
+    }
+    if (d.getTime() >= sixDaysAgo.getTime()) {
+      return d.toLocaleDateString("en-GB", { weekday: "short" });
+    }
+    return d.toLocaleDateString("en-GB", { day: "numeric", month: "short" });
+  } catch { return ""; }
 }
 
 // ─── History drawer — slides in from the LEFT of the panel ───────────────
-function HistoryDrawer({ open, onClose, conversations, conversationNames, activeId, onSelect, onNew }) {
+// Reads from the JessConversation entity. Sections by recency, supports
+// real-time search, swipe-to-delete on each row, and an empty state with
+// the Jess botanical sigil.
+function HistoryDrawer({
+  open, onClose, conversations, activeId, search, onSearchChange,
+  onSelect, onDelete, onNew,
+}) {
   if (!open) return null;
-  const list = (conversations || []).slice(0, 20);
+  const all = (conversations || []).filter((c) => !c?.is_deleted);
+  const q = String(search || "").trim().toLowerCase();
+  const filtered = !q ? all : all.filter((c) => {
+    const hay = `${c?.name || ""} ${c?.preview_text || ""}`.toLowerCase();
+    return hay.includes(q);
+  });
+  const buckets = groupByRecency(filtered);
+
   return (
     <div
       role="dialog"
@@ -1419,7 +1626,7 @@ function HistoryDrawer({ open, onClose, conversations, conversationNames, active
       <aside
         style={{
           position: "relative",
-          width: "78%", maxWidth: 334, height: "100%",
+          width: "82%", maxWidth: 348, height: "100%",
           background: C.espressoDeep,
           color: C.cream,
           display: "flex", flexDirection: "column",
@@ -1430,7 +1637,7 @@ function HistoryDrawer({ open, onClose, conversations, conversationNames, active
       >
         <header style={{
           display: "flex", alignItems: "center", justifyContent: "space-between",
-          padding: "16px 16px 12px",
+          padding: "16px 16px 8px",
         }}>
           <span style={{
             fontFamily: "'Inter', sans-serif",
@@ -1448,6 +1655,47 @@ function HistoryDrawer({ open, onClose, conversations, conversationNames, active
             }}
           ><X size={16} aria-hidden /></button>
         </header>
+
+        {/* Search bar — debouncing the entity round-trip isn't needed
+            because filtering happens client-side over the cached list. */}
+        <div style={{
+          padding: "4px 16px 10px",
+        }}>
+          <div style={{
+            display: "flex", alignItems: "center", gap: 8,
+            padding: "0 12px", minHeight: 38,
+            background: "rgba(255,255,255,0.07)",
+            border: "1px solid rgba(255,255,255,0.12)",
+            borderRadius: 9999,
+          }}>
+            <Search size={14} aria-hidden style={{ color: C.cream, opacity: 0.5, flexShrink: 0 }} />
+            <input
+              type="search"
+              value={search || ""}
+              onChange={(e) => onSearchChange?.(e.target.value)}
+              placeholder="Search conversations"
+              aria-label="Search conversations"
+              style={{
+                flex: 1, minWidth: 0,
+                background: "transparent", border: "none", outline: "none",
+                color: C.cream, fontFamily: "'Inter', sans-serif",
+                fontSize: 13.5, padding: "8px 0",
+              }}
+            />
+            {q && (
+              <button
+                type="button"
+                onClick={() => onSearchChange?.("")}
+                aria-label="Clear search"
+                style={{
+                  background: "transparent", border: "none",
+                  color: C.cream, opacity: 0.6, cursor: "pointer", padding: 0,
+                  display: "inline-flex", alignItems: "center",
+                }}
+              ><X size={12} aria-hidden /></button>
+            )}
+          </div>
+        </div>
 
         <button
           type="button"
@@ -1469,57 +1717,215 @@ function HistoryDrawer({ open, onClose, conversations, conversationNames, active
 
         <div style={{
           flex: 1, overflowY: "auto",
-          padding: "8px 0 max(env(safe-area-inset-bottom), 16px)",
+          padding: "4px 0 max(env(safe-area-inset-bottom), 16px)",
         }}>
-          {list.length === 0 ? (
-            <p style={{
-              margin: "12px 16px", fontSize: 12, fontStyle: "italic",
-              color: C.cream, opacity: 0.6, fontFamily: "'Inter', sans-serif",
-            }}>No past conversations yet — they'll appear here once you've chatted with Jess.</p>
-          ) : list.map((c) => {
-            const id = c?.id || c?.conversation_id;
-            const created = c?.created_at || c?.created_date || c?.updated_at;
-            const when = created ? formatHistoryDate(created) : "Past";
-            const isActive = activeId && id === activeId;
-            // Prefer persisted/server name; fall back to first user-message snippet.
-            const serverName = c?.name || c?.title;
-            const persistedName = conversationNames?.[id];
-            const msgs = Array.isArray(c?.messages) ? c.messages : [];
-            const firstReal = msgs.find((m) =>
-              m?.role === "user" && !String(m?.content || "").startsWith("[JESS CONTEXT")
-            ) || msgs.find((m) => m?.role === "assistant");
-            const snippet = String(firstReal?.content || "").replace(/\s+/g, " ").slice(0, 40);
-            const label = persistedName || serverName || snippet || "Untitled chat";
-            return (
-              <button
-                key={id || when + label}
-                type="button"
-                onClick={() => id && onSelect(id)}
-                style={{
-                  width: "100%", textAlign: "left",
-                  display: "block",
-                  padding: "10px 16px",
-                  background: isActive ? "rgba(255,255,255,0.06)" : "transparent",
-                  border: "none",
-                  borderLeft: isActive ? `3px solid ${C.gold}` : "3px solid transparent",
-                  color: C.cream, cursor: "pointer",
-                  fontFamily: "'Inter', sans-serif",
-                }}
-              >
-                <p style={{
-                  margin: 0, fontSize: 13, fontWeight: 500, color: C.cream,
-                  whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis",
-                  lineHeight: 1.35,
-                }}>{label}</p>
-                <p style={{
-                  margin: "2px 0 0", fontSize: 10, color: C.cream, opacity: 0.55,
-                  letterSpacing: "0.04em",
-                }}>{when}</p>
-              </button>
-            );
-          })}
+          {filtered.length === 0 ? (
+            <DrawerEmpty hasQuery={!!q} />
+          ) : (
+            <>
+              {buckets.today.length > 0 && (
+                <DrawerSection
+                  label="Today"
+                  rows={buckets.today}
+                  activeId={activeId}
+                  onSelect={onSelect}
+                  onDelete={onDelete}
+                />
+              )}
+              {buckets.week.length > 0 && (
+                <DrawerSection
+                  label="This week"
+                  rows={buckets.week}
+                  activeId={activeId}
+                  onSelect={onSelect}
+                  onDelete={onDelete}
+                />
+              )}
+              {buckets.earlier.length > 0 && (
+                <DrawerSection
+                  label="Earlier"
+                  rows={buckets.earlier}
+                  activeId={activeId}
+                  onSelect={onSelect}
+                  onDelete={onDelete}
+                />
+              )}
+            </>
+          )}
         </div>
       </aside>
+    </div>
+  );
+}
+
+function DrawerSection({ label, rows, activeId, onSelect, onDelete }) {
+  return (
+    <div style={{ marginTop: 6 }}>
+      <p style={{
+        margin: "8px 16px 4px", fontSize: 10, fontWeight: 700,
+        letterSpacing: "0.18em", textTransform: "uppercase",
+        color: C.cream, opacity: 0.55,
+        fontFamily: "'Inter', sans-serif",
+      }}>{label}</p>
+      {rows.map((r) => (
+        <DrawerRow
+          key={r.id}
+          row={r}
+          isActive={activeId === r.id}
+          onSelect={onSelect}
+          onDelete={onDelete}
+        />
+      ))}
+    </div>
+  );
+}
+
+// One row with swipe-to-delete. Implemented as a positioned wrapper:
+// the "Delete" button sits behind, the row content sits on top with a
+// transform that follows a touch drag. Releases below threshold → snap
+// back; above threshold → reveal Delete; tap row → select.
+function DrawerRow({ row, isActive, onSelect, onDelete }) {
+  const [dx, setDx] = useState(0);
+  const startXRef = useRef(null);
+  const movedRef = useRef(false);
+  const SWIPE_THRESHOLD = 80;
+
+  const name = row?.name || "Untitled chat";
+  const preview = row?.preview_text || "";
+  const stamp = relativeStamp(row?.updated_date || row?.created_date);
+  const isPending = row?.name_status === "pending" && !row?.name;
+
+  function onTouchStart(e) {
+    const t = e.touches?.[0];
+    if (!t) return;
+    startXRef.current = t.clientX;
+    movedRef.current = false;
+  }
+  function onTouchMove(e) {
+    const t = e.touches?.[0];
+    if (!t || startXRef.current == null) return;
+    const delta = t.clientX - startXRef.current;
+    if (Math.abs(delta) > 6) movedRef.current = true;
+    // Only allow left swipe.
+    if (delta < 0) setDx(Math.max(delta, -120));
+    else setDx(0);
+  }
+  function onTouchEnd() {
+    startXRef.current = null;
+    if (dx <= -SWIPE_THRESHOLD) setDx(-96);
+    else setDx(0);
+  }
+
+  function handleSelect() {
+    // Suppress click after a swipe.
+    if (movedRef.current || dx !== 0) {
+      if (dx !== 0) setDx(0);
+      return;
+    }
+    onSelect?.(row);
+  }
+
+  return (
+    <div style={{
+      position: "relative",
+      overflow: "hidden",
+      background: "transparent",
+    }}>
+      {/* Delete button — revealed behind the row on left-swipe */}
+      <button
+        type="button"
+        aria-label={`Delete ${name}`}
+        onClick={() => { onDelete?.(row.id); setDx(0); }}
+        style={{
+          position: "absolute", top: 0, right: 0, bottom: 0,
+          width: 96,
+          display: "inline-flex", alignItems: "center", justifyContent: "center",
+          gap: 6,
+          background: C.blush,
+          color: C.espresso,
+          border: "none", cursor: "pointer",
+          fontFamily: "'Inter', sans-serif",
+          fontSize: 12, fontWeight: 700, letterSpacing: "0.04em",
+        }}
+      >
+        <Trash2 size={14} aria-hidden />
+        Delete
+      </button>
+      {/* Row body — translates over the Delete button */}
+      <button
+        type="button"
+        onClick={handleSelect}
+        onTouchStart={onTouchStart}
+        onTouchMove={onTouchMove}
+        onTouchEnd={onTouchEnd}
+        style={{
+          position: "relative",
+          width: "100%", textAlign: "left",
+          display: "block",
+          padding: "10px 16px",
+          background: isActive ? "rgba(255,255,255,0.06)" : C.espressoDeep,
+          border: "none",
+          borderLeft: isActive ? `3px solid ${C.gold}` : "3px solid transparent",
+          color: C.cream, cursor: "pointer",
+          fontFamily: "'Inter', sans-serif",
+          transform: `translateX(${dx}px)`,
+          transition: startXRef.current == null ? "transform 200ms cubic-bezier(0.16,1,0.3,1)" : "none",
+          touchAction: "pan-y",
+        }}
+      >
+        <div style={{
+          display: "flex", alignItems: "baseline", gap: 8,
+          marginBottom: preview ? 3 : 0,
+        }}>
+          <p style={{
+            margin: 0, fontSize: 13.5, fontWeight: 600, color: C.cream,
+            whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis",
+            lineHeight: 1.35, flex: 1, minWidth: 0,
+            opacity: isPending ? 0.7 : 1,
+            fontStyle: isPending ? "italic" : "normal",
+          }}>{isPending ? "New conversation" : name}</p>
+          {stamp && (
+            <span style={{
+              fontSize: 10, color: C.cream, opacity: 0.5,
+              letterSpacing: "0.04em", flexShrink: 0,
+            }}>{stamp}</span>
+          )}
+        </div>
+        {preview && (
+          <p style={{
+            margin: 0, fontSize: 11.5, color: C.cream, opacity: 0.55,
+            whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis",
+            lineHeight: 1.4,
+          }}>{preview}</p>
+        )}
+      </button>
+    </div>
+  );
+}
+
+function DrawerEmpty({ hasQuery }) {
+  return (
+    <div style={{
+      display: "flex", flexDirection: "column", alignItems: "center",
+      gap: 14, padding: "44px 24px 0",
+      textAlign: "center",
+    }}>
+      <div aria-hidden style={{
+        width: 60, height: 60, borderRadius: 9999,
+        background: "rgba(255,255,255,0.06)",
+        display: "inline-flex", alignItems: "center", justifyContent: "center",
+      }}>
+        <BotanicalSigil size={30} stroke={C.gold} />
+      </div>
+      <p style={{
+        margin: 0, fontSize: 13.5, color: C.cream, opacity: 0.85,
+        fontFamily: "'Inter', sans-serif", lineHeight: 1.5,
+        maxWidth: 220,
+      }}>
+        {hasQuery
+          ? "No conversations match that search."
+          : "Your conversations with Jess will appear here once you've chatted."}
+      </p>
     </div>
   );
 }
@@ -1551,6 +1957,25 @@ function TabChip({ chip, onTap }) {
 }
 
 function MessageNode({ msg, shell, onChip, onToggleQuickLog }) {
+  // Divider chip — e.g. "Conversation resumed" when the user re-opens an
+  // old thread from the History drawer. Centred, muted, not a bubble.
+  if (msg.type === "divider" || msg.role === "divider") {
+    return (
+      <div style={{
+        display: "flex", alignItems: "center", gap: 10,
+        margin: "6px 0 4px",
+      }} aria-hidden>
+        <span style={{ flex: 1, height: 1, background: C.border, opacity: 0.55 }} />
+        <span style={{
+          fontFamily: "'Inter', sans-serif",
+          fontSize: 10.5, fontWeight: 700, letterSpacing: "0.18em",
+          textTransform: "uppercase",
+          color: C.muted,
+        }}>{msg.text || "Resumed"}</span>
+        <span style={{ flex: 1, height: 1, background: C.border, opacity: 0.55 }} />
+      </div>
+    );
+  }
   if (msg.role === "user") {
     // user-bubble: blush #E8B4B8, espresso text, asymmetric 17px / 4px corners
     return (
