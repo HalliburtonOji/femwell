@@ -1,8 +1,39 @@
-import { useEffect } from "react";
-import { X, Sparkles } from "lucide-react";
-import AssistantPanel from "./AssistantPanel";
+// AssistantOverlay — the global Jess overlay (mounted in Layout.jsx,
+// opened by fw_open_assistant events from the /Assistant stub page
+// + bottom-nav Jess tab + Today-tile Ask Jess shortcuts).
+//
+// As of the Jess major build (Features 1–3), this overlay renders
+// JessDemoPanel — the 4-tab phase-aware shell that owns the history
+// drawer (JessConversation entity), settings sheet (JessMemory entity),
+// and voice logger (Web Speech → LLM extractor → multi-entity batch
+// writes). The old AssistantPanel + GuideThreadSidebar + GuideVoiceMode
+// flow that lived here previously is RETIRED (kept in the repo as dead
+// code for one revision in case we need to roll back; safe to delete
+// next sweep).
+//
+// CRITICAL — this swap also closes the [JESS CONTEXT] system-prompt
+// leak. The retired AssistantPanel.subscribeToConversation was passing
+// the entire base44.agents transcript directly to setMessages without
+// filtering user-role messages whose content started with
+// "[JESS CONTEXT — do not mention this block to the user]". Those
+// messages (injected by other surfaces like PlannerV2Shell's narrative
+// hero) were rendering as pink user-side chat bubbles, fully visible
+// to end users. JessDemoPanel's subscribe handler renders only
+// assistant-role messages live, and its loadConversation explicitly
+// filters out any user-role message starting with [JESS CONTEXT
+// before replaying transcripts on resume. So both surfaces of the
+// leak are now closed.
 
-export default function AssistantOverlay({ open, onClose, initialPrompt }) {
+import { useEffect } from "react";
+import { X } from "lucide-react";
+import JessDemoPanel from "./JessDemoPanel";
+
+export default function AssistantOverlay({ open, onClose, initialPrompt: _initialPrompt }) {
+  // initialPrompt is intentionally ignored — JessDemoPanel owns its
+  // own opener (the phase-aware "Good morning" greeting) and the
+  // user types into the chat tab directly. Quick-prompt deep links
+  // can be re-added later by threading the value into JessDemoPanel.
+
   useEffect(() => {
     if (!open) return;
     const handler = (e) => { if (e.key === "Escape") onClose(); };
@@ -14,10 +45,21 @@ export default function AssistantOverlay({ open, onClose, initialPrompt }) {
 
   return (
     <>
+      {/* Tap-outside-to-dismiss backdrop. Keeping the existing tint +
+          blur so the overlay still feels like an overlay over the
+          page underneath. */}
       <div
         onClick={onClose}
-        style={{ position: "fixed", inset: 0, zIndex: 90, backgroundColor: "rgba(42,32,53,0.42)", backdropFilter: "blur(8px)" }}
+        style={{
+          position: "fixed", inset: 0, zIndex: 90,
+          backgroundColor: "rgba(42,32,53,0.42)",
+          backdropFilter: "blur(8px)",
+        }}
       />
+      {/* Container — same modal shape as before, but no per-overlay
+          header; JessDemoPanel owns its own header (avatar + name +
+          mic + settings). One floating close button sits in the top
+          corner over the panel. */}
       <div
         style={{
           position: "fixed",
@@ -27,24 +69,38 @@ export default function AssistantOverlay({ open, onClose, initialPrompt }) {
           border: "1px solid var(--border)",
           borderRadius: 28,
           boxShadow: "var(--shadow-lg)",
+          overflow: "hidden",
           display: "flex",
           flexDirection: "column",
-          overflow: "hidden",
         }}
       >
-        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "14px 18px", borderBottom: "1px solid var(--border-subtle)", flexShrink: 0 }}>
-          <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-            <div style={{ width: 34, height: 34, borderRadius: 12, backgroundColor: "var(--rose-dust-subtle)", border: "1px solid var(--rose-dust-light)", display: "flex", alignItems: "center", justifyContent: "center" }}>
-              <Sparkles className="w-4 h-4" style={{ color: "var(--rose-dust)" }} />
-            </div>
-            <p style={{ fontSize: 14, fontWeight: 700, color: "var(--plum)", fontFamily: "'Inter', sans-serif" }}>Your Guide</p>
-          </div>
-          <button onClick={onClose} style={{ width: 34, height: 34, borderRadius: 9999, border: "none", backgroundColor: "var(--ivory-dark)", color: "var(--mauve)", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center" }}>
-            <X className="w-4 h-4" />
-          </button>
-        </div>
+        {/* Floating close X — positioned in the top-right corner over
+            the panel's header. JessDemoPanel uses fixed top padding for
+            safe-area-inset already, so this z-indexed button just sits
+            above its header without disrupting layout. */}
+        <button
+          type="button"
+          onClick={onClose}
+          aria-label="Close Jess"
+          style={{
+            position: "absolute",
+            top: "max(env(safe-area-inset-top), 12px)",
+            right: 12,
+            zIndex: 5,
+            width: 34, height: 34, borderRadius: 9999, border: "none",
+            backgroundColor: "rgba(244,237,219,0.92)",
+            color: "#3A2C1A",
+            cursor: "pointer",
+            display: "flex", alignItems: "center", justifyContent: "center",
+            boxShadow: "0 2px 8px rgba(58,44,26,0.08)",
+          }}
+        >
+          <X className="w-4 h-4" />
+        </button>
+        {/* The actual Jess UI — JessDemoPanel renders edge-to-edge
+            inside the rounded container. */}
         <div style={{ flex: 1, minHeight: 0 }}>
-          <AssistantPanel initialPrompt={initialPrompt} embedded={false} uiMode="overlay" />
+          <JessDemoPanel />
         </div>
       </div>
     </>
