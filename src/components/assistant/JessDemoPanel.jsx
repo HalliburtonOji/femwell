@@ -206,6 +206,12 @@ function buildJessContext({ user, profile, todayCheckin, recentCheckins, symptom
     lines.push("---");
   }
   lines.push("[Respond in character. Be specific to this data. Never diagnose. Frame as wellness companion.]");
+  // QA round 3 — regression guard. The base44 agent had been calling an
+  // internal `log water` tool on EVERY user message ("Done — I logged
+  // 300 ml of water for today."). Tell the agent in no uncertain terms
+  // that it does NOT have tool access. The user logs data through the
+  // dedicated Track surfaces; Jess is a *conversational* companion only.
+  lines.push("[CRITICAL — NO TOOL CALLS. You do NOT have any logging, tracking, or data-write tools available. NEVER say 'I logged', 'I tracked', 'I saved', 'I recorded', 'Done — logged X', or any phrase implying you wrote data on the user's behalf. NEVER fabricate water, mood, energy, symptom, meal, medication, or supplement entries. The user logs ALL data themselves via the dedicated Track / Today / voice-logger surfaces. Your job is conversation only — listen, reflect, suggest, encourage. If the user mentions they drank water / ate / felt something, acknowledge it warmly without claiming to have logged anything.]");
   return lines.join("\n");
 }
 
@@ -541,64 +547,111 @@ function fmtTimeAmPm(d = new Date()) {
   return `${h}:${String(m).padStart(2, "0")}${ampm}`;
 }
 
-// QA found assistant replies sometimes end with a JSON array of
-// suggestion chips, e.g. `["Try journaling", "Take a walk"]`. The
-// MessageNode already renders msg.chips as tappable buttons, but the
-// raw JSON was bleeding into the bubble text. Detect a trailing array
-// of short strings, pull it into chips, and return the prose without
-// it. We only return chips when we're confident we parsed a complete
-// array (closing bracket present, length ≤ 8, each item ≤ 60 chars),
-// so partial streaming chunks (`[`, `["Try`, etc.) don't get treated
-// as chips — they stay in text and get replaced next stream tick.
+// QA found assistant replies sometimes contain a JSON array of
+// suggestion chips at or near the end, e.g.
+//   "Sure! ["Try journaling", "Take a walk"]"
+//   "...thoughts? ["Yes", "No"]."
+//   "...some help?\n\n```json\n["A","B"]\n```"
+// The MessageNode already renders msg.chips as tappable buttons, but
+// the raw JSON was bleeding into the bubble text. This parser searches
+// the LAST half of the text for the rightmost balanced `[...]` block,
+// validates it parses as an array of short strings, lifts it into
+// chips, and returns the prose without it. Partial streaming chunks
+// (`[`, `["Try`, etc.) fail validation and the raw text is preserved
+// until a complete array arrives in a later stream tick.
 function splitChipsFromText(raw) {
   const text = String(raw || "");
-  // Walk back from the end skipping trailing whitespace to find the
-  // last non-space char. If it's `]`, look for a matching `[` and try
-  // to JSON.parse the slice.
-  const trimmed = text.trimEnd();
-  if (!trimmed.endsWith("]")) return { text, chips: null };
-  // Find the matching opening bracket — naive scan from the end is
-  // fine because chip arrays are short. Skip strings.
-  let depth = 0;
-  let inStr = false;
-  let strChar = "";
-  let openIdx = -1;
-  for (let i = trimmed.length - 1; i >= 0; i--) {
-    const ch = trimmed[i];
-    if (inStr) {
-      if (ch === strChar && trimmed[i - 1] !== "\\") inStr = false;
-      continue;
+  if (!text || text.length < 6) return { text, chips: null };
+  // Strip ```json fences first so they don't interfere with the
+  // bracket scan (and we don't leave the fences in the visible text).
+  const cleaned = text.replace(/```(?:json)?\s*/gi, "").replace(/```/g, "");
+  // Find the rightmost `[` and try to parse from there forward,
+  // walking back further on failure. This handles trailing punctuation
+  // like `].` or `]\n` and any text that follows the array.
+  let bestOpen = -1;
+  let bestClose = -1;
+  let scanFrom = cleaned.length;
+  for (let attempts = 0; attempts < 4; attempts++) {
+    const openIdx = cleaned.lastIndexOf("[", scanFrom);
+    if (openIdx < 0) break;
+    // Find a balanced `]` starting from openIdx.
+    let depth = 0;
+    let inStr = false;
+    let strChar = "";
+    let escape = false;
+    let closeIdx = -1;
+    for (let i = openIdx; i < cleaned.length; i++) {
+      const ch = cleaned[i];
+      if (escape) { escape = false; continue; }
+      if (inStr) {
+        if (ch === "\\") { escape = true; continue; }
+        if (ch === strChar) inStr = false;
+        continue;
+      }
+      if (ch === '"' || ch === "'") { inStr = true; strChar = ch; continue; }
+      if (ch === "[") depth++;
+      else if (ch === "]") {
+        depth--;
+        if (depth === 0) { closeIdx = i; break; }
+      }
     }
-    if (ch === '"' || ch === "'") { inStr = true; strChar = ch; continue; }
-    if (ch === "]") depth++;
-    else if (ch === "[") {
-      depth--;
-      if (depth === 0) { openIdx = i; break; }
+    if (closeIdx > openIdx) {
+      bestOpen = openIdx;
+      bestClose = closeIdx;
+      break; // Found a balanced array — try parsing it.
     }
+    // No balance — try the next `[` to the left.
+    scanFrom = openIdx - 1;
   }
-  if (openIdx < 0) return { text, chips: null };
-  const jsonSlice = trimmed.slice(openIdx);
+  if (bestOpen < 0 || bestClose < 0) return { text, chips: null };
+  const jsonSlice = cleaned.slice(bestOpen, bestClose + 1);
   let parsed = null;
   try { parsed = JSON.parse(jsonSlice); } catch { return { text, chips: null }; }
-  if (!Array.isArray(parsed) || parsed.length === 0 || parsed.length > 8) {
+  if (!Array.isArray(parsed) || parsed.length === 0 || parsed.length > 12) {
     return { text, chips: null };
   }
-  // Every item must be a short non-empty string.
+  // Coerce each item to a string label. Reject if any item produces an
+  // empty string or anything obscenely long (>80 chars — chip labels
+  // are short by design).
   const chips = [];
   for (const v of parsed) {
-    if (typeof v !== "string") return { text, chips: null };
-    const s = v.trim();
-    if (!s || s.length > 60) return { text, chips: null };
+    let s = "";
+    if (typeof v === "string") s = v;
+    else if (v && typeof v === "object" && typeof v.label === "string") s = v.label;
+    else if (v && typeof v === "object" && typeof v.text === "string") s = v.text;
+    else return { text, chips: null };
+    s = s.trim();
+    if (!s || s.length > 80) return { text, chips: null };
     chips.push(s);
   }
-  // Strip the array (and any preceding whitespace / newline / "Chips:" label
-  // / trailing ".") from the visible text.
-  let head = trimmed.slice(0, openIdx).trimEnd();
+  // Strip the array + any common LLM prefix label + any trailing tail
+  // text (the array is the last meaningful content, drop everything
+  // after it too).
+  let head = cleaned.slice(0, bestOpen).trimEnd();
   // Common LLM prefixes that introduce the chip list.
-  head = head.replace(/\b(?:Suggestions?|Chips?|Quick replies?|Options?)\s*[:\-—]\s*$/i, "").trimEnd();
+  head = head.replace(/\b(?:Suggestions?|Chips?|Quick replies?|Options?|Next steps?|Follow[-\s]?ups?)\s*[:\-—]\s*$/i, "").trimEnd();
   // Trailing colon or dash left behind after the prefix strip.
   head = head.replace(/[:\-—]\s*$/, "").trimEnd();
   return { text: head, chips };
+}
+
+// QA round 3 — the base44 personal_assistant agent has been firing an
+// auto "log water" tool on every user message, prefixing replies with
+// "Done — I logged 300 ml of water for today." We've told the agent
+// not to do this via the JESS CONTEXT block, but as defence-in-depth
+// strip any such confessions from the visible text. We only strip
+// lines that match a strict "tool-confirmation" shape so genuine
+// wellness chat that mentions water / mood / etc. isn't mangled.
+const TOOL_CONFIRMATION_LINE = /^\s*(?:done[\s—–-]+|✓\s*|✅\s*)?\bi\s+(?:just\s+)?(?:logged|tracked|saved|recorded|noted|added|created)\b[^\n]*\.?\s*$/i;
+function stripToolConfirmations(text) {
+  if (!text) return text;
+  const lines = text.split(/\n/);
+  const kept = lines.filter((line) => !TOOL_CONFIRMATION_LINE.test(line));
+  // If we stripped at least one line, collapse leading blank lines.
+  if (kept.length !== lines.length) {
+    return kept.join("\n").replace(/^\s+/, "").replace(/\n{3,}/g, "\n\n");
+  }
+  return text;
 }
 
 // ─── Main panel ───────────────────────────────────────────────────────────
@@ -1002,11 +1055,29 @@ export default function JessDemoPanel() {
         let sawText = false;
         for (const m of live) {
           const raw = String(m.content ?? "");
+          // QA round 3 — strip spurious "Done — I logged X" tool
+          // confirmation lines BEFORE chip parsing so the chip parser
+          // sees clean prose.
+          const sanitized = stripToolConfirmations(raw);
           // Strip trailing JSON suggestion-chip array (e.g. the model
           // ends its reply with `["Try journaling","Take a walk"]`).
           // The chips themselves render as tappable buttons under the
           // bubble; only the prose above belongs in the bubble text.
-          const { text: content, chips } = splitChipsFromText(raw);
+          const { text: content, chips } = splitChipsFromText(sanitized);
+          // QA round 3 — visible breadcrumb so we can confirm in dev
+          // tools that the parser ran on this message and whether
+          // chips were lifted. Uses console.log (not info) for max
+          // visibility across browser console filter settings.
+          if (chips || sanitized !== raw) {
+            // eslint-disable-next-line no-console
+            console.log("[jess-subscribe]", {
+              messageId: m.id,
+              strippedToolLine: sanitized !== raw,
+              chipsLifted: chips ? chips.length : 0,
+              previewIn: raw.slice(0, 80),
+              previewOut: content.slice(0, 80),
+            });
+          }
           if (byId.has(m.id)) {
             // Replace text on the existing bubble — streaming update.
             const i = byId.get(m.id);
@@ -1120,18 +1191,18 @@ export default function JessDemoPanel() {
       const snap = closingThreadRef.current;
       if (!snap?.userId || !Array.isArray(snap.messages)) {
         // eslint-disable-next-line no-console
-        console.info("[jess-memory] unmount: skip (no snap)", snap);
+        console.log("[jess-memory] unmount: skip (no snap)", snap);
         return;
       }
       const hasUserTurn = snap.messages.some((m) => m?.role === "user");
       if (!hasUserTurn || snap.messages.length < 2) {
         // eslint-disable-next-line no-console
-        console.info("[jess-memory] unmount: skip (insufficient turns)",
+        console.log("[jess-memory] unmount: skip (insufficient turns)",
           { count: snap.messages.length, hasUserTurn });
         return;
       }
       // eslint-disable-next-line no-console
-      console.info("[jess-memory] unmount: firing extractor",
+      console.log("[jess-memory] unmount: firing extractor",
         { messageCount: snap.messages.length, convId: snap.convId });
       // Don't await — the component is tearing down. Service has its
       // own guards.
@@ -1153,6 +1224,10 @@ export default function JessDemoPanel() {
   // Feature 2 — before tearing down, snapshot the current messages so we
   // can run the memory extractor against the closing thread.
   const startNewConversation = useCallback(async () => {
+    // QA round 3 — unconditional entry breadcrumb. Use console.log
+    // (not info) so it shows even with strict console filters.
+    // eslint-disable-next-line no-console
+    console.log("[jess-memory] ✦New tapped — entering startNewConversation");
     // Snapshot the active thread for the memory extractor BEFORE we
     // clear messages state. Skip if there's no live thread yet, or if
     // it's just the opener (no user turn).
@@ -1163,13 +1238,13 @@ export default function JessDemoPanel() {
       // Fire-and-forget — don't block the new-convo creation on the
       // extractor's LLM round-trip. reloadMemories() runs after.
       // eslint-disable-next-line no-console
-      console.info("[jess-memory] new-convo: firing extractor",
+      console.log("[jess-memory] new-convo: firing extractor",
         { messageCount: closingMessages.length, convId: closingConvId });
       (async () => {
         try {
           const result = await extractMemoriesFromConversation(closingMessages, user.id, closingConvId, assistantName);
           // eslint-disable-next-line no-console
-          console.info("[jess-memory] new-convo: extractor returned", result);
+          console.log("[jess-memory] new-convo: extractor returned", result);
           await reloadMemories();
         } catch (e) {
           // eslint-disable-next-line no-console
@@ -1178,7 +1253,7 @@ export default function JessDemoPanel() {
       })();
     } else {
       // eslint-disable-next-line no-console
-      console.info("[jess-memory] new-convo: skip extraction",
+      console.log("[jess-memory] new-convo: skip extraction",
         { hasUserId: !!user?.id, hasUserTurn, messageCount: closingMessages.length });
     }
     if (unsubRef.current) { unsubRef.current(); unsubRef.current = null; }
@@ -2015,107 +2090,57 @@ function DrawerSection({ label, rows, activeId, onSelect, onDelete }) {
   );
 }
 
-// One row with swipe-to-delete. Implemented as a positioned wrapper:
-// the "Delete" button sits behind, the row content sits on top with a
-// transform that follows a touch drag. Releases below threshold → snap
-// back; above threshold → reveal Delete; tap row → select.
+// One row with an always-visible explicit delete icon (Trash2) sitting
+// to the right of the row content. QA round 3 retired the previous
+// swipe-to-reveal pattern: on desktop / Dispatch the swipe never
+// triggers, the delete button stays hidden behind the row body, and
+// taps on the (translucent-but-visible) delete area kept falling
+// through to the row's onSelect. The new layout uses a flex row with
+// a dedicated trash button — completely separate hit-targets, no
+// overlap, no transform tricks.
 function DrawerRow({ row, isActive, onSelect, onDelete }) {
-  const [dx, setDx] = useState(0);
-  const startXRef = useRef(null);
-  const movedRef = useRef(false);
-  const SWIPE_THRESHOLD = 80;
-
   const name = row?.name || "Untitled chat";
   const preview = row?.preview_text || "";
   const stamp = relativeStamp(row?.updated_date || row?.created_date);
   const isPending = row?.name_status === "pending" && !row?.name;
 
-  function onTouchStart(e) {
-    const t = e.touches?.[0];
-    if (!t) return;
-    startXRef.current = t.clientX;
-    movedRef.current = false;
-  }
-  function onTouchMove(e) {
-    const t = e.touches?.[0];
-    if (!t || startXRef.current == null) return;
-    const delta = t.clientX - startXRef.current;
-    if (Math.abs(delta) > 6) movedRef.current = true;
-    // Only allow left swipe.
-    if (delta < 0) setDx(Math.max(delta, -120));
-    else setDx(0);
-  }
-  function onTouchEnd() {
-    startXRef.current = null;
-    if (dx <= -SWIPE_THRESHOLD) setDx(-96);
-    else setDx(0);
-  }
-
-  function handleSelect() {
-    // Suppress click after a swipe.
-    if (movedRef.current || dx !== 0) {
-      if (dx !== 0) setDx(0);
-      return;
+  // Delete handler — stop propagation defensively at every event tier
+  // so the click cannot bubble up to a wrapper that calls onSelect.
+  function handleDeleteClick(e) {
+    if (e) {
+      e.stopPropagation();
+      e.preventDefault();
+      if (e.nativeEvent && typeof e.nativeEvent.stopImmediatePropagation === "function") {
+        e.nativeEvent.stopImmediatePropagation();
+      }
     }
-    onSelect?.(row);
+    onDelete?.(row.id);
   }
 
   return (
-    <div style={{
-      position: "relative",
-      overflow: "hidden",
-      background: "transparent",
-    }}>
-      {/* Delete button — revealed behind the row on left-swipe.
-          stopPropagation so the click doesn't also fire the parent
-          row's onSelect (which would re-open the convo we just
-          deleted). Same for the Delete-key fallback. */}
+    <div
+      style={{
+        display: "flex",
+        alignItems: "stretch",
+        background: isActive ? "rgba(255,255,255,0.06)" : C.espressoDeep,
+        borderLeft: isActive ? `3px solid ${C.gold}` : "3px solid transparent",
+      }}
+    >
+      {/* Row body — clickable region for selecting the conversation.
+          Takes all remaining space; the delete icon sits next to it
+          as a sibling button. */}
       <button
         type="button"
-        aria-label={`Delete ${name}`}
-        onClick={(e) => {
-          e.stopPropagation();
-          e.preventDefault();
-          onDelete?.(row.id);
-          setDx(0);
-        }}
-        onMouseDown={(e) => e.stopPropagation()}
-        onTouchStart={(e) => e.stopPropagation()}
+        onClick={() => onSelect?.(row)}
         style={{
-          position: "absolute", top: 0, right: 0, bottom: 0,
-          width: 96,
-          display: "inline-flex", alignItems: "center", justifyContent: "center",
-          gap: 6,
-          background: C.blush,
-          color: C.espresso,
-          border: "none", cursor: "pointer",
-          fontFamily: "'Inter', sans-serif",
-          fontSize: 12, fontWeight: 700, letterSpacing: "0.04em",
-        }}
-      >
-        <Trash2 size={14} aria-hidden />
-        Delete
-      </button>
-      {/* Row body — translates over the Delete button */}
-      <button
-        type="button"
-        onClick={handleSelect}
-        onTouchStart={onTouchStart}
-        onTouchMove={onTouchMove}
-        onTouchEnd={onTouchEnd}
-        style={{
-          position: "relative",
-          width: "100%", textAlign: "left",
+          flex: 1, minWidth: 0,
+          textAlign: "left",
           display: "block",
-          padding: "10px 16px",
-          background: isActive ? "rgba(255,255,255,0.06)" : C.espressoDeep,
+          padding: "10px 8px 10px 16px",
+          background: "transparent",
           border: "none",
-          borderLeft: isActive ? `3px solid ${C.gold}` : "3px solid transparent",
           color: C.cream, cursor: "pointer",
           fontFamily: "'Inter', sans-serif",
-          transform: `translateX(${dx}px)`,
-          transition: startXRef.current == null ? "transform 200ms cubic-bezier(0.16,1,0.3,1)" : "none",
-          touchAction: "pan-y",
         }}
       >
         <div style={{
@@ -2143,6 +2168,32 @@ function DrawerRow({ row, isActive, onSelect, onDelete }) {
             lineHeight: 1.4,
           }}>{preview}</p>
         )}
+      </button>
+      {/* Always-visible delete icon — its own button, no z-index
+          stacking shenanigans, no swipe required. Padded for an
+          easy hit-target on touch. */}
+      <button
+        type="button"
+        aria-label={`Delete ${name}`}
+        onClick={handleDeleteClick}
+        onMouseDown={(e) => e.stopPropagation()}
+        onTouchStart={(e) => e.stopPropagation()}
+        onPointerDown={(e) => e.stopPropagation()}
+        style={{
+          flexShrink: 0,
+          width: 44,
+          display: "inline-flex", alignItems: "center", justifyContent: "center",
+          background: "transparent",
+          color: C.cream, opacity: 0.55,
+          border: "none", cursor: "pointer",
+          fontFamily: "'Inter', sans-serif",
+          padding: 0,
+          margin: 0,
+        }}
+        onMouseEnter={(e) => { e.currentTarget.style.opacity = "0.95"; }}
+        onMouseLeave={(e) => { e.currentTarget.style.opacity = "0.55"; }}
+      >
+        <Trash2 size={16} aria-hidden />
       </button>
     </div>
   );

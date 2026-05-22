@@ -30,11 +30,13 @@
 import { base44 } from "@/api/base44Client";
 
 // One-line dev breadcrumb so devs can grep `[jess-memory]` in the
-// console after a thread closes and see what happened.
+// console after a thread closes and see what happened. Uses
+// console.log (not info) so the line shows up regardless of dev-tools
+// console filter level — strict filters often hide info-level logs.
 function trace(stage, payload) {
   try {
     // eslint-disable-next-line no-console
-    console.info(`[jess-memory] ${stage}`, payload || "");
+    console.log(`[jess-memory] ${stage}`, payload || "");
   } catch { /* console may be unavailable in some envs */ }
 }
 
