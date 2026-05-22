@@ -25,6 +25,8 @@ import SmartLoggerDemo from "@/components/SmartLoggerDemo";   // v3
 // Jess AI tab — JessDemoPanel is the rebuilt phase-aware experience with
 // the botanical avatar, memory bar, context strip, and 3-tab shell.
 import JessDemoPanel from "@/components/assistant/JessDemoPanel";
+import JessHubDemo from "@/components/assistant/JessHubDemo";
+import JessWingsDemo from "@/components/assistant/JessWingsDemo";
 import SmartLoggerV4 from "@/components/SmartLoggerV4";       // v4 (new)
 
 // Unified Logger demo HTML — raw strings (Vite ?raw suffix returns file as string).
@@ -144,6 +146,27 @@ const UNIFIEDLOGGER_VERSIONS = [
   { id: "demo3",  label: "Demo 3",       sub: "Command Dial",active: false, render: () => <UnifiedLoggerIframe html={unifiedDemo3Html}  title="Unified Logger — Command Dial" /> },
 ];
 
+// ── Jess AI version registry ───────────────────────────────────────────────
+// Wraps each Jess demo in the same fixed-height shell the page used to
+// give JessDemoPanel directly, so the version pills swap content cleanly.
+function JessShell({ children }) {
+  return (
+    <div style={{
+      height: "min(82vh, 820px)",
+      background: "#F4EDDB",
+      border: "1px solid rgba(58,44,26,0.12)",
+      borderRadius: 18,
+      overflow: "hidden",
+      display: "flex",
+    }}>{children}</div>
+  );
+}
+const JESSAI_VERSIONS = [
+  { id: "homebase", label: "Home Base", sub: "4-tab phase-aware shell · live", active: true,  render: () => <JessShell><JessDemoPanel /></JessShell> },
+  { id: "hub",      label: "Hub",       sub: "Central command centre",          active: false, render: () => <JessShell><JessHubDemo  /></JessShell> },
+  { id: "wings",    label: "Wings",     sub: "Where Jess lives across the app", active: false, render: () => <JessShell><JessWingsDemo /></JessShell> },
+];
+
 // ── Planner version registry ───────────────────────────────────────────────
 // Surface the existing planner demos as a version row.
 const PLANNER_VERSIONS = [
@@ -166,6 +189,7 @@ export default function Ideas() {
   const [smartVersion,   setSmartVersion]   = useState("v4");
   const [unifiedVersion, setUnifiedVersion] = useState("tabsv2");
   const [plannerVersion, setPlannerVersion] = useState("unified");
+  const [jessVersion,    setJessVersion]    = useState("homebase");
 
   return (
     <div style={{
@@ -276,16 +300,14 @@ export default function Ideas() {
         )}
         {feature === "journal" && <ComingSoonView name="Journal" />}
         {feature === "jessai"  && (
-          <div style={{
-            height: "min(82vh, 820px)",
-            background: "#F4EDDB",
-            border: "1px solid rgba(58,44,26,0.12)",
-            borderRadius: 18,
-            overflow: "hidden",
-            display: "flex",
-          }}>
-            <JessDemoPanel />
-          </div>
+          <FeatureBody
+            title="Jess AI"
+            kicker="THE VOICE ACROSS THE APP"
+            description="Three demos of Jess. Home Base is the shipped 4-tab phase-aware shell (live behind every Jess surface). Hub frames Jess as a stand-alone command centre. Wings shows where Jess lives across the rest of FemWell — Planner, Voice Logger, Doctor Export, Astra handoff."
+            versions={JESSAI_VERSIONS}
+            activeId={jessVersion}
+            onPick={setJessVersion}
+          />
         )}
       </main>
     </div>
