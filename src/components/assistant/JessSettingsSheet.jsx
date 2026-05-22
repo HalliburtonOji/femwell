@@ -15,16 +15,18 @@ import { useEffect, useState } from "react";
 import { X, Check, Trash2, AlertTriangle } from "lucide-react";
 import { base44 } from "@/api/base44Client";
 
+// FemWell design tokens — locked to spec.
 const C = {
   cream:        "#F4EDDB",
+  creamDark:    "#EDE6D5",
   paper:        "#FBF6E6",
-  paperHi:      "#FFFFFF",
+  paperHi:      "#EDE6D5", // was pure white — now spec card surface
   espresso:     "#3A2C1A",
   espressoDeep: "#2A1E0E",
   blush:        "#E8B4B8",
   sage:         "#8FAF8F",
   muted:        "#9B8B7A",
-  mutedText:    "#6B5B4E",
+  mutedText:    "#9B8B7A", // alias for muted per spec
   gold:         "#D4AF37",
   border:       "#D4C9B4",
 };
