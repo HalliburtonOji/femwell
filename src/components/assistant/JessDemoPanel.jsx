@@ -25,6 +25,7 @@ import {
 } from "lucide-react";
 import ReactMarkdown from "react-markdown";
 import JessSettingsSheet from "./JessSettingsSheet";
+import JessVoiceLogger from "./JessVoiceLogger";
 import {
   extractMemoriesFromConversation,
   loadTopMemories,
@@ -551,6 +552,8 @@ export default function JessDemoPanel() {
   const [lastJournal, setLastJournal] = useState(null);
   const [tab, setTab] = useState("chat");
   const [settingsOpen, setSettingsOpen] = useState(false);
+  // Feature 3 — full-screen voice logger overlay.
+  const [voiceLoggerOpen, setVoiceLoggerOpen] = useState(false);
   // Chat state.
   const [conversationId, setConversationId] = useState(null);
   const [messages, setMessages] = useState([]);
@@ -1378,6 +1381,18 @@ export default function JessDemoPanel() {
         </button>
         <button
           type="button"
+          onClick={() => setVoiceLoggerOpen(true)}
+          aria-label="Voice logger"
+          style={{
+            width: 40, height: 40, borderRadius: 9999, border: "none",
+            background: C.blush, color: C.espresso, cursor: "pointer",
+            display: "inline-flex", alignItems: "center", justifyContent: "center",
+            flexShrink: 0,
+            boxShadow: "0 2px 8px rgba(232,180,184,0.35)",
+          }}
+        ><Mic size={16} /></button>
+        <button
+          type="button"
           onClick={() => setSettingsOpen(true)}
           aria-label="Jess settings"
           style={{
@@ -1540,6 +1555,13 @@ export default function JessDemoPanel() {
         user={user}
         profile={profile}
         onProfileChange={(p) => setProfile(p)}
+      />
+
+      {/* Feature 3 — Voice Logger overlay */}
+      <JessVoiceLogger
+        open={voiceLoggerOpen}
+        onClose={() => setVoiceLoggerOpen(false)}
+        user={user}
       />
     </div>
   );
