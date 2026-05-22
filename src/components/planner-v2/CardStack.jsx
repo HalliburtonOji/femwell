@@ -36,20 +36,32 @@ const C = {
   dotIdle:  "#D4C9B4",
 };
 
+// Horizontal deck: top card sits flush, deeper cards shift to the RIGHT
+// so you see their right edge peeking from behind the front card. No
+// vertical offset — Halli specifically wants a fanned-out hand of cards
+// look, not a downward stack.
+//
+// `left` is an extra horizontal nudge that makes the deeper cards
+// progressively narrower-on-the-left as well, so the back cards' left
+// edges sit slightly inset (the visual reads as a sliver to the right
+// of the front card without the back card's left edge poking out under
+// the front card's left edge).
 const DEPTH_STYLE = [
   // depth 0 — active card on top
   {
-    transform: "translateY(0px) scale(1)",
+    left: 0,
+    transform: "translateX(0) scale(1)",
     opacity: 1,
     boxShadow:
-      "0 8px 32px rgba(58,44,26,0.22), 0 2px 8px rgba(58,44,26,0.12), 0 -1px 0 rgba(212,175,55,0.22), inset 0 1px 0 rgba(255,255,255,0.7)",
+      "0 8px 32px rgba(58,44,26,0.22), 0 2px 8px rgba(58,44,26,0.10), 0 -1px 0 rgba(212,175,55,0.22), inset 0 1px 0 rgba(255,255,255,0.7)",
     zIndex: 3,
     cursor: "pointer",
     pointerEvents: "auto",
   },
-  // depth 1 — peeking behind
+  // depth 1 — peeks from RIGHT edge of card 1
   {
-    transform: "translateY(8px) scale(0.96)",
+    left: 12,
+    transform: "translateX(28px) scale(0.97)",
     opacity: 0.85,
     boxShadow:
       "0 4px 16px rgba(58,44,26,0.14), inset 0 1px 0 rgba(255,255,255,0.5)",
@@ -57,9 +69,10 @@ const DEPTH_STYLE = [
     cursor: "default",
     pointerEvents: "none",
   },
-  // depth 2 — deepest visible
+  // depth 2 — peeks from behind card 2
   {
-    transform: "translateY(14px) scale(0.92)",
+    left: 20,
+    transform: "translateX(48px) scale(0.94)",
     opacity: 0.65,
     boxShadow:
       "0 2px 8px rgba(58,44,26,0.08), inset 0 1px 0 rgba(255,255,255,0.4)",
@@ -79,6 +92,7 @@ export default function CardStack({
   const [idx, setIdx] = useState(0);
   const [leaving, setLeaving] = useState(false);
 
+  const touchStartXRef = useRef(0);
   const touchStartYRef = useRef(0);
   const wasSwipeRef = useRef(false);
 
@@ -101,19 +115,26 @@ export default function CardStack({
   }
 
   function onTouchStart(e) {
+    touchStartXRef.current = e.touches[0]?.clientX ?? 0;
     touchStartYRef.current = e.touches[0]?.clientY ?? 0;
     wasSwipeRef.current = false;
   }
   function onTouchMove(e) {
+    const x = e.touches[0]?.clientX ?? 0;
     const y = e.touches[0]?.clientY ?? 0;
-    if (Math.abs(touchStartYRef.current - y) > 8) {
+    if (Math.abs(touchStartXRef.current - x) > 8 || Math.abs(touchStartYRef.current - y) > 8) {
       wasSwipeRef.current = true;
     }
   }
   function onTouchEnd(e) {
+    const endX = e.changedTouches?.[0]?.clientX ?? 0;
     const endY = e.changedTouches?.[0]?.clientY ?? 0;
+    const dx = touchStartXRef.current - endX;
     const dy = touchStartYRef.current - endY;
-    if (wasSwipeRef.current && dy > 50) {
+    // Advance on a leftward swipe (positive dx) that is predominantly
+    // horizontal. The horizontal predominance check keeps a downward
+    // page scroll from accidentally dismissing a card.
+    if (wasSwipeRef.current && dx > 50 && Math.abs(dx) > Math.abs(dy)) {
       advance();
     }
   }
@@ -176,12 +197,14 @@ export default function CardStack({
           const isTop = depth === 0;
 
           // The TOP card uses position:relative so it sizes the stack
-          // container naturally. The deeper cards layer absolutely
-          // behind it, anchored to top:0 (the translateY pushes them
-          // down to reveal a sliver).
+          // container naturally. Deeper cards layer absolutely behind
+          // it (anchored at top:0), shifted right via translateX so
+          // their right edge peeks out from under the front card.
+          // Width is consistent across the deck: calc(100% - 40px) on
+          // every card so the deeper ones don't overflow when shifted.
           const positionStyle = isTop
-            ? { position: "relative" }
-            : { position: "absolute", top: 0, left: 0, right: 0 };
+            ? { position: "relative", width: "calc(100% - 40px)" }
+            : { position: "absolute", top: 0, right: "auto", width: "calc(100% - 40px)" };
 
           const isLeavingTop = isTop && leaving;
 
@@ -223,8 +246,8 @@ export default function CardStack({
           definition; styles cost is negligible vs hoisting to global. */}
       <style>{`
         @keyframes plannerStackLeave {
-          0%   { transform: translateY(0px) scale(1);    opacity: 1; }
-          100% { transform: translateY(-72px) scale(0.94); opacity: 0; }
+          0%   { transform: translateX(0)      scale(1);    opacity: 1; }
+          100% { transform: translateX(-140%)  scale(0.94); opacity: 0; }
         }
       `}</style>
     </section>
