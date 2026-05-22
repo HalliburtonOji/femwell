@@ -1736,8 +1736,8 @@ function YourDayRow({ user }) {
       </div>
       <style>{`@keyframes femwellShimmer { 0%{opacity:.4} 50%{opacity:.9} 100%{opacity:.4} }`}</style>
       <div ref={trackRef} onScroll={onScroll} style={rowTrack}>
-        {YOUR_DAY_SLOTS.map((s) => (
-          <div key={s.id} style={rowSlot}>
+        {YOUR_DAY_SLOTS.map((s, i) => (
+          <div key={s.id} style={i === active ? { ...rowSlot, ...rowSlotActive } : rowSlot}>
             <YourDayCard
               slot={s}
               loading={!data}
@@ -4795,7 +4795,12 @@ function Row({ label, children }) {
             <div style={rowNav}>
               <button onClick={() => jumpTo(idx - 1)} style={rowArrow}><ChevronLeft size={14} /></button>
               {Array.from({ length: count }).map((_, i) => (
-                <span key={i} style={{ ...rowDot, background: i === idx ? C.espresso : "rgba(58,44,26,0.20)" }} />
+                <span key={i} style={{
+                  ...rowDot,
+                  background: i === idx ? C.gold : "#D4C9B4",
+                  transform: i === idx ? "scale(1.25)" : "scale(1)",
+                  transition: "background 200ms ease, transform 200ms ease",
+                }} />
               ))}
               <button onClick={() => jumpTo(idx + 1)} style={rowArrow}><ChevronRight size={14} /></button>
             </div>
@@ -4803,7 +4808,9 @@ function Row({ label, children }) {
         </div>
       )}
       <div ref={trackRef} onScroll={onScroll} style={rowTrack}>
-        {Children.map(children, (child, i) => <div key={i} style={rowSlot}>{child}</div>)}
+        {Children.map(children, (child, i) => (
+          <div key={i} style={i === idx ? { ...rowSlot, ...rowSlotActive } : rowSlot}>{child}</div>
+        ))}
       </div>
     </section>
   );
@@ -4913,12 +4920,29 @@ const rowDot = { width: 6, height: 6, borderRadius: 9999 };
 const rowTrack = {
   display: "flex", overflowX: "auto",
   scrollSnapType: "x mandatory", gap: 12,
-  padding: "4px 16px",
+  // Right padding lets the next card peek in from the edge — telegraphs "swipe for more".
+  padding: "8px 40px 8px 16px",
   scrollbarWidth: "none", WebkitOverflowScrolling: "touch",
+  perspective: 1200,
 };
+// Base slot — inactive "behind the deck" state. Slightly scaled down + dimmed
+// so the active card reads as forward, the next as peeking from behind.
 const rowSlot = {
-  flex: "0 0 calc(100% - 32px)", maxWidth: 520,
+  flex: "0 0 calc(100% - 48px)", maxWidth: 520,
   scrollSnapAlign: "start",
+  borderRadius: 16,
+  transform: "scale(0.96) translateZ(0)",
+  opacity: 0.86,
+  transition: "transform 320ms cubic-bezier(0.16,1,0.3,1), opacity 320ms ease, box-shadow 320ms ease",
+  boxShadow: "0 2px 10px rgba(58,44,26,0.08), inset 0 1px 0 rgba(255,255,255,0.5)",
+  willChange: "transform, opacity",
+};
+// Active slot — full scale, gold rim, deeper shadow.
+const rowSlotActive = {
+  transform: "scale(1) translateZ(0)",
+  opacity: 1,
+  boxShadow:
+    "0 6px 28px rgba(58,44,26,0.15), 0 2px 6px rgba(58,44,26,0.10), 0 -1px 0 rgba(212,175,55,0.22), inset 0 1px 0 rgba(255,255,255,0.7)",
 };
 
 // Card primitive
