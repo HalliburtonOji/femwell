@@ -610,21 +610,11 @@ export default function PlannerV2Shell({
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // ── Card-deck stacking effect ──
-  const cardStyle = (n, extra = {}) => ({
-    position: 'sticky',
-    top: (56 + n * 12) + 'px',
-    zIndex: 20 + n,
-    borderRadius: 20,
-    background: '#F4EDDB',
-    boxShadow: '0 -2px 0 0 rgba(212,175,55,0.15),0 4px 24px rgba(58,44,26,0.10),0 1px 3px rgba(58,44,26,0.08),inset 0 1px 0 rgba(255,255,255,0.6)',
-    marginBottom: -24,
-    transform: 'translateZ(0)',
-    minHeight: 80,
-    overflow: 'visible',
-    borderTop: '1px solid rgba(212,175,55,0.3)',
-    ...extra,
-  });
+  // Note: The vertical sticky "deck" wrappers that previously surrounded
+  // each section have been removed. The 3D card-deck illusion now lives
+  // inside each horizontal Row's slider (rowSlot / rowSlotActive), where
+  // it actually belongs — the next horizontal card peeks in from the
+  // right edge with a subtle scale + opacity falloff.
 
   return (
     <div style={shell}>
@@ -640,20 +630,10 @@ export default function PlannerV2Shell({
       <Header greeting={greeting} onOpenPlan={() => setPlanOpen(true)} lifeStage={profileProp?.life_stage || realLifeStage} />
 
       {/* INSIGHTS hero — first horizontal slider on the page */}
-      <div style={cardStyle(0, {
-        borderTop: phase === 'menstrual' ? '3px solid #E8B4B8'
-          : phase === 'follicular' ? '3px solid #8FAF8F'
-          : phase === 'ovulatory' ? '3px solid #D4AF37'
-          : '3px solid #9B8B7A',
-      })} >
       <InsightsHeroRow phase={phase} dayInCycle={cycleDay} />
-      </div>
 
-      <div style={cardStyle(1)}>
       <ListsSection user={user} />
-      </div>
 
-      <div style={cardStyle(2)}>
       <Row label="Schedule & cycle">
         <SchedulePreviewCard blocks={blocks} onExpand={() => setScheduleOpen(true)} />
         <CyclePreviewCard
@@ -665,13 +645,9 @@ export default function PlannerV2Shell({
           profileProp={profileProp}
         />
       </Row>
-      </div>
 
-      <div style={cardStyle(3)}>
       <YourDayRow user={user} />
-      </div>
 
-      <div style={cardStyle(4)}>
       <Row label="Your body today">
         <BodyTodayCard user={user} />
         <SmartViewCard phase={phase} />
@@ -682,7 +658,6 @@ export default function PlannerV2Shell({
           daysUntilPeriod={daysUntilPeriod}
         />
       </Row>
-      </div>
 
       {/* Stage + condition rows — #13: suppress cycle-driven conditions during
           pregnancy / postpartum because they're not biologically active. */}
@@ -704,7 +679,6 @@ export default function PlannerV2Shell({
                 Cycle-linked conditions ({suppressed.map((c) => c.toUpperCase()).join(", ")}) are paused during pregnancy.
               </div>
             )}
-            <div style={cardStyle(5)}>
             <StageRow
               stage={effectiveLifeStage}
               profile={profileProp}
@@ -712,30 +686,24 @@ export default function PlannerV2Shell({
               cycleDay={cycleDay}
               user={user}
             />
-            </div>
             {visible.length > 0 && (
-              <div style={cardStyle(6)}>
               <ConditionRow
                 conditions={visible}
                 profile={profileProp}
                 phase={phase}
                 cycleDay={cycleDay}
               />
-              </div>
             )}
           </>
         );
       })()}
 
-      <div style={cardStyle(7)}>
       <Row label="Rituals">
         <MorningStackCard user={user} />
         <CreateRitualCard />
         {ritualBundles.map((b) => <RitualBundleCard key={b.id} bundle={b} user={user} />)}
       </Row>
-      </div>
 
-      <div style={cardStyle(9)}>
       <Row label="Mind & insight">
         <IntentionCard user={user} />
         <AstraCard profile={profileProp} />
@@ -743,27 +711,21 @@ export default function PlannerV2Shell({
         <BreathworkCard />
         <CyclePsychologyCard />
       </Row>
-      </div>
 
-      <div style={cardStyle(8)}>
       <Row label="Nourishment">
         <MacroTrackerCard user={user} profile={profileProp} />
         <HydrationCard user={user} />
         <AIMealPlanCard />
         <PhaseRecipesCard />
       </Row>
-      </div>
 
-      <div style={cardStyle(10)}>
       <Row label="Care">
         <MedsAndSuppsCard user={user} />
         <SymptomLogCard user={user} />
         <BodyScanCard user={user} />
         <GPReportCardSmall profile={profileProp} />
       </Row>
-      </div>
 
-      <div style={cardStyle(11)}>
       <Row label="Tonight">
         <TonightReflectionCard user={user} />
         <TomorrowPreviewCard user={user} />
@@ -772,7 +734,6 @@ export default function PlannerV2Shell({
             a single reflective text field persisted to JournalEntries. */}
         <EndOfDayNoteCard user={user} />
       </Row>
-      </div>
 
       {/* DemoFooter removed from production render — the function is kept
           intact below for now but no longer mounted. */}
