@@ -19,8 +19,8 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { base44 } from "@/api/base44Client";
 import {
-  Mic, Send, Settings, Check, ChevronRight, ChevronDown,
-  MessageCircle, Sun, LineChart, Sparkles,
+  Mic, Send, Settings, Check, ChevronRight,
+  MessageCircle, Sun, LineChart, Sparkles, History, X, Plus,
 } from "lucide-react";
 import ReactMarkdown from "react-markdown";
 import JessSettingsSheet from "./JessSettingsSheet";
@@ -253,6 +253,42 @@ function buildProactiveChips({ todayCheckin, recentCheckins, symptoms, lastJourn
   return out.slice(0, 3);
 }
 
+// ─── Auto-name a conversation from its first user message ────────────────
+// Chip → topic mapping covers the proactive chips and tab-level chips.
+// Free-text falls back to title-cased first-5-words. If no user message was
+// sent yet (Jess-only opener), name it by date.
+const CHIP_TO_TOPIC = [
+  [/how are you feeling today/i,                   "Mood Check-in"],
+  [/your energy was low yesterday/i,               "Energy Check"],
+  [/luteal phase/i,                                "Luteal Support"],
+  [/journalled/i,                                  "Journal Nudge"],
+  [/peak window/i,                                 "Peak Window"],
+  [/good morning/i,                                "Morning Check-in"],
+  [/what's been on your mind/i,                    "Open Chat"],
+  [/how's your body feeling today/i,               "Body Check-in"],
+  [/anything you want to track/i,                  "Tracking Chat"],
+  [/a few days running/i,                          "Symptom Patterns"],
+  [/jess,? summarise my week/i,                    "Weekly Summary"],
+  [/pattern stands out most/i,                     "Pattern Spotlight"],
+  [/one thing i should focus on/i,                 "Today's Focus"],
+];
+function deriveConversationName(firstUserText) {
+  const text = String(firstUserText || "").trim();
+  if (!text) {
+    const d = new Date();
+    const day = d.toLocaleDateString("en-GB", { day: "numeric", month: "long" });
+    return `Morning Chat · ${day}`;
+  }
+  for (const [rx, topic] of CHIP_TO_TOPIC) if (rx.test(text)) return topic;
+  // Title-case first 5 words.
+  const words = text.split(/\s+/).slice(0, 5).map((w) => {
+    const stripped = w.replace(/[^\p{L}\p{N}'’-]/gu, "");
+    if (!stripped) return w;
+    return stripped.charAt(0).toUpperCase() + stripped.slice(1).toLowerCase();
+  });
+  return words.join(" ");
+}
+
 // ─── Botanical sigil — 4-petal bloom, gold stroke on cream ────────────────
 function BotanicalSigil({ size = 36, stroke = C.gold }) {
   return (
@@ -325,15 +361,22 @@ export default function JessDemoPanel() {
   const [assistantTyping, setAssistantTyping] = useState(false);
   const [listeningVoice, setListeningVoice] = useState(false);
   const [followUpFired, setFollowUpFired] = useState(false);
-  // History UI state.
+  // History drawer state — opened from the header history icon, slides in
+  // from the left, lists past conversations, lets the user resume any one.
   const [conversationsList, setConversationsList] = useState([]);
-  const [historyOpen, setHistoryOpen] = useState(false);
-  const [viewingHistoricalId, setViewingHistoricalId] = useState(null);
-  // Snapshot of the active conversation so we can return from a history view.
-  const liveMessagesRef = useRef(null);
+  const [drawerOpen, setDrawerOpen] = useState(false);
+  // Locally-stored auto-generated names for conversations, keyed by id.
+  // We try base44.agents.updateConversation first; if unsupported, fall
+  // back to this in-memory + localStorage mirror.
+  const [conversationNames, setConversationNames] = useState({});
   // Track whether the context block has been sent for this convo so we only
-  // inject it once per conversation.
+  // inject it once per conversation. We also remove an id from this set when
+  // the user resumes an old conversation, so we re-inject fresh context
+  // before their next message lands.
   const contextInjectedRef = useRef(new Set());
+  // Remember the first user message of an active conversation so we can
+  // auto-name it as soon as Jess's first response arrives.
+  const firstUserMsgRef = useRef({});
   const bottomRef = useRef(null);
   const unsubRef = useRef(null);
   const seenAgentIdsRef = useRef(new Set());
@@ -425,6 +468,30 @@ export default function JessDemoPanel() {
     [todayCheckin, recentCheckins, symptoms, lastJournal, phase, dayInCycle],
   );
 
+  // Load persisted conversation names from localStorage once.
+  useEffect(() => {
+    try {
+      const raw = window.localStorage?.getItem("jess_convo_names");
+      if (raw) setConversationNames(JSON.parse(raw) || {});
+    } catch { /* localStorage unavailable */ }
+  }, []);
+
+  const persistConvoName = useCallback((id, name) => {
+    if (!id || !name) return;
+    setConversationNames((prev) => {
+      const next = { ...prev, [id]: name };
+      try { window.localStorage?.setItem("jess_convo_names", JSON.stringify(next)); } catch {}
+      return next;
+    });
+    // Best-effort: try to update on the server too — if the SDK doesn't
+    // support this it's fine, our local mirror covers it.
+    try {
+      if (typeof base44.agents?.updateConversation === "function") {
+        base44.agents.updateConversation({ id, name }).catch(() => {});
+      }
+    } catch { /* fine */ }
+  }, []);
+
   // Memoised context block to inject as the first user message in any new
   // conversation. Recomputed when underlying data changes (so resuming a
   // convo later still gets up-to-date context).
@@ -453,8 +520,14 @@ export default function JessDemoPanel() {
         })),
       ]);
       setAssistantTyping(false);
+      // Auto-name once Jess has responded for the first time in this convo.
+      const firstUser = firstUserMsgRef.current[id];
+      if (firstUser !== undefined && !conversationNames[id]) {
+        const name = deriveConversationName(firstUser);
+        persistConvoName(id, name);
+      }
     });
-  }, []);
+  }, [conversationNames, persistConvoName]);
 
   const ensureConversation = useCallback(async () => {
     if (conversationId) return conversationId;
@@ -510,24 +583,35 @@ export default function JessDemoPanel() {
     if (unsubRef.current) { unsubRef.current(); unsubRef.current = null; }
     seenAgentIdsRef.current = new Set();
     setConversationId(null);
-    setViewingHistoricalId(null);
-    setHistoryOpen(false);
+    setDrawerOpen(false);
     setMessages([]);
     setFollowUpFired(false); // re-fire opener
   }, []);
 
-  // ── Load a past conversation into read-only view ───────────────────────
-  const loadHistoricalConversation = useCallback(async (id) => {
+  // ── Resume a past conversation — fully interactive ─────────────────────
+  // The user can continue chatting; we re-use the same conversationId for
+  // addMessage. Before their next message, we re-inject a fresh context
+  // block so Jess has current state even in old threads (handled by
+  // sendUserText via the contextInjectedRef gate).
+  const loadConversation = useCallback(async (id) => {
     if (!id) return;
-    // Snapshot the current live thread so we can come back to it.
-    liveMessagesRef.current = messages;
-    setViewingHistoricalId(id);
-    setHistoryOpen(false);
+    setDrawerOpen(false);
+    // Tear down any existing subscription before swapping conversation id.
+    if (unsubRef.current) { unsubRef.current(); unsubRef.current = null; }
+    seenAgentIdsRef.current = new Set();
+    // Force a fresh context block on the next user message in this thread.
+    contextInjectedRef.current.delete(id);
+    setConversationId(id);
     try {
       const c = await base44.agents.getConversation(id);
       const list = Array.isArray(c?.messages) ? c.messages : [];
-      // Hide our context-block message (first user message that starts with
-      // "[JESS CONTEXT") and replay everything else into our local shape.
+      // Mark every existing assistant message as already-seen so the
+      // subscribe callback doesn't replay them when it connects.
+      for (const m of list) {
+        if (m?.role === "assistant" && m?.id) seenAgentIdsRef.current.add(m.id);
+      }
+      // Hide our context-block message (first user message that starts
+      // with "[JESS CONTEXT") and replay everything else.
       const view = list
         .filter((m) => !(m?.role === "user" && String(m?.content || "").startsWith("[JESS CONTEXT")))
         .map((m) => ({
@@ -535,19 +619,13 @@ export default function JessDemoPanel() {
           role: m.role === "assistant" ? "jess" : "user",
           type: "bubble",
           text: m.content || "",
-          historical: true,
         }));
       setMessages(view);
+      subscribeToConversation(id);
     } catch {
-      setMessages([{ id: uid(), role: "jess", type: "bubble", text: "Couldn't load that conversation.", historical: true }]);
+      setMessages([{ id: uid(), role: "jess", type: "bubble", text: "Couldn't load that conversation." }]);
     }
-  }, [messages]);
-
-  const returnFromHistorical = useCallback(() => {
-    setViewingHistoricalId(null);
-    if (liveMessagesRef.current) setMessages(liveMessagesRef.current);
-    liveMessagesRef.current = null;
-  }, []);
+  }, [subscribeToConversation]);
 
   // Send a free-text message — extracted so chip taps can reuse it.
   const sendUserText = useCallback(async (text) => {
@@ -558,7 +636,19 @@ export default function JessDemoPanel() {
     try {
       const cid = await ensureConversation();
       if (!cid) throw new Error("no convo");
+      // Record this as the "first user message" if we don't have one yet —
+      // drives auto-naming when Jess responds.
+      if (firstUserMsgRef.current[cid] === undefined) {
+        firstUserMsgRef.current[cid] = msg;
+      }
       const convo = await base44.agents.getConversation(cid);
+      // Re-inject a fresh context block if this conversation was just
+      // resumed (loadConversation removes the id from contextInjectedRef).
+      if (!contextInjectedRef.current.has(cid)) {
+        contextInjectedRef.current.add(cid);
+        try { await base44.agents.addMessage(convo, { role: "user", content: contextBlock }); }
+        catch { /* fine, just won't be re-injected this turn */ }
+      }
       await base44.agents.addMessage(convo, { role: "user", content: msg });
     } catch {
       setTimeout(() => {
@@ -569,17 +659,11 @@ export default function JessDemoPanel() {
         setAssistantTyping(false);
       }, 1200);
     }
-  }, [assistantTyping, ensureConversation]);
+  }, [assistantTyping, ensureConversation, contextBlock]);
 
   // Tap a proactive chip → send the question as the user's message.
   const handleProactiveChip = useCallback((label) => {
     setTab("chat");
-    setViewingHistoricalId(null);
-    if (liveMessagesRef.current) {
-      // If currently viewing a historical thread, return to live first.
-      setMessages(liveMessagesRef.current);
-      liveMessagesRef.current = null;
-    }
     sendUserText(label);
   }, [sendUserText]);
 
@@ -697,8 +781,19 @@ export default function JessDemoPanel() {
         padding: "max(env(safe-area-inset-top), 12px) 16px 14px",
         background: `linear-gradient(180deg, ${shell.headerTint} 0%, ${C.cream} 100%)`,
         borderBottom: `1px solid ${C.border}`,
-        display: "flex", alignItems: "center", gap: 12, flexShrink: 0,
+        display: "flex", alignItems: "center", gap: 10, flexShrink: 0,
       }}>
+        <button
+          type="button"
+          onClick={() => setDrawerOpen(true)}
+          aria-label="Past conversations"
+          style={{
+            width: 36, height: 36, borderRadius: 9999, border: "none",
+            background: "transparent", color: C.espresso, cursor: "pointer",
+            display: "inline-flex", alignItems: "center", justifyContent: "center",
+            flexShrink: 0,
+          }}
+        ><History size={18} aria-hidden /></button>
         <div
           style={{
             width: 44, height: 44, borderRadius: 9999,
@@ -814,12 +909,6 @@ export default function JessDemoPanel() {
             bottomRef={bottomRef}
             proactiveChips={proactiveChips}
             onProactiveChip={handleProactiveChip}
-            conversationsList={conversationsList}
-            historyOpen={historyOpen}
-            onToggleHistory={() => setHistoryOpen((v) => !v)}
-            onLoadHistorical={loadHistoricalConversation}
-            viewingHistoricalId={viewingHistoricalId}
-            onReturnFromHistorical={returnFromHistorical}
           />
         )}
         {tab === "brief"    && (
@@ -891,6 +980,16 @@ export default function JessDemoPanel() {
         </div>
       )}
 
+      <HistoryDrawer
+        open={drawerOpen}
+        onClose={() => setDrawerOpen(false)}
+        conversations={conversationsList}
+        conversationNames={conversationNames}
+        activeId={conversationId}
+        onSelect={loadConversation}
+        onNew={startNewConversation}
+      />
+
       <JessSettingsSheet
         open={settingsOpen}
         onClose={() => setSettingsOpen(false)}
@@ -926,6 +1025,14 @@ function KeyframesBlock() {
         0%, 100% { opacity: 0.2; }
         50%      { opacity: 1; }
       }
+      @keyframes jess-drawer-in {
+        from { transform: translateX(-100%); }
+        to   { transform: translateX(0); }
+      }
+      @keyframes jess-overlay-fade {
+        from { opacity: 0; }
+        to   { opacity: 1; }
+      }
     `}</style>
   );
 }
@@ -934,8 +1041,6 @@ function KeyframesBlock() {
 function ChatTab({
   messages, assistantTyping, shell, onChip, onToggleQuickLog, bottomRef,
   proactiveChips, onProactiveChip,
-  conversationsList, historyOpen, onToggleHistory, onLoadHistorical,
-  viewingHistoricalId, onReturnFromHistorical,
 }) {
   return (
     <div style={{
@@ -943,7 +1048,7 @@ function ChatTab({
       display: "flex", flexDirection: "column", gap: 12,
     }}>
       {/* Proactive question chips — "Jess is thinking about you" row */}
-      {Array.isArray(proactiveChips) && proactiveChips.length > 0 && !viewingHistoricalId && (
+      {Array.isArray(proactiveChips) && proactiveChips.length > 0 && (
         <div style={{ marginBottom: 2 }}>
           <p style={{
             margin: "0 0 6px 4px", fontSize: 10, fontWeight: 700,
@@ -983,29 +1088,6 @@ function ChatTab({
         </div>
       )}
 
-      {/* Viewing a historical thread banner */}
-      {viewingHistoricalId && (
-        <div style={{
-          background: C.creamDark, border: `1px solid ${C.border}`,
-          borderRadius: 12, padding: "10px 12px",
-          display: "flex", alignItems: "center", justifyContent: "space-between", gap: 8,
-        }}>
-          <span style={{ fontSize: 12, color: C.mutedText, fontFamily: "'Inter', sans-serif" }}>
-            Viewing a past conversation
-          </span>
-          <button
-            type="button"
-            onClick={onReturnFromHistorical}
-            style={{
-              background: C.espresso, color: C.cream, border: "none",
-              borderRadius: 9999, padding: "6px 12px", minHeight: 32,
-              fontFamily: "'Inter', sans-serif",
-              fontSize: 11, fontWeight: 700, cursor: "pointer",
-            }}
-          >Return to current</button>
-        </div>
-      )}
-
       {messages.map((m) => (
         <MessageNode
           key={m.id}
@@ -1017,85 +1099,6 @@ function ChatTab({
       ))}
       {assistantTyping && <TypingIndicator />}
       <div ref={bottomRef} />
-
-      {/* Conversation history — collapsed by default */}
-      {!viewingHistoricalId && (
-        <div style={{ marginTop: 14 }}>
-          <button
-            type="button"
-            onClick={onToggleHistory}
-            aria-expanded={historyOpen}
-            style={{
-              width: "100%",
-              display: "inline-flex", alignItems: "center", justifyContent: "space-between",
-              padding: "10px 12px", borderRadius: 10,
-              background: "transparent", border: `1px solid ${C.border}`,
-              color: C.espresso, cursor: "pointer",
-              fontFamily: "'Inter', sans-serif",
-              fontSize: 12, fontWeight: 700,
-              letterSpacing: "0.04em",
-            }}
-          >
-            <span>Past conversations</span>
-            <span aria-hidden style={{ display: "inline-flex", alignItems: "center", gap: 4 }}>
-              {historyOpen ? <ChevronDown size={14} /> : <ChevronRight size={14} />}
-            </span>
-          </button>
-          {historyOpen && (
-            <div style={{ marginTop: 8, display: "flex", flexDirection: "column", gap: 6 }}>
-              {(!conversationsList || conversationsList.length === 0) ? (
-                <p style={{
-                  margin: 0, padding: "10px 12px",
-                  fontSize: 12, fontStyle: "italic", color: C.mutedText,
-                  fontFamily: "'Inter', sans-serif",
-                }}>No past conversations yet — they'll appear here once you've chatted with Jess.</p>
-              ) : (
-                conversationsList.slice(0, 5).map((c) => {
-                  const id = c?.id || c?.conversation_id;
-                  const created = c?.created_at || c?.created_date || c?.updated_at;
-                  const when = created ? formatHistoryDate(created) : "Past";
-                  // Find first non-context user message for the snippet.
-                  const msgs = Array.isArray(c?.messages) ? c.messages : [];
-                  const firstReal = msgs.find((m) =>
-                    m?.role === "user" && !String(m?.content || "").startsWith("[JESS CONTEXT")
-                  ) || msgs.find((m) => m?.role === "assistant");
-                  const snippet = String(firstReal?.content || "")
-                    .replace(/\s+/g, " ").slice(0, 60);
-                  return (
-                    <button
-                      key={id || when + snippet}
-                      type="button"
-                      onClick={() => id && onLoadHistorical(id)}
-                      style={{
-                        textAlign: "left",
-                        display: "flex", alignItems: "center", gap: 10,
-                        padding: "10px 12px", borderRadius: 10,
-                        background: C.cream, border: "none",
-                        borderLeft: `2px solid ${C.espresso}`,
-                        cursor: "pointer", color: C.espresso,
-                        fontFamily: "'Inter', sans-serif",
-                      }}
-                    >
-                      <div style={{ flex: 1, minWidth: 0 }}>
-                        <p style={{
-                          margin: 0, fontSize: 11, color: C.mutedText, fontWeight: 700,
-                          letterSpacing: "0.04em",
-                        }}>{when}</p>
-                        <p style={{
-                          margin: "2px 0 0", fontSize: 13, color: C.espresso, fontWeight: 500,
-                          whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis",
-                          lineHeight: 1.4,
-                        }}>{snippet || "(no preview)"}</p>
-                      </div>
-                      <ChevronRight size={14} aria-hidden style={{ color: C.muted, flexShrink: 0 }} />
-                    </button>
-                  );
-                })
-              )}
-            </div>
-          )}
-        </div>
-      )}
     </div>
   );
 }
@@ -1105,6 +1108,141 @@ function formatHistoryDate(iso) {
     const d = new Date(iso);
     return d.toLocaleDateString("en-GB", { weekday: "long", day: "numeric", month: "long" });
   } catch { return "Past"; }
+}
+
+// ─── History drawer — slides in from the LEFT of the panel ───────────────
+function HistoryDrawer({ open, onClose, conversations, conversationNames, activeId, onSelect, onNew }) {
+  if (!open) return null;
+  const list = (conversations || []).slice(0, 20);
+  return (
+    <div
+      role="dialog"
+      aria-label="Past conversations"
+      aria-modal="true"
+      style={{
+        position: "absolute", inset: 0, zIndex: 50,
+        display: "flex",
+      }}
+    >
+      {/* Overlay — tap to dismiss */}
+      <button
+        type="button"
+        aria-label="Close conversation history"
+        onClick={onClose}
+        style={{
+          position: "absolute", inset: 0, padding: 0,
+          background: "rgba(58,44,26,0.4)",
+          border: "none", cursor: "pointer",
+          animation: "jess-overlay-fade 200ms ease-out",
+        }}
+      />
+      {/* Drawer surface */}
+      <aside
+        style={{
+          position: "relative",
+          width: "78%", maxWidth: 334, height: "100%",
+          background: C.espressoDeep,
+          color: C.cream,
+          display: "flex", flexDirection: "column",
+          animation: "jess-drawer-in 280ms cubic-bezier(0.16,1,0.3,1)",
+          boxShadow: "4px 0 24px rgba(0,0,0,0.25)",
+          paddingTop: "env(safe-area-inset-top)",
+        }}
+      >
+        <header style={{
+          display: "flex", alignItems: "center", justifyContent: "space-between",
+          padding: "16px 16px 12px",
+        }}>
+          <span style={{
+            fontFamily: "'Inter', sans-serif",
+            fontSize: 11, fontWeight: 700, letterSpacing: "0.18em",
+            textTransform: "uppercase", color: C.cream, opacity: 0.85,
+          }}>Conversations</span>
+          <button
+            type="button"
+            onClick={onClose}
+            aria-label="Close"
+            style={{
+              width: 32, height: 32, borderRadius: 9999, border: "none",
+              background: "transparent", color: C.cream, cursor: "pointer",
+              display: "inline-flex", alignItems: "center", justifyContent: "center",
+            }}
+          ><X size={16} aria-hidden /></button>
+        </header>
+
+        <button
+          type="button"
+          onClick={() => { onClose(); onNew(); }}
+          style={{
+            display: "flex", alignItems: "center", gap: 10,
+            padding: "12px 16px",
+            background: "transparent", border: "none",
+            borderLeft: `3px solid ${C.gold}`,
+            color: C.gold, cursor: "pointer",
+            textAlign: "left",
+            fontFamily: "'Inter', sans-serif",
+            fontSize: 13, fontWeight: 700,
+          }}
+        >
+          <Plus size={14} aria-hidden />
+          New conversation
+        </button>
+
+        <div style={{
+          flex: 1, overflowY: "auto",
+          padding: "8px 0 max(env(safe-area-inset-bottom), 16px)",
+        }}>
+          {list.length === 0 ? (
+            <p style={{
+              margin: "12px 16px", fontSize: 12, fontStyle: "italic",
+              color: C.cream, opacity: 0.6, fontFamily: "'Inter', sans-serif",
+            }}>No past conversations yet — they'll appear here once you've chatted with Jess.</p>
+          ) : list.map((c) => {
+            const id = c?.id || c?.conversation_id;
+            const created = c?.created_at || c?.created_date || c?.updated_at;
+            const when = created ? formatHistoryDate(created) : "Past";
+            const isActive = activeId && id === activeId;
+            // Prefer persisted/server name; fall back to first user-message snippet.
+            const serverName = c?.name || c?.title;
+            const persistedName = conversationNames?.[id];
+            const msgs = Array.isArray(c?.messages) ? c.messages : [];
+            const firstReal = msgs.find((m) =>
+              m?.role === "user" && !String(m?.content || "").startsWith("[JESS CONTEXT")
+            ) || msgs.find((m) => m?.role === "assistant");
+            const snippet = String(firstReal?.content || "").replace(/\s+/g, " ").slice(0, 40);
+            const label = persistedName || serverName || snippet || "Untitled chat";
+            return (
+              <button
+                key={id || when + label}
+                type="button"
+                onClick={() => id && onSelect(id)}
+                style={{
+                  width: "100%", textAlign: "left",
+                  display: "block",
+                  padding: "10px 16px",
+                  background: isActive ? "rgba(255,255,255,0.06)" : "transparent",
+                  border: "none",
+                  borderLeft: isActive ? `3px solid ${C.gold}` : "3px solid transparent",
+                  color: C.cream, cursor: "pointer",
+                  fontFamily: "'Inter', sans-serif",
+                }}
+              >
+                <p style={{
+                  margin: 0, fontSize: 13, fontWeight: 500, color: C.cream,
+                  whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis",
+                  lineHeight: 1.35,
+                }}>{label}</p>
+                <p style={{
+                  margin: "2px 0 0", fontSize: 10, color: C.cream, opacity: 0.55,
+                  letterSpacing: "0.04em",
+                }}>{when}</p>
+              </button>
+            );
+          })}
+        </div>
+      </aside>
+    </div>
+  );
 }
 
 // ─── Tab-level "ask Jess" chip shown at the top of non-chat tabs ─────────
