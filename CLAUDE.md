@@ -24,3 +24,23 @@ If you see "This session is being continued from a previous conversation that ra
 - Sprint 1–4: complete and committed
 - Sprint 5: complete and committed
 - Sprint 6: ready for specs
+
+### Jess major build (Features 1–3): COMPLETE ✅
+- Feature 1 — JessConversation entity + history drawer + auto-naming
+- Feature 2 — JessMemory system (extract + inject + settings)
+- Feature 3 — Voice Logger (Web Speech → LLM → multi-entity writes)
+- /Assistant migration to JessDemoPanel (closes [JESS CONTEXT] leak)
+- QA rounds 1–6 landed (day_key, chip parser, drawer delete, memory
+  poll-loop, single-turn context, subscribe-log dedupe, dead-code
+  cleanup, todayISO unused-var fix)
+
+### Feature 4 — For You tab + Wings: NEXT (spec not started)
+
+### ⚠️ Publish workaround
+UI "Publish App" button regularly hangs on "Publishing..." because of a
+stale base44 preview-mode lint auto-fix loop. **Deploy via direct API:**
+```
+POST https://app.base44.com/api/apps/69a9891a6ccccc1822bbb4bc/deploy
+Authorization: Bearer <base44_access_token from localStorage>
+```
+Returns 200 in ~5s. Live bundle hash flips ~60–90s later.

@@ -25,9 +25,9 @@
 
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import {
-  Plus, X, ArrowLeft, Mic, Sparkles, Pen, ChevronRight,
+  Plus, X, ArrowLeft, Mic, Sparkles, Pen,
   Footprints, ListChecks, Pill, Utensils, CalendarClock, Droplets,
-  StickyNote, Smile, Stethoscope, Check, Frown, Meh, Heart, Zap,
+  StickyNote, Smile, Stethoscope, Check, Frown, Meh,
   Coffee, Wine,
 } from "lucide-react";
 import { base44 } from "@/api/base44Client";
@@ -413,8 +413,11 @@ function _resolveDate(s) {
 }
 
 async function saveVoiceIntent(intent) {
-  const todayISO = new Date().toISOString().split("T")[0];
-  const nowISO   = new Date().toISOString();
+  // QA round 6 — `todayISO` removed (never used; `date` is sourced
+  // from `_resolveDate(intent.date)` below). The unused declaration
+  // was triggering base44's preview-mode lint into a persistent
+  // "missing import" auto-fix loop that blocked the UI Publish button.
+  const nowISO = new Date().toISOString();
   const me = await base44.entities.User.me().catch(() => null);
   const user_id = me?.id;
   if (!user_id) return { ok: false, reason: "auth" };

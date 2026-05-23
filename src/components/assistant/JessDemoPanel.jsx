@@ -717,6 +717,10 @@ export default function JessDemoPanel() {
   const bottomRef = useRef(null);
   const unsubRef = useRef(null);
   const seenAgentIdsRef = useRef(new Set());
+  // QA round 6 — set of assistant message ids we've already logged a
+  // `[jess-subscribe]` line for, so the breadcrumb fires once per
+  // message instead of once per stream chunk (~24x).
+  const loggedSubscribeIdsRef = useRef(new Set());
 
   // ── Load data ──────────────────────────────────────────────────────────
   useEffect(() => {
@@ -1077,11 +1081,14 @@ export default function JessDemoPanel() {
           // The chips themselves render as tappable buttons under the
           // bubble; only the prose above belongs in the bubble text.
           const { text: content, chips } = splitChipsFromText(sanitized);
-          // QA round 3 — visible breadcrumb so we can confirm in dev
-          // tools that the parser ran on this message and whether
-          // chips were lifted. Uses console.log (not info) for max
-          // visibility across browser console filter settings.
-          if (chips || sanitized !== raw) {
+          // QA round 6 — log once per messageId, not on every stream
+          // chunk. Base44 emits ~24 chunks per assistant reply; the
+          // bubble updates in place but the breadcrumb was firing on
+          // every single one. We only log the FIRST time we lift
+          // chips or strip a tool line for a given id, so the
+          // console stays readable.
+          if ((chips || sanitized !== raw) && !loggedSubscribeIdsRef.current.has(m.id)) {
+            loggedSubscribeIdsRef.current.add(m.id);
             // eslint-disable-next-line no-console
             console.log("[jess-subscribe]", {
               messageId: m.id,
@@ -1269,6 +1276,7 @@ export default function JessDemoPanel() {
     }
     if (unsubRef.current) { unsubRef.current(); unsubRef.current = null; }
     seenAgentIdsRef.current = new Set();
+    loggedSubscribeIdsRef.current = new Set();
     setConversationId(null);
     setActiveConvRecord(null);
     setDrawerOpen(false);
@@ -1295,6 +1303,7 @@ export default function JessDemoPanel() {
     // Tear down any existing subscription before swapping conversation id.
     if (unsubRef.current) { unsubRef.current(); unsubRef.current = null; }
     seenAgentIdsRef.current = new Set();
+    loggedSubscribeIdsRef.current = new Set();
     // Force a fresh context block on the next user message in this thread.
     contextInjectedRef.current.delete(id);
     setActiveConvRecord(record);
