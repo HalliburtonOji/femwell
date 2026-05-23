@@ -103,93 +103,81 @@ export async function extractMemoriesFromConversation(messages, userId, convId, 
     return r;
   }
 
+  // QA round 5 — switched from subscribeToConversation to a poll loop.
+  // The streaming subscription doesn't reliably deliver events for
+  // ephemeral extraction conversations (we measured 0 events across
+  // multiple runs). But `getConversation` polled after the fact does
+  // contain the assistant reply with a valid JSON memory array. Poll
+  // every 2 s up to 10 times = 20 s ceiling.
   let fullText = "";
-  let unsub = null;
-  let lastSubData = null;
-  let subEventCount = 0;
-  let firstSubAt = 0;
-  let firstAssistantAt = 0;
   try {
     trace("step:get-convo:before", { convoId: convo.id });
     const c = await base44.agents.getConversation(convo.id);
-    trace("step:get-convo:after", { hasMessages: Array.isArray(c?.messages), msgCount: (c?.messages || []).length });
+    // Normalise message count — base44 returns messages as an array OR
+    // as { items: [...] } depending on endpoint version, so be
+    // defensive.
+    const initialMsgs = Array.isArray(c?.messages) ? c.messages : (Array.isArray(c?.messages?.items) ? c.messages.items : []);
+    trace("step:get-convo:after", { hasMessages: Array.isArray(c?.messages), msgCount: initialMsgs.length, keys: c ? Object.keys(c).join(",") : "" });
     trace("step:add-message:before", { contentChars: turns.length + systemLine.length });
     await base44.agents.addMessage(c, {
       role: "user",
       content: `[SYSTEM]\n${systemLine}\n\n[CONVERSATION]\n${turns}`,
     });
     trace("step:add-message:after");
-    // Collect the streamed reply. Each event delivers the FULL message
-    // list, so we grab the last assistant message's content. Resolve
-    // early once we see what looks like a *complete* JSON array
-    // (balanced brackets) — otherwise the 8 s timer used to truncate
-    // mid-stream responses and we'd hit parse-error.
-    trace("step:subscribe:before");
-    fullText = await new Promise((resolve) => {
-      let latest = "";
-      let settled = false;
-      const finish = (value, why) => {
-        if (settled) return;
-        settled = true;
-        trace("step:subscribe:finish", { why, latestChars: latest.length, subEventCount, firstSubMs: firstSubAt ? firstSubAt - Date.now() : null });
-        resolve(value);
-      };
-      unsub = base44.agents.subscribeToConversation(convo.id, (data) => {
-        if (!firstSubAt) firstSubAt = Date.now();
-        subEventCount += 1;
-        lastSubData = data;
-        const list = data?.messages || [];
-        // Note all assistants we can see in this event so we can debug
-        // whether the agent is replying at all.
-        const assistants = list.filter((m) => m?.role === "assistant" && m?.id);
-        if (assistants.length && !firstAssistantAt) {
-          firstAssistantAt = Date.now();
-          trace("step:subscribe:first-assistant", { count: assistants.length, sampleContent: String(assistants[0].content || "").slice(0, 80) });
+    trace("step:poll:start", { maxAttempts: 10, intervalMs: 2000 });
+    for (let attempt = 1; attempt <= 10; attempt++) {
+      // eslint-disable-next-line no-await-in-loop
+      await new Promise((r) => window.setTimeout(r, 2000));
+      try {
+        // eslint-disable-next-line no-await-in-loop
+        const updated = await base44.agents.getConversation(convo.id);
+        const messages = Array.isArray(updated?.messages)
+          ? updated.messages
+          : (Array.isArray(updated?.messages?.items) ? updated.messages.items : []);
+        // findLast equivalent — newer-first scan for a substantive
+        // assistant reply (>10 chars, post-trim).
+        let assistantMsg = null;
+        for (let i = messages.length - 1; i >= 0; i--) {
+          const m = messages[i];
+          if (m?.role !== "assistant") continue;
+          const txt = String(m?.content || "").trim();
+          if (txt.length > 10) { assistantMsg = m; break; }
         }
-        for (const m of assistants) {
-          const txt = String(m.content || "").trim();
-          if (!txt) continue;
-          latest = txt;
+        const tick = {
+          attempt,
+          msgCount: messages.length,
+          assistantFound: !!assistantMsg,
+          assistantChars: assistantMsg ? String(assistantMsg.content).length : 0,
+        };
+        if (assistantMsg) {
+          fullText = String(assistantMsg.content);
+          trace("step:poll:hit", tick);
+          break;
         }
-        // Periodically log progress so QA can see the stream is alive.
-        if (subEventCount === 1 || subEventCount % 5 === 0) {
-          trace("step:subscribe:event", {
-            n: subEventCount,
-            totalMsgs: list.length,
-            assistantCount: assistants.length,
-            latestChars: latest.length,
-            latestTail: latest.slice(-60),
-          });
-        }
-        // Early-resolve heuristic: a complete JSON array — first `[`
-        // matches a balanced `]` somewhere later. This is the cheap
-        // version that doesn't try to JSON.parse the partial.
-        if (hasBalancedJsonArray(latest)) {
-          finish(latest, "balanced-array");
-        }
-      });
-      trace("step:subscribe:attached");
-      // 12 s ceiling — slow agent days were still timing out at 8.
-      window.setTimeout(() => finish(latest, "timeout-12s"), 12000);
-    });
-    trace("step:subscribe:resolved", { fullTextChars: fullText.length });
+        trace("step:poll:tick", tick);
+      } catch (e) {
+        trace("step:poll:throw", { attempt, error: String(e?.message || e) });
+      }
+    }
+    if (!fullText) trace("step:poll:exhausted");
   } catch (e) { trace("step:agent:throw", String(e?.message || e)); }
-  finally { try { unsub?.(); } catch {} }
 
-  // QA round 4 — dump the last subscription payload AND the conversation
-  // post-mortem if we got no text. This is the only way to see whether
-  // base44 actually streamed anything for the extraction prompt.
   if (!fullText) {
+    // Post-mortem so QA can see the final conversation state if the
+    // poll loop never found an assistant turn.
     let postMortem = null;
     try {
       const c = await base44.agents.getConversation(convo.id);
+      const msgs = Array.isArray(c?.messages)
+        ? c.messages
+        : (Array.isArray(c?.messages?.items) ? c.messages.items : []);
       postMortem = {
-        msgCount: (c?.messages || []).length,
-        roles: (c?.messages || []).map((m) => m?.role).join(","),
-        lastContent: String((c?.messages || []).slice(-1)[0]?.content || "").slice(0, 200),
+        msgCount: msgs.length,
+        roles: msgs.map((m) => m?.role).join(","),
+        lastContent: String(msgs.slice(-1)[0]?.content || "").slice(0, 200),
       };
     } catch (e) { postMortem = { error: String(e?.message || e) }; }
-    trace("step:post-mortem", { subEventCount, hadAnyAssistant: !!firstAssistantAt, lastSubMsgCount: (lastSubData?.messages || []).length, postMortem });
+    trace("step:post-mortem", { postMortem });
   }
 
   if (!fullText) {

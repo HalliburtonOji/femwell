@@ -1167,15 +1167,13 @@ export default function JessDemoPanel() {
         }
       }
     } catch { /* swallow — chat still works without history row */ }
-    // Inject the context block as the first user message so the agent
-    // responds personally. Hidden from the chat UI.
-    if (!contextInjectedRef.current.has(convo.id)) {
-      contextInjectedRef.current.add(convo.id);
-      try {
-        const c = await base44.agents.getConversation(convo.id);
-        await base44.agents.addMessage(c, { role: "user", content: contextBlock });
-      } catch { /* graceful — context just won't be injected this turn */ }
-    }
+    // QA round 5 — DO NOT pre-inject the context block here. Previously
+    // we added it as a `role: "user"` message, which the base44 agent
+    // treated as a turn and replied to. Combined with the actual user
+    // message that sendUserText adds next, this produced TWO assistant
+    // replies for a single user input. The context block is now
+    // PREPENDED to the first user message in sendUserText so the agent
+    // sees exactly one user turn and replies exactly once.
     return { convoId: convo.id, record };
   }, [conversationId, activeConvRecord, subscribeToConversation, contextBlock, user?.id]);
 
@@ -1310,10 +1308,28 @@ export default function JessDemoPanel() {
       for (const m of list) {
         if (m?.role === "assistant" && m?.id) seenAgentIdsRef.current.add(m.id);
       }
-      // Hide our context-block message (first user message that starts
-      // with "[JESS CONTEXT") and replay everything else.
+      // QA round 5 — the first user turn now CONTAINS the context
+      // block PREPENDED to the user's actual message (joined by
+      // `\n\n---\n\n`). On replay we need to strip the context prefix
+      // and show only the user's text. Legacy pure-context messages
+      // (no separator) are still skipped entirely.
       const view = list
-        .filter((m) => !(m?.role === "user" && String(m?.content || "").startsWith("[JESS CONTEXT")))
+        .map((m) => {
+          if (m?.role === "user") {
+            const content = String(m?.content || "");
+            if (content.startsWith("[JESS CONTEXT")) {
+              const sepIdx = content.indexOf("\n\n---\n\n");
+              if (sepIdx >= 0) {
+                // Combined message — keep only the trailing user text.
+                return { ...m, content: content.slice(sepIdx + 7).trim() };
+              }
+              // Pure context block (legacy) — flag for filter to drop.
+              return { ...m, __dropFromView: true };
+            }
+          }
+          return m;
+        })
+        .filter((m) => !m?.__dropFromView)
         .map((m) => ({
           id: m.id || uid(),
           role: m.role === "assistant" ? "jess" : "user",
@@ -1357,14 +1373,20 @@ export default function JessDemoPanel() {
         }
       }
       const convo = await base44.agents.getConversation(cid);
-      // Re-inject a fresh context block if this conversation was just
-      // resumed (loadConversation removes the id from contextInjectedRef).
+      // QA round 5 — combine the hidden context block with the user's
+      // actual message into a SINGLE `role: "user"` turn so the agent
+      // replies exactly once. On the first turn of a thread (and after
+      // resume, when loadConversation clears the flag) we prepend the
+      // [JESS CONTEXT] block; on subsequent turns we send just the
+      // user's text.
+      let outgoing;
       if (!contextInjectedRef.current.has(cid)) {
         contextInjectedRef.current.add(cid);
-        try { await base44.agents.addMessage(convo, { role: "user", content: contextBlock }); }
-        catch { /* fine, just won't be re-injected this turn */ }
+        outgoing = `${contextBlock}\n\n---\n\n${msg}`;
+      } else {
+        outgoing = msg;
       }
-      await base44.agents.addMessage(convo, { role: "user", content: msg });
+      await base44.agents.addMessage(convo, { role: "user", content: outgoing });
       // Feature 1F — bump message_count, updated_date, preview_text.
       if (record?.id) {
         const bumped = await bumpConvoMeta(record, msg);
