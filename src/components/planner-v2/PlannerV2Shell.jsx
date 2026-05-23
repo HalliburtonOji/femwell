@@ -56,6 +56,19 @@ import {
 } from "@/hooks/useCycleDay";
 // P2-4 — Body Today phase chips read PHASE_RECS (movement + rest slices).
 import { PHASE_RECS } from "@/data/phaseRecs";
+// Phase 3 — new feature components.
+import MorningCheckinCard from "@/components/planner/MorningCheckinCard";
+import ContextualFAB from "@/components/planner/ContextualFAB";
+import PlannerSettingsSheet, {
+  loadPlannerSettings,
+  DEFAULT_PLANNER_SETTINGS,
+  PLANNER_ROW_DEFINITIONS,
+} from "@/components/planner/PlannerSettingsSheet";
+import RitualBuilder, {
+  listRitualsForContext,
+  iconFor as ritualIconFor,
+} from "@/components/planner/RitualBuilder";
+import { Settings as SettingsIcon } from "lucide-react";
 
 // Layers + X imported separately so the DEV pill below can use them
 // without colliding with the demo's existing import list above.
@@ -641,32 +654,75 @@ export default function PlannerV2Shell({
   // it actually belongs — the next horizontal card peeks in from the
   // right edge with a subtle scale + opacity falloff.
 
-  return (
-    <div style={shell}>
-      {shouldShowDev() && (
-        <DevPill
-          devStage={devStage}
-          devConditions={devConditions}
-          onChangeStage={setDevStage}
-          onChangeConditions={setDevConditions}
-        />
-      )}
+  // ── Phase 3 — feature state ────────────────────────────────────────────
+  // P3-3 planner settings (row visibility + order) — loaded from
+  // localStorage on mount, optionally from UserProfile.plannerSettings.
+  const [plannerSettings, setPlannerSettings] = useState(DEFAULT_PLANNER_SETTINGS);
+  const [settingsOpen, setSettingsOpen] = useState(false);
+  // P3-4 ritual builder open state + custom-rituals refresh tick.
+  const [ritualBuilderOpen, setRitualBuilderOpen] = useState(false);
+  const [customRitualsTick, setCustomRitualsTick] = useState(0);
 
-      <Header greeting={greeting} onOpenPlan={() => setPlanOpen(true)} lifeStage={profileProp?.life_stage || realLifeStage} />
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    // Prefer the server-side UserProfile blob when available; localStorage
+    // is the fallback / mirror.
+    const fromProfile = profileProp?.plannerSettings;
+    if (fromProfile && typeof fromProfile === "object") {
+      setPlannerSettings({
+        hidden: Array.isArray(fromProfile.hidden) ? fromProfile.hidden : [],
+        order:  Array.isArray(fromProfile.order)  ? fromProfile.order  : DEFAULT_PLANNER_SETTINGS.order,
+      });
+    } else {
+      setPlannerSettings(loadPlannerSettings(user?.id));
+    }
+  }, [profileProp?.plannerSettings, user?.id]);
 
-      {/* Coach-mark tour — fires once on first visit, gated by
-          localStorage.planner_tour_v1. Targets each section below via
-          its data-tour attribute. */}
-      <PlannerTour name={realDisplayName} />
+  // P3-4 — custom rituals matching current context, refreshed when the
+  // tick bumps (after a save) or the phase / lifeStage changes.
+  const customRituals = useMemo(
+    () => listRitualsForContext(user?.id, { phase, lifeStage: effectiveLifeStage }),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [user?.id, phase, effectiveLifeStage, customRitualsTick],
+  );
 
-      {/* INSIGHTS hero — first horizontal slider on the page */}
-      <div data-tour="hero">
+  // Build the row nodes by key. Each key here lines up with the
+  // `PLANNER_ROW_DEFINITIONS` table in PlannerSettingsSheet.
+  const stageConditionNode = (() => {
+    const PREGNANCY_STAGES = ["pregnant-t1", "pregnant-t2", "pregnant-t3", "postpartum"];
+    const CYCLE_CONDITIONS = ["pmdd", "pcos", "endometriosis", "fibroids"];
+    const isPregOrPP = PREGNANCY_STAGES.includes(String(effectiveLifeStage || "").toLowerCase());
+    const conds = (effectiveConditions || []).map((c) => String(c || "").toLowerCase());
+    const suppressed = isPregOrPP ? conds.filter((c) => CYCLE_CONDITIONS.includes(c)) : [];
+    const visible    = conds.filter((c) => !suppressed.includes(c));
+    return {
+      suppressedNotice: suppressed.length > 0 ? (
+        <div style={{
+          padding: "8px 16px", margin: "8px 16px 0",
+          background: "rgba(58,44,26,0.04)", borderRadius: 10,
+          fontSize: 12, color: C.muted, fontStyle: "italic",
+        }}>
+          Cycle-linked conditions ({suppressed.map((c) => c.toUpperCase()).join(", ")}) are paused during pregnancy.
+        </div>
+      ) : null,
+      conditionRowVisible: visible,
+    };
+  })();
+
+  const NODES_BY_KEY = {
+    hero: (
+      <div data-tour="hero" key="hero">
         <InsightsHeroRow phase={phase} dayInCycle={cycleDay} profile={profileProp} user={user} />
       </div>
-
-      <ListsSection user={user} />
-
-      <Row label="Schedule & cycle">
+    ),
+    morning: (
+      <MorningCheckinCard key="morning" user={user} />
+    ),
+    lists: (
+      <ListsSection key="lists" user={user} />
+    ),
+    schedule: (
+      <Row label="Schedule & cycle" key="schedule">
         <SchedulePreviewCard blocks={blocks} onExpand={() => setScheduleOpen(true)} />
         <CyclePreviewCard
           onExpand={() => setCycleOpen(true)}
@@ -677,14 +733,14 @@ export default function PlannerV2Shell({
           profileProp={profileProp}
         />
       </Row>
-
-      <div data-tour="yourday">
+    ),
+    yourday: (
+      <div data-tour="yourday" key="yourday">
         <YourDayRow user={user} phase={phase} />
       </div>
-
-      <div data-tour="body">
-        {/* P2-4 — phase personalisation chip strip above the Body Today
-            carousel. Read-only, sage background, 3 picks per phase. */}
+    ),
+    body: (
+      <div data-tour="body" key="body">
         <BodyTodayChips phase={phase} lifeStage={effectiveLifeStage} />
         <Row label="Your body today">
           <BodyTodayCard user={user} />
@@ -697,111 +753,147 @@ export default function PlannerV2Shell({
           />
         </Row>
       </div>
-
-      {/* Stage + condition rows — locked order per spec:
-              Body Today → Stage Row → Condition Row → Rituals
-          P1-2: both rows now sit in their own `data-tour` wrappers so
-          the coach-mark tour and the rest of the layout treat them
-          as standalone sections (no more bleeding into Body Today).
-          P1-3: ConditionRow always renders — empty state when the
-          user has no conditions on file routes them to /Profile.
-          #13: cycle-driven conditions are suppressed during pregnancy
-          and postpartum (not biologically active in those stages). */}
-      {(() => {
-        const PREGNANCY_STAGES = ["pregnant-t1", "pregnant-t2", "pregnant-t3", "postpartum"];
-        const CYCLE_CONDITIONS = ["pmdd", "pcos", "endometriosis", "fibroids"];
-        const isPregOrPP = PREGNANCY_STAGES.includes(String(effectiveLifeStage || "").toLowerCase());
-        const conds = (effectiveConditions || []).map((c) => String(c || "").toLowerCase());
-        const suppressed = isPregOrPP ? conds.filter((c) => CYCLE_CONDITIONS.includes(c)) : [];
-        const visible    = conds.filter((c) => !suppressed.includes(c));
-        return (
-          <>
-            {suppressed.length > 0 && (
-              <div style={{
-                padding: "8px 16px", margin: "8px 16px 0",
-                background: "rgba(58,44,26,0.04)", borderRadius: 10,
-                fontSize: 12, color: C.muted, fontStyle: "italic",
-              }}>
-                Cycle-linked conditions ({suppressed.map((c) => c.toUpperCase()).join(", ")}) are paused during pregnancy.
-              </div>
-            )}
-            <div data-tour="stage" style={{ marginTop: 6 }}>
-              <StageRow
-                stage={effectiveLifeStage}
-                profile={profileProp}
-                phase={phase}
-                cycleDay={cycleDay}
-                user={user}
-              />
-            </div>
-            <div data-tour="conditions" style={{ marginTop: 6 }}>
-              {visible.length > 0 ? (
-                <ConditionRow
-                  conditions={visible}
-                  profile={profileProp}
-                  phase={phase}
-                  cycleDay={cycleDay}
-                />
-              ) : (
-                <ConditionEmptyPrompt />
-              )}
-            </div>
-          </>
-        );
-      })()}
-
-      <div data-tour="rituals">
+    ),
+    stage: (
+      <div key="stage">
+        {stageConditionNode.suppressedNotice}
+        <div data-tour="stage" style={{ marginTop: 6 }}>
+          <StageRow
+            stage={effectiveLifeStage}
+            profile={profileProp}
+            phase={phase}
+            cycleDay={cycleDay}
+            user={user}
+          />
+        </div>
+      </div>
+    ),
+    conditions: (
+      <div data-tour="conditions" style={{ marginTop: 6 }} key="conditions">
+        {stageConditionNode.conditionRowVisible.length > 0 ? (
+          <ConditionRow
+            conditions={stageConditionNode.conditionRowVisible}
+            profile={profileProp}
+            phase={phase}
+            cycleDay={cycleDay}
+          />
+        ) : (
+          <ConditionEmptyPrompt />
+        )}
+      </div>
+    ),
+    rituals: (
+      <div data-tour="rituals" key="rituals">
         <Row label="Rituals">
           <MorningStackCard user={user} />
-          <CreateRitualCard />
+          <CreateRitualCard onOpenBuilder={() => setRitualBuilderOpen(true)} />
           {ritualBundles.map((b) => <RitualBundleCard key={b.id} bundle={b} user={user} />)}
+          {customRituals.map((r) => <CustomRitualCard key={r.id} ritual={r} />)}
         </Row>
-        {/* P2-1 — inline + Add for rituals (opens HabitLog modal). */}
         <RowAddFooter label="Add a ritual" loggerType="ritual" />
       </div>
-
-      {/* Planner audit fix — row order spec is Nourishment (row 9)
-          then Mind & Insight (row 10). The previous render order had
-          them swapped, putting Mind & Insight at Y≈2232 ahead of
-          Nourishment at Y≈2697. */}
-      <Row label="Nourishment">
-        <MacroTrackerCard user={user} profile={profileProp} />
-        <HydrationCard user={user} phase={phase} />
-        <AIMealPlanCard phase={phase} />
-        <PhaseRecipesCard phase={phase} />
-      </Row>
-      {/* P2-1 — inline + Add for nourishment (opens MealLog modal). */}
-      <RowAddFooter label="Log a meal" loggerType="meal" />
-
-      <Row label="Mind & insight">
+    ),
+    nourishment: (
+      <div data-tour="nourishment" key="nourishment">
+        <Row label="Nourishment">
+          <MacroTrackerCard user={user} profile={profileProp} />
+          <HydrationCard user={user} phase={phase} />
+          <AIMealPlanCard phase={phase} />
+          <PhaseRecipesCard phase={phase} />
+        </Row>
+        <RowAddFooter label="Log a meal" loggerType="meal" />
+      </div>
+    ),
+    mind: (
+      <Row label="Mind & insight" key="mind">
         <IntentionCard user={user} />
         <AstraCard profile={profileProp} />
         <MoodMentalHealthCard user={user} phase={phase} />
         <BreathworkCard phase={phase} />
         <CyclePsychologyCard />
       </Row>
+    ),
+    care: (
+      <div data-tour="care" key="care">
+        <Row label="Care">
+          <MedsAndSuppsCard user={user} />
+          <SymptomLogCard user={user} />
+          <BodyScanCard user={user} />
+          <GPReportCardSmall profile={profileProp} />
+        </Row>
+      </div>
+    ),
+    tonight: (
+      <div key="tonight">
+        <Row label="Tonight">
+          <TonightReflectionCard user={user} />
+          <TomorrowPreviewCard user={user} phase={phase} cycleDay={cycleDay} profile={profileProp} />
+          <EndOfDayNoteCard user={user} />
+        </Row>
+        <RowAddFooter label="Add a task for tomorrow" loggerType="task" />
+      </div>
+    ),
+  };
 
-      <Row label="Care">
-        <MedsAndSuppsCard user={user} />
-        <SymptomLogCard user={user} />
-        <BodyScanCard user={user} />
-        <GPReportCardSmall profile={profileProp} />
-      </Row>
+  // Resolve the final render order from settings, falling back to the
+  // canonical default. Hidden rows are filtered out at the end.
+  const orderedRowKeys = (() => {
+    const seen = new Set();
+    const out = [];
+    for (const k of plannerSettings.order || []) {
+      if (NODES_BY_KEY[k] && !seen.has(k)) { seen.add(k); out.push(k); }
+    }
+    for (const r of PLANNER_ROW_DEFINITIONS) {
+      if (!seen.has(r.key) && NODES_BY_KEY[r.key]) { seen.add(r.key); out.push(r.key); }
+    }
+    return out.filter((k) => !plannerSettings.hidden.includes(k));
+  })();
 
-      <Row label="Tonight">
-        <TonightReflectionCard user={user} />
-        <TomorrowPreviewCard user={user} phase={phase} cycleDay={cycleDay} profile={profileProp} />
-        {/* #11: CycleReflectionCard removed (duplicated BodyTodayCard's
-            mood/energy/symptoms check-in). Replaced by EndOfDayNoteCard —
-            a single reflective text field persisted to JournalEntries. */}
-        <EndOfDayNoteCard user={user} />
-      </Row>
-      {/* P2-1 — inline + Add for Tonight (opens PersonalTask modal —
-          users typically add tomorrow's tasks from here). */}
-      <RowAddFooter label="Add a task for tomorrow" loggerType="task" />
+  return (
+    <div style={shell}>
+      {shouldShowDev() && (
+        <DevPill
+          devStage={devStage}
+          devConditions={devConditions}
+          onChangeStage={setDevStage}
+          onChangeConditions={setDevConditions}
+        />
+      )}
 
-      {/* DemoFooter removed from production render — the function is kept
-          intact below for now but no longer mounted. */}
+      <Header
+        greeting={greeting}
+        onOpenPlan={() => setPlanOpen(true)}
+        onOpenSettings={() => setSettingsOpen(true)}
+        lifeStage={profileProp?.life_stage || realLifeStage}
+      />
+
+      {/* Coach-mark tour — fires once on first visit, gated by
+          localStorage.planner_tour_v1. Targets each section below via
+          its data-tour attribute. */}
+      <PlannerTour name={realDisplayName} />
+
+      {/* Phase 3 — rows are rendered in user-defined order. The
+          NODES_BY_KEY map above defines each row's JSX; PlannerSettingsSheet
+          writes the order + hidden array; orderedRowKeys resolves the
+          final sequence. Hidden rows collapse fully (no spacer). */}
+      {orderedRowKeys.map((k) => NODES_BY_KEY[k])}
+
+      <ContextualFAB />
+
+      <PlannerSettingsSheet
+        open={settingsOpen}
+        onClose={() => setSettingsOpen(false)}
+        userId={user?.id}
+        profileId={profileProp?.id}
+        settings={plannerSettings}
+        onChange={(next) => setPlannerSettings(next)}
+      />
+      <RitualBuilder
+        open={ritualBuilderOpen}
+        onClose={() => setRitualBuilderOpen(false)}
+        userId={user?.id}
+        onSaved={() => setCustomRitualsTick((t) => t + 1)}
+      />
 
       <PlanADaySheet open={planOpen} onClose={() => setPlanOpen(false)} user={user} />
 
@@ -855,7 +947,7 @@ export default function PlannerV2Shell({
 //   • For pregnancy stages (pregnant-t1 / t2 / t3) we render
 //     "Pregnant · Trimester N" instead of "Luteal Day 25".
 //   • Other stages keep the original cycle-day format.
-function Header({ greeting, onOpenPlan, lifeStage }) {
+function Header({ greeting, onOpenPlan, onOpenSettings, lifeStage }) {
   const now = new Date();
   const dateLabel = now.toLocaleDateString(undefined, {
     weekday: "long", day: "numeric", month: "long",
@@ -887,6 +979,23 @@ function Header({ greeting, onOpenPlan, lifeStage }) {
         >
           <SearchIcon size={16} />
         </a>
+        {/* P3-3 — open the Planner personalisation sheet. */}
+        {onOpenSettings && (
+          <button
+            type="button"
+            onClick={onOpenSettings}
+            aria-label="Planner settings"
+            style={{
+              width: 36, height: 36, borderRadius: 9999,
+              display: "inline-flex", alignItems: "center", justifyContent: "center",
+              background: "rgba(58,44,26,0.06)", color: C.espresso,
+              border: "none", cursor: "pointer",
+              flexShrink: 0,
+            }}
+          >
+            <SettingsIcon size={16} />
+          </button>
+        )}
       </div>
       <div style={headerSubRow}>
         <span style={greetingSub}>
@@ -2940,9 +3049,55 @@ function ConsistencyCard() {
 }
 
 // ── Rituals ───────────────────────────────────────────────────────────────
-function CreateRitualCard() {
+// P3-4 — render a user-created ritual inside the Rituals row.
+function CustomRitualCard({ ritual }) {
+  const Icon = ritualIconFor(ritual?.icon || "sparkles");
+  const dayCount = Array.isArray(ritual?.days_of_week) ? ritual.days_of_week.length : 0;
+  const daysLabel = dayCount === 7 ? "Every day" : `${dayCount} day${dayCount === 1 ? "" : "s"}/wk`;
+  const time = ritual?.time_of_day
+    ? ritual.time_of_day.charAt(0).toUpperCase() + ritual.time_of_day.slice(1)
+    : "Anytime";
   return (
-    <button onClick={() => openLogger("ritual")} style={createRitualCard}>
+    <article style={{ ...cardStyle, borderTop: `3px solid ${C.gold}` }}>
+      <div style={cardHeadRow}>
+        <span style={{
+          ...iconChip,
+          background: `${C.gold}1F`,
+          color: C.goldDeep,
+        }}><Icon size={13} /></span>
+        <div style={{ flex: 1, minWidth: 0 }}>
+          <span style={kicker}>YOUR RITUAL</span>
+          <h3 style={{ ...cardTitle, margin: "2px 0 0" }}>{ritual?.name || "Custom ritual"}</h3>
+        </div>
+      </div>
+      <p style={cardSub}>{daysLabel} · {time}</p>
+      <button
+        type="button"
+        onClick={() => { try { openLogger("ritual"); } catch { /* swallow */ } }}
+        style={{
+          alignSelf: "flex-start", marginTop: 4,
+          display: "inline-flex", alignItems: "center", gap: 4,
+          padding: "6px 10px", borderRadius: 9999,
+          background: C.cream, border: "1px solid rgba(58,44,26,0.18)",
+          color: C.espresso, cursor: "pointer",
+          fontFamily: "'Inter', system-ui, sans-serif",
+          fontSize: 11.5, fontWeight: 700,
+        }}
+      ><Plus size={11} /> Mark done</button>
+    </article>
+  );
+}
+
+function CreateRitualCard({ onOpenBuilder }) {
+  // P3-4 — primary entry point for the Ritual Builder wizard. Falls back
+  // to the universal logger if no callback was passed (defensive — the
+  // Planner-mounted instance always passes one).
+  const handleTap = () => {
+    if (onOpenBuilder) onOpenBuilder();
+    else openLogger("ritual");
+  };
+  return (
+    <button onClick={handleTap} style={createRitualCard}>
       <span style={createRitualIcon}><Sparkles size={24} style={{ color: C.gold }} /></span>
       <span style={createRitualTitle}>Build a ritual</span>
       <span style={createRitualSub}>Your own bundle, your phase, your time</span>
