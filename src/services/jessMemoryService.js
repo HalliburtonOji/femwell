@@ -86,10 +86,17 @@ export async function extractMemoriesFromConversation(messages, userId, convId, 
     `content is a concise 1-sentence memory. importance_score is 1-10. tags is a comma-separated keyword list. ` +
     `Only extract things genuinely worth remembering (importance >= 5). Return [] if nothing is memorable.`;
 
+  // QA round 4 — granular breadcrumbs for every step of the LLM round
+  // trip so we can see *exactly* where extraction stalls.
+  trace("step:create-convo:before");
   let convo = null;
   try {
-    convo = await base44.agents.createConversation({ agent_name: "personal_assistant" }).catch(() => null);
-  } catch (e) { trace("create-convo-throw", String(e?.message || e)); }
+    convo = await base44.agents.createConversation({ agent_name: "personal_assistant" }).catch((e) => {
+      trace("step:create-convo:rejected", String(e?.message || e));
+      return null;
+    });
+  } catch (e) { trace("step:create-convo:throw", String(e?.message || e)); }
+  trace("step:create-convo:after", { convoId: convo?.id || null, hasMessages: Array.isArray(convo?.messages) });
   if (!convo?.id) {
     const r = { extracted: 0, reason: "no-agent-convo" };
     trace("fail", r);
@@ -98,45 +105,92 @@ export async function extractMemoriesFromConversation(messages, userId, convId, 
 
   let fullText = "";
   let unsub = null;
+  let lastSubData = null;
+  let subEventCount = 0;
+  let firstSubAt = 0;
+  let firstAssistantAt = 0;
   try {
+    trace("step:get-convo:before", { convoId: convo.id });
     const c = await base44.agents.getConversation(convo.id);
+    trace("step:get-convo:after", { hasMessages: Array.isArray(c?.messages), msgCount: (c?.messages || []).length });
+    trace("step:add-message:before", { contentChars: turns.length + systemLine.length });
     await base44.agents.addMessage(c, {
       role: "user",
       content: `[SYSTEM]\n${systemLine}\n\n[CONVERSATION]\n${turns}`,
     });
+    trace("step:add-message:after");
     // Collect the streamed reply. Each event delivers the FULL message
     // list, so we grab the last assistant message's content. Resolve
     // early once we see what looks like a *complete* JSON array
     // (balanced brackets) — otherwise the 8 s timer used to truncate
     // mid-stream responses and we'd hit parse-error.
+    trace("step:subscribe:before");
     fullText = await new Promise((resolve) => {
       let latest = "";
       let settled = false;
-      const finish = (value) => {
+      const finish = (value, why) => {
         if (settled) return;
         settled = true;
+        trace("step:subscribe:finish", { why, latestChars: latest.length, subEventCount, firstSubMs: firstSubAt ? firstSubAt - Date.now() : null });
         resolve(value);
       };
       unsub = base44.agents.subscribeToConversation(convo.id, (data) => {
+        if (!firstSubAt) firstSubAt = Date.now();
+        subEventCount += 1;
+        lastSubData = data;
         const list = data?.messages || [];
-        for (const m of list) {
-          if (m?.role !== "assistant" || !m?.id) continue;
+        // Note all assistants we can see in this event so we can debug
+        // whether the agent is replying at all.
+        const assistants = list.filter((m) => m?.role === "assistant" && m?.id);
+        if (assistants.length && !firstAssistantAt) {
+          firstAssistantAt = Date.now();
+          trace("step:subscribe:first-assistant", { count: assistants.length, sampleContent: String(assistants[0].content || "").slice(0, 80) });
+        }
+        for (const m of assistants) {
           const txt = String(m.content || "").trim();
           if (!txt) continue;
           latest = txt;
+        }
+        // Periodically log progress so QA can see the stream is alive.
+        if (subEventCount === 1 || subEventCount % 5 === 0) {
+          trace("step:subscribe:event", {
+            n: subEventCount,
+            totalMsgs: list.length,
+            assistantCount: assistants.length,
+            latestChars: latest.length,
+            latestTail: latest.slice(-60),
+          });
         }
         // Early-resolve heuristic: a complete JSON array — first `[`
         // matches a balanced `]` somewhere later. This is the cheap
         // version that doesn't try to JSON.parse the partial.
         if (hasBalancedJsonArray(latest)) {
-          finish(latest);
+          finish(latest, "balanced-array");
         }
       });
+      trace("step:subscribe:attached");
       // 12 s ceiling — slow agent days were still timing out at 8.
-      window.setTimeout(() => finish(latest), 12000);
+      window.setTimeout(() => finish(latest, "timeout-12s"), 12000);
     });
-  } catch (e) { trace("agent-throw", String(e?.message || e)); }
+    trace("step:subscribe:resolved", { fullTextChars: fullText.length });
+  } catch (e) { trace("step:agent:throw", String(e?.message || e)); }
   finally { try { unsub?.(); } catch {} }
+
+  // QA round 4 — dump the last subscription payload AND the conversation
+  // post-mortem if we got no text. This is the only way to see whether
+  // base44 actually streamed anything for the extraction prompt.
+  if (!fullText) {
+    let postMortem = null;
+    try {
+      const c = await base44.agents.getConversation(convo.id);
+      postMortem = {
+        msgCount: (c?.messages || []).length,
+        roles: (c?.messages || []).map((m) => m?.role).join(","),
+        lastContent: String((c?.messages || []).slice(-1)[0]?.content || "").slice(0, 200),
+      };
+    } catch (e) { postMortem = { error: String(e?.message || e) }; }
+    trace("step:post-mortem", { subEventCount, hadAnyAssistant: !!firstAssistantAt, lastSubMsgCount: (lastSubData?.messages || []).length, postMortem });
+  }
 
   if (!fullText) {
     const r = { extracted: 0, reason: "no-llm-reply" };

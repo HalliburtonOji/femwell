@@ -628,8 +628,12 @@ function splitChipsFromText(raw) {
   // text (the array is the last meaningful content, drop everything
   // after it too).
   let head = cleaned.slice(0, bestOpen).trimEnd();
-  // Common LLM prefixes that introduce the chip list.
-  head = head.replace(/\b(?:Suggestions?|Chips?|Quick replies?|Options?|Next steps?|Follow[-\s]?ups?)\s*[:\-—]\s*$/i, "").trimEnd();
+  // QA round 4 — agent often ends with a bare label like "\n\noptions"
+  // (no colon, no dash). Strip the label EVEN WHEN the trailing
+  // punctuation is absent. We match a SHORT lowercase/Title-case label
+  // at the end, optionally followed by `:`/`-`/`—`, then collapse the
+  // trailing whitespace.
+  head = head.replace(/\b(?:Suggestions?|Chips?|Quick replies?|Options?|Next steps?|Follow[-\s]?ups?)\s*[:\-—]?\s*$/i, "").trimEnd();
   // Trailing colon or dash left behind after the prefix strip.
   head = head.replace(/[:\-—]\s*$/, "").trimEnd();
   return { text: head, chips };
@@ -1042,9 +1046,18 @@ export default function JessDemoPanel() {
     unsubRef.current = base44.agents.subscribeToConversation(id, (data) => {
       const list = data?.messages || [];
       // Only the assistants we DIDN'T pre-mark as already-replayed.
-      const live = list.filter((m) =>
-        m?.role === "assistant" && m?.id && !seenAgentIdsRef.current.has(m.id)
-      );
+      // QA round 4 — ALSO filter out empty-content messages. Base44
+      // emits tool-call intermediary frames with `role: "assistant"`
+      // but empty `content`; previously these were creating phantom
+      // empty bubbles (2 stacked above every real reply with the
+      // timestamp + MHRA footer but no text).
+      const live = list.filter((m) => {
+        if (m?.role !== "assistant" || !m?.id) return false;
+        if (seenAgentIdsRef.current.has(m.id)) return false;
+        const content = String(m.content ?? "").trim();
+        if (!content) return false;
+        return true;
+      });
       if (live.length === 0) return;
       setMessages((prev) => {
         // Index of existing entries by id so we can update in place when
