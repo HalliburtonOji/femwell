@@ -54,6 +54,8 @@ import {
   computeCycleDay as derivePlannerPhase,
   useCycleDay,
 } from "@/hooks/useCycleDay";
+// P2-4 — Body Today phase chips read PHASE_RECS (movement + rest slices).
+import { PHASE_RECS } from "@/data/phaseRecs";
 
 // Layers + X imported separately so the DEV pill below can use them
 // without colliding with the demo's existing import list above.
@@ -681,6 +683,9 @@ export default function PlannerV2Shell({
       </div>
 
       <div data-tour="body">
+        {/* P2-4 — phase personalisation chip strip above the Body Today
+            carousel. Read-only, sage background, 3 picks per phase. */}
+        <BodyTodayChips phase={phase} lifeStage={effectiveLifeStage} />
         <Row label="Your body today">
           <BodyTodayCard user={user} />
           <SmartViewCard phase={phase} />
@@ -751,6 +756,8 @@ export default function PlannerV2Shell({
           <CreateRitualCard />
           {ritualBundles.map((b) => <RitualBundleCard key={b.id} bundle={b} user={user} />)}
         </Row>
+        {/* P2-1 — inline + Add for rituals (opens HabitLog modal). */}
+        <RowAddFooter label="Add a ritual" loggerType="ritual" />
       </div>
 
       {/* Planner audit fix — row order spec is Nourishment (row 9)
@@ -763,6 +770,8 @@ export default function PlannerV2Shell({
         <AIMealPlanCard phase={phase} />
         <PhaseRecipesCard phase={phase} />
       </Row>
+      {/* P2-1 — inline + Add for nourishment (opens MealLog modal). */}
+      <RowAddFooter label="Log a meal" loggerType="meal" />
 
       <Row label="Mind & insight">
         <IntentionCard user={user} />
@@ -787,6 +796,9 @@ export default function PlannerV2Shell({
             a single reflective text field persisted to JournalEntries. */}
         <EndOfDayNoteCard user={user} />
       </Row>
+      {/* P2-1 — inline + Add for Tonight (opens PersonalTask modal —
+          users typically add tomorrow's tasks from here). */}
+      <RowAddFooter label="Add a task for tomorrow" loggerType="task" />
 
       {/* DemoFooter removed from production render — the function is kept
           intact below for now but no longer mounted. */}
@@ -2259,6 +2271,17 @@ function ListsSection({ user }) {
           {activeList ? `${activeList.name}: ` : ""}{previewText}{(topTask?.text || "").length > 40 ? "…" : ""}
         </p>
       )}
+      {/* P2-3 — explicit empty state when no tasks exist in any bucket.
+          Distinct from the "0" count badges so first-time users see a
+          warm prompt instead of three empty chips. */}
+      {!previewText && lists.every((l) => l.tasks.length === 0) && (
+        <p style={{
+          fontSize: 12, color: C.muted, margin: "6px 16px 0",
+          fontStyle: "italic", fontFamily: "'Inter', system-ui, sans-serif",
+        }}>
+          Nothing on your list — add a task to get started.
+        </p>
+      )}
       {expanded && (
         <div style={listsAccordion}>
           {(lists.find((l) => l.id === expanded)?.tasks || []).map((t) => {
@@ -2664,6 +2687,17 @@ function BodyTodayCard({ user }) {
           <div style={ringSub}>Settling rhythm</div>
         </div>
       </div>
+      {/* P2-3 — gentle empty-state hint when no checkin exists today.
+          The mood/energy/sleep chips already open the logger, so the
+          tap target is in place; this just makes the prompt explicit. */}
+      {!checkin && (
+        <p style={{
+          margin: "2px 0 0", fontSize: 12, color: C.muted, fontStyle: "italic",
+          fontFamily: "'Inter', system-ui, sans-serif", lineHeight: 1.4,
+        }}>
+          No check-in yet — tap a chip below to log how you feel.
+        </p>
+      )}
       <div style={miniChipRow}>
         <button onClick={() => openLogger("checkin")} style={miniChip}>
           <Smile size={12} style={{ color: C.rose }} /> Mood
@@ -2846,7 +2880,8 @@ function MorningStackCard({ user }) {
           fontFamily: "'Inter', sans-serif", fontSize: 12, color: C.muted,
           padding: "12px 0",
         }}>
-          No rituals for today — add some from the logger or the Rituals carousel below.
+          {/* P2-3 — empty-state copy. */}
+          No rituals this morning — tap + to begin your day.
         </p>
       )}
       {morning.length > 0 && (
@@ -3560,10 +3595,21 @@ function MacroTrackerCard({ user, profile: profileProp }) {
     { label: "Carbs",   value: totals.carbs,   target: targets.carbs,   tone: C.gold,  unit: "g" },
     { label: "Fat",     value: totals.fat,     target: targets.fat,     tone: C.blush, unit: "g" },
   ];
+  const noMealsLoggedYet = totals.protein == null && totals.carbs == null && totals.fat == null;
   return (
     <article style={cardStyle}>
       <span style={kicker}>MACRO TRACKER</span>
       <h3 style={cardTitle}>Today's plate</h3>
+      {/* P2-3 — short empty-state line when no MealLog rows exist
+          for today. Macro rings stay visible as targets. */}
+      {noMealsLoggedYet && (
+        <p style={{
+          margin: "2px 0 4px", fontSize: 12, color: C.muted, fontStyle: "italic",
+          fontFamily: "'Inter', system-ui, sans-serif", lineHeight: 1.4,
+        }}>
+          No meals logged today — tap + to add.
+        </p>
+      )}
       <div style={macroRingRow}>
         {macros.map((m) => {
           const R = 24, CIRC = 2 * Math.PI * R;
@@ -3870,7 +3916,15 @@ function MedsAndSuppsCard({ user }) {
         {allMedsDone && <span style={allDoneChip}><Check size={11} /> Meds done</span>}
       </div>
       <Section name="MEDICATIONS">
-        {meds.map((m) => (
+        {meds.length === 0 ? (
+          /* P2-3 — empty state when no medications are on file. */
+          <p style={{
+            margin: "4px 0 0", fontSize: 12, color: C.muted, fontStyle: "italic",
+            fontFamily: "'Inter', system-ui, sans-serif", lineHeight: 1.4,
+          }}>
+            No medications logged — tap + below to add one.
+          </p>
+        ) : meds.map((m) => (
           <CheckboxRow key={m.id} checked={m.done} onChange={() => toggleMed(m.id)} text={m.text}>
             <span style={medTimeChip}>{m.time}</span>
           </CheckboxRow>
@@ -5130,6 +5184,79 @@ function GenericAddSheet({ type, onClose, onSaved }) {
 // every horizontal slider in the Planner stays consistent.
 function Row({ label, children }) {
   return <CardStack label={label}>{children}</CardStack>;
+}
+
+// P2-1 — small "+ Add" tap target rendered below a row's CardStack.
+// Opens the appropriate UniversalLogger modal via `loggerType` so each
+// affected row routes to the right entity (task / meal / ritual).
+function RowAddFooter({ label, loggerType }) {
+  return (
+    <div style={{
+      display: "flex", justifyContent: "center",
+      margin: "-2px 16px 14px",
+    }}>
+      <button
+        type="button"
+        onClick={() => { try { openLogger(loggerType); } catch { /* swallow */ } }}
+        style={{
+          display: "inline-flex", alignItems: "center", gap: 6,
+          padding: "8px 16px", minHeight: 34, borderRadius: 9999,
+          background: "transparent",
+          border: `1px dashed ${C.muted}66`,
+          color: C.espresso, cursor: "pointer",
+          fontFamily: "'Inter', system-ui, sans-serif",
+          fontSize: 12, fontWeight: 600,
+          letterSpacing: "0.02em",
+        }}
+      >
+        <Plus size={12} /> {label}
+      </button>
+    </div>
+  );
+}
+
+// P2-4 — phase personalisation chips for Body Today. Renders 3 sage-tinted
+// chips above the carousel pulling from PHASE_RECS.movement + .rest.
+// Hidden for pregnancy / postpartum / menopause stages where cycle phase
+// isn't the right framing.
+function BodyTodayChips({ phase, lifeStage }) {
+  const HIDE_STAGES = ["pregnant-t1", "pregnant-t2", "pregnant-t3", "postpartum", "menopause", "post-menopause"];
+  if (HIDE_STAGES.includes(String(lifeStage || "").toLowerCase())) return null;
+  const recs = PHASE_RECS[phase];
+  if (!recs) return null;
+  // Mix one movement tip + one rest tip + one mood tip so the strip
+  // covers different facets of "body today" rather than three of the
+  // same kind. Fall back gracefully if a slice is missing.
+  const picks = [
+    recs.movement?.[0],
+    recs.rest?.[0],
+    recs.mood?.[0],
+  ].filter(Boolean);
+  if (picks.length === 0) return null;
+  return (
+    <div style={{
+      display: "flex", gap: 8, overflowX: "auto",
+      padding: "2px 16px 10px",
+      scrollbarWidth: "none", WebkitOverflowScrolling: "touch",
+    }}>
+      {picks.map((tip, i) => (
+        <span key={i} style={{
+          flexShrink: 0,
+          display: "inline-flex", alignItems: "center",
+          padding: "8px 12px",
+          borderRadius: 9999,
+          background: "rgba(143, 175, 143, 0.16)", // sage @ 16%
+          border: "1px solid rgba(143, 175, 143, 0.36)",
+          color: "#2F4A2F",
+          fontFamily: "'Inter', system-ui, sans-serif",
+          fontSize: 11.5, fontWeight: 600,
+          lineHeight: 1.3,
+          maxWidth: 320,
+          whiteSpace: "normal",
+        }}>{tip}</span>
+      ))}
+    </div>
+  );
 }
 
 // P1-3 — empty state for the Condition row. When the user has no health
