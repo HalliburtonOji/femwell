@@ -318,24 +318,33 @@ export default function MonthRibbon({ profile, habitLogs = [], today = new Date(
                 // as crimson cell + cream outline + pulsing dot, not a
                 // cream cell on a crimson row.
                 const hasPhaseFill = phase === "menstrual" || phase === "ovulatory";
-                // Planner audit round 2 — QA reported today's cell
-                // STILL rendering rgb(255,255,255) (pure white) even
-                // after the first composition fix. The previous
-                // attempt relied on `background: transparent` to let
-                // the parent ribbon's crimson gradient bleed through,
-                // but something on the page (browser focus ring, user-
-                // agent button styling, or a stacking quirk we
-                // couldn't reproduce locally) was still painting white
-                // pixels at the cell location. Replacing transparency
-                // with an EXPLICIT phase-colour background on today
-                // cells that sit over a phase fill — so even if some
-                // user-agent or focus state tries to override, we win.
-                // Dropped the `outline` entirely; ring is now a pure
-                // box-shadow stack (cream inner ring + espresso outer
-                // ring for extra contrast against any background).
-                const todayBg = isToday && hasPhaseFill
-                  ? (PHASE_COLOR[phase] || "#8B2635")
-                  : (isToday ? "#F4EDDB" : "transparent");
+                // Planner audit round 4 — QA still saw the today cell
+                // rendering as white even after the explicit-background
+                // attempt. Rewrote the composition as the user
+                // specified: phase fill is the BASE layer that sets
+                // background, the today indicator NEVER overwrites
+                // background when hasPhaseFill is true — it only adds
+                // a box-shadow ring on top.
+                const cellStyle = { ...cellBtnStyle, outline: "none" };
+                if (hasPhaseFill) {
+                  cellStyle.background = PHASE_COLOR[phase];
+                }
+                if (isToday) {
+                  if (hasPhaseFill) {
+                    // Period or ovulatory day + today: keep the phase
+                    // background untouched (already set above), add a
+                    // cream+espresso ring via box-shadow only.
+                    cellStyle.boxShadow = "0 0 0 2px #F4EDDB, 0 0 0 3.5px #3A2C1A";
+                  } else {
+                    // Follicular / luteal / off + today: espresso pill
+                    // with cream halo.
+                    cellStyle.background = "#3A2C1A";
+                    cellStyle.boxShadow = "0 0 0 2px rgba(244,237,219,0.5), 0 0 0 3.5px #3A2C1A";
+                  }
+                  cellStyle.zIndex = 2;
+                } else {
+                  cellStyle.zIndex = 1;
+                }
                 return (
                   <button
                     key={cell.dateISO}
@@ -343,18 +352,7 @@ export default function MonthRibbon({ profile, habitLogs = [], today = new Date(
                     onClick={() => handleCellClick(cell.dateISO)}
                     aria-label={ariaLabel}
                     aria-current={isToday ? "date" : undefined}
-                    style={{
-                      ...cellBtnStyle,
-                      outline: "none",
-                      background: todayBg,
-                      // Double-ring (cream inner + espresso halo)
-                      // reads clearly on both cream and phase
-                      // backgrounds.
-                      boxShadow: isToday
-                        ? "0 0 0 2px #F4EDDB, 0 0 0 3.5px #3A2C1A, 0 0 12px rgba(244,237,219,0.45)"
-                        : "none",
-                      zIndex: isToday ? 2 : 1,
-                    }}
+                    style={cellStyle}
                   >
                     {isToday && (
                       <>
@@ -379,20 +377,20 @@ export default function MonthRibbon({ profile, habitLogs = [], today = new Date(
                     <span
                       style={{
                         ...dayNumStyle,
-                        // Audit fix — when today sits on a phase-filled
-                        // cell (menstrual / ovulatory), background is
-                        // now the phase colour rather than the cream
-                        // pill, so the number needs the SAME contrast
-                        // treatment as a non-today phase cell: cream
-                        // on crimson, plum on gold.
+                        // Audit fix round 4 — colour matrix:
+                        //   off cell:                     muted espresso
+                        //   today + phase fill:           cream  (white on crimson/gold)
+                        //   today + no phase fill:        cream  (on espresso pill)
+                        //   ovulatory cell, not today:    plum   (on gold)
+                        //   all other phase-filled cells: cream
                         color: cell.isOff
                           ? "rgba(58,44,26,0.40)"
-                          : isToday && !hasPhaseFill
-                            ? PHASE_COLOR[phase] || "#3A2C1A"  // Le Menu: phase ink on the cream today pill
+                          : isToday
+                            ? "#F4EDDB"
                             : isOvulatory
                               ? "var(--plum, #4A2A3A)"
                               : "#FFFAF5",
-                        textShadow: !cell.isOff && !isOvulatory && (!isToday || hasPhaseFill) ? "0 1px 2px rgba(74,42,58,0.30)" : "none",
+                        textShadow: !cell.isOff && !isOvulatory ? "0 1px 2px rgba(74,42,58,0.30)" : "none",
                         fontWeight: isToday ? 800 : 700,
                       }}
                     >
