@@ -16,6 +16,7 @@
 // ─────────────────────────────────────────────────────────────────────────────
 
 import { useCallback, useEffect, useRef, useState } from "react";
+import { useLocation } from "react-router-dom";
 import {
   Plus, Minus, X as XIcon, Check,
   Heart, Utensils, Pill, Pen, Activity, Sparkles,
@@ -2399,10 +2400,15 @@ export default function UnifiedTabLogger() {
     toastTimer.current = setTimeout(() => setToast(t => ({ ...t, visible: false })), 1500);
   }, []);
 
-  // Path detection.
-  const path = typeof window !== "undefined" ? window.location.pathname : "";
-  const onIdeas   = path.startsWith("/Ideas");
-  const onPlanner = path.startsWith("/Planner");
+  // Path detection. Uses react-router's `useLocation()` so this is
+  // reactive to in-app navigation — UnifiedTabLogger is mounted INSIDE
+  // <Router> in App.jsx as of this commit. Case-insensitive so both
+  // `/Planner` and `/planner` are caught (canonical route is uppercase).
+  const location = useLocation();
+  const path = location?.pathname || "";
+  const pathLower = path.toLowerCase();
+  const onIdeas   = pathLower.startsWith("/ideas");
+  const onPlanner = pathLower.startsWith("/planner");
 
   // Set the default tab based on current path whenever the sheet opens.
   useEffect(() => {
@@ -2434,7 +2440,9 @@ export default function UnifiedTabLogger() {
     };
   }, [open]);
 
-  if (onIdeas) return null;
+  // Suppress on /Ideas (legacy — no global FAB on the demo gallery)
+  // and on /Planner where ContextualFAB owns the floating add affordance.
+  if (onIdeas || onPlanner) return null;
 
   const closeSheet = () => {
     setOpen(false);
