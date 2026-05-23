@@ -57,7 +57,10 @@ import {
 // P2-4 — Body Today phase chips read PHASE_RECS (movement + rest slices).
 import { PHASE_RECS } from "@/data/phaseRecs";
 // Phase 3 — new feature components.
-import MorningCheckinCard from "@/components/planner/MorningCheckinCard";
+// MorningCheckinCard removed from the Planner per Halli 2026-05-23 —
+// the app's central check-in surface already covers this need. The
+// component file itself stays at src/components/planner/MorningCheckinCard.jsx
+// in case we want to mount it elsewhere later.
 import ContextualFAB from "@/components/planner/ContextualFAB";
 import PlannerSettingsSheet, {
   loadPlannerSettings,
@@ -715,9 +718,7 @@ export default function PlannerV2Shell({
         <InsightsHeroRow phase={phase} dayInCycle={cycleDay} profile={profileProp} user={user} />
       </div>
     ),
-    morning: (
-      <MorningCheckinCard key="morning" user={user} />
-    ),
+    // morning: removed 2026-05-23 — central check-in covers this need.
     lists: (
       <ListsSection key="lists" user={user} />
     ),

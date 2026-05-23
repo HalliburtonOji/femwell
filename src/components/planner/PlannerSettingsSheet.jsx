@@ -36,9 +36,13 @@ const C = {
 // Canonical row keys + labels. Keep in sync with `data-tour` markers
 // in PlannerV2Shell. `core: true` rows can't be hidden — the Hero and
 // Schedule rows are too foundational.
+//
+// `morning` (Morning Check-in Card) was removed from the Planner on
+// 2026-05-23. The Settings sheet's render loop has a defensive
+// `if (!def) return null` so any saved order arrays from before that
+// date silently drop the entry when it's not in this list.
 export const PLANNER_ROW_DEFINITIONS = [
   { key: "hero",         label: "Insights hero",           core: true  },
-  { key: "morning",      label: "Morning check-in",        core: false },
   { key: "lists",        label: "My lists",                core: false },
   { key: "schedule",     label: "Schedule & cycle",        core: true  },
   { key: "yourday",      label: "Your day (time of day)",  core: false },
