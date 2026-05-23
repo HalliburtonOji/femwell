@@ -208,14 +208,11 @@ function App() {
             </div>
           )}
           <AuthenticatedApp />
-          {/* Universal Logger — global gold + FAB available on every page.
-              Module-level openLogger() lets any component trigger it.
-              Mounted INSIDE <Router> so useLocation() works for the
-              per-route suppression checks (e.g. /Planner uses its own
-              ContextualFAB instead). */}
-          <UnifiedTabLogger />
         </Router>
         <Toaster />
+        {/* Universal Logger — global gold + FAB available on every page.
+            Module-level openLogger() lets any component trigger it. */}
+        <UnifiedTabLogger />
       </QueryClientProvider>
     </AuthProvider>
   );

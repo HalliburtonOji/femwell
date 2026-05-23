@@ -61,7 +61,12 @@ import { PHASE_RECS } from "@/data/phaseRecs";
 // the app's central check-in surface already covers this need. The
 // component file itself stays at src/components/planner/MorningCheckinCard.jsx
 // in case we want to mount it elsewhere later.
-import ContextualFAB from "@/components/planner/ContextualFAB";
+// ContextualFAB removed from the Planner per Halli 2026-05-23 — the
+// global UnifiedTabLogger FAB is the single source of truth for
+// logging across the app, so two FABs stacking on the Planner was
+// confusing. The component file stays at
+// src/components/planner/ContextualFAB.jsx but is no longer imported
+// or mounted anywhere.
 import PlannerSettingsSheet, {
   loadPlannerSettings,
   DEFAULT_PLANNER_SETTINGS,
@@ -879,7 +884,8 @@ export default function PlannerV2Shell({
           final sequence. Hidden rows collapse fully (no spacer). */}
       {orderedRowKeys.map((k) => NODES_BY_KEY[k])}
 
-      <ContextualFAB />
+      {/* ContextualFAB removed 2026-05-23 — global UnifiedTabLogger FAB
+          is the single source of truth for logging app-wide. */}
 
       <PlannerSettingsSheet
         open={settingsOpen}
