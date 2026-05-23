@@ -298,6 +298,24 @@ export default function MonthRibbon({ profile, habitLogs = [], today = new Date(
                 // as crimson cell + cream outline + pulsing dot, not a
                 // cream cell on a crimson row.
                 const hasPhaseFill = phase === "menstrual" || phase === "ovulatory";
+                // Planner audit round 2 — QA reported today's cell
+                // STILL rendering rgb(255,255,255) (pure white) even
+                // after the first composition fix. The previous
+                // attempt relied on `background: transparent` to let
+                // the parent ribbon's crimson gradient bleed through,
+                // but something on the page (browser focus ring, user-
+                // agent button styling, or a stacking quirk we
+                // couldn't reproduce locally) was still painting white
+                // pixels at the cell location. Replacing transparency
+                // with an EXPLICIT phase-colour background on today
+                // cells that sit over a phase fill — so even if some
+                // user-agent or focus state tries to override, we win.
+                // Dropped the `outline` entirely; ring is now a pure
+                // box-shadow stack (cream inner ring + espresso outer
+                // ring for extra contrast against any background).
+                const todayBg = isToday && hasPhaseFill
+                  ? (PHASE_COLOR[phase] || "#8B2635")
+                  : (isToday ? "#F4EDDB" : "transparent");
                 return (
                   <button
                     key={cell.dateISO}
@@ -307,17 +325,13 @@ export default function MonthRibbon({ profile, habitLogs = [], today = new Date(
                     aria-current={isToday ? "date" : undefined}
                     style={{
                       ...cellBtnStyle,
-                      // Le Menu: today = cream pill with double halo
-                      // (kept), but on phase-filled days we keep the
-                      // phase colour as background and the cream is a
-                      // ring only.
-                      outline: isToday ? "2.5px solid #F4EDDB" : "none",
-                      outlineOffset: isToday ? "-1px" : 0,
-                      background: isToday && !hasPhaseFill ? "#F4EDDB" : "transparent",
+                      outline: "none",
+                      background: todayBg,
+                      // Double-ring (cream inner + espresso halo)
+                      // reads clearly on both cream and phase
+                      // backgrounds.
                       boxShadow: isToday
-                        ? (hasPhaseFill
-                            ? "0 0 0 1.5px #F4EDDB, 0 0 12px rgba(244,237,219,0.45)"
-                            : "0 0 0 1.5px #F4EDDB, 0 1px 4px rgba(58,44,26,0.22), 0 0 14px rgba(244,237,219,0.55)")
+                        ? "0 0 0 2px #F4EDDB, 0 0 0 3.5px #3A2C1A, 0 0 12px rgba(244,237,219,0.45)"
                         : "none",
                       zIndex: isToday ? 2 : 1,
                     }}

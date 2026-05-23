@@ -728,8 +728,8 @@ export default function PlannerV2Shell({
       <Row label="Mind & insight">
         <IntentionCard user={user} />
         <AstraCard profile={profileProp} />
-        <MoodMentalHealthCard user={user} />
-        <BreathworkCard />
+        <MoodMentalHealthCard user={user} phase={phase} />
+        <BreathworkCard phase={phase} />
         <CyclePsychologyCard />
       </Row>
 
@@ -3145,7 +3145,30 @@ function AstraCard({ profile: profileProp }) {
 }
 
 // ── Mind & Insight extras (Mood / Breathwork / Cycle psych) ──────────────
-function MoodMentalHealthCard({ user }) {
+// Planner audit fix — phase-keyed copy for the Mood + Breathwork cards.
+// Previously both cards had Luteal copy hard-coded, so a Menstrual Day 3
+// user still read "Luteal can bring emotional intensity…" and the
+// breathwork tip prescribed 4-7-8 for sleep regardless of phase.
+const MIND_PHASE_COPY = {
+  menstrual: {
+    moodTip:       "Menstrual phase brings natural introspection — rest and feel without judgement.",
+    breathTip:     "Menstrual — try box breathing (4-4-4-4) to ease cramps and calm the nervous system.",
+  },
+  follicular: {
+    moodTip:       "Follicular phase lifts mood and focus — channel the energy into something new.",
+    breathTip:     "Follicular — try energising breath (4-in / 4-out, 2 minutes) before a creative block.",
+  },
+  ovulatory: {
+    moodTip:       "Ovulatory peak brings confidence and warmth — say the bold thing today.",
+    breathTip:     "Ovulatory — try coherent breath (5-in / 5-out) to stay grounded at the peak.",
+  },
+  luteal: {
+    moodTip:       "Luteal can bring emotional intensity — this is biological, not personal.",
+    breathTip:     "Luteal — try 4-7-8 tonight for sleep.",
+  },
+};
+
+function MoodMentalHealthCard({ user, phase }) {
   // Phase B5 — 7-day mood dots now come from the last 30 DailyCheckins,
   // indexed by date, capped to the 7-day window ending today. Missing days
   // fall back to value 2 so the bar still renders (visual is unchanged).
@@ -3247,7 +3270,7 @@ function MoodMentalHealthCard({ user }) {
           </span>
         ))}
       </div>
-      <p style={tipText}>Luteal can bring emotional intensity — this is biological, not personal.</p>
+      <p style={tipText}>{(MIND_PHASE_COPY[phase] || MIND_PHASE_COPY.follicular).moodTip}</p>
       <label style={miniInputLabel}>
         <span style={miniLabel}>WHAT ARE YOU CARRYING TODAY?</span>
         <textarea
@@ -3281,7 +3304,7 @@ function MoodMentalHealthCard({ user }) {
   );
 }
 
-function BreathworkCard() {
+function BreathworkCard({ phase }) {
   const patterns = [
     { id: "box",    name: "Box breathing",   pattern: "4-4-4-4", duration: "4 min", purpose: "Calm" },
     { id: "478",    name: "4-7-8 breathing", pattern: "4-7-8",   duration: "5 min", purpose: "Sleep" },
@@ -3307,7 +3330,7 @@ function BreathworkCard() {
           </button>
         ))}
       </div>
-      <p style={tipText}>Luteal — try 4-7-8 tonight for sleep.</p>
+      <p style={tipText}>{(MIND_PHASE_COPY[phase] || MIND_PHASE_COPY.follicular).breathTip}</p>
       <button
         type="button"
         onClick={() => { try { window.location.href = "/Lifestyle"; } catch {} }}
