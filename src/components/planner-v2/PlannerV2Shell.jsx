@@ -725,19 +725,23 @@ export default function PlannerV2Shell({
         </Row>
       </div>
 
+      {/* Planner audit fix — row order spec is Nourishment (row 9)
+          then Mind & Insight (row 10). The previous render order had
+          them swapped, putting Mind & Insight at Y≈2232 ahead of
+          Nourishment at Y≈2697. */}
+      <Row label="Nourishment">
+        <MacroTrackerCard user={user} profile={profileProp} />
+        <HydrationCard user={user} phase={phase} />
+        <AIMealPlanCard phase={phase} />
+        <PhaseRecipesCard phase={phase} />
+      </Row>
+
       <Row label="Mind & insight">
         <IntentionCard user={user} />
         <AstraCard profile={profileProp} />
         <MoodMentalHealthCard user={user} phase={phase} />
         <BreathworkCard phase={phase} />
         <CyclePsychologyCard />
-      </Row>
-
-      <Row label="Nourishment">
-        <MacroTrackerCard user={user} profile={profileProp} />
-        <HydrationCard user={user} phase={phase} />
-        <AIMealPlanCard phase={phase} />
-        <PhaseRecipesCard phase={phase} />
       </Row>
 
       <Row label="Care">
@@ -2270,18 +2274,66 @@ function SchedulePreviewCard({ blocks, onExpand }) {
           <Maximize2 size={13} />
         </button>
       </div>
-      <ul style={{ ...bulletList, gap: 6, marginTop: 6 }}>
-        {upcoming.map((b) => {
-          const tones = TYPE_TONES[b.type] || TYPE_TONES.task;
-          return (
-            <li key={b.id} style={{ ...miniRow, background: tones.bg, borderLeft: `3px solid ${tones.bar}` }}>
-              <span style={miniRowTime}>{(b.hour <= 12 ? b.hour : b.hour - 12) + (b.hour < 12 ? "am" : "pm")}</span>
-              <span style={miniRowTitle}>{b.title}</span>
-              <span style={miniRowDur}>{b.duration}m</span>
-            </li>
-          );
-        })}
-      </ul>
+      {upcoming.length === 0 ? (
+        // Planner audit fix — previously the card body was a blank
+        // void when the user had no PlannerItems for today. Now a
+        // centred empty-state with a clear "tap to add" hint.
+        <div style={{
+          display: "flex", flexDirection: "column", alignItems: "center",
+          justifyContent: "center", gap: 6,
+          padding: "24px 12px 18px",
+          textAlign: "center",
+        }}>
+          <span style={{
+            display: "inline-flex", alignItems: "center", justifyContent: "center",
+            width: 36, height: 36, borderRadius: 9999,
+            background: "rgba(58,44,26,0.06)",
+            color: C.muted,
+          }}>
+            <CalendarClock size={16} />
+          </span>
+          <p style={{
+            margin: 0,
+            fontFamily: "'Inter', system-ui, sans-serif",
+            fontSize: 13, fontWeight: 500,
+            color: C.espresso,
+            lineHeight: 1.4,
+          }}>
+            No events scheduled for today
+          </p>
+          <button
+            type="button"
+            onClick={() => { try { openLogger("event"); } catch {} }}
+            style={{
+              display: "inline-flex", alignItems: "center", gap: 5,
+              padding: "5px 11px", marginTop: 2,
+              background: "transparent",
+              border: `1px solid ${C.muted}55`,
+              borderRadius: 9999,
+              color: C.muted,
+              cursor: "pointer",
+              fontFamily: "'Inter', system-ui, sans-serif",
+              fontSize: 11, fontWeight: 600,
+              letterSpacing: "0.02em",
+            }}
+          >
+            <Plus size={11} /> Add event
+          </button>
+        </div>
+      ) : (
+        <ul style={{ ...bulletList, gap: 6, marginTop: 6 }}>
+          {upcoming.map((b) => {
+            const tones = TYPE_TONES[b.type] || TYPE_TONES.task;
+            return (
+              <li key={b.id} style={{ ...miniRow, background: tones.bg, borderLeft: `3px solid ${tones.bar}` }}>
+                <span style={miniRowTime}>{(b.hour <= 12 ? b.hour : b.hour - 12) + (b.hour < 12 ? "am" : "pm")}</span>
+                <span style={miniRowTitle}>{b.title}</span>
+                <span style={miniRowDur}>{b.duration}m</span>
+              </li>
+            );
+          })}
+        </ul>
+      )}
       <button onClick={onExpand} style={openFullBtn}>
         View full schedule <ChevronRight size={12} />
       </button>
@@ -3979,7 +4031,16 @@ function GPReportCardSmall({ profile: profileProp }) {
             <p style={{ ...cardSub, margin: "2px 0 0" }}>Build your health report</p>
           </div>
         </div>
-        <button onClick={() => setOpen(true)} style={{ ...modalSaveBtn, alignSelf: "flex-start", marginTop: 8 }}>
+        {/* Planner audit fix — "Open" now routes to the dedicated
+            /DoctorExport page (one of three canonical entry points
+            into the GP export flow), instead of opening the inline
+            "Build your report" modal which was the legacy demo
+            behaviour. Using window.location instead of useNavigate
+            because react-router isn't imported into this shell yet. */}
+        <button
+          onClick={() => { try { window.location.href = "/DoctorExport"; } catch {} }}
+          style={{ ...modalSaveBtn, alignSelf: "flex-start", marginTop: 8 }}
+        >
           Open <ChevronRight size={11} />
         </button>
         <p style={{ ...reportLastExport, display: "inline-flex", alignItems: "center", gap: 6 }}>
