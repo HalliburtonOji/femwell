@@ -2359,15 +2359,43 @@ function CyclePreviewCard({ onExpand, phase: phaseProp, dayInCycle, daysUntilPer
       <div style={miniWeekRow}>
         {weekDays.map((d, i) => {
           const phaseDeep = PHASE_DEEP[d.phase];
+          // Planner audit round 5 — compositional today cell. Previously
+          // `background: d.isToday ? "#FFFFFF" : phaseDeep` always
+          // wiped the phase fill, so today on a period/ovulatory day
+          // rendered as a white pill instead of a crimson/gold cell
+          // with a ring on top. Now: phase fill is the base layer for
+          // menstrual + ovulatory days regardless of today; today
+          // adds a cream+espresso ring via box-shadow without
+          // touching background. On follicular / luteal / off days,
+          // today still gets the white pill it always did (no phase
+          // fill to preserve).
+          const isPhaseFill = d.phase === "menstrual" || d.phase === "ovulatory";
+          const cellBg = d.isToday && !isPhaseFill ? "#FFFFFF" : phaseDeep;
+          const cellShadow = d.isToday
+            ? (isPhaseFill
+                ? "0 0 0 2px #F4EDDB, 0 0 0 3.5px #3A2C1A"
+                : "0 2px 8px rgba(58,44,26,0.15)")
+            : "none";
+          const cellBorder = d.isToday && !isPhaseFill
+            ? "1px solid rgba(58,44,26,0.12)"
+            : "1px solid transparent";
+          // Number colour: cream on phase fill (today or not),
+          // espresso on the white pill (today + no phase fill).
+          const letterColor = d.isToday && !isPhaseFill
+            ? C.muted
+            : "rgba(255,255,255,0.85)";
+          const numColor = d.isToday && !isPhaseFill
+            ? C.espresso
+            : "rgba(255,255,255,0.95)";
           return (
             <div key={i} style={{
               ...miniWeekCell,
-              background: d.isToday ? "#FFFFFF" : phaseDeep,
-              boxShadow: d.isToday ? "0 2px 8px rgba(58,44,26,0.15)" : "none",
-              border: d.isToday ? `1px solid rgba(58,44,26,0.12)` : `1px solid transparent`,
+              background: cellBg,
+              boxShadow: cellShadow,
+              border: cellBorder,
             }}>
-              <span style={{ ...miniWeekLetter, color: d.isToday ? C.muted : "rgba(255,255,255,0.85)" }}>{d.letter}</span>
-              <span style={{ ...miniWeekNum, color: d.isToday ? C.espresso : "rgba(255,255,255,0.95)" }}>{d.date}</span>
+              <span style={{ ...miniWeekLetter, color: letterColor }}>{d.letter}</span>
+              <span style={{ ...miniWeekNum, color: numColor }}>{d.date}</span>
             </div>
           );
         })}
@@ -4644,10 +4672,28 @@ function WeekPill({ week, onDayTap }) {
         if (d.blank) return <span key={i} style={dayBlank} />;
         const iso = d.date.toISOString().split("T")[0];
         const isToday = (d.date.getDate() === today.getDate() && d.date.getMonth() === today.getMonth() && d.date.getFullYear() === today.getFullYear());
+        // Planner audit round 5 — compositional today cell here too.
+        // `dayTileToday` was a hard-coded white pill that wiped the
+        // parent's phase-coloured pill background underneath. On
+        // phase-fill days we keep the parent gradient showing
+        // through and add a cream+espresso ring via box-shadow.
+        // On non-phase-fill days we keep the original white pill.
+        const isPhaseFill = d.phase === "menstrual" || d.phase === "ovulatory";
+        const tileStyle = isToday
+          ? (isPhaseFill
+              ? { ...dayTile, boxShadow: "0 0 0 2px #F4EDDB, 0 0 0 3.5px #3A2C1A", borderRadius: 10 }
+              : dayTileToday)
+          : dayTile;
+        const numColor = isToday && !isPhaseFill
+          ? C.espresso
+          : "rgba(255,255,255,0.95)";
+        const dashBg = isToday && !isPhaseFill
+          ? "rgba(58,44,26,0.30)"
+          : "rgba(255,255,255,0.45)";
         return (
-          <button key={i} onClick={() => onDayTap(iso)} style={isToday ? dayTileToday : dayTile}>
-            <span style={{ ...dayNum, color: isToday ? C.espresso : "rgba(255,255,255,0.95)" }}>{d.day}</span>
-            <span style={{ ...daySymptomDash, background: isToday ? "rgba(58,44,26,0.30)" : "rgba(255,255,255,0.45)" }} />
+          <button key={i} onClick={() => onDayTap(iso)} style={tileStyle}>
+            <span style={{ ...dayNum, color: numColor }}>{d.day}</span>
+            <span style={{ ...daySymptomDash, background: dashBg }} />
           </button>
         );
       })}
