@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import {
-  X, Plus, Check,
+  X, Plus,
   PenLine, HeartHandshake, MessageSquareDashed, CheckSquare,
   Sparkles, Zap, Moon, Frown, Meh, Smile,
 } from "lucide-react";
@@ -51,11 +51,18 @@ function randomColor() {
   return COLOR_NAMES[Math.floor(Math.random() * COLOR_NAMES.length)];
 }
 
-export default function NewEntrySheet({ user, phase, onClose, onSaved, editEntry = null }) {
-  const [step, setStep] = useState(editEntry ? "form" : "type");
-  const [cardType, setCardType] = useState(editEntry?.card_type || "free");
+export default function NewEntrySheet({
+  user, phase, onClose, onSaved, editEntry = null,
+  // Feature 4 — Jess Journal Prompt support. When a seedText is passed
+  // we open directly on the form step with the prompt pre-filled, and
+  // optionally route to a specific card type (default "free").
+  seedText = "",
+  seedCardType = null,
+}) {
+  const [step, setStep] = useState(editEntry || seedText ? "form" : "type");
+  const [cardType, setCardType] = useState(editEntry?.card_type || seedCardType || "free");
   const [color, setColor] = useState(editEntry?.card_color || randomColor());
-  const [text, setText] = useState(editEntry?.text || "");
+  const [text, setText] = useState(editEntry?.text || seedText || "");
   const [mood, setMood] = useState(editEntry?.mood_rating || 0);
   const [tags, setTags] = useState(editEntry?.tags ? (Array.isArray(editEntry.tags) ? editEntry.tags.join(", ") : editEntry.tags) : "");
   const [gratitudes, setGratitudes] = useState(["", "", ""]);

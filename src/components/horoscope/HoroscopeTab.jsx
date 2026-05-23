@@ -27,6 +27,7 @@ import PrivacyLine from "./sections/PrivacyLine";
 import GoddessBench from "./sections/GoddessBench";
 import AtelierReading from "./sections/AtelierReading";
 import PaidShelf from "./sections/PaidShelf";
+import JessAstraBanner from "./JessAstraBanner";
 
 // ─────────────────────────────────────────────────────────────────────────────
 // HoroscopeTab
@@ -109,6 +110,11 @@ export default function HoroscopeTab(props) {
 
   return (
     <div style={tabShellStyle}>
+      {/* Jess → Astra handoff banner — Feature 4. Renders only when the
+          page was opened from Jess via ?from=jess and a fresh sessionStorage
+          handoff blob is in place. */}
+      <JessAstraBanner />
+
       {/* Hero — always shows immediately with fallbacks if reading is loading */}
       <TwilightHero
         chart={chart}

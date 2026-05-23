@@ -5,6 +5,7 @@ import { PenLine } from "lucide-react";
 import JotterCard from "../components/journal/JotterCard";
 import NewEntrySheet from "../components/journal/NewEntrySheet";
 import JournalInsightsTab from "../components/journal/JournalInsightsTab";
+import JessJournalPrompt from "../components/journal/JessJournalPrompt";
 
 const FILTER_TYPES = [
   { id: "all",         label: "All" },
@@ -91,6 +92,11 @@ export default function Journal() {
   const [filterType, setFilterType] = useState("all");
   const [showNewEntry, setShowNewEntry] = useState(false);
   const [editEntry, setEditEntry] = useState(null);
+  // Feature 4 — Jess prompt seed text. When the user taps "Use this
+  // prompt" in JessJournalPrompt we open the New Entry sheet with the
+  // prompt pre-filled. Cleared after the sheet closes so the next manual
+  // "New entry" starts blank.
+  const [seedText, setSeedText] = useState("");
 
   useEffect(() => {
     (async () => {
@@ -173,7 +179,8 @@ export default function Journal() {
           user={user}
           phase={phase}
           editEntry={editEntry}
-          onClose={() => { setShowNewEntry(false); setEditEntry(null); }}
+          seedText={seedText}
+          onClose={() => { setShowNewEntry(false); setEditEntry(null); setSeedText(""); }}
           onSaved={handleSaved}
         />
       )}
@@ -256,6 +263,22 @@ export default function Journal() {
         {/* ── JOURNAL TAB ── */}
         {activeTab === "journal" && (
           <>
+            {/* Jess prompt card — Feature 4, Wing #1 */}
+            {user && (
+              <JessJournalPrompt
+                user={user}
+                profile={profile}
+                phase={phase}
+                lastEntry={entries[0] || null}
+                onUsePrompt={(promptText) => {
+                  // Pre-fill the New Entry sheet with the prompt + a blank
+                  // line so the user lands on a fresh writing line below.
+                  setSeedText(`${promptText}\n\n`);
+                  setShowNewEntry(true);
+                }}
+              />
+            )}
+
             {/* Filter pills */}
             <style>{`.jfilter-scroll::-webkit-scrollbar{display:none}`}</style>
             <div className="jfilter-scroll" style={{ display: "flex", gap: 6, overflowX: "auto", paddingBottom: 4, marginBottom: 16, scrollbarWidth: "none" }}>

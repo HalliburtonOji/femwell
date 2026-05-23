@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { base44 } from "@/api/base44Client";
 import { ArrowLeft, Copy, Check, Loader2 } from "lucide-react";
+import JessPatientSummary from "../components/jess/JessPatientSummary";
 
 function avg(arr) {
   const valid = arr.filter(v => v != null && !isNaN(v));
@@ -191,6 +192,16 @@ export default function DoctorExport() {
           {copied ? <Check className="w-4 h-4" /> : <Copy className="w-4 h-4" />}
           {copied ? "Copied to clipboard!" : "Copy as text"}
         </button>
+
+        {/* Jess clinical summary — Feature 4, Wing #2 */}
+        {user && (
+          <JessPatientSummary
+            user={user}
+            profile={profile}
+            checkins={checkins}
+            symptoms={symptoms}
+          />
+        )}
 
         {/* Section 1 */}
         <div style={card}>

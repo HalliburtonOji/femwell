@@ -19,9 +19,10 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { base44 } from "@/api/base44Client";
 import {
-  Mic, Send, Settings, Check, ChevronRight,
+  Mic, Send, Settings, ChevronRight,
   MessageCircle, Sun, LineChart, Sparkles, History, X,
   Search, Trash2,
+  Apple, Activity, Moon, Heart, Users, ThumbsUp, ThumbsDown, Star,
 } from "lucide-react";
 import ReactMarkdown from "react-markdown";
 import JessSettingsSheet from "./JessSettingsSheet";
@@ -30,6 +31,12 @@ import {
   extractMemoriesFromConversation,
   loadTopMemories,
 } from "@/services/jessMemoryService";
+import {
+  callJessAgent,
+  loadDailyCache,
+  saveDailyCache,
+  todayKey,
+} from "@/services/jessAgentService";
 
 // ─── Tokens ───────────────────────────────────────────────────────────────
 // FemWell design tokens — locked to the spec Halli circulated. All
@@ -98,6 +105,156 @@ const PHASE_COPY = {
       "Batch admin tasks now, save creative work for next follicular",
       "Magnesium-rich foods can ease day 24–26 symptoms",
     ],
+  },
+};
+
+// ─── Feature 4 — For You data ─────────────────────────────────────────────
+// PHASE_RECS feeds the "This week" section: 5 categories × phase, 2-3
+// tips each. Keep wording UK English, second person, no emoji.
+//
+// Categories rendered as horizontal scroll chip-cards, in this order:
+//   nutrition · movement · rest · mood · social
+const PHASE_RECS = {
+  menstrual: {
+    nutrition: [
+      "Iron-forward meals: lentils, dark leafy greens, beef or liver if you eat it",
+      "Pair iron with vitamin C — squeeze lemon on the greens",
+      "Warm cooked food over salads; stew, soup, congee, roast roots",
+    ],
+    movement: [
+      "Walking and gentle yoga move blood without taxing energy",
+      "Skip the HIIT this week — your nervous system is in repair mode",
+      "Pelvic-floor stretches ease cramps for many people",
+    ],
+    rest: [
+      "Hot water bottle on the lower belly or back — 20 minutes, twice a day",
+      "Earlier bed by 30 minutes — sleep need rises in the menstrual phase",
+      "Naps under 25 minutes don't disrupt the night-time cycle",
+    ],
+    mood: [
+      "Lower the bar this week — that's information, not failure",
+      "Journaling for 5 minutes can name the feelings that surface in week 1",
+      "If you're irritable, it's hormonal. Don't make decisions you'll regret",
+    ],
+    social: [
+      "Decline what you can — your social battery is genuinely lower",
+      "One trusted person beats five surface conversations this week",
+      "Reschedule the 'maybe' invites — your future self will thank you",
+    ],
+  },
+  follicular: {
+    nutrition: [
+      "Leaner proteins, fresh veg, sprouted grains — your gut handles variety well now",
+      "Fermented foods (kefir, kimchi, sauerkraut) support rising oestrogen",
+      "Lighter breakfasts work — appetite is naturally lower this phase",
+    ],
+    movement: [
+      "Strength training is your friend — muscles build best in the first half",
+      "Try a new class or sport — coordination and learning peak now",
+      "Cardio feels easier — push the pace a bit",
+    ],
+    rest: [
+      "You may need slightly less sleep — 7 hours often enough this phase",
+      "Morning light walks set the circadian rhythm for the whole cycle",
+      "Save big rest blocks for luteal week instead",
+    ],
+    mood: [
+      "Optimism rises with oestrogen — ride it, plan ahead",
+      "Creative work lands well — brainstorm, draft, design",
+      "Confidence is real this week, not a performance",
+    ],
+    social: [
+      "Schedule the harder conversations now — communication is sharper",
+      "Try the thing you've been putting off — first impressions go well",
+      "Network, present, ask — this is your visibility window",
+    ],
+  },
+  ovulatory: {
+    nutrition: [
+      "High-protein, anti-inflammatory: salmon, eggs, leafy greens, berries",
+      "Hydration is critical — body temperature is up around ovulation",
+      "Cruciferous veg (broccoli, kale, sprouts) help oestrogen metabolism",
+    ],
+    movement: [
+      "Peak strength and stamina — schedule the hardest session of the cycle",
+      "Group classes and team sport land well — your social drive is high",
+      "Cool down properly — heat regulation is harder this week",
+    ],
+    rest: [
+      "Sleep slightly later if you can — body temperature drop is delayed",
+      "A 10-minute wind-down ritual offsets the natural alertness",
+      "Skip caffeine after 2 pm — sensitivity is higher this phase",
+    ],
+    mood: [
+      "Confidence and clarity are at their best — make the bold ask today",
+      "Communication peaks — write the email, send the message",
+      "If something feels off socially, trust it — your read on people is sharp",
+    ],
+    social: [
+      "This is your visibility window — schedule the meeting, post, present",
+      "Date nights and reconnections land especially well",
+      "Lead with warmth — your charisma is at its highest",
+    ],
+  },
+  luteal: {
+    nutrition: [
+      "Magnesium-rich foods: dark chocolate, pumpkin seeds, almonds, banana",
+      "Complex carbs (oats, sweet potato, rye) steady week-3 mood dips",
+      "Reduce alcohol and sugar — both worsen PMS for most people",
+    ],
+    movement: [
+      "Pilates, swimming, and walking match your energy better than HIIT",
+      "Strength is still possible — just lower the volume by 20%",
+      "Stretching before bed helps with the restless luteal nights",
+    ],
+    rest: [
+      "Earlier bed by 45 minutes — sleep need rises through luteal week",
+      "Wind down with no screens 30 minutes before bed",
+      "If you wake at 3-4am, try magnesium glycinate (check with your GP)",
+    ],
+    mood: [
+      "Sensitivity rises — that's biology, not weakness",
+      "Big feelings are valid; big decisions can wait a few days",
+      "Track what soothes you — patterns emerge across cycles",
+    ],
+    social: [
+      "Batch admin and chores now — save creative collaboration for next cycle",
+      "Smaller, quieter gatherings beat big nights out this week",
+      "Tell your closest people what you need — they often can't guess",
+    ],
+  },
+};
+
+// NEXT_PHASE_PREVIEW feeds the "Coming up" / Section 3 block.
+// Each phase carries: nextPhase, twoSentencePreview, prepTip.
+const NEXT_PHASE_PREVIEW = {
+  menstrual: {
+    nextPhase: "Follicular",
+    preview:
+      "Oestrogen is starting to climb back up. Energy, focus and curiosity will lift over the next few days.",
+    prepTip:
+      "Choose one thing you've been putting off — follicular is the easiest week to start it.",
+  },
+  follicular: {
+    nextPhase: "Ovulatory",
+    preview:
+      "You're heading into your peak window. Communication, confidence and physical output are about to be at their highest.",
+    prepTip:
+      "Block 2-3 hours of deep work in your calendar for the next 3-4 days — you'll be sharper than usual.",
+  },
+  ovulatory: {
+    nextPhase: "Luteal",
+    preview:
+      "Energy will ease back as progesterone takes over. Your body shifts into a quieter, more inward week.",
+    prepTip:
+      "Front-load the week — finish the harder tasks now, save admin and gentler work for days 20+.",
+  },
+  luteal: {
+    nextPhase: "Menstrual",
+    preview:
+      "Your period is approaching. Energy will dip and your body will ask for warmth, rest and slower food.",
+    prepTip:
+      "Stock the cupboard: iron-rich snacks, a hot water bottle on standby, painkillers in reach.",
   },
 };
 
@@ -1430,6 +1587,39 @@ export default function JessDemoPanel() {
     sendUserText(label);
   }, [sendUserText]);
 
+  // Feature 4 — Astra handoff. After 3+ user turns Jess offers a one-tap
+  // jump to /Lifestyle?tab=horoscope&from=jess. We seed sessionStorage
+  // with phase / recent topics / mood so the Astra surface can show a
+  // "Jess sent you — here's the context" banner without re-fetching.
+  const astraReady = useMemo(() => {
+    return messages.filter((m) => m?.role === "user").length >= 3;
+  }, [messages]);
+
+  const handleAstraHandoff = useCallback(() => {
+    const recentTopics = messages
+      .filter((m) => m?.role === "user")
+      .slice(-3)
+      .map((m) => String(m?.text || m?.content || "").slice(0, 80))
+      .filter(Boolean);
+    const handoff = {
+      from: "jess",
+      ts: Date.now(),
+      phase,
+      cycleDay: dayInCycle,
+      lifeStage: profile?.life_stage || "reproductive",
+      recentTopics,
+      mood: todayCheckin?.mood ?? null,
+      energy: todayCheckin?.energy ?? todayCheckin?.energy_level ?? null,
+      sentBy: profile?.jess_name || "Jess",
+    };
+    try {
+      window.sessionStorage.setItem("jess_astra_handoff", JSON.stringify(handoff));
+    } catch { /* swallow quota */ }
+    // Navigate to the Lifestyle Horoscope tab; from=jess triggers the
+    // banner pickup on the Astra side.
+    window.location.href = "/Lifestyle?tab=horoscope&from=jess";
+  }, [messages, phase, dayInCycle, profile, todayCheckin]);
+
   // ── Scripted response handler — rich hormone-aware content ─────────────
   // When the user taps a suggestion chip, we:
   //   1. Append their tap as a user bubble (timestamped)
@@ -1682,6 +1872,8 @@ export default function JessDemoPanel() {
             bottomRef={bottomRef}
             proactiveChips={proactiveChips}
             onProactiveChip={handleProactiveChip}
+            astraReady={astraReady}
+            onAstraHandoff={handleAstraHandoff}
           />
         )}
         {tab === "brief"    && (
@@ -1697,6 +1889,9 @@ export default function JessDemoPanel() {
         )}
         {tab === "foryou"   && (
           <ForYouTab phase={phase} shell={shell} profile={profile}
+            user={user}
+            recentCheckins={recentCheckins}
+            symptoms={symptoms}
             tabChip="What's the one thing I should focus on today?" onTabChip={handleProactiveChip} />
         )}
       </div>
@@ -1836,12 +2031,39 @@ function KeyframesBlock() {
 function ChatTab({
   messages, assistantTyping, shell, onChip, onToggleQuickLog, bottomRef,
   proactiveChips, onProactiveChip,
+  astraReady, onAstraHandoff,
 }) {
   return (
     <div style={{
       padding: "14px 14px 8px",
       display: "flex", flexDirection: "column", gap: 12,
     }}>
+      {/* Astra handoff chip — Feature 4, Wing #3. Surfaces after the
+          user has had 3+ turns; one-tap jump to the Horoscope/Astra
+          surface with a sessionStorage context blob in tow. */}
+      {astraReady && (
+        <button
+          type="button"
+          onClick={onAstraHandoff}
+          aria-label="Talk to Astra about this"
+          style={{
+            alignSelf: "flex-start",
+            display: "inline-flex", alignItems: "center", gap: 8,
+            padding: "10px 14px", minHeight: 40, borderRadius: 9999,
+            background: "linear-gradient(135deg, #2A1E0E 0%, #4A3B2A 100%)",
+            color: C.cream,
+            border: `1px solid ${C.gold}`,
+            cursor: "pointer",
+            fontFamily: "'Inter', sans-serif",
+            fontSize: 13, fontWeight: 600,
+          }}
+        >
+          <Star size={13} style={{ color: C.gold }} aria-hidden />
+          Talk to Astra about this
+          <ChevronRight size={13} style={{ opacity: 0.7 }} aria-hidden />
+        </button>
+      )}
+
       {/* Proactive question chips — "Jess is thinking about you" row */}
       {Array.isArray(proactiveChips) && proactiveChips.length > 0 && (
         <div style={{ marginBottom: 2 }}>
@@ -2802,97 +3024,323 @@ function DigDeeperRow() {
   );
 }
 
-// ─── For You tab ──────────────────────────────────────────────────────────
-function ForYouTab({ phase, shell, profile, tabChip, onTabChip }) {
-  const copy = PHASE_COPY[phase] || PHASE_COPY.follicular;
+// ─── For You tab — Feature 4 ──────────────────────────────────────────────
+// Three sections:
+//   1. This week — 5 category cards (PHASE_RECS), horizontal scroll
+//   2. Jess noticed — agent-derived pattern from last 7 days, daily cache
+//   3. Coming up — next phase preview (NEXT_PHASE_PREVIEW lookup)
+const FOR_YOU_CATEGORIES = [
+  { key: "nutrition", label: "Nutrition", Icon: Apple },
+  { key: "movement",  label: "Movement",  Icon: Activity },
+  { key: "rest",      label: "Rest",      Icon: Moon },
+  { key: "mood",      label: "Mood",      Icon: Heart },
+  { key: "social",    label: "Social",    Icon: Users },
+];
+
+function ForYouTab({ phase, shell, profile, user, recentCheckins, symptoms, tabChip, onTabChip }) {
+  const recs = PHASE_RECS[phase] || PHASE_RECS.follicular;
+  const nextPreview = NEXT_PHASE_PREVIEW[phase] || NEXT_PHASE_PREVIEW.follicular;
   const lifeStage = profile?.life_stage || "reproductive";
-  const habitSuggestions = lifeStage === "perimenopause" || lifeStage === "menopause"
-    ? [
-        "Two strength sessions a week protect bone density in this stage",
-        "Track hot flashes in the Symptom logger — patterns emerge fast",
-      ]
-    : lifeStage.startsWith("pregnant")
-    ? [
-        "Daily 10-minute walks support circulation through pregnancy",
-        "Pelvic-floor practice 3× a week pays back in the months ahead",
-      ]
-    : [
-        "Move daily — even 5 minutes counts toward consistency",
-        "Hydration first: aim for a glass of water before coffee",
-      ];
-  const patternNudges = [
-    "Your energy lifts the day after journaling — keep that streak alive.",
-    "Last cycle you slept best on days you walked after dinner.",
-  ];
+
+  // Pregnancy / postpartum / menopause stages don't follow a menstrual
+  // cycle. Hide "next phase" for them and route mood/social/rest as
+  // life-stage-agnostic content. PHASE_RECS still applies for the body of
+  // For You — it just stops representing a cycle at those points.
+  const hideNextPhase = lifeStage.startsWith("pregnant")
+    || lifeStage === "postpartum"
+    || lifeStage === "menopause"
+    || lifeStage === "post-menopause";
+
   return (
-    <div style={{ padding: "14px 16px 24px", display: "flex", flexDirection: "column", gap: 12 }}>
+    <div style={{ padding: "14px 16px 24px", display: "flex", flexDirection: "column", gap: 18 }}>
       <TabChip chip={tabChip} onTap={onTabChip} />
-      <Card animationDelay={0} accent={shell.accent}>
-        <p style={kicker}>This week · {shell.label}</p>
-        <ul style={{ margin: 0, padding: 0, listStyle: "none", display: "flex", flexDirection: "column", gap: 10 }}>
-          {copy.forYou.map((rec, i) => (
-            <li key={i} style={{
-              display: "flex", alignItems: "flex-start", gap: 10,
-              padding: "10px 0", borderBottom: i < copy.forYou.length - 1 ? `1px solid ${C.border}` : "none",
-            }}>
-              <span aria-hidden style={{
-                flexShrink: 0, marginTop: 5,
-                width: 6, height: 6, borderRadius: 9999, background: shell.accent,
-              }} />
-              <span style={{
-                flex: 1, fontSize: 13, color: C.espresso,
-                fontFamily: "'Inter', sans-serif", lineHeight: 1.5,
-              }}>{rec}</span>
-            </li>
-          ))}
-        </ul>
-      </Card>
-      <Card animationDelay={80}>
-        <p style={kicker}>Based on your patterns</p>
-        <ul style={{ margin: 0, padding: 0, listStyle: "none", display: "flex", flexDirection: "column", gap: 8 }}>
-          {patternNudges.map((n, i) => (
-            <li key={i} style={{
-              padding: "10px 12px", borderRadius: 10,
-              background: C.paper, border: `1px solid ${C.border}`,
-              fontSize: 13, color: C.espresso,
-              fontFamily: "'Inter', sans-serif", lineHeight: 1.5,
-            }}>{n}</li>
-          ))}
-        </ul>
-      </Card>
-      <Card animationDelay={160}>
-        <p style={kicker}>Habit suggestions · {lifeStage.replace("-", " ")}</p>
-        <ul style={{ margin: 0, padding: 0, listStyle: "none", display: "flex", flexDirection: "column", gap: 8 }}>
-          {habitSuggestions.map((h, i) => (
-            <li key={i} style={{
-              display: "flex", alignItems: "flex-start", gap: 10,
-              padding: "10px 12px", borderRadius: 10,
-              background: C.paper, border: `1px solid ${C.border}`,
-              fontSize: 13, color: C.espresso,
-              fontFamily: "'Inter', sans-serif", lineHeight: 1.5,
-            }}>
-              <Check size={14} style={{ color: C.sage, flexShrink: 0, marginTop: 2 }} aria-hidden />
-              {h}
-            </li>
-          ))}
-        </ul>
-      </Card>
-      <div style={{
-        background: C.espresso, color: C.cream,
-        borderRadius: 12, padding: "12px 14px",
-        animation: "jess-card-rise 320ms ease-out 240ms backwards",
-        display: "flex", alignItems: "center", gap: 8,
-      }}>
-        <Sparkles size={14} style={{ color: C.gold, flexShrink: 0 }} aria-hidden />
-        <p style={{
-          margin: 0, fontSize: 12, fontFamily: "'Inter', sans-serif", lineHeight: 1.5,
-        }}>
-          <strong>Jess is learning.</strong> The more you log, the smarter these get. 47 data points so far this cycle.
+
+      {/* ── Section 1 — This week (5 category cards) ──────────────────── */}
+      <section>
+        <p style={{ ...kicker, padding: "0 4px", marginBottom: 10 }}>
+          This week · {shell.label}
         </p>
-      </div>
+        <div style={{
+          display: "flex", overflowX: "auto", gap: 12,
+          scrollSnapType: "x mandatory",
+          padding: "4px 16px 8px",
+          margin: "0 -16px",
+          scrollbarWidth: "none",
+          WebkitOverflowScrolling: "touch",
+        }}>
+          {FOR_YOU_CATEGORIES.map((cat, i) => {
+            const Icon = cat.Icon;
+            const tips = recs[cat.key] || [];
+            return (
+              <article key={cat.key} style={{
+                flex: "0 0 240px",
+                scrollSnapAlign: "start",
+                background: C.paperHi,
+                border: `1px solid ${C.border}`,
+                borderTop: `3px solid ${shell.accent}`,
+                borderRadius: 14,
+                padding: "12px 14px 14px",
+                animation: `jess-card-rise 320ms ease-out ${i * 60}ms backwards`,
+                display: "flex", flexDirection: "column", gap: 8,
+              }}>
+                <div style={{
+                  display: "flex", alignItems: "center", gap: 8,
+                }}>
+                  <Icon size={14} style={{ color: shell.tone }} aria-hidden />
+                  <p style={{
+                    margin: 0, fontSize: 11, fontWeight: 700,
+                    letterSpacing: "0.14em", textTransform: "uppercase",
+                    color: C.espresso, fontFamily: "'Inter', sans-serif",
+                  }}>{cat.label}</p>
+                </div>
+                <ul style={{
+                  margin: 0, padding: 0, listStyle: "none",
+                  display: "flex", flexDirection: "column", gap: 6,
+                }}>
+                  {tips.map((tip, j) => (
+                    <li key={j} style={{
+                      fontSize: 12, color: C.espresso,
+                      fontFamily: "'Inter', sans-serif", lineHeight: 1.5,
+                      paddingLeft: 10, position: "relative",
+                    }}>
+                      <span aria-hidden style={{
+                        position: "absolute", left: 0, top: 7,
+                        width: 4, height: 4, borderRadius: 9999,
+                        background: shell.accent,
+                      }} />
+                      {tip}
+                    </li>
+                  ))}
+                </ul>
+              </article>
+            );
+          })}
+        </div>
+      </section>
+
+      {/* ── Section 2 — Jess noticed (agent call + daily cache) ────────── */}
+      <JessNoticedCard
+        user={user}
+        recentCheckins={recentCheckins}
+        symptoms={symptoms}
+        phase={phase}
+      />
+
+      {/* ── Section 3 — Coming up (next phase preview) ────────────────── */}
+      {!hideNextPhase && (
+        <section>
+          <p style={{ ...kicker, padding: "0 4px", marginBottom: 10 }}>
+            Coming up · {nextPreview.nextPhase}
+          </p>
+          <Card animationDelay={120}>
+            <p style={{
+              margin: "0 0 12px", fontSize: 13.5, color: C.espresso,
+              fontFamily: "'Fraunces', serif", lineHeight: 1.55, fontStyle: "italic",
+            }}>{nextPreview.preview}</p>
+            <div style={{
+              display: "flex", alignItems: "flex-start", gap: 10,
+              padding: "10px 12px", borderRadius: 10,
+              background: C.paper, border: `1px solid ${C.border}`,
+            }}>
+              <Sparkles size={14} style={{ color: C.gold, flexShrink: 0, marginTop: 3 }} aria-hidden />
+              <p style={{
+                margin: 0, fontSize: 12.5, color: C.espresso,
+                fontFamily: "'Inter', sans-serif", lineHeight: 1.55,
+              }}><strong style={{ fontWeight: 700 }}>Prep tip — </strong>{nextPreview.prepTip}</p>
+            </div>
+          </Card>
+        </section>
+      )}
+
       <MhraNote />
     </div>
   );
+}
+
+// ─── Jess Noticed — pattern card with agent call + daily cache ───────────
+// Calls the personal_assistant agent with a 7-day digest of DailyCheckins
+// + SymptomLogs and asks for ONE short observation. Caches the text +
+// feedback under `jess_noticed_${userId}_${todayKey}` so subsequent
+// renders of the For You tab don't re-fire the agent.
+//
+// Empty-state branches:
+//   • fewer than 3 checkins → "I'll start spotting patterns once you've
+//     logged a few days" (no agent call)
+//   • agent returns NOT_ENOUGH_DATA → same gentle prompt
+//   • agent times out → render nothing (silent fail; UI doesn't punish)
+function JessNoticedCard({ user, recentCheckins, symptoms, phase }) {
+  const [loading, setLoading] = useState(false);
+  const [text, setText] = useState("");
+  const [feedback, setFeedback] = useState(null); // "up" | "down" | null
+  const [exhausted, setExhausted] = useState(false);
+  const triedRef = useRef(false);
+
+  const cacheKey = user?.id ? `jess_noticed_${user.id}_${todayKey()}` : null;
+  const hasEnoughData = Array.isArray(recentCheckins) && recentCheckins.length >= 3;
+
+  useEffect(() => {
+    if (!cacheKey || triedRef.current) return;
+    triedRef.current = true;
+
+    // 1. Cache hit — render immediately.
+    const cached = loadDailyCache(cacheKey);
+    if (cached?.text) {
+      setText(cached.text);
+      setFeedback(cached.feedback || null);
+      return;
+    }
+
+    // 2. Not enough data — render empty state, don't call the agent.
+    if (!hasEnoughData) {
+      setExhausted(true);
+      return;
+    }
+
+    // 3. Build a digest and call the agent.
+    const last7 = (recentCheckins || []).slice(0, 7);
+    const checkinLines = last7
+      .map((c) => {
+        const date = String(c?.date || c?.created_date || "").split("T")[0];
+        const mood = c?.mood ?? "—";
+        const energy = c?.energy ?? c?.energy_level ?? "—";
+        const sleep = c?.sleep_hours ?? c?.sleepHours ?? "—";
+        return `${date}: mood=${mood}/5, energy=${energy}/5, sleep=${sleep}h`;
+      })
+      .join("\n");
+    const symLines = (symptoms || [])
+      .slice(0, 12)
+      .map((s) => {
+        const date = String(s?.date || s?.created_date || "").split("T")[0];
+        const name = s?.symptom_type || s?.symptom_name || "—";
+        const severity = s?.severity ?? "—";
+        return `${date}: ${name} (${severity}/5)`;
+      })
+      .join("\n");
+
+    const system =
+      "You are Jess, a UK-based women's wellness companion. The user has shared recent daily check-ins and symptom logs. " +
+      "Your only job in this turn: surface ONE useful pattern or observation from the data. " +
+      "Output rules: " +
+      "(1) one or two sentences only, max 240 characters total; " +
+      "(2) warm, observational tone — 'I noticed…', 'You tend to…', 'Your mood lifts when…'; " +
+      "(3) be specific — refer to days, counts, or directions if possible; " +
+      "(4) never give medical advice and do not name conditions; " +
+      "(5) never just restate the numbers — interpret them; " +
+      "(6) if data is too thin or too uniform, reply exactly NOT_ENOUGH_DATA and nothing else; " +
+      "(7) do not include preambles, sign-offs, or quotation marks.";
+
+    const userPrompt =
+      `Current cycle phase: ${phase}.\n\n` +
+      `Recent daily check-ins (newest first):\n${checkinLines || "(none)"}\n\n` +
+      `Recent symptom logs:\n${symLines || "(none)"}\n\n` +
+      `Surface one pattern.`;
+
+    setLoading(true);
+    callJessAgent({ system, user: userPrompt })
+      .then(({ text: raw }) => {
+        setLoading(false);
+        if (!raw || /NOT_ENOUGH_DATA/i.test(raw)) {
+          setExhausted(true);
+          return;
+        }
+        const cleaned = String(raw).trim().replace(/^["']|["']$/g, "");
+        setText(cleaned);
+        saveDailyCache(cacheKey, { text: cleaned, feedback: null });
+      })
+      .catch(() => {
+        setLoading(false);
+        setExhausted(true);
+      });
+  }, [cacheKey, hasEnoughData, recentCheckins, symptoms, phase]);
+
+  function tapFeedback(value) {
+    const next = feedback === value ? null : value;
+    setFeedback(next);
+    if (cacheKey) saveDailyCache(cacheKey, { text, feedback: next });
+  }
+
+  return (
+    <section>
+      <p style={{ ...kicker, padding: "0 4px", marginBottom: 10 }}>Jess noticed</p>
+      <article style={{
+        background: C.paperHi,
+        border: `1px solid ${C.border}`,
+        borderLeft: `3px solid ${C.gold}`,
+        borderRadius: 14, padding: "14px",
+        animation: "jess-card-rise 320ms ease-out 80ms backwards",
+      }}>
+        <div style={{ display: "flex", alignItems: "flex-start", gap: 12 }}>
+          <div style={{
+            width: 28, height: 28, borderRadius: "50%",
+            background: C.gold, display: "inline-flex",
+            alignItems: "center", justifyContent: "center",
+            flexShrink: 0, marginTop: 1,
+          }} aria-hidden>
+            <Star size={14} style={{ color: C.espresso }} />
+          </div>
+          <div style={{ flex: 1, minWidth: 0 }}>
+            {loading ? (
+              <p style={{
+                margin: 0, fontSize: 13, color: C.muted, fontStyle: "italic",
+                fontFamily: "'Inter', sans-serif", lineHeight: 1.55,
+              }}>Looking for patterns in your last 7 days…</p>
+            ) : text ? (
+              <>
+                <p style={{
+                  margin: 0, fontSize: 13.5, color: C.espresso,
+                  fontFamily: "'Inter', sans-serif", lineHeight: 1.55,
+                }}>{text}</p>
+                <div style={{ display: "flex", alignItems: "center", gap: 8, marginTop: 12 }}>
+                  <button
+                    type="button"
+                    aria-label="Helpful"
+                    aria-pressed={feedback === "up"}
+                    onClick={() => tapFeedback("up")}
+                    style={feedbackBtnStyle(feedback === "up")}
+                  ><ThumbsUp size={14} /></button>
+                  <button
+                    type="button"
+                    aria-label="Not helpful"
+                    aria-pressed={feedback === "down"}
+                    onClick={() => tapFeedback("down")}
+                    style={feedbackBtnStyle(feedback === "down")}
+                  ><ThumbsDown size={14} /></button>
+                  {feedback && (
+                    <span style={{
+                      fontSize: 11, color: C.muted, fontStyle: "italic",
+                      fontFamily: "'Inter', sans-serif",
+                    }}>Thanks — that helps Jess learn.</span>
+                  )}
+                </div>
+              </>
+            ) : exhausted && !hasEnoughData ? (
+              <p style={{
+                margin: 0, fontSize: 13, color: C.espresso,
+                fontFamily: "'Inter', sans-serif", lineHeight: 1.55,
+              }}>I'll start spotting patterns once you've logged a few days. Try a quick check-in today — even just mood and energy.</p>
+            ) : (
+              <p style={{
+                margin: 0, fontSize: 13, color: C.muted, fontStyle: "italic",
+                fontFamily: "'Inter', sans-serif", lineHeight: 1.55,
+              }}>Not enough variation yet to spot a clear pattern — keep logging.</p>
+            )}
+          </div>
+        </div>
+      </article>
+    </section>
+  );
+}
+
+function feedbackBtnStyle(active) {
+  return {
+    width: 32, height: 32, borderRadius: 9999,
+    background: active ? C.gold : "transparent",
+    border: `1px solid ${active ? C.goldDeep : C.border}`,
+    color: active ? C.espresso : C.muted,
+    display: "inline-flex", alignItems: "center", justifyContent: "center",
+    cursor: "pointer", padding: 0,
+    transition: "background 200ms ease, color 200ms ease, border-color 200ms ease",
+  };
 }
 
 // ─── Small UI primitives ──────────────────────────────────────────────────
