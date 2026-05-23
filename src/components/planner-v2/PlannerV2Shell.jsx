@@ -47,6 +47,13 @@ import CardStack from "@/components/planner-v2/CardStack";
 import PlannerTour from "@/components/planner-v2/PlannerTour";
 import AiDisclaimer from "@/components/compliance/AiDisclaimer";
 import { computeStreaks } from "@/utils/habitStreaks";
+// P1-5 — shared cycle-day derivation. `derivePlannerPhase` is now an
+// alias-import of the pure helper so existing call sites keep working;
+// the Hero useMemo at line ~525 swaps to the `useCycleDay` hook.
+import {
+  computeCycleDay as derivePlannerPhase,
+  useCycleDay,
+} from "@/hooks/useCycleDay";
 
 // Layers + X imported separately so the DEV pill below can use them
 // without colliding with the demo's existing import list above.
@@ -111,31 +118,41 @@ const PHASE_SOFT = {
 // menstrual / follicular / ovulatory / luteal. Returns phase + dayInCycle
 // + daysUntilPeriod so the phase-keyed copy maps can present cycle-accurate
 // content (instead of the original demo's hardcoded luteal strings).
-function derivePlannerPhase(prof) {
-  if (!prof?.last_period_start_date) {
-    return { phase: "follicular", dayInCycle: 1, daysUntilPeriod: null, periodLen: 5, cycleLen: 28 };
-  }
-  const cycleLen  = prof.cycle_avg_length || 28;
-  const periodLen = prof.period_length    || 5;
-  const start     = new Date(prof.last_period_start_date);
-  const t         = new Date(); t.setHours(0, 0, 0, 0);
-  const startDay  = new Date(start); startDay.setHours(0, 0, 0, 0);
-  const dayInCycleRaw = Math.floor((t - startDay) / 86400000) + 1;
-  const normDay   = ((dayInCycleRaw - 1) % cycleLen + cycleLen) % cycleLen + 1;
-  const daysUntilPeriod = cycleLen - normDay + 1;
-  let phase;
-  if (normDay <= periodLen) phase = "menstrual";
-  else if (normDay <= Math.floor(cycleLen * 0.43)) phase = "follicular";
-  else if (normDay <= Math.floor(cycleLen * 0.5))  phase = "ovulatory";
-  else phase = "luteal";
-  return { phase, dayInCycle: normDay, daysUntilPeriod, periodLen, cycleLen };
-}
+// P1-5: derivation moved to src/hooks/useCycleDay.js. The
+// `derivePlannerPhase` symbol is now an alias-import (see top of file)
+// pointing at the same algorithm, so every previous call site stays
+// behaviourally identical.
 
 // ── Phase-keyed copy ──────────────────────────────────────────────────────
 const PHASE_LABEL = {
   menstrual: "Menstrual", follicular: "Follicular",
   ovulatory: "Ovulatory", luteal:     "Luteal",
 };
+// P1-4 — phase-aware guidance for empty Your Day time-of-day slots.
+// Rendered only when the slot's bucket has no habits/tasks/meals/meds.
+const PHASE_DAY_TIPS = {
+  menstrual: {
+    morning:   "Lower the bar this morning — gentler movement is enough.",
+    afternoon: "Warm food and a short walk make luteal-week mornings easier.",
+    evening:   "Hot water bottle + early bed beats screens tonight.",
+  },
+  follicular: {
+    morning:   "Great time to tackle focused work — your brain is sharpest now.",
+    afternoon: "Strength training and new ideas land best in this window.",
+    evening:   "Sleep is shorter this week — wind down by 10 to stay rested.",
+  },
+  ovulatory: {
+    morning:   "Lead the meeting, send the bold message — peak window is open.",
+    afternoon: "Social plans and big asks fit naturally this afternoon.",
+    evening:   "Protect tonight's sleep — your peak energy needs 7–8 hrs.",
+  },
+  luteal: {
+    morning:   "Batch admin tasks now while you've still got steady energy.",
+    afternoon: "Pilates, swim or walk — match the pace your body's setting.",
+    evening:   "Earlier bed by 30 mins — luteal sleep need is genuinely higher.",
+  },
+};
+
 const ASTRA_READINGS = {
   menstrual:  { eyebrow: "ASTRA · MENSTRUAL INSIGHT",  title: "Rest is the strategy right now",     body: "Day 1 energy is lowest — warmth, gentle movement and iron-rich food support your body today." },
   follicular: { eyebrow: "ASTRA · FOLLICULAR INSIGHT", title: "Your energy is building",             body: "Oestrogen is rising. A great time to start new habits, social plans and strength work." },
@@ -522,11 +539,9 @@ export default function PlannerV2Shell({
   // Prefer derived-from-last-period over stored fields so the entire page
   // stays internally consistent (greeting "Menstrual Day 1" was inconsistent
   // with hardcoded "Luteal week" / "OVULATORY READING" strings throughout).
-  const derived = useMemo(() => derivePlannerPhase(profileProp), [
-    profileProp?.last_period_start_date,
-    profileProp?.cycle_avg_length,
-    profileProp?.period_length,
-  ]);
+  // P1-5: shared `useCycleDay` hook now owns the derivation — same algorithm,
+  // single source of truth across the Hero, AstraCard and TomorrowPreviewCard.
+  const derived = useCycleDay(profileProp);
   const phase    = selectedPhase     || derived.phase    || profileProp?.current_phase || profile.phase;
   const cycleDay = selectedCycleDay  || derived.dayInCycle || profileProp?.cycle_day   || profile.cycleDay;
   const daysUntilPeriod = derived.daysUntilPeriod;
@@ -662,7 +677,7 @@ export default function PlannerV2Shell({
       </Row>
 
       <div data-tour="yourday">
-        <YourDayRow user={user} />
+        <YourDayRow user={user} phase={phase} />
       </div>
 
       <div data-tour="body">
@@ -678,8 +693,15 @@ export default function PlannerV2Shell({
         </Row>
       </div>
 
-      {/* Stage + condition rows — #13: suppress cycle-driven conditions during
-          pregnancy / postpartum because they're not biologically active. */}
+      {/* Stage + condition rows — locked order per spec:
+              Body Today → Stage Row → Condition Row → Rituals
+          P1-2: both rows now sit in their own `data-tour` wrappers so
+          the coach-mark tour and the rest of the layout treat them
+          as standalone sections (no more bleeding into Body Today).
+          P1-3: ConditionRow always renders — empty state when the
+          user has no conditions on file routes them to /Profile.
+          #13: cycle-driven conditions are suppressed during pregnancy
+          and postpartum (not biologically active in those stages). */}
       {(() => {
         const PREGNANCY_STAGES = ["pregnant-t1", "pregnant-t2", "pregnant-t3", "postpartum"];
         const CYCLE_CONDITIONS = ["pmdd", "pcos", "endometriosis", "fibroids"];
@@ -698,21 +720,27 @@ export default function PlannerV2Shell({
                 Cycle-linked conditions ({suppressed.map((c) => c.toUpperCase()).join(", ")}) are paused during pregnancy.
               </div>
             )}
-            <StageRow
-              stage={effectiveLifeStage}
-              profile={profileProp}
-              phase={phase}
-              cycleDay={cycleDay}
-              user={user}
-            />
-            {visible.length > 0 && (
-              <ConditionRow
-                conditions={visible}
+            <div data-tour="stage" style={{ marginTop: 6 }}>
+              <StageRow
+                stage={effectiveLifeStage}
                 profile={profileProp}
                 phase={phase}
                 cycleDay={cycleDay}
+                user={user}
               />
-            )}
+            </div>
+            <div data-tour="conditions" style={{ marginTop: 6 }}>
+              {visible.length > 0 ? (
+                <ConditionRow
+                  conditions={visible}
+                  profile={profileProp}
+                  phase={phase}
+                  cycleDay={cycleDay}
+                />
+              ) : (
+                <ConditionEmptyPrompt />
+              )}
+            </div>
           </>
         );
       })()}
@@ -1731,7 +1759,7 @@ function _bucketAll({ tasks, meals, habits, meds }) {
   return buckets;
 }
 
-function YourDayRow({ user }) {
+function YourDayRow({ user, phase }) {
   // CardStack owns its own active-card state now — no local idx needed.
   // Live data state. null while loading; {} when ready.
   const [data, setData]       = useState(null);
@@ -1798,6 +1826,7 @@ function YourDayRow({ user }) {
           <YourDayCard
             key={s.id}
             slot={s}
+            phase={phase}
             loading={!data}
             bucket={buckets ? buckets[s.id] : null}
             streaks={streaks}
@@ -1809,7 +1838,7 @@ function YourDayRow({ user }) {
   );
 }
 
-function YourDayCard({ slot, loading, bucket, streaks, onRefresh }) {
+function YourDayCard({ slot, phase, loading, bucket, streaks, onRefresh }) {
   // Local optimistic toggle state — keys: `task-<id>` / `habit-<id>`.
   const [doneOverride, setDoneOverride] = useState({});
 
@@ -2015,7 +2044,11 @@ function YourDayCard({ slot, loading, bucket, streaks, onRefresh }) {
           {/* EMPTY STATE — soft filled tile (no dashed dev-placeholder).
               cream-dark background + accent icon ring + warm copy + a
               proper solid Add button. Reads as "an inviting empty slot",
-              not "broken element". */}
+              not "broken element".
+              P1-4: when the slot is empty AND we know the phase, surface
+              a single-line phase-aware guidance tip ABOVE the "Nothing
+              logged yet" line so the empty slot does useful work for
+              the user instead of just nagging them to add something. */}
           {isEmpty && (
             <div style={{
               marginTop: 14, padding: "18px 14px",
@@ -2032,6 +2065,19 @@ function YourDayCard({ slot, loading, bucket, streaks, onRefresh }) {
               }}>
                 <slot.Icon size={16} />
               </span>
+              {(() => {
+                const tip = PHASE_DAY_TIPS[phase]?.[slot.id];
+                if (!tip) return null;
+                return (
+                  <p style={{
+                    fontFamily: "Georgia, serif", fontStyle: "italic",
+                    fontSize: 13, color: C.espresso, margin: 0,
+                    lineHeight: 1.45, textAlign: "center", maxWidth: 240,
+                  }}>
+                    {tip}
+                  </p>
+                );
+              })()}
               <p style={{
                 fontSize: 12.5, color: C.muted, margin: 0,
                 fontFamily: "'Inter', sans-serif", lineHeight: 1.45, textAlign: "center",
@@ -2945,7 +2991,7 @@ function RitualBundleCard({ bundle, user }) {
   return (
     <article style={{ ...cardStyle, borderTop: `3px solid ${bundle.accent}` }}>
       <div style={cardHeadRow}>
-        <h3 style={{ ...cardTitle, margin: 0 }}>{bundle.title}</h3>
+        <h3 style={{ ...cardTitle, margin: 0, flex: 1 }}>{bundle.title}</h3>
         <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
           {/* V3 sprint Task 3 — 🔥 streak badge inline on the bundle card. */}
           {bestStreak >= 2 && (
@@ -3820,7 +3866,7 @@ function MedsAndSuppsCard({ user }) {
   return (
     <article style={cardStyle}>
       <div style={cardHeadRow}>
-        <h3 style={{ ...cardTitle, margin: 0 }}>Medications &amp; Supplements</h3>
+        <h3 style={{ ...cardTitle, margin: 0, flex: 1 }}>Medications &amp; Supplements</h3>
         {allMedsDone && <span style={allDoneChip}><Check size={11} /> Meds done</span>}
       </div>
       <Section name="MEDICATIONS">
@@ -4433,7 +4479,7 @@ function MedicationsCard() {
   return (
     <article style={cardStyle}>
       <div style={cardHeadRow}>
-        <h3 style={{ ...cardTitle, margin: 0 }}>Medications today</h3>
+        <h3 style={{ ...cardTitle, margin: 0, flex: 1 }}>Medications today</h3>
         {allDone && <span style={allDoneChip}><Check size={11} /> All taken</span>}
       </div>
       <ul style={{ ...bulletList, gap: 6, marginTop: 6 }}>
@@ -4540,7 +4586,7 @@ function SleepTargetCard() {
   return (
     <article style={cardStyle}>
       <div style={cardHeadRow}>
-        <h3 style={{ ...cardTitle, margin: 0 }}>Sleep target</h3>
+        <h3 style={{ ...cardTitle, margin: 0, flex: 1 }}>Sleep target</h3>
         <BedDouble size={14} style={{ color: C.muted }} />
       </div>
       <p style={sleepTargetTime}>Aim for bed by <b>10:30pm</b></p>
@@ -5086,6 +5132,63 @@ function Row({ label, children }) {
   return <CardStack label={label}>{children}</CardStack>;
 }
 
+// P1-3 — empty state for the Condition row. When the user has no health
+// conditions on file, point them at the Profile page where conditions
+// are managed. Uses the same Row → CardStack shell as a real condition
+// row so the visual fits between Stage Row and Rituals.
+function ConditionEmptyPrompt() {
+  return (
+    <Row label="Conditions">
+      <article style={{
+        background: C.paperHi,
+        border: `1px solid ${C.border}`,
+        borderRadius: 16,
+        padding: "16px 16px 14px",
+        display: "flex",
+        flexDirection: "column",
+        gap: 10,
+      }}>
+        <span style={kicker}>HEALTH CONDITIONS</span>
+        <h3 style={{
+          ...cardTitle,
+          margin: "2px 0 0",
+        }}>Add yours for personalised tips</h3>
+        <p style={{
+          margin: 0,
+          fontSize: 13,
+          color: C.muted,
+          lineHeight: 1.5,
+        }}>
+          Add your health conditions in Profile to see personalised tips here.
+        </p>
+        <button
+          type="button"
+          onClick={() => { try { window.location.href = "/Profile"; } catch { /* swallow */ } }}
+          style={{
+            alignSelf: "flex-start",
+            marginTop: 4,
+            display: "inline-flex",
+            alignItems: "center",
+            gap: 6,
+            padding: "8px 14px",
+            borderRadius: 9999,
+            background: C.espresso,
+            color: C.cream,
+            border: "none",
+            cursor: "pointer",
+            fontSize: 12.5,
+            fontWeight: 700,
+            fontFamily: "'Inter', system-ui, sans-serif",
+          }}
+        >
+          Open Profile
+          <ChevronRight size={13} />
+        </button>
+      </article>
+    </Row>
+  );
+}
+
 function Section({ name, children }) {
   return (
     <div style={{ marginTop: 8 }}>
@@ -5234,10 +5337,18 @@ const cardStyle = {
   minHeight: 200,
 };
 const cardHeadRow = { display: "flex", alignItems: "center", gap: 8 };
+// P1-1: dropped `flex: 1` from the global cardTitle. cardStyle is a
+// column flex container, so `flex: 1` on the h3 made the title grow
+// vertically and pushed every sibling (intention textarea, astra
+// summary, reflection inputs, etc.) to the bottom of the card,
+// leaving a large blank area at the top. Row-context callsites that
+// still need the title to expand horizontally between an icon and a
+// trailing button (RitualBundleCard, MedsAndSuppsCard, MedicationsTodayCard,
+// SleepTargetCard) now pass `flex: 1` inline.
 const cardTitle = {
   fontFamily: "'Fraunces', Georgia, serif",
   fontSize: 17, fontWeight: 500, color: C.espresso,
-  margin: "2px 0", lineHeight: 1.25, letterSpacing: "-0.005em", flex: 1,
+  margin: "2px 0", lineHeight: 1.25, letterSpacing: "-0.005em",
 };
 const cardSub = { fontSize: 12, color: C.muted, margin: "4px 0 0", lineHeight: 1.5 };
 const iconChip = {
