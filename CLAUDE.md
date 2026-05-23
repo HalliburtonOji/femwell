@@ -34,7 +34,28 @@ If you see "This session is being continued from a previous conversation that ra
   poll-loop, single-turn context, subscribe-log dedupe, dead-code
   cleanup, todayISO unused-var fix)
 
-### Feature 4 — For You tab + Wings: NEXT (spec not started)
+### Jess Feature 4 (For You real data + 3 Wings): COMPLETE ✅
+- For You tab Section 1 — `PHASE_RECS` lookup × 5 categories (nutrition /
+  movement / rest / mood / social), horizontal scroll-snap cards
+- For You tab Section 2 — `JessNoticedCard` agent call against last 7
+  days of DailyCheckins + SymptomLogs, daily cache + Lucide thumbs feedback
+- For You tab Section 3 — `NEXT_PHASE_PREVIEW` static lookup, hidden for
+  pregnancy/postpartum/menopause stages
+- Wing 1: `JessJournalPrompt` on `/Journal` (daily-cached prompt, "Use
+  this prompt" pre-fills `NewEntrySheet` via new `seedText` prop)
+- Wing 2: `JessPatientSummary` on `/DoctorExport` (weekly-cached clinical
+  summary, copy-to-clipboard appends "Not medical advice")
+- Wing 3: Astra handoff — `JessDemoPanel` "Talk to Astra" chip after 3+
+  user turns → sessionStorage `jess_astra_handoff` (phase/topics/mood)
+  → `/Lifestyle?tab=horoscope&from=jess` → `JessAstraBanner` mounts at
+  top of `HoroscopeTab` with 2h TTL, dismissable
+- Shared service: `src/services/jessAgentService.js` (`callJessAgent`,
+  `loadDailyCache`, `saveDailyCache`, `todayKey`, `weekKey`)
+- No emoji throughout — Lucide-only icons (Apple, Activity, Moon, Heart,
+  Users, ThumbsUp, ThumbsDown, Star, Sparkles, RefreshCw)
+- Shipped commit `2359640` on `main`, live bundle `index-DDFcefDF.js`
+
+### Feature 5: TBD by Halli post-QA
 
 ### ⚠️ Publish workaround
 UI "Publish App" button regularly hangs on "Publishing..." because of a
