@@ -128,14 +128,25 @@ const rowArrow = {
 const rowTrack = {
   display: "flex", overflowX: "auto",
   scrollSnapType: "x mandatory", gap: 12,
-  // Right padding lets the next card peek ~15% from the edge.
-  padding: "8px 40px 8px 16px",
+  // Planner audit fix — right padding ~24px so the next card peeks
+  // ~15% from the right edge. Combined with the 16px left padding
+  // and the card width `calc(100% - 40px)`, this gives the
+  // dominant-card layout the spec calls for on every viewport.
+  padding: "8px 24px 8px 16px",
   scrollbarWidth: "none", WebkitOverflowScrolling: "touch",
 };
 // Base slot — non-active card. Slightly scaled down + dimmed so the
 // active card reads as forward, the peeking right-edge as "more behind".
+//
+// Planner audit fix — removed the `maxWidth: 520` cap. With the cap,
+// desktop viewports (~1475px) fit 3 cards at ~520px each side-by-side
+// instead of one dominant card with a 15%-peek of the next. Cards
+// now fill `calc(100% - 40px)` of the scroll container width on
+// every viewport (≈350px on mobile @ 390px viewport, ≈1435px on
+// desktop), and the next card consistently peeks ~40px from the
+// right edge.
 const rowSlot = {
-  flex: "0 0 calc(100% - 48px)", maxWidth: 520,
+  flex: "0 0 calc(100% - 40px)",
   scrollSnapAlign: "start",
   borderRadius: 20,
   transform: "scale(0.96)",

@@ -735,9 +735,9 @@ export default function PlannerV2Shell({
 
       <Row label="Nourishment">
         <MacroTrackerCard user={user} profile={profileProp} />
-        <HydrationCard user={user} />
-        <AIMealPlanCard />
-        <PhaseRecipesCard />
+        <HydrationCard user={user} phase={phase} />
+        <AIMealPlanCard phase={phase} />
+        <PhaseRecipesCard phase={phase} />
       </Row>
 
       <Row label="Care">
@@ -749,7 +749,7 @@ export default function PlannerV2Shell({
 
       <Row label="Tonight">
         <TonightReflectionCard user={user} />
-        <TomorrowPreviewCard user={user} />
+        <TomorrowPreviewCard user={user} phase={phase} cycleDay={cycleDay} profile={profileProp} />
         {/* #11: CycleReflectionCard removed (duplicated BodyTodayCard's
             mood/energy/symptoms check-in). Replaced by EndOfDayNoteCard —
             a single reflective text field persisted to JournalEntries. */}
@@ -3446,7 +3446,74 @@ function MacroTrackerCard({ user, profile: profileProp }) {
 // minus subtracts locally only (deletion of the most-recent row would be
 // noisy and out of scope). Initial glasses derived from sum(amount_ml)/250
 // of today's HydrationLog rows.
-function HydrationCard({ user }) {
+// Planner audit fix — phase-keyed Nourishment copy. The Nourishment row
+// used to hardcode Luteal copy on every card; now each card looks up
+// its content by `phase`. Falls back to follicular if phase is unknown
+// or null.
+const HYDRATION_TIP = {
+  menstrual:  "Menstrual phase — replenish iron-rich + warm fluids. Aim for 2L.",
+  follicular: "Follicular phase — energy rising. Cool fresh fluids, aim for 2L.",
+  ovulatory:  "Ovulatory phase — peak hydration matters. Aim for 2.2L with electrolytes.",
+  luteal:     "Luteal phase — aim for 2.5L, bloating can mask thirst.",
+};
+const MEAL_PLAN_BY_PHASE = {
+  menstrual: [
+    { label: "Breakfast", text: "Porridge + dark berries + flaxseed · iron + slow energy for day 1" },
+    { label: "Lunch",     text: "Lentil soup + sourdough · warming, iron-rich, anti-cramp" },
+    { label: "Dinner",    text: "Ginger beef stir-fry + brown rice · warm, mineral-rich for menstruation" },
+  ],
+  follicular: [
+    { label: "Breakfast", text: "Greek yoghurt + seeds + berries · protein + fresh start" },
+    { label: "Lunch",     text: "Quinoa bowl + roast veg + tahini · light, energising" },
+    { label: "Dinner",    text: "Grilled chicken + green salad + olive oil · clean protein for the build" },
+  ],
+  ovulatory: [
+    { label: "Breakfast", text: "Smoothie + spinach + chia + nut butter · antioxidant + B-vits" },
+    { label: "Lunch",     text: "Salmon + avocado + leaves · omega-3 + glutathione for the peak" },
+    { label: "Dinner",    text: "Roast veg + chickpeas + lemon dressing · fibre-forward, light" },
+  ],
+  luteal: [
+    { label: "Breakfast", text: "Eggs + spinach + sourdough · iron + B12 for luteal energy" },
+    { label: "Lunch",     text: "Roast salmon, sweet potato, kale · anti-inflammatory + Mg" },
+    { label: "Dinner",    text: "Turmeric chicken stew + brown rice · warming + magnesium-rich" },
+  ],
+};
+const RECIPE_BY_PHASE = {
+  menstrual: {
+    sub: "Warm, iron-rich, anti-cramp.",
+    items: [
+      { name: "Ginger beef stir-fry",       time: "20 min", tone: "blush" },
+      { name: "Lentil + ginger soup",       time: "25 min", tone: "gold"  },
+      { name: "Dark chocolate + tahini bars", time: "10 min", tone: "sage"  },
+    ],
+  },
+  follicular: {
+    sub: "Fresh, light, protein-forward.",
+    items: [
+      { name: "Quinoa + roast veg bowl",     time: "30 min", tone: "sage"  },
+      { name: "Grilled lemon chicken salad", time: "20 min", tone: "blush" },
+      { name: "Berry chia parfait",          time: "5 min",  tone: "gold"  },
+    ],
+  },
+  ovulatory: {
+    sub: "Bright, antioxidant-rich, omega-led.",
+    items: [
+      { name: "Salmon + avocado bowl",       time: "20 min", tone: "blush" },
+      { name: "Roast pepper + lentil salad", time: "25 min", tone: "gold"  },
+      { name: "Cacao + nut energy bites",    time: "10 min", tone: "sage"  },
+    ],
+  },
+  luteal: {
+    sub: "Anti-inflammatory, warming, magnesium-rich.",
+    items: [
+      { name: "Turmeric salmon",             time: "20 min", tone: "blush" },
+      { name: "Roasted root + lentil bowl",  time: "30 min", tone: "gold"  },
+      { name: "Magnesium magic dahl",        time: "25 min", tone: "sage"  },
+    ],
+  },
+};
+
+function HydrationCard({ user, phase }) {
   const [glasses, setGlasses] = useState(0);
   const target = 8;
   useEffect(() => {
@@ -3507,17 +3574,13 @@ function HydrationCard({ user }) {
         <button onClick={() => bump(-1)} style={hydroAdjustBtn}>−</button>
         <button onClick={() => bump(+1)} style={{ ...hydroAdjustBtn, background: C.espresso, color: C.cream }}>+</button>
       </div>
-      <p style={tipText}>Luteal phase — aim for 2.5L, bloating can mask thirst.</p>
+      <p style={tipText}>{HYDRATION_TIP[phase] || HYDRATION_TIP.follicular}</p>
     </article>
   );
 }
 
-function AIMealPlanCard() {
-  const meals = [
-    { label: "Breakfast", text: "Eggs + spinach + sourdough · iron + B12 for luteal energy" },
-    { label: "Lunch",     text: "Roast salmon, sweet potato, kale · anti-inflammatory + Mg" },
-    { label: "Dinner",    text: "Turmeric chicken stew + brown rice · warming + magnesium-rich" },
-  ];
+function AIMealPlanCard({ phase }) {
+  const meals = MEAL_PLAN_BY_PHASE[phase] || MEAL_PLAN_BY_PHASE.follicular;
   return (
     <article style={cardStyle}>
       <div style={cardHeadRow}>
@@ -3545,17 +3608,18 @@ function AIMealPlanCard() {
   );
 }
 
-function PhaseRecipesCard() {
-  const recipes = [
-    { name: "Turmeric salmon",       time: "20 min", tone: C.blush },
-    { name: "Roasted root + lentil bowl", time: "30 min", tone: C.gold  },
-    { name: "Magnesium magic dahl",  time: "25 min", tone: C.sage  },
-  ];
+function PhaseRecipesCard({ phase }) {
+  const safePhase = phase && RECIPE_BY_PHASE[phase] ? phase : "follicular";
+  const data = RECIPE_BY_PHASE[safePhase];
+  // Map tone string → actual colour token (kept out of the map so we
+  // can swap the palette without touching every entry).
+  const toneColor = { blush: C.blush, gold: C.gold, sage: C.sage };
+  const recipes = data.items.map((r) => ({ ...r, tone: toneColor[r.tone] || C.blush }));
   return (
     <article style={cardStyle}>
-      <span style={kicker}>PHASE RECIPES · LUTEAL</span>
+      <span style={kicker}>PHASE RECIPES · {safePhase.toUpperCase()}</span>
       <h3 style={cardTitle}>For your phase</h3>
-      <p style={cardSub}>Anti-inflammatory, warming, magnesium-rich.</p>
+      <p style={cardSub}>{data.sub}</p>
       <ul style={{ ...bulletList, gap: 6, marginTop: 4 }}>
         {recipes.map((r) => (
           <li key={r.name} style={recipeRow}>
@@ -3908,11 +3972,52 @@ function GPReportCardSmall({ profile: profileProp }) {
 }
 
 // ── Tonight extras (Tomorrow preview · Cycle reflection) ─────────────────
-function TomorrowPreviewCard({ user }) {
+function TomorrowPreviewCard({ user, phase: todayPhase, cycleDay: todayCycleDay, profile: profileProp }) {
   const tomorrowDate = new Date(today); tomorrowDate.setDate(today.getDate() + 1);
   const tomorrowStr  = tomorrowDate.toISOString().split("T")[0];
-  const tmCycleDay = profile.cycleDay + 1;
-  const tmPhase = tmCycleDay <= 28 ? "luteal" : "menstrual";
+  // Planner audit fix — previously this card used the legacy
+  // `profile.cycleDay + 1` (no normalisation against cycle length) and
+  // a buggy `tmCycleDay <= 28 ? "luteal" : "menstrual"` ternary that
+  // mislabelled every day ≤ 28 as luteal. Now derive tomorrow's
+  // cycle day + phase from the same `derivePlannerPhase` boundaries
+  // the hero uses, so a Menstrual Day 3 user sees "Menstrual Day 4"
+  // (not "Late Luteal Day 4") tomorrow.
+  const cycleLen  = profileProp?.cycle_avg_length || 28;
+  const periodLen = profileProp?.period_length    || 5;
+  const baseDay   = Number.isFinite(todayCycleDay) ? todayCycleDay : 1;
+  const tmRaw     = baseDay + 1;
+  const tmCycleDay = ((tmRaw - 1) % cycleLen + cycleLen) % cycleLen + 1;
+  let tmPhase;
+  if (tmCycleDay <= periodLen)                       tmPhase = "menstrual";
+  else if (tmCycleDay <= Math.floor(cycleLen * 0.43)) tmPhase = "follicular";
+  else if (tmCycleDay <= Math.floor(cycleLen * 0.5))  tmPhase = "ovulatory";
+  else                                                tmPhase = "luteal";
+  // Optional "Early / Mid / Late" qualifier — keeps the demo voice
+  // while staying correct. We only label "Late" for the back half of
+  // the luteal phase; menstrual / follicular / ovulatory have their
+  // own natural qualifiers.
+  const phaseQualifier = (() => {
+    const phaseStart = tmPhase === "menstrual"
+      ? 1
+      : tmPhase === "follicular"
+        ? periodLen + 1
+        : tmPhase === "ovulatory"
+          ? Math.floor(cycleLen * 0.43) + 1
+          : Math.floor(cycleLen * 0.5) + 1;
+    const phaseEnd = tmPhase === "menstrual"
+      ? periodLen
+      : tmPhase === "follicular"
+        ? Math.floor(cycleLen * 0.43)
+        : tmPhase === "ovulatory"
+          ? Math.floor(cycleLen * 0.5)
+          : cycleLen;
+    const span = phaseEnd - phaseStart + 1;
+    const offset = tmCycleDay - phaseStart;
+    if (span <= 2) return "";
+    if (offset / span < 0.34) return "Early";
+    if (offset / span > 0.66) return "Late";
+    return "Mid";
+  })();
   const key = `femwell_tomorrow_priority_${tomorrowStr}`;
   const [pri, setPri] = useState(() => { try { return localStorage.getItem(key) || ""; } catch { return ""; } });
   function save(v) { setPri(v); try { localStorage.setItem(key, v); } catch {} }
@@ -3971,7 +4076,7 @@ function TomorrowPreviewCard({ user }) {
       <div style={{ display: "flex", alignItems: "center", gap: 8, padding: "8px 12px", borderRadius: 10, background: `${PHASE_LIGHT[tmPhase]}22`, border: `1px solid ${PHASE_LIGHT[tmPhase]}55` }}>
         <span style={{ width: 10, height: 10, borderRadius: 9999, background: PHASE_LIGHT[tmPhase] }} />
         <span style={{ fontFamily: "'Fraunces', Georgia, serif", fontSize: 15, fontWeight: 500, color: C.espresso }}>
-          Late {tmPhase[0].toUpperCase() + tmPhase.slice(1)} · Day {tmCycleDay}
+          {phaseQualifier ? `${phaseQualifier} ` : ""}{tmPhase[0].toUpperCase() + tmPhase.slice(1)} · Day {tmCycleDay}
         </span>
       </div>
       <div style={energyForecastRow}>

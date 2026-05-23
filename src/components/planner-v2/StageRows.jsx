@@ -379,7 +379,21 @@ function BirthPrepCard() {
 }
 
 export function PregnancyRow({ stage, profile, user }) {
+  // Planner audit fix — belt-and-braces guard. The router at the
+  // bottom of this file (`StageRow`) already gates this row on
+  // `stage.startsWith("pregnant")`, but the audit caught Week 18 /
+  // Kick Counter cards rendering for a Menstrual-Day-3 user whose
+  // Planner.jsx-side effectiveLifeStage logged as "reproductive".
+  // The divergence came from PlannerV2Shell reading a stale
+  // `dev_planner_stage` localStorage override that Planner.jsx
+  // doesn't see — so if the parent ever invokes PregnancyRow with a
+  // non-pregnant stage (stale dev state, race during stage swap,
+  // pregnancy_due_date cleared but life_stage not), we return null
+  // here too instead of unconditionally rendering the cards.
   const trimester = trimesterOf(stage);
+  if (!stage || !String(stage).startsWith("pregnant") || !trimester) {
+    return null;
+  }
   return (
     <Row label="Your pregnancy">
       <BabyThisWeekCard profile={profile} trimester={trimester} />
