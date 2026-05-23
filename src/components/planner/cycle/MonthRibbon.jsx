@@ -40,7 +40,27 @@ const PHASE_LABEL_NICE = {
 };
 
 function toDateStr(d) {
-  return d.toISOString().split("T")[0];
+  // Planner audit round 3 — the previous implementation used
+  // `d.toISOString().split("T")[0]`, which is the UTC date. For
+  // anyone east of UTC (e.g. the UK during BST = UTC+1, where this
+  // app's primary user lives), a local midnight constructed via
+  // `new Date(year, month, day)` becomes the PREVIOUS day in UTC.
+  // That made every cell in the grid `dateISO` one day earlier than
+  // its visible label — so the "today" comparison landed on the
+  // cell whose `dayNum` was today+1, not today's. The crimson
+  // period background also shifted with it (because the gradient
+  // and phaseByDay use the same `dateISO`), which is why the
+  // visual May 23 cell appeared white (it was actually keyed as
+  // 2026-05-22 → off / pre-cycle in the test profile) and the
+  // ring landed on May 24.
+  //
+  // Switching to local-date components fixes both: today's local
+  // date string equals the cell's local date string for the cell
+  // labelled with today's number, and phases/grids line up.
+  const y = d.getFullYear();
+  const m = String(d.getMonth() + 1).padStart(2, "0");
+  const day = String(d.getDate()).padStart(2, "0");
+  return `${y}-${m}-${day}`;
 }
 
 // Same shape as Planner.jsx `phaseForDate` but takes an explicit ISO date.
