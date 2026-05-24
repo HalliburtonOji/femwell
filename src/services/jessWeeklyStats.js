@@ -61,8 +61,16 @@ export async function fetchWeeklyStats(userId) {
     return d >= startKey && d <= endKey;
   });
 
+  // Sprint 1 S1-3 — exclude unlogged days from the average. A row that
+  // never filled in mood/energy/sleep stores 0 or undefined; treating
+  // those as real 0/5 readings dragged the GP-facing averages to "0.4"
+  // for users who only logged 2 of 7 days. Now we only average days
+  // with a positive logged value (>0 for mood/energy on the 1-5 scale,
+  // and >0 for sleep_hours).
   const avg = (arr, k) => {
-    const xs = arr.map((x) => Number(x?.[k])).filter((n) => Number.isFinite(n));
+    const xs = arr
+      .map((x) => Number(x?.[k]))
+      .filter((n) => Number.isFinite(n) && n > 0);
     if (!xs.length) return null;
     return Number((xs.reduce((a, b) => a + b, 0) / xs.length).toFixed(1));
   };
@@ -96,13 +104,19 @@ export async function fetchWeeklyStats(userId) {
 // [WEEKLY STATS] block as the user's actual data."
 export function buildWeeklyStatsContext(agg) {
   if (!agg) return "";
+  // Sprint 1 S1-3 — when an average is null it means no days had a
+  // logged value. Surface that explicitly so Jess doesn't hallucinate
+  // a "0/5 mood" reading from missing data.
+  const fmtAvg = (v, unit = "") => (v == null || !Number.isFinite(v))
+    ? "N/A (not logged)"
+    : `${v}${unit}`;
   const lines = [
     "[WEEKLY STATS]",
     `Window: ${agg.windowStart} → ${agg.windowEnd} (last 7 days, today=${todayKey()})`,
     `Check-ins: ${agg.checkinCount}`,
-    `Avg mood: ${agg.avgMood ?? "n/a"}/5`,
-    `Avg energy: ${agg.avgEnergy ?? "n/a"}/5`,
-    `Avg sleep: ${agg.avgSleep ?? "n/a"}h`,
+    `Avg mood: ${fmtAvg(agg.avgMood, "/5")}`,
+    `Avg energy: ${fmtAvg(agg.avgEnergy, "/5")}`,
+    `Avg sleep: ${fmtAvg(agg.avgSleep, "h")}`,
     `Habits completed: ${agg.habitCount}`,
     `Symptoms logged: ${agg.symptomCount}` +
       (agg.topSymptoms?.length ? ` (top: ${agg.topSymptoms.join(", ")})` : ""),

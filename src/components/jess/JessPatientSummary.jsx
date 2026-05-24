@@ -66,9 +66,13 @@ export default function JessPatientSummary({ user, profile, checkins, symptoms }
       .sort(([, a], [, b]) => b - a)
       .slice(0, 5)
       .map(([k]) => k);
-    const moodVals = recentC.map((c) => Number(c?.mood)).filter((n) => Number.isFinite(n));
-    const energyVals = recentC.map((c) => Number(c?.energy ?? c?.energy_level)).filter((n) => Number.isFinite(n));
-    const sleepVals = recentC.map((c) => Number(c?.sleep_hours ?? c?.sleepHours)).filter((n) => Number.isFinite(n));
+    // Sprint 1 S1-3 — exclude unlogged days from the average. A row
+    // with no logged mood/energy/sleep stores 0 (or undefined); treating
+    // those as real readings dragged averages to misleading "0.4/5"
+    // numbers on the GP-facing card. Only average positive logged values.
+    const moodVals   = recentC.map((c) => Number(c?.mood)).filter((n) => Number.isFinite(n) && n > 0);
+    const energyVals = recentC.map((c) => Number(c?.energy ?? c?.energy_level)).filter((n) => Number.isFinite(n) && n > 0);
+    const sleepVals  = recentC.map((c) => Number(c?.sleep_hours ?? c?.sleepHours)).filter((n) => Number.isFinite(n) && n > 0);
     const avg = (arr) => (arr.length ? Math.round((arr.reduce((a, b) => a + b, 0) / arr.length) * 10) / 10 : null);
     return {
       checkinCount: recentC.length,
@@ -125,9 +129,9 @@ export default function JessPatientSummary({ user, profile, checkins, symptoms }
       `- check-ins logged: ${digest.checkinCount}\n` +
       `- symptom events logged: ${digest.symptomCount}\n` +
       `- top symptoms by frequency: ${digest.topSym.join(", ") || "none"}\n` +
-      `- average mood: ${digest.mood ?? "n/a"}/5\n` +
-      `- average energy: ${digest.energy ?? "n/a"}/5\n` +
-      `- average sleep: ${digest.sleep ?? "n/a"} hours\n\n` +
+      `- average mood: ${digest.mood == null ? "N/A (not logged)" : `${digest.mood}/5`}\n` +
+      `- average energy: ${digest.energy == null ? "N/A (not logged)" : `${digest.energy}/5`}\n` +
+      `- average sleep: ${digest.sleep == null ? "N/A (not logged)" : `${digest.sleep} hours`}\n\n` +
       `Draft the summary.`;
 
     callJessAgent({ system, user: userPrompt })

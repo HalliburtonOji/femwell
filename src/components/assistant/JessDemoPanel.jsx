@@ -58,6 +58,7 @@ import {
   buildWeeklyStatsContext,
   matchesWeeklySummaryAsk,
 } from "@/services/jessWeeklyStats";
+import JessErrorBoundary from "@/components/jess/JessErrorBoundary";
 
 // ─── Tokens ───────────────────────────────────────────────────────────────
 // FemWell design tokens — locked to the spec Halli circulated. All
@@ -692,7 +693,19 @@ function stripToolConfirmations(text) {
 }
 
 // ─── Main panel ───────────────────────────────────────────────────────────
-export default function JessDemoPanel() {
+// Sprint 1 S1-1 — JessDemoPanel is wrapped in an error boundary so a
+// render-time crash (e.g. the feedbackByMsgId ReferenceError we just
+// patched) doesn't take the whole page down. Default export is now
+// the wrapped version below; the raw component is `JessDemoPanelInner`.
+export default function JessDemoPanel(props) {
+  return (
+    <JessErrorBoundary variant="panel" label="JessDemoPanel">
+      <JessDemoPanelInner {...props} />
+    </JessErrorBoundary>
+  );
+}
+
+function JessDemoPanelInner() {
   const [user, setUser] = useState(null);
   const [profile, setProfile] = useState(null);
   const [todayCheckin, setTodayCheckin] = useState(null);
@@ -2108,7 +2121,7 @@ function ChatTab({
           shell={shell}
           onChip={onChip}
           onToggleQuickLog={onToggleQuickLog}
-          feedback={feedbackByMsgId[m.id] || null}
+          feedback={(feedbackByMsgId || {})[m.id] || null}
           onFeedback={(rating, reason) => {
             // QA Fix 4 — write to the dedicated feedbackByMsgId map so
             // streaming msg updates can't blow this away.

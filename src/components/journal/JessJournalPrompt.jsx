@@ -25,6 +25,25 @@ const PHASE_FALLBACK = {
   luteal:     "What have you noticed about yourself in the last few days?",
 };
 
+// Sprint 1 S1-2 — cross-mount inflight dedup.
+//
+// The Journal page was re-rendering JessJournalPrompt up to 6× before
+// the first agent call wrote to localStorage, so every mount saw an
+// empty cache and fired its own request. The component's per-instance
+// `triedRef` couldn't see across remounts.
+//
+// Two-tier dedup:
+//   1. Module-level inflight Map<cacheKey, Promise> — any concurrent
+//      mount in the same JS context awaits the existing promise
+//      instead of firing a fresh call.
+//   2. Pending sentinel written into localStorage *before* the agent
+//      call resolves. A subsequent mount (or a fresh navigation
+//      that drops the module's Map) treats `{ pending: true }` as
+//      "wait, don't re-fire" up to a 30 s expiry, after which we
+//      assume the prior call was lost and try again.
+const JOURNAL_PROMPT_INFLIGHT = new Map();
+const PENDING_TTL_MS = 30 * 1000;
+
 export default function JessJournalPrompt({ user, profile, phase, lastEntry, onUsePrompt }) {
   const [prompt, setPrompt] = useState("");
   const [loading, setLoading] = useState(false);
@@ -35,12 +54,29 @@ export default function JessJournalPrompt({ user, profile, phase, lastEntry, onU
     return `jess_journal_prompt_${user.id}_${todayKey()}`;
   }, [user?.id]);
 
-  // Initial fetch — try cache, then agent, then phase fallback.
+  // Initial fetch — try cache (incl. pending sentinel), then agent.
   useEffect(() => {
     if (!cacheKey || triedRef.current) return;
     triedRef.current = true;
     const cached = loadDailyCache(cacheKey);
     if (cached?.prompt) { setPrompt(cached.prompt); return; }
+    // Sprint 1 S1-2 — honour a pending sentinel from another mount.
+    if (cached?.pending && Date.now() - Number(cached.ts || 0) < PENDING_TTL_MS) {
+      // Another mount is already fetching. Latch onto its promise if
+      // available and adopt the resolved prompt; otherwise leave the
+      // card in its loading-but-quiet state until the other mount's
+      // saveDailyCache call lands.
+      const inflight = JOURNAL_PROMPT_INFLIGHT.get(cacheKey);
+      if (inflight && typeof inflight.then === "function") {
+        setLoading(true);
+        inflight.finally(() => {
+          const fresh = loadDailyCache(cacheKey);
+          if (fresh?.prompt) setPrompt(fresh.prompt);
+          setLoading(false);
+        });
+      }
+      return;
+    }
     runAgent({ force: false });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [cacheKey, phase]);
@@ -48,11 +84,27 @@ export default function JessJournalPrompt({ user, profile, phase, lastEntry, onU
   function runAgent({ force }) {
     if (!cacheKey) return;
     if (loading) return;
+    // Sprint 1 S1-2 — second guard: if another mount started the same
+    // request in this JS context, await it rather than firing again.
+    const existing = JOURNAL_PROMPT_INFLIGHT.get(cacheKey);
+    if (existing && typeof existing.then === "function" && !force) {
+      setLoading(true);
+      existing.finally(() => {
+        const fresh = loadDailyCache(cacheKey);
+        if (fresh?.prompt) setPrompt(fresh.prompt);
+        setLoading(false);
+      });
+      return;
+    }
     const fallback = PHASE_FALLBACK[phase] || PHASE_FALLBACK.follicular;
     const lastSnippet = (lastEntry?.text || lastEntry?.content || "")
       .toString().slice(0, 200).replace(/\s+/g, " ").trim();
 
     setLoading(true);
+    // Sprint 1 S1-2 — write the pending sentinel synchronously BEFORE
+    // the agent call so a remount in the next paint tick sees it and
+    // doesn't fire a duplicate.
+    saveDailyCache(cacheKey, { pending: true, ts: Date.now() });
 
     const system =
       "You are Jess, a UK-based women's wellness companion. " +
@@ -71,7 +123,9 @@ export default function JessJournalPrompt({ user, profile, phase, lastEntry, onU
       (lastSnippet ? `Last journal snippet: "${lastSnippet}"\n` : "") +
       `Suggest one journaling prompt for today.`;
 
-    callJessAgent({ system, user: userPrompt })
+    // Sprint 1 S1-2 — capture the promise in the module-level Map so
+    // concurrent mounts in the same JS context dedupe to a single call.
+    const promise = callJessAgent({ system, user: userPrompt })
       .then(({ text }) => {
         setLoading(false);
         const cleaned = String(text || "")
@@ -87,7 +141,12 @@ export default function JessJournalPrompt({ user, profile, phase, lastEntry, onU
         setLoading(false);
         setPrompt(fallback);
         saveDailyCache(cacheKey, { prompt: fallback });
+      })
+      .finally(() => {
+        // Clear the inflight slot so a future refresh can fire again.
+        JOURNAL_PROMPT_INFLIGHT.delete(cacheKey);
       });
+    JOURNAL_PROMPT_INFLIGHT.set(cacheKey, promise);
     // force flag exists so the refresh button can be wired later if desired
     void force;
   }
