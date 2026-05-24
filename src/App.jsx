@@ -35,6 +35,7 @@ import Planner from './pages/Planner';
 import SealedLetters from './pages/SealedLetters';
 import BookReader from './pages/BookReader';
 import UnifiedTabLogger from './components/UnifiedTabLogger';
+import MorningBriefOverlay from './components/MorningBriefOverlay';
 
 
 const { Pages, Layout, mainPage } = pagesConfig;
@@ -45,10 +46,63 @@ const LayoutWrapper = ({ children, currentPageName }) => Layout ?
   <Layout currentPageName={currentPageName}>{children}</Layout>
   : <>{children}</>;
 
+// Sprint 8 — Morning Brief gating helpers.
+// `localKey(uid)` returns the once-per-day localStorage key. Day-of is
+// derived from local calendar components so a midnight BST flip doesn't
+// hide today's brief from a user on the UK side of the dateline.
+function morningBriefKey(uid) {
+  if (!uid) return null;
+  const d = new Date();
+  const ymd = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+  return `femwell_morning_brief_${uid}_${ymd}`;
+}
+function hasSeenMorningBrief(uid) {
+  if (typeof window === "undefined" || !window.localStorage) return true;
+  const k = morningBriefKey(uid);
+  if (!k) return true;
+  try { return window.localStorage.getItem(k) === "seen"; }
+  catch { return true; }
+}
+function markMorningBriefSeen(uid) {
+  if (typeof window === "undefined" || !window.localStorage) return;
+  const k = morningBriefKey(uid);
+  if (!k) return;
+  try { window.localStorage.setItem(k, "seen"); } catch { /* swallow */ }
+}
+
 const AuthenticatedApp = () => {
   const { isLoadingAuth, isLoadingPublicSettings, authError, navigateToLogin } = useAuth();
   const location = useLocation();
   const navigate = useNavigate();
+  // Sprint 8 — once-per-day Morning Brief auto-launch.
+  // We resolve user + profile in a tiny background effect so the brief
+  // is data-aware (cycle phase, display name) without blocking router
+  // render. `showBrief` starts false; flips true only when (a) auth is
+  // settled, (b) we're not in onboarding, (c) the user hasn't seen
+  // today's brief yet.
+  const [briefUser,    setBriefUser]    = useState(null);
+  const [briefProfile, setBriefProfile] = useState(null);
+  const [showBrief,    setShowBrief]    = useState(false);
+  useEffect(() => {
+    if (isLoadingAuth || authError) return;
+    if (location.pathname === "/Onboarding") return;
+    let cancelled = false;
+    (async () => {
+      try {
+        const u = await base44.auth.me().catch(() => null);
+        if (!u?.id || cancelled) return;
+        if (hasSeenMorningBrief(u.id)) return;
+        const profiles = await base44.entities.UserProfile
+          .filter({ user_id: u.id }, null, 1)
+          .catch(() => []);
+        if (cancelled) return;
+        setBriefUser(u);
+        setBriefProfile(profiles?.[0] || null);
+        setShowBrief(true);
+      } catch { /* silent */ }
+    })();
+    return () => { cancelled = true; };
+  }, [isLoadingAuth, authError, location.pathname]);
   // One-time onboarding check after auth resolves (sessionStorage survives refreshes within session)
   useEffect(() => {
     if (isLoadingAuth || authError) return;
@@ -97,6 +151,20 @@ const AuthenticatedApp = () => {
 
   // Render the main app
   return (
+    <>
+      {/* Sprint 8 — Morning Brief sits above the routed app on first
+          open per day. Dismissal sets a localStorage flag so it stays
+          gone until tomorrow. */}
+      {showBrief && briefUser && (
+        <MorningBriefOverlay
+          user={briefUser}
+          profile={briefProfile}
+          onDismiss={() => {
+            markMorningBriefSeen(briefUser.id);
+            setShowBrief(false);
+          }}
+        />
+      )}
     <AnimatePresence mode="popLayout" initial={false}>
       <motion.div
         key={location.pathname}
@@ -150,6 +218,7 @@ const AuthenticatedApp = () => {
         </Routes>
       </motion.div>
     </AnimatePresence>
+    </>
   );
 };
 
