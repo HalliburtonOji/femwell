@@ -76,6 +76,7 @@ import RitualBuilder, {
   listRitualsForContext,
   iconFor as ritualIconFor,
 } from "@/components/planner/RitualBuilder";
+import VoiceScheduler, { VoiceMicButton } from "@/components/planner/VoiceScheduler";
 import { Settings as SettingsIcon } from "lucide-react";
 
 // Layers + X imported separately so the DEV pill below can use them
@@ -670,6 +671,12 @@ export default function PlannerV2Shell({
   // P3-4 ritual builder open state + custom-rituals refresh tick.
   const [ritualBuilderOpen, setRitualBuilderOpen] = useState(false);
   const [customRitualsTick, setCustomRitualsTick] = useState(0);
+  // Sprint 7 — Voice-to-schedule sheet open state. Tick bumps when a
+  // PlannerItem is saved so downstream readers (SchedulePreviewCard
+  // and Your Day) can pick it up on the next refresh cycle.
+  const [voiceOpen, setVoiceOpen] = useState(false);
+  // eslint-disable-next-line no-unused-vars
+  const [voiceSavedTick, setVoiceSavedTick] = useState(0);
 
   useEffect(() => {
     if (typeof window === "undefined") return;
@@ -870,6 +877,7 @@ export default function PlannerV2Shell({
         greeting={greeting}
         onOpenPlan={() => setPlanOpen(true)}
         onOpenSettings={() => setSettingsOpen(true)}
+        onOpenVoice={() => setVoiceOpen(true)}
         lifeStage={profileProp?.life_stage || realLifeStage}
       />
 
@@ -900,6 +908,14 @@ export default function PlannerV2Shell({
         onClose={() => setRitualBuilderOpen(false)}
         userId={user?.id}
         onSaved={() => setCustomRitualsTick((t) => t + 1)}
+      />
+      {/* Sprint 7 — Voice to Schedule. Mic in header opens; on save
+          we bump voiceSavedTick so future readers can re-filter. */}
+      <VoiceScheduler
+        open={voiceOpen}
+        onClose={() => setVoiceOpen(false)}
+        userId={user?.id}
+        onSaved={() => setVoiceSavedTick((t) => t + 1)}
       />
 
       <PlanADaySheet open={planOpen} onClose={() => setPlanOpen(false)} user={user} />
@@ -954,7 +970,7 @@ export default function PlannerV2Shell({
 //   • For pregnancy stages (pregnant-t1 / t2 / t3) we render
 //     "Pregnant · Trimester N" instead of "Luteal Day 25".
 //   • Other stages keep the original cycle-day format.
-function Header({ greeting, onOpenPlan, onOpenSettings, lifeStage }) {
+function Header({ greeting, onOpenPlan, onOpenSettings, onOpenVoice, lifeStage }) {
   const now = new Date();
   const dateLabel = now.toLocaleDateString(undefined, {
     weekday: "long", day: "numeric", month: "long",
@@ -1003,6 +1019,8 @@ function Header({ greeting, onOpenPlan, onOpenSettings, lifeStage }) {
             <SettingsIcon size={16} />
           </button>
         )}
+        {/* Sprint 7 — voice-to-schedule entry. */}
+        {onOpenVoice && <VoiceMicButton onTap={onOpenVoice} />}
       </div>
       <div style={headerSubRow}>
         <span style={greetingSub}>
