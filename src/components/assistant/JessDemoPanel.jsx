@@ -1877,8 +1877,7 @@ function JessDemoPanelInner() {
             bottomRef={bottomRef}
             proactiveChips={proactiveChips}
             onProactiveChip={handleProactiveChip}
-            /* Astra chip moved to sticky-above-input — see the JSX block
-               outside this tab body. */
+            feedbackByMsgId={feedbackByMsgId} setFeedbackByMsgId={setFeedbackByMsgId} user={user}
           />
         )}
         {tab === "brief"    && (
@@ -2098,9 +2097,7 @@ function KeyframesBlock() {
 // ─── Chat tab ─────────────────────────────────────────────────────────────
 function ChatTab({
   messages, assistantTyping, shell, onChip, onToggleQuickLog, bottomRef,
-  proactiveChips, onProactiveChip,
-  // astraReady + onAstraHandoff used to live here; the chip moved to
-  // a sticky position above the input bar on 2026-05-23 per QA.
+  proactiveChips, onProactiveChip, feedbackByMsgId, setFeedbackByMsgId, user,
 }) {
   return (
     <div style={{
