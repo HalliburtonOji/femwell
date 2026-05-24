@@ -25,6 +25,9 @@
 // ─────────────────────────────────────────────────────────────────────────────
 
 import React, { useEffect, useMemo, useRef, useState, Children } from "react";
+// QA Fix 2 (2026-05-24) — GPReportCardSmall navigates to /DoctorExport
+// via the router rather than a full-page reload via window.location.
+import { useNavigate } from "react-router-dom";
 import {
   Sun, Moon, Zap, Calendar, Activity, X, Plus, ChevronLeft, ChevronRight,
   ChevronDown, ChevronUp, Sparkles, CalendarCheck, Check, Edit3, Trash2,
@@ -868,7 +871,20 @@ export default function PlannerV2Shell({
     for (const r of PLANNER_ROW_DEFINITIONS) {
       if (!seen.has(r.key) && NODES_BY_KEY[r.key]) { seen.add(r.key); out.push(r.key); }
     }
-    return out.filter((k) => !plannerSettings.hidden.includes(k));
+    const filtered = out.filter((k) => !plannerSettings.hidden.includes(k));
+    // QA Fix 1 (2026-05-24) — locked spec order says
+    // Nourishment → Mind & Insight. Users who saved a custom order
+    // before the lock can still have "mind" ahead of "nourishment";
+    // this post-pass enforces the spec regardless of saved order.
+    const iNour = filtered.indexOf("nourishment");
+    const iMind = filtered.indexOf("mind");
+    if (iNour > -1 && iMind > -1 && iNour > iMind) {
+      // Pull "nourishment" out and re-insert it directly before "mind".
+      filtered.splice(iNour, 1);
+      const newMindIdx = filtered.indexOf("mind");
+      filtered.splice(newMindIdx, 0, "nourishment");
+    }
+    return filtered;
   })();
 
   return (
@@ -2498,7 +2514,14 @@ function ListsSection({ user }) {
 
 // ── Schedule preview card ─────────────────────────────────────────────────
 function SchedulePreviewCard({ blocks, onExpand }) {
-  const upcoming = blocks.filter((b) => !b.done).slice(0, 3);
+  const upcoming = (Array.isArray(blocks) ? blocks : []).filter((b) => !b.done).slice(0, 3);
+  // QA Fix 3 (2026-05-24) — empty-state shows when EITHER there are
+  // no blocks at all OR the filtered "upcoming" list is empty. The
+  // previous condition only checked upcoming, but if blocks had any
+  // truthy `done`-less items it would skip the empty-state and render
+  // a list with zero `<li>` elements — leaving a visual void between
+  // the header and "View full schedule".
+  const isEmpty = (!Array.isArray(blocks) || blocks.length === 0) || upcoming.length === 0;
   return (
     <article style={cardStyle}>
       <div style={cardHeadRow}>
@@ -2511,7 +2534,7 @@ function SchedulePreviewCard({ blocks, onExpand }) {
           <Maximize2 size={13} />
         </button>
       </div>
-      {upcoming.length === 0 ? (
+      {isEmpty ? (
         // Planner audit fix — previously the card body was a blank
         // void when the user had no PlannerItems for today. Now a
         // centred empty-state with a clear "tap to add" hint.
@@ -4312,88 +4335,48 @@ function _gpTimeAgo(iso) {
 }
 
 function GPReportCardSmall({ profile: profileProp }) {
-  const [open, setOpen]               = useState(false);
-  const [lastExport, setLastExport]   = useState(profileProp?.last_gp_export_at || null);
-  const [exporting, setExporting]     = useState(false);
-  useEffect(() => { setLastExport(profileProp?.last_gp_export_at || null); }, [profileProp?.last_gp_export_at]);
-  const exportInfo = _gpTimeAgo(lastExport);
-
-  async function handleExport() {
-    if (exporting) return;
-    setExporting(true);
-    try {
-      const now = new Date().toISOString();
-      if (profileProp?.id) {
-        await base44.entities.UserProfile.update(profileProp.id, { last_gp_export_at: now }).catch(() => {});
-      }
-      setLastExport(now);
-    } finally {
-      setExporting(false);
-      setOpen(false);
-    }
-  }
+  // QA Fix 2 (2026-05-24) — route to /DoctorExport via react-router
+  // so the SPA doesn't hard-reload. The legacy inline "Build your
+  // report" modal has been removed entirely; /DoctorExport is the
+  // single canonical entry point for the GP export flow.
+  const navigate = useNavigate();
+  const [lastExport] = useState(profileProp?.last_gp_export_at || null);
+  // Note: setLastExport intentionally not wired since handleExport was
+  // part of the dead modal. The card now just displays the timestamp
+  // from the profile prop, refreshing on profile updates.
+  const exportInfo = _gpTimeAgo(profileProp?.last_gp_export_at || lastExport);
 
   return (
-    <>
-      <article style={{ ...cardStyle, minHeight: 160 }}>
-        <div style={cardHeadRow}>
-          <span style={{ ...iconCircle, background: C.cream, width: 30, height: 30, borderRadius: 9 }}>
-            <FileText size={13} style={{ color: C.espresso }} />
-          </span>
-          <div style={{ flex: 1 }}>
-            <h3 style={{ ...cardTitle, margin: 0, fontSize: 15 }}>GP Report & Diary</h3>
-            <p style={{ ...cardSub, margin: "2px 0 0" }}>Build your health report</p>
-          </div>
+    <article style={{ ...cardStyle, minHeight: 160 }}>
+      <div style={cardHeadRow}>
+        <span style={{ ...iconCircle, background: C.cream, width: 30, height: 30, borderRadius: 9 }}>
+          <FileText size={13} style={{ color: C.espresso }} />
+        </span>
+        <div style={{ flex: 1 }}>
+          <h3 style={{ ...cardTitle, margin: 0, fontSize: 15 }}>GP Report & Diary</h3>
+          <p style={{ ...cardSub, margin: "2px 0 0" }}>Build your health report</p>
         </div>
-        {/* Planner audit fix — "Open" now routes to the dedicated
-            /DoctorExport page (one of three canonical entry points
-            into the GP export flow), instead of opening the inline
-            "Build your report" modal which was the legacy demo
-            behaviour. Using window.location instead of useNavigate
-            because react-router isn't imported into this shell yet. */}
-        <button
-          onClick={() => { try { window.location.href = "/DoctorExport"; } catch {} }}
-          style={{ ...modalSaveBtn, alignSelf: "flex-start", marginTop: 8 }}
-        >
-          Open <ChevronRight size={11} />
-        </button>
-        <p style={{ ...reportLastExport, display: "inline-flex", alignItems: "center", gap: 6 }}>
-          {exportInfo.stale && (
-            <span style={{
-              width: 7, height: 7, borderRadius: 9999,
-              background: C.gold, display: "inline-block",
-            }} />
-          )}
-          {exportInfo.text}
-        </p>
-      </article>
-      {open && (
-        <div style={modalBackdrop} onClick={() => setOpen(false)}>
-          <div style={{ ...modalCard, maxHeight: "85vh", overflowY: "auto" }} onClick={(e) => e.stopPropagation()}>
-            <div style={modalHead}>
-              <span style={kicker}>GP REPORT & DIARY</span>
-              <button onClick={() => setOpen(false)} style={drawerCloseBtn}><X size={14} /></button>
-            </div>
-            <h3 style={modalTitle}>Build your report</h3>
-            <p style={cardSub}>Diary entries are off by default.</p>
-            <div style={{ display: "flex", flexDirection: "column", gap: 6, marginTop: 10 }}>
-              {["Cycle data", "Symptoms", "Diary entries", "Medications", "Sleep + mood"].map((label, i) => (
-                <label key={label} style={reportSectionRow}>
-                  <input type="checkbox" defaultChecked={i !== 2} style={{ accentColor: C.sage }} />
-                  <span style={{ fontSize: 13, color: C.espresso }}>{label}</span>
-                </label>
-              ))}
-            </div>
-            <div style={modalFoot}>
-              <button onClick={() => setOpen(false)} style={modalCancelBtn}>Cancel</button>
-              <button onClick={handleExport} disabled={exporting} style={modalSaveBtn}>
-                {exporting ? "Exporting…" : "Export PDF"}
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-    </>
+      </div>
+      <button
+        type="button"
+        onClick={() => {
+          try { navigate("/DoctorExport"); }
+          catch { try { window.location.href = "/DoctorExport"; } catch {} }
+        }}
+        style={{ ...modalSaveBtn, alignSelf: "flex-start", marginTop: 8 }}
+      >
+        Open <ChevronRight size={11} />
+      </button>
+      <p style={{ ...reportLastExport, display: "inline-flex", alignItems: "center", gap: 6 }}>
+        {exportInfo.stale && (
+          <span style={{
+            width: 7, height: 7, borderRadius: 9999,
+            background: C.gold, display: "inline-block",
+          }} />
+        )}
+        {exportInfo.text}
+      </p>
+    </article>
   );
 }
 
