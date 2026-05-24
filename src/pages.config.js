@@ -81,6 +81,7 @@ import Planner from './pages/Planner';
 import Insights from './pages/Insights.jsx';
 import OneShotThankYou from './pages/OneShotThankYou';
 import Ideas from './pages/Ideas';
+import Founders from './pages/Founders';
 import __Layout from './Layout.jsx';
 
 
@@ -118,6 +119,7 @@ export const PAGES = {
     "Insights": Insights,
     "OneShotThankYou": OneShotThankYou,
     "Ideas": Ideas,
+    "Founders": Founders,
 }
 
 export const pagesConfig = {
