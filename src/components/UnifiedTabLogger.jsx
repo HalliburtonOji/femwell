@@ -2434,9 +2434,11 @@ export default function UnifiedTabLogger() {
     };
   }, [open]);
 
-  // Suppress on /Ideas (legacy — no global FAB on the demo gallery)
-  // and on /Planner where ContextualFAB owns the floating add affordance.
-  if (onIdeas || onPlanner) return null;
+  // Suppress on /Ideas (legacy — no global FAB on the demo gallery).
+  // Planner used to be in this guard for the short-lived ContextualFAB
+  // experiment; removed 2026-05-23 so the global FAB shows everywhere
+  // including /Planner.
+  if (onIdeas) return null;
 
   const closeSheet = () => {
     setOpen(false);

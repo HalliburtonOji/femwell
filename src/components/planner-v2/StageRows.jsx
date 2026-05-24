@@ -1370,20 +1370,63 @@ export function TeenRow({ phase }) {
   );
 }
 
+// ─── Phase-keyed micro-copy for the reproductive default row. ──────────────
+const REPRO_PHASE_COPY = {
+  menstrual:  { headline: "Rest week",          body: "Iron-rich food, warmth, gentler movement.  Your nervous system is in repair mode." },
+  follicular: { headline: "Energy rising",      body: "Strength training and new starts land well now.  Push the pace a little." },
+  ovulatory:  { headline: "Peak window",        body: "Highest output capacity.  Schedule the bold meeting or hardest workout." },
+  luteal:     { headline: "Slow-down phase",    body: "Progesterone is up.  Earlier bed, magnesium-rich food, gentler pace." },
+};
+
+// Default Stage Row for users without a dedicated life-stage card
+// (reproductive, unset, or anything unrecognised). Keeps the Stage
+// section visible so the locked spec order — Body Today → Stage Row →
+// Condition Row → Rituals — is honoured for every user.
+function ReproductiveRow({ phase, cycleDay }) {
+  const copy = REPRO_PHASE_COPY[phase] || REPRO_PHASE_COPY.follicular;
+  const phaseLabel = phase ? phase.charAt(0).toUpperCase() + phase.slice(1) : "Cycle";
+  return (
+    <Row label="Your cycle">
+      <article style={card}>
+        <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+          <span style={{
+            width: 28, height: 28, borderRadius: 9,
+            background: `${PHASE_DEEP[phase] || "#9B8B7A"}22`,
+            color: PHASE_DEEP[phase] || "#3A2C1A",
+            display: "inline-flex", alignItems: "center", justifyContent: "center",
+          }}><MoonIcon size={13} /></span>
+          <div style={{ flex: 1, minWidth: 0 }}>
+            <span style={kicker}>STAGE · REPRODUCTIVE</span>
+            <h3 style={{ ...cardTitle, margin: "2px 0 0" }}>{phaseLabel}{cycleDay ? ` · Day ${cycleDay}` : ""}</h3>
+          </div>
+        </div>
+        <p style={{
+          fontFamily: "'Fraunces', Georgia, serif", fontStyle: "italic",
+          fontSize: 14, color: C.espresso, margin: "6px 0 0", lineHeight: 1.5,
+        }}>{copy.headline}</p>
+        <p style={{ ...cardSub, marginTop: 4 }}>{copy.body}</p>
+      </article>
+    </Row>
+  );
+}
+
 // ─── Router ─────────────────────────────────────────────────────────────────
-// Returns the matching stage row, or null for stages without a dedicated
-// row (e.g. reproductive — the base experience already covers it).
+// Routes life-stage → row component. Reproductive (and unset) users get
+// the default ReproductiveRow so the Stage section never disappears.
 
 function StageRow({ stage, profile, phase, cycleDay, user }) {
-  if (!stage) return null;
-  if (stage.startsWith("pregnant"))                   return <PregnancyRow stage={stage} profile={profile} user={user} />;
-  if (stage === "postpartum")                          return <PostpartumRow />;
-  if (stage === "ttc")                                 return <TtcRow phase={phase} cycleDay={cycleDay} />;
-  if (stage === "pre-ttc")                             return <PreTtcRow phase={phase} />;
-  if (stage === "perimenopause")                       return <PerimenopauseRow />;
-  if (stage === "menopause" || stage === "post-menopause") return <MenopauseRow />;
-  if (stage === "teen")                                return <TeenRow phase={phase} />;
-  return null;
+  const normStage = String(stage || "reproductive").toLowerCase();
+  if (normStage.startsWith("pregnant"))                          return <PregnancyRow stage={normStage} profile={profile} user={user} />;
+  if (normStage === "postpartum")                                return <PostpartumRow />;
+  if (normStage === "ttc")                                       return <TtcRow phase={phase} cycleDay={cycleDay} />;
+  if (normStage === "pre-ttc")                                   return <PreTtcRow phase={phase} />;
+  if (normStage === "perimenopause")                             return <PerimenopauseRow />;
+  if (normStage === "menopause" || normStage === "post-menopause") return <MenopauseRow />;
+  if (normStage === "teen")                                      return <TeenRow phase={phase} />;
+  // Default: reproductive (or anything unrecognised). Always render
+  // something so the standalone Stage section in PlannerV2Shell stays
+  // visible per the locked spec order.
+  return <ReproductiveRow phase={phase} cycleDay={cycleDay} />;
 }
 
 const adjustBtn = {
