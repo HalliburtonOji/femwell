@@ -47,6 +47,12 @@ import {
   URGENCY_REFERRAL,
   DISTRESS_REFERRAL,
 } from "@/services/jessSensitiveTopics";
+import {
+  recordFeedback,
+  loadRecentFeedback,
+  feedbackDirective,
+  REASONS as FEEDBACK_REASONS,
+} from "@/services/jessFeedback";
 
 // ─── Tokens ───────────────────────────────────────────────────────────────
 // FemWell design tokens — locked to the spec Halli circulated. All
@@ -1432,12 +1438,19 @@ export default function JessDemoPanel() {
       // Jess v2 J2-3 — inject mode directive for grief / distress turns
       // so the agent's voice shifts. Urgency already short-circuited.
       const modeLine = modeDirectiveFor(category);
+      // Jess v2 J2-7 — read the last 5 user thumbs ratings and bias the
+      // agent's tone if they were unhappy. `feedbackLine` is empty when
+      // the user hasn't complained, so it costs nothing in the happy path.
+      const feedbackLine = user?.id
+        ? feedbackDirective(loadRecentFeedback(user.id))
+        : "";
+      const prefix = [feedbackLine, modeLine].filter(Boolean).join("\n\n---\n\n");
       let outgoing;
       if (!contextInjectedRef.current.has(cid)) {
         contextInjectedRef.current.add(cid);
-        outgoing = `${contextBlock}\n\n---\n\n${modeLine ? modeLine + "\n\n---\n\n" : ""}${msg}`;
+        outgoing = `${contextBlock}\n\n---\n\n${prefix ? prefix + "\n\n---\n\n" : ""}${msg}`;
       } else {
-        outgoing = modeLine ? `${modeLine}\n\n---\n\n${msg}` : msg;
+        outgoing = prefix ? `${prefix}\n\n---\n\n${msg}` : msg;
       }
       await base44.agents.addMessage(convo, { role: "user", content: outgoing });
       // After the agent replies, append a referral card for the
@@ -2062,6 +2075,14 @@ function ChatTab({
           shell={shell}
           onChip={onChip}
           onToggleQuickLog={onToggleQuickLog}
+          onFeedback={(rating, reason) => {
+            // J2-7 — persist + mark on the in-memory message so the row
+            // stays "rated" without re-render flicker.
+            if (user?.id) recordFeedback(user.id, { messageText: m.text, rating, reason });
+            setMessages((prev) => prev.map((row) =>
+              row.id === m.id ? { ...row, rating, ratingReason: reason || row.ratingReason || null } : row,
+            ));
+          }}
         />
       ))}
       {assistantTyping && <TypingIndicator />}
@@ -2468,6 +2489,81 @@ function TabChip({ chip, onTap }) {
   );
 }
 
+// Jess v2 J2-7 — thumbs row beneath every Jess bubble. Compact, muted
+// when fresh; once rated it collapses to a small acknowledgement; on
+// thumbs-down it expands a 3-chip reason picker. Reasons stay open
+// until the user taps one — they can also tap thumbs-down again to
+// dismiss without picking a reason.
+function FeedbackRow({ msg, onFeedback }) {
+  const rated = !!msg.rating;
+  const showReasons = msg.rating === "down" && !msg.ratingReason;
+  return (
+    <div style={{
+      display: "flex", flexDirection: "column", gap: 6,
+      marginTop: 6, marginLeft: 2,
+    }}>
+      {!rated && (
+        <div style={{ display: "flex", alignItems: "center", gap: 8 }} role="group" aria-label="Rate this reply">
+          <button
+            type="button"
+            aria-label="Helpful"
+            onClick={() => onFeedback("up")}
+            style={{
+              width: 26, height: 26, borderRadius: 9999,
+              background: "transparent", border: `1px solid ${C.border}`,
+              color: C.muted, cursor: "pointer",
+              display: "inline-flex", alignItems: "center", justifyContent: "center",
+              padding: 0,
+            }}
+          ><ThumbsUp size={12} /></button>
+          <button
+            type="button"
+            aria-label="Not helpful"
+            onClick={() => onFeedback("down")}
+            style={{
+              width: 26, height: 26, borderRadius: 9999,
+              background: "transparent", border: `1px solid ${C.border}`,
+              color: C.muted, cursor: "pointer",
+              display: "inline-flex", alignItems: "center", justifyContent: "center",
+              padding: 0,
+            }}
+          ><ThumbsDown size={12} /></button>
+        </div>
+      )}
+      {rated && !showReasons && (
+        <span style={{
+          fontSize: 10.5, color: C.muted,
+          fontFamily: "'Inter', sans-serif",
+          letterSpacing: "0.04em",
+        }}>
+          {msg.rating === "up" ? "Thanks — Jess will lean this way." :
+            msg.ratingReason
+              ? "Noted — Jess will adjust next reply."
+              : "Noted."}
+        </span>
+      )}
+      {showReasons && (
+        <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
+          {Object.entries(FEEDBACK_REASONS).map(([key, r]) => (
+            <button
+              key={key}
+              type="button"
+              onClick={() => onFeedback("down", key)}
+              style={{
+                padding: "5px 10px", minHeight: 28,
+                background: C.creamDark, border: `1px solid ${C.border}`,
+                borderRadius: 9999, color: C.espresso, cursor: "pointer",
+                fontFamily: "'Inter', sans-serif",
+                fontSize: 11.5, fontWeight: 600,
+              }}
+            >{r.label}</button>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
 // Jess v2 J2-2 — typewriter-style reveal for the Jess chat bubble.
 // Splits the text into words (keeping whitespace tokens) and reveals
 // them at ~40ms each. When `text` grows mid-reveal (streaming chunks),
@@ -2493,7 +2589,7 @@ function StreamingMarkdown({ text, speedMs = 40 }) {
   return <span>{tokens.slice(0, shown).join("")}</span>;
 }
 
-function MessageNode({ msg, shell, onChip, onToggleQuickLog }) {
+function MessageNode({ msg, shell, onChip, onToggleQuickLog, onFeedback }) {
   // Divider chip — e.g. "Conversation resumed" when the user re-opens an
   // old thread from the History drawer. Centred, muted, not a bubble.
   if (msg.type === "divider" || msg.role === "divider") {
@@ -2604,6 +2700,15 @@ function MessageNode({ msg, shell, onChip, onToggleQuickLog }) {
           fontSize: 10, color: C.muted, marginTop: 3,
           fontFamily: "'Inter', sans-serif",
         }}>Jess · {msg.time}</span>
+      )}
+      {/* Jess v2 J2-7 — feedback row. Compact thumbs row on every Jess
+          bubble. Once rated, the row collapses to a small label so the
+          user sees their input was recorded; thumbs-down reveals three
+          reason chips. Feedback is persisted via the parent's onFeedback
+          callback (writes to localStorage) and biases the NEXT agent
+          turn via feedbackDirective(). */}
+      {onFeedback && (
+        <FeedbackRow msg={msg} onFeedback={onFeedback} />
       )}
       <MhraNote />
       {Array.isArray(msg.chips) && msg.chips.filter((c) => !(msg.chipsUsedList || []).includes(c)).length > 0 && (

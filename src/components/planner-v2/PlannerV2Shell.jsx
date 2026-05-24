@@ -80,6 +80,7 @@ import VoiceScheduler, { VoiceMicButton } from "@/components/planner/VoiceSchedu
 import JessDailyOpener from "@/components/jess/JessDailyOpener";
 import JessPatternNudge from "@/components/jess/JessPatternNudge";
 import JessPhasePrep from "@/components/jess/JessPhasePrep";
+import JessWeeklySummary from "@/components/jess/JessWeeklySummary";
 import { Settings as SettingsIcon } from "lucide-react";
 
 // Layers + X imported separately so the DEV pill below can use them
@@ -902,6 +903,11 @@ export default function PlannerV2Shell({
           next phase is coming" card 3-4 days before a cycle phase
           transition. Hidden for non-cycle life stages. Cached weekly. */}
       <JessPhasePrep user={user} profile={profileProp} />
+
+      {/* Jess v2 J2-8 — Weekly Health Summary. Sunday-only reflection
+          on the last 7 days of check-ins / habits / symptoms / journal.
+          Cached weekly. Hidden mid-week and after dismissal. */}
+      <JessWeeklySummary user={user} profile={profileProp} />
 
       {/* Phase 3 — rows are rendered in user-defined order. The
           NODES_BY_KEY map above defines each row's JSX; PlannerSettingsSheet
