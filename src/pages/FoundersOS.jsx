@@ -19,6 +19,7 @@
 
 import { useEffect, useState, useCallback } from "react";
 import { useAuth } from "@/lib/AuthContext";
+import { base44 } from "@/api/base44Client";
 
 // Brand tokens
 const CREAM    = "#F4EDDB";
@@ -34,7 +35,7 @@ const ALLOWED = new Set([
   "ojihalliburton57@gmail.com",
 ]);
 
-const TABS = ["Lab", "Roadmap", "Strategy", "Legal", "Decisions"];
+const TABS = ["Lab", "Pages", "Roadmap", "Ideas", "Strategy", "Legal", "Decisions"];
 
 // ── DATA — Tab 1: Lab ───────────────────────────────────────────────
 const LAB = [
@@ -138,14 +139,134 @@ const SPRINTS = [
 ];
 
 // ── DATA — Tab 3: Strategy ──────────────────────────────────────────
+// Refreshed 2026-05-24 with the research findings from the
+// competitive + market scan: Flo's AI growth, the femtech AI funding
+// surge, the menopause whitespace, the live ICO investigation, the
+// competitive window, and the investor narrative that lands.
 const STRATEGY = [
-  { title: "Business Model", body: "Freemium + Premium. ~£4.99–9.99/mo premium. Decide exact pricing after full build + cost analysis. Apple 30% cut (15% after year 1 for small devs)." },
-  { title: "Platform Plan",  body: "Build in Base44 → export React → Capacitor shell → TestFlight + Play Store internal → fix native issues → submit to stores." },
-  { title: "Timeline",       body: "6–8 months to App Store / Play Store from Jan 2026. Target: late 2026." },
-  { title: "Market",         body: "1.8B women globally in hormonal health window. UK: 47M eligible women. Competitors: Clue, Flo, Natural Cycles, Noom, Elvie. FemWell differentiator: full life stage coverage, not just cycle tracking." },
-  { title: "Compliance",     body: "ICO registration required before first real users. Sole trader OK. Teen life stage = biggest legal exposure (UK GDPR Art. 8, Age Appropriate Design Code). Every AI output needs \"not medical advice\" disclaimer." },
-  { title: "Trademark",      body: "Search \"FemWell\" in UK health/wellness category before launch." },
+  {
+    title: "Business Model",
+    body: "Freemium + Premium. ~£4.99–9.99/mo premium. Decide exact pricing after full build + cost analysis. Apple 30% cut (15% after year 1 for small devs).",
+  },
+  {
+    title: "Platform Plan",
+    body: "Build in Base44 → export React → Capacitor shell → TestFlight + Play Store internal → fix native issues → submit to stores.",
+  },
+  {
+    title: "Timeline",
+    body: "6–8 months to App Store / Play Store from Jan 2026. Target: late 2026.",
+  },
+  {
+    title: "Market — femtech AI is exploding",
+    body: "Flo deployed LLM fine-tuning and saw 45% MAU growth + 57% WAU growth — proof the AI-first cycle market rewards depth. $2.6B was invested in femtech AI in 2024 alone (55% YoY increase). 1.8B women globally are in some hormonal-health window; UK is ~47M eligible women.",
+  },
+  {
+    title: "Menopause whitespace",
+    body: "Only ~7% of femtech startups focused on menopause before 2025 — 1 billion affected women, no dominant AI companion. The over-35 cohort has higher willingness to pay and is under-served. Sweet spot for FemWell's life-stage coverage.",
+  },
+  {
+    title: "Trust window — ICO is live",
+    body: "The ICO's fertility-app investigation is currently active; law-enforcement data-access guidance was published Dec 2024 — UK police can now access menstrual data with a warrant. This is a first-mover trust opportunity: explicit \"your data stays yours\" UX is a defensible moat the entrenched players haven't seized.",
+  },
+  {
+    title: "Competitive window",
+    body: "Clue + Flo own the reproductive cohort. Natural Cycles owns the regulated contraception bar. Noom owns behaviour change. Nobody owns the full-life companion with perimenopause depth + warm tone. Flo has cycle + AI; they don't have the life-stage breadth or the clinically-referenced care surface.",
+  },
+  {
+    title: "Investor narrative",
+    body: "The pitch that works: AI-first + clinically credible + perimenopause whitespace + B2B pathway (workplace women's health benefit). Each one is a credible standalone wedge; together they're a defensible thesis.",
+  },
+  {
+    title: "Compliance",
+    body: "ICO registration required before first real users. Sole trader OK. Teen life stage = biggest legal exposure (UK GDPR Art. 8, Age Appropriate Design Code). Every AI output needs \"not medical advice\" disclaimer.",
+  },
+  {
+    title: "Trademark",
+    body: "Search \"FemWell\" in UK health/wellness category before launch.",
+  },
 ];
+
+// ── DATA — Tab "Pages" (data-flow map) ─────────────────────────────
+// 13-row table that documents what each page reads from + writes to.
+// Used to prevent building features that read from one entity but
+// forget to thread the write-back through the surfaces that need it.
+const PAGE_MAP = [
+  { page: "Today",         reads: "DailyCheckins, SymptomLogs, MealLog, HydrationLog, HabitLogs, MedicationLogs, CycleRecord", writes: "DailyCheckins, SymptomLogs, MealLog, HydrationLog, HabitLogs, MedicationLogs" },
+  { page: "Planner",       reads: "DailyCheckins, PersonalTasks, HabitLogs, MealLog, PlannerItems, CycleRecord, Events", writes: "PersonalTasks, HabitLogs, DailyCheckins" },
+  { page: "Pulse",         reads: "DailyCheckins, SymptomLogs, HabitLogs, CycleRecord, SessionLogs, MealLog", writes: "Read-only" },
+  { page: "Journal",       reads: "JournalEntries", writes: "JournalEntries" },
+  { page: "Nutrition",     reads: "MealLog, HydrationLog", writes: "MealLog, HydrationLog" },
+  { page: "Doctor Export", reads: "DailyCheckins, SymptomLogs, MedicationLogs, SessionLogs, CycleRecord", writes: "Export only" },
+  { page: "Skin & Hair",   reads: "DailyCheckins (skin/hair fields)", writes: "Logged via Today" },
+  { page: "Profile",       reads: "UserProfile", writes: "UserProfile" },
+  { page: "Track",         reads: "CycleRecord, SymptomLogs, HabitLogs, MedicationLogs, SessionLogs", writes: "All of the above" },
+  { page: "Explore",       reads: "ContentLibrary", writes: "SessionLogs" },
+  { page: "Jess",          reads: "All entities + JessMemory + JessConversations", writes: "JessMemory, JessConversations, action layer" },
+  { page: "Community",     reads: "CommunityPosts", writes: "CommunityPosts" },
+  { page: "Partner Sync",  reads: "NOT BUILT — 404", writes: "—" },
+];
+
+const DATA_FLOW_RULES = [
+  "Today check-in → radiates to Planner body tiles, Pulse, Skin & Hair, Doctor Export, Jess context.",
+  "Life stage change (Profile) → reshapes EVERY page — always test across pages after any build.",
+  "Habit completions → Today Habits Stack AND Planner Morning Stack write to the SAME HabitLogs entity.",
+  "Hydration → Today AND Nutrition both write to the same HydrationLog.",
+  "Meal logging → Today AND Nutrition both write to the same MealLog.",
+  "GP Report → accessible from 3 places, all reach /DoctorExport.",
+  "Cycle period logged → triggers phase recalculation across Today, Planner, Pulse, Explore, Nutrition, Lifestyle.",
+  "Jess reads: cycle phase, life stage, mood/energy, recent symptoms, memory — wire new data to Jess context.",
+];
+
+// ── DATA — Tab "Ideas" (15 pre-populated backlog items) ────────────
+// Persisted to UserProfile.founder_ideas (JSON array) so the backlog
+// follows Halli across devices and stays readable by agents. Local-
+// storage `femwell_ideas` is used as a secondary cache only.
+const IDEAS_KEY = "femwell_ideas";
+const IDEAS_INITIAL = [
+  { id: 100001, title: "Unified Health Page", description: "A single dashboard aggregating all health data: cycle, mood/energy/symptoms over time, nutrition, medication, sleep — one place to see your whole health picture.", status: "idea",      ts: 1737590400000 },
+  { id: 100002, title: "Morning Brief auto-launch", description: "When user opens app for first time each day, Morning Brief launches instead of Planner home (daily ritual).", status: "planned",      ts: 1737590400000 },
+  { id: 100003, title: "Pattern Nudges (Jess)", description: "Jess proactively notices patterns (\"You've mentioned feeling tired on day 19–21 for 3 cycles — that's your luteal dip\") and surfaces them without being asked.", status: "researched", ts: 1737590400000 },
+  { id: 100004, title: "Predictive Phase Prep (Jess)", description: "Uses the user's specific cycle history to prep them for what's physically coming in the next phase, not generic advice. Competitors don't do this well.", status: "researched", ts: 1737590400000 },
+  { id: 100005, title: "B2B / employer pathway", description: "Sell FemWell as a workplace women's health benefit. Enterprise pricing, anonymised aggregate reporting for HR.", status: "idea",      ts: 1737590400000 },
+  { id: 100006, title: "Jess Memory Cards", description: "Visible summaries of what Jess has learned about you (\"Jess knows: you tend to feel low energy in luteal phase, you prefer vegetarian meals, you've been trying to conceive since March\").", status: "researched", ts: 1737590400000 },
+  { id: 100007, title: "Daily Opening Card (Jess streaming)", description: "Jess's first message of the day streams in as you open the app. Perceptual step-change vs waiting for a typed reply.", status: "researched", ts: 1737590400000 },
+  { id: 100008, title: "Astra deep-link", description: "From any Jess conversation, \"Talk to Astra about this\" hands off to an Astra clinical-style session with full context. Astra is distinct from Jess (more clinical).", status: "partial",    ts: 1737590400000 },
+  { id: 100009, title: "Perimenopause companion mode", description: "Jess adapts her entire persona for perimenopause: no cycle tracking references, brain fog empathy, HRT conversation support, menopause rating scale.", status: "planned",    ts: 1737590400000 },
+  { id: 100010, title: "Partner Sync", description: "Partner-facing view showing cycle phase, how partner is feeling, what support would help. Currently 404.", status: "planned",      ts: 1737590400000 },
+  { id: 100011, title: "Full data export (\"Download my data\")", description: "GDPR Art. 20, required before launch. JSON export of everything.", status: "planned",      ts: 1737590400000 },
+  { id: 100012, title: "Teen companion mode", description: "Under-18 specific experience, age-appropriate language, parental consent flow, stricter data handling.", status: "required",   ts: 1737590400000 },
+  { id: 100013, title: "Skin & Hair phase guide", description: "Cycle-aware skincare recommendations. May already be partially built.", status: "unknown",      ts: 1737590400000 },
+  { id: 100014, title: "Wearable / device sync", description: "Apple Health, Garmin, Fitbit data ingestion for richer health context.", status: "future",       ts: 1737590400000 },
+  { id: 100015, title: "Offline mode", description: "Cached content for when user has no signal.", status: "future",       ts: 1737590400000 },
+];
+
+function loadIdeasFromCache() {
+  try {
+    const raw = window.localStorage?.getItem(IDEAS_KEY);
+    if (!raw) return null;
+    const j = JSON.parse(raw);
+    return Array.isArray(j) ? j : null;
+  } catch { return null; }
+}
+function saveIdeasToCache(arr) {
+  try { window.localStorage?.setItem(IDEAS_KEY, JSON.stringify(arr || [])); }
+  catch { /* swallow */ }
+}
+
+// Status badge tone for an Idea card.
+function ideaTone(status) {
+  switch (String(status || "").toLowerCase()) {
+    case "shipped":    return { bg: SAGE,      fg: WHITE };
+    case "building":   return { bg: GOLD,      fg: ESPRESSO };
+    case "planned":    return { bg: "rgba(58,44,26,0.10)", fg: ESPRESSO };
+    case "researched": return { bg: "rgba(143,175,143,0.22)", fg: "#4F6B4F" };
+    case "partial":    return { bg: "rgba(212,175,55,0.22)", fg: "#7A6320" };
+    case "required":   return { bg: "rgba(196,79,79,0.20)", fg: "#7A2935" };
+    case "future":     return { bg: GREY_LITE, fg: MUTED };
+    case "unknown":    return { bg: GREY_LITE, fg: MUTED };
+    default:           return { bg: GREY_LITE, fg: MUTED };
+  }
+}
 
 // ── DATA — Tab 4: Legal ─────────────────────────────────────────────
 const LEGAL = [
@@ -236,10 +357,10 @@ export default function FoundersOS() {
     );
   }
 
-  return <FoundersInner email={email} />;
+  return <FoundersInner email={email} user={user} />;
 }
 
-function FoundersInner({ email }) {
+function FoundersInner({ email, user }) {
   const [tab, setTab] = useState("Lab");
   return (
     <div style={{
@@ -334,7 +455,9 @@ function FoundersInner({ email }) {
         padding: "20px 16px 60px",
       }}>
         {tab === "Lab"       && <LabTab />}
+        {tab === "Pages"     && <PagesTab />}
         {tab === "Roadmap"   && <RoadmapTab />}
+        {tab === "Ideas"     && <IdeasTab user={user} />}
         {tab === "Strategy"  && <StrategyTab />}
         {tab === "Legal"     && <LegalTab />}
         {tab === "Decisions" && <DecisionsTab />}
@@ -694,6 +817,287 @@ function DecisionsTab() {
           </article>
         ))}
       </div>
+    </div>
+  );
+}
+
+// ─────────────────────────────────────────────────────────────────────
+// Tab — Pages (data-flow map)
+// ─────────────────────────────────────────────────────────────────────
+function PagesTab() {
+  return (
+    <div>
+      <SectionHeader
+        kicker="DATA-FLOW MAP"
+        sub="Every page, every entity it reads and writes. Use this before building anything new — nothing should ship that reads from one entity but forgets to wire the write."
+      />
+
+      {/* Section 1: page-by-entity table (scroll-x on mobile) */}
+      <div style={{
+        marginTop: 14,
+        background: WHITE, borderRadius: 12,
+        boxShadow: "0 1px 2px rgba(58,44,26,0.06)",
+        overflow: "hidden",
+      }}>
+        <div style={{
+          overflowX: "auto", WebkitOverflowScrolling: "touch",
+        }}>
+          <table style={{
+            width: "100%", borderCollapse: "collapse",
+            fontFamily: "'Inter', system-ui, sans-serif",
+            fontSize: 12,
+            minWidth: 600,
+          }}>
+            <thead>
+              <tr style={{ background: CREAM }}>
+                <th style={pmHeadCell}>Page</th>
+                <th style={pmHeadCell}>Reads from</th>
+                <th style={pmHeadCell}>Writes to</th>
+              </tr>
+            </thead>
+            <tbody>
+              {PAGE_MAP.map((row, i) => (
+                <tr key={row.page} style={{
+                  background: i % 2 === 0 ? WHITE : "rgba(244,237,219,0.45)",
+                }}>
+                  <td style={{ ...pmCell, fontWeight: 700, color: ESPRESSO }}>{row.page}</td>
+                  <td style={{ ...pmCell, color: ESPRESSO }}>{row.reads}</td>
+                  <td style={{ ...pmCell, color: ESPRESSO }}>{row.writes}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      {/* Section 2: critical data flow rules — gold left-border cards */}
+      <div style={{ marginTop: 20 }}>
+        <p style={{
+          margin: 0, fontSize: 10.5, fontWeight: 800,
+          letterSpacing: "0.18em", textTransform: "uppercase",
+          color: MUTED,
+        }}>CRITICAL DATA FLOW RULES</p>
+        <ol style={{
+          margin: "12px 0 0", padding: 0, listStyle: "none",
+          display: "flex", flexDirection: "column", gap: 10,
+        }}>
+          {DATA_FLOW_RULES.map((rule, i) => (
+            <li key={i} style={{
+              background: WHITE,
+              borderRadius: 12,
+              padding: "12px 14px",
+              borderLeft: `3px solid ${GOLD}`,
+              boxShadow: "0 1px 2px rgba(58,44,26,0.06)",
+              display: "flex", gap: 10,
+              fontSize: 13, color: ESPRESSO, lineHeight: 1.5,
+            }}>
+              <span style={{
+                flexShrink: 0,
+                fontFamily: "'JetBrains Mono', 'SF Mono', Menlo, monospace",
+                fontWeight: 700, color: GOLD, fontSize: 13,
+                minWidth: 16,
+              }}>{i + 1}.</span>
+              <span>{rule}</span>
+            </li>
+          ))}
+        </ol>
+      </div>
+    </div>
+  );
+}
+
+const pmHeadCell = {
+  textAlign: "left", padding: "10px 12px",
+  fontSize: 10.5, fontWeight: 800,
+  letterSpacing: "0.14em", textTransform: "uppercase",
+  color: MUTED,
+  borderBottom: `1px solid rgba(58,44,26,0.12)`,
+  whiteSpace: "nowrap",
+};
+const pmCell = {
+  padding: "10px 12px",
+  verticalAlign: "top",
+  lineHeight: 1.45,
+  borderBottom: `1px solid rgba(58,44,26,0.06)`,
+};
+
+// ─────────────────────────────────────────────────────────────────────
+// Tab — Ideas (persistent backlog)
+// ─────────────────────────────────────────────────────────────────────
+function IdeasTab({ user }) {
+  const [ideas, setIdeas]   = useState([]);
+  const [title, setTitle]   = useState("");
+  const [desc, setDesc]     = useState("");
+  const [profile, setProfile] = useState(null);
+  const [saving, setSaving] = useState(false);
+
+  // Hydrate from UserProfile.founder_ideas (primary) with a
+  // localStorage cache fallback. If neither has anything, seed with
+  // the IDEAS_INITIAL constant so the backlog is never blank.
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      let rows = [];
+      try {
+        if (user?.id) {
+          rows = await base44.entities.UserProfile
+            .filter({ user_id: user.id }, null, 1)
+            .catch(() => []);
+        }
+      } catch { /* swallow */ }
+      const p = rows?.[0] || null;
+      if (cancelled) return;
+      setProfile(p);
+      const fromProfile = Array.isArray(p?.founder_ideas) ? p.founder_ideas : null;
+      const cached = loadIdeasFromCache();
+      const initial = fromProfile && fromProfile.length > 0
+        ? fromProfile
+        : (cached && cached.length > 0 ? cached : IDEAS_INITIAL);
+      setIdeas(initial);
+      // If we hydrated from the constant or cache but the profile is
+      // empty, seed the profile so future devices have it.
+      if (user?.id && (!fromProfile || fromProfile.length === 0)) {
+        try {
+          if (p?.id) {
+            base44.entities.UserProfile.update(p.id, { founder_ideas: initial })
+              .catch(() => {});
+          }
+        } catch {}
+      }
+      saveIdeasToCache(initial);
+    })();
+    return () => { cancelled = true; };
+  }, [user?.id]);
+
+  const persist = useCallback(async (next) => {
+    saveIdeasToCache(next);
+    if (profile?.id) {
+      try { await base44.entities.UserProfile.update(profile.id, { founder_ideas: next }); }
+      catch { /* swallow — cache is still primary fallback */ }
+    }
+  }, [profile?.id]);
+
+  const addIdea = useCallback(async () => {
+    const t = title.trim();
+    if (!t || saving) return;
+    setSaving(true);
+    const entry = {
+      id: Date.now(),
+      title: t,
+      description: desc.trim(),
+      status: "idea",
+      ts: Date.now(),
+    };
+    const next = [entry, ...ideas];
+    setIdeas(next);
+    setTitle("");
+    setDesc("");
+    await persist(next);
+    setSaving(false);
+  }, [title, desc, ideas, persist, saving]);
+
+  return (
+    <div>
+      <SectionHeader
+        kicker="IDEAS BACKLOG"
+        sub="The full list of things worth building. Add new ones any time — they save to your profile."
+      />
+
+      {/* Add-idea card */}
+      <div style={{
+        marginTop: 14,
+        background: WHITE, borderRadius: 12, padding: 14,
+        boxShadow: "0 1px 2px rgba(58,44,26,0.06)",
+        display: "flex", flexDirection: "column", gap: 8,
+      }}>
+        <input
+          type="text"
+          value={title}
+          onChange={(e) => setTitle(e.target.value)}
+          placeholder="Idea title…"
+          maxLength={120}
+          style={{
+            width: "100%", boxSizing: "border-box",
+            padding: "10px 12px", minHeight: 40, borderRadius: 10,
+            border: `1px solid rgba(58,44,26,0.18)`,
+            background: CREAM,
+            fontFamily: "'Inter', system-ui, sans-serif",
+            fontSize: 14, color: ESPRESSO, outline: "none",
+          }}
+        />
+        <textarea
+          value={desc}
+          onChange={(e) => setDesc(e.target.value)}
+          placeholder="One-line description (optional)"
+          maxLength={400}
+          rows={2}
+          style={{
+            width: "100%", boxSizing: "border-box",
+            padding: "10px 12px", borderRadius: 10,
+            border: `1px solid rgba(58,44,26,0.18)`,
+            background: CREAM,
+            fontFamily: "'Inter', system-ui, sans-serif",
+            fontSize: 13, color: ESPRESSO, outline: "none",
+            resize: "vertical",
+            lineHeight: 1.5,
+          }}
+        />
+        <div style={{ display: "flex", justifyContent: "flex-end" }}>
+          <button
+            type="button"
+            onClick={addIdea}
+            disabled={!title.trim() || saving}
+            style={{
+              padding: "8px 16px", minHeight: 36, borderRadius: 9999,
+              background: title.trim() && !saving ? GOLD : GREY_LITE,
+              color: title.trim() && !saving ? WHITE : MUTED,
+              border: "none",
+              cursor: title.trim() && !saving ? "pointer" : "not-allowed",
+              fontFamily: "'Inter', system-ui, sans-serif",
+              fontSize: 13, fontWeight: 700, letterSpacing: "0.02em",
+            }}
+          >{saving ? "Saving…" : "Save"}</button>
+        </div>
+      </div>
+
+      {/* Ideas list */}
+      <ul style={{
+        marginTop: 14, padding: 0, listStyle: "none",
+        display: "flex", flexDirection: "column", gap: 8,
+      }}>
+        {ideas.map((idea) => {
+          const tone = ideaTone(idea.status);
+          return (
+            <li key={idea.id} style={{
+              background: WHITE, borderRadius: 12, padding: 14,
+              boxShadow: "0 1px 2px rgba(58,44,26,0.06)",
+              display: "flex", flexDirection: "column", gap: 6,
+            }}>
+              <div style={{
+                display: "flex", alignItems: "center", gap: 8,
+                justifyContent: "space-between",
+              }}>
+                <span style={{
+                  fontWeight: 700, fontSize: 14, color: ESPRESSO,
+                  lineHeight: 1.3, flex: 1, minWidth: 0,
+                }}>{idea.title}</span>
+                <span style={{
+                  flexShrink: 0,
+                  padding: "3px 10px", borderRadius: 9999,
+                  background: tone.bg, color: tone.fg,
+                  fontSize: 10, fontWeight: 800, letterSpacing: "0.04em",
+                  textTransform: "uppercase",
+                }}>{idea.status}</span>
+              </div>
+              {idea.description && (
+                <p style={{
+                  margin: 0, fontSize: 12.5, color: MUTED, lineHeight: 1.55,
+                }}>{idea.description}</p>
+              )}
+            </li>
+          );
+        })}
+      </ul>
     </div>
   );
 }
