@@ -77,6 +77,7 @@ import RitualBuilder, {
   iconFor as ritualIconFor,
 } from "@/components/planner/RitualBuilder";
 import VoiceScheduler, { VoiceMicButton } from "@/components/planner/VoiceScheduler";
+import JessDailyOpener from "@/components/jess/JessDailyOpener";
 import { Settings as SettingsIcon } from "lucide-react";
 
 // Layers + X imported separately so the DEV pill below can use them
@@ -885,6 +886,10 @@ export default function PlannerV2Shell({
           localStorage.planner_tour_v1. Targets each section below via
           its data-tour attribute. */}
       <PlannerTour name={realDisplayName} />
+
+      {/* Jess v2 J2-1 — Daily Opening Card. Renders above the row
+          stack, once per user per day. Auto-dismisses after 10s. */}
+      <JessDailyOpener user={user} profile={profileProp} />
 
       {/* Phase 3 — rows are rendered in user-defined order. The
           NODES_BY_KEY map above defines each row's JSX; PlannerSettingsSheet

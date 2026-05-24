@@ -40,6 +40,13 @@ import {
 // Shared phase recommendation data — also consumed by PlannerV2Shell
 // Body Today chip strip (Phase 2 P2-4). See src/data/phaseRecs.js.
 import { PHASE_RECS, NEXT_PHASE_PREVIEW } from "@/data/phaseRecs";
+// Jess v2 J2-3 — sensitive topic classifier + referral copy.
+import {
+  classifyJessInput,
+  modeDirectiveFor,
+  URGENCY_REFERRAL,
+  DISTRESS_REFERRAL,
+} from "@/services/jessSensitiveTopics";
 
 // ─── Tokens ───────────────────────────────────────────────────────────────
 // FemWell design tokens — locked to the spec Halli circulated. All
@@ -1378,6 +1385,25 @@ export default function JessDemoPanel() {
     setMessages((prev) => [...prev, {
       id: uid(), role: "user", type: "bubble", text: msg, time: fmtTimeAmPm(),
     }]);
+
+    // Jess v2 J2-3 — sensitive topic classifier runs BEFORE the agent
+    // call. Urgency short-circuits the agent entirely; distress/grief
+    // shift the mode + (distress only) append a referral card after
+    // the agent reply.
+    const { category } = classifyJessInput(msg);
+    if (category === "urgent") {
+      setMessages((prev) => [...prev, {
+        id: uid(),
+        role: "jess",
+        type: "referral",
+        variant: "urgent",
+        title: URGENCY_REFERRAL.title,
+        text: URGENCY_REFERRAL.body,
+        time: fmtTimeAmPm(),
+      }]);
+      return; // do NOT call the agent
+    }
+
     setAssistantTyping(true);
     try {
       const { convoId: cid, record } = await ensureConversation();
@@ -1403,14 +1429,36 @@ export default function JessDemoPanel() {
       // resume, when loadConversation clears the flag) we prepend the
       // [JESS CONTEXT] block; on subsequent turns we send just the
       // user's text.
+      // Jess v2 J2-3 — inject mode directive for grief / distress turns
+      // so the agent's voice shifts. Urgency already short-circuited.
+      const modeLine = modeDirectiveFor(category);
       let outgoing;
       if (!contextInjectedRef.current.has(cid)) {
         contextInjectedRef.current.add(cid);
-        outgoing = `${contextBlock}\n\n---\n\n${msg}`;
+        outgoing = `${contextBlock}\n\n---\n\n${modeLine ? modeLine + "\n\n---\n\n" : ""}${msg}`;
       } else {
-        outgoing = msg;
+        outgoing = modeLine ? `${modeLine}\n\n---\n\n${msg}` : msg;
       }
       await base44.agents.addMessage(convo, { role: "user", content: outgoing });
+      // After the agent replies, append a referral card for the
+      // distress branch. We watch `assistantTyping` to flip: once it
+      // turns false the agent reply has rendered, then we drop the
+      // card on the next tick.
+      if (category === "distress") {
+        // Small delay tied to typing flag — drop the card once the
+        // agent reply text has at least started rendering.
+        setTimeout(() => {
+          setMessages((prev) => [...prev, {
+            id: uid(),
+            role: "jess",
+            type: "referral",
+            variant: "distress",
+            title: DISTRESS_REFERRAL.title,
+            text: DISTRESS_REFERRAL.body,
+            time: fmtTimeAmPm(),
+          }]);
+        }, 1800);
+      }
       // Feature 1F — bump message_count, updated_date, preview_text.
       if (record?.id) {
         const bumped = await bumpConvoMeta(record, msg);
@@ -1793,6 +1841,27 @@ export default function JessDemoPanel() {
               to   { opacity: 1; transform: translateY(0); }
             }
           `}</style>
+        </div>
+      )}
+
+      {/* Jess v2 J2-3 — persistent footer disclaimer on the chat panel.
+          One line, muted, sits just above the input bar so it's always
+          in view when the user is typing without intruding on the
+          thread. Per-bubble MhraNote (`<MhraNote />` in MessageNode)
+          still renders, but this is the always-visible reassurance. */}
+      {tab === "chat" && (
+        <div style={{
+          padding: "6px 14px 0",
+          background: C.cream,
+          flexShrink: 0,
+        }}>
+          <p style={{
+            margin: 0, fontSize: 10.5, color: C.muted, fontStyle: "italic",
+            fontFamily: "'Inter', system-ui, sans-serif",
+            textAlign: "center", lineHeight: 1.4,
+          }}>
+            Not medical advice — Jess is a wellness companion.
+          </p>
         </div>
       )}
 
@@ -2399,6 +2468,31 @@ function TabChip({ chip, onTap }) {
   );
 }
 
+// Jess v2 J2-2 — typewriter-style reveal for the Jess chat bubble.
+// Splits the text into words (keeping whitespace tokens) and reveals
+// them at ~40ms each. When `text` grows mid-reveal (streaming chunks),
+// the target word count grows too, so the animation naturally extends
+// instead of restarting. Once fully revealed, switches to a proper
+// ReactMarkdown render so bold/italic/lists format correctly.
+function StreamingMarkdown({ text, speedMs = 40 }) {
+  const [shown, setShown] = useState(0);
+  const tokens = useMemo(() => String(text || "").split(/(\s+)/), [text]);
+  const total = tokens.length;
+  useEffect(() => {
+    if (shown >= total) return;
+    const t = setTimeout(() => setShown((n) => Math.min(total, n + 1)), speedMs);
+    return () => clearTimeout(t);
+  }, [shown, total, speedMs]);
+  if (shown >= total) {
+    return (
+      <ReactMarkdown className="prose prose-sm max-w-none [&>*:first-child]:mt-0 [&>*:last-child]:mb-0">
+        {text || ""}
+      </ReactMarkdown>
+    );
+  }
+  return <span>{tokens.slice(0, shown).join("")}</span>;
+}
+
 function MessageNode({ msg, shell, onChip, onToggleQuickLog }) {
   // Divider chip — e.g. "Conversation resumed" when the user re-opens an
   // old thread from the History drawer. Centred, muted, not a bubble.
@@ -2416,6 +2510,49 @@ function MessageNode({ msg, shell, onChip, onToggleQuickLog }) {
           color: C.muted,
         }}>{msg.text || "Resumed"}</span>
         <span style={{ flex: 1, height: 1, background: C.border, opacity: 0.55 }} />
+      </div>
+    );
+  }
+  // Jess v2 J2-3 — referral card. Distinct treatment so urgent /
+  // distress callouts read differently from a standard chat bubble.
+  if (msg.type === "referral") {
+    const isUrgent = msg.variant === "urgent";
+    const ringTint = isUrgent ? "#D45E52" : C.gold;
+    const bg = isUrgent ? "#FFF1EE" : C.paperHi;
+    return (
+      <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-start", width: "100%" }}>
+        <article style={{
+          width: "100%",
+          background: bg,
+          border: `1px solid ${ringTint}66`,
+          borderLeft: `3px solid ${ringTint}`,
+          borderRadius: 14,
+          padding: "12px 14px 10px",
+          display: "flex", flexDirection: "column", gap: 6,
+          animation: "jess-bubble-enter 280ms ease-out",
+        }}>
+          <p style={{
+            margin: 0, fontSize: 10, fontWeight: 700,
+            letterSpacing: "0.16em", textTransform: "uppercase",
+            color: isUrgent ? "#A23B30" : C.goldDeep || "#A6862B",
+            fontFamily: "'Inter', sans-serif",
+          }}>{isUrgent ? "Urgent · please read" : "Support resource"}</p>
+          <p style={{
+            margin: "2px 0 0", fontSize: 14.5, fontWeight: 600,
+            color: C.espresso, fontFamily: "'Fraunces', Georgia, serif",
+            lineHeight: 1.35,
+          }}>{msg.title}</p>
+          <p style={{
+            margin: "2px 0 0", fontSize: 13, color: C.espresso,
+            fontFamily: "'Inter', system-ui, sans-serif", lineHeight: 1.5,
+          }}>{msg.text}</p>
+        </article>
+        {msg.time && (
+          <span style={{
+            fontSize: 10, color: C.muted, marginTop: 3,
+            fontFamily: "'Inter', sans-serif",
+          }}>Jess · {msg.time}</span>
+        )}
       </div>
     );
   }
@@ -2457,9 +2594,10 @@ function MessageNode({ msg, shell, onChip, onToggleQuickLog }) {
         animation: "jess-bubble-enter 280ms ease-out",
         whiteSpace: "pre-wrap",
       }}>
-        <ReactMarkdown className="prose prose-sm max-w-none [&>*:first-child]:mt-0 [&>*:last-child]:mb-0">
-          {msg.text || ""}
-        </ReactMarkdown>
+        {/* Jess v2 J2-2 — typewriter reveal at ~40ms per word. Once
+            fully revealed StreamingMarkdown swaps to ReactMarkdown so
+            bold/italic/lists format correctly. */}
+        <StreamingMarkdown text={msg.text || ""} speedMs={40} />
       </div>
       {msg.time && (
         <span style={{
