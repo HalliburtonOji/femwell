@@ -78,21 +78,26 @@ export default function AssistantOverlay({ open, onClose, initialPrompt: _initia
             the panel's header. JessDemoPanel uses fixed top padding for
             safe-area-inset already, so this z-indexed button just sits
             above its header without disrupting layout. */}
+        {/* QA — sits to the right of the panel's settings cog with
+            ~8px gap (paired with the panel's 60px right padding in
+            JessDemoPanel header). 36×36 to match the panel button
+            sizing, soft cream chip surface so it reads as a real
+            tappable control. */}
         <button
           type="button"
           onClick={onClose}
           aria-label="Close Jess"
           style={{
             position: "absolute",
-            top: "max(env(safe-area-inset-top), 12px)",
-            right: 12,
+            top: "max(env(safe-area-inset-top), 14px)",
+            right: 14,
             zIndex: 5,
-            width: 34, height: 34, borderRadius: 9999, border: "none",
-            backgroundColor: "rgba(244,237,219,0.92)",
+            width: 36, height: 36, borderRadius: 9999, border: "1px solid #D4C9B4",
+            backgroundColor: "rgba(244,237,219,0.96)",
             color: "#3A2C1A",
             cursor: "pointer",
             display: "flex", alignItems: "center", justifyContent: "center",
-            boxShadow: "0 2px 8px rgba(58,44,26,0.08)",
+            boxShadow: "0 2px 8px rgba(58,44,26,0.10)",
           }}
         >
           <X className="w-4 h-4" />

@@ -1743,8 +1743,13 @@ function JessDemoPanelInner() {
       <KeyframesBlock />
 
       {/* Top bar */}
+      {/* QA — right padding is 60px (not 16px) so AssistantOverlay's
+          floating close button (34px wide, positioned right:12px) has
+          ~14px of clearance from the rightmost header control
+          (settings cog at 40px wide). Without this, the X overlaps
+          the settings cog on every viewport narrower than ~520px. */}
       <header style={{
-        padding: "max(env(safe-area-inset-top), 12px) 16px 14px",
+        padding: "max(env(safe-area-inset-top), 12px) 60px 14px 16px",
         background: `linear-gradient(180deg, ${shell.headerTint} 0%, ${C.cream} 100%)`,
         borderBottom: `1px solid ${C.border}`,
         display: "flex", alignItems: "center", gap: 10, flexShrink: 0,
