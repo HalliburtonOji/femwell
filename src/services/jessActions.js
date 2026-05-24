@@ -51,6 +51,79 @@ function memKey(uid) { return `jess_memory_${uid || "anon"}`; }
 function today() { return new Date().toISOString().split("T")[0]; }
 function nowISO() { return new Date().toISOString(); }
 
+// ─── Meal-plan scaffold ─────────────────────────────────────────────
+// When Jess emits a CREATE_MEAL_PLAN with `{ days, preferences }` but
+// no explicit `plan` array, build placeholder breakfast/lunch/dinner
+// rows for each upcoming day. The placeholders are intentionally
+// simple — they go into MealLog so the user can open Nutrition and
+// see "something is here" rather than an empty week. The user (or
+// Jess via follow-up) can refine each entry later.
+//
+// Preference matching is loose by design — substring match across the
+// pref list. Unknown prefs fall through to OMNIVORE.
+const MEAL_TEMPLATES = {
+  vegetarian: {
+    breakfast: ["Overnight oats with berries", "Spinach + feta scramble", "Greek yoghurt + granola + honey", "Avocado on sourdough", "Smoothie bowl (banana, oat milk, spinach)", "Mushroom + tomato on toast", "Porridge with almond butter + apple"],
+    lunch:     ["Lentil + spinach soup with bread", "Halloumi + roasted veg salad", "Hummus + grilled veg wrap", "Quinoa bowl with chickpeas + tahini", "Pasta with pesto + cherry tomatoes", "Baked sweet potato + black bean chilli", "Frittata with side salad"],
+    dinner:    ["Vegetable curry with brown rice", "Mushroom risotto + green salad", "Stuffed peppers with quinoa + feta", "Aubergine parmigiana + crusty bread", "Cauliflower steak with herb sauce + couscous", "Mushroom + spinach stroganoff with pasta", "Black bean tacos with slaw"],
+  },
+  vegan: {
+    breakfast: ["Overnight oats with chia + berries", "Tofu scramble with greens", "Granola with oat milk + banana", "Avocado + tomato on toast", "Smoothie bowl (banana, almond milk, kale)", "Chickpea pancakes with mushrooms", "Porridge with peanut butter + apple"],
+    lunch:     ["Lentil + spinach soup + sourdough", "Falafel + tabbouleh wrap", "Hummus + roasted veg wrap", "Quinoa bowl with chickpeas + tahini", "Pasta with vegan pesto + cherry tomatoes", "Baked sweet potato + black bean chilli", "Buddha bowl: rice, edamame, slaw, tahini"],
+    dinner:    ["Vegetable curry with brown rice", "Mushroom + lentil bolognese", "Stuffed peppers with quinoa + walnuts", "Tofu stir-fry with brown rice", "Cauliflower steak with herb sauce + couscous", "Coconut chickpea curry with rice", "Black bean tacos with slaw + guac"],
+  },
+  pescatarian: {
+    breakfast: ["Smoked salmon + scrambled egg", "Avocado on sourdough + poached egg", "Greek yoghurt + granola + honey", "Porridge with almond butter + berries", "Mushroom omelette", "Overnight oats with chia", "Toast with peanut butter + banana"],
+    lunch:     ["Tuna + white bean salad", "Salmon poke bowl with brown rice", "Prawn + avocado wrap", "Smoked mackerel + new potato salad", "Pasta with pesto + cherry tomatoes", "Egg + watercress sandwich", "Sushi platter with miso soup"],
+    dinner:    ["Baked salmon with greens + sweet potato", "Cod traybake with vegetables", "Prawn linguine with chilli + garlic", "Thai red curry with prawns + rice", "Salmon fishcakes + slaw", "Grilled trout with quinoa + asparagus", "Tuna nicoise"],
+  },
+  pcos: {
+    breakfast: ["Overnight oats with berries + chia (low-GI)", "Spinach + feta scramble + tomato", "Greek yoghurt + nuts + cinnamon", "Avocado on rye + boiled egg", "Smoothie bowl (berries, oat milk, flax)", "Cottage cheese + berries + walnut", "Porridge with almond butter + cinnamon"],
+    lunch:     ["Lentil + spinach soup + rye", "Chicken + roasted veg + quinoa", "Salmon poke bowl with brown rice", "Halloumi + roasted veg salad", "Tuna + white bean salad", "Sweet potato + chickpea + spinach bowl", "Frittata with mixed leaves"],
+    dinner:    ["Salmon with greens + sweet potato", "Chicken + cauliflower rice + vegetables", "Mushroom + lentil bolognese", "Stuffed peppers with quinoa", "Thai curry with prawns + brown rice", "Cod traybake with vegetables", "Beef + broccoli stir-fry with rice"],
+  },
+  omnivore: {
+    breakfast: ["Eggs on sourdough + tomato", "Greek yoghurt + granola + berries", "Bacon + mushroom + scrambled egg", "Avocado on toast + poached egg", "Porridge with banana + honey", "Smoothie bowl with oat milk", "Toast with peanut butter + apple"],
+    lunch:     ["Chicken + roasted veg salad", "Tuna + white bean salad", "Falafel + hummus wrap", "Pasta with pesto + cherry tomatoes", "Steak + watercress sandwich", "Quinoa bowl with chickpeas", "Soup + crusty bread"],
+    dinner:    ["Roast chicken + greens + sweet potato", "Salmon with vegetables + new potatoes", "Beef stir-fry with brown rice", "Pasta bolognese with side salad", "Thai curry with chicken + rice", "Mushroom risotto", "Pork chop with apple slaw + potatoes"],
+  },
+};
+
+function pickTemplateBucket(prefs) {
+  const blob = String(prefs.join(" ")).toLowerCase();
+  if (/(vegan)/.test(blob))         return MEAL_TEMPLATES.vegan;
+  if (/(pescatar|fish)/.test(blob)) return MEAL_TEMPLATES.pescatarian;
+  if (/(pcos)/.test(blob))          return MEAL_TEMPLATES.pcos;
+  if (/(vegetarian)/.test(blob))    return MEAL_TEMPLATES.vegetarian;
+  return MEAL_TEMPLATES.omnivore;
+}
+
+function dateOffset(start, days) {
+  const d = new Date(start);
+  d.setDate(d.getDate() + days);
+  return d.toISOString().split("T")[0];
+}
+
+function parseDateOrToday(s) {
+  if (!s) return new Date();
+  const d = new Date(s);
+  return Number.isNaN(d.getTime()) ? new Date() : d;
+}
+
+// Returns an array of MealLog payloads (date + meal_type + food_items
+// for breakfast/lunch/dinner × N days).
+function scaffoldMealPlan(days, prefs, start) {
+  const bucket = pickTemplateBucket(prefs || []);
+  const out = [];
+  for (let i = 0; i < days; i++) {
+    const date = dateOffset(start, i);
+    out.push({ date, meal_type: "breakfast", food_items: bucket.breakfast[i % bucket.breakfast.length] });
+    out.push({ date, meal_type: "lunch",     food_items: bucket.lunch[i % bucket.lunch.length] });
+    out.push({ date, meal_type: "dinner",    food_items: bucket.dinner[i % bucket.dinner.length] });
+  }
+  return out;
+}
+
 // ─── Parse — safe extraction with fallback ───────────────────────────
 // Tries JSON.parse on the raw agent reply. If that fails, tries to
 // locate the first balanced {...} envelope embedded inside prose or
@@ -219,12 +292,34 @@ async function executeAction(action, userId) {
     }
 
     // ── Meal plan (batch over N upcoming days) ──
+    // Accepts EITHER:
+    //   { plan: [{date, meal_type, food_items, notes}, ...] }  — explicit
+    //   { meals: [...] }                                        — alias
+    //   { days: 7, preferences: ["vegetarian"], start_date? }   — scaffolded
+    //
+    // When `days` is provided without an explicit plan, we generate
+    // breakfast/lunch/dinner placeholders for each upcoming day, tuned
+    // to the user's stated dietary preferences. This lets Jess return
+    // a SHORT envelope (`{ days: 7, preferences: [...] }`) instead of
+    // having to serialise 21 meal rows in its JSON response — which it
+    // routinely refused to do because of token budget anxiety.
     case ACTION_TYPES.CREATE_MEAL_PLAN: {
       if (!Ent.MealLog) throw new Error("MealLog entity not available");
-      const plan = Array.isArray(data.plan) ? data.plan
-                : Array.isArray(data.meals) ? data.meals
-                : [];
+
+      let plan = Array.isArray(data.plan) ? data.plan
+              : Array.isArray(data.meals) ? data.meals
+              : [];
+
+      // Scaffold from days + preferences if no explicit plan came down.
+      if (plan.length === 0) {
+        const days = Number(data.days) > 0 ? Math.min(Math.floor(Number(data.days)), 14) : 7;
+        const prefs = Array.isArray(data.preferences) ? data.preferences.map(String) : [];
+        const start = parseDateOrToday(data.start_date);
+        plan = scaffoldMealPlan(days, prefs, start);
+      }
+
       if (plan.length === 0) throw new Error("empty meal plan");
+
       const out = [];
       for (const item of plan) {
         try {
@@ -233,7 +328,7 @@ async function executeAction(action, userId) {
             date: item.date || today(),
             meal_type: item.meal_type || item.mealType || "snack",
             food_items: item.food_items || item.items || item.food || "",
-            notes: item.notes || "",
+            notes: item.notes || (Array.isArray(data.preferences) ? `Plan: ${data.preferences.join(", ")}` : ""),
           };
           const r = await Ent.MealLog.create(payload);
           out.push(r);
