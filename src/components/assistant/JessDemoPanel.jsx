@@ -46,6 +46,10 @@ import {
   modeDirectiveFor,
   URGENCY_REFERRAL,
   DISTRESS_REFERRAL,
+  CRISIS_CATEGORIES,
+  classifySensitiveTopic,
+  getCrisisConfig,
+  GROUNDING_5_4_3_2_1,
 } from "@/services/jessSensitiveTopics";
 import {
   recordFeedback,
@@ -1418,19 +1422,30 @@ function JessDemoPanelInner() {
       id: uid(), role: "user", type: "bubble", text: msg, time: fmtTimeAmPm(),
     }]);
 
-    // Jess v2 J2-3 — sensitive topic classifier runs BEFORE the agent
-    // call. Urgency short-circuits the agent entirely; distress/grief
-    // shift the mode + (distress only) append a referral card after
-    // the agent reply.
-    const { category } = classifyJessInput(msg);
-    if (category === "urgent") {
+    // Jess crisis protocol (7-category) — runs BEFORE the agent call.
+    //
+    // We classify once, look up the response config, and branch:
+    //   • suppressAI=true (urgent_crisis): skip agent, render
+    //     emergency card with the Samaritans / A&E / GP lines, and
+    //     bail out before any LLM round-trip.
+    //   • everything else (incl. grief): proceed to the agent with a
+    //     mode directive baked into the outgoing message. Surfaces
+    //     that have a referralCard render it after the agent reply
+    //     starts streaming.
+    const category = classifySensitiveTopic(msg);
+    const crisisCfg = category ? getCrisisConfig(category) : null;
+
+    if (crisisCfg?.suppressAI) {
+      const card = crisisCfg.referralCard;
       setMessages((prev) => [...prev, {
         id: uid(),
         role: "jess",
         type: "referral",
-        variant: "urgent",
-        title: URGENCY_REFERRAL.title,
-        text: URGENCY_REFERRAL.body,
+        variant: category, // "urgent_crisis"
+        title: card?.title || "You're not alone",
+        lines: card?.lines || [],
+        // Back-compat: also keep `text` so older renderers still work.
+        text: (card?.lines || []).join(" · "),
         time: fmtTimeAmPm(),
       }]);
       return; // do NOT call the agent
@@ -1461,9 +1476,16 @@ function JessDemoPanelInner() {
       // resume, when loadConversation clears the flag) we prepend the
       // [JESS CONTEXT] block; on subsequent turns we send just the
       // user's text.
-      // Jess v2 J2-3 — inject mode directive for grief / distress turns
-      // so the agent's voice shifts. Urgency already short-circuited.
-      const modeLine = modeDirectiveFor(category);
+      // Mode directive for the agent — varies per crisis category.
+      // Pulled from the per-category config so adding a new category
+      // only requires touching jessSensitiveTopics.js.
+      const modeLine = crisisCfg?.modeDirective || "";
+      // Grounding script for SEVERE_ANXIETY — prepended to the
+      // outgoing turn so the agent's reply starts AFTER a 5-4-3-2-1
+      // exercise. The script is also rendered visually as a separate
+      // bubble below for users who'd benefit from seeing it isolated
+      // from the rest of the reply.
+      const groundingLine = crisisCfg?.groundingFirst ? GROUNDING_5_4_3_2_1 : "";
       // Jess v2 J2-7 — read the last 5 user thumbs ratings and bias the
       // agent's tone if they were unhappy. `feedbackLine` is empty when
       // the user hasn't complained, so it costs nothing in the happy path.
@@ -1485,7 +1507,7 @@ function JessDemoPanelInner() {
         } catch { /* swallow */ }
       }
 
-      const prefix = [feedbackLine, weeklyStatsLine, modeLine].filter(Boolean).join("\n\n---\n\n");
+      const prefix = [feedbackLine, weeklyStatsLine, modeLine, groundingLine && `[GROUNDING SCRIPT — PREPENDED TO YOUR REPLY]\n${groundingLine}`].filter(Boolean).join("\n\n---\n\n");
       let outgoing;
       if (!contextInjectedRef.current.has(cid)) {
         contextInjectedRef.current.add(cid);
@@ -1494,26 +1516,27 @@ function JessDemoPanelInner() {
         outgoing = prefix ? `${prefix}\n\n---\n\n${msg}` : msg;
       }
       await base44.agents.addMessage(convo, { role: "user", content: outgoing });
-      // After the agent replies, append a referral card for the
-      // distress branch. We watch `assistantTyping` to flip: once it
-      // turns false the agent reply has rendered, then we drop the
-      // card on the next tick.
+      // After the agent reply starts streaming, queue the per-category
+      // referral card (if this category has one). Grief + severe
+      // anxiety have referralCard:null and skip this entirely; the
+      // remaining categories (self_harm, eating_disorder,
+      // domestic_abuse, distress) get their dedicated card.
       //
-      // QA Fix 2 — explicit strict equality. Grief NEVER shows a card;
-      // it only shifts the agent's voice via modeDirectiveFor() above.
-      // This guard is belt-and-braces alongside the classifier
-      // precedence change in jessSensitiveTopics.
-      if (category === "distress") {
-        // Small delay tied to typing flag — drop the card once the
-        // agent reply text has at least started rendering.
+      // The delay (~1.8s) lets the typing indicator transition into
+      // the first chunk of the agent's reply before the card lands,
+      // so the card feels like a footnote rather than an interruption.
+      if (crisisCfg?.referralCard) {
+        const card = crisisCfg.referralCard;
         setTimeout(() => {
           setMessages((prev) => [...prev, {
             id: uid(),
             role: "jess",
             type: "referral",
-            variant: "distress",
-            title: DISTRESS_REFERRAL.title,
-            text: DISTRESS_REFERRAL.body,
+            variant: category, // exact category string
+            title: card.title,
+            lines: card.lines,
+            // back-compat string for older renderers
+            text: card.lines.join(" · "),
             time: fmtTimeAmPm(),
           }]);
         }, 1800);
@@ -2691,12 +2714,30 @@ function MessageNode({ msg, shell, onChip, onToggleQuickLog, feedback, onFeedbac
       </div>
     );
   }
-  // Jess v2 J2-3 — referral card. Distinct treatment so urgent /
-  // distress callouts read differently from a standard chat bubble.
+  // Crisis-protocol referral card. The chat shell builds these with
+  // `variant: <CRISIS_CATEGORIES value>`. Each variant gets its own
+  // tone of voice — urgent reads as urgent (red, "please read"), the
+  // other support categories read as steady support (gold, "Support
+  // resource"). Multi-line content arrives in `msg.lines`; we still
+  // support `msg.text` for legacy single-line cards.
   if (msg.type === "referral") {
-    const isUrgent = msg.variant === "urgent";
+    // Variants that should read with the loudest urgency framing.
+    const URGENT_VARIANTS = new Set(["urgent_crisis", "urgent"]);
+    const isUrgent = URGENT_VARIANTS.has(msg.variant);
     const ringTint = isUrgent ? "#D45E52" : C.gold;
-    const bg = isUrgent ? "#FFF1EE" : C.paperHi;
+    const bg       = isUrgent ? "#FFF1EE" : C.paperHi;
+    // Per-variant eyebrow label so a user knows at a glance which
+    // resource they're being pointed at.
+    const VARIANT_LABEL = {
+      urgent_crisis:   "Urgent · please read",
+      urgent:          "Urgent · please read",          // legacy alias
+      self_harm:       "Support resource · please read",
+      eating_disorder: "Support resource",
+      domestic_abuse:  "Confidential support",
+      severe_anxiety:  "Grounding · with you",
+      distress:        "Support resource",
+    };
+    const label = VARIANT_LABEL[msg.variant] || "Support resource";
     return (
       <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-start", width: "100%" }}>
         <article style={{
@@ -2714,16 +2755,28 @@ function MessageNode({ msg, shell, onChip, onToggleQuickLog, feedback, onFeedbac
             letterSpacing: "0.16em", textTransform: "uppercase",
             color: isUrgent ? "#A23B30" : C.goldDeep || "#A6862B",
             fontFamily: "'Inter', sans-serif",
-          }}>{isUrgent ? "Urgent · please read" : "Support resource"}</p>
+          }}>{label}</p>
           <p style={{
             margin: "2px 0 0", fontSize: 14.5, fontWeight: 600,
             color: C.espresso, fontFamily: "'Fraunces', Georgia, serif",
             lineHeight: 1.35,
           }}>{msg.title}</p>
-          <p style={{
-            margin: "2px 0 0", fontSize: 13, color: C.espresso,
-            fontFamily: "'Inter', system-ui, sans-serif", lineHeight: 1.5,
-          }}>{msg.text}</p>
+          {Array.isArray(msg.lines) && msg.lines.length > 0 ? (
+            <ul style={{
+              margin: "4px 0 0", padding: "0 0 0 16px",
+              fontSize: 13, color: C.espresso,
+              fontFamily: "'Inter', system-ui, sans-serif", lineHeight: 1.55,
+            }}>
+              {msg.lines.map((line, i) => (
+                <li key={i} style={{ marginTop: i === 0 ? 0 : 2 }}>{line}</li>
+              ))}
+            </ul>
+          ) : (
+            <p style={{
+              margin: "2px 0 0", fontSize: 13, color: C.espresso,
+              fontFamily: "'Inter', system-ui, sans-serif", lineHeight: 1.5,
+            }}>{msg.text}</p>
+          )}
         </article>
         {msg.time && (
           <span style={{
