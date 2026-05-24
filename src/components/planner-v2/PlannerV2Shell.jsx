@@ -78,6 +78,8 @@ import RitualBuilder, {
 } from "@/components/planner/RitualBuilder";
 import VoiceScheduler, { VoiceMicButton } from "@/components/planner/VoiceScheduler";
 import JessDailyOpener from "@/components/jess/JessDailyOpener";
+import JessPatternNudge from "@/components/jess/JessPatternNudge";
+import JessPhasePrep from "@/components/jess/JessPhasePrep";
 import { Settings as SettingsIcon } from "lucide-react";
 
 // Layers + X imported separately so the DEV pill below can use them
@@ -890,6 +892,16 @@ export default function PlannerV2Shell({
       {/* Jess v2 J2-1 — Daily Opening Card. Renders above the row
           stack, once per user per day. Auto-dismisses after 10s. */}
       <JessDailyOpener user={user} profile={profileProp} />
+
+      {/* Jess v2 J2-4 — Pattern Nudge. Surfaces a single, gentle
+          observation when the last 3+ days of check-ins show low
+          mood / energy / sleep or a sudden mood drop. Max 1/day. */}
+      <JessPatternNudge user={user} profile={profileProp} />
+
+      {/* Jess v2 J2-6 — Predictive Phase Prep. Shows a small "your
+          next phase is coming" card 3-4 days before a cycle phase
+          transition. Hidden for non-cycle life stages. Cached weekly. */}
+      <JessPhasePrep user={user} profile={profileProp} />
 
       {/* Phase 3 — rows are rendered in user-defined order. The
           NODES_BY_KEY map above defines each row's JSX; PlannerSettingsSheet

@@ -12,12 +12,14 @@
 // follow-up when the JessMemory entity exists.
 
 import { useEffect, useState, useCallback } from "react";
-import { X, Check, Trash2, AlertTriangle } from "lucide-react";
+import { X, Check, Trash2, AlertTriangle, Pencil, Plus } from "lucide-react";
 import { base44 } from "@/api/base44Client";
 import {
   loadTopMemories,
   deactivateMemory,
   deactivateAllMemories,
+  createUserMemory,
+  updateMemoryContent,
   memoryTypeBadge,
 } from "@/services/jessMemoryService";
 
@@ -65,6 +67,12 @@ export default function JessSettingsSheet({ open, onClose, user, profile, onProf
   const [memories, setMemories] = useState([]);
   const [memoriesLoading, setMemoriesLoading] = useState(false);
   const [showClearConfirm, setShowClearConfirm] = useState(false);
+  // J2-5 — inline edit + add. editId tracks which row is in edit mode;
+  // editDraft holds the unsaved text. addDraft is the new-memory input.
+  const [editId, setEditId] = useState(null);
+  const [editDraft, setEditDraft] = useState("");
+  const [addDraft, setAddDraft] = useState("");
+  const [adding, setAdding] = useState(false);
 
   const reloadMemories = useCallback(async () => {
     if (!user?.id) { setMemories([]); return; }
@@ -74,6 +82,22 @@ export default function JessSettingsSheet({ open, onClose, user, profile, onProf
       setMemories(Array.isArray(rows) ? rows : []);
     } finally { setMemoriesLoading(false); }
   }, [user?.id]);
+
+  // J2-5 — create a user-authored memory from the add-input.
+  const addMemoryNow = useCallback(async () => {
+    if (!user?.id) return;
+    const draft = addDraft.trim();
+    if (draft.length < 4 || adding) return;
+    setAdding(true);
+    try {
+      const row = await createUserMemory(user.id, draft);
+      if (row) {
+        // Prepend optimistically — newest user-added memory at the top.
+        setMemories((prev) => [row, ...prev]);
+        setAddDraft("");
+      }
+    } finally { setAdding(false); }
+  }, [user?.id, addDraft, adding]);
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
 
@@ -97,6 +121,11 @@ export default function JessSettingsSheet({ open, onClose, user, profile, onProf
     });
     setShowClearConfirm(false);
     setSaved(false);
+    // J2-5 — reset transient edit + add state every time the sheet opens.
+    setEditId(null);
+    setEditDraft("");
+    setAddDraft("");
+    setAdding(false);
     // Feature 2 — pull fresh JessMemory rows when the sheet opens.
     reloadMemories();
   }, [open, profile?.id, reloadMemories]);
@@ -301,11 +330,12 @@ export default function JessSettingsSheet({ open, onClose, user, profile, onProf
             </div>
           </Section>
 
-          {/* JESS REMEMBERS — Feature 2 (JessMemory entity) */}
-          <Section title="Jess Remembers" hint="Things Jess has picked up across your conversations.">
+          {/* WHAT JESS KNOWS — J2-5 (editable, addable memory cards) */}
+          <Section title="What Jess knows" hint="Edit, remove, or add things you want Jess to remember.">
             <ul style={{ listStyle: "none", margin: 0, padding: 0, display: "flex", flexDirection: "column", gap: 8 }}>
               {memories.map((m) => {
                 const badge = memoryTypeBadge(m.memory_type);
+                const isEditing = editId === m.id;
                 return (
                   <li key={m.id} style={{
                     display: "flex", alignItems: "flex-start", gap: 10,
@@ -322,26 +352,92 @@ export default function JessSettingsSheet({ open, onClose, user, profile, onProf
                         fontSize: 10, fontWeight: 700, letterSpacing: "0.06em",
                         textTransform: "uppercase",
                       }}>{badge.label}</span>
-                      <span style={{
-                        fontSize: 13, lineHeight: 1.45, color: C.espresso,
-                        fontFamily: "'Inter', sans-serif",
-                      }}>{m.content}</span>
+                      {isEditing ? (
+                        <textarea
+                          value={editDraft}
+                          onChange={(e) => setEditDraft(e.target.value)}
+                          rows={2}
+                          autoFocus
+                          style={{
+                            width: "100%", boxSizing: "border-box",
+                            padding: "8px 10px", borderRadius: 8,
+                            border: `1px solid ${C.border}`, background: C.paperHi,
+                            fontFamily: "'Inter', sans-serif", fontSize: 13,
+                            color: C.espresso, outline: "none", resize: "vertical",
+                            lineHeight: 1.45,
+                          }}
+                        />
+                      ) : (
+                        <span style={{
+                          fontSize: 13, lineHeight: 1.45, color: C.espresso,
+                          fontFamily: "'Inter', sans-serif",
+                        }}>{m.content}</span>
+                      )}
+                      {isEditing && (
+                        <div style={{ display: "flex", gap: 6, marginTop: 4 }}>
+                          <button
+                            type="button"
+                            onClick={async () => {
+                              const draft = editDraft.trim();
+                              if (draft.length < 4) { setEditId(null); return; }
+                              // Optimistic
+                              setMemories((prev) => prev.map((row) =>
+                                row.id === m.id ? { ...row, content: draft } : row,
+                              ));
+                              setEditId(null);
+                              await updateMemoryContent(m.id, draft);
+                            }}
+                            style={{
+                              padding: "6px 12px", minHeight: 32,
+                              background: C.espresso, color: C.cream, border: "none",
+                              borderRadius: 9999, cursor: "pointer",
+                              fontFamily: "'Inter', sans-serif", fontSize: 12, fontWeight: 700,
+                            }}
+                          >Save</button>
+                          <button
+                            type="button"
+                            onClick={() => { setEditId(null); setEditDraft(""); }}
+                            style={{
+                              padding: "6px 12px", minHeight: 32,
+                              background: "transparent", color: C.muted,
+                              border: `1px solid ${C.border}`,
+                              borderRadius: 9999, cursor: "pointer",
+                              fontFamily: "'Inter', sans-serif", fontSize: 12, fontWeight: 600,
+                            }}
+                          >Cancel</button>
+                        </div>
+                      )}
                     </div>
-                    <button
-                      type="button"
-                      aria-label={`Forget: ${m.content}`}
-                      onClick={async () => {
-                        // Optimistic — drop locally, then soft-delete.
-                        setMemories((prev) => prev.filter((row) => row.id !== m.id));
-                        await deactivateMemory(m.id);
-                      }}
-                      style={{
-                        width: 32, height: 32, borderRadius: 9999, border: "none",
-                        background: "transparent", color: C.muted, cursor: "pointer",
-                        display: "inline-flex", alignItems: "center", justifyContent: "center",
-                        flexShrink: 0,
-                      }}
-                    ><X size={14} /></button>
+                    {!isEditing && (
+                      <>
+                        <button
+                          type="button"
+                          aria-label={`Edit: ${m.content}`}
+                          onClick={() => { setEditId(m.id); setEditDraft(m.content || ""); }}
+                          style={{
+                            width: 32, height: 32, borderRadius: 9999, border: "none",
+                            background: "transparent", color: C.muted, cursor: "pointer",
+                            display: "inline-flex", alignItems: "center", justifyContent: "center",
+                            flexShrink: 0,
+                          }}
+                        ><Pencil size={13} /></button>
+                        <button
+                          type="button"
+                          aria-label={`Forget: ${m.content}`}
+                          onClick={async () => {
+                            // Optimistic — drop locally, then soft-delete.
+                            setMemories((prev) => prev.filter((row) => row.id !== m.id));
+                            await deactivateMemory(m.id);
+                          }}
+                          style={{
+                            width: 32, height: 32, borderRadius: 9999, border: "none",
+                            background: "transparent", color: C.muted, cursor: "pointer",
+                            display: "inline-flex", alignItems: "center", justifyContent: "center",
+                            flexShrink: 0,
+                          }}
+                        ><X size={14} /></button>
+                      </>
+                    )}
                   </li>
                 );
               })}
@@ -351,7 +447,7 @@ export default function JessSettingsSheet({ open, onClose, user, profile, onProf
                   background: C.paper, border: `1px dashed ${C.border}`,
                   fontSize: 12, color: C.mutedText, fontStyle: "italic",
                   textAlign: "center",
-                }}>Jess hasn't formed memories yet — keep chatting!</li>
+                }}>Jess hasn't formed memories yet — keep chatting, or add one below.</li>
               )}
               {memoriesLoading && (
                 <li style={{
@@ -361,6 +457,48 @@ export default function JessSettingsSheet({ open, onClose, user, profile, onProf
                 }}>Loading memories…</li>
               )}
             </ul>
+
+            {/* J2-5 — add-a-memory input. Saves as user-authored. */}
+            <div style={{
+              display: "flex", gap: 8, marginTop: 10,
+              alignItems: "stretch",
+            }}>
+              <input
+                type="text"
+                value={addDraft}
+                onChange={(e) => setAddDraft(e.target.value)}
+                placeholder="Add something for Jess to remember…"
+                maxLength={240}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter" && addDraft.trim().length >= 4 && !adding) {
+                    e.preventDefault();
+                    addMemoryNow();
+                  }
+                }}
+                style={{
+                  flex: 1, boxSizing: "border-box",
+                  padding: "10px 12px", minHeight: 40, borderRadius: 12,
+                  border: `1px solid ${C.border}`, background: C.paperHi,
+                  fontFamily: "'Inter', sans-serif", fontSize: 13,
+                  color: C.espresso, outline: "none",
+                }}
+              />
+              <button
+                type="button"
+                onClick={addMemoryNow}
+                disabled={adding || addDraft.trim().length < 4}
+                aria-label="Add memory"
+                style={{
+                  minWidth: 44, minHeight: 40, borderRadius: 12,
+                  background: C.espresso, color: C.cream, border: "none",
+                  display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 4,
+                  cursor: (adding || addDraft.trim().length < 4) ? "not-allowed" : "pointer",
+                  opacity: (adding || addDraft.trim().length < 4) ? 0.45 : 1,
+                  fontFamily: "'Inter', sans-serif", fontSize: 13, fontWeight: 700,
+                  padding: "0 12px",
+                }}
+              ><Plus size={14} /> Add</button>
+            </div>
             <button
               type="button"
               onClick={() => setShowClearConfirm(true)}

@@ -300,6 +300,46 @@ export async function deactivateMemory(memoryId) {
   } catch { return false; }
 }
 
+// ─── User-authored memory (Jess v2 J2-5) ──────────────────────────────────
+// Lets the user add their own memory rows from the settings sheet's
+// "What Jess knows" section. These are tagged source_conv_id="user-added"
+// so we can filter / surface them separately if we ever want to. Score
+// defaults high (8) so they outrank low-confidence LLM extractions in
+// loadTopMemories().
+export async function createUserMemory(userId, content) {
+  if (!userId) return null;
+  const text = String(content || "").trim();
+  if (text.length < 4) return null;
+  const Entity = base44?.entities?.JessMemory;
+  if (!Entity) return null;
+  try {
+    const row = await Entity.create({
+      user_id: userId,
+      memory_type: "explicit_statement",
+      content: text,
+      source_conv_id: "user-added",
+      importance_score: 8,
+      is_active: true,
+      tags: "user-added",
+    });
+    return row || null;
+  } catch { return null; }
+}
+
+// Update the text of an existing memory in place. Used when the user
+// taps "Edit" on a memory card and saves changes.
+export async function updateMemoryContent(memoryId, content) {
+  if (!memoryId) return false;
+  const text = String(content || "").trim();
+  if (text.length < 4) return false;
+  const Entity = base44?.entities?.JessMemory;
+  if (!Entity) return false;
+  try {
+    await Entity.update(memoryId, { content: text });
+    return true;
+  } catch { return false; }
+}
+
 // ─── Bulk soft-delete ─────────────────────────────────────────────────────
 // Used by the settings sheet's "Clear all memory" action.
 export async function deactivateAllMemories(userId) {
