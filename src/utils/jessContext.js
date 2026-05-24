@@ -10,6 +10,7 @@
 
 import { base44 } from "@/api/base44Client";
 import { hasAiConsent } from "@/utils/consent";
+import { JESS_PERSONA } from "@/services/jessAgentService";
 
 function todayKey() {
   return new Date().toISOString().split("T")[0];
@@ -97,7 +98,11 @@ export async function buildJessContext({ user, profile } = {}) {
     `Symptoms today: ${todaySymptoms.length ? todaySymptoms.join(", ") : "none logged"}`,
   ];
 
-  const prompt = `USER CONTEXT (today, ${todayKey()}):\n${lines.join("\n")}\n\n`;
+  // Sprint 2 S2-3 + Sprint 3 S3-1 — prepend the locked Jess persona +
+  // crisis escalation line so the chat surface (which sends through
+  // base44.agents.addMessage, not callJessAgent) inherits the same
+  // guardrails as every other Jess surface.
+  const prompt = `[JESS PERSONA]\n${JESS_PERSONA}\n\n---\n\nUSER CONTEXT (today, ${todayKey()}):\n${lines.join("\n")}\n\n`;
 
   return {
     lifeStage,

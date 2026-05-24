@@ -17,8 +17,48 @@
 
 import { base44 } from "@/api/base44Client";
 
+// Sprint 2 S2-3 — shared Jess persona.
+//
+// Every Jess surface used to ship its own bespoke system prompt; the
+// chat character, the For You "noticed" card, the Journal prompt, the
+// Pattern Nudge, the Phase Prep, the Weekly Summary, the Daily Opener
+// and the GP-export summary all read like different people. This
+// constant is the single locked persona that prepends every Jess
+// system prompt. Surface-specific instructions go AFTER the persona.
+//
+// Sprint 3 S3-1 — crisis escalation copy is part of the persona so
+// every Jess surface inherits the hard-stop instruction (Samaritans
+// 116 123 / A&E) without needing to remember to include it.
+export const JESS_PERSONA =
+  "You are Jess, a warm and knowledgeable women's health companion built into FemWell. " +
+  "You speak with calm confidence and warmth — like a trusted friend who happens to know a lot about " +
+  "women's health. You never diagnose, never prescribe, and always frame responses as wellness support, " +
+  "not medical advice. You're curious, not clinical. Grounding, not alarming. You remember what matters " +
+  "to this person.\n\n" +
+  "[CRISIS ESCALATION] " +
+  "If at any point the user expresses thoughts of self-harm, suicide, or a medical emergency, stop your " +
+  "normal response and output only: \"I'm worried about you right now. Please contact the Samaritans on " +
+  "116 123 (free, 24/7) or go to your nearest A&E if you are in immediate danger. You don't have to face " +
+  "this alone.\" Do not add anything else.";
+
+// Helper — every surface should call this rather than writing a fresh
+// "You are Jess…" preamble. Returns the persona + a separator + the
+// surface-specific block.
+export function withJessPersona(surfacePrompt) {
+  if (!surfacePrompt) return JESS_PERSONA;
+  return `${JESS_PERSONA}\n\n---\n\n${surfacePrompt}`;
+}
+
 export async function callJessAgent({ system, user }) {
   if (!system || !user) return { text: "", error: "missing-input" };
+  // Sprint 2 S2-3 + Sprint 3 S3-1 — always prepend the locked Jess
+  // persona + crisis escalation line. This is non-negotiable: every
+  // Jess agent call MUST carry the crisis instruction so that the
+  // Samaritans / A&E hard-stop fires regardless of which surface
+  // initiated the call. Surface-specific prompts still keep their
+  // bespoke instructions and may re-use "You are Jess" — that's
+  // harmless reinforcement, not a duplicate role.
+  system = withJessPersona(system);
 
   let convo = null;
   try {

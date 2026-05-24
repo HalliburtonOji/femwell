@@ -77,7 +77,11 @@ import RitualBuilder, {
   iconFor as ritualIconFor,
 } from "@/components/planner/RitualBuilder";
 import VoiceScheduler, { VoiceMicButton } from "@/components/planner/VoiceScheduler";
-import JessDailyOpener from "@/components/jess/JessDailyOpener";
+// Sprint 2 S2-2 — JessDailyOpener removed from the Planner. The
+// canonical first-open greeting now lives in MorningBriefOverlay
+// (Sprint 8) so users don't see two competing daily greetings (and
+// don't pay two agent calls for the same one). JessDailyOpener.jsx
+// still exists for any historical mount; we just don't mount it here.
 import JessPatternNudge from "@/components/jess/JessPatternNudge";
 import JessPhasePrep from "@/components/jess/JessPhasePrep";
 import JessWeeklySummary from "@/components/jess/JessWeeklySummary";
@@ -890,9 +894,10 @@ export default function PlannerV2Shell({
           its data-tour attribute. */}
       <PlannerTour name={realDisplayName} />
 
-      {/* Jess v2 J2-1 — Daily Opening Card. Renders above the row
-          stack, once per user per day. Auto-dismisses after 10s. */}
-      <JessDailyOpener user={user} profile={profileProp} />
+      {/* Jess v2 J2-1 — Daily Opening Card REMOVED here.
+          Sprint 2 S2-2: MorningBriefOverlay (Sprint 8) is the single
+          first-open greeting surface; rendering JessDailyOpener here
+          duplicated the same agent call + UI on the same day. */}
 
       {/* Jess v2 J2-4 — Pattern Nudge. Surfaces a single, gentle
           observation when the last 3+ days of check-ins show low
