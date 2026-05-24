@@ -1194,8 +1194,18 @@ function JessDemoPanelInner() {
           let envelopeParsed = null;
           let actionsToFire = [];
           let envelopeMessage = null;
+          // Sprint 5 P0#1 — ALWAYS use parseJessResponse's `message`
+          // field for display, even on fallback. parseJessResponse now
+          // sanitizes trailing JSON debris (`{...}`, `[...`, `"actions":`)
+          // from fallback text so raw envelope fragments never leak
+          // into the bubble. envelopeParsed gates action execution —
+          // only fires when JSON parsed cleanly.
+          let parsedMessage = "";
           try {
             const tryParse = parseJessResponse(raw);
+            parsedMessage = typeof tryParse?.message === "string"
+              ? tryParse.message
+              : "";
             if (!tryParse._fallback) {
               envelopeParsed = tryParse;
               envelopeMessage = tryParse.message;
@@ -1203,7 +1213,12 @@ function JessDemoPanelInner() {
             }
           } catch { /* swallow — fall back below */ }
 
-          const baseText = envelopeMessage != null ? envelopeMessage : raw;
+          // Pick display source. envelopeMessage wins (clean parse).
+          // parsedMessage wins second (sanitized fallback — strips JSON
+          // debris from the raw text). raw is last-ditch.
+          const baseText = envelopeMessage != null
+            ? envelopeMessage
+            : (parsedMessage || raw);
           const sanitized = stripToolConfirmations(baseText);
           // Strip trailing JSON suggestion-chip array (e.g. the model
           // ends its reply with `["Try journaling","Take a walk"]`).
@@ -1478,29 +1493,73 @@ function JessDemoPanelInner() {
     setFollowUpFired(true); // suppress the auto-opener for resumed threads
     try {
       const c = await base44.agents.getConversation(id);
-      const list = Array.isArray(c?.messages) ? c.messages : [];
+      // P0#2 — base44.agents.getConversation returns the messages array
+      // in different shapes depending on size: a bare array OR
+      // `{ items: [...] }`. Previously we only checked the bare-array
+      // shape, so paginated conversations collapsed to "only the last
+      // message visible after resume". Mirror the jessAgentService
+      // poll-loop behaviour and check both.
+      const list = Array.isArray(c?.messages)
+        ? c.messages
+        : (Array.isArray(c?.messages?.items)
+          ? c.messages.items
+          : (Array.isArray(c?.messages?.list)
+            ? c.messages.list
+            : []));
       // Mark every existing assistant message as already-seen so the
       // subscribe callback doesn't replay them when it connects.
       for (const m of list) {
         if (m?.role === "assistant" && m?.id) seenAgentIdsRef.current.add(m.id);
       }
-      // QA round 5 — the first user turn now CONTAINS the context
-      // block PREPENDED to the user's actual message (joined by
-      // `\n\n---\n\n`). On replay we need to strip the context prefix
-      // and show only the user's text. Legacy pure-context messages
-      // (no separator) are still skipped entirely.
+      // P0#2 — every outgoing user turn since Sprint 5 carries a
+      // multi-block prefix (`[JESS CONTEXT]`, `[ACTION LAYER]`,
+      // `[GROUNDING SCRIPT]`, `[FEEDBACK SIGNAL]`, `[WEEKLY STATS]`,
+      // `[MEMORY CONTEXT]`, etc.) joined by `\n\n---\n\n` separators
+      // before the actual user text. On resume we want to show ONLY
+      // the user text. We do this generically: if a user message starts
+      // with `[SOMETHING_LIKE_THIS]`, walk the `\n\n---\n\n` separators
+      // and keep the LAST segment that does NOT itself start with `[`.
+      // Legacy pure-context messages (single `[JESS CONTEXT]` block with
+      // no trailing user text) are dropped entirely.
+      //
+      // For assistant turns we run parseJessResponse so the JSON
+      // envelope becomes clean prose instead of a wall of `{ "message":
+      // "...", "actions": [...] }` text in the resumed bubble.
       const view = list
         .map((m) => {
           if (m?.role === "user") {
             const content = String(m?.content || "");
-            if (content.startsWith("[JESS CONTEXT")) {
-              const sepIdx = content.indexOf("\n\n---\n\n");
-              if (sepIdx >= 0) {
-                // Combined message — keep only the trailing user text.
-                return { ...m, content: content.slice(sepIdx + 7).trim() };
+            if (/^\s*\[[A-Z][A-Z _\-—]+/.test(content)) {
+              const segments = content.split("\n\n---\n\n");
+              // Walk from end → start and grab the first segment that
+              // isn't itself a bracket header block.
+              let userText = "";
+              for (let i = segments.length - 1; i >= 0; i--) {
+                const seg = String(segments[i] || "").trim();
+                if (!seg) continue;
+                if (/^\[[A-Z][A-Z _\-—]+/.test(seg)) continue;
+                userText = seg;
+                break;
               }
-              // Pure context block (legacy) — flag for filter to drop.
-              return { ...m, __dropFromView: true };
+              if (!userText) {
+                return { ...m, __dropFromView: true };
+              }
+              return { ...m, content: userText };
+            }
+            return m;
+          }
+          if (m?.role === "assistant") {
+            const content = String(m?.content || "");
+            if (!content.trim()) return { ...m, __dropFromView: true };
+            // Tool-call intermediate frames sometimes have empty content
+            // — already filtered above. For real text replies, strip the
+            // JSON envelope so resumed bubbles show only Jess's prose.
+            try {
+              const parsed = parseJessResponse(content);
+              const cleaned = String(parsed?.message || content).trim();
+              return { ...m, content: cleaned };
+            } catch {
+              return m;
             }
           }
           return m;
@@ -1511,11 +1570,15 @@ function JessDemoPanelInner() {
           role: m.role === "assistant" ? "jess" : "user",
           type: "bubble",
           text: m.content || "",
-        }));
-      // Prepend a "Conversation resumed" divider chip so the user can tell.
+        }))
+        // Final safety net — drop any empty bubble after cleaning.
+        .filter((b) => String(b.text || "").trim().length > 0);
+      // P0#2 — the divider now reads "Conversation resumed" and lands
+      // AT THE END of the loaded history so the user can see the full
+      // thread above with the resumed marker as a "you are here" line.
       setMessages([
-        { id: uid(), role: "divider", type: "divider", text: "Conversation resumed" },
         ...view,
+        { id: uid(), role: "divider", type: "divider", text: "Conversation resumed" },
       ]);
       subscribeToConversation(id);
     } catch {

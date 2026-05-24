@@ -52,30 +52,118 @@ function today() { return new Date().toISOString().split("T")[0]; }
 function nowISO() { return new Date().toISOString(); }
 
 // ─── Parse — safe extraction with fallback ───────────────────────────
-// Tries JSON.parse on the raw agent reply. If that fails OR the parsed
-// object doesn't have a `message` string, treats the WHOLE raw string
-// as the user-visible message with no actions. Also handles the common
-// ```json ... ``` code-fence wrapper that some LLMs add.
+// Tries JSON.parse on the raw agent reply. If that fails, tries to
+// locate the first balanced {...} envelope embedded inside prose or
+// fences. If THAT still fails, returns the raw text with any trailing
+// JSON-looking debris stripped so a partial stream chunk never leaks
+// `["*Find PCOS nutrition tips", "*Find fe...` into the visible bubble.
+// Also handles the common ```json ... ``` code-fence wrapper.
 export function parseJessResponse(raw) {
   const text = String(raw || "").trim();
   if (!text) return { message: "", actions: [], _fallback: true };
+
   // Strip ```json fences if present.
   const fenced = text
     .replace(/^```(?:json)?\s*/i, "")
     .replace(/\s*```\s*$/g, "")
     .trim();
-  try {
-    const j = JSON.parse(fenced);
-    const msg = typeof j?.message === "string" ? j.message : "";
-    const actions = Array.isArray(j?.actions) ? j.actions : [];
-    if (!msg && actions.length === 0) {
-      // Parsed an object but no usable content — degrade.
-      return { message: text, actions: [], _fallback: true };
-    }
-    return { message: msg || text, actions, _fallback: false };
-  } catch {
-    return { message: text, actions: [], _fallback: true };
+
+  // Pass 1 — full JSON parse on the de-fenced string.
+  const direct = _tryEnvelope(fenced);
+  if (direct) return { ...direct, _fallback: false };
+
+  // Pass 2 — find the FIRST balanced {...} block anywhere in the text
+  // and try to parse that. Catches "prose blah\n{...envelope...}\nmore"
+  // and partial fenceless streams where the LLM dumps prose AND a
+  // tail envelope.
+  const extracted = _extractFirstJsonObject(fenced);
+  if (extracted) {
+    const envelope = _tryEnvelope(extracted);
+    if (envelope) return { ...envelope, _fallback: false };
   }
+
+  // Pass 3 — degraded fallback. Strip ANY trailing JSON-ish debris so
+  // the user never sees raw `[`, `{`, `"actions":` fragments in the
+  // bubble. Returns _fallback: true so the subscribe handler knows
+  // actions weren't extracted.
+  const sanitized = _stripTrailingJsonDebris(text);
+  return { message: sanitized, actions: [], _fallback: true };
+}
+
+// Internal — try to interpret a string as { message, actions } envelope.
+function _tryEnvelope(s) {
+  try {
+    const j = JSON.parse(s);
+    if (!j || typeof j !== "object" || Array.isArray(j)) return null;
+    const msg = typeof j.message === "string" ? j.message : "";
+    const actions = Array.isArray(j.actions) ? j.actions : [];
+    if (!msg && actions.length === 0) return null;
+    return { message: msg, actions };
+  } catch {
+    return null;
+  }
+}
+
+// Internal — walk the string, ignoring braces inside string literals,
+// and return the FIRST balanced {...} substring. Returns null if no
+// balanced block exists (e.g. mid-stream truncated envelope).
+function _extractFirstJsonObject(text) {
+  const start = text.indexOf("{");
+  if (start < 0) return null;
+  let depth = 0;
+  let inString = false;
+  let escaped = false;
+  for (let i = start; i < text.length; i++) {
+    const ch = text[i];
+    if (escaped) { escaped = false; continue; }
+    if (inString) {
+      if (ch === "\\") { escaped = true; continue; }
+      if (ch === '"') inString = false;
+      continue;
+    }
+    if (ch === '"') { inString = true; continue; }
+    if (ch === "{") depth++;
+    else if (ch === "}") {
+      depth--;
+      if (depth === 0) return text.slice(start, i + 1);
+    }
+  }
+  return null;
+}
+
+// Internal — last-resort guard. Removes anything from the LAST suspicious
+// JSON-ish opener (e.g. `, "actions": [`, a trailing standalone `[`, or a
+// trailing standalone `{`) to end-of-string. Conservative: only acts when
+// the text contains a clear JSON-envelope marker so prose paragraphs
+// that happen to mention brackets aren't mangled.
+function _stripTrailingJsonDebris(text) {
+  if (!text) return text;
+  let out = text;
+  // Drop a trailing partial `"actions": [...]` fragment (the most common
+  // leakage when the LLM half-streams an envelope into prose).
+  out = out.replace(/[,\s]*["']?actions["']?\s*:\s*\[[\s\S]*$/i, "").trim();
+  // Drop a trailing `"message": "..."` fragment.
+  out = out.replace(/[,\s]*["']?message["']?\s*:\s*"[\s\S]*$/i, "").trim();
+  // Drop a trailing standalone JSON-array fragment whose first element
+  // is a quoted string (suggestion-chip leakage; splitChipsFromText
+  // handles fully-balanced arrays, this catches mid-stream truncations
+  // like `["A","B","C...`).
+  out = out.replace(/[\s,]*\[\s*"[^"\]]*(?:"[^"]*)?(?:\s*,\s*"[^"\]]*(?:"[^"]*)?)*[\s\S]*$/, (match) => {
+    // Only strip if the bracket is unbalanced (i.e. no matching `]` after
+    // it). If it IS balanced, splitChipsFromText will lift it later.
+    const opens = (match.match(/\[/g) || []).length;
+    const closes = (match.match(/\]/g) || []).length;
+    return opens > closes ? "" : match;
+  }).trim();
+  // Drop a trailing standalone unbalanced `{...` envelope opener.
+  out = out.replace(/[\s,]*\{[\s\S]*$/, (match) => {
+    const opens = (match.match(/\{/g) || []).length;
+    const closes = (match.match(/\}/g) || []).length;
+    return opens > closes ? "" : match;
+  }).trim();
+  // Trim any dangling separator characters left after the strip.
+  out = out.replace(/[,\s]+$/, "").trim();
+  return out;
 }
 
 // ─── Dispatch a single action to its Base44 entity ──────────────────
