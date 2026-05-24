@@ -81,7 +81,10 @@ import Planner from './pages/Planner';
 import Insights from './pages/Insights.jsx';
 import OneShotThankYou from './pages/OneShotThankYou';
 import Ideas from './pages/Ideas';
-import Founders from './pages/Founders';
+// /Founders renders FoundersOS — fresh dashboard, no Ideas / Design Lab
+// reuse. The previous Founders.jsx has been deleted; this is the only
+// component that owns the /Founders route.
+import FoundersOS from './pages/FoundersOS';
 import __Layout from './Layout.jsx';
 
 
@@ -119,7 +122,7 @@ export const PAGES = {
     "Insights": Insights,
     "OneShotThankYou": OneShotThankYou,
     "Ideas": Ideas,
-    "Founders": Founders,
+    "Founders": FoundersOS,
 }
 
 export const pagesConfig = {
