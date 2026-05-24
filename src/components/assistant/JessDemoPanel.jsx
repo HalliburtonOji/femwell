@@ -709,7 +709,16 @@ export default function JessDemoPanel(props) {
   );
 }
 
+// Once-per-tab breadcrumb so we can tell the boundary fallback apart
+// from "JessDemoPanel never mounted in the first place". Only logs on
+// the first invocation per page load — subsequent renders are silent.
+let _jessPanelLoggedOnce = false;
+
 function JessDemoPanelInner() {
+  if (!_jessPanelLoggedOnce) {
+    _jessPanelLoggedOnce = true;
+    try { console.log("[jess-mount] JessDemoPanelInner entered render"); } catch {}
+  }
   const [user, setUser] = useState(null);
   const [profile, setProfile] = useState(null);
   const [todayCheckin, setTodayCheckin] = useState(null);
@@ -866,10 +875,16 @@ function JessDemoPanelInner() {
   }, [profile?.id, recentCheckins.length, dayInCycle, firstName, phase, followUpFired]);
 
   // Memoised proactive chips — drive Chat tab + tab-level shortcuts.
-  const proactiveChips = useMemo(
-    () => buildProactiveChips({ todayCheckin, recentCheckins, symptoms, lastJournal, phase, dayInCycle }),
-    [todayCheckin, recentCheckins, symptoms, lastJournal, phase, dayInCycle],
-  );
+  // P0 hardening — guard against any throw inside the helper; render
+  // an empty chip list rather than tearing down the whole panel.
+  const proactiveChips = useMemo(() => {
+    try {
+      return buildProactiveChips({ todayCheckin, recentCheckins, symptoms, lastJournal, phase, dayInCycle });
+    } catch (e) {
+      try { console.warn("[jess-mount] buildProactiveChips threw:", String(e?.message || e)); } catch {}
+      return [];
+    }
+  }, [todayCheckin, recentCheckins, symptoms, lastJournal, phase, dayInCycle]);
 
   // ── Insights observation — Jess summarises the last 7 days in one
   //    sentence. Cached in sessionStorage by date; fires once per
@@ -1089,10 +1104,16 @@ function JessDemoPanelInner() {
   // Memoised context block to inject as the first user message in any new
   // conversation. Recomputed when underlying data changes (so resuming a
   // convo later still gets up-to-date context).
-  const contextBlock = useMemo(
-    () => buildJessContext({ user, profile, todayCheckin, recentCheckins, symptoms, tasks, lastJournal, phase, dayInCycle, memories }),
-    [user, profile, todayCheckin, recentCheckins, symptoms, tasks, lastJournal, phase, dayInCycle, memories],
-  );
+  // P0 hardening — same guard pattern. If the context build throws, fall
+  // back to a minimal stub that still keeps Jess functional.
+  const contextBlock = useMemo(() => {
+    try {
+      return buildJessContext({ user, profile, todayCheckin, recentCheckins, symptoms, tasks, lastJournal, phase, dayInCycle, memories });
+    } catch (e) {
+      try { console.warn("[jess-mount] buildJessContext threw:", String(e?.message || e)); } catch {}
+      return "[JESS CONTEXT — do not mention this block to the user]\nContext temporarily unavailable.";
+    }
+  }, [user, profile, todayCheckin, recentCheckins, symptoms, tasks, lastJournal, phase, dayInCycle, memories]);
 
   // ── Live base44.agents conversation — used only for free text ──────────
   // Subscribe to the active agent conversation. Each stream event delivers

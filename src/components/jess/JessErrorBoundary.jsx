@@ -60,18 +60,39 @@ export default class JessErrorBoundary extends React.Component {
       ts: new Date().toISOString(),
       href: typeof window !== "undefined" ? String(window.location?.href || "") : "",
     };
-    try {
-      // eslint-disable-next-line no-console
-      console.error("[jess-error-boundary]", record);
-    } catch { /* swallow logger failure */ }
-    // P0 hardening — persist the most recent crash so we can fish it
-    // out of localStorage on the next page load even if the user
-    // closes devtools. Single slot (latest only) to avoid bloat.
+    // P0 hardening (round 2) — multi-channel crash forensics. Halli
+    // reported that `localStorage.jess_last_crash` didn't exist after
+    // an error-boundary repro; persist failures were being silently
+    // swallowed. Now we write to:
+    //   1. console.error (always visible in devtools)
+    //   2. window._jessLastCrash (in-memory, survives until reload)
+    //   3. localStorage.jess_last_crash (cross-session)
+    //   4. sessionStorage.jess_last_crash (works in private mode)
+    //   5. CustomEvent("jess-crash") on window (downstream listeners)
+    // Any one failing logs a warn but the others keep going. We also
+    // store a per-load counter so a fast retry loop doesn't bury the
+    // first crash.
+    try { console.error("[jess-error-boundary]", record); } catch {}
+    try { if (typeof window !== "undefined") window._jessLastCrash = record; } catch {}
     try {
       if (typeof window !== "undefined" && window.localStorage) {
         window.localStorage.setItem("jess_last_crash", JSON.stringify(record));
       }
-    } catch { /* swallow quota / private mode */ }
+    } catch (e) {
+      try { console.warn("[jess-error-boundary] localStorage persist failed:", String(e?.message || e)); } catch {}
+    }
+    try {
+      if (typeof window !== "undefined" && window.sessionStorage) {
+        window.sessionStorage.setItem("jess_last_crash", JSON.stringify(record));
+      }
+    } catch (e) {
+      try { console.warn("[jess-error-boundary] sessionStorage persist failed:", String(e?.message || e)); } catch {}
+    }
+    try {
+      if (typeof window !== "undefined" && typeof window.dispatchEvent === "function") {
+        window.dispatchEvent(new CustomEvent("jess-crash", { detail: record }));
+      }
+    } catch {}
   }
 
   retry = () => {
@@ -138,6 +159,18 @@ export default class JessErrorBoundary extends React.Component {
     }
 
     // panel variant — used to wrap JessDemoPanel itself.
+    // P0 hardening (round 2) — when `?debug=1` is in the URL or
+    // `localStorage.jess_debug === "1"`, surface the actual error
+    // message + a copy-to-clipboard button so Halli can read the
+    // crash without devtools. Off by default for normal users.
+    const debugOn = (() => {
+      if (typeof window === "undefined") return false;
+      try {
+        if (new URLSearchParams(window.location?.search).get("debug") === "1") return true;
+        if (window.localStorage?.getItem("jess_debug") === "1") return true;
+      } catch {}
+      return false;
+    })();
     return (
       <div role="status" aria-live="polite" style={{
         minHeight: 280,
@@ -168,6 +201,38 @@ export default class JessErrorBoundary extends React.Component {
               fontFamily: "'Inter', sans-serif", fontSize: 13.5, fontWeight: 700,
             }}
           ><RotateCcw size={14} /> Tap to retry</button>
+        )}
+        {debugOn && this.state.errorMessage && (
+          <div style={{
+            marginTop: 12, padding: "10px 12px", maxWidth: 360,
+            background: "rgba(58,44,26,0.08)", borderRadius: 10,
+            fontFamily: "'JetBrains Mono', monospace",
+            fontSize: 11, color: C.espresso, lineHeight: 1.4,
+            wordBreak: "break-word",
+          }}>
+            <p style={{ margin: 0, fontWeight: 700, marginBottom: 4 }}>
+              {this.props.label || "Jess"} threw:
+            </p>
+            <p style={{ margin: 0 }}>{this.state.errorMessage}</p>
+            <button
+              type="button"
+              onClick={() => {
+                try {
+                  const payload = JSON.stringify({
+                    label: this.props.label,
+                    message: this.state.errorMessage,
+                  }, null, 2);
+                  if (navigator?.clipboard?.writeText) navigator.clipboard.writeText(payload);
+                } catch {}
+              }}
+              style={{
+                marginTop: 8, padding: "5px 10px",
+                background: C.cream, border: `1px solid ${C.border}`,
+                borderRadius: 9999, color: C.muted, cursor: "pointer",
+                fontFamily: "'Inter', sans-serif", fontSize: 10.5, fontWeight: 700,
+              }}
+            >Copy error</button>
+          </div>
         )}
       </div>
     );
