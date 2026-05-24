@@ -41,12 +41,57 @@ export const JESS_PERSONA =
   "116 123 (free, 24/7) or go to your nearest A&E if you are in immediate danger. You don't have to face " +
   "this alone.\" Do not add anything else.";
 
+// Sprint 5 — Action Layer envelope. Appended to every Jess agent call
+// so the LLM returns a structured JSON envelope the chat shell can
+// parse + execute. Includes the MEMORY_CONTEXT placeholder; the chat
+// shell substitutes the rolling-20 memory line via withJessActionEnvelope().
+export const JESS_ACTION_ENVELOPE =
+  "RESPONSE FORMAT — MANDATORY:\n" +
+  "You MUST always respond with a valid JSON object in this exact shape:\n" +
+  "{\n" +
+  '  "message": "your conversational reply here",\n' +
+  '  "actions": [\n' +
+  "    {\n" +
+  '      "type": "ACTION_TYPE",\n' +
+  '      "confidence": 0.0,\n' +
+  '      "data": { }\n' +
+  "    }\n" +
+  "  ]\n" +
+  "}\n" +
+  'If no actions are needed, return "actions": [].\n' +
+  "Never return plain text — always return this JSON envelope.\n" +
+  "Confidence below 0.75 means you are unsure — return CLARIFICATION_NEEDED instead.\n\n" +
+  "WHAT YOU CAN DO:\n" +
+  "You can log mood, energy, sleep, symptoms, meals, hydration, medication, supplements, habits, tasks, " +
+  "and journal entries. When the user mentions doing or feeling something, extract the action and include " +
+  "it. Confirm what you logged in your message naturally: \"Got it — I've logged that for you.\"\n\n" +
+  "ACTION TYPES: LOG_MOOD, LOG_ENERGY, LOG_SLEEP, LOG_DAILY_CHECKIN, LOG_SYMPTOM, LOG_MEAL, " +
+  "CREATE_MEAL_PLAN, LOG_HYDRATION, LOG_MEDICATION, LOG_SUPPLEMENT, LOG_HABIT, CREATE_TASK, " +
+  "COMPLETE_TASK, WRITE_JOURNAL, QUERY_DATA, CLARIFICATION_NEEDED.\n\n" +
+  "MEMORY CONTEXT:\n" +
+  "{{MEMORY_CONTEXT}}";
+
 // Helper — every surface should call this rather than writing a fresh
 // "You are Jess…" preamble. Returns the persona + a separator + the
 // surface-specific block.
 export function withJessPersona(surfacePrompt) {
   if (!surfacePrompt) return JESS_PERSONA;
   return `${JESS_PERSONA}\n\n---\n\n${surfacePrompt}`;
+}
+
+// Sprint 5 — wraps a surface prompt with persona + the Action Layer
+// envelope, substituting the {{MEMORY_CONTEXT}} placeholder. Passing
+// `memoryLine = ""` is fine — the envelope still asks for JSON but
+// records no prior turns.
+export function withJessActionEnvelope(surfacePrompt, memoryLine = "") {
+  const envelope = JESS_ACTION_ENVELOPE.replace(
+    "{{MEMORY_CONTEXT}}",
+    memoryLine && memoryLine.trim() ? memoryLine.trim() : "(no prior turns)",
+  );
+  const parts = [JESS_PERSONA];
+  if (surfacePrompt) parts.push(surfacePrompt);
+  parts.push(envelope);
+  return parts.join("\n\n---\n\n");
 }
 
 export async function callJessAgent({ system, user }) {

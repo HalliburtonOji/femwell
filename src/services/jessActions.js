@@ -1,0 +1,355 @@
+// jessActions — Jess Sprint 5 (Action Layer)
+//
+// Every Jess agent call now returns a JSON envelope:
+//   {
+//     "message": "her conversational reply",
+//     "actions": [
+//       { "type": ACTION_TYPE, "confidence": 0.0-1.0, "data": {...} }
+//     ]
+//   }
+//
+// This service:
+//   1. parseJessResponse(raw)       — safely extracts message + actions
+//                                     with a fallback if the LLM returns
+//                                     plain text or malformed JSON.
+//   2. executeJessActions(actions,  — dispatches each action to its
+//        userId)                       Base44 entity create call, with a
+//                                     confidence floor (skip < 0.75).
+//                                     Returns per-action results.
+//   3. updateJessMemory(memory,     — appends a rolling-20 conversation
+//        actions, userMsg, jReply)    breadcrumb.
+//   4. loadJessMemory(userId) /     — localStorage persistence keyed by
+//      saveJessMemory(userId, m)      jess_memory_<userId>.
+//
+// Every entity write is wrapped in try/catch — Jess never crashes the
+// chat shell because the schema doesn't have a particular entity.
+
+import { base44 } from "@/api/base44Client";
+
+export const ACTION_TYPES = {
+  LOG_MOOD:            "LOG_MOOD",
+  LOG_ENERGY:          "LOG_ENERGY",
+  LOG_SLEEP:           "LOG_SLEEP",
+  LOG_DAILY_CHECKIN:   "LOG_DAILY_CHECKIN",
+  LOG_SYMPTOM:         "LOG_SYMPTOM",
+  LOG_MEAL:            "LOG_MEAL",
+  CREATE_MEAL_PLAN:    "CREATE_MEAL_PLAN",
+  LOG_HYDRATION:       "LOG_HYDRATION",
+  LOG_MEDICATION:      "LOG_MEDICATION",
+  LOG_SUPPLEMENT:      "LOG_SUPPLEMENT",
+  LOG_HABIT:           "LOG_HABIT",
+  CREATE_TASK:         "CREATE_TASK",
+  COMPLETE_TASK:       "COMPLETE_TASK",
+  WRITE_JOURNAL:       "WRITE_JOURNAL",
+  QUERY_DATA:          "QUERY_DATA",
+  CLARIFICATION_NEEDED:"CLARIFICATION_NEEDED",
+};
+
+const CONFIDENCE_FLOOR = 0.75;
+const MEM_LIMIT = 20;
+function memKey(uid) { return `jess_memory_${uid || "anon"}`; }
+function today() { return new Date().toISOString().split("T")[0]; }
+function nowISO() { return new Date().toISOString(); }
+
+// ─── Parse — safe extraction with fallback ───────────────────────────
+// Tries JSON.parse on the raw agent reply. If that fails OR the parsed
+// object doesn't have a `message` string, treats the WHOLE raw string
+// as the user-visible message with no actions. Also handles the common
+// ```json ... ``` code-fence wrapper that some LLMs add.
+export function parseJessResponse(raw) {
+  const text = String(raw || "").trim();
+  if (!text) return { message: "", actions: [], _fallback: true };
+  // Strip ```json fences if present.
+  const fenced = text
+    .replace(/^```(?:json)?\s*/i, "")
+    .replace(/\s*```\s*$/g, "")
+    .trim();
+  try {
+    const j = JSON.parse(fenced);
+    const msg = typeof j?.message === "string" ? j.message : "";
+    const actions = Array.isArray(j?.actions) ? j.actions : [];
+    if (!msg && actions.length === 0) {
+      // Parsed an object but no usable content — degrade.
+      return { message: text, actions: [], _fallback: true };
+    }
+    return { message: msg || text, actions, _fallback: false };
+  } catch {
+    return { message: text, actions: [], _fallback: true };
+  }
+}
+
+// ─── Dispatch a single action to its Base44 entity ──────────────────
+async function executeAction(action, userId) {
+  if (!action || typeof action !== "object") {
+    throw new Error("invalid action");
+  }
+  const type = action.type;
+  const data = action.data || {};
+  const Ent = base44?.entities || {};
+  const meta = { user_id: userId, created_by: userId };
+
+  switch (type) {
+    // ── Daily check-in (mood / energy / sleep / combined) ──
+    case ACTION_TYPES.LOG_MOOD:
+    case ACTION_TYPES.LOG_ENERGY:
+    case ACTION_TYPES.LOG_SLEEP:
+    case ACTION_TYPES.LOG_DAILY_CHECKIN: {
+      if (!Ent.DailyCheckins) throw new Error("DailyCheckins entity not available");
+      const payload = { ...meta, date: data.date || today() };
+      if (data.mood != null)         payload.mood = Number(data.mood);
+      if (data.energy != null)       payload.energy = Number(data.energy);
+      if (data.sleep_hours != null)  payload.sleep_hours = Number(data.sleep_hours);
+      // Allow flexible synonyms from the LLM.
+      if (data.sleep != null && payload.sleep_hours == null) payload.sleep_hours = Number(data.sleep);
+      return await Ent.DailyCheckins.create(payload);
+    }
+
+    // ── Symptom ──
+    case ACTION_TYPES.LOG_SYMPTOM: {
+      if (!Ent.SymptomLogs) throw new Error("SymptomLogs entity not available");
+      const payload = {
+        ...meta,
+        date: data.date || today(),
+        symptom: data.symptom || data.name || "unspecified",
+        severity: data.severity != null ? Number(data.severity) : null,
+        notes: data.notes || "",
+      };
+      return await Ent.SymptomLogs.create(payload);
+    }
+
+    // ── Meal ──
+    case ACTION_TYPES.LOG_MEAL: {
+      if (!Ent.MealLog) throw new Error("MealLog entity not available");
+      const payload = {
+        ...meta,
+        date: data.date || today(),
+        meal_type: data.meal_type || data.mealType || "snack",
+        food_items: data.food_items || data.items || data.food || "",
+        notes: data.notes || "",
+      };
+      return await Ent.MealLog.create(payload);
+    }
+
+    // ── Meal plan (batch over N upcoming days) ──
+    case ACTION_TYPES.CREATE_MEAL_PLAN: {
+      if (!Ent.MealLog) throw new Error("MealLog entity not available");
+      const plan = Array.isArray(data.plan) ? data.plan
+                : Array.isArray(data.meals) ? data.meals
+                : [];
+      if (plan.length === 0) throw new Error("empty meal plan");
+      const out = [];
+      for (const item of plan) {
+        try {
+          const payload = {
+            ...meta,
+            date: item.date || today(),
+            meal_type: item.meal_type || item.mealType || "snack",
+            food_items: item.food_items || item.items || item.food || "",
+            notes: item.notes || "",
+          };
+          const r = await Ent.MealLog.create(payload);
+          out.push(r);
+        } catch (e) { out.push({ error: String(e?.message || e) }); }
+      }
+      return out;
+    }
+
+    // ── Hydration ──
+    case ACTION_TYPES.LOG_HYDRATION: {
+      if (!Ent.HydrationLog) throw new Error("HydrationLog entity not available");
+      const payload = {
+        ...meta,
+        date: data.date || today(),
+        cups: data.cups != null ? Number(data.cups) : (data.glasses != null ? Number(data.glasses) : 1),
+        notes: data.notes || "",
+      };
+      return await Ent.HydrationLog.create(payload);
+    }
+
+    // ── Medication ──
+    case ACTION_TYPES.LOG_MEDICATION: {
+      if (!Ent.MedicationLogs) throw new Error("MedicationLogs entity not available");
+      const payload = {
+        ...meta,
+        medication_name: data.medication_name || data.name || "medication",
+        dose: data.dose || "",
+        taken_at: data.taken_at || nowISO(),
+        notes: data.notes || "",
+      };
+      return await Ent.MedicationLogs.create(payload);
+    }
+
+    // ── Supplement ──
+    case ACTION_TYPES.LOG_SUPPLEMENT: {
+      if (!Ent.SupplementLog) throw new Error("SupplementLog entity not available");
+      const payload = {
+        ...meta,
+        supplement_name: data.supplement_name || data.name || "supplement",
+        dose: data.dose || "",
+        taken_at: data.taken_at || nowISO(),
+        notes: data.notes || "",
+      };
+      return await Ent.SupplementLog.create(payload);
+    }
+
+    // ── Habit ──
+    case ACTION_TYPES.LOG_HABIT: {
+      if (!Ent.HabitLogs) throw new Error("HabitLogs entity not available");
+      const payload = {
+        ...meta,
+        date: data.date || today(),
+        habit_name: data.habit_name || data.name || "habit",
+        completed: data.completed !== false,
+        notes: data.notes || "",
+      };
+      return await Ent.HabitLogs.create(payload);
+    }
+
+    // ── Task ──
+    case ACTION_TYPES.CREATE_TASK: {
+      if (!Ent.PersonalTasks) throw new Error("PersonalTasks entity not available");
+      const payload = {
+        ...meta,
+        title: data.title || data.text || "Untitled task",
+        due_date: data.due_date || data.date || today(),
+        time_of_day: data.time_of_day || data.timeOfDay || "",
+        notes: data.notes || "",
+        completed: false,
+      };
+      return await Ent.PersonalTasks.create(payload);
+    }
+
+    case ACTION_TYPES.COMPLETE_TASK: {
+      if (!Ent.PersonalTasks) throw new Error("PersonalTasks entity not available");
+      const id = data.id || data.taskId;
+      if (!id) throw new Error("missing task id");
+      return await Ent.PersonalTasks.update(id, { completed: true, completed_at: nowISO() });
+    }
+
+    // ── Journal ──
+    case ACTION_TYPES.WRITE_JOURNAL: {
+      if (!Ent.JournalEntries) throw new Error("JournalEntries entity not available");
+      const payload = {
+        ...meta,
+        date: data.date || today(),
+        content: data.content || data.text || data.body || "",
+        mood: data.mood != null ? Number(data.mood) : null,
+        session_date: data.session_date || today(),
+      };
+      if (!payload.content) throw new Error("empty journal content");
+      return await Ent.JournalEntries.create(payload);
+    }
+
+    // ── Pure read intent — no write to perform ──
+    case ACTION_TYPES.QUERY_DATA:
+      return { ok: true, noOp: true, reason: "query intent, no write" };
+
+    case ACTION_TYPES.CLARIFICATION_NEEDED:
+      return { ok: true, noOp: true, reason: "agent asked for clarification" };
+
+    default:
+      throw new Error(`unknown action type: ${type}`);
+  }
+}
+
+// ─── Execute a batch of actions (confidence-gated) ──────────────────
+// Returns one result per action: { action, success, result?, error? }.
+// Confidence < 0.75 actions are skipped (and tagged as such) so the
+// LLM can't accidentally write garbage.
+export async function executeJessActions(actions = [], userId) {
+  if (!Array.isArray(actions) || actions.length === 0) return [];
+  const results = [];
+  for (const action of actions) {
+    const conf = Number(action?.confidence);
+    if (!Number.isFinite(conf) || conf < CONFIDENCE_FLOOR) {
+      results.push({
+        action,
+        success: false,
+        skipped: true,
+        reason: `confidence ${Number.isFinite(conf) ? conf : "n/a"} below ${CONFIDENCE_FLOOR}`,
+      });
+      continue;
+    }
+    if (!userId) {
+      results.push({ action, success: false, error: "no userId" });
+      continue;
+    }
+    try {
+      const result = await executeAction(action, userId);
+      results.push({ action, result, success: true });
+    } catch (e) {
+      results.push({ action, error: String(e?.message || e), success: false });
+    }
+  }
+  return results;
+}
+
+// ─── Memory ─────────────────────────────────────────────────────────
+// One breadcrumb per user turn: what they said, what Jess replied, and
+// which action types were successfully executed. Rolling 20 entries.
+export function updateJessMemory(memory = [], results = [], userMessage = "", jessReply = "") {
+  const successful = (results || [])
+    .filter((r) => r && r.success)
+    .map((r) => r?.action?.type)
+    .filter(Boolean);
+  const entry = {
+    ts: Date.now(),
+    userMessage: String(userMessage || "").slice(0, 120),
+    jessReply:   String(jessReply || "").slice(0, 120),
+    actionsExecuted: successful,
+  };
+  const prev = Array.isArray(memory) ? memory : [];
+  return [entry, ...prev].slice(0, MEM_LIMIT);
+}
+
+export function loadJessMemory(userId) {
+  if (typeof window === "undefined" || !window.localStorage) return [];
+  try {
+    const raw = window.localStorage.getItem(memKey(userId));
+    if (!raw) return [];
+    const j = JSON.parse(raw);
+    return Array.isArray(j) ? j.slice(0, MEM_LIMIT) : [];
+  } catch { return []; }
+}
+
+export function saveJessMemory(userId, memory) {
+  if (typeof window === "undefined" || !window.localStorage) return;
+  try {
+    window.localStorage.setItem(memKey(userId), JSON.stringify(memory || []));
+  } catch { /* swallow quota */ }
+}
+
+// Compact memory context string for the system prompt. Returns "" when
+// there's nothing memorable.
+export function buildMemoryContextLine(memory = []) {
+  if (!Array.isArray(memory) || memory.length === 0) return "";
+  const lines = memory.slice(0, 8).map((m) => {
+    const acts = (m.actionsExecuted || []).join(", ") || "no actions";
+    return `- "${m.userMessage}" → [${acts}]`;
+  });
+  return `Recent turns (newest first, last 8 of ${memory.length}):\n${lines.join("\n")}`;
+}
+
+// ─── Confirmation chip copy ─────────────────────────────────────────
+// Short one-line label per action type for the inline confirmation
+// chip the chat shell shows below Jess's message after a successful
+// write. Used by both text chat and voice mode.
+export function chipLabelForAction(type, data) {
+  switch (type) {
+    case ACTION_TYPES.LOG_MOOD:           return "✓ Logged your mood";
+    case ACTION_TYPES.LOG_ENERGY:         return "✓ Logged your energy";
+    case ACTION_TYPES.LOG_SLEEP:          return "✓ Logged your sleep";
+    case ACTION_TYPES.LOG_DAILY_CHECKIN:  return "✓ Logged your check-in";
+    case ACTION_TYPES.LOG_SYMPTOM:        return `✓ Logged ${data?.symptom || "symptom"}`;
+    case ACTION_TYPES.LOG_MEAL:           return "✓ Logged your meal";
+    case ACTION_TYPES.CREATE_MEAL_PLAN:   return "✓ Saved your meal plan";
+    case ACTION_TYPES.LOG_HYDRATION:      return "✓ Logged hydration";
+    case ACTION_TYPES.LOG_MEDICATION:     return `✓ Logged ${data?.medication_name || "medication"}`;
+    case ACTION_TYPES.LOG_SUPPLEMENT:     return `✓ Logged ${data?.supplement_name || "supplement"}`;
+    case ACTION_TYPES.LOG_HABIT:          return `✓ Logged ${data?.habit_name || "habit"}`;
+    case ACTION_TYPES.CREATE_TASK:        return `✓ Added task`;
+    case ACTION_TYPES.COMPLETE_TASK:      return `✓ Marked task done`;
+    case ACTION_TYPES.WRITE_JOURNAL:      return `✓ Saved to journal`;
+    default:                              return null;
+  }
+}

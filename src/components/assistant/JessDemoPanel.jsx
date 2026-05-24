@@ -27,6 +27,10 @@ import {
 import ReactMarkdown from "react-markdown";
 import JessSettingsSheet from "./JessSettingsSheet";
 import JessVoiceLogger from "./JessVoiceLogger";
+// Sprint 5 — Voice Companion replaces the Voice Logger sheet for the
+// mic button. JessVoiceLogger stays in the repo (not deleted) but is
+// no longer reachable from any UI path.
+import JessVoiceMode from "./JessVoiceMode";
 import {
   extractMemoriesFromConversation,
   loadTopMemories,
@@ -41,12 +45,10 @@ import {
 // Body Today chip strip (Phase 2 P2-4). See src/data/phaseRecs.js.
 import { PHASE_RECS, NEXT_PHASE_PREVIEW } from "@/data/phaseRecs";
 // Jess v2 J2-3 — sensitive topic classifier + referral copy.
+// (Legacy URGENCY_REFERRAL / DISTRESS_REFERRAL / classifyJessInput
+// imports trimmed after Sprint 5 — the new classifySensitiveTopic +
+// getCrisisConfig API supersedes them.)
 import {
-  classifyJessInput,
-  modeDirectiveFor,
-  URGENCY_REFERRAL,
-  DISTRESS_REFERRAL,
-  CRISIS_CATEGORIES,
   classifySensitiveTopic,
   getCrisisConfig,
   GROUNDING_5_4_3_2_1,
@@ -57,6 +59,16 @@ import {
   feedbackDirective,
   REASONS as FEEDBACK_REASONS,
 } from "@/services/jessFeedback";
+// Sprint 5 — Action Layer envelope + executor
+import {
+  parseJessResponse,
+  executeJessActions,
+  updateJessMemory,
+  loadJessMemory,
+  saveJessMemory,
+  buildMemoryContextLine,
+  chipLabelForAction,
+} from "@/services/jessActions";
 import {
   fetchWeeklyStats,
   buildWeeklyStatsContext,
@@ -730,9 +742,20 @@ function JessDemoPanelInner() {
   const [settingsOpen, setSettingsOpen] = useState(false);
   // Feature 3 — full-screen voice logger overlay.
   const [voiceLoggerOpen, setVoiceLoggerOpen] = useState(false);
+  // Sprint 5 — JessVoiceMode (Voice Companion) is the active mic UI.
+  const [voiceModeOpen, setVoiceModeOpen] = useState(false);
   // Chat state.
   const [conversationId, setConversationId] = useState(null);
   const [messages, setMessages] = useState([]);
+  // Sprint 5 — Action Layer memory. Rolling-20 breadcrumb of the
+  // user's recent turns + which actions Jess executed. Persisted to
+  // localStorage `jess_memory_<userId>` and injected into the next
+  // outgoing user turn via the [MEMORY CONTEXT] block in the system
+  // envelope.
+  const [jessMemory, setJessMemory] = useState([]);
+  // Pair each outgoing user message with the assistant reply that
+  // streams back so updateJessMemory can record the right user turn.
+  const pendingUserMsgRef = useRef(null);
   // QA Fix 4 — feedback state lives OUTSIDE the messages array.
   // Previously we tried to add `rating` / `ratingReason` directly to the
   // msg object, but the base44 streaming handler rebuilds messages on
@@ -788,6 +811,10 @@ function JessDemoPanelInner() {
   // `[jess-subscribe]` line for, so the breadcrumb fires once per
   // message instead of once per stream chunk (~24x).
   const loggedSubscribeIdsRef = useRef(new Set());
+  // Sprint 5 — assistant ids for which we've already parsed the JSON
+  // envelope + executed actions. Streaming sends the same id many
+  // times; we only want to fire writes once per reply.
+  const actionsFiredRef = useRef(new Set());
 
   // ── Load data ──────────────────────────────────────────────────────────
   useEffect(() => {
@@ -797,6 +824,10 @@ function JessDemoPanelInner() {
         const u = await base44.auth.me().catch(() => null);
         if (!u?.id || cancelled) return;
         setUser(u);
+        // Sprint 5 — hydrate the Action Layer memory ring once we know
+        // the user's id. Failure-tolerant (loadJessMemory returns [] on
+        // any storage hiccup).
+        try { setJessMemory(loadJessMemory(u.id)); } catch {}
         const today = new Date().toISOString().split("T")[0];
         const [profiles, ciToday, recent, ts, syms, jrn] = await Promise.all([
           base44.entities.UserProfile.filter({ user_id: u.id }).catch(() => []),
@@ -1154,12 +1185,69 @@ function JessDemoPanelInner() {
           // QA round 3 — strip spurious "Done — I logged X" tool
           // confirmation lines BEFORE chip parsing so the chip parser
           // sees clean prose.
-          const sanitized = stripToolConfirmations(raw);
+          // Sprint 5 — try parsing the streamed reply as the JSON
+          // action envelope FIRST. If it parses cleanly, use the
+          // envelope's `message` field as the visible bubble and queue
+          // its actions for execution. If it doesn't parse (mid-stream
+          // chunk, or LLM degraded to plain text), fall back to the
+          // legacy tool-strip + chip-split pipeline.
+          let envelopeParsed = null;
+          let actionsToFire = [];
+          let envelopeMessage = null;
+          try {
+            const tryParse = parseJessResponse(raw);
+            if (!tryParse._fallback) {
+              envelopeParsed = tryParse;
+              envelopeMessage = tryParse.message;
+              actionsToFire = tryParse.actions || [];
+            }
+          } catch { /* swallow — fall back below */ }
+
+          const baseText = envelopeMessage != null ? envelopeMessage : raw;
+          const sanitized = stripToolConfirmations(baseText);
           // Strip trailing JSON suggestion-chip array (e.g. the model
           // ends its reply with `["Try journaling","Take a walk"]`).
           // The chips themselves render as tappable buttons under the
           // bubble; only the prose above belongs in the bubble text.
           const { text: content, chips } = splitChipsFromText(sanitized);
+
+          // Sprint 5 — fire actions ONCE per assistant message id, as
+          // soon as we have a clean envelope. Streaming sends the same
+          // id many times; without this guard we'd write each action
+          // 20+ times.
+          if (envelopeParsed && !actionsFiredRef.current.has(m.id) && user?.id) {
+            actionsFiredRef.current.add(m.id);
+            const pairedUserMsg = pendingUserMsgRef.current || "";
+            pendingUserMsgRef.current = null;
+            // Fire and forget — chat doesn't need to await the writes.
+            executeJessActions(actionsToFire, user.id)
+              .then((results) => {
+                const successful = (results || []).filter((r) => r && r.success);
+                // Append a chip-confirmation bubble below Jess's
+                // message for every successful write.
+                if (successful.length > 0) {
+                  setMessages((prev) => [
+                    ...prev,
+                    ...successful.map((r) => ({
+                      id: uid(),
+                      role: "jess",
+                      type: "action-chip",
+                      text: chipLabelForAction(r.action?.type, r.action?.data) || "✓ Done",
+                      time: fmtTimeAmPm(),
+                    })),
+                  ]);
+                }
+                // Update + persist memory.
+                setJessMemory((prev) => {
+                  const next = updateJessMemory(prev, results, pairedUserMsg, envelopeMessage || "");
+                  try { saveJessMemory(user.id, next); } catch {}
+                  return next;
+                });
+              })
+              .catch((e) => {
+                try { console.warn("[jess-actions] execute threw:", String(e?.message || e)); } catch {}
+              });
+          }
           // QA round 6 — log once per messageId, not on every stream
           // chunk. Base44 emits ~24 chunks per assistant reply; the
           // bubble updates in place but the breadcrumb was firing on
@@ -1543,7 +1631,32 @@ function JessDemoPanelInner() {
         } catch { /* swallow */ }
       }
 
-      const prefix = [feedbackLine, weeklyStatsLine, modeLine, groundingLine && `[GROUNDING SCRIPT — PREPENDED TO YOUR REPLY]\n${groundingLine}`].filter(Boolean).join("\n\n---\n\n");
+      // Sprint 5 — Action Layer envelope + memory line. Every outgoing
+      // turn carries the JSON-envelope instruction so Jess returns a
+      // parseable response. Memory line summarises the last-8 user
+      // turns + which actions Jess executed, so she remembers across
+      // sessions (also persisted to localStorage `jess_memory_<userId>`).
+      const memoryLine = (() => {
+        try { return buildMemoryContextLine(jessMemory) || ""; }
+        catch { return ""; }
+      })();
+      const actionEnvelopeLine =
+        "[ACTION LAYER — RESPONSE FORMAT REMINDER]\n" +
+        "Your reply MUST be a JSON object: { \"message\": \"…\", \"actions\": [{ type, confidence, data }] }. " +
+        "Actions are written to entities when confidence ≥ 0.75. " +
+        "Types: LOG_MOOD, LOG_ENERGY, LOG_SLEEP, LOG_DAILY_CHECKIN, LOG_SYMPTOM, LOG_MEAL, " +
+        "CREATE_MEAL_PLAN, LOG_HYDRATION, LOG_MEDICATION, LOG_SUPPLEMENT, LOG_HABIT, " +
+        "CREATE_TASK, COMPLETE_TASK, WRITE_JOURNAL, QUERY_DATA, CLARIFICATION_NEEDED. " +
+        "If you are unsure, return CLARIFICATION_NEEDED with confidence < 0.75 — never guess and write.\n\n" +
+        (memoryLine ? `[MEMORY CONTEXT]\n${memoryLine}` : "[MEMORY CONTEXT]\n(no prior turns)");
+
+      const prefix = [
+        feedbackLine,
+        weeklyStatsLine,
+        modeLine,
+        groundingLine && `[GROUNDING SCRIPT — PREPENDED TO YOUR REPLY]\n${groundingLine}`,
+        actionEnvelopeLine,
+      ].filter(Boolean).join("\n\n---\n\n");
       let outgoing;
       if (!contextInjectedRef.current.has(cid)) {
         contextInjectedRef.current.add(cid);
@@ -1551,6 +1664,10 @@ function JessDemoPanelInner() {
       } else {
         outgoing = prefix ? `${prefix}\n\n---\n\n${msg}` : msg;
       }
+      // Sprint 5 — record the outgoing user message so the streaming
+      // handler can pair it with the assistant reply when actions
+      // execute (for the memory ring breadcrumb).
+      pendingUserMsgRef.current = msg;
       await base44.agents.addMessage(convo, { role: "user", content: outgoing });
       // After the agent reply starts streaming, queue the per-category
       // referral card (if this category has one). Grief + severe
@@ -1823,8 +1940,11 @@ function JessDemoPanelInner() {
         </button>
         <button
           type="button"
-          onClick={() => setVoiceLoggerOpen(true)}
-          aria-label="Voice logger"
+          // Sprint 5 — mic now opens JessVoiceMode (full-screen voice
+          // companion). The old JessVoiceLogger sheet is no longer
+          // reachable from any UI element.
+          onClick={() => setVoiceModeOpen(true)}
+          aria-label="Talk to Jess"
           style={{
             width: 40, height: 40, borderRadius: 9999, border: "none",
             background: C.blush, color: C.espresso, cursor: "pointer",
@@ -2066,11 +2186,26 @@ function JessDemoPanelInner() {
         onProfileChange={(p) => setProfile(p)}
       />
 
-      {/* Feature 3 — Voice Logger overlay */}
+      {/* Feature 3 — Voice Logger overlay (legacy; no longer reachable
+          from any UI element after Sprint 5. Mounted here so existing
+          deep-link triggers, if any, still work; safe to delete later.) */}
       <JessVoiceLogger
         open={voiceLoggerOpen}
         onClose={() => setVoiceLoggerOpen(false)}
         user={user}
+      />
+
+      {/* Sprint 5 — Voice Companion overlay. Wired to the mic button
+          in the panel header. Full-screen espresso, pulse circle, Web
+          Speech API, parses the same Sprint 5 JSON envelope and
+          executes the same actions as text chat. */}
+      <JessVoiceMode
+        open={voiceModeOpen}
+        onClose={() => setVoiceModeOpen(false)}
+        user={user}
+        profile={profile}
+        phase={phase}
+        cycleDay={dayInCycle}
       />
     </div>
   );
@@ -2751,6 +2886,34 @@ function MessageNode({ msg, shell, onChip, onToggleQuickLog, feedback, onFeedbac
           color: C.muted,
         }}>{msg.text || "Resumed"}</span>
         <span style={{ flex: 1, height: 1, background: C.border, opacity: 0.55 }} />
+      </div>
+    );
+  }
+  // Sprint 5 — Action Layer confirmation chip. Small inline pill that
+  // confirms what Jess wrote to entities, e.g. "✓ Logged your mood".
+  // Sage tint so it reads as a positive confirmation, not a question.
+  if (msg.type === "action-chip") {
+    return (
+      <div style={{
+        display: "flex", flexDirection: "column", alignItems: "flex-start",
+        marginTop: 2,
+      }}>
+        <span style={{
+          display: "inline-flex", alignItems: "center", gap: 6,
+          padding: "5px 12px", borderRadius: 9999,
+          background: "rgba(143,175,143,0.20)",
+          color: "#3D6B3D",
+          border: "1px solid rgba(143,175,143,0.45)",
+          fontFamily: "'Inter', sans-serif",
+          fontSize: 12, fontWeight: 700,
+          letterSpacing: "0.02em",
+        }}>{msg.text || "✓ Done"}</span>
+        {msg.time && (
+          <span style={{
+            fontSize: 10, color: C.muted, marginTop: 3,
+            fontFamily: "'Inter', sans-serif",
+          }}>Jess · {msg.time}</span>
+        )}
       </div>
     );
   }
