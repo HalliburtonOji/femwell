@@ -52,14 +52,26 @@ export default class JessErrorBoundary extends React.Component {
   }
 
   componentDidCatch(error, info) {
+    const record = {
+      label: this.props.label || "Jess surface",
+      message: String(error?.message || error),
+      stack: String(error?.stack || "").slice(0, 2000),
+      componentStack: String(info?.componentStack || "").slice(0, 1200),
+      ts: new Date().toISOString(),
+      href: typeof window !== "undefined" ? String(window.location?.href || "") : "",
+    };
     try {
       // eslint-disable-next-line no-console
-      console.error("[jess-error-boundary]", {
-        label: this.props.label || "Jess surface",
-        message: String(error?.message || error),
-        componentStack: String(info?.componentStack || "").slice(0, 600),
-      });
+      console.error("[jess-error-boundary]", record);
     } catch { /* swallow logger failure */ }
+    // P0 hardening — persist the most recent crash so we can fish it
+    // out of localStorage on the next page load even if the user
+    // closes devtools. Single slot (latest only) to avoid bloat.
+    try {
+      if (typeof window !== "undefined" && window.localStorage) {
+        window.localStorage.setItem("jess_last_crash", JSON.stringify(record));
+      }
+    } catch { /* swallow quota / private mode */ }
   }
 
   retry = () => {

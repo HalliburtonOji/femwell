@@ -1432,20 +1432,35 @@ function JessDemoPanelInner() {
     //     mode directive baked into the outgoing message. Surfaces
     //     that have a referralCard render it after the agent reply
     //     starts streaming.
-    const category = classifySensitiveTopic(msg);
-    const crisisCfg = category ? getCrisisConfig(category) : null;
+    //
+    // P0 hardening — the entire classifier path is wrapped so a
+    // single throw in the service module can never take down the
+    // panel. On any classifier failure, fall back to "no category"
+    // and let the conversation continue normally.
+    let category = null;
+    let crisisCfg = null;
+    try {
+      category  = classifySensitiveTopic(msg) || null;
+      crisisCfg = category ? (getCrisisConfig(category) || null) : null;
+    } catch (e) {
+      // eslint-disable-next-line no-console
+      console.error("[jess-crisis] classifier threw:", e?.message || e);
+      category  = null;
+      crisisCfg = null;
+    }
 
-    if (crisisCfg?.suppressAI) {
-      const card = crisisCfg.referralCard;
+    if (crisisCfg && crisisCfg.suppressAI === true) {
+      const card = crisisCfg.referralCard || {};
+      const lines = Array.isArray(card.lines) ? card.lines : [];
       setMessages((prev) => [...prev, {
         id: uid(),
         role: "jess",
         type: "referral",
         variant: category, // "urgent_crisis"
-        title: card?.title || "You're not alone",
-        lines: card?.lines || [],
+        title: card.title || "You're not alone",
+        lines,
         // Back-compat: also keep `text` so older renderers still work.
-        text: (card?.lines || []).join(" · "),
+        text: lines.join(" · "),
         time: fmtTimeAmPm(),
       }]);
       return; // do NOT call the agent
@@ -1525,18 +1540,20 @@ function JessDemoPanelInner() {
       // The delay (~1.8s) lets the typing indicator transition into
       // the first chunk of the agent's reply before the card lands,
       // so the card feels like a footnote rather than an interruption.
-      if (crisisCfg?.referralCard) {
-        const card = crisisCfg.referralCard;
+      //
+      // P0 hardening — defensive across the whole append.
+      const cardCfg = crisisCfg && crisisCfg.referralCard;
+      if (cardCfg) {
+        const lines = Array.isArray(cardCfg.lines) ? cardCfg.lines : [];
         setTimeout(() => {
           setMessages((prev) => [...prev, {
             id: uid(),
             role: "jess",
             type: "referral",
-            variant: category, // exact category string
-            title: card.title,
-            lines: card.lines,
-            // back-compat string for older renderers
-            text: card.lines.join(" · "),
+            variant: category,
+            title: cardCfg.title || "You're not alone",
+            lines,
+            text: lines.join(" · "),
             time: fmtTimeAmPm(),
           }]);
         }, 1800);
