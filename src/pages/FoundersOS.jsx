@@ -226,8 +226,13 @@ export default function FoundersOS() {
     );
   }
   if (!ALLOWED.has(email)) {
+    // /Ideas now lands here for everyone — gate copy reads as
+    // founder-only rather than "not authorised" (which could be
+    // mistaken for a session error).
     return (
-      <div style={{ padding: 40, textAlign: "center", color: MUTED }}>Not authorised</div>
+      <div style={{ padding: 40, textAlign: "center", color: MUTED }}>
+        This page is for the FemWell founder.
+      </div>
     );
   }
 

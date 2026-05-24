@@ -80,10 +80,14 @@ import Community from './pages/Community';
 import Planner from './pages/Planner';
 import Insights from './pages/Insights.jsx';
 import OneShotThankYou from './pages/OneShotThankYou';
-import Ideas from './pages/Ideas';
-// /Founders renders FoundersOS — fresh dashboard, no Ideas / Design Lab
-// reuse. The previous Founders.jsx has been deleted; this is the only
-// component that owns the /Founders route.
+// `Ideas` (the Design Lab component) is no longer routed — Halli's
+// menu links go to /Ideas, and she needs that path to land on Founder
+// OS, not on the old Design Lab. We keep the import commented so the
+// file isn't removed by accident; if it ever needs to be reachable
+// again, mount it at /DesignLab or similar.
+// import Ideas from './pages/Ideas';
+// /Ideas AND /Founders both render FoundersOS. /Founders is kept as
+// an alias so any old bookmarks still work.
 import FoundersOS from './pages/FoundersOS';
 import __Layout from './Layout.jsx';
 
@@ -121,7 +125,10 @@ export const PAGES = {
     "Planner": Planner,
     "Insights": Insights,
     "OneShotThankYou": OneShotThankYou,
-    "Ideas": Ideas,
+    // /Ideas now renders FoundersOS — that's the path the in-app
+    // menu link points at. /Founders keeps the same component as a
+    // direct alias.
+    "Ideas": FoundersOS,
     "Founders": FoundersOS,
 }
 
