@@ -85,6 +85,7 @@ import VoiceScheduler, { VoiceMicButton } from "@/components/planner/VoiceSchedu
 import JessPatternNudge from "@/components/jess/JessPatternNudge";
 import JessPhasePrep from "@/components/jess/JessPhasePrep";
 import JessWeeklySummary from "@/components/jess/JessWeeklySummary";
+import JessErrorBoundary from "@/components/jess/JessErrorBoundary";
 import { Settings as SettingsIcon } from "lucide-react";
 
 // Layers + X imported separately so the DEV pill below can use them
@@ -899,20 +900,25 @@ export default function PlannerV2Shell({
           first-open greeting surface; rendering JessDailyOpener here
           duplicated the same agent call + UI on the same day. */}
 
-      {/* Jess v2 J2-4 — Pattern Nudge. Surfaces a single, gentle
-          observation when the last 3+ days of check-ins show low
-          mood / energy / sleep or a sudden mood drop. Max 1/day. */}
-      <JessPatternNudge user={user} profile={profileProp} />
+      {/* Sprint 3 S3-3 — each passive Jess card is wrapped in a quiet
+          error boundary. A crash in one card never breaks the row
+          stack around it; the user sees a small "Jess is taking a
+          moment — Try again" placeholder for that card only. */}
 
-      {/* Jess v2 J2-6 — Predictive Phase Prep. Shows a small "your
-          next phase is coming" card 3-4 days before a cycle phase
-          transition. Hidden for non-cycle life stages. Cached weekly. */}
-      <JessPhasePrep user={user} profile={profileProp} />
+      {/* Jess v2 J2-4 — Pattern Nudge. */}
+      <JessErrorBoundary variant="quiet" label="JessPatternNudge">
+        <JessPatternNudge user={user} profile={profileProp} />
+      </JessErrorBoundary>
 
-      {/* Jess v2 J2-8 — Weekly Health Summary. Sunday-only reflection
-          on the last 7 days of check-ins / habits / symptoms / journal.
-          Cached weekly. Hidden mid-week and after dismissal. */}
-      <JessWeeklySummary user={user} profile={profileProp} />
+      {/* Jess v2 J2-6 — Predictive Phase Prep. */}
+      <JessErrorBoundary variant="quiet" label="JessPhasePrep">
+        <JessPhasePrep user={user} profile={profileProp} />
+      </JessErrorBoundary>
+
+      {/* Jess v2 J2-8 — Weekly Health Summary. */}
+      <JessErrorBoundary variant="quiet" label="JessWeeklySummary">
+        <JessWeeklySummary user={user} profile={profileProp} />
+      </JessErrorBoundary>
 
       {/* Phase 3 — rows are rendered in user-defined order. The
           NODES_BY_KEY map above defines each row's JSX; PlannerSettingsSheet

@@ -36,6 +36,7 @@ import SealedLetters from './pages/SealedLetters';
 import BookReader from './pages/BookReader';
 import UnifiedTabLogger from './components/UnifiedTabLogger';
 import MorningBriefOverlay from './components/MorningBriefOverlay';
+import JessErrorBoundary from '@/components/jess/JessErrorBoundary';
 
 
 const { Pages, Layout, mainPage } = pagesConfig;
@@ -156,14 +157,18 @@ const AuthenticatedApp = () => {
           open per day. Dismissal sets a localStorage flag so it stays
           gone until tomorrow. */}
       {showBrief && briefUser && (
-        <MorningBriefOverlay
-          user={briefUser}
-          profile={briefProfile}
-          onDismiss={() => {
-            markMorningBriefSeen(briefUser.id);
-            setShowBrief(false);
-          }}
-        />
+        // Sprint 3 S3-3 — variant="hidden" so a crash silently skips
+        // the overlay rather than blocking the rest of the app.
+        <JessErrorBoundary variant="hidden" label="MorningBriefOverlay">
+          <MorningBriefOverlay
+            user={briefUser}
+            profile={briefProfile}
+            onDismiss={() => {
+              markMorningBriefSeen(briefUser.id);
+              setShowBrief(false);
+            }}
+          />
+        </JessErrorBoundary>
       )}
     <AnimatePresence mode="popLayout" initial={false}>
       <motion.div

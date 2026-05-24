@@ -6,6 +6,7 @@ import JotterCard from "../components/journal/JotterCard";
 import NewEntrySheet from "../components/journal/NewEntrySheet";
 import JournalInsightsTab from "../components/journal/JournalInsightsTab";
 import JessJournalPrompt from "../components/journal/JessJournalPrompt";
+import JessErrorBoundary from "@/components/jess/JessErrorBoundary";
 
 const FILTER_TYPES = [
   { id: "all",         label: "All" },
@@ -263,20 +264,24 @@ export default function Journal() {
         {/* ── JOURNAL TAB ── */}
         {activeTab === "journal" && (
           <>
-            {/* Jess prompt card — Feature 4, Wing #1 */}
+            {/* Jess prompt card — Feature 4, Wing #1
+                Sprint 3 S3-3 — quiet error boundary so a crash in the
+                Jess prompt never breaks the Journal page around it. */}
             {user && (
-              <JessJournalPrompt
-                user={user}
-                profile={profile}
-                phase={phase}
-                lastEntry={entries[0] || null}
-                onUsePrompt={(promptText) => {
-                  // Pre-fill the New Entry sheet with the prompt + a blank
-                  // line so the user lands on a fresh writing line below.
-                  setSeedText(`${promptText}\n\n`);
-                  setShowNewEntry(true);
-                }}
-              />
+              <JessErrorBoundary variant="quiet" label="JessJournalPrompt">
+                <JessJournalPrompt
+                  user={user}
+                  profile={profile}
+                  phase={phase}
+                  lastEntry={entries[0] || null}
+                  onUsePrompt={(promptText) => {
+                    // Pre-fill the New Entry sheet with the prompt + a blank
+                    // line so the user lands on a fresh writing line below.
+                    setSeedText(`${promptText}\n\n`);
+                    setShowNewEntry(true);
+                  }}
+                />
+              </JessErrorBoundary>
             )}
 
             {/* Filter pills */}

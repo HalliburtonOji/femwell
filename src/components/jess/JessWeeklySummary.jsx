@@ -62,7 +62,17 @@ export default function JessWeeklySummary({ user, profile }) {
 
   // Sunday only. Use the LOCAL date for the day-of-week so we don't fire
   // on a Saturday-night Z-shifted client. getDay() returns 0 = Sunday.
-  const isSunday = new Date().getDay() === 0;
+  //
+  // Sprint 3 S3-2 — dev/test bypass. Setting
+  // `localStorage.setItem('jess_weekly_force', 'true')` forces the
+  // weekly summary card to fire regardless of day, so QA can verify
+  // the surface without waiting for Sunday. Production users are
+  // unaffected (the key is only ever set manually).
+  const forceFlag = (() => {
+    try { return window.localStorage?.getItem("jess_weekly_force") === "true"; }
+    catch { return false; }
+  })();
+  const isSunday = new Date().getDay() === 0 || forceFlag;
 
   const cacheKey = user?.id ? `jess_weekly_summary_${user.id}_${weekKey()}` : null;
 

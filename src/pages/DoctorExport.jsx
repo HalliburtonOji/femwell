@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { base44 } from "@/api/base44Client";
 import { ArrowLeft, Copy, Check, Loader2 } from "lucide-react";
 import JessPatientSummary from "../components/jess/JessPatientSummary";
+import JessErrorBoundary from "@/components/jess/JessErrorBoundary";
 
 function avg(arr) {
   const valid = arr.filter(v => v != null && !isNaN(v));
@@ -193,14 +194,18 @@ export default function DoctorExport() {
           {copied ? "Copied to clipboard!" : "Copy as text"}
         </button>
 
-        {/* Jess clinical summary — Feature 4, Wing #2 */}
+        {/* Jess clinical summary — Feature 4, Wing #2
+            Sprint 3 S3-3 — quiet boundary so a crash in the summary
+            doesn't take down the doctor export. */}
         {user && (
-          <JessPatientSummary
-            user={user}
-            profile={profile}
-            checkins={checkins}
-            symptoms={symptoms}
-          />
+          <JessErrorBoundary variant="quiet" label="JessPatientSummary">
+            <JessPatientSummary
+              user={user}
+              profile={profile}
+              checkins={checkins}
+              symptoms={symptoms}
+            />
+          </JessErrorBoundary>
         )}
 
         {/* Section 1 */}

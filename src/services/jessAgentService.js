@@ -99,21 +99,64 @@ export async function callJessAgent({ system, user }) {
   return { text: fullText, error: fullText ? null : "no-reply" };
 }
 
+// ─── Safe storage layer (Sprint 3 S3-4) ──────────────────────────────────
+//
+// Private/incognito browsing throws on localStorage writes (Safari is
+// strictest — even reads can throw if a quota was exceeded earlier in
+// the session). Wrap reads/writes in try/catch and fall back to a
+// session-only in-memory Map so Jess caches degrade gracefully instead
+// of cratering. The in-memory Map is process-lifetime — it survives
+// re-renders but resets on a hard reload, which is the right trade
+// (we'd rather hit the agent once on a fresh tab than crash trying
+// to write).
+const _memCache = new Map();
+
+export function safeLocalStorageGet(key) {
+  if (!key) return null;
+  if (typeof window !== "undefined") {
+    try {
+      const raw = window.localStorage?.getItem(key);
+      if (raw != null) return raw;
+    } catch { /* fall through to memory */ }
+  }
+  return _memCache.has(key) ? _memCache.get(key) : null;
+}
+
+export function safeLocalStorageSet(key, value) {
+  if (!key) return;
+  // Always write to memory — it's our "last writer wins" record even
+  // when localStorage works, so a subsequent get can fall back to it
+  // if the storage layer goes sideways mid-session.
+  _memCache.set(key, value);
+  if (typeof window !== "undefined") {
+    try { window.localStorage?.setItem(key, value); }
+    catch { /* swallow quota / private mode */ }
+  }
+}
+
+export function safeLocalStorageRemove(key) {
+  if (!key) return;
+  _memCache.delete(key);
+  if (typeof window !== "undefined") {
+    try { window.localStorage?.removeItem(key); }
+    catch { /* swallow */ }
+  }
+}
+
 // ─── Cache helpers ───────────────────────────────────────────────────────
+// loadDailyCache / saveDailyCache are the public API every Jess
+// surface uses; they now go through the safe storage layer above so a
+// crash from localStorage being unavailable doesn't propagate.
 export function loadDailyCache(key) {
-  if (typeof window === "undefined" || !window.localStorage || !key) return null;
-  try {
-    const raw = window.localStorage.getItem(key);
-    if (!raw) return null;
-    return JSON.parse(raw);
-  } catch { return null; }
+  const raw = safeLocalStorageGet(key);
+  if (!raw) return null;
+  try { return JSON.parse(raw); }
+  catch { return null; }
 }
 
 export function saveDailyCache(key, value) {
-  if (typeof window === "undefined" || !window.localStorage || !key) return;
-  try {
-    window.localStorage.setItem(key, JSON.stringify(value));
-  } catch { /* swallow quota */ }
+  try { safeLocalStorageSet(key, JSON.stringify(value)); }
+  catch { /* swallow stringify failure */ }
 }
 
 // "YYYY-MM-DD" using LOCAL date components (BST off-by-one safe).
