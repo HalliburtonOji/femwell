@@ -1,9 +1,13 @@
 import { useState, useEffect } from "react";
 import { base44 } from "@/api/base44Client";
 import { format, parseISO } from "date-fns";
-import { Plus, ChevronLeft, ChevronRight, Droplets, Activity, Heart, Pill, Play, Trash2, Circle, CheckCircle2 } from "lucide-react";
+import { Plus, ChevronLeft, ChevronRight, Droplets, Activity, Heart, Pill, Play, Trash2, Circle, CheckCircle2, Sparkles } from "lucide-react";
 import HabitCard from "../components/habits/HabitCard";
 import StreakMilestoneToast from "../components/habits/StreakMilestoneToast";
+// Ritual Builder — same wizard the Planner Rituals row uses. Mounted
+// at the bottom of this page and opened from the entry button at the
+// top of the Habits tab.
+import RitualBuilder from "../components/planner/RitualBuilder";
 
 const TABS = ["Cycle", "Symptoms", "Habits", "Meds", "Sessions"];
 
@@ -112,6 +116,8 @@ export default function Track() {
   const [newHabitName, setNewHabitName] = useState("");
   const [savingHabit, setSavingHabit] = useState(false);
   const [milestone, setMilestone] = useState(null);
+  // Ritual Builder wizard — same entry point as the Planner Rituals row.
+  const [ritualBuilderOpen, setRitualBuilderOpen] = useState(false);
 
   const [medLogs, setMedLogs] = useState([]);
   const [sessionHistory, setSessionHistory] = useState([]);
@@ -514,6 +520,27 @@ export default function Track() {
               <StreakMilestoneToast streak={milestone.streak} habitName={milestone.habitName} onDismiss={() => setMilestone(null)} />
             )}
 
+            {/* Ritual Builder entry — opens the same wizard as the
+                Planner Rituals row. Dashed-border espresso pill that
+                matches the Planner RowAddFooter style. */}
+            <button
+              type="button"
+              onClick={() => setRitualBuilderOpen(true)}
+              style={{
+                display: "flex", alignItems: "center", justifyContent: "center", gap: 8,
+                width: "100%", padding: "12px 16px", borderRadius: 16,
+                background: "transparent",
+                border: "1.5px dashed rgba(58,44,26,0.30)",
+                color: "var(--plum)", cursor: "pointer",
+                fontFamily: "'Inter', system-ui, sans-serif",
+                fontSize: 13.5, fontWeight: 700,
+                letterSpacing: "0.01em",
+              }}
+            >
+              <Sparkles size={14} style={{ color: "var(--rose-dust)" }} />
+              Build a ritual
+            </button>
+
             {allHabitNames.length > 0 ? allHabitNames.map((habitName) => (
               <HabitCard key={habitName} habit={habitName}
                 habitLogs={habitLogs} allHabitLogs={allHabitLogs}
@@ -653,6 +680,13 @@ export default function Track() {
           </div>
         )}
       </div>
+
+      {/* Ritual Builder wizard — opened from the Habits tab entry button. */}
+      <RitualBuilder
+        open={ritualBuilderOpen}
+        onClose={() => setRitualBuilderOpen(false)}
+        userId={user?.id}
+      />
     </div>
   );
 }
