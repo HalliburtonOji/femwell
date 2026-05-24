@@ -41,6 +41,7 @@ export const ACTION_TYPES = {
   CREATE_TASK:         "CREATE_TASK",
   COMPLETE_TASK:       "COMPLETE_TASK",
   WRITE_JOURNAL:       "WRITE_JOURNAL",
+  CREATE_PLANNER_ITEM: "CREATE_PLANNER_ITEM", // Sprint 7 — Voice to Schedule
   QUERY_DATA:          "QUERY_DATA",
   CLARIFICATION_NEEDED:"CLARIFICATION_NEEDED",
 };
@@ -423,6 +424,55 @@ async function executeAction(action, userId) {
       return await Ent.JournalEntries.create(payload);
     }
 
+    // ── Planner item (Sprint 7 — Voice to Schedule) ──
+    // Writes a PlannerItem the user spoke into the mic. Supports a
+    // `recurring` flag — when set, fans the row out across N upcoming
+    // days (default 14) so the recurrence shows up on the cycle calendar
+    // without needing a separate recurring-rule engine yet.
+    case ACTION_TYPES.CREATE_PLANNER_ITEM: {
+      if (!Ent.PlannerItems) throw new Error("PlannerItems entity not available");
+      const baseDate = data.date || today();
+      const recurring = (data.recurring && data.recurring !== "false")
+        ? String(data.recurring)
+        : null;
+      const baseRow = {
+        ...meta,
+        date_str: baseDate,
+        title: data.title || "Untitled",
+        time: data.time || null,
+        item_type: data.item_type || data.category || "event",
+        category: data.category || data.item_type || "task",
+        source: data.source || "voice",
+        notes: data.notes || "",
+        created_at: nowISO(),
+        updated_at: nowISO(),
+      };
+
+      // Single-shot when not recurring.
+      if (!recurring) {
+        try { return await Ent.PlannerItems.create(baseRow); }
+        catch {
+          // Fallback for schemas without category/source fields.
+          const fallback = { ...meta, date_str: baseDate, title: baseRow.title, time: baseRow.time, item_type: "event", created_at: baseRow.created_at, updated_at: baseRow.updated_at };
+          return await Ent.PlannerItems.create(fallback);
+        }
+      }
+
+      // Recurring — fan out over a window. daily=14 days, weekly=6 weeks.
+      const window = recurring === "weekly" ? 6 : 14;
+      const stepDays = recurring === "weekly" ? 7 : 1;
+      const start = parseDateOrToday(baseDate);
+      const out = [];
+      for (let i = 0; i < window; i++) {
+        try {
+          const row = { ...baseRow, date_str: dateOffset(start, i * stepDays), recurrence_key: `${baseRow.title}|${recurring}|${baseDate}` };
+          const r = await Ent.PlannerItems.create(row);
+          out.push(r);
+        } catch (e) { out.push({ error: String(e?.message || e) }); }
+      }
+      return out;
+    }
+
     // ── Pure read intent — no write to perform ──
     case ACTION_TYPES.QUERY_DATA:
       return { ok: true, noOp: true, reason: "query intent, no write" };
@@ -533,6 +583,11 @@ export function chipLabelForAction(type, data) {
     case ACTION_TYPES.CREATE_TASK:        return `✓ Added task`;
     case ACTION_TYPES.COMPLETE_TASK:      return `✓ Marked task done`;
     case ACTION_TYPES.WRITE_JOURNAL:      return `✓ Saved to journal`;
+    case ACTION_TYPES.CREATE_PLANNER_ITEM: {
+      const t = data?.title ? `"${String(data.title).slice(0, 30)}"` : "item";
+      const r = data?.recurring ? ` (${data.recurring})` : "";
+      return `✓ Added ${t} to planner${r}`;
+    }
     default:                              return null;
   }
 }
