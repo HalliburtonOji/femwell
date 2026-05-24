@@ -1730,8 +1730,8 @@ export default function JessDemoPanel() {
             bottomRef={bottomRef}
             proactiveChips={proactiveChips}
             onProactiveChip={handleProactiveChip}
-            astraReady={astraReady}
-            onAstraHandoff={handleAstraHandoff}
+            /* Astra chip moved to sticky-above-input — see the JSX block
+               outside this tab body. */
           />
         )}
         {tab === "brief"    && (
@@ -1753,6 +1753,48 @@ export default function JessDemoPanel() {
             tabChip="What's the one thing I should focus on today?" onTabChip={handleProactiveChip} />
         )}
       </div>
+
+      {/* Astra handoff chip — moved here 2026-05-23 per QA. Sits in the
+          flexible footer stack above the input bar so it stays visible
+          without scrolling once the user has had 3+ turns. The chat
+          body is `overflow: auto` so this banner remains pinned no
+          matter how long the conversation gets. */}
+      {tab === "chat" && astraReady && (
+        <div style={{
+          padding: "6px 14px 0",
+          background: C.cream,
+          display: "flex", flexShrink: 0, justifyContent: "center",
+          animation: "jess-astra-chip-rise 240ms ease-out",
+        }}>
+          <button
+            type="button"
+            onClick={handleAstraHandoff}
+            aria-label="Talk to Astra about this"
+            style={{
+              display: "inline-flex", alignItems: "center", gap: 8,
+              padding: "9px 14px", minHeight: 36, borderRadius: 9999,
+              background: "linear-gradient(135deg, #2A1E0E 0%, #4A3B2A 100%)",
+              color: C.cream,
+              border: `1px solid ${C.gold}`,
+              cursor: "pointer",
+              fontFamily: "'Inter', sans-serif",
+              fontSize: 13, fontWeight: 600,
+              boxShadow: "0 6px 16px rgba(58,44,26,0.18)",
+              maxWidth: "100%",
+            }}
+          >
+            <Star size={13} style={{ color: C.gold, flexShrink: 0 }} aria-hidden />
+            Talk to Astra about this
+            <ChevronRight size={13} style={{ opacity: 0.7, flexShrink: 0 }} aria-hidden />
+          </button>
+          <style>{`
+            @keyframes jess-astra-chip-rise {
+              from { opacity: 0; transform: translateY(6px); }
+              to   { opacity: 1; transform: translateY(0); }
+            }
+          `}</style>
+        </div>
+      )}
 
       {/* Input — chat tab only */}
       {tab === "chat" && (
@@ -1889,38 +1931,19 @@ function KeyframesBlock() {
 function ChatTab({
   messages, assistantTyping, shell, onChip, onToggleQuickLog, bottomRef,
   proactiveChips, onProactiveChip,
-  astraReady, onAstraHandoff,
+  // astraReady + onAstraHandoff used to live here; the chip moved to
+  // a sticky position above the input bar on 2026-05-23 per QA.
 }) {
   return (
     <div style={{
       padding: "14px 14px 8px",
       display: "flex", flexDirection: "column", gap: 12,
     }}>
-      {/* Astra handoff chip — Feature 4, Wing #3. Surfaces after the
-          user has had 3+ turns; one-tap jump to the Horoscope/Astra
-          surface with a sessionStorage context blob in tow. */}
-      {astraReady && (
-        <button
-          type="button"
-          onClick={onAstraHandoff}
-          aria-label="Talk to Astra about this"
-          style={{
-            alignSelf: "flex-start",
-            display: "inline-flex", alignItems: "center", gap: 8,
-            padding: "10px 14px", minHeight: 40, borderRadius: 9999,
-            background: "linear-gradient(135deg, #2A1E0E 0%, #4A3B2A 100%)",
-            color: C.cream,
-            border: `1px solid ${C.gold}`,
-            cursor: "pointer",
-            fontFamily: "'Inter', sans-serif",
-            fontSize: 13, fontWeight: 600,
-          }}
-        >
-          <Star size={13} style={{ color: C.gold }} aria-hidden />
-          Talk to Astra about this
-          <ChevronRight size={13} style={{ opacity: 0.7 }} aria-hidden />
-        </button>
-      )}
+      {/* Astra handoff chip moved out of the chat thread on 2026-05-23
+          per QA. Now rendered as a sticky pill ABOVE the input bar
+          (see the JSX block following the chat-body container) so it
+          stays visible without scrolling once the 3+ turn threshold
+          is hit. The trigger condition (astraReady) is unchanged. */}
 
       {/* Proactive question chips — "Jess is thinking about you" row */}
       {Array.isArray(proactiveChips) && proactiveChips.length > 0 && (
