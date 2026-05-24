@@ -21,7 +21,7 @@
 // cover the surface area. This is a wellness nudge, not advice.
 
 import { useEffect, useRef, useState } from "react";
-import { X, HeartPulse } from "lucide-react";
+import { X, HeartPulse, MessageCircle, Check } from "lucide-react";
 import { base44 } from "@/api/base44Client";
 import {
   callJessAgent,
@@ -29,6 +29,28 @@ import {
   saveDailyCache,
   todayKey,
 } from "@/services/jessAgentService";
+
+// QA Fix 3 — 48-hour suppression key flipped when the user taps
+// "I'm okay". Stored separately from the daily-cache key so the
+// dismissal persists across calendar-day boundaries.
+const OK_SUPPRESS_MS = 48 * 60 * 60 * 1000;
+function okSuppressKey(uid) { return uid ? `jess_pattern_nudge_ok_${uid}` : null; }
+function isOkSuppressed(uid) {
+  const k = okSuppressKey(uid);
+  if (!k || typeof window === "undefined" || !window.localStorage) return false;
+  try {
+    const raw = window.localStorage.getItem(k);
+    if (!raw) return false;
+    const ts = Number(raw);
+    if (!Number.isFinite(ts)) return false;
+    return (Date.now() - ts) < OK_SUPPRESS_MS;
+  } catch { return false; }
+}
+function markOkSuppressed(uid) {
+  const k = okSuppressKey(uid);
+  if (!k || typeof window === "undefined" || !window.localStorage) return;
+  try { window.localStorage.setItem(k, String(Date.now())); } catch { /* swallow */ }
+}
 
 const C = {
   cream:    "#F4EDDB",
@@ -129,6 +151,9 @@ export default function JessPatternNudge({ user, profile }) {
     if (!cacheKey || ranRef.current) return;
     ranRef.current = true;
 
+    // QA Fix 3 — 48h "I'm okay" suppression beats every other check.
+    if (isOkSuppressed(user?.id)) { setVisible(false); return; }
+
     // Already shown today?
     const cached = loadDailyCache(cacheKey);
     if (cached?.shown) { setVisible(false); return; }
@@ -205,6 +230,23 @@ export default function JessPatternNudge({ user, profile }) {
     }
   }
 
+  // QA Fix 3 — "Tell Jess" jumps to the assistant. Pre-open the chat
+  // by setting sessionStorage so JessDemoPanel picks it up on mount.
+  function tellJess() {
+    try {
+      window.sessionStorage.setItem("jess_open_chat", "1");
+      window.sessionStorage.setItem("jess_chat_prompt", `I want to talk about: ${patternSummary(hit)}`);
+    } catch { /* swallow */ }
+    close();
+    window.location.href = "/Assistant";
+  }
+
+  // QA Fix 3 — "I'm okay" suppresses this nudge family for 48h.
+  function imOkay() {
+    if (user?.id) markOkSuppressed(user.id);
+    close();
+  }
+
   if (!visible || !hit || !text) return null;
 
   return (
@@ -240,6 +282,38 @@ export default function JessPatternNudge({ user, profile }) {
           fontFamily: "'Fraunces', Georgia, serif",
           color: C.espresso, lineHeight: 1.5,
         }}>{text}</p>
+        {/* QA Fix 3 — two CTAs: open the assistant or mark "I'm okay"
+            and suppress for 48h. The × in the top right still dismisses
+            without setting the long suppression. */}
+        <div style={{
+          display: "flex", gap: 8, marginTop: 10, flexWrap: "wrap",
+        }}>
+          <button
+            type="button"
+            onClick={tellJess}
+            style={{
+              padding: "6px 12px", minHeight: 32,
+              background: C.espresso, color: C.cream, border: "none",
+              borderRadius: 9999, cursor: "pointer",
+              display: "inline-flex", alignItems: "center", gap: 6,
+              fontFamily: "'Inter', sans-serif",
+              fontSize: 12, fontWeight: 700,
+            }}
+          ><MessageCircle size={12} /> Tell Jess</button>
+          <button
+            type="button"
+            onClick={imOkay}
+            style={{
+              padding: "6px 12px", minHeight: 32,
+              background: "transparent", color: C.espresso,
+              border: `1px solid ${C.border}`,
+              borderRadius: 9999, cursor: "pointer",
+              display: "inline-flex", alignItems: "center", gap: 6,
+              fontFamily: "'Inter', sans-serif",
+              fontSize: 12, fontWeight: 600,
+            }}
+          ><Check size={12} /> I'm okay</button>
+        </div>
       </div>
       <button
         type="button"

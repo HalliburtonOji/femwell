@@ -42,15 +42,25 @@ function findMatches(text, words) {
 }
 
 // Returns { category, matchedWords }. category is "urgent" | "distress" |
-// "grief" | "normal". Urgency takes precedence over distress over grief.
+// "grief" | "normal".
+//
+// Precedence (QA Fix 2 — 2026-05-24):
+//   urgent > grief > distress > normal
+//
+// Grief is now checked BEFORE distress so messages like "I had a
+// miscarriage and I'm depressed about it" route into compassionate
+// listening mode (no referral card) rather than the distress branch
+// (which appends a mind.org.uk card). Grief is a more specific
+// emotional context than the generic distress keywords and should win
+// when both are present.
 export function classifyJessInput(text) {
   if (!text) return { category: "normal", matchedWords: [] };
   const urgent = findMatches(text, KEYWORDS.urgent);
   if (urgent.length) return { category: "urgent", matchedWords: urgent };
-  const distress = findMatches(text, KEYWORDS.distress);
-  if (distress.length) return { category: "distress", matchedWords: distress };
   const grief = findMatches(text, KEYWORDS.grief);
   if (grief.length) return { category: "grief", matchedWords: grief };
+  const distress = findMatches(text, KEYWORDS.distress);
+  if (distress.length) return { category: "distress", matchedWords: distress };
   return { category: "normal", matchedWords: [] };
 }
 

@@ -53,6 +53,11 @@ import {
   feedbackDirective,
   REASONS as FEEDBACK_REASONS,
 } from "@/services/jessFeedback";
+import {
+  fetchWeeklyStats,
+  buildWeeklyStatsContext,
+  matchesWeeklySummaryAsk,
+} from "@/services/jessWeeklyStats";
 
 // ─── Tokens ───────────────────────────────────────────────────────────────
 // FemWell design tokens — locked to the spec Halli circulated. All
@@ -702,6 +707,14 @@ export default function JessDemoPanel() {
   // Chat state.
   const [conversationId, setConversationId] = useState(null);
   const [messages, setMessages] = useState([]);
+  // QA Fix 4 — feedback state lives OUTSIDE the messages array.
+  // Previously we tried to add `rating` / `ratingReason` directly to the
+  // msg object, but the base44 streaming handler rebuilds messages on
+  // every chunk; even with `...next[i]` spreads, race conditions could
+  // wipe the rating mid-keystroke. Keying off a separate map by msg.id
+  // is rock-solid: streaming never touches it, and FeedbackRow gets a
+  // stable, predictable prop.
+  const [feedbackByMsgId, setFeedbackByMsgId] = useState({});
   const [input, setInput] = useState("");
   const [assistantTyping, setAssistantTyping] = useState(false);
   const [listeningVoice, setListeningVoice] = useState(false);
@@ -1444,7 +1457,22 @@ export default function JessDemoPanel() {
       const feedbackLine = user?.id
         ? feedbackDirective(loadRecentFeedback(user.id))
         : "";
-      const prefix = [feedbackLine, modeLine].filter(Boolean).join("\n\n---\n\n");
+
+      // QA Fix 5 — when the user asks Jess to summarise their week,
+      // fetch the last-7-day aggregates and inject them as a
+      // [WEEKLY STATS] block. The agent has no implicit data access;
+      // every fact has to be in the message. Fail open — if the fetch
+      // throws or the user isn't logged in, just send the message as-is
+      // and let Jess do her best.
+      let weeklyStatsLine = "";
+      if (user?.id && matchesWeeklySummaryAsk(msg)) {
+        try {
+          const agg = await fetchWeeklyStats(user.id);
+          weeklyStatsLine = buildWeeklyStatsContext(agg);
+        } catch { /* swallow */ }
+      }
+
+      const prefix = [feedbackLine, weeklyStatsLine, modeLine].filter(Boolean).join("\n\n---\n\n");
       let outgoing;
       if (!contextInjectedRef.current.has(cid)) {
         contextInjectedRef.current.add(cid);
@@ -1457,6 +1485,11 @@ export default function JessDemoPanel() {
       // distress branch. We watch `assistantTyping` to flip: once it
       // turns false the agent reply has rendered, then we drop the
       // card on the next tick.
+      //
+      // QA Fix 2 — explicit strict equality. Grief NEVER shows a card;
+      // it only shifts the agent's voice via modeDirectiveFor() above.
+      // This guard is belt-and-braces alongside the classifier
+      // precedence change in jessSensitiveTopics.
       if (category === "distress") {
         // Small delay tied to typing flag — drop the card once the
         // agent reply text has at least started rendering.
@@ -2075,13 +2108,18 @@ function ChatTab({
           shell={shell}
           onChip={onChip}
           onToggleQuickLog={onToggleQuickLog}
+          feedback={feedbackByMsgId[m.id] || null}
           onFeedback={(rating, reason) => {
-            // J2-7 — persist + mark on the in-memory message so the row
-            // stays "rated" without re-render flicker.
+            // QA Fix 4 — write to the dedicated feedbackByMsgId map so
+            // streaming msg updates can't blow this away.
             if (user?.id) recordFeedback(user.id, { messageText: m.text, rating, reason });
-            setMessages((prev) => prev.map((row) =>
-              row.id === m.id ? { ...row, rating, ratingReason: reason || row.ratingReason || null } : row,
-            ));
+            setFeedbackByMsgId((prev) => ({
+              ...prev,
+              [m.id]: {
+                rating,
+                reason: reason || prev[m.id]?.reason || null,
+              },
+            }));
           }}
         />
       ))}
@@ -2491,12 +2529,31 @@ function TabChip({ chip, onTap }) {
 
 // Jess v2 J2-7 — thumbs row beneath every Jess bubble. Compact, muted
 // when fresh; once rated it collapses to a small acknowledgement; on
-// thumbs-down it expands a 3-chip reason picker. Reasons stay open
-// until the user taps one — they can also tap thumbs-down again to
-// dismiss without picking a reason.
-function FeedbackRow({ msg, onFeedback }) {
-  const rated = !!msg.rating;
-  const showReasons = msg.rating === "down" && !msg.ratingReason;
+// thumbs-down it expands a 3-chip reason picker.
+//
+// QA Fix 4 — the picker visibility is now driven by a LOCAL useState
+// flag, set the instant the thumbs-down button is clicked, in addition
+// to whatever the parent's `feedback` prop says. This makes the picker
+// reveal instant + immune to upstream state-update races (streaming
+// chunks rebuilding the messages array, etc.). The flag clears as soon
+// as the user selects a reason. The `feedback` prop is now an
+// explicit object `{ rating, reason } | null` from the parent, not a
+// field on the msg object.
+function FeedbackRow({ feedback, onFeedback }) {
+  const rating = feedback?.rating || null;
+  const reason = feedback?.reason || null;
+  const rated  = !!rating;
+  const [askReason, setAskReason] = useState(false);
+  // Sync local "ask" flag from prop state: when a thumbs-down rating
+  // exists without a reason, ask. When a reason lands, stop asking.
+  useEffect(() => {
+    if (rating === "down" && !reason) setAskReason(true);
+    if (rating === "down" && reason)  setAskReason(false);
+    if (rating === "up")              setAskReason(false);
+  }, [rating, reason]);
+
+  const showReasons = askReason && rating === "down" && !reason;
+
   return (
     <div style={{
       display: "flex", flexDirection: "column", gap: 6,
@@ -2507,7 +2564,7 @@ function FeedbackRow({ msg, onFeedback }) {
           <button
             type="button"
             aria-label="Helpful"
-            onClick={() => onFeedback("up")}
+            onClick={(e) => { e.stopPropagation(); onFeedback("up"); }}
             style={{
               width: 26, height: 26, borderRadius: 9999,
               background: "transparent", border: `1px solid ${C.border}`,
@@ -2519,7 +2576,15 @@ function FeedbackRow({ msg, onFeedback }) {
           <button
             type="button"
             aria-label="Not helpful"
-            onClick={() => onFeedback("down")}
+            onClick={(e) => {
+              e.stopPropagation();
+              // QA Fix 4 — flip the local picker BEFORE the parent
+              // setState round-trip so the user sees the picker the
+              // moment they tap, even if the parent's state update
+              // hasn't propagated yet.
+              setAskReason(true);
+              onFeedback("down");
+            }}
             style={{
               width: 26, height: 26, borderRadius: 9999,
               background: "transparent", border: `1px solid ${C.border}`,
@@ -2536,8 +2601,8 @@ function FeedbackRow({ msg, onFeedback }) {
           fontFamily: "'Inter', sans-serif",
           letterSpacing: "0.04em",
         }}>
-          {msg.rating === "up" ? "Thanks — Jess will lean this way." :
-            msg.ratingReason
+          {rating === "up" ? "Thanks — Jess will lean this way." :
+            reason
               ? "Noted — Jess will adjust next reply."
               : "Noted."}
         </span>
@@ -2548,7 +2613,11 @@ function FeedbackRow({ msg, onFeedback }) {
             <button
               key={key}
               type="button"
-              onClick={() => onFeedback("down", key)}
+              onClick={(e) => {
+                e.stopPropagation();
+                setAskReason(false);
+                onFeedback("down", key);
+              }}
               style={{
                 padding: "5px 10px", minHeight: 28,
                 background: C.creamDark, border: `1px solid ${C.border}`,
@@ -2589,7 +2658,7 @@ function StreamingMarkdown({ text, speedMs = 40 }) {
   return <span>{tokens.slice(0, shown).join("")}</span>;
 }
 
-function MessageNode({ msg, shell, onChip, onToggleQuickLog, onFeedback }) {
+function MessageNode({ msg, shell, onChip, onToggleQuickLog, feedback, onFeedback }) {
   // Divider chip — e.g. "Conversation resumed" when the user re-opens an
   // old thread from the History drawer. Centred, muted, not a bubble.
   if (msg.type === "divider" || msg.role === "divider") {
@@ -2708,7 +2777,7 @@ function MessageNode({ msg, shell, onChip, onToggleQuickLog, onFeedback }) {
           callback (writes to localStorage) and biases the NEXT agent
           turn via feedbackDirective(). */}
       {onFeedback && (
-        <FeedbackRow msg={msg} onFeedback={onFeedback} />
+        <FeedbackRow feedback={feedback} onFeedback={onFeedback} />
       )}
       <MhraNote />
       {Array.isArray(msg.chips) && msg.chips.filter((c) => !(msg.chipsUsedList || []).includes(c)).length > 0 && (
@@ -3367,7 +3436,17 @@ function JessNoticedCard({ user, recentCheckins, symptoms, phase }) {
           setExhausted(true);
           return;
         }
-        const cleaned = String(raw).trim().replace(/^["']|["']$/g, "");
+        // QA Fix 1 — the agent sometimes emits a ```options [...] ``` block
+        // (chip suggestions intended for the chat surface). It doesn't
+        // belong in the JESS NOTICED card. Strip ```options``` blocks,
+        // any other fenced code blocks, and surrounding whitespace before
+        // rendering.
+        const cleaned = String(raw)
+          .replace(/```options[\s\S]*?```/gi, "")
+          .replace(/```[\s\S]*?```/g, "")
+          .trim()
+          .replace(/^["']|["']$/g, "");
+        if (!cleaned) { setExhausted(true); return; }
         setText(cleaned);
         saveDailyCache(cacheKey, { text: cleaned, feedback: null });
       })
