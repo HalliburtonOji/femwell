@@ -1827,6 +1827,35 @@ function JessDemoPanelInner() {
           }]);
         }, 1800);
       }
+
+      // QA FIX C — every crisis category (including the chip-only
+      // GRIEF + SEVERE_ANXIETY paths that have referralCard: null)
+      // gets a "Find support resources" chip injected onto Jess's
+      // most recent bubble. handleChip intercepts the chip-tap and
+      // renders the hardcoded UK support card inline — no LLM call.
+      // This guarantees the resources are always one tap away even
+      // when Jess's prose itself doesn't surface them.
+      if (category) {
+        setTimeout(() => {
+          setMessages((prev) => {
+            // Find the last assistant bubble (NOT a referral card)
+            // and append the chip if not already present.
+            const next = [...prev];
+            for (let i = next.length - 1; i >= 0; i--) {
+              const m = next[i];
+              if (m?.role === "jess" && m?.type === "bubble") {
+                const chips = Array.isArray(m.chips) ? m.chips.slice() : [];
+                if (!chips.includes("Find support resources")) {
+                  chips.push("Find support resources");
+                  next[i] = { ...m, chips };
+                }
+                return next;
+              }
+            }
+            return next;
+          });
+        }, 2400);
+      }
       // Feature 1F — bump message_count, updated_date, preview_text.
       if (record?.id) {
         const bumped = await bumpConvoMeta(record, msg);

@@ -136,7 +136,7 @@ export function parseJessResponse(raw) {
   const text = String(raw || "").trim();
   if (!text) return { message: "", actions: [], _fallback: true };
 
-  // Strip ```json fences if present.
+  // Strip ```json fences if present at start/end of the WHOLE message.
   const fenced = text
     .replace(/^```(?:json)?\s*/i, "")
     .replace(/\s*```\s*$/g, "")
@@ -145,6 +145,18 @@ export function parseJessResponse(raw) {
   // Pass 1 — full JSON parse on the de-fenced string.
   const direct = _tryEnvelope(fenced);
   if (direct) return { ...direct, _fallback: false };
+
+  // Pass 1.5 — QA FIX A. If the text has a ```json … ``` (or just
+  // ``` … ```) block ANYWHERE inside it (not just at start/end), pull
+  // the content between the first balanced pair of triple-backticks
+  // and try parsing that. Catches "Some preamble.\n```json\n{...}\n```"
+  // and the common Anthropic-style code-fence wrapping where the
+  // fence is preceded by prose like "Here's the response:".
+  const fenceContent = _extractFromCodeFence(text);
+  if (fenceContent) {
+    const fromFence = _tryEnvelope(fenceContent);
+    if (fromFence) return { ...fromFence, _fallback: false };
+  }
 
   // Pass 2 — find the FIRST balanced {...} block anywhere in the text
   // and try to parse that. Catches "prose blah\n{...envelope...}\nmore"
@@ -176,6 +188,23 @@ function _tryEnvelope(s) {
   } catch {
     return null;
   }
+}
+
+// QA FIX A — Pull the content between the first pair of triple-backticks
+// (with optional `json` language tag) anywhere in the text. Handles all
+// of: ```json\n{...}\n```, ```\n{...}\n```, ``` json {...} ```,
+// "Some preamble\n```json\n{...}\n```\nMore text." Returns null when
+// no balanced fence pair is present. The opening fence-match is
+// case-insensitive on the `json` tag.
+function _extractFromCodeFence(text) {
+  if (!text || text.indexOf("```") < 0) return null;
+  // Strip optional `json` tag + whitespace after the opening fence.
+  const openMatch = text.match(/```(?:json)?\s*/i);
+  if (!openMatch) return null;
+  const start = openMatch.index + openMatch[0].length;
+  const closeIdx = text.indexOf("```", start);
+  if (closeIdx < 0) return null;
+  return text.slice(start, closeIdx).trim();
 }
 
 // Internal — walk the string, ignoring braces inside string literals,
