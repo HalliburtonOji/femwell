@@ -1248,12 +1248,16 @@ function JessDemoPanelInner() {
               // the chain is cheap. Order: heaviest writes first
               // (meal plan = 21 rows) → planner item → mood / symptom
               // / hydration / journal (all single-row).
+              // QA round 12 — Journal must run BEFORE Hydration so
+              // a "write a journal entry: I had a productive day…"
+              // message hits the journal injector first. HYDRATION_REGEX
+              // matches "I had" on the journal body otherwise.
               let p = injectMealPlanIfNeeded(rawParse, userMsgForInject);
               p = injectTaskIfNeeded(p, userMsgForInject);
               p = injectMoodIfNeeded(p, userMsgForInject);
               p = injectSymptomIfNeeded(p, userMsgForInject);
-              p = injectHydrationIfNeeded(p, userMsgForInject);
               p = injectJournalIfNeeded(p, userMsgForInject);
+              p = injectHydrationIfNeeded(p, userMsgForInject);
               tryParse = p;
             }
             parsedMessage = typeof tryParse?.message === "string"

@@ -376,6 +376,11 @@ export function extractHydrationFromMessage(userMessage) {
 export function injectHydrationIfNeeded(parsed, userMessage) {
   if (!_needsInjection(parsed, "LOG_HYDRATION")) return parsed;
   if (!userMessage || !HYDRATION_REGEX.test(String(userMessage))) return parsed;
+  // QA round 12 — journal-shaped messages like "Write a journal
+  // entry: I had a productive day…" also match HYDRATION_REGEX on
+  // the "I had" tail. Defer to the journal injector when the
+  // message also matches JOURNAL_REGEX so we never log fake water.
+  if (JOURNAL_REGEX.test(String(userMessage))) return parsed;
   const data = extractHydrationFromMessage(userMessage);
   const injected = { type: "LOG_HYDRATION", confidence: 0.9, data };
   return {
@@ -513,30 +518,30 @@ function _resolveDietaryPref(data) {
 // derive it from the scaffolded plan rows we just wrote to MealLog
 // so the two surfaces stay in sync.
 function _buildPlanDaysFromMealLogs(planRows, days, startDateObj, resolvedPref) {
-  // QA round 11 — MealPlans schema requires plan_days[n].breakfast,
-  // .lunch, .dinner to be ARRAYS, not single objects. Update failed
-  // with "Input should be a valid list" on every slot. Wrap each
-  // meal object in [...] so the schema accepts one meal per slot
-  // (with room to add more meals to the same slot later — same
-  // schema, multi-meal compatible).
+  // QA round 12 — MealPlans schema wants plan_days[n].breakfast (and
+  // lunch / dinner) as an ARRAY OF STRINGS, not array of objects.
+  // Round-11 wrapped meal objects in [...] but the schema still
+  // rejected with "Input should be a valid string at plan_days.N.
+  // breakfast.0". Each slot is now just [mealName] — plain string
+  // inside an array (multi-meal-friendly: push more strings later
+  // if a snack-as-second-lunch needs to live on the same date).
   //
-  // Group plan rows by date, then by meal_type (each slot is an
-  // ARRAY of meal objects).
+  // Group rows by date, then by meal_type, pushing the meal NAME
+  // string into the slot array.
   const byDate = new Map();
   for (const item of planRows) {
     const date = item.date || toLocalISO(startDateObj);
     if (!byDate.has(date)) byDate.set(date, {});
     const slot = String(item.meal_type || "snack").toLowerCase();
-    const name = item.food_items || item.raw_text || item.food_name || item.name || "Healthy meal";
-    const mealObj = { name, meal_type: slot, raw_text: name, food_name: name };
+    const mealName = String(
+      item.food_items || item.raw_text || item.food_name || item.name || "Healthy meal"
+    );
     const dayBucket = byDate.get(date);
     if (!Array.isArray(dayBucket[slot])) dayBucket[slot] = [];
-    dayBucket[slot].push(mealObj);
+    dayBucket[slot].push(mealName);
   }
-  // Walk requested days in order and emit day-objects even for any
-  // dates the scaffold skipped (shouldn't happen, but be safe). Every
-  // meal slot is an array — empty array when no meal was scaffolded,
-  // so the schema's "valid list" constraint always passes.
+  // Walk requested days in order — every meal slot is an array of
+  // strings (empty array when no meal was scaffolded for that date).
   const out = [];
   for (let i = 0; i < days; i++) {
     const d = new Date(startDateObj);
