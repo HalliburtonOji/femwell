@@ -539,6 +539,13 @@ async function executeAction(action, userId) {
 
       if (plan.length === 0) throw new Error("empty meal plan");
 
+      // QA round 8 — capture the resolved preference so we can stamp
+      // dietary_preference on every row and pick the right friendly
+      // copy bucket for any rows where the scaffold didn't pre-fill
+      // a meal name.
+      const resolvedPref = Array.isArray(data.preferences) && data.preferences[0]
+        ? String(data.preferences[0]).toLowerCase()
+        : (data.dietary_preference || "balanced");
       const out = [];
       for (const item of plan) {
         // QA round 7 — pass through day_key + day_name from the
@@ -547,6 +554,16 @@ async function executeAction(action, userId) {
         // `day_key`.
         const itemDate = item.date || today();
         const itemDateObj = parseDateOrToday(itemDate);
+        // QA round 8 — populate raw_text / food_name / name on EVERY
+        // row. Previously we only sent `food_items`, so the MealLog
+        // rows wrote successfully but raw_text stayed null → /Nutrition
+        // rendered "Nothing planned". Whatever string we have for the
+        // meal goes into all four name-shaped fields so any schema
+        // variant picks one up.
+        const mealName =
+          item.food_items || item.items || item.food ||
+          item.raw_text  || item.food_name || item.name ||
+          "Healthy meal";
         try {
           const payload = {
             ...meta,
@@ -554,7 +571,12 @@ async function executeAction(action, userId) {
             day_key: item.day_key || itemDate,
             day_name: item.day_name || WEEKDAYS[itemDateObj.getDay()],
             meal_type: item.meal_type || item.mealType || "snack",
-            food_items: item.food_items || item.items || item.food || "",
+            food_items: mealName,
+            raw_text: mealName,
+            food_name: mealName,
+            name: mealName,
+            dietary_preference: resolvedPref,
+            ai_generated: true,
             notes: item.notes || (Array.isArray(data.preferences) ? `Plan: ${data.preferences.join(", ")}` : ""),
           };
           const r = await Ent.MealLog.create(payload);
