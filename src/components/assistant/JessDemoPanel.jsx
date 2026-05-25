@@ -1214,6 +1214,20 @@ function JessDemoPanelInner() {
               envelopeMessage = tryParse.message;
               actionsToFire = tryParse.actions || [];
             }
+
+            // QA round 3 — buffer code-fence-wrapped responses. When
+            // Jess's reply starts with ``` and the envelope hasn't
+            // fully parsed yet, the partial chunk after fence-stripping
+            // is just '```json' which would otherwise render as the
+            // bubble text. Skip this stream tick entirely — keep the
+            // typing indicator up — and wait for a later tick where
+            // the full JSON has arrived and envelopeParsed is set.
+            // The 30 s freeze-guard in sendUserText is the safety net
+            // if the stream never completes.
+            const startsWithFence = /^\s*```/.test(raw);
+            if (startsWithFence && !envelopeParsed) {
+              continue; // skip this message in the live loop
+            }
             // QA FIX 2 — log every parsed action set so we can see in
             // production console whether Jess is actually returning
             // the envelope. Logged once per message id (first stream
@@ -1936,16 +1950,25 @@ function JessDemoPanelInner() {
   //      with the remaining suggestion chips attached as follow-ups.
   async function handleChip(chipLabel, fromMessageId) {
     // QA FIX 1 — CRITICAL SAFETY. If the chip label looks like a
-    // crisis-resources ask (e.g. "Find support resources", "Show
-    // helplines", "Get help"), render the hardcoded UK support card
-    // inline and DO NOT send any text to the chat. The agent must
-    // never be asked to generate hotline numbers — they need to be
-    // exact and reliable.
+    // crisis-resources ask (e.g. "Find support resources", "Find
+    // mental wellness resources", "Show helplines", "Get help"),
+    // render the hardcoded UK support card inline and DO NOT send
+    // any text to the chat. The agent must never be asked to
+    // generate hotline numbers — they need to be exact and reliable.
+    //
+    // QA round 3 — broadened the regex after Jess emitted her own
+    // chip labelled "Find mental wellness resources", which the
+    // narrower pattern missed. Anything that pairs "resources" /
+    // "helpline" / "hotline" / "crisis line" with a help-seeking
+    // verb or wellness adjective now intercepts.
     const ciLabel = String(chipLabel || "").toLowerCase();
+    const hasResourcesWord = /\b(?:resources?|helplines?|hotlines?)\b/.test(ciLabel);
+    const hasHelpVerb = /\b(?:find|show|get|see|browse|view)\b/.test(ciLabel);
+    const hasWellnessAdj = /\b(?:support|wellness|mental|emotional|crisis|safety|help)\b/.test(ciLabel);
     const isResourcesAsk =
-      /\b(?:find\s+)?(?:support\s+)?(?:resource|resources|helpline|helplines|hotline|hotlines)\b/.test(ciLabel) ||
-      /\bget\s+(?:help|support)\b/.test(ciLabel) ||
+      (hasResourcesWord && (hasHelpVerb || hasWellnessAdj)) ||
       /\bcrisis\s+(?:line|support|help)\b/.test(ciLabel) ||
+      /\b(?:get|find)\s+(?:help|support)\b/.test(ciLabel) ||
       ciLabel === "find support" ||
       ciLabel === "show resources";
     if (isResourcesAsk) {
