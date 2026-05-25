@@ -15,6 +15,8 @@ import HealthDataSubTab from "./HealthDataSubTab";
 import SymptomLogForm from "../track/SymptomLogForm";
 import SymptomHeatmap from "../track/SymptomHeatmap";
 import SymptomPatternCard from "../track/SymptomPatternCard";
+// Sprint 8 loose-end — Ritual Builder wizard, shared with Planner.
+import RitualBuilder from "../planner/RitualBuilder";
 
 const todayStr = new Date().toISOString().split("T")[0];
 
@@ -444,6 +446,11 @@ function HabitsSubTab({ user, profile, selectedDate }) {
   const [showCustom, setShowCustom] = useState(false);
   const [customName, setCustomName] = useState("");
   const [saving, setSaving] = useState(null); // habit name or null
+  // Sprint 8 loose-end — Ritual Builder wizard open state. Same
+  // pattern as Planner's CreateRitualCard. A saved ritual surfaces
+  // in the Habits list on the next load() (the on-save callback
+  // bumps the date so load re-fires).
+  const [ritualBuilderOpen, setRitualBuilderOpen] = useState(false);
 
   // Hydration
   const hydrationTarget = profile?.hydration_target_ml || 2000;
@@ -593,6 +600,36 @@ function HabitsSubTab({ user, profile, selectedDate }) {
           )}
         </div>
       </div>
+
+      {/* Sprint 8 loose-end — Ritual Builder entry. Same wizard as
+          Planner. Espresso text, no fill — secondary tone so it
+          doesn't compete with the primary habit-add path. */}
+      <div style={{ display: "flex", justifyContent: "center", paddingTop: 4, paddingBottom: 8 }}>
+        <button
+          type="button"
+          onClick={() => setRitualBuilderOpen(true)}
+          style={{
+            display: "inline-flex", alignItems: "center", gap: 6,
+            padding: "10px 16px",
+            background: "transparent",
+            border: "1px solid #D4C9B4",
+            borderRadius: 9999,
+            color: "#3A2C1A",
+            fontSize: 13, fontWeight: 600,
+            fontFamily: "'Inter', system-ui, sans-serif",
+            cursor: "pointer",
+          }}
+        >
+          <Plus style={{ width: 14, height: 14 }} /> Create ritual
+        </button>
+      </div>
+
+      <RitualBuilder
+        open={ritualBuilderOpen}
+        onClose={() => setRitualBuilderOpen(false)}
+        userId={user?.id}
+        onSaved={() => { setRitualBuilderOpen(false); load(); }}
+      />
     </div>
   );
 }

@@ -35,7 +35,7 @@ import Planner from './pages/Planner';
 import SealedLetters from './pages/SealedLetters';
 import BookReader from './pages/BookReader';
 import UnifiedTabLogger from './components/UnifiedTabLogger';
-import MorningBriefOverlay from './components/MorningBriefOverlay';
+import MorningBriefSheet from './components/planner/MorningBriefSheet';
 import JessErrorBoundary from '@/components/jess/JessErrorBoundary';
 
 
@@ -159,8 +159,8 @@ const AuthenticatedApp = () => {
       {showBrief && briefUser && (
         // Sprint 3 S3-3 — variant="hidden" so a crash silently skips
         // the overlay rather than blocking the rest of the app.
-        <JessErrorBoundary variant="hidden" label="MorningBriefOverlay">
-          <MorningBriefOverlay
+        <JessErrorBoundary variant="hidden" label="MorningBriefSheet">
+          <MorningBriefSheet
             user={briefUser}
             profile={briefProfile}
             onDismiss={() => {
