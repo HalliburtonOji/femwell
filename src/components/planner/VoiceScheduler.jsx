@@ -316,6 +316,13 @@ export default function VoiceScheduler({ open, onClose, userId, onSaved }) {
   const [saving, setSaving] = useState(false);
   const [clarification, setClarification] = useState("");
   const recRef = useRef(null);
+  // QA fix — guards renderer freeze when the user opens then immediately
+  // closes the sheet. SpeechRecognition.stop() fires `end` even with no
+  // speech captured; without this flag, the end handler would route the
+  // empty transcript into processNow → Jess agent → 10s hang. abort()
+  // is meant to NOT fire end, but some browsers (notably Chrome Android)
+  // still fire it. Belt + braces.
+  const cancelledRef = useRef(false);
 
   const supported = useMemo(() => {
     if (typeof window === "undefined") return false;
@@ -343,10 +350,18 @@ export default function VoiceScheduler({ open, onClose, userId, onSaved }) {
     };
     rec.onerror = () => { /* swallow — onend handles transition */ };
     rec.onend = () => {
+      // QA fix — bail before doing ANY work if the sheet was cancelled
+      // (X tap, backdrop tap, parent unmount). abort() is supposed to
+      // suppress end but Chrome Android still fires it intermittently.
+      if (cancelledRef.current) return;
       setState((s) => {
         if (s !== "listening") return s;
         const text = (finalText || "").trim();
-        if (!text) return "listening";
+        // QA fix — no speech captured → never call backend. Just sit
+        // in the idle listening state and let the user try again.
+        if (!text || text.length === 0) {
+          return "listening";
+        }
         processNow(text);
         return "processing";
       });
@@ -360,6 +375,7 @@ export default function VoiceScheduler({ open, onClose, userId, onSaved }) {
   useEffect(() => {
     if (!open) return;
     if (!supported) { setState("unsupported"); return; }
+    cancelledRef.current = false;
     setTranscript("");
     setParsed(null);
     setEditing(false);
@@ -368,23 +384,47 @@ export default function VoiceScheduler({ open, onClose, userId, onSaved }) {
     setState("listening");
     startRecognition();
     return () => {
+      // QA fix — flip the cancel flag BEFORE calling abort() so any
+      // late-firing end event (Chrome Android) sees it and bails out.
+      cancelledRef.current = true;
       try { recRef.current && recRef.current.abort(); } catch { /* swallow */ }
       recRef.current = null;
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [open]);
 
+  // QA fix — handleClose wraps onClose with an explicit cancel + abort.
+  // Wired to the X button and backdrop tap (was naked onClose). The
+  // cancel flag + abort() pair prevents the empty-transcript freeze.
+  const handleClose = useCallback(() => {
+    cancelledRef.current = true;
+    try { recRef.current && recRef.current.abort(); } catch { /* swallow */ }
+    recRef.current = null;
+    if (onClose) onClose();
+  }, [onClose]);
+
+  // The mic-button-tap stop path. Uses stop() (not abort) on purpose:
+  // we WANT end to fire so a captured transcript gets processed. The
+  // empty-transcript guard in onend handles the no-speech case.
   function handleStop() {
     try { recRef.current && recRef.current.stop(); } catch { /* swallow */ }
   }
 
   // Rule-first parser, Jess fallback when title comes back empty.
   async function processNow(text) {
+    // QA fix — double-check we still have real input and haven't been
+    // cancelled. processNow runs asynchronously after setState, so the
+    // user may have already tapped close between onend and here.
+    if (!text || !text.trim() || cancelledRef.current) {
+      setState("listening");
+      return;
+    }
     let result = parseTranscript(text);
     if (!result || !String(result.title || "").trim()) {
-      // Hand to Jess.
+      // Hand to Jess (slow path — must re-check cancel after).
       try {
         const llm = await parseWithJessFallback(text);
+        if (cancelledRef.current) return;
         if (llm?._clarification) {
           setClarification(llm._clarification);
           setState("listening");
@@ -454,7 +494,7 @@ export default function VoiceScheduler({ open, onClose, userId, onSaved }) {
 
   return (
     <div
-      onClick={onClose}
+      onClick={handleClose}
       style={{
         position: "fixed", inset: 0,
         background: "rgba(8,4,2,0.65)",
@@ -498,7 +538,7 @@ export default function VoiceScheduler({ open, onClose, userId, onSaved }) {
           </div>
           <button
             type="button"
-            onClick={onClose}
+            onClick={handleClose}
             aria-label="Close"
             style={{
               width: 32, height: 32, borderRadius: 9999,
