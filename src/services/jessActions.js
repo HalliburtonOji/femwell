@@ -81,14 +81,31 @@ export function detectDietaryPref(text) {
   return "balanced";
 }
 
-// QA round 5 — synthesise a CREATE_MEAL_PLAN action when Jess's
-// envelope came back empty AND the user explicitly asked for a
-// meal plan. The action goes through the same scaffoldMealPlan
-// executor as a real CREATE_MEAL_PLAN, so the user gets 21 MealLog
-// rows on /Nutrition even when the LLM tried to deflect.
+// QA round 5/6 — synthesise a CREATE_MEAL_PLAN action when Jess's
+// envelope came back empty (or a CLARIFICATION_NEEDED stall) AND
+// the user explicitly asked for a meal plan. The action goes
+// through the same scaffoldMealPlan executor as a real
+// CREATE_MEAL_PLAN, so the user gets 21 MealLog rows on /Nutrition
+// even when the LLM tried to deflect.
+//
+// Trigger conditions (any one is enough):
+//   1. parsed._fallback === true            (envelope unparseable)
+//   2. parsed.actions is empty / missing    (LLM returned message-only)
+//   3. every action is CLARIFICATION_NEEDED (LLM hedged on confidence)
+// PLUS: the user's message must match MEAL_PLAN_REGEX.
+function _shouldInjectMealPlan(parsed, userMessage) {
+  if (!userMessage || !MEAL_PLAN_REGEX.test(String(userMessage))) return false;
+  if (!parsed) return true;
+  if (parsed._fallback === true || parsed.fallback === true) return true;
+  const actions = Array.isArray(parsed.actions) ? parsed.actions : [];
+  if (actions.length === 0) return true;
+  const allClarify = actions.every((a) => a?.type === "CLARIFICATION_NEEDED");
+  if (allClarify) return true;
+  return false;
+}
+
 export function injectMealPlanIfNeeded(parsed, userMessage) {
-  if (!parsed || parsed._fallback === false) return parsed;
-  if (!userMessage || !MEAL_PLAN_REGEX.test(String(userMessage))) return parsed;
+  if (!_shouldInjectMealPlan(parsed, userMessage)) return parsed;
   const pref = detectDietaryPref(userMessage);
   const injected = {
     type: "CREATE_MEAL_PLAN",
@@ -478,20 +495,31 @@ async function executeAction(action, userId) {
     // ── Task ──
     case ACTION_TYPES.CREATE_TASK: {
       if (!Ent.PersonalTasks) throw new Error("PersonalTasks entity not available");
-      const title = data.title || data.task_title || data.text || data.name || "New task";
-      // QA round 5 — try the rich payload first; if the schema
-      // rejects any optional field, fall back to a minimal payload
-      // (user_id + title + status). Logs the exact payload that
-      // failed so future schema drifts are diagnosable.
+      // QA round 6 — title was being defaulted to "New task" because
+      // we only looked at `title`/`task_title`/`text`/`name`. The LLM
+      // emits `task_name` in some replies (and `title` in others).
+      // Pull from every known synonym before defaulting.
+      const taskTitle =
+        data.task_name || data.title || data.taskTitle ||
+        data.task_title || data.text || data.name ||
+        "New task";
+      // QA round 6 — PersonalTasks schema requires `date`, not
+      // `due_date`. The rich-payload attempt previously failed with
+      //   Error in field date: Field required
+      // so we now send `date` (mapping due_date → date if Jess used
+      // the alias). Optional fields are appended only when truthy
+      // so the rich payload doesn't include empty strings the
+      // schema might reject.
+      const taskDate = data.due_date || data.date || today();
       const richPayload = {
         ...meta,
-        title,
-        due_date: data.due_date || data.date || today(),
-        time_of_day: data.time_of_day || data.timeOfDay || "",
-        notes: data.notes || "",
+        title: taskTitle,
+        date: taskDate,
         completed: false,
         status: "pending",
       };
+      if (data.time_of_day || data.timeOfDay) richPayload.time_of_day = data.time_of_day || data.timeOfDay;
+      if (data.notes) richPayload.notes = data.notes;
       try {
         const r = await Ent.PersonalTasks.create(richPayload);
         try { console.log("[jess-execute] ✓ CREATE_TASK wrote (rich)", r?.id || r); } catch {}
@@ -500,15 +528,20 @@ async function executeAction(action, userId) {
         const err1 = String(e1?.message || e1);
         try { console.warn("[jess-execute] CREATE_TASK rich payload failed", { err: err1, payload: richPayload }); } catch {}
         // Minimal fallback — every PersonalTasks schema we know of
-        // accepts at least user_id + title.
+        // accepts at least user_id + title + date.
         try {
-          const minimal = { user_id: userId, created_by: userId, title };
+          const minimal = {
+            user_id: userId,
+            created_by: userId,
+            title: taskTitle,
+            date: taskDate,
+          };
           const r2 = await Ent.PersonalTasks.create(minimal);
           try { console.log("[jess-execute] ✓ CREATE_TASK wrote (minimal)", r2?.id || r2); } catch {}
           return r2;
         } catch (e2) {
           const err2 = String(e2?.message || e2);
-          try { console.error("[jess-execute] ✗ CREATE_TASK minimal also failed", { err: err2 }); } catch {}
+          try { console.error("[jess-execute] ✗ CREATE_TASK minimal also failed", { err: err2, payload: { user_id: userId, title: taskTitle, date: taskDate } }); } catch {}
           throw e2;
         }
       }
