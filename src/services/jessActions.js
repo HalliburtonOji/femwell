@@ -505,6 +505,15 @@ function _resolveDietaryPref(data) {
   if (typeof data.diet === "string" && data.diet.trim()) {
     return data.diet.trim().toLowerCase();
   }
+  // QA round 13 — the LLM frequently emits dietary intent under
+  // `meal_type` (e.g. "vegetarian") instead of dietary_preference.
+  // Accept it as long as it isn't a generic catch-all that signals
+  // "no preference stated" (standard / mixed / regular / any).
+  if (typeof data.meal_type === "string") {
+    const mt = data.meal_type.trim().toLowerCase();
+    const generic = new Set(["standard", "mixed", "regular", "any", "normal", "default", ""]);
+    if (mt && !generic.has(mt)) return mt;
+  }
   // Last-resort — detectDietaryPref already has the substring matchers.
   if (typeof data.user_message === "string" && data.user_message.trim()) {
     return detectDietaryPref(data.user_message);
@@ -898,42 +907,82 @@ async function executeAction(action, userId) {
 
       if (plan.length === 0) throw new Error("empty meal plan");
 
+      // QA round 13 — My Plan calendar reads MealLog by day_key
+      // (one query per day). Previous loop derived day_key from
+      // item.date but if the LLM sends an explicit plan with bad/
+      // missing dates, or the scaffold's date math drifts, all 21
+      // rows can end up on today and the calendar renders "Nothing
+      // planned" for days 2–7. Fix: ALWAYS compute day_key
+      // deterministically from a start date + explicit day index,
+      // assuming scaffolded plans group meals in B/L/D triplets
+      // per day. Plans that pre-supply item.day_key win out (so
+      // hand-crafted LLM plans still resolve correctly).
+      const planStartObj = parseDateOrToday(data.start_date);
       const out = [];
-      for (const item of plan) {
-        // QA round 7 — pass through day_key + day_name from the
-        // scaffold (or derive from date if Jess sent her own plan
-        // array without them). MealLog schema rejects rows missing
-        // `day_key`.
-        const itemDate = item.date || today();
-        const itemDateObj = parseDateOrToday(itemDate);
+      for (let i = 0; i < plan.length; i++) {
+        const item = plan[i];
+        // For scaffolded plans, item.date comes from dateOffset(start, i/3)
+        // — but trust the explicit value only if it's present AND
+        // parses as a real future-or-today ISO date. Otherwise derive
+        // from the start date + Math.floor(i / 3) day index.
+        const dayIndex = Math.floor(i / 3);
+        const fallbackDate = (() => {
+          const d = new Date(planStartObj);
+          d.setHours(0, 0, 0, 0);
+          d.setDate(d.getDate() + dayIndex);
+          return toLocalISO(d);
+        })();
+        const dayKey = item.day_key || item.date || fallbackDate;
+        const dayObj = parseDateOrToday(dayKey);
         // QA round 8 — populate raw_text / food_name / name on EVERY
-        // row. Previously we only sent `food_items`, so the MealLog
-        // rows wrote successfully but raw_text stayed null → /Nutrition
-        // rendered "Nothing planned". Whatever string we have for the
-        // meal goes into all four name-shaped fields so any schema
-        // variant picks one up.
+        // row so My Plan can render whichever field its view reads.
         const mealName =
           item.food_items || item.items || item.food ||
           item.raw_text  || item.food_name || item.name ||
           "Healthy meal";
+        const ts = nowISO();
         try {
+          // QA round 13 — food_items now an ARRAY (schema variant
+          // expects list, not string). raw_text/food_name/name stay
+          // as plain strings. logged_at added so the entity row
+          // reads in chronological-write order.
           const payload = {
             ...meta,
-            date: itemDate,
-            day_key: item.day_key || itemDate,
-            day_name: item.day_name || WEEKDAYS[itemDateObj.getDay()],
+            date: dayKey,
+            day_key: dayKey,
+            day_name: item.day_name || WEEKDAYS[dayObj.getDay()],
+            day_index: dayIndex,
             meal_type: item.meal_type || item.mealType || "snack",
-            food_items: mealName,
+            food_items: Array.isArray(item.food_items) ? item.food_items : [mealName],
             raw_text: mealName,
             food_name: mealName,
             name: mealName,
             dietary_preference: resolvedPref,
             ai_generated: true,
+            logged_at: ts,
             notes: item.notes || `Plan: ${resolvedPref}`,
           };
           const r = await Ent.MealLog.create(payload);
           out.push(r);
-        } catch (e) { out.push({ error: String(e?.message || e) }); }
+        } catch (e) {
+          try { console.warn("[jess-execute] MealLog (plan row) failed", { err: String(e?.message || e), dayKey, meal_type: item.meal_type }); } catch {}
+          // Schema fallback — some MealLog variants reject array
+          // food_items. Retry with food_items as a plain string.
+          try {
+            const fallbackPayload = {
+              ...meta,
+              date: dayKey,
+              day_key: dayKey,
+              meal_type: item.meal_type || item.mealType || "snack",
+              food_items: mealName,
+              raw_text: mealName,
+              food_name: mealName,
+              name: mealName,
+            };
+            const r2 = await Ent.MealLog.create(fallbackPayload);
+            out.push(r2);
+          } catch (e2) { out.push({ error: String(e2?.message || e2) }); }
+        }
       }
 
       // QA round 9 — the My-Plan view on /Nutrition reads from a
