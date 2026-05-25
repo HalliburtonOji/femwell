@@ -129,6 +129,109 @@ export function injectMealPlanIfNeeded(parsed, userMessage) {
   };
 }
 
+// QA round 7 — CREATE_TASK client-side intent injector (mirror of
+// the meal-plan injector). The model keeps returning prose like
+// "Done — I've added that to your morning list" with no JSON action.
+// Detect the task intent in the user message, extract title + time-
+// of-day + date from natural-language patterns, and synthesise a
+// CREATE_TASK action so the PersonalTasks row actually gets written.
+export const TASK_REGEX =
+  /\b(?:add|put|remind(?:\s+me)?|remember|create|make|schedule|log)\b[^\n]{0,80}\b(?:task|to-?do|reminder|to\s+my\s+(?:morning|afternoon|evening|tasks?|lists?|to-?do)|in\s+(?:my\s+)?(?:morning|afternoon|evening))\b/i;
+
+export function extractTaskFromMessage(userMessage) {
+  const text = String(userMessage || "").trim();
+  let title = null;
+
+  // "add X to my tasks / morning / list" / "put X on my list"
+  const m1 = text.match(/(?:add|put)\s+(.+?)\s+(?:to|on|in)\s+(?:my\s+)?(?:tasks?|to-?do|list|morning|afternoon|evening)/i);
+  if (m1) title = m1[1];
+
+  // "remind me to X (for|by|on|at|tomorrow|today|tonight) …"
+  if (!title) {
+    const m2 = text.match(/remind(?:\s+me)?\s+to\s+(.+?)(?:\s+(?:for|by|on|at|tomorrow|today|tonight)\b|$)/i);
+    if (m2) title = m2[1];
+  }
+
+  // "remember to X …"
+  if (!title) {
+    const m3 = text.match(/remember\s+to\s+(.+?)(?:\s+(?:for|by|on|at|tomorrow|today|tonight)\b|$)/i);
+    if (m3) title = m3[1];
+  }
+
+  // "schedule / create / make X"
+  if (!title) {
+    const m4 = text.match(/(?:schedule|create|make)\s+(?:a\s+)?(?:task\s+(?:to\s+|for\s+)?)?(.+?)(?:\s+(?:for|by|on|at|tomorrow|today|tonight)\b|$)/i);
+    if (m4) title = m4[1];
+  }
+
+  if (!title) title = text.slice(0, 80);
+  title = String(title).trim().replace(/^[\s"']+|[\s"',.;]+$/g, "");
+
+  // Time-of-day — morning/afternoon/evening (tonight collapses to evening)
+  const timeMatch = text.match(/\b(morning|afternoon|evening|tonight|night)\b/i);
+  let time_of_day = "";
+  if (timeMatch) {
+    const t = timeMatch[1].toLowerCase();
+    time_of_day = (t === "tonight" || t === "night") ? "evening" : t;
+  }
+
+  // Date — tomorrow / today / tonight / day-of-week / next week
+  const dateObj = new Date(); dateObj.setHours(0, 0, 0, 0);
+  if (/\btomorrow\b/i.test(text)) {
+    dateObj.setDate(dateObj.getDate() + 1);
+  } else if (/\bnext week\b/i.test(text)) {
+    dateObj.setDate(dateObj.getDate() + 7);
+  } else {
+    const days = ["sunday","monday","tuesday","wednesday","thursday","friday","saturday"];
+    const dayMatch = text.toLowerCase().match(/\b(?:next\s+)?(sunday|monday|tuesday|wednesday|thursday|friday|saturday)\b/);
+    if (dayMatch) {
+      const target = days.indexOf(dayMatch[1]);
+      const now = dateObj.getDay();
+      let delta = (target - now + 7) % 7;
+      if (delta === 0) delta = 7;
+      dateObj.setDate(dateObj.getDate() + delta);
+    }
+  }
+  const date = toLocalISO(dateObj);
+  return { title, time_of_day, date, due_date: date };
+}
+
+function toLocalISO(d) {
+  const y = d.getFullYear();
+  const m = String(d.getMonth() + 1).padStart(2, "0");
+  const day = String(d.getDate()).padStart(2, "0");
+  return `${y}-${m}-${day}`;
+}
+
+export function injectTaskIfNeeded(parsed, userMessage) {
+  if (!parsed) return parsed;
+  if (!userMessage || !TASK_REGEX.test(String(userMessage))) return parsed;
+  // Don't inject if there's already a real CREATE_TASK in actions.
+  const actions = Array.isArray(parsed.actions) ? parsed.actions : [];
+  if (actions.some((a) => a?.type === "CREATE_TASK")) return parsed;
+  // Same trigger surface as the meal-plan injector: fallback OR
+  // empty actions OR all CLARIFICATION_NEEDED.
+  const fallback = parsed._fallback === true || parsed.fallback === true;
+  const allClarify = actions.length > 0 && actions.every((a) => a?.type === "CLARIFICATION_NEEDED");
+  if (!fallback && actions.length > 0 && !allClarify) return parsed;
+
+  const taskData = extractTaskFromMessage(userMessage);
+  const injected = {
+    type: "CREATE_TASK",
+    confidence: 0.9,
+    data: taskData,
+  };
+  const friendly = taskData.time_of_day
+    ? `Got it — I've added "${taskData.title}" to your ${taskData.time_of_day} list ✓`
+    : `Got it — I've added "${taskData.title}" to your to-do list ✓`;
+  return {
+    message: friendly,
+    actions: [injected],
+    _fallback: false,
+    _injectedTask: true,
+  };
+}
+
 // ─── Meal-plan scaffold ─────────────────────────────────────────────
 // When Jess emits a CREATE_MEAL_PLAN with `{ days, preferences }` but
 // no explicit `plan` array, build placeholder breakfast/lunch/dinner
@@ -188,16 +291,28 @@ function parseDateOrToday(s) {
   return Number.isNaN(d.getTime()) ? new Date() : d;
 }
 
+// QA round 7 — MealLog schema requires `day_key` (rejected all 21
+// writes with `Error in field day_key: Field required`). We don't
+// know the exact format expected so we send BOTH:
+//   day_key  → ISO date "YYYY-MM-DD" (most schema patterns)
+//   day_name → lowercase weekday string ("monday", "tuesday", …)
+// Whichever the schema accepts is fine; the other becomes a
+// harmless extra field on schemas that tolerate it.
+const WEEKDAYS = ["sunday", "monday", "tuesday", "wednesday", "thursday", "friday", "saturday"];
+
 // Returns an array of MealLog payloads (date + meal_type + food_items
-// for breakfast/lunch/dinner × N days).
+// + day_key + day_name for breakfast/lunch/dinner × N days).
 function scaffoldMealPlan(days, prefs, start) {
   const bucket = pickTemplateBucket(prefs || []);
   const out = [];
   for (let i = 0; i < days; i++) {
     const date = dateOffset(start, i);
-    out.push({ date, meal_type: "breakfast", food_items: bucket.breakfast[i % bucket.breakfast.length] });
-    out.push({ date, meal_type: "lunch",     food_items: bucket.lunch[i % bucket.lunch.length] });
-    out.push({ date, meal_type: "dinner",    food_items: bucket.dinner[i % bucket.dinner.length] });
+    const dateObj = parseDateOrToday(date);
+    const day_name = WEEKDAYS[dateObj.getDay()];
+    const day_key = date; // ISO date — same value as `date` field
+    out.push({ date, day_key, day_name, meal_type: "breakfast", food_items: bucket.breakfast[i % bucket.breakfast.length] });
+    out.push({ date, day_key, day_name, meal_type: "lunch",     food_items: bucket.lunch[i % bucket.lunch.length] });
+    out.push({ date, day_key, day_name, meal_type: "dinner",    food_items: bucket.dinner[i % bucket.dinner.length] });
   }
   return out;
 }
@@ -426,10 +541,18 @@ async function executeAction(action, userId) {
 
       const out = [];
       for (const item of plan) {
+        // QA round 7 — pass through day_key + day_name from the
+        // scaffold (or derive from date if Jess sent her own plan
+        // array without them). MealLog schema rejects rows missing
+        // `day_key`.
+        const itemDate = item.date || today();
+        const itemDateObj = parseDateOrToday(itemDate);
         try {
           const payload = {
             ...meta,
-            date: item.date || today(),
+            date: itemDate,
+            day_key: item.day_key || itemDate,
+            day_name: item.day_name || WEEKDAYS[itemDateObj.getDay()],
             meal_type: item.meal_type || item.mealType || "snack",
             food_items: item.food_items || item.items || item.food || "",
             notes: item.notes || (Array.isArray(data.preferences) ? `Plan: ${data.preferences.join(", ")}` : ""),

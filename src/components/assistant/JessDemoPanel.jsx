@@ -69,6 +69,7 @@ import {
   buildMemoryContextLine,
   chipLabelForAction,
   injectMealPlanIfNeeded,
+  injectTaskIfNeeded,
 } from "@/services/jessActions";
 import {
   fetchWeeklyStats,
@@ -1223,21 +1224,23 @@ function JessDemoPanelInner() {
           let parsedMessage = "";
           try {
             const rawParse = parseJessResponse(raw);
-            // QA round 5 — pipe parseJessResponse through the
-            // meal-plan injector ONLY when this isn't a mid-stream
-            // fence-buffered chunk. If raw starts with ``` we're
-            // still waiting for Jess's real envelope to complete —
-            // we'd be pre-firing a synthesised action and racing
-            // against her actual reply. Once the stream completes
-            // (or comes back as pure prose refusal) the injector
-            // runs and writes the scaffold.
+            // QA round 5/7 — pipe parseJessResponse through the
+            // meal-plan AND task injectors ONLY when this isn't a
+            // mid-stream fence-buffered chunk. If raw starts with
+            // ``` we're still waiting for Jess's real envelope to
+            // complete — we'd be pre-firing a synthesised action
+            // and racing against her actual reply. Once the stream
+            // completes (or comes back as pure prose refusal) the
+            // injectors run and write the scaffold.
             const startsWithFenceForInject = /^\s*```/.test(raw);
-            const tryParse = startsWithFenceForInject && rawParse?._fallback
-              ? rawParse
-              : injectMealPlanIfNeeded(
-                  rawParse,
-                  lastUserMessageRef.current || pendingUserMsgRef.current || "",
-                );
+            const userMsgForInject = lastUserMessageRef.current || pendingUserMsgRef.current || "";
+            let tryParse;
+            if (startsWithFenceForInject && rawParse?._fallback) {
+              tryParse = rawParse;
+            } else {
+              const afterMeal = injectMealPlanIfNeeded(rawParse, userMsgForInject);
+              tryParse = injectTaskIfNeeded(afterMeal, userMsgForInject);
+            }
             parsedMessage = typeof tryParse?.message === "string"
               ? tryParse.message
               : "";
