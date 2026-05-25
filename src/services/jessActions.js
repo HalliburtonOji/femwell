@@ -232,6 +232,200 @@ export function injectTaskIfNeeded(parsed, userMessage) {
   };
 }
 
+// QA round 10 — shared trigger gate for all client-side injectors.
+// Fires when the LLM has effectively NOT taken the action: fallback
+// envelope, empty actions, or all CLARIFICATION_NEEDED.
+function _needsInjection(parsed, alreadyHasType) {
+  if (!parsed) return true;
+  const fallback = parsed._fallback === true || parsed.fallback === true;
+  const actions = Array.isArray(parsed.actions) ? parsed.actions : [];
+  if (alreadyHasType && actions.some((a) => a?.type === alreadyHasType)) return false;
+  if (fallback) return true;
+  if (actions.length === 0) return true;
+  return actions.every((a) => a?.type === "CLARIFICATION_NEEDED");
+}
+
+// ─── MOOD INJECTOR ──────────────────────────────────────────────────
+export const MOOD_REGEX = /\b(?:feel(?:ing)?|mood|emotion|i'm|i\s+am)\b[^\n]{0,40}\b(?:happy|sad|anxious|stressed|tired|exhausted|good|great|awful|low|high|energis(?:ed|e)|calm|angry|frustrated|hopeful|overwhelmed|flat|numb|ok|okay|fine|alright|content|miserable|down)\b/i;
+
+const MOOD_MAP = {
+  // (label) → { value 1-5, mood_label }
+  "happy":        { mood: 5, mood_label: "happy" },
+  "great":        { mood: 5, mood_label: "great" },
+  "good":         { mood: 4, mood_label: "good" },
+  "hopeful":      { mood: 4, mood_label: "hopeful" },
+  "calm":         { mood: 4, mood_label: "calm" },
+  "content":      { mood: 4, mood_label: "content" },
+  "ok":           { mood: 3, mood_label: "ok" },
+  "okay":         { mood: 3, mood_label: "ok" },
+  "fine":         { mood: 3, mood_label: "fine" },
+  "alright":      { mood: 3, mood_label: "alright" },
+  "flat":         { mood: 3, mood_label: "flat" },
+  "numb":         { mood: 2, mood_label: "numb" },
+  "tired":        { mood: 2, mood_label: "tired" },
+  "exhausted":    { mood: 2, mood_label: "exhausted" },
+  "stressed":     { mood: 2, mood_label: "stressed" },
+  "anxious":      { mood: 2, mood_label: "anxious" },
+  "overwhelmed":  { mood: 2, mood_label: "overwhelmed" },
+  "frustrated":   { mood: 2, mood_label: "frustrated" },
+  "low":          { mood: 2, mood_label: "low" },
+  "down":         { mood: 2, mood_label: "down" },
+  "sad":          { mood: 2, mood_label: "sad" },
+  "angry":        { mood: 1, mood_label: "angry" },
+  "awful":        { mood: 1, mood_label: "awful" },
+  "miserable":    { mood: 1, mood_label: "miserable" },
+};
+
+export function extractMoodFromMessage(userMessage) {
+  const text = String(userMessage || "").toLowerCase();
+  for (const word of Object.keys(MOOD_MAP)) {
+    const re = new RegExp("\\b" + word + "\\b");
+    if (re.test(text)) return MOOD_MAP[word];
+  }
+  return { mood: 3, mood_label: "neutral" };
+}
+
+export function injectMoodIfNeeded(parsed, userMessage) {
+  if (!_needsInjection(parsed, "LOG_MOOD")) return parsed;
+  if (!userMessage || !MOOD_REGEX.test(String(userMessage))) return parsed;
+  const { mood, mood_label } = extractMoodFromMessage(userMessage);
+  const injected = {
+    type: "LOG_MOOD",
+    confidence: 0.9,
+    data: { mood, mood_label, date: _todayLocal() },
+  };
+  return {
+    message: `Got it — I've noted your mood as ${mood_label} today.`,
+    actions: [injected],
+    _fallback: false,
+    _injectedMood: true,
+  };
+}
+
+// ─── SYMPTOM INJECTOR ───────────────────────────────────────────────
+export const SYMPTOM_REGEX = /\b(?:have|got|experiencing|feeling|suffering|with)\b[^\n]{0,40}\b(?:headache|migraine|cramps?|bloat(?:ing|ed)|nausea|fatigue|pain|ache|spotting|discharge|hot\s*flash|brain\s*fog|insomnia|backache|breast\s*tender|mood\s*swing|cravings?|acne|breakout)\b/i;
+
+const SYMPTOM_WORDS = [
+  "headache","migraine","cramps","bloating","bloated","nausea","fatigue",
+  "back pain","period pain","spotting","discharge","hot flash","brain fog",
+  "insomnia","backache","breast tenderness","mood swing","cravings","acne",
+  "breakout",
+];
+
+export function extractSymptomFromMessage(userMessage) {
+  const text = String(userMessage || "").toLowerCase();
+  let symptom = "symptom";
+  for (const w of SYMPTOM_WORDS) {
+    if (text.includes(w)) { symptom = w; break; }
+  }
+  // Severity — look for "severity 3", "out of 5", or words mild/moderate/severe.
+  let severity = null;
+  const m1 = text.match(/severity\s*(?:of\s*)?(\d)/);
+  if (m1) severity = Math.min(5, Math.max(1, parseInt(m1[1], 10)));
+  if (severity == null) {
+    if (/\b(mild|slight)\b/.test(text))   severity = 2;
+    else if (/\b(moderate|medium)\b/.test(text)) severity = 3;
+    else if (/\b(severe|terrible|awful|bad)\b/.test(text)) severity = 4;
+    else severity = 3;
+  }
+  return { symptom_name: symptom, severity, date: _todayLocal() };
+}
+
+export function injectSymptomIfNeeded(parsed, userMessage) {
+  if (!_needsInjection(parsed, "LOG_SYMPTOM")) return parsed;
+  if (!userMessage || !SYMPTOM_REGEX.test(String(userMessage))) return parsed;
+  const data = extractSymptomFromMessage(userMessage);
+  const injected = { type: "LOG_SYMPTOM", confidence: 0.9, data };
+  return {
+    message: `Got it — I've logged your ${data.symptom_name} (severity ${data.severity}).`,
+    actions: [injected],
+    _fallback: false,
+    _injectedSymptom: true,
+  };
+}
+
+// ─── HYDRATION INJECTOR ─────────────────────────────────────────────
+export const HYDRATION_REGEX = /\b(?:drank?|had|drink|drinking|water|hydrat(?:e|ed|ing)|glass(?:es)?|cups?|litre|liter|ml)\b/i;
+
+export function extractHydrationFromMessage(userMessage) {
+  const text = String(userMessage || "").toLowerCase();
+  let amount_ml = null;
+  // explicit ml: "500ml"
+  const mMl = text.match(/(\d{2,4})\s*ml\b/);
+  if (mMl) amount_ml = parseInt(mMl[1], 10);
+  // litres: "1.5 litres", "2 liters", "a litre"
+  if (amount_ml == null) {
+    const mL = text.match(/(\d+(?:\.\d+)?)\s*(?:litre|liter)s?\b/);
+    if (mL) amount_ml = Math.round(parseFloat(mL[1]) * 1000);
+    else if (/\ba\s*(?:litre|liter)\b/.test(text)) amount_ml = 1000;
+  }
+  // glasses/cups: "2 glasses", "a glass", "three cups"
+  if (amount_ml == null) {
+    const mG = text.match(/(\d+|one|two|three|four|five|a)\s*(glass(?:es)?|cups?)/);
+    if (mG) {
+      const wordsToNum = { "a": 1, "one": 1, "two": 2, "three": 3, "four": 4, "five": 5 };
+      const count = wordsToNum[mG[1]] || parseInt(mG[1], 10) || 1;
+      const unitMl = /cup/.test(mG[2]) ? 240 : 250;
+      amount_ml = count * unitMl;
+    }
+  }
+  if (amount_ml == null) amount_ml = 250;
+  return { amount_ml, day_key: _todayLocal() };
+}
+
+export function injectHydrationIfNeeded(parsed, userMessage) {
+  if (!_needsInjection(parsed, "LOG_HYDRATION")) return parsed;
+  if (!userMessage || !HYDRATION_REGEX.test(String(userMessage))) return parsed;
+  const data = extractHydrationFromMessage(userMessage);
+  const injected = { type: "LOG_HYDRATION", confidence: 0.9, data };
+  return {
+    message: `Got it — I've logged ${data.amount_ml}ml of water.`,
+    actions: [injected],
+    _fallback: false,
+    _injectedHydration: true,
+  };
+}
+
+// ─── JOURNAL INJECTOR ───────────────────────────────────────────────
+export const JOURNAL_REGEX = /\b(?:journal|diary|note(?:\s+down)?|write\s+(?:this\s+)?down|log\s+this|record\s+(?:this|that)|capture\s+this)\b/i;
+
+export function extractJournalFromMessage(userMessage) {
+  const text = String(userMessage || "").trim();
+  // Pull the part after "journal entry:" / "write down:" / "note:" etc.
+  const m = text.match(/(?:journal(?:\s+entry)?|diary(?:\s+entry)?|write(?:\s+this\s+down)?|note(?:\s+down)?|record|log\s+this|capture\s+this)\s*[:\-—]\s*(.+)$/i);
+  const body = m ? m[1].trim() : text;
+  return {
+    text: body,
+    session_date: _todayLocal(),
+    tags: ["note"],
+    prompt: "Jess journal entry",
+    card_type: "free",
+  };
+}
+
+export function injectJournalIfNeeded(parsed, userMessage) {
+  if (!_needsInjection(parsed, "WRITE_JOURNAL")) return parsed;
+  if (!userMessage || !JOURNAL_REGEX.test(String(userMessage))) return parsed;
+  const data = extractJournalFromMessage(userMessage);
+  if (!data.text || data.text.length < 4) return parsed; // need real content
+  const injected = { type: "WRITE_JOURNAL", confidence: 0.9, data };
+  return {
+    message: `Got it — I've saved that to your journal.`,
+    actions: [injected],
+    _fallback: false,
+    _injectedJournal: true,
+  };
+}
+
+// Tiny shared helper — local YYYY-MM-DD without time component.
+function _todayLocal() {
+  const d = new Date();
+  const y = d.getFullYear();
+  const m = String(d.getMonth() + 1).padStart(2, "0");
+  const day = String(d.getDate()).padStart(2, "0");
+  return `${y}-${m}-${day}`;
+}
+
 // ─── Meal-plan scaffold ─────────────────────────────────────────────
 // When Jess emits a CREATE_MEAL_PLAN with `{ days, preferences }` but
 // no explicit `plan` array, build placeholder breakfast/lunch/dinner
@@ -530,44 +724,121 @@ async function executeAction(action, userId) {
 
   switch (type) {
     // ── Daily check-in (mood / energy / sleep / combined) ──
+    // QA round 10 — MorningCheckinCard's canonical shape is:
+    //   { user_id, date, mood, energy, energy_level, sleep_hours,
+    //     sleep_quality }
+    // We mirror that. mood_label is accepted too (some surfaces
+    // render it). Rich payload → minimal fallback pattern, matches
+    // CREATE_TASK.
     case ACTION_TYPES.LOG_MOOD:
     case ACTION_TYPES.LOG_ENERGY:
     case ACTION_TYPES.LOG_SLEEP:
     case ACTION_TYPES.LOG_DAILY_CHECKIN: {
       if (!Ent.DailyCheckins) throw new Error("DailyCheckins entity not available");
-      const payload = { ...meta, date: data.date || today() };
-      if (data.mood != null)         payload.mood = Number(data.mood);
-      if (data.energy != null)       payload.energy = Number(data.energy);
-      if (data.sleep_hours != null)  payload.sleep_hours = Number(data.sleep_hours);
-      // Allow flexible synonyms from the LLM.
-      if (data.sleep != null && payload.sleep_hours == null) payload.sleep_hours = Number(data.sleep);
-      return await Ent.DailyCheckins.create(payload);
+      const date = data.date || today();
+      const moodNum   = data.mood   != null ? Number(data.mood)   : null;
+      const energyNum = data.energy != null ? Number(data.energy) : null;
+      const sleepHrs  = data.sleep_hours != null ? Number(data.sleep_hours)
+                     : data.sleep != null      ? Number(data.sleep) : null;
+      const richPayload = { ...meta, date };
+      if (moodNum   != null && Number.isFinite(moodNum))   richPayload.mood = moodNum;
+      if (energyNum != null && Number.isFinite(energyNum)) {
+        richPayload.energy = energyNum;
+        richPayload.energy_level = energyNum;
+      }
+      if (sleepHrs  != null && Number.isFinite(sleepHrs))  richPayload.sleep_hours = sleepHrs;
+      if (data.sleep_quality != null) richPayload.sleep_quality = String(data.sleep_quality);
+      if (data.mood_label) richPayload.mood_label = String(data.mood_label);
+      if (data.notes) richPayload.notes = String(data.notes);
+      try {
+        const r = await Ent.DailyCheckins.create(richPayload);
+        try { console.log("[jess-execute] ✓ DailyCheckins wrote (rich)", r?.id || r); } catch {}
+        return r;
+      } catch (e1) {
+        try { console.warn("[jess-execute] DailyCheckins rich payload failed", { err: String(e1?.message || e1), payload: richPayload }); } catch {}
+        // Minimal fallback — at least date + one signal.
+        const minimal = { ...meta, date };
+        if (richPayload.mood != null) minimal.mood = richPayload.mood;
+        if (richPayload.energy != null) minimal.energy = richPayload.energy;
+        if (richPayload.sleep_hours != null) minimal.sleep_hours = richPayload.sleep_hours;
+        const r2 = await Ent.DailyCheckins.create(minimal);
+        try { console.log("[jess-execute] ✓ DailyCheckins wrote (minimal)", r2?.id || r2); } catch {}
+        return r2;
+      }
     }
 
     // ── Symptom ──
+    // QA round 10 — UniversalLogger writes BOTH symptom_type AND
+    // symptom_name (some screens read one, some the other). Also
+    // adds created_at/updated_at. We mirror the canonical shape.
     case ACTION_TYPES.LOG_SYMPTOM: {
       if (!Ent.SymptomLogs) throw new Error("SymptomLogs entity not available");
-      const payload = {
+      const sname = data.symptom_name || data.symptom || data.name || "unspecified";
+      const date = data.date || today();
+      const ts = nowISO();
+      const richPayload = {
         ...meta,
-        date: data.date || today(),
-        symptom: data.symptom || data.name || "unspecified",
+        date,
+        symptom_type: sname,
+        symptom_name: sname,
         severity: data.severity != null ? Number(data.severity) : null,
         notes: data.notes || "",
+        created_at: ts,
+        updated_at: ts,
       };
-      return await Ent.SymptomLogs.create(payload);
+      try {
+        const r = await Ent.SymptomLogs.create(richPayload);
+        try { console.log("[jess-execute] ✓ SymptomLogs wrote (rich)", r?.id || r); } catch {}
+        return r;
+      } catch (e1) {
+        try { console.warn("[jess-execute] SymptomLogs rich payload failed", { err: String(e1?.message || e1), payload: richPayload }); } catch {}
+        const minimal = { ...meta, date, symptom_name: sname };
+        if (Number.isFinite(richPayload.severity)) minimal.severity = richPayload.severity;
+        const r2 = await Ent.SymptomLogs.create(minimal);
+        try { console.log("[jess-execute] ✓ SymptomLogs wrote (minimal)", r2?.id || r2); } catch {}
+        return r2;
+      }
     }
 
     // ── Meal ──
+    // QA round 10 — single MealLog row. Mirror CREATE_MEAL_PLAN's
+    // per-row shape: day_key required, raw_text + food_name + name
+    // all populated so /Nutrition My-Plan can render whichever
+    // field it reads.
     case ACTION_TYPES.LOG_MEAL: {
       if (!Ent.MealLog) throw new Error("MealLog entity not available");
-      const payload = {
+      const date = data.date || today();
+      const dObj = parseDateOrToday(date);
+      const mealName =
+        data.food_items || data.items || data.food ||
+        data.raw_text   || data.food_name || data.name ||
+        "Meal";
+      const richPayload = {
         ...meta,
-        date: data.date || today(),
+        date,
+        day_key: data.day_key || date,
+        day_name: data.day_name || WEEKDAYS[dObj.getDay()],
         meal_type: data.meal_type || data.mealType || "snack",
-        food_items: data.food_items || data.items || data.food || "",
+        food_items: mealName,
+        raw_text: mealName,
+        food_name: mealName,
+        name: mealName,
         notes: data.notes || "",
       };
-      return await Ent.MealLog.create(payload);
+      try {
+        const r = await Ent.MealLog.create(richPayload);
+        try { console.log("[jess-execute] ✓ MealLog wrote (rich)", r?.id || r); } catch {}
+        return r;
+      } catch (e1) {
+        try { console.warn("[jess-execute] MealLog rich payload failed", { err: String(e1?.message || e1), payload: richPayload }); } catch {}
+        const minimal = {
+          ...meta, date, day_key: richPayload.day_key,
+          meal_type: richPayload.meal_type, raw_text: mealName,
+        };
+        const r2 = await Ent.MealLog.create(minimal);
+        try { console.log("[jess-execute] ✓ MealLog wrote (minimal)", r2?.id || r2); } catch {}
+        return r2;
+      }
     }
 
     // ── Meal plan (batch over N upcoming days) ──
@@ -705,54 +976,155 @@ async function executeAction(action, userId) {
     }
 
     // ── Hydration ──
+    // QA round 10 — HydrationLog uses day_key (NOT date) and
+    // amount_ml. Mirror UnifiedTabLogger.writeHydration: 1 glass =
+    // 250ml, 1 cup = 240ml, 1 litre = 1000ml.
     case ACTION_TYPES.LOG_HYDRATION: {
       if (!Ent.HydrationLog) throw new Error("HydrationLog entity not available");
-      const payload = {
+      const day_key = data.day_key || data.date || today();
+      let amount_ml = null;
+      if (data.amount_ml != null) amount_ml = Number(data.amount_ml);
+      else if (data.ml != null)   amount_ml = Number(data.ml);
+      else if (data.litres != null || data.liters != null) {
+        amount_ml = Number(data.litres ?? data.liters) * 1000;
+      }
+      else if (data.glasses != null) amount_ml = Number(data.glasses) * 250;
+      else if (data.cups != null)    amount_ml = Number(data.cups) * 240;
+      else amount_ml = 250; // safe default: one glass
+      if (!Number.isFinite(amount_ml) || amount_ml <= 0) amount_ml = 250;
+      const ts = nowISO();
+      const richPayload = {
         ...meta,
-        date: data.date || today(),
-        cups: data.cups != null ? Number(data.cups) : (data.glasses != null ? Number(data.glasses) : 1),
-        notes: data.notes || "",
+        day_key,
+        amount_ml: Math.round(amount_ml),
+        logged_at: ts,
+        source: "manual",
+        created_at: ts,
+        updated_at: ts,
       };
-      return await Ent.HydrationLog.create(payload);
+      try {
+        const r = await Ent.HydrationLog.create(richPayload);
+        try { console.log("[jess-execute] ✓ HydrationLog wrote (rich)", r?.id || r); } catch {}
+        return r;
+      } catch (e1) {
+        try { console.warn("[jess-execute] HydrationLog rich payload failed", { err: String(e1?.message || e1), payload: richPayload }); } catch {}
+        const minimal = { ...meta, day_key, amount_ml: richPayload.amount_ml };
+        const r2 = await Ent.HydrationLog.create(minimal);
+        try { console.log("[jess-execute] ✓ HydrationLog wrote (minimal)", r2?.id || r2); } catch {}
+        return r2;
+      }
     }
 
     // ── Medication ──
+    // QA round 10 — MedicationLogs schema uses `item_name` (not
+    // medication_name), `date` (not taken_at as primary), `taken:
+    // true`. Mirror UnifiedTabLogger.writeMedication.
     case ACTION_TYPES.LOG_MEDICATION: {
       if (!Ent.MedicationLogs) throw new Error("MedicationLogs entity not available");
-      const payload = {
+      const item_name = data.item_name || data.medication_name || data.name || "medication";
+      const date = data.date || today();
+      const ts = nowISO();
+      const richPayload = {
         ...meta,
-        medication_name: data.medication_name || data.name || "medication",
-        dose: data.dose || "",
-        taken_at: data.taken_at || nowISO(),
+        date,
+        item_name,
+        dose: String(data.dose || data.dosage || ""),
+        taken: data.taken !== false, // default to true
         notes: data.notes || "",
+        created_at: ts,
+        updated_at: ts,
       };
-      return await Ent.MedicationLogs.create(payload);
+      try {
+        const r = await Ent.MedicationLogs.create(richPayload);
+        try { console.log("[jess-execute] ✓ MedicationLogs wrote (rich)", r?.id || r); } catch {}
+        return r;
+      } catch (e1) {
+        try { console.warn("[jess-execute] MedicationLogs rich payload failed", { err: String(e1?.message || e1), payload: richPayload }); } catch {}
+        const minimal = { ...meta, date, item_name, taken: true };
+        const r2 = await Ent.MedicationLogs.create(minimal);
+        try { console.log("[jess-execute] ✓ MedicationLogs wrote (minimal)", r2?.id || r2); } catch {}
+        return r2;
+      }
     }
 
     // ── Supplement ──
+    // QA round 10 — SupplementLog is per-day with named boolean
+    // flags (folic_acid / vitamin_d / omega3 / iron). Mirror
+    // SupplementTrackerCard. Best-effort string-match the user's
+    // named supplement → the matching boolean column. Falls back
+    // to a free-text row (supplement_name + dose) for cases the
+    // schema accepts both shapes.
     case ACTION_TYPES.LOG_SUPPLEMENT: {
       if (!Ent.SupplementLog) throw new Error("SupplementLog entity not available");
-      const payload = {
-        ...meta,
-        supplement_name: data.supplement_name || data.name || "supplement",
-        dose: data.dose || "",
-        taken_at: data.taken_at || nowISO(),
-        notes: data.notes || "",
-      };
-      return await Ent.SupplementLog.create(payload);
+      const name = String(data.supplement_name || data.name || "supplement").toLowerCase();
+      const date = data.date || today();
+      // Try to match a known boolean column from the supplement name.
+      const richPayload = { ...meta, date };
+      if (/folic|folate/.test(name))       richPayload.folic_acid = data.taken !== false;
+      else if (/vit\s*d|vitamin\s*d|d3/.test(name))  richPayload.vitamin_d = data.taken !== false;
+      else if (/omega|fish\s*oil|epa|dha/.test(name)) richPayload.omega3 = data.taken !== false;
+      else if (/iron|ferrous|ferritin/.test(name))   richPayload.iron = data.taken !== false;
+      // ALSO send free-text fields in case the schema variants accept them.
+      richPayload.supplement_name = data.supplement_name || data.name || "supplement";
+      richPayload.dose = String(data.dose || data.dosage || "");
+      richPayload.taken = data.taken !== false;
+      richPayload.notes = data.notes || "";
+      const ts = nowISO();
+      richPayload.created_at = ts;
+      richPayload.updated_at = ts;
+      try {
+        const r = await Ent.SupplementLog.create(richPayload);
+        try { console.log("[jess-execute] ✓ SupplementLog wrote (rich)", r?.id || r); } catch {}
+        return r;
+      } catch (e1) {
+        try { console.warn("[jess-execute] SupplementLog rich payload failed", { err: String(e1?.message || e1), payload: richPayload }); } catch {}
+        // Minimal — booleans + date only.
+        const minimal = { ...meta, date };
+        if (richPayload.folic_acid != null) minimal.folic_acid = richPayload.folic_acid;
+        if (richPayload.vitamin_d  != null) minimal.vitamin_d  = richPayload.vitamin_d;
+        if (richPayload.omega3     != null) minimal.omega3     = richPayload.omega3;
+        if (richPayload.iron       != null) minimal.iron       = richPayload.iron;
+        const r2 = await Ent.SupplementLog.create(minimal);
+        try { console.log("[jess-execute] ✓ SupplementLog wrote (minimal)", r2?.id || r2); } catch {}
+        return r2;
+      }
     }
 
     // ── Habit ──
+    // QA round 10 — HabitLogs canonical shape mirrors
+    // UniversalLogger.add_habit: habit_type + habit_name (both),
+    // habit_category, completed + is_completed (both), time_of_day,
+    // created_at/updated_at.
     case ACTION_TYPES.LOG_HABIT: {
       if (!Ent.HabitLogs) throw new Error("HabitLogs entity not available");
-      const payload = {
+      const habit = data.habit_name || data.name || data.habit_id || "habit";
+      const date = data.date || today();
+      const isDone = data.completed !== false;
+      const ts = nowISO();
+      const richPayload = {
         ...meta,
-        date: data.date || today(),
-        habit_name: data.habit_name || data.name || "habit",
-        completed: data.completed !== false,
+        date,
+        habit_type: habit,
+        habit_name: habit,
+        habit_category: data.habit_category || data.category || "other",
+        completed: isDone,
+        is_completed: isDone,
+        time_of_day: data.time_of_day || data.timeOfDay || null,
         notes: data.notes || "",
+        created_at: ts,
+        updated_at: ts,
       };
-      return await Ent.HabitLogs.create(payload);
+      try {
+        const r = await Ent.HabitLogs.create(richPayload);
+        try { console.log("[jess-execute] ✓ HabitLogs wrote (rich)", r?.id || r); } catch {}
+        return r;
+      } catch (e1) {
+        try { console.warn("[jess-execute] HabitLogs rich payload failed", { err: String(e1?.message || e1), payload: richPayload }); } catch {}
+        const minimal = { ...meta, date, habit_name: habit, habit_type: habit, completed: isDone };
+        const r2 = await Ent.HabitLogs.create(minimal);
+        try { console.log("[jess-execute] ✓ HabitLogs wrote (minimal)", r2?.id || r2); } catch {}
+        return r2;
+      }
     }
 
     // ── Task ──
@@ -818,17 +1190,44 @@ async function executeAction(action, userId) {
     }
 
     // ── Journal ──
+    // QA round 10 — JournalEntries canonical shape (NewEntrySheet
+    // + UniversalLogger): user_id, session_date (NOT date),
+    // text (NOT content/body), tags: [], prompt, mood_rating,
+    // card_type, card_color, todo_items, created_at.
     case ACTION_TYPES.WRITE_JOURNAL: {
       if (!Ent.JournalEntries) throw new Error("JournalEntries entity not available");
-      const payload = {
+      const text = String(data.text || data.content || data.body || data.entry || "").trim();
+      if (!text) throw new Error("empty journal content");
+      const session_date = data.session_date || data.date || today();
+      const tags = Array.isArray(data.tags) ? data.tags
+                : data.mood ? [String(data.mood).toLowerCase()]
+                : ["note"];
+      const ts = nowISO();
+      const richPayload = {
         ...meta,
-        date: data.date || today(),
-        content: data.content || data.text || data.body || "",
-        mood: data.mood != null ? Number(data.mood) : null,
-        session_date: data.session_date || today(),
+        session_date,
+        text,
+        tags,
+        prompt: data.prompt || data.title || "Journal entry",
+        mood_rating: data.mood_rating != null ? Number(data.mood_rating)
+                   : data.mood != null         ? Number(data.mood) : undefined,
+        card_type: data.card_type || data.type || "free",
+        card_color: data.card_color || "cream",
+        created_at: ts,
       };
-      if (!payload.content) throw new Error("empty journal content");
-      return await Ent.JournalEntries.create(payload);
+      // Strip undefined so the schema doesn't see a null mood_rating.
+      Object.keys(richPayload).forEach((k) => richPayload[k] === undefined && delete richPayload[k]);
+      try {
+        const r = await Ent.JournalEntries.create(richPayload);
+        try { console.log("[jess-execute] ✓ JournalEntries wrote (rich)", r?.id || r); } catch {}
+        return r;
+      } catch (e1) {
+        try { console.warn("[jess-execute] JournalEntries rich payload failed", { err: String(e1?.message || e1), payload: richPayload }); } catch {}
+        const minimal = { ...meta, session_date, text, tags: ["note"] };
+        const r2 = await Ent.JournalEntries.create(minimal);
+        try { console.log("[jess-execute] ✓ JournalEntries wrote (minimal)", r2?.id || r2); } catch {}
+        return r2;
+      }
     }
 
     // ── Planner item (Sprint 7 — Voice to Schedule) ──

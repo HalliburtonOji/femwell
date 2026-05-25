@@ -70,6 +70,10 @@ import {
   chipLabelForAction,
   injectMealPlanIfNeeded,
   injectTaskIfNeeded,
+  injectMoodIfNeeded,
+  injectSymptomIfNeeded,
+  injectHydrationIfNeeded,
+  injectJournalIfNeeded,
 } from "@/services/jessActions";
 import {
   fetchWeeklyStats,
@@ -1238,8 +1242,19 @@ function JessDemoPanelInner() {
             if (startsWithFenceForInject && rawParse?._fallback) {
               tryParse = rawParse;
             } else {
-              const afterMeal = injectMealPlanIfNeeded(rawParse, userMsgForInject);
-              tryParse = injectTaskIfNeeded(afterMeal, userMsgForInject);
+              // QA round 10 — pipe through every client-side injector
+              // in priority order. Each one is a pure pass-through if
+              // its trigger regex doesn't match the user's message, so
+              // the chain is cheap. Order: heaviest writes first
+              // (meal plan = 21 rows) → planner item → mood / symptom
+              // / hydration / journal (all single-row).
+              let p = injectMealPlanIfNeeded(rawParse, userMsgForInject);
+              p = injectTaskIfNeeded(p, userMsgForInject);
+              p = injectMoodIfNeeded(p, userMsgForInject);
+              p = injectSymptomIfNeeded(p, userMsgForInject);
+              p = injectHydrationIfNeeded(p, userMsgForInject);
+              p = injectJournalIfNeeded(p, userMsgForInject);
+              tryParse = p;
             }
             parsedMessage = typeof tryParse?.message === "string"
               ? tryParse.message
