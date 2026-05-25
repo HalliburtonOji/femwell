@@ -17,6 +17,14 @@ import SymptomHeatmap from "../track/SymptomHeatmap";
 import SymptomPatternCard from "../track/SymptomPatternCard";
 // Sprint 8 loose-end — Ritual Builder wizard, shared with Planner.
 import RitualBuilder from "../planner/RitualBuilder";
+// Sprint 9 — perimenopause-only logging cards.
+import HotFlashCard from "./HotFlashCard";
+import BrainFogCard from "./BrainFogCard";
+
+const MENO_STAGES_SET = new Set(["perimenopause", "menopause", "post-menopause"]);
+function isMenoStage(profile) {
+  return !!profile && MENO_STAGES_SET.has(profile.life_stage);
+}
 
 const todayStr = new Date().toISOString().split("T")[0];
 
@@ -389,6 +397,16 @@ function SymptomsSubTab({ user, profile, selectedDate }) {
       </a>
 
       {hasPMDD && <PMDDSeverityLogger user={user} profile={profile} selectedDate={selectedDate} />}
+
+      {/* Sprint 9 — peri/meno/post-meno deep-tracking cards. Gated
+          on life_stage so the rest of the user base never sees them. */}
+      {isMenoStage(profile) && (
+        <>
+          <HotFlashCard user={user} />
+          <BrainFogCard user={user} />
+        </>
+      )}
+
       {symptoms.length > 0 && (
         <div style={{ ...card, padding: 20 }}>
           <p style={{ ...sLabel, marginBottom: 12 }}>Logged on {selectedDate}</p>

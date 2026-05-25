@@ -8,6 +8,9 @@ import { toast } from "sonner";
 import SymptomDiarySection from "./SymptomDiarySection";
 import MenopauseReportCard from "./MenopauseReportCard";
 import HotFlashTracker from "./HotFlashTracker";
+// Sprint 9 — clinical MRS questionnaire + HRT today card.
+import MenopauseRatingScale from "../lifeStage/MenopauseRatingScale";
+import HrtTodayCard from "../lifeStage/HrtTodayCard";
 
 const FOCUSES = ["Sleep", "Hot flashes", "Mood", "Energy", "Brain fog", "Joint comfort", "Weight balance", "Libido", "Vaginal health", "Bone health"];
 const todayStr = new Date().toISOString().split("T")[0];
@@ -218,6 +221,12 @@ export default function MenopauseSupportTab({ user, profile, setProfile, logs, s
         <p style={{ fontSize: 20, fontWeight: 700, color: "var(--plum)", fontFamily: "'Fraunces', serif" }}>{stageInfo.label}</p>
         <p style={{ fontSize: 12, color: "var(--mauve)", marginTop: 4, lineHeight: 1.6 }}>{stageInfo.description}</p>
       </div>
+
+      {/* Sprint 9 — HRT today (above the AI tips) + MRS monthly
+          check-in card. Visible for every peri/meno/post-meno user
+          who lands on this tab. */}
+      <HrtTodayCard user={user} profile={profile} />
+      <MenopauseRatingScale user={user} profile={profile} />
 
       {/* Stats strip */}
       <div className="grid grid-cols-3 gap-3">

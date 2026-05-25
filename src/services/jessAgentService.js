@@ -131,25 +131,80 @@ export const JESS_ACTION_ENVELOPE =
   "MEMORY CONTEXT:\n" +
   "{{MEMORY_CONTEXT}}";
 
+// Sprint 9 — Perimenopause / Menopause / Post-menopause persona extension.
+//
+// Appended to every Jess system prompt when the caller's profile has
+// life_stage ∈ { "perimenopause", "menopause", "post-menopause" }.
+//
+// What this changes for Jess in those stages:
+//   • Drops cycle-phase language ("follicular", "luteal", "day N of cycle").
+//   • Adds explicit empathy for hot flashes, night sweats, and brain fog.
+//   • Acknowledges HRT tracking + side-effects, while never giving medical
+//     advice or recommending specific doses.
+//   • Replaces the cycle-day opener with a peri/meno-appropriate one.
+export const MENO_STAGES = new Set(["perimenopause", "menopause", "post-menopause"]);
+
+export const JESS_PERIMENOPAUSE_EXTENSION =
+  "[PERIMENOPAUSE / MENOPAUSE MODE — ACTIVE]\n" +
+  "This user's life_stage is perimenopause, menopause, or post-menopause. Adjust your voice:\n" +
+  "- NEVER reference menstrual-cycle phases (\"follicular phase\", \"luteal phase\", \"day of cycle\", " +
+  "\"ovulation\"). Periods may be irregular or absent. Phase language is irrelevant and feels clueless.\n" +
+  "- Replace the cycle-day greeting. Use openings like \"Perimenopause can be unpredictable — Jess is " +
+  "here to help you spot your patterns,\" \"Menopause is a transition, not a problem to fix,\" or \"How " +
+  "are you feeling today?\" depending on context.\n" +
+  "- HRT awareness: the user may be on hormone replacement therapy. If they mention dose timing, side " +
+  "effects, missed doses, or new symptoms after starting/changing HRT, acknowledge with warmth and " +
+  "frame as wellness companionship, not medical advice. Suggest tracking the pattern + bringing it to " +
+  "their GP or menopause specialist. Never recommend a specific HRT brand, dose, or schedule.\n" +
+  "- Brain fog empathy: if the user mentions forgetting things, difficulty concentrating, or word-" +
+  "finding difficulties, respond with warmth and normalisation: \"Brain fog is really common in " +
+  "perimenopause — you're not alone in this.\" Offer to log it on the Track tab so patterns surface " +
+  "over time.\n" +
+  "- Hot flash / night sweat empathy: if the user mentions hot flashes, sweating, or night sweats, " +
+  "acknowledge how disruptive they are and ask gentle pattern questions (time of day, triggers like " +
+  "alcohol/caffeine/stress, whether they're worse around sleep). Offer to log them via the Hot Flashes " +
+  "card on Track.\n" +
+  "- Validation first. Many users in this stage have been dismissed by clinicians. Lead with \"That " +
+  "sounds exhausting / disruptive / hard\" before any practical suggestion.\n" +
+  "- Always frame as wellness support, never medical advice. End empathetic responses with a soft " +
+  "reminder that a GP or menopause specialist is the right person for clinical decisions when relevant.";
+
+// Helper — append the peri/meno extension to a system prompt when the
+// supplied profile indicates one of those life stages. No-op otherwise.
+// Exported so any surface can call it directly when wiring profile in.
+export function withJessLifeStageExtension(systemPrompt, profile) {
+  if (!profile?.life_stage) return systemPrompt;
+  if (!MENO_STAGES.has(profile.life_stage)) return systemPrompt;
+  const prefix = systemPrompt ? `${systemPrompt}\n\n---\n\n` : "";
+  return `${prefix}${JESS_PERIMENOPAUSE_EXTENSION}`;
+}
+
 // Helper — every surface should call this rather than writing a fresh
 // "You are Jess…" preamble. Returns the persona + a separator + the
-// surface-specific block.
-export function withJessPersona(surfacePrompt) {
-  if (!surfacePrompt) return JESS_PERSONA;
-  return `${JESS_PERSONA}\n\n---\n\n${surfacePrompt}`;
+// surface-specific block. Sprint 9 — optional profile triggers the
+// peri/meno extension.
+export function withJessPersona(surfacePrompt, profile = null) {
+  const core = surfacePrompt
+    ? `${JESS_PERSONA}\n\n---\n\n${surfacePrompt}`
+    : JESS_PERSONA;
+  return withJessLifeStageExtension(core, profile);
 }
 
 // Sprint 5 — wraps a surface prompt with persona + the Action Layer
 // envelope, substituting the {{MEMORY_CONTEXT}} placeholder. Passing
 // `memoryLine = ""` is fine — the envelope still asks for JSON but
-// records no prior turns.
-export function withJessActionEnvelope(surfacePrompt, memoryLine = "") {
+// records no prior turns. Sprint 9 — optional profile triggers the
+// peri/meno extension before the action envelope.
+export function withJessActionEnvelope(surfacePrompt, memoryLine = "", profile = null) {
   const envelope = JESS_ACTION_ENVELOPE.replace(
     "{{MEMORY_CONTEXT}}",
     memoryLine && memoryLine.trim() ? memoryLine.trim() : "(no prior turns)",
   );
   const parts = [JESS_PERSONA];
   if (surfacePrompt) parts.push(surfacePrompt);
+  if (profile?.life_stage && MENO_STAGES.has(profile.life_stage)) {
+    parts.push(JESS_PERIMENOPAUSE_EXTENSION);
+  }
   parts.push(envelope);
   return parts.join("\n\n---\n\n");
 }
