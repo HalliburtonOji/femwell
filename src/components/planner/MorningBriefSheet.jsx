@@ -18,7 +18,7 @@
 // renders whatever the parent hands it and calls onDismiss when
 // the user taps the start button.
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { base44 } from "@/api/base44Client";
 import { useCycleDay } from "@/hooks/useCycleDay";
 import { Frown, Meh, Smile, Zap, Moon, Check, ArrowRight, ListChecks, Utensils } from "lucide-react";
@@ -79,18 +79,29 @@ export default function MorningBriefSheet({ user, profile, onDismiss }) {
   const today = todayLocalISO();
   const cycle = useCycleDay(profile);
   const phase = cycle?.phase || "unknown";
-  const cycleDay = cycle?.day || null;
+  // QA fix — the useCycleDay hook returns `cycleDay`, not `day`. The
+  // previous `cycle?.day` read returned undefined on every render so
+  // the subtitle showed only the phase label. Aliases supported in
+  // case the hook ever ships the alternate name.
+  const cycleDay = cycle?.cycleDay || cycle?.dayInCycle || cycle?.day || null;
 
   const greeting = useMemo(timeOfDayGreeting, []);
   const displayName = (profile?.display_name || profile?.first_name || user?.full_name?.split(" ")[0] || "there").trim();
 
   // ── Check-in strip — load today's row (if any) so the tiles
   // come up pre-selected when re-opening within the same day.
+  //
+  // QA fix — partial writes (mood → energy → sleep) used to race
+  // because each pick wrote via React state that hadn't committed
+  // yet. Result: rapid taps created multiple rows AND lost fields.
+  // The ref below holds the live truth (checkinId + the latest
+  // values we've persisted) so persistCheckin always updates the
+  // ONE row regardless of React render timing.
   const [mood, setMood] = useState(null);
   const [energy, setEnergy] = useState(null);
   const [sleepHours, setSleepHours] = useState(null);
-  const [checkinId, setCheckinId] = useState(null);
   const [saving, setSaving] = useState(null); // "mood" | "energy" | "sleep" | null
+  const checkinRef = useRef({ id: null, mood: null, energy: null, sleep_hours: null });
   useEffect(() => {
     if (!user?.id) return;
     let cancelled = false;
@@ -100,10 +111,22 @@ export default function MorningBriefSheet({ user, profile, onDismiss }) {
         if (cancelled) return;
         const row = rows?.[0];
         if (row?.id) {
-          setCheckinId(row.id);
-          if (row.mood != null) setMood(Number(row.mood));
-          if (row.energy != null) setEnergy(Number(row.energy));
-          if (row.sleep_hours != null) setSleepHours(Number(row.sleep_hours));
+          checkinRef.current.id = row.id;
+          if (row.mood != null) {
+            const v = Number(row.mood);
+            checkinRef.current.mood = v;
+            setMood(v);
+          }
+          if (row.energy != null) {
+            const v = Number(row.energy);
+            checkinRef.current.energy = v;
+            setEnergy(v);
+          }
+          if (row.sleep_hours != null) {
+            const v = Number(row.sleep_hours);
+            checkinRef.current.sleep_hours = v;
+            setSleepHours(v);
+          }
         }
       } catch { /* swallow */ }
     })();
@@ -112,39 +135,51 @@ export default function MorningBriefSheet({ user, profile, onDismiss }) {
 
   async function persistCheckin(patch) {
     if (!user?.id) return;
+    // Apply patch to the ref synchronously so the build-up of mood +
+    // energy + sleep all land on the same row, even if React state
+    // hasn't committed yet between rapid taps.
+    const next = { ...checkinRef.current, ...patch };
+    checkinRef.current = next;
+
+    // Build the canonical payload matching MorningCheckinCard's shape
+    // (the one TodayHeroSection reads): mood, energy + energy_level
+    // mirror, sleep_hours. Empty values are omitted so a partial
+    // patch doesn't accidentally null out an existing column.
     const payload = {
       user_id: user.id,
       created_by: user.id,
       date: today,
-      ...(mood != null ? { mood } : {}),
-      ...(energy != null ? { energy, energy_level: energy } : {}),
-      ...(sleepHours != null ? { sleep_hours: sleepHours } : {}),
-      ...patch,
     };
-    if (payload.energy != null) payload.energy_level = payload.energy;
+    if (next.mood         != null) payload.mood         = next.mood;
+    if (next.energy       != null) { payload.energy = next.energy; payload.energy_level = next.energy; }
+    if (next.sleep_hours  != null) payload.sleep_hours  = next.sleep_hours;
+
     try {
-      if (checkinId) {
-        await base44.entities.DailyCheckins.update(checkinId, payload).catch(async () => {
-          // Schema drift fallback — minimal payload.
+      if (next.id) {
+        await base44.entities.DailyCheckins.update(next.id, payload).catch(async () => {
+          // Schema drift fallback — minimal payload, only the field
+          // that just changed.
           const minimal = { date: today };
-          if (patch.mood != null) minimal.mood = patch.mood;
-          if (patch.energy != null) { minimal.energy = patch.energy; minimal.energy_level = patch.energy; }
+          if (patch.mood        != null) minimal.mood = patch.mood;
+          if (patch.energy      != null) { minimal.energy = patch.energy; minimal.energy_level = patch.energy; }
           if (patch.sleep_hours != null) minimal.sleep_hours = patch.sleep_hours;
-          await base44.entities.DailyCheckins.update(checkinId, minimal);
+          await base44.entities.DailyCheckins.update(next.id, minimal);
         });
       } else {
         const created = await base44.entities.DailyCheckins.create(payload).catch(async () => {
-          const minimal = { user_id: user.id, created_by: user.id, date: today, ...patch };
-          if (minimal.energy != null) minimal.energy_level = minimal.energy;
+          const minimal = { user_id: user.id, created_by: user.id, date: today };
+          if (patch.mood        != null) minimal.mood = patch.mood;
+          if (patch.energy      != null) { minimal.energy = patch.energy; minimal.energy_level = patch.energy; }
+          if (patch.sleep_hours != null) minimal.sleep_hours = patch.sleep_hours;
           return await base44.entities.DailyCheckins.create(minimal);
         });
-        if (created?.id) setCheckinId(created.id);
+        if (created?.id) checkinRef.current.id = created.id;
       }
     } catch { /* swallow */ }
   }
 
   async function pickMood(v)   { setMood(v);       setSaving("mood");   await persistCheckin({ mood: v });                              setSaving(null); }
-  async function pickEnergy(v) { setEnergy(v);     setSaving("energy"); await persistCheckin({ energy: v, energy_level: v });          setSaving(null); }
+  async function pickEnergy(v) { setEnergy(v);     setSaving("energy"); await persistCheckin({ energy: v });                            setSaving(null); }
   async function pickSleep(h)  { setSleepHours(h); setSaving("sleep");  await persistCheckin({ sleep_hours: h });                       setSaving(null); }
 
   // ── Today at a glance — PlannerItems + first MealLog.
@@ -227,18 +262,22 @@ export default function MorningBriefSheet({ user, profile, onDismiss }) {
             borderRadius: 14, padding: "14px 14px 12px",
             display: "flex", flexDirection: "column", gap: 12,
           }}>
-            {/* Mood */}
+            {/* Mood — QA fix: derive the saved value from the loop
+                index (index + 1) so the 1-indexed scale is locked in
+                and a future reorder of MOOD_OPTIONS can't drift the
+                numbers. */}
             <div>
               <p style={tileLabel}>Mood</p>
               <div style={tileRow}>
-                {MOOD_OPTIONS.map((opt) => {
+                {MOOD_OPTIONS.map((opt, index) => {
                   const Icon = opt.Icon;
-                  const on = mood === opt.value;
+                  const value = index + 1;
+                  const on = mood === value;
                   return (
                     <button
-                      key={opt.value}
+                      key={value}
                       type="button"
-                      onClick={() => pickMood(opt.value)}
+                      onClick={() => pickMood(value)}
                       disabled={saving === "mood"}
                       style={{
                         ...tileBtn,
