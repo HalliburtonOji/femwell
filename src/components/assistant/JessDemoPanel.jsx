@@ -818,6 +818,16 @@ function JessDemoPanelInner() {
   // QA FIX 1 — 30s timeout ref. Cleared as soon as the subscribe
   // handler renders the first chunk of Jess's reply.
   const jessTimeoutRef = useRef(null);
+  // QA round 4 — userRef. subscribeToConversation is useCallback([])
+  // so its closure captures the user value at first render — which is
+  // null (auth still loading). The action-firing block was reading
+  // `user?.id` from the stale closure, so executeJessActions silently
+  // skipped for every reply. userRef.current always points to the
+  // latest user (synced every render below), so the subscribe handler
+  // can read a fresh id at execute time without busting the memoised
+  // callback.
+  const userRef = useRef(null);
+  userRef.current = user;
 
   // ── Load data ──────────────────────────────────────────────────────────
   useEffect(() => {
@@ -1263,12 +1273,26 @@ function JessDemoPanelInner() {
           // soon as we have a clean envelope. Streaming sends the same
           // id many times; without this guard we'd write each action
           // 20+ times.
-          if (envelopeParsed && !actionsFiredRef.current.has(m.id) && user?.id) {
+          //
+          // QA round 4 — read userId from userRef.current (not the
+          // captured `user` closure) because subscribeToConversation
+          // is useCallback([]) and the closure-captured `user` is
+          // null at first render. The ref tracks the latest value.
+          const liveUser = userRef.current;
+          const liveUserId = liveUser?.id;
+          if (envelopeParsed && !actionsFiredRef.current.has(m.id) && liveUserId) {
             actionsFiredRef.current.add(m.id);
             const pairedUserMsg = pendingUserMsgRef.current || "";
             pendingUserMsgRef.current = null;
+            try {
+              console.log("[jess-execute-call]", {
+                messageId: m.id,
+                userId: liveUserId,
+                actionCount: actionsToFire.length,
+              });
+            } catch { /* swallow */ }
             // Fire and forget — chat doesn't need to await the writes.
-            executeJessActions(actionsToFire, user.id)
+            executeJessActions(actionsToFire, liveUserId)
               .then((results) => {
                 const successful = (results || []).filter((r) => r && r.success);
                 // Append a chip-confirmation bubble below Jess's
@@ -1288,13 +1312,23 @@ function JessDemoPanelInner() {
                 // Update + persist memory.
                 setJessMemory((prev) => {
                   const next = updateJessMemory(prev, results, pairedUserMsg, envelopeMessage || "");
-                  try { saveJessMemory(user.id, next); } catch {}
+                  try { saveJessMemory(liveUserId, next); } catch {}
                   return next;
                 });
               })
               .catch((e) => {
                 try { console.warn("[jess-actions] execute threw:", String(e?.message || e)); } catch {}
               });
+          } else if (envelopeParsed && !actionsFiredRef.current.has(m.id)) {
+            // Surface the silent-skip case in the console so future
+            // regressions don't disappear into the void again.
+            try {
+              console.warn("[jess-execute-skip]", {
+                messageId: m.id,
+                reason: !liveUserId ? "no userId in ref" : "already fired",
+                hasUserInRef: !!liveUser,
+              });
+            } catch { /* swallow */ }
           }
           // QA round 6 — log once per messageId, not on every stream
           // chunk. Base44 emits ~24 chunks per assistant reply; the
