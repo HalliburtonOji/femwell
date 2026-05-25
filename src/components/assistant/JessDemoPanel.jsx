@@ -815,6 +815,9 @@ function JessDemoPanelInner() {
   // envelope + executed actions. Streaming sends the same id many
   // times; we only want to fire writes once per reply.
   const actionsFiredRef = useRef(new Set());
+  // QA FIX 1 — 30s timeout ref. Cleared as soon as the subscribe
+  // handler renders the first chunk of Jess's reply.
+  const jessTimeoutRef = useRef(null);
 
   // ── Load data ──────────────────────────────────────────────────────────
   useEffect(() => {
@@ -1211,6 +1214,22 @@ function JessDemoPanelInner() {
               envelopeMessage = tryParse.message;
               actionsToFire = tryParse.actions || [];
             }
+            // QA FIX 2 — log every parsed action set so we can see in
+            // production console whether Jess is actually returning
+            // the envelope. Logged once per message id (first stream
+            // chunk that produces a parse result), not every chunk.
+            if (!loggedSubscribeIdsRef.current.has(m.id + ":actions")) {
+              loggedSubscribeIdsRef.current.add(m.id + ":actions");
+              // eslint-disable-next-line no-console
+              console.log("[jess-actions]", {
+                messageId: m.id,
+                fallback: !!tryParse._fallback,
+                actionCount: Array.isArray(tryParse.actions) ? tryParse.actions.length : 0,
+                actions: tryParse.actions,
+                messagePreview: String(tryParse.message || "").slice(0, 80),
+                rawPreview: raw.slice(0, 80),
+              });
+            }
           } catch { /* swallow — fall back below */ }
 
           // Pick display source. envelopeMessage wins (clean parse).
@@ -1309,7 +1328,17 @@ function JessDemoPanelInner() {
         }
         // Only hide the typing indicator once we've actually rendered
         // text — empty stream events shouldn't dismiss the dots.
-        if (sawText) setAssistantTyping(false);
+        if (sawText) {
+          setAssistantTyping(false);
+          // QA FIX 1 — clear the 30s freeze guard once any real text
+          // lands, so the fallback bubble never double-fires.
+          try {
+            if (jessTimeoutRef.current) {
+              clearTimeout(jessTimeoutRef.current);
+              jessTimeoutRef.current = null;
+            }
+          } catch { /* swallow */ }
+        }
         return next;
       });
     });
@@ -1732,6 +1761,45 @@ function JessDemoPanelInner() {
       // execute (for the memory ring breadcrumb).
       pendingUserMsgRef.current = msg;
       await base44.agents.addMessage(convo, { role: "user", content: outgoing });
+
+      // QA FIX 1 — 30-second streaming timeout. If the typing indicator
+      // is still up 30s after we sent the user message, Jess is stuck —
+      // dismiss the indicator and post a graceful fallback bubble plus
+      // a hardcoded support-resources card (if this turn was crisis-
+      // adjacent). Cleared automatically once the subscribe handler
+      // sees its first text chunk.
+      try { if (jessTimeoutRef.current) clearTimeout(jessTimeoutRef.current); } catch {}
+      const wasCrisis = !!(category && category !== null);
+      jessTimeoutRef.current = window.setTimeout(() => {
+        setAssistantTyping(false);
+        setMessages((prev) => [
+          ...prev,
+          {
+            id: uid(),
+            role: "jess",
+            type: "bubble",
+            text: wasCrisis
+              ? "Jess is taking a moment. You can still access support resources:"
+              : "Jess is taking a moment — try sending that again in a few seconds.",
+            time: fmtTimeAmPm(),
+          },
+          ...(wasCrisis ? [{
+            id: uid(),
+            role: "jess",
+            type: "referral",
+            variant: "self_harm",
+            title: "Support resources",
+            lines: [
+              "Samaritans: 116 123 (free, 24/7)",
+              "Crisis text line: text SHOUT to 85258",
+              "Mind: 0300 123 3393",
+              "Emergency: 999",
+            ],
+            text: "Samaritans: 116 123 · SHOUT to 85258 · Mind: 0300 123 3393 · Emergency: 999",
+            time: fmtTimeAmPm(),
+          }] : []),
+        ]);
+      }, 30000);
       // After the agent reply starts streaming, queue the per-category
       // referral card (if this category has one). Grief + severe
       // anxiety have referralCard:null and skip this entirely; the
@@ -1838,6 +1906,51 @@ function JessDemoPanelInner() {
   //      current phase-aware context, and render as a normal Jess bubble
   //      with the remaining suggestion chips attached as follow-ups.
   async function handleChip(chipLabel, fromMessageId) {
+    // QA FIX 1 — CRITICAL SAFETY. If the chip label looks like a
+    // crisis-resources ask (e.g. "Find support resources", "Show
+    // helplines", "Get help"), render the hardcoded UK support card
+    // inline and DO NOT send any text to the chat. The agent must
+    // never be asked to generate hotline numbers — they need to be
+    // exact and reliable.
+    const ciLabel = String(chipLabel || "").toLowerCase();
+    const isResourcesAsk =
+      /\b(?:find\s+)?(?:support\s+)?(?:resource|resources|helpline|helplines|hotline|hotlines)\b/.test(ciLabel) ||
+      /\bget\s+(?:help|support)\b/.test(ciLabel) ||
+      /\bcrisis\s+(?:line|support|help)\b/.test(ciLabel) ||
+      ciLabel === "find support" ||
+      ciLabel === "show resources";
+    if (isResourcesAsk) {
+      // Mark the chip as used (so the strip dims it) but never
+      // post the user-bubble OR call the agent.
+      setMessages((prev) => {
+        const next = prev.map((m) => {
+          if (m.id !== fromMessageId) return m;
+          const usedSet = new Set(m.chipsUsedList || []);
+          usedSet.add(chipLabel);
+          return { ...m, chipsUsedList: Array.from(usedSet) };
+        });
+        return [
+          ...next,
+          {
+            id: uid(),
+            role: "jess",
+            type: "referral",
+            variant: "self_harm", // generic-support tone, not the urgent red one
+            title: "Support resources",
+            lines: [
+              "Samaritans: 116 123 (free, 24/7)",
+              "Crisis text line: text SHOUT to 85258",
+              "Mind: 0300 123 3393",
+              "Emergency: 999",
+            ],
+            text: "Samaritans: 116 123 · SHOUT to 85258 · Mind: 0300 123 3393 · Emergency: 999",
+            time: fmtTimeAmPm(),
+          },
+        ];
+      });
+      return;
+    }
+
     setMessages((prev) => {
       const next = prev.map((m) => {
         if (m.id !== fromMessageId) return m;

@@ -218,17 +218,14 @@ function _stripTrailingJsonDebris(text) {
   out = out.replace(/[,\s]*["']?actions["']?\s*:\s*\[[\s\S]*$/i, "").trim();
   // Drop a trailing `"message": "..."` fragment.
   out = out.replace(/[,\s]*["']?message["']?\s*:\s*"[\s\S]*$/i, "").trim();
-  // Drop a trailing standalone JSON-array fragment whose first element
-  // is a quoted string (suggestion-chip leakage; splitChipsFromText
-  // handles fully-balanced arrays, this catches mid-stream truncations
-  // like `["A","B","C...`).
-  out = out.replace(/[\s,]*\[\s*"[^"\]]*(?:"[^"]*)?(?:\s*,\s*"[^"\]]*(?:"[^"]*)?)*[\s\S]*$/, (match) => {
-    // Only strip if the bracket is unbalanced (i.e. no matching `]` after
-    // it). If it IS balanced, splitChipsFromText will lift it later.
-    const opens = (match.match(/\[/g) || []).length;
-    const closes = (match.match(/\]/g) || []).length;
-    return opens > closes ? "" : match;
-  }).trim();
+  // QA Fix 3 — strip ANY trailing JSON array of quoted strings, balanced
+  // or unbalanced. Used to only strip unbalanced (relying on
+  // splitChipsFromText to lift the balanced ones) but historical messages
+  // come through loadConversation which doesn't run splitChipsFromText.
+  // Result: balanced arrays bled into the bubble text on resumed
+  // threads. The pattern matches `["A","B"]`, `["A","B"`, `["A","B...`
+  // — anything that opens with `[ "..."` and chains string entries.
+  out = out.replace(/[\s,.]*\[\s*"[^"]{0,200}"(?:\s*,\s*"[^"]{0,200}"){0,11}\s*,?\s*[^\]]*\]?[\s.]*$/, "").trim();
   // Drop a trailing standalone unbalanced `{...` envelope opener.
   out = out.replace(/[\s,]*\{[\s\S]*$/, (match) => {
     const opens = (match.match(/\{/g) || []).length;
@@ -490,7 +487,15 @@ async function executeAction(action, userId) {
 // Confidence < 0.75 actions are skipped (and tagged as such) so the
 // LLM can't accidentally write garbage.
 export async function executeJessActions(actions = [], userId) {
-  if (!Array.isArray(actions) || actions.length === 0) return [];
+  if (!Array.isArray(actions) || actions.length === 0) {
+    // QA FIX 2 — surface why nothing fired. Logged once per call so
+    // empty-action invocations are visible in production console.
+    try { console.log("[jess-execute] no actions to fire", { hasUser: !!userId }); } catch {}
+    return [];
+  }
+  if (!userId) {
+    try { console.warn("[jess-execute] skipped — no userId", { count: actions.length }); } catch {}
+  }
   const results = [];
   for (const action of actions) {
     const conf = Number(action?.confidence);
@@ -501,6 +506,7 @@ export async function executeJessActions(actions = [], userId) {
         skipped: true,
         reason: `confidence ${Number.isFinite(conf) ? conf : "n/a"} below ${CONFIDENCE_FLOOR}`,
       });
+      try { console.log("[jess-execute] skipped (low confidence)", { type: action?.type, conf }); } catch {}
       continue;
     }
     if (!userId) {
@@ -510,8 +516,11 @@ export async function executeJessActions(actions = [], userId) {
     try {
       const result = await executeAction(action, userId);
       results.push({ action, result, success: true });
+      try { console.log("[jess-execute] ✓ wrote", { type: action.type, data: action.data, result }); } catch {}
     } catch (e) {
-      results.push({ action, error: String(e?.message || e), success: false });
+      const err = String(e?.message || e);
+      results.push({ action, error: err, success: false });
+      try { console.warn("[jess-execute] ✗ failed", { type: action.type, error: err }); } catch {}
     }
   }
   return results;
