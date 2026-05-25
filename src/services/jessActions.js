@@ -968,6 +968,11 @@ async function executeAction(action, userId) {
 
       // Build plan_days mirror for MealPlans (slots = arrays of
       // strings, per QA round 12 schema requirement).
+      // QA round 15 — every entry now also carries `day: dayIndex`
+      // (0=Monday … 6=Sunday). The My Plan renderer does
+      //   plan_days.find(d => d.day === selectedDayIndex)
+      // and returned undefined every time without this. day_key /
+      // day_index / day_name are still stamped for older readers.
       const plan_days = [];
       for (let day = 0; day < 7; day++) {
         const dayDate = new Date(
@@ -977,6 +982,7 @@ async function executeAction(action, userId) {
         );
         const dayKey = toLocalISO(dayDate);
         plan_days.push({
+          day,
           date: dayKey,
           day_key: dayKey,
           day_index: day,
