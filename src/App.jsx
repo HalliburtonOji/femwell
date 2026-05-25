@@ -4,6 +4,8 @@ import { QueryClientProvider } from '@tanstack/react-query'
 import { queryClientInstance } from '@/lib/query-client'
 import { pagesConfig } from './pages.config'
 import { BrowserRouter as Router, Route, Routes, Navigate, useLocation, useNavigate } from 'react-router-dom';
+// Sprint 10 — public partner-view route, mounted OUTSIDE the auth gate.
+import Partner from './pages/Partner';
 import { useEffect, useState } from 'react';
 import { base44 } from '@/api/base44Client';
 import { flushPending } from '@/utils/pendingQueue';
@@ -281,7 +283,14 @@ function App() {
               You're offline — your logs are saved and will sync automatically.
             </div>
           )}
-          <AuthenticatedApp />
+          {/* Sprint 10 — /partner?code=… is a public share-view route.
+              It bypasses AuthenticatedApp's loading spinner so a
+              partner who isn't logged in still lands on the read-only
+              card stack rather than getting stuck on the auth screen. */}
+          <Routes>
+            <Route path="/partner" element={<Partner />} />
+            <Route path="*" element={<AuthenticatedApp />} />
+          </Routes>
         </Router>
         <Toaster />
         {/* Universal Logger — global gold + FAB available on every page.

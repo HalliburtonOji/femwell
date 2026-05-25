@@ -89,6 +89,11 @@ import OneShotThankYou from './pages/OneShotThankYou';
 // /Ideas AND /Founders both render FoundersOS. /Founders is kept as
 // an alias so any old bookmarks still work.
 import FoundersOS from './pages/FoundersOS';
+// Sprint 10 — Partner Sync hub (user's share-code page). The
+// matching public /partner?code=… read-only view (Partner.jsx) is
+// wired separately in App.jsx OUTSIDE this PAGES map so it can run
+// without the auth gate.
+import PartnerSync from './pages/PartnerSync';
 import __Layout from './Layout.jsx';
 
 
@@ -130,6 +135,7 @@ export const PAGES = {
     // direct alias.
     "Ideas": FoundersOS,
     "Founders": FoundersOS,
+    "PartnerSync": PartnerSync,
 }
 
 export const pagesConfig = {
