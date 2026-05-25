@@ -513,17 +513,30 @@ function _resolveDietaryPref(data) {
 // derive it from the scaffolded plan rows we just wrote to MealLog
 // so the two surfaces stay in sync.
 function _buildPlanDaysFromMealLogs(planRows, days, startDateObj, resolvedPref) {
-  // Group plan rows by date, then by meal_type.
+  // QA round 11 — MealPlans schema requires plan_days[n].breakfast,
+  // .lunch, .dinner to be ARRAYS, not single objects. Update failed
+  // with "Input should be a valid list" on every slot. Wrap each
+  // meal object in [...] so the schema accepts one meal per slot
+  // (with room to add more meals to the same slot later — same
+  // schema, multi-meal compatible).
+  //
+  // Group plan rows by date, then by meal_type (each slot is an
+  // ARRAY of meal objects).
   const byDate = new Map();
   for (const item of planRows) {
     const date = item.date || toLocalISO(startDateObj);
     if (!byDate.has(date)) byDate.set(date, {});
     const slot = String(item.meal_type || "snack").toLowerCase();
     const name = item.food_items || item.raw_text || item.food_name || item.name || "Healthy meal";
-    byDate.get(date)[slot] = { name, meal_type: slot, raw_text: name, food_name: name };
+    const mealObj = { name, meal_type: slot, raw_text: name, food_name: name };
+    const dayBucket = byDate.get(date);
+    if (!Array.isArray(dayBucket[slot])) dayBucket[slot] = [];
+    dayBucket[slot].push(mealObj);
   }
   // Walk requested days in order and emit day-objects even for any
-  // dates the scaffold skipped (shouldn't happen, but be safe).
+  // dates the scaffold skipped (shouldn't happen, but be safe). Every
+  // meal slot is an array — empty array when no meal was scaffolded,
+  // so the schema's "valid list" constraint always passes.
   const out = [];
   for (let i = 0; i < days; i++) {
     const d = new Date(startDateObj);
@@ -536,9 +549,9 @@ function _buildPlanDaysFromMealLogs(planRows, days, startDateObj, resolvedPref) 
       day_key: date,
       day_name,
       day_index: i,
-      breakfast: slots.breakfast || null,
-      lunch:     slots.lunch     || null,
-      dinner:    slots.dinner    || null,
+      breakfast: Array.isArray(slots.breakfast) ? slots.breakfast : [],
+      lunch:     Array.isArray(slots.lunch)     ? slots.lunch     : [],
+      dinner:    Array.isArray(slots.dinner)    ? slots.dinner    : [],
       dietary_preference: resolvedPref,
     });
   }
