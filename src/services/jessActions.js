@@ -422,6 +422,172 @@ export function injectJournalIfNeeded(parsed, userMessage) {
   };
 }
 
+// ─── MEDICATION INJECTOR ────────────────────────────────────────────
+// QA round 16 — handles "took my metformin 500mg" / "had my HRT" /
+// "logged a dose of paracetamol". Extracts the drug name (from a
+// curated allow-list of common UK meds) and the dose ("500mg",
+// "5ml", "10mcg") when present.
+export const MEDICATION_REGEX =
+  /\b(?:took|taken|had|logged|administered|taken my|dose of)\b[\s\S]{0,60}\b(?:med(?:ication)?s?|pill|tablet|capsule|metformin|ibuprofen|aspirin|paracetamol|ozempic|hrt|levothyroxine|omeprazole|atorvastatin|sertraline|fluoxetine|amoxicillin|penicillin)\b|\b(?:med(?:ication)?|pill|tablet)\b[\s\S]{0,30}\b(?:took|taken|had)\b/i;
+
+const KNOWN_MEDS = [
+  "metformin", "ibuprofen", "aspirin", "paracetamol", "ozempic",
+  "HRT", "levothyroxine", "omeprazole", "atorvastatin", "sertraline",
+  "fluoxetine", "amoxicillin", "penicillin",
+];
+
+export function extractMedicationFromMessage(userMessage) {
+  const text = String(userMessage || "");
+  let item_name = "Medication";
+  for (const drug of KNOWN_MEDS) {
+    const re = new RegExp("\\b" + drug + "\\b", "i");
+    const m = text.match(re);
+    if (m) {
+      // Preserve "HRT" all-caps but otherwise title-case.
+      item_name = drug === "HRT" ? "HRT" : (m[0][0].toUpperCase() + m[0].slice(1).toLowerCase());
+      break;
+    }
+  }
+  const doseMatch = text.match(/\b(\d+\s?(?:mg|ml|mcg|g|iu|units?))\b/i);
+  const dose = doseMatch ? doseMatch[0] : "";
+  return {
+    item_name,
+    medication_name: item_name,
+    dose,
+    taken: true,
+    date: _todayLocal(),
+    time_taken: new Date().toTimeString().slice(0, 5),
+  };
+}
+
+export function injectMedicationIfNeeded(parsed, userMessage) {
+  if (!_needsInjection(parsed, "LOG_MEDICATION")) return parsed;
+  if (!userMessage || !MEDICATION_REGEX.test(String(userMessage))) return parsed;
+  const data = extractMedicationFromMessage(userMessage);
+  const injected = { type: "LOG_MEDICATION", confidence: 0.85, data };
+  const friendly = data.dose
+    ? `Got it — I've logged ${data.item_name} ${data.dose} ✓`
+    : `Got it — I've logged ${data.item_name} ✓`;
+  return {
+    message: friendly,
+    actions: [injected],
+    _fallback: false,
+    _injectedMedication: true,
+  };
+}
+
+// ─── SUPPLEMENT INJECTOR ────────────────────────────────────────────
+// QA round 16 — sets the matching boolean column on the per-day
+// SupplementLog row (folic_acid / vitamin_d / omega3 / iron /
+// magnesium / zinc / calcium / vitamin_c / vitamin_b).
+export const SUPPLEMENT_REGEX =
+  /\b(?:took|taken|had)\b[\s\S]{0,60}\b(?:supplement|vitamin|folic.?acid|folate|vitamin.?d|vitamin.?c|vitamin.?b|omega.?3|iron|magnesium|zinc|calcium|probiotic|turmeric|collagen|fish.?oil)\b|\b(?:supplement|vitamin|folic.?acid|omega.?3)\b[\s\S]{0,30}\b(?:took|taken|had)\b/i;
+
+export function extractSupplementFromMessage(userMessage) {
+  const msg = String(userMessage || "").toLowerCase();
+  const flags = {
+    folic_acid: /folic.?acid|folate/.test(msg),
+    vitamin_d:  /vitamin.?d/.test(msg),
+    omega3:     /omega.?3|fish.?oil/.test(msg),
+    iron:       /\biron\b/.test(msg),
+    magnesium:  /magnesium/.test(msg),
+    zinc:       /\bzinc\b/.test(msg),
+    calcium:    /calcium/.test(msg),
+    vitamin_c:  /vitamin.?c/.test(msg),
+    vitamin_b:  /vitamin.?b/.test(msg),
+  };
+  return {
+    day_key: _todayLocal(),
+    date: _todayLocal(),
+    logged_at: new Date().toISOString(),
+    ...flags,
+  };
+}
+
+export function injectSupplementIfNeeded(parsed, userMessage) {
+  if (!_needsInjection(parsed, "LOG_SUPPLEMENT")) return parsed;
+  if (!userMessage || !SUPPLEMENT_REGEX.test(String(userMessage))) return parsed;
+  const data = extractSupplementFromMessage(userMessage);
+  // Build a friendly summary of which flags were set.
+  const setKeys = Object.keys(data).filter((k) =>
+    ["folic_acid","vitamin_d","omega3","iron","magnesium","zinc","calcium","vitamin_c","vitamin_b"].includes(k) && data[k]);
+  const friendlyNames = {
+    folic_acid: "folic acid", vitamin_d: "vitamin D", omega3: "omega-3",
+    iron: "iron", magnesium: "magnesium", zinc: "zinc", calcium: "calcium",
+    vitamin_c: "vitamin C", vitamin_b: "vitamin B",
+  };
+  const labels = setKeys.map((k) => friendlyNames[k]);
+  const labelText = labels.length === 0 ? "your supplement"
+                  : labels.length === 1 ? labels[0]
+                  : labels.length === 2 ? `${labels[0]} + ${labels[1]}`
+                  : `${labels.slice(0, -1).join(", ")} + ${labels.slice(-1)}`;
+  const injected = { type: "LOG_SUPPLEMENT", confidence: 0.85, data };
+  return {
+    message: `Got it — I've logged ${labelText} ✓`,
+    actions: [injected],
+    _fallback: false,
+    _injectedSupplement: true,
+  };
+}
+
+// ─── HABIT INJECTOR ─────────────────────────────────────────────────
+// QA round 16 — "completed my meditation", "did my run", "finished
+// yoga". Maps activity word → habit name + category and infers
+// time_of_day from morning/afternoon/evening hints.
+export const HABIT_REGEX =
+  /\b(?:completed|did|finished|done|accomplished|checked off)\b[\s\S]{0,60}\b(?:habit|meditation|meditated|workout|exercise|run|ran|walk|walked|journal(?:l?ed)?|yoga|stretching|reading|cold.?shower)\b|\b(?:completed my|finished my|did my)\b/i;
+
+const HABIT_PATTERNS = [
+  { re: /meditat/i,            name: "Meditation",  category: "mindfulness" },
+  { re: /workout|exercise/i,    name: "Workout",     category: "fitness" },
+  { re: /\b(?:run|ran|running)\b/i, name: "Running", category: "fitness" },
+  { re: /walk/i,                name: "Walking",     category: "fitness" },
+  { re: /yoga/i,                name: "Yoga",        category: "fitness" },
+  { re: /stretching/i,          name: "Stretching",  category: "fitness" },
+  { re: /journal(?:l?ed)?/i,    name: "Journalling", category: "mindfulness" },
+  { re: /reading/i,             name: "Reading",     category: "mindfulness" },
+  { re: /cold.?shower/i,        name: "Cold shower", category: "wellness" },
+];
+
+export function extractHabitFromMessage(userMessage) {
+  const msg = String(userMessage || "").toLowerCase();
+  let habit_name = "Habit";
+  let habit_category = "wellness";
+  for (const p of HABIT_PATTERNS) {
+    if (p.re.test(msg)) {
+      habit_name = p.name;
+      habit_category = p.category;
+      break;
+    }
+  }
+  let time_of_day = "morning";
+  if (/\b(?:evening|night|bedtime|tonight)\b/.test(msg)) time_of_day = "evening";
+  else if (/\bafternoon\b/.test(msg)) time_of_day = "afternoon";
+  return {
+    habit_name,
+    habit_type: "custom",
+    habit_category,
+    completed: true,
+    is_completed: true,
+    time_of_day,
+    logged_at: new Date().toISOString(),
+    date: _todayLocal(),
+  };
+}
+
+export function injectHabitIfNeeded(parsed, userMessage) {
+  if (!_needsInjection(parsed, "LOG_HABIT")) return parsed;
+  if (!userMessage || !HABIT_REGEX.test(String(userMessage))) return parsed;
+  const data = extractHabitFromMessage(userMessage);
+  const injected = { type: "LOG_HABIT", confidence: 0.85, data };
+  return {
+    message: `Got it — I've logged your ${data.habit_name.toLowerCase()} ✓`,
+    actions: [injected],
+    _fallback: false,
+    _injectedHabit: true,
+  };
+}
+
 // Tiny shared helper — local YYYY-MM-DD without time component.
 function _todayLocal() {
   const d = new Date();

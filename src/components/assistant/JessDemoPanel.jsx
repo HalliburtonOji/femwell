@@ -74,6 +74,9 @@ import {
   injectSymptomIfNeeded,
   injectHydrationIfNeeded,
   injectJournalIfNeeded,
+  injectMedicationIfNeeded,
+  injectSupplementIfNeeded,
+  injectHabitIfNeeded,
 } from "@/services/jessActions";
 import {
   fetchWeeklyStats,
@@ -1258,6 +1261,13 @@ function JessDemoPanelInner() {
               p = injectSymptomIfNeeded(p, userMsgForInject);
               p = injectJournalIfNeeded(p, userMsgForInject);
               p = injectHydrationIfNeeded(p, userMsgForInject);
+              // QA round 16 — Medication / Supplement / Habit injectors
+              // run last so the more-specific intents above (meal plan,
+              // task, mood, symptom, journal, hydration) win in the
+              // rare cases where two regexes overlap.
+              p = injectMedicationIfNeeded(p, userMsgForInject);
+              p = injectSupplementIfNeeded(p, userMsgForInject);
+              p = injectHabitIfNeeded(p, userMsgForInject);
               tryParse = p;
             }
             parsedMessage = typeof tryParse?.message === "string"
