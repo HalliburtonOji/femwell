@@ -112,13 +112,18 @@ export default function MorningBriefSheet({ user, profile, onDismiss }) {
         const row = rows?.[0];
         if (row?.id) {
           checkinRef.current.id = row.id;
-          if (row.mood != null) {
-            const v = Number(row.mood);
+          // QA round 2 — prefer either mood key when re-opening the
+          // sheet within the same day so the tile lights up regardless
+          // of which write path created the row.
+          const moodRaw = row.mood != null ? row.mood : row.mood_score;
+          if (moodRaw != null) {
+            const v = Number(moodRaw);
             checkinRef.current.mood = v;
             setMood(v);
           }
-          if (row.energy != null) {
-            const v = Number(row.energy);
+          const energyRaw = row.energy != null ? row.energy : row.energy_level;
+          if (energyRaw != null) {
+            const v = Number(energyRaw);
             checkinRef.current.energy = v;
             setEnergy(v);
           }
@@ -143,14 +148,21 @@ export default function MorningBriefSheet({ user, profile, onDismiss }) {
 
     // Build the canonical payload matching MorningCheckinCard's shape
     // (the one TodayHeroSection reads): mood, energy + energy_level
-    // mirror, sleep_hours. Empty values are omitted so a partial
-    // patch doesn't accidentally null out an existing column.
+    // mirror, sleep_hours. QA round 2 fix — Today's mood widget actually
+    // reads `mood_score`, not `mood`. Writing BOTH keys covers both
+    // surfaces that exist today and any future ones that pick either.
+    // `day_key` is added alongside `date` for the same dual-read reason
+    // (hydration + meal entities key on day_key). Empty values are
+    // omitted so a partial patch doesn't accidentally null out an
+    // existing column.
     const payload = {
       user_id: user.id,
       created_by: user.id,
       date: today,
+      day_key: today,
+      logged_at: new Date().toISOString(),
     };
-    if (next.mood         != null) payload.mood         = next.mood;
+    if (next.mood         != null) { payload.mood = next.mood; payload.mood_score = next.mood; }
     if (next.energy       != null) { payload.energy = next.energy; payload.energy_level = next.energy; }
     if (next.sleep_hours  != null) payload.sleep_hours  = next.sleep_hours;
 
@@ -158,9 +170,10 @@ export default function MorningBriefSheet({ user, profile, onDismiss }) {
       if (next.id) {
         await base44.entities.DailyCheckins.update(next.id, payload).catch(async () => {
           // Schema drift fallback — minimal payload, only the field
-          // that just changed.
+          // that just changed, plus the dual aliases so neither read
+          // surface gets stale data.
           const minimal = { date: today };
-          if (patch.mood        != null) minimal.mood = patch.mood;
+          if (patch.mood        != null) { minimal.mood = patch.mood; minimal.mood_score = patch.mood; }
           if (patch.energy      != null) { minimal.energy = patch.energy; minimal.energy_level = patch.energy; }
           if (patch.sleep_hours != null) minimal.sleep_hours = patch.sleep_hours;
           await base44.entities.DailyCheckins.update(next.id, minimal);
@@ -168,7 +181,7 @@ export default function MorningBriefSheet({ user, profile, onDismiss }) {
       } else {
         const created = await base44.entities.DailyCheckins.create(payload).catch(async () => {
           const minimal = { user_id: user.id, created_by: user.id, date: today };
-          if (patch.mood        != null) minimal.mood = patch.mood;
+          if (patch.mood        != null) { minimal.mood = patch.mood; minimal.mood_score = patch.mood; }
           if (patch.energy      != null) { minimal.energy = patch.energy; minimal.energy_level = patch.energy; }
           if (patch.sleep_hours != null) minimal.sleep_hours = patch.sleep_hours;
           return await base44.entities.DailyCheckins.create(minimal);
