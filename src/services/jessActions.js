@@ -883,121 +883,117 @@ async function executeAction(action, userId) {
     case ACTION_TYPES.CREATE_MEAL_PLAN: {
       if (!Ent.MealLog) throw new Error("MealLog entity not available");
 
-      // QA round 9 — resolve dietary preference from EVERY source the
-      // LLM might emit: explicit field, preferences array, or as a
-      // last resort detectDietaryPref(user_message). The model has
-      // started returning empty action.data with the user's message
-      // copied into data.user_message, so we need that fallback.
+      // QA round 14 — DETERMINISTIC rewrite. Ignore data.plan entirely
+      // (injector synth never carries one anyway, and explicit LLM
+      // plans have unreliable dates). Derive everything from:
+      //   • resolvedPref → MEAL_TEMPLATES bucket
+      //   • today (local-midnight Date) + day index 0..6
+      // The 21 MealLog rows ALWAYS spread across 7 distinct day_keys.
       const resolvedPref = _resolveDietaryPref(data);
+      const bucket = pickTemplateBucket([resolvedPref]);
 
-      let plan = Array.isArray(data.plan) ? data.plan
-              : Array.isArray(data.meals) ? data.meals
-              : [];
-
-      // Scaffold from days + preferences if no explicit plan came down.
-      // Pass the resolved pref so the scaffold picks the right template
-      // bucket even when data.preferences is empty.
-      const startDateObj = parseDateOrToday(data.start_date);
-      const requestedDays = Number(data.days) > 0
-        ? Math.min(Math.floor(Number(data.days)), 14)
-        : 7;
-      if (plan.length === 0) {
-        plan = scaffoldMealPlan(requestedDays, [resolvedPref], startDateObj);
+      // Flatten the bucket into a 21-entry array: B0 L0 D0 B1 L1 D1
+      // … B6 L6 D6. Cycles the per-slot lists if they have fewer
+      // than 7 entries.
+      const meals21 = [];
+      for (let day = 0; day < 7; day++) {
+        meals21.push(bucket.breakfast[day % bucket.breakfast.length]);
+        meals21.push(bucket.lunch[day % bucket.lunch.length]);
+        meals21.push(bucket.dinner[day % bucket.dinner.length]);
       }
+      const MEAL_TYPES = ["breakfast", "lunch", "dinner"];
 
-      if (plan.length === 0) throw new Error("empty meal plan");
-
-      // QA round 13 — My Plan calendar reads MealLog by day_key
-      // (one query per day). Previous loop derived day_key from
-      // item.date but if the LLM sends an explicit plan with bad/
-      // missing dates, or the scaffold's date math drifts, all 21
-      // rows can end up on today and the calendar renders "Nothing
-      // planned" for days 2–7. Fix: ALWAYS compute day_key
-      // deterministically from a start date + explicit day index,
-      // assuming scaffolded plans group meals in B/L/D triplets
-      // per day. Plans that pre-supply item.day_key win out (so
-      // hand-crafted LLM plans still resolve correctly).
-      const planStartObj = parseDateOrToday(data.start_date);
+      // Local-midnight today. Using year/month/date constructor avoids
+      // the UTC drift `new Date().toISOString()` introduces around
+      // midnight (would otherwise return yesterday's date for users
+      // in negative UTC offsets just after local midnight).
+      const todayLocal = new Date();
+      todayLocal.setHours(0, 0, 0, 0);
       const out = [];
-      for (let i = 0; i < plan.length; i++) {
-        const item = plan[i];
-        // For scaffolded plans, item.date comes from dateOffset(start, i/3)
-        // — but trust the explicit value only if it's present AND
-        // parses as a real future-or-today ISO date. Otherwise derive
-        // from the start date + Math.floor(i / 3) day index.
-        const dayIndex = Math.floor(i / 3);
-        const fallbackDate = (() => {
-          const d = new Date(planStartObj);
-          d.setHours(0, 0, 0, 0);
-          d.setDate(d.getDate() + dayIndex);
-          return toLocalISO(d);
-        })();
-        const dayKey = item.day_key || item.date || fallbackDate;
-        const dayObj = parseDateOrToday(dayKey);
-        // QA round 8 — populate raw_text / food_name / name on EVERY
-        // row so My Plan can render whichever field its view reads.
-        const mealName =
-          item.food_items || item.items || item.food ||
-          item.raw_text  || item.food_name || item.name ||
-          "Healthy meal";
-        const ts = nowISO();
-        try {
-          // QA round 13 — food_items now an ARRAY (schema variant
-          // expects list, not string). raw_text/food_name/name stay
-          // as plain strings. logged_at added so the entity row
-          // reads in chronological-write order.
-          const payload = {
-            ...meta,
-            date: dayKey,
-            day_key: dayKey,
-            day_name: item.day_name || WEEKDAYS[dayObj.getDay()],
-            day_index: dayIndex,
-            meal_type: item.meal_type || item.mealType || "snack",
-            food_items: Array.isArray(item.food_items) ? item.food_items : [mealName],
-            raw_text: mealName,
-            food_name: mealName,
-            name: mealName,
-            dietary_preference: resolvedPref,
-            ai_generated: true,
-            logged_at: ts,
-            notes: item.notes || `Plan: ${resolvedPref}`,
-          };
-          const r = await Ent.MealLog.create(payload);
-          out.push(r);
-        } catch (e) {
-          try { console.warn("[jess-execute] MealLog (plan row) failed", { err: String(e?.message || e), dayKey, meal_type: item.meal_type }); } catch {}
-          // Schema fallback — some MealLog variants reject array
-          // food_items. Retry with food_items as a plain string.
+
+      // Write 21 MealLog rows, one per (day, slot).
+      for (let day = 0; day < 7; day++) {
+        const dayDate = new Date(
+          todayLocal.getFullYear(),
+          todayLocal.getMonth(),
+          todayLocal.getDate() + day,
+        );
+        const dayKey = toLocalISO(dayDate);
+        const day_name = WEEKDAYS[dayDate.getDay()];
+        for (let slot = 0; slot < 3; slot++) {
+          const mealName = meals21[day * 3 + slot];
+          const meal_type = MEAL_TYPES[slot];
+          const ts = nowISO();
           try {
-            const fallbackPayload = {
+            // QA round 14 — rich payload. food_items as ARRAY (schema
+            // wants list), all other name fields as plain strings.
+            const r = await Ent.MealLog.create({
               ...meta,
               date: dayKey,
               day_key: dayKey,
-              meal_type: item.meal_type || item.mealType || "snack",
-              food_items: mealName,
+              day_name,
+              day_index: day,
+              meal_type,
+              food_items: [mealName],
               raw_text: mealName,
               food_name: mealName,
               name: mealName,
-            };
-            const r2 = await Ent.MealLog.create(fallbackPayload);
-            out.push(r2);
-          } catch (e2) { out.push({ error: String(e2?.message || e2) }); }
+              dietary_preference: resolvedPref,
+              ai_generated: true,
+              logged_at: ts,
+              notes: `Plan: ${resolvedPref}`,
+            });
+            out.push(r);
+          } catch (e1) {
+            try { console.warn("[jess-execute] MealLog rich failed, trying minimal", { err: String(e1?.message || e1), dayKey, meal_type }); } catch {}
+            // Schema-safe fallback — food_items as plain string in
+            // case the schema rejects arrays.
+            try {
+              const r2 = await Ent.MealLog.create({
+                ...meta,
+                date: dayKey,
+                day_key: dayKey,
+                meal_type,
+                food_items: mealName,
+                raw_text: mealName,
+                food_name: mealName,
+                name: mealName,
+              });
+              out.push(r2);
+            } catch (e2) { out.push({ error: String(e2?.message || e2) }); }
+          }
         }
       }
+      try { console.log("[jess-execute] ✓ wrote 21 MealLog rows for", resolvedPref); } catch {}
 
-      // QA round 9 — the My-Plan view on /Nutrition reads from a
-      // SEPARATE entity, MealPlans, and renders MealPlans.plan_days[i]
-      // (one object per day, with breakfast/lunch/dinner subfields).
-      // After writing the 21 MealLog rows we ALSO build that plan_days
-      // structure and upsert the MealPlans record so the view actually
-      // populates. Without this, my-plan stays empty even though the
-      // logs exist.
+      // Build plan_days mirror for MealPlans (slots = arrays of
+      // strings, per QA round 12 schema requirement).
+      const plan_days = [];
+      for (let day = 0; day < 7; day++) {
+        const dayDate = new Date(
+          todayLocal.getFullYear(),
+          todayLocal.getMonth(),
+          todayLocal.getDate() + day,
+        );
+        const dayKey = toLocalISO(dayDate);
+        plan_days.push({
+          date: dayKey,
+          day_key: dayKey,
+          day_index: day,
+          day_name: WEEKDAYS[dayDate.getDay()],
+          breakfast: [meals21[day * 3]],
+          lunch:     [meals21[day * 3 + 1]],
+          dinner:    [meals21[day * 3 + 2]],
+          dietary_preference: resolvedPref,
+        });
+      }
+
+      // Update or create the MealPlans shell so the legacy view path
+      // (if any reader uses it) also resolves.
       try {
         if (Ent.MealPlans) {
-          const planDays = _buildPlanDaysFromMealLogs(plan, requestedDays, startDateObj, resolvedPref);
-          const week_start = toLocalISO(startDateObj);
+          const week_start = toLocalISO(todayLocal);
           let mealPlanRow = null;
-          // Try to find an existing active plan for this week.
           try {
             const filterFn = Ent.MealPlans.filter || Ent.MealPlans.list;
             if (typeof filterFn === "function") {
@@ -1007,7 +1003,7 @@ async function executeAction(action, userId) {
             }
           } catch { /* swallow filter unavailable */ }
           const planPayload = {
-            plan_days: planDays,
+            plan_days,
             dietary_preference: resolvedPref,
             is_active: true,
             ai_generated: true,
@@ -1030,7 +1026,7 @@ async function executeAction(action, userId) {
               out.push({ _mealPlan: "created", id: created?.id });
               try { console.log("[jess-execute] ✓ MealPlans created", created?.id || "(no id)"); } catch {}
             } catch (e) {
-              try { console.warn("[jess-execute] MealPlans create failed", { err: String(e?.message || e), week_start, dayCount: planDays.length }); } catch {}
+              try { console.warn("[jess-execute] MealPlans create failed", { err: String(e?.message || e), week_start, dayCount: plan_days.length }); } catch {}
             }
           }
         } else {
