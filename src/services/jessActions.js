@@ -291,6 +291,66 @@ function parseDateOrToday(s) {
   return Number.isNaN(d.getTime()) ? new Date() : d;
 }
 
+// QA round 9 — central resolver for dietary preference. The LLM has
+// started returning empty action.data ({}) with the user's prompt
+// echoed into data.user_message. Walk every plausible source before
+// falling back to "balanced".
+function _resolveDietaryPref(data) {
+  if (!data || typeof data !== "object") return "balanced";
+  if (Array.isArray(data.preferences) && data.preferences[0]) {
+    return String(data.preferences[0]).toLowerCase();
+  }
+  if (typeof data.dietary_preference === "string" && data.dietary_preference.trim()) {
+    return data.dietary_preference.trim().toLowerCase();
+  }
+  if (typeof data.diet === "string" && data.diet.trim()) {
+    return data.diet.trim().toLowerCase();
+  }
+  // Last-resort — detectDietaryPref already has the substring matchers.
+  if (typeof data.user_message === "string" && data.user_message.trim()) {
+    return detectDietaryPref(data.user_message);
+  }
+  return "balanced";
+}
+
+// QA round 9 — build the plan_days array the /Nutrition My-Plan view
+// reads from MealPlans.plan_days[i]. Each day object carries the
+// breakfast / lunch / dinner subfields plus a date + day_name. We
+// derive it from the scaffolded plan rows we just wrote to MealLog
+// so the two surfaces stay in sync.
+function _buildPlanDaysFromMealLogs(planRows, days, startDateObj, resolvedPref) {
+  // Group plan rows by date, then by meal_type.
+  const byDate = new Map();
+  for (const item of planRows) {
+    const date = item.date || toLocalISO(startDateObj);
+    if (!byDate.has(date)) byDate.set(date, {});
+    const slot = String(item.meal_type || "snack").toLowerCase();
+    const name = item.food_items || item.raw_text || item.food_name || item.name || "Healthy meal";
+    byDate.get(date)[slot] = { name, meal_type: slot, raw_text: name, food_name: name };
+  }
+  // Walk requested days in order and emit day-objects even for any
+  // dates the scaffold skipped (shouldn't happen, but be safe).
+  const out = [];
+  for (let i = 0; i < days; i++) {
+    const d = new Date(startDateObj);
+    d.setDate(startDateObj.getDate() + i);
+    const date = toLocalISO(d);
+    const day_name = WEEKDAYS[d.getDay()];
+    const slots = byDate.get(date) || {};
+    out.push({
+      date,
+      day_key: date,
+      day_name,
+      day_index: i,
+      breakfast: slots.breakfast || null,
+      lunch:     slots.lunch     || null,
+      dinner:    slots.dinner    || null,
+      dietary_preference: resolvedPref,
+    });
+  }
+  return out;
+}
+
 // QA round 7 — MealLog schema requires `day_key` (rejected all 21
 // writes with `Error in field day_key: Field required`). We don't
 // know the exact format expected so we send BOTH:
@@ -525,27 +585,30 @@ async function executeAction(action, userId) {
     case ACTION_TYPES.CREATE_MEAL_PLAN: {
       if (!Ent.MealLog) throw new Error("MealLog entity not available");
 
+      // QA round 9 — resolve dietary preference from EVERY source the
+      // LLM might emit: explicit field, preferences array, or as a
+      // last resort detectDietaryPref(user_message). The model has
+      // started returning empty action.data with the user's message
+      // copied into data.user_message, so we need that fallback.
+      const resolvedPref = _resolveDietaryPref(data);
+
       let plan = Array.isArray(data.plan) ? data.plan
               : Array.isArray(data.meals) ? data.meals
               : [];
 
       // Scaffold from days + preferences if no explicit plan came down.
+      // Pass the resolved pref so the scaffold picks the right template
+      // bucket even when data.preferences is empty.
+      const startDateObj = parseDateOrToday(data.start_date);
+      const requestedDays = Number(data.days) > 0
+        ? Math.min(Math.floor(Number(data.days)), 14)
+        : 7;
       if (plan.length === 0) {
-        const days = Number(data.days) > 0 ? Math.min(Math.floor(Number(data.days)), 14) : 7;
-        const prefs = Array.isArray(data.preferences) ? data.preferences.map(String) : [];
-        const start = parseDateOrToday(data.start_date);
-        plan = scaffoldMealPlan(days, prefs, start);
+        plan = scaffoldMealPlan(requestedDays, [resolvedPref], startDateObj);
       }
 
       if (plan.length === 0) throw new Error("empty meal plan");
 
-      // QA round 8 — capture the resolved preference so we can stamp
-      // dietary_preference on every row and pick the right friendly
-      // copy bucket for any rows where the scaffold didn't pre-fill
-      // a meal name.
-      const resolvedPref = Array.isArray(data.preferences) && data.preferences[0]
-        ? String(data.preferences[0]).toLowerCase()
-        : (data.dietary_preference || "balanced");
       const out = [];
       for (const item of plan) {
         // QA round 7 — pass through day_key + day_name from the
@@ -577,11 +640,66 @@ async function executeAction(action, userId) {
             name: mealName,
             dietary_preference: resolvedPref,
             ai_generated: true,
-            notes: item.notes || (Array.isArray(data.preferences) ? `Plan: ${data.preferences.join(", ")}` : ""),
+            notes: item.notes || `Plan: ${resolvedPref}`,
           };
           const r = await Ent.MealLog.create(payload);
           out.push(r);
         } catch (e) { out.push({ error: String(e?.message || e) }); }
+      }
+
+      // QA round 9 — the My-Plan view on /Nutrition reads from a
+      // SEPARATE entity, MealPlans, and renders MealPlans.plan_days[i]
+      // (one object per day, with breakfast/lunch/dinner subfields).
+      // After writing the 21 MealLog rows we ALSO build that plan_days
+      // structure and upsert the MealPlans record so the view actually
+      // populates. Without this, my-plan stays empty even though the
+      // logs exist.
+      try {
+        if (Ent.MealPlans) {
+          const planDays = _buildPlanDaysFromMealLogs(plan, requestedDays, startDateObj, resolvedPref);
+          const week_start = toLocalISO(startDateObj);
+          let mealPlanRow = null;
+          // Try to find an existing active plan for this week.
+          try {
+            const filterFn = Ent.MealPlans.filter || Ent.MealPlans.list;
+            if (typeof filterFn === "function") {
+              const found = await filterFn.call(Ent.MealPlans, { user_id: userId, week_start })
+                .catch(() => null);
+              if (Array.isArray(found) && found[0]?.id) mealPlanRow = found[0];
+            }
+          } catch { /* swallow filter unavailable */ }
+          const planPayload = {
+            plan_days: planDays,
+            dietary_preference: resolvedPref,
+            is_active: true,
+            ai_generated: true,
+          };
+          if (mealPlanRow?.id) {
+            try {
+              const upd = await Ent.MealPlans.update(mealPlanRow.id, planPayload);
+              out.push({ _mealPlan: "updated", id: upd?.id || mealPlanRow.id });
+              try { console.log("[jess-execute] ✓ MealPlans updated", mealPlanRow.id); } catch {}
+            } catch (e) {
+              try { console.warn("[jess-execute] MealPlans update failed", String(e?.message || e)); } catch {}
+            }
+          } else {
+            try {
+              const created = await Ent.MealPlans.create({
+                ...meta,
+                week_start,
+                ...planPayload,
+              });
+              out.push({ _mealPlan: "created", id: created?.id });
+              try { console.log("[jess-execute] ✓ MealPlans created", created?.id || "(no id)"); } catch {}
+            } catch (e) {
+              try { console.warn("[jess-execute] MealPlans create failed", { err: String(e?.message || e), week_start, dayCount: planDays.length }); } catch {}
+            }
+          }
+        } else {
+          try { console.log("[jess-execute] MealPlans entity not available — skipping shell"); } catch {}
+        }
+      } catch (e) {
+        try { console.warn("[jess-execute] MealPlans upsert threw", String(e?.message || e)); } catch {}
       }
       return out;
     }
