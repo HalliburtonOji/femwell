@@ -52,6 +52,66 @@ function memKey(uid) { return `jess_memory_${uid || "anon"}`; }
 function today() { return new Date().toISOString().split("T")[0]; }
 function nowISO() { return new Date().toISOString(); }
 
+// QA round 5 — meal-plan intent detection. When Jess refuses a
+// meal-plan request in prose ('I can't create a custom plan...')
+// the parser comes back with fallback: true and no actions. This
+// regex detects the user's intent client-side so we can inject a
+// CREATE_MEAL_PLAN action and force the scaffold to run anyway.
+export const MEAL_PLAN_REGEX =
+  /\b(?:meal\s*plan|weekly\s*meals?|7[-\s]?day(?:\s+plan)?|nutrition\s*plan|diet\s*plan|food\s*plan|plan\s*(?:my\s*)?(?:meals?|eating|diet)|create\s+(?:a\s+|me\s+a\s+)?\w*\s*meal\s*plan|make\s+(?:me\s+)?(?:a\s+)?meal\s*plan|build\s+(?:me\s+)?(?:a\s+)?meal\s*plan|generate\s+(?:a\s+)?meal\s*plan|set\s+up\s+(?:my\s+)?meals?)\b/i;
+
+const DIETARY_PREFS = [
+  { re: /\b(vegan|plant[-\s]?based)\b/i,             pref: "vegan" },
+  { re: /\b(vegetarian|veggie)\b/i,                   pref: "vegetarian" },
+  { re: /\b(pescatarian|fish)\b/i,                    pref: "pescatarian" },
+  { re: /\b(pcos)\b/i,                                pref: "pcos" },
+  { re: /\b(low[\s-]?carb|keto)\b/i,                  pref: "low-carb" },
+  { re: /\b(gluten[\s-]?free)\b/i,                    pref: "gluten-free" },
+  { re: /\b(dairy[\s-]?free)\b/i,                     pref: "dairy-free" },
+];
+
+// Pull a friendly preference string out of an arbitrary message
+// (e.g. "make me a vegetarian week plan" → "vegetarian"). Used as
+// the data.preferences value when we synthesise a CREATE_MEAL_PLAN.
+export function detectDietaryPref(text) {
+  const s = String(text || "");
+  for (const p of DIETARY_PREFS) {
+    if (p.re.test(s)) return p.pref;
+  }
+  return "balanced";
+}
+
+// QA round 5 — synthesise a CREATE_MEAL_PLAN action when Jess's
+// envelope came back empty AND the user explicitly asked for a
+// meal plan. The action goes through the same scaffoldMealPlan
+// executor as a real CREATE_MEAL_PLAN, so the user gets 21 MealLog
+// rows on /Nutrition even when the LLM tried to deflect.
+export function injectMealPlanIfNeeded(parsed, userMessage) {
+  if (!parsed || parsed._fallback === false) return parsed;
+  if (!userMessage || !MEAL_PLAN_REGEX.test(String(userMessage))) return parsed;
+  const pref = detectDietaryPref(userMessage);
+  const injected = {
+    type: "CREATE_MEAL_PLAN",
+    confidence: 0.95,
+    data: {
+      days: 7,
+      preferences: [pref],
+      user_message: userMessage.slice(0, 200),
+    },
+  };
+  // Replace the (refusal) message with a confirmation so the
+  // bubble doesn't say "I can't" while we silently write data.
+  const friendly = pref === "balanced"
+    ? "Got it — I've planned a 7-day balanced meal plan for you. Open Nutrition to see the week."
+    : `Got it — I've planned a 7-day ${pref} meal plan for you. Open Nutrition to see the week.`;
+  return {
+    message: friendly,
+    actions: [injected],
+    _fallback: false,
+    _injectedMealPlan: true,
+  };
+}
+
 // ─── Meal-plan scaffold ─────────────────────────────────────────────
 // When Jess emits a CREATE_MEAL_PLAN with `{ days, preferences }` but
 // no explicit `plan` array, build placeholder breakfast/lunch/dinner
@@ -418,15 +478,40 @@ async function executeAction(action, userId) {
     // ── Task ──
     case ACTION_TYPES.CREATE_TASK: {
       if (!Ent.PersonalTasks) throw new Error("PersonalTasks entity not available");
-      const payload = {
+      const title = data.title || data.task_title || data.text || data.name || "New task";
+      // QA round 5 — try the rich payload first; if the schema
+      // rejects any optional field, fall back to a minimal payload
+      // (user_id + title + status). Logs the exact payload that
+      // failed so future schema drifts are diagnosable.
+      const richPayload = {
         ...meta,
-        title: data.title || data.text || "Untitled task",
+        title,
         due_date: data.due_date || data.date || today(),
         time_of_day: data.time_of_day || data.timeOfDay || "",
         notes: data.notes || "",
         completed: false,
+        status: "pending",
       };
-      return await Ent.PersonalTasks.create(payload);
+      try {
+        const r = await Ent.PersonalTasks.create(richPayload);
+        try { console.log("[jess-execute] ✓ CREATE_TASK wrote (rich)", r?.id || r); } catch {}
+        return r;
+      } catch (e1) {
+        const err1 = String(e1?.message || e1);
+        try { console.warn("[jess-execute] CREATE_TASK rich payload failed", { err: err1, payload: richPayload }); } catch {}
+        // Minimal fallback — every PersonalTasks schema we know of
+        // accepts at least user_id + title.
+        try {
+          const minimal = { user_id: userId, created_by: userId, title };
+          const r2 = await Ent.PersonalTasks.create(minimal);
+          try { console.log("[jess-execute] ✓ CREATE_TASK wrote (minimal)", r2?.id || r2); } catch {}
+          return r2;
+        } catch (e2) {
+          const err2 = String(e2?.message || e2);
+          try { console.error("[jess-execute] ✗ CREATE_TASK minimal also failed", { err: err2 }); } catch {}
+          throw e2;
+        }
+      }
     }
 
     case ACTION_TYPES.COMPLETE_TASK: {
@@ -549,7 +634,17 @@ export async function executeJessActions(actions = [], userId) {
     } catch (e) {
       const err = String(e?.message || e);
       results.push({ action, error: err, success: false });
-      try { console.warn("[jess-execute] ✗ failed", { type: action.type, error: err }); } catch {}
+      // QA round 5 — log the action data alongside the error so we
+      // can see which field the entity rejected without needing
+      // server-side log access.
+      try {
+        console.warn("[jess-execute] ✗ failed", {
+          type: action.type,
+          error: err,
+          data: action.data,
+          userId,
+        });
+      } catch { /* swallow */ }
     }
   }
   return results;

@@ -68,6 +68,7 @@ import {
   saveJessMemory,
   buildMemoryContextLine,
   chipLabelForAction,
+  injectMealPlanIfNeeded,
 } from "@/services/jessActions";
 import {
   fetchWeeklyStats,
@@ -828,6 +829,12 @@ function JessDemoPanelInner() {
   // callback.
   const userRef = useRef(null);
   userRef.current = user;
+  // QA round 5 — persistent ref to the latest user message text.
+  // pendingUserMsgRef gets cleared after the first action fires, so
+  // we need a second ref that stays populated long enough for the
+  // meal-plan injector to read it from the streaming subscribe
+  // handler. Set by sendUserText, never cleared (only overwritten).
+  const lastUserMessageRef = useRef("");
 
   // ── Load data ──────────────────────────────────────────────────────────
   useEffect(() => {
@@ -1215,7 +1222,22 @@ function JessDemoPanelInner() {
           // only fires when JSON parsed cleanly.
           let parsedMessage = "";
           try {
-            const tryParse = parseJessResponse(raw);
+            const rawParse = parseJessResponse(raw);
+            // QA round 5 — pipe parseJessResponse through the
+            // meal-plan injector ONLY when this isn't a mid-stream
+            // fence-buffered chunk. If raw starts with ``` we're
+            // still waiting for Jess's real envelope to complete —
+            // we'd be pre-firing a synthesised action and racing
+            // against her actual reply. Once the stream completes
+            // (or comes back as pure prose refusal) the injector
+            // runs and writes the scaffold.
+            const startsWithFenceForInject = /^\s*```/.test(raw);
+            const tryParse = startsWithFenceForInject && rawParse?._fallback
+              ? rawParse
+              : injectMealPlanIfNeeded(
+                  rawParse,
+                  lastUserMessageRef.current || pendingUserMsgRef.current || "",
+                );
             parsedMessage = typeof tryParse?.message === "string"
               ? tryParse.message
               : "";
@@ -1808,6 +1830,8 @@ function JessDemoPanelInner() {
       // handler can pair it with the assistant reply when actions
       // execute (for the memory ring breadcrumb).
       pendingUserMsgRef.current = msg;
+      // QA round 5 — persistent ref for the meal-plan injector to read.
+      lastUserMessageRef.current = msg;
       await base44.agents.addMessage(convo, { role: "user", content: outgoing });
 
       // QA FIX 1 — 30-second streaming timeout. If the typing indicator
