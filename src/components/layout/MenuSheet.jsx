@@ -4,6 +4,7 @@ import {
   Sun, Utensils, BookOpen, Book, Sparkles, Activity, HeartPulse,
   CalendarDays, LayoutGrid, Users, Compass, Search,
   Settings, Stethoscope, UsersRound, LogOut, ChevronRight,
+  BarChart2,
 } from "lucide-react";
 import { base44 } from "@/api/base44Client";
 import { createPageUrl } from "@/utils";
@@ -17,6 +18,8 @@ const KNOWN_ROUTES = new Set([
   "/Settings", "/DoctorExport", "/PartnerSettings", "/Explore",
   "/Track", "/Onboarding", "/CycleSettings", "/Upgrade",
   "/Ideas",
+  // Sprint 11 — Unified Health Dashboard
+  "/HealthDashboard",
 ]);
 
 function safeRoute(path) {
@@ -35,6 +38,7 @@ const QUICK_TILES = [
 
 const PILLARS = [
   { label: "Track",    icon: Activity,     route: "/Track" },
+  { label: "Health",   icon: BarChart2,    route: "/HealthDashboard" },
   { label: "Pulse",    icon: HeartPulse,   route: "/Pulse" },
   { label: "Planner",  icon: CalendarDays, route: "/Planner" },
   { label: "Programs", icon: LayoutGrid,   route: "/ProgramsHub" },

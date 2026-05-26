@@ -1,34 +1,31 @@
-// HealthDashboard — Sprint 11
+// HealthDashboard — Sprint 11 (rewritten per new spec)
 //
-// Single scrollable "command-centre" view that aggregates all the
-// user's tracked health data into one page. Eight sections, top to
-// bottom:
+// /HealthDashboard — a single scrollable, mobile-first page that
+// aggregates every health entity the user logs into ONE picture.
+// All charts rendered inline as SVG; no external charting library.
 //
-//   1. Cycle & Phase strip          — reproductive / pre-ttc / ttc /
-//                                      pregnant users only
-//   2. Mood + Energy 30-day sparks  — from DailyCheckins
-//   3. Symptom frequency top-5      — from SymptomLogs
-//   4. Nutrition 7-day grid         — from MealLog + HydrationLog avg
-//   5. Medication adherence dots    — from MedicationLogs
-//   6. Sleep 14-day bars            — from DailyCheckins.sleep_hours
-//   7. Habit completion dots        — from HabitLogs
-//   8. Jess Insight card            — computed from the data above
+// Eight sections, top to bottom:
+//   1. Cycle / Life Stage strip  — gentle banner for meno stages,
+//                                  cycle day + 5-week mini calendar otherwise.
+//   2. Mood & Energy 30-day      — two side-by-side SVG sparklines,
+//                                  blush for mood, sage for energy.
+//   3. Symptom frequency top-5   — horizontal espresso bars.
+//   4. Nutrition summary         — SVG donut for days with ≥3 meals + latest plan_name.
+//   5. Adherence (HRT/med/supp)  — 14-day dot rows.
+//   6. Sleep 14-day              — vertical bars colour-coded by hours.
+//   7. Habit 30-day grid         — 5×6 GitHub-style contribution grid.
+//   8. Jess insight              — warm card + CTA + 7-day-streak flair.
 //
-// SVG sparklines are inline (no charting library). Each section
-// renders a friendly empty state with a Lucide icon when there's
-// no data.
-//
-// Sprint 9 / 10 alignment — peri / meno / post-meno users skip the
-// cycle strip entirely; the rest still apply.
+// All queries fire once at mount, in parallel. Each section gates
+// independently on its own data so empty states don't cascade.
 
 import { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import { base44 } from "@/api/base44Client";
 import { useCycleDay } from "@/hooks/useCycleDay";
-import { PHASE_RECS } from "@/data/phaseRecs";
 import {
-  Activity, Heart, Zap, Moon, Utensils, Pill, ListChecks,
-  Droplets, Brain, ChevronLeft, Sparkles,
+  BarChart2, Heart, Zap, Activity, Utensils, Pill, Moon, ListChecks,
+  Sparkles, ChevronLeft, ArrowRight,
 } from "lucide-react";
 
 const C = {
@@ -38,79 +35,63 @@ const C = {
   espresso:   "#3A2C1A",
   espressoDk: "#2A1E0E",
   muted:      "#9B8B7A",
+  mutedLight: "#D4C9B4",
   gold:       "#D4AF37",
+  goldLight:  "#F0DFA8",
   sage:       "#8FAF8F",
+  sageLight:  "#C8DDC8",
   blush:      "#E8B4B8",
+  blushLight: "#F2D4D6",
   border:     "#D4C9B4",
   rose:       "#C4849A",
 };
 
-const CYCLE_STAGES = new Set(["reproductive", "pre-ttc", "ttc", "pregnant"]);
-const MENO_STAGES  = new Set(["perimenopause", "menopause", "post-menopause"]);
+const MENO_STAGES = new Set(["perimenopause", "menopause", "post-menopause"]);
 
+const PHASE_COLOR = {
+  menstrual:   C.muted,
+  follicular:  C.sage,
+  ovulatory:   C.gold,
+  luteal:      C.blush,
+  unknown:     C.muted,
+};
 const PHASE_LABEL = {
   menstrual: "Menstrual", follicular: "Follicular",
   ovulatory: "Ovulatory", luteal: "Luteal", unknown: "Today",
 };
 
-const PHASE_COLOR = {
-  menstrual:  "#C96B9E", follicular: "#9B7FCC",
-  ovulatory:  "#E8B84B", luteal:     "#4ABFA3",
-  unknown:    "#9B8B7A",
-};
-
-function todayISO() {
-  const d = new Date();
-  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
-}
-
-function daysAgoISO(n) {
-  const d = new Date();
-  d.setDate(d.getDate() - n);
-  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
-}
-
-function lastNDayKeys(n) {
-  const out = [];
-  const today = new Date();
+function todayLocal() { const d = new Date(); d.setHours(0,0,0,0); return d; }
+function isoOf(d) { return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}-${String(d.getDate()).padStart(2,"0")}`; }
+function lastNDays(n) {
+  const out = []; const today = todayLocal();
   for (let i = n - 1; i >= 0; i--) {
-    const d = new Date(today);
-    d.setDate(today.getDate() - i);
-    out.push(`${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`);
+    const d = new Date(today); d.setDate(today.getDate() - i);
+    out.push(isoOf(d));
   }
   return out;
 }
-
-// Title-Case a snake / kebab / lowercase symptom_type for display.
 function prettyName(s) {
-  return String(s || "")
-    .replace(/[_-]+/g, " ")
-    .replace(/\w\S*/g, (w) => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase());
+  return String(s || "").replace(/[_-]+/g, " ").replace(/\w\S*/g, (w) => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase());
 }
+function readMood(r)   { const v = r?.mood_score ?? r?.mood;          return v != null ? Number(v) : null; }
+function readEnergy(r) { const v = r?.energy_level ?? r?.energy;      return v != null ? Number(v) : null; }
+function dateKeyOf(r)  { return r?.date || r?.day_key || (r?.logged_at ? String(r.logged_at).slice(0,10) : "") || (r?.created_date ? String(r.created_date).slice(0,10) : ""); }
 
-// Pull `mood` / `mood_score` (Sprint 8 dual-key) safely as a number.
-function readMood(row) {
-  if (!row) return null;
-  const v = row.mood_score != null ? row.mood_score : row.mood;
-  return v != null ? Number(v) : null;
-}
-function readEnergy(row) {
-  if (!row) return null;
-  const v = row.energy != null ? row.energy : row.energy_level;
-  return v != null ? Number(v) : null;
-}
-
-// 7-day rolling avg over an aligned-by-date array of N numbers.
-function rollingAvg7(daily) {
-  const out = new Array(daily.length).fill(null);
-  for (let i = 0; i < daily.length; i++) {
-    let sum = 0, count = 0;
-    for (let j = Math.max(0, i - 6); j <= i; j++) {
-      if (daily[j] != null) { sum += daily[j]; count++; }
-    }
-    out[i] = count > 0 ? sum / count : null;
-  }
-  return out;
+// 5-week mini calendar phase derivation. Given a profile with
+// last_period_start_date + cycle_avg_length + period_length, return
+// the phase for any given date inside the visible 5×7 grid.
+function phaseForDate(profile, date) {
+  if (!profile?.last_period_start_date) return "unknown";
+  const cycleLen  = Number(profile.cycle_avg_length) || 28;
+  const periodLen = Number(profile.period_length)    || 5;
+  const start = new Date(profile.last_period_start_date); start.setHours(0,0,0,0);
+  const days = Math.floor((date - start) / 86400000);
+  if (days < 0) return "unknown";
+  const norm = ((days % cycleLen) + cycleLen) % cycleLen + 1;
+  if (norm <= periodLen) return "menstrual";
+  if (norm <= Math.floor(cycleLen * 0.43)) return "follicular";
+  if (norm <= Math.floor(cycleLen * 0.5))  return "ovulatory";
+  return "luteal";
 }
 
 export default function HealthDashboard() {
@@ -118,13 +99,13 @@ export default function HealthDashboard() {
   const [profile, setProfile] = useState(null);
   const [loading, setLoading] = useState(true);
 
-  // Raw data buckets.
-  const [checkins30, setCheckins30] = useState([]); // last 30 days, oldest first
-  const [symptoms30, setSymptoms30] = useState([]);
-  const [meals7, setMeals7]         = useState([]);
-  const [hydration7, setHydration7] = useState([]);
-  const [meds7, setMeds7]           = useState([]);
-  const [habits7, setHabits7]       = useState([]);
+  // Raw buckets — filtered to the right windows once.
+  const [checkins, setCheckins]   = useState([]); // last 30 days
+  const [symptoms, setSymptoms]   = useState([]); // last 30 days
+  const [meals7,   setMeals7]     = useState([]);
+  const [meds14,   setMeds14]     = useState([]);
+  const [supps14,  setSupps14]    = useState([]);
+  const [habits30, setHabits30]   = useState([]);
 
   useEffect(() => {
     let cancelled = false;
@@ -134,273 +115,298 @@ export default function HealthDashboard() {
         if (!u?.id) { setLoading(false); return; }
         if (cancelled) return;
         setUser(u);
-
         const profiles = await base44.entities.UserProfile.filter({ user_id: u.id }, null, 1).catch(() => []);
         if (cancelled) return;
         setProfile(profiles?.[0] || null);
 
-        const from30 = daysAgoISO(29);
-        const from14 = daysAgoISO(13);
-        const from7  = daysAgoISO(6);
-
-        const [ci, sx, ml, hy, md, hb] = await Promise.all([
-          base44.entities.DailyCheckins.filter({ user_id: u.id }, "-date", 90).catch(() => []),
-          base44.entities.SymptomLogs.filter({ user_id: u.id }, "-date", 200).catch(() => []),
-          base44.entities.MealLog.filter({ user_id: u.id }, "-day_key", 100).catch(() => []),
-          base44.entities.HydrationLog.filter({ user_id: u.id }, "-day_key", 100).catch(() => []),
-          base44.entities.MedicationLogs.filter({ user_id: u.id }, "-date", 100).catch(() => []),
-          base44.entities.HabitLogs.filter({ user_id: u.id }, "-date", 100).catch(() => []),
+        // Spec says { created_by: user.id }. The FemWell convention is
+        // `user_id`, and `created_by` in base44 stores the email. We
+        // run both queries per entity in parallel and merge the result
+        // by id — whichever shape the schema actually keys on, the
+        // row comes through.
+        const both = async (entName) => {
+          const ent = base44.entities?.[entName];
+          if (!ent?.filter) return [];
+          const [a, b] = await Promise.all([
+            ent.filter({ user_id: u.id }).catch(() => []),
+            u.email ? ent.filter({ created_by: u.email }).catch(() => []) : Promise.resolve([]),
+          ]);
+          const seen = new Set();
+          const out = [];
+          for (const r of [...(a || []), ...(b || [])]) {
+            if (!r || seen.has(r.id)) continue;
+            seen.add(r.id);
+            out.push(r);
+          }
+          return out;
+        };
+        const [allChk, allSym, allMeal, allMed, allSupp, allHab] = await Promise.all([
+          both("DailyCheckins"),
+          both("SymptomLogs"),
+          both("MealLog"),
+          both("MedicationLogs"),
+          both("SupplementLog"),
+          both("HabitLogs"),
         ]);
         if (cancelled) return;
 
-        // Filter to the windows we need + sort oldest-first for charts.
-        const sortByDate = (a, b) => String(a.date || a.day_key || "").localeCompare(String(b.date || b.day_key || ""));
-        const keepInRange = (rows, fromIso) => (Array.isArray(rows) ? rows.filter((r) => {
-          const key = r?.date || r?.day_key || (r?.logged_at ? String(r.logged_at).slice(0, 10) : "");
-          return key && key >= fromIso;
-        }).sort(sortByDate) : []);
+        const today = todayLocal();
+        const cutoff30 = new Date(today); cutoff30.setDate(today.getDate() - 29);
+        const cutoff14 = new Date(today); cutoff14.setDate(today.getDate() - 13);
+        const cutoff7  = new Date(today); cutoff7.setDate(today.getDate()  - 6);
+        const since = (rows, cutoff) => rows
+          .filter((r) => { const k = dateKeyOf(r); return k && new Date(k) >= cutoff; })
+          .sort((a, b) => String(dateKeyOf(a)).localeCompare(String(dateKeyOf(b))));
 
-        setCheckins30(keepInRange(ci, from30));
-        setSymptoms30(keepInRange(sx, from30));
-        setMeals7(keepInRange(ml, from7));
-        setHydration7(keepInRange(hy, from7));
-        setMeds7(keepInRange(md, from7));
-        setHabits7(keepInRange(hb, from7));
+        setCheckins(since(allChk, cutoff30));
+        setSymptoms(since(allSym, cutoff30));
+        setMeals7(  since(allMeal, cutoff7));
+        setMeds14(  since(allMed,  cutoff14));
+        setSupps14( since(allSupp, cutoff14));
+        setHabits30(since(allHab,  cutoff30));
       } catch { /* swallow */ }
       finally { if (!cancelled) setLoading(false); }
     })();
     return () => { cancelled = true; };
   }, []);
 
-  const lifeStage = profile?.life_stage || "reproductive";
-  const showCycleStrip = CYCLE_STAGES.has(lifeStage);
-  const cycle = useCycleDay(profile);
+  const lifeStage   = profile?.life_stage || "reproductive";
+  const isMenoStage = MENO_STAGES.has(lifeStage);
+  const cycle       = useCycleDay(profile);
 
-  // Aligned 30-day mood + energy daily values (null where no check-in).
-  const days30 = useMemo(() => lastNDayKeys(30), []);
-  const days14 = useMemo(() => lastNDayKeys(14), []);
-  const moodDaily   = useMemo(() => alignByDate(checkins30, days30, readMood), [checkins30, days30]);
-  const energyDaily = useMemo(() => alignByDate(checkins30, days30, readEnergy), [checkins30, days30]);
-  const sleepDaily  = useMemo(() => alignByDate(checkins30.slice(-14), days14, (r) => (r?.sleep_hours != null ? Number(r.sleep_hours) : null)), [checkins30, days14]);
-  const moodAvg7    = useMemo(() => avgIgnoreNull(rollingAvg7(moodDaily).slice(-7)),   [moodDaily]);
-  const energyAvg7  = useMemo(() => avgIgnoreNull(rollingAvg7(energyDaily).slice(-7)), [energyDaily]);
-  const sleepAvg    = useMemo(() => avgIgnoreNull(sleepDaily), [sleepDaily]);
+  // ── Aligned daily series for charts ────────────────────────────
+  const days30 = useMemo(() => lastNDays(30), []);
+  const days14 = useMemo(() => lastNDays(14), []);
+  const days7  = useMemo(() => lastNDays(7),  []);
+  const moodDaily   = useMemo(() => align(checkins, days30, readMood),   [checkins, days30]);
+  const energyDaily = useMemo(() => align(checkins, days30, readEnergy), [checkins, days30]);
+  const sleepDaily  = useMemo(() => align(checkins, days14, (r) => (r?.sleep_hours != null ? Number(r.sleep_hours) : null)), [checkins, days14]);
 
-  // Top-5 most-frequent symptoms in last 30 days.
+  // Symptom top-5
   const topSymptoms = useMemo(() => {
     const counts = new Map();
-    for (const r of symptoms30) {
+    for (const r of symptoms) {
       const k = r?.symptom_type || r?.symptom_name || "";
       if (!k) continue;
       counts.set(k, (counts.get(k) || 0) + 1);
     }
-    const arr = Array.from(counts.entries()).map(([k, v]) => ({ key: k, count: v }));
-    arr.sort((a, b) => b.count - a.count);
-    return arr.slice(0, 5);
-  }, [symptoms30]);
+    return Array.from(counts.entries()).map(([k, v]) => ({ key: k, count: v })).sort((a, b) => b.count - a.count).slice(0, 5);
+  }, [symptoms]);
 
-  // 7-day meal grid: count per day_key.
-  const days7 = useMemo(() => lastNDayKeys(7), []);
+  // Nutrition donut + latest plan_name
   const mealsPerDay = useMemo(() => {
-    const map = new Map(days7.map((k) => [k, 0]));
-    for (const r of meals7) {
-      const k = r?.day_key || r?.date;
-      if (map.has(k)) map.set(k, map.get(k) + 1);
-    }
-    return days7.map((k) => map.get(k) || 0);
+    const m = new Map(days7.map((k) => [k, 0]));
+    for (const r of meals7) { const k = dateKeyOf(r); if (m.has(k)) m.set(k, m.get(k) + 1); }
+    return days7.map((k) => m.get(k) || 0);
   }, [meals7, days7]);
+  const onTrackDays = mealsPerDay.filter((c) => c >= 3).length;
+  const latestPlanName = useMemo(() => {
+    const named = meals7.filter((r) => r?.plan_name).sort((a, b) => String(dateKeyOf(b)).localeCompare(String(dateKeyOf(a))));
+    return named[0]?.plan_name || null;
+  }, [meals7]);
 
-  // 7-day hydration daily avg in glasses (250 ml each).
-  const hydrationAvgGlasses = useMemo(() => {
-    if (!hydration7.length) return null;
-    const map = new Map(days7.map((k) => [k, 0]));
-    for (const r of hydration7) {
-      const k = r?.day_key || r?.date;
-      const ml = Number(r?.amount_ml) || 0;
-      if (map.has(k)) map.set(k, map.get(k) + ml);
-    }
-    const dayTotalsMl = days7.map((k) => map.get(k) || 0);
-    const avgMl = dayTotalsMl.reduce((a, b) => a + b, 0) / 7;
-    return avgMl > 0 ? Math.round(avgMl / 250) : null;
-  }, [hydration7, days7]);
-
-  // Medication adherence — per medication, last-7-day taken dots.
+  // Adherence — group by item name, 14-day dots.
+  const hrtName = (profile?.hrt_medication || "HRT").trim() || "HRT";
   const medAdherence = useMemo(() => {
-    const byMed = new Map();
-    for (const r of meds7) {
-      const name = r?.item_name || r?.medication_name || "Medication";
-      if (!byMed.has(name)) byMed.set(name, new Set());
-      const k = r?.date || r?.day_key;
+    const groups = new Map();
+    for (const r of meds14) {
+      const name = (r?.item_name || r?.medication_name || "Medication").trim();
+      if (!groups.has(name)) groups.set(name, new Set());
+      const k = dateKeyOf(r);
       const taken = r?.taken === true || r?.taken === "true";
-      if (k && taken) byMed.get(name).add(k);
+      if (k && taken) groups.get(name).add(k);
     }
-    return Array.from(byMed.entries()).map(([name, takenSet]) => ({
+    const arr = Array.from(groups.entries()).map(([name, set]) => ({
       name,
-      dots: days7.map((k) => takenSet.has(k)),
+      isHrt: /hrt|estradiol|oestradiol|progesterone|tibolone/i.test(name) || (r => r === name)(hrtName),
+      dots: days14.map((k) => set.has(k)),
     }));
-  }, [meds7, days7]);
+    // Meno-stage users → HRT row first.
+    if (isMenoStage) {
+      arr.sort((a, b) => (b.isHrt ? 1 : 0) - (a.isHrt ? 1 : 0));
+    }
+    return arr;
+  }, [meds14, days14, hrtName, isMenoStage]);
 
-  // Habit completion — per habit, last 7-day dots.
-  const habitAdherence = useMemo(() => {
-    const byHabit = new Map();
-    for (const r of habits7) {
-      const name = r?.habit_name || r?.habit_type || "Habit";
-      if (!byHabit.has(name)) byHabit.set(name, new Set());
-      const k = r?.date || r?.day_key;
+  const suppAdherence = useMemo(() => {
+    const groups = new Map();
+    for (const r of supps14) {
+      const name = (r?.supplement_name || r?.item_name || "Supplement").trim();
+      if (!groups.has(name)) groups.set(name, new Set());
+      const k = dateKeyOf(r);
+      if (k) groups.get(name).add(k);
+    }
+    return Array.from(groups.entries()).map(([name, set]) => ({ name, dots: days14.map((k) => set.has(k)) }));
+  }, [supps14, days14]);
+
+  // Sleep avg
+  const sleepAvg = useMemo(() => {
+    const vals = sleepDaily.filter((v) => v != null && Number.isFinite(Number(v))).map(Number);
+    if (!vals.length) return null;
+    return vals.reduce((a, b) => a + b, 0) / vals.length;
+  }, [sleepDaily]);
+
+  // Habit grid 30-day completion count per day
+  const habitPerDay = useMemo(() => {
+    const m = new Map(days30.map((k) => [k, 0]));
+    for (const r of habits30) {
+      const k = dateKeyOf(r);
       const done = r?.completed === true || r?.is_completed === true;
-      if (k && done) byHabit.get(name).add(k);
+      if (k && done && m.has(k)) m.set(k, m.get(k) + 1);
     }
-    return Array.from(byHabit.entries()).map(([name, doneSet]) => ({
-      name,
-      dots: days7.map((k) => doneSet.has(k)),
-    }));
-  }, [habits7, days7]);
+    return days30.map((k) => m.get(k) || 0);
+  }, [habits30, days30]);
+  const habitsCompletedTotal = habitPerDay.reduce((a, b) => a + b, 0);
 
-  // Pick the most relevant Jess insight from the data above.
-  const insight = useMemo(() => {
-    // Trend check — last 3 days vs prior 3 days mood.
-    const recent3 = moodDaily.slice(-3).filter((v) => v != null);
-    const prior3  = moodDaily.slice(-6, -3).filter((v) => v != null);
-    if (recent3.length >= 2 && prior3.length >= 2) {
-      const r = recent3.reduce((a, b) => a + b, 0) / recent3.length;
-      const p = prior3.reduce((a, b) => a + b, 0) / prior3.length;
-      if (r < p - 0.5) {
-        return "Your mood has been dipping the past few days. Jess suggests gentle company — a warm drink, a slow walk, or a quiet evening. Reach out to someone you trust if it lingers.";
-      }
+  // Mood streak — consecutive trailing days with a mood entry.
+  const moodStreak = useMemo(() => {
+    let s = 0;
+    for (let i = moodDaily.length - 1; i >= 0; i--) {
+      if (moodDaily[i] != null) s++;
+      else break;
     }
-    if (sleepAvg != null && sleepAvg < 6) {
-      return "You've averaged under 6 hours of sleep recently. Rest is recovery — protect a wind-down window tonight and let tomorrow be quieter.";
-    }
-    if (symptoms30.length === 0 && checkins30.length > 0) {
-      return "You've had a clear stretch with no symptoms logged. Keep tracking — patterns only show up across weeks, not days.";
-    }
-    if (showCycleStrip && cycle?.phase) {
-      const block = PHASE_RECS?.[cycle.phase];
-      if (block?.movement?.tip) return block.movement.tip;
-      if (block?.nutrition?.tip) return block.nutrition.tip;
-    }
-    return "Tracking is its own kind of self-respect. Keep noticing — Jess is here when you want to talk it through.";
-  }, [moodDaily, sleepAvg, symptoms30.length, checkins30.length, cycle?.phase, showCycleStrip]);
+    return s;
+  }, [moodDaily]);
 
   if (loading) {
     return (
       <div style={shell}>
-        <p style={{ color: C.muted, fontFamily: "'Inter', system-ui, sans-serif" }}>Loading your health…</p>
+        <p style={{ color: C.muted, fontFamily: "'Inter', system-ui, sans-serif" }}>Loading your health story…</p>
       </div>
     );
   }
 
   return (
-    <div style={{ minHeight: "100vh", background: C.cream, color: C.espresso, fontFamily: "'Inter', system-ui, sans-serif", paddingBottom: 100 }}>
-      <div style={{ maxWidth: 720, margin: "0 auto", padding: "18px 18px 32px" }}>
+    <div style={{
+      minHeight: "100vh", background: C.cream, color: C.espresso,
+      fontFamily: "'Inter', system-ui, sans-serif", paddingBottom: 120,
+    }}>
+      <div style={{ maxWidth: 640, margin: "0 auto", padding: "18px 18px 32px" }}>
         <Link to="/Today" style={backLink}>
           <ChevronLeft size={16} /> Back
         </Link>
 
-        <header style={{ margin: "12px 0 20px" }}>
+        <header style={{ margin: "12px 0 18px" }}>
           <p style={{ margin: 0, fontSize: 11, fontWeight: 700, letterSpacing: "0.2em", textTransform: "uppercase", color: C.rose }}>
-            Command centre
+            Your story so far
           </p>
-          <h1 style={{ margin: "6px 0 4px", fontSize: 30, fontWeight: 600, fontFamily: "'Fraunces', Georgia, serif", color: C.espressoDk, lineHeight: 1.1, letterSpacing: -0.4 }}>
-            Your Health
+          <h1 style={{ margin: "6px 0 6px", fontSize: 30, fontWeight: 600, fontFamily: "'Fraunces', Georgia, serif", color: C.espressoDk, lineHeight: 1.1, letterSpacing: -0.4 }}>
+            Your Health Story
           </h1>
-          <p style={{ margin: 0, fontSize: 15, color: C.muted, lineHeight: 1.5 }}>
-            Everything in one place.
+          <p style={{ margin: 0, fontSize: 14.5, color: C.muted, lineHeight: 1.55 }}>
+            Here's your health picture at a glance — patterns only you can see.
           </p>
         </header>
 
-        {/* 1. Cycle strip — gated */}
-        {showCycleStrip && cycle?.phase && (
-          <CycleStrip phase={cycle.phase} day={cycle.cycleDay || cycle.dayInCycle || 1} cycleLen={cycle.cycleLen || 28} />
-        )}
+        {/* 1. Cycle / Life Stage strip */}
+        {isMenoStage
+          ? <LifeStageStrip stage={lifeStage} />
+          : <CycleStrip cycle={cycle} profile={profile} />
+        }
 
-        {/* 2. Mood + Energy sparks */}
+        {/* 2. Mood & Energy sparklines */}
         <Section title="Mood & Energy" subtitle="Last 30 days" icon={<Heart size={16} />} accent={C.blush}>
-          {moodDaily.some((v) => v != null) ? (
-            <>
-              <SparkRow label="Mood"   values={rollingAvg7(moodDaily)}   color={C.blush} avg7={moodAvg7} />
-              <SparkRow label="Energy" values={rollingAvg7(energyDaily)} color={C.sage}  avg7={energyAvg7} />
-            </>
-          ) : (
-            <Empty icon={<Heart size={20} />} text="Start tracking your check-ins to see trends here." />
-          )}
+          {moodDaily.filter((v) => v != null).length >= 3 ? (
+            <div style={{ display: "flex", gap: 12, flexWrap: "wrap" }}>
+              <SparkBlock label="Mood"   color={C.blush} values={moodDaily}   IconCmp={Heart} />
+              <SparkBlock label="Energy" color={C.sage}  values={energyDaily} IconCmp={Zap} />
+            </div>
+          ) : <Empty icon={<Heart size={20} />} text="Log your mood daily to see your pattern." />}
         </Section>
 
         {/* 3. Symptom frequency */}
         <Section title="Symptoms" subtitle="Last 30 days" icon={<Activity size={16} />} accent={C.gold}>
-          {topSymptoms.length > 0 ? (
-            <FrequencyBars items={topSymptoms} />
-          ) : (
-            <Empty icon={<Activity size={20} />} text="No symptoms logged. Tap a symptom on the Track tab to start." />
-          )}
+          {topSymptoms.length > 0
+            ? <FreqBars items={topSymptoms} />
+            : <Empty icon={<Activity size={20} />} text="No symptoms logged in the last 30 days." />}
         </Section>
 
-        {/* 4. Nutrition */}
+        {/* 4. Nutrition summary */}
         <Section title="Nutrition" subtitle="Last 7 days" icon={<Utensils size={16} />} accent={C.gold}>
-          {meals7.length > 0 || hydrationAvgGlasses != null ? (
-            <NutritionGrid mealsPerDay={mealsPerDay} hydrationAvgGlasses={hydrationAvgGlasses} />
-          ) : (
-            <Empty icon={<Utensils size={20} />} text="No meals or hydration logged this week." />
-          )}
+          {meals7.length > 0
+            ? <NutritionBlock onTrackDays={onTrackDays} totalMeals={meals7.length} planName={latestPlanName} />
+            : <Empty icon={<Utensils size={20} />} text="Start logging meals to see your nutrition picture." />}
         </Section>
 
-        {/* 5. Medication adherence */}
-        <Section title="Medications & Supplements" subtitle="Last 7 days" icon={<Pill size={16} />} accent={C.gold}>
-          {medAdherence.length > 0 ? (
-            <AdherenceList items={medAdherence} />
-          ) : (
-            <Empty icon={<Pill size={20} />} text="No medications tracked. Add one on the Track tab to see adherence." />
-          )}
+        {/* 5. Adherence */}
+        <Section title="Medications & Supplements" subtitle="Last 14 days" icon={<Pill size={16} />} accent={C.sage}>
+          {(medAdherence.length + suppAdherence.length) > 0 ? (
+            <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+              {medAdherence.map((m) => <AdherenceRow key={"med-" + m.name} name={m.name} dots={m.dots} accent={m.isHrt ? C.gold : C.sage} />)}
+              {suppAdherence.map((s) => <AdherenceRow key={"supp-" + s.name} name={s.name} dots={s.dots} accent={C.sage} />)}
+              {medAdherence.length === 0 && <p style={{ margin: 0, fontSize: 12, color: C.muted, fontStyle: "italic" }}>No medications logged yet.</p>}
+              {suppAdherence.length === 0 && <p style={{ margin: 0, fontSize: 12, color: C.muted, fontStyle: "italic" }}>No supplements logged yet.</p>}
+            </div>
+          ) : <Empty icon={<Pill size={20} />} text="No medications or supplements logged yet." />}
         </Section>
 
         {/* 6. Sleep */}
         <Section title="Sleep" subtitle="Last 14 days" icon={<Moon size={16} />} accent={C.sage}>
-          {sleepDaily.some((v) => v != null) ? (
-            <SleepBars values={sleepDaily} avg={sleepAvg} />
-          ) : (
-            <Empty icon={<Moon size={20} />} text="Log sleep hours on your morning check-in to see this." />
-          )}
+          {sleepDaily.some((v) => v != null)
+            ? <SleepBars values={sleepDaily} avg={sleepAvg} />
+            : <Empty icon={<Moon size={20} />} text="Log sleep in your Morning Brief to see trends." />}
         </Section>
 
-        {/* 7. Habits */}
-        <Section title="Habits" subtitle="Last 7 days" icon={<ListChecks size={16} />} accent={C.sage}>
-          {habitAdherence.length > 0 ? (
-            <AdherenceList items={habitAdherence} />
-          ) : (
-            <Empty icon={<ListChecks size={20} />} text="No habits tracked. Build a ritual on the Track tab." />
-          )}
+        {/* 7. Habit completion grid */}
+        <Section title="Habits" subtitle="Last 30 days" icon={<ListChecks size={16} />} accent={C.sage}>
+          {habits30.length > 0
+            ? <HabitGrid values={habitPerDay} totalCompletions={habitsCompletedTotal} />
+            : <Empty icon={<ListChecks size={20} />} text="Track habits daily to see your consistency." />}
         </Section>
 
         {/* 8. Jess insight */}
         <article style={{
           background: C.paperHi, border: `1px solid ${C.border}`,
-          borderLeft: `3px solid ${C.rose}`, borderRadius: 18,
-          padding: "16px 16px 14px", margin: "8px 0 0",
+          borderLeft: `3px solid ${C.gold}`,
+          borderRadius: 18, padding: "16px 16px 14px", margin: "8px 0 14px",
         }}>
           <header style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 8 }}>
-            <span style={{ width: 30, height: 30, borderRadius: 10, background: "rgba(196,132,154,0.18)", color: C.rose, display: "inline-flex", alignItems: "center", justifyContent: "center" }}>
-              <Sparkles size={16} />
+            <span style={{ width: 32, height: 32, borderRadius: 10, background: "rgba(212,175,55,0.18)", color: C.gold, display: "inline-flex", alignItems: "center", justifyContent: "center" }}>
+              <Sparkles size={18} />
             </span>
             <div>
-              <p style={{ margin: 0, fontSize: 10, fontWeight: 700, letterSpacing: "0.18em", textTransform: "uppercase", color: C.rose }}>Jess insight</p>
-              <h3 style={{ margin: "2px 0 0", fontSize: 15, fontWeight: 600, fontFamily: "'Fraunces', Georgia, serif", color: C.espressoDk }}>
-                Where you're at this week
+              <p style={{ margin: 0, fontSize: 10, fontWeight: 700, letterSpacing: "0.18em", textTransform: "uppercase", color: C.gold }}>From Jess</p>
+              <h3 style={{ margin: "2px 0 0", fontSize: 16, fontWeight: 600, fontFamily: "'Fraunces', Georgia, serif", color: C.espressoDk }}>
+                A quiet observation
               </h3>
             </div>
           </header>
+          {moodStreak >= 7 && (
+            <p style={{
+              margin: "0 0 10px",
+              padding: "8px 10px", borderRadius: 10,
+              background: "rgba(212,175,55,0.16)", color: C.espressoDk,
+              fontSize: 13, fontWeight: 600,
+            }}>
+              🌟 {moodStreak}-day logging streak — Jess has noticed.
+            </p>
+          )}
           <p style={{ margin: 0, fontSize: 14, color: C.espresso, lineHeight: 1.55 }}>
-            {insight}
+            Jess is watching your patterns. The more you log, the smarter her insights become.
           </p>
-          <p style={{ margin: "10px 0 0", fontSize: 10.5, color: C.muted, fontStyle: "italic" }}>
-            Not medical advice — for your own self-tracking.
-          </p>
+          <Link to="/Assistant" style={{
+            display: "inline-flex", alignItems: "center", gap: 6,
+            marginTop: 12,
+            padding: "10px 14px", borderRadius: 12,
+            background: C.espresso, color: C.cream,
+            textDecoration: "none", fontWeight: 700, fontSize: 13,
+          }}>
+            Chat with Jess <ArrowRight size={14} />
+          </Link>
         </article>
+
+        <p style={{
+          margin: "16px 4px 0", fontSize: 11, color: C.muted,
+          fontStyle: "italic", lineHeight: 1.5, textAlign: "center",
+        }}>
+          FemWell Health Story is for personal insight only — not medical advice. Jess is a wellness companion.
+        </p>
       </div>
     </div>
   );
 }
 
-// ─── Subcomponents ─────────────────────────────────────────────────
+// ─── Sub-components ───────────────────────────────────────────────
 
 function Section({ title, subtitle, icon, accent, children }) {
   return (
@@ -409,7 +415,7 @@ function Section({ title, subtitle, icon, accent, children }) {
       borderLeft: `3px solid ${accent}`, borderRadius: 18,
       padding: "14px 16px 14px", margin: "0 0 14px",
     }}>
-      <header style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 10 }}>
+      <header style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 12 }}>
         <span style={{ width: 28, height: 28, borderRadius: 8, background: accent + "22", color: accent, display: "inline-flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
           {icon}
         </span>
@@ -425,216 +431,320 @@ function Section({ title, subtitle, icon, accent, children }) {
 
 function Empty({ icon, text }) {
   return (
-    <div style={{ display: "flex", alignItems: "center", gap: 10, padding: "10px 0", color: C.muted }}>
+    <div style={{ display: "flex", alignItems: "center", gap: 10, padding: "8px 0", color: C.muted }}>
       <span style={{ flexShrink: 0, opacity: 0.6 }}>{icon}</span>
       <p style={{ margin: 0, fontSize: 13, fontStyle: "italic", lineHeight: 1.5 }}>{text}</p>
     </div>
   );
 }
 
-function CycleStrip({ phase, day, cycleLen }) {
-  const color = PHASE_COLOR[phase] || PHASE_COLOR.unknown;
-  const label = PHASE_LABEL[phase] || "Today";
-  const pct = Math.min(100, Math.max(0, ((Number(day) || 1) / Math.max(1, cycleLen)) * 100));
+function LifeStageStrip({ stage }) {
+  const map = {
+    perimenopause:    { label: "Perimenopause", line: "Hormones are shifting. Tracking is your map." },
+    menopause:        { label: "Menopause",     line: "A transition, not a problem to fix." },
+    "post-menopause": { label: "Post-menopause", line: "Steady support — bones, sleep, mood, energy." },
+  };
+  const info = map[stage] || map.perimenopause;
   return (
     <section style={{
-      background: C.paperHi, border: `1px solid ${C.border}`, borderLeft: `3px solid ${color}`,
-      borderRadius: 18, padding: "14px 16px", margin: "0 0 14px",
+      background: C.paperHi, border: `1px solid ${C.border}`,
+      borderLeft: `3px solid ${C.rose}`, borderRadius: 18,
+      padding: "14px 16px", margin: "0 0 14px",
     }}>
-      <header style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 10 }}>
-        <span style={{ width: 28, height: 28, borderRadius: 8, background: color + "22", color, display: "inline-flex", alignItems: "center", justifyContent: "center" }}>
+      <p style={{ margin: 0, fontSize: 10, fontWeight: 700, letterSpacing: "0.16em", textTransform: "uppercase", color: C.rose }}>Life stage</p>
+      <h2 style={{ margin: "4px 0 4px", fontSize: 18, fontWeight: 600, fontFamily: "'Fraunces', Georgia, serif", color: C.espressoDk }}>
+        Life stage: {info.label}
+      </h2>
+      <p style={{ margin: 0, fontSize: 13.5, color: C.muted, lineHeight: 1.5 }}>{info.line}</p>
+    </section>
+  );
+}
+
+function CycleStrip({ cycle, profile }) {
+  const phase = cycle?.phase || "unknown";
+  const day   = cycle?.cycleDay || cycle?.dayInCycle || 1;
+  const cycleLen = cycle?.cycleLen || cycle?.cycleLength || 28;
+  const tint  = PHASE_COLOR[phase] || C.muted;
+
+  // 5×7 grid spanning a centred window around today.
+  const today = todayLocal();
+  const start = new Date(today); start.setDate(today.getDate() - 17); // 17 days back so today lands in the middle
+  const cells = [];
+  for (let i = 0; i < 35; i++) {
+    const d = new Date(start); d.setDate(start.getDate() + i);
+    const p = phaseForDate(profile, d);
+    const isToday = d.getTime() === today.getTime();
+    cells.push({ p, isToday });
+  }
+
+  return (
+    <section style={{
+      background: C.paperHi, border: `1px solid ${C.border}`,
+      borderLeft: `3px solid ${tint}`, borderRadius: 18,
+      padding: "14px 16px", margin: "0 0 14px",
+    }}>
+      <header style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 12 }}>
+        <span style={{ width: 28, height: 28, borderRadius: 8, background: tint + "22", color: tint, display: "inline-flex", alignItems: "center", justifyContent: "center" }}>
           <Activity size={16} />
         </span>
         <div style={{ flex: 1 }}>
           <p style={{ margin: 0, fontSize: 10, fontWeight: 700, letterSpacing: "0.16em", textTransform: "uppercase", color: C.muted }}>Cycle</p>
           <h2 style={{ margin: "2px 0 0", fontSize: 17, fontWeight: 600, fontFamily: "'Fraunces', Georgia, serif", color: C.espressoDk }}>
-            {label} · Day {day}
+            {PHASE_LABEL[phase]} · Day {day}
           </h2>
         </div>
         <span style={{
-          padding: "4px 10px", borderRadius: 999, background: color + "22", color,
+          padding: "4px 10px", borderRadius: 999, background: tint + "22", color: tint,
           fontSize: 11, fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase",
-        }}>Day {day}/{cycleLen}</span>
+        }}>{day}/{cycleLen}</span>
       </header>
-      <div style={{ height: 8, borderRadius: 999, background: C.cream, border: `1px solid ${C.border}`, overflow: "hidden" }}>
-        <div style={{ height: "100%", width: `${pct}%`, background: color, transition: "width 240ms ease" }} />
+
+      {/* 5×7 mini calendar */}
+      <div style={{
+        display: "grid",
+        gridTemplateColumns: "repeat(7, 1fr)",
+        gap: 6,
+        padding: "4px 0",
+      }}>
+        {cells.map((c, i) => (
+          <span key={i} style={{
+            aspectRatio: "1",
+            borderRadius: 999,
+            background: PHASE_COLOR[c.p] || C.cream,
+            opacity: c.isToday ? 1 : 0.6,
+            outline: c.isToday ? `2px solid ${C.espressoDk}` : "none",
+            outlineOffset: 1,
+            border: c.p === "unknown" ? `1px solid ${C.border}` : "none",
+          }} />
+        ))}
       </div>
+      <p style={{ margin: "8px 0 0", fontSize: 11, color: C.muted, textAlign: "center" }}>
+        Today is centred. Phase colours: sage=follicular · gold=ovulatory · blush=luteal · muted=menstrual.
+      </p>
     </section>
   );
 }
 
-// Mood + Energy sparkline row. Renders an SVG sparkline filled to a
-// 1–5 scale on a cream background.
-function SparkLine({ values, color }) {
-  const W = 320, H = 56, PAD = 4;
-  const xs = values;
-  const min = 1, max = 5;
-  const points = xs.map((v, i) => {
-    const x = PAD + (i * (W - 2 * PAD)) / Math.max(1, xs.length - 1);
-    const y = v == null
-      ? null
-      : PAD + (H - 2 * PAD) * (1 - (Math.min(max, Math.max(min, v)) - min) / (max - min));
+function SparkBlock({ label, color, values, IconCmp }) {
+  // Mini SVG sparkline. 1-5 axis, last point highlighted in gold.
+  const W = 280, H = 84, PAD = 6;
+  const pts = values.map((v, i) => {
+    const x = PAD + (i * (W - 2 * PAD)) / Math.max(1, values.length - 1);
+    if (v == null) return { x, y: null };
+    const clamped = Math.min(5, Math.max(1, v));
+    const y = PAD + (H - 2 * PAD) * (1 - (clamped - 1) / 4);
     return { x, y };
   });
-  let d = "";
-  let started = false;
-  for (const p of points) {
+  let d = ""; let started = false;
+  for (const p of pts) {
     if (p.y == null) continue;
     d += started ? ` L ${p.x.toFixed(1)} ${p.y.toFixed(1)}` : `M ${p.x.toFixed(1)} ${p.y.toFixed(1)}`;
     started = true;
   }
-  return (
-    <svg viewBox={`0 0 ${W} ${H}`} preserveAspectRatio="none" style={{ width: "100%", height: H, display: "block" }}>
-      <rect x="0" y="0" width={W} height={H} fill={C.cream} />
-      <line x1={PAD} y1={H - PAD} x2={W - PAD} y2={H - PAD} stroke={C.border} strokeWidth="0.5" />
-      <path d={d} stroke={color} strokeWidth="2" fill="none" strokeLinecap="round" strokeLinejoin="round" />
-      {points.filter((p) => p.y != null).slice(-1).map((p, i) => (
-        <circle key={i} cx={p.x} cy={p.y} r="3" fill={color} />
-      ))}
-    </svg>
-  );
-}
+  // Find the last non-null point for the "today" highlight.
+  let lastReal = null;
+  for (let i = pts.length - 1; i >= 0; i--) {
+    if (pts[i].y != null) { lastReal = pts[i]; break; }
+  }
+  const definedCount = values.filter((v) => v != null).length;
+  const avg7 = (() => {
+    const tail = values.slice(-7).filter((v) => v != null);
+    if (!tail.length) return null;
+    return tail.reduce((a, b) => a + b, 0) / tail.length;
+  })();
 
-function SparkRow({ label, values, color, avg7 }) {
   return (
-    <div style={{ margin: "0 0 12px" }}>
-      <div style={{ display: "flex", alignItems: "baseline", justifyContent: "space-between", marginBottom: 4 }}>
-        <p style={{ margin: 0, fontSize: 12, fontWeight: 600, color: C.espresso }}>{label}</p>
-        <p style={{ margin: 0, fontSize: 11, color: C.muted }}>
-          {avg7 != null ? `7-day avg: ${avg7.toFixed(1)}` : "7-day avg: —"}
-        </p>
+    <div style={{
+      flex: "1 1 200px", minWidth: 240,
+      background: C.cream, border: `1px solid ${C.border}`,
+      borderRadius: 14, padding: "10px 12px",
+    }}>
+      <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 6 }}>
+        <IconCmp size={14} style={{ color }} />
+        <p style={{ margin: 0, fontSize: 12.5, fontWeight: 600, color: C.espresso }}>{label}</p>
+        <span style={{ marginLeft: "auto", fontSize: 11, color: C.muted }}>
+          {avg7 != null ? `Avg ${avg7.toFixed(1)}/5` : `${definedCount} logs`}
+        </span>
       </div>
-      <SparkLine values={values} color={color} />
+      <svg viewBox={`0 0 ${W} ${H}`} preserveAspectRatio="none" style={{ width: "100%", height: 64, display: "block" }}>
+        <line x1={PAD} y1={H - PAD} x2={W - PAD} y2={H - PAD} stroke={C.border} strokeWidth="0.6" />
+        {/* 30 dots for each daily slot */}
+        {pts.map((p, i) => p.y != null ? (
+          <circle key={i} cx={p.x} cy={p.y} r="1.6" fill={color} opacity="0.7" />
+        ) : null)}
+        <path d={d} stroke={color} strokeWidth="2" fill="none" strokeLinecap="round" strokeLinejoin="round" />
+        {lastReal && <circle cx={lastReal.x} cy={lastReal.y} r="3.5" fill={C.gold} stroke={C.espressoDk} strokeWidth="0.8" />}
+      </svg>
     </div>
   );
 }
 
-function FrequencyBars({ items }) {
+function FreqBars({ items }) {
   const max = Math.max(1, ...items.map((i) => i.count));
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
       {items.map((s) => (
-        <div key={s.key} style={{ display: "grid", gridTemplateColumns: "minmax(0, 1fr) 2fr 48px", gap: 10, alignItems: "center" }}>
+        <div key={s.key} style={{ display: "grid", gridTemplateColumns: "minmax(0, 1fr) 2fr 56px", gap: 10, alignItems: "center" }}>
           <p style={{ margin: 0, fontSize: 13, color: C.espresso, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
             {prettyName(s.key)}
           </p>
-          <div style={{ height: 10, borderRadius: 999, background: C.cream, border: `1px solid ${C.border}`, overflow: "hidden" }}>
-            <div style={{ height: "100%", width: `${(s.count / max) * 100}%`, background: C.gold }} />
+          <div style={{ height: 12, borderRadius: 999, background: C.cream, border: `1px solid ${C.border}`, overflow: "hidden" }}>
+            <div style={{ height: "100%", width: `${(s.count / max) * 100}%`, background: C.espresso }} />
           </div>
-          <p style={{ margin: 0, fontSize: 12, color: C.muted, textAlign: "right" }}>{s.count} times</p>
+          <p style={{ margin: 0, fontSize: 12, color: C.muted, textAlign: "right" }}>{s.count}×</p>
         </div>
       ))}
     </div>
   );
 }
 
-function NutritionGrid({ mealsPerDay, hydrationAvgGlasses }) {
-  const DAY_LETTERS = ["M", "T", "W", "T", "F", "S", "S"];
-  const MAX_SEGMENTS = 4; // up to 4 meals/day before clamping the column.
+function NutritionBlock({ onTrackDays, totalMeals, planName }) {
+  // SVG donut — gold ring for `onTrackDays/7`.
+  const RADIUS = 28, STROKE = 8, SIZE = 80, CENTER = SIZE / 2;
+  const circ = 2 * Math.PI * RADIUS;
+  const pct = Math.max(0, Math.min(1, onTrackDays / 7));
   return (
-    <div>
-      <div style={{ display: "grid", gridTemplateColumns: "repeat(7, 1fr)", gap: 8, alignItems: "end", padding: "6px 0 4px" }}>
-        {mealsPerDay.map((count, idx) => {
-          const filled = Math.min(MAX_SEGMENTS, count);
-          return (
-            <div key={idx} style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 4 }}>
-              <div style={{ display: "flex", flexDirection: "column-reverse", gap: 2, height: 64, width: 18 }}>
-                {Array.from({ length: MAX_SEGMENTS }).map((_, i) => (
-                  <span key={i} style={{
-                    flex: 1, borderRadius: 3,
-                    background: i < filled ? C.gold : C.cream,
-                    border: `1px solid ${C.border}`,
-                  }} />
-                ))}
-              </div>
-              <span style={{ fontSize: 10, color: C.muted, letterSpacing: "0.04em" }}>{DAY_LETTERS[idx % 7]}</span>
-            </div>
-          );
-        })}
-      </div>
-      <div style={{ display: "flex", alignItems: "center", gap: 8, marginTop: 10, padding: "8px 10px", background: C.cream, border: `1px solid ${C.border}`, borderRadius: 10 }}>
-        <Droplets size={14} style={{ color: C.sage }} />
-        <p style={{ margin: 0, fontSize: 13, color: C.espresso }}>
-          Avg hydration: <strong>{hydrationAvgGlasses != null ? `${hydrationAvgGlasses} glasses/day` : "—"}</strong>
+    <div style={{ display: "flex", alignItems: "center", gap: 16, flexWrap: "wrap" }}>
+      <svg viewBox={`0 0 ${SIZE} ${SIZE}`} style={{ width: 88, height: 88, flexShrink: 0 }}>
+        <circle cx={CENTER} cy={CENTER} r={RADIUS} fill="none" stroke={C.mutedLight} strokeWidth={STROKE} />
+        <circle cx={CENTER} cy={CENTER} r={RADIUS} fill="none"
+          stroke={C.gold} strokeWidth={STROKE} strokeLinecap="round"
+          strokeDasharray={`${(circ * pct).toFixed(2)} ${circ.toFixed(2)}`}
+          transform={`rotate(-90 ${CENTER} ${CENTER})`}
+        />
+        <text x={CENTER} y={CENTER + 5} textAnchor="middle" fontFamily="'Fraunces', Georgia, serif" fontSize="20" fontWeight="600" fill={C.espressoDk}>{onTrackDays}/7</text>
+      </svg>
+      <div style={{ flex: 1, minWidth: 160 }}>
+        <p style={{ margin: 0, fontSize: 14.5, color: C.espresso, lineHeight: 1.5 }}>
+          <strong>{totalMeals} meals</strong> logged this week.
         </p>
+        <p style={{ margin: "4px 0 0", fontSize: 12.5, color: C.muted, lineHeight: 1.5 }}>
+          {onTrackDays >= 5
+            ? "On track most days."
+            : onTrackDays >= 3
+            ? "A steady middle."
+            : "A sparse week — gentle next steps."}
+        </p>
+        {planName && (
+          <p style={{
+            margin: "8px 0 0", display: "inline-block",
+            padding: "4px 10px", borderRadius: 999,
+            background: C.cream, border: `1px solid ${C.border}`,
+            fontSize: 11.5, color: C.espresso, fontWeight: 600,
+          }}>{planName}</p>
+        )}
       </div>
     </div>
   );
 }
 
-function AdherenceList({ items }) {
+function AdherenceRow({ name, dots, accent }) {
   return (
-    <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
-      {items.map((it) => (
-        <div key={it.name} style={{ display: "grid", gridTemplateColumns: "minmax(0, 1fr) auto", gap: 12, alignItems: "center" }}>
-          <p style={{ margin: 0, fontSize: 13, color: C.espresso, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
-            {it.name}
-          </p>
-          <div style={{ display: "flex", gap: 5 }}>
-            {it.dots.map((on, i) => (
-              <span key={i} style={{
-                width: 14, height: 14, borderRadius: 999,
-                background: on ? C.sage : C.cream,
-                border: `1.5px solid ${on ? C.sage : C.border}`,
-              }} />
-            ))}
-          </div>
-        </div>
-      ))}
+    <div style={{ display: "grid", gridTemplateColumns: "minmax(0, 1fr) auto", gap: 12, alignItems: "center" }}>
+      <p style={{ margin: 0, fontSize: 13, color: C.espresso, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{name}</p>
+      <div style={{ display: "flex", gap: 4 }}>
+        {dots.map((on, i) => (
+          <span key={i} style={{
+            width: 12, height: 12, borderRadius: 999,
+            background: on ? accent : C.cream,
+            border: `1px solid ${on ? accent : C.border}`,
+          }} />
+        ))}
+      </div>
     </div>
   );
 }
 
 function SleepBars({ values, avg }) {
-  const MAX = 9;
+  const MAX = 10;
   return (
     <div>
-      <div style={{ display: "flex", gap: 4, alignItems: "end", height: 70 }}>
+      <div style={{ display: "flex", gap: 4, alignItems: "end", height: 80 }}>
         {values.map((v, i) => {
           const h = v == null ? 0 : Math.min(MAX, Math.max(0, Number(v)));
           const pct = (h / MAX) * 100;
+          const color = v == null ? C.cream
+            : h >= 7 ? C.sage
+            : h >= 5 ? C.gold
+            : C.blushLight;
+          const border = v == null ? C.border
+            : h >= 7 ? C.sage
+            : h >= 5 ? C.gold
+            : C.blush;
           return (
             <span key={i} title={v == null ? "no log" : `${v}h`}
               style={{
                 flex: 1,
-                height: `${Math.max(4, pct)}%`,
-                background: v == null ? C.cream : C.sage,
-                border: `1px solid ${v == null ? C.border : C.sage}`,
+                height: `${Math.max(6, pct)}%`,
+                background: color,
+                border: `1px solid ${border}`,
                 borderRadius: 4,
               }}
             />
           );
         })}
       </div>
-      <p style={{ margin: "8px 0 0", fontSize: 12, color: C.muted }}>
-        Avg: {avg != null ? `${avg.toFixed(1)}h / night` : "—"}
+      <p style={{ margin: "8px 0 0", fontSize: 12, color: C.muted, textAlign: "center" }}>
+        Avg {avg != null ? `${avg.toFixed(1)}h / night` : "—"}
       </p>
     </div>
   );
 }
 
-// ─── Helpers ───────────────────────────────────────────────────────
-
-function alignByDate(rows, days, extract) {
-  const map = new Map();
-  for (const r of rows) {
-    const key = r?.date || r?.day_key || (r?.logged_at ? String(r.logged_at).slice(0, 10) : "");
-    if (!key) continue;
-    const v = extract(r);
-    if (v != null) map.set(key, v);
+function HabitGrid({ values, totalCompletions }) {
+  // 5 rows × 6 cols = 30 cells (last 30 days, oldest at top-left).
+  const ROWS = 5, COLS = 6;
+  const cellColor = (n) => {
+    if (n === 0) return C.cream;
+    if (n === 1) return C.sageLight;
+    return C.sage;
+  };
+  // Fill into a 5×6 grid row-major (oldest first).
+  const cells = [];
+  for (let r = 0; r < ROWS; r++) {
+    for (let c = 0; c < COLS; c++) {
+      const idx = r * COLS + c;
+      cells.push(values[idx] || 0);
+    }
   }
-  return days.map((k) => (map.has(k) ? map.get(k) : null));
+  return (
+    <div>
+      <div style={{
+        display: "grid",
+        gridTemplateColumns: `repeat(${COLS}, 1fr)`,
+        gap: 6, padding: "2px 0",
+      }}>
+        {cells.map((n, i) => (
+          <span key={i} title={`${n} habits`} style={{
+            aspectRatio: "1",
+            borderRadius: 4,
+            background: cellColor(n),
+            border: `1px solid ${C.border}`,
+          }} />
+        ))}
+      </div>
+      <p style={{ margin: "10px 0 0", fontSize: 13, color: C.espresso }}>
+        <strong>{totalCompletions}</strong> habit{totalCompletions === 1 ? "" : "s"} completed this month.
+      </p>
+    </div>
+  );
 }
 
-function avgIgnoreNull(arr) {
-  const vals = (arr || []).filter((v) => v != null && Number.isFinite(Number(v))).map(Number);
-  if (vals.length === 0) return null;
-  return vals.reduce((a, b) => a + b, 0) / vals.length;
+// ─── Helpers ──────────────────────────────────────────────────────
+
+function align(rows, dayKeys, extract) {
+  const map = new Map();
+  for (const r of rows) {
+    const k = dateKeyOf(r);
+    if (!k) continue;
+    const v = extract(r);
+    if (v != null) map.set(k, v);
+  }
+  return dayKeys.map((k) => (map.has(k) ? map.get(k) : null));
 }
 
 const shell = {
-  minHeight: "100vh",
-  background: C.cream,
+  minHeight: "100vh", background: C.cream,
   display: "flex", alignItems: "center", justifyContent: "center",
 };
 const backLink = {
