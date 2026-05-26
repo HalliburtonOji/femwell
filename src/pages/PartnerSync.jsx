@@ -75,127 +75,171 @@ const DEFAULT_SETTINGS = {
 };
 
 export default function PartnerSync() {
+  // QA fix — separated the share code + sharing settings out of the
+  // `profile` object. Previously the code was nested in `profile`, and
+  // when the server silently dropped `partner_share_code` on write
+  // (likely because the entity schema doesn't define it yet), the
+  // local `profile` mutation persisted for the session but every
+  // reload re-fetched a row with no code and minted a new one.
+  //
+  // With dedicated top-level state for `shareCode`, the load-or-create
+  // logic in the effect can run exactly once per user.id, decide what
+  // to do based on the value freshly returned by the server, and the
+  // rest of the page renders straight off `shareCode` (not via a
+  // derived field on `profile`).
   const [user, setUser] = useState(null);
-  const [profile, setProfile] = useState(null);
+  const [profileId, setProfileId] = useState(null);
+  const [shareCode, setShareCode] = useState("");
+  const [sharingSettings, setSharingSettings] = useState(DEFAULT_SETTINGS);
+  const [profileForPreview, setProfileForPreview] = useState(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [copied, setCopied] = useState(false);
   const [previewOpen, setPreviewOpen] = useState(false);
 
-  // Load user + profile, mint + persist share code if missing.
-  //
-  // QA fix — the previous loop wrapped the UserProfile.update call in a
-  // silent `.catch(() => {})` and mutated the local `p` object whether
-  // the write succeeded or not, so the partner view at /partner?code=…
-  // always returned "link invalid" even though the UI showed a code.
-  //
-  // The new flow:
-  //   1. Re-use any existing 6-char `partner_share_code` (stability
-  //      across reloads).
-  //   2. If missing OR not a 6-char string, generate a fresh code AND
-  //      AWAIT the UserProfile.update — using the returned row as the
-  //      source of truth.
-  //   3. If the write fails (schema reject, transient), log loudly
-  //      AND fall back to the local code so the user sees something,
-  //      but they know the persist didn't happen (the live partner
-  //      view will still fail until the schema accepts the field).
+  // Resolve the auth user once on mount. Once `user.id` is in state the
+  // load-or-create effect below can fire with a stable dep.
   useEffect(() => {
     let cancelled = false;
     (async () => {
       try {
         const me = await base44.auth.me().catch(() => null);
-        if (!me?.id || cancelled) { setLoading(false); return; }
-        setUser(me);
-        const profiles = await base44.entities.UserProfile
-          .filter({ user_id: me.id }, null, 1)
-          .catch(() => []);
-        if (cancelled) return;
-        let p = profiles?.[0] || null;
-        if (!p?.id) { setLoading(false); return; }
-
-        // ── Persist share code ──
-        const existingCode = typeof p.partner_share_code === "string" ? p.partner_share_code.trim() : "";
-        const needsCode = !existingCode || existingCode.length !== 6;
-        if (needsCode) {
-          const code = generateShareCode();
-          try {
-            const updated = await base44.entities.UserProfile.update(p.id, { partner_share_code: code });
-            // Use the server's returned row when present so local state
-            // matches what the partner-view query will see.
-            if (updated && typeof updated === "object") {
-              p = { ...p, ...updated, partner_share_code: updated.partner_share_code || code };
-            } else {
-              p = { ...p, partner_share_code: code };
-            }
-            // eslint-disable-next-line no-console
-            console.info("[partner-sync] share code persisted:", p.partner_share_code);
-          } catch (e) {
-            // eslint-disable-next-line no-console
-            console.error("[partner-sync] share code write FAILED — partner link will not resolve:", e?.message || e);
-            // Still expose the code locally so the user isn't staring
-            // at a blank — but they'll need a schema fix to make the
-            // partner view actually load.
-            p = { ...p, partner_share_code: code };
-          }
-        }
-
-        // ── Persist default sharing settings on first open ──
-        if (!p.partner_sharing_settings || typeof p.partner_sharing_settings !== "object") {
-          try {
-            const updated = await base44.entities.UserProfile.update(p.id, {
-              partner_sharing_settings: DEFAULT_SETTINGS,
-            });
-            if (updated && typeof updated === "object") {
-              p = { ...p, ...updated, partner_sharing_settings: updated.partner_sharing_settings || DEFAULT_SETTINGS };
-            } else {
-              p = { ...p, partner_sharing_settings: DEFAULT_SETTINGS };
-            }
-          } catch (e) {
-            // eslint-disable-next-line no-console
-            console.error("[partner-sync] sharing settings write FAILED:", e?.message || e);
-            p = { ...p, partner_sharing_settings: DEFAULT_SETTINGS };
-          }
-        }
-        setProfile(p);
-      } catch { /* swallow */ }
-      finally { if (!cancelled) setLoading(false); }
+        if (!cancelled) setUser(me || null);
+      } catch { if (!cancelled) setUser(null); }
     })();
     return () => { cancelled = true; };
   }, []);
 
-  const shareCode = profile?.partner_share_code || "";
+  // Load-or-create flow. Runs once per user.id change — NOT on every
+  // render and NOT when shareCode / settings state changes (those are
+  // separate state slots specifically to avoid triggering re-runs of
+  // this effect).
+  useEffect(() => {
+    if (!user?.id) { setLoading(false); return; }
+    let cancelled = false;
+    async function loadOrCreateCode() {
+      try {
+        // Two fetch strategies in fallback chain — FemWell convention
+        // (`user_id`) first, base44 SDK convention (`created_by` = the
+        // auth email) second. Whichever resolves a row wins.
+        let profiles = await base44.entities.UserProfile
+          .filter({ user_id: user.id }, null, 1)
+          .catch(() => []);
+        if ((!profiles || profiles.length === 0) && user?.email) {
+          profiles = await base44.entities.UserProfile
+            .filter({ created_by: user.email }, null, 1)
+            .catch(() => []);
+        }
+        if (cancelled) return;
+        const profile = profiles?.[0];
+        if (!profile?.id) { setLoading(false); return; }
+        setProfileId(profile.id);
+        setProfileForPreview(profile);
+
+        // ── 1) Share code: re-use existing 6-char string, else mint + persist ──
+        const existing = typeof profile.partner_share_code === "string"
+          ? profile.partner_share_code.trim()
+          : "";
+        if (existing && existing.length === 6) {
+          // eslint-disable-next-line no-console
+          console.info("[partner-sync] re-using existing share code:", existing);
+          setShareCode(existing);
+        } else {
+          const newCode = generateShareCode();
+          try {
+            const updated = await base44.entities.UserProfile.update(
+              profile.id,
+              { partner_share_code: newCode },
+            );
+            // Critical — only commit to local state with what the
+            // server returns. If the server drops the field (schema
+            // missing), the returned `partner_share_code` will be
+            // undefined and we log + still display the minted code so
+            // the user sees something — but they'll know the persist
+            // didn't take and the partner view will keep failing
+            // until the schema accepts the field.
+            const persisted = updated && typeof updated === "object"
+              ? (updated.partner_share_code || "")
+              : "";
+            if (persisted && persisted.length === 6) {
+              // eslint-disable-next-line no-console
+              console.info("[partner-sync] new share code persisted:", persisted);
+              setShareCode(persisted);
+              setProfileForPreview((prev) => prev ? { ...prev, partner_share_code: persisted } : prev);
+            } else {
+              // eslint-disable-next-line no-console
+              console.error(
+                "[partner-sync] share code update returned no partner_share_code — schema likely doesn't accept the field. Showing local code only:",
+                newCode,
+                "server response:",
+                updated,
+              );
+              setShareCode(newCode);
+            }
+          } catch (e) {
+            // eslint-disable-next-line no-console
+            console.error("[partner-sync] share code write FAILED:", e?.message || e);
+            setShareCode(newCode);
+          }
+        }
+
+        // ── 2) Sharing settings: re-use if present, else default + persist ──
+        if (profile.partner_sharing_settings && typeof profile.partner_sharing_settings === "object") {
+          setSharingSettings({ ...DEFAULT_SETTINGS, ...profile.partner_sharing_settings });
+        } else {
+          try {
+            await base44.entities.UserProfile.update(
+              profile.id,
+              { partner_sharing_settings: DEFAULT_SETTINGS },
+            );
+            // eslint-disable-next-line no-console
+            console.info("[partner-sync] default sharing settings persisted");
+          } catch (e) {
+            // eslint-disable-next-line no-console
+            console.error("[partner-sync] sharing settings write FAILED:", e?.message || e);
+          }
+          setSharingSettings(DEFAULT_SETTINGS);
+        }
+      } catch (e) {
+        // eslint-disable-next-line no-console
+        console.error("[partner-sync] load-or-create threw:", e?.message || e);
+      } finally {
+        if (!cancelled) setLoading(false);
+      }
+    }
+    loadOrCreateCode();
+    return () => { cancelled = true; };
+  }, [user?.id, user?.email]);
+
   const shareUrl = useMemo(() => {
     if (!shareCode) return "";
     const origin = typeof window !== "undefined" && window.location ? window.location.origin : "https://femwells.com";
     return `${origin}/partner?code=${shareCode}`;
   }, [shareCode]);
 
-  const settings = profile?.partner_sharing_settings || DEFAULT_SETTINGS;
-
-  // QA fix — every toggle flip PATCHes UserProfile.partner_sharing_settings
-  // and awaits the result. If the write fails we roll the optimistic
-  // state back so the UI matches the DB. Console-log the outcome so the
-  // toggle behaviour can be verified end-to-end in DevTools.
+  // QA fix — toggle handler matches the spec. Optimistic update with a
+  // rollback on failure. `profileId` is captured in dedicated state so
+  // it doesn't disappear when settings get rewritten.
   async function toggle(key) {
-    if (!profile?.id || saving) return;
+    if (!profileId || saving) return;
     setSaving(true);
-    const prevSettings = settings;
-    const next = { ...settings, [key]: !settings[key] };
-    setProfile((prev) => ({ ...prev, partner_sharing_settings: next }));
+    const prevSettings = sharingSettings;
+    const updated = { ...sharingSettings, [key]: !sharingSettings[key] };
+    setSharingSettings(updated);
     try {
-      const updated = await base44.entities.UserProfile.update(profile.id, { partner_sharing_settings: next });
-      if (updated && typeof updated === "object") {
-        setProfile((prev) => ({ ...prev, ...updated, partner_sharing_settings: updated.partner_sharing_settings || next }));
-      }
+      await base44.entities.UserProfile.update(profileId, { partner_sharing_settings: updated });
       // eslint-disable-next-line no-console
-      console.info("[partner-sync] toggle persisted:", key, "→", next[key]);
+      console.info("[partner-sync] toggle persisted:", key, "→", updated[key]);
     } catch (e) {
-      // Roll back the optimistic UI change so it doesn't lie about state.
-      setProfile((prev) => ({ ...prev, partner_sharing_settings: prevSettings }));
+      setSharingSettings(prevSettings);
       // eslint-disable-next-line no-console
       console.error("[partner-sync] toggle write FAILED:", key, e?.message || e);
     } finally { setSaving(false); }
   }
+
+  // Keep a `settings` alias so existing JSX below reads the right
+  // variable without a sweep. Same shape, same defaults.
+  const settings = sharingSettings;
 
   async function copyLink() {
     if (!shareUrl) return;
@@ -436,7 +480,7 @@ export default function PartnerSync() {
             ><XIcon size={16} /></button>
           </header>
           <div style={{ flex: 1, overflowY: "auto" }}>
-            <PartnerPreviewBody user={user} profile={profile} settings={settings} />
+            <PartnerPreviewBody user={user} profile={profileForPreview} settings={settings} />
           </div>
         </div>
       )}
