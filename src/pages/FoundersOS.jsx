@@ -31,9 +31,7 @@
 import { useEffect, useMemo, useState, useCallback } from "react";
 import { useAuth } from "@/lib/AuthContext";
 import { base44 } from "@/api/base44Client";
-import HealthCornerOverview from "./HealthCornerOverview";
-import HealthCornerSkinHair from "./HealthCornerSkinHair";
-import HealthCornerBody from "./HealthCornerBody";
+import HealthCornerDemo from "./HealthCornerDemo";
 
 // ─── Tokens ────────────────────────────────────────────────────────────
 const T = {
@@ -59,7 +57,7 @@ const ALLOWED = new Set([
   "ojihalliburton57@gmail.com",
 ]);
 
-const TABS = ["Lab", "Pages", "Roadmap", "Ideas", "Strategy", "Legal", "Decisions", "🏥 HC: Overview", "✨ HC: Skin & Hair", "🩺 HC: Body"];
+const TABS = ["Lab", "Pages", "Roadmap", "Ideas", "Strategy", "Legal", "Decisions", "🏥 Health Corner"];
 
 const IDEAS_KEY  = "femwell_ideas";
 const CHECKS_KEY = "femwell_founder_checks";
@@ -474,9 +472,7 @@ function FoundersInner({ user }) {
         {tab === "Strategy"  && <StrategyTab />}
         {tab === "Legal"     && <LegalTab />}
         {tab === "Decisions" && <DecisionsTab />}
-        {tab === "🏥 HC: Overview"   && <HealthCornerOverview {...hc} />}
-        {tab === "✨ HC: Skin & Hair" && <HealthCornerSkinHair {...hc} />}
-        {tab === "🩺 HC: Body"       && <HealthCornerBody {...hc} />}
+        {tab === "🏥 Health Corner" && <HealthCornerDemo {...hc} />}
       </main>
     </FullBleed>
   );
