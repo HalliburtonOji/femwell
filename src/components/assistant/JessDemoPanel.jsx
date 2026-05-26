@@ -2279,7 +2279,22 @@ function JessDemoPanelInner() {
             color: C.mutedText, fontFamily: "'Inter', sans-serif",
           }}>
             <span aria-hidden style={{ width: 6, height: 6, borderRadius: 9999, background: shell.accent }} />
-            <span>Day {dayInCycle} · {shell.label}</span>
+            {/* Sprint 10 follow-on — the persistent header subtitle was
+                the second spot still rendering "Day N · Phase" for peri /
+                meno / post-meno users. Guard mirrors BriefTab + the
+                opener message. */}
+            {(() => {
+              const lifeStageNow = profile?.life_stage;
+              const isMenoStageNow = !!lifeStageNow && ["perimenopause", "menopause", "post-menopause"].includes(lifeStageNow);
+              const MENO_HEADER = {
+                perimenopause: "Perimenopause",
+                menopause: "Menopause",
+                "post-menopause": "Post-menopause",
+              };
+              return isMenoStageNow
+                ? <span>{MENO_HEADER[lifeStageNow] || "Life stage"}</span>
+                : <span>Day {dayInCycle} · {shell.label}</span>;
+            })()}
           </div>
         </div>
         <button
