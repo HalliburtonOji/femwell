@@ -370,6 +370,19 @@
       "type": "boolean",
       "default": false
     },
+    "partner_share_code": {
+      "type": "string",
+      "description": "6-char uppercase alphanumeric code that the partner-view route resolves against. Minted client-side on first /PartnerSync open."
+    },
+    "partner_sharing_settings": {
+      "type": "object",
+      "description": "Which of the three partner cards the share-code view should render.",
+      "properties": {
+        "show_mood_energy": { "type": "boolean", "default": true },
+        "show_phase":       { "type": "boolean", "default": true },
+        "show_tips":        { "type": "boolean", "default": true }
+      }
+    },
     "created_at": {
       "type": "string"
     },
