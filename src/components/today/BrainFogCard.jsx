@@ -56,12 +56,12 @@ export default function BrainFogCard({ user }) {
     if (!user?.id || saving) return;
     setSaving(true);
     try {
-      // QA fix — `date` must be present in BOTH the rich and minimal
-      // payloads so SymptomLogs always has a queryable per-day key.
-      // The previous shape carried it but the QA report flagged it as
-      // missing — locking it in explicitly here so a future re-edit
-      // of the rich payload can't silently drop it.
-      const dateStr = today; // YYYY-MM-DD local
+      // QA fix — SymptomLogs requires `date` in strict YYYY-MM-DD
+      // format. Server returned 422 when the slot was missing OR when
+      // it inherited from the closure-level `today`. Computing
+      // `dateStr` inline with `toISOString().slice(0, 10)` at call
+      // time guarantees the shape and can't go stale across midnight.
+      const dateStr = new Date().toISOString().slice(0, 10);
       const rich = {
         user_id: user.id,
         created_by: user.id,

@@ -941,6 +941,21 @@ function JessDemoPanelInner() {
             : `Hello, ${firstName}. Many things shift in post-menopause — Jess will help you notice what changes and what steadies. How are you feeling today?`)
         : `Hello, ${firstName}. I can see you're on day ${dayInCycle} of your ${phase} phase — ` +
           `${PHASE_OPENING_LINE[phase] || PHASE_OPENING_LINE.follicular}. How are you feeling?`;
+      // Sprint 9 QA fix — strip the "What's coming in my cycle?" chip
+      // for peri/meno/post-meno users and replace it with a stage-
+      // appropriate prompt. The rest of the chip list stays the same.
+      const MENO_CHIP_SWAPS = {
+        perimenopause:    "Tell me about perimenopause",
+        menopause:        "How do I manage hot flashes?",
+        "post-menopause": "What should I be tracking now?",
+      };
+      const baseChips = SUGGESTION_CHIPS.slice(0, 5);
+      const openerChips = isMenoStage
+        ? baseChips.map((c) =>
+            c === "What's coming in my cycle?"
+              ? (MENO_CHIP_SWAPS[lifeStage] || "How do I manage hot flashes?")
+              : c)
+        : baseChips;
       setMessages([
         {
           id: uid(),
@@ -948,7 +963,7 @@ function JessDemoPanelInner() {
           type: "bubble",
           text: opener,
           time: fmtTimeAmPm(),
-          chips: SUGGESTION_CHIPS.slice(0, 5),
+          chips: openerChips,
         },
       ]);
     }, 1400);
@@ -2142,6 +2157,12 @@ function JessDemoPanelInner() {
           if (Array.isArray(m.chipsUsedList)) for (const c of m.chipsUsedList) used.add(c);
         }
         used.add(chipLabel);
+        // Sprint 9 QA fix — also exclude the cycle-only chip for peri /
+        // meno / post-meno users so it can't re-appear later in the
+        // chip rotation.
+        const lifeStageNow = profile?.life_stage;
+        const isMenoStageNow = !!lifeStageNow && ["perimenopause", "menopause", "post-menopause"].includes(lifeStageNow);
+        if (isMenoStageNow) used.add("What's coming in my cycle?");
         const remaining = SUGGESTION_CHIPS.filter((c) => !used.has(c)).slice(0, 5);
         return [
           ...prev,
@@ -2368,6 +2389,7 @@ function JessDemoPanelInner() {
         )}
         {tab === "brief"    && (
           <BriefTab phase={phase} dayInCycle={dayInCycle} shell={shell} tasks={tasks} energySpark={energySpark}
+            lifeStage={profile?.life_stage}
             tabChip="Jess, summarise my week" onTabChip={handleProactiveChip} />
         )}
         {tab === "insights" && (
@@ -3442,8 +3464,21 @@ function TypingIndicator() {
 }
 
 // ─── Today's Brief tab ────────────────────────────────────────────────────
-function BriefTab({ phase, dayInCycle, shell, tasks, energySpark, tabChip, onTabChip }) {
+function BriefTab({ phase, dayInCycle, shell, tasks, energySpark, lifeStage, tabChip, onTabChip }) {
   const copy = PHASE_COPY[phase] || PHASE_COPY.follicular;
+  // Sprint 9 QA fix — peri / meno / post-meno users have no meaningful
+  // cycle phase. Replace the "Phase · Day N" subtitle (and the kicker
+  // label above it) with their life stage so the header tracks reality.
+  const isMenoStage = !!lifeStage && ["perimenopause", "menopause", "post-menopause"].includes(lifeStage);
+  const MENO_LABEL = {
+    perimenopause: "Perimenopause",
+    menopause: "Menopause",
+    "post-menopause": "Post-menopause",
+  };
+  const headerKicker = isMenoStage ? "This stage" : "This phase";
+  const headerTitle = isMenoStage
+    ? (MENO_LABEL[lifeStage] || "Your stage")
+    : `${shell.label} · Day ${dayInCycle}`;
   const upcomingPhase = phase === "menstrual" ? "Follicular"
                      : phase === "follicular" ? "Ovulatory · day 14"
                      : phase === "ovulatory" ? "Luteal"
@@ -3454,11 +3489,11 @@ function BriefTab({ phase, dayInCycle, shell, tasks, energySpark, tabChip, onTab
     <div style={{ padding: "14px 16px 24px", display: "flex", flexDirection: "column", gap: 12 }}>
       <TabChip chip={tabChip} onTap={onTabChip} />
       <Card animationDelay={0}>
-        <p style={kicker}>This phase</p>
+        <p style={kicker}>{headerKicker}</p>
         <h2 style={{
           margin: "2px 0 6px", fontFamily: "'Fraunces', Georgia, serif",
           fontSize: 22, fontWeight: 600, color: C.espresso, letterSpacing: "-0.01em",
-        }}>{shell.label} · Day {dayInCycle}</h2>
+        }}>{headerTitle}</h2>
         <p style={{
           margin: 0, fontSize: 13, color: C.mutedText,
           fontFamily: "'Inter', sans-serif", lineHeight: 1.55,

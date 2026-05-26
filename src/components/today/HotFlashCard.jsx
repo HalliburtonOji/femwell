@@ -69,6 +69,12 @@ export default function HotFlashCard({ user }) {
     if (!user?.id || saving) return;
     setSaving(true);
     try {
+      // QA fix — SymptomLogs requires `date` in strict YYYY-MM-DD format
+      // (server rejected with 422 when this slot was missing or relied on
+      // the closure variable). Computing `dateStr` inline at call time
+      // with `toISOString().slice(0, 10)` guarantees the right shape and
+      // can't go stale across day boundaries.
+      const dateStr = new Date().toISOString().slice(0, 10);
       const rich = {
         user_id: user.id,
         created_by: user.id,
@@ -77,18 +83,18 @@ export default function HotFlashCard({ user }) {
         severity,
         count: count,
         notes: lastFlashTime ? `Last at ${lastFlashTime}` : "",
-        date: today,
+        date: dateStr,
         logged_at: new Date().toISOString(),
         created_at: new Date().toISOString(),
         updated_at: new Date().toISOString(),
       };
       const created = await base44.entities.SymptomLogs.create(rich).catch(async () => {
-        // Schema drift fallback — minimal payload.
+        // Schema drift fallback — minimal payload (same dateStr).
         const minimal = {
           user_id: user.id,
           symptom_type: "hot_flash",
           severity,
-          date: today,
+          date: dateStr,
         };
         return await base44.entities.SymptomLogs.create(minimal);
       });
