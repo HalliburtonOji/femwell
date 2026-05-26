@@ -31,9 +31,9 @@
 import { useEffect, useMemo, useState, useCallback } from "react";
 import { useAuth } from "@/lib/AuthContext";
 import { base44 } from "@/api/base44Client";
-import HealthStoryDemo from "./HealthStoryDemo";
-import WeatherDemo from "./WeatherDemo";
-import LetterDemo from "./LetterDemo";
+import HealthCornerOverview from "./HealthCornerOverview";
+import HealthCornerSkinHair from "./HealthCornerSkinHair";
+import HealthCornerBody from "./HealthCornerBody";
 
 // ─── Tokens ────────────────────────────────────────────────────────────
 const T = {
@@ -59,7 +59,7 @@ const ALLOWED = new Set([
   "ojihalliburton57@gmail.com",
 ]);
 
-const TABS = ["Lab", "Pages", "Roadmap", "Ideas", "Strategy", "Legal", "Decisions", "Health Story ✨", "🌤 The Weather", "💌 The Letter"];
+const TABS = ["Lab", "Pages", "Roadmap", "Ideas", "Strategy", "Legal", "Decisions", "🏥 HC: Overview", "✨ HC: Skin & Hair", "🩺 HC: Body"];
 
 const IDEAS_KEY  = "femwell_ideas";
 const CHECKS_KEY = "femwell_founder_checks";
@@ -336,6 +336,60 @@ function NotAuthorised() {
 function FoundersInner({ user }) {
   const [tab, setTab] = useState("Lab");
 
+  // ── Shared Health Corner data fetch (Sprint 13). ──────────────────
+  // All three "HC: …" tabs read from the same set of entities. We
+  // fetch once at this level and pass the buckets down as props so
+  // each tab renders instantly when switched.
+  // FemWell convention: `user_id` AND `created_by` (email) both occur
+  // in the wild depending on which writer created the row. We merge.
+  const [hc, setHc] = useState({
+    profile: null,
+    checkins: [], symptoms: [], meals: [], meds: [], supps: [], habits: [], skinLogs: [],
+    loading: true,
+  });
+  useEffect(() => {
+    if (!user?.id) return;
+    let cancelled = false;
+    (async () => {
+      try {
+        const both = async (entName) => {
+          const ent = base44.entities?.[entName];
+          if (!ent?.filter) return [];
+          const [a, b] = await Promise.all([
+            ent.filter({ user_id: user.id }).catch(() => []),
+            user.email ? ent.filter({ created_by: user.email }).catch(() => []) : Promise.resolve([]),
+          ]);
+          const seen = new Set(); const out = [];
+          for (const r of [...(a || []), ...(b || [])]) {
+            if (!r || seen.has(r.id)) continue;
+            seen.add(r.id); out.push(r);
+          }
+          return out;
+        };
+        const [profiles, chk, sym, meal, med, supp, hab, skin] = await Promise.all([
+          base44.entities.UserProfile.filter({ user_id: user.id }, null, 1).catch(() => []),
+          both("DailyCheckins"),
+          both("SymptomLogs"),
+          both("MealLog"),
+          both("MedicationLogs"),
+          both("SupplementLog"),
+          both("HabitLogs"),
+          base44.entities?.SkinHairLogs ? both("SkinHairLogs") : Promise.resolve([]),
+        ]);
+        if (cancelled) return;
+        setHc({
+          profile: profiles?.[0] || null,
+          checkins: chk, symptoms: sym, meals: meal,
+          meds: med, supps: supp, habits: hab, skinLogs: skin,
+          loading: false,
+        });
+      } catch {
+        if (!cancelled) setHc((s) => ({ ...s, loading: false }));
+      }
+    })();
+    return () => { cancelled = true; };
+  }, [user?.id, user?.email]);
+
   return (
     <FullBleed>
       {/* Fixed top bar */}
@@ -420,9 +474,9 @@ function FoundersInner({ user }) {
         {tab === "Strategy"  && <StrategyTab />}
         {tab === "Legal"     && <LegalTab />}
         {tab === "Decisions" && <DecisionsTab />}
-        {tab === "Health Story ✨" && <HealthStoryDemo user={user} />}
-        {tab === "🌤 The Weather"  && <WeatherDemo user={user} />}
-        {tab === "💌 The Letter"   && <LetterDemo user={user} />}
+        {tab === "🏥 HC: Overview"   && <HealthCornerOverview {...hc} />}
+        {tab === "✨ HC: Skin & Hair" && <HealthCornerSkinHair {...hc} />}
+        {tab === "🩺 HC: Body"       && <HealthCornerBody {...hc} />}
       </main>
     </FullBleed>
   );
