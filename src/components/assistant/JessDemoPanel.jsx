@@ -2296,6 +2296,14 @@ function JessDemoPanelInner() {
                 : <span>Day {dayInCycle} · {shell.label}</span>;
             })()}
           </div>
+          {/* Sprint 12 batch 1 — compliance microcopy: Jess data notice */}
+          <p style={{
+            margin: "4px 0 0", fontSize: 10, lineHeight: 1.4,
+            color: "#9B8B7A",
+            fontFamily: "'Inter', sans-serif",
+          }}>
+            Jess is a wellness companion · Not medical advice · Your conversations are private
+          </p>
         </div>
         <button
           type="button"

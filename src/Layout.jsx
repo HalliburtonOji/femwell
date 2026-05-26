@@ -82,6 +82,11 @@ export default function Layout({ children, currentPageName }) {
           Made with
           <Heart aria-hidden="true" className="w-3 h-3" style={{ color: "#E11D48", fill: "#E11D48" }} />
           <span className="sr-only">love</span> in 2026
+          <span aria-hidden style={{ margin: "0 6px", color: "#9B8B7A" }}>·</span>
+          {/* Sprint 12 batch 1 — small muted legal links on every page footer. */}
+          <a href="/Privacy" style={{ color: "#9B8B7A", textDecoration: "none", fontSize: 11 }}>Privacy</a>
+          <span aria-hidden style={{ margin: "0 4px", color: "#9B8B7A" }}>·</span>
+          <a href="/Terms" style={{ color: "#9B8B7A", textDecoration: "none", fontSize: 11 }}>Terms</a>
         </footer>
       )}
       {showNav && currentPageName !== "Ideas" && (

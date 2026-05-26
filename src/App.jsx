@@ -284,11 +284,17 @@ function App() {
             </div>
           )}
           {/* Sprint 10 — /partner?code=… is a public share-view route.
-              It bypasses AuthenticatedApp's loading spinner so a
-              partner who isn't logged in still lands on the read-only
-              card stack rather than getting stuck on the auth screen. */}
+              Sprint 12 batch 1 — /Privacy, /Terms, /privacy, /terms are
+              also public so prospective users can read the policies
+              before signing up. All four bypass AuthenticatedApp's
+              loading spinner so a non-logged-in visitor doesn't get
+              stuck on the auth screen. */}
           <Routes>
             <Route path="/partner" element={<Partner />} />
+            <Route path="/Privacy" element={<Privacy />} />
+            <Route path="/privacy" element={<Privacy />} />
+            <Route path="/Terms"   element={<Terms />} />
+            <Route path="/terms"   element={<Terms />} />
             <Route path="*" element={<AuthenticatedApp />} />
           </Routes>
         </Router>

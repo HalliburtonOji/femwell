@@ -397,6 +397,9 @@ function PrivacySection({ user, profile, onProfileChange, onDownloadData }) {
         </div>
       </SettingsCard>
 
+      {/* Sprint 12 batch 1 — analytics opt-out + privacy contact line. */}
+      <AnalyticsConsentCard user={user} profile={profile} onProfileChange={onProfileChange} />
+
       {/* Sprint C C2 — six GDPR consent toggles, persisted to UserProfile. */}
       <ConsentSettingsCard user={user} profile={profile} onChange={onProfileChange} />
 
