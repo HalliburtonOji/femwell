@@ -94,6 +94,8 @@ import FoundersOS from './pages/FoundersOS';
 // wired separately in App.jsx OUTSIDE this PAGES map so it can run
 // without the auth gate.
 import PartnerSync from './pages/PartnerSync';
+// Sprint 11 — unified Health Dashboard (command-centre view).
+import HealthDashboard from './pages/HealthDashboard';
 import __Layout from './Layout.jsx';
 
 
@@ -136,6 +138,7 @@ export const PAGES = {
     "Ideas": FoundersOS,
     "Founders": FoundersOS,
     "PartnerSync": PartnerSync,
+    "HealthDashboard": HealthDashboard,
 }
 
 export const pagesConfig = {
