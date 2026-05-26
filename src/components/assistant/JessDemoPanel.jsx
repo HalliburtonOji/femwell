@@ -231,10 +231,20 @@ function buildJessContext({ user, profile, todayCheckin, recentCheckins, symptom
     : null;
   const character = profile?.jess_character || "nurturing";
 
+  // Sprint 9 QA fix — peri/meno/post-meno users have no meaningful
+  // cycle phase. Feeding "Day N of cycle · luteal phase" into the LLM
+  // context for those stages caused Jess to talk about phases anyway,
+  // bypassing the persona extension. Swap the cycle line for a stage
+  // line in those cases.
+  const isMenoStageCtx = !!lifeStage && ["perimenopause", "menopause", "post-menopause"].includes(lifeStage);
+  const todayLine = isMenoStageCtx
+    ? `Today: life stage = ${lifeStage} (no cycle phase — periods are irregular or absent)`
+    : `Today: Day ${dayInCycle} of cycle · ${phase} phase`;
+
   const lines = [
     "[JESS CONTEXT — do not mention this block to the user]",
     `User: ${firstName}, life stage: ${lifeStage}`,
-    `Today: Day ${dayInCycle} of cycle · ${phase} phase`,
+    todayLine,
     moodToday != null || energyToday != null || sleepHours != null
       ? `Mood today: ${moodToday ?? "—"}/5 · Energy: ${energyToday ?? "—"}/5${sleepHours != null ? ` · Sleep last night: ${sleepHours}hrs` : ""}`
       : "Mood today: not yet logged",
@@ -911,14 +921,26 @@ function JessDemoPanelInner() {
   //   "Hello, {name}. I can see you're on day {N} of your {phase} phase —
   //    {phaseOpeningLine}. How are you feeling?"
   // The opener carries the first 5 suggestion chips for the user to tap.
+  //
+  // Sprint 9 QA fix — peri/meno/post-meno users don't have a meaningful
+  // "follicular phase" or "day of cycle". For those stages we swap the
+  // opener to a stage-appropriate greeting that mirrors the persona
+  // extension in jessAgentService.js.
   useEffect(() => {
     if (followUpFired) return;
     if (!profile && recentCheckins.length === 0) return; // wait for first data tick
     const t = setTimeout(() => {
       setFollowUpFired(true);
-      const opener =
-        `Hello, ${firstName}. I can see you're on day ${dayInCycle} of your ${phase} phase — ` +
-        `${PHASE_OPENING_LINE[phase] || PHASE_OPENING_LINE.follicular}. How are you feeling?`;
+      const lifeStage = profile?.life_stage;
+      const isMenoStage = !!lifeStage && ["perimenopause", "menopause", "post-menopause"].includes(lifeStage);
+      const opener = isMenoStage
+        ? (lifeStage === "perimenopause"
+            ? `Hello, ${firstName}. Perimenopause can feel unpredictable — Jess is here to help you track your patterns. How are you feeling today?`
+            : lifeStage === "menopause"
+            ? `Hello, ${firstName}. Menopause is a transition, not a problem to fix — Jess is here for the day-to-day. How are you feeling today?`
+            : `Hello, ${firstName}. Many things shift in post-menopause — Jess will help you notice what changes and what steadies. How are you feeling today?`)
+        : `Hello, ${firstName}. I can see you're on day ${dayInCycle} of your ${phase} phase — ` +
+          `${PHASE_OPENING_LINE[phase] || PHASE_OPENING_LINE.follicular}. How are you feeling?`;
       setMessages([
         {
           id: uid(),
@@ -931,7 +953,7 @@ function JessDemoPanelInner() {
       ]);
     }, 1400);
     return () => clearTimeout(t);
-  }, [profile?.id, recentCheckins.length, dayInCycle, firstName, phase, followUpFired]);
+  }, [profile?.id, profile?.life_stage, recentCheckins.length, dayInCycle, firstName, phase, followUpFired]);
 
   // Memoised proactive chips — drive Chat tab + tab-level shortcuts.
   // P0 hardening — guard against any throw inside the helper; render

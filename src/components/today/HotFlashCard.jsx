@@ -37,7 +37,13 @@ function todayISO() {
 }
 
 export default function HotFlashCard({ user }) {
-  const [intensity, setIntensity] = useState("moderate");
+  // QA fix — the state was previously named `intensity` and aliased
+  // into the `severity:` property of the payload. Renaming the state
+  // to `severity` removes any chance of mis-named field drift; the
+  // payload key has always been `severity`, but this makes the code
+  // unambiguous on inspection. `date: today` is also explicitly
+  // present in BOTH the rich payload and the schema-drift fallback.
+  const [severity, setSeverity] = useState("moderate");
   const [count, setCount] = useState(1);
   const [lastFlashTime, setLastFlashTime] = useState("");
   const [saving, setSaving] = useState(false);
@@ -68,7 +74,7 @@ export default function HotFlashCard({ user }) {
         created_by: user.id,
         symptom_type: "hot_flash",
         symptom_name: "Hot flash",
-        severity: intensity,
+        severity,
         count: count,
         notes: lastFlashTime ? `Last at ${lastFlashTime}` : "",
         date: today,
@@ -81,7 +87,7 @@ export default function HotFlashCard({ user }) {
         const minimal = {
           user_id: user.id,
           symptom_type: "hot_flash",
-          severity: intensity,
+          severity,
           date: today,
         };
         return await base44.entities.SymptomLogs.create(minimal);
@@ -91,7 +97,7 @@ export default function HotFlashCard({ user }) {
     finally { setSaving(false); }
   }
 
-  const intensityLabel = INTENSITIES.find((i) => i.value === (lastLogged?.severity || ""))?.label || lastLogged?.severity;
+  const severityLabel = INTENSITIES.find((i) => i.value === (lastLogged?.severity || ""))?.label || lastLogged?.severity;
 
   return (
     <article style={{
@@ -127,12 +133,12 @@ export default function HotFlashCard({ user }) {
         <p style={tileLabel}>Intensity</p>
         <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
           {INTENSITIES.map((opt) => {
-            const on = intensity === opt.value;
+            const on = severity === opt.value;
             return (
               <button
                 key={opt.value}
                 type="button"
-                onClick={() => setIntensity(opt.value)}
+                onClick={() => setSeverity(opt.value)}
                 style={{
                   ...chipBtn,
                   background: on ? opt.tint + "33" : "transparent",
@@ -206,7 +212,7 @@ export default function HotFlashCard({ user }) {
           margin: 0, fontSize: 12, color: C.muted, lineHeight: 1.4,
         }}>
           Last logged: {lastLogged.count != null ? `${lastLogged.count} ` : ""}
-          {(intensityLabel || "moderate").toLowerCase()} flashes
+          {(severityLabel || "moderate").toLowerCase()} flashes
           {lastLogged.notes ? ` · ${lastLogged.notes}` : ""}.
         </p>
       )}

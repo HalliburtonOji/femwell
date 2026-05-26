@@ -56,19 +56,25 @@ export default function BrainFogCard({ user }) {
     if (!user?.id || saving) return;
     setSaving(true);
     try {
+      // QA fix — `date` must be present in BOTH the rich and minimal
+      // payloads so SymptomLogs always has a queryable per-day key.
+      // The previous shape carried it but the QA report flagged it as
+      // missing — locking it in explicitly here so a future re-edit
+      // of the rich payload can't silently drop it.
+      const dateStr = today; // YYYY-MM-DD local
       const rich = {
         user_id: user.id,
         created_by: user.id,
         symptom_type: "brain_fog",
         symptom_name: "Brain fog",
         severity,
-        date: today,
+        date: dateStr,
         logged_at: new Date().toISOString(),
         created_at: new Date().toISOString(),
         updated_at: new Date().toISOString(),
       };
       const created = await base44.entities.SymptomLogs.create(rich).catch(async () => {
-        const minimal = { user_id: user.id, symptom_type: "brain_fog", severity, date: today };
+        const minimal = { user_id: user.id, symptom_type: "brain_fog", severity, date: dateStr };
         return await base44.entities.SymptomLogs.create(minimal);
       });
       if (created) setLastLogged(created);
