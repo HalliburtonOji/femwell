@@ -31,6 +31,7 @@
 import { useEffect, useMemo, useState, useCallback } from "react";
 import { useAuth } from "@/lib/AuthContext";
 import { base44 } from "@/api/base44Client";
+import HealthStoryDemo from "./HealthStoryDemo";
 
 // ─── Tokens ────────────────────────────────────────────────────────────
 const T = {
@@ -56,7 +57,7 @@ const ALLOWED = new Set([
   "ojihalliburton57@gmail.com",
 ]);
 
-const TABS = ["Lab", "Pages", "Roadmap", "Ideas", "Strategy", "Legal", "Decisions"];
+const TABS = ["Lab", "Pages", "Roadmap", "Ideas", "Strategy", "Legal", "Decisions", "Health Story ✨"];
 
 const IDEAS_KEY  = "femwell_ideas";
 const CHECKS_KEY = "femwell_founder_checks";
@@ -417,6 +418,7 @@ function FoundersInner({ user }) {
         {tab === "Strategy"  && <StrategyTab />}
         {tab === "Legal"     && <LegalTab />}
         {tab === "Decisions" && <DecisionsTab />}
+        {tab === "Health Story ✨" && <HealthStoryDemo user={user} />}
       </main>
     </FullBleed>
   );
