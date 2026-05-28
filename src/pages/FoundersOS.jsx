@@ -31,7 +31,10 @@
 import { useEffect, useMemo, useState, useCallback } from "react";
 import { useAuth } from "@/lib/AuthContext";
 import { base44 } from "@/api/base44Client";
-import HealthCornerDemo from "./HealthCornerDemo";
+// HealthCornerDemo was the multi-layout preview. The canonical health
+// experience now lives at /Health (src/pages/Health.jsx). The Health Corner
+// tab in /Ideas renders <HealthCornerRedirectCard /> instead.
+// import HealthCornerDemo from "./HealthCornerDemo";
 
 // ─── Tokens ────────────────────────────────────────────────────────────
 const T = {
@@ -472,9 +475,57 @@ function FoundersInner({ user }) {
         {tab === "Strategy"  && <StrategyTab />}
         {tab === "Legal"     && <LegalTab />}
         {tab === "Decisions" && <DecisionsTab />}
-        {tab === "🏥 Health Corner" && <HealthCornerDemo {...hc} />}
+        {tab === "🏥 Health Corner" && <HealthCornerRedirectCard />}
       </main>
     </FullBleed>
+  );
+}
+
+// ─── Tab — Health Corner: now redirects to the real /Health page ─────
+// The full health-letter experience lives at /Health. This tab just
+// points users there so we don't ship two parallel UIs.
+function HealthCornerRedirectCard() {
+  return (
+    <div style={{ padding: "40px 16px", display: "flex", justifyContent: "center" }}>
+      <div style={{
+        maxWidth: 480,
+        background: "#FEFAF2",
+        border: "1px solid rgba(212,175,55,0.4)",
+        borderRadius: 12,
+        padding: "32px 28px",
+        textAlign: "center",
+        boxShadow: "0 10px 28px rgba(58,44,26,0.12)",
+      }}>
+        <div style={{
+          fontFamily: '"Inter", system-ui, sans-serif',
+          fontSize: 11, letterSpacing: 2, color: "#9B8B7A", textTransform: "uppercase",
+          fontWeight: 700, marginBottom: 8,
+        }}>FemWell Health Letter</div>
+        <div style={{
+          fontFamily: '"Fraunces", Georgia, serif',
+          fontSize: 22, fontWeight: 700, color: "#3A2C1A",
+          marginBottom: 12, lineHeight: 1.3,
+        }}>The Health hub now lives at its own page.</div>
+        <p style={{
+          fontFamily: 'Georgia, serif',
+          fontSize: 15, lineHeight: 1.7, color: "#3A2C1A", marginBottom: 20,
+        }}>
+          The Letter-format Health page has replaced this preview, the old Skin &amp; Hair
+          page, and Life Stage Care. It's a single hub with all eight tabs &mdash; Overview,
+          Cycle, Life Stage, Skin &amp; Hair, Body, Mind, Nourishment, Care.
+        </p>
+        <a href="/Health" style={{
+          display: "inline-block",
+          padding: "10px 22px",
+          background: "#3A2C1A",
+          color: "#F4EDDB",
+          textDecoration: "none",
+          borderRadius: 999,
+          fontFamily: '"Inter", system-ui, sans-serif',
+          fontSize: 13, fontWeight: 600, letterSpacing: 0.4,
+        }}>Open Health &nbsp;&rarr;</a>
+      </div>
+    </div>
   );
 }
 
