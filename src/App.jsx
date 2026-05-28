@@ -210,6 +210,7 @@ const AuthenticatedApp = () => {
           <Route path="/SkinHair" element={<Navigate to="/Health" replace />} />
           <Route path="/SkinHairLegacy" element={<LayoutWrapper currentPageName="SkinHair"><SkinHair /></LayoutWrapper>} />
           <Route path="/LifeStageCare" element={<Navigate to="/Health" replace />} />
+          <Route path="/HealthDashboard" element={<Navigate to="/Health" replace />} />
           <Route path="/admin/migrations" element={<AdminMigrations />} />
           <Route path="/admin/jess-conversations" element={<AdminJessConversations />} />
           <Route path="/DoctorExport" element={<LayoutWrapper currentPageName="DoctorExport"><DoctorExport /></LayoutWrapper>} />

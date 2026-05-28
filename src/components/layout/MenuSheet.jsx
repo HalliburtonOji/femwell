@@ -18,9 +18,9 @@ const KNOWN_ROUTES = new Set([
   "/Settings", "/DoctorExport", "/PartnerSettings", "/Explore",
   "/Track", "/Onboarding", "/CycleSettings", "/Upgrade",
   "/Ideas",
-  // Sprint 11 — Unified Health Dashboard
-  "/HealthDashboard",
-  // Health letter hub (replaces /SkinHair + /LifeStageCare in the nav)
+  // Health letter hub (replaces /SkinHair, /LifeStageCare AND /HealthDashboard).
+  // /HealthDashboard now redirects to /Health via App.jsx — kept out of the
+  // whitelist so any stray nav link warns rather than silently 404s.
   "/Health",
 ]);
 
@@ -40,16 +40,20 @@ const QUICK_TILES = [
 
 const PILLARS = [
   { label: "Track",    icon: Activity,     route: "/Track" },
-  { label: "Health",   icon: BarChart2,    route: "/HealthDashboard" },
+  // Health (formerly /HealthDashboard "Your Health Story") now points to
+  // the unified Health Letter page. There is exactly one Health entry across
+  // the menu — duplicates were removed.
+  { label: "Health",   icon: HeartPulse,   route: "/Health" },
   { label: "Pulse",    icon: HeartPulse,   route: "/Pulse" },
   { label: "Planner",  icon: CalendarDays, route: "/Planner" },
   { label: "Programs", icon: LayoutGrid,   route: "/ProgramsHub" },
 ];
 
+// COMMUNITY_ROWS — the secondary row of menu links. Health intentionally
+// lives ONLY in the PILLARS row above to avoid duplicate "Health" entries.
 const COMMUNITY_ROWS = [
   { label: "Community",   icon: Users,      route: "/Community" },
   { label: "Journal",     icon: BookOpen,   route: "/Journal" },
-  { label: "Health",      icon: HeartPulse, route: "/Health" },
   { label: "Explore",     icon: Search,     route: "/Explore" },
   { label: "Nutrition",   icon: Utensils,   route: "/Nutrition" },
 ];

@@ -94,8 +94,13 @@ import FoundersOS from './pages/FoundersOS';
 // wired separately in App.jsx OUTSIDE this PAGES map so it can run
 // without the auth gate.
 import PartnerSync from './pages/PartnerSync';
-// Sprint 11 — unified Health Dashboard (command-centre view).
-import HealthDashboard from './pages/HealthDashboard';
+// Sprint 11 — legacy HealthDashboard ("Your Health Story" cycle calendar +
+// mood charts). Superseded by /Health (Letter format). The /HealthDashboard
+// route now redirects to /Health via App.jsx; this import is preserved
+// commented out for history. The data-viz components inside the file
+// (cycle calendar, mood charts) will be ported into the Health Letter as a
+// future "Story" tab.
+// import HealthDashboard from './pages/HealthDashboard';
 import __Layout from './Layout.jsx';
 
 
@@ -138,7 +143,8 @@ export const PAGES = {
     "Ideas": FoundersOS,
     "Founders": FoundersOS,
     "PartnerSync": PartnerSync,
-    "HealthDashboard": HealthDashboard,
+    // HealthDashboard intentionally NOT registered — see import comment above.
+    // "HealthDashboard": HealthDashboard,
 }
 
 export const pagesConfig = {
