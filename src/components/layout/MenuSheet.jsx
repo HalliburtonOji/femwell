@@ -20,6 +20,8 @@ const KNOWN_ROUTES = new Set([
   "/Ideas",
   // Sprint 11 — Unified Health Dashboard
   "/HealthDashboard",
+  // Health letter hub (replaces /SkinHair + /LifeStageCare in the nav)
+  "/Health",
 ]);
 
 function safeRoute(path) {
@@ -47,8 +49,7 @@ const PILLARS = [
 const COMMUNITY_ROWS = [
   { label: "Community",   icon: Users,      route: "/Community" },
   { label: "Journal",     icon: BookOpen,   route: "/Journal" },
-  { label: "Skin & Hair", icon: Sparkles,   route: "/SkinHair" },
-  { label: "Life Stage",  icon: Compass,    route: "/LifeStageCare" },
+  { label: "Health",      icon: HeartPulse, route: "/Health" },
   { label: "Explore",     icon: Search,     route: "/Explore" },
   { label: "Nutrition",   icon: Utensils,   route: "/Nutrition" },
 ];

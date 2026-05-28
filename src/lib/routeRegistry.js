@@ -8,9 +8,12 @@ export const ROUTES = {
   Lifestyle:    "/Lifestyle",
   Programs:     "/ProgramsHub",
   Explore:      "/Explore",
-  SkinHair:     "/SkinHair",
+  // Health letter hub replaces /SkinHair + /LifeStageCare — legacy keys
+  // resolve to /Health so Jess/route-suggestions land on the new page.
+  Health:       "/Health",
+  SkinHair:     "/Health",
   Pulse:        "/Pulse",
-  LifeStageCare:"/LifeStageCare",
+  LifeStageCare:"/Health",
   Profile:      "/Profile",
   Saved:        "/Saved",
   Events:       "/Events",

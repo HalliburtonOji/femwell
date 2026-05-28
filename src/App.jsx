@@ -22,6 +22,7 @@ import Events from './pages/Events';
 import WeeklyInsights from './pages/WeeklyInsights';
 import LifestyleDetail from './pages/LifestyleDetail';
 import SkinHair from './pages/SkinHair';
+import Health from './pages/Health';
 import AdminMigrations from './pages/AdminMigrations';
 import AdminJessConversations from './pages/AdminJessConversations';
 import DoctorExport from './pages/DoctorExport';
@@ -204,7 +205,11 @@ const AuthenticatedApp = () => {
           <Route path="/Events" element={<LayoutWrapper currentPageName="Events"><Events /></LayoutWrapper>} />
           <Route path="/WeeklyInsights" element={<LayoutWrapper currentPageName="WeeklyInsights"><WeeklyInsights /></LayoutWrapper>} />
           <Route path="/LifestyleDetail" element={<LayoutWrapper currentPageName="LifestyleDetail"><LifestyleDetail /></LayoutWrapper>} />
-          <Route path="/SkinHair" element={<LayoutWrapper currentPageName="SkinHair"><SkinHair /></LayoutWrapper>} />
+          <Route path="/Health" element={<LayoutWrapper currentPageName="Health"><Health /></LayoutWrapper>} />
+          <Route path="/health" element={<Navigate to="/Health" replace />} />
+          <Route path="/SkinHair" element={<Navigate to="/Health" replace />} />
+          <Route path="/SkinHairLegacy" element={<LayoutWrapper currentPageName="SkinHair"><SkinHair /></LayoutWrapper>} />
+          <Route path="/LifeStageCare" element={<Navigate to="/Health" replace />} />
           <Route path="/admin/migrations" element={<AdminMigrations />} />
           <Route path="/admin/jess-conversations" element={<AdminJessConversations />} />
           <Route path="/DoctorExport" element={<LayoutWrapper currentPageName="DoctorExport"><DoctorExport /></LayoutWrapper>} />

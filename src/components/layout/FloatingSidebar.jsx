@@ -3,7 +3,7 @@ import { Link } from "react-router-dom";
 import { createPageUrl } from "@/utils";
 import { motion, AnimatePresence } from "framer-motion";
 import {
-  Sun, Compass, User, BookOpen, Newspaper, Utensils, X, Map, Activity, Feather, Menu, Heart, Users, CalendarDays
+  Sun, Compass, User, BookOpen, Newspaper, Utensils, X, Map, Activity, Feather, Menu, Heart, HeartPulse, Users, CalendarDays
 } from "lucide-react";
 
 const NAV = [
@@ -16,8 +16,7 @@ const NAV = [
   { label: "Community", icon: Users,        page: "Community" },
   { label: "Journal",   icon: Newspaper,    page: "Journal" },
   { label: "Pulse",     icon: Activity,     page: "Pulse" },
-  { label: "Skin & Hair", icon: Feather,    page: "SkinHair" },
-  { label: "Life Stage", icon: Heart,       page: "LifeStageCare" },
+  { label: "Health",    icon: HeartPulse,   page: "Health" },
   { label: "Profile",   icon: User,         page: "Profile" },
 ];
 
