@@ -19,7 +19,7 @@
 // re-skinned by the active layout).
 // ─────────────────────────────────────────────────────────────────────────────
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState, useContext, useRef, useCallback, createContext } from "react";
 import { Link } from "react-router-dom";
 import { useCycleDay } from "@/hooks/useCycleDay";
 import { Sparkles, FileText, ChevronRight, ChevronDown, ExternalLink, Stethoscope, Quote } from "lucide-react";
@@ -176,6 +176,65 @@ const SECTION_BADGE = {
   "pmdd-neurosteroid": "EVIDENCE-BASED",
   "endometriosis":     "EXPERT",
 };
+
+// ─── KEY FACTS — one per section (Letter layout shows always-visible) ──
+const KEY_FACTS = {
+  // Cycle
+  "hormone-curve":           "Oestrogen peaks at ovulation, driving your best energy and mood — progesterone dominates the second half.",
+  "fertility-signs":         "Egg-white cervical mucus = peak fertility. BBT rise confirms ovulation happened, but can't predict it.",
+  "cycle-health-indicators": "Healthy: 21–35 day cycle, 3–7 days bleed, 12–16 day luteal. Bleed-through every hour or 3-month absence are red flags.",
+  "luteal-phase-defect":     "Day 21 progesterone should be above 30 nmol/L. Below 10 days luteal may explain short cycles or trouble conceiving.",
+  "phase-food-movement":     "Your fuel and movement needs shift with each phase — eat for what your hormones are doing right now.",
+  // Skin & Hair
+  "how-hormones-skin":       "Oestrogen stimulates fibroblasts — the cells that make collagen. Post-menopause: 30% collagen loss in 5 years.",
+  "hormonal-acne":           "Jaw/chin breakouts peak 7–10 days before your period. Salicylic acid penetrates pores because it's lipid-soluble.",
+  "phase-skincare":          "Follicular = actives window. Luteal = barrier focus, no new actives. Match the active to the phase.",
+  "hair-science":            "Ferritin under 70 µg/L causes hair loss even when GP says 'normal'. Ask for ferritin by name, not just full blood count.",
+  "acne-tracker":            "3+ logged breakouts a month is a pattern, not noise — worth a phase-synced protocol.",
+  "supplements":             "Zinc, omega-3 EPA and vitamin C have real evidence. Biotin only helps if you're deficient.",
+  // Body
+  "symptom-intro":           "Where in your cycle a symptom shows up tells you its likely cause — perimenstrual, mid-cycle, or constant.",
+  "ranked-symptoms":         "Patterns over 2–3 cycles are the most diagnostic thing you can show a GP.",
+  "symptom-calendar":        "Visual 30-day load makes hormonal clusters obvious — and easier to explain in a 10-minute appointment.",
+  "hot-flash-physiology":    "Hot flashes happen because oestrogen's thermal zone narrows — tiny temperature shifts now trigger full cooling.",
+  "pcos":                    "PCOS affects 1 in 10 women. Insulin resistance is the driver in most cases — not just the ovaries.",
+  "endometriosis":           "Endo takes 7–9 years to diagnose. Pain outside your period window is the biggest red flag, not severity alone.",
+  "pmdd":                    "PMDD isn't bad PMS — it's an abnormal brain sensitivity to normal progesterone. Luteal-only SSRIs are first-line.",
+  // Mind
+  "oestrogen-brain":         "Oestrogen receptors are throughout your hippocampus, prefrontal cortex and amygdala — mood and memory are biology.",
+  "cognition-by-phase":      "Verbal memory peaks follicular. Spatial reasoning peaks ovulatory. Detail focus peaks early luteal.",
+  "hpa-hpg":                 "Chronic stress directly suppresses the hormones that drive ovulation. Cortisol and progesterone share precursors.",
+  "mood-energy-30":          "30 days is the minimum window where hormonal patterns become visible above day-to-day noise.",
+  "sleep-14":                "Less than 7h sleep three nights in a row measurably lowers mood and increases cortisol the next day.",
+  "sleep-cycle":             "Progesterone is sedative via GABA. Late-luteal sleep disruption is hormonal, not behavioural.",
+  "pmdd-neurosteroid":       "Allopregnanolone is normally calming — in PMDD it's paradoxically dysregulating. SSRIs reset the system.",
+  "stress-stage":            "Many women are prescribed antidepressants when HRT would be more appropriate. Know which lever fits.",
+  "nervous-system":          "Physiological sighs and cold exposure activate the vagus nerve faster than any other technique.",
+  "brain-fog":               "Brain fog tracks sleep quality more than anything else — treat sleep first, then look at oestrogen.",
+  // Nourishment
+  "phase-nutrition":         "Follicular = cruciferous + zinc. Luteal = protein + magnesium + B6. Same body, different needs.",
+  "estrobolome":             "Gut bacteria recirculate up to 30% of your oestrogen. 30+ plant foods a week is the strongest lever.",
+  "seed-cycling":            "If it works, give it 3 months. Flax + pumpkin in follicular, sunflower + sesame in luteal.",
+  "blood-sugar":             "Progesterone reduces insulin sensitivity. Protein before carbs cuts post-meal glucose by up to 30%.",
+  "edcs":                    "Plastic-free hot food storage and unscented products are the two highest-leverage EDC swaps.",
+  // Care
+  "blood-tests":             "Ferritin, vitamin D, B12 and full thyroid panel aren't included by default. Ask by name.",
+  "hormonal-panel":          "Day 2–3 + day 21 progesterone for cycling. Day 2–3 FSH for perimenopause. Timing matters.",
+  "range-vs-optimal":        "'Reference range' is what 95% of tested people have, not what's optimal. The two are very different.",
+  "hrt-conversation":        "Transdermal oestrogen + micronised progesterone is body-identical. The 2002 WHI was a different drug, different cohort.",
+  "supplement-stacking":     "Iron + calcium block each other. Vitamin D needs K2 and magnesium to work. Sequence matters as much as substance.",
+  "gp-prep":                 "10-minute appointments respond best to one primary concern, written symptoms, and tracked data.",
+  "meds-adherence":          "Adherence patterns are clinical data. Bring the chart, not the impression.",
+  "to-discuss":              "Three items max. Flagged from your own logs is more powerful than a vague 'something's off'.",
+};
+function firstSentenceFromBody(body) {
+  // Fallback keyFact derivation when the section id isn't in KEY_FACTS.
+  // The body is JSX, so we keep this minimal — caller passes the section title.
+  return null;
+}
+
+// ─── LETTER CONTEXT — progressive disclosure across registered sections ──
+const LetterContext = createContext(null);
 
 // ─── PHASE DOT COLOR MAP (Timeline) ─────────────────────────────────
 const PHASE_DOT_COLOR = {
@@ -805,7 +864,13 @@ function LayoutFrame({ layout, profile, phase, cycle, stage, isMeno, active, chi
 }
 
 // ═══════════════════════════════════════════════════════════════════════
-// LETTER PAPER — paper-floating-on-surface effect with letterhead + sign-off
+// LETTER PAPER — paper-floating-on-surface effect + progressive disclosure
+//   • Provides LetterContext so each <Section> can register itself,
+//     toggle its expanded state, and render its keyFact callout.
+//   • Renders the Table of Contents and "Expand / Collapse all" controls
+//     between the salutation and the registered sections.
+//   • Applies phase-smart default expansions on first registration of
+//     each tab so the letter opens as a focused 2-section piece.
 // ═══════════════════════════════════════════════════════════════════════
 function LetterPaper({ profile, phase, cycle, stage, isMeno, tab, children }) {
   const today = new Date();
@@ -814,69 +879,269 @@ function LetterPaper({ profile, phase, cycle, stage, isMeno, tab, children }) {
   const day = cycle?.cycleDay || cycle?.dayInCycle;
   const name = profile?.preferred_name || profile?.full_name?.split?.(" ")?.[0] || "friend";
 
+  // ─── registry of sections that have mounted under this letter ──
+  const [registry, setRegistry] = useState([]);
+  // ─── expanded state (id → bool) ──
+  const [expanded, setExpanded] = useState({});
+  // ─── track first init per tab so user toggles don't get clobbered ──
+  const initialisedRef = useRef(null);
+
+  // Reset everything whenever the user switches tabs (children change).
+  useEffect(() => {
+    setRegistry([]);
+    setExpanded({});
+    initialisedRef.current = null;
+  }, [tab]);
+
+  const registerSection = useCallback((descriptor) => {
+    setRegistry((prev) => {
+      if (prev.find((s) => s.id === descriptor.id)) return prev;
+      return [...prev, descriptor];
+    });
+  }, []);
+
+  // After sections have registered for the active tab, apply phase-smart
+  // defaults exactly once. Two sections open on load — the phase default,
+  // plus the first section as anchor.
+  useEffect(() => {
+    if (!registry.length) return;
+    if (initialisedRef.current === tab) return;
+    initialisedRef.current = tab;
+    const defaults = {};
+    const phaseId = DEFAULT_OPEN[tab]?.[phase];
+    if (phaseId && registry.find((s) => s.id === phaseId)) defaults[phaseId] = true;
+    if (registry[0] && !defaults[registry[0].id]) defaults[registry[0].id] = true;
+    setExpanded(defaults);
+  }, [registry, tab, phase]);
+
+  const toggle      = useCallback((id) => setExpanded((p) => ({ ...p, [id]: !p[id] })), []);
+  const expandAll   = useCallback(() => {
+    setExpanded(Object.fromEntries(registry.map((s) => [s.id, true])));
+  }, [registry]);
+  const collapseAll = useCallback(() => setExpanded({}), []);
+
+  const ctxValue = useMemo(() => ({
+    expanded, toggle, expandAll, collapseAll, registerSection, registry,
+  }), [expanded, toggle, expandAll, collapseAll, registerSection, registry]);
+
+  return (
+    <LetterContext.Provider value={ctxValue}>
+      <div style={{
+        maxWidth: 680, margin: "20px auto 24px",
+        background: "#FEFAF2",
+        padding: "48px 52px",
+        boxShadow: "0 18px 44px rgba(58,44,26,0.18), 0 4px 10px rgba(58,44,26,0.10)",
+        borderRadius: 4,
+        position: "relative",
+      }} className="hcdemo-letter-paper">
+        {/* Letterhead */}
+        <div style={{ textAlign: "center", marginBottom: 18 }}>
+          <div style={{
+            fontFamily: '"Fraunces", Georgia, serif',
+            fontSize: 26, fontWeight: 700, letterSpacing: 3,
+            color: T.espresso, textTransform: "uppercase",
+          }}>FEMWELL</div>
+          <div style={{
+            fontSize: 10, letterSpacing: 4, textTransform: "uppercase",
+            color: T.muted, fontWeight: 600, marginTop: 4,
+          }}>Personal Health Guide</div>
+        </div>
+        <BotanicalDivider />
+
+        {/* Dateline */}
+        <div style={{
+          fontSize: 12.5, color: T.muted, fontStyle: "italic",
+          fontFamily: 'Georgia, serif',
+          textAlign: "right", marginTop: 18, marginBottom: 22,
+          letterSpacing: 0.2,
+        }}>
+          {dateline}
+          {!isMeno && day && (
+            <>
+              <br />
+              <span style={{ color: T.gold }}>{phaseLabel} · Day {day}</span>
+            </>
+          )}
+        </div>
+
+        {/* Salutation */}
+        <div style={{
+          fontFamily: 'Georgia, serif',
+          fontSize: 18, fontStyle: "italic",
+          color: T.espresso, marginBottom: 18,
+        }}>
+          Dear {name},
+        </div>
+
+        {/* ── Table of Contents (populates after first useEffect pass) ── */}
+        <LetterTOC />
+
+        {/* Body */}
+        <div className="hcdemo-letter-body" style={{ fontFamily: 'Georgia, serif', color: T.espresso, lineHeight: 1.75, fontSize: 15 }}>
+          {children}
+        </div>
+
+        {/* Sign-off */}
+        <BotanicalDivider />
+        <div style={{
+          marginTop: 22, fontFamily: 'Georgia, serif', fontSize: 14.5,
+          color: T.espresso, lineHeight: 1.6,
+        }}>
+          <div style={{ fontStyle: "italic" }}>With care,</div>
+          <div style={{ marginTop: 6, fontFamily: '"Fraunces", Georgia, serif', fontStyle: "italic", fontSize: 16, color: T.gold }}>
+            Your FemWell Health Guide
+          </div>
+        </div>
+      </div>
+    </LetterContext.Provider>
+  );
+}
+
+// ─── LETTER SECTION — registers itself + handles read-more/read-less ───
+function LetterSection({ id, title, category, keyFact, children }) {
+  const ctx = useContext(LetterContext);
+  // Register on mount; re-register if id/title/category/keyFact identity changes.
+  useEffect(() => {
+    if (!ctx) return;
+    ctx.registerSection({ id, title, category, keyFact });
+  }, [ctx, id, title, category, keyFact]);
+
+  const isExpanded = !!ctx?.expanded?.[id];
+  const onToggle   = () => ctx?.toggle(id);
+
+  return (
+    <section
+      id={`letter-section-${id}`}
+      style={{ marginTop: 32, marginBottom: 8, scrollMarginTop: 110 }}
+      className="hcdemo-letter-section"
+    >
+      {/* Section header — category eyebrow + Georgia serif title */}
+      <div style={{ marginBottom: 10 }}>
+        <div style={{
+          fontSize: 10, color: T.muted, letterSpacing: 2,
+          textTransform: "uppercase", marginBottom: 4,
+          fontFamily: '"Inter", system-ui, sans-serif', fontWeight: 700,
+        }}>{category}</div>
+        <div style={{
+          fontSize: 19, fontWeight: 700, color: T.espresso,
+          fontFamily: '"Fraunces", Georgia, serif', lineHeight: 1.3, letterSpacing: -0.2,
+        }}>{title}</div>
+      </div>
+
+      {/* Key insight — always visible, gold left border */}
+      {keyFact && (
+        <div style={{
+          padding: "10px 14px",
+          background: "rgba(212,175,55,0.08)",
+          borderLeft: `3px solid ${T.gold}`,
+          borderRadius: "0 4px 4px 0",
+          marginBottom: 12,
+        }} className="hcdemo-letter-keyfact">
+          <span style={{
+            fontSize: 11, color: T.muted, letterSpacing: 1.3,
+            textTransform: "uppercase", marginRight: 8, fontWeight: 700,
+          }}>Key insight</span>
+          <span style={{
+            fontSize: 13.5, color: T.espresso,
+            fontFamily: 'Georgia, serif', fontStyle: "italic",
+          }}>{keyFact}</span>
+        </div>
+      )}
+
+      {/* Body — collapsed by default, with a discreet read-more link */}
+      {isExpanded ? (
+        <div>
+          <div style={{ color: T.espresso, fontFamily: 'Georgia, serif', lineHeight: 1.78, fontSize: 15 }}>
+            {children}
+          </div>
+          <button onClick={onToggle} style={{
+            background: "none", border: "none", padding: 0, cursor: "pointer",
+            fontSize: 13, color: T.muted, fontFamily: "Georgia, serif", fontStyle: "italic",
+            display: "block", marginTop: 10,
+          }}>— read less</button>
+        </div>
+      ) : (
+        <button onClick={onToggle} style={{
+          background: "none", border: "none", padding: 0, cursor: "pointer",
+          fontSize: 13, color: T.gold, fontFamily: "Georgia, serif", fontStyle: "italic",
+          display: "block", marginTop: 4,
+        }}>— read more</button>
+      )}
+    </section>
+  );
+}
+
+// ─── LETTER TABLE OF CONTENTS + Expand/Collapse all controls ───────
+function LetterTOC() {
+  const ctx = useContext(LetterContext);
+  if (!ctx) return null;
+  const { registry, expandAll, collapseAll, toggle, expanded } = ctx;
+  if (!registry.length) {
+    // Skeleton placeholder — keeps layout stable while sections register.
+    return (
+      <div style={{
+        margin: "10px 0 28px", padding: "16px 20px",
+        background: "rgba(232,220,200,0.30)",
+        border: "1px solid #E8DCC8",
+        borderRadius: 4, minHeight: 60,
+      }} aria-hidden="true">
+        <div style={{ fontSize: 10, color: T.muted, letterSpacing: 2, textTransform: "uppercase" }}>
+          In this letter
+        </div>
+        <div style={{ marginTop: 8, fontSize: 12.5, color: T.muted, fontStyle: "italic" }}>
+          Compiling sections…
+        </div>
+      </div>
+    );
+  }
   return (
     <div style={{
-      maxWidth: 680, margin: "20px auto 24px",
-      background: "#FEFAF2",
-      padding: "48px 52px",
-      boxShadow: "0 18px 44px rgba(58,44,26,0.18), 0 4px 10px rgba(58,44,26,0.10)",
+      margin: "10px 0 28px",
+      padding: "16px 20px",
+      background: "rgba(232,220,200,0.30)",
       borderRadius: 4,
-      position: "relative",
-    }} className="hcdemo-letter-paper">
-      {/* Letterhead */}
-      <div style={{ textAlign: "center", marginBottom: 18 }}>
-        <div style={{
-          fontFamily: '"Fraunces", Georgia, serif',
-          fontSize: 26, fontWeight: 700, letterSpacing: 3,
-          color: T.espresso, textTransform: "uppercase",
-        }}>FEMWELL</div>
-        <div style={{
-          fontSize: 10, letterSpacing: 4, textTransform: "uppercase",
-          color: T.muted, fontWeight: 600, marginTop: 4,
-        }}>Personal Health Guide</div>
+      border: "1px solid #E8DCC8",
+    }}>
+      <div style={{ fontSize: 10, color: T.muted, letterSpacing: 2, textTransform: "uppercase", marginBottom: 10 }}>
+        In this letter
       </div>
-      <BotanicalDivider />
-
-      {/* Dateline */}
-      <div style={{
-        fontSize: 12.5, color: T.muted, fontStyle: "italic",
-        fontFamily: 'Georgia, serif',
-        textAlign: "right", marginTop: 18, marginBottom: 22,
-        letterSpacing: 0.2,
-      }}>
-        {dateline}
-        {!isMeno && day && (
-          <>
-            <br />
-            <span style={{ color: T.gold }}>{phaseLabel} · Day {day}</span>
-          </>
-        )}
+      <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+        {registry.map((s, i) => (
+          <a
+            key={s.id}
+            href={`#letter-section-${s.id}`}
+            onClick={(e) => {
+              e.preventDefault();
+              if (!expanded[s.id]) toggle(s.id);
+              const el = document.getElementById(`letter-section-${s.id}`);
+              if (el) el.scrollIntoView({ behavior: "smooth", block: "start" });
+            }}
+            style={{
+              display: "flex", alignItems: "center", gap: 10,
+              fontSize: 13.5, color: T.espresso,
+              fontFamily: 'Georgia, serif', fontStyle: "italic",
+              textDecoration: "none",
+            }}
+          >
+            <span style={{
+              fontSize: 10, color: T.muted, fontFamily: "ui-monospace, SFMono-Regular, Menlo, monospace",
+              fontStyle: "normal", minWidth: 22,
+            }}>{String(i + 1).padStart(2, "0")}</span>
+            <span style={{ flex: 1 }}>{s.title}</span>
+            <span style={{ fontSize: 11, color: T.gold }} aria-hidden="true">↓</span>
+          </a>
+        ))}
       </div>
-
-      {/* Salutation */}
-      <div style={{
-        fontFamily: 'Georgia, serif',
-        fontSize: 18, fontStyle: "italic",
-        color: T.espresso, marginBottom: 18,
-      }}>
-        Dear {name},
-      </div>
-
-      {/* Body */}
-      <div style={{ fontFamily: 'Georgia, serif', color: T.espresso, lineHeight: 1.75, fontSize: 15 }}>
-        {children}
-      </div>
-
-      {/* Sign-off */}
-      <BotanicalDivider />
-      <div style={{
-        marginTop: 22, fontFamily: 'Georgia, serif', fontSize: 14.5,
-        color: T.espresso, lineHeight: 1.6,
-      }}>
-        <div style={{ fontStyle: "italic" }}>With care,</div>
-        <div style={{ marginTop: 6, fontFamily: '"Fraunces", Georgia, serif', fontStyle: "italic", fontSize: 16, color: T.gold }}>
-          Your FemWell Health Guide
-        </div>
+      <div style={{ display: "flex", gap: 16, marginTop: 14, paddingTop: 12, borderTop: "1px solid rgba(232,220,200,0.7)" }}>
+        <button onClick={expandAll} style={{
+          background: "none", border: "none", padding: 0, cursor: "pointer",
+          fontSize: 12, color: T.gold, fontFamily: "Georgia, serif", fontStyle: "italic",
+        }}>Expand all sections</button>
+        <span style={{ color: "#E8DCC8" }} aria-hidden="true">·</span>
+        <button onClick={collapseAll} style={{
+          background: "none", border: "none", padding: 0, cursor: "pointer",
+          fontSize: 12, color: T.muted, fontFamily: "Georgia, serif", fontStyle: "italic",
+        }}>Collapse all</button>
       </div>
     </div>
   );
@@ -1239,25 +1504,14 @@ function Section({ layout, id, title, jessIntro, open, onToggle, children, index
     );
   }
 
-  // ─── LETTER: prose-only section break, no card, with section-break heading ───
+  // ─── LETTER: progressive disclosure — register, key-fact, read more/less ───
   if (layout === "letter") {
-    return (
-      <section style={{ marginTop: 26, marginBottom: 8 }}>
-        <div style={{
-          fontSize: 10, letterSpacing: 3, textTransform: "uppercase",
-          color: T.muted, fontWeight: 700, marginBottom: 6,
-          fontFamily: '"Inter", system-ui, sans-serif',
-        }}>{sectionBadge || "Section"}</div>
-        <h3 style={{
-          fontFamily: '"Fraunces", Georgia, serif',
-          fontSize: 22, fontWeight: 600, color: T.espresso,
-          margin: "0 0 14px", letterSpacing: -0.2, lineHeight: 1.25,
-        }}>{title}</h3>
-        <div style={{ color: T.espresso, fontFamily: 'Georgia, serif', lineHeight: 1.78, fontSize: 15 }}>
-          {children}
-        </div>
-      </section>
-    );
+    return <LetterSection
+      id={id}
+      title={title}
+      category={sectionBadge || "Section"}
+      keyFact={KEY_FACTS[id]}
+    >{children}</LetterSection>;
   }
 
   // ─── CARD GRID (default): rounded card + 6px top accent + emoji + featured ───
