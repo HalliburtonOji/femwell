@@ -8,8 +8,11 @@
 // expandable sections with key-fact callouts, expert quotes, P.S., sign-off,
 // and a rosebud reading-progress indicator that opens as the user scrolls.
 //
-// Typography: Cormorant Garamond (serif body + headers) + DM Sans (labels +
-// metadata), loaded from Google Fonts at mount.
+// Typography: Cormorant Garamond (serif body, opener, P.S., section titles)
+// for the letter feel; system font stack (Apple system / Segoe UI / Roboto)
+// for UI chrome — tab pills, sticky bars, ToC labels, buttons, metadata.
+// Cormorant loaded from Google Fonts at mount with weights 400/500/600 +
+// italic 400/500 so the body type renders at proper weight on mobile.
 // ─────────────────────────────────────────────────────────────────────────────
 
 import { useEffect, useMemo, useRef, useState } from "react";
@@ -603,7 +606,7 @@ export default function Health() {
     const l1 = document.createElement("link");
     l1.id = id;
     l1.rel = "stylesheet";
-    l1.href = "https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;1,400&family=DM+Sans:wght@400;500&display=block";
+    l1.href = "https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,500&display=block";
     document.head.appendChild(l1);
   }, []);
 
@@ -656,10 +659,10 @@ export default function Health() {
   const opener = OPENERS[activeTab]?.[phase] || OPENERS.overview.follicular;
 
   return (
-    <div style={{ background: "#F0E6CE", minHeight: "100vh", paddingBottom: 80 }}>
+    <div style={{ background: "#E8DBC8", minHeight: "100vh", paddingBottom: 80, boxShadow: "inset 0 0 60px rgba(58,44,26,0.08)" }}>
       {/* ─── Tab bar ─── */}
       <div style={{
-        background: "#F0E6CE", borderBottom: "1px solid rgba(58,44,26,0.10)",
+        background: "#E8DBC8", borderBottom: "1px solid rgba(58,44,26,0.10)",
         padding: "8px 12px", position: "sticky", top: 0, zIndex: 11,
         overflowX: "auto", scrollbarWidth: "none",
       }}>
@@ -670,7 +673,7 @@ export default function Health() {
               <button key={t.id} onClick={() => setActiveTab(t.id)} style={{
                 background: "transparent", border: "none",
                 padding: "8px 12px",
-                fontFamily: 'DM Sans, system-ui, sans-serif',
+                fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
                 fontSize: 12, letterSpacing: 0.5,
                 color: on ? "#3A2C1A" : "#9B8B7A",
                 fontWeight: on ? 600 : 500,
@@ -690,7 +693,7 @@ export default function Health() {
       <div style={{
         background: "#3A2C1A", color: "#F4EDDB",
         padding: "8px 20px",
-        fontSize: 12, fontFamily: "DM Sans, system-ui, sans-serif", letterSpacing: 0.8,
+        fontSize: 12, fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif', letterSpacing: 0.8,
         display: "flex", alignItems: "center", justifyContent: "space-between",
         position: "sticky", top: 47, zIndex: 10,
       }}>
@@ -701,7 +704,18 @@ export default function Health() {
       {/* ─── Letter paper card ─── */}
       <div style={{ padding: "32px 16px 64px" }}>
         <article ref={letterRef} className="hc-letter-paper" style={{
-          background: "#FEFAF2",
+          background: `
+            repeating-linear-gradient(
+              transparent,
+              transparent 31px,
+              rgba(58,44,26,0.04) 31px,
+              rgba(58,44,26,0.04) 32px
+            ),
+            radial-gradient(ellipse at 50% 100%, rgba(180,140,80,0.06) 0%, transparent 70%),
+            radial-gradient(ellipse at 0% 50%, rgba(180,140,80,0.04) 0%, transparent 50%),
+            radial-gradient(ellipse at 100% 50%, rgba(180,140,80,0.04) 0%, transparent 50%),
+            #FAF5E8
+          `,
           maxWidth: 680, margin: "0 auto",
           padding: "52px 56px 64px",
           borderRadius: 2,
@@ -728,13 +742,13 @@ export default function Health() {
               <TabBotanical tabId={tab.id} />
             </div>
             <div style={{ textAlign: "center", marginTop: 12 }}>
-              <div style={{ fontFamily: 'DM Sans, system-ui, sans-serif', fontSize: 10, letterSpacing: 3, color: "#9B8B7A", textTransform: "uppercase" }}>
+              <div style={{ fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif', fontSize: 10, letterSpacing: 3, color: "#9B8B7A", textTransform: "uppercase" }}>
                 FemWell Health Letter
               </div>
               <div style={{ fontFamily: 'Cormorant Garamond, Georgia, serif', fontSize: 24, fontWeight: 600, color: "#3A2C1A", marginTop: 4 }}>
                 {tab.label}
               </div>
-              <div style={{ fontFamily: 'DM Sans, system-ui, sans-serif', fontSize: 11, color: "#9B8B7A", marginTop: 4 }}>
+              <div style={{ fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif', fontSize: 11, color: "#9B8B7A", marginTop: 4 }}>
                 {formattedDate} · {stageLbl}
               </div>
             </div>
@@ -742,15 +756,15 @@ export default function Health() {
 
           {/* ── Salutation ── */}
           <div style={{ marginBottom: 28, position: "relative" }}>
-            <div style={{ fontFamily: 'Cormorant Garamond, Georgia, serif', fontSize: 18, color: "#3A2C1A", marginBottom: 16, fontStyle: "italic" }}>
+            <div style={{ fontFamily: 'Cormorant Garamond, Georgia, serif', fontSize: 19, color: "#3A2C1A", marginBottom: 16, fontStyle: "italic" }}>
               Dear {name},
             </div>
             <p style={{
               fontFamily: 'Cormorant Garamond, Georgia, serif',
-              fontSize: 17, lineHeight: 1.85, color: "#3A2C1A", margin: "0 0 16px",
+              fontSize: 18, fontWeight: 500, lineHeight: 1.9, color: "#3A2C1A", margin: "0 0 16px",
             }}>
               <span style={{
-                float: "left", fontSize: 64, lineHeight: "0.75",
+                float: "left", fontSize: 72, lineHeight: "0.75",
                 marginRight: 8, marginTop: 4,
                 fontFamily: 'Cormorant Garamond, Georgia, serif', fontWeight: 600, color: "#3A2C1A",
               }}>{opener.charAt(0)}</span>
@@ -765,7 +779,7 @@ export default function Health() {
             position: "relative",
           }}>
             <div style={{
-              fontFamily: 'DM Sans, system-ui, sans-serif', fontSize: 10, letterSpacing: 1.5,
+              fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif', fontSize: 10, letterSpacing: 1.5,
               textTransform: "uppercase", color: "#9B8B7A", marginBottom: 10,
               display: "flex", justifyContent: "space-between", alignItems: "center",
             }}>
@@ -773,7 +787,7 @@ export default function Health() {
               <button onClick={toggleAll} style={{
                 background: "none", border: "none", padding: 0, cursor: "pointer",
                 fontSize: 10, color: "#D4AF37", letterSpacing: 0.5,
-                fontFamily: 'DM Sans, system-ui, sans-serif',
+                fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
               }}>
                 {allExpanded ? "Collapse all" : "Expand all"}
               </button>
@@ -785,11 +799,11 @@ export default function Health() {
                 const el = document.getElementById(`letter-section-${s.id}`);
                 if (el) el.scrollIntoView({ behavior: "smooth", block: "start" });
               }} style={{
-                fontFamily: 'Cormorant Garamond, Georgia, serif', fontSize: 14, color: "#3A2C1A",
-                padding: "4px 0", display: "flex", alignItems: "center", gap: 8,
+                fontFamily: 'Cormorant Garamond, Georgia, serif', fontSize: 16, color: "#3A2C1A",
+                padding: "6px 0", display: "flex", alignItems: "center", gap: 8,
                 opacity: expanded[s.id] ? 1 : 0.7, textDecoration: "none",
               }}>
-                <span style={{ fontFamily: 'DM Sans, system-ui, sans-serif', fontSize: 10, color: "#9B8B7A", minWidth: 18 }}>{i + 1}.</span>
+                <span style={{ fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif', fontSize: 10, color: "#9B8B7A", minWidth: 18 }}>{i + 1}.</span>
                 <span style={{ flex: 1 }}>{s.title}</span>
                 {expanded[s.id] && <span style={{ color: "#D4AF37", fontSize: 10 }} aria-hidden="true">✓</span>}
               </a>
@@ -810,10 +824,10 @@ export default function Health() {
             <div style={{ fontFamily: 'Cormorant Garamond, Georgia, serif', fontSize: 16, color: "#3A2C1A", marginBottom: 4 }}>
               With care,
             </div>
-            <div style={{ fontFamily: 'Cormorant Garamond, Georgia, serif', fontSize: 18, fontWeight: 600, color: "#3A2C1A", fontStyle: "italic" }}>
+            <div style={{ fontFamily: 'Cormorant Garamond, Georgia, serif', fontSize: 20, fontWeight: 600, color: "#3A2C1A", fontStyle: "italic" }}>
               {(SIGNATURES[activeTab] || SIGNATURES.overview).name}
             </div>
-            <div style={{ fontFamily: 'DM Sans, system-ui, sans-serif', fontSize: 11, color: "#9B8B7A", letterSpacing: 0.5, marginTop: 2 }}>
+            <div style={{ fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif', fontSize: 11, color: "#9B8B7A", letterSpacing: 0.5, marginTop: 2 }}>
               {(SIGNATURES[activeTab] || SIGNATURES.overview).role}
             </div>
           </div>
@@ -821,15 +835,15 @@ export default function Health() {
           {/* ── P.S. ── */}
           <div style={{ marginTop: 32, paddingTop: 24, borderTop: "1px solid rgba(58,44,26,0.10)", position: "relative" }}>
             <p style={{
-              fontFamily: 'Cormorant Garamond, Georgia, serif', fontSize: 15, fontStyle: "italic",
-              color: "#6B5744", lineHeight: 1.8, margin: 0,
+              fontFamily: 'Cormorant Garamond, Georgia, serif', fontSize: 16, fontWeight: 500, fontStyle: "italic",
+              color: "#3A2C1A", lineHeight: 1.8, margin: 0,
             }}>
               <strong style={{ fontStyle: "normal", fontWeight: 600 }}>P.S.</strong> — {POSTSCRIPTS[activeTab] || POSTSCRIPTS.overview}
             </p>
           </div>
 
           {/* ── In-paper disclaimer ── */}
-          <div style={{ marginTop: 16, fontFamily: 'DM Sans, system-ui, sans-serif', fontSize: 10, color: "#9B8B7A", letterSpacing: 0.4, fontStyle: "italic", position: "relative" }}>
+          <div style={{ marginTop: 16, fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif', fontSize: 10, color: "#9B8B7A", letterSpacing: 0.4, fontStyle: "italic", position: "relative" }}>
             This letter is for informational purposes only and does not constitute medical advice. Always consult a qualified healthcare professional for personal health decisions.
           </div>
         </article>
@@ -842,7 +856,7 @@ export default function Health() {
       <div style={{
         background: "#3A2C1A", color: "rgba(244,237,219,0.6)",
         padding: "12px 20px", textAlign: "center",
-        fontFamily: 'DM Sans, system-ui, sans-serif', fontSize: 10, letterSpacing: 0.5,
+        fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif', fontSize: 10, letterSpacing: 0.5,
       }}>
         This content is for informational purposes only and does not constitute medical advice. Always consult a qualified healthcare professional for personalised health decisions.
       </div>
@@ -860,10 +874,10 @@ function LetterSection({ section, isExpanded, onToggle }) {
         width: "100%", textAlign: "left", background: "none", border: "none", cursor: "pointer",
         padding: "12px 0", display: "flex", justifyContent: "space-between", alignItems: "center",
       }}>
-        <span style={{ fontFamily: 'Cormorant Garamond, Georgia, serif', fontWeight: 600, fontSize: 19, color: "#3A2C1A" }}>
+        <span style={{ fontFamily: 'Cormorant Garamond, Georgia, serif', fontWeight: 600, fontSize: 20, color: "#3A2C1A" }}>
           {section.title}
         </span>
-        <span style={{ fontFamily: 'DM Sans, system-ui, sans-serif', fontSize: 12, color: "#9B8B7A", letterSpacing: 0.5 }}>
+        <span style={{ fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif', fontSize: 12, color: "#9B8B7A", letterSpacing: 0.5 }}>
           {isExpanded ? "— close" : "+ read"}
         </span>
       </button>
@@ -876,11 +890,11 @@ function LetterSection({ section, isExpanded, onToggle }) {
           borderRadius: "0 4px 4px 0",
         }}>
           <span style={{
-            fontFamily: 'DM Sans, system-ui, sans-serif', fontSize: 10, color: "#9B8B7A",
+            fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif', fontSize: 10, color: "#9B8B7A",
             letterSpacing: 1.2, textTransform: "uppercase", marginRight: 8,
           }}>Key insight</span>
           <span style={{
-            fontFamily: 'Cormorant Garamond, Georgia, serif', fontSize: 14, color: "#3A2C1A", fontStyle: "italic",
+            fontFamily: 'Cormorant Garamond, Georgia, serif', fontSize: 15, fontWeight: 500, color: "#3A2C1A", fontStyle: "italic",
           }}>{section.keyFact}</span>
         </div>
       )}
@@ -891,7 +905,7 @@ function LetterSection({ section, isExpanded, onToggle }) {
             if (block.type === "para") {
               return (
                 <p key={i} style={{
-                  fontFamily: 'Cormorant Garamond, Georgia, serif', fontSize: 16, lineHeight: 1.85,
+                  fontFamily: 'Cormorant Garamond, Georgia, serif', fontSize: 18, fontWeight: 500, lineHeight: 1.9,
                   color: "#3A2C1A", margin: "0 0 14px",
                 }}>{block.text}</p>
               );
@@ -904,11 +918,11 @@ function LetterSection({ section, isExpanded, onToggle }) {
                   borderRadius: "0 4px 4px 0",
                 }}>
                   <p style={{
-                    fontFamily: 'Cormorant Garamond, Georgia, serif', fontSize: 15, fontStyle: "italic",
-                    color: "#6B5744", margin: "0 0 8px", lineHeight: 1.8,
+                    fontFamily: 'Cormorant Garamond, Georgia, serif', fontSize: 17, fontWeight: 500, fontStyle: "italic",
+                    color: "#3A2C1A", margin: "0 0 8px", lineHeight: 1.8,
                   }}>"{block.quote}"</p>
                   <div style={{
-                    fontFamily: 'DM Sans, system-ui, sans-serif', fontSize: 11, color: "#9B8B7A", letterSpacing: 0.5,
+                    fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif', fontSize: 11, color: "#9B8B7A", letterSpacing: 0.5,
                   }}>— {block.attribution}</div>
                 </div>
               );
@@ -916,7 +930,7 @@ function LetterSection({ section, isExpanded, onToggle }) {
             if (block.type === "list") {
               return (
                 <ul key={i} style={{
-                  fontFamily: 'Cormorant Garamond, Georgia, serif', fontSize: 15, lineHeight: 1.8,
+                  fontFamily: 'Cormorant Garamond, Georgia, serif', fontSize: 17, fontWeight: 500, lineHeight: 1.85,
                   color: "#3A2C1A", paddingLeft: 24, margin: "0 0 14px",
                 }}>
                   {block.items.map((item, j) => <li key={j} style={{ marginBottom: 6 }}>{item}</li>)}
@@ -933,7 +947,7 @@ function LetterSection({ section, isExpanded, onToggle }) {
                     fontFamily: 'Cormorant Garamond, Georgia, serif', fontSize: 40, fontWeight: 600, color: "#D4AF37",
                   }}>{block.number}</div>
                   <div style={{
-                    fontFamily: 'DM Sans, system-ui, sans-serif', fontSize: 11, color: "#9B8B7A",
+                    fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif', fontSize: 11, color: "#9B8B7A",
                     letterSpacing: 1, textTransform: "uppercase", marginTop: 4,
                   }}>{block.label}</div>
                 </div>
