@@ -1,11 +1,16 @@
 // ─────────────────────────────────────────────────────────────────────────────
 // HealthCornerDemo — tabbed Health Corner hub on /Ideas (FoundersOS).
 //
-// v4 (2026-05-28) — 5 LAYOUT themes (Magazine · Card Grid · Timeline ·
-// Dashboard · Conversational). Reverts the v3.1 colour-theme experiment.
+// v4.1 (2026-05-28) — Conversational layout removed and replaced by a new
+// Letter layout (paper-on-surface effect, drop caps, botanical dividers,
+// dateline, sign-off). The remaining four layouts (Magazine · Card Grid ·
+// Timeline · Dashboard) get distinctive backgrounds and inline SVG visual
+// assets — grain hero, section numbers, sparklines, animated pulse dots,
+// circular cycle progress, ruled journal lines, dot grid, status dots.
+//
 // Single FemWell brand palette throughout (cream, espresso, blush, sage,
-// gold, muted). What changes per theme is the visual structure — section
-// shape, hierarchy, typography sizing, header style — not the palette.
+// gold, muted). What changes per theme is the visual structure plus its
+// signature asset — not the palette.
 //
 // All v3 content preserved: hormone curve, cervical mucus table, life
 // stage detail, hormonal acne mechanisms, oestrogen + brain neurobiology,
@@ -17,7 +22,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import { useCycleDay } from "@/hooks/useCycleDay";
-import { Sparkles, FileText, ChevronRight, ChevronDown, ExternalLink, Stethoscope } from "lucide-react";
+import { Sparkles, FileText, ChevronRight, ChevronDown, ExternalLink, Stethoscope, Quote } from "lucide-react";
 
 // ─── BRAND PALETTE — single source of truth ─────────────────────────
 const T = {
@@ -41,16 +46,144 @@ const T = {
 
 // ─── LAYOUT THEMES ──────────────────────────────────────────────────
 const LAYOUTS = [
-  { id: "magazine",       icon: "📰", label: "Magazine" },
-  { id: "card-grid",      icon: "▦",  label: "Card Grid" },
-  { id: "timeline",       icon: "◎",  label: "Timeline" },
-  { id: "dashboard",      icon: "⊞",  label: "Dashboard" },
-  { id: "conversational", icon: "💬", label: "Conversational" },
+  { id: "magazine",  icon: "📰", label: "Magazine" },
+  { id: "card-grid", icon: "▦",  label: "Card Grid" },
+  { id: "timeline",  icon: "◎",  label: "Timeline" },
+  { id: "dashboard", icon: "⊞",  label: "Dashboard" },
+  { id: "letter",    icon: "📜", label: "Letter" },
 ];
 const DEFAULT_LAYOUT = "card-grid";
 
-// Magazine + Conversational layouts force every section open (no collapse).
-const FORCE_OPEN_LAYOUTS = new Set(["magazine", "conversational"]);
+// Magazine + Letter layouts force every section open (no collapse).
+const FORCE_OPEN_LAYOUTS = new Set(["magazine", "letter"]);
+
+// ─── PER-LAYOUT BACKGROUNDS ─────────────────────────────────────────
+// SVG-as-data-URL backgrounds (no external files). Each background is
+// quiet and palette-faithful so it reads as texture, not decoration.
+const LAYOUT_BG = {
+  magazine:  "#FDFCFA",
+  "card-grid": `radial-gradient(rgba(155,139,122,0.18) 1px, transparent 1px) #F4EDDB`,
+  timeline:  `repeating-linear-gradient(to bottom, transparent 0, transparent 31px, rgba(155,139,122,0.14) 31px, rgba(155,139,122,0.14) 32px) #FAF7F2`,
+  dashboard: "#F0EDE6",
+  letter:    "#F5EDD8",
+};
+const LAYOUT_BG_SIZE = {
+  "card-grid": "18px 18px",
+};
+
+// ─── SECTION COLOR MAP (Card Grid accent bands) ─────────────────────
+const SECTION_COLORS = {
+  // Cycle
+  "hormone-curve":           "#D4AF37",  // gold
+  "fertility-signs":         "#8FAF8F",  // sage
+  "cycle-health-indicators": "#E8B4B8",  // blush
+  "luteal-phase-defect":     "#E8B4B8",  // blush
+  "phase-food-movement":     "#D4AF37",  // gold
+  // Skin & Hair
+  "how-hormones-skin":       "#D4AF37",
+  "hormonal-acne":           "#E8B4B8",
+  "phase-skincare":          "#8FAF8F",
+  "hair-science":            "#D4AF37",
+  "acne-tracker":            "#E8B4B8",
+  "supplements":             "#8FAF8F",
+  // Body
+  "symptom-intro":           "#8FAF8F",
+  "ranked-symptoms":         "#D4AF37",
+  "symptom-calendar":        "#E8B4B8",
+  "hot-flash-physiology":    "#E8B4B8",
+  "pcos":                    "#D4AF37",
+  "endometriosis":           "#E8B4B8",
+  "pmdd":                    "#E8B4B8",
+  // Mind
+  "oestrogen-brain":         "#D4AF37",
+  "cognition-by-phase":      "#8FAF8F",
+  "hpa-hpg":                 "#E8B4B8",
+  "mood-energy-30":          "#D4AF37",
+  "sleep-14":                "#8FAF8F",
+  "sleep-cycle":             "#8FAF8F",
+  "pmdd-neurosteroid":       "#E8B4B8",
+  "stress-stage":            "#D4AF37",
+  "nervous-system":          "#8FAF8F",
+  "brain-fog":               "#D4AF37",
+  // Nourishment
+  "phase-nutrition":         "#8FAF8F",
+  "estrobolome":             "#D4AF37",
+  "seed-cycling":            "#8FAF8F",
+  "blood-sugar":             "#E8B4B8",
+  "edcs":                    "#D4AF37",
+  // Care
+  "blood-tests":             "#8FAF8F",
+  "hormonal-panel":          "#D4AF37",
+  "range-vs-optimal":        "#8FAF8F",
+  "hrt-conversation":        "#D4AF37",
+  "supplement-stacking":     "#8FAF8F",
+  "gp-prep":                 "#D4AF37",
+  "meds-adherence":          "#8FAF8F",
+  "to-discuss":              "#E8B4B8",
+};
+const SECTION_ICON = {
+  "hormone-curve":           "🌀",
+  "fertility-signs":         "🌱",
+  "cycle-health-indicators": "🩺",
+  "luteal-phase-defect":     "🌙",
+  "phase-food-movement":     "🍽",
+  "how-hormones-skin":       "✨",
+  "hormonal-acne":           "🪞",
+  "phase-skincare":          "🧴",
+  "hair-science":            "🪮",
+  "acne-tracker":            "📊",
+  "supplements":             "💊",
+  "symptom-intro":           "📓",
+  "ranked-symptoms":         "📈",
+  "symptom-calendar":        "🗓",
+  "hot-flash-physiology":    "🔥",
+  "pcos":                    "⚖",
+  "endometriosis":           "🌹",
+  "pmdd":                    "🌧",
+  "oestrogen-brain":         "🧠",
+  "cognition-by-phase":      "📖",
+  "hpa-hpg":                 "⚡",
+  "mood-energy-30":          "🌤",
+  "sleep-14":                "🌙",
+  "sleep-cycle":             "💤",
+  "pmdd-neurosteroid":       "🧬",
+  "stress-stage":            "🌿",
+  "nervous-system":          "🌊",
+  "brain-fog":               "☁",
+  "phase-nutrition":         "🥗",
+  "estrobolome":             "🌾",
+  "seed-cycling":            "🌻",
+  "blood-sugar":             "🍯",
+  "edcs":                    "🧪",
+  "blood-tests":             "🩸",
+  "hormonal-panel":          "📋",
+  "range-vs-optimal":        "📐",
+  "hrt-conversation":        "💬",
+  "supplement-stacking":     "💊",
+  "gp-prep":                 "📝",
+  "meds-adherence":          "💊",
+  "to-discuss":              "🗒",
+};
+const SECTION_BADGE = {
+  "hormone-curve":     "EVIDENCE-BASED",
+  "fertility-signs":   "TRACKED",
+  "hormonal-acne":     "EXPERT",
+  "hair-science":      "EVIDENCE-BASED",
+  "oestrogen-brain":   "EXPERT",
+  "estrobolome":       "EVIDENCE-BASED",
+  "blood-tests":       "EXPERT",
+  "hrt-conversation":  "EXPERT",
+  "pmdd-neurosteroid": "EVIDENCE-BASED",
+  "endometriosis":     "EXPERT",
+};
+
+// ─── PHASE DOT COLOR MAP (Timeline) ─────────────────────────────────
+const PHASE_DOT_COLOR = {
+  follicular: "#8FAF8F",  // sage
+  ovulatory:  "#D4AF37",  // gold
+  luteal:     "#E8B4B8",  // blush
+  menstrual:  "#9B8B7A",  // muted
+};
 
 // ─── Tab + semantic constants ────────────────────────────────────────
 const HC_TABS = [
@@ -562,9 +695,37 @@ export default function HealthCornerDemo({ profile, checkins = [], symptoms = []
 
   return (
     <div>
+      {/* Global injected styles — animations + drop caps. Kept inline so the
+          file remains self-contained and survives the base44 build pipeline. */}
+      <style>{`
+        @keyframes hcdemo-pulse {
+          0%   { box-shadow: 0 0 0 0 rgba(212,175,55,0.55); }
+          70%  { box-shadow: 0 0 0 10px rgba(212,175,55,0); }
+          100% { box-shadow: 0 0 0 0 rgba(212,175,55,0); }
+        }
+        .hcdemo-pulse-dot { animation: hcdemo-pulse 1.8s infinite; }
+        .hcdemo-letter-paper p.hcdemo-lede:first-letter,
+        .hcdemo-magazine-prose p.hcdemo-lede:first-letter {
+          float: left;
+          font-family: "Fraunces", Georgia, serif;
+          font-size: 56px;
+          line-height: 0.9;
+          padding: 6px 10px 0 0;
+          color: ${T.gold};
+          font-weight: 700;
+        }
+        .hcdemo-letter-link {
+          color: ${T.gold};
+          font-style: italic;
+          text-decoration: underline;
+          text-underline-offset: 3px;
+          text-decoration-thickness: 1px;
+        }
+      `}</style>
+
       <DemoPill />
 
-      <article style={canvasStyle()}>
+      <article style={canvasStyle(layout)}>
         <LayoutPicker active={layout} setActive={setLayout} />
 
         <nav style={{
@@ -594,24 +755,284 @@ export default function HealthCornerDemo({ profile, checkins = [], symptoms = []
 
         <PhaseBar phase={phase} cycle={cycle} stage={stage} isMeno={isMeno} />
 
+        {layout === "magazine" && <MagazineRunningHeader />}
+
         <div style={{ padding: "6px 0 24px" }}>
-          {active === "overview"    && <OverviewTab    {...props} />}
-          {active === "cycle"       && <CycleTab       {...props} />}
-          {active === "life-stage"  && <LifeStageTab   {...props} />}
-          {active === "skin-hair"   && <SkinHairTab    {...props} />}
-          {active === "body"        && <BodyTab        {...props} />}
-          {active === "mind"        && <MindTab        {...props} />}
-          {active === "nourishment" && <NourishmentTab {...props} />}
-          {active === "care"        && <CareTab        {...props} />}
+          <LayoutFrame layout={layout} profile={profile} phase={phase} cycle={cycle} stage={stage} isMeno={isMeno} active={active}>
+            {active === "overview"    && <OverviewTab    {...props} />}
+            {active === "cycle"       && <CycleTab       {...props} />}
+            {active === "life-stage"  && <LifeStageTab   {...props} />}
+            {active === "skin-hair"   && <SkinHairTab    {...props} />}
+            {active === "body"        && <BodyTab        {...props} />}
+            {active === "mind"        && <MindTab        {...props} />}
+            {active === "nourishment" && <NourishmentTab {...props} />}
+            {active === "care"        && <CareTab        {...props} />}
+          </LayoutFrame>
         </div>
       </article>
 
       <ReviewerNote>
-        v4 — 5 layout themes. Same brand palette, same content. What changes is the structure: Magazine
-        (editorial), Card Grid (default — Notion-style), Timeline (vertical journal), Dashboard (data
-        widgets + flat panels), Conversational (Jess voice). The Section primitive renders differently
-        per layout; all v3 content is preserved inside.
+        v4.1 — Letter layout added (paper-on-surface, drop caps, botanical dividers, dateline, sign-off).
+        Conversational layout retired. Magazine grows a grain hero + section numbers + running header;
+        Card Grid grows section color bands + dot-grid background + EXPERT badges; Timeline grows a gold
+        pulsing dot, phase-color milestones, journal-rule background; Dashboard grows sparklines, trend
+        arrows, and a circular cycle progress arc. Single brand palette throughout — only structure
+        and signature asset change per layout.
       </ReviewerNote>
+    </div>
+  );
+}
+
+// ═══════════════════════════════════════════════════════════════════════
+// LAYOUT FRAME — wraps tab content per-layout (Letter paper, Magazine prose)
+// ═══════════════════════════════════════════════════════════════════════
+function LayoutFrame({ layout, profile, phase, cycle, stage, isMeno, active, children }) {
+  if (layout === "letter") {
+    return (
+      <LetterPaper profile={profile} phase={phase} cycle={cycle} stage={stage} isMeno={isMeno} tab={active}>
+        {children}
+      </LetterPaper>
+    );
+  }
+  if (layout === "magazine") {
+    return (
+      <div className="hcdemo-magazine-prose">
+        {children}
+      </div>
+    );
+  }
+  return children;
+}
+
+// ═══════════════════════════════════════════════════════════════════════
+// LETTER PAPER — paper-floating-on-surface effect with letterhead + sign-off
+// ═══════════════════════════════════════════════════════════════════════
+function LetterPaper({ profile, phase, cycle, stage, isMeno, tab, children }) {
+  const today = new Date();
+  const dateline = today.toLocaleDateString("en-GB", { weekday: "long", day: "numeric", month: "long", year: "numeric" });
+  const phaseLabel = PHASE_LABEL[phase] || prettyName(phase);
+  const day = cycle?.cycleDay || cycle?.dayInCycle;
+  const name = profile?.preferred_name || profile?.full_name?.split?.(" ")?.[0] || "friend";
+
+  return (
+    <div style={{
+      maxWidth: 680, margin: "20px auto 24px",
+      background: "#FEFAF2",
+      padding: "48px 52px",
+      boxShadow: "0 18px 44px rgba(58,44,26,0.18), 0 4px 10px rgba(58,44,26,0.10)",
+      borderRadius: 4,
+      position: "relative",
+    }} className="hcdemo-letter-paper">
+      {/* Letterhead */}
+      <div style={{ textAlign: "center", marginBottom: 18 }}>
+        <div style={{
+          fontFamily: '"Fraunces", Georgia, serif',
+          fontSize: 26, fontWeight: 700, letterSpacing: 3,
+          color: T.espresso, textTransform: "uppercase",
+        }}>FEMWELL</div>
+        <div style={{
+          fontSize: 10, letterSpacing: 4, textTransform: "uppercase",
+          color: T.muted, fontWeight: 600, marginTop: 4,
+        }}>Personal Health Guide</div>
+      </div>
+      <BotanicalDivider />
+
+      {/* Dateline */}
+      <div style={{
+        fontSize: 12.5, color: T.muted, fontStyle: "italic",
+        fontFamily: 'Georgia, serif',
+        textAlign: "right", marginTop: 18, marginBottom: 22,
+        letterSpacing: 0.2,
+      }}>
+        {dateline}
+        {!isMeno && day && (
+          <>
+            <br />
+            <span style={{ color: T.gold }}>{phaseLabel} · Day {day}</span>
+          </>
+        )}
+      </div>
+
+      {/* Salutation */}
+      <div style={{
+        fontFamily: 'Georgia, serif',
+        fontSize: 18, fontStyle: "italic",
+        color: T.espresso, marginBottom: 18,
+      }}>
+        Dear {name},
+      </div>
+
+      {/* Body */}
+      <div style={{ fontFamily: 'Georgia, serif', color: T.espresso, lineHeight: 1.75, fontSize: 15 }}>
+        {children}
+      </div>
+
+      {/* Sign-off */}
+      <BotanicalDivider />
+      <div style={{
+        marginTop: 22, fontFamily: 'Georgia, serif', fontSize: 14.5,
+        color: T.espresso, lineHeight: 1.6,
+      }}>
+        <div style={{ fontStyle: "italic" }}>With care,</div>
+        <div style={{ marginTop: 6, fontFamily: '"Fraunces", Georgia, serif', fontStyle: "italic", fontSize: 16, color: T.gold }}>
+          Your FemWell Health Guide
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ═══════════════════════════════════════════════════════════════════════
+// MAGAZINE RUNNING HEADER
+// ═══════════════════════════════════════════════════════════════════════
+function MagazineRunningHeader() {
+  const now = new Date();
+  const month = now.toLocaleString("en-GB", { month: "long" }).toUpperCase();
+  const year  = now.getFullYear();
+  return (
+    <div style={{
+      borderBottom: `1px solid ${T.border}`,
+      background: "#FDFCFA",
+      padding: "10px 18px",
+      display: "flex", alignItems: "center", justifyContent: "space-between",
+      fontFamily: '"Inter", system-ui, sans-serif',
+    }}>
+      <div style={{ fontSize: 10, letterSpacing: 3, color: T.muted, fontWeight: 700, textTransform: "uppercase" }}>
+        FemWell Health Guide
+      </div>
+      <div style={{ fontSize: 10, letterSpacing: 3, color: T.gold, fontWeight: 700 }}>
+        {month} {year}
+      </div>
+    </div>
+  );
+}
+
+// ═══════════════════════════════════════════════════════════════════════
+// VISUAL ASSET SVGs
+// ═══════════════════════════════════════════════════════════════════════
+function BotanicalDivider({ color = T.gold }) {
+  return (
+    <div style={{ textAlign: "center", margin: "16px 0 8px" }} aria-hidden="true">
+      <svg width="140" height="18" viewBox="0 0 140 18" xmlns="http://www.w3.org/2000/svg">
+        <line x1="0"   y1="9" x2="56"  y2="9" stroke={color} strokeWidth="0.8" opacity="0.6" />
+        <line x1="84"  y1="9" x2="140" y2="9" stroke={color} strokeWidth="0.8" opacity="0.6" />
+        {/* Centre flower */}
+        <circle cx="70" cy="9" r="2.4" fill={color} />
+        <ellipse cx="64" cy="9" rx="4" ry="1.8" fill={color} opacity="0.55" />
+        <ellipse cx="76" cy="9" rx="4" ry="1.8" fill={color} opacity="0.55" />
+        <ellipse cx="70" cy="4" rx="1.8" ry="3.5" fill={color} opacity="0.4" />
+        <ellipse cx="70" cy="14" rx="1.8" ry="3.5" fill={color} opacity="0.4" />
+        {/* End leaves */}
+        <ellipse cx="0"   cy="9" rx="3.5" ry="1.6" fill={color} opacity="0.5" />
+        <ellipse cx="140" cy="9" rx="3.5" ry="1.6" fill={color} opacity="0.5" />
+      </svg>
+    </div>
+  );
+}
+
+function Sparkline({ values, width = 80, height = 26, stroke = T.gold }) {
+  const clean = (values || []).map((v) => (v == null ? 0 : Number(v)));
+  if (!clean.length) return null;
+  const max = Math.max(...clean, 1);
+  const step = clean.length > 1 ? width / (clean.length - 1) : width;
+  const pts = clean.map((v, i) => `${i * step},${height - (v / max) * (height - 4) - 2}`).join(" ");
+  const lastY = clean.length ? height - (clean[clean.length - 1] / max) * (height - 4) - 2 : height / 2;
+  return (
+    <svg width={width} height={height} viewBox={`0 0 ${width} ${height}`} aria-hidden="true">
+      <polyline points={pts} fill="none" stroke={stroke} strokeWidth="1.6" strokeLinejoin="round" strokeLinecap="round" />
+      <circle cx={(clean.length - 1) * step} cy={lastY} r="2.2" fill={stroke} />
+    </svg>
+  );
+}
+
+function CycleProgress({ day = 14, length = 28, size = 78 }) {
+  const r = size / 2 - 6;
+  const cx = size / 2;
+  const cy = size / 2;
+  const pct = Math.max(0, Math.min(1, day / Math.max(length, 1)));
+  const circumference = 2 * Math.PI * r;
+  const offset = circumference * (1 - pct);
+  return (
+    <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`} aria-hidden="true">
+      <circle cx={cx} cy={cy} r={r} fill="none" stroke={T.border} strokeWidth="3" />
+      <circle cx={cx} cy={cy} r={r} fill="none" stroke={T.gold} strokeWidth="3"
+        strokeDasharray={circumference} strokeDashoffset={offset}
+        strokeLinecap="round" transform={`rotate(-90 ${cx} ${cy})`} />
+      <text x={cx} y={cy + 3} textAnchor="middle"
+        fontFamily='"Fraunces", Georgia, serif' fontSize="20" fontWeight="700" fill={T.espresso}>
+        {day}
+      </text>
+      <text x={cx} y={cy + 18} textAnchor="middle" fontSize="9" fill={T.muted} fontWeight="600" letterSpacing="1.2">
+        DAY
+      </text>
+    </svg>
+  );
+}
+
+function TrendArrow({ direction = "up" }) {
+  const color = direction === "up" ? T.sage : direction === "down" ? T.blushDeep : T.muted;
+  const symbol = direction === "up" ? "↑" : direction === "down" ? "↓" : "→";
+  return <span style={{ color, fontWeight: 700, fontSize: 13 }} aria-hidden="true">{symbol}</span>;
+}
+
+function StatusDot({ color }) {
+  return (
+    <span aria-hidden="true" style={{
+      display: "inline-block", width: 12, height: 12, borderRadius: 999,
+      background: color, marginRight: 8, verticalAlign: "middle",
+      boxShadow: `0 0 0 2px ${color}25`,
+    }} />
+  );
+}
+
+function MagazineHero({ title, kicker, intro }) {
+  return (
+    <div style={{ marginBottom: 28 }}>
+      <div style={{
+        position: "relative",
+        height: 140, borderRadius: 4, overflow: "hidden",
+        background: `linear-gradient(135deg, ${T.blush} 0%, ${T.gold} 55%, ${T.sage} 100%)`,
+      }}>
+        {/* Grain overlay — inline SVG noise */}
+        <svg width="100%" height="100%" viewBox="0 0 200 140" preserveAspectRatio="none"
+          aria-hidden="true"
+          style={{ position: "absolute", inset: 0, mixBlendMode: "overlay", opacity: 0.35 }}>
+          <filter id="hcgrain">
+            <feTurbulence type="fractalNoise" baseFrequency="0.9" numOctaves="2" seed="3" />
+            <feColorMatrix values="0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  0 0 0 1 0" />
+          </filter>
+          <rect width="200" height="140" filter="url(#hcgrain)" />
+        </svg>
+        {/* Centred kicker */}
+        <div style={{
+          position: "absolute", inset: 0,
+          display: "flex", alignItems: "center", justifyContent: "center",
+          textAlign: "center", padding: "0 24px",
+        }}>
+          <div>
+            {kicker && (
+              <div style={{
+                fontSize: 10, letterSpacing: 4, color: "#FFFFFF",
+                textTransform: "uppercase", fontWeight: 700, marginBottom: 10,
+                textShadow: "0 1px 3px rgba(58,44,26,0.3)",
+              }}>{kicker}</div>
+            )}
+            <div style={{
+              fontFamily: '"Fraunces", Georgia, serif',
+              fontSize: 32, fontWeight: 700, lineHeight: 1.1,
+              color: "#FFFFFF", letterSpacing: -0.5,
+              textShadow: "0 2px 6px rgba(58,44,26,0.35)",
+            }}>{title}</div>
+          </div>
+        </div>
+      </div>
+      {intro && (
+        <p className="hcdemo-lede" style={{
+          marginTop: 20, marginBottom: 0,
+          fontFamily: '"Fraunces", Georgia, serif',
+          fontSize: 19, lineHeight: 1.55, color: T.espresso,
+        }}>{intro}</p>
+      )}
     </div>
   );
 }
@@ -690,44 +1111,83 @@ function PhaseBar({ phase, cycle, stage, isMeno }) {
 }
 
 // ═══════════════════════════════════════════════════════════════════════
-// SECTION — renders differently per layout (the heart of v4)
+// SECTION — renders differently per layout (the heart of v4.1)
 // ═══════════════════════════════════════════════════════════════════════
-function Section({ layout, id, title, jessIntro, open, onToggle, children }) {
+function Section({ layout, id, title, jessIntro, open, onToggle, children, index = null, phase = null }) {
   const forcedOpen = FORCE_OPEN_LAYOUTS.has(layout);
   const isOpen = forcedOpen ? true : open;
+  const sectionColor = SECTION_COLORS[id] || T.gold;
+  const sectionIcon  = SECTION_ICON[id]   || null;
+  const sectionBadge = SECTION_BADGE[id]  || null;
 
-  // ─── MAGAZINE: editorial big headers, dividers, always open ─────
+  // ─── MAGAZINE: editorial big headers + oversized quote marks + section number ───
   if (layout === "magazine") {
     return (
-      <section style={{ marginBottom: 36 }}>
+      <section style={{ marginBottom: 40, position: "relative" }}>
+        {/* Decorative oversized section number — opacity 0.08, behind */}
+        {index != null && (
+          <div aria-hidden="true" style={{
+            position: "absolute", top: -8, right: 0,
+            fontFamily: '"Fraunces", Georgia, serif',
+            fontSize: 64, fontWeight: 700,
+            color: T.espresso, opacity: 0.08,
+            lineHeight: 1, letterSpacing: -2,
+            pointerEvents: "none",
+          }}>{String(index + 1).padStart(2, "0")}</div>
+        )}
         <div style={{ height: 2, background: T.espresso, marginBottom: 18 }} />
+        {sectionBadge && (
+          <span style={{
+            display: "inline-block", marginBottom: 12,
+            padding: "3px 10px", borderRadius: 4,
+            background: T.goldSoft, color: T.gold,
+            fontSize: 10, letterSpacing: 1.6, fontWeight: 700, textTransform: "uppercase",
+          }}>{sectionBadge}</span>
+        )}
         <h2 style={{
           fontFamily: '"Fraunces", Georgia, serif',
-          fontSize: 28, fontWeight: 700, letterSpacing: -0.5,
-          color: T.espresso, lineHeight: 1.2,
-          margin: "0 0 18px",
+          fontSize: 30, fontWeight: 700, letterSpacing: -0.5,
+          color: T.espresso, lineHeight: 1.15,
+          margin: "0 0 20px",
+          maxWidth: "85%",
         }}>{title}</h2>
-        <div style={{ fontSize: 15, lineHeight: 1.7 }}>{children}</div>
+        <div style={{ fontSize: 15.5, lineHeight: 1.75 }}>{children}</div>
       </section>
     );
   }
 
-  // ─── TIMELINE: vertical line + dot + content offset right ───────
+  // ─── TIMELINE: vertical line + phase-coloured pulsing dot + medical caps ───
   if (layout === "timeline") {
+    const dotColor = phase ? (PHASE_DOT_COLOR[phase] || T.gold) : (isOpen ? T.gold : T.muted);
+    const goldFill = isOpen;
     return (
-      <div style={{ position: "relative", paddingLeft: 32, marginBottom: 18 }}>
-        {/* vertical line */}
+      <div style={{ position: "relative", paddingLeft: 44, marginBottom: 22 }}>
+        {/* vertical line — gold fill when this section is the active one */}
         <div style={{
-          position: "absolute", left: 5, top: 22, bottom: -18,
-          width: 2, background: T.espresso, opacity: 0.18,
+          position: "absolute", left: 9, top: 22, bottom: -22,
+          width: 2,
+          background: goldFill
+            ? `linear-gradient(to bottom, ${T.gold} 0%, ${T.gold} 40%, ${T.border} 40%, ${T.border} 100%)`
+            : T.border,
         }} />
-        {/* dot */}
+        {/* dot — pulses when this is the active/open section */}
+        <div className={goldFill ? "hcdemo-pulse-dot" : ""} style={{
+          position: "absolute", left: 2, top: 12,
+          width: 16, height: 16, borderRadius: 999,
+          background: dotColor,
+          border: `3px solid #FFFFFF`,
+          boxShadow: goldFill ? `0 0 0 2px ${dotColor}` : `0 0 0 1px ${T.border}`,
+        }} />
+        {/* Date / phase side label */}
         <div style={{
-          position: "absolute", left: 0, top: 14,
-          width: 12, height: 12, borderRadius: 999,
-          background: isOpen ? T.gold : T.muted,
-          boxShadow: isOpen ? `0 0 0 3px ${T.goldSoft}` : "none",
-        }} />
+          position: "absolute", left: -18, top: 32,
+          width: 12, fontSize: 9, color: T.muted,
+          letterSpacing: 1.2, textTransform: "uppercase",
+          writingMode: "vertical-rl", transform: "rotate(180deg)",
+          fontWeight: 700,
+        }}>
+          {phase ? (PHASE_LABEL[phase]?.slice(0, 5) || "") : ""}
+        </div>
         <button onClick={() => onToggle(id)} style={{
           width: "100%", padding: "8px 0",
           display: "flex", justifyContent: "space-between", alignItems: "center",
@@ -746,13 +1206,13 @@ function Section({ layout, id, title, jessIntro, open, onToggle, children }) {
     );
   }
 
-  // ─── DASHBOARD: flat-top panel with coloured left accent bar ────
+  // ─── DASHBOARD: flat panel + status dot + EXPERT/EVIDENCE badge ──
   if (layout === "dashboard") {
     return (
       <div style={{
         marginBottom: 12,
-        background: T.cream,
-        borderLeft: `4px solid ${T.blush}`,
+        background: "#FFFFFF",
+        borderLeft: `4px solid ${sectionColor}`,
         borderTop: `1px solid ${T.border}`,
         borderRight: `1px solid ${T.border}`,
         borderBottom: `1px solid ${T.border}`,
@@ -764,7 +1224,10 @@ function Section({ layout, id, title, jessIntro, open, onToggle, children }) {
           background: "transparent", border: "none", cursor: "pointer", textAlign: "left", gap: 12,
         }}>
           <div>
-            <div style={{ fontSize: 10, color: T.muted, letterSpacing: 1.4, textTransform: "uppercase", fontWeight: 700, marginBottom: 2 }}>Panel</div>
+            <div style={{ fontSize: 10, color: T.muted, letterSpacing: 1.4, textTransform: "uppercase", fontWeight: 700, marginBottom: 4, display: "flex", alignItems: "center", gap: 6 }}>
+              <StatusDot color={sectionColor} />
+              <span>{sectionBadge || "Panel"}</span>
+            </div>
             <div style={{ fontSize: 15, fontWeight: 700, color: T.espresso, lineHeight: 1.4 }}>{title}</div>
           </div>
           <ChevronDown size={16} style={{ color: T.muted, transform: isOpen ? "rotate(180deg)" : "rotate(0)", transition: "transform 0.2s ease" }} />
@@ -776,47 +1239,38 @@ function Section({ layout, id, title, jessIntro, open, onToggle, children }) {
     );
   }
 
-  // ─── CONVERSATIONAL: Jess speech bubble + plain prose ───────────
-  if (layout === "conversational") {
+  // ─── LETTER: prose-only section break, no card, with section-break heading ───
+  if (layout === "letter") {
     return (
-      <section style={{ marginBottom: 28 }}>
-        {/* Jess avatar + speech bubble */}
-        <div style={{ display: "flex", alignItems: "flex-start", gap: 10, marginBottom: 12 }}>
-          <div aria-hidden="true" style={{
-            width: 34, height: 34, borderRadius: 999,
-            background: T.blush, color: T.espresso,
-            display: "flex", alignItems: "center", justifyContent: "center",
-            fontFamily: '"Fraunces", Georgia, serif', fontWeight: 700, fontSize: 16,
-            flexShrink: 0,
-          }}>J</div>
-          <div style={{
-            background: T.blushBg,
-            color: T.espresso,
-            padding: "12px 16px",
-            borderRadius: "16px 16px 16px 4px",
-            fontFamily: '"Fraunces", Georgia, serif',
-            fontSize: 15, lineHeight: 1.55,
-            maxWidth: 600,
-          }}>{jessIntro || title}</div>
-        </div>
-        {/* Body — no card, reads like a letter */}
+      <section style={{ marginTop: 26, marginBottom: 8 }}>
         <div style={{
-          paddingLeft: 44,
-          fontSize: 15, lineHeight: 1.8, color: T.espresso,
+          fontSize: 10, letterSpacing: 3, textTransform: "uppercase",
+          color: T.muted, fontWeight: 700, marginBottom: 6,
           fontFamily: '"Inter", system-ui, sans-serif',
-        }}>{children}</div>
+        }}>{sectionBadge || "Section"}</div>
+        <h3 style={{
+          fontFamily: '"Fraunces", Georgia, serif',
+          fontSize: 22, fontWeight: 600, color: T.espresso,
+          margin: "0 0 14px", letterSpacing: -0.2, lineHeight: 1.25,
+        }}>{title}</h3>
+        <div style={{ color: T.espresso, fontFamily: 'Georgia, serif', lineHeight: 1.78, fontSize: 15 }}>
+          {children}
+        </div>
       </section>
     );
   }
 
-  // ─── CARD GRID (default): rounded white card, accordion ─────────
+  // ─── CARD GRID (default): rounded card + 6px top accent + emoji + featured ───
+  // When index is explicitly 0 the section is the tab's "featured" card.
+  const isFeatured = index === 0;
   return (
     <div style={{
       marginBottom: 10,
       background: "#FFFFFF",
       borderRadius: 16,
-      boxShadow: "0 2px 8px rgba(58,44,26,0.08)",
+      boxShadow: isFeatured ? "0 6px 18px rgba(58,44,26,0.12)" : "0 2px 8px rgba(58,44,26,0.08)",
       border: `1px solid ${T.border}`,
+      borderTop: `6px solid ${sectionColor}`,
       overflow: "hidden",
     }}>
       <button onClick={() => onToggle(id)} style={{
@@ -825,7 +1279,25 @@ function Section({ layout, id, title, jessIntro, open, onToggle, children }) {
         background: "transparent", border: "none", cursor: "pointer",
         textAlign: "left", gap: 12,
       }}>
-        <span style={{ fontSize: 14, fontWeight: 700, color: T.espresso, lineHeight: 1.45 }}>{title}</span>
+        <div style={{ display: "flex", alignItems: "center", gap: 12, flex: 1, minWidth: 0 }}>
+          {sectionIcon && (
+            <span aria-hidden="true" style={{
+              flexShrink: 0,
+              width: 36, height: 36, borderRadius: 10,
+              background: `${sectionColor}22`,
+              display: "flex", alignItems: "center", justifyContent: "center",
+              fontSize: 18,
+            }}>{sectionIcon}</span>
+          )}
+          <div style={{ flex: 1, minWidth: 0 }}>
+            {sectionBadge && (
+              <div style={{ fontSize: 9.5, letterSpacing: 1.5, color: sectionColor, fontWeight: 700, marginBottom: 3, textTransform: "uppercase" }}>
+                {sectionBadge}
+              </div>
+            )}
+            <span style={{ fontSize: 14, fontWeight: 700, color: T.espresso, lineHeight: 1.45 }}>{title}</span>
+          </div>
+        </div>
         <ChevronDown size={16} style={{ color: T.muted, flexShrink: 0, transform: isOpen ? "rotate(180deg)" : "rotate(0)", transition: "transform 0.2s ease" }} />
       </button>
       <div style={{ maxHeight: isOpen ? 8000 : 0, overflow: "hidden", transition: "max-height 0.35s ease" }}>
@@ -841,33 +1313,38 @@ function GlanceCard({ layout, children }) {
     return (
       <div style={{ padding: "8px 0 28px", borderBottom: `2px solid ${T.espresso}`, marginBottom: 28 }}>
         <div style={{ fontSize: 10, letterSpacing: 3, textTransform: "uppercase", color: T.muted, fontWeight: 700, marginBottom: 12 }}>At a glance</div>
-        <p style={{ margin: 0, fontFamily: '"Fraunces", Georgia, serif', fontSize: 24, lineHeight: 1.4, color: T.espresso, fontWeight: 500 }}>{children}</p>
+        <p className="hcdemo-lede" style={{ margin: 0, fontFamily: '"Fraunces", Georgia, serif', fontSize: 22, lineHeight: 1.45, color: T.espresso, fontWeight: 500 }}>{children}</p>
       </div>
     );
   }
   if (layout === "dashboard") {
     return (
-      <div style={{ background: T.jessBg, borderLeft: `4px solid ${T.gold}`, padding: "14px 16px", marginBottom: 14 }}>
-        <div style={{ fontSize: 10, letterSpacing: 1.4, textTransform: "uppercase", color: T.muted, fontWeight: 700, marginBottom: 6 }}>Summary</div>
+      <div style={{ background: "#FFFFFF", borderLeft: `4px solid ${T.gold}`, border: `1px solid ${T.border}`, padding: "14px 16px", marginBottom: 14 }}>
+        <div style={{ fontSize: 10, letterSpacing: 1.4, textTransform: "uppercase", color: T.muted, fontWeight: 700, marginBottom: 6, display: "flex", alignItems: "center" }}>
+          <StatusDot color={T.gold} />
+          <span>Summary</span>
+        </div>
         <p style={{ margin: 0, fontSize: 14.5, lineHeight: 1.6, color: T.espresso }}>{children}</p>
       </div>
     );
   }
   if (layout === "timeline") {
     return (
-      <div style={{ paddingLeft: 32, position: "relative", marginBottom: 24 }}>
-        <div style={{ position: "absolute", left: 0, top: 4, width: 12, height: 12, borderRadius: 999, background: T.gold, boxShadow: `0 0 0 3px ${T.goldSoft}` }} />
+      <div style={{ paddingLeft: 44, position: "relative", marginBottom: 24 }}>
+        <div className="hcdemo-pulse-dot" style={{ position: "absolute", left: 2, top: 4, width: 16, height: 16, borderRadius: 999, background: T.gold, border: `3px solid #FFFFFF`, boxShadow: `0 0 0 2px ${T.gold}` }} />
         <div style={{ fontSize: 10, letterSpacing: 1.4, textTransform: "uppercase", color: T.gold, fontWeight: 700, marginBottom: 6 }}>Today</div>
         <p style={{ margin: 0, fontFamily: '"Fraunces", Georgia, serif', fontSize: 15, lineHeight: 1.65, color: T.espresso }}>{children}</p>
       </div>
     );
   }
-  if (layout === "conversational") {
+  if (layout === "letter") {
     return (
-      <div style={{ display: "flex", gap: 10, marginBottom: 22, alignItems: "flex-start" }}>
-        <div aria-hidden="true" style={{ width: 34, height: 34, borderRadius: 999, background: T.gold, color: T.espressoDk, display: "flex", alignItems: "center", justifyContent: "center", fontFamily: '"Fraunces", Georgia, serif', fontWeight: 700, fontSize: 16, flexShrink: 0 }}>J</div>
-        <div style={{ background: T.blushBg, padding: "14px 18px", borderRadius: "16px 16px 16px 4px", fontFamily: '"Fraunces", Georgia, serif', fontSize: 16, lineHeight: 1.6, color: T.espresso, maxWidth: 680 }}>{children}</div>
-      </div>
+      <p className="hcdemo-lede" style={{
+        margin: "0 0 18px",
+        fontFamily: 'Georgia, serif',
+        fontSize: 17, lineHeight: 1.78,
+        color: T.espresso,
+      }}>{children}</p>
     );
   }
   // Card grid default
@@ -885,7 +1362,10 @@ function SubHeader({ layout, children }) {
     return <div style={{ padding: "14px 0 8px", fontSize: 10, letterSpacing: 3, textTransform: "uppercase", color: T.muted, fontWeight: 700 }}>{children}</div>;
   }
   if (layout === "dashboard") {
-    return <div style={{ padding: "12px 0 6px", fontSize: 10, letterSpacing: 1.4, textTransform: "uppercase", color: T.gold, fontWeight: 700 }}>{children}</div>;
+    return <div style={{ padding: "12px 0 6px", fontSize: 10, letterSpacing: 1.4, textTransform: "uppercase", color: T.gold, fontWeight: 700, display: "flex", alignItems: "center" }}><StatusDot color={T.gold} />{children}</div>;
+  }
+  if (layout === "letter") {
+    return <div style={{ marginTop: 18, marginBottom: 8, fontSize: 10, letterSpacing: 2.5, textTransform: "uppercase", color: T.muted, fontWeight: 700, fontFamily: '"Inter", system-ui, sans-serif' }}>{children}</div>;
   }
   return <div style={{ padding: "14px 0 8px", fontSize: 11, letterSpacing: 1.4, textTransform: "uppercase", color: T.muted, fontWeight: 700 }}>{children}</div>;
 }
@@ -905,10 +1385,46 @@ function WidgetRow({ widgets }) {
         }}>
           <div style={{ fontSize: 10, letterSpacing: 1.4, textTransform: "uppercase", color: T.muted, fontWeight: 700, marginBottom: 4 }}>{w.label}</div>
           <div style={{ fontSize: 22, fontWeight: 700, color: T.espresso, fontFamily: '"Fraunces", Georgia, serif', lineHeight: 1.1 }}>{w.value}</div>
+          {w.trend && (
+            <div style={{ marginTop: 6, fontSize: 11.5, color: T.muted }}>
+              <TrendArrow direction={w.trend} /> <span style={{ marginLeft: 4 }}>{w.trendLabel || "7d"}</span>
+            </div>
+          )}
         </div>
       ))}
     </div>
   );
+}
+
+function SparklineCard({ label, values, trend = "flat", stroke = T.gold, suffix = "" }) {
+  const last = (values || []).slice().reverse().find((v) => v != null);
+  return (
+    <div style={{ background: "#FFFFFF", border: `1px solid ${T.border}`, borderTop: `3px solid ${stroke}`, padding: "12px 14px" }}>
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+        <div style={{ fontSize: 10, letterSpacing: 1.4, textTransform: "uppercase", color: T.muted, fontWeight: 700 }}>{label}</div>
+        <TrendArrow direction={trend} />
+      </div>
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-end", marginTop: 4 }}>
+        <div style={{ fontSize: 20, fontWeight: 700, color: T.espresso, fontFamily: '"Fraunces", Georgia, serif', lineHeight: 1.1 }}>
+          {last != null ? `${last}${suffix}` : "—"}
+        </div>
+        <Sparkline values={values} stroke={stroke} />
+      </div>
+    </div>
+  );
+}
+
+function trendOf(values) {
+  const clean = (values || []).filter((v) => v != null).map(Number);
+  if (clean.length < 2) return "flat";
+  const half = Math.floor(clean.length / 2);
+  const earlier = clean.slice(0, half);
+  const later = clean.slice(half);
+  const avg = (a) => a.length ? a.reduce((s, x) => s + x, 0) / a.length : 0;
+  const diff = avg(later) - avg(earlier);
+  if (diff > 0.25) return "up";
+  if (diff < -0.25) return "down";
+  return "flat";
 }
 
 // ─── NEWS STRIP — layout-aware ──────────────────────────────────
@@ -924,6 +1440,9 @@ function NewsStrip({ layout, tab }) {
         <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(260px, 1fr))", gap: 18, marginBottom: 18 }}>
           {items.map((item, i) => (
             <a key={i} href={item.url} target="_blank" rel="noopener noreferrer" style={{ textDecoration: "none", color: T.espresso }}>
+              <span style={{ display: "inline-block", marginBottom: 8, padding: "2px 9px", borderRadius: 3, background: T.goldSoft, color: T.gold, fontSize: 9, letterSpacing: 1.5, fontWeight: 700, textTransform: "uppercase" }}>
+                {tab.replace(/-/g, " ")}
+              </span>
               <div style={{ fontFamily: '"Fraunces", Georgia, serif', fontSize: 17, fontWeight: 700, color: T.espresso, marginBottom: 6, lineHeight: 1.35 }}>{item.headline}</div>
               <div style={{ fontStyle: "italic", fontSize: 12, color: T.muted }}>{item.source}{item.date ? ` · ${item.date}` : ""}</div>
             </a>
@@ -976,23 +1495,20 @@ function NewsStrip({ layout, tab }) {
     );
   }
 
-  if (layout === "conversational") {
+  if (layout === "letter") {
     return (
-      <div style={{ marginBottom: 14 }}>
-        <div style={{ display: "flex", gap: 10, marginBottom: 12, alignItems: "flex-start" }}>
-          <div aria-hidden="true" style={{ width: 34, height: 34, borderRadius: 999, background: T.blush, color: T.espresso, display: "flex", alignItems: "center", justifyContent: "center", fontFamily: '"Fraunces", Georgia, serif', fontWeight: 700, fontSize: 16, flexShrink: 0 }}>J</div>
-          <div style={{ background: T.blushBg, padding: "10px 14px", borderRadius: "16px 16px 16px 4px", fontFamily: '"Fraunces", Georgia, serif', fontSize: 14.5, lineHeight: 1.55, color: T.espresso, maxWidth: 600 }}>
-            Something that caught my eye this week — worth reading if you have a moment.
-          </div>
-        </div>
-        <div style={{ paddingLeft: 44, display: "grid", gap: 10 }}>
+      <div style={{ marginTop: 26 }}>
+        <div style={{ fontSize: 10, letterSpacing: 3, textTransform: "uppercase", color: T.muted, fontWeight: 700, marginBottom: 8 }}>Further Reading</div>
+        <ul style={{ margin: 0, padding: "0 0 0 0", listStyle: "none" }}>
           {items.map((item, i) => (
-            <a key={i} href={item.url} target="_blank" rel="noopener noreferrer" style={{ textDecoration: "none", color: T.espresso }}>
-              <div style={{ fontSize: 14, fontWeight: 600, marginBottom: 2 }}>{item.headline} <ExternalLink size={12} style={{ display: "inline", color: T.gold, marginLeft: 4 }} /></div>
-              <div style={{ fontSize: 11.5, color: T.muted }}>{item.source}{item.date ? ` · ${item.date}` : ""}</div>
-            </a>
+            <li key={i} style={{ marginBottom: 8, fontFamily: 'Georgia, serif', fontSize: 14.5, lineHeight: 1.6, color: T.espresso }}>
+              <a href={item.url} target="_blank" rel="noopener noreferrer" className="hcdemo-letter-link">
+                {item.headline}
+              </a>
+              <span style={{ color: T.muted, fontStyle: "italic", marginLeft: 6, fontSize: 12.5 }}>— {item.source}{item.date ? `, ${item.date}` : ""}</span>
+            </li>
           ))}
-        </div>
+        </ul>
       </div>
     );
   }
@@ -1029,9 +1545,16 @@ function ExpertQuote({ layout, tab }) {
 
   if (layout === "magazine") {
     return (
-      <div style={{ padding: "30px 16px", textAlign: "center", marginBottom: 14 }}>
-        <div style={{ fontFamily: '"Fraunces", Georgia, serif', fontStyle: "italic", fontSize: 22, color: T.blush, marginBottom: 12, lineHeight: 1.45 }}>
-          "{q.quote}"
+      <div style={{ position: "relative", padding: "30px 24px", textAlign: "center", marginBottom: 14 }}>
+        {/* Oversized decorative quote mark — opacity 0.12 */}
+        <div aria-hidden="true" style={{
+          position: "absolute", top: -10, left: "50%", transform: "translateX(-50%)",
+          fontFamily: '"Fraunces", Georgia, serif',
+          fontSize: 120, lineHeight: 1, color: T.gold,
+          opacity: 0.12, fontWeight: 700, pointerEvents: "none",
+        }}>“</div>
+        <div style={{ fontFamily: '"Fraunces", Georgia, serif', fontStyle: "italic", fontSize: 22, color: T.espresso, marginBottom: 12, lineHeight: 1.5, position: "relative" }}>
+          {q.quote}
         </div>
         <div style={{ fontSize: 12, color: T.muted, letterSpacing: 0.4 }}>— {q.attribution}</div>
       </div>
@@ -1062,20 +1585,20 @@ function ExpertQuote({ layout, tab }) {
     );
   }
 
-  if (layout === "conversational") {
+  if (layout === "letter") {
     return (
-      <div style={{ marginBottom: 14 }}>
-        <div style={{ display: "flex", gap: 10, marginBottom: 10, alignItems: "flex-start" }}>
-          <div aria-hidden="true" style={{ width: 34, height: 34, borderRadius: 999, background: T.blush, color: T.espresso, display: "flex", alignItems: "center", justifyContent: "center", fontFamily: '"Fraunces", Georgia, serif', fontWeight: 700, fontSize: 16, flexShrink: 0 }}>J</div>
-          <div style={{ background: T.blushBg, padding: "10px 14px", borderRadius: "16px 16px 16px 4px", fontFamily: '"Fraunces", Georgia, serif', fontSize: 14.5, lineHeight: 1.55, color: T.espresso, maxWidth: 600 }}>
-            Here's how a clinician I respect put it:
-          </div>
-        </div>
-        <div style={{ paddingLeft: 44 }}>
-          <div style={{ fontStyle: "italic", fontSize: 15.5, color: T.espresso, lineHeight: 1.65, marginBottom: 8, fontFamily: '"Fraunces", Georgia, serif' }}>"{q.quote}"</div>
-          <div style={{ fontSize: 12, color: T.muted, fontWeight: 600 }}>— {q.attribution}</div>
-        </div>
-      </div>
+      <blockquote style={{
+        margin: "22px 0 8px",
+        padding: "4px 0 4px 18px",
+        borderLeft: `3px solid ${T.gold}`,
+        fontFamily: 'Georgia, serif',
+        fontStyle: "italic",
+        color: T.espresso,
+        lineHeight: 1.7, fontSize: 15.5,
+      }}>
+        <div style={{ marginBottom: 6 }}>"{q.quote}"</div>
+        <cite style={{ fontStyle: "normal", fontSize: 12.5, color: T.muted, fontWeight: 600 }}>— {q.attribution}</cite>
+      </blockquote>
     );
   }
 
@@ -1129,9 +1652,24 @@ function OverviewTab({ layout, profile, checkins, symptoms, habits, cycle, phase
 
   return (
     <div style={{ padding: "16px 18px 0" }}>
+      {layout === "magazine" && (
+        <MagazineHero
+          kicker="Overview"
+          title="Your week in your body"
+          intro={jess}
+        />
+      )}
       <GlanceCard layout={layout}>{jess}</GlanceCard>
 
-      {layout === "dashboard" ? <WidgetRow widgets={widgets} /> : (
+      {layout === "dashboard" ? (
+        <>
+          <WidgetRow widgets={widgets} />
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(180px, 1fr))", gap: 10, marginBottom: 14 }}>
+            <SparklineCard label="Mood" values={mood7} trend={trendOf(mood7)} stroke={T.blush} />
+            <SparklineCard label="Energy" values={energy7} trend={trendOf(energy7)} stroke={T.sage} />
+          </div>
+        </>
+      ) : (
         <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(140px, 1fr))", gap: 10, marginBottom: 14 }}>
           {widgets.map((w, i) => <Tile key={i} {...w} />)}
         </div>
@@ -1183,11 +1721,25 @@ function CycleTab({ layout, profile, cycle, phase, stage, isMeno }) {
 
   return (
     <div style={{ padding: "16px 18px 0" }}>
+      {layout === "magazine" && (
+        <MagazineHero
+          kicker="The Cycle Issue"
+          title="Your monthly rhythm, decoded"
+          intro={glance}
+        />
+      )}
       <GlanceCard layout={layout}>{glance}</GlanceCard>
 
-      {layout === "dashboard" && <WidgetRow widgets={dashboardWidgets} />}
+      {layout === "dashboard" && (
+        <>
+          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 12, gap: 12 }}>
+            {!isMeno && day && <CycleProgress day={day} length={cycle?.cycleLen || 28} />}
+            <WidgetRow widgets={dashboardWidgets} />
+          </div>
+        </>
+      )}
 
-      <Section layout={layout} id="hormone-curve" title="Why you feel different across the month — the hormone curve" jessIntro="Here's something most women aren't taught about their own cycle..." open={open === "hormone-curve"} onToggle={toggle}>
+      <Section index={0} phase={phase} layout={layout} id="hormone-curve" title="Why you feel different across the month — the hormone curve" jessIntro="Here's something most women aren't taught about their own cycle..." open={open === "hormone-curve"} onToggle={toggle}>
         <p style={{ margin: "0 0 12px", fontSize: 14, color: T.muted, lineHeight: 1.6, fontFamily: '"Fraunces", Georgia, serif' }}>
           Across a typical 28-day cycle, four hormones choreograph everything your body does:
         </p>
@@ -1267,6 +1819,13 @@ function LifeStageTab({ layout, profile }) {
 
   return (
     <div style={{ padding: "16px 18px 0" }}>
+      {layout === "magazine" && (
+        <MagazineHero
+          kicker="Life Stages"
+          title={LIFE_STAGE_LABEL[initialKey] || prettyName(initialKey)}
+          intro={glance}
+        />
+      )}
       <GlanceCard layout={layout}>{glance}</GlanceCard>
 
       <SubHeader layout={layout}>Browse life stages · your current is highlighted</SubHeader>
@@ -1343,9 +1902,16 @@ function SkinHairTab({ layout, symptoms, phase, stage, isMeno }) {
 
   return (
     <div style={{ padding: "16px 18px 0" }}>
+      {layout === "magazine" && (
+        <MagazineHero
+          kicker="Skin & Hair"
+          title="Your skin is an endocrine organ"
+          intro={glance}
+        />
+      )}
       <GlanceCard layout={layout}>{glance}</GlanceCard>
 
-      <Section layout={layout} id="how-hormones-skin" title="How hormones control your skin — the mechanism" jessIntro="Your skin is an endocrine organ. Once you understand that, your routine changes." open={open === "how-hormones-skin"} onToggle={toggle}>
+      <Section index={0} phase={phase} layout={layout} id="how-hormones-skin" title="How hormones control your skin — the mechanism" jessIntro="Your skin is an endocrine organ. Once you understand that, your routine changes." open={open === "how-hormones-skin"} onToggle={toggle}>
         <p style={{ margin: 0, fontFamily: '"Fraunces", Georgia, serif', fontSize: 14.5, lineHeight: 1.7, color: T.espresso }}>{HORMONES_CONTROL_SKIN}</p>
       </Section>
 
@@ -1453,9 +2019,16 @@ function BodyTab({ layout, symptoms, phase, isMeno }) {
 
   return (
     <div style={{ padding: "16px 18px 0" }}>
+      {layout === "magazine" && (
+        <MagazineHero
+          kicker="Body"
+          title="Symptoms as signals"
+          intro={glance}
+        />
+      )}
       <GlanceCard layout={layout}>{glance}</GlanceCard>
 
-      <Section layout={layout} id="symptom-intro" title="Understanding your symptoms — what to look for in patterns" jessIntro="Symptoms aren't inconveniences. They're signals — and the pattern matters more than any single day." open={open === "symptom-intro"} onToggle={toggle}>
+      <Section index={0} phase={phase} layout={layout} id="symptom-intro" title="Understanding your symptoms — what to look for in patterns" jessIntro="Symptoms aren't inconveniences. They're signals — and the pattern matters more than any single day." open={open === "symptom-intro"} onToggle={toggle}>
         <p style={{ margin: "0 0 10px", fontFamily: '"Fraunces", Georgia, serif', fontSize: 14.5, lineHeight: 1.7, color: T.espresso }}>
           Symptoms are signals. When you log consistently over 2–3 cycles, patterns emerge that can be genuinely diagnostic.
         </p>
@@ -1550,9 +2123,24 @@ function MindTab({ layout, checkins, symptoms, phase, stage }) {
 
   return (
     <div style={{ padding: "16px 18px 0" }}>
+      {layout === "magazine" && (
+        <MagazineHero
+          kicker="Mind"
+          title="Your brain across the month"
+          intro={glance}
+        />
+      )}
       <GlanceCard layout={layout}>{glance}</GlanceCard>
 
-      <Section layout={layout} id="oestrogen-brain" title="Oestrogen and your brain — the receptor map" jessIntro="Oestrogen receptors are literally in your brain tissue — here's where, and what it means." open={open === "oestrogen-brain"} onToggle={toggle}>
+      {layout === "dashboard" && (
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(180px, 1fr))", gap: 10, marginBottom: 14 }}>
+          <SparklineCard label="Mood (30d)"   values={mood30}   trend={trendOf(mood30)}   stroke={T.blush} />
+          <SparklineCard label="Energy (30d)" values={energy30} trend={trendOf(energy30)} stroke={T.sage} />
+          <SparklineCard label="Sleep (14d)"  values={sleep14}  trend={trendOf(sleep14)}  stroke={T.gold} suffix="h" />
+        </div>
+      )}
+
+      <Section index={0} phase={phase} layout={layout} id="oestrogen-brain" title="Oestrogen and your brain — the receptor map" jessIntro="Oestrogen receptors are literally in your brain tissue — here's where, and what it means." open={open === "oestrogen-brain"} onToggle={toggle}>
         <p style={{ margin: 0, fontFamily: '"Fraunces", Georgia, serif', fontSize: 14.5, lineHeight: 1.7, color: T.espresso }}>{OESTROGEN_BRAIN}</p>
       </Section>
 
@@ -1651,9 +2239,16 @@ function NourishmentTab({ layout, checkins, meals, phase, isMeno }) {
 
   return (
     <div style={{ padding: "16px 18px 0" }}>
+      {layout === "magazine" && (
+        <MagazineHero
+          kicker="Nourishment"
+          title="Eat with your cycle"
+          intro={glance}
+        />
+      )}
       <GlanceCard layout={layout}>{glance}</GlanceCard>
 
-      <Section layout={layout} id="phase-nutrition" title="Phase nutrition — the why behind the what" jessIntro="Your nutritional needs shift every phase — here's the mechanism, not just the list." open={open === "phase-nutrition"} onToggle={toggle}>
+      <Section index={0} phase={phase} layout={layout} id="phase-nutrition" title="Phase nutrition — the why behind the what" jessIntro="Your nutritional needs shift every phase — here's the mechanism, not just the list." open={open === "phase-nutrition"} onToggle={toggle}>
         <div style={{ display: "grid", gap: 10 }}>
           {["menstrual", "follicular", "ovulatory", "luteal"].map((p) => (
             <div key={p} style={{ border: !isMeno && p === phase ? `2px solid ${T.gold}` : `1px solid ${T.border}`, borderRadius: 10, padding: 12, background: T.cream }}>
@@ -1746,9 +2341,16 @@ function CareTab({ layout, profile, symptoms, meds, stage, isMeno, phase }) {
 
   return (
     <div style={{ padding: "16px 18px 0" }}>
+      {layout === "magazine" && (
+        <MagazineHero
+          kicker="Care"
+          title="How to be heard in 10 minutes"
+          intro={glance}
+        />
+      )}
       <GlanceCard layout={layout}>{glance}</GlanceCard>
 
-      <Section layout={layout} id="blood-tests" title="Blood tests every woman should know — ask by name" jessIntro="These aren't included by default in most NHS panels. Ask for them by name." open={open === "blood-tests"} onToggle={toggle}>
+      <Section index={0} phase={phase} layout={layout} id="blood-tests" title="Blood tests every woman should know — ask by name" jessIntro="These aren't included by default in most NHS panels. Ask for them by name." open={open === "blood-tests"} onToggle={toggle}>
         <div style={{ display: "grid", gap: 10 }}>
           {BLOODS_CORE.map((b) => (
             <div key={b.name} style={{ border: `1px solid ${T.border}`, borderRadius: 10, padding: 12, background: T.cream }}>
@@ -1913,15 +2515,19 @@ function DemoPill() {
         fontSize: 11, fontWeight: 700, letterSpacing: 0.6, textTransform: "uppercase",
         border: `1px solid ${T.gold}`,
       }}>
-        <Sparkles className="w-3 h-3" /> Health Corner v4 · layout themes
+        <Sparkles className="w-3 h-3" /> Health Corner v4.1 · letter + visual assets
       </span>
-      <span style={{ color: "#9B8B7A", fontSize: 12 }}>Magazine · Card Grid · Timeline · Dashboard · Conversational</span>
+      <span style={{ color: "#9B8B7A", fontSize: 12 }}>Magazine · Card Grid · Timeline · Dashboard · Letter</span>
     </div>
   );
 }
-function canvasStyle() {
+function canvasStyle(layout = "card-grid") {
+  const bg = LAYOUT_BG[layout] || T.paper;
+  const bgSize = LAYOUT_BG_SIZE[layout];
   return {
-    backgroundColor: T.paper, color: T.espresso, borderRadius: 18,
+    background: bg,
+    backgroundSize: bgSize,
+    color: T.espresso, borderRadius: 18,
     overflow: "hidden", boxShadow: "0 20px 60px rgba(0,0,0,0.32)",
     border: `1px solid rgba(212,175,55,0.22)`,
     fontFamily: '"Inter", "SF Pro Text", system-ui, sans-serif',
