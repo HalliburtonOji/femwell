@@ -1009,7 +1009,18 @@ function LetterSection({ id, title, category, keyFact, children }) {
   const isExpanded = !!ctx?.expanded?.[id];
   const onToggle   = () => ctx?.toggle(id);
 
+  // Index in the registry → use this to decide whether to render a
+  // botanical divider above (every section except the first).
+  const registryIdx = ctx?.registry?.findIndex((s) => s.id === id) ?? -1;
+  const showDividerAbove = registryIdx > 0;
+
   return (
+    <>
+      {showDividerAbove && (
+        <div style={{ margin: "8px 0 -8px" }}>
+          <BotanicalDivider color={T.muted} />
+        </div>
+      )}
     <section
       id={`letter-section-${id}`}
       style={{ marginTop: 32, marginBottom: 8, scrollMarginTop: 110 }}
@@ -1068,6 +1079,7 @@ function LetterSection({ id, title, category, keyFact, children }) {
         }}>— read more</button>
       )}
     </section>
+    </>
   );
 }
 
