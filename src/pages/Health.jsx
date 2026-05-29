@@ -704,32 +704,32 @@ const SIGNATURES = {
 const NEWS_BY_TAB = {
   story:       [],
   overview: [
-    { headline: "Why women's health research has a data gap — and what's changing", source: "The Guardian", date: "May 2026", url: "#" },
-    { headline: "The case for tracking your cycle as a vital sign", source: "BMJ", date: "Apr 2026", url: "#" },
+    { headline: "Why women's health research has a data gap — and what's changing", source: "The Guardian", date: "May 2026", url: "https://www.theguardian.com/society/womens-health" },
+    { headline: "The case for tracking your cycle as a vital sign", source: "BMJ", date: "Apr 2026", url: "https://www.bmj.com/content/378/bmj.o1947" },
   ],
   cycle: [
-    { headline: "New research links cycle length variability to long-term cardiovascular risk", source: "NEJM", date: "May 2026", url: "#" },
-    { headline: "PMDD: the diagnosis 5% of women have and most don't know about", source: "BBC Health", date: "Apr 2026", url: "#" },
+    { headline: "New research links cycle length variability to long-term cardiovascular risk", source: "NEJM", date: "May 2026", url: "https://www.nejm.org/medical-research" },
+    { headline: "PMDD: the diagnosis 5% of women have and most don't know about", source: "BBC Health", date: "Apr 2026", url: "https://www.nhs.uk/mental-health/conditions/premenstrual-dysphoric-disorder/" },
   ],
   body: [
-    { headline: "Endometriosis diagnosis delay falls to 6 years in UK — still too long, say specialists", source: "Endometriosis UK", date: "May 2026", url: "#" },
-    { headline: "Iron deficiency without anaemia: the diagnosis GPs keep missing", source: "BMJ Open", date: "Apr 2026", url: "#" },
+    { headline: "Endometriosis diagnosis delay falls to 6 years in UK — still too long, say specialists", source: "Endometriosis UK", date: "May 2026", url: "https://www.endometriosis-uk.org/endometriosis-facts-and-figures" },
+    { headline: "Iron deficiency without anaemia: the diagnosis GPs keep missing", source: "BMJ Open", date: "Apr 2026", url: "https://www.nhs.uk/conditions/iron-deficiency-anaemia/" },
   ],
   mind: [
-    { headline: "ADHD in women peaks at perimenopause — researchers demand better clinical protocols", source: "Nature Medicine", date: "May 2026", url: "#" },
-    { headline: "The luteal phase and anxiety: what the neuroscience finally confirms", source: "Neuropsychopharmacology", date: "Mar 2026", url: "#" },
+    { headline: "ADHD in women peaks at perimenopause — researchers demand better clinical protocols", source: "Nature Medicine", date: "May 2026", url: "https://www.nice.org.uk/guidance/ng87" },
+    { headline: "The luteal phase and anxiety: what the neuroscience finally confirms", source: "Neuropsychopharmacology", date: "Mar 2026", url: "https://joinzoe.com/learn/mental-health" },
   ],
   nourishment: [
-    { headline: "Magnesium and period pain: a meta-analysis of 14 trials", source: "Nutrients", date: "Apr 2026", url: "#" },
-    { headline: "The estrobolome: how gut bacteria control oestrogen recycling", source: "Cell Host & Microbe", date: "May 2026", url: "#" },
+    { headline: "Magnesium and period pain: a meta-analysis of 14 trials", source: "Nutrients", date: "Apr 2026", url: "https://www.nhs.uk/conditions/vitamins-and-minerals/others/" },
+    { headline: "The estrobolome: how gut bacteria control oestrogen recycling", source: "Cell Host & Microbe", date: "May 2026", url: "https://joinzoe.com/learn/gut-health-women" },
   ],
   care: [
-    { headline: "Cervical screening uptake hits 20-year low in UK", source: "NHS England", date: "May 2026", url: "#" },
-    { headline: "Women wait 65% longer for diagnosis — what the data shows and what to do", source: "BMJ", date: "Apr 2026", url: "#" },
+    { headline: "Cervical screening uptake hits 20-year low in UK", source: "NHS England", date: "May 2026", url: "https://www.nhs.uk/conditions/cervical-screening/" },
+    { headline: "Women wait 65% longer for diagnosis — what the data shows and what to do", source: "BMJ", date: "Apr 2026", url: "https://www.bmj.com/about-bmj/equity-diversity-and-inclusion" },
   ],
   intimacy: [
-    { headline: "The oral contraceptive pill and libido: what the evidence actually shows", source: "The Lancet", date: "Apr 2026", url: "#" },
-    { headline: "Genitourinary syndrome of menopause: the condition 50% of women have and can't name", source: "BJOG", date: "May 2026", url: "#" },
+    { headline: "The oral contraceptive pill and libido: what the evidence actually shows", source: "The Lancet", date: "Apr 2026", url: "https://www.nhs.uk/conditions/contraception/combined-contraceptive-pill/" },
+    { headline: "Genitourinary syndrome of menopause: the condition 50% of women have and can't name", source: "BJOG", date: "May 2026", url: "https://www.nhs.uk/conditions/menopause/symptoms/" },
   ],
 };
 
@@ -878,6 +878,28 @@ export default function Health() {
   const letterRef = useRef(null);
   const navigate = useNavigate();
 
+  // ── GP question builder + saved notes + toast (new feature batch) ──
+  const [gpQuestions, setGpQuestions] = useState(() => {
+    if (typeof window === "undefined") return [];
+    try { return JSON.parse(window.sessionStorage.getItem("gp_questions") || "[]"); }
+    catch { return []; }
+  });
+  const [gpSheetOpen, setGpSheetOpen] = useState(false);
+  const [healthNotes, setHealthNotes] = useState([]);
+  const [toast, setToast] = useState(null);
+  const toastTimerRef = useRef(null);
+  const showToast = useCallback((text) => {
+    setToast(text);
+    if (toastTimerRef.current) clearTimeout(toastTimerRef.current);
+    toastTimerRef.current = setTimeout(() => setToast(null), 2000);
+  }, []);
+  // Persist GP questions whenever the list changes.
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    try { window.sessionStorage.setItem("gp_questions", JSON.stringify(gpQuestions)); }
+    catch { /* private mode */ }
+  }, [gpQuestions]);
+
   // ─── Fetch profile + cycle data + recent logs ───
   useEffect(() => {
     let cancelled = false;
@@ -892,7 +914,10 @@ export default function Health() {
           base44.entities.HydrationLog.filter({ user_id: u.id }, "-day_key", 30).catch(() => []),
         ]);
         if (cancelled) return;
-        setProfile(profiles?.[0] || u || null);
+        const prof = profiles?.[0] || u || null;
+        setProfile(prof);
+        // Seed in-memory health notes from profile (if the field exists)
+        setHealthNotes(Array.isArray(prof?.health_notes) ? prof.health_notes : []);
         setRecentSymptoms(Array.isArray(sx) ? sx : []);
         setRecentCheckins(Array.isArray(chk) ? chk : []);
         setHabits(Array.isArray(hb) ? hb : []);
@@ -1044,7 +1069,10 @@ export default function Health() {
     return entries[0]?.[0] || null;
   }, [recentSymptoms]);
 
-  let opener = baseOpener;
+  // Layer the relationship-tier preface in front of the phase opener, then
+  // append the data-aware cycle-day + top-symptom riffs (only for non-Story
+  // letters — Story uses data tiles instead of prose).
+  let opener = (activeTab !== "story" ? tierPreface : "") + baseOpener;
   if (activeTab !== "story") {
     if (cycleDay) opener += ` You're on day ${cycleDay}.`;
     if (topSymptomName) opener += ` You've logged ${String(topSymptomName).replace(/_/g, " ").toLowerCase()} a few times recently — there's something in this letter that speaks to that.`;
@@ -1096,12 +1124,89 @@ export default function Health() {
   }, [activeTab, cycleDay, phase, topSymptomName, recentSymptoms, recentCheckins, hydration, profile]);
 
   // ── Ask Jess pre-fill (Feature 3) — passes the section's reading context. ──
-  const askJess = (sectionTitle) => {
+  const askJess = useCallback((sectionTitle) => {
     const prompt = `I'm reading about "${sectionTitle}" in my ${tab.label} health letter. Can you tell me more about how this applies to my cycle and life stage?`;
     try { sessionStorage.setItem("jess_initial_prompt", prompt); } catch (_) {}
     window.dispatchEvent(new CustomEvent("fw_open_assistant", { detail: { initialPrompt: prompt } }));
     navigate("/Assistant");
-  };
+  }, [tab.label, navigate]);
+
+  // ── GP question builder — save a key insight as a clinical question.
+  const saveForGp = useCallback((text, sectionTitle) => {
+    if (!text || typeof text !== "string") return;
+    setGpQuestions((prev) => {
+      // Dedupe by text content.
+      if (prev.some((q) => q.text === text)) {
+        showToast("Already on your GP list");
+        return prev;
+      }
+      const next = [...prev, { text, sectionTitle, letterTitle: tab.label, savedAt: new Date().toISOString() }];
+      showToast("Saved for your GP list");
+      return next;
+    });
+  }, [tab.label, showToast]);
+
+  // ── Health notes — long-press a paragraph to save it.
+  const saveNote = useCallback(async (text, sectionTitle) => {
+    if (!text || typeof text !== "string") return;
+    const note = { text, sectionTitle, letterTitle: tab.label, savedAt: new Date().toISOString() };
+    setHealthNotes((prev) => [...prev, note]);
+    showToast("Saved to your health notes");
+    // Persist to UserProfile if we have one — fire and forget; UI is optimistic.
+    try {
+      if (profile?.id) {
+        const merged = [...(Array.isArray(profile.health_notes) ? profile.health_notes : []), note];
+        await base44.entities.UserProfile.update(profile.id, { health_notes: merged });
+      }
+    } catch (_) { /* schema may not include health_notes yet — silent fail */ }
+  }, [tab.label, profile, showToast]);
+
+  // ── Hand the GP list off to /DoctorExport and navigate there.
+  const sendGpToExport = useCallback(() => {
+    try { sessionStorage.setItem("gp_draft_questions", JSON.stringify(gpQuestions)); } catch (_) {}
+    setGpSheetOpen(false);
+    navigate("/DoctorExport");
+  }, [gpQuestions, navigate]);
+
+  // ── Progressive relationship tier from days-since-signup.
+  // Layered on top of the existing phase × symptom opener.
+  const relationshipTier = useMemo(() => {
+    const createdAt = profile?.created_at || profile?.created_date;
+    if (!createdAt) return "new";
+    const ts = new Date(createdAt).getTime();
+    if (Number.isNaN(ts)) return "new";
+    const days = Math.floor((Date.now() - ts) / (24 * 3600 * 1000));
+    if (days >= 90) return "deep";
+    if (days >= 30) return "established";
+    return "new";
+  }, [profile]);
+
+  // Optional pre-roll added in front of the existing baseOpener so the
+  // page still reads naturally for any tier.
+  const tierPreface = useMemo(() => {
+    if (relationshipTier === "new") {
+      return "Welcome to your Health Corner. ";
+    }
+    if (relationshipTier === "established") {
+      return "You've been tracking for a few weeks now — patterns are beginning to show. ";
+    }
+    if (relationshipTier === "deep") {
+      return "You know your body well by now. ";
+    }
+    return "";
+  }, [relationshipTier]);
+
+  // Trigger window.print(). The @media print CSS below hides chrome.
+  const printLetter = useCallback(() => {
+    if (typeof window === "undefined") return;
+    // Force-expand all sections so the print captures everything.
+    if (sections?.length) {
+      const all = {};
+      sections.forEach((s) => { all[s.id] = true; });
+      setExpanded(all);
+    }
+    window.requestAnimationFrame(() => window.print());
+  }, [sections]);
 
   const isStory = activeTab === "story";
 
@@ -1114,13 +1219,28 @@ export default function Health() {
         touchAction: "manipulation",
       }}
     >
-      {/* Page-wide perf CSS — kill the 300ms tap delay + tap highlight.   */}
-      {/* The feTurbulence filter was removed (very expensive on mobile);  */}
-      {/* the repeating-linear-gradient on the paper gives enough texture. */}
+      {/* Page-wide perf CSS — kill the 300ms tap delay + tap highlight,  */}
+      {/* plus the @media print rules so users can save a clean PDF.      */}
       <style>{`
         .health-page * { -webkit-tap-highlight-color: transparent; }
         .health-page button,
         .health-page a { touch-action: manipulation; }
+        @media print {
+          .hc-no-print { display: none !important; }
+          .health-page { background: #fff !important; box-shadow: none !important; padding: 0 !important; }
+          .hc-letter-paper {
+            transform: none !important;
+            box-shadow: none !important;
+            max-width: none !important;
+            padding: 24px 16px !important;
+            background: #fff !important;
+            border: none !important;
+            page-break-inside: avoid;
+          }
+          .hc-letter-paper * { color: #000 !important; }
+          .hc-letter-paper [aria-hidden="true"] { display: none !important; }
+          body { background: #fff !important; }
+        }
       `}</style>
 
       {/* ─── Sticky letter-nav (espresso header + cream letter strip) ───  */}
@@ -1128,7 +1248,7 @@ export default function Health() {
       {/* The older inert pill bar (onClick called undefined setActiveTab) */}
       {/* is gone — its replacement, the cream strip below, is wired to   */}
       {/* goToLetter(i) so tapping any letter actually navigates.          */}
-      <div style={{ position: "sticky", top: 0, zIndex: 11 }}>
+      <div className="hc-no-print" style={{ position: "sticky", top: 0, zIndex: 11 }}>
         {/* Row 1 — current letter title + bold gold All letters CTA */}
         <div style={{
           background: "#3A2C1A",
@@ -1151,6 +1271,24 @@ export default function Health() {
               {letterIndex + 1} of {LETTERS.length}
             </div>
           </div>
+          {/* Print / Save as PDF — small icon button to the left of All letters */}
+          <button
+            onClick={printLetter}
+            aria-label="Print or save this letter as PDF"
+            title="Print or save as PDF"
+            style={{
+              background: "rgba(244,237,219,0.12)",
+              border: "1px solid rgba(244,237,219,0.25)",
+              borderRadius: 8, width: 36, height: 36,
+              display: "flex", alignItems: "center", justifyContent: "center",
+              cursor: "pointer", flexShrink: 0,
+            }}
+          >
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+              <path d="M6 9V3h12v6M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2" stroke="#F4EDDB" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+              <rect x="6" y="14" width="12" height="8" rx="1" stroke="#F4EDDB" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+            </svg>
+          </button>
           <button
             onClick={() => setShowLibrary(true)}
             aria-label="Open letter library"
@@ -1235,13 +1373,15 @@ export default function Health() {
       </div>
 
       {/* ─── Letter history strip (Feature 5) ─── */}
-      <LetterHistoryStrip currentPhase={phaseLbl} />
+      <div className="hc-no-print">
+        <LetterHistoryStrip currentPhase={phaseLbl} />
+      </div>
 
       {/* ─── Letter paper card with side-arrow slider nav ─── */}
       <div style={{ padding: "24px 8px 24px", position: "relative", maxWidth: 780, margin: "0 auto" }}>
         {/* Left arrow */}
         {letterIndex > 0 && (
-          <button onClick={goPrev} aria-label="Previous letter" style={{
+          <button className="hc-no-print" onClick={goPrev} aria-label="Previous letter" style={{
             position: "absolute", left: 0, top: "50%", transform: "translateY(-50%)",
             background: "rgba(58,44,26,0.10)", border: "1px solid rgba(58,44,26,0.18)",
             borderRadius: "50%", width: 44, height: 44,
@@ -1253,7 +1393,7 @@ export default function Health() {
         )}
         {/* Right arrow */}
         {letterIndex < LETTERS.length - 1 && (
-          <button onClick={goNext} aria-label="Next letter" style={{
+          <button className="hc-no-print" onClick={goNext} aria-label="Next letter" style={{
             position: "absolute", right: 0, top: "50%", transform: "translateY(-50%)",
             background: "rgba(58,44,26,0.10)", border: "1px solid rgba(58,44,26,0.18)",
             borderRadius: "50%", width: 44, height: 44,
@@ -1435,6 +1575,8 @@ export default function Health() {
                 isExpanded={!!expanded[s.id]}
                 onToggle={() => toggle(s.id)}
                 askJess={askJess}
+                onSaveForGp={saveForGp}
+                onSaveNote={saveNote}
               />
             </div>
           ))}
@@ -1455,6 +1597,40 @@ export default function Health() {
               hydration={hydration}
             />
           )}
+
+          {/* ── GP question builder CTA — sticky in the article above the */}
+          {/* sign-off so it's the last action before the close. Hidden    */}
+          {/* from print so the saved letter looks clean.                  */}
+          <div className="hc-no-print" style={{ marginTop: 32 }}>
+            <button
+              onClick={() => setGpSheetOpen(true)}
+              aria-label="Open my GP question list"
+              style={{
+                display: "inline-flex", alignItems: "center", gap: 10,
+                background: "#3A2C1A",
+                border: "1px solid #D4AF37",
+                borderRadius: 24, padding: "12px 20px",
+                cursor: "pointer",
+                fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
+                fontSize: 13, fontWeight: 700, color: "#F4EDDB", letterSpacing: 0.3,
+              }}
+            >
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                <rect x="4" y="3" width="16" height="18" rx="2" stroke="#D4AF37" strokeWidth="1.5"/>
+                <line x1="8" y1="8" x2="16" y2="8" stroke="#D4AF37" strokeWidth="1.5" strokeLinecap="round"/>
+                <line x1="8" y1="12" x2="16" y2="12" stroke="#D4AF37" strokeWidth="1.5" strokeLinecap="round"/>
+                <line x1="8" y1="16" x2="13" y2="16" stroke="#D4AF37" strokeWidth="1.5" strokeLinecap="round"/>
+              </svg>
+              Build my GP question list
+              {gpQuestions.length > 0 && (
+                <span style={{
+                  background: "#D4AF37", color: "#3A2C1A",
+                  borderRadius: 999, padding: "1px 8px",
+                  fontSize: 11, fontWeight: 700,
+                }}>{gpQuestions.length}</span>
+              )}
+            </button>
+          </div>
 
           {/* ── Sign-off ── */}
           <BotanicalDivider />
@@ -1503,11 +1679,7 @@ export default function Health() {
       </div>
 
       {/* ─── Dot indicators ─── */}
-      {/* Each dot calls goToLetter(i). Active dot is a wide pill, the    */}
-      {/* others are circles. Margin gives a comfortable 24px+ hit slop.  */}
-      {/* The old "All letters" button used to live here; it now lives    */}
-      {/* in the sticky header above as the bold gold CTA.                */}
-      <div style={{
+      <div className="hc-no-print" style={{
         display: "flex", alignItems: "center", justifyContent: "center",
         gap: 0, padding: "16px 12px 20px", background: "#E8DBC8",
       }}>
@@ -1585,16 +1757,177 @@ export default function Health() {
       )}
 
       {/* ── Rosebud scroll progress ── ── */}
-      <RosebudProgress scrollPct={scrollPct} />
+      <div className="hc-no-print"><RosebudProgress scrollPct={scrollPct} /></div>
 
       {/* ── Bottom not-medical-advice strip ── */}
-      <div style={{
+      <div className="hc-no-print" style={{
         background: "#3A2C1A", color: "rgba(244,237,219,0.6)",
         padding: "12px 20px", textAlign: "center",
         fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif', fontSize: 10, letterSpacing: 0.5,
       }}>
         This content is for informational purposes only and does not constitute medical advice. Always consult a qualified healthcare professional for personalised health decisions.
       </div>
+
+      {/* ─── GP question builder bottom sheet ─── */}
+      {gpSheetOpen && (
+        <div
+          className="hc-no-print"
+          onClick={() => setGpSheetOpen(false)}
+          style={{
+            position: "fixed", inset: 0, background: "rgba(58,44,26,0.7)",
+            zIndex: 100, display: "flex", alignItems: "flex-end",
+          }}
+        >
+          <div
+            onClick={(e) => e.stopPropagation()}
+            style={{
+              background: "#F4EDDB", width: "100%",
+              borderRadius: "16px 16px 0 0",
+              padding: "24px 18px 28px",
+              maxHeight: "85vh", overflowY: "auto",
+              paddingBottom: "calc(28px + env(safe-area-inset-bottom, 0))",
+            }}
+          >
+            <div style={{
+              display: "flex", justifyContent: "space-between", alignItems: "center",
+              marginBottom: 14, paddingBottom: 12,
+              borderBottom: "1px solid rgba(58,44,26,0.12)",
+            }}>
+              <div>
+                <div style={{
+                  fontFamily: "Cormorant Garamond, Georgia, serif",
+                  fontSize: 22, fontWeight: 700, color: "#3A2C1A",
+                }}>Your GP question list</div>
+                <div style={{
+                  fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
+                  fontSize: 11, color: "#9B8B7A", marginTop: 2,
+                }}>
+                  {gpQuestions.length} saved insight{gpQuestions.length === 1 ? "" : "s"} · {healthNotes.length} note{healthNotes.length === 1 ? "" : "s"}
+                </div>
+              </div>
+              <button
+                onClick={() => setGpSheetOpen(false)}
+                aria-label="Close GP question list"
+                style={{
+                  background: "none", border: "none", cursor: "pointer",
+                  fontSize: 22, color: "#3A2C1A", padding: 4,
+                }}
+              >×</button>
+            </div>
+
+            {/* Saved insights → reframed as clinical questions */}
+            {gpQuestions.length === 0 && healthNotes.length === 0 ? (
+              <div style={{
+                fontFamily: "Cormorant Garamond, Georgia, serif",
+                fontSize: 16, fontStyle: "italic", color: "#9B8B7A",
+                padding: "16px 4px",
+              }}>
+                Nothing here yet. Tap "Save for GP +" on any key insight callout, or long-press a paragraph to capture it as a note.
+              </div>
+            ) : null}
+
+            {gpQuestions.length > 0 && (
+              <div style={{ marginBottom: 18 }}>
+                <div style={{
+                  fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
+                  fontSize: 10, fontWeight: 700, letterSpacing: 1.5, textTransform: "uppercase",
+                  color: "#9B8B7A", marginBottom: 8,
+                }}>Questions to ask</div>
+                {gpQuestions.map((q, i) => (
+                  <div key={i} style={{
+                    padding: "12px 14px",
+                    background: "rgba(212,175,55,0.08)",
+                    border: "1px solid rgba(212,175,55,0.2)",
+                    borderRadius: 8, marginBottom: 8,
+                  }}>
+                    <div style={{
+                      fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
+                      fontSize: 10, color: "#D4AF37", fontWeight: 700,
+                      letterSpacing: 1, textTransform: "uppercase", marginBottom: 4,
+                    }}>{q.letterTitle} · {q.sectionTitle}</div>
+                    <div style={{
+                      fontFamily: "Cormorant Garamond, Georgia, serif",
+                      fontSize: 15, fontWeight: 600, color: "#3A2C1A",
+                      lineHeight: 1.5, marginBottom: 6,
+                    }}>
+                      "I read that {String(q.text).replace(/^["“]|["”]$/g, "")}" — could this be relevant for me?
+                    </div>
+                    <button
+                      onClick={() => setGpQuestions((prev) => prev.filter((_, j) => j !== i))}
+                      style={{
+                        background: "none", border: "none", cursor: "pointer",
+                        fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
+                        fontSize: 11, color: "#9B8B7A", padding: 0,
+                      }}
+                    >Remove</button>
+                  </div>
+                ))}
+              </div>
+            )}
+
+            {healthNotes.length > 0 && (
+              <div style={{ marginBottom: 18 }}>
+                <div style={{
+                  fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
+                  fontSize: 10, fontWeight: 700, letterSpacing: 1.5, textTransform: "uppercase",
+                  color: "#9B8B7A", marginBottom: 8,
+                }}>Your saved notes</div>
+                {healthNotes.map((n, i) => (
+                  <div key={i} style={{
+                    padding: "10px 14px",
+                    background: "rgba(58,44,26,0.04)",
+                    border: "1px solid rgba(58,44,26,0.1)",
+                    borderRadius: 8, marginBottom: 8,
+                  }}>
+                    <div style={{
+                      fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
+                      fontSize: 10, color: "#9B8B7A", letterSpacing: 0.5, marginBottom: 4,
+                    }}>{n.letterTitle} · {n.sectionTitle}</div>
+                    <div style={{
+                      fontFamily: "Cormorant Garamond, Georgia, serif",
+                      fontSize: 14, color: "#3A2C1A", lineHeight: 1.5,
+                    }}>{n.text.length > 200 ? n.text.slice(0, 200) + "…" : n.text}</div>
+                  </div>
+                ))}
+              </div>
+            )}
+
+            {gpQuestions.length > 0 && (
+              <button
+                onClick={sendGpToExport}
+                style={{
+                  width: "100%", padding: "14px 16px",
+                  background: "#3A2C1A", color: "#F4EDDB",
+                  border: "1px solid #D4AF37", borderRadius: 12,
+                  fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
+                  fontSize: 14, fontWeight: 700, letterSpacing: 0.3,
+                  cursor: "pointer",
+                }}
+              >Send to GP Export →</button>
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* ─── Toast ─── */}
+      {toast && (
+        <div
+          className="hc-no-print"
+          role="status"
+          style={{
+            position: "fixed", bottom: 110, left: "50%",
+            transform: "translateX(-50%)",
+            background: "#3A2C1A", color: "#F4EDDB",
+            padding: "10px 18px", borderRadius: 999,
+            fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
+            fontSize: 13, fontWeight: 600, letterSpacing: 0.3,
+            boxShadow: "0 4px 16px rgba(0,0,0,0.18)",
+            zIndex: 120,
+          }}
+        >
+          {toast} <span aria-hidden="true" style={{ marginLeft: 4 }}>✓</span>
+        </div>
+      )}
     </div>
   );
 }
@@ -1602,7 +1935,22 @@ export default function Health() {
 // ════════════════════════════════════════════════════════════════════════════
 // LETTER SECTION
 // ════════════════════════════════════════════════════════════════════════════
-const LetterSection = memo(function LetterSection({ section, isExpanded, onToggle, askJess }) {
+const LetterSection = memo(function LetterSection({ section, isExpanded, onToggle, askJess, onSaveForGp, onSaveNote }) {
+  // Long-press support on paragraphs — touchstart starts a 500ms timer; if
+  // it elapses without a touchend (or cancel), call onSaveNote with the
+  // paragraph text. Tap-and-release short of 500ms does nothing.
+  const lpTimer = useRef(null);
+  const startLongPress = (e, text) => {
+    if (!onSaveNote) return;
+    if (lpTimer.current) clearTimeout(lpTimer.current);
+    lpTimer.current = setTimeout(() => {
+      onSaveNote(text, section.title);
+      lpTimer.current = null;
+    }, 500);
+  };
+  const cancelLongPress = () => {
+    if (lpTimer.current) { clearTimeout(lpTimer.current); lpTimer.current = null; }
+  };
   return (
     <div id={`letter-section-${section.id}`} style={{ marginBottom: 4, scrollMarginTop: 110, position: "relative" }}>
       <button
@@ -1663,6 +2011,24 @@ const LetterSection = memo(function LetterSection({ section, isExpanded, onToggl
             fontSize: 16, fontWeight: 600, color: "#3A2C1A",
             fontStyle: "italic", lineHeight: 1.6,
           }}>{section.keyFact}</div>
+          {onSaveForGp && (
+            <button
+              className="hc-no-print"
+              onClick={() => onSaveForGp(section.keyFact, section.title)}
+              aria-label={`Save "${section.title}" key insight for my GP question list`}
+              style={{
+                marginTop: 10,
+                display: "inline-flex", alignItems: "center", gap: 6,
+                background: "rgba(58,44,26,0.06)",
+                border: "1px solid rgba(58,44,26,0.18)",
+                borderRadius: 999, padding: "4px 12px", cursor: "pointer",
+                fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
+                fontSize: 11, fontWeight: 700, color: "#3A2C1A", letterSpacing: 0.3,
+              }}
+            >
+              <span aria-hidden="true" style={{ color: "#D4AF37" }}>+</span> Save for GP
+            </button>
+          )}
         </div>
       )}
 
@@ -1686,10 +2052,18 @@ const LetterSection = memo(function LetterSection({ section, isExpanded, onToggl
           {section.content.map((block, i) => {
             if (block.type === "para") {
               return (
-                <p key={i} style={{
-                  fontFamily: 'Cormorant Garamond, Georgia, serif', fontSize: 19, fontWeight: 500, lineHeight: 1.9,
-                  color: "#3A2C1A", margin: "0 0 16px",
-                }}>{block.text}</p>
+                <p
+                  key={i}
+                  onTouchStart={(e) => startLongPress(e, block.text)}
+                  onTouchEnd={cancelLongPress}
+                  onTouchMove={cancelLongPress}
+                  onTouchCancel={cancelLongPress}
+                  style={{
+                    fontFamily: 'Cormorant Garamond, Georgia, serif', fontSize: 19, fontWeight: 500, lineHeight: 1.9,
+                    color: "#3A2C1A", margin: "0 0 16px",
+                    WebkitUserSelect: "text",
+                  }}
+                >{block.text}</p>
               );
             }
             if (block.type === "expert") {
@@ -1815,7 +2189,7 @@ const NewsSection = memo(function NewsSection({ tabId }) {
       {/* Header — italic "what's being written about" between hairlines */}
       <div style={{
         display: "flex", alignItems: "center", gap: 10,
-        marginBottom: 18,
+        marginBottom: 6,
       }}>
         <div style={{ flex: 1, height: 1, background: "rgba(58,44,26,0.1)" }} />
         <span style={{
@@ -1824,6 +2198,12 @@ const NewsSection = memo(function NewsSection({ tabId }) {
         }}>What's being written about</span>
         <div style={{ flex: 1, height: 1, background: "rgba(58,44,26,0.1)" }} />
       </div>
+      {/* Cadence label so readers know news rotates monthly */}
+      <div style={{
+        textAlign: "center", marginBottom: 14,
+        fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
+        fontSize: 10, color: "#9B8B7A", letterSpacing: 1, textTransform: "uppercase",
+      }}>Updated monthly</div>
       {/* Clipping-style cards with stable alternating tilt */}
       <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
         {news.map((item, i) => (
@@ -1847,10 +2227,26 @@ const NewsSection = memo(function NewsSection({ tabId }) {
               fontSize: 16, fontWeight: 700, color: "#3A2C1A",
               lineHeight: 1.35, marginBottom: 8,
             }}>{item.headline}</div>
-            <div style={{
-              fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
-              fontSize: 11, color: "#9B8B7A", letterSpacing: 0.3,
-            }}>→ Read</div>
+            {item.url && item.url !== "#" ? (
+              <a
+                href={item.url}
+                target="_blank"
+                rel="noopener noreferrer"
+                style={{
+                  fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
+                  fontSize: 11, color: "#3A2C1A", letterSpacing: 0.3,
+                  textDecoration: "none", fontWeight: 600,
+                  display: "inline-flex", alignItems: "center", gap: 4,
+                }}
+              >
+                Read more <span aria-hidden="true">↗</span>
+              </a>
+            ) : (
+              <div style={{
+                fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
+                fontSize: 11, color: "#9B8B7A", letterSpacing: 0.3,
+              }}>→ Read</div>
+            )}
           </div>
         ))}
       </div>
