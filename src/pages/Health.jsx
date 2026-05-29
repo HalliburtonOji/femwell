@@ -1041,16 +1041,74 @@ export default function Health() {
         </div>
       </div>
 
-      {/* ─── Sticky phase bar ─── */}
-      <div style={{
-        background: "#3A2C1A", color: "#F4EDDB",
-        padding: "8px 20px",
-        fontSize: 12, fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif', letterSpacing: 0.8,
-        display: "flex", alignItems: "center", justifyContent: "space-between",
-        position: "sticky", top: 47, zIndex: 10,
-      }}>
-        <span>{phaseLbl} · {stageLbl}</span>
-        {cycle?.cycleDay && <span>Day {cycle.cycleDay}</span>}
+      {/* ─── Sticky letter-nav header (2 rows) ─── */}
+      {/* Row 1: current letter title + bold gold "All letters" button.   */}
+      {/* Row 2: phase / cycle day / life stage summary.                  */}
+      {/* This replaces the older subtle phase bar — the gold button is   */}
+      {/* now the obvious entry point to the letter library.              */}
+      <div style={{ position: "sticky", top: 47, zIndex: 10 }}>
+        {/* Row 1 — letter title + All letters CTA */}
+        <div style={{
+          background: "#3A2C1A",
+          padding: "10px 16px",
+          display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12,
+        }}>
+          <div style={{ flex: 1, minWidth: 0 }}>
+            <div style={{
+              fontFamily: "Cormorant Garamond, Georgia, serif",
+              fontSize: 17, fontWeight: 700, color: "#F4EDDB",
+              whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis",
+            }}>
+              <span aria-hidden="true">{currentLetter.icon}</span> {currentLetter.title}
+            </div>
+            <div style={{
+              fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
+              fontSize: 10, color: "rgba(244,237,219,0.55)",
+              letterSpacing: 0.5, marginTop: 1,
+            }}>
+              {letterIndex + 1} of {LETTERS.length}
+            </div>
+          </div>
+          <button
+            onClick={() => setShowLibrary(true)}
+            aria-label="Open letter library"
+            style={{
+              background: "#D4AF37",
+              border: "none",
+              borderRadius: 8,
+              padding: "8px 14px",
+              cursor: "pointer",
+              display: "flex", alignItems: "center", gap: 6,
+              flexShrink: 0,
+            }}
+          >
+            <svg width="16" height="14" viewBox="0 0 16 14" fill="none" aria-hidden="true">
+              <rect x="0" y="0" width="6" height="5" rx="1" fill="#3A2C1A"/>
+              <rect x="10" y="0" width="6" height="5" rx="1" fill="#3A2C1A"/>
+              <rect x="0" y="9" width="6" height="5" rx="1" fill="#3A2C1A"/>
+              <rect x="10" y="9" width="6" height="5" rx="1" fill="#3A2C1A"/>
+            </svg>
+            <span style={{
+              fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
+              fontSize: 13, fontWeight: 700, color: "#3A2C1A", letterSpacing: 0.3,
+            }}>
+              All letters
+            </span>
+          </button>
+        </div>
+        {/* Row 2 — phase / day / life stage strip */}
+        <div style={{
+          background: "rgba(58,44,26,0.85)",
+          padding: "5px 16px",
+          display: "flex", alignItems: "center", justifyContent: "space-between",
+        }}>
+          <span style={{
+            fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
+            fontSize: 11, color: "rgba(244,237,219,0.7)", letterSpacing: 0.5,
+          }}>
+            {phaseLbl}{cycle?.cycleDay ? ` · Day ${cycle.cycleDay}` : ""} · {stageLbl}
+          </span>
+        </div>
       </div>
 
       {/* ─── Letter history strip (Feature 5) ─── */}
@@ -1276,27 +1334,34 @@ export default function Health() {
         </article>
       </div>
 
-      {/* ─── Dot indicator + Library button ─── */}
+      {/* ─── Dot indicators ─── */}
+      {/* Each dot calls goToLetter(i). Active dot is a wide pill, the    */}
+      {/* others are circles. Margin gives a comfortable 24px+ hit slop.  */}
+      {/* The old "All letters" button used to live here; it now lives    */}
+      {/* in the sticky header above as the bold gold CTA.                */}
       <div style={{
         display: "flex", alignItems: "center", justifyContent: "center",
-        gap: 8, padding: "20px 12px", background: "#E8DBC8",
+        gap: 0, padding: "16px 12px 20px", background: "#E8DBC8",
       }}>
-        {LETTERS.map((_, i) => (
-          <button key={i} onClick={() => goToLetter(i)} aria-label={`Letter ${i + 1}`} style={{
-            width: i === letterIndex ? 22 : 9,
-            height: 9, borderRadius: 4.5,
-            background: i === letterIndex ? "#3A2C1A" : "rgba(58,44,26,0.22)",
-            border: "none", cursor: "pointer", padding: 0,
-            transition: "all 0.2s ease",
-          }} />
+        {LETTERS.map((L, i) => (
+          <button
+            key={i}
+            onClick={() => goToLetter(i)}
+            aria-label={L.title}
+            style={{
+              width: i === letterIndex ? 32 : 10,
+              height: 10,
+              minWidth: 10,
+              borderRadius: 5,
+              background: i === letterIndex ? "#3A2C1A" : "rgba(58,44,26,0.25)",
+              border: "none",
+              cursor: "pointer",
+              padding: 0,
+              margin: "8px 3px",
+              transition: "all 0.2s ease",
+            }}
+          />
         ))}
-        <button onClick={() => setShowLibrary(true)} style={{
-          marginLeft: 14, background: "none",
-          border: "1px solid rgba(58,44,26,0.2)", borderRadius: 14,
-          padding: "5px 14px", cursor: "pointer",
-          fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
-          fontSize: 11, fontWeight: 600, color: "#9B8B7A", letterSpacing: 0.5,
-        }}>All letters</button>
       </div>
 
       {/* ─── Library overlay ─── */}
@@ -1326,21 +1391,22 @@ export default function Health() {
                 return (
                   <button key={L.id} onClick={() => { goToLetter(i); setShowLibrary(false); }} style={{
                     background: on ? "#3A2C1A" : "#FEFAF2",
-                    border: "1px solid rgba(212,175,55,0.4)",
-                    borderRadius: 8, padding: "16px 14px",
+                    border: `1.5px solid ${on ? "#D4AF37" : "rgba(212,175,55,0.3)"}`,
+                    borderRadius: 10, padding: "16px 14px",
                     cursor: "pointer", textAlign: "left",
+                    transition: "all 0.15s",
                   }}>
                     <div style={{ fontSize: 22, marginBottom: 6 }} aria-hidden="true">{L.icon}</div>
                     <div style={{
                       fontFamily: "Cormorant Garamond, Georgia, serif",
                       fontSize: 16, fontWeight: 700,
                       color: on ? "#F4EDDB" : "#3A2C1A",
-                      marginBottom: 4, lineHeight: 1.25,
+                      marginBottom: 3, lineHeight: 1.2,
                     }}>{L.title}</div>
                     <div style={{
                       fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
-                      fontSize: 11, fontWeight: 500,
-                      color: on ? "rgba(244,237,219,0.65)" : "#9B8B7A",
+                      fontSize: 10, color: on ? "rgba(244,237,219,0.55)" : "#9B8B7A",
+                      lineHeight: 1.4,
                     }}>{L.subtitle}</div>
                   </button>
                 );
