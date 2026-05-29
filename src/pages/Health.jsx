@@ -15,7 +15,7 @@
 // italic 400/500 so the body type renders at proper weight on mobile.
 // ─────────────────────────────────────────────────────────────────────────────
 
-import { useEffect, useMemo, useRef, useState } from "react";
+import { memo, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { base44 } from "@/api/base44Client";
 import { useCycleDay } from "@/hooks/useCycleDay";
@@ -62,7 +62,7 @@ const PHASE_LABEL = {
 // ════════════════════════════════════════════════════════════════════════════
 // BOTANICAL MOTIFS — one per tab
 // ════════════════════════════════════════════════════════════════════════════
-function TabBotanical({ tabId }) {
+function _TabBotanical({ tabId }) {
   switch (tabId) {
     case "story":
       // Concentric circles + centre dot — a personal-data motif (your patterns).
@@ -188,11 +188,12 @@ function TabBotanical({ tabId }) {
       return null;
   }
 }
+const TabBotanical = memo(_TabBotanical);
 
 // Tiny helper for the TOC — capped at X so it stays simple in this UI.
 const romanize = (n) => ["I","II","III","IV","V","VI","VII","VIII","IX","X"][n] || String(n + 1);
 
-function BotanicalDivider() {
+const BotanicalDivider = memo(function BotanicalDivider() {
   return (
     <div style={{ textAlign: "center", margin: "36px 0", opacity: 0.7 }} aria-hidden="true">
       <svg width="200" height="32" viewBox="0 0 200 32" fill="none">
@@ -210,12 +211,12 @@ function BotanicalDivider() {
       </svg>
     </div>
   );
-}
+});
 
 // ════════════════════════════════════════════════════════════════════════════
 // ROSEBUD READING PROGRESS — opens as the user scrolls
 // ════════════════════════════════════════════════════════════════════════════
-function RosebudProgress({ scrollPct }) {
+const RosebudProgress = memo(function RosebudProgress({ scrollPct }) {
   const openness = Math.max(0, Math.min(1, scrollPct / 100));
   const fullyBloomed = openness >= 0.96;
   return (
@@ -246,7 +247,7 @@ function RosebudProgress({ scrollPct }) {
       )}
     </div>
   );
-}
+});
 
 // ════════════════════════════════════════════════════════════════════════════
 // CONTENT — HEALTH_CONTENT (sections per tab)
@@ -767,7 +768,7 @@ function getJessObservations(letterId, profile, recentSymptoms, cycle, phase) {
   return list;
 }
 
-function JessObservationCard({ letterId, profile, recentSymptoms, cycle, phase }) {
+const JessObservationCard = memo(function JessObservationCard({ letterId, profile, recentSymptoms, cycle, phase }) {
   const observations = getJessObservations(letterId, profile, recentSymptoms, cycle, phase);
   if (!observations || !observations.length) return null;
   // Trim to 3 max — Jess's brief should feel curated, not a list.
@@ -820,7 +821,7 @@ function JessObservationCard({ letterId, profile, recentSymptoms, cycle, phase }
       ))}
     </div>
   );
-}
+});
 
 // ════════════════════════════════════════════════════════════════════════════
 // TERM — in-context glossary tooltip (sparingly used in body content)
@@ -912,17 +913,41 @@ export default function Health() {
   // (forwards keyframe to opacity: 0 with no in-animation), which made
   // navigation feel broken. Instant updates are better than half-broken
   // transitions. ───
-  const goToLetter = (i) => {
+  // Memoised navigation handlers. goNext/goPrev use the functional updater so
+  // they don't depend on letterIndex — stable identity means children can
+  // safely React.memo without busted memoisation.
+  const goToLetter = useCallback((i) => {
     if (i < 0 || i >= LETTERS.length) return;
     setLetterIndex(i);
     setExpanded({});
-    // Scroll to top of the paper so the new letter starts at its letterhead.
     if (typeof window !== "undefined") {
       window.requestAnimationFrame(() => window.scrollTo({ top: 0, behavior: "instant" }));
     }
-  };
-  const goNext = () => { if (letterIndex < LETTERS.length - 1) goToLetter(letterIndex + 1); };
-  const goPrev = () => { if (letterIndex > 0)                   goToLetter(letterIndex - 1); };
+  }, []);
+  const goNext = useCallback(() => {
+    setLetterIndex((i) => {
+      const ni = Math.min(LETTERS.length - 1, i + 1);
+      if (ni !== i) {
+        setExpanded({});
+        if (typeof window !== "undefined") {
+          window.requestAnimationFrame(() => window.scrollTo({ top: 0, behavior: "instant" }));
+        }
+      }
+      return ni;
+    });
+  }, []);
+  const goPrev = useCallback(() => {
+    setLetterIndex((i) => {
+      const ni = Math.max(0, i - 1);
+      if (ni !== i) {
+        setExpanded({});
+        if (typeof window !== "undefined") {
+          window.requestAnimationFrame(() => window.scrollTo({ top: 0, behavior: "instant" }));
+        }
+      }
+      return ni;
+    });
+  }, []);
   const handleTouchStart = (e) => { touchStartX.current = e.touches[0].clientX; };
   const handleTouchEnd = (e) => {
     if (touchStartX.current == null) return;
@@ -942,21 +967,31 @@ export default function Health() {
     document.head.appendChild(l1);
   }, []);
 
-  // ─── Scroll progress for rosebud ───
+  // ─── Scroll progress for rosebud — rAF-throttled.                ───
+  // Scroll fires hundreds of times per frame; bare setState was the      //
+  // single biggest source of mid-scroll jank. We now coalesce all events //
+  // into the next animation frame so we recompute at most once per paint.//
   useEffect(() => {
-    const onScroll = () => {
-      const el = letterRef.current;
-      if (!el) return;
-      const rect = el.getBoundingClientRect();
-      const vh = window.innerHeight || document.documentElement.clientHeight;
-      const total = el.offsetHeight + vh;
-      const seen = vh - rect.top;
-      const pct = Math.max(0, Math.min(100, (seen / total) * 100));
-      setScrollPct(pct);
+    let ticking = false;
+    const handler = () => {
+      if (ticking) return;
+      ticking = true;
+      requestAnimationFrame(() => {
+        const el = letterRef.current;
+        if (el) {
+          const rect = el.getBoundingClientRect();
+          const vh = window.innerHeight || document.documentElement.clientHeight;
+          const total = el.offsetHeight + vh;
+          const seen = vh - rect.top;
+          const pct = Math.max(0, Math.min(100, (seen / total) * 100));
+          setScrollPct(pct);
+        }
+        ticking = false;
+      });
     };
-    window.addEventListener("scroll", onScroll, { passive: true });
-    onScroll();
-    return () => window.removeEventListener("scroll", onScroll);
+    window.addEventListener("scroll", handler, { passive: true });
+    handler();
+    return () => window.removeEventListener("scroll", handler);
   }, []);
 
   // ─── Sections start collapsed on every tab change. The reader chooses
@@ -969,16 +1004,23 @@ export default function Health() {
   const tabContent = HEALTH_CONTENT[activeTab] || HEALTH_CONTENT.overview;
   const sections = tabContent.sections || [];
 
-  const toggle = (id) => setExpanded((p) => ({ ...p, [id]: !p[id] }));
+  // Memoised toggle / toggleAll — stable identity means child sections   //
+  // don't re-render every time the parent renders for some unrelated     //
+  // reason (e.g. scroll progress updating).                              //
+  const toggle = useCallback(
+    (id) => setExpanded((p) => ({ ...p, [id]: !p[id] })),
+    []
+  );
   const allExpanded = sections.length > 0 && sections.every((s) => expanded[s.id]);
-  const toggleAll = () => {
-    if (allExpanded) setExpanded({});
-    else {
-      const all = {};
-      sections.forEach((s) => { all[s.id] = true; });
-      setExpanded(all);
-    }
-  };
+  const toggleAll = useCallback(() => {
+    setExpanded((prev) => {
+      const wasAllOpen = sections.length > 0 && sections.every((s) => prev[s.id]);
+      if (wasAllOpen) return {};
+      const next = {};
+      sections.forEach((s) => { next[s.id] = true; });
+      return next;
+    });
+  }, [sections]);
 
   const name = profile?.preferred_name || profile?.display_name || profile?.full_name?.split?.(" ")?.[0] || "friend";
   const today = new Date();
@@ -1064,20 +1106,22 @@ export default function Health() {
   const isStory = activeTab === "story";
 
   return (
-    <div style={{ background: "#E8DBC8", minHeight: "100vh", paddingBottom: 80, boxShadow: "inset 0 0 60px rgba(58,44,26,0.08)" }}>
-      {/* ─── Hidden paper-texture SVG filter ───                          */}
-      {/* Used inside the letter paper as a subtle noise overlay so the    */}
-      {/* surface reads like real paper instead of a flat color block.     */}
-      <svg width="0" height="0" style={{ position: "absolute" }} aria-hidden="true">
-        <defs>
-          <filter id="paper-texture" x="0%" y="0%" width="100%" height="100%">
-            <feTurbulence type="fractalNoise" baseFrequency="0.65" numOctaves="3" stitchTiles="stitch" />
-            <feColorMatrix type="saturate" values="0" />
-            <feBlend in="SourceGraphic" mode="multiply" result="blend" />
-            <feComposite in="blend" in2="SourceGraphic" operator="in" />
-          </filter>
-        </defs>
-      </svg>
+    <div
+      className="health-page"
+      style={{
+        background: "#E8DBC8", minHeight: "100vh", paddingBottom: 80,
+        boxShadow: "inset 0 0 60px rgba(58,44,26,0.08)",
+        touchAction: "manipulation",
+      }}
+    >
+      {/* Page-wide perf CSS — kill the 300ms tap delay + tap highlight.   */}
+      {/* The feTurbulence filter was removed (very expensive on mobile);  */}
+      {/* the repeating-linear-gradient on the paper gives enough texture. */}
+      <style>{`
+        .health-page * { -webkit-tap-highlight-color: transparent; }
+        .health-page button,
+        .health-page a { touch-action: manipulation; }
+      `}</style>
 
       {/* ─── Sticky letter-nav (espresso header + cream letter strip) ───  */}
       {/* This is the ONLY navigation chrome at the top of /Health.        */}
@@ -1241,11 +1285,13 @@ export default function Health() {
           borderRadius: 2,
           transform: "rotate(-0.3deg)",
           position: "relative",
+          // Promote to its own compositing layer so the article doesn't repaint
+          // on every parent state change.
+          willChange: "transform",
+          // 3 shadow layers (was 5) — same look, half the paint cost.
           boxShadow: [
-            "0 1px 1px rgba(58,44,26,0.06)",
-            "3px 3px 0 -1px #F0E8D4",
-            "6px 6px 0 -2px #EAE0C8",
-            "0 12px 48px rgba(58,44,26,0.18)",
+            "4px 4px 0 -1px #EAE0C8",
+            "0 12px 40px rgba(58,44,26,0.16)",
             "inset 0 1px 0 rgba(255,255,255,0.8)",
           ].join(", "),
         }}>
@@ -1256,17 +1302,10 @@ export default function Health() {
             borderRadius: 2,
           }} />
 
-          {/* Paper noise overlay — turbulence filter applied to a flat tan */}
-          {/* tile so the texture multiplies onto the page behind the text */}
-          {/* (text itself sits in front and stays crisp).                 */}
-          <div aria-hidden="true" style={{
-            position: "absolute", inset: 0, pointerEvents: "none",
-            opacity: 0.18,
-            mixBlendMode: "multiply",
-            background: "#E8DBC8",
-            filter: "url(#paper-texture)",
-            borderRadius: 2,
-          }} />
+          {/* (Paper noise overlay removed — feTurbulence was the single   */}
+          {/* most expensive paint cost on mobile. The repeating-linear-   */}
+          {/* gradient + warm radial gradients on the article bg give     */}
+          {/* enough texture without a GPU filter.)                       */}
 
           {/* ── Letterhead ── */}
           <div style={{ borderBottom: "1px solid rgba(58,44,26,0.12)", paddingBottom: 24, marginBottom: 32, position: "relative" }}>
@@ -1552,7 +1591,7 @@ export default function Health() {
 // ════════════════════════════════════════════════════════════════════════════
 // LETTER SECTION
 // ════════════════════════════════════════════════════════════════════════════
-function LetterSection({ section, isExpanded, onToggle, askJess }) {
+const LetterSection = memo(function LetterSection({ section, isExpanded, onToggle, askJess }) {
   return (
     <div id={`letter-section-${section.id}`} style={{ marginBottom: 4, scrollMarginTop: 110, position: "relative" }}>
       <button
@@ -1714,12 +1753,12 @@ function LetterSection({ section, isExpanded, onToggle, askJess }) {
       )}
     </div>
   );
-}
+});
 
 // ════════════════════════════════════════════════════════════════════════════
 // LETTER HISTORY STRIP (Feature 5)
 // ════════════════════════════════════════════════════════════════════════════
-function LetterHistoryStrip({ currentPhase }) {
+const LetterHistoryStrip = memo(function LetterHistoryStrip({ currentPhase }) {
   const phases = ["Menstrual", "Follicular", "Ovulatory", "Luteal"];
   return (
     <div style={{
@@ -1751,12 +1790,12 @@ function LetterHistoryStrip({ currentPhase }) {
       })}
     </div>
   );
-}
+});
 
 // ════════════════════════════════════════════════════════════════════════════
 // NEWS SECTION (Feature 4) — curated cards before sign-off
 // ════════════════════════════════════════════════════════════════════════════
-function NewsSection({ tabId }) {
+const NewsSection = memo(function NewsSection({ tabId }) {
   const news = NEWS_BY_TAB[tabId] || [];
   if (!news.length) return null;
   return (
@@ -1783,7 +1822,9 @@ function NewsSection({ tabId }) {
             borderRadius: 4,
             padding: "14px 16px",
             position: "relative",
-            transform: `rotate(${i % 2 === 0 ? 0.4 : -0.3}deg)`,
+            // (transform: rotate removed — multiple rotated children forced
+            // layout thrashing on first paint. Border + bg alone reads as
+            // a clipping.)
             boxShadow: "0 1px 2px rgba(58,44,26,0.06)",
           }}>
             <div style={{
@@ -1805,7 +1846,7 @@ function NewsSection({ tabId }) {
       </div>
     </div>
   );
-}
+});
 
 // ════════════════════════════════════════════════════════════════════════════
 // STORY DASHBOARD (Feature 1) — data tiles in place of letter sections
@@ -1901,17 +1942,11 @@ function StoryDashboard({ profile, cycle, phase, recentCheckins, recentSymptoms,
   };
   return (
     <div>
-      {/* Pulse-ring keyframes for the today dot — injected once via <style>. */}
-      <style>{`
-        @keyframes fw-pulse-ring {
-          0%   { box-shadow: 0 0 0 0 rgba(212,175,55,0.5); }
-          70%  { box-shadow: 0 0 0 10px rgba(212,175,55,0); }
-          100% { box-shadow: 0 0 0 0 rgba(212,175,55,0); }
-        }
-        .fw-today-dot { animation: fw-pulse-ring 2s infinite; }
-      `}</style>
+      {/* (Pulse keyframe removed — continuous box-shadow animation forced */}
+      {/* a paint every frame, which was a major scroll-jank source. The  */}
+      {/* today dot now uses a static gold ring + soft outer halo.)       */}
 
-      {/* 1. Cycle calendar — phase label above grid, pulsing today, legend below */}
+      {/* 1. Cycle calendar — phase label above grid, static gold ring today, legend below */}
       <div style={TILE}>
         <div style={TILE_LABEL}>Your cycle</div>
         <div style={{
@@ -1932,7 +1967,11 @@ function StoryDashboard({ profile, cycle, phase, recentCheckins, recentSymptoms,
                 height: d.isToday ? 18 : 10,
                 borderRadius: "50%",
                 background: phaseColour[d.phase],
-                boxShadow: d.isToday ? "0 0 0 2px #3A2C1A" : "none",
+                // Static gold ring instead of an animated box-shadow. Same
+                // "this is today" reading at zero GPU cost.
+                border: d.isToday ? "3px solid rgba(212,175,55,0.7)" : "none",
+                boxShadow: d.isToday ? "0 0 0 4px rgba(212,175,55,0.2)" : "none",
+                boxSizing: "border-box",
               }}
             />
           ))}
