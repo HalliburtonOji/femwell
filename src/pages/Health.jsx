@@ -1012,42 +1012,27 @@ export default function Health() {
 
   return (
     <div style={{ background: "#E8DBC8", minHeight: "100vh", paddingBottom: 80, boxShadow: "inset 0 0 60px rgba(58,44,26,0.08)" }}>
-      {/* ─── Tab bar ─── */}
-      <div style={{
-        background: "#E8DBC8", borderBottom: "1px solid rgba(58,44,26,0.10)",
-        padding: "8px 12px", position: "sticky", top: 0, zIndex: 11,
-        overflowX: "auto", scrollbarWidth: "none",
-      }}>
-        <div style={{ display: "flex", gap: 6, minWidth: "max-content" }}>
-          {TABS.map((t) => {
-            const on = activeTab === t.id;
-            return (
-              <button key={t.id} onClick={() => setActiveTab(t.id)} style={{
-                background: "transparent", border: "none",
-                padding: "8px 12px",
-                fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
-                fontSize: 12, letterSpacing: 0.5,
-                color: on ? "#3A2C1A" : "#9B8B7A",
-                fontWeight: on ? 600 : 500,
-                borderBottom: on ? "2px solid #D4AF37" : "2px solid transparent",
-                cursor: "pointer", whiteSpace: "nowrap",
-                display: "inline-flex", alignItems: "center", gap: 6,
-              }}>
-                <span aria-hidden="true">{t.icon}</span>
-                <span>{t.label}</span>
-              </button>
-            );
-          })}
-        </div>
-      </div>
+      {/* ─── Hidden paper-texture SVG filter ───                          */}
+      {/* Used inside the letter paper as a subtle noise overlay so the    */}
+      {/* surface reads like real paper instead of a flat color block.     */}
+      <svg width="0" height="0" style={{ position: "absolute" }} aria-hidden="true">
+        <defs>
+          <filter id="paper-texture" x="0%" y="0%" width="100%" height="100%">
+            <feTurbulence type="fractalNoise" baseFrequency="0.65" numOctaves="3" stitchTiles="stitch" />
+            <feColorMatrix type="saturate" values="0" />
+            <feBlend in="SourceGraphic" mode="multiply" result="blend" />
+            <feComposite in="blend" in2="SourceGraphic" operator="in" />
+          </filter>
+        </defs>
+      </svg>
 
-      {/* ─── Sticky letter-nav header (2 rows) ─── */}
-      {/* Row 1: current letter title + bold gold "All letters" button.   */}
-      {/* Row 2: phase / cycle day / life stage summary.                  */}
-      {/* This replaces the older subtle phase bar — the gold button is   */}
-      {/* now the obvious entry point to the letter library.              */}
-      <div style={{ position: "sticky", top: 47, zIndex: 10 }}>
-        {/* Row 1 — letter title + All letters CTA */}
+      {/* ─── Sticky letter-nav (espresso header + cream letter strip) ───  */}
+      {/* This is the ONLY navigation chrome at the top of /Health.        */}
+      {/* The older inert pill bar (onClick called undefined setActiveTab) */}
+      {/* is gone — its replacement, the cream strip below, is wired to   */}
+      {/* goToLetter(i) so tapping any letter actually navigates.          */}
+      <div style={{ position: "sticky", top: 0, zIndex: 11 }}>
+        {/* Row 1 — current letter title + bold gold All letters CTA */}
         <div style={{
           background: "#3A2C1A",
           padding: "10px 16px",
@@ -1108,6 +1093,47 @@ export default function Health() {
           }}>
             {phaseLbl}{cycle?.cycleDay ? ` · Day ${cycle.cycleDay}` : ""} · {stageLbl}
           </span>
+        </div>
+        {/* Row 3 — cream scrollable letter strip (the working version).   */}
+        {/* The old strip used setActiveTab which doesn't exist; this one  */}
+        {/* calls goToLetter(i) directly so taps land. Active letter gets  */}
+        {/* a gold underline + Cormorant 700, idle letters fade to mauve.  */}
+        <div style={{
+          background: "#F0E6CE",
+          borderBottom: "1px solid rgba(58,44,26,0.10)",
+          display: "flex",
+          overflowX: "auto",
+          WebkitOverflowScrolling: "touch",
+          scrollbarWidth: "none",
+          msOverflowStyle: "none",
+        }}>
+          {LETTERS.map((L, i) => {
+            const on = i === letterIndex;
+            return (
+              <button
+                key={L.id}
+                onClick={() => goToLetter(i)}
+                aria-label={`Jump to ${L.title}`}
+                aria-current={on ? "true" : "false"}
+                style={{
+                  background: "none", border: "none", cursor: "pointer",
+                  padding: "10px 16px",
+                  borderBottom: on ? "2px solid #D4AF37" : "2px solid transparent",
+                  fontFamily: "Cormorant Garamond, Georgia, serif",
+                  fontSize: 16,
+                  fontWeight: on ? 700 : 500,
+                  color: on ? "#3A2C1A" : "rgba(58,44,26,0.45)",
+                  whiteSpace: "nowrap",
+                  transition: "all 0.15s",
+                  display: "inline-flex", alignItems: "center", gap: 6,
+                  flexShrink: 0,
+                }}
+              >
+                <span aria-hidden="true">{L.icon}</span>
+                <span>{L.title}</span>
+              </button>
+            );
+          })}
         </div>
       </div>
 
@@ -1177,11 +1203,28 @@ export default function Health() {
             borderRadius: 2,
           }} />
 
+          {/* Paper noise overlay — turbulence filter applied to a flat tan */}
+          {/* tile so the texture multiplies onto the page behind the text */}
+          {/* (text itself sits in front and stays crisp).                 */}
+          <div aria-hidden="true" style={{
+            position: "absolute", inset: 0, pointerEvents: "none",
+            opacity: 0.18,
+            mixBlendMode: "multiply",
+            background: "#E8DBC8",
+            filter: "url(#paper-texture)",
+            borderRadius: 2,
+          }} />
+
           {/* ── Letterhead ── */}
           <div style={{ borderBottom: "1px solid rgba(58,44,26,0.12)", paddingBottom: 24, marginBottom: 32, position: "relative" }}>
             <div style={{ display: "flex", justifyContent: "center", marginBottom: 8 }}>
               <TabBotanical tabId={tab.id} />
             </div>
+            {/* Thin gold rule beneath the botanical — old-letter flourish. */}
+            <div aria-hidden="true" style={{
+              width: 48, height: 1, background: "#D4AF37", opacity: 0.4,
+              margin: "8px auto 12px",
+            }} />
             <div style={{ textAlign: "center", marginTop: 12 }}>
               <div style={{ fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif', fontSize: 13, fontWeight: 600, letterSpacing: 2, color: "#9B8B7A", textTransform: "uppercase" }}>
                 FemWell Health Letter
@@ -1306,6 +1349,11 @@ export default function Health() {
           {/* ── Sign-off ── */}
           <BotanicalDivider />
           <div style={{ marginTop: 28, position: "relative" }}>
+            {/* Thin charcoal flourish line above the salutation. */}
+            <div aria-hidden="true" style={{
+              width: 80, height: 1, background: "rgba(58,44,26,0.15)",
+              margin: "0 0 20px",
+            }} />
             <div style={{ fontFamily: 'Cormorant Garamond, Georgia, serif', fontSize: 17, fontWeight: 500, color: "#3A2C1A", marginBottom: 4 }}>
               With care,
             </div>
@@ -1437,9 +1485,16 @@ export default function Health() {
 function LetterSection({ section, isExpanded, onToggle, askJess }) {
   return (
     <div id={`letter-section-${section.id}`} style={{ marginBottom: 4, scrollMarginTop: 110, position: "relative" }}>
-      <button onClick={onToggle} style={{
+      <button
+        onClick={onToggle}
+        onMouseEnter={(e) => { e.currentTarget.style.background = "rgba(212,175,55,0.06)"; }}
+        onMouseLeave={(e) => { e.currentTarget.style.background = "none"; }}
+        style={{
         width: "100%", textAlign: "left", background: "none", border: "none", cursor: "pointer",
-        padding: "14px 0 8px",
+        padding: "14px 8px 8px",
+        margin: "0 -8px",
+        borderRadius: 4,
+        transition: "background 0.15s",
         display: "flex", justifyContent: "space-between", alignItems: "center",
         borderBottom: "1px solid rgba(58,44,26,0.08)",
       }}>
