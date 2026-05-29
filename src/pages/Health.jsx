@@ -1069,6 +1069,20 @@ export default function Health() {
     return entries[0]?.[0] || null;
   }, [recentSymptoms]);
 
+  // Relationship tier — inlined here so its const is in scope when the
+  // opener below reads it. (Earlier I placed the memo below this line and
+  // hit a TDZ ReferenceError on production.)
+  const _createdAt = profile?.created_at || profile?.created_date;
+  const _daysSinceSignup = _createdAt && !Number.isNaN(new Date(_createdAt).getTime())
+    ? Math.floor((Date.now() - new Date(_createdAt).getTime()) / (24 * 3600 * 1000))
+    : 0;
+  const relationshipTier = _daysSinceSignup >= 90 ? "deep" : _daysSinceSignup >= 30 ? "established" : "new";
+  const tierPreface = relationshipTier === "new"
+    ? "Welcome to your Health Corner. "
+    : relationshipTier === "established"
+      ? "You've been tracking for a few weeks now — patterns are beginning to show. "
+      : "You know your body well by now. ";
+
   // Layer the relationship-tier preface in front of the phase opener, then
   // append the data-aware cycle-day + top-symptom riffs (only for non-Story
   // letters — Story uses data tiles instead of prose).
@@ -1168,33 +1182,8 @@ export default function Health() {
     navigate("/DoctorExport");
   }, [gpQuestions, navigate]);
 
-  // ── Progressive relationship tier from days-since-signup.
-  // Layered on top of the existing phase × symptom opener.
-  const relationshipTier = useMemo(() => {
-    const createdAt = profile?.created_at || profile?.created_date;
-    if (!createdAt) return "new";
-    const ts = new Date(createdAt).getTime();
-    if (Number.isNaN(ts)) return "new";
-    const days = Math.floor((Date.now() - ts) / (24 * 3600 * 1000));
-    if (days >= 90) return "deep";
-    if (days >= 30) return "established";
-    return "new";
-  }, [profile]);
-
-  // Optional pre-roll added in front of the existing baseOpener so the
-  // page still reads naturally for any tier.
-  const tierPreface = useMemo(() => {
-    if (relationshipTier === "new") {
-      return "Welcome to your Health Corner. ";
-    }
-    if (relationshipTier === "established") {
-      return "You've been tracking for a few weeks now — patterns are beginning to show. ";
-    }
-    if (relationshipTier === "deep") {
-      return "You know your body well by now. ";
-    }
-    return "";
-  }, [relationshipTier]);
+  // (Relationship tier + preface are inlined above where the opener is
+  // composed, since the opener reads them.)
 
   // Trigger window.print(). The @media print CSS below hides chrome.
   const printLetter = useCallback(() => {
