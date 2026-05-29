@@ -23,17 +23,20 @@ import { useCycleDay } from "@/hooks/useCycleDay";
 // ════════════════════════════════════════════════════════════════════════════
 // TABS
 // ════════════════════════════════════════════════════════════════════════════
-const TABS = [
-  { id: "story",       label: "Your Story",  icon: "◎" },
-  { id: "overview",    label: "Overview",    icon: "✦" },
-  { id: "cycle",       label: "Cycle",       icon: "◯" },
-  { id: "lifestage",   label: "Life Stage",  icon: "◈" },
-  { id: "skin",        label: "Skin & Hair", icon: "❧" },
-  { id: "body",        label: "Body",        icon: "◉" },
-  { id: "mind",        label: "Mind",        icon: "⟳" },
-  { id: "nourishment", label: "Nourishment", icon: "✿" },
-  { id: "care",        label: "Care",        icon: "⊕" },
+// ─── LETTERS — 7 consolidated letters. Replaces the old 9-tab TABS array
+// because the pill bar didn't scale on mobile. Navigation is now a slider
+// (arrows + dots + Library overlay) — see Health() component body.
+const LETTERS = [
+  { id: "story",       title: "Your Story",          subtitle: "Patterns only you can see",                icon: "◎", botanical: "story" },
+  { id: "cycle",       title: "Cycle & Life Stage",  subtitle: "Where you are, and what it means",         icon: "◯", botanical: "cycle" },
+  { id: "body",        title: "Body & Skin",         subtitle: "What your body is telling you",            icon: "◉", botanical: "body" },
+  { id: "mind",        title: "Mind & Sleep",        subtitle: "The cycling brain, and rest",              icon: "⟳", botanical: "mind" },
+  { id: "nourishment", title: "Nourishment & Gut",   subtitle: "Food, hormones, and your microbiome",       icon: "✿", botanical: "nourishment" },
+  { id: "intimacy",    title: "Intimacy",            subtitle: "The conversation most apps skip",          icon: "❧", botanical: "skin" },
+  { id: "care",        title: "Your Care",           subtitle: "Navigate the system like you own it",      icon: "⊕", botanical: "care" },
 ];
+// Back-compat alias — older code paths still expect TABS.
+const TABS = LETTERS.map((L) => ({ id: L.id, label: L.title, icon: L.icon }));
 
 const LIFE_STAGE_LABEL = {
   teen: "Teen",
@@ -294,10 +297,6 @@ const HEALTH_CONTENT = {
           { type: "para", text: "Bring a printed three-month chart to your GP if something feels off. It transforms a 10-minute appointment from 'I feel terrible sometimes' to a clinical pattern they can act on." },
         ],
       },
-    ],
-  },
-  lifestage: {
-    sections: [
       {
         id: "your-stage-now",
         title: "Where you are in the bigger arc",
@@ -322,11 +321,35 @@ const HEALTH_CONTENT = {
             "Don't defer cervical screening — uptake is at its lowest in 20 years",
           ] },
         ],
-      },
+      },,
     ],
   },
-  skin: {
+  body: {
     sections: [
+      {
+        id: "hormonal-symptoms",
+        title: "Pain that deserves a name",
+        keyFact: "Endometriosis takes 7–10 years to diagnose in the UK. The biggest reason is the word 'normal' — used by both patients and doctors.",
+        content: [
+          { type: "para", text: "Women's pain has been historically dismissed in medicine, and conditions that mostly affect women are diagnosed later, treated less aggressively, and researched less than equivalent conditions in men. Knowing this isn't cynicism — it just helps you walk into appointments differently." },
+          { type: "expert", quote: "The phrase 'bad periods are normal' has caused more diagnostic delay than almost any other sentence in women's health. Pain you need medication to function through is a symptom, not normal.", attribution: "Lone Hummelshoj, World Endometriosis Research Foundation" },
+          { type: "para", text: "If you have period pain that needs prescription painkillers, pain outside your period, pain during sex, or cyclical bowel or bladder symptoms — endometriosis is worth investigating. Don't accept 'just bad periods' as a diagnosis." },
+        ],
+      },
+      {
+        id: "fatigue-and-energy",
+        title: "Why you're so tired",
+        keyFact: "A standard 'full blood count' doesn't include ferritin. You have to ask for it by name.",
+        content: [
+          { type: "para", text: "Fatigue is the symptom GPs hear most often and investigate least well. In women of reproductive age, the three most common treatable causes are low iron stores (ferritin), under-active thyroid (TSH), and low vitamin D. All three are measurable. All three are missed if you only run a standard blood count." },
+          { type: "list", items: [
+            "Ask for ferritin (not just FBC), TSH, vitamin D, B12 and folate as a baseline",
+            "Ferritin below 30 µg/L: iron supplementation has good evidence",
+            "TSH between 2.5 and 4 with symptoms: worth a real conversation",
+            "Heavy periods + tiredness: get both investigated — the link is iron loss",
+          ] },
+        ],
+      },
       {
         id: "hormonal-skin",
         title: "Your skin is a hormone receipt",
@@ -365,35 +388,7 @@ const HEALTH_CONTENT = {
             "Days 1–4 (period): just nourish — no exfoliants",
           ] },
         ],
-      },
-    ],
-  },
-  body: {
-    sections: [
-      {
-        id: "hormonal-symptoms",
-        title: "Pain that deserves a name",
-        keyFact: "Endometriosis takes 7–10 years to diagnose in the UK. The biggest reason is the word 'normal' — used by both patients and doctors.",
-        content: [
-          { type: "para", text: "Women's pain has been historically dismissed in medicine, and conditions that mostly affect women are diagnosed later, treated less aggressively, and researched less than equivalent conditions in men. Knowing this isn't cynicism — it just helps you walk into appointments differently." },
-          { type: "expert", quote: "The phrase 'bad periods are normal' has caused more diagnostic delay than almost any other sentence in women's health. Pain you need medication to function through is a symptom, not normal.", attribution: "Lone Hummelshoj, World Endometriosis Research Foundation" },
-          { type: "para", text: "If you have period pain that needs prescription painkillers, pain outside your period, pain during sex, or cyclical bowel or bladder symptoms — endometriosis is worth investigating. Don't accept 'just bad periods' as a diagnosis." },
-        ],
-      },
-      {
-        id: "fatigue-and-energy",
-        title: "Why you're so tired",
-        keyFact: "A standard 'full blood count' doesn't include ferritin. You have to ask for it by name.",
-        content: [
-          { type: "para", text: "Fatigue is the symptom GPs hear most often and investigate least well. In women of reproductive age, the three most common treatable causes are low iron stores (ferritin), under-active thyroid (TSH), and low vitamin D. All three are measurable. All three are missed if you only run a standard blood count." },
-          { type: "list", items: [
-            "Ask for ferritin (not just FBC), TSH, vitamin D, B12 and folate as a baseline",
-            "Ferritin below 30 µg/L: iron supplementation has good evidence",
-            "TSH between 2.5 and 4 with symptoms: worth a real conversation",
-            "Heavy periods + tiredness: get both investigated — the link is iron loss",
-          ] },
-        ],
-      },
+      },,
     ],
   },
   mind: {
@@ -423,6 +418,36 @@ const HEALTH_CONTENT = {
           ] },
         ],
       },
+      {
+        id: "sleep-across-cycle",
+        title: "Sleep across your cycle",
+        keyFact: "Women need 20 minutes more sleep per night than men on average — and most get less.",
+        content: [
+          { type: "para", text: "Your sleep changes every week of your cycle and almost nobody is told. Progesterone in early luteal improves sleep depth — that's the warm, calm fortnight. In late luteal (the week before your period), progesterone falls sharply and sleep architecture disrupts. You may wake at 3am for no reason. You're not broken — you're hormonal." },
+          { type: "para", text: "If you have PMS or PMDD, sleep typically worsens between days 22 and 28. Tracking your sleep against your cycle for two months will show you the pattern — and it will make you stop blaming yourself for the bad weeks." },
+          { type: "list", items: [
+            "Magnesium glycinate 200–400mg in the evening — meta-analysis evidence for premenstrual sleep",
+            "Cool room (16–18°C) — your core temperature is higher in luteal phase",
+            "Wind-down routine 60 minutes before bed — protect this on luteal days",
+            "Avoid alcohol in late luteal — it fragments sleep more than usual",
+          ] },
+        ],
+      },
+      {
+        id: "sleep-perimenopause",
+        title: "Sleep in perimenopause",
+        keyFact: "If you've started waking at 3am every night in your 40s, that's not anxiety — that's hormones.",
+        content: [
+          { type: "para", text: "Night sweats, racing thoughts at 3am, and fragmented sleep are some of the earliest perimenopausal symptoms — often years before periods change. Sleep hygiene lectures don't fix this. The mechanism is hormonal: falling oestrogen disrupts the temperature regulation that normally keeps you asleep." },
+          { type: "expert", quote: "Sleep in perimenopause is a treatable problem. Most women try every supplement and bedtime ritual before they have a proper conversation about HRT, which is genuinely the most effective intervention we have.", attribution: "Dr Louise Newson, GP and menopause specialist" },
+          { type: "list", items: [
+            "HRT (transdermal oestrogen + micronised progesterone): strongest evidence base",
+            "Magnesium glycinate: reduces night-time waking",
+            "Sleep restriction therapy with a CBT-I specialist: works when habits are part of it",
+            "Melatonin alone: weak evidence — useful for shift workers, not for hormonal disruption",
+          ] },
+        ],
+      },
     ],
   },
   nourishment: {
@@ -442,6 +467,21 @@ const HEALTH_CONTENT = {
         keyFact: "The bacteria in your gut decide how much of your used oestrogen gets reabsorbed — which means fibre is genuinely hormonal medicine.",
         content: [
           { type: "para", text: "Your gut bacteria affect your oestrogen levels directly. They produce enzymes that decide whether 'used' oestrogen leaves your body or gets reabsorbed. If your gut isn't varied (low fibre, lots of ultra-processed food), more oestrogen sticks around than should — which contributes to endometriosis, fibroids and worse PMS." },
+       {
+        id: "estrobolome",
+        title: "The estrobolome — why gut health is hormonal health",
+        keyFact: "The bacteria in your gut decide how much of your used oestrogen gets reabsorbed. They are part of your endocrine system.",
+        content: [
+          { type: "para", text: "Your body breaks down oestrogen in the liver, sends it to the gut for excretion, and a specific group of gut bacteria called the estrobolome decides what happens next. A healthy estrobolome lets the used oestrogen leave. A disrupted one (low fibre, antibiotics, ultra-processed food) releases an enzyme called beta-glucuronidase that splits oestrogen back into its active form — and it gets reabsorbed into your bloodstream." },
+          { type: "para", text: "This is the mechanism behind a lot of unexplained oestrogen dominance — heavier periods, premenstrual breast tenderness, fibroid growth, endometriosis worsening. It's also why fibre intake genuinely affects hormones: at least 30g a day feeds the right bacteria and keeps the estrobolome functioning." },
+          { type: "list", items: [
+            "30g of fibre a day — beans, lentils, oats, seeds, fruit, vegetables",
+            "Fermented foods 3–4× per week — yoghurt, kefir, kimchi, sauerkraut",
+            "Reduce ultra-processed food — emulsifiers disrupt the gut barrier",
+            "Avoid unnecessary antibiotics — they reset the estrobolome for months",
+          ] },
+        ],
+      },
           { type: "para", text: "The fix isn't fancy. More fibre — 30g a day is the target, most UK women eat 18. More plants generally. A bit of fermented food (kefir, kimchi, live yoghurt). And less of the things that disrupt the gut: alcohol, ultra-processed food, very high caffeine." },
           { type: "list", items: [
             "Aim for 30g of fibre a day — seeds, beans, oats, vegetables",
@@ -507,6 +547,47 @@ const HEALTH_CONTENT = {
       },
     ],
   },
+  intimacy: {
+    sections: [
+      {
+        id: "libido-across-cycle",
+        title: "Libido across the cycle",
+        keyFact: "Libido peaks at ovulation — testosterone and oestrogen are both elevated, and this is the only time biological and experiential desire align for most women.",
+        content: [
+          { type: "para", text: "Desire fluctuates hormonally and most of us are never told. The highest libido point in the cycle is around ovulation (testosterone and oestrogen both peak). The lowest is in late luteal (progesterone dominant, allopregnanolone rising and falling) and early menstrual (everything is at the floor). This is biology, not relationship quality, not personal failing." },
+          { type: "para", text: "The mismatch between hormonal desire and life circumstances is one of the most common sources of unspoken relationship friction. Track it for 2–3 cycles and the pattern becomes obvious. The point isn't to schedule sex around your hormones — it's to stop blaming yourself for the weeks where it isn't there." },
+        ],
+      },
+      {
+        id: "ocp-and-desire",
+        title: "The hormonal pill and desire",
+        keyFact: "Combined oral contraceptives suppress free testosterone — in some women, the effect on libido persists long after stopping.",
+        content: [
+          { type: "para", text: "The combined oral contraceptive pill raises a protein called sex hormone-binding globulin (SHBG), which binds free testosterone and reduces what your body has available. For some women that's clinically meaningful: libido drops, arousal blunts, orgasm changes. The pill is the right choice for many people — but this side effect deserves to be part of the conversation when it's prescribed, and it almost never is." },
+          { type: "para", text: "If you're on the OCP and have low desire, raise it with your GP. Switching to a different formulation, or moving to a non-hormonal method, sometimes restores it. In a smaller number of women, SHBG stays elevated for months or years after stopping — that's worth knowing about before you start." },
+        ],
+      },
+      {
+        id: "pelvic-health",
+        title: "Pelvic health",
+        keyFact: "Pelvic floor dysfunction affects 1 in 3 women who've given birth — and is undertreated because we've normalised incontinence as 'part of motherhood'.",
+        content: [
+          { type: "para", text: "The pelvic floor is a group of muscles that support the bladder, bowel and uterus. Dysfunction (weakness, hypertonicity, or both) causes symptoms including leaking when you cough or laugh, prolapse, pelvic pain, painful intercourse, and difficulty emptying your bladder fully. These symptoms are common after birth and around menopause. They are also treatable." },
+          { type: "para", text: "In France postpartum pelvic physiotherapy is standard NHS-equivalent care. In the UK it's a postcode lottery. You can self-refer to a specialist pelvic physio privately — sessions are usually £60–120 and most women see meaningful change in 6–8 weeks. The normalisation is the bigger problem than the dysfunction." },
+        ],
+      },
+      {
+        id: "gsm",
+        title: "Genitourinary symptoms at menopause",
+        keyFact: "Half of postmenopausal women have GSM — vaginal dryness, painful sex, recurrent UTIs — and most are never offered the simple, effective treatment.",
+        content: [
+          { type: "para", text: "GSM (genitourinary syndrome of menopause) is what happens when oestrogen falls and the vaginal and urinary tract tissue thins, loses elasticity, and becomes more vulnerable to infection. Symptoms: dryness, burning, pain during sex, urinary urgency, recurrent UTIs. Unlike hot flushes, GSM doesn't ease with time — it worsens unless treated." },
+          { type: "para", text: "The first-line treatment is topical vaginal oestrogen — a cream or pessary used locally, with minimal systemic absorption. It's safe even for many women who can't use systemic HRT. It works for most. It's massively undertreated because women don't know to ask and clinicians don't routinely volunteer it. The exact words: 'Can we discuss topical vaginal oestrogen?'" },
+          { type: "expert", quote: "GSM is one of the most undertreated conditions in women's health. The treatment is cheap, safe, and effective. The barrier is conversation.", attribution: "Dr Heather Currie, gynaecologist and Menopause Matters" },
+        ],
+      },
+    ],
+  },
 };
 
 const OPENERS = {
@@ -527,12 +608,6 @@ const OPENERS = {
     ovulatory:  "You're around ovulation — confidence, libido and verbal flow at their monthly peak. It lasts about 24 hours, so notice it.",
     luteal:     "You're in the luteal phase. The world feels heavier than it did a week ago — a calming chemical called allopregnanolone is dropping. This isn't a personality flaw.",
     menstrual:  "You're bleeding. This isn't a failure — it's a remarkable monthly reset. The same chemicals that cause cramping make the renewal possible.",
-  },
-  skin: {
-    follicular: "Your skin is at its most cooperative right now. Oestrogen is rising, sebum is low, your barrier is strong. This is the week for retinol, vitamin C, or anything you've wanted to try.",
-    ovulatory:  "Your skin is at its monthly peak. Photograph it now — it'll be your reference for the rest of the cycle.",
-    luteal:     "Your skin will start shifting this week. Sebum rises, breakouts cluster around the jaw. It's not your routine — it's the timing.",
-    menstrual:  "Your skin is at its most reactive right now. Skip the actives. Stick to barrier care — ceramides, hyaluronic acid, gentle cleanser.",
   },
   mind: {
     follicular: "Your brain is in its sharpest, most curious mode right now. Verbal fluency is up, anxiety is down. If you have a hard conversation to have, this is the week.",
@@ -558,11 +633,11 @@ const OPENERS = {
     luteal:     "Bring written notes to any appointment this week. Cognitive load is higher, recall is less reliable. Don't trust yourself to remember everything.",
     menstrual:  "This is the week your body is most clearly telling you what's wrong. If you keep a symptom diary, the first three days of your period are the richest moments.",
   },
-  lifestage: {
-    follicular: "Wherever you are in your life — reproductive, perimenopausal, postpartum — follicular is when biology is most generous. Make use of it this week.",
-    ovulatory:  "Mid-cycle is a good moment to reflect on bigger arcs. If you're tracking signs of perimenopause, this is when your body's signals are clearest.",
-    luteal:     "Late luteal mirrors a lot of what perimenopause and postpartum feel like. Understanding one helps you understand the others.",
-    menstrual:  "Menstruation marks the end of one cycle and the beginning of another — a useful frame for thinking about life-stage transitions too.",
+  intimacy: {
+    follicular: "This is the letter most health apps don't write. We're going to write it properly.",
+    ovulatory:  "This is the letter most health apps don't write. We're going to write it properly.",
+    luteal:     "This is the letter most health apps don't write. We're going to write it properly.",
+    menstrual:  "This is the letter most health apps don't write. We're going to write it properly.",
   },
 };
 
@@ -571,12 +646,11 @@ const POSTSCRIPTS = {
 
   overview:    "The most powerful thing you can do for your long-term health is keep tracking, gently. Patterns over months tell you things no single appointment ever can.",
   cycle:       "Your cycle is one of the most sensitive signals your body has. If it changes meaningfully — that's information. Always worth bringing to your GP.",
-  skin:        "Your skin tells the hormonal story before any blood test does. If you're seeing patterns, document them — photographs included. Take them in.",
   mind:        "What you experience across your cycle is real, measurable, and underresearched. If you've been diagnosed with anxiety, ADHD or depression — your symptoms likely vary by phase. That conversation is worth having.",
   body:        "Chronic symptoms are not character flaws. Fatigue, pain or inflammation that tracks with your hormones deserves a proper investigation — not 'many women experience this'.",
   nourishment: "Food isn't moral. The best nutrition for your hormones is the one you can sustain with pleasure. Variety, iron, magnesium — that beats any elimination protocol.",
   care:        "You are your most important advocate. A symptom diary, a written list, and a follow-up email after appointments — those three habits change outcomes more than anything else.",
-  lifestage:   "Every transition feels less lonely when you understand the biology. These aren't conditions to fix. They're chapters to walk through with knowledge.",
+  intimacy:   "Nothing in this letter is about what you should want or how you should feel. It's about understanding the biological context for what you experience — which is the start of a useful conversation, with a partner, a GP, or just yourself.",
 };
 // ════════════════════════════════════════════════════════════════════════════
 const SIGNATURES = {
@@ -584,12 +658,11 @@ const SIGNATURES = {
 
   overview:    { name: "Jess",                          role: "Your FemWell companion" },
   cycle:       { name: "The FemWell Editorial Team",   role: "In partnership with reproductive endocrinology" },
-  skin:        { name: "The FemWell Editorial Team",   role: "Dermatology & hormonal skin" },
   body:        { name: "The FemWell Editorial Team",   role: "Integrative women's health" },
   mind:        { name: "The FemWell Editorial Team",   role: "Neuropsychology & the cycle" },
   nourishment: { name: "The FemWell Editorial Team",   role: "Nutritional endocrinology" },
   care:        { name: "The FemWell Editorial Team",   role: "Healthcare navigation" },
-  lifestage:   { name: "The FemWell Editorial Team",   role: "Life stage transitions" },
+  intimacy:   { name: "The FemWell Editorial Team", role: "Sexual and pelvic health" },
 };
 
 // ════════════════════════════════════════════════════════════════════════════
@@ -610,14 +683,6 @@ const NEWS_BY_TAB = {
     { headline: "New research links cycle length variability to long-term cardiovascular risk", source: "NEJM", date: "May 2026", url: "#" },
     { headline: "PMDD: the diagnosis 5% of women have and most don't know about", source: "BBC Health", date: "Apr 2026", url: "#" },
   ],
-  lifestage: [
-    { headline: "Perimenopause starts earlier than we thought — and symptoms are being missed", source: "The Lancet", date: "May 2026", url: "#" },
-    { headline: "Postpartum thyroid dysfunction: the condition affecting 1 in 20 new mothers", source: "NHS England", date: "Mar 2026", url: "#" },
-  ],
-  skin: [
-    { headline: "Hormonal acne: why dermatologists are finally talking to endocrinologists", source: "British Journal of Dermatology", date: "Apr 2026", url: "#" },
-    { headline: "Ferritin and female hair loss — what the new guidelines say", source: "Dermatology Times", date: "May 2026", url: "#" },
-  ],
   body: [
     { headline: "Endometriosis diagnosis delay falls to 6 years in UK — still too long, say specialists", source: "Endometriosis UK", date: "May 2026", url: "#" },
     { headline: "Iron deficiency without anaemia: the diagnosis GPs keep missing", source: "BMJ Open", date: "Apr 2026", url: "#" },
@@ -634,10 +699,121 @@ const NEWS_BY_TAB = {
     { headline: "Cervical screening uptake hits 20-year low in UK", source: "NHS England", date: "May 2026", url: "#" },
     { headline: "Women wait 65% longer for diagnosis — what the data shows and what to do", source: "BMJ", date: "Apr 2026", url: "#" },
   ],
+  intimacy: [
+    { headline: "The oral contraceptive pill and libido: what the evidence actually shows", source: "The Lancet", date: "Apr 2026", url: "#" },
+    { headline: "Genitourinary syndrome of menopause: the condition 50% of women have and can't name", source: "BJOG", date: "May 2026", url: "#" },
+  ],
 };
 
+
+// ════════════════════════════════════════════════════════════════════════════
+// JESS OBSERVATION CARD (top of each letter)
+// ════════════════════════════════════════════════════════════════════════════
+function getJessObservations(letterId, profile, recentSymptoms, cycle, phase) {
+  const cycleDay = cycle?.cycleDay || cycle?.dayInCycle;
+  const topSymptom = (recentSymptoms || [])[0]?.symptom_name || (recentSymptoms || [])[0]?.symptom_type;
+  const obs = {
+    cycle: [
+      cycleDay ? `You're on day ${cycleDay} — ${phase === "luteal" ? "the second half, where most of the interesting patterns show up." : phase === "follicular" ? "the sharp half. Energy tends to be clearest here." : phase === "ovulatory" ? "the brief window where everything tends to feel easier." : "the reset. Be patient with these few days."}` : null,
+      topSymptom ? `You've logged ${String(topSymptom).replace(/_/g, " ").toLowerCase()} recently — there's a section in here that speaks directly to that.` : null,
+    ].filter(Boolean).slice(0, 2),
+    body: [
+      "This letter covers symptoms that are often dismissed. If something here sounds familiar, it deserves investigation.",
+      (recentSymptoms || []).length > 2 ? "You've been logging consistently — that data is genuinely useful to a clinician." : null,
+    ].filter(Boolean),
+    intimacy: [
+      "This is content most apps skip. It's here because it matters to your health, not as an afterthought.",
+    ],
+    mind: [
+      phase === "luteal" ? "You're in the luteal phase — emotional bandwidth tends to be narrower here. That's biology, not weakness." : phase === "follicular" ? "Follicular phase is the clearest thinking window. Worth noting what feels easier this week." : null,
+    ].filter(Boolean),
+    nourishment: [
+      "Three things move the needle most: fibre, magnesium, and being on top of iron. Everything else is detail.",
+    ],
+    care: [
+      "Bring written notes and ask specific questions. Both double the chance your main worry is addressed.",
+    ],
+    story: [],
+  };
+  const list = obs[letterId];
+  if (!list || !list.length) return null;
+  return list;
+}
+
+function JessObservationCard({ letterId, profile, recentSymptoms, cycle, phase }) {
+  const observations = getJessObservations(letterId, profile, recentSymptoms, cycle, phase);
+  if (!observations || !observations.length) return null;
+  return (
+    <div style={{
+      background: "rgba(58,44,26,0.04)",
+      border: "1px solid rgba(58,44,26,0.1)",
+      borderRadius: 8, padding: "14px 18px", marginBottom: 24,
+    }}>
+      <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 10 }}>
+        <span style={{ fontSize: 16 }} aria-hidden="true">✦</span>
+        <span style={{
+          fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
+          fontSize: 11, fontWeight: 700, letterSpacing: 1.2,
+          textTransform: "uppercase", color: "#9B8B7A",
+        }}>Jess noticed</span>
+      </div>
+      {observations.map((o, i) => (
+        <p key={i} style={{
+          fontFamily: "Cormorant Garamond, Georgia, serif",
+          fontSize: 16, fontWeight: 500, color: "#3A2C1A",
+          lineHeight: 1.7, fontStyle: "italic",
+          margin: i < observations.length - 1 ? "0 0 8px" : 0,
+        }}>{o}</p>
+      ))}
+    </div>
+  );
+}
+
+// ════════════════════════════════════════════════════════════════════════════
+// TERM — in-context glossary tooltip (sparingly used in body content)
+// ════════════════════════════════════════════════════════════════════════════
+function Term({ word, definition }) {
+  const [open, setOpen] = useState(false);
+  return (
+    <span style={{ position: "relative", display: "inline" }}>
+      <span
+        onClick={() => setOpen((o) => !o)}
+        style={{
+          borderBottom: "1px dotted rgba(58,44,26,0.4)",
+          cursor: "pointer", color: "#3A2C1A",
+        }}
+      >{word}</span>
+      {open && (
+        <span style={{
+          position: "absolute", bottom: "100%", left: "50%",
+          transform: "translateX(-50%)",
+          background: "#3A2C1A", color: "#F4EDDB",
+          borderRadius: 6, padding: "10px 12px",
+          fontSize: 12.5, fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
+          fontStyle: "normal", lineHeight: 1.5,
+          width: 220, zIndex: 30,
+          boxShadow: "0 4px 12px rgba(0,0,0,0.25)", textAlign: "left",
+        }}>
+          {definition}
+          <span aria-hidden="true" style={{
+            position: "absolute", top: "100%", left: "50%",
+            transform: "translateX(-50%)",
+            border: "5px solid transparent",
+            borderTopColor: "#3A2C1A",
+          }} />
+        </span>
+      )}
+    </span>
+  );
+}
+
 export default function Health() {
-  const [activeTab, setActiveTab] = useState("story");
+  const [letterIndex, setLetterIndex] = useState(0);
+  const [showLibrary, setShowLibrary] = useState(false);
+  const [slideDirection, setSlideDirection] = useState(null);
+  const touchStartX = useRef(null);
+  const activeTab = LETTERS[letterIndex]?.id || "story";
+  const currentLetter = LETTERS[letterIndex] || LETTERS[0];
   const [expanded, setExpanded] = useState({});
   const [profile, setProfile] = useState(null);
   const [scrollPct, setScrollPct] = useState(0);
@@ -678,6 +854,40 @@ export default function Health() {
   const cycle = useCycleDay(profile);
   const phase = cycle?.phase || "follicular";
   const stage = profile?.life_stage || "reproductive";
+
+  // ─── Inject slide-animation styles once ───
+  useEffect(() => {
+    const id = "hc-slide-css";
+    if (document.getElementById(id)) return;
+    const styleEl = document.createElement("style");
+    styleEl.id = id;
+    styleEl.textContent = `
+      .hc-slide-left  { animation: hcSlideOutLeft  0.2s ease forwards; }
+      .hc-slide-right { animation: hcSlideOutRight 0.2s ease forwards; }
+      @keyframes hcSlideOutLeft  { from { transform: translateX(0)    rotate(-0.3deg); opacity: 1; } to { transform: translateX(-40px) rotate(-0.3deg); opacity: 0; } }
+      @keyframes hcSlideOutRight { from { transform: translateX(0)    rotate(-0.3deg); opacity: 1; } to { transform: translateX( 40px) rotate(-0.3deg); opacity: 0; } }
+    `;
+    document.head.appendChild(styleEl);
+  }, []);
+
+  // ─── Letter navigation helpers ───
+  const goToLetter = (i, direction) => {
+    if (i === letterIndex || i < 0 || i >= LETTERS.length) return;
+    setSlideDirection(direction || (i > letterIndex ? "left" : "right"));
+    setTimeout(() => {
+      setLetterIndex(i);
+      setSlideDirection(null);
+    }, 200);
+  };
+  const goNext = () => { if (letterIndex < LETTERS.length - 1) goToLetter(letterIndex + 1, "left"); };
+  const goPrev = () => { if (letterIndex > 0) goToLetter(letterIndex - 1, "right"); };
+  const handleTouchStart = (e) => { touchStartX.current = e.touches[0].clientX; };
+  const handleTouchEnd = (e) => {
+    if (touchStartX.current == null) return;
+    const diff = touchStartX.current - e.changedTouches[0].clientX;
+    if (Math.abs(diff) > 50) { if (diff > 0) goNext(); else goPrev(); }
+    touchStartX.current = null;
+  };
 
   // ─── Inject Google Fonts once ───
   useEffect(() => {
@@ -857,9 +1067,39 @@ export default function Health() {
       {/* ─── Letter history strip (Feature 5) ─── */}
       <LetterHistoryStrip currentPhase={phaseLbl} />
 
-      {/* ─── Letter paper card ─── */}
-      <div style={{ padding: "32px 16px 64px" }}>
-        <article ref={letterRef} className="hc-letter-paper" style={{
+      {/* ─── Letter paper card with side-arrow slider nav ─── */}
+      <div
+        style={{ padding: "24px 8px 24px", position: "relative", maxWidth: 780, margin: "0 auto" }}
+        onTouchStart={handleTouchStart}
+        onTouchEnd={handleTouchEnd}
+      >
+        {/* Left arrow */}
+        {letterIndex > 0 && (
+          <button onClick={goPrev} aria-label="Previous letter" style={{
+            position: "absolute", left: 0, top: "50%", transform: "translateY(-50%)",
+            background: "rgba(58,44,26,0.10)", border: "1px solid rgba(58,44,26,0.18)",
+            borderRadius: "50%", width: 40, height: 40,
+            display: "flex", alignItems: "center", justifyContent: "center",
+            cursor: "pointer", zIndex: 5,
+            fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
+            fontSize: 22, color: "#3A2C1A", fontWeight: 600, paddingBottom: 2,
+          }}>‹</button>
+        )}
+        {/* Right arrow */}
+        {letterIndex < LETTERS.length - 1 && (
+          <button onClick={goNext} aria-label="Next letter" style={{
+            position: "absolute", right: 0, top: "50%", transform: "translateY(-50%)",
+            background: "rgba(58,44,26,0.10)", border: "1px solid rgba(58,44,26,0.18)",
+            borderRadius: "50%", width: 40, height: 40,
+            display: "flex", alignItems: "center", justifyContent: "center",
+            cursor: "pointer", zIndex: 5,
+            fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
+            fontSize: 22, color: "#3A2C1A", fontWeight: 600, paddingBottom: 2,
+          }}>›</button>
+        )}
+        <article ref={letterRef}
+          className={`hc-letter-paper ${slideDirection === "left" ? "hc-slide-left" : slideDirection === "right" ? "hc-slide-right" : ""}`}
+          style={{
           background: `
             repeating-linear-gradient(
               transparent,
@@ -909,6 +1149,15 @@ export default function Health() {
               </div>
             </div>
           </div>
+
+          {/* ── Jess observation card ── */}
+          <JessObservationCard
+            letterId={activeTab}
+            profile={profile}
+            recentSymptoms={recentSymptoms}
+            cycle={cycle}
+            phase={phase}
+          />
 
           {/* ── Salutation ── */}
           <div style={{ marginBottom: 28, position: "relative" }}>
@@ -1040,7 +1289,81 @@ export default function Health() {
         </article>
       </div>
 
-      {/* ── Rosebud scroll progress ── */}
+      {/* ─── Dot indicator + Library button ─── */}
+      <div style={{
+        display: "flex", alignItems: "center", justifyContent: "center",
+        gap: 8, padding: "20px 12px", background: "#E8DBC8",
+      }}>
+        {LETTERS.map((_, i) => (
+          <button key={i} onClick={() => goToLetter(i)} aria-label={`Letter ${i + 1}`} style={{
+            width: i === letterIndex ? 22 : 9,
+            height: 9, borderRadius: 4.5,
+            background: i === letterIndex ? "#3A2C1A" : "rgba(58,44,26,0.22)",
+            border: "none", cursor: "pointer", padding: 0,
+            transition: "all 0.2s ease",
+          }} />
+        ))}
+        <button onClick={() => setShowLibrary(true)} style={{
+          marginLeft: 14, background: "none",
+          border: "1px solid rgba(58,44,26,0.2)", borderRadius: 14,
+          padding: "5px 14px", cursor: "pointer",
+          fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
+          fontSize: 11, fontWeight: 600, color: "#9B8B7A", letterSpacing: 0.5,
+        }}>All letters</button>
+      </div>
+
+      {/* ─── Library overlay ─── */}
+      {showLibrary && (
+        <div
+          onClick={() => setShowLibrary(false)}
+          style={{
+            position: "fixed", inset: 0, background: "rgba(58,44,26,0.7)",
+            zIndex: 100, display: "flex", alignItems: "flex-end",
+          }}
+        >
+          <div
+            onClick={(e) => e.stopPropagation()}
+            style={{
+              background: "#F0E6CE", width: "100%", borderRadius: "16px 16px 0 0",
+              padding: "24px 16px 40px", maxHeight: "75vh", overflowY: "auto",
+            }}
+          >
+            <div style={{
+              fontFamily: "Cormorant Garamond, Georgia, serif",
+              fontSize: 22, fontWeight: 700, color: "#3A2C1A",
+              marginBottom: 20, textAlign: "center",
+            }}>Your letters</div>
+            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
+              {LETTERS.map((L, i) => {
+                const on = i === letterIndex;
+                return (
+                  <button key={L.id} onClick={() => { goToLetter(i); setShowLibrary(false); }} style={{
+                    background: on ? "#3A2C1A" : "#FEFAF2",
+                    border: "1px solid rgba(212,175,55,0.4)",
+                    borderRadius: 8, padding: "16px 14px",
+                    cursor: "pointer", textAlign: "left",
+                  }}>
+                    <div style={{ fontSize: 22, marginBottom: 6 }} aria-hidden="true">{L.icon}</div>
+                    <div style={{
+                      fontFamily: "Cormorant Garamond, Georgia, serif",
+                      fontSize: 16, fontWeight: 700,
+                      color: on ? "#F4EDDB" : "#3A2C1A",
+                      marginBottom: 4, lineHeight: 1.25,
+                    }}>{L.title}</div>
+                    <div style={{
+                      fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
+                      fontSize: 11, fontWeight: 500,
+                      color: on ? "rgba(244,237,219,0.65)" : "#9B8B7A",
+                    }}>{L.subtitle}</div>
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ── Rosebud scroll progress ── ── */}
       <RosebudProgress scrollPct={scrollPct} />
 
       {/* ── Bottom not-medical-advice strip ── */}
