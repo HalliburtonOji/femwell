@@ -5,7 +5,16 @@ export default function Assistant() {
   const navigate = useNavigate();
 
   useEffect(() => {
-    window.dispatchEvent(new CustomEvent("fw_open_assistant", { detail: {} }));
+    // Pick up any pre-filled prompt from sessionStorage (e.g. the Ask Jess
+    // button on the /Health letter writes one before navigating here).
+    let pendingPrompt = null;
+    try {
+      pendingPrompt = sessionStorage.getItem("jess_initial_prompt");
+      if (pendingPrompt) sessionStorage.removeItem("jess_initial_prompt");
+    } catch (_) { /* sessionStorage may throw in private mode */ }
+    window.dispatchEvent(new CustomEvent("fw_open_assistant", {
+      detail: pendingPrompt ? { initialPrompt: pendingPrompt } : {},
+    }));
   }, []);
 
   return (

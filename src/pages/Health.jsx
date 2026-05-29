@@ -16,6 +16,7 @@
 // ─────────────────────────────────────────────────────────────────────────────
 
 import { useEffect, useMemo, useRef, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { base44 } from "@/api/base44Client";
 import { useCycleDay } from "@/hooks/useCycleDay";
 
@@ -23,6 +24,7 @@ import { useCycleDay } from "@/hooks/useCycleDay";
 // TABS
 // ════════════════════════════════════════════════════════════════════════════
 const TABS = [
+  { id: "story",       label: "Your Story",  icon: "◎" },
   { id: "overview",    label: "Overview",    icon: "✦" },
   { id: "cycle",       label: "Cycle",       icon: "◯" },
   { id: "lifestage",   label: "Life Stage",  icon: "◈" },
@@ -59,6 +61,16 @@ const PHASE_LABEL = {
 // ════════════════════════════════════════════════════════════════════════════
 function TabBotanical({ tabId }) {
   switch (tabId) {
+    case "story":
+      // Concentric circles + centre dot — a personal-data motif (your patterns).
+      return (
+        <svg width="80" height="80" viewBox="0 0 80 80" fill="none" aria-hidden="true">
+          <circle cx="40" cy="40" r="36" stroke="#D4AF37" strokeWidth="0.75" opacity="0.4" />
+          <circle cx="40" cy="40" r="26" stroke="#8FAF8F" strokeWidth="0.75" opacity="0.5" />
+          <circle cx="40" cy="40" r="16" stroke="#E8B4B8" strokeWidth="0.75" opacity="0.6" />
+          <circle cx="40" cy="40" r="4" fill="#D4AF37" opacity="0.8" />
+        </svg>
+      );
     case "overview":
       return (
         <svg width="48" height="48" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
@@ -498,6 +510,12 @@ const HEALTH_CONTENT = {
 };
 
 const OPENERS = {
+  story: {
+    follicular: "Here's what your body has been telling you. Not in symptoms to manage — in patterns worth knowing.",
+    ovulatory:  "Here's what your body has been telling you. Not in symptoms to manage — in patterns worth knowing.",
+    luteal:     "Here's what your body has been telling you. Not in symptoms to manage — in patterns worth knowing.",
+    menstrual:  "Here's what your body has been telling you. Not in symptoms to manage — in patterns worth knowing.",
+  },
   overview: {
     follicular: "You're in follicular — the bright, sharp part of your cycle. Energy lifts, skin is calm, your brain is curious. There's a reason for all of it, and it's worth knowing this week.",
     ovulatory:  "You're around ovulation — the brief mid-cycle peak. Most women feel it before they can name it. Here's what's actually happening today.",
@@ -549,6 +567,8 @@ const OPENERS = {
 };
 
 const POSTSCRIPTS = {
+  story:       "Your patterns get clearer every cycle. The more you log, the more this letter has to tell you.",
+
   overview:    "The most powerful thing you can do for your long-term health is keep tracking, gently. Patterns over months tell you things no single appointment ever can.",
   cycle:       "Your cycle is one of the most sensitive signals your body has. If it changes meaningfully — that's information. Always worth bringing to your GP.",
   skin:        "Your skin tells the hormonal story before any blood test does. If you're seeing patterns, document them — photographs included. Take them in.",
@@ -560,6 +580,8 @@ const POSTSCRIPTS = {
 };
 // ════════════════════════════════════════════════════════════════════════════
 const SIGNATURES = {
+  story:       { name: "Your patterns",  role: "Drawn from what you've logged this month" },
+
   overview:    { name: "Jess",                          role: "Your FemWell companion" },
   cycle:       { name: "The FemWell Editorial Team",   role: "In partnership with reproductive endocrinology" },
   skin:        { name: "The FemWell Editorial Team",   role: "Dermatology & hormonal skin" },
@@ -573,21 +595,79 @@ const SIGNATURES = {
 // ════════════════════════════════════════════════════════════════════════════
 // MAIN COMPONENT
 // ════════════════════════════════════════════════════════════════════════════
+
+// ════════════════════════════════════════════════════════════════════════════
+// CURATED NEWS — static for now. Will be wired to a real feed (Guardian /
+// PubMed / NHS) in a later pass. Two cards per tab.
+// ════════════════════════════════════════════════════════════════════════════
+const NEWS_BY_TAB = {
+  story:       [],
+  overview: [
+    { headline: "Why women's health research has a data gap — and what's changing", source: "The Guardian", date: "May 2026", url: "#" },
+    { headline: "The case for tracking your cycle as a vital sign", source: "BMJ", date: "Apr 2026", url: "#" },
+  ],
+  cycle: [
+    { headline: "New research links cycle length variability to long-term cardiovascular risk", source: "NEJM", date: "May 2026", url: "#" },
+    { headline: "PMDD: the diagnosis 5% of women have and most don't know about", source: "BBC Health", date: "Apr 2026", url: "#" },
+  ],
+  lifestage: [
+    { headline: "Perimenopause starts earlier than we thought — and symptoms are being missed", source: "The Lancet", date: "May 2026", url: "#" },
+    { headline: "Postpartum thyroid dysfunction: the condition affecting 1 in 20 new mothers", source: "NHS England", date: "Mar 2026", url: "#" },
+  ],
+  skin: [
+    { headline: "Hormonal acne: why dermatologists are finally talking to endocrinologists", source: "British Journal of Dermatology", date: "Apr 2026", url: "#" },
+    { headline: "Ferritin and female hair loss — what the new guidelines say", source: "Dermatology Times", date: "May 2026", url: "#" },
+  ],
+  body: [
+    { headline: "Endometriosis diagnosis delay falls to 6 years in UK — still too long, say specialists", source: "Endometriosis UK", date: "May 2026", url: "#" },
+    { headline: "Iron deficiency without anaemia: the diagnosis GPs keep missing", source: "BMJ Open", date: "Apr 2026", url: "#" },
+  ],
+  mind: [
+    { headline: "ADHD in women peaks at perimenopause — researchers demand better clinical protocols", source: "Nature Medicine", date: "May 2026", url: "#" },
+    { headline: "The luteal phase and anxiety: what the neuroscience finally confirms", source: "Neuropsychopharmacology", date: "Mar 2026", url: "#" },
+  ],
+  nourishment: [
+    { headline: "Magnesium and period pain: a meta-analysis of 14 trials", source: "Nutrients", date: "Apr 2026", url: "#" },
+    { headline: "The estrobolome: how gut bacteria control oestrogen recycling", source: "Cell Host & Microbe", date: "May 2026", url: "#" },
+  ],
+  care: [
+    { headline: "Cervical screening uptake hits 20-year low in UK", source: "NHS England", date: "May 2026", url: "#" },
+    { headline: "Women wait 65% longer for diagnosis — what the data shows and what to do", source: "BMJ", date: "Apr 2026", url: "#" },
+  ],
+};
+
 export default function Health() {
-  const [activeTab, setActiveTab] = useState("overview");
+  const [activeTab, setActiveTab] = useState("story");
   const [expanded, setExpanded] = useState({});
   const [profile, setProfile] = useState(null);
   const [scrollPct, setScrollPct] = useState(0);
+  // ── Real entity data wired into Story tab + dynamic salutation/postscript ──
+  const [recentSymptoms, setRecentSymptoms] = useState([]);
+  const [recentCheckins, setRecentCheckins] = useState([]);
+  const [habits, setHabits] = useState([]);
+  const [hydration, setHydration] = useState([]);
   const letterRef = useRef(null);
+  const navigate = useNavigate();
 
-  // ─── Fetch profile + cycle data ───
+  // ─── Fetch profile + cycle data + recent logs ───
   useEffect(() => {
     let cancelled = false;
     (async () => {
       try {
         const u = await base44.auth.me();
-        const profiles = await base44.entities.UserProfile.filter({ user_id: u.id }).catch(() => []);
-        if (!cancelled) setProfile(profiles?.[0] || u || null);
+        const [profiles, sx, chk, hb, hy] = await Promise.all([
+          base44.entities.UserProfile.filter({ user_id: u.id }).catch(() => []),
+          base44.entities.SymptomLogs.filter({ user_id: u.id }, "-date", 30).catch(() => []),
+          base44.entities.DailyCheckins.filter({ user_id: u.id }, "-date", 30).catch(() => []),
+          base44.entities.HabitLogs.filter({ user_id: u.id }, "-date", 90).catch(() => []),
+          base44.entities.HydrationLog.filter({ user_id: u.id }, "-day_key", 30).catch(() => []),
+        ]);
+        if (cancelled) return;
+        setProfile(profiles?.[0] || u || null);
+        setRecentSymptoms(Array.isArray(sx) ? sx : []);
+        setRecentCheckins(Array.isArray(chk) ? chk : []);
+        setHabits(Array.isArray(hb) ? hb : []);
+        setHydration(Array.isArray(hy) ? hy : []);
       } catch (err) {
         if (!cancelled) setProfile(null);
       }
@@ -654,7 +734,82 @@ export default function Health() {
   const stageLbl = LIFE_STAGE_LABEL[stage] || "Reproductive";
   const phaseLbl = PHASE_LABEL[phase] || "Follicular";
 
-  const opener = OPENERS[activeTab]?.[phase] || OPENERS.overview.follicular;
+  const baseOpener = OPENERS[activeTab]?.[phase] || OPENERS.overview.follicular;
+
+  // ── Data-aware opener (Feature 2) — appended to phase opener when data exists ──
+  const cycleDay = cycle?.cycleDay || cycle?.dayInCycle;
+  const topSymptomName = useMemo(() => {
+    if (!recentSymptoms?.length) return null;
+    const counts = recentSymptoms.reduce((acc, x) => {
+      const n = x?.symptom_name || x?.symptom_type;
+      if (!n) return acc;
+      acc[n] = (acc[n] || 0) + 1;
+      return acc;
+    }, {});
+    const entries = Object.entries(counts).sort((a, b) => b[1] - a[1]);
+    return entries[0]?.[0] || null;
+  }, [recentSymptoms]);
+
+  let opener = baseOpener;
+  if (activeTab !== "story") {
+    if (cycleDay) opener += ` You're on day ${cycleDay}.`;
+    if (topSymptomName) opener += ` You've logged ${String(topSymptomName).replace(/_/g, " ").toLowerCase()} a few times recently — there's something in this letter that speaks to that.`;
+  }
+
+  // ── Data-aware postscript (Feature 2) ──
+  const dynamicPostscript = useMemo(() => {
+    const base = POSTSCRIPTS[activeTab] || POSTSCRIPTS.overview;
+    if (activeTab === "cycle" && cycleDay) {
+      const note = phase === "luteal"
+        ? "The second half is when most women notice the biggest shifts in mood and energy — worth tracking this week."
+        : phase === "menstrual"
+          ? "The reset is happening. Be patient with yourself for the next few days."
+          : "This is a good week to note what feels different.";
+      return `You're on day ${cycleDay} of your cycle. ${note}`;
+    }
+    if (activeTab === "skin") {
+      const skinSx = (recentSymptoms || []).find((x) => /acne|breakout|dry skin|oily skin|rash/i.test(String(x?.symptom_name || x?.symptom_type || "")));
+      if (skinSx) {
+        const n = String(skinSx.symptom_name || skinSx.symptom_type || "").replace(/_/g, " ").toLowerCase();
+        return `You logged ${n} recently. Note what day of your cycle that was — if it's consistent, that's a pattern worth bringing to a dermatologist.`;
+      }
+    }
+    if (activeTab === "body" && topSymptomName) {
+      const n = String(topSymptomName).replace(/_/g, " ").toLowerCase();
+      return `You've logged ${n} more than once recently. Patterns matter. Keep noting when and how it shows up — that's the data that changes a GP conversation.`;
+    }
+    if (activeTab === "mind") {
+      const moods = (recentCheckins || []).map((c) => Number(c?.mood_score ?? c?.mood)).filter((v) => !Number.isNaN(v));
+      if (moods.length >= 7) {
+        const avg = moods.reduce((a, b) => a + b, 0) / moods.length;
+        if (avg <= 2.5) return "Your mood has been on the low side for a few weeks. Worth noting if that tracks your cycle — and worth raising with your GP if it doesn't lift.";
+      }
+    }
+    if (activeTab === "nourishment") {
+      const totalMl = (hydration || []).reduce((a, h) => a + (Number(h?.amount_ml) || 0), 0);
+      const days = Math.max(1, new Set((hydration || []).map((h) => h?.day_key)).size);
+      const avg = Math.round(totalMl / days);
+      const target = profile?.hydration_target_ml || 2000;
+      if (avg > 0 && avg < target * 0.7) {
+        return `Your average hydration this fortnight is around ${avg}ml — under your ${target}ml target. Small, frequent sips beat one big glass. Your skin and energy will both notice.`;
+      }
+    }
+    if (activeTab === "care" && topSymptomName) {
+      const n = String(topSymptomName).replace(/_/g, " ").toLowerCase();
+      return `Bring your logs to your next GP appointment. "I've logged ${n} on these specific days over the past month" is a clinical pattern — it gets investigated faster than "I sometimes feel off".`;
+    }
+    return base;
+  }, [activeTab, cycleDay, phase, topSymptomName, recentSymptoms, recentCheckins, hydration, profile]);
+
+  // ── Ask Jess pre-fill (Feature 3) — passes the section's reading context. ──
+  const askJess = (sectionTitle) => {
+    const prompt = `I'm reading about "${sectionTitle}" in my ${tab.label} health letter. Can you tell me more about how this applies to my cycle and life stage?`;
+    try { sessionStorage.setItem("jess_initial_prompt", prompt); } catch (_) {}
+    window.dispatchEvent(new CustomEvent("fw_open_assistant", { detail: { initialPrompt: prompt } }));
+    navigate("/Assistant");
+  };
+
+  const isStory = activeTab === "story";
 
   return (
     <div style={{ background: "#E8DBC8", minHeight: "100vh", paddingBottom: 80, boxShadow: "inset 0 0 60px rgba(58,44,26,0.08)" }}>
@@ -698,6 +853,9 @@ export default function Health() {
         <span>{phaseLbl} · {stageLbl}</span>
         {cycle?.cycleDay && <span>Day {cycle.cycleDay}</span>}
       </div>
+
+      {/* ─── Letter history strip (Feature 5) ─── */}
+      <LetterHistoryStrip currentPhase={phaseLbl} />
 
       {/* ─── Letter paper card ─── */}
       <div style={{ padding: "32px 16px 64px" }}>
@@ -770,7 +928,7 @@ export default function Health() {
             </p>
           </div>
 
-          {/* ── Table of Contents ── */}
+          {!isStory && (<>{/* ── Table of Contents ── */}
           <div style={{
             border: "1.5px solid rgba(212,175,55,0.4)", borderRadius: 8,
             padding: "20px 24px", marginBottom: 32,
@@ -825,9 +983,31 @@ export default function Health() {
           {sections.map((s, idx) => (
             <div key={s.id} style={{ position: "relative" }}>
               {idx > 0 && <BotanicalDivider />}
-              <LetterSection section={s} isExpanded={!!expanded[s.id]} onToggle={() => toggle(s.id)} />
+              <LetterSection
+                section={s}
+                isExpanded={!!expanded[s.id]}
+                onToggle={() => toggle(s.id)}
+                askJess={askJess}
+              />
             </div>
           ))}
+
+          {/* ── News (Feature 4) ── */}
+          <NewsSection tabId={activeTab} />
+          </>)}
+
+          {/* ── Story dashboard (Feature 1) ── */}
+          {isStory && (
+            <StoryDashboard
+              profile={profile}
+              cycle={cycle}
+              phase={phase}
+              recentCheckins={recentCheckins}
+              recentSymptoms={recentSymptoms}
+              habits={habits}
+              hydration={hydration}
+            />
+          )}
 
           {/* ── Sign-off ── */}
           <BotanicalDivider />
@@ -849,7 +1029,7 @@ export default function Health() {
               fontFamily: 'Cormorant Garamond, Georgia, serif', fontSize: 17, fontWeight: 500, fontStyle: "italic",
               color: "#3A2C1A", lineHeight: 1.8, margin: 0,
             }}>
-              <strong style={{ fontStyle: "normal", fontWeight: 600 }}>P.S.</strong> — {POSTSCRIPTS[activeTab] || POSTSCRIPTS.overview}
+              <strong style={{ fontStyle: "normal", fontWeight: 600 }}>P.S.</strong> — {dynamicPostscript}
             </p>
           </div>
 
@@ -878,7 +1058,7 @@ export default function Health() {
 // ════════════════════════════════════════════════════════════════════════════
 // LETTER SECTION
 // ════════════════════════════════════════════════════════════════════════════
-function LetterSection({ section, isExpanded, onToggle }) {
+function LetterSection({ section, isExpanded, onToggle, askJess }) {
   return (
     <div id={`letter-section-${section.id}`} style={{ marginBottom: 4, scrollMarginTop: 110, position: "relative" }}>
       <button onClick={onToggle} style={{
@@ -994,8 +1174,317 @@ function LetterSection({ section, isExpanded, onToggle }) {
             }
             return null;
           })}
+          {askJess && (
+            <div style={{ marginTop: 16 }}>
+              <button onClick={() => askJess(section.title)} style={{
+                display: "inline-flex", alignItems: "center", gap: 8,
+                background: "rgba(58,44,26,0.06)",
+                border: "1px solid rgba(58,44,26,0.15)",
+                borderRadius: 20, padding: "8px 18px",
+                cursor: "pointer",
+                fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
+                fontSize: 13, fontWeight: 600, color: "#3A2C1A", letterSpacing: 0.3,
+              }}>
+                <span aria-hidden="true" style={{ fontSize: 15 }}>✦</span>
+                Ask Jess about this
+              </button>
+            </div>
+          )}
         </div>
       )}
+    </div>
+  );
+}
+
+// ════════════════════════════════════════════════════════════════════════════
+// LETTER HISTORY STRIP (Feature 5)
+// ════════════════════════════════════════════════════════════════════════════
+function LetterHistoryStrip({ currentPhase }) {
+  const phases = ["Menstrual", "Follicular", "Ovulatory", "Luteal"];
+  return (
+    <div style={{
+      background: "#E8DBC8",
+      borderBottom: "1px solid rgba(58,44,26,0.08)",
+      padding: "10px 16px",
+      display: "flex", alignItems: "center", gap: 8,
+      overflowX: "auto", scrollbarWidth: "none",
+      position: "sticky", top: 84, zIndex: 9,
+    }}>
+      <span style={{
+        fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
+        fontSize: 10, letterSpacing: 1.5, textTransform: "uppercase",
+        color: "#9B8B7A", whiteSpace: "nowrap", marginRight: 6, fontWeight: 700,
+      }}>Past letters</span>
+      {phases.map((p) => {
+        const on = p === currentPhase;
+        return (
+          <div key={p} style={{
+            fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
+            fontSize: 11, fontWeight: 600,
+            background: on ? "#3A2C1A" : "transparent",
+            color: on ? "#F4EDDB" : "#9B8B7A",
+            border: "1px solid rgba(58,44,26,0.15)",
+            borderRadius: 14, padding: "5px 14px",
+            whiteSpace: "nowrap", opacity: on ? 1 : 0.7,
+          }}>{p}</div>
+        );
+      })}
+    </div>
+  );
+}
+
+// ════════════════════════════════════════════════════════════════════════════
+// NEWS SECTION (Feature 4) — curated cards before sign-off
+// ════════════════════════════════════════════════════════════════════════════
+function NewsSection({ tabId }) {
+  const news = NEWS_BY_TAB[tabId] || [];
+  if (!news.length) return null;
+  return (
+    <div style={{ marginTop: 32 }}>
+      <BotanicalDivider />
+      <div style={{
+        fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
+        fontSize: 11, letterSpacing: 2, textTransform: "uppercase", color: "#9B8B7A",
+        marginBottom: 18, fontWeight: 700,
+      }}>What's being written about</div>
+      <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
+        {news.map((item, i) => (
+          <div key={i} style={{
+            borderLeft: "3px solid rgba(212,175,55,0.5)",
+            paddingLeft: 16, paddingTop: 6, paddingBottom: 6,
+          }}>
+            <div style={{
+              fontFamily: 'Cormorant Garamond, Georgia, serif',
+              fontSize: 17, fontWeight: 600, color: "#3A2C1A",
+              lineHeight: 1.4, marginBottom: 6,
+            }}>{item.headline}</div>
+            <div style={{
+              fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
+              fontSize: 12, color: "#9B8B7A", letterSpacing: 0.3, fontWeight: 600,
+            }}>{item.source} · {item.date}</div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+// ════════════════════════════════════════════════════════════════════════════
+// STORY DASHBOARD (Feature 1) — data tiles in place of letter sections
+// ════════════════════════════════════════════════════════════════════════════
+const TILE = {
+  background: "rgba(212,175,55,0.06)",
+  border: "1px solid rgba(212,175,55,0.2)",
+  borderRadius: 8, padding: 18, marginBottom: 14,
+};
+const TILE_LABEL = {
+  fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
+  fontSize: 11, fontWeight: 700,
+  letterSpacing: 1.5, textTransform: "uppercase",
+  color: "#9B8B7A", marginBottom: 12,
+};
+function StoryDashboard({ profile, cycle, phase, recentCheckins, recentSymptoms, habits, hydration }) {
+  const cycleDay = cycle?.cycleDay || cycle?.dayInCycle || 1;
+  const cycleLen = cycle?.cycleLen || cycle?.cycleLength || 28;
+  const periodLen = profile?.period_length || profile?.menstrual_length || 5;
+  // Build 27-day phase strip centred on today
+  const dots = [];
+  const startDay = Math.max(1, cycleDay - 13);
+  for (let i = 0; i < 27; i++) {
+    const d = ((startDay + i - 1) % cycleLen) + 1;
+    let p;
+    if (d <= periodLen) p = "menstrual";
+    else if (d <= Math.floor(cycleLen * 0.43)) p = "follicular";
+    else if (d <= Math.floor(cycleLen * 0.5)) p = "ovulatory";
+    else p = "luteal";
+    dots.push({ day: d, phase: p, isToday: d === cycleDay });
+  }
+  const phaseColour = {
+    follicular: "#8FAF8F",
+    ovulatory:  "#D4AF37",
+    luteal:     "#E8B4B8",
+    menstrual:  "#9B8B7A",
+  };
+
+  // 30-day mood + energy series
+  const moodSeries = (recentCheckins || []).slice(0, 30).map((c) => Number(c?.mood_score ?? c?.mood)).filter((v) => !Number.isNaN(v));
+  const energySeries = (recentCheckins || []).slice(0, 30).map((c) => Number(c?.energy_level ?? c?.energy)).filter((v) => !Number.isNaN(v));
+
+  // Top 3 symptoms last 14 days
+  const since = Date.now() - 14 * 24 * 60 * 60 * 1000;
+  const sxCounts = {};
+  (recentSymptoms || []).forEach((x) => {
+    const d = x?.date ? new Date(x.date).getTime() : 0;
+    if (d && d < since) return;
+    const n = x?.symptom_name || x?.symptom_type;
+    if (!n) return;
+    sxCounts[n] = (sxCounts[n] || 0) + 1;
+  });
+  const topSx = Object.entries(sxCounts).sort((a, b) => b[1] - a[1]).slice(0, 3);
+
+  // Habit streaks — count consecutive recent days per habit
+  const habitDays = {};
+  (habits || []).forEach((h) => {
+    const n = h?.habit_name || h?.habit_id || "Habit";
+    const d = h?.date || h?.day_key || "";
+    if (!d) return;
+    if (!habitDays[n]) habitDays[n] = new Set();
+    habitDays[n].add(d);
+  });
+  const streaks = Object.entries(habitDays).map(([n, set]) => {
+    const sorted = Array.from(set).sort().reverse();
+    let streak = 0;
+    let prev = null;
+    for (const day of sorted) {
+      if (prev === null) { streak = 1; prev = new Date(day); continue; }
+      const cur = new Date(day);
+      const diff = (prev - cur) / (24 * 3600 * 1000);
+      if (Math.abs(diff - 1) < 0.5) { streak++; prev = cur; } else break;
+    }
+    return { name: n, streak };
+  }).sort((a, b) => b.streak - a.streak).slice(0, 3);
+
+  // Hydration this week — sum amount_ml from last 7 day_keys
+  const today = new Date();
+  const week = new Set();
+  for (let i = 0; i < 7; i++) {
+    const d = new Date(today); d.setDate(today.getDate() - i);
+    week.add(`${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`);
+  }
+  const weekHydMl = (hydration || []).filter((h) => week.has(h?.day_key)).reduce((a, h) => a + (Number(h?.amount_ml) || 0), 0);
+  const avgMlPerDay = Math.round(weekHydMl / 7);
+  const hydTarget = profile?.hydration_target_ml || 2000;
+
+  return (
+    <div>
+      {/* 1. Cycle calendar */}
+      <div style={TILE}>
+        <div style={TILE_LABEL}>Your cycle · day {cycleDay}</div>
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(9, 1fr)", gap: 8, justifyItems: "center" }}>
+          {dots.map((d, i) => (
+            <div key={i} title={`Day ${d.day} · ${d.phase}`} style={{
+              width: d.isToday ? 16 : 10,
+              height: d.isToday ? 16 : 10,
+              borderRadius: "50%",
+              background: phaseColour[d.phase],
+              boxShadow: d.isToday ? "0 0 0 2px #3A2C1A" : "none",
+            }} />
+          ))}
+        </div>
+        <div style={{
+          marginTop: 12, fontFamily: 'Cormorant Garamond, Georgia, serif',
+          fontSize: 14, fontWeight: 500, fontStyle: "italic", color: "#3A2C1A",
+        }}>
+          You're in your {phase} phase. The big dot is today.
+        </div>
+      </div>
+
+      {/* 2. Mood + Energy sparkline */}
+      <div style={TILE}>
+        <div style={TILE_LABEL}>Mood &amp; Energy · last 30 days</div>
+        {(moodSeries.length || energySeries.length) ? (
+          <svg viewBox="0 0 300 70" width="100%" height="70" preserveAspectRatio="none">
+            {[moodSeries, energySeries].map((series, i) => {
+              if (!series.length) return null;
+              const color = i === 0 ? "#E8B4B8" : "#8FAF8F";
+              const max = 5;
+              const pts = series.slice(0, 30).map((v, idx) => {
+                const x = (idx / Math.max(1, Math.min(30, series.length) - 1)) * 300;
+                const y = 70 - (Math.max(0, Math.min(max, v)) / max) * 60 - 5;
+                return `${x},${y}`;
+              }).join(" ");
+              return <polyline key={i} points={pts} fill="none" stroke={color} strokeWidth="2" strokeLinejoin="round" strokeLinecap="round" />;
+            })}
+          </svg>
+        ) : (
+          <div style={{ fontFamily: 'Cormorant Garamond, Georgia, serif', fontSize: 14, fontStyle: "italic", color: "#9B8B7A" }}>
+            No check-ins logged yet. Today is a good day to start.
+          </div>
+        )}
+        <div style={{ display: "flex", gap: 18, marginTop: 8, fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif', fontSize: 12, color: "#9B8B7A", fontWeight: 600 }}>
+          <span><span style={{ display: "inline-block", width: 10, height: 2, background: "#E8B4B8", marginRight: 6, verticalAlign: "middle" }} />Mood</span>
+          <span><span style={{ display: "inline-block", width: 10, height: 2, background: "#8FAF8F", marginRight: 6, verticalAlign: "middle" }} />Energy</span>
+        </div>
+      </div>
+
+      {/* 3. Top symptoms this phase */}
+      <div style={TILE}>
+        <div style={TILE_LABEL}>Top symptoms · last 14 days</div>
+        {topSx.length ? (
+          <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
+            {topSx.map(([name, n]) => (
+              <span key={name} style={{
+                display: "inline-flex", alignItems: "center", gap: 6,
+                background: "#3A2C1A", color: "#F4EDDB",
+                padding: "6px 12px", borderRadius: 999,
+                fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
+                fontSize: 13, fontWeight: 600,
+              }}>
+                {String(name).replace(/_/g, " ")}
+                <span style={{ background: "rgba(244,237,219,0.18)", borderRadius: 999, padding: "1px 8px", fontSize: 11 }}>{n}×</span>
+              </span>
+            ))}
+          </div>
+        ) : (
+          <div style={{ fontFamily: 'Cormorant Garamond, Georgia, serif', fontSize: 14, fontStyle: "italic", color: "#9B8B7A" }}>
+            Nothing's been logged this fortnight. Track when something feels off — patterns take 2–3 cycles to show.
+          </div>
+        )}
+      </div>
+
+      {/* 4. Habit streaks */}
+      <div style={TILE}>
+        <div style={TILE_LABEL}>Habit streaks</div>
+        {streaks.length ? (
+          <div>
+            {streaks.map((h, i) => (
+              <div key={i} style={{
+                display: "flex", justifyContent: "space-between", alignItems: "center",
+                padding: "8px 0",
+                borderBottom: i < streaks.length - 1 ? "1px solid rgba(58,44,26,0.06)" : "none",
+              }}>
+                <span style={{
+                  fontFamily: 'Cormorant Garamond, Georgia, serif',
+                  fontSize: 16, fontWeight: 600, color: "#3A2C1A",
+                }}>{String(h.name).replace(/_/g, " ")}</span>
+                <span style={{
+                  fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
+                  fontSize: 12, fontWeight: 700, color: "#8FAF8F",
+                  background: "rgba(143,175,143,0.15)",
+                  padding: "3px 10px", borderRadius: 12,
+                }}>{h.streak} day{h.streak === 1 ? "" : "s"}</span>
+              </div>
+            ))}
+          </div>
+        ) : (
+          <div style={{ fontFamily: 'Cormorant Garamond, Georgia, serif', fontSize: 14, fontStyle: "italic", color: "#9B8B7A" }}>
+            No habits logged yet. One small daily action repeated is the most valuable line on this page.
+          </div>
+        )}
+      </div>
+
+      {/* 5. Hydration this week */}
+      <div style={TILE}>
+        <div style={TILE_LABEL}>Hydration this week</div>
+        <div style={{ display: "flex", alignItems: "baseline", gap: 10 }}>
+          <span style={{
+            fontFamily: 'Cormorant Garamond, Georgia, serif',
+            fontSize: 40, fontWeight: 700, color: "#3A2C1A", lineHeight: 1,
+          }}>{avgMlPerDay}</span>
+          <span style={{
+            fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
+            fontSize: 13, color: "#9B8B7A", fontWeight: 600,
+          }}>ml / day · target {hydTarget}ml</span>
+        </div>
+        <div style={{
+          marginTop: 10, height: 8, background: "rgba(58,44,26,0.08)", borderRadius: 4, overflow: "hidden",
+        }}>
+          <div style={{
+            width: `${Math.min(100, (avgMlPerDay / hydTarget) * 100)}%`,
+            height: "100%", background: "#8FAF8F",
+          }} />
+        </div>
+      </div>
     </div>
   );
 }
