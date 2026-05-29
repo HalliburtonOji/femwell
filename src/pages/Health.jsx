@@ -189,15 +189,24 @@ function TabBotanical({ tabId }) {
   }
 }
 
+// Tiny helper for the TOC — capped at X so it stays simple in this UI.
+const romanize = (n) => ["I","II","III","IV","V","VI","VII","VIII","IX","X"][n] || String(n + 1);
+
 function BotanicalDivider() {
   return (
-    <div style={{ textAlign: "center", margin: "32px 0" }} aria-hidden="true">
-      <svg width="160" height="24" viewBox="0 0 160 24" fill="none">
-        <line x1="0" y1="12" x2="58" y2="12" stroke="#D4AF37" strokeWidth="0.75" opacity="0.5" />
-        <ellipse cx="80" cy="12" rx="5" ry="10" fill="#8FAF8F" opacity="0.6" transform="rotate(-30 80 12)" />
-        <ellipse cx="80" cy="12" rx="5" ry="10" fill="#8FAF8F" opacity="0.4" transform="rotate(30 80 12)" />
-        <circle cx="80" cy="12" r="2.5" fill="#D4AF37" opacity="0.8" />
-        <line x1="102" y1="12" x2="160" y2="12" stroke="#D4AF37" strokeWidth="0.75" opacity="0.5" />
+    <div style={{ textAlign: "center", margin: "36px 0", opacity: 0.7 }} aria-hidden="true">
+      <svg width="200" height="32" viewBox="0 0 200 32" fill="none">
+        <line x1="0"   y1="16" x2="72"  y2="16" stroke="#D4AF37" strokeWidth="0.75" opacity="0.5" />
+        <line x1="72"  y1="16" x2="82"  y2="8"  stroke="#8FAF8F" strokeWidth="0.75" opacity="0.6" />
+        <line x1="72"  y1="16" x2="82"  y2="24" stroke="#8FAF8F" strokeWidth="0.75" opacity="0.6" />
+        <ellipse cx="100" cy="16" rx="6" ry="12" fill="#8FAF8F" opacity="0.5"  transform="rotate(-30 100 16)" />
+        <ellipse cx="100" cy="16" rx="6" ry="12" fill="#8FAF8F" opacity="0.35" transform="rotate(30 100 16)" />
+        <circle  cx="100" cy="16" r="3"   fill="#D4AF37" opacity="0.8" />
+        <line x1="118" y1="16" x2="128" y2="8"  stroke="#8FAF8F" strokeWidth="0.75" opacity="0.6" />
+        <line x1="118" y1="16" x2="128" y2="24" stroke="#8FAF8F" strokeWidth="0.75" opacity="0.6" />
+        <line x1="128" y1="16" x2="200" y2="16" stroke="#D4AF37" strokeWidth="0.75" opacity="0.5" />
+        <circle cx="72"  cy="16" r="2" fill="#D4AF37" opacity="0.5" />
+        <circle cx="128" cy="16" r="2" fill="#D4AF37" opacity="0.5" />
       </svg>
     </div>
   );
@@ -208,15 +217,33 @@ function BotanicalDivider() {
 // ════════════════════════════════════════════════════════════════════════════
 function RosebudProgress({ scrollPct }) {
   const openness = Math.max(0, Math.min(1, scrollPct / 100));
+  const fullyBloomed = openness >= 0.96;
   return (
-    <div style={{ position: "fixed", bottom: 96, right: 18, opacity: 0.7, zIndex: 30, pointerEvents: "none" }} aria-hidden="true">
-      <svg width="28" height="36" viewBox="0 0 24 32" fill="none">
+    <div
+      data-rosebud-progress="true"
+      style={{
+        position: "fixed", bottom: 96, right: 18, opacity: 0.75, zIndex: 30,
+        pointerEvents: "none", textAlign: "center",
+      }}
+      aria-hidden="true"
+    >
+      <svg width="32" height="44" viewBox="0 0 24 32" fill="none">
         <line x1="12" y1="32" x2="12" y2="18" stroke="#8FAF8F" strokeWidth="1.5" />
-        <ellipse cx="12" cy="12" rx={4 + openness * 5} ry={8 + openness * 4} fill="#E8B4B8" opacity={0.3 + openness * 0.4} />
-        <ellipse cx="12" cy="12" rx={4 + openness * 5} ry={8 + openness * 4} fill="#E8B4B8" opacity={0.25 + openness * 0.35} transform="rotate(60 12 12)" />
-        <ellipse cx="12" cy="12" rx={4 + openness * 5} ry={8 + openness * 4} fill="#E8B4B8" opacity={0.25 + openness * 0.35} transform="rotate(120 12 12)" />
-        <circle cx="12" cy="12" r={2 + openness * 2} fill="#D4AF37" opacity={0.6 + openness * 0.3} />
+        <ellipse cx="12" cy="12" rx={4 + openness * 5} ry={8 + openness * 4} fill="#E8B4B8" opacity={0.35 + openness * 0.4} />
+        <ellipse cx="12" cy="12" rx={4 + openness * 5} ry={8 + openness * 4} fill="#E8B4B8" opacity={0.3  + openness * 0.35} transform="rotate(60 12 12)" />
+        <ellipse cx="12" cy="12" rx={4 + openness * 5} ry={8 + openness * 4} fill="#E8B4B8" opacity={0.3  + openness * 0.35} transform="rotate(120 12 12)" />
+        <circle cx="12" cy="12" r={2 + openness * 2} fill="#D4AF37" opacity={0.65 + openness * 0.3} />
       </svg>
+      {fullyBloomed && (
+        <div style={{
+          marginTop: 4,
+          fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
+          fontSize: 9, fontWeight: 700, letterSpacing: 1, textTransform: "uppercase",
+          color: "#8FAF8F", whiteSpace: "nowrap",
+        }}>
+          You've read it all ✓
+        </div>
+      )}
     </div>
   );
 }
@@ -743,27 +770,53 @@ function getJessObservations(letterId, profile, recentSymptoms, cycle, phase) {
 function JessObservationCard({ letterId, profile, recentSymptoms, cycle, phase }) {
   const observations = getJessObservations(letterId, profile, recentSymptoms, cycle, phase);
   if (!observations || !observations.length) return null;
+  // Trim to 3 max — Jess's brief should feel curated, not a list.
+  const top = observations.slice(0, 3);
   return (
     <div style={{
       background: "rgba(58,44,26,0.04)",
       border: "1px solid rgba(58,44,26,0.1)",
-      borderRadius: 8, padding: "14px 18px", marginBottom: 24,
+      borderRadius: 8, padding: "16px 18px", marginBottom: 24,
     }}>
-      <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 10 }}>
-        <span style={{ fontSize: 16 }} aria-hidden="true">✦</span>
-        <span style={{
-          fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
-          fontSize: 11, fontWeight: 700, letterSpacing: 1.2,
-          textTransform: "uppercase", color: "#9B8B7A",
-        }}>Jess noticed</span>
+      {/* Header — gold circle chip + "Jess noticed" + subtitle */}
+      <div style={{
+        display: "flex", alignItems: "center", gap: 10,
+        marginBottom: 14, paddingBottom: 12,
+        borderBottom: "1px solid rgba(212,175,55,0.2)",
+      }}>
+        <div aria-hidden="true" style={{
+          width: 28, height: 28, borderRadius: "50%",
+          background: "rgba(212,175,55,0.12)",
+          display: "flex", alignItems: "center", justifyContent: "center",
+          fontSize: 14, color: "#D4AF37", flexShrink: 0,
+        }}>✦</div>
+        <div>
+          <div style={{
+            fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
+            fontSize: 12, fontWeight: 700, color: "#3A2C1A", letterSpacing: 0.5,
+          }}>Jess noticed</div>
+          <div style={{
+            fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
+            fontSize: 10, color: "#9B8B7A",
+          }}>Based on your recent activity</div>
+        </div>
       </div>
-      {observations.map((o, i) => (
-        <p key={i} style={{
-          fontFamily: "Cormorant Garamond, Georgia, serif",
-          fontSize: 16, fontWeight: 500, color: "#3A2C1A",
-          lineHeight: 1.7, fontStyle: "italic",
-          margin: i < observations.length - 1 ? "0 0 8px" : 0,
-        }}>{o}</p>
+
+      {/* Observations — diamond bullets in gold + italic Cormorant body */}
+      {top.map((o, i) => (
+        <div key={i} style={{
+          display: "flex", alignItems: "flex-start", gap: 10,
+          marginBottom: i < top.length - 1 ? 10 : 0,
+        }}>
+          <span aria-hidden="true" style={{
+            color: "#D4AF37", fontSize: 14, marginTop: 4, flexShrink: 0,
+          }}>◆</span>
+          <p style={{
+            fontFamily: "Cormorant Garamond, Georgia, serif",
+            fontSize: 16, fontWeight: 500, color: "#3A2C1A",
+            lineHeight: 1.7, fontStyle: "italic", margin: 0,
+          }}>{o}</p>
+        </div>
       ))}
     </div>
   );
@@ -1276,10 +1329,18 @@ export default function Health() {
               marginBottom: 16, paddingBottom: 12,
               borderBottom: "1px solid rgba(212,175,55,0.25)",
             }}>
-              <span style={{
-                fontFamily: 'Cormorant Garamond, Georgia, serif',
-                fontSize: 18, fontWeight: 700, color: "#3A2C1A", letterSpacing: 0.5,
-              }}>In this letter</span>
+              <div style={{ display: "flex", alignItems: "baseline", gap: 10 }}>
+                <span style={{
+                  fontFamily: 'Cormorant Garamond, Georgia, serif',
+                  fontSize: 18, fontWeight: 700, color: "#3A2C1A", letterSpacing: 0.5,
+                }}>In this letter</span>
+                <span style={{
+                  fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
+                  fontSize: 10, color: "#9B8B7A", letterSpacing: 0.3,
+                }}>
+                  ~{Math.ceil(sections.length * 1.5)} min read
+                </span>
+              </div>
               <button onClick={toggleAll} style={{
                 background: "none", border: "1px solid rgba(58,44,26,0.2)",
                 borderRadius: 14, padding: "5px 14px", cursor: "pointer",
@@ -1296,22 +1357,21 @@ export default function Health() {
                 const el = document.getElementById(`letter-section-${s.id}`);
                 if (el) el.scrollIntoView({ behavior: "smooth", block: "start" });
               }} style={{
-                display: "flex", alignItems: "center", gap: 12,
-                padding: "10px 0", textDecoration: "none",
-                borderBottom: i < sections.length - 1 ? "1px solid rgba(58,44,26,0.05)" : "none",
+                display: "flex", alignItems: "baseline", gap: 10,
+                padding: "7px 0", textDecoration: "none",
+                borderBottom: i < sections.length - 1 ? "1px solid rgba(58,44,26,0.06)" : "none",
               }}>
                 <span style={{
-                  fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
-                  fontSize: 12, fontWeight: 700, color: "#D4AF37",
-                  minWidth: 22, background: "rgba(212,175,55,0.15)",
-                  borderRadius: "50%", width: 22, height: 22,
-                  display: "flex", alignItems: "center", justifyContent: "center",
-                }}>{i + 1}</span>
+                  fontFamily: 'Cormorant Garamond, Georgia, serif',
+                  fontSize: 13, color: "#D4AF37", fontStyle: "italic",
+                  minWidth: 20, textAlign: "left",
+                }}>{romanize(i)}</span>
                 <span style={{
                   fontFamily: 'Cormorant Garamond, Georgia, serif',
-                  fontSize: 17, fontWeight: 600, color: "#3A2C1A", flex: 1,
+                  fontSize: 17, fontWeight: 600, color: "#3A2C1A",
+                  flex: 1, lineHeight: 1.3,
                 }}>{s.title}</span>
-                {expanded[s.id] && <span style={{ fontSize: 14, color: "#8FAF8F" }} aria-hidden="true">✓</span>}
+                {expanded[s.id] && <span style={{ fontSize: 12, color: "#8FAF8F", flexShrink: 0 }} aria-hidden="true">✓</span>}
               </a>
             ))}
           </div>
@@ -1360,9 +1420,19 @@ export default function Health() {
             <div style={{ fontFamily: 'Cormorant Garamond, Georgia, serif', fontSize: 22, fontWeight: 700, color: "#3A2C1A", fontStyle: "italic" }}>
               {(SIGNATURES[activeTab] || SIGNATURES.overview).name}
             </div>
-            <div style={{ fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif', fontSize: 14, fontWeight: 600, color: "#9B8B7A", letterSpacing: 0.5, marginTop: 4 }}>
+            <div style={{ fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif', fontSize: 14, fontWeight: 600, color: "#9B8B7A", letterSpacing: 0.5, marginTop: 4, marginBottom: 20 }}>
               {(SIGNATURES[activeTab] || SIGNATURES.overview).role}
             </div>
+            {/* FW wax-seal mark — small circular gold monogram. */}
+            <div data-fw-seal="true" aria-hidden="true" style={{
+              width: 36, height: 36, borderRadius: "50%",
+              background: "rgba(212,175,55,0.12)",
+              border: "1px solid rgba(212,175,55,0.35)",
+              display: "flex", alignItems: "center", justifyContent: "center",
+              fontFamily: "Cormorant Garamond, Georgia, serif",
+              fontSize: 13, fontWeight: 700, color: "#D4AF37",
+              letterSpacing: 0.5,
+            }}>FW</div>
           </div>
 
           {/* ── P.S. ── */}
@@ -1515,21 +1585,33 @@ function LetterSection({ section, isExpanded, onToggle, askJess }) {
         </span>
       </button>
 
-      {/* Key fact — always visible */}
+      {/* Key fact — always visible — oversized quote mark + gradient panel */}
       {section.keyFact && (
         <div className="hc-letter-keyfact" style={{
-          padding: "14px 18px", background: "rgba(212,175,55,0.08)",
-          borderLeft: "3px solid #D4AF37", marginTop: 14, marginBottom: 14,
-          borderRadius: "0 4px 4px 0",
+          padding: "14px 18px",
+          background: "linear-gradient(135deg, rgba(212,175,55,0.10), rgba(212,175,55,0.05))",
+          borderLeft: "3px solid #D4AF37",
+          borderRadius: "0 6px 6px 0",
+          margin: "8px 0 12px",
+          position: "relative",
+          overflow: "hidden",
         }}>
+          <div aria-hidden="true" style={{
+            position: "absolute", top: -4, left: 14,
+            fontFamily: "Georgia, serif", fontSize: 48,
+            color: "rgba(212,175,55,0.2)", lineHeight: 1,
+            pointerEvents: "none", userSelect: "none",
+          }}>&ldquo;</div>
           <div style={{
             fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
-            fontSize: 12, color: "#9B8B7A", fontWeight: 700,
-            letterSpacing: 1.5, textTransform: "uppercase", marginBottom: 6,
+            fontSize: 9, fontWeight: 700, letterSpacing: 2,
+            textTransform: "uppercase", color: "#D4AF37",
+            marginBottom: 6,
           }}>Key insight</div>
           <div style={{
             fontFamily: 'Cormorant Garamond, Georgia, serif',
-            fontSize: 16, fontWeight: 600, color: "#3A2C1A", fontStyle: "italic", lineHeight: 1.55,
+            fontSize: 16, fontWeight: 600, color: "#3A2C1A",
+            fontStyle: "italic", lineHeight: 1.6,
           }}>{section.keyFact}</div>
         </div>
       )}
@@ -1609,15 +1691,22 @@ function LetterSection({ section, isExpanded, onToggle, askJess }) {
             <div style={{ marginTop: 16 }}>
               <button onClick={() => askJess(section.title)} style={{
                 display: "inline-flex", alignItems: "center", gap: 8,
-                background: "rgba(58,44,26,0.06)",
-                border: "1px solid rgba(58,44,26,0.15)",
-                borderRadius: 20, padding: "8px 18px",
-                cursor: "pointer",
+                background: "linear-gradient(135deg, rgba(212,175,55,0.12), rgba(212,175,55,0.06))",
+                border: "1px solid rgba(212,175,55,0.35)",
+                borderRadius: 8, padding: "10px 18px",
+                cursor: "pointer", marginTop: 4,
                 fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
                 fontSize: 13, fontWeight: 600, color: "#3A2C1A", letterSpacing: 0.3,
               }}>
-                <span aria-hidden="true" style={{ fontSize: 15 }}>✦</span>
-                Ask Jess about this
+                <span aria-hidden="true" style={{
+                  width: 22, height: 22, borderRadius: "50%",
+                  background: "rgba(212,175,55,0.2)",
+                  display: "inline-flex", alignItems: "center", justifyContent: "center",
+                  fontSize: 12, flexShrink: 0, color: "#D4AF37",
+                }}>✦</span>
+                <span>
+                  Ask Jess — <em style={{ fontStyle: "italic", fontWeight: 400 }}>{String(section.title).toLowerCase()}</em>
+                </span>
               </button>
             </div>
           )}
@@ -1673,26 +1762,44 @@ function NewsSection({ tabId }) {
   return (
     <div style={{ marginTop: 32 }}>
       <BotanicalDivider />
+      {/* Header — italic "what's being written about" between hairlines */}
       <div style={{
-        fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
-        fontSize: 11, letterSpacing: 2, textTransform: "uppercase", color: "#9B8B7A",
-        marginBottom: 18, fontWeight: 700,
-      }}>What's being written about</div>
+        display: "flex", alignItems: "center", gap: 10,
+        marginBottom: 18,
+      }}>
+        <div style={{ flex: 1, height: 1, background: "rgba(58,44,26,0.1)" }} />
+        <span style={{
+          fontFamily: 'Cormorant Garamond, Georgia, serif',
+          fontSize: 14, fontStyle: "italic", color: "#9B8B7A", whiteSpace: "nowrap",
+        }}>What's being written about</span>
+        <div style={{ flex: 1, height: 1, background: "rgba(58,44,26,0.1)" }} />
+      </div>
+      {/* Clipping-style cards with stable alternating tilt */}
       <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
         {news.map((item, i) => (
           <div key={i} style={{
-            borderLeft: "3px solid rgba(212,175,55,0.5)",
-            paddingLeft: 16, paddingTop: 6, paddingBottom: 6,
+            background: "rgba(255,255,255,0.5)",
+            border: "1px solid rgba(58,44,26,0.1)",
+            borderRadius: 4,
+            padding: "14px 16px",
+            position: "relative",
+            transform: `rotate(${i % 2 === 0 ? 0.4 : -0.3}deg)`,
+            boxShadow: "0 1px 2px rgba(58,44,26,0.06)",
           }}>
             <div style={{
+              fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
+              fontSize: 9, fontWeight: 700, letterSpacing: 1.5,
+              textTransform: "uppercase", color: "#D4AF37", marginBottom: 6,
+            }}>{item.source} · {item.date}</div>
+            <div style={{
               fontFamily: 'Cormorant Garamond, Georgia, serif',
-              fontSize: 17, fontWeight: 600, color: "#3A2C1A",
-              lineHeight: 1.4, marginBottom: 6,
+              fontSize: 16, fontWeight: 700, color: "#3A2C1A",
+              lineHeight: 1.35, marginBottom: 8,
             }}>{item.headline}</div>
             <div style={{
               fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
-              fontSize: 12, color: "#9B8B7A", letterSpacing: 0.3, fontWeight: 600,
-            }}>{item.source} · {item.date}</div>
+              fontSize: 11, color: "#9B8B7A", letterSpacing: 0.3,
+            }}>→ Read</div>
           </div>
         ))}
       </div>
@@ -1786,61 +1893,148 @@ function StoryDashboard({ profile, cycle, phase, recentCheckins, recentSymptoms,
   const avgMlPerDay = Math.round(weekHydMl / 7);
   const hydTarget = profile?.hydration_target_ml || 2000;
 
+  const phaseLabels = {
+    menstrual: "Menstrual",
+    follicular: "Follicular",
+    ovulatory: "Ovulatory",
+    luteal: "Luteal",
+  };
   return (
     <div>
-      {/* 1. Cycle calendar */}
+      {/* Pulse-ring keyframes for the today dot — injected once via <style>. */}
+      <style>{`
+        @keyframes fw-pulse-ring {
+          0%   { box-shadow: 0 0 0 0 rgba(212,175,55,0.5); }
+          70%  { box-shadow: 0 0 0 10px rgba(212,175,55,0); }
+          100% { box-shadow: 0 0 0 0 rgba(212,175,55,0); }
+        }
+        .fw-today-dot { animation: fw-pulse-ring 2s infinite; }
+      `}</style>
+
+      {/* 1. Cycle calendar — phase label above grid, pulsing today, legend below */}
       <div style={TILE}>
-        <div style={TILE_LABEL}>Your cycle · day {cycleDay}</div>
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(9, 1fr)", gap: 8, justifyItems: "center" }}>
+        <div style={TILE_LABEL}>Your cycle</div>
+        <div style={{
+          fontFamily: 'Cormorant Garamond, Georgia, serif',
+          fontSize: 17, fontWeight: 700, color: "#3A2C1A", marginBottom: 12,
+          letterSpacing: 0.2,
+        }}>
+          {phaseLabels[phase] || "Follicular"} — Day {cycleDay}
+        </div>
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(9, 1fr)", gap: 8, justifyItems: "center", alignItems: "center" }}>
           {dots.map((d, i) => (
-            <div key={i} title={`Day ${d.day} · ${d.phase}`} style={{
-              width: d.isToday ? 16 : 10,
-              height: d.isToday ? 16 : 10,
-              borderRadius: "50%",
-              background: phaseColour[d.phase],
-              boxShadow: d.isToday ? "0 0 0 2px #3A2C1A" : "none",
-            }} />
+            <div
+              key={i}
+              title={`Day ${d.day} · ${d.phase}`}
+              className={d.isToday ? "fw-today-dot" : undefined}
+              style={{
+                width:  d.isToday ? 18 : 10,
+                height: d.isToday ? 18 : 10,
+                borderRadius: "50%",
+                background: phaseColour[d.phase],
+                boxShadow: d.isToday ? "0 0 0 2px #3A2C1A" : "none",
+              }}
+            />
+          ))}
+        </div>
+        {/* Phase legend chips */}
+        <div style={{
+          display: "flex", flexWrap: "wrap", gap: 10, marginTop: 14,
+          fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
+          fontSize: 11, fontWeight: 600, color: "#9B8B7A",
+        }}>
+          {["menstrual","follicular","ovulatory","luteal"].map((p) => (
+            <span key={p} style={{ display: "inline-flex", alignItems: "center", gap: 5 }}>
+              <span style={{
+                width: 8, height: 8, borderRadius: "50%",
+                background: phaseColour[p], display: "inline-block",
+              }} />
+              {phaseLabels[p]}
+            </span>
           ))}
         </div>
         <div style={{
           marginTop: 12, fontFamily: 'Cormorant Garamond, Georgia, serif',
-          fontSize: 14, fontWeight: 500, fontStyle: "italic", color: "#3A2C1A",
+          fontSize: 13, fontWeight: 500, fontStyle: "italic", color: "#9B8B7A",
         }}>
-          You're in your {phase} phase. The big dot is today.
+          {cycleLen}-day cycle · the pulsing dot is today
         </div>
       </div>
 
-      {/* 2. Mood + Energy sparkline */}
+      {/* 2. Mood + Energy sparkline — axis labels, thicker lines, soft fill */}
       <div style={TILE}>
         <div style={TILE_LABEL}>Mood &amp; Energy · last 30 days</div>
         {(moodSeries.length || energySeries.length) ? (
-          <svg viewBox="0 0 300 70" width="100%" height="70" preserveAspectRatio="none">
-            {[moodSeries, energySeries].map((series, i) => {
-              if (!series.length) return null;
-              const color = i === 0 ? "#E8B4B8" : "#8FAF8F";
-              const max = 5;
-              const pts = series.slice(0, 30).map((v, idx) => {
-                const x = (idx / Math.max(1, Math.min(30, series.length) - 1)) * 300;
-                const y = 70 - (Math.max(0, Math.min(max, v)) / max) * 60 - 5;
-                return `${x},${y}`;
-              }).join(" ");
-              return <polyline key={i} points={pts} fill="none" stroke={color} strokeWidth="2" strokeLinejoin="round" strokeLinecap="round" />;
-            })}
-          </svg>
+          <div style={{ position: "relative" }}>
+            {/* y axis tick labels */}
+            <div style={{
+              position: "absolute", top: -2, left: 0, bottom: 18,
+              display: "flex", flexDirection: "column", justifyContent: "space-between",
+              fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
+              fontSize: 10, color: "#9B8B7A", paddingRight: 6,
+            }}>
+              <span>High</span>
+              <span>Low</span>
+            </div>
+            <svg viewBox="0 0 300 70" width="100%" height="80" preserveAspectRatio="none" style={{ paddingLeft: 28 }}>
+              <defs>
+                <linearGradient id="mood-fill" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="0%" stopColor="#E8B4B8" stopOpacity="0.18" />
+                  <stop offset="100%" stopColor="#E8B4B8" stopOpacity="0" />
+                </linearGradient>
+                <linearGradient id="energy-fill" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="0%" stopColor="#8FAF8F" stopOpacity="0.18" />
+                  <stop offset="100%" stopColor="#8FAF8F" stopOpacity="0" />
+                </linearGradient>
+              </defs>
+              {[moodSeries, energySeries].map((series, i) => {
+                if (!series.length) return null;
+                const color = i === 0 ? "#E8B4B8" : "#8FAF8F";
+                const fillId = i === 0 ? "mood-fill" : "energy-fill";
+                const max = 5;
+                const pts = series.slice(0, 30).map((v, idx) => {
+                  const x = (idx / Math.max(1, Math.min(30, series.length) - 1)) * 300;
+                  const y = 70 - (Math.max(0, Math.min(max, v)) / max) * 60 - 5;
+                  return { x, y };
+                });
+                const lineStr = pts.map((p) => `${p.x},${p.y}`).join(" ");
+                const fillStr = `${pts[0].x},70 ${lineStr} ${pts[pts.length - 1].x},70`;
+                return (
+                  <g key={i}>
+                    <polyline points={fillStr} fill={`url(#${fillId})`} stroke="none" />
+                    <polyline points={lineStr} fill="none" stroke={color} strokeWidth="2.5" strokeLinejoin="round" strokeLinecap="round" />
+                  </g>
+                );
+              })}
+            </svg>
+            {/* x axis day markers */}
+            <div style={{
+              display: "flex", justifyContent: "space-between", marginTop: 4, paddingLeft: 28,
+              fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
+              fontSize: 10, color: "#9B8B7A",
+            }}>
+              <span>Day 1</span>
+              <span>Day 30</span>
+            </div>
+          </div>
         ) : (
           <div style={{ fontFamily: 'Cormorant Garamond, Georgia, serif', fontSize: 14, fontStyle: "italic", color: "#9B8B7A" }}>
             No check-ins logged yet. Today is a good day to start.
           </div>
         )}
-        <div style={{ display: "flex", gap: 18, marginTop: 8, fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif', fontSize: 12, color: "#9B8B7A", fontWeight: 600 }}>
-          <span><span style={{ display: "inline-block", width: 10, height: 2, background: "#E8B4B8", marginRight: 6, verticalAlign: "middle" }} />Mood</span>
-          <span><span style={{ display: "inline-block", width: 10, height: 2, background: "#8FAF8F", marginRight: 6, verticalAlign: "middle" }} />Energy</span>
+        <div style={{ display: "flex", gap: 18, marginTop: 10, fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif', fontSize: 12, color: "#9B8B7A", fontWeight: 600 }}>
+          <span><span style={{ display: "inline-block", width: 10, height: 10, borderRadius: "50%", background: "#E8B4B8", marginRight: 6, verticalAlign: "middle" }} />Mood</span>
+          <span><span style={{ display: "inline-block", width: 10, height: 10, borderRadius: "50%", background: "#8FAF8F", marginRight: 6, verticalAlign: "middle" }} />Energy</span>
         </div>
       </div>
 
-      {/* 3. Top symptoms this phase */}
+      {/* 3. Top symptoms this phase — subtitle, count badges, empty hint */}
       <div style={TILE}>
-        <div style={TILE_LABEL}>Top symptoms · last 14 days</div>
+        <div style={TILE_LABEL}>Top symptoms</div>
+        <div style={{
+          fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
+          fontSize: 11, color: "#9B8B7A", marginTop: -8, marginBottom: 12, letterSpacing: 0.3,
+        }}>Most frequent in last 14 days</div>
         {topSx.length ? (
           <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
             {topSx.map(([name, n]) => (
@@ -1852,69 +2046,111 @@ function StoryDashboard({ profile, cycle, phase, recentCheckins, recentSymptoms,
                 fontSize: 13, fontWeight: 600,
               }}>
                 {String(name).replace(/_/g, " ")}
-                <span style={{ background: "rgba(244,237,219,0.18)", borderRadius: 999, padding: "1px 8px", fontSize: 11 }}>{n}×</span>
+                <span style={{ background: "rgba(244,237,219,0.18)", borderRadius: 999, padding: "1px 8px", fontSize: 11 }}>×{n}</span>
               </span>
             ))}
           </div>
         ) : (
           <div style={{ fontFamily: 'Cormorant Garamond, Georgia, serif', fontSize: 14, fontStyle: "italic", color: "#9B8B7A" }}>
-            Nothing's been logged this fortnight. Track when something feels off — patterns take 2–3 cycles to show.
+            No symptoms logged yet — start tracking to see patterns.
           </div>
         )}
       </div>
 
-      {/* 4. Habit streaks */}
+      {/* 4. Habit streaks — fire emoji on long streaks, progress bar of best */}
       <div style={TILE}>
         <div style={TILE_LABEL}>Habit streaks</div>
         {streaks.length ? (
           <div>
-            {streaks.map((h, i) => (
-              <div key={i} style={{
-                display: "flex", justifyContent: "space-between", alignItems: "center",
-                padding: "8px 0",
-                borderBottom: i < streaks.length - 1 ? "1px solid rgba(58,44,26,0.06)" : "none",
-              }}>
-                <span style={{
-                  fontFamily: 'Cormorant Garamond, Georgia, serif',
-                  fontSize: 16, fontWeight: 600, color: "#3A2C1A",
-                }}>{String(h.name).replace(/_/g, " ")}</span>
-                <span style={{
-                  fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
-                  fontSize: 12, fontWeight: 700, color: "#8FAF8F",
-                  background: "rgba(143,175,143,0.15)",
-                  padding: "3px 10px", borderRadius: 12,
-                }}>{h.streak} day{h.streak === 1 ? "" : "s"}</span>
-              </div>
-            ))}
+            {streaks.map((h, i) => {
+              const best = Math.max(h.streak, 7); // assume 7-day reference for fill bar
+              const pct = Math.min(100, (h.streak / best) * 100);
+              const showFire = h.streak >= 3;
+              return (
+                <div key={i} style={{
+                  padding: "8px 0",
+                  borderBottom: i < streaks.length - 1 ? "1px solid rgba(58,44,26,0.06)" : "none",
+                }}>
+                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                    <span style={{
+                      fontFamily: 'Cormorant Garamond, Georgia, serif',
+                      fontSize: 16, fontWeight: 600, color: "#3A2C1A",
+                    }}>{String(h.name).replace(/_/g, " ")}</span>
+                    <span style={{
+                      fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
+                      fontSize: 12, fontWeight: 700, color: "#8FAF8F",
+                      background: "rgba(143,175,143,0.15)",
+                      padding: "3px 10px", borderRadius: 12,
+                      display: "inline-flex", alignItems: "center", gap: 4,
+                    }}>{showFire && <span aria-hidden="true">🔥</span>}{h.streak} day{h.streak === 1 ? "" : "s"}</span>
+                  </div>
+                  <div style={{
+                    marginTop: 6, height: 3, background: "rgba(58,44,26,0.06)",
+                    borderRadius: 2, overflow: "hidden",
+                  }}>
+                    <div style={{ width: `${pct}%`, height: "100%", background: "#8FAF8F" }} />
+                  </div>
+                </div>
+              );
+            })}
           </div>
         ) : (
           <div style={{ fontFamily: 'Cormorant Garamond, Georgia, serif', fontSize: 14, fontStyle: "italic", color: "#9B8B7A" }}>
-            No habits logged yet. One small daily action repeated is the most valuable line on this page.
+            No active streaks — build one today.
           </div>
         )}
       </div>
 
-      {/* 5. Hydration this week */}
+      {/* 5. Hydration — visual glass + headline number / target */}
       <div style={TILE}>
         <div style={TILE_LABEL}>Hydration this week</div>
-        <div style={{ display: "flex", alignItems: "baseline", gap: 10 }}>
-          <span style={{
-            fontFamily: 'Cormorant Garamond, Georgia, serif',
-            fontSize: 40, fontWeight: 700, color: "#3A2C1A", lineHeight: 1,
-          }}>{avgMlPerDay}</span>
-          <span style={{
-            fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
-            fontSize: 13, color: "#9B8B7A", fontWeight: 600,
-          }}>ml / day · target {hydTarget}ml</span>
-        </div>
-        <div style={{
-          marginTop: 10, height: 8, background: "rgba(58,44,26,0.08)", borderRadius: 4, overflow: "hidden",
-        }}>
-          <div style={{
-            width: `${Math.min(100, (avgMlPerDay / hydTarget) * 100)}%`,
-            height: "100%", background: "#8FAF8F",
-          }} />
-        </div>
+        {(() => {
+          const pct = Math.min(1, avgMlPerDay / hydTarget);
+          const meetsTarget = avgMlPerDay >= hydTarget;
+          const fillColour = meetsTarget ? "#8FAF8F" : "#9B8B7A";
+          const fillHeight = pct * 64; // glass inner height = 64
+          return (
+            <div style={{ display: "flex", alignItems: "center", gap: 18, marginTop: 4 }}>
+              {/* Glass SVG */}
+              <svg width="40" height="76" viewBox="0 0 40 76" aria-hidden="true" style={{ flexShrink: 0 }}>
+                <defs>
+                  <clipPath id="glass-inside">
+                    {/* trapezoid clip slightly inset for stroke */}
+                    <path d="M8 8 L32 8 L29 70 L11 70 Z" />
+                  </clipPath>
+                </defs>
+                {/* fill */}
+                <rect
+                  x="0"
+                  y={70 - fillHeight}
+                  width="40"
+                  height={fillHeight}
+                  fill={fillColour}
+                  opacity="0.55"
+                  clipPath="url(#glass-inside)"
+                />
+                {/* outline */}
+                <path d="M8 6 L32 6 L29 72 L11 72 Z" fill="none" stroke="#3A2C1A" strokeWidth="1.5" strokeLinejoin="round" opacity="0.7" />
+              </svg>
+              {/* Number + label */}
+              <div>
+                <div style={{
+                  fontFamily: 'Cormorant Garamond, Georgia, serif',
+                  fontSize: 28, fontWeight: 700, color: "#3A2C1A", lineHeight: 1,
+                }}>
+                  {(avgMlPerDay / 1000).toFixed(1)}L / {(hydTarget / 1000).toFixed(1)}L today
+                </div>
+                <div style={{
+                  marginTop: 6,
+                  fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
+                  fontSize: 12, color: meetsTarget ? "#8FAF8F" : "#9B8B7A", fontWeight: 600, letterSpacing: 0.3,
+                }}>
+                  {meetsTarget ? "Meeting your target ✓" : `${Math.round(pct * 100)}% of daily target`}
+                </div>
+              </div>
+            </div>
+          );
+        })()}
       </div>
     </div>
   );
