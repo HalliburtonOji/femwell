@@ -810,7 +810,6 @@ function Term({ word, definition }) {
 export default function Health() {
   const [letterIndex, setLetterIndex] = useState(0);
   const [showLibrary, setShowLibrary] = useState(false);
-  const [slideDirection, setSlideDirection] = useState(null);
   const touchStartX = useRef(null);
   const activeTab = LETTERS[letterIndex]?.id || "story";
   const currentLetter = LETTERS[letterIndex] || LETTERS[0];
@@ -855,32 +854,22 @@ export default function Health() {
   const phase = cycle?.phase || "follicular";
   const stage = profile?.life_stage || "reproductive";
 
-  // ─── Inject slide-animation styles once ───
-  useEffect(() => {
-    const id = "hc-slide-css";
-    if (document.getElementById(id)) return;
-    const styleEl = document.createElement("style");
-    styleEl.id = id;
-    styleEl.textContent = `
-      .hc-slide-left  { animation: hcSlideOutLeft  0.2s ease forwards; }
-      .hc-slide-right { animation: hcSlideOutRight 0.2s ease forwards; }
-      @keyframes hcSlideOutLeft  { from { transform: translateX(0)    rotate(-0.3deg); opacity: 1; } to { transform: translateX(-40px) rotate(-0.3deg); opacity: 0; } }
-      @keyframes hcSlideOutRight { from { transform: translateX(0)    rotate(-0.3deg); opacity: 1; } to { transform: translateX( 40px) rotate(-0.3deg); opacity: 0; } }
-    `;
-    document.head.appendChild(styleEl);
-  }, []);
-
-  // ─── Letter navigation helpers ───
-  const goToLetter = (i, direction) => {
-    if (i === letterIndex || i < 0 || i >= LETTERS.length) return;
-    setSlideDirection(direction || (i > letterIndex ? "left" : "right"));
-    setTimeout(() => {
-      setLetterIndex(i);
-      setSlideDirection(null);
-    }, 200);
+  // ─── Letter navigation helpers — instant, no animation.
+  // We had a slide-out animation here but it left the paper at opacity 0
+  // (forwards keyframe to opacity: 0 with no in-animation), which made
+  // navigation feel broken. Instant updates are better than half-broken
+  // transitions. ───
+  const goToLetter = (i) => {
+    if (i < 0 || i >= LETTERS.length) return;
+    setLetterIndex(i);
+    setExpanded({});
+    // Scroll to top of the paper so the new letter starts at its letterhead.
+    if (typeof window !== "undefined") {
+      window.requestAnimationFrame(() => window.scrollTo({ top: 0, behavior: "instant" }));
+    }
   };
-  const goNext = () => { if (letterIndex < LETTERS.length - 1) goToLetter(letterIndex + 1, "left"); };
-  const goPrev = () => { if (letterIndex > 0) goToLetter(letterIndex - 1, "right"); };
+  const goNext = () => { if (letterIndex < LETTERS.length - 1) goToLetter(letterIndex + 1); };
+  const goPrev = () => { if (letterIndex > 0)                   goToLetter(letterIndex - 1); };
   const handleTouchStart = (e) => { touchStartX.current = e.touches[0].clientX; };
   const handleTouchEnd = (e) => {
     if (touchStartX.current == null) return;
@@ -1068,19 +1057,15 @@ export default function Health() {
       <LetterHistoryStrip currentPhase={phaseLbl} />
 
       {/* ─── Letter paper card with side-arrow slider nav ─── */}
-      <div
-        style={{ padding: "24px 8px 24px", position: "relative", maxWidth: 780, margin: "0 auto" }}
-        onTouchStart={handleTouchStart}
-        onTouchEnd={handleTouchEnd}
-      >
+      <div style={{ padding: "24px 8px 24px", position: "relative", maxWidth: 780, margin: "0 auto" }}>
         {/* Left arrow */}
         {letterIndex > 0 && (
           <button onClick={goPrev} aria-label="Previous letter" style={{
             position: "absolute", left: 0, top: "50%", transform: "translateY(-50%)",
             background: "rgba(58,44,26,0.10)", border: "1px solid rgba(58,44,26,0.18)",
-            borderRadius: "50%", width: 40, height: 40,
+            borderRadius: "50%", width: 44, height: 44,
             display: "flex", alignItems: "center", justifyContent: "center",
-            cursor: "pointer", zIndex: 5,
+            cursor: "pointer", zIndex: 20, pointerEvents: "auto",
             fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
             fontSize: 22, color: "#3A2C1A", fontWeight: 600, paddingBottom: 2,
           }}>‹</button>
@@ -1090,15 +1075,17 @@ export default function Health() {
           <button onClick={goNext} aria-label="Next letter" style={{
             position: "absolute", right: 0, top: "50%", transform: "translateY(-50%)",
             background: "rgba(58,44,26,0.10)", border: "1px solid rgba(58,44,26,0.18)",
-            borderRadius: "50%", width: 40, height: 40,
+            borderRadius: "50%", width: 44, height: 44,
             display: "flex", alignItems: "center", justifyContent: "center",
-            cursor: "pointer", zIndex: 5,
+            cursor: "pointer", zIndex: 20, pointerEvents: "auto",
             fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
             fontSize: 22, color: "#3A2C1A", fontWeight: 600, paddingBottom: 2,
           }}>›</button>
         )}
         <article ref={letterRef}
-          className={`hc-letter-paper ${slideDirection === "left" ? "hc-slide-left" : slideDirection === "right" ? "hc-slide-right" : ""}`}
+          className="hc-letter-paper"
+          onTouchStart={handleTouchStart}
+          onTouchEnd={handleTouchEnd}
           style={{
           background: `
             repeating-linear-gradient(
