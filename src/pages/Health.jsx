@@ -1302,10 +1302,21 @@ export default function Health() {
             borderRadius: 2,
           }} />
 
-          {/* (Paper noise overlay removed — feTurbulence was the single   */}
-          {/* most expensive paint cost on mobile. The repeating-linear-   */}
-          {/* gradient + warm radial gradients on the article bg give     */}
-          {/* enough texture without a GPU filter.)                       */}
+          {/* Paper noise overlay — restored as a STATIC tiling SVG data-  */}
+          {/* URI. Browser rasterises this once and tiles the image; there */}
+          {/* is no live feTurbulence pass on scroll/repaint. Same look as */}
+          {/* the old live filter, ~0% mobile paint cost.                  */}
+          <div aria-hidden="true" style={{
+            position: "absolute", inset: 0,
+            borderRadius: 2,
+            backgroundImage: "url(\"data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='200' height='200'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='2' stitchTiles='stitch'/><feColorMatrix type='saturate' values='0'/></filter><rect width='200' height='200' filter='url(%23n)' opacity='0.18'/></svg>\")",
+            backgroundRepeat: "repeat",
+            backgroundSize: "200px 200px",
+            mixBlendMode: "multiply",
+            pointerEvents: "none",
+            opacity: 0.45,
+            zIndex: 0,
+          }} />
 
           {/* ── Letterhead ── */}
           <div style={{ borderBottom: "1px solid rgba(58,44,26,0.12)", paddingBottom: 24, marginBottom: 32, position: "relative" }}>
@@ -1822,9 +1833,8 @@ const NewsSection = memo(function NewsSection({ tabId }) {
             borderRadius: 4,
             padding: "14px 16px",
             position: "relative",
-            // (transform: rotate removed — multiple rotated children forced
-            // layout thrashing on first paint. Border + bg alone reads as
-            // a clipping.)
+            // Stable alternating tilt — GPU-composited transform, cheap.
+            transform: `rotate(${i % 2 === 0 ? 0.4 : -0.3}deg)`,
             boxShadow: "0 1px 2px rgba(58,44,26,0.06)",
           }}>
             <div style={{
@@ -1942,11 +1952,27 @@ function StoryDashboard({ profile, cycle, phase, recentCheckins, recentSymptoms,
   };
   return (
     <div>
-      {/* (Pulse keyframe removed — continuous box-shadow animation forced */}
-      {/* a paint every frame, which was a major scroll-jank source. The  */}
-      {/* today dot now uses a static gold ring + soft outer halo.)       */}
+      {/* GPU-only pulse: animates transform + opacity on a wrapper ring  */}
+      {/* (composited on its own layer), never box-shadow. Visual is the  */}
+      {/* same expanding gold halo at zero per-frame paint cost.          */}
+      <style>{`
+        @keyframes fw-pulse-ring {
+          0%   { transform: scale(1);   opacity: 0.7; }
+          70%  { transform: scale(2.2); opacity: 0;   }
+          100% { transform: scale(2.2); opacity: 0;   }
+        }
+        .fw-pulse-wrapper { position: relative; display: inline-block; width: 18px; height: 18px; }
+        .fw-pulse-ring {
+          position: absolute; inset: 0;
+          border-radius: 50%;
+          background: rgba(212,175,55,0.45);
+          animation: fw-pulse-ring 2s ease-out infinite;
+          pointer-events: none;
+          will-change: transform, opacity;
+        }
+      `}</style>
 
-      {/* 1. Cycle calendar — phase label above grid, static gold ring today, legend below */}
+      {/* 1. Cycle calendar — phase label above grid, pulsing today, legend below */}
       <div style={TILE}>
         <div style={TILE_LABEL}>Your cycle</div>
         <div style={{
@@ -1958,22 +1984,28 @@ function StoryDashboard({ profile, cycle, phase, recentCheckins, recentSymptoms,
         </div>
         <div style={{ display: "grid", gridTemplateColumns: "repeat(9, 1fr)", gap: 8, justifyItems: "center", alignItems: "center" }}>
           {dots.map((d, i) => (
-            <div
-              key={i}
-              title={`Day ${d.day} · ${d.phase}`}
-              className={d.isToday ? "fw-today-dot" : undefined}
-              style={{
-                width:  d.isToday ? 18 : 10,
-                height: d.isToday ? 18 : 10,
-                borderRadius: "50%",
-                background: phaseColour[d.phase],
-                // Static gold ring instead of an animated box-shadow. Same
-                // "this is today" reading at zero GPU cost.
-                border: d.isToday ? "3px solid rgba(212,175,55,0.7)" : "none",
-                boxShadow: d.isToday ? "0 0 0 4px rgba(212,175,55,0.2)" : "none",
-                boxSizing: "border-box",
-              }}
-            />
+            d.isToday ? (
+              // Today: pulse ring + dot inside a wrapper. The ring animates
+              // on transform/opacity (GPU-composited) — no CPU paint per frame.
+              <div key={i} title={`Day ${d.day} · ${d.phase}`} className="fw-pulse-wrapper">
+                <div className="fw-pulse-ring" aria-hidden="true" />
+                <div style={{
+                  width: 18, height: 18, borderRadius: "50%",
+                  background: phaseColour[d.phase],
+                  border: "2px solid rgba(212,175,55,0.8)",
+                  position: "relative", zIndex: 1, boxSizing: "border-box",
+                }} />
+              </div>
+            ) : (
+              <div
+                key={i}
+                title={`Day ${d.day} · ${d.phase}`}
+                style={{
+                  width: 10, height: 10, borderRadius: "50%",
+                  background: phaseColour[d.phase],
+                }}
+              />
+            )
           ))}
         </div>
         {/* Phase legend chips */}
