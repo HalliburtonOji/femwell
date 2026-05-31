@@ -60,7 +60,7 @@ const ALLOWED = new Set([
   "ojihalliburton57@gmail.com",
 ]);
 
-const TABS = ["Lab", "Pages", "Roadmap", "Ideas", "Strategy", "Legal", "Decisions", "🏥 Health Corner"];
+const TABS = ["Lab", "Pages", "Roadmap", "Ideas", "Strategy", "Legal", "Decisions", "Journal", "🏥 Health Corner"];
 
 const IDEAS_KEY  = "femwell_ideas";
 const CHECKS_KEY = "femwell_founder_checks";
@@ -475,6 +475,7 @@ function FoundersInner({ user }) {
         {tab === "Strategy"  && <StrategyTab />}
         {tab === "Legal"     && <LegalTab />}
         {tab === "Decisions" && <DecisionsTab />}
+        {tab === "Journal"   && <JournalTab />}
         {tab === "🏥 Health Corner" && <HealthCornerRedirectCard />}
       </main>
     </FullBleed>
@@ -1131,6 +1132,428 @@ function DecisionsTab() {
             <div style={{ fontSize: 13, color: T.textMuted, lineHeight: 1.55 }}>{d.body}</div>
           </article>
         ))}
+      </div>
+    </div>
+  );
+}
+
+// ─── Tab — Journal Full Rebuild Plan ──────────────────────────────────
+// Read-only research / planning content. No interactivity, no build —
+// just a well-presented plan doc for Halli to review and decide on.
+const JOURNAL_STAGES = [
+  { stage: "Teen",            need: "Safe space, short prompts, voice",                             never: "Blank page, streaks with guilt, fertile window" },
+  { stage: "Reproductive",    need: "Pattern recognition, cycle understanding",                     never: 'Frame emotions as "just hormones"' },
+  { stage: "Pre-TTC",         need: "Decision processing, future self letters",                     never: "Fertility stats, urgency" },
+  { stage: "TTC",             need: "Dual-track body+heart, grief container",                       never: "Conception stats, gamification, premature congratulation" },
+  { stage: "Pregnant T1",     need: "Secret trimester processing, letters to baby",                 never: "Miscarriage stats, force positivity" },
+  { stage: "Pregnant T2–T3",  need: "Identity shift, archiving, fear processing",                   never: "Weight framing, labour stats" },
+  { stage: "Postpartum",      need: "Survival, PND detection support, voice-first",                 never: "Bounce-back language, social sharing" },
+  { stage: "Perimenopause",   need: "Map chaos, pattern across months, whole life",                 never: 'Decline language, "manage symptoms"' },
+  { stage: "Menopause",       need: "Identity on own terms, grief + liberation",                    never: "Frame as ending, fertility language" },
+  { stage: "Post-menopause",  need: "Memoir, legacy, long-horizon reflection",                      never: "Disease management tone" },
+];
+
+const JOURNAL_CONCEPTS = [
+  {
+    n: 1,
+    name: "THE BODY FIRST",
+    tagline: "Your body has already written the first sentence. You're just finishing it.",
+    philosophy: "Before she types a word, her body has already been tracking — cycle day, symptoms, sleep, energy. There is no blank page. The journal gives language to what the body has already communicated. Starts every entry with a Jess-written Body Card: a 2–3 sentence synthesis of today's physical state in warm second-person language.",
+    bestFor: ["Perimenopause", "Postpartum", "TTC", "Reproductive"],
+    features: [
+      "Body Card (no blank page)",
+      "Somatic tags (heavy/light/tight/open — felt-sense, not symptoms)",
+      "Seasonal UI texture shift",
+      "GP-ready body pattern detection",
+    ],
+    design: "Kinfolk magazine warmth + Oura Ring data presentation",
+  },
+  {
+    n: 2,
+    name: "THE MANY SELVES",
+    tagline: "You are not one person having this week. You are many, and they've all been trying to talk.",
+    philosophy: "Built on IFS therapy — the psyche is a collection of parts, not a unified self. Instead of \"how do you feel?\", it asks \"which of you is writing today?\" Opens to a hallway with 5 doors — each door is a Part (The Achiever, The Tender One, The Body, The One Who Knew, The Witness). Each Part has its own aesthetic and Jess prompt. Advanced: The Meeting Room — Jess writes a two-voice dialogue between two Parts from the same day's entries.",
+    bestFor: ["Perimenopause", "Pre-TTC", "TTC", "Postpartum"],
+    features: [
+      "The many rooms landing screen",
+      "The Meeting Room (AI-facilitated Parts dialogue)",
+      "The Parts Map (8-week visual portrait of inner life)",
+      "Parts onboarding ceremony",
+    ],
+    design: "Papier journal aesthetic + house-with-rooms visual metaphor",
+  },
+  {
+    n: 3,
+    name: "THE TIME TRAVELLER",
+    tagline: "Write to her. She's already read it.",
+    philosophy: "Holds three temporal layers — past self, present self, future self. Future Self Letters are sealed on writing and cannot be edited — they arrive on a chosen date (or life stage transition) as a ceremony. Life-stage triggered defaults: TTC = \"write to yourself when you know, one way or another\", T3 = \"write to yourself one year after the birth\", Perimenopause = \"write to yourself when you feel at home in this new chapter.\"",
+    bestFor: ["TTC (primary)", "Pregnant T3", "Perimenopause", "Post-menopause"],
+    features: [
+      "The Seal (permanence as design)",
+      "The Arrival Ceremony (darker/slower app screen when a letter unlocks)",
+      "Chapter Summaries (Jess writes a one-page synthesis on life-stage transition — the app's most shareable content)",
+      "Time Echoes",
+    ],
+    design: "Letters of Note visual language + time capsule aesthetic",
+  },
+  {
+    n: 4,
+    name: "THE WITNESS",
+    tagline: "Not every thought needs to become a task. Not every feeling needs to be solved. Some things just need to be seen.",
+    philosophy: "An antidote to the coerciveness of wellness apps. No metrics. No streaks. No gamification. No suggestions. Just a space to notice. Opens to today's date and a blank field. If she taps and doesn't write for 8 seconds, a barely-there prompt appears: \"What are you noticing right now?\" She can dismiss it. The journal holds entries without comment. Once per week: The Still Point — Jess surfaces one observation. \"This week you mentioned light three times.\" She never interprets it. Once per year: The Annual Still — a piece of writing, not a data summary. FemWell's most literary feature.",
+    bestFor: ["Post-menopause", "Menopause", "Perimenopause", "Postpartum"],
+    features: [
+      "No metrics (deliberate design statement)",
+      "8-second delay before prompting",
+      "The Still Point",
+      "The Annual Still",
+      "Explicit anti-gamification",
+    ],
+    design: "Muji blank notebook aesthetic + The Quiet Life visual restraint",
+  },
+];
+
+const JOURNAL_WIRING = [
+  { target: "Today",         flow: "Today's Jess opener can quote yesterday's last journal sentence" },
+  { target: "Cycle / Track", flow: "Mood entries write through to DailyCheckins so phase charts include them" },
+  { target: "Planner",       flow: "Phase chip + cycle day pulled from CycleTracker; never duplicated state" },
+  { target: "Jess",          flow: "Recent 7 entries feed weekly reflection prompt; per-entry 'Not for Jess' privacy toggle respected" },
+  { target: "Health Letter", flow: "GP question saves share the sessionStorage 'gp_questions' list with /Health" },
+  { target: "DoctorExport",  flow: "Saved insights + 'Write for my GP' entries flow into the printable summary" },
+  { target: "Profile",       flow: "Reads life_stage + created_at; tier preface mirrors /Health tone" },
+];
+
+const JOURNAL_HIGH = [
+  '"On This Day" — same cycle day last month. Core differentiator.',
+  "Phase-aware prompts — foundational, not optional. ~200 prompt variants.",
+  "Pattern insights — must feel like Jess noticed, not a data report.",
+  "AI weekly reflection — requires 3+ entries. Below threshold: invitation only.",
+  "Voice journaling — accessibility feature for postpartum + peri brain fog.",
+  "Unsent letters — therapeutic format, genuinely novel, critical for TTC grief.",
+  "Future self letters — with life-stage triggers, uniquely powerful.",
+  "GP question saving — killer feature for perimenopause.",
+];
+
+const JOURNAL_GIMMICK = [
+  "Dream log — gimmick. Low retention everywhere. Skip (exception: light T1/T2 pregnancy option only).",
+];
+
+const JOURNAL_BACKLOG = [
+  "Grief journaling container (pregnancy loss, failed cycles)",
+  "\"Write for my GP\" entry type (symptom in own words → Doctor Export)",
+  "Monthly cycle letter from Jess (warm narrative synthesis, not a report)",
+  "\"Not for Jess\" per-entry privacy toggle",
+];
+
+function JournalTab() {
+  return (
+    <div>
+      {/* Header */}
+      <div style={{
+        backgroundColor: T.surface,
+        border: `1px solid ${T.border}`,
+        borderRadius: 14,
+        padding: "22px 22px 20px",
+        marginBottom: 22,
+      }}>
+        <div style={{
+          fontFamily: '"Fraunces", "Cormorant Garamond", Georgia, serif',
+          fontSize: 28, fontWeight: 700, color: T.gold,
+          letterSpacing: -0.4, lineHeight: 1.15, marginBottom: 6,
+        }}>Journal — Full Rebuild Plan</div>
+        <div style={{
+          fontSize: 13, color: T.textMid, lineHeight: 1.55, marginBottom: 14,
+        }}>Research complete · 4 demo concepts ready · Awaiting founder approval</div>
+        <div style={{
+          display: "inline-block",
+          background: T.redSoft, color: T.red,
+          border: `1px solid ${T.red}`,
+          borderRadius: 6, padding: "5px 12px",
+          fontSize: 11, fontWeight: 700, letterSpacing: 1.2,
+          textTransform: "uppercase",
+        }}>Do not build until approved</div>
+      </div>
+
+      {/* Why this rebuild */}
+      <SectionLabel>Why this rebuild</SectionLabel>
+      <div style={{
+        backgroundColor: T.surface,
+        border: `1px solid ${T.border}`,
+        borderRadius: 12,
+        padding: "16px 18px",
+        marginBottom: 14,
+      }}>
+        <p style={{ fontSize: 13.5, color: T.textHi, lineHeight: 1.6, margin: "0 0 12px" }}>
+          The current Journal page is a skeleton — not reliably wired, not cycle-aware, and doesn't reflect FemWell's vision.
+          4 distinct demo concepts have been researched and designed. Choose one (or a combination) before any build begins.
+        </p>
+        <div style={{
+          fontSize: 11, color: T.gold, letterSpacing: 1.2,
+          fontWeight: 700, textTransform: "uppercase", marginBottom: 8,
+        }}>Key research findings</div>
+        <ul style={{
+          margin: 0, paddingLeft: 18,
+          fontSize: 13, color: T.textMid, lineHeight: 1.7,
+        }}>
+          <li><strong style={{ color: T.textHi }}>83% of girls 16–19 keep private diaries.</strong> Privacy is the non-negotiable design principle — if it doesn't feel private, she won't write the real things.</li>
+          <li><strong style={{ color: T.textHi }}>James Pennebaker:</strong> narrative + meaning-making drive health outcomes from writing. Prompts must guide toward meaning, not just expression.</li>
+          <li><strong style={{ color: T.textHi }}>Cycle phases shape writing style:</strong> ovulatory = outward/relational, luteal = inward/editing, menstrual = reflective, follicular = curious/generative. Prompts must match or feel tone-deaf.</li>
+          <li><strong style={{ color: T.textHi }}>No existing app combines cycle-aware + life-stage-aware + therapeutically grounded journaling.</strong> This is FemWell's whitespace.</li>
+        </ul>
+      </div>
+
+      {/* Life Stage Summary */}
+      <SectionLabel>Life stage summary</SectionLabel>
+      <div style={{
+        backgroundColor: T.surface,
+        border: `1px solid ${T.border}`,
+        borderRadius: 12, overflow: "hidden",
+        marginBottom: 22,
+      }}>
+        <div style={{
+          display: "grid",
+          gridTemplateColumns: "minmax(110px, 140px) 1fr 1fr",
+          gap: 0,
+          background: T.surfaceHi,
+          padding: "10px 14px",
+          fontSize: 10.5, fontWeight: 700, letterSpacing: 1.2,
+          textTransform: "uppercase", color: T.gold,
+        }}>
+          <div>Stage</div>
+          <div>Primary need</div>
+          <div>Never do</div>
+        </div>
+        {JOURNAL_STAGES.map((row, i) => (
+          <div key={row.stage} style={{
+            display: "grid",
+            gridTemplateColumns: "minmax(110px, 140px) 1fr 1fr",
+            gap: 14,
+            padding: "12px 14px",
+            borderTop: `1px solid ${T.border}`,
+            background: i % 2 === 0 ? T.surface : T.surfaceHi,
+          }}>
+            <div style={{ fontSize: 13, fontWeight: 600, color: T.textHi, lineHeight: 1.45 }}>{row.stage}</div>
+            <div style={{ fontSize: 12.5, color: T.textMid, lineHeight: 1.55 }}>{row.need}</div>
+            <div style={{ fontSize: 12.5, color: T.blush, lineHeight: 1.55, fontStyle: "italic" }}>{row.never}</div>
+          </div>
+        ))}
+      </div>
+
+      {/* The 4 Demo Concepts */}
+      <SectionLabel>The 4 demo concepts</SectionLabel>
+      <div style={{ display: "flex", flexDirection: "column", gap: 14, marginBottom: 22 }}>
+        {JOURNAL_CONCEPTS.map((c) => (
+          <article key={c.n} style={{
+            backgroundColor: T.surface,
+            border: `1px solid ${T.border}`,
+            borderRadius: 14,
+            padding: "20px 20px 18px",
+          }}>
+            <div style={{ display: "flex", alignItems: "flex-start", gap: 14, marginBottom: 12 }}>
+              <div style={{
+                width: 36, height: 36, borderRadius: "50%",
+                background: T.goldSoft, color: T.gold,
+                border: `1px solid ${T.gold}`,
+                display: "flex", alignItems: "center", justifyContent: "center",
+                fontFamily: '"Fraunces", "Cormorant Garamond", Georgia, serif',
+                fontSize: 18, fontWeight: 700, flexShrink: 0,
+              }}>{c.n}</div>
+              <div style={{ flex: 1 }}>
+                <div style={{
+                  fontSize: 11, color: T.gold, fontWeight: 700,
+                  letterSpacing: 1.5, marginBottom: 4,
+                }}>Concept {c.n}</div>
+                <div style={{
+                  fontFamily: '"Fraunces", "Cormorant Garamond", Georgia, serif',
+                  fontSize: 22, fontWeight: 700, color: T.textHi,
+                  letterSpacing: -0.2, lineHeight: 1.2, marginBottom: 8,
+                }}>{c.name}</div>
+                <div style={{
+                  fontFamily: '"Fraunces", "Cormorant Garamond", Georgia, serif',
+                  fontSize: 14, fontStyle: "italic", color: T.blush,
+                  lineHeight: 1.5,
+                }}>{c.tagline}</div>
+              </div>
+            </div>
+
+            <p style={{
+              fontSize: 13, color: T.textMid, lineHeight: 1.7,
+              margin: "0 0 14px",
+            }}>{c.philosophy}</p>
+
+            <div style={{
+              display: "grid",
+              gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))",
+              gap: 12, marginBottom: 12,
+            }}>
+              <div>
+                <div style={{
+                  fontSize: 10.5, color: T.sage, fontWeight: 700,
+                  letterSpacing: 1.2, textTransform: "uppercase", marginBottom: 6,
+                }}>Best for</div>
+                <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
+                  {c.bestFor.map((s) => (
+                    <span key={s} style={{
+                      background: T.sageSoft, color: T.sage,
+                      border: `1px solid ${T.sage}`,
+                      padding: "3px 9px", borderRadius: 999,
+                      fontSize: 11, fontWeight: 600,
+                    }}>{s}</span>
+                  ))}
+                </div>
+              </div>
+              <div>
+                <div style={{
+                  fontSize: 10.5, color: T.gold, fontWeight: 700,
+                  letterSpacing: 1.2, textTransform: "uppercase", marginBottom: 6,
+                }}>Unique features</div>
+                <ul style={{
+                  margin: 0, paddingLeft: 16,
+                  fontSize: 12.5, color: T.textMid, lineHeight: 1.6,
+                }}>
+                  {c.features.map((f) => <li key={f} style={{ marginBottom: 2 }}>{f}</li>)}
+                </ul>
+              </div>
+            </div>
+
+            <div style={{
+              paddingTop: 12,
+              borderTop: `1px solid ${T.border}`,
+              fontSize: 11.5, color: T.textMuted, fontStyle: "italic",
+            }}>
+              Design reference: {c.design}
+            </div>
+          </article>
+        ))}
+      </div>
+
+      {/* Cross-page wiring */}
+      <SectionLabel>Cross-page wiring plan</SectionLabel>
+      <div style={{
+        backgroundColor: T.surface,
+        border: `1px solid ${T.border}`,
+        borderRadius: 12, overflow: "hidden",
+        marginBottom: 22,
+      }}>
+        <div style={{
+          display: "grid",
+          gridTemplateColumns: "minmax(140px, 180px) 1fr",
+          background: T.surfaceHi,
+          padding: "10px 14px",
+          fontSize: 10.5, fontWeight: 700, letterSpacing: 1.2,
+          textTransform: "uppercase", color: T.gold,
+        }}>
+          <div>Connects to</div>
+          <div>What flows</div>
+        </div>
+        {JOURNAL_WIRING.map((row, i) => (
+          <div key={row.target} style={{
+            display: "grid",
+            gridTemplateColumns: "minmax(140px, 180px) 1fr",
+            gap: 14,
+            padding: "11px 14px",
+            borderTop: `1px solid ${T.border}`,
+            background: i % 2 === 0 ? T.surface : T.surfaceHi,
+          }}>
+            <div style={{ fontSize: 13, fontWeight: 600, color: T.gold }}>{row.target}</div>
+            <div style={{ fontSize: 12.5, color: T.textMid, lineHeight: 1.55 }}>{row.flow}</div>
+          </div>
+        ))}
+      </div>
+
+      {/* Feature verdicts */}
+      <SectionLabel>Feature verdicts</SectionLabel>
+      <div style={{
+        display: "grid",
+        gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))",
+        gap: 12, marginBottom: 16,
+      }}>
+        <div style={{
+          backgroundColor: T.surface,
+          border: `1px solid ${T.sage}`,
+          borderRadius: 12, padding: "16px 18px",
+        }}>
+          <div style={{
+            display: "inline-block",
+            background: T.sageSoft, color: T.sage,
+            padding: "3px 10px", borderRadius: 6,
+            fontSize: 10.5, fontWeight: 700, letterSpacing: 1.2,
+            textTransform: "uppercase", marginBottom: 12,
+          }}>High value · build</div>
+          <ul style={{ margin: 0, padding: 0, listStyle: "none" }}>
+            {JOURNAL_HIGH.map((line) => (
+              <li key={line} style={{
+                display: "flex", alignItems: "flex-start", gap: 8,
+                fontSize: 12.5, color: T.textHi, lineHeight: 1.55, marginBottom: 8,
+              }}>
+                <span aria-hidden="true" style={{ color: T.sage, fontWeight: 700, flexShrink: 0 }}>✓</span>
+                <span>{line}</span>
+              </li>
+            ))}
+          </ul>
+        </div>
+
+        <div style={{
+          backgroundColor: T.surface,
+          border: `1px solid ${T.red}`,
+          borderRadius: 12, padding: "16px 18px",
+        }}>
+          <div style={{
+            display: "inline-block",
+            background: T.redSoft, color: T.red,
+            padding: "3px 10px", borderRadius: 6,
+            fontSize: 10.5, fontWeight: 700, letterSpacing: 1.2,
+            textTransform: "uppercase", marginBottom: 12,
+          }}>Gimmick · skip</div>
+          <ul style={{ margin: 0, padding: 0, listStyle: "none" }}>
+            {JOURNAL_GIMMICK.map((line) => (
+              <li key={line} style={{
+                display: "flex", alignItems: "flex-start", gap: 8,
+                fontSize: 12.5, color: T.textHi, lineHeight: 1.55, marginBottom: 8,
+              }}>
+                <span aria-hidden="true" style={{ color: T.red, fontWeight: 700, flexShrink: 0 }}>✕</span>
+                <span>{line}</span>
+              </li>
+            ))}
+          </ul>
+        </div>
+      </div>
+
+      {/* Backlog additions */}
+      <div style={{
+        backgroundColor: T.surface,
+        border: `1px solid ${T.border}`,
+        borderRadius: 12, padding: "16px 18px", marginBottom: 22,
+      }}>
+        <div style={{
+          fontSize: 10.5, color: T.gold, fontWeight: 700,
+          letterSpacing: 1.2, textTransform: "uppercase", marginBottom: 10,
+        }}>New features to add to backlog</div>
+        <ul style={{ margin: 0, padding: 0, listStyle: "none" }}>
+          {JOURNAL_BACKLOG.map((line) => (
+            <li key={line} style={{
+              display: "flex", alignItems: "flex-start", gap: 8,
+              fontSize: 12.5, color: T.textHi, lineHeight: 1.55, marginBottom: 6,
+            }}>
+              <span aria-hidden="true" style={{ color: T.gold, fontWeight: 700, flexShrink: 0 }}>+</span>
+              <span>{line}</span>
+            </li>
+          ))}
+        </ul>
+      </div>
+
+      {/* Footer */}
+      <div style={{
+        backgroundColor: T.surfaceHi,
+        border: `1px solid ${T.gold}`,
+        borderRadius: 12,
+        padding: "16px 18px",
+        textAlign: "center",
+      }}>
+        <div style={{
+          fontFamily: '"Fraunces", "Cormorant Garamond", Georgia, serif',
+          fontSize: 16, fontStyle: "italic", color: T.gold,
+        }}>Awaiting Halli's approval before any demo build begins.</div>
       </div>
     </div>
   );
