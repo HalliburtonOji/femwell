@@ -72,9 +72,14 @@ export default function ContentCard({ item, locked, bookmarked, onToggleBookmark
             {item.level && (
               <span className="text-[10px] text-gray-400 capitalize">{item.level}</span>
             )}
-            {item.tags && (
-              <span className="text-[10px] bg-rose-50 text-rose-400 px-1.5 py-0.5 rounded-full capitalize">{item.tags.split(",")[0]?.trim()}</span>
-            )}
+            {item.tags && (() => {
+              const first = Array.isArray(item.tags)
+                ? String(item.tags[0] ?? "").trim()
+                : (typeof item.tags === "string" ? (item.tags.split(",")[0] || "").trim() : "");
+              return first ? (
+                <span className="text-[10px] bg-rose-50 text-rose-400 px-1.5 py-0.5 rounded-full capitalize">{first}</span>
+              ) : null;
+            })()}
           </div>
 
           <button

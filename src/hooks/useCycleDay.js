@@ -22,6 +22,17 @@
 
 import { useMemo } from "react";
 
+// Single source of truth for "given a cycle day, what phase is it?".
+// Matches the thresholds used inside computeCycleDay so every surface
+// (Planner mini-calendar, TomorrowPreviewCard, Hero, Pulse) agrees.
+export function phaseForDay(cycleDay, periodLen = 5, cycleLen = 28) {
+  const d = Math.max(1, Math.min(cycleLen, Number(cycleDay) || 1));
+  if (d <= periodLen) return "menstrual";
+  if (d <= Math.floor(cycleLen * 0.43)) return "follicular";
+  if (d <= Math.floor(cycleLen * 0.5))  return "ovulatory";
+  return "luteal";
+}
+
 export function computeCycleDay(profile /*, dailyCheckins */) {
   if (!profile?.last_period_start_date) {
     return {

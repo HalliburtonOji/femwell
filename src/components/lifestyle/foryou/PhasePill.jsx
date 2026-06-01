@@ -1,14 +1,26 @@
 import { phaseLabel } from "@/utils/cyclePhase";
 
+const VALID_PHASES = ["menstrual", "follicular", "ovulatory", "luteal"];
+
 // "★ Luteal match" pill — transparent plum tint, used on matched cards
 // (NOT the editorial hero). Star is U+2605 (typeset glyph, not emoji).
-export default function PhasePill({ phase, style = {} }) {
-  if (!phase) return null;
-  const label = phaseLabel(phase);
+// Bug #5 (2026-06-01) — refuse sentinel values like "any"/"all"/"none"
+// that occasionally leak in from legacy seed data; fall through to
+// `fallbackPhase` (the user's actual current cycle phase) before
+// giving up and rendering nothing.
+export default function PhasePill({ phase, fallbackPhase, style = {} }) {
+  const candidate = String(phase || "").toLowerCase();
+  const effective = VALID_PHASES.includes(candidate)
+    ? candidate
+    : (VALID_PHASES.includes(String(fallbackPhase || "").toLowerCase())
+        ? String(fallbackPhase).toLowerCase()
+        : null);
+  if (!effective) return null;
+  const label = phaseLabel(effective);
   return (
     <span
       role="img"
-      aria-label={`Matched to your ${phase} phase`}
+      aria-label={`Matched to your ${effective} phase`}
       style={{
         display: "inline-flex",
         alignItems: "center",

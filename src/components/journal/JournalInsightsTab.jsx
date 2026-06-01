@@ -68,10 +68,15 @@ export default function JournalInsightsTab({ user, entries }) {
   });
   const topMoods = Object.entries(moodCounts).sort(([,a],[,b]) => b - a).slice(0, 3);
 
-  // Tag frequency (last 30)
+  // Tag frequency (last 30) — tolerate string OR array OR null
   const tagCounts = {};
+  const tagsToArray = (t) => {
+    if (Array.isArray(t)) return t.map(String).map(s => s.trim()).filter(Boolean);
+    if (typeof t === "string") return t.split(",").map(s => s.trim()).filter(Boolean);
+    return [];
+  };
   last30.forEach((e) => {
-    if (e.tags) e.tags.split(",").map(t => t.trim()).filter(Boolean).forEach((t) => {
+    tagsToArray(e.tags).forEach((t) => {
       tagCounts[t] = (tagCounts[t] || 0) + 1;
     });
   });

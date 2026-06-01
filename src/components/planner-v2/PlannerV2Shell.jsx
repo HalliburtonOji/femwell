@@ -56,6 +56,7 @@ import { computeStreaks } from "@/utils/habitStreaks";
 import {
   computeCycleDay as derivePlannerPhase,
   useCycleDay,
+  phaseForDay,
 } from "@/hooks/useCycleDay";
 // P2-4 — Body Today phase chips read PHASE_RECS (movement + rest slices).
 import { PHASE_RECS } from "@/data/phaseRecs";
@@ -357,10 +358,9 @@ function buildMonth(year, month) {
 function phaseForCalDay(d) {
   const todayDom = today.getDate();
   const cycleDayForCal = ((d - todayDom + profile.cycleDay - 1 + profile.cycleLen * 3) % profile.cycleLen) + 1;
-  if (cycleDayForCal <= 5) return "menstrual";
-  if (cycleDayForCal <= 13) return "follicular";
-  if (cycleDayForCal <= 16) return "ovulatory";
-  return "luteal";
+  // Bugs #4 + #7 (2026-06-01) — share the same thresholds as the central
+  // useCycleDay hook so the mini-calendar agrees with the Hero.
+  return phaseForDay(cycleDayForCal, 5, profile.cycleLen);
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -1284,9 +1284,8 @@ function FutureBlueprintInline({ date, step, setStep, onClose }) {
   const d = new Date(date);
   const todayDom = today.getDate();
   const cycleDay = ((d.getDate() - todayDom + profile.cycleDay - 1 + profile.cycleLen * 3) % profile.cycleLen) + 1;
-  const phase = (cycleDay <= 5) ? "menstrual"
-    : (cycleDay <= 13) ? "follicular"
-    : (cycleDay <= 16) ? "ovulatory" : "luteal";
+  // Bugs #4 + #7 (2026-06-01) — single source of truth for phase ranges.
+  const phase = phaseForDay(cycleDay, 5, profile.cycleLen);
   const [intention, setIntention] = useState("");
   const [capacity, setCapacity] = useState("moderate");
   return (

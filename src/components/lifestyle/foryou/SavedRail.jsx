@@ -112,7 +112,7 @@ export default function SavedRail({ items, currentPhase, savedPhases, onUntagOrU
               </div>
               {(matched || phase) && (
                 <div style={{ position: "absolute", top: 8, left: 8 }}>
-                  <PhasePill phase={phase || currentPhase} />
+                  <PhasePill phase={phase || currentPhase} fallbackPhase={currentPhase} />
                 </div>
               )}
               <button

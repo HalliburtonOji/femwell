@@ -219,6 +219,33 @@ export default function ProgramDetail() {
     );
   }
 
+  // Bug #6 (2026-06-01) — programs with no seeded ProgramDays/Tasks rendered
+  // as a confusing "0 sessions · 0 videos" wall. Show a clear "coming soon"
+  // empty-state so perimenopause (and any other thin-content stage) reads
+  // as "we're building this," not as broken UI. Filter is already maximally
+  // wide (program_key only) — the underlying gap is content seeding.
+  const isUnseeded = days.length === 0 && tasks.length === 0;
+  if (isUnseeded) {
+    return (
+      <div className="min-h-screen" style={{ backgroundColor: "var(--ivory)", padding: "32px 20px 80px" }}>
+        <h1 style={{ font: '300 24px/1.2 "Fraunces", Georgia, serif', color: "var(--plum-deep)", margin: "0 0 6px" }}>
+          {program.title || "Program"}
+        </h1>
+        <p style={{ font: '400 14px/1.55 "Inter", system-ui, sans-serif', color: "var(--mauve)", margin: "0 0 18px" }}>
+          {program.description || program.subtitle || "Tailored sessions and read-ups for this stage."}
+        </p>
+        <div style={{ background: "var(--cream-2)", border: "1px solid var(--rose-soft)", borderRadius: 14, padding: "18px 18px 16px" }}>
+          <p style={{ font: '500 13px/1.55 "Inter", system-ui, sans-serif', color: "var(--plum-deep)", margin: "0 0 6px" }}>
+            This program is being built for you.
+          </p>
+          <p style={{ font: '400 13px/1.6 "Inter", system-ui, sans-serif', color: "var(--mauve)", margin: 0 }}>
+            We're seeding the sessions and read-ups here. In the meantime, your daily reflections, mood &amp; energy logs, and Jess conversations continue to flow into your records.
+          </p>
+        </div>
+      </div>
+    );
+  }
+
   const locked = (TIER_ORDER[program.access_tier] || 0) > (TIER_ORDER[userPlan] || 0);
   const thumb = program.cover_thumbnail_url || program.thumbnail_url;
   const totalVideos = tasks.filter((task) => task.external_url).length;

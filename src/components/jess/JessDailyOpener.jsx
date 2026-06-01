@@ -84,8 +84,14 @@ export default function JessDailyOpener({ user, profile }) {
 
     callJessAgent({ system, user: userPrompt })
       .then(({ text: raw }) => {
-        const cleaned = String(raw || "").trim().replace(/^["']|["']$/g, "");
-        const final = cleaned && cleaned.length > 8 ? cleaned : fallback;
+        // Strip any ```code fences``` (incl. ```options blocks) the model
+        // sometimes leaks, plus a trailing JSON action envelope.
+        const stripped = String(raw || "")
+          .replace(/```[\s\S]*?```/g, "")           // fenced blocks
+          .replace(/\{[\s\S]*"actions"[\s\S]*\}\s*$/m, "") // trailing JSON envelope
+          .trim()
+          .replace(/^["']|["']$/g, "");
+        const final = stripped && stripped.length > 8 ? stripped : fallback;
         setText(final);
         saveDailyCache(cacheKey, { text: final, shown: true });
         scheduleAutoDismiss();
@@ -153,7 +159,7 @@ export default function JessDailyOpener({ user, profile }) {
           margin: "4px 0 0", fontSize: 14,
           fontFamily: "'Fraunces', Georgia, serif",
           color: C.espresso, lineHeight: 1.5,
-        }}>{text}</p>
+        }}>{String(text || "").replace(/```[\s\S]*?```/g, "").replace(/\{[\s\S]*"actions"[\s\S]*\}\s*$/m, "").trim() || text}</p>
         {(phase || cycleDay) && (
           <p style={{
             margin: "4px 0 0", fontSize: 11, color: C.muted,

@@ -85,7 +85,7 @@ function BentoCard({ item, idx, currentPhase, savedSet, savedPhases, onSave, onU
         )}
         {matched && (
           <div style={{ position: "absolute", top: 16 + 22 + 4, left: 16 }}>
-            <PhasePill phase={currentPhase} />
+            <PhasePill phase={currentPhase} fallbackPhase={currentPhase} />
           </div>
         )}
         <div data-no-nav="true" style={{ position: "absolute", top: 12, right: 12 }}>
