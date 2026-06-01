@@ -1810,186 +1810,412 @@ function AnotherYouTab() {
 }
 
 // ════════════════════════════════════════════════════════════════════════════
-// Tab — UX & Design research
+// Tab — UX & Design (cross-category patterns)
 // ════════════════════════════════════════════════════════════════════════════
-const UX_RECS = [
-  { n: 1,  name: "Three-tier information architecture",            body: "Every page should have Glance (1s — what do I need right now), Scan (10s — what's relevant today), Deep Dive (full data, optional). Currently most pages are all in Deep Dive mode by default. Linear uses this — complex project management feels simple because of information tiering." },
-  { n: 2,  name: "Sticky phase context bar",                       body: "A persistent 32dp bar at the top of every page showing: cycle day + phase name + life stage tag. Implemented via IntersectionObserver. User never loses their health context as they navigate. Eliminates the need for phase explanation on every page." },
-  { n: 3,  name: "Phase-smart accordion defaults",                 body: "Based on today's phase, the most relevant section on each page opens automatically. In luteal: Mind & Insight opens first. In follicular: Schedule & Cycle. The user's context decides what's prominent — not a generic layout." },
-  { n: 4,  name: "Horizontal snap carousels for parallel options", body: "Currently using vertical stacks of similar-weight cards. Spotify, App Store, and Pinterest all use horizontal snapping for exploration without commitment. Use for: entry type selection in Journal, feature discovery in Explore, ritual bundle selection in Planner." },
-  { n: 5,  name: "Persistent scroll position",                     body: "Every page should remember exactly where the user was. iOS-native behaviour: UIScrollView maintains position. FemWell currently resets to top on every navigation. This is the single most-cited friction point in health apps." },
-  { n: 6,  name: "Jess as structural narrator, not just a bottom card", body: "Jess currently appears as a floating card or a separate page. The research shows AI companions woven into the page structure (not bolted on) have 3× higher engagement. Jess should provide a one-line observation in every page's header area on relevant pages." },
-  { n: 7,  name: "The Health Corner letter layout for long-form content", body: "The letter aesthetic (paper-on-surface, Cormorant Garamond, botanical dividers) should be a reusable pattern for all long-form content: Health Corner letters, Doctor Export summary, Journal insights, Another You letters. Consistency creates familiarity." },
-  { n: 8,  name: '"What Jess has noticed" as a structural zone',   body: "On Today, Planner, and Journal: a dedicated espresso card that is ALWAYS present, showing Jess's one current observation. Not a notification. Not a chat bubble. A named structural zone. Users learn to look for it. Finch uses this pattern — the \"How Finch is doing\" card is always in the same place." },
-  { n: 9,  name: "Phase-aware empty states",                       body: "Currently: generic \"nothing here yet\" messages. Should be: \"It's day 26 of your cycle — your energy often dips here. Nothing logged yet today is okay.\" Empty states as emotional intelligence rather than placeholder text." },
-  { n: 10, name: "Celebration as structure, not confetti",         body: "Milestone moments (first cycle logged, first Jess conversation, first pattern insight unlocked) should have a distinct full-screen moment — not an animation overlay on a normal page. Day One's \"your memories\" card, Spotify Wrapped, Duolingo's celebration screens — all use intentional full-screen moments for milestones." },
-  { n: 11, name: "Progressive relationship architecture (30/90/365 days)", body: "The app should look and feel meaningfully different at 30, 90, and 365 days. At day 1: introductory copy, simple views. At day 30: pattern insights start unlocking, Jess references history. At day 90: archetype mapping, predictive prompts. At day 365: Year in Phases letter. This is the retention architecture — not streaks." },
-  { n: 12, name: "Voice-first context-aware logging",              body: "The Universal Logger FAB currently opens a form. It should open a voice-first interface: Jess listens and parses. \"Just had a hot flash\" → logged to HotFlashLog. \"Feeling pretty good today, 4/5\" → DailyCheckins. This is built (Voice Logger) — it needs to BE the default logging UX, not a secondary option." },
+const UX_ANCHORS = [
+  {
+    n: 1,
+    title: "Oura Readiness → FemWell Vitality Score",
+    what: "What Oura does: one number (0–100) synthesising sleep, HRV, recovery. Their entire premium hardware business sits on this single daily number.",
+    translation: "A daily Vitality Score synthesising mood, energy, sleep, symptom load, cycle phase, and habit completion. \"Your Vitality today: 72 — you're in a high-output window.\" Shown in the Planner hero. Shareable. Makes the whole app's data into something a user can say out loud.",
+    why: "Right now FemWell has 10 separate data streams with no synthesis. The Vitality Score is the marketing hook, the retention mechanism, and the \"one thing\" that makes the complexity legible.",
+  },
+  {
+    n: 2,
+    title: "Spotify Mini Player → Persistent Jess Bar",
+    what: "The Now Playing mini-player persists across all navigation. Something important is always accessible without interrupting what you're doing.",
+    translation: "A 44px Jess bar sitting above the tab bar on every page. Shows her current one-line observation. Tap to expand into full chat. Jess becomes the interface, not a feature buried in a menu.",
+    why: "Currently Jess is a destination. Making her persistent makes her a companion. This is the single change that most clearly separates FemWell from every other cycle app.",
+  },
+  {
+    n: 3,
+    title: "Notion Slash Command → FemWell Quick Action",
+    what: "Type \"/\" anywhere to surface a command palette — insert a table, create a page, change block type. Power-user shortcut that removes all navigation.",
+    translation: "\"/\" or a swipe-up gesture from anywhere launches a quick-action bar: Log symptom · Start journal entry · Ask Jess · Add to planner · Check cycle day. 2 taps to any action from anywhere in the app.",
+    why: "Currently every action requires navigating to the right page first. The slash command removes page-as-container entirely.",
+  },
+  {
+    n: 4,
+    title: "Wordle One-Thing-Per-Day → Jess Daily Intention",
+    what: "One puzzle per day. No bingeing. Returns tomorrow. Creates daily habit without streaks or pressure.",
+    translation: "One Jess-written intention per morning, delivered fresh based on phase + yesterday's mood. \"Today is a good day to start small and notice what actually feels good.\" Can't be advanced. Creates a reliable daily opening moment. Refreshes at 6am.",
+    why: "The daily opening is the app's biggest retention lever. A reliable, fresh, personal thing every morning at the right moment — not a push notification, a card you find.",
+  },
+  {
+    n: 5,
+    title: "Monzo Notification → FemWell Micro-Alert",
+    what: "\"You just spent £4.20 at Pret\" — immediate, contextual, friendly, deep-linked. Reads like a text from a smart friend who's been watching.",
+    translation: "\"You've logged mood 2/5 three days in a row. Want to talk to Jess?\" / \"Your energy is climbing — this is your best window for the hard thing.\" Deep-links directly to the relevant action. Written like a message, not an alert.",
+    why: "Current notifications are generic reminders. Monzo-style notifications are observations. The former is dismissed. The latter is read.",
+  },
 ];
 
-const UX_PRINCIPLES = [
-  "Warmth is structural (cream / espresso / blush are data-carrying colours, not decoration)",
-  "Typography IS hierarchy (Cormorant Garamond for trusted voice, system font for data, italic for Jess)",
-  "Data as landscape, not chart (the cycle calendar IS landscape art — lean into this)",
-  "Motion as breath (fade and surface, never bounce or spring except for celebration moments)",
-  "24dp padding between cards · 1dp divider at 10% opacity between sections · 44px minimum touch targets · 18sp minimum body text",
+// 25 cross-category patterns — tier=top (8), strong (12), polish (5)
+const UX_PATTERNS = [
+  { n: 1,  tier: "top",    title: "OURA READINESS → VITALITY SCORE",
+    body: "Synthesise all data into one daily number. Source: Oura Ring. Apply to: Planner hero card. Single most shareable feature." },
+  { n: 2,  tier: "top",    title: "SPOTIFY MINI PLAYER → JESS BAR",
+    body: "Persistent 44px Jess strip above tab bar on every page. Tap to expand. Source: Spotify Now Playing. Apply to: global app shell. Makes Jess the interface, not a feature." },
+  { n: 3,  tier: "top",    title: "NOTION SLASH COMMAND → QUICK ACTION",
+    body: "\"/\" or swipe-up from anywhere → log · journal · ask Jess · planner. Source: Notion, Linear, Raycast. Apply to: global. Removes page-as-container." },
+  { n: 4,  tier: "top",    title: "GOOGLE MAPS DRAGGABLE CARD → LOGGING SHEETS",
+    body: "Replace all logging forms as bottom sheets with snap points (peek / half / full). Drag up for more detail. Drag down to dismiss. Source: Google Maps place card. Apply to: Universal Logger, journal entry creation, GP question builder, habit completion." },
+  { n: 5,  tier: "top",    title: "THINGS 3 NATURAL LANGUAGE → JESS VOICE INPUT",
+    body: "\"Had a headache since noon\" parsed directly to SymptomLogs. \"Feeling pretty good, 4 out of 5\" to DailyCheckins. Source: Things 3, Todoist. Apply to: Jess chat (already partially built — make it the default logging UX, not secondary)." },
+  { n: 6,  tier: "top",    title: "ROBINHOOD HAPTIC SCRUBBER → CYCLE CALENDAR",
+    body: "As user drags finger across the cycle calendar, haptic ticks mark each day. Phase transitions get a distinct haptic. Source: Robinhood price chart. Apply to: Planner cycle calendar. Makes data tactile." },
+  { n: 7,  tier: "top",    title: "MONZO CONTEXTUAL NOTIFICATION → FEMWELL MICRO-ALERT",
+    body: "Written like a friend's text. Observation + one-tap action. Deep-linked. Source: Monzo. Apply to: all Jess-triggered notifications." },
+  { n: 8,  tier: "top",    title: "WORDLE DAILY CONSTRAINT → JESS MORNING INTENTION",
+    body: "One fresh phase-aware Jess line every morning. Can't be skipped. Creates the daily opening moment. Source: Wordle. Apply to: Planner hero." },
+  { n: 9,  tier: "strong", title: "STRAVA PERSONAL BEST → FEMWELL PERSONAL RECORDS",
+    body: "\"Your best mood week in 3 months.\" \"Longest habit streak.\" Personal records, not averages. Source: Strava segments. Apply to: Pulse insights." },
+  { n: 10, tier: "strong", title: "VSCO FILM PRESETS → MOOD PRESETS",
+    body: "Instead of a 1–5 slider, 6 named mood states with a visual: \"Steady ground\", \"Heavy weather\", \"Morning clarity\", \"Restless energy\", \"Tender\", \"Electric\". Source: VSCO. Apply to: mood logging everywhere." },
+  { n: 11, tier: "strong", title: "INSTAGRAM STORIES TAP-TO-ADVANCE → HEALTH CORNER NAVIGATION",
+    body: "Tap right side of letter to advance to next section. Tap left to go back. Hold to pause. Source: Instagram Stories. Apply to: Health Corner letters." },
+  { n: 12, tier: "strong", title: "IMESSAGE TAPBACK → JESS MESSAGE REACTIONS",
+    body: "One-tap reaction to Jess's observations. A heart for a helpful insight, a sad-face for one that missed. Trains Jess's context silently. Source: iMessage. Apply to: Jess chat." },
+  { n: 13, tier: "strong", title: "AIRBNB DATE PICKER WITH CONTEXT → PREDICTED CYCLE CALENDAR",
+    body: "Show predicted mood / energy / phase for each future date on the calendar so users can plan ahead. Source: Airbnb price-per-night calendar. Apply to: Planner schedule calendar." },
+  { n: 14, tier: "strong", title: "APPLE WATCH ACTIVITY RINGS → DATA COMPLETION ARCS",
+    body: "Three arcs on the Today page: Body (symptoms + check-in), Mind (journal or Jess), Nourishment (meals + hydration). Fill as you log. Source: Apple Watch rings. Apply to: Today page header." },
+  { n: 15, tier: "strong", title: "BEREAL AUTHENTICITY CONSTRAINT → HONEST JOURNAL",
+    body: "One journal entry per day where editing is disabled after 5 minutes. \"The unedited you.\" Opt-in entry type. Source: BeReal. Apply to: journal entry types." },
+  { n: 16, tier: "strong", title: "SNAPCHAT HOLD-TO-RECORD → HOLD FOR VOICE JOURNAL",
+    body: "Hold the mic button in journal → voice recording. Release → transcribes and presents for save / edit / burn. Source: Snapchat. Apply to: journal entry creation." },
+  { n: 17, tier: "strong", title: "DUOLINGO LESSON COMPLETE → CHECK-IN CELEBRATION",
+    body: "A dedicated full-screen moment when you complete your morning check-in. Not confetti on a card — a moment. Source: Duolingo. Apply to: Morning Brief completion." },
+  { n: 18, tier: "strong", title: "SHOPIFY ABANDONED CART RECOVERY → STREAK PAUSE",
+    body: "When a habit streak breaks, instead of resetting to zero, offer a \"Pause\" for up to 3 days. On return: \"Welcome back — your streak is safe.\" Source: Shopify recovery emails. Apply to: habits everywhere." },
+  { n: 19, tier: "strong", title: "CALM DAILY CALM → JESS DAILY PIECE",
+    body: "One fresh Jess-written piece of health content per day. Not a notification — a card that's always there. Source: Calm's Daily Calm. Apply to: Today page or Planner." },
+  { n: 20, tier: "strong", title: "OBSIDIAN BACKLINKS → JOURNAL ENTRY CONNECTIONS",
+    body: "When Jess detects you've written about the same person or theme in multiple entries, show \"You've written about this 3 times — see all.\" Source: Obsidian. Apply to: journal insights." },
+  { n: 21, tier: "polish", title: "AMAZON 1-CLICK → SINGLE-TAP HABIT COMPLETION",
+    body: "Completing a habit in Planner is one tap. No confirmation dialog. Undo toast appears for 3 seconds. Source: Amazon 1-click. Apply to: all habit completions." },
+  { n: 22, tier: "polish", title: "APPLE NOTES TEXT SELECTION → JOURNAL SELECTION ACTIONS",
+    body: "Select any text in a journal entry → contextual menu appears: \"Save to Health Notes\", \"Ask Jess about this\", \"Add to GP list\". Source: Apple Notes. Apply to: journal entries, Health Corner letters." },
+  { n: 23, tier: "polish", title: "SIGNAL DISAPPEARING MESSAGES → BURN MODE",
+    body: "Timed deletion with user-set timer. Already planned — make the timer dial beautiful (the burn date picker is a featured UI moment, not a settings option). Source: Signal. Apply to: Burn Mode." },
+  { n: 24, tier: "polish", title: "SLACK THREADS → JESS OBSERVATION THREADS",
+    body: "Reply directly to a specific Jess pattern observation without starting a new conversation. Source: Slack threads. Apply to: Jess For You tab observations." },
+  { n: 25, tier: "polish", title: "TELEGRAM REACTIONS → JOURNAL EMOJI TAGS",
+    body: "Quick reactions on journal entries instead of formal type labels. Storm = heavy day. Sun = good day. Spiral = confused. Heart = grateful. Source: Telegram reactions. Apply to: journal entry list." },
 ];
+
+function UxPatternCard({ n, tier, title, body }) {
+  const tones = {
+    top:    { bg: T.goldSoft,   fg: T.gold,      border: T.gold,    label: "Top tier" },
+    strong: { bg: T.sageSoft,   fg: T.sage,      border: T.sage,    label: "Strong"   },
+    polish: { bg: T.surfaceHi,  fg: T.textMuted, border: T.border,  label: "Polish"   },
+  };
+  const t = tones[tier] || tones.strong;
+  return (
+    <article style={{
+      backgroundColor: T.surface,
+      border: `1px solid ${T.border}`,
+      borderRadius: 12, padding: "14px 16px",
+    }}>
+      <div style={{ display: "flex", alignItems: "flex-start", gap: 12, marginBottom: 8 }}>
+        <div style={{
+          width: 26, height: 26, borderRadius: "50%",
+          background: t.bg, color: t.fg, border: `1px solid ${t.border}`,
+          display: "flex", alignItems: "center", justifyContent: "center",
+          fontFamily: '"Fraunces", Georgia, serif',
+          fontSize: 13, fontWeight: 700, flexShrink: 0,
+        }}>{n}</div>
+        <div style={{ flex: 1 }}>
+          <div style={{ display: "flex", alignItems: "baseline", gap: 8, flexWrap: "wrap", marginBottom: 4 }}>
+            <span style={{
+              background: t.bg, color: t.fg, border: `1px solid ${t.border}`,
+              padding: "2px 8px", borderRadius: 999,
+              fontSize: 9.5, fontWeight: 700, letterSpacing: 1.2,
+              textTransform: "uppercase",
+            }}>{t.label}</span>
+          </div>
+          <div style={{
+            fontFamily: '"Fraunces", Georgia, serif',
+            fontSize: 14.5, fontWeight: 700, color: T.textHi,
+            letterSpacing: -0.1, lineHeight: 1.3,
+          }}>{title}</div>
+        </div>
+      </div>
+      <p style={{
+        fontSize: 12.5, color: T.textMid, lineHeight: 1.65,
+        margin: "0 0 0 38px",
+      }}>{body}</p>
+    </article>
+  );
+}
 
 function UxDesignTab() {
   return (
     <div>
       <PageHeader
-        title="UX & Design Research — Cross-App Patterns"
-        subtitle="Deep research across 16 apps outside wellness to fix the generic-assets problem"
+        title="UX & Design — Patterns From Everywhere"
+        subtitle="Not wellness apps. What every other category figured out that we haven't borrowed yet."
       />
 
-      <SectionLabel>The problem</SectionLabel>
-      <div style={{
-        backgroundColor: T.surface,
-        border: `1px solid ${T.border}`,
-        borderRadius: 12, padding: "16px 18px", marginBottom: 22,
-      }}>
-        <p style={{ fontSize: 13.5, color: T.textHi, lineHeight: 1.7, margin: 0 }}>
-          The app has many features and currently uses the same card / button / section patterns everywhere — feels generic and overwhelming.
-          Research from Linear, Things 3, Spotify, Duolingo, Finch, Arc, Robinhood, and 9 others identifies 12 high-impact UX improvements.
-        </p>
-      </div>
-
-      <SectionLabel>The 12 highest-impact recommendations</SectionLabel>
-      <div style={{ display: "flex", flexDirection: "column", gap: 10, marginBottom: 22 }}>
-        {UX_RECS.map((r) => (
-          <article key={r.n} style={{
-            backgroundColor: T.surface,
-            border: `1px solid ${T.border}`,
-            borderRadius: 12, padding: "14px 16px",
-          }}>
-            <div style={{ display: "flex", alignItems: "flex-start", gap: 12, marginBottom: 6 }}>
-              <div style={{
-                width: 28, height: 28, borderRadius: "50%",
-                background: T.goldSoft, color: T.gold,
-                border: `1px solid ${T.gold}`,
-                display: "flex", alignItems: "center", justifyContent: "center",
-                fontFamily: '"Fraunces", Georgia, serif',
-                fontSize: 14, fontWeight: 700, flexShrink: 0,
-              }}>{r.n}</div>
-              <div style={{
-                fontSize: 14, fontWeight: 600, color: T.textHi,
-                lineHeight: 1.4, paddingTop: 2,
-              }}>{r.name}</div>
-            </div>
-            <p style={{
-              fontSize: 12.5, color: T.textMid, lineHeight: 1.65,
-              margin: "0 0 0 40px",
-            }}>{r.body}</p>
-          </article>
-        ))}
-      </div>
-
-      <SectionLabel>Visual design principles</SectionLabel>
-      <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
-        {UX_PRINCIPLES.map((p) => (
-          <div key={p} style={{
-            backgroundColor: T.surface,
-            border: `1px solid ${T.sage}`,
-            borderRadius: 10, padding: "12px 16px",
-            display: "flex", alignItems: "flex-start", gap: 10,
-          }}>
-            <span aria-hidden="true" style={{ color: T.sage, fontSize: 14, fontWeight: 700, flexShrink: 0 }}>◆</span>
-            <span style={{ fontSize: 13, color: T.textHi, lineHeight: 1.65 }}>{p}</span>
-          </div>
-        ))}
-      </div>
-    </div>
-  );
-}
-
-// ════════════════════════════════════════════════════════════════════════════
-// Tab — Wholeness (women's lives beyond the cycle)
-// ════════════════════════════════════════════════════════════════════════════
-const WHOLENESS_FEATURES = [
-  { n: 1, name: "Life Dimensions Journal",                body: "Journal entries that aren't about health: work, relationships, money, creative blocks, grief, joy. These should be first-class entry types, not afterthoughts. The journal is for the whole life." },
-  { n: 2, name: "The 3AM Gap",                            body: "Anxiety, loneliness, and existential searching between 11PM–4AM. Research consistently documents this specific sleep-disruption moment. No wellness app serves this experience. (Another You's Night Self serves this — the Wholeness framing is: this is a life experience, not just a spiritual one.)" },
-  { n: 3, name: "Everyday Joy Log",                       body: "Not gratitude practice. Not self-care. The tiny actual things: the coffee this morning, that song, a text that made you laugh. Mundane beauty capture. Day One does this but not with a women's health lens." },
-  { n: 4, name: "Grief and Loss Space",                   body: "A specific container, not a journal entry type. The app has no real home for pregnancy loss, friendship ending, parent illness, relationship grief, the grief of perimenopause identity shift. A designated space with warm copy and relevant resources." },
-  { n: 5, name: "Money Stress Tracking",                  body: "Financial anxiety is the top non-health stressor for women 25–45. It correlates with mood, sleep, and symptoms. Logging \"financial stress\" as a DailyCheckins field would capture clinically relevant data and make women feel seen." },
-  { n: 6, name: "Relationship Map",                       body: "Built from journal mentions over time. Jess quietly notices the names that appear repeatedly and builds a map of the user's relational world. Not displayed by default — shown when asked: \"Who have you written about most this year?\"" },
-  { n: 7, name: "Creativity and Play Space",              body: "Not productive, not optimised, just creative. A section of the journal (or standalone) for doodles, fragments, half-ideas, songs stuck in her head. The female creative tradition as a health practice, not a productivity tool." },
-  { n: 8, name: 'The "what actually happened today" entry', body: "A mundane daily life capture. Not health data. Not a check-in. \"Had the meeting. Ate a sandwich. Rained the whole day. Finished the book.\" The texture of a life, not a data point. This is what diaries have always been. FemWell should honour that." },
-];
-
-const WHOLENESS_ENGAGEMENT = [
-  { label: "Shame-free streaks", body: 'Call it "writing rhythm" not "streak." Show a habit grid (dots, not a counter). When broken, show "last wrote 3 days ago" — never a zero.' },
-  { label: "Recovery messaging", body: '"Welcome back — you last wrote about [theme]. How\'s that sitting now?"' },
-  { label: "Menstrual phase grace", body: 'Threshold drops during menstrual phase, notifications reduce, "rest is part of your cycle too."' },
-  { label: "The one question that drives retention", body: '"Did you feel understood today?" Apps that create this feeling retain 4× better.' },
-];
-
-function WholenessTab() {
-  return (
-    <div>
-      <PageHeader
-        title="Wholeness — Women's Lives Beyond the Cycle"
-        subtitle="The app is excellent on cycle health. It needs to be as good on the rest of a woman's life."
-      />
-
-      <SectionLabel>The insight</SectionLabel>
+      <SectionLabel>The principle</SectionLabel>
       <div style={{
         backgroundColor: T.surface,
         border: `1px solid ${T.gold}`,
         borderRadius: 12, padding: "16px 18px", marginBottom: 22,
       }}>
         <p style={{ fontSize: 13.5, color: T.textHi, lineHeight: 1.7, margin: 0 }}>
-          Women don't just have hormones. They have jobs, grief, creativity, friendships, financial anxiety, and a life that doesn't pause for their cycle.
-          The top reason women abandon wellness apps: they feel designed for an idealised user with consistent schedules and predictable motivation.
-          The streak mechanic specifically accelerates disengagement when life gets hard.
+          The founder gave two examples — Safari's contextual action sheet and restaurant ordering flows. These were seeds, not the scope.
+          The real question is: what has gaming, banking, social, music, maps, and e-commerce figured out that no health app has borrowed yet?
+          These 25 patterns answer that.
         </p>
       </div>
 
-      <SectionLabel>8 missing features</SectionLabel>
-      <div style={{ display: "flex", flexDirection: "column", gap: 10, marginBottom: 22 }}>
-        {WHOLENESS_FEATURES.map((f) => (
-          <article key={f.n} style={{
+      <SectionLabel>5 anchor translations</SectionLabel>
+      <div style={{ display: "flex", flexDirection: "column", gap: 12, marginBottom: 22 }}>
+        {UX_ANCHORS.map((a) => (
+          <article key={a.n} style={{
             backgroundColor: T.surface,
             border: `1px solid ${T.border}`,
-            borderRadius: 12, padding: "14px 16px",
+            borderRadius: 14, padding: "18px 20px 16px",
           }}>
-            <div style={{ display: "flex", alignItems: "flex-start", gap: 12, marginBottom: 6 }}>
+            <div style={{ display: "flex", alignItems: "flex-start", gap: 14, marginBottom: 12 }}>
               <div style={{
-                width: 28, height: 28, borderRadius: "50%",
+                width: 32, height: 32, borderRadius: "50%",
                 background: T.goldSoft, color: T.gold,
                 border: `1px solid ${T.gold}`,
                 display: "flex", alignItems: "center", justifyContent: "center",
                 fontFamily: '"Fraunces", Georgia, serif',
-                fontSize: 14, fontWeight: 700, flexShrink: 0,
-              }}>{f.n}</div>
+                fontSize: 16, fontWeight: 700, flexShrink: 0,
+              }}>{a.n}</div>
               <div style={{
-                fontSize: 14, fontWeight: 600, color: T.textHi,
-                lineHeight: 1.4, paddingTop: 2,
-              }}>{f.name}</div>
+                fontFamily: '"Fraunces", Georgia, serif',
+                fontSize: 19, fontWeight: 700, color: T.gold,
+                letterSpacing: -0.2, lineHeight: 1.25, paddingTop: 2,
+              }}>{a.title}</div>
             </div>
-            <p style={{
-              fontSize: 12.5, color: T.textMid, lineHeight: 1.65,
-              margin: "0 0 0 40px",
-            }}>{f.body}</p>
+            <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+              <div>
+                <div style={{
+                  fontSize: 10, color: T.textMuted, fontWeight: 700,
+                  letterSpacing: 1.2, textTransform: "uppercase", marginBottom: 4,
+                }}>What they do</div>
+                <p style={{ fontSize: 13, color: T.textMid, lineHeight: 1.65, margin: 0 }}>{a.what}</p>
+              </div>
+              <div>
+                <div style={{
+                  fontSize: 10, color: T.gold, fontWeight: 700,
+                  letterSpacing: 1.2, textTransform: "uppercase", marginBottom: 4,
+                }}>FemWell translation</div>
+                <p style={{ fontSize: 13, color: T.textHi, lineHeight: 1.65, margin: 0 }}>{a.translation}</p>
+              </div>
+              <div>
+                <div style={{
+                  fontSize: 10, color: T.sage, fontWeight: 700,
+                  letterSpacing: 1.2, textTransform: "uppercase", marginBottom: 4,
+                }}>Why it matters</div>
+                <p style={{ fontSize: 13, color: T.textMid, lineHeight: 1.65, fontStyle: "italic", margin: 0 }}>{a.why}</p>
+              </div>
+            </div>
           </article>
         ))}
       </div>
 
-      <SectionLabel>The engagement research summary</SectionLabel>
-      <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
-        {WHOLENESS_ENGAGEMENT.map((row) => (
-          <div key={row.label} style={{
+      <SectionLabel>25 cross-category patterns</SectionLabel>
+      <div style={{
+        display: "grid",
+        gridTemplateColumns: "repeat(auto-fit, minmax(300px, 1fr))",
+        gap: 10, marginBottom: 22,
+      }}>
+        {UX_PATTERNS.map((p) => <UxPatternCard key={p.n} {...p} />)}
+      </div>
+
+      <SectionLabel>Bottom line</SectionLabel>
+      <div style={{
+        backgroundColor: T.surface,
+        border: `1px solid ${T.sage}`,
+        borderRadius: 12, padding: "16px 18px",
+      }}>
+        <p style={{ fontSize: 13.5, color: T.textHi, lineHeight: 1.75, margin: 0 }}>
+          The patterns wellness apps use — cards, sliders, modals, checklists — come from productivity and health admin.
+          The patterns that create love — persistent companions, haptic feedback, daily rituals, synthesis scores, one-tap actions — come from everywhere else.{" "}
+          <strong style={{ color: T.sage }}>FemWell should borrow from everywhere else.</strong>
+        </p>
+      </div>
+    </div>
+  );
+}
+
+// ════════════════════════════════════════════════════════════════════════════
+// Tab — Wholeness (the phase-centricity problem)
+// ════════════════════════════════════════════════════════════════════════════
+const WHOLENESS_CATEGORIES = [
+  {
+    n: 1,
+    name: "Features that break without phase data",
+    current: "Planner phase prompts show generic fallback. Jess opening card shows \"loading your phase.\" Health Corner letters start with phase salutation that means nothing to a menopausal user. Journal prompts are phase-tagged.",
+    fix: "Every feature needs a \"phase-independent\" mode that is as rich as the phase-aware mode. Not a fallback — a full alternative state. Menopausal users get life-stage-aware content that is as detailed and personal as cycle-aware content.",
+  },
+  {
+    n: 2,
+    name: "The app has no value for life outside the body",
+    current: "Everything tracked is bodily — symptoms, mood, energy, sleep, nutrition, cycle. A woman's financial anxiety, creative blocks, career decisions, and grief have nowhere to go.",
+    fix: "The journal and Jess should serve the whole life. Jess should be able to hold a conversation about work stress without pivoting it to \"here's how your cycle phase affects work performance.\" Sometimes it's just work stress.",
+  },
+  {
+    n: 3,
+    name: "The language assumes cycling",
+    current: "\"Your cycle\", \"your phase\", \"cycle day X\" appears throughout the UI regardless of life stage.",
+    fix: "Adaptive language engine. Post-menopause user never sees \"cycle day.\" Pregnant user sees \"week X.\" User who hasn't set up cycle tracking sees day-based or calendar-based framing. Language adapts to the user's actual context, not the default template.",
+  },
+];
+
+const WHOLENESS_PAGE_ROWS = [
+  { page: "Planner",       cur: 'Generic "set up your cycle to unlock"',                       should: "Life-stage phase (e.g. Week 28 of pregnancy, or just today's date + mood-based capacity)" },
+  { page: "Today",         cur: "Phase header shows fallback text",                            should: "Mood + energy check-in is primary; life-stage tip replaces phase tip" },
+  { page: "Journal",       cur: "Phase prompt feels irrelevant",                               should: 'Life-stage prompt OR a universal "what\'s alive for you today?"' },
+  { page: "Health Corner", cur: "Phase salutation feels wrong",                                should: "Life-stage salutation. Menopausal women get just as rich an opener." },
+  { page: "Jess",          cur: "Cycle context missing from her awareness",                    should: "Life stage + mood history as primary context. Jess knows she's talking to a postpartum woman, not a blank user." },
+  { page: "Pulse",         cur: "Charts show empty states waiting for cycle data",             should: "Non-cycle trends are prominent: mood trend, energy trend, habit consistency, sleep pattern" },
+];
+
+const WHOLENESS_GAPS = [
+  "Journal: non-health entry types are first class (work, relationships, grief, creativity, joy, money) — not health subfields",
+  "Jess: can hold a conversation that stays in the emotional / relational / professional register without routing it through health data",
+  'Today: a "how life is going" check-in that\'s separate from the health check-in (takes 10 seconds, captures: work / relationships / energy for life — not just body)',
+  "Planner: capacity model accounts for non-health context (Jess knows if you mentioned a hard meeting or financial stress)",
+  "Community: spaces organised by life circumstance and life stage, not just cycle phase",
+];
+
+function WholenessTab() {
+  return (
+    <div>
+      <PageHeader
+        title="Wholeness — The Phase Centricity Problem"
+        subtitle="The app is excellent on cycle health. The problem: it assumes you're always thinking about your cycle."
+      />
+
+      <SectionLabel>The real issue</SectionLabel>
+      <div style={{
+        backgroundColor: T.surface,
+        border: `1px solid ${T.gold}`,
+        borderRadius: 12, padding: "16px 18px", marginBottom: 22,
+      }}>
+        <p style={{ fontSize: 13.5, color: T.textHi, lineHeight: 1.7, margin: "0 0 10px" }}>
+          Every page in FemWell currently assumes cycle phase context. When that context is absent — postpartum (no cycle),
+          perimenopause (irregular cycle), menopausal (no cycle), first week in the app (no data) — the experience degrades.
+          Features show "waiting for data" states. Phase prompts feel irrelevant. The app implies you only matter when you're cycling.
+        </p>
+        <p style={{ fontSize: 13.5, color: T.gold, lineHeight: 1.7, margin: 0, fontStyle: "italic" }}>
+          This is the phase-centricity problem. It's not about adding features. It's about rethinking the app's assumptions.
+        </p>
+      </div>
+
+      <SectionLabel>Three categories of the problem</SectionLabel>
+      <div style={{ display: "flex", flexDirection: "column", gap: 12, marginBottom: 22 }}>
+        {WHOLENESS_CATEGORIES.map((c) => (
+          <article key={c.n} style={{
             backgroundColor: T.surface,
             border: `1px solid ${T.border}`,
-            borderRadius: 10, padding: "14px 16px",
+            borderRadius: 14, padding: "18px 20px 16px",
           }}>
-            <div style={{
-              fontSize: 10.5, color: T.gold, fontWeight: 700,
-              letterSpacing: 1.2, textTransform: "uppercase", marginBottom: 6,
-            }}>{row.label}</div>
-            <div style={{ fontSize: 13, color: T.textMid, lineHeight: 1.65 }}>{row.body}</div>
+            <div style={{ display: "flex", alignItems: "flex-start", gap: 14, marginBottom: 12 }}>
+              <div style={{
+                width: 32, height: 32, borderRadius: "50%",
+                background: T.goldSoft, color: T.gold,
+                border: `1px solid ${T.gold}`,
+                display: "flex", alignItems: "center", justifyContent: "center",
+                fontFamily: '"Fraunces", Georgia, serif',
+                fontSize: 16, fontWeight: 700, flexShrink: 0,
+              }}>{c.n}</div>
+              <div style={{
+                fontFamily: '"Fraunces", Georgia, serif',
+                fontSize: 18, fontWeight: 700, color: T.textHi,
+                letterSpacing: -0.1, lineHeight: 1.3, paddingTop: 4,
+              }}>{c.name}</div>
+            </div>
+            <div style={{ marginBottom: 12 }}>
+              <div style={{
+                fontSize: 10, color: T.blush, fontWeight: 700,
+                letterSpacing: 1.2, textTransform: "uppercase", marginBottom: 4,
+              }}>Current</div>
+              <p style={{ fontSize: 13, color: T.textMid, lineHeight: 1.65, margin: 0 }}>{c.current}</p>
+            </div>
+            <div>
+              <div style={{
+                fontSize: 10, color: T.sage, fontWeight: 700,
+                letterSpacing: 1.2, textTransform: "uppercase", marginBottom: 4,
+              }}>Fix principle</div>
+              <p style={{ fontSize: 13, color: T.textHi, lineHeight: 1.65, margin: 0 }}>{c.fix}</p>
+            </div>
+          </article>
+        ))}
+      </div>
+
+      <SectionLabel>Page-by-page: what each page shows when there's no cycle data</SectionLabel>
+      <div style={{
+        backgroundColor: T.surface,
+        border: `1px solid ${T.border}`,
+        borderRadius: 12, overflow: "hidden",
+        marginBottom: 22,
+      }}>
+        <div style={{
+          display: "grid",
+          gridTemplateColumns: "minmax(110px, 130px) 1fr 1fr",
+          background: T.surfaceHi,
+          padding: "10px 14px",
+          fontSize: 10.5, fontWeight: 700, letterSpacing: 1.2,
+          textTransform: "uppercase", color: T.gold,
+        }}>
+          <div>Page</div>
+          <div>Currently (no cycle data)</div>
+          <div>Should show</div>
+        </div>
+        {WHOLENESS_PAGE_ROWS.map((row, i) => (
+          <div key={row.page} style={{
+            display: "grid",
+            gridTemplateColumns: "minmax(110px, 130px) 1fr 1fr",
+            gap: 14,
+            padding: "12px 14px",
+            borderTop: `1px solid ${T.border}`,
+            background: i % 2 === 0 ? T.surface : T.surfaceHi,
+          }}>
+            <div style={{ fontSize: 13, fontWeight: 600, color: T.gold, lineHeight: 1.45 }}>{row.page}</div>
+            <div style={{ fontSize: 12.5, color: T.blush, lineHeight: 1.55, fontStyle: "italic" }}>{row.cur}</div>
+            <div style={{ fontSize: 12.5, color: T.textHi, lineHeight: 1.55 }}>{row.should}</div>
           </div>
         ))}
+      </div>
+
+      <SectionLabel>The fix · life stage as the primary context, cycle as one expression of it</SectionLabel>
+      <div style={{
+        backgroundColor: T.surface,
+        border: `1px solid ${T.gold}`,
+        borderRadius: 12, padding: "16px 18px", marginBottom: 22,
+      }}>
+        <p style={{ fontSize: 13.5, color: T.textHi, lineHeight: 1.7, margin: 0 }}>
+          The 11 life stages already exist. The fix is making them as richly surfaced as cycle phase — not just a profile setting
+          but a live context that shapes every page just as much as cycle day currently does. A perimenopausal user should feel as
+          known by the app as a user in their follicular phase.
+        </p>
+      </div>
+
+      <SectionLabel>Wholeness features · built into every page, not a new section</SectionLabel>
+      <div style={{
+        backgroundColor: T.surface,
+        border: `1px solid ${T.border}`,
+        borderRadius: 12, padding: "16px 18px",
+      }}>
+        <ul style={{ margin: 0, padding: 0, listStyle: "none" }}>
+          {WHOLENESS_GAPS.map((line) => (
+            <li key={line} style={{
+              display: "flex", gap: 8, alignItems: "flex-start",
+              fontSize: 13, color: T.textHi, lineHeight: 1.65, marginBottom: 10,
+            }}>
+              <span aria-hidden="true" style={{ color: T.sage, fontWeight: 700, flexShrink: 0 }}>◆</span>
+              <span>{line}</span>
+            </li>
+          ))}
+        </ul>
       </div>
     </div>
   );
