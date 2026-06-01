@@ -60,7 +60,7 @@ const ALLOWED = new Set([
   "ojihalliburton57@gmail.com",
 ]);
 
-const TABS = ["Lab", "Pages", "Roadmap", "Ideas", "Strategy", "Legal", "Decisions", "Journal", "🏥 Health Corner"];
+const TABS = ["Lab", "Pages", "Roadmap", "Ideas", "Strategy", "Legal", "Decisions", "Journal", "Another You", "UX & Design", "Wholeness", "LGBTQ+", "🏥 Health Corner"];
 
 const IDEAS_KEY  = "femwell_ideas";
 const CHECKS_KEY = "femwell_founder_checks";
@@ -475,7 +475,11 @@ function FoundersInner({ user }) {
         {tab === "Strategy"  && <StrategyTab />}
         {tab === "Legal"     && <LegalTab />}
         {tab === "Decisions" && <DecisionsTab />}
-        {tab === "Journal"   && <JournalTab />}
+        {tab === "Journal"     && <JournalTab />}
+        {tab === "Another You" && <AnotherYouTab />}
+        {tab === "UX & Design" && <UxDesignTab />}
+        {tab === "Wholeness"   && <WholenessTab />}
+        {tab === "LGBTQ+"      && <LgbtqTab />}
         {tab === "🏥 Health Corner" && <HealthCornerRedirectCard />}
       </main>
     </FullBleed>
@@ -1554,6 +1558,593 @@ function JournalTab() {
           fontFamily: '"Fraunces", "Cormorant Garamond", Georgia, serif',
           fontSize: 16, fontStyle: "italic", color: T.gold,
         }}>Awaiting Halli's approval before any demo build begins.</div>
+      </div>
+    </div>
+  );
+}
+
+// ════════════════════════════════════════════════════════════════════════════
+// Shared building blocks for the four read-only research tabs below
+// ════════════════════════════════════════════════════════════════════════════
+function PageHeader({ title, subtitle, badge, badgeTone = "red" }) {
+  const tone = badgeTone === "gold"
+    ? { bg: T.goldSoft, fg: T.gold, border: T.gold }
+    : badgeTone === "sage"
+      ? { bg: T.sageSoft, fg: T.sage, border: T.sage }
+      : { bg: T.redSoft, fg: T.red, border: T.red };
+  return (
+    <div style={{
+      backgroundColor: T.surface,
+      border: `1px solid ${T.border}`,
+      borderRadius: 14,
+      padding: "22px 22px 20px",
+      marginBottom: 22,
+    }}>
+      <div style={{
+        fontFamily: '"Fraunces", "Cormorant Garamond", Georgia, serif',
+        fontSize: 28, fontWeight: 700, color: T.gold,
+        letterSpacing: -0.4, lineHeight: 1.15, marginBottom: 6,
+      }}>{title}</div>
+      <div style={{
+        fontSize: 13, color: T.textMid, lineHeight: 1.55, marginBottom: badge ? 14 : 0,
+      }}>{subtitle}</div>
+      {badge && (
+        <div style={{
+          display: "inline-block",
+          background: tone.bg, color: tone.fg,
+          border: `1px solid ${tone.border}`,
+          borderRadius: 6, padding: "5px 12px",
+          fontSize: 11, fontWeight: 700, letterSpacing: 1.2,
+          textTransform: "uppercase",
+        }}>{badge}</div>
+      )}
+    </div>
+  );
+}
+
+function FeatureCard({ n, name, tagline, body, tier }) {
+  const tierStyle = tier === "addon"
+    ? { bg: T.surfaceHi, fg: T.textMuted, border: T.border, label: "Addon" }
+    : { bg: T.goldSoft, fg: T.gold, border: T.gold, label: "Core" };
+  return (
+    <article style={{
+      backgroundColor: T.surface,
+      border: `1px solid ${T.border}`,
+      borderRadius: 14,
+      padding: "18px 20px 16px",
+    }}>
+      <div style={{ display: "flex", alignItems: "flex-start", gap: 14, marginBottom: 10 }}>
+        <div style={{
+          width: 36, height: 36, borderRadius: "50%",
+          background: tier === "addon" ? T.surfaceHi : T.goldSoft,
+          color: tier === "addon" ? T.textMuted : T.gold,
+          border: `1px solid ${tier === "addon" ? T.border : T.gold}`,
+          display: "flex", alignItems: "center", justifyContent: "center",
+          fontFamily: '"Fraunces", "Cormorant Garamond", Georgia, serif',
+          fontSize: 18, fontWeight: 700, flexShrink: 0,
+        }}>{n}</div>
+        <div style={{ flex: 1 }}>
+          <div style={{ display: "flex", alignItems: "baseline", gap: 8, flexWrap: "wrap", marginBottom: 4 }}>
+            {tier && (
+              <span style={{
+                background: tierStyle.bg, color: tierStyle.fg,
+                border: `1px solid ${tierStyle.border}`,
+                padding: "2px 8px", borderRadius: 999,
+                fontSize: 9.5, fontWeight: 700, letterSpacing: 1.2,
+                textTransform: "uppercase",
+              }}>{tierStyle.label}</span>
+            )}
+            <div style={{
+              fontFamily: '"Fraunces", "Cormorant Garamond", Georgia, serif',
+              fontSize: 18, fontWeight: 700, color: T.textHi,
+              letterSpacing: -0.1, lineHeight: 1.25,
+            }}>{name}</div>
+          </div>
+          {tagline && (
+            <div style={{
+              fontFamily: '"Fraunces", "Cormorant Garamond", Georgia, serif',
+              fontSize: 13.5, fontStyle: "italic", color: T.blush,
+              lineHeight: 1.5, marginBottom: 8,
+            }}>{tagline}</div>
+          )}
+        </div>
+      </div>
+      <p style={{
+        fontSize: 13, color: T.textMid, lineHeight: 1.7, margin: 0,
+      }}>{body}</p>
+    </article>
+  );
+}
+
+// ════════════════════════════════════════════════════════════════════════════
+// Tab — Another You (Shadow / Mirror / Oracle page concept)
+// ════════════════════════════════════════════════════════════════════════════
+const ANOTHER_YOU_PAGE_TABS = [
+  { name: "Mirror",    desc: "Archetype mapping, shadow cycle map, data reflection" },
+  { name: "Shadow",    desc: "Shadow Letter, Burn Mode, Night Self / 3AM mode" },
+  { name: "Oracle",    desc: "Data-wired horoscope, Human Design crosscheck, lunar sync" },
+  { name: "Dark Moon", desc: "Collective Shadow, personalised ritual design" },
+];
+
+const ANOTHER_YOU_FEATURES = [
+  { n: 1, tier: "core", name: "THE SHADOW LETTER", tagline: "Once per cycle, Jess writes as you — not to you.",
+    body: "Analyses mood variance, journal tone gaps, habit abandonment, and symptom patterns to write a letter in first-person as the suppressed version of you. Types itself character-by-character. After reveal: \"Is this her?\" — saves or prompts reflection. Hard-private: never in Doctor Export, never in Partner Sync." },
+  { n: 2, tier: "core", name: "SHADOW ACROSS THE CYCLE", tagline: "A map of when your shadow shows up.",
+    body: "Algorithm computes per-day divergence between stated mood/energy and behavioural/linguistic signals (journal sentiment, habit compliance). Renders as a circular 28-day map — colour saturation deepens in high-divergence windows. After 3 cycles the pattern stabilises. Jess writes 2 sentences per peak window: \"Days 22-25: Your logs say 'fine.' Your patterns say otherwise.\"" },
+  { n: 3, tier: "core", name: "THE DATA CONFESSION", tagline: "Monthly. One thing your data reveals that you haven't admitted.",
+    body: "Jess finds the most significant behavioural pattern — systematic gaps, stated intentions that data contradicts, Monday crashes, things mentioned to Jess but never logged. One confession per month. Below it: \"What do you know about this that I don't?\" User responds or dismisses. Dismissed confessions never repeat." },
+  { n: 4, tier: "core", name: "HOROSCOPE WIRED TO YOUR ACTUAL DATA", tagline: "Co-Star uses your birth chart. We use your last 7 days.",
+    body: "Astra generates your horoscope using star sign PLUS current cycle phase, mood trend, most logged symptoms, energy trajectory, journal themes, shadow window position. Instead of \"Sagittarians may feel conflicted\" → \"Your data says your energy has been climbing since Tuesday. Your chart says this is your season for initiation. Something is trying to begin.\" Data and chart agreements/divergences both surfaced. Moves from Lifestyle to Another You as primary home." },
+  { n: 5, tier: "core", name: "MOON × CYCLE × MOOD CORRELATION", tagline: "Your personal lunar sync. Not a theory — your data.",
+    body: "Tracks moon phase as background variable (calculated from date, no API). After 3 cycles: \"Your period starts within 2 days of the new moon in 3 out of 4 cycles.\" Visual: two overlapping circles — lunar cycle and menstrual cycle — gold glow where they align. 24% of women under 35 show sync. FemWell finds out if you're one of them." },
+  { n: 6, tier: "core", name: "THE NIGHT SELF / 3AM MODE", tagline: "Between 11pm and 4am, everything else disappears.",
+    body: "Full-screen dark interface, single text field, immediate keyboard. One label: \"3am self. No analysis. No judgment. Write.\" Save (kept private, never analysed) or Release (instant burn). Monthly: if 3+ night entries, Jess writes one observation: \"I notice you're visiting them.\" Ends at 4am automatically." },
+  { n: 7, tier: "core", name: "THE COLLECTIVE SHADOW", tagline: "Every week, thousands move through the same patterns. You won't know their names. You'll feel less alone.",
+    body: "Anonymised aggregate of emotional themes across all Another You users — rendered as a written piece, not a data report. \"This week, thousands of you were in your shadow window. Tuesday felt heavier than you said it was.\" A word cloud of one-word responses from the collective. K-anonymity protected. Opt-in to contribute." },
+  { n: 8, tier: "core", name: "ARCHETYPE MAPPING ACROSS YOUR CYCLE", tagline: "Not what the archetypes mean. What YOUR archetype is, based on your data.",
+    body: "Eight archetypes: Menstrual (The Sage / The Hermit), Follicular (The Maiden / The Dreamer), Ovulatory (The Mother / The Performer), Luteal (The Crone / The Critic). Assigned from behavioural data — not self-report. The Dreamer if follicular shows aspiration language but low task completion. The Critic if luteal journal uses negative self-referential language. Shareable archetype wheel (image export, no health data visible)." },
+  { n: 9, tier: "core", name: "RITUAL DESIGN PERSONALISED TO YOUR DATA", tagline: "Not a generic full-moon ritual. One designed for this window in your specific body.",
+    body: "Jess pulls: current phase, moon phase, shadow window position, HD authority type, Data Confession pattern. Generates a 3–5 element ritual with reasons. Each element links to Explore content where possible. \"Save to Planner\" creates PlannerItems for the next 3 days." },
+  { n: 10, tier: "addon", name: "HUMAN DESIGN CROSSCHECK", tagline: "50M HD charts globally. None of them checked against behavioural data.",
+    body: "User enters birth date/time/place. FemWell calculates HD type, profile, authority. Jess cross-references against actual behavioural data: \"Your Projector design suggests working in bursts. Your habit data shows completions peak before 11am and almost never after 5pm. That's your design, not a character flaw.\"" },
+  { n: 11, tier: "addon", name: "BURN MODE (user-set timer)", tagline: "Write knowing it will be gone. Burn in 1 hour / 24 hours / on a specific date / when you tap the flame.",
+    body: "Entry lives with an amber countdown. On burn date: fire animation consuming the entry, \"Released.\" Only metadata kept (date created, date burned). Jess never reads Burn entries — explicit UI guarantee." },
+  { n: 12, tier: "addon", name: "GUT FEELING TRACKER", tagline: "Log an intuition. Set a test date. Find out if you were right.",
+    body: "Builds an evidence base for her specific intuition accuracy per category: body / relationships / health / situations. After 10 resolved predictions: \"Your body gut feelings are right 78% of the time. Your relationship gut feelings are right 41% — that might be fear, not intuition.\" Correlation with cycle phase after 3 months." },
+];
+
+const ANOTHER_YOU_COMPLIANCE = [
+  "Birth data for Human Design requires explicit consent + GDPR Article 6(1)(a)",
+  "Burn Mode: irretrievability must be disclosed before first use",
+  "Crisis monitoring active in all entry modes",
+  "Collective Shadow: k-anonymity, minimum group size 50 before aggregate shown",
+  "Age gate recommendation: 18+ for Another You (the psychological depth)",
+  '"Not medical advice" on all Jess-generated content',
+];
+
+function AnotherYouTab() {
+  return (
+    <div>
+      <PageHeader
+        title="Another You — /AnotherYou Page Concept"
+        subtitle="The most ambitious page in the app. No competitor can build this — they don't have our data."
+        badge="Research complete · awaiting build approval"
+        badgeTone="red"
+      />
+
+      <SectionLabel>Strategic case</SectionLabel>
+      <div style={{
+        backgroundColor: T.surface,
+        border: `1px solid ${T.gold}`,
+        borderRadius: 12, padding: "16px 18px", marginBottom: 22,
+      }}>
+        <p style={{ fontSize: 13.5, color: T.textHi, lineHeight: 1.7, margin: 0 }}>
+          FemWell has months of behavioural data. Co-Star uses birth chart data for 45M users and still writes generic copy.
+          FemWell is the first app with both a behavioural data layer AND a spiritual/astrology persona (Astra). The Shadow page is where data becomes something uncanny.
+        </p>
+      </div>
+
+      <SectionLabel>Page name</SectionLabel>
+      <div style={{
+        backgroundColor: T.surface,
+        border: `1px solid ${T.border}`,
+        borderRadius: 12, padding: "16px 18px", marginBottom: 22,
+      }}>
+        <div style={{ marginBottom: 10 }}>
+          <span style={{ fontSize: 10.5, color: T.gold, fontWeight: 700, letterSpacing: 1.2, textTransform: "uppercase", marginRight: 8 }}>Recommended</span>
+          <span style={{ fontFamily: '"Fraunces", Georgia, serif', fontSize: 18, color: T.textHi, fontStyle: "italic" }}>"Another You"</span>
+          <span style={{ color: T.textMuted, marginLeft: 8 }}>at /AnotherYou</span>
+        </div>
+        <p style={{
+          fontFamily: '"Fraunces", Georgia, serif', fontSize: 15, fontStyle: "italic", color: T.blush,
+          margin: "0 0 12px", lineHeight: 1.5,
+        }}>"The version of you that your data has been quietly describing."</p>
+        <p style={{ fontSize: 12.5, color: T.textMid, lineHeight: 1.6, margin: 0 }}>
+          Design: deep indigo-black background (#0D0B14), smoke-like card surfaces, violet/silver/amber accents. Cormorant Garamond italic headers.
+          Cards drift in (no bounce, no spring). Shadow Letter types itself 12 ms/character.
+        </p>
+      </div>
+
+      <SectionLabel>4-tab structure (within the page)</SectionLabel>
+      <div style={{
+        display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(180px, 1fr))",
+        gap: 10, marginBottom: 22,
+      }}>
+        {ANOTHER_YOU_PAGE_TABS.map((t) => (
+          <div key={t.name} style={{
+            backgroundColor: T.surface,
+            border: `1px solid ${T.border}`,
+            borderRadius: 10, padding: "14px 14px",
+          }}>
+            <div style={{
+              fontFamily: '"Fraunces", Georgia, serif',
+              fontSize: 18, color: T.gold, fontWeight: 600, marginBottom: 6,
+              letterSpacing: -0.1,
+            }}>[ {t.name} ]</div>
+            <div style={{ fontSize: 12, color: T.textMid, lineHeight: 1.55 }}>{t.desc}</div>
+          </div>
+        ))}
+      </div>
+
+      <SectionLabel>The 12 top features</SectionLabel>
+      <div style={{ display: "flex", flexDirection: "column", gap: 12, marginBottom: 22 }}>
+        {ANOTHER_YOU_FEATURES.map((f) => (
+          <FeatureCard key={f.n} {...f} />
+        ))}
+      </div>
+
+      <SectionLabel>Opt-out design</SectionLabel>
+      <div style={{
+        backgroundColor: T.surface,
+        border: `1px solid ${T.border}`,
+        borderRadius: 12, padding: "16px 18px", marginBottom: 22,
+      }}>
+        <p style={{ fontSize: 13, color: T.textMid, lineHeight: 1.7, margin: 0 }}>
+          First visit: single card —{" "}
+          <em style={{ color: T.blush }}>"Your data has been watching you. Not the version you show the world — the other one."</em>
+          {" "}Button: <strong style={{ color: T.textHi }}>"Meet her"</strong> / <strong style={{ color: T.textHi }}>"Not now"</strong>.
+          Hard disable in Settings removes the page from nav. Full data delete on disable.
+        </p>
+      </div>
+
+      <SectionLabel>Compliance notes</SectionLabel>
+      <div style={{
+        backgroundColor: T.surface,
+        border: `1px solid ${T.blush}`,
+        borderRadius: 12, padding: "16px 18px",
+      }}>
+        <ul style={{ margin: 0, padding: 0, listStyle: "none" }}>
+          {ANOTHER_YOU_COMPLIANCE.map((line) => (
+            <li key={line} style={{
+              display: "flex", gap: 8, alignItems: "flex-start",
+              fontSize: 12.5, color: T.textMid, lineHeight: 1.6, marginBottom: 8,
+            }}>
+              <span aria-hidden="true" style={{ color: T.blush, fontWeight: 700, flexShrink: 0 }}>◆</span>
+              <span>{line}</span>
+            </li>
+          ))}
+        </ul>
+      </div>
+    </div>
+  );
+}
+
+// ════════════════════════════════════════════════════════════════════════════
+// Tab — UX & Design research
+// ════════════════════════════════════════════════════════════════════════════
+const UX_RECS = [
+  { n: 1,  name: "Three-tier information architecture",            body: "Every page should have Glance (1s — what do I need right now), Scan (10s — what's relevant today), Deep Dive (full data, optional). Currently most pages are all in Deep Dive mode by default. Linear uses this — complex project management feels simple because of information tiering." },
+  { n: 2,  name: "Sticky phase context bar",                       body: "A persistent 32dp bar at the top of every page showing: cycle day + phase name + life stage tag. Implemented via IntersectionObserver. User never loses their health context as they navigate. Eliminates the need for phase explanation on every page." },
+  { n: 3,  name: "Phase-smart accordion defaults",                 body: "Based on today's phase, the most relevant section on each page opens automatically. In luteal: Mind & Insight opens first. In follicular: Schedule & Cycle. The user's context decides what's prominent — not a generic layout." },
+  { n: 4,  name: "Horizontal snap carousels for parallel options", body: "Currently using vertical stacks of similar-weight cards. Spotify, App Store, and Pinterest all use horizontal snapping for exploration without commitment. Use for: entry type selection in Journal, feature discovery in Explore, ritual bundle selection in Planner." },
+  { n: 5,  name: "Persistent scroll position",                     body: "Every page should remember exactly where the user was. iOS-native behaviour: UIScrollView maintains position. FemWell currently resets to top on every navigation. This is the single most-cited friction point in health apps." },
+  { n: 6,  name: "Jess as structural narrator, not just a bottom card", body: "Jess currently appears as a floating card or a separate page. The research shows AI companions woven into the page structure (not bolted on) have 3× higher engagement. Jess should provide a one-line observation in every page's header area on relevant pages." },
+  { n: 7,  name: "The Health Corner letter layout for long-form content", body: "The letter aesthetic (paper-on-surface, Cormorant Garamond, botanical dividers) should be a reusable pattern for all long-form content: Health Corner letters, Doctor Export summary, Journal insights, Another You letters. Consistency creates familiarity." },
+  { n: 8,  name: '"What Jess has noticed" as a structural zone',   body: "On Today, Planner, and Journal: a dedicated espresso card that is ALWAYS present, showing Jess's one current observation. Not a notification. Not a chat bubble. A named structural zone. Users learn to look for it. Finch uses this pattern — the \"How Finch is doing\" card is always in the same place." },
+  { n: 9,  name: "Phase-aware empty states",                       body: "Currently: generic \"nothing here yet\" messages. Should be: \"It's day 26 of your cycle — your energy often dips here. Nothing logged yet today is okay.\" Empty states as emotional intelligence rather than placeholder text." },
+  { n: 10, name: "Celebration as structure, not confetti",         body: "Milestone moments (first cycle logged, first Jess conversation, first pattern insight unlocked) should have a distinct full-screen moment — not an animation overlay on a normal page. Day One's \"your memories\" card, Spotify Wrapped, Duolingo's celebration screens — all use intentional full-screen moments for milestones." },
+  { n: 11, name: "Progressive relationship architecture (30/90/365 days)", body: "The app should look and feel meaningfully different at 30, 90, and 365 days. At day 1: introductory copy, simple views. At day 30: pattern insights start unlocking, Jess references history. At day 90: archetype mapping, predictive prompts. At day 365: Year in Phases letter. This is the retention architecture — not streaks." },
+  { n: 12, name: "Voice-first context-aware logging",              body: "The Universal Logger FAB currently opens a form. It should open a voice-first interface: Jess listens and parses. \"Just had a hot flash\" → logged to HotFlashLog. \"Feeling pretty good today, 4/5\" → DailyCheckins. This is built (Voice Logger) — it needs to BE the default logging UX, not a secondary option." },
+];
+
+const UX_PRINCIPLES = [
+  "Warmth is structural (cream / espresso / blush are data-carrying colours, not decoration)",
+  "Typography IS hierarchy (Cormorant Garamond for trusted voice, system font for data, italic for Jess)",
+  "Data as landscape, not chart (the cycle calendar IS landscape art — lean into this)",
+  "Motion as breath (fade and surface, never bounce or spring except for celebration moments)",
+  "24dp padding between cards · 1dp divider at 10% opacity between sections · 44px minimum touch targets · 18sp minimum body text",
+];
+
+function UxDesignTab() {
+  return (
+    <div>
+      <PageHeader
+        title="UX & Design Research — Cross-App Patterns"
+        subtitle="Deep research across 16 apps outside wellness to fix the generic-assets problem"
+      />
+
+      <SectionLabel>The problem</SectionLabel>
+      <div style={{
+        backgroundColor: T.surface,
+        border: `1px solid ${T.border}`,
+        borderRadius: 12, padding: "16px 18px", marginBottom: 22,
+      }}>
+        <p style={{ fontSize: 13.5, color: T.textHi, lineHeight: 1.7, margin: 0 }}>
+          The app has many features and currently uses the same card / button / section patterns everywhere — feels generic and overwhelming.
+          Research from Linear, Things 3, Spotify, Duolingo, Finch, Arc, Robinhood, and 9 others identifies 12 high-impact UX improvements.
+        </p>
+      </div>
+
+      <SectionLabel>The 12 highest-impact recommendations</SectionLabel>
+      <div style={{ display: "flex", flexDirection: "column", gap: 10, marginBottom: 22 }}>
+        {UX_RECS.map((r) => (
+          <article key={r.n} style={{
+            backgroundColor: T.surface,
+            border: `1px solid ${T.border}`,
+            borderRadius: 12, padding: "14px 16px",
+          }}>
+            <div style={{ display: "flex", alignItems: "flex-start", gap: 12, marginBottom: 6 }}>
+              <div style={{
+                width: 28, height: 28, borderRadius: "50%",
+                background: T.goldSoft, color: T.gold,
+                border: `1px solid ${T.gold}`,
+                display: "flex", alignItems: "center", justifyContent: "center",
+                fontFamily: '"Fraunces", Georgia, serif',
+                fontSize: 14, fontWeight: 700, flexShrink: 0,
+              }}>{r.n}</div>
+              <div style={{
+                fontSize: 14, fontWeight: 600, color: T.textHi,
+                lineHeight: 1.4, paddingTop: 2,
+              }}>{r.name}</div>
+            </div>
+            <p style={{
+              fontSize: 12.5, color: T.textMid, lineHeight: 1.65,
+              margin: "0 0 0 40px",
+            }}>{r.body}</p>
+          </article>
+        ))}
+      </div>
+
+      <SectionLabel>Visual design principles</SectionLabel>
+      <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+        {UX_PRINCIPLES.map((p) => (
+          <div key={p} style={{
+            backgroundColor: T.surface,
+            border: `1px solid ${T.sage}`,
+            borderRadius: 10, padding: "12px 16px",
+            display: "flex", alignItems: "flex-start", gap: 10,
+          }}>
+            <span aria-hidden="true" style={{ color: T.sage, fontSize: 14, fontWeight: 700, flexShrink: 0 }}>◆</span>
+            <span style={{ fontSize: 13, color: T.textHi, lineHeight: 1.65 }}>{p}</span>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+// ════════════════════════════════════════════════════════════════════════════
+// Tab — Wholeness (women's lives beyond the cycle)
+// ════════════════════════════════════════════════════════════════════════════
+const WHOLENESS_FEATURES = [
+  { n: 1, name: "Life Dimensions Journal",                body: "Journal entries that aren't about health: work, relationships, money, creative blocks, grief, joy. These should be first-class entry types, not afterthoughts. The journal is for the whole life." },
+  { n: 2, name: "The 3AM Gap",                            body: "Anxiety, loneliness, and existential searching between 11PM–4AM. Research consistently documents this specific sleep-disruption moment. No wellness app serves this experience. (Another You's Night Self serves this — the Wholeness framing is: this is a life experience, not just a spiritual one.)" },
+  { n: 3, name: "Everyday Joy Log",                       body: "Not gratitude practice. Not self-care. The tiny actual things: the coffee this morning, that song, a text that made you laugh. Mundane beauty capture. Day One does this but not with a women's health lens." },
+  { n: 4, name: "Grief and Loss Space",                   body: "A specific container, not a journal entry type. The app has no real home for pregnancy loss, friendship ending, parent illness, relationship grief, the grief of perimenopause identity shift. A designated space with warm copy and relevant resources." },
+  { n: 5, name: "Money Stress Tracking",                  body: "Financial anxiety is the top non-health stressor for women 25–45. It correlates with mood, sleep, and symptoms. Logging \"financial stress\" as a DailyCheckins field would capture clinically relevant data and make women feel seen." },
+  { n: 6, name: "Relationship Map",                       body: "Built from journal mentions over time. Jess quietly notices the names that appear repeatedly and builds a map of the user's relational world. Not displayed by default — shown when asked: \"Who have you written about most this year?\"" },
+  { n: 7, name: "Creativity and Play Space",              body: "Not productive, not optimised, just creative. A section of the journal (or standalone) for doodles, fragments, half-ideas, songs stuck in her head. The female creative tradition as a health practice, not a productivity tool." },
+  { n: 8, name: 'The "what actually happened today" entry', body: "A mundane daily life capture. Not health data. Not a check-in. \"Had the meeting. Ate a sandwich. Rained the whole day. Finished the book.\" The texture of a life, not a data point. This is what diaries have always been. FemWell should honour that." },
+];
+
+const WHOLENESS_ENGAGEMENT = [
+  { label: "Shame-free streaks", body: 'Call it "writing rhythm" not "streak." Show a habit grid (dots, not a counter). When broken, show "last wrote 3 days ago" — never a zero.' },
+  { label: "Recovery messaging", body: '"Welcome back — you last wrote about [theme]. How\'s that sitting now?"' },
+  { label: "Menstrual phase grace", body: 'Threshold drops during menstrual phase, notifications reduce, "rest is part of your cycle too."' },
+  { label: "The one question that drives retention", body: '"Did you feel understood today?" Apps that create this feeling retain 4× better.' },
+];
+
+function WholenessTab() {
+  return (
+    <div>
+      <PageHeader
+        title="Wholeness — Women's Lives Beyond the Cycle"
+        subtitle="The app is excellent on cycle health. It needs to be as good on the rest of a woman's life."
+      />
+
+      <SectionLabel>The insight</SectionLabel>
+      <div style={{
+        backgroundColor: T.surface,
+        border: `1px solid ${T.gold}`,
+        borderRadius: 12, padding: "16px 18px", marginBottom: 22,
+      }}>
+        <p style={{ fontSize: 13.5, color: T.textHi, lineHeight: 1.7, margin: 0 }}>
+          Women don't just have hormones. They have jobs, grief, creativity, friendships, financial anxiety, and a life that doesn't pause for their cycle.
+          The top reason women abandon wellness apps: they feel designed for an idealised user with consistent schedules and predictable motivation.
+          The streak mechanic specifically accelerates disengagement when life gets hard.
+        </p>
+      </div>
+
+      <SectionLabel>8 missing features</SectionLabel>
+      <div style={{ display: "flex", flexDirection: "column", gap: 10, marginBottom: 22 }}>
+        {WHOLENESS_FEATURES.map((f) => (
+          <article key={f.n} style={{
+            backgroundColor: T.surface,
+            border: `1px solid ${T.border}`,
+            borderRadius: 12, padding: "14px 16px",
+          }}>
+            <div style={{ display: "flex", alignItems: "flex-start", gap: 12, marginBottom: 6 }}>
+              <div style={{
+                width: 28, height: 28, borderRadius: "50%",
+                background: T.goldSoft, color: T.gold,
+                border: `1px solid ${T.gold}`,
+                display: "flex", alignItems: "center", justifyContent: "center",
+                fontFamily: '"Fraunces", Georgia, serif',
+                fontSize: 14, fontWeight: 700, flexShrink: 0,
+              }}>{f.n}</div>
+              <div style={{
+                fontSize: 14, fontWeight: 600, color: T.textHi,
+                lineHeight: 1.4, paddingTop: 2,
+              }}>{f.name}</div>
+            </div>
+            <p style={{
+              fontSize: 12.5, color: T.textMid, lineHeight: 1.65,
+              margin: "0 0 0 40px",
+            }}>{f.body}</p>
+          </article>
+        ))}
+      </div>
+
+      <SectionLabel>The engagement research summary</SectionLabel>
+      <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+        {WHOLENESS_ENGAGEMENT.map((row) => (
+          <div key={row.label} style={{
+            backgroundColor: T.surface,
+            border: `1px solid ${T.border}`,
+            borderRadius: 10, padding: "14px 16px",
+          }}>
+            <div style={{
+              fontSize: 10.5, color: T.gold, fontWeight: 700,
+              letterSpacing: 1.2, textTransform: "uppercase", marginBottom: 6,
+            }}>{row.label}</div>
+            <div style={{ fontSize: 13, color: T.textMid, lineHeight: 1.65 }}>{row.body}</div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+// ════════════════════════════════════════════════════════════════════════════
+// Tab — LGBTQ+ full inclusion plan
+// ════════════════════════════════════════════════════════════════════════════
+const LGBTQ_FINDINGS = [
+  "BMC Women's Health 2025: only 50% of 60 menstrual health apps use neutral or no pronouns. Minimum viable inclusion bar is low to clear.",
+  "Bisexual women: 59% lifetime depression rate (highest of any group), 69% lifetime IPV exposure. Jess needs specific awareness.",
+  "Trans women on HRT: experience monthly PMS-equivalent symptoms. Active cycle app users whose needs aren't served anywhere.",
+  "Trans men on testosterone: 26.8% still bleed at 3 months. \"No cycle\" assumption is wrong.",
+  "UK Online Safety Act obligations apply to LGBTQ+-targeted content moderation.",
+];
+
+const LGBTQ_QUICK = [
+  "Pronoun choice in onboarding (they/them, she/her, he/him, custom) — used by Jess throughout",
+  'Full copy audit: replace "husband/boyfriend" with "partner" throughout app',
+  '"No current cycle" mode for trans women and trans men on T who have stopped periods',
+  "LGBTQ+ crisis resources in Jess (Galop UK, MindOut) alongside Samaritans",
+  "Donor insemination / IVF pathway in TTC life stage (for same-sex couples TTC via donor)",
+];
+
+const LGBTQ_STRUCTURAL = [
+  { name: "Decouple cycle tracking from gender identity",
+    body: "The app should not assume everyone who tracks a cycle identifies as a woman. Opt-in framing on cycle features." },
+  { name: "Configurable life stages",
+    body: 'The fixed 11-stage list doesn\'t serve all users. Life stages should be configurable or at least include: "Cycling but not a woman" / "Trans + HRT" / "Non-binary + menstruating"' },
+  { name: "Jess LGBTQ+ awareness",
+    body: "JESS_PERSONA updated to: know queer TTC pathways, not assume heterosexual relationships, use user's pronoun preference throughout, have specific empathy for bisexual mental health burden" },
+  { name: "Partner Sync for same-sex couples",
+    body: "Partner Sync should work for same-sex TTC couples including IUI timing, donor tracking" },
+  { name: "Contextual LGBTQ+ content",
+    body: 'Embedded throughout the Health Corner letters, not in a separate "LGBTQ+ section" (which always feels like a ghetto)' },
+];
+
+const LGBTQ_DONT = [
+  "Do not add a pride flag in June and call it done.",
+  'Do not create a separate "LGBTQ+ mode" — this segregates rather than includes.',
+  "Do not ask about gender identity during onboarding then not use the answer anywhere in the app.",
+];
+
+function LgbtqTab() {
+  return (
+    <div>
+      <PageHeader
+        title="LGBTQ+ — Full Inclusion Plan"
+        subtitle="8–12% of FemWell's UK target market. Currently the app would feel exclusionary to most of them."
+      />
+
+      <SectionLabel>Key research findings</SectionLabel>
+      <div style={{ display: "flex", flexDirection: "column", gap: 10, marginBottom: 22 }}>
+        {LGBTQ_FINDINGS.map((line) => (
+          <div key={line} style={{
+            backgroundColor: T.surface,
+            border: `1px solid ${T.gold}`,
+            borderRadius: 10, padding: "12px 16px",
+            display: "flex", alignItems: "flex-start", gap: 10,
+          }}>
+            <span aria-hidden="true" style={{ color: T.gold, fontSize: 14, fontWeight: 700, flexShrink: 0 }}>◆</span>
+            <span style={{ fontSize: 13, color: T.textHi, lineHeight: 1.65 }}>{line}</span>
+          </div>
+        ))}
+      </div>
+
+      <SectionLabel>Quick wins · small, high visibility</SectionLabel>
+      <div style={{ display: "flex", flexDirection: "column", gap: 10, marginBottom: 22 }}>
+        {LGBTQ_QUICK.map((line, i) => (
+          <div key={i} style={{
+            backgroundColor: T.surface,
+            border: `1px solid ${T.sage}`,
+            borderRadius: 10, padding: "12px 16px",
+            display: "flex", alignItems: "flex-start", gap: 10,
+          }}>
+            <span aria-hidden="true" style={{
+              background: T.sageSoft, color: T.sage,
+              border: `1px solid ${T.sage}`,
+              borderRadius: "50%", width: 22, height: 22,
+              display: "flex", alignItems: "center", justifyContent: "center",
+              fontFamily: '"Fraunces", Georgia, serif',
+              fontSize: 12, fontWeight: 700, flexShrink: 0,
+            }}>{i + 1}</span>
+            <span style={{ fontSize: 13, color: T.textHi, lineHeight: 1.65 }}>{line}</span>
+          </div>
+        ))}
+      </div>
+
+      <SectionLabel>Structural changes · bigger, require planning</SectionLabel>
+      <div style={{ display: "flex", flexDirection: "column", gap: 10, marginBottom: 22 }}>
+        {LGBTQ_STRUCTURAL.map((row, i) => (
+          <article key={row.name} style={{
+            backgroundColor: T.surface,
+            border: `1px solid ${T.blush}`,
+            borderRadius: 12, padding: "14px 16px",
+          }}>
+            <div style={{ display: "flex", alignItems: "flex-start", gap: 12, marginBottom: 6 }}>
+              <div style={{
+                background: T.blushSoft, color: T.blush,
+                border: `1px solid ${T.blush}`,
+                borderRadius: "50%", width: 28, height: 28,
+                display: "flex", alignItems: "center", justifyContent: "center",
+                fontFamily: '"Fraunces", Georgia, serif',
+                fontSize: 13, fontWeight: 700, flexShrink: 0,
+              }}>{i + 1}</div>
+              <div style={{
+                fontSize: 14, fontWeight: 600, color: T.textHi,
+                lineHeight: 1.4, paddingTop: 2,
+              }}>{row.name}</div>
+            </div>
+            <p style={{
+              fontSize: 12.5, color: T.textMid, lineHeight: 1.65,
+              margin: "0 0 0 40px",
+            }}>{row.body}</p>
+          </article>
+        ))}
+      </div>
+
+      <SectionLabel>What NOT to do</SectionLabel>
+      <div style={{
+        backgroundColor: T.surface,
+        border: `1px solid ${T.red}`,
+        borderRadius: 12, padding: "16px 18px", marginBottom: 22,
+      }}>
+        <div style={{
+          display: "inline-block",
+          background: T.redSoft, color: T.red,
+          padding: "3px 10px", borderRadius: 6,
+          fontSize: 10.5, fontWeight: 700, letterSpacing: 1.2,
+          textTransform: "uppercase", marginBottom: 12,
+        }}>Amber warning</div>
+        <ul style={{ margin: 0, padding: 0, listStyle: "none" }}>
+          {LGBTQ_DONT.map((line) => (
+            <li key={line} style={{
+              display: "flex", gap: 8, alignItems: "flex-start",
+              fontSize: 12.5, color: T.textHi, lineHeight: 1.6, marginBottom: 8,
+            }}>
+              <span aria-hidden="true" style={{ color: T.red, fontWeight: 700, flexShrink: 0 }}>✕</span>
+              <span>{line}</span>
+            </li>
+          ))}
+        </ul>
+      </div>
+
+      <SectionLabel>Compliance note</SectionLabel>
+      <div style={{
+        backgroundColor: T.surface,
+        border: `1px solid ${T.gold}`,
+        borderRadius: 12, padding: "16px 18px",
+      }}>
+        <p style={{ fontSize: 13, color: T.textHi, lineHeight: 1.7, margin: 0 }}>
+          UK Equality Act 2010 protected characteristics include sexual orientation and gender reassignment. LGBTQ+ users reporting
+          discrimination in community features must have a clear escalation path.{" "}
+          <strong style={{ color: T.gold }}>Galop UK</strong> (not just Samaritans) should be in the crisis resources.
+        </p>
       </div>
     </div>
   );
