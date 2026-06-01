@@ -2046,176 +2046,258 @@ function UxDesignTab() {
 }
 
 // ════════════════════════════════════════════════════════════════════════════
-// Tab — Wholeness (the phase-centricity problem)
+// Tab — Wholeness (from cycle app to women's app)
 // ════════════════════════════════════════════════════════════════════════════
-const WHOLENESS_CATEGORIES = [
+const WHOLENESS_DIMENSIONS = [
   {
     n: 1,
-    name: "Features that break without phase data",
-    current: "Planner phase prompts show generic fallback. Jess opening card shows \"loading your phase.\" Health Corner letters start with phase salutation that means nothing to a menopausal user. Journal prompts are phase-tagged.",
-    fix: "Every feature needs a \"phase-independent\" mode that is as rich as the phase-aware mode. Not a fallback — a full alternative state. Menopausal users get life-stage-aware content that is as detailed and personal as cycle-aware content.",
+    name: "RELATIONSHIPS & FEMALE FRIENDSHIP",
+    what: "The people in her life — romantic partnerships, friendships, family, community belonging. The loneliness epidemic disproportionately affects women.",
+    why: "Female friendships are clinically protective (60% premature death risk reduction). Bumble BFF proved women want depth and context in connection, not swiping. No health app holds relationship health as a first-class dimension.",
+    femwell: "A relationships log in journal (write about specific people over time, Jess notices recurring themes), a friendship appreciation feature, community spaces organized by life circumstance not just cycle phase.",
+    cycle: "Ovulatory phase is naturally relational — the app can surface relationship prompts and social energy awareness during peak connection windows.",
   },
   {
     n: 2,
-    name: "The app has no value for life outside the body",
-    current: "Everything tracked is bodily — symptoms, mood, energy, sleep, nutrition, cycle. A woman's financial anxiety, creative blocks, career decisions, and grief have nowhere to go.",
-    fix: "The journal and Jess should serve the whole life. Jess should be able to hold a conversation about work stress without pivoting it to \"here's how your cycle phase affects work performance.\" Sometimes it's just work stress.",
+    name: "SEX & INTIMACY",
+    what: "Desire, pleasure, confidence, the quality of intimate relationships — not just fertility and conception.",
+    why: "Desire tracking is one of the most requested missing features in femtech. Libido fluctuates with cycle phase, life stress, relationship health, and medication. Currently FemWell has conception-framed intimacy content. Most women are not TTC.",
+    femwell: "Desire log (how connected do I feel today, in my body, with my partner/self), intimacy reflection journal type, phase-aware desire patterns surfaced as insight, body confidence content that isn't about weight or symptoms.",
+    cycle: "The cycle is the most powerful predictor of desire patterns — this is where phase intelligence is most directly applicable to something women actually feel.",
   },
   {
     n: 3,
-    name: "The language assumes cycling",
-    current: "\"Your cycle\", \"your phase\", \"cycle day X\" appears throughout the UI regardless of life stage.",
-    fix: "Adaptive language engine. Post-menopause user never sees \"cycle day.\" Pregnant user sees \"week X.\" User who hasn't set up cycle tracking sees day-based or calendar-based framing. Language adapts to the user's actual context, not the default template.",
+    name: "CAREER & AMBITION",
+    what: "Work satisfaction, career progression, workplace relationships, the negotiation gap, returning to work (postpartum, menopause), the ambition-guilt complex unique to women.",
+    why: "Career decisions intersect constantly with reproductive health (fertility treatment + work travel, postpartum return, perimenopause cognitive symptoms affecting work performance). No app holds both sides of this.",
+    femwell: "Career journal type, Jess who can hold a conversation about imposter syndrome without routing it through cycle data, a \"work capacity\" signal in the Planner (not just body capacity), a pre-negotiation confidence ritual.",
+    cycle: "Cognitive phase patterns are clinically documented — follicular for strategy sessions, ovulatory for presentations, menstrual for deep thinking. This makes the cycle lens genuinely useful for career planning.",
+  },
+  {
+    n: 4,
+    name: "FINANCIAL HEALTH & CONFIDENCE",
+    what: "Money management, wealth-building, financial anxiety, the gender wealth gap (21% in UK), financial decisions at life transitions (maternity leave, divorce, career change).",
+    why: "Only 38% of Gen Z/Millennial women feel confident discussing money vs 56% of men. Financial anxiety is the top non-health stressor for women 25–45. It correlates with mood, sleep, and health outcomes. FemWell already tracks mood — financial stress should be part of what Jess understands.",
+    femwell: "Financial stress as a DailyCheckins field (not financial advice — emotional state around money), a money journal type (\"what's my relationship with money this month\"), Jess awareness of financial stress as a life context.",
+    cycle: "Luteal phase is documented as highest financial anxiety window for many women — validating this pattern is clinically and emotionally useful.",
+  },
+  {
+    n: 5,
+    name: "GRIEF & LOSS",
+    what: "Pregnancy loss, fertility treatment grief, relationship endings, parent illness, job loss, the identity grief of life stage transitions (becoming a mother, entering perimenopause, children leaving home).",
+    why: "The Pregnancy After Loss app closed in 2025, leaving a documented gap. Grief is one of the most common experiences FemWell's life stages will encounter — TTC users experience loss regularly, postpartum grief is real, perimenopause involves profound identity loss. No health app holds grief well.",
+    femwell: "A dedicated grief container (separate from journal — specific, warm, no prompts to \"move on\"), a loss entry type that doesn't show up in insights or be analysed, Jess who can sit with grief without pivoting to health advice, crisis-adjacent resources for grief.",
+    cycle: "Grief often maps to specific cycle phases (luteal heightens grief intensity). Understanding this pattern is validating — not reductive.",
+  },
+  {
+    n: 6,
+    name: "BODY CONFIDENCE & AESTHETICS ON HER OWN TERMS",
+    what: "How she feels in and about her body — not as data, not clinically, but culturally, politically, personally. Beauty as self-expression, not performance.",
+    why: "Body image is the most common self-esteem driver for women under 45. Current FemWell has skin + hair tracking (clinically framed). Missing: the experience of feeling powerful in your body, dressing for yourself, the political act of loving your body in a culture that profits from you not doing so.",
+    femwell: "A body affirmation feature (not self-help platitudes — specific, earned, data-informed: \"your energy has been building all week. You know what that feels like in your body.\"), an aesthetic journal type (not skincare — how do I want to present today, what makes me feel like myself), beauty and culture content that treats women as subjects not objects.",
+    cycle: "How a woman feels about her body maps closely to cycle phase. This intelligence, used gently and affirmingly, is a genuine differentiator.",
+  },
+  {
+    n: 7,
+    name: "CREATIVITY & SELF-EXPRESSION",
+    what: "Making things, hobbies, art, writing, music, movement as creative expression — not just exercise.",
+    why: "Creativity is a documented protective factor for mental health. Julia Cameron's research on morning pages showed creativity practice reduces anxiety and depression. Women historically have had less permission for creative time. A women's app that honours creative life is unusual.",
+    femwell: "A creativity journal type (\"what did I make / imagine / notice today\"), a creative project log, content in the Health Corner letters about creativity and the feminine tradition, Jess who celebrates creative work without pivoting to productivity metrics.",
+    cycle: "Follicular and ovulatory phases are peak creative windows (higher verbal fluency, spatial reasoning, collaborative thinking). Surfacing this makes creative life feel supported by the app.",
+  },
+  {
+    n: 8,
+    name: "CULTURAL & SEASONAL RHYTHMS",
+    what: "The rhythms of a woman's year beyond her menstrual cycle — cultural seasons, personal anniversaries, collective moments, the social and cultural calendar she inhabits.",
+    why: "Women don't only live by their biological cycle. They live by school years, cultural seasons, personal anniversaries, the rhythms of the communities they belong to. An app that only understands one rhythm feels incomplete.",
+    femwell: "A personal seasonal calendar (her own significant dates — not birthdays only, but the date she moved out, the date she got diagnosed, the date she made a brave decision), cultural calendar awareness in content (the cultural mood of January vs June vs September), Jess who understands that December is hard for many women regardless of their cycle phase.",
+    cycle: "The interaction between cultural seasons and cycle phase is genuinely interesting — women often notice their cycle feels different in winter. Surfacing this correlation adds depth.",
+  },
+  {
+    n: 9,
+    name: "IDENTITY, VALUES & BECOMING",
+    what: "Who she is, what she stands for, who she's becoming. The questions that don't have quick answers and that health apps never ask.",
+    why: "Perimenopause and postpartum are the two life stages with the highest identity disruption. Women in these stages consistently say they need space to process who they are now — not medical information about what's happening to their body.",
+    femwell: "A values journal type, an identity prompt library (\"what am I willing to defend? what have I stopped pretending to care about?\"), Jess who can hold identity conversations without routing them through health context, a \"becoming\" archive — entries tagged as identity-shaping moments.",
+    cycle: "The menstrual phase is the phase of integration and identity processing — the quieter inward days are actually ideal for this kind of reflection.",
+  },
+  {
+    n: 10,
+    name: "REST, PLAY & JOY",
+    what: "Actual rest (not self-care-as-productivity), actual play (not optimised recreation), actual joy (the tiny mundane things). The right to waste time beautifully.",
+    why: "Women are systematically under-rested and over-optimised. The wellness industry — including most health apps — makes rest a task. FemWell should be the one app that gives women permission to do nothing and celebrates it.",
+    femwell: "An everyday joy log (not gratitude journalling — the tiny actual things: the coffee, the song, the good parking space), a \"nothing\" check-in option (no logging, no prompts — just the app acknowledging you showed up), Jess who can say \"that sounds like a good day\" without offering a health insight.",
+    cycle: "The menstrual phase is rest-permission built into biology. Using the cycle to validate rest rather than just explain it is a genuinely different framing.",
   },
 ];
 
-const WHOLENESS_PAGE_ROWS = [
-  { page: "Planner",       cur: 'Generic "set up your cycle to unlock"',                       should: "Life-stage phase (e.g. Week 28 of pregnancy, or just today's date + mood-based capacity)" },
-  { page: "Today",         cur: "Phase header shows fallback text",                            should: "Mood + energy check-in is primary; life-stage tip replaces phase tip" },
-  { page: "Journal",       cur: "Phase prompt feels irrelevant",                               should: 'Life-stage prompt OR a universal "what\'s alive for you today?"' },
-  { page: "Health Corner", cur: "Phase salutation feels wrong",                                should: "Life-stage salutation. Menopausal women get just as rich an opener." },
-  { page: "Jess",          cur: "Cycle context missing from her awareness",                    should: "Life stage + mood history as primary context. Jess knows she's talking to a postpartum woman, not a blank user." },
-  { page: "Pulse",         cur: "Charts show empty states waiting for cycle data",             should: "Non-cycle trends are prominent: mood trend, energy trend, habit consistency, sleep pattern" },
+const WHOLENESS_LETTERS = [
+  "A letter on relationships and friendship (as health)",
+  "A letter on career and ambition through a women's lens",
+  "A letter on money confidence",
+  "A letter on creativity as a health practice",
+  "A letter on grief and loss (not a crisis protocol — a considered, warm exploration)",
+  "A letter on beauty and body on your own terms",
 ];
 
-const WHOLENESS_GAPS = [
-  "Journal: non-health entry types are first class (work, relationships, grief, creativity, joy, money) — not health subfields",
-  "Jess: can hold a conversation that stays in the emotional / relational / professional register without routing it through health data",
-  'Today: a "how life is going" check-in that\'s separate from the health check-in (takes 10 seconds, captures: work / relationships / energy for life — not just body)',
-  "Planner: capacity model accounts for non-health context (Jess knows if you mentioned a hard meeting or financial stress)",
-  "Community: spaces organised by life circumstance and life stage, not just cycle phase",
-];
+function DimensionField({ label, body, labelTone }) {
+  const labelColor = labelTone === "blush" ? T.blush : labelTone === "sage" ? T.sage : T.gold;
+  return (
+    <div style={{ marginBottom: 10 }}>
+      <div style={{
+        fontSize: 10, color: labelColor, fontWeight: 700,
+        letterSpacing: 1.2, textTransform: "uppercase", marginBottom: 4,
+      }}>{label}</div>
+      <p style={{ fontSize: 13, color: T.textHi, lineHeight: 1.65, margin: 0 }}>{body}</p>
+    </div>
+  );
+}
+
+function DimensionCard({ d }) {
+  return (
+    <article style={{
+      backgroundColor: T.surface,
+      border: `1px solid ${T.border}`,
+      borderRadius: 14, padding: "18px 20px 16px",
+    }}>
+      <div style={{ display: "flex", alignItems: "flex-start", gap: 14, marginBottom: 14 }}>
+        <div style={{
+          width: 34, height: 34, borderRadius: "50%",
+          background: T.goldSoft, color: T.gold,
+          border: `1px solid ${T.gold}`,
+          display: "flex", alignItems: "center", justifyContent: "center",
+          fontFamily: '"Fraunces", Georgia, serif',
+          fontSize: 15, fontWeight: 700, flexShrink: 0,
+        }}>{d.n}</div>
+        <div style={{
+          fontFamily: '"Fraunces", Georgia, serif',
+          fontSize: 17, fontWeight: 700, color: T.textHi,
+          letterSpacing: 0.3, lineHeight: 1.3, paddingTop: 6,
+        }}>{d.name}</div>
+      </div>
+      <DimensionField label="What" body={d.what} labelTone="gold" />
+      <DimensionField label="Why it matters" body={d.why} labelTone="blush" />
+      <DimensionField label="In FemWell" body={d.femwell} labelTone="sage" />
+      <div>
+        <div style={{
+          fontSize: 10, color: T.gold, fontWeight: 700,
+          letterSpacing: 1.2, textTransform: "uppercase", marginBottom: 4,
+        }}>Cycle intelligence enhancement</div>
+        <p style={{ fontSize: 13, color: T.gold, lineHeight: 1.65, margin: 0, fontStyle: "italic" }}>{d.cycle}</p>
+      </div>
+    </article>
+  );
+}
 
 function WholenessTab() {
   return (
     <div>
       <PageHeader
-        title="Wholeness — The Phase Centricity Problem"
-        subtitle="The app is excellent on cycle health. The problem: it assumes you're always thinking about your cycle."
+        title="Wholeness — From Cycle App to Women's App"
+        subtitle="Phase intelligence is a strength. The vision is bigger: hold the whole of what it means to be a woman."
       />
 
-      <SectionLabel>The real issue</SectionLabel>
+      <SectionLabel>The vision shift</SectionLabel>
       <div style={{
         backgroundColor: T.surface,
         border: `1px solid ${T.gold}`,
-        borderRadius: 12, padding: "16px 18px", marginBottom: 22,
+        borderRadius: 12, padding: "18px 20px", marginBottom: 24,
       }}>
-        <p style={{ fontSize: 13.5, color: T.textHi, lineHeight: 1.7, margin: "0 0 10px" }}>
-          Every page in FemWell currently assumes cycle phase context. When that context is absent — postpartum (no cycle),
-          perimenopause (irregular cycle), menopausal (no cycle), first week in the app (no data) — the experience degrades.
-          Features show "waiting for data" states. Phase prompts feel irrelevant. The app implies you only matter when you're cycling.
+        <p style={{ fontSize: 13.5, color: T.textHi, lineHeight: 1.75, margin: "0 0 12px" }}>
+          FemWell is currently an excellent cycle and health tracking app. The goal is to become something more:
+          the companion that holds a woman's full life — her health, her relationships, her career, her grief, her
+          creativity, her money, her identity, her joy. Cycle and phase remain central strengths. They enrich
+          everything. But they should be one thread in a richer tapestry — not the whole tapestry.
         </p>
-        <p style={{ fontSize: 13.5, color: T.gold, lineHeight: 1.7, margin: 0, fontStyle: "italic" }}>
-          This is the phase-centricity problem. It's not about adding features. It's about rethinking the app's assumptions.
+        <p style={{ fontSize: 13.5, color: T.textMid, lineHeight: 1.75, margin: "0 0 12px" }}>
+          <span style={{ color: T.gold, fontWeight: 700 }}>Reference point: </span>
+          Goop proved women will invest heavily in a platform that takes the full breadth of their lives seriously.
+          FemWell has the health credibility Goop lacks. The question is whether FemWell expands to hold the rest.
+        </p>
+        <p style={{ fontSize: 13.5, color: T.textHi, lineHeight: 1.75, margin: 0, fontStyle: "italic" }}>
+          Harvard Nurses' Health Study: female friendships reduce premature death risk by 60% — equivalent to
+          quitting smoking. This finding alone is justification for a relationship dimension in a health app.
         </p>
       </div>
 
-      <SectionLabel>Three categories of the problem</SectionLabel>
-      <div style={{ display: "flex", flexDirection: "column", gap: 12, marginBottom: 22 }}>
-        {WHOLENESS_CATEGORIES.map((c) => (
-          <article key={c.n} style={{
-            backgroundColor: T.surface,
-            border: `1px solid ${T.border}`,
-            borderRadius: 14, padding: "18px 20px 16px",
-          }}>
-            <div style={{ display: "flex", alignItems: "flex-start", gap: 14, marginBottom: 12 }}>
-              <div style={{
-                width: 32, height: 32, borderRadius: "50%",
-                background: T.goldSoft, color: T.gold,
-                border: `1px solid ${T.gold}`,
-                display: "flex", alignItems: "center", justifyContent: "center",
-                fontFamily: '"Fraunces", Georgia, serif',
-                fontSize: 16, fontWeight: 700, flexShrink: 0,
-              }}>{c.n}</div>
-              <div style={{
-                fontFamily: '"Fraunces", Georgia, serif',
-                fontSize: 18, fontWeight: 700, color: T.textHi,
-                letterSpacing: -0.1, lineHeight: 1.3, paddingTop: 4,
-              }}>{c.name}</div>
-            </div>
-            <div style={{ marginBottom: 12 }}>
-              <div style={{
-                fontSize: 10, color: T.blush, fontWeight: 700,
-                letterSpacing: 1.2, textTransform: "uppercase", marginBottom: 4,
-              }}>Current</div>
-              <p style={{ fontSize: 13, color: T.textMid, lineHeight: 1.65, margin: 0 }}>{c.current}</p>
-            </div>
-            <div>
-              <div style={{
-                fontSize: 10, color: T.sage, fontWeight: 700,
-                letterSpacing: 1.2, textTransform: "uppercase", marginBottom: 4,
-              }}>Fix principle</div>
-              <p style={{ fontSize: 13, color: T.textHi, lineHeight: 1.65, margin: 0 }}>{c.fix}</p>
-            </div>
-          </article>
+      <SectionLabel>The 10 dimensions FemWell should hold</SectionLabel>
+      <div style={{ display: "flex", flexDirection: "column", gap: 14, marginBottom: 26 }}>
+        {WHOLENESS_DIMENSIONS.map((d) => (
+          <DimensionCard key={d.n} d={d} />
         ))}
       </div>
 
-      <SectionLabel>Page-by-page: what each page shows when there's no cycle data</SectionLabel>
+      <SectionLabel>What this means for Jess</SectionLabel>
       <div style={{
         backgroundColor: T.surface,
-        border: `1px solid ${T.border}`,
-        borderRadius: 12, overflow: "hidden",
-        marginBottom: 22,
+        border: `1px solid ${T.sage}`,
+        borderRadius: 12, padding: "18px 20px", marginBottom: 24,
       }}>
-        <div style={{
-          display: "grid",
-          gridTemplateColumns: "minmax(110px, 130px) 1fr 1fr",
-          background: T.surfaceHi,
-          padding: "10px 14px",
-          fontSize: 10.5, fontWeight: 700, letterSpacing: 1.2,
-          textTransform: "uppercase", color: T.gold,
-        }}>
-          <div>Page</div>
-          <div>Currently (no cycle data)</div>
-          <div>Should show</div>
-        </div>
-        {WHOLENESS_PAGE_ROWS.map((row, i) => (
-          <div key={row.page} style={{
-            display: "grid",
-            gridTemplateColumns: "minmax(110px, 130px) 1fr 1fr",
-            gap: 14,
-            padding: "12px 14px",
-            borderTop: `1px solid ${T.border}`,
-            background: i % 2 === 0 ? T.surface : T.surfaceHi,
-          }}>
-            <div style={{ fontSize: 13, fontWeight: 600, color: T.gold, lineHeight: 1.45 }}>{row.page}</div>
-            <div style={{ fontSize: 12.5, color: T.blush, lineHeight: 1.55, fontStyle: "italic" }}>{row.cur}</div>
-            <div style={{ fontSize: 12.5, color: T.textHi, lineHeight: 1.55 }}>{row.should}</div>
-          </div>
-        ))}
+        <p style={{ fontSize: 13.5, color: T.textHi, lineHeight: 1.75, margin: "0 0 10px" }}>
+          <span style={{ color: T.sage, fontWeight: 700 }}>Jess v1: </span>
+          a health companion who knows your cycle.
+        </p>
+        <p style={{ fontSize: 13.5, color: T.textHi, lineHeight: 1.75, margin: "0 0 14px" }}>
+          <span style={{ color: T.sage, fontWeight: 700 }}>Jess v2 (Wholeness vision): </span>
+          a life companion who happens to know your health deeply.
+        </p>
+        <p style={{ fontSize: 13.5, color: T.textMid, lineHeight: 1.75, margin: "0 0 12px" }}>
+          The difference: Jess v2 can hold a conversation about a difficult work situation without pivoting to
+          "here's how your cycle phase affects work performance." She can celebrate a creative win. She can sit with
+          financial anxiety without suggesting a breathing exercise. She understands that sometimes the most helpful
+          thing is to say "that sounds really hard" and mean it.
+        </p>
+        <p style={{ fontSize: 13.5, color: T.textHi, lineHeight: 1.75, margin: 0, fontStyle: "italic" }}>
+          The Wholeness upgrade for Jess is not technical — it's a persona expansion. Her system prompt needs to
+          explicitly grant her permission to be present in the full spectrum of a woman's life, not just her
+          health data.
+        </p>
       </div>
 
-      <SectionLabel>The fix · life stage as the primary context, cycle as one expression of it</SectionLabel>
+      <SectionLabel>What this means for the Health Corner letters</SectionLabel>
       <div style={{
         backgroundColor: T.surface,
         border: `1px solid ${T.gold}`,
-        borderRadius: 12, padding: "16px 18px", marginBottom: 22,
+        borderRadius: 12, padding: "18px 20px", marginBottom: 24,
       }}>
-        <p style={{ fontSize: 13.5, color: T.textHi, lineHeight: 1.7, margin: 0 }}>
-          The 11 life stages already exist. The fix is making them as richly surfaced as cycle phase — not just a profile setting
-          but a live context that shapes every page just as much as cycle day currently does. A perimenopausal user should feel as
-          known by the app as a user in their follicular phase.
+        <p style={{ fontSize: 13.5, color: T.textHi, lineHeight: 1.75, margin: "0 0 14px" }}>
+          The current 7 letters cover health topics well. The Wholeness vision expands them:
         </p>
-      </div>
-
-      <SectionLabel>Wholeness features · built into every page, not a new section</SectionLabel>
-      <div style={{
-        backgroundColor: T.surface,
-        border: `1px solid ${T.border}`,
-        borderRadius: 12, padding: "16px 18px",
-      }}>
-        <ul style={{ margin: 0, padding: 0, listStyle: "none" }}>
-          {WHOLENESS_GAPS.map((line) => (
+        <ul style={{ margin: "0 0 14px", padding: 0, listStyle: "none" }}>
+          {WHOLENESS_LETTERS.map((line) => (
             <li key={line} style={{
-              display: "flex", gap: 8, alignItems: "flex-start",
-              fontSize: 13, color: T.textHi, lineHeight: 1.65, marginBottom: 10,
+              display: "flex", gap: 10, alignItems: "flex-start",
+              fontSize: 13, color: T.textHi, lineHeight: 1.65, marginBottom: 9,
             }}>
-              <span aria-hidden="true" style={{ color: T.sage, fontWeight: 700, flexShrink: 0 }}>◆</span>
+              <span aria-hidden="true" style={{ color: T.gold, fontWeight: 700, flexShrink: 0 }}>◆</span>
               <span>{line}</span>
             </li>
           ))}
         </ul>
+        <p style={{ fontSize: 13.5, color: T.textMid, lineHeight: 1.7, margin: 0, fontStyle: "italic" }}>
+          These sit alongside the existing 7, not replacing them.
+        </p>
+      </div>
+
+      <SectionLabel>The integration principle</SectionLabel>
+      <div style={{
+        backgroundColor: T.textHi,
+        border: `1px solid ${T.gold}`,
+        borderRadius: 12, padding: "20px 22px", marginBottom: 8,
+      }}>
+        <p style={{ fontSize: 13.5, color: T.bg, lineHeight: 1.75, margin: "0 0 12px" }}>
+          Phase intelligence doesn't disappear — it enriches every dimension. Career planning is richer with phase
+          awareness. Grief is more understandable with cycle context. Relationships are deeper when she understands
+          her relational energy across the month. Creativity is more sustainable when she works with her cycle not
+          against it.
+        </p>
+        <p style={{
+          fontSize: 14, color: T.bg, lineHeight: 1.65, margin: 0,
+          fontFamily: '"Fraunces", Georgia, serif', fontStyle: "italic", fontWeight: 600,
+        }}>
+          The vision isn't less cycle. It's: cycle as one of many intelligent lenses FemWell uses to understand
+          and serve the whole woman.
+        </p>
       </div>
     </div>
   );
