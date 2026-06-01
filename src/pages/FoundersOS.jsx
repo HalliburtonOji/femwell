@@ -265,6 +265,96 @@ function SectionLabel({ children }) {
   );
 }
 
+function PageHeader({ title, subtitle, badge, badgeTone = "red" }) {
+  const tone = badgeTone === "gold"
+    ? { bg: T.goldSoft, fg: T.gold, border: T.gold }
+    : badgeTone === "sage"
+      ? { bg: T.sageSoft, fg: T.sage, border: T.sage }
+      : { bg: T.redSoft, fg: T.red, border: T.red };
+  return (
+    <div style={{
+      backgroundColor: T.surface,
+      border: `1px solid ${T.border}`,
+      borderRadius: 14,
+      padding: "22px 22px 20px",
+      marginBottom: 22,
+    }}>
+      <div style={{
+        fontFamily: '"Fraunces", "Cormorant Garamond", Georgia, serif',
+        fontSize: 28, fontWeight: 700, color: T.gold,
+        letterSpacing: -0.4, lineHeight: 1.15, marginBottom: 6,
+      }}>{title}</div>
+      <div style={{
+        fontSize: 13, color: T.textMid, lineHeight: 1.55, marginBottom: badge ? 14 : 0,
+      }}>{subtitle}</div>
+      {badge && (
+        <div style={{
+          display: "inline-block",
+          background: tone.bg, color: tone.fg,
+          border: `1px solid ${tone.border}`,
+          borderRadius: 6, padding: "5px 12px",
+          fontSize: 11, fontWeight: 700, letterSpacing: 1.2,
+          textTransform: "uppercase",
+        }}>{badge}</div>
+      )}
+    </div>
+  );
+}
+
+function FeatureCard({ n, name, tagline, body, tier }) {
+  const tierStyle = tier === "addon"
+    ? { bg: T.surfaceHi, fg: T.textMuted, border: T.border, label: "Addon" }
+    : { bg: T.goldSoft, fg: T.gold, border: T.gold, label: "Core" };
+  return (
+    <article style={{
+      backgroundColor: T.surface,
+      border: `1px solid ${T.border}`,
+      borderRadius: 14,
+      padding: "18px 20px 16px",
+    }}>
+      <div style={{ display: "flex", alignItems: "flex-start", gap: 14, marginBottom: 10 }}>
+        <div style={{
+          width: 36, height: 36, borderRadius: "50%",
+          background: tier === "addon" ? T.surfaceHi : T.goldSoft,
+          color: tier === "addon" ? T.textMuted : T.gold,
+          border: `1px solid ${tier === "addon" ? T.border : T.gold}`,
+          display: "flex", alignItems: "center", justifyContent: "center",
+          fontFamily: '"Fraunces", "Cormorant Garamond", Georgia, serif',
+          fontSize: 18, fontWeight: 700, flexShrink: 0,
+        }}>{n}</div>
+        <div style={{ flex: 1 }}>
+          <div style={{ display: "flex", alignItems: "baseline", gap: 8, flexWrap: "wrap", marginBottom: 4 }}>
+            {tier && (
+              <span style={{
+                background: tierStyle.bg, color: tierStyle.fg,
+                border: `1px solid ${tierStyle.border}`,
+                padding: "2px 8px", borderRadius: 999,
+                fontSize: 9.5, fontWeight: 700, letterSpacing: 1.2,
+                textTransform: "uppercase",
+              }}>{tierStyle.label}</span>
+            )}
+            <div style={{
+              fontFamily: '"Fraunces", "Cormorant Garamond", Georgia, serif',
+              fontSize: 18, fontWeight: 700, color: T.textHi,
+              letterSpacing: -0.1, lineHeight: 1.25,
+            }}>{name}</div>
+          </div>
+          {tagline && (
+            <div style={{
+              fontFamily: '"Fraunces", "Cormorant Garamond", Georgia, serif',
+              fontSize: 13.5, fontStyle: "italic", color: T.blush,
+              lineHeight: 1.5, marginBottom: 8,
+            }}>{tagline}</div>
+          )}
+        </div>
+      </div>
+      <p style={{
+        fontSize: 13, color: T.textMid, lineHeight: 1.7, margin: 0,
+      }}>{body}</p>
+    </article>
+  );
+}
+
 function StatusDot({ color }) {
   return (
     <span style={{
