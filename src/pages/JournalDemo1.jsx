@@ -38,6 +38,32 @@ const MOCK = {
   ],
 };
 
+const TYPE_COLOUR = {
+  "Free write":    "#3A2C1A",
+  "Gratitude":     "#D4AF37",
+  "Mood":          "#E8B4B8",
+  "Mood journal":  "#E8B4B8",
+  "Reflection":    "#8FAF8F",
+  "Work":          "#5C7A7A",
+  "Work & Career": "#5C7A7A",
+  "Relationships": "#C4556B",
+  "Money":         "#8B6914",
+  "Creative":      "#C4892A",
+  "Grief":         "#9B8B7A",
+  "Joy":           "#5EA05E",
+  "Identity":      "#6B4FA0",
+  "Burn":          "#D4882A",
+  "Burn Mode":     "#D4882A",
+};
+
+function tintFor(label) {
+  const c = TYPE_COLOUR[label] || T.espresso;
+  const r = parseInt(c.slice(1, 3), 16);
+  const g = parseInt(c.slice(3, 5), 16);
+  const b = parseInt(c.slice(5, 7), 16);
+  return { stripe: c, tint: `rgba(${r},${g},${b},0.04)` };
+}
+
 const ENTRY_TYPES = [
   { id: "free", label: "Free write" },
   { id: "gratitude", label: "Gratitude" },
@@ -245,22 +271,36 @@ function RhythmStrip() {
 
 function EntryCard({ entry, i, onTap }) {
   const rot = i % 2 === 0 ? 0.3 : -0.2;
+  const label = entry.burn ? "Burn" : entry.type;
+  const { stripe, tint } = tintFor(label);
   return (
     <article onClick={() => onTap(entry)} style={{
-      background: T.paperHi, borderRadius: 4,
-      padding: "22px 26px 20px", marginBottom: 22,
+      background: tint || T.paperHi, borderRadius: 4,
+      padding: "22px 26px 20px 26px", marginBottom: 22,
       cursor: "pointer", transform: `rotate(${rot}deg)`,
       boxShadow: "0 1px 3px rgba(58,44,26,0.08), 0 4px 12px rgba(58,44,26,0.06), 0 0 0 1px rgba(58,44,26,0.04)",
-      borderLeft: entry.burn ? `3px solid ${T.amber}` : "none",
+      borderLeft: `4px solid ${stripe}`,
+      position: "relative", overflow: "hidden",
     }}>
-      <SmallCaps mb={0}>{entry.burn ? "Burn" : entry.type}</SmallCaps>
-      <Rule />
-      <p style={{
-        fontFamily: CORM, fontStyle: "italic", fontSize: 20,
-        color: T.espresso, lineHeight: 1.55, margin: "14px 0 12px", fontWeight: 500,
-      }}>{entry.body}</p>
-      <div style={{ fontFamily: UI, fontSize: 11.5, color: T.muted, letterSpacing: 0.3 }}>
-        {entry.date}
+      {/* Card body sits over the paper white so the 4% tint reads on the warm paper rest of the bg */}
+      <div style={{
+        position: "absolute", inset: "0 0 0 4px",
+        background: T.paperHi, opacity: 1, zIndex: 0,
+      }} />
+      <div style={{
+        position: "absolute", inset: "0 0 0 4px",
+        background: tint, zIndex: 0,
+      }} />
+      <div style={{ position: "relative", zIndex: 1 }}>
+        <SmallCaps mb={0}>{label}</SmallCaps>
+        <Rule />
+        <p style={{
+          fontFamily: CORM, fontStyle: "italic", fontSize: 20,
+          color: T.espresso, lineHeight: 1.55, margin: "14px 0 12px", fontWeight: 500,
+        }}>{entry.body}</p>
+        <div style={{ fontFamily: UI, fontSize: 11.5, color: T.muted, letterSpacing: 0.3 }}>
+          {entry.date}
+        </div>
       </div>
     </article>
   );

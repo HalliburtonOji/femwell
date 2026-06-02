@@ -1,8 +1,7 @@
-// JournalDemo3 — "Layered" (organic warmth, coloured stripes per entry type)
-// Shared FemWell palette + a few derived warm tones for the per-type stripes,
-// as specified. Distinct via tactile cards with full-height left stripe, light
-// phase-wash backgrounds, botanical SVG dividers between entries.
-import { useState } from "react";
+// JournalDemo3 — "The Canvas"
+// Entries plotted as dots on a 2D map: X = day of cycle, Y = mood.
+// Pan + zoom. Today pulses. Phase bands wash the background.
+import { useState, useRef } from "react";
 
 const T = {
   cream:    "#F4EDDB",
@@ -18,123 +17,238 @@ const T = {
 const CORM = '"Cormorant Garamond","Fraunces",Georgia,serif';
 const UI = '"Inter",system-ui,sans-serif';
 
-const PHASE_COLOUR = { menstrual: T.blush, follicular: T.sage, ovulatory: T.gold, luteal: T.muted };
-
-// Per-entry-type stripe colours (FemWell palette + a few warm derivatives).
 const TYPE_COLOUR = {
-  free:          T.espresso,
-  gratitude:     T.gold,
-  mood:          T.blush,
-  reflection:    T.sage,
-  work:          "#5C7A7A",
-  relationships: T.blush,
-  money:         "#8B6914",
-  creative:      "#C4892A",
-  grief:         T.muted,
-  joy:           T.sage,
-  identity:      T.muted,
-  burn:          T.amber,
+  free: T.espresso, gratitude: T.gold, mood: T.blush, reflection: T.sage,
+  work: "#5C7A7A", relationships: "#C4556B", money: "#8B6914",
+  creative: "#C4892A", grief: T.muted, joy: "#5EA05E", identity: "#6B4FA0",
+  burn: T.amber,
 };
-
-const MOCK = {
-  phase: "luteal", cycleDay: 26,
-  prompt: "The editing phase. What can you let go of? What genuinely matters?",
-  altPrompts: [
-    "What's a quieter no you've been avoiding saying?",
-    "What does the discerning part of you know about today?",
-  ],
-  rhythm: [true, true, false, true, true, false, true],
-  rhythmCounts: [3, 4, 0, 2, 3, 0, 5],
-  jessLine: "On cycle day 26 last month, you wrote about feeling invisible. It's day 26 today.",
-  community: "23 women in luteal are writing about boundaries this week.",
-  onThisDay: { text: "I felt invisible at the meeting. Like I had to make myself larger to be heard.", date: "Last cycle · Day 26", type: "reflection" },
-  entries: [
-    { id: 1, type: "reflection", body: "Today I noticed I keep editing myself before I speak. I don't think anyone asked me to.", date: "Today · 9:42am" },
-    { id: 2, type: "work",       body: "The deadline shifted again. I'm not sure how to plan around so much uncertainty.", date: "Yesterday" },
-    { id: 3, type: "burn",       body: "Things I'm not allowed to say out loud — even to myself.", date: "2d · burns 4h", burn: true },
-    { id: 4, type: "joy",        body: "The coffee. The exact angle of light on the table.", date: "3d" },
-    { id: 5, type: "relationships", body: "Mum called for no reason. Just to say hello.", date: "4d" },
-    { id: 6, type: "creative",   body: "Sketched for the first time in a month.", date: "5d" },
-  ],
-};
-
-const ENTRY_TYPES = [
-  "free","gratitude","mood","reflection","work","relationships","money","creative","grief","joy","identity",
-];
 const TYPE_LABEL = {
-  free: "Free write", gratitude: "Gratitude", mood: "Mood", reflection: "Reflection",
-  work: "Work", relationships: "Relationships", money: "Money", creative: "Creative",
-  grief: "Grief", joy: "Joy", identity: "Identity",
+  free: "Free", gratitude: "Gratitude", mood: "Mood", reflection: "Reflection",
+  work: "Work", relationships: "Relationships", money: "Money",
+  creative: "Creative", grief: "Grief", joy: "Joy", identity: "Identity",
+  burn: "Burn",
 };
+const ENTRY_TYPES = Object.keys(TYPE_COLOUR).filter(k => k !== "burn");
 const TYPE_PROMPTS = {
   free: "Write freely.",
   gratitude: "Name three things you're genuinely grateful for today.",
-  mood: "How are you actually feeling — not the edited version?",
+  mood: "How are you actually feeling?",
   reflection: "What went well? What would you do differently?",
-  work: "What's the actual state of work right now?",
+  work: "What's the actual state of work?",
   relationships: "Who's on your mind?",
-  money: "What's your relationship with money this month?",
-  creative: "What did you make, imagine or notice?",
-  grief: "You don't have to explain. Just say what's true.",
-  joy: "Name one small actual thing that felt good.",
+  money: "What's your money story right now?",
+  creative: "What did you make or notice?",
+  grief: "Say what's true.",
+  joy: "Name one small good thing.",
   identity: "Who are you becoming?",
 };
 
-function tint(hex, alpha) {
-  const r = parseInt(hex.slice(1,3),16);
-  const g = parseInt(hex.slice(3,5),16);
-  const b = parseInt(hex.slice(5,7),16);
-  return `rgba(${r},${g},${b},${alpha})`;
+// Canvas geometry: viewBox 800 × 360, X-axis is 28 days, Y-axis mood 1-5.
+const VB_W = 800, VB_H = 360, MARGIN_X = 40, MARGIN_Y = 20;
+const PLOT_W = VB_W - MARGIN_X * 2;
+const PLOT_H = VB_H - MARGIN_Y * 2;
+function xFor(day)   { return MARGIN_X + ((day - 1) / 27) * PLOT_W; }   // day 1..28
+function yFor(mood)  { return MARGIN_Y + (1 - (mood - 1) / 4) * PLOT_H; } // mood 1..5 (5=top)
+
+// Mock entries: { day, mood, type, body, words }
+const ENTRIES = [
+  { id: 1,  day: 1,  mood: 2, type: "mood",       body: "Day 1. Slow. Lots of paracetamol.", words: 32 },
+  { id: 2,  day: 3,  mood: 3, type: "reflection", body: "Calmer than I expected.", words: 14 },
+  { id: 3,  day: 5,  mood: 4, type: "joy",        body: "Coffee outside, alone, perfect.", words: 18 },
+  { id: 4,  day: 8,  mood: 4, type: "creative",   body: "Started sketching again.", words: 22 },
+  { id: 5,  day: 11, mood: 5, type: "gratitude",  body: "Three good things today.", words: 28 },
+  { id: 6,  day: 14, mood: 5, type: "relationships", body: "Coffee with H. We talked about everything.", words: 40 },
+  { id: 7,  day: 16, mood: 4, type: "work",       body: "Wrapped the deck early.", words: 16 },
+  { id: 8,  day: 19, mood: 3, type: "reflection", body: "Quieter day. Editing energy.", words: 12 },
+  { id: 9,  day: 22, mood: 2, type: "work",       body: "Deadline shifted again.", words: 20 },
+  { id: 10, day: 24, mood: 2, type: "grief",      body: "Reading old letters. Heavy.", words: 30 },
+  { id: 11, day: 25, mood: 3, type: "reflection", body: "I keep editing myself before I speak.", words: 45 },
+  { id: 12, day: 26, mood: 3, type: "reflection", body: "Today: I noticed it again. The editing.", words: 55, isToday: true },
+  { id: 13, day: 27, mood: 2, type: "burn",       body: "Things I'm not allowed to say.", words: 18, burn: true, burnIn: "4h" },
+  // On This Day reference — same day_in_cycle from a prior cycle:
+  { id: 100, day: 26, mood: 2, type: "reflection", body: "I felt invisible at the meeting. Like I had to make myself larger to be heard.", words: 60, lastCycle: true },
+];
+
+const PHASES = [
+  { start: 1,  end: 5,  colour: T.blush, label: "Menstrual" },
+  { start: 6,  end: 13, colour: T.sage,  label: "Follicular" },
+  { start: 14, end: 16, colour: T.gold,  label: "Ovulatory" },
+  { start: 17, end: 28, colour: T.muted, label: "Luteal" },
+];
+
+const MOCK = {
+  prompt: "The editing phase. What can you let go of?",
+  community: "23 women also journalled today",
+  jessLine: "Most of your entries this cycle cluster around day 25–26. There's a pattern worth noticing.",
+};
+
+function sizeFor(words) {
+  // Map word count (0–60) to 10–22px diameter
+  const w = Math.min(60, Math.max(8, words));
+  return 10 + (w / 60) * 12;
 }
 
-function Botanical() {
+function PhaseBands() {
   return (
-    <svg width="60" height="14" viewBox="0 0 60 14" aria-hidden style={{ display: "block", margin: "6px auto 6px" }}>
-      <path d="M2 7 Q15 1 30 7 T58 7" fill="none" stroke={T.muted} strokeWidth="1" opacity="0.55" />
-      <circle cx="30" cy="7" r="1" fill={T.gold} />
+    <g>
+      {PHASES.map((p) => (
+        <rect
+          key={p.label}
+          x={xFor(p.start) - PLOT_W / 56}
+          y={MARGIN_Y}
+          width={xFor(p.end) - xFor(p.start) + PLOT_W / 28}
+          height={PLOT_H}
+          fill={p.colour}
+          opacity={0.10}
+        />
+      ))}
+      {PHASES.map((p) => (
+        <text
+          key={`label-${p.label}`}
+          x={(xFor(p.start) + xFor(p.end)) / 2}
+          y={MARGIN_Y + 14}
+          textAnchor="middle"
+          fontFamily={UI}
+          fontSize="9"
+          fill={T.muted}
+          opacity={0.7}
+          style={{ letterSpacing: 1, textTransform: "uppercase" }}
+        >{p.label.toUpperCase()}</text>
+      ))}
+    </g>
+  );
+}
+
+function Axes() {
+  return (
+    <g>
+      {/* Y axis labels */}
+      <text x={6} y={yFor(5) + 4} fontFamily={UI} fontSize="9" fill={T.muted}>High</text>
+      <text x={6} y={yFor(1) + 4} fontFamily={UI} fontSize="9" fill={T.muted}>Low</text>
+      {/* X axis ticks */}
+      {[1, 7, 14, 21, 28].map((d) => (
+        <text key={d} x={xFor(d)} y={VB_H - 4} textAnchor="middle" fontFamily={UI} fontSize="9" fill={T.muted}>
+          {d === 28 ? "Day 28" : `Day ${d}`}
+        </text>
+      ))}
+      {/* Connecting line through entries (chronological) */}
+      <polyline
+        fill="none"
+        stroke={T.muted}
+        strokeWidth="1"
+        strokeDasharray="2 3"
+        opacity={0.45}
+        points={ENTRIES.filter(e => !e.lastCycle).sort((a,b)=>a.day-b.day).map(e => `${xFor(e.day)},${yFor(e.mood)}`).join(" ")}
+      />
+    </g>
+  );
+}
+
+function GhostDots() {
+  // Faint community signal — 23 grey dots scattered near today's column behind entries
+  const today = 26;
+  return (
+    <g opacity={0.25}>
+      {Array.from({ length: 23 }).map((_, i) => {
+        const angle = (i / 23) * Math.PI * 2;
+        const r = 26 + (i % 5);
+        return (
+          <circle
+            key={i}
+            cx={xFor(today) + Math.cos(angle) * r}
+            cy={yFor(3) + Math.sin(angle) * r}
+            r={3}
+            fill={T.muted}
+          />
+        );
+      })}
+    </g>
+  );
+}
+
+function Dot({ e, onTap }) {
+  const colour = e.burn ? T.amber : (TYPE_COLOUR[e.type] || T.espresso);
+  const r = sizeFor(e.words) / 2;
+  const cx = xFor(e.day);
+  const cy = yFor(e.mood);
+
+  // Last cycle: dashed gold ring around the dot
+  if (e.lastCycle) {
+    return (
+      <g style={{ cursor: "pointer" }} onClick={() => onTap(e)}>
+        <circle cx={cx} cy={cy} r={r + 7} fill="none" stroke={T.gold} strokeWidth="1.5" strokeDasharray="3 3" />
+        <circle cx={cx} cy={cy} r={r} fill={colour} opacity={0.4} />
+      </g>
+    );
+  }
+
+  // Today: large + gold pulse ring
+  if (e.isToday) {
+    return (
+      <g style={{ cursor: "pointer" }} onClick={() => onTap(e)}>
+        <circle cx={cx} cy={cy} r={r + 10} fill={T.gold} opacity={0.18}>
+          <animate attributeName="r" values={`${r + 8};${r + 16};${r + 8}`} dur="2.4s" repeatCount="indefinite" />
+          <animate attributeName="opacity" values="0.30;0.05;0.30" dur="2.4s" repeatCount="indefinite" />
+        </circle>
+        <circle cx={cx} cy={cy} r={r + 5} fill="none" stroke={T.gold} strokeWidth="2" />
+        <circle cx={cx} cy={cy} r={r + 2} fill={colour} />
+        <text x={cx} y={cy + 3} textAnchor="middle" fontFamily={CORM} fontSize="10" fontWeight="700" fill={T.paperHi}>26</text>
+      </g>
+    );
+  }
+
+  return (
+    <g style={{ cursor: "pointer" }} onClick={() => onTap(e)}>
+      <circle cx={cx} cy={cy} r={r} fill={colour} opacity={0.78} />
+      {e.burn && (
+        <text x={cx} y={cy + 3} textAnchor="middle" fontSize="9" fill={T.paperHi} fontFamily={UI} fontWeight="700">🔥</text>
+      )}
+    </g>
+  );
+}
+
+function MiniCanvas() {
+  // Compressed canvas — used in the insights bar
+  return (
+    <svg viewBox={`0 0 ${VB_W} ${VB_H}`} style={{ width: 120, height: 54 }} aria-hidden>
+      <PhaseBands />
+      {ENTRIES.filter(e => !e.lastCycle).map((e) => (
+        <circle
+          key={e.id}
+          cx={xFor(e.day)}
+          cy={yFor(e.mood)}
+          r={sizeFor(e.words) / 2}
+          fill={e.burn ? T.amber : TYPE_COLOUR[e.type]}
+          opacity={e.isToday ? 1 : 0.7}
+        />
+      ))}
     </svg>
   );
 }
 
-function PhasePill() {
-  const c = PHASE_COLOUR[MOCK.phase];
-  return (
-    <span style={{
-      background: c, color: T.espresso,
-      fontFamily: UI, fontSize: 11.5, fontWeight: 700,
-      padding: "4px 10px", borderRadius: 9999,
-      letterSpacing: 0.4, textTransform: "uppercase",
-    }}>Luteal · Day {MOCK.cycleDay}</span>
-  );
-}
-
-function InsightsCard({ onExpand }) {
-  const c = PHASE_COLOUR[MOCK.phase];
+function InsightsBar({ onExpand }) {
   return (
     <button onClick={onExpand} style={{
-      display: "flex", alignItems: "stretch", gap: 0,
+      display: "flex", alignItems: "center", gap: 12,
       width: "100%", textAlign: "left", cursor: "pointer",
-      background: tint(c, 0.10),
-      border: "none",
-      borderRadius: 14, padding: 0, marginBottom: 16,
-      boxShadow: "0 2px 8px rgba(58,44,26,0.07)",
-      overflow: "hidden",
+      background: T.cream, border: `1px solid rgba(58,44,26,0.10)`,
+      borderRadius: 14, padding: "10px 14px", marginBottom: 12,
     }}>
-      <div style={{ width: 4, background: c, alignSelf: "stretch" }} />
-      <div style={{ flex: 1, padding: "14px 18px" }}>
-        <div style={{ display: "flex", alignItems: "flex-end", gap: 6, height: 32, marginBottom: 10 }}>
-          {MOCK.rhythmCounts.slice(0, 5).map((n, i) => (
-            <div key={i} style={{
-              flex: 1, height: `${Math.max(4, n * 6)}px`,
-              background: c, borderRadius: "2px 2px 0 0", opacity: 0.7,
-            }} />
-          ))}
+      <div style={{ flexShrink: 0 }}>
+        <MiniCanvas />
+      </div>
+      <div style={{ flex: 1 }}>
+        <div style={{
+          fontFamily: UI, fontSize: 11, color: T.gold, fontWeight: 700,
+          letterSpacing: 1.4, marginBottom: 3, textTransform: "uppercase",
+        }}>Your constellation</div>
+        <div style={{ fontFamily: UI, fontSize: 12.5, color: T.espresso, fontWeight: 600 }}>
+          Cycle day 26 · 12 entries this cycle
         </div>
-        <p style={{
-          fontFamily: CORM, fontStyle: "italic", fontSize: 16,
-          color: T.espresso, lineHeight: 1.5, margin: 0,
-        }}>{MOCK.jessLine}</p>
-        <div style={{ fontFamily: UI, fontSize: 11, color: T.muted, marginTop: 6 }}>Tap to see more</div>
+        <div style={{ fontFamily: CORM, fontStyle: "italic", fontSize: 13, color: T.muted, marginTop: 2, lineHeight: 1.4 }}>
+          {MOCK.jessLine}
+        </div>
       </div>
     </button>
   );
@@ -143,293 +257,216 @@ function InsightsCard({ onExpand }) {
 function InsightsExpanded({ onClose }) {
   return (
     <div onClick={onClose} style={{
-      position: "fixed", inset: 0, zIndex: 80, background: "rgba(58,44,26,0.40)",
-      display: "flex", alignItems: "flex-end", justifyContent: "center",
+      position: "fixed", inset: 0, zIndex: 80,
+      background: "rgba(58,44,26,0.40)",
+      display: "flex", alignItems: "center", justifyContent: "center", padding: 20,
     }}>
       <div onClick={(e) => e.stopPropagation()} style={{
-        background: tint(PHASE_COLOUR[MOCK.phase], 0.12),
-        width: "100%", maxWidth: 680,
-        borderTopLeftRadius: 24, borderTopRightRadius: 24,
-        padding: "22px 22px 30px",
+        background: T.paperHi, width: "100%", maxWidth: 720,
+        borderRadius: 18, padding: "20px 22px 26px",
       }}>
-        <div style={{ width: 36, height: 4, background: T.muted, borderRadius: 9999, margin: "0 auto 16px" }} />
-        <PhasePill />
-        <p style={{
-          fontFamily: CORM, fontStyle: "italic", fontSize: 19,
-          color: T.espresso, lineHeight: 1.55, margin: "14px 0 22px",
-        }}>{MOCK.jessLine}</p>
-
-        <div style={{ fontFamily: UI, fontSize: 11, color: T.muted, fontWeight: 700, letterSpacing: 0.5, marginBottom: 8, textTransform: "uppercase" }}>
-          Dimension coverage
+        <div style={{ fontFamily: UI, fontSize: 11, color: T.gold, fontWeight: 700, letterSpacing: 1.4, marginBottom: 8, textTransform: "uppercase" }}>
+          Your constellation, expanded
         </div>
-        {[
-          ["work", 0.92, "Most active"],
-          ["relationships", 0.62, ""],
-          ["reflection", 0.55, ""],
-          ["joy", 0.30, ""],
-          ["creative", 0.12, "Quiet this cycle"],
-        ].map(([k, v, note]) => (
-          <div key={k} style={{
-            display: "flex", alignItems: "center", gap: 10,
-            background: tint(TYPE_COLOUR[k], 0.08),
-            borderLeft: `4px solid ${TYPE_COLOUR[k]}`,
-            borderRadius: 10, padding: "8px 12px", marginBottom: 6,
-          }}>
-            <div style={{ width: 90, fontFamily: UI, fontSize: 12, color: T.espresso, fontWeight: 600 }}>
-              {TYPE_LABEL[k]}
-            </div>
-            <div style={{ flex: 1, height: 6, background: T.cream, borderRadius: 9999 }}>
-              <div style={{ width: `${v * 100}%`, height: "100%", background: TYPE_COLOUR[k], borderRadius: 9999 }} />
-            </div>
-            <div style={{ fontFamily: UI, fontSize: 10.5, color: T.muted, width: 95, textAlign: "right" }}>{note}</div>
-          </div>
-        ))}
-        <p style={{ fontFamily: CORM, fontStyle: "italic", fontSize: 14, color: T.muted, margin: "16px 0 0" }}>
-          {MOCK.community}
-        </p>
+        <div style={{ background: T.cream, borderRadius: 12, padding: 8, marginBottom: 14, position: "relative" }}>
+          <svg viewBox={`0 0 ${VB_W} ${VB_H}`} style={{ width: "100%", height: "auto", display: "block" }}>
+            <PhaseBands />
+            <Axes />
+            {ENTRIES.map((e) => (
+              <Dot key={e.id} e={e} onTap={() => {}} />
+            ))}
+            {/* annotation */}
+            <line x1={xFor(25)} y1={yFor(3.5) - 18} x2={xFor(26)} y2={yFor(3)} stroke={T.gold} strokeWidth="1" />
+            <text x={xFor(25)} y={yFor(3.5) - 22} textAnchor="middle" fontFamily={CORM} fontStyle="italic" fontSize="12" fill={T.gold}>
+              Cluster · day 25–26
+            </text>
+          </svg>
+        </div>
+        <p style={{
+          fontFamily: CORM, fontStyle: "italic", fontSize: 16,
+          color: T.espresso, lineHeight: 1.55, margin: 0,
+        }}>{MOCK.jessLine}</p>
+        <div style={{ fontFamily: UI, fontSize: 11, color: T.muted, marginTop: 12 }}>{MOCK.community}</div>
       </div>
     </div>
   );
 }
 
 function PromptCard({ onWrite }) {
-  const [i, setI] = useState(0);
-  const c = PHASE_COLOUR[MOCK.phase];
-  const prompts = [MOCK.prompt, ...MOCK.altPrompts];
-  const current = prompts[i % prompts.length];
   return (
     <div style={{
-      background: T.paperHi,
-      borderRadius: 14, marginBottom: 16, display: "flex", overflow: "hidden",
-      boxShadow: "0 2px 8px rgba(58,44,26,0.07)",
+      background: T.cream, border: `1px solid rgba(58,44,26,0.10)`,
+      borderLeft: `4px solid ${T.muted}`,
+      borderRadius: 14, padding: "12px 14px", marginBottom: 12,
     }}>
-      <div style={{ width: 4, background: c }} />
-      <div style={{ flex: 1, padding: "16px 18px" }}>
-        <div style={{ fontFamily: UI, fontSize: 10.5, color: T.muted, fontWeight: 700, letterSpacing: 0.5, marginBottom: 6, textTransform: "uppercase" }}>
-          Jess · Day {MOCK.cycleDay}
-        </div>
-        <p style={{
-          fontFamily: CORM, fontStyle: "italic", fontSize: 18,
-          color: T.espresso, lineHeight: 1.55, margin: "0 0 14px", fontWeight: 500,
-        }}>{current}</p>
-        <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
-          <button onClick={() => onWrite(current)} style={{
-            background: T.gold, color: T.espresso, border: "none",
-            borderRadius: 9999, padding: "7px 16px",
-            fontFamily: UI, fontSize: 13, fontWeight: 700, cursor: "pointer",
-          }}>Write to this</button>
-          <button onClick={() => setI(x => x + 1)} style={{
-            background: "transparent", color: c,
-            border: `1px solid ${c}`,
-            borderRadius: 9999, padding: "7px 14px",
-            fontFamily: UI, fontSize: 12.5, fontWeight: 600, cursor: "pointer",
-          }}>Different prompt</button>
-        </div>
+      <div style={{ fontFamily: UI, fontSize: 10.5, color: T.muted, fontWeight: 700, letterSpacing: 1.4, marginBottom: 4, textTransform: "uppercase" }}>
+        Jess · Luteal · Day 26
       </div>
+      <p style={{ fontFamily: CORM, fontStyle: "italic", fontSize: 16, color: T.espresso, lineHeight: 1.55, margin: "0 0 10px" }}>
+        {MOCK.prompt}
+      </p>
+      <button onClick={onWrite} style={{
+        background: T.gold, color: T.espresso, border: "none",
+        borderRadius: 9999, padding: "7px 14px",
+        fontFamily: UI, fontSize: 12.5, fontWeight: 700, cursor: "pointer",
+      }}>Write to this ✦</button>
     </div>
   );
 }
 
-function OnThisDayCard({ onReply }) {
-  const c = TYPE_COLOUR[MOCK.onThisDay.type] || T.gold;
-  return (
-    <div style={{
-      background: T.paperHi,
-      borderRadius: 14, marginBottom: 16, display: "flex", overflow: "hidden",
-      boxShadow: "0 2px 8px rgba(58,44,26,0.07)",
-    }}>
-      <div style={{ width: 4, background: c }} />
-      <div style={{ flex: 1, padding: "14px 18px", background: tint(c, 0.04) }}>
-        <div style={{ fontFamily: UI, fontSize: 10.5, color: c, fontWeight: 700, letterSpacing: 0.5, marginBottom: 4, textTransform: "uppercase" }}>
-          On this day · {MOCK.onThisDay.date}
-        </div>
-        <p style={{
-          fontFamily: CORM, fontStyle: "italic", fontSize: 16.5,
-          color: T.espresso, lineHeight: 1.55, margin: "0 0 8px",
-        }}>"{MOCK.onThisDay.text}"</p>
-        <button onClick={onReply} style={{
-          background: "transparent", color: c, border: "none",
-          fontFamily: UI, fontSize: 12.5, fontWeight: 700, cursor: "pointer",
-          padding: 0,
-        }}>Reply to past self →</button>
-      </div>
-    </div>
-  );
-}
-
-function CommunityStrip() {
-  return (
-    <div style={{
-      background: T.paperHi,
-      borderRadius: 14, marginBottom: 16, display: "flex", overflow: "hidden",
-      boxShadow: "0 2px 8px rgba(58,44,26,0.07)",
-    }}>
-      <div style={{ width: 4, background: T.blush }} />
-      <div style={{ flex: 1, padding: "12px 18px" }}>
-        <p style={{ fontFamily: CORM, fontStyle: "italic", fontSize: 14.5, color: T.espresso, margin: 0 }}>
-          {MOCK.community}
-        </p>
-      </div>
-    </div>
-  );
-}
-
-function RhythmStrip() {
-  const labels = ["M","T","W","T","F","S","S"];
-  const c = PHASE_COLOUR[MOCK.phase];
-  return (
-    <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 18 }}>
-      {labels.map((d, i) => (
-        <div key={i} style={{ flex: 1, textAlign: "center" }}>
-          <div style={{
-            width: 11, height: 11, borderRadius: "50%", margin: "0 auto 5px",
-            background: MOCK.rhythm[i] ? c : "transparent",
-            border: MOCK.rhythm[i] ? "none" : `1px solid ${T.muted}`,
-          }} />
-          <div style={{ fontFamily: UI, fontSize: 10.5, color: T.muted, letterSpacing: 0.3 }}>{d}</div>
-        </div>
-      ))}
-    </div>
-  );
-}
-
-function EntryCard({ entry, onTap, divider }) {
-  const c = TYPE_COLOUR[entry.type] || T.espresso;
-  return (
-    <>
-      <article onClick={() => onTap(entry)} style={{
-        background: tint(c, 0.03),
-        borderRadius: 14, marginBottom: 10, display: "flex", overflow: "hidden",
-        boxShadow: "0 2px 8px rgba(58,44,26,0.07)",
-        cursor: "pointer",
-      }}>
-        <div style={{ width: 4, background: c }} />
-        <div style={{ flex: 1, padding: "16px 20px 14px" }}>
-          <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 6 }}>
-            <span style={{
-              fontFamily: UI, fontSize: 10.5, color: c, fontWeight: 700,
-              letterSpacing: 0.6, textTransform: "uppercase",
-            }}>{entry.burn ? "Burn 🔥" : TYPE_LABEL[entry.type]}</span>
-            <span style={{ marginLeft: "auto", fontFamily: UI, fontSize: 11.5, color: T.muted }}>{entry.date}</span>
-          </div>
-          <p style={{
-            fontFamily: CORM, fontStyle: "italic", fontSize: 16.5,
-            color: T.espresso, lineHeight: 1.55, margin: 0,
-            display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical",
-            overflow: "hidden",
-          }}>{entry.body}</p>
-        </div>
-      </article>
-      {divider && <Botanical />}
-    </>
-  );
-}
-
-function Composer({ open, onClose, seedPrompt }) {
-  const [type, setType] = useState("reflection");
-  const [text, setText] = useState("");
-  const [burn, setBurn] = useState(false);
-  const [timer, setTimer] = useState("24h");
-  if (!open) return null;
-  const c = TYPE_COLOUR[type] || T.espresso;
-  const prompt = seedPrompt || TYPE_PROMPTS[type] || MOCK.prompt;
+function EntryDetail({ entry, onClose }) {
+  if (!entry) return null;
+  const c = entry.burn ? T.amber : TYPE_COLOUR[entry.type];
   return (
     <div onClick={onClose} style={{
-      position: "fixed", inset: 0, zIndex: 90,
-      background: "rgba(58,44,26,0.40)",
+      position: "fixed", inset: 0, zIndex: 70, background: "rgba(58,44,26,0.40)",
       display: "flex", alignItems: "flex-end", justifyContent: "center",
     }}>
       <div onClick={(e) => e.stopPropagation()} style={{
-        background: T.surface, width: "100%", maxWidth: 680,
-        borderTopLeftRadius: 24, borderTopRightRadius: 24,
-        padding: "20px 20px 28px", maxHeight: "92vh", overflowY: "auto",
+        background: T.paperHi, width: "100%", maxWidth: 720,
+        borderTopLeftRadius: 20, borderTopRightRadius: 20,
+        padding: "20px 22px 26px",
+        borderTop: `3px solid ${c}`,
       }}>
         <div style={{ width: 36, height: 4, background: T.muted, borderRadius: 9999, margin: "0 auto 14px" }} />
-        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 14 }}>
-          <div style={{ fontFamily: UI, fontSize: 11, color: T.muted, fontWeight: 700, letterSpacing: 0.5, textTransform: "uppercase" }}>
-            New entry
+        <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 10 }}>
+          <span style={{ width: 10, height: 10, borderRadius: "50%", background: c }} />
+          <span style={{
+            fontFamily: UI, fontSize: 11, color: c, fontWeight: 700,
+            letterSpacing: 1.4, textTransform: "uppercase",
+          }}>
+            {entry.burn ? `Burn · burns in ${entry.burnIn}` : TYPE_LABEL[entry.type]}
+          </span>
+          <span style={{ marginLeft: "auto", fontFamily: UI, fontSize: 11.5, color: T.muted }}>
+            Day {entry.day} · mood {entry.mood}/5
+          </span>
+        </div>
+        {entry.lastCycle && (
+          <div style={{
+            fontFamily: UI, fontSize: 10.5, color: T.gold,
+            fontWeight: 700, letterSpacing: 1.4, marginBottom: 6, textTransform: "uppercase",
+          }}>This time last cycle</div>
+        )}
+        {entry.isToday && (
+          <div style={{
+            fontFamily: UI, fontSize: 10.5, color: T.gold,
+            fontWeight: 700, letterSpacing: 1.4, marginBottom: 6, textTransform: "uppercase",
+          }}>Today's prompt</div>
+        )}
+        <p style={{
+          fontFamily: CORM, fontStyle: "italic", fontSize: 18,
+          color: T.espresso, lineHeight: 1.6, margin: 0,
+        }}>{entry.body}</p>
+        {entry.isToday && (
+          <div style={{ marginTop: 14 }}>
+            <PromptCard onWrite={onClose} />
           </div>
-          <button onClick={onClose} style={{
-            background: "transparent", border: "none", color: T.muted, fontSize: 22, cursor: "pointer",
-          }} aria-label="Close">×</button>
+        )}
+        <button style={{
+          marginTop: 14,
+          background: T.espresso, color: T.cream, border: "none",
+          borderRadius: 9999, padding: "8px 16px",
+          fontFamily: UI, fontSize: 12.5, fontWeight: 700, cursor: "pointer",
+        }}>Ask Jess about this</button>
+      </div>
+    </div>
+  );
+}
+
+function Composer({ open, onClose }) {
+  const [type, setType] = useState("reflection");
+  const [text, setText] = useState("");
+  const [mood, setMood] = useState(3);
+  const [burnOn, setBurnOn] = useState(false);
+  const [timer, setTimer] = useState("1h");
+  if (!open) return null;
+  return (
+    <div onClick={onClose} style={{
+      position: "fixed", inset: 0, zIndex: 95, background: "rgba(58,44,26,0.40)",
+      display: "flex", alignItems: "flex-end", justifyContent: "center",
+    }}>
+      <div onClick={(e) => e.stopPropagation()} style={{
+        background: T.paperHi, width: "100%", maxWidth: 720,
+        borderTopLeftRadius: 20, borderTopRightRadius: 20,
+        padding: "16px 18px 24px", maxHeight: "94vh", overflowY: "auto",
+      }}>
+        <div style={{ width: 36, height: 4, background: T.muted, borderRadius: 9999, margin: "0 auto 14px" }} />
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 12 }}>
+          <span style={{ fontFamily: UI, fontSize: 11, color: T.muted, fontWeight: 700, letterSpacing: 1.4, textTransform: "uppercase" }}>
+            New entry · today
+          </span>
+          <button onClick={onClose} style={{ background: "transparent", border: "none", color: T.muted, fontSize: 22, cursor: "pointer" }}>×</button>
         </div>
 
-        <div style={{ display: "flex", gap: 8, overflowX: "auto", paddingBottom: 6, marginBottom: 14 }}>
+        <div style={{ display: "flex", gap: 6, overflowX: "auto", paddingBottom: 6, marginBottom: 12 }}>
           {ENTRY_TYPES.map((k) => {
             const active = k === type;
             return (
-              <button key={k} onClick={() => setType(k)} style={{
+              <button key={k} onClick={() => { setType(k); setBurnOn(false); }} style={{
                 flexShrink: 0,
-                background: active ? TYPE_COLOUR[k] : tint(TYPE_COLOUR[k], 0.10),
+                background: active ? TYPE_COLOUR[k] : "transparent",
                 color: active ? "white" : T.espresso,
                 border: `1px solid ${TYPE_COLOUR[k]}`,
-                borderRadius: 9999, padding: "6px 14px",
-                fontFamily: UI, fontSize: 12.5, fontWeight: 700,
-                cursor: "pointer", whiteSpace: "nowrap",
+                borderRadius: 9999, padding: "5px 12px",
+                fontFamily: UI, fontSize: 12, fontWeight: 700, cursor: "pointer",
+                whiteSpace: "nowrap",
               }}>{TYPE_LABEL[k]}</button>
             );
           })}
+          <button onClick={() => setBurnOn(v => !v)} style={{
+            flexShrink: 0,
+            background: burnOn ? T.amber : "transparent",
+            color: burnOn ? T.paperHi : T.amber,
+            border: `1px solid ${T.amber}`,
+            borderRadius: 9999, padding: "5px 12px",
+            fontFamily: UI, fontSize: 12, fontWeight: 700, cursor: "pointer",
+            whiteSpace: "nowrap",
+          }}>🔥 Burn</button>
         </div>
 
-        <div style={{ height: 3, background: c, marginBottom: 14, borderRadius: 9999 }} />
-
-        <div style={{
-          background: T.paperHi, borderRadius: 14, display: "flex", overflow: "hidden",
-          marginBottom: 14, boxShadow: "0 2px 8px rgba(58,44,26,0.06)",
-        }}>
-          <div style={{ width: 4, background: c }} />
-          <div style={{ flex: 1, padding: "12px 14px" }}>
-            <div style={{ fontFamily: UI, fontSize: 10.5, color: c, fontWeight: 700, letterSpacing: 0.5, marginBottom: 4, textTransform: "uppercase" }}>
-              Jess prompt
-            </div>
-            <p style={{ fontFamily: CORM, fontStyle: "italic", fontSize: 16, color: T.espresso, margin: 0, lineHeight: 1.55 }}>
-              {prompt}
-            </p>
-          </div>
-        </div>
+        <p style={{
+          fontFamily: CORM, fontStyle: "italic", fontSize: 16,
+          color: T.espresso, lineHeight: 1.55, margin: "0 0 12px",
+        }}>{burnOn ? "Jess never reads this. Set a timer." : (TYPE_PROMPTS[type] || MOCK.prompt)}</p>
 
         <textarea
           value={text} onChange={(e) => setText(e.target.value)}
           placeholder="Write…"
           style={{
-            width: "100%", minHeight: 220,
-            background: T.paperHi, border: "none",
-            borderRadius: 14, padding: 18, resize: "none",
+            width: "100%", minHeight: 200,
+            background: T.cream, border: "none",
+            borderRadius: 12, padding: 14, resize: "none",
             fontFamily: CORM, fontSize: 17, lineHeight: 1.6,
             color: T.espresso, outline: "none",
-            boxShadow: "0 2px 8px rgba(58,44,26,0.06)",
           }}
         />
 
-        <div style={{
-          marginTop: 14,
-          background: tint(T.amber, 0.10),
-          borderRadius: 14, padding: "12px 14px",
-          display: "flex", alignItems: "center", gap: 12,
-        }}>
-          <span style={{ fontSize: 18 }}>🔥</span>
-          <div style={{ flex: 1 }}>
-            <div style={{ fontFamily: UI, fontSize: 11.5, color: T.amber, fontWeight: 700, letterSpacing: 0.4 }}>Burn Mode</div>
-            <div style={{ fontFamily: CORM, fontStyle: "italic", fontSize: 13, color: T.espresso }}>
-              Jess never reads this. Pick a timer.
-            </div>
+        <div style={{ marginTop: 14 }}>
+          <div style={{ fontFamily: UI, fontSize: 11, color: T.muted, fontWeight: 700, letterSpacing: 1, marginBottom: 6, textTransform: "uppercase" }}>
+            Mood — this sets the Y position of your dot
           </div>
-          <button onClick={() => setBurn(v => !v)} style={{
-            background: burn ? T.amber : "transparent",
-            color: burn ? "white" : T.amber,
-            border: `1px solid ${T.amber}`,
-            borderRadius: 9999, padding: "5px 12px",
-            fontFamily: UI, fontSize: 12, fontWeight: 700, cursor: "pointer",
-          }}>{burn ? "On" : "Open"}</button>
+          <div style={{ display: "flex", gap: 8 }}>
+            {[1,2,3,4,5].map((m) => (
+              <button key={m} onClick={() => setMood(m)} style={{
+                flex: 1,
+                background: mood === m ? T.gold : "transparent",
+                color: mood === m ? T.espresso : T.muted,
+                border: `1px solid ${T.muted}`,
+                borderRadius: 12, padding: "8px 0",
+                fontFamily: UI, fontSize: 13, fontWeight: 700, cursor: "pointer",
+              }}>{m}</button>
+            ))}
+          </div>
         </div>
-        {burn && (
-          <div style={{ display: "flex", gap: 6, marginTop: 8, flexWrap: "wrap" }}>
+
+        {burnOn && (
+          <div style={{ display: "flex", gap: 6, marginTop: 10, flexWrap: "wrap" }}>
             {["1h","24h","Choose date","Tap to burn"].map(t => (
               <button key={t} onClick={() => setTimer(t)} style={{
                 background: timer === t ? T.amber : "transparent",
-                color: timer === t ? "white" : T.amber,
+                color: timer === t ? T.paperHi : T.amber,
                 border: `1px solid ${T.amber}`,
-                borderRadius: 9999, padding: "4px 10px",
+                borderRadius: 9999, padding: "5px 12px",
                 fontFamily: UI, fontSize: 11.5, fontWeight: 700, cursor: "pointer",
               }}>{t}</button>
             ))}
@@ -439,84 +476,136 @@ function Composer({ open, onClose, seedPrompt }) {
         <button onClick={onClose} style={{
           width: "100%", marginTop: 14,
           background: T.gold, color: T.espresso, border: "none",
-          borderRadius: 9999, padding: "10px 18px",
+          borderRadius: 9999, padding: "11px 18px",
           fontFamily: UI, fontSize: 14, fontWeight: 700, cursor: "pointer",
-        }}>Save entry ✓</button>
-      </div>
-    </div>
-  );
-}
-
-function EntryDetail({ entry, onClose }) {
-  if (!entry) return null;
-  const c = TYPE_COLOUR[entry.type] || T.espresso;
-  return (
-    <div onClick={onClose} style={{
-      position: "fixed", inset: 0, zIndex: 70, background: "rgba(58,44,26,0.40)",
-      display: "flex", alignItems: "flex-end", justifyContent: "center",
-    }}>
-      <div onClick={(e) => e.stopPropagation()} style={{
-        background: tint(c, 0.08), width: "100%", maxWidth: 680,
-        borderTopLeftRadius: 24, borderTopRightRadius: 24,
-        padding: "22px 22px 28px",
-        borderTop: `4px solid ${c}`,
-      }}>
-        <div style={{ fontFamily: UI, fontSize: 10.5, color: c, fontWeight: 700, letterSpacing: 0.5, marginBottom: 8, textTransform: "uppercase" }}>
-          {entry.burn ? "Burn" : TYPE_LABEL[entry.type]}
-        </div>
-        <p style={{
-          fontFamily: CORM, fontStyle: "italic", fontSize: 18,
-          color: T.espresso, lineHeight: 1.6, margin: "0 0 10px", whiteSpace: "pre-wrap",
-        }}>{entry.body}</p>
-        <div style={{ fontFamily: UI, fontSize: 12, color: T.muted }}>{entry.date}</div>
+        }}>Save entry · add to canvas ✦</button>
       </div>
     </div>
   );
 }
 
 export default function JournalDemo3() {
+  const [zoom, setZoom] = useState(1);
+  const [pan, setPan] = useState({ x: 0, y: 0 });
+  const [detail, setDetail] = useState(ENTRIES.find(e => e.isToday) || null);
   const [insOpen, setInsOpen] = useState(false);
   const [composer, setComposer] = useState(false);
-  const [seed, setSeed] = useState("");
-  const [detail, setDetail] = useState(null);
+  const dragRef = useRef(null);
 
-  const open = (p = "") => { setSeed(p); setComposer(true); };
+  const onWheel = (e) => {
+    e.preventDefault();
+    const next = Math.max(0.7, Math.min(2.5, zoom + (e.deltaY < 0 ? 0.12 : -0.12)));
+    setZoom(next);
+  };
+  const onMouseDown = (e) => {
+    dragRef.current = { x: e.clientX, y: e.clientY, panX: pan.x, panY: pan.y };
+  };
+  const onMouseMove = (e) => {
+    if (!dragRef.current) return;
+    setPan({
+      x: dragRef.current.panX + (e.clientX - dragRef.current.x),
+      y: dragRef.current.panY + (e.clientY - dragRef.current.y),
+    });
+  };
+  const onMouseUp = () => { dragRef.current = null; };
 
   return (
-    <div style={{ minHeight: "100vh", background: T.surface, paddingBottom: 60 }}>
-      <div style={{ maxWidth: 680, margin: "0 auto", padding: "26px 20px 18px" }}>
-        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-end", marginBottom: 16 }}>
+    <div style={{ minHeight: "100vh", background: T.surface, paddingBottom: 80 }}>
+      <div style={{ maxWidth: 760, margin: "0 auto", padding: "18px 16px 16px" }}>
+        {/* Header */}
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-end", marginBottom: 14 }}>
           <div>
+            <div style={{ fontFamily: UI, fontSize: 10.5, color: T.muted, letterSpacing: 1.4, fontWeight: 700, marginBottom: 4, textTransform: "uppercase" }}>
+              Luteal · Day 26
+            </div>
             <h1 style={{
-              fontFamily: CORM, fontSize: 30, fontWeight: 600,
-              color: T.espresso, margin: 0, letterSpacing: -0.4,
-            }}>Journal</h1>
-            <div style={{ marginTop: 8 }}><PhasePill /></div>
+              fontFamily: CORM, fontStyle: "italic", fontSize: 28, fontWeight: 500,
+              color: T.espresso, margin: 0, letterSpacing: -0.3,
+            }}>Your journal as a constellation</h1>
           </div>
-          <button onClick={() => open()} style={{
-            background: T.espresso, color: T.cream, border: "none",
-            borderRadius: 9999, padding: "9px 16px",
-            fontFamily: UI, fontSize: 13, fontWeight: 700, cursor: "pointer",
-          }}>+ New entry</button>
+          <div style={{ display: "flex", gap: 4 }}>
+            <button onClick={() => setZoom(z => Math.max(0.7, z - 0.2))} style={zoomBtn}>−</button>
+            <button onClick={() => setZoom(z => Math.min(2.5, z + 0.2))} style={zoomBtn}>+</button>
+          </div>
         </div>
 
-        <InsightsCard onExpand={() => setInsOpen(true)} />
-        <PromptCard onWrite={(p) => open(p)} />
-        <OnThisDayCard onReply={() => open("Reflecting on what I wrote a cycle ago…\n\n")} />
-        <CommunityStrip />
-        <RhythmStrip />
+        {/* Insights bar with mini canvas */}
+        <InsightsBar onExpand={() => setInsOpen(true)} />
 
-        <div style={{ fontFamily: UI, fontSize: 10.5, color: T.muted, fontWeight: 700, letterSpacing: 0.5, marginBottom: 10, textTransform: "uppercase" }}>
-          Entries
+        {/* Canvas viewport */}
+        <div
+          onWheel={onWheel}
+          onMouseDown={onMouseDown}
+          onMouseMove={onMouseMove}
+          onMouseUp={onMouseUp}
+          onMouseLeave={onMouseUp}
+          style={{
+            position: "relative",
+            background: T.cream,
+            border: `1px solid rgba(58,44,26,0.10)`,
+            borderRadius: 16, overflow: "hidden",
+            cursor: dragRef.current ? "grabbing" : "grab",
+            touchAction: "none",
+          }}
+        >
+          <svg
+            viewBox={`0 0 ${VB_W} ${VB_H}`}
+            style={{
+              width: "100%", height: "auto", display: "block",
+              transform: `translate(${pan.x}px, ${pan.y}px) scale(${zoom})`,
+              transformOrigin: "center center",
+              transition: dragRef.current ? "none" : "transform 200ms ease-out",
+            }}
+          >
+            <PhaseBands />
+            <Axes />
+            <GhostDots />
+            {ENTRIES.map((e) => <Dot key={e.id} e={e} onTap={(en) => setDetail(en)} />)}
+          </svg>
+
+          {/* Community label at bottom */}
+          <div style={{
+            position: "absolute", left: 12, bottom: 8,
+            fontFamily: UI, fontSize: 10, color: T.muted, opacity: 0.85,
+          }}>{MOCK.community}</div>
         </div>
-        {MOCK.entries.map((e, i) => (
-          <EntryCard key={e.id} entry={e} onTap={(en) => setDetail(en)} divider={i < MOCK.entries.length - 1} />
-        ))}
+
+        {/* Legend */}
+        <div style={{
+          display: "flex", flexWrap: "wrap", gap: 10, marginTop: 12, marginBottom: 4,
+        }}>
+          {["reflection","joy","work","gratitude","relationships","creative","grief"].map((k) => (
+            <span key={k} style={{
+              display: "inline-flex", alignItems: "center", gap: 5,
+              fontFamily: UI, fontSize: 11, color: T.muted,
+            }}>
+              <span style={{ width: 8, height: 8, borderRadius: "50%", background: TYPE_COLOUR[k] }} />
+              {TYPE_LABEL[k]}
+            </span>
+          ))}
+        </div>
       </div>
 
+      {/* Write today FAB */}
+      <button onClick={() => setComposer(true)} style={{
+        position: "fixed", bottom: 24, right: 24, zIndex: 60,
+        width: 56, height: 56, borderRadius: "50%",
+        background: T.gold, color: T.espresso, border: "none",
+        boxShadow: "0 8px 22px rgba(212,175,55,0.45)",
+        fontSize: 22, fontFamily: CORM, fontWeight: 700, cursor: "pointer",
+      }} aria-label="Write today">✏️</button>
+
       {insOpen && <InsightsExpanded onClose={() => setInsOpen(false)} />}
-      <Composer open={composer} onClose={() => setComposer(false)} seedPrompt={seed} />
+      <Composer open={composer} onClose={() => setComposer(false)} />
       <EntryDetail entry={detail} onClose={() => setDetail(null)} />
     </div>
   );
 }
+
+const zoomBtn = {
+  width: 30, height: 30, borderRadius: "50%",
+  background: T.cream, color: T.espresso,
+  border: `1px solid ${T.muted}`, cursor: "pointer",
+  fontFamily: CORM, fontSize: 16, fontWeight: 700,
+  display: "inline-flex", alignItems: "center", justifyContent: "center",
+};
