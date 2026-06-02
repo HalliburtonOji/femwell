@@ -60,7 +60,7 @@ const ALLOWED = new Set([
   "ojihalliburton57@gmail.com",
 ]);
 
-const TABS = ["Lab", "Pages", "Roadmap", "Ideas", "Strategy", "Legal", "Decisions", "Journal", "Another You", "UX & Design", "Wholeness", "LGBTQ+", "🏥 Health Corner"];
+const TABS = ["Lab", "Pages", "Roadmap", "Ideas", "Strategy", "Legal", "Decisions", "Journal", "Journal Demos", "Another You", "UX & Design", "Wholeness", "LGBTQ+", "🏥 Health Corner"];
 
 const IDEAS_KEY  = "femwell_ideas";
 const CHECKS_KEY = "femwell_founder_checks";
@@ -565,8 +565,9 @@ function FoundersInner({ user }) {
         {tab === "Strategy"  && <StrategyTab />}
         {tab === "Legal"     && <LegalTab />}
         {tab === "Decisions" && <DecisionsTab />}
-        {tab === "Journal"     && <JournalTab />}
-        {tab === "Another You" && <AnotherYouTab />}
+        {tab === "Journal"        && <JournalTab />}
+        {tab === "Journal Demos"  && <JournalDemosTab />}
+        {tab === "Another You"    && <AnotherYouTab />}
         {tab === "UX & Design" && <UxDesignTab />}
         {tab === "Wholeness"   && <WholenessTab />}
         {tab === "LGBTQ+"      && <LgbtqTab />}
@@ -1797,6 +1798,125 @@ function JournalTab() {
   );
 }
 
+
+// ════════════════════════════════════════════════════════════════════════════
+// Tab — Journal Demos (4 fully interactive theme directions)
+// ════════════════════════════════════════════════════════════════════════════
+const JOURNAL_DEMOS = [
+  {
+    n: 1, slug: "JournalDemo1",
+    title: "Paper & Ink",
+    subtitle: "Warm Editorial",
+    accent: "#D4AF37",
+    body: "The journal as a physical letter to yourself. Cormorant Garamond dominant. Cards rotate softly as if spread on a desk. Botanical dividers. Inspired by Day One Premium + the Health Letter aesthetic.",
+    tags: ["Cormorant dominant", "Subtle card rotation", "Botanical dividers", "Gold-only accents"],
+  },
+  {
+    n: 2, slug: "JournalDemo2",
+    title: "Night Light",
+    subtitle: "Dark Intimate",
+    accent: "#7B5EA7",
+    body: "The journal as the 3am room. Deep indigo-black. Smoke-like surfaces. Gold used sparingly — only for Jess moments. A faint breathing animation. For the most vulnerable entries.",
+    tags: ["Deep indigo background", "Silver/violet rhythm", "Borderless entries", "Burn Mode glows"],
+  },
+  {
+    n: 3, slug: "JournalDemo3",
+    title: "Clean Lines",
+    subtitle: "Modern Native",
+    accent: "#3A2C1A",
+    body: "The journal as a precision tool. SF/system font primary. iOS-standard sheets, segmented controls, a toggle for Burn Mode. Cormorant Garamond reserved for Jess output only.",
+    tags: ["System font primary", "iOS-style sheets", "Compact insights", "Burn toggle"],
+  },
+  {
+    n: 4, slug: "JournalDemo4",
+    title: "Living Colour",
+    subtitle: "Expressive & Dimensional",
+    accent: "#C4556B",
+    body: "The journal as a living emotional landscape. Each life dimension has its own accent colour. Insights show a dimension balance map. The Wholeness vision made visual.",
+    tags: ["11 dimension colours", "Masonry list", "Dimension balance map", "Coloured composer"],
+  },
+];
+
+function JournalDemosTab() {
+  return (
+    <div>
+      <PageHeader
+        title="Journal — 4 Theme Demos"
+        subtitle="All features. Four completely different visual and UX directions. Pick one or combine."
+        badge="INTERACTIVE"
+        badgeTone="gold"
+      />
+      <div style={{ display: "flex", flexDirection: "column", gap: 14, marginBottom: 24 }}>
+        {JOURNAL_DEMOS.map((d) => (
+          <article key={d.n} style={{
+            background: T.surface,
+            border: `1px solid ${T.border}`,
+            borderLeft: `4px solid ${d.accent}`,
+            borderRadius: 14,
+            padding: "18px 20px 16px",
+          }}>
+            <div style={{ display: "flex", alignItems: "flex-start", gap: 14, marginBottom: 10 }}>
+              <div style={{
+                width: 38, height: 38, borderRadius: "50%",
+                background: T.goldSoft, color: d.accent,
+                border: `1px solid ${d.accent}`,
+                display: "flex", alignItems: "center", justifyContent: "center",
+                fontFamily: '"Fraunces", Georgia, serif',
+                fontSize: 17, fontWeight: 700, flexShrink: 0,
+              }}>{d.n}</div>
+              <div style={{ flex: 1 }}>
+                <div style={{
+                  fontFamily: '"Fraunces", Georgia, serif',
+                  fontSize: 19, fontWeight: 700, color: T.textHi,
+                  letterSpacing: -0.1, lineHeight: 1.25,
+                }}>
+                  Demo {d.n} — {d.title}
+                </div>
+                <div style={{
+                  fontFamily: '"Fraunces", Georgia, serif',
+                  fontStyle: "italic", fontSize: 13.5, color: d.accent,
+                  marginTop: 2,
+                }}>{d.subtitle}</div>
+              </div>
+            </div>
+            <p style={{
+              fontSize: 13, color: T.textMid, lineHeight: 1.65, margin: "0 0 12px",
+            }}>{d.body}</p>
+            <div style={{ display: "flex", flexWrap: "wrap", gap: 6, marginBottom: 14 }}>
+              {d.tags.map((tag) => (
+                <span key={tag} style={{
+                  fontSize: 10.5, color: T.textMid,
+                  background: T.surfaceHi, border: `1px solid ${T.border}`,
+                  borderRadius: 9999, padding: "3px 9px",
+                  fontFamily: '"Inter", system-ui, sans-serif',
+                }}>{tag}</span>
+              ))}
+            </div>
+            <a href={`/${d.slug}`} style={{
+              display: "inline-block",
+              background: d.accent, color: T.bg,
+              border: "none", borderRadius: 9999,
+              padding: "8px 16px",
+              fontFamily: '"Inter", system-ui, sans-serif',
+              fontSize: 13, fontWeight: 700, cursor: "pointer",
+              textDecoration: "none",
+            }}>Open demo →</a>
+          </article>
+        ))}
+      </div>
+      <div style={{
+        background: T.surface, border: `1px dashed ${T.border}`,
+        borderRadius: 12, padding: "12px 16px",
+        fontSize: 12, color: T.textMid, lineHeight: 1.6,
+      }}>
+        All 4 demos share the same 9 features: compact insights card (tap to expand) ·
+        Jess phase prompt · entry type chooser · entry list · Burn Mode indicator ·
+        On This Day · community signal · full composer · writing rhythm dots.
+        Every interaction is wired with useState; no real entities are queried.
+      </div>
+    </div>
+  );
+}
 
 // ════════════════════════════════════════════════════════════════════════════
 // Tab — Another You (Shadow / Mirror / Oracle page concept)

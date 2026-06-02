@@ -89,6 +89,12 @@ import OneShotThankYou from './pages/OneShotThankYou';
 // /Ideas AND /Founders both render FoundersOS. /Founders is kept as
 // an alias so any old bookmarks still work.
 import FoundersOS from './pages/FoundersOS';
+// 4 Journal theme demos (mounted at /JournalDemo1..4). Linked from the
+// "Journal Demos" tab in FoundersOS. Mock data, no entity queries.
+import JournalDemo1 from './pages/JournalDemo1';
+import JournalDemo2 from './pages/JournalDemo2';
+import JournalDemo3 from './pages/JournalDemo3';
+import JournalDemo4 from './pages/JournalDemo4';
 // Sprint 10 — Partner Sync hub (user's share-code page). The
 // matching public /partner?code=… read-only view (Partner.jsx) is
 // wired separately in App.jsx OUTSIDE this PAGES map so it can run
@@ -143,6 +149,10 @@ export const PAGES = {
     "Ideas": FoundersOS,
     "Founders": FoundersOS,
     "PartnerSync": PartnerSync,
+    "JournalDemo1": JournalDemo1,
+    "JournalDemo2": JournalDemo2,
+    "JournalDemo3": JournalDemo3,
+    "JournalDemo4": JournalDemo4,
     // HealthDashboard intentionally NOT registered — see import comment above.
     // "HealthDashboard": HealthDashboard,
 }
