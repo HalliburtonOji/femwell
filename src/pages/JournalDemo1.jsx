@@ -9,17 +9,17 @@ import { Lock, Moon, ArrowRight, ChevronRight, Feather } from "lucide-react";
 
 // ── palette (brand cream + espresso; one restrained crimson for the heart) ──
 const T = {
-  paper:    "#F1E9D4",   // warm handmade-paper cream
-  paperHi:  "#F8F2E2",   // insets / cards
-  paperDeep:"#E7DCC2",   // deckle / hairline wash
-  ink:      "#33291C",   // warm near-black ink
-  inkSoft:  "#5C5040",
-  muted:    "#9C8D77",
-  gold:     "#C2A24A",   // hairline accents only
+  paper:    "#E8E3D5",   // cool matte stationery cream (reference paper)
+  paperHi:  "#F1ECDD",   // insets / cards
+  paperDeep:"#D6CDBA",   // deckle / hairline wash
+  ink:      "#221D16",   // near-black charcoal ink (reference handwriting)
+  inkSoft:  "#463E33",
+  muted:    "#8C8273",
+  gold:     "#B89A55",   // muted hairline accent only
   crimson:  "#C0322B",   // THE heart — the single colour pop
   blush:    "#E8B4B8", sage: "#8FAF8F",
 };
-const SCRIPT = '"Tangerine","Parisienne",cursive';        // the journal's voice
+const SCRIPT = '"Allura","Pinyon Script",cursive';        // the journal's voice — pointed-pen hand
 const SERIF  = '"Cormorant Garamond","Fraunces",Georgia,serif'; // reading
 const UI     = '"Inter",system-ui,sans-serif';            // chrome
 
@@ -79,8 +79,9 @@ function Heart({ size = 18, style }) {
 }
 
 // ── warm handmade-paper background: grain + soft vignette ──────────────────
+// Soft, smooth, low-frequency cool-taupe mottle — fine stationery / stone, not grain.
 const NOISE = "data:image/svg+xml;utf8," + encodeURIComponent(
-  '<svg xmlns="http://www.w3.org/2000/svg" width="180" height="180"><filter id="n"><feTurbulence type="fractalNoise" baseFrequency="0.9" numOctaves="2" stitchTiles="stitch"/><feColorMatrix type="saturate" values="0"/></filter><rect width="100%" height="100%" filter="url(#n)" opacity="0.045"/></svg>'
+  '<svg xmlns="http://www.w3.org/2000/svg" width="600" height="600"><filter id="m"><feTurbulence type="fractalNoise" baseFrequency="0.012" numOctaves="3" seed="7" stitchTiles="stitch"/><feColorMatrix type="matrix" values="0 0 0 0 0.42  0 0 0 0 0.40  0 0 0 0 0.35  0 0 0 1 0"/></filter><rect width="100%" height="100%" filter="url(#m)" opacity="0.10"/></svg>'
 );
 function Paper() {
   return (
@@ -88,10 +89,10 @@ function Paper() {
       position: "fixed", inset: 0, zIndex: 0, pointerEvents: "none",
       backgroundColor: T.paper,
       backgroundImage:
-        `radial-gradient(120% 80% at 50% -10%, rgba(255,253,245,0.65) 0%, rgba(255,253,245,0) 55%),` +
-        `radial-gradient(120% 120% at 50% 120%, rgba(120,96,54,0.10) 0%, rgba(120,96,54,0) 55%),` +
+        `radial-gradient(140% 90% at 50% 0%, rgba(250,248,240,0.55) 0%, rgba(250,248,240,0) 60%),` +
+        `radial-gradient(120% 100% at 50% 50%, rgba(0,0,0,0) 60%, rgba(60,52,38,0.18) 100%),` +
         `url("${NOISE}")`,
-      backgroundSize: "auto, auto, 180px 180px",
+      backgroundSize: "auto, auto, 600px 600px",
     }} />
   );
 }
@@ -104,7 +105,8 @@ function Rule({ w = "100%", c = T.paperDeep, mt = 0, mb = 0 }) {
   return <div style={{ width: w, height: 1, background: c, marginTop: mt, marginBottom: mb }} />;
 }
 function Script({ children, size = 40, color = T.ink, style }) {
-  return <span style={{ fontFamily: SCRIPT, fontWeight: 700, fontSize: size, lineHeight: 1.15, color, ...style }}>{children}</span>;
+  // Script faces (Allura/Pinyon) are 400-weight only — never faux-bold them.
+  return <span style={{ fontFamily: SCRIPT, fontWeight: 400, fontSize: size, lineHeight: 1.2, color, ...style }}>{children}</span>;
 }
 
 // ── Masthead — the issue title ─────────────────────────────────────────────
@@ -375,7 +377,7 @@ export default function JournalDemo1() {
     if (document.getElementById(id)) return;
     const l = document.createElement("link");
     l.id = id; l.rel = "stylesheet";
-    l.href = "https://fonts.googleapis.com/css2?family=Tangerine:wght@400;700&family=Parisienne&family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,500;1,600&family=Inter:wght@400;600;700&display=swap";
+    l.href = "https://fonts.googleapis.com/css2?family=Allura&family=Pinyon+Script&family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,500;1,600&family=Inter:wght@400;600;700&display=swap";
     document.head.appendChild(l);
   }, []);
 

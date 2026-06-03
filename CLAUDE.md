@@ -18,8 +18,11 @@
 4. Do NOT search for local paths — you already have the repo open
 5. Do NOT spin up new task sessions — work happens here
 
-## THE BATON RULE (every ship updates STATUS.md):
-After any commit that lands on `main`, append a SHIP LOG line to `claude-state/STATUS.md` with: (1) commit hash + summary, (2) shipped-vs-demo, (3) live bundle hash after deploy, (4) verification. If you don't log all four, the baton is broken. No exceptions.
+## THE BATON RULE — UPDATE STATUS.md CONSTANTLY (not at session end):
+Update `claude-state/STATUS.md` IMMEDIATELY after EVERY build / fix / ship — the moment a change is made, not batched up for later. Each entry records all four: (1) what changed + commit hash, (2) shipped-vs-demo, (3) live bundle hash after deploy, (4) verification (live-walk / build / Ms Verify). If you don't log all four right away, the baton is broken and the next (possibly reset) session loses the thread. No exceptions. This rule exists because state went stale before and Halli had to re-explain.
+
+## ALWAYS USE THE NAMED AGENT ROSTER (every relevant task):
+FemWell has a standing team of named subagents, bound by specs at `.claude/agents/*.md` (+ `TEAM.md` in repo root). Dispatch them BY NAME on every relevant task — do not hand-write specs/research/verification/craft yourself when a teammate owns it. Read the spec file before dispatching (it encodes tools, output contract, rules). Core roster: **Mr Lead Manager** (scope/spec each MP), **Ms Deep Search** (non-generic research), **Ms Verify** (live/exit-gate verification — runs after every build/ship), **Mr Fix-it** (trivial ≤2-file edits), **Ms Atelier** (UI/UX craft + brand gate, model: opus), plus Mx Storyteller, Ms Accessibility, Mr Performance, Ms Data, Mr Tester, Ms Strategy (and Mr Lucha, paused). For any visual change: **Ms Atelier crafts, Ms Verify checks it (against the reference/spec) before ship.** Memory: `feedback_femwell_agent_team.md`.
 
 ## APP DETAILS:
 - Live at: femwells.com
