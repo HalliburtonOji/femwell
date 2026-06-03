@@ -1,5 +1,19 @@
 # FemWell — STATUS (the shared baton) — SINGLE SOURCE OF TRUTH
 
+## 🧭 STANDING GOVERNANCE (permanent — also in CLAUDE.md)
+- **A. ALWAYS use the named agent roster** (`.claude/agents/*.md` + `TEAM.md`): Mr Lead Manager · Ms Deep Search · Ms Verify · Mr Fix-it · Ms Atelier (+ Mx Storyteller, Ms Accessibility, Mr Performance, Ms Data, Mr Tester, Ms Strategy; Mr Lucha paused). Dispatch by name on every relevant task; read the spec first. **Every visual change: Ms Atelier crafts → Ms Verify checks vs reference/spec BEFORE ship.**
+- **B. UPDATE STATUS.md CONSTANTLY** — immediately after every build/fix/ship (what changed + commit + bundle hash + verification), never batched to session end. State went stale before; this prevents Halli re-explaining.
+
+## UPDATE 2026-06-03 (session d) — Editorial demo refined to reference (PATCH-READY)
+- **Commit `6c50df7`** — Editorial journal demo (`JournalDemo1`, /Ideas, demo-only — production untouched) refined to match Halli's reference IMG_9854 on his three correction points:
+  - **Paper:** warm grain → **cool matte stationery cream `#E8E3D5`** + soft low-freq mottle (`feTurbulence baseFrequency 0.012`, desaturated cool-taupe, opacity 0.10) + edge vignette. Stationery/stone, not grain.
+  - **Ink:** → **near-black charcoal `#221D16`** (was `#33291C`).
+  - **Font:** Tangerine → **Allura** (authentic connected pointed-pen handwriting; Pinyon Script fallback), script weight 400 (no faux-bold); Cormorant serif still for all reading body.
+- **Roster used:** Ms Atelier (craft) + **Ms Verify (APPROVE — 3/3 requirements, emoji-gate zero, reading-stays-serif).**
+- **Build + lint clean.** NOT yet pushed/deployed — Cowork sandbox has no push cred. In **`femwell_status_deploy_2026-06-03.patch`** is the prior status commit; the NEW demo refinement commit `6c50df7` needs Code to push on top of `30751cc`, then deploy (github/sync + deploy) and verify the new bundle hash. Self-screenshot was unavailable (Chrome MCP screenshot degraded this session) — live `/Ideas` is the visual check per Halli's review flow.
+
+# FemWell — STATUS (the shared baton) — SINGLE SOURCE OF TRUTH
+
 ## ✅ DEPLOYED + LIVE 2026-06-03 (session c → shipped)
 - **origin/main = `30751cc`** (Code applied the 8 Cowork commits via `git am`, fast-forward from `2db4c0b`; SHAs recomputed, content/messages/order identical — original sandbox tip was `6fd9ef0`).
 - **Base44 synced to `30751cc`** (`last_git_commit_hash` confirmed) → **deploy API 200** → **live bundle flipped `index-CXIb5PJb.js` → `index-CoStN_6I.js`** on femwells.com.
