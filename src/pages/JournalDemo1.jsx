@@ -12,7 +12,7 @@ const T = {
   paper:    "#E8E3D5",   // cool matte stationery cream (reference paper)
   paperHi:  "#F1ECDD",   // insets / cards
   paperDeep:"#D6CDBA",   // deckle / hairline wash
-  ink:      "#221D16",   // near-black charcoal ink (reference handwriting)
+  ink:      "#15110C",   // near-true-black ink (reference handwriting)
   inkSoft:  "#463E33",
   muted:    "#8C8273",
   gold:     "#B89A55",   // muted hairline accent only
@@ -78,10 +78,13 @@ function Heart({ size = 18, style }) {
   );
 }
 
-// ── warm handmade-paper background: grain + soft vignette ──────────────────
-// Soft, smooth, low-frequency cool-taupe mottle — fine stationery / stone, not grain.
-const NOISE = "data:image/svg+xml;utf8," + encodeURIComponent(
-  '<svg xmlns="http://www.w3.org/2000/svg" width="600" height="600"><filter id="m"><feTurbulence type="fractalNoise" baseFrequency="0.012" numOctaves="3" seed="7" stitchTiles="stitch"/><feColorMatrix type="matrix" values="0 0 0 0 0.42  0 0 0 0 0.40  0 0 0 0 0.35  0 0 0 1 0"/></filter><rect width="100%" height="100%" filter="url(#m)" opacity="0.10"/></svg>'
+// ── layered handmade-paper: cloud mottle (large) + fibre grain (fine) + vignette + sheen ──
+// Stacked SVG-noise layers give real tonal depth + paper fibre, not a flat CSS fill.
+const MOTTLE = "data:image/svg+xml;utf8," + encodeURIComponent(
+  '<svg xmlns="http://www.w3.org/2000/svg" width="700" height="700"><filter id="c"><feTurbulence type="fractalNoise" baseFrequency="0.010" numOctaves="4" seed="11" stitchTiles="stitch"/><feColorMatrix type="matrix" values="0 0 0 0 0.40  0 0 0 0 0.37  0 0 0 0 0.31  0 0 0 1 0"/></filter><rect width="100%" height="100%" filter="url(#c)" opacity="0.24"/></svg>'
+);
+const FIBRE = "data:image/svg+xml;utf8," + encodeURIComponent(
+  '<svg xmlns="http://www.w3.org/2000/svg" width="160" height="160"><filter id="f"><feTurbulence type="fractalNoise" baseFrequency="0.5 0.9" numOctaves="2" seed="4" stitchTiles="stitch"/><feColorMatrix type="matrix" values="0 0 0 0 0.30  0 0 0 0 0.27  0 0 0 0 0.22  0 0 0 1 0"/></filter><rect width="100%" height="100%" filter="url(#f)" opacity="0.07"/></svg>'
 );
 function Paper() {
   return (
@@ -89,10 +92,12 @@ function Paper() {
       position: "fixed", inset: 0, zIndex: 0, pointerEvents: "none",
       backgroundColor: T.paper,
       backgroundImage:
-        `radial-gradient(140% 90% at 50% 0%, rgba(250,248,240,0.55) 0%, rgba(250,248,240,0) 60%),` +
-        `radial-gradient(120% 100% at 50% 50%, rgba(0,0,0,0) 60%, rgba(60,52,38,0.18) 100%),` +
-        `url("${NOISE}")`,
-      backgroundSize: "auto, auto, 600px 600px",
+        `radial-gradient(150% 95% at 50% -5%, rgba(252,250,243,0.70) 0%, rgba(252,250,243,0) 55%),` +  // soft top sheen
+        `radial-gradient(125% 110% at 50% 50%, rgba(0,0,0,0) 52%, rgba(48,40,28,0.28) 100%),` +         // edge vignette (card-on-dark)
+        `url("${FIBRE}"),` +                                                                             // fine fibre grain
+        `url("${MOTTLE}")`,                                                                              // large soft cloud mottle
+      backgroundSize: "auto, auto, 160px 160px, 700px 700px",
+      backgroundRepeat: "no-repeat, no-repeat, repeat, repeat",
     }} />
   );
 }
