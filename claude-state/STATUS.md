@@ -1,3 +1,71 @@
+# FemWell — STATUS (the shared baton) — SINGLE SOURCE OF TRUTH
+
+> **This file is the one authoritative answer to "where are we and what's next."**
+> Both Claudes (Cowork + Code) read this block FIRST on session start and update it after every ship.
+> Halli should never have to re-explain project state. If this block and any other doc disagree, THIS BLOCK WINS.
+
+## THE BATON RULE (non-negotiable — bake into every ship)
+Every time code lands on `main`, the shipper appends a one-line entry to the SHIP LOG below with all four of:
+1. **commit hash** + one-line summary
+2. **shipped vs demo** (does it change the live consumer app, or is it internal `/Ideas` exploration?)
+3. **live bundle hash** after deploy (`curl -s https://femwells.com/ | grep -oE 'index-[A-Za-z0-9_-]+\.js'`)
+4. **verification** (live-walked? lint/build? or "unverified")
+
+If you ship and don't log all four, the baton is broken and the next session loses the thread. No exceptions.
+
+---
+
+## CURRENT STATE — as of 2026-06-03 (Cowork)
+
+- **HEAD:** `2db4c0b` (2026-06-02 16:30) — "Editorial layered + 3 innovative Journal demos: Conversation, Canvas, Wheel"
+- **Live bundle on femwells.com:** `index-CXIb5PJb.js` (confirmed live 2026-06-03)
+- **Jess Features 1-4: ALL SHIPPED + LIVE.** Feature 4 (For You real data + 3 Wings) shipped `2359640` (2026-05-23). Wings confirmed rendering live 2026-06-03: Journal prompt card, DoctorExport GP summary, Astra handoff pill.
+- **Last consumer-app change:** `cda3e96` (2026-06-01) — 7 live bug fixes (see SHIP LOG + live-walk below).
+- **Most recent work (2026-06-02) is INTERNAL DEMO/EXPLORATION**, not consumer features: Journal redesign demos live behind the `/Ideas` (FoundersOS) floating tab. Production `Journal.jsx` was reverted to skeleton in `66f74ab` — the live Journal page is the pre-existing one, NOT the demos.
+
+## LIVE-WALK VERIFICATION of `cda3e96` (7 bug fixes) — done 2026-06-03 by Cowork on bundle CXIb5PJb
+| # | Fix | Result |
+|---|-----|--------|
+| 1 | Journal Insights `tags.split` crash | VERIFIED — Insights tab renders chart + Luteal stat card + Jess insight; zero console errors |
+| 2 | `/CareBridge` 404 -> redirect | VERIFIED — `/CareBridge` now lands on `/DoctorExport` |
+| 3 | Jess hero markdown/JSON envelope strip | VERIFIED (by absence) — no raw code-fences or action-JSON leaked on any hero (Today, Planner/Track) |
+| 4+7 | Phase/day unification (`phaseForDay()`) | VERIFIED — in-app Today + Journal both read "OVULATORY · DAY 15" consistently |
+| 5 | Lifestyle "any phase" placeholder | VERIFIED — Lifestyle For You renders real phase content, no sentinel placeholder |
+| 6 | Perimenopause program empty-state | CODE-CONFIRMED, NOT LIVE-OBSERVED — test account life_stage = "reproductive"; peri program deep-link unreachable without in-app nav / Pro. Empty-state code is present + correct in `ProgramDetail.jsx`. |
+
+**Minor issues surfaced during the walk (not regressions, worth a future fix):**
+- The daily **"Start my day" gate** (full-reload interstitial) still labels the phase **"LUTEAL · DAY 15"** while the unified app shows **"OVULATORY · DAY 15"**. The gate component didn't get the `phaseForDay()` single-source treatment.
+- Direct deep-links to some routes **404** (e.g. `/Programs` — the real route is `/ProgramsHub`). `/CareBridge` is handled via redirect now; other routes may need the same.
+- The internal **`/Ideas` (FoundersOS) demo surface is exposed on production** via the floating "IDEAS" tab — intentional per recent commits, but visible to live users.
+
+## SHIP LOG — commits since the last baton update (2026-05-23)
+> shipped = changes live consumer app · demo = internal /Ideas exploration only
+| commit | date | shipped/demo | summary | bundle | verified |
+|--------|------|--------------|---------|--------|----------|
+| `2db4c0b` | 06-02 | demo | Editorial layered + 3 Journal demos (Conversation/Canvas/Wheel) in FoundersOS | CXIb5PJb (current) | live-walk 06-03: /Ideas reachable |
+| `494326b` | 06-02 | demo | Rebuild 4 Journal demos with shared FemWell palette | — | — |
+| `5d1ae28` | 06-02 | demo | Journal demos: 4 interactive theme directions + FoundersOS gallery tab | — | — |
+| `66f74ab` | 06-02 | shipped | **Revert production Journal.jsx to skeleton** (pre-b8b3f69) — live Journal is the old page | — | — |
+| `b504471` | 06-02 | infra | Update base44 packages | — | — |
+| `3b8ab43` | 06-01 | shipped | Hotfix: restore PageHeader + FeatureCard helpers (lost in Journal splice) | — | — |
+| `b8b3f69` | 06-01 | demo+shipped | Journal master plan in FoundersOS + Phase 1 rebuild of /Journal (later reverted by 66f74ab) | — | — |
+| `cda3e96` | 06-01 | **shipped** | **7 live bug fixes** (Insights crash, CareBridge redirect, Jess envelope strip, phase/day unification, Lifestyle placeholder, peri empty-state) | CXIb5PJb (live) | live-walked 06-03 (table above) |
+| `21484e2` | 06-01 | demo | Wholeness tab: 10 dimensions + Jess v2 + Letter extensions (/Ideas) | — | — |
+| `c774cbf` | 06-01 | demo | /Ideas — replace UX & Design + Wholeness tab contents | — | — |
+| `a8edab5` | 06-01 | demo | /Ideas — add 4 read-only research tabs | — | — |
+| `611c18e` | 05-31 | demo | /Ideas — read-only Journal tab with full rebuild plan | — | — |
+
+## OPEN QUESTIONS / NEEDS-HALLI (resolved vs open as of 2026-06-03)
+- **Which commit produced bundle `CXIb5PJb`?** OPEN — not recorded anywhere; base44 generates the hash at deploy. It is definitively *post*-Feature-4 (DDFcefDF) and serves the June work. The BATON RULE fixes this going forward. Needs Halli only if exact mapping matters.
+- **Did the Phase 2.5 / Phase 3 pipeline data-verification ever complete?** OPEN / likely-NO — no verification artifact exists in `claude-state/` (only `verify_high_risk_three_2026-05-13.md`, which is the horoscope surfaces). The "verify tomorrow" task from 2026-05-06 appears never formally closed. NEEDS HALLI (or a base44 MCP re-sample of LifestyleItems) to confirm `phase_tags` + `try_this_content_key` populate from real LLM inference.
+- **Content-pipeline Phase A bugs (ingestRSS `rss_url` vs `feed_url`, `created_at` null, Listen seed).** PARTIALLY RESOLVED — Code shipped podcast cleanup + `backfillPodcastFields` + `backfillLongreadsImages` + a podcast schema migration. No explicit confirmation the *original* Phase A root bugs were closed. NEEDS HALLI/Code to confirm or re-file.
+- **Awaiting-sign-off pages: live vs demo.** RESOLVED — real page implementations now exist for nearly all of them: `Onboarding`, `Profile`, `Settings`, `SkinHair`, `LifeStageCare`, `Explore`, `Community`, `Pulse`, `Nutrition`, `Partner*`, `SealedLetters`, `ProgramsHub`. Whether each is *signed off* is a Halli decision; they are not just HTML demos anymore.
+- **2 base44 schema migrations from the 2026-05-16 Life Stage build** (UserProfile life_stage schema + HrtLog entity) — STATUS history says Halli still had to run them. NEEDS HALLI to confirm or run.
+
+---
+---
+> Everything below this line is the PRE-2026-06-03 historical log, preserved for context. The block ABOVE is authoritative.
+
 # FemWell — current status (the shared baton)
 
 > **This file is the source of truth for "where we are and what's next."** Both Claudes read it on session start and write to it after every commit. Halli should never have to copy status between Cowork and Code — they coordinate through this file.
