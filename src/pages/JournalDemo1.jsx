@@ -1,456 +1,401 @@
-// JournalDemo1 — "Editorial" (dramatic serif, magazine layout)
-// Shared FemWell palette. Distinct via typography, layout, hierarchy.
-import { useState } from "react";
-import { Sparkles, Flame } from "lucide-react";
+// JournalDemo1 — "Editorial" v2 (the chosen direction)
+// Cream textured-paper feel, an elegant script hand for the journal's VOICE
+// (phase word, Jess's lines, quotes) over humanist serif for reading, and a
+// single small imperfect red heart as the only colour pop — matching Halli's
+// reference (IMG_9854: handmade paper, fine script, one red heart).
+// Brand-pure: no emoji, Lucide + custom SVG only. Demo-only mock data.
+import { useState, useEffect } from "react";
+import { Lock, Moon, ArrowRight, ChevronRight, Feather } from "lucide-react";
 
+// ── palette (brand cream + espresso; one restrained crimson for the heart) ──
 const T = {
-  cream:    "#F4EDDB",
-  surface:  "#FAF5E8",
-  paperHi:  "#FFFDF5",
-  espresso: "#3A2C1A",
-  blush:    "#E8B4B8",
-  sage:     "#8FAF8F",
-  gold:     "#D4AF37",
-  muted:    "#9B8B7A",
-  amber:    "#D4882A",
+  paper:    "#F1E9D4",   // warm handmade-paper cream
+  paperHi:  "#F8F2E2",   // insets / cards
+  paperDeep:"#E7DCC2",   // deckle / hairline wash
+  ink:      "#33291C",   // warm near-black ink
+  inkSoft:  "#5C5040",
+  muted:    "#9C8D77",
+  gold:     "#C2A24A",   // hairline accents only
+  crimson:  "#C0322B",   // THE heart — the single colour pop
+  blush:    "#E8B4B8", sage: "#8FAF8F",
 };
-const CORM = '"Cormorant Garamond","Fraunces",Georgia,serif';
-const UI = '"Inter",system-ui,sans-serif';
-
-const PHASE_COLOUR = { menstrual: T.blush, follicular: T.sage, ovulatory: T.gold, luteal: T.muted };
+const SCRIPT = '"Tangerine","Parisienne",cursive';        // the journal's voice
+const SERIF  = '"Cormorant Garamond","Fraunces",Georgia,serif'; // reading
+const UI     = '"Inter",system-ui,sans-serif';            // chrome
 
 const MOCK = {
-  phase: "luteal", cycleDay: 26,
-  prompt: "The editing phase. What can you let go of? What genuinely matters?",
-  altPrompts: [
-    "What's a quieter no you've been avoiding saying?",
-    "What does the discerning part of you know about today?",
+  phase: "Luteal", season: "Inner Autumn", cycleDay: 26, date: "Wednesday, 3 June",
+  prompts: [
+    "The editing phase. What can you let go of — and what genuinely matters?",
+    "What is a quieter no you have been avoiding saying?",
+    "What does the discerning part of you already know about today?",
   ],
-  rhythm: [true, true, false, true, true, false, true],
-  jessLine: "On cycle day 26 last month, you wrote about feeling invisible. It's day 26 today.",
-  community: "23 women in luteal are writing about boundaries this week.",
-  onThisDay: { text: "I felt invisible at the meeting. Like I had to make myself larger to be heard. Tired of it.", date: "Last cycle · Day 26" },
+  jessLine: "On cycle day 26 last month you wrote about feeling invisible. It is day 26 again — and you sound steadier.",
+  weekLine: "You have written on 4 of the last 7 evenings. Your luteal entries lean honest.",
+  community: "Five women in late luteal wrote one line each tonight.",
+  mirror: { text: "I felt invisible at the meeting. Like I had to make myself larger just to be heard. I am tired of it.", when: "Last cycle · Day 26" },
+  tonight: "Before the day closes — name one thing today asked of you, and one thing you gave it.",
+  sealed: { count: 2, next: "opens at your next follicular" },
   entries: [
-    { id: 1, type: "Reflection", body: "Today I noticed I keep editing myself before I speak. I don't think anyone asked me to.", date: "Today · 9:42am" },
-    { id: 2, type: "Work",       body: "The deadline shifted again. I'm not sure how to plan around so much uncertainty.", date: "Yesterday" },
-    { id: 3, type: "Burn",       body: "Things I'm not allowed to say out loud — even to myself.", date: "2 days ago · burns in 4h", burn: true },
+    { id: 1, type: "Reflection", body: "Today I noticed I keep editing myself before I speak. I do not think anyone asked me to.", date: "Today · 9:42", drop: true },
+    { id: 2, type: "Work",       body: "The deadline shifted again. I am not sure how to plan around this much uncertainty.", date: "Yesterday" },
+    { id: 3, type: "Burn",       body: "Things I am not allowed to say out loud — even to myself.", date: "2 days ago · burns in 4h", burn: true },
     { id: 4, type: "Joy",        body: "The coffee this morning. The exact angle of the sunlight on the table.", date: "3 days ago" },
     { id: 5, type: "Gratitude",  body: "Mum called for no reason. Just to say hello.", date: "4 days ago" },
   ],
 };
 
 const TYPE_COLOUR = {
-  "Free write":    "#3A2C1A",
-  "Gratitude":     "#D4AF37",
-  "Mood":          "#E8B4B8",
-  "Mood journal":  "#E8B4B8",
-  "Reflection":    "#8FAF8F",
-  "Work":          "#5C7A7A",
-  "Work & Career": "#5C7A7A",
-  "Relationships": "#C4556B",
-  "Money":         "#8B6914",
-  "Creative":      "#C4892A",
-  "Grief":         "#9B8B7A",
-  "Joy":           "#5EA05E",
-  "Identity":      "#6B4FA0",
-  "Burn":          "#D4882A",
-  "Burn Mode":     "#D4882A",
+  Reflection: "#8FAF8F", Work: "#5C7A7A", Joy: "#5EA05E", Gratitude: "#C2A24A",
+  Burn: "#C0322B", Mood: "#E8B4B8", Relationships: "#C4556B", Money: "#8B6914",
+  Creative: "#C4892A", Grief: "#9B8B7A", Identity: "#6B4FA0", "Free write": "#33291C",
 };
-
-function tintFor(label) {
-  const c = TYPE_COLOUR[label] || T.espresso;
-  const r = parseInt(c.slice(1, 3), 16);
-  const g = parseInt(c.slice(3, 5), 16);
-  const b = parseInt(c.slice(5, 7), 16);
-  return { stripe: c, tint: `rgba(${r},${g},${b},0.04)` };
-}
-
-const ENTRY_TYPES = [
-  { id: "free", label: "Free write" },
-  { id: "gratitude", label: "Gratitude" },
-  { id: "mood", label: "Mood" },
-  { id: "reflection", label: "Reflection" },
-  { id: "work", label: "Work" },
-  { id: "relationships", label: "Relationships" },
-  { id: "money", label: "Money" },
-  { id: "creative", label: "Creative" },
-  { id: "grief", label: "Grief" },
-  { id: "joy", label: "Joy" },
-  { id: "identity", label: "Identity" },
-];
-
+const ENTRY_TYPES = ["Free write","Reflection","Gratitude","Mood","Work","Relationships","Money","Creative","Grief","Joy","Identity","Affirmation"];
 const TYPE_PROMPTS = {
-  free: "Write freely.",
-  gratitude: "Name three things you're genuinely grateful for today.",
-  mood: "How are you actually feeling — not the edited version?",
-  reflection: "What went well? What would you do differently?",
-  work: "What's the actual state of work right now?",
-  relationships: "Who's on your mind?",
-  money: "What's your relationship with money this month?",
-  creative: "What did you make, imagine or notice?",
-  grief: "You don't have to explain. Just say what's true.",
-  joy: "Name one small actual thing that felt good.",
-  identity: "Who are you becoming?",
+  "Free write": "Write freely.",
+  Reflection: "What went well? What would you do differently?",
+  Gratitude: "Name three things you are genuinely grateful for today.",
+  Mood: "How are you actually feeling — not the edited version?",
+  Work: "What is the real state of work right now?",
+  Relationships: "Who is on your mind?",
+  Money: "What is your relationship with money this month?",
+  Creative: "What did you make, imagine or notice?",
+  Grief: "You do not have to explain. Just say what is true.",
+  Joy: "Name one small actual thing that felt good.",
+  Identity: "Who are you becoming?",
+  Affirmation: "Write the sentence you most need to believe today.",
 };
 
-// Tiny utility ruler that appears under labels
-function Rule() {
-  return <div style={{ width: 24, height: 1, background: T.gold, marginTop: 4 }} />;
-}
-
-function SmallCaps({ children, mb = 0 }) {
+// ── the heart — hand-drawn, imperfect, one tiny highlight + a small splash ──
+function Heart({ size = 18, style }) {
   return (
-    <div style={{
-      fontFamily: UI, fontSize: 10.5, color: T.muted,
-      letterSpacing: 1.6, fontWeight: 600, textTransform: "uppercase",
-      marginBottom: mb,
-    }}>{children}</div>
+    <svg width={size} height={size} viewBox="0 0 24 24" style={{ display: "inline-block", verticalAlign: "middle", ...style }} aria-hidden>
+      <path d="M12 20.3C7 16.6 3.6 13.8 3.6 9.7 3.6 7.2 5.5 5.4 7.9 5.4c1.6 0 3.1.9 3.9 2.3.2.3.6.3.8 0 .8-1.4 2.3-2.3 3.9-2.3 2.4 0 4.3 1.8 4.3 4.3 0 4.1-3.4 6.9-8.4 10.6-.2.1-.4.1-.6 0Z"
+        fill={T.crimson} transform="rotate(-6 12 12)" />
+      <circle cx="9.2" cy="9.4" r="1.5" fill="#fff" opacity="0.85" />
+      <circle cx="6.6" cy="14.3" r="0.9" fill={T.crimson} opacity="0.55" />
+    </svg>
   );
 }
 
-function InsightsCard({ onExpand }) {
+// ── warm handmade-paper background: grain + soft vignette ──────────────────
+const NOISE = "data:image/svg+xml;utf8," + encodeURIComponent(
+  '<svg xmlns="http://www.w3.org/2000/svg" width="180" height="180"><filter id="n"><feTurbulence type="fractalNoise" baseFrequency="0.9" numOctaves="2" stitchTiles="stitch"/><feColorMatrix type="saturate" values="0"/></filter><rect width="100%" height="100%" filter="url(#n)" opacity="0.045"/></svg>'
+);
+function Paper() {
   return (
-    <button onClick={onExpand} style={{
-      display: "flex", alignItems: "center", gap: 18,
-      width: "100%", textAlign: "left", cursor: "pointer",
-      background: T.paperHi, border: "none",
-      borderRadius: 4, padding: "22px 24px",
-      boxShadow: "0 1px 3px rgba(58,44,26,0.08), 0 4px 12px rgba(58,44,26,0.06), 0 0 0 1px rgba(58,44,26,0.04)",
-      marginBottom: 40,
+    <div aria-hidden style={{
+      position: "fixed", inset: 0, zIndex: 0, pointerEvents: "none",
+      backgroundColor: T.paper,
+      backgroundImage:
+        `radial-gradient(120% 80% at 50% -10%, rgba(255,253,245,0.65) 0%, rgba(255,253,245,0) 55%),` +
+        `radial-gradient(120% 120% at 50% 120%, rgba(120,96,54,0.10) 0%, rgba(120,96,54,0) 55%),` +
+        `url("${NOISE}")`,
+      backgroundSize: "auto, auto, 180px 180px",
+    }} />
+  );
+}
+
+// ── small typographic helpers ──────────────────────────────────────────────
+function Eyebrow({ children, mb = 0, color = T.muted }) {
+  return <div style={{ fontFamily: UI, fontSize: 10.5, color, letterSpacing: 1.8, fontWeight: 600, textTransform: "uppercase", marginBottom: mb }}>{children}</div>;
+}
+function Rule({ w = "100%", c = T.paperDeep, mt = 0, mb = 0 }) {
+  return <div style={{ width: w, height: 1, background: c, marginTop: mt, marginBottom: mb }} />;
+}
+function Script({ children, size = 40, color = T.ink, style }) {
+  return <span style={{ fontFamily: SCRIPT, fontWeight: 700, fontSize: size, lineHeight: 1.15, color, ...style }}>{children}</span>;
+}
+
+// ── Masthead — the issue title ─────────────────────────────────────────────
+function Masthead({ onWrite }) {
+  return (
+    <header style={{ marginBottom: 44 }}>
+      <Eyebrow mb={10}>The Journal · A publication of one</Eyebrow>
+      <div style={{ display: "flex", alignItems: "baseline", gap: 14, flexWrap: "wrap" }}>
+        <Script size={68}>{MOCK.phase}</Script>
+        <span style={{ fontFamily: SERIF, fontStyle: "italic", fontSize: 22, color: T.muted }}>{MOCK.season}</span>
+      </div>
+      <div style={{ display: "flex", alignItems: "center", gap: 10, marginTop: 10 }}>
+        <Rule w={28} c={T.gold} />
+        <span style={{ fontFamily: UI, fontSize: 11.5, color: T.muted, letterSpacing: 1.2 }}>
+          DAY {MOCK.cycleDay} · {MOCK.date.toUpperCase()}
+        </span>
+        <Heart size={15} style={{ marginLeft: 2 }} />
+      </div>
+      <button onClick={onWrite} style={{
+        marginTop: 22, display: "inline-flex", alignItems: "center", gap: 8,
+        background: "transparent", border: "none", cursor: "pointer", padding: 0,
+        fontFamily: SERIF, fontStyle: "italic", fontSize: 18, color: T.ink,
+        borderBottom: `1px solid ${T.gold}`, paddingBottom: 3,
+      }}>
+        <Feather size={15} /> Begin a new entry
+      </button>
+    </header>
+  );
+}
+
+// ── Jess's note — the day's invitation, in script ──────────────────────────
+function JessNote({ onWrite }) {
+  const [i, setI] = useState(0);
+  const p = MOCK.prompts[i % MOCK.prompts.length];
+  return (
+    <section style={{ marginBottom: 46 }}>
+      <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 14 }}>
+        <Heart size={14} />
+        <Eyebrow>A note from Jess · Luteal · Day {MOCK.cycleDay}</Eyebrow>
+      </div>
+      <Script size={34} style={{ display: "block", letterSpacing: 0.2 }}>{p}</Script>
+      <div style={{ display: "flex", gap: 26, marginTop: 18, alignItems: "center" }}>
+        <button onClick={() => onWrite(p)} style={{
+          display: "inline-flex", alignItems: "center", gap: 6, background: "transparent",
+          border: "none", cursor: "pointer", padding: 0, paddingBottom: 3,
+          fontFamily: SERIF, fontStyle: "italic", fontSize: 17, color: T.ink, borderBottom: `1px solid ${T.gold}`,
+        }}>Write to this <ArrowRight size={14} /></button>
+        <button onClick={() => setI(x => x + 1)} style={{
+          background: "transparent", border: "none", cursor: "pointer", padding: 0,
+          fontFamily: UI, fontSize: 12.5, color: T.muted, letterSpacing: 0.4,
+        }}>Another prompt</button>
+      </div>
+    </section>
+  );
+}
+
+// ── On This Day — Cycle Mirror (your own past words) ───────────────────────
+function Mirror({ onReply }) {
+  return (
+    <section style={{ position: "relative", marginBottom: 46, background: T.paperHi, borderRadius: 3,
+      padding: "30px 30px 26px", boxShadow: "0 1px 2px rgba(51,41,28,0.06), 0 0 0 1px rgba(51,41,28,0.05)" }}>
+      <div aria-hidden style={{ position: "absolute", top: 2, left: 16, fontFamily: SERIF, fontSize: 110, color: T.gold, opacity: 0.16, lineHeight: 1, fontWeight: 600 }}>&ldquo;</div>
+      <Eyebrow mb={8}>On this day · {MOCK.mirror.when}</Eyebrow>
+      <Rule w={28} c={T.gold} mb={14} />
+      <p style={{ fontFamily: SERIF, fontStyle: "italic", fontSize: 22, color: T.ink, lineHeight: 1.55, margin: "0 0 18px", position: "relative" }}>{MOCK.mirror.text}</p>
+      <button onClick={onReply} style={{
+        display: "inline-flex", alignItems: "center", gap: 6, background: "transparent",
+        border: "none", cursor: "pointer", padding: 0, paddingBottom: 3,
+        fontFamily: SERIF, fontStyle: "italic", fontSize: 16, color: T.ink, borderBottom: `1px solid ${T.gold}`,
+      }}>Reply to who you were <ArrowRight size={13} /></button>
+    </section>
+  );
+}
+
+// ── A line from the week — insight teaser → opens Insights ─────────────────
+function InsightTeaser({ onOpen }) {
+  return (
+    <button onClick={onOpen} style={{
+      display: "flex", alignItems: "center", gap: 16, width: "100%", textAlign: "left",
+      cursor: "pointer", background: "transparent", border: "none", borderTop: `1px solid ${T.paperDeep}`,
+      borderBottom: `1px solid ${T.paperDeep}`, padding: "18px 2px", marginBottom: 46,
     }}>
-      <div style={{ width: 2, height: 40, background: T.gold }} />
-      <div style={{ flex: 1 }}>
-        <p style={{
-          fontFamily: CORM, fontStyle: "italic", fontSize: 18,
-          color: T.espresso, margin: 0, lineHeight: 1.45, fontWeight: 400,
-        }}>{MOCK.jessLine}</p>
-        <SmallCaps mb={0}>From Jess <Sparkles size={11} style={{ display: "inline", verticalAlign: "-1px" }} /></SmallCaps>
-      </div>
-      <div style={{ display: "flex", gap: 6 }} aria-label="Writing rhythm">
-        {MOCK.rhythm.slice(0, 5).map((on, i) => (
-          <div key={i} style={{
-            width: 8, height: 8, borderRadius: "50%",
-            background: on ? T.espresso : "transparent",
-            border: on ? "none" : `1px solid ${T.muted}`,
-          }} />
-        ))}
-      </div>
+      <div style={{ width: 2, alignSelf: "stretch", background: T.gold }} />
+      <p style={{ flex: 1, fontFamily: SERIF, fontStyle: "italic", fontSize: 18, color: T.inkSoft, margin: 0, lineHeight: 1.45 }}>{MOCK.weekLine}</p>
+      <span style={{ fontFamily: UI, fontSize: 11, color: T.muted, letterSpacing: 1, display: "inline-flex", alignItems: "center", gap: 4 }}>INSIGHTS <ChevronRight size={13} /></span>
     </button>
   );
 }
 
-function InsightsExpanded({ onClose }) {
+// ── The Ledger — entries as an editorial table of contents ─────────────────
+function Ledger({ onTap }) {
   return (
-    <div onClick={onClose} style={{
-      position: "fixed", inset: 0, zIndex: 80,
-      background: "rgba(58,44,26,0.40)",
-      display: "flex", alignItems: "center", justifyContent: "center",
-      padding: "0 24px",
-    }}>
-      <div onClick={(e) => e.stopPropagation()} style={{
-        background: T.paperHi, width: "100%", maxWidth: 580,
-        padding: "40px 36px 36px", borderRadius: 4,
-        boxShadow: "0 8px 40px rgba(58,44,26,0.18)",
-      }}>
-        <SmallCaps mb={20}>From Jess <Sparkles size={11} style={{ display: "inline", verticalAlign: "-1px" }} /></SmallCaps>
-        <p style={{
-          fontFamily: CORM, fontStyle: "italic", fontSize: 26,
-          color: T.espresso, lineHeight: 1.45, margin: "0 0 26px", fontWeight: 400,
-        }}>{MOCK.jessLine}</p>
-        <Rule />
-        <div style={{ marginTop: 24, marginBottom: 18 }}>
-          <SmallCaps mb={8}>This cycle</SmallCaps>
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(7, 1fr)", gap: 8 }}>
-            {Array.from({ length: 28 }).map((_, i) => {
-              const day = i + 1;
-              const wrote = [1, 3, 5, 12, 14, 17, 21, 23, 24, 26].includes(day);
-              return (
-                <div key={day} style={{
-                  width: 22, height: 22, borderRadius: "50%",
-                  background: wrote ? T.espresso : "transparent",
-                  border: `1px solid ${wrote ? T.espresso : T.muted}`,
-                  fontFamily: UI, fontSize: 9, color: wrote ? T.cream : T.muted,
-                  display: "flex", alignItems: "center", justifyContent: "center",
-                }}>{day}</div>
-              );
-            })}
-          </div>
-        </div>
-        <p style={{
-          fontFamily: CORM, fontStyle: "italic", fontSize: 16,
-          color: T.muted, lineHeight: 1.5, margin: 0,
-        }}>{MOCK.community}</p>
+    <section style={{ marginBottom: 46 }}>
+      <Eyebrow mb={16}>The ledger · Recent entries</Eyebrow>
+      {MOCK.entries.map((e, idx) => {
+        const colour = e.burn ? T.crimson : (TYPE_COLOUR[e.type] || T.ink);
+        const label = e.burn ? "Burn" : e.type;
+        return (
+          <article key={e.id} onClick={() => onTap(e)} style={{
+            display: "flex", gap: 16, cursor: "pointer", padding: "18px 0",
+            borderTop: idx === 0 ? "none" : `1px solid ${T.paperDeep}`,
+          }}>
+            <div style={{ width: 3, alignSelf: "stretch", background: colour, borderRadius: 2, opacity: 0.8 }} />
+            <div style={{ flex: 1, minWidth: 0 }}>
+              <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 6 }}>
+                <span style={{ fontFamily: UI, fontSize: 10, fontWeight: 700, letterSpacing: 1.4, textTransform: "uppercase", color: colour }}>{label}</span>
+                {e.burn && <Moon size={11} style={{ color: T.crimson }} />}
+                <span style={{ fontFamily: UI, fontSize: 10.5, color: T.muted, letterSpacing: 0.4, marginLeft: "auto" }}>{e.date}</span>
+              </div>
+              <p style={{ fontFamily: SERIF, fontSize: 19, color: T.ink, lineHeight: 1.5, margin: 0 }}>
+                {e.drop ? <span style={{ float: "left", fontFamily: SERIF, fontSize: 52, lineHeight: 0.82, fontWeight: 600, color: T.gold, margin: "4px 10px 0 0" }}>{e.body.charAt(0)}</span> : null}
+                {e.drop ? e.body.slice(1) : e.body}
+              </p>
+            </div>
+          </article>
+        );
+      })}
+    </section>
+  );
+}
+
+// ── Tonight's Reflection — the dusk close-out ──────────────────────────────
+function Tonight({ onWrite }) {
+  return (
+    <section style={{ marginBottom: 44, background: "linear-gradient(135deg, #2B2230 0%, #3A2C30 100%)", borderRadius: 3, padding: "28px 30px 26px" }}>
+      <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 14 }}>
+        <Moon size={14} style={{ color: T.blush }} />
+        <Eyebrow color="#C9B8B0">Tonight's reflection · 90 seconds</Eyebrow>
       </div>
-    </div>
+      <Script size={30} color="#F4E9DE" style={{ display: "block" }}>{MOCK.tonight}</Script>
+      <button onClick={() => onWrite(MOCK.tonight)} style={{
+        marginTop: 16, display: "inline-flex", alignItems: "center", gap: 6, background: "transparent",
+        border: "none", cursor: "pointer", padding: 0, paddingBottom: 3,
+        fontFamily: SERIF, fontStyle: "italic", fontSize: 16, color: "#F4E9DE", borderBottom: "1px solid rgba(244,233,222,0.5)",
+      }}>Close the day <ArrowRight size={13} /></button>
+    </section>
   );
 }
 
-function PromptCard({ onWrite }) {
-  const [i, setI] = useState(0);
-  const prompts = [MOCK.prompt, ...MOCK.altPrompts];
-  const current = prompts[i % prompts.length];
+// ── Sealed Letters — locked vault teaser ───────────────────────────────────
+function SealedLetters() {
   return (
-    <div style={{ marginBottom: 40 }}>
-      <SmallCaps mb={12}>Jess · Luteal · Day {MOCK.cycleDay}</SmallCaps>
-      <p style={{
-        fontFamily: CORM, fontStyle: "italic", fontSize: 22,
-        color: T.espresso, lineHeight: 1.5, margin: "0 0 18px", fontWeight: 400,
-      }}>{current}</p>
-      <div style={{ display: "flex", gap: 28 }}>
-        <button onClick={() => onWrite(current)} style={{
-          background: "transparent", border: "none", cursor: "pointer",
-          fontFamily: CORM, fontSize: 17, color: T.gold, fontStyle: "italic",
-          padding: 0, borderBottom: `1px solid ${T.gold}`, paddingBottom: 2,
-        }}>Write to this <Sparkles size={13} style={{ display: "inline", verticalAlign: "-2px" }} /></button>
-        <button onClick={() => setI(x => x + 1)} style={{
-          background: "transparent", border: "none", cursor: "pointer",
-          fontFamily: UI, fontSize: 13, color: T.muted, padding: 0,
-        }}>Different prompt →</button>
+    <section style={{ marginBottom: 30, display: "flex", gap: 16, alignItems: "center",
+      background: T.paperHi, borderRadius: 3, padding: "22px 24px",
+      boxShadow: "0 0 0 1px rgba(51,41,28,0.05)" }}>
+      <div style={{ width: 42, height: 42, borderRadius: "50%", flexShrink: 0, display: "flex", alignItems: "center", justifyContent: "center", background: "#EFE3C9", border: `1px solid ${T.gold}` }}>
+        <Lock size={18} style={{ color: T.gold }} />
       </div>
-    </div>
-  );
-}
-
-function OnThisDayCard({ onReply }) {
-  return (
-    <div style={{ position: "relative", marginBottom: 40, padding: "28px 30px 24px", background: T.paperHi, borderRadius: 4,
-      boxShadow: "0 1px 3px rgba(58,44,26,0.08), 0 4px 12px rgba(58,44,26,0.06), 0 0 0 1px rgba(58,44,26,0.04)",
-    }}>
-      <div style={{
-        position: "absolute", top: -10, left: 18,
-        fontFamily: CORM, fontSize: 120, color: T.gold,
-        opacity: 0.20, lineHeight: 1, fontWeight: 600,
-      }} aria-hidden>“</div>
-      <SmallCaps mb={10}>From last cycle · Day {MOCK.cycleDay}</SmallCaps>
-      <Rule />
-      <p style={{
-        fontFamily: CORM, fontStyle: "italic", fontSize: 22,
-        color: T.espresso, lineHeight: 1.5, margin: "16px 0 18px", fontWeight: 400,
-        position: "relative",
-      }}>{MOCK.onThisDay.text}</p>
-      <button onClick={onReply} style={{
-        background: "transparent", border: "none", cursor: "pointer",
-        fontFamily: CORM, fontSize: 16, color: T.gold, fontStyle: "italic",
-        padding: 0, borderBottom: `1px solid ${T.gold}`, paddingBottom: 2,
-      }}>Reply to past self <Sparkles size={13} style={{ display: "inline", verticalAlign: "-2px" }} /></button>
-    </div>
-  );
-}
-
-function CommunityStrip() {
-  return (
-    <div style={{ marginBottom: 32 }}>
-      <SmallCaps mb={6}>Community</SmallCaps>
-      <p style={{
-        fontFamily: CORM, fontStyle: "italic", fontSize: 17,
-        color: T.muted, margin: 0, lineHeight: 1.5,
-      }}>{MOCK.community}</p>
-    </div>
-  );
-}
-
-function RhythmStrip() {
-  const labels = ["Mon","Tue","Wed","Thu","Fri","Sat","Sun"];
-  return (
-    <div style={{ marginBottom: 40 }}>
-      <SmallCaps mb={10}>This week</SmallCaps>
-      <div style={{ display: "flex", justifyContent: "space-between" }}>
-        {labels.map((d, i) => (
-          <div key={d} style={{ textAlign: "center" }}>
-            <div style={{
-              width: 10, height: 10, borderRadius: "50%", margin: "0 auto 6px",
-              background: MOCK.rhythm[i] ? T.espresso : "transparent",
-              border: MOCK.rhythm[i] ? "none" : `1px solid ${T.muted}`,
-            }} />
-            <div style={{ fontFamily: UI, fontSize: 10, color: T.muted, letterSpacing: 0.5 }}>{d}</div>
-          </div>
-        ))}
+      <div style={{ flex: 1 }}>
+        <Eyebrow mb={4}>Sealed letters · {MOCK.sealed.count} waiting</Eyebrow>
+        <p style={{ fontFamily: SERIF, fontStyle: "italic", fontSize: 17, color: T.ink, margin: 0, lineHeight: 1.4 }}>A letter to who you'll be — {MOCK.sealed.next}. Not even Jess can open it early.</p>
       </div>
-    </div>
+      <ChevronRight size={18} style={{ color: T.muted }} />
+    </section>
   );
 }
 
-function EntryCard({ entry, i, onTap }) {
-  const rot = i % 2 === 0 ? 0.3 : -0.2;
-  const label = entry.burn ? "Burn" : entry.type;
-  const { stripe, tint } = tintFor(label);
+// ── Echo Wall — honest "coming" teaser (Q2) ────────────────────────────────
+function EchoComing() {
   return (
-    <article onClick={() => onTap(entry)} style={{
-      background: tint || T.paperHi, borderRadius: 4,
-      padding: "22px 26px 20px 26px", marginBottom: 22,
-      cursor: "pointer", transform: `rotate(${rot}deg)`,
-      boxShadow: "0 1px 3px rgba(58,44,26,0.08), 0 4px 12px rgba(58,44,26,0.06), 0 0 0 1px rgba(58,44,26,0.04)",
-      borderLeft: `4px solid ${stripe}`,
-      position: "relative", overflow: "hidden",
-    }}>
-      {/* Card body sits over the paper white so the 4% tint reads on the warm paper rest of the bg */}
-      <div style={{
-        position: "absolute", inset: "0 0 0 4px",
-        background: T.paperHi, opacity: 1, zIndex: 0,
-      }} />
-      <div style={{
-        position: "absolute", inset: "0 0 0 4px",
-        background: tint, zIndex: 0,
-      }} />
-      <div style={{ position: "relative", zIndex: 1 }}>
-        <SmallCaps mb={0}>{label}</SmallCaps>
-        <Rule />
-        <p style={{
-          fontFamily: CORM, fontStyle: "italic", fontSize: 20,
-          color: T.espresso, lineHeight: 1.55, margin: "14px 0 12px", fontWeight: 500,
-        }}>{entry.body}</p>
-        <div style={{ fontFamily: UI, fontSize: 11.5, color: T.muted, letterSpacing: 0.3 }}>
-          {entry.date}
-        </div>
-      </div>
-    </article>
+    <section style={{ marginBottom: 40, textAlign: "center" }}>
+      <Eyebrow mb={6}>Echo wall · Coming</Eyebrow>
+      <p style={{ fontFamily: SERIF, fontStyle: "italic", fontSize: 16, color: T.muted, margin: 0, lineHeight: 1.5 }}>{MOCK.community} <span style={{ color: T.inkSoft }}>One day you'll be able to leave one too — anonymous, held, never replied to.</span></p>
+    </section>
   );
 }
 
-function Composer({ open, onClose, seedPrompt }) {
-  const [type, setType] = useState("reflection");
+function Footer() {
+  return (
+    <footer style={{ textAlign: "center", paddingTop: 8 }}>
+      <Rule w={40} c={T.paperDeep} mb={14} />
+      <div style={{ display: "inline-flex", alignItems: "center", gap: 7, fontFamily: UI, fontSize: 11, color: T.muted, letterSpacing: 0.8 }}>
+        <Lock size={12} /> Locked to you. Always.
+      </div>
+    </footer>
+  );
+}
+
+// ── Composer (full-screen) ─────────────────────────────────────────────────
+function Composer({ open, onClose, seed }) {
+  const [type, setType] = useState("Reflection");
   const [text, setText] = useState("");
   if (!open) return null;
-  const prompt = seedPrompt || TYPE_PROMPTS[type] || MOCK.prompt;
+  const prompt = seed || TYPE_PROMPTS[type] || MOCK.prompts[0];
   return (
-    <div style={{
-      position: "fixed", inset: 0, zIndex: 90, background: T.surface,
-      padding: "32px 32px 40px", overflowY: "auto",
-    }}>
-      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 28 }}>
-        <SmallCaps>A new entry</SmallCaps>
-        <button onClick={onClose} style={{
-          background: "transparent", border: "none", cursor: "pointer",
-          fontFamily: UI, fontSize: 13, color: T.muted,
-        }}>Close</button>
-      </div>
-
-      <h2 style={{
-        fontFamily: CORM, fontStyle: "italic", fontSize: 36, fontWeight: 700,
-        color: T.espresso, margin: "0 0 24px", letterSpacing: -0.5,
-      }}>
-        {ENTRY_TYPES.find(t => t.id === type)?.label || "Free write"}
-      </h2>
-
-      <div style={{ display: "flex", gap: 20, flexWrap: "wrap", marginBottom: 28 }}>
-        {ENTRY_TYPES.map((t) => (
-          <button key={t.id} onClick={() => setType(t.id)} style={{
-            background: "transparent", border: "none", cursor: "pointer",
-            fontFamily: UI, fontSize: 12.5, color: t.id === type ? T.gold : T.muted,
-            padding: 0, fontWeight: t.id === type ? 700 : 400, letterSpacing: 0.5,
-            borderBottom: t.id === type ? `1px solid ${T.gold}` : "none",
-            paddingBottom: 2,
-          }}>{t.label}</button>
-        ))}
-      </div>
-
-      <div style={{
-        paddingLeft: 18, borderLeft: `1px solid ${T.gold}`, marginBottom: 28,
-      }}>
-        <p style={{
-          fontFamily: CORM, fontStyle: "italic", fontSize: 20,
-          color: T.espresso, lineHeight: 1.55, margin: 0, fontWeight: 400,
-        }}>{prompt}</p>
-      </div>
-
-      <textarea
-        value={text} onChange={(e) => setText(e.target.value)}
-        placeholder="Begin…"
-        style={{
-          width: "100%", minHeight: 320,
-          background: T.paperHi, border: "none",
-          padding: "20px 22px", borderRadius: 4, resize: "none",
-          fontFamily: CORM, fontSize: 22, lineHeight: 1.6,
-          color: T.espresso, outline: "none", fontStyle: "italic",
-          boxShadow: "0 1px 3px rgba(58,44,26,0.08), 0 4px 12px rgba(58,44,26,0.06)",
-        }}
-      />
-
-      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginTop: 32 }}>
-        <button style={{
-          background: "transparent", border: `1px solid ${T.gold}`,
-          padding: "12px 28px", cursor: "pointer",
-          fontFamily: CORM, fontSize: 16, color: T.gold, fontStyle: "italic",
-          borderRadius: 4,
-        }} onClick={onClose}>Save entry</button>
-        <button style={{
-          background: "transparent", border: "none", cursor: "pointer",
-          fontFamily: UI, fontSize: 13, color: T.amber, padding: 0,
-        }}><Flame size={13} style={{ display: "inline", verticalAlign: "-2px" }} /> Burn this entry</button>
+    <div style={{ position: "fixed", inset: 0, zIndex: 90, background: T.paper, padding: "30px 28px 40px", overflowY: "auto" }}>
+      <div style={{ maxWidth: 620, margin: "0 auto" }}>
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 24 }}>
+          <Eyebrow>A new entry</Eyebrow>
+          <button onClick={onClose} style={{ background: "transparent", border: "none", cursor: "pointer", fontFamily: UI, fontSize: 13, color: T.muted }}>Close</button>
+        </div>
+        <Script size={46} style={{ display: "block", marginBottom: 22 }}>{type}</Script>
+        <div style={{ display: "flex", gap: 16, flexWrap: "wrap", marginBottom: 24 }}>
+          {ENTRY_TYPES.map((t) => (
+            <button key={t} onClick={() => setType(t)} style={{
+              background: "transparent", border: "none", cursor: "pointer", padding: 0, paddingBottom: 2,
+              fontFamily: UI, fontSize: 12.5, letterSpacing: 0.4,
+              color: t === type ? T.ink : T.muted, fontWeight: t === type ? 700 : 400,
+              borderBottom: t === type ? `1px solid ${T.gold}` : "none",
+            }}>{t}</button>
+          ))}
+        </div>
+        <div style={{ paddingLeft: 16, borderLeft: `1px solid ${T.gold}`, marginBottom: 22 }}>
+          <p style={{ fontFamily: SERIF, fontStyle: "italic", fontSize: 19, color: T.inkSoft, margin: 0, lineHeight: 1.5 }}>{prompt}</p>
+        </div>
+        <textarea value={text} onChange={(e) => setText(e.target.value)} placeholder="Begin…" style={{
+          width: "100%", minHeight: 300, background: T.paperHi, border: "none", padding: "20px 22px", borderRadius: 3,
+          resize: "none", fontFamily: SERIF, fontSize: 21, lineHeight: 1.6, color: T.ink, outline: "none",
+          boxShadow: "0 0 0 1px rgba(51,41,28,0.05)",
+        }} />
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginTop: 26 }}>
+          <button onClick={onClose} style={{ background: "transparent", border: `1px solid ${T.gold}`, padding: "11px 26px", cursor: "pointer", fontFamily: SERIF, fontStyle: "italic", fontSize: 16, color: T.ink, borderRadius: 3 }}>Save entry</button>
+          <button style={{ display: "inline-flex", alignItems: "center", gap: 6, background: "transparent", border: "none", cursor: "pointer", padding: 0, fontFamily: UI, fontSize: 12.5, color: T.crimson, letterSpacing: 0.4 }}><Moon size={13} /> Burn this entry</button>
+        </div>
       </div>
     </div>
   );
 }
 
-function EntryDetail({ entry, onClose }) {
+// ── Entry reader — page is the screen ──────────────────────────────────────
+function Reader({ entry, onClose }) {
   if (!entry) return null;
   return (
-    <div onClick={onClose} style={{
-      position: "fixed", inset: 0, zIndex: 70,
-      background: "rgba(58,44,26,0.40)",
-      display: "flex", alignItems: "center", justifyContent: "center", padding: "0 24px",
-    }}>
-      <div onClick={(e) => e.stopPropagation()} style={{
-        background: T.paperHi, width: "100%", maxWidth: 580,
-        padding: "36px 32px", borderRadius: 4,
-        boxShadow: "0 8px 40px rgba(58,44,26,0.18)",
-      }}>
-        <SmallCaps>{entry.burn ? "Burn" : entry.type}</SmallCaps>
-        <Rule />
-        <p style={{
-          fontFamily: CORM, fontStyle: "italic", fontSize: 22,
-          color: T.espresso, lineHeight: 1.6, margin: "20px 0 16px", whiteSpace: "pre-wrap",
-        }}>{entry.body}</p>
-        <div style={{ fontFamily: UI, fontSize: 12, color: T.muted, letterSpacing: 0.5 }}>{entry.date}</div>
+    <div onClick={onClose} style={{ position: "fixed", inset: 0, zIndex: 70, background: "rgba(51,41,28,0.42)", display: "flex", alignItems: "center", justifyContent: "center", padding: "0 22px" }}>
+      <div onClick={(e) => e.stopPropagation()} style={{ background: T.paperHi, width: "100%", maxWidth: 580, padding: "36px 34px", borderRadius: 3, boxShadow: "0 8px 40px rgba(51,41,28,0.20)" }}>
+        <Eyebrow mb={10} color={entry.burn ? T.crimson : T.muted}>{entry.burn ? "Burn" : entry.type}</Eyebrow>
+        <Rule w={28} c={T.gold} mb={18} />
+        <p style={{ fontFamily: SERIF, fontStyle: "italic", fontSize: 22, color: T.ink, lineHeight: 1.62, margin: "0 0 16px", whiteSpace: "pre-wrap" }}>{entry.body}</p>
+        <div style={{ fontFamily: UI, fontSize: 11.5, color: T.muted, letterSpacing: 0.5 }}>{entry.date}</div>
       </div>
     </div>
   );
 }
 
+// ── Insights expanded ──────────────────────────────────────────────────────
+function Insights({ open, onClose }) {
+  if (!open) return null;
+  const wrote = [1,3,5,12,14,17,21,23,24,26];
+  return (
+    <div onClick={onClose} style={{ position: "fixed", inset: 0, zIndex: 80, background: "rgba(51,41,28,0.42)", display: "flex", alignItems: "center", justifyContent: "center", padding: "0 22px" }}>
+      <div onClick={(e) => e.stopPropagation()} style={{ background: T.paperHi, width: "100%", maxWidth: 580, padding: "38px 34px 34px", borderRadius: 3, boxShadow: "0 8px 40px rgba(51,41,28,0.20)" }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 18 }}><Heart size={14} /><Eyebrow>From Jess</Eyebrow></div>
+        <p style={{ fontFamily: SERIF, fontStyle: "italic", fontSize: 24, color: T.ink, lineHeight: 1.45, margin: "0 0 24px" }}>{MOCK.jessLine}</p>
+        <Eyebrow mb={10}>This cycle · {wrote.length} entries</Eyebrow>
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(7,1fr)", gap: 7 }}>
+          {Array.from({ length: 28 }).map((_, i) => {
+            const d = i + 1, on = wrote.includes(d);
+            return <div key={d} style={{ aspectRatio: "1", borderRadius: "50%", background: on ? T.ink : "transparent", border: `1px solid ${on ? T.ink : T.paperDeep}`, fontFamily: UI, fontSize: 9, color: on ? T.paper : T.muted, display: "flex", alignItems: "center", justifyContent: "center" }}>{d}</div>;
+          })}
+        </div>
+        <p style={{ fontFamily: SERIF, fontStyle: "italic", fontSize: 16, color: T.muted, lineHeight: 1.5, margin: "20px 0 0" }}>{MOCK.community}</p>
+      </div>
+    </div>
+  );
+}
+
+// ── page ───────────────────────────────────────────────────────────────────
 export default function JournalDemo1() {
-  const [insOpen, setInsOpen] = useState(false);
   const [composer, setComposer] = useState(false);
   const [seed, setSeed] = useState("");
   const [detail, setDetail] = useState(null);
-
+  const [ins, setIns] = useState(false);
   const open = (p = "") => { setSeed(p); setComposer(true); };
 
+  // Load the script + serif faces for the journal voice (demo-only injection).
+  useEffect(() => {
+    const id = "journal-editorial-fonts";
+    if (document.getElementById(id)) return;
+    const l = document.createElement("link");
+    l.id = id; l.rel = "stylesheet";
+    l.href = "https://fonts.googleapis.com/css2?family=Tangerine:wght@400;700&family=Parisienne&family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,500;1,600&family=Inter:wght@400;600;700&display=swap";
+    document.head.appendChild(l);
+  }, []);
+
   return (
-    <div style={{ minHeight: "100vh", background: T.surface, paddingBottom: 80 }}>
-      <div style={{ maxWidth: 680, margin: "0 auto", padding: "60px 32px 24px" }}>
-        <SmallCaps mb={4}>The Journal</SmallCaps>
-        <h1 style={{
-          fontFamily: CORM, fontSize: 60, fontWeight: 300,
-          color: T.muted, margin: 0, letterSpacing: -1, lineHeight: 1,
-          textTransform: "capitalize",
-        }}>Luteal</h1>
-        <div style={{ marginTop: 8 }}>
-          <SmallCaps>Day {MOCK.cycleDay}</SmallCaps>
-        </div>
-        <button onClick={() => open()} style={{
-          marginTop: 24,
-          background: "transparent", border: "none", cursor: "pointer",
-          fontFamily: CORM, fontSize: 17, color: T.gold, fontStyle: "italic",
-          padding: 0, borderBottom: `1px solid ${T.gold}`, paddingBottom: 2,
-        }}>+ Begin a new entry <Sparkles size={13} style={{ display: "inline", verticalAlign: "-2px" }} /></button>
-
-        <div style={{ marginTop: 48 }}>
-          <InsightsCard onExpand={() => setInsOpen(true)} />
-          <PromptCard onWrite={(p) => open(p)} />
-          <OnThisDayCard onReply={() => open("Reflecting on what I wrote a cycle ago…\n\n")} />
-          <CommunityStrip />
-          <RhythmStrip />
-
-          <SmallCaps mb={20}>Entries</SmallCaps>
-          {MOCK.entries.map((e, i) => (
-            <EntryCard key={e.id} entry={e} i={i} onTap={(en) => setDetail(en)} />
-          ))}
-        </div>
+    <div style={{ position: "relative", minHeight: "100vh", paddingBottom: 90 }}>
+      <Paper />
+      <div style={{ position: "relative", zIndex: 1, maxWidth: 680, margin: "0 auto", padding: "56px 30px 24px" }}>
+        <Masthead onWrite={() => open()} />
+        <JessNote onWrite={(p) => open(p)} />
+        <Mirror onReply={() => open("Reflecting on what I wrote a cycle ago…\n\n")} />
+        <InsightTeaser onOpen={() => setIns(true)} />
+        <Ledger onTap={(e) => setDetail(e)} />
+        <Tonight onWrite={(p) => open(p)} />
+        <SealedLetters />
+        <EchoComing />
+        <Footer />
       </div>
-
-      {insOpen && <InsightsExpanded onClose={() => setInsOpen(false)} />}
-      <Composer open={composer} onClose={() => setComposer(false)} seedPrompt={seed} />
-      <EntryDetail entry={detail} onClose={() => setDetail(null)} />
+      <Composer open={composer} onClose={() => setComposer(false)} seed={seed} />
+      <Reader entry={detail} onClose={() => setDetail(null)} />
+      <Insights open={ins} onClose={() => setIns(false)} />
     </div>
   );
 }
