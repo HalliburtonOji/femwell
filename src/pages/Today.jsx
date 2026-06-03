@@ -4,6 +4,7 @@ import { base44 } from "@/api/base44Client";
 import { PageLoader } from "../components/common/LoadingSpinner";
 import { createPageUrl } from "@/utils";
 import { isCycleLifeStage, filterProgramsByStage } from "@/utils/plannerAdapter";
+import { computeCycleDay } from "@/hooks/useCycleDay";
 import {
   AlertCircle, ChevronRight, Utensils, Feather, Brain, Salad, Zap,
   Droplets, UtensilsCrossed, BookOpen, Activity, Lightbulb, TrendingUp, X
@@ -30,7 +31,6 @@ import RecommendedForYouSection from "../components/today/RecommendedForYouSecti
 import QuickMealLog from "../components/today/QuickMealLog";
 import ActiveProgramCard from "../components/today/ActiveProgramCard";
 import QuickAccessGrid from "../components/today/QuickAccessGrid";
-import { differenceInDays, parseISO } from "date-fns";
 
 // ── Cycle phase helper ──────────────────────────────────────────────────────
 const PHASE_INFO = {
@@ -48,14 +48,18 @@ const PHASE_GRADIENTS = {
 };
 
 function getCyclePhase(lastPeriodDate, cycleLength, periodLength) {
+  // Single source of truth: delegate to computeCycleDay so Today, Journal,
+  // the Planner and the Morning gate all agree on the phase boundary
+  // (ovulatory ends at floor(cycleLen*0.5); day after = luteal). Previously
+  // this used its own *0.4 / *0.55 thresholds and disagreed with the rest
+  // of the app (e.g. day 15 read "ovulatory" here, "luteal" in the gate).
   if (!lastPeriodDate) return null;
-  const today = new Date();
-  const last = parseISO(lastPeriodDate);
-  const dayOfCycle = (differenceInDays(today, last) % cycleLength) + 1;
-  if (dayOfCycle <= periodLength) return { phase: "menstrual", day: dayOfCycle };
-  if (dayOfCycle <= Math.round(cycleLength * 0.4)) return { phase: "follicular", day: dayOfCycle };
-  if (dayOfCycle <= Math.round(cycleLength * 0.55)) return { phase: "ovulatory", day: dayOfCycle };
-  return { phase: "luteal", day: dayOfCycle };
+  const { phase, cycleDay } = computeCycleDay({
+    last_period_start_date: lastPeriodDate,
+    cycle_avg_length: cycleLength,
+    period_length: periodLength,
+  });
+  return { phase, day: cycleDay };
 }
 
 const card = {

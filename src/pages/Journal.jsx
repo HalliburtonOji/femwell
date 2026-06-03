@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { base44 } from "@/api/base44Client";
 import { format, parseISO, differenceInDays } from "date-fns";
+import { computeCycleDay } from "@/hooks/useCycleDay";
 import { PenLine } from "lucide-react";
 import JotterCard from "../components/journal/JotterCard";
 import NewEntrySheet from "../components/journal/NewEntrySheet";
@@ -47,12 +48,10 @@ function entriesThisCycle(entries, profile) {
 }
 
 function cycleDayOf(profile) {
+  // Single source of truth — same cycle-day math as computeCycleDay.
   if (!profile?.last_period_start_date) return null;
   try {
-    const cycleLen = profile.cycle_avg_length || 28;
-    const diff = differenceInDays(new Date(), parseISO(profile.last_period_start_date));
-    if (diff < 0) return null;
-    return ((diff % cycleLen) + 1);
+    return computeCycleDay(profile).cycleDay;
   } catch { return null; }
 }
 
@@ -72,16 +71,10 @@ function calcStreak(entries) {
 }
 
 function getCurrentPhase(profile) {
+  // Single source of truth — delegate to computeCycleDay (was hard-coded
+  // day<=13 / day<=16 thresholds that disagreed with Today + the gate).
   if (!profile?.last_period_start_date) return null;
-  const cycleLen = profile.cycle_avg_length || 28;
-  const periodLen = profile.period_length || 5;
-  const diff = differenceInDays(new Date(), parseISO(profile.last_period_start_date));
-  if (diff < 0) return null;
-  const day = (diff % cycleLen) + 1;
-  if (day <= periodLen) return "menstrual";
-  if (day <= 13) return "follicular";
-  if (day <= 16) return "ovulatory";
-  return "luteal";
+  return computeCycleDay(profile).phase;
 }
 
 export default function Journal() {
