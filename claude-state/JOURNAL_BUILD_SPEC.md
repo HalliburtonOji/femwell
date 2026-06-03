@@ -1,329 +1,262 @@
-# FemWell Journal — BUILD SPEC (production, Editorial direction)
+# FemWell Journal — BUILD SPEC (production, Editorial direction) — v2
 
 _Owner: Mr Lead Manager. Craft: Ms Atelier. Research: Ms Deep Search. Verification gate: Ms Verify._
-_Created 2026-06-03. Status: PLANNING ONLY — no code yet. Pairs with `journal_editorial/JOURNAL_GRAND_PLAN.md` + `journal_editorial/JOURNAL_BRIEF_everything_we_know.md`._
+_v1 created 2026-06-03. **v2 2026-06-03 — exhaustive archaeology pass** (Ms Deep Search swept every journal source in the space: 3 sharing HTML demos, community_v2, journal_demo, strategic synthesis, sealed-letters MP, e-reader research, future-features brainstorm, horoscope/rituals/today/story crossovers, STATUS ship log + JournalPlanDoc reconciliations, memory). v2 recovers the **private/public visibility model** Halli flagged as missing, plus ~25 features/nuances thin-or-absent in v1._
+_Pairs with `journal_editorial/JOURNAL_GRAND_PLAN.md` + `journal_editorial/JOURNAL_BRIEF_everything_we_know.md`._
 
-> **DECISION (Halli, 2026-06-03):** We now build the Journal **for real on the PRODUCTION `Journal.jsx` page (Target B)** — not the `/Ideas` demo. The Editorial design + features proven in `JournalDemo1.jsx` become the basis for production `Journal.jsx`. Expect **many** revision cycles.
+> **DECISION (Halli, 2026-06-03):** Build the Journal **for real on production `Journal.jsx` (Target B)**, not the `/Ideas` demo. The Editorial treatment proven in `JournalDemo1.jsx` is the basis. Many revision cycles expected.
 >
-> **Live baseline this spec is written against:** `origin/main e6f1906`, live bundle `index-DA-OrqI_.js`. The Editorial demo lives at `/Ideas → Journal Demos → Demo 1` (route `/JournalDemo1`); production `Journal.jsx` is still the pre-existing utilitarian page.
+> **Live baseline this spec is written against:** `origin/main 91b3bd5`. Editorial demo at `/Ideas → Journal Demos → Demo 1` (route `/JournalDemo1`); production `Journal.jsx` is still the pre-existing utilitarian page.
 >
-> **Hard brand rules (non-negotiable, apply to every line of this build):** UK market (NHS, GMC/NMC/HCPC, £, UK GDPR) · **no emoji anywhere** (Lucide + custom SVG only) · Fraunces + Inter as the app's base type, with the journal's own voice faces layered in (see §4) · **one unified bottom nav** at all viewports, no desktop sidebar · cycle-count rhythm, never streak shame · evidence-informed, never a clinical promise.
+> **Hard brand rules (every line of this build):** UK market (NHS, GMC/NMC/HCPC, £, UK GDPR) · **no emoji anywhere** (Lucide + custom SVG only) · Fraunces + Inter base type with the journal's voice faces layered in (§5) · **one unified bottom nav** at all viewports · cycle-count rhythm never streak shame · evidence-informed never a clinical promise.
+>
+> **How to read v2:** §1 principles · **§2 the private/public model (the big v1 gap)** · §3 exhaustive feature inventory · §4 migration · §5 craft + reading engine · §6 roadmap · §7 open decisions · **§8 sourced conflicts to resolve** · **§9 source map** · **§10 needs-Halli-to-expand** · **§11 mentioned-but-not-found (honest gaps)**.
 
 ---
 
 ## 1. VISION & PRINCIPLES
 
-### 1.1 The thesis (what the Journal IS)
-A **phase-aware, private-by-default writing space** whose moat is cycle data. The one-line claim: _"Only a cycle-aware app can write you letters across phases and mirror your own history back to you. Period-tracker diaries cannot."_ The Journal is the heart of FemWell's strategic move from **cycle app → women's app**. It is **solo first**; social surfaces are earned, anonymous, and deliberately thin.
-
-The core feeling, set by Halli's reference (cream handmade paper, fine script, one small red heart): the journal should feel like a **private letterpress notebook**, not an app screen — and like **a place that remembers you**. Editorial craft + cycle memory is the combination no competitor has.
+### 1.1 Thesis
+A **phase-aware, private-by-default writing space** whose moat is cycle data: _"Only a cycle-aware app can write you letters across phases and mirror your own history back to you. Period-tracker diaries cannot."_ The Journal is the heart of FemWell's move from cycle app → women's app. **Solo first**; social surfaces are earned, anonymous, thin. The feeling: a **private letterpress notebook** that **remembers you**.
 
 ### 1.2 The eight locked principles
-1. **Locked to you. Always.** Encrypted on-device; Jess reads an entry only when explicitly handed to her.
-2. **Solo before social.** Cycle Mirror + Sealed Letters earn the trust that Echo Wall / Witness / Phase Twin later spend.
+1. **Locked to you. Always.** Encrypted on-device; Jess reads an entry only when handed it.
+2. **Solo before social.** Cycle Mirror + Sealed Letters earn the trust Echo Wall / Witness / Phase Twin spend.
 3. **Anonymity is the default** for any peer surface; Jess scrubs names, places, dates, substances before anything leaves the device.
-4. **Reactions are emotional, not transactional** — lexicon: _same · hold · hear you · saved_. No like. No follow. No emoji pile-on.
-5. **Phase-aware copy across the board** — luteal / follicular / ovulatory / menstrual voices. Serif italic for the human; Inter for chrome.
-6. **Evidence-informed, never a clinical promise** — Pennebaker (expressive writing), Neff (self-compassion), Narrative Exposure Therapy as a bibliography, never a marketing claim.
-7. **No emoji anywhere** — Lucide + custom SVG glyphs only.
+4. **Reactions are emotional, not transactional** — lexicon _same · hold · hear you · saved_. No like, no follow, no emoji pile-on. Counts are never a score; feed order is phase + recency, never engagement.
+5. **Phase-aware copy across the board** (luteal/follicular/ovulatory/menstrual voices). Serif italic for the human; Inter for chrome.
+6. **Evidence-informed, never a clinical promise** — Pennebaker (expressive writing, d≈0.16 meta), Neff (self-compassion + common humanity), Narrative Exposure Therapy (18 RCTs) as a bibliography, not a marketing line.
+7. **No emoji anywhere** — Lucide + custom SVG only.
 8. **Cycle-count rhythm, never streak shame.**
 
-### 1.3 The solitude → witness gradient (the safety spine)
-The whole product is arranged as a one-directional gradient from private to social, shipped **safest-first**. Each step out costs trust the prior step earned:
+### 1.3 The solitude → witness gradient (the safety spine + the retention engine)
+One-directional, shipped safest-first. _"These five aren't competing features. They're a gradient of solitude → witness the user walks along as trust builds … Nobody is forced to Phase Twin."_ (sharing_concepts). _"The gradient itself is a retention engine — there's always a next step."_
 
 ```
-  SOLITUDE                                                           WITNESS
-  └ private entry ─ Cycle Mirror ─ Sealed Letters ─┃─ Echo Wall ─ Witness ─ Phase Twin
-     (you alone)     (you + past you)  (you + future you) ┃  (anon crowd) (1:1 anon) (12-day pair)
-                                                          ┃
-                         everything LEFT of this line ships first and stands alone.
+ SOLITUDE ───────────────────────────────────────────────────────────────── WITNESS
+ private entry ─ Cycle Mirror ─ Sealed Letters ─┃─ Share-as-Echo → Echo Wall ─ Witness ─ Phase Twin
+   (you alone)   (you + past-you)  (you + future-you) ┃  (one scrubbed line, anon)  (1:1 anon)  (12-day pair)
+                                                      ┃
+                       everything LEFT of the line ships first and stands alone (Journal page).
+                       everything RIGHT lives on the Community page; one entry can flow through both.
 ```
-Solo features (left of the line) are the product's spine and must be excellent on their own. Social features (right) are **rooms off the hallway**, never crammed into the main scroll, and each arrives as its own quiet surface — never an open chat, never a feed you scroll for dopamine.
 
-### 1.4 Why this is a moat (competitive read)
-Stardust explains phases prettily but mirrors nothing back. Clue/Flo publish phase _stats_, not _belonging_. Day One pioneered encrypted-then-revealed entries but isn't phase-anchored. Moody Month has phase voice but no real journal. **Nobody runs a phase-cohort, hold-only, mirror-your-own-history journal with cross-phase sealed letters.** That is the open lane, and it is defensible precisely because it requires the cycle engine FemWell already has.
-
-### 1.5 The experience spine (single scrolling "issue")
-Production `/Journal` is composed like one vertical literary-journal issue you scroll, plus an Insights tab and full-screen Composer/Reader. End-state IA:
-
-```
-/Journal  (Editorial page — "a publication of one")
-├─ Masthead        phase as issue title ("Luteal · Inner Autumn · Day 26") · hairline rule · date · one red heart
-├─ Jess's note     one phase-tuned prompt line in the journal voice + a 3–5 prompt carousel ("Write to this")
-├─ On This Day     Cycle Mirror — your own words from the same cycle day last cycle + Jess gloss + "reply to past self"
-├─ A line from the week   insight teaser (one sentence) → opens the Insights tab
-├─ The Ledger      your entries as an editorial table-of-contents: hanging dates, hairline rules, drop-initial on the latest
-├─ Tonight's Reflection   dusk close-out ritual card (phase-aware, ~90s)
-├─ Sealed Letters  locked card hinting at letters to future-you → vault
-├─ Echo Wall — coming   single quiet teaser (honest about Q2)
-└─ Footer          "Locked to you. Always." + small lock glyph
-
-Tab: Insights   cycle × mood chart · 7-day/28-day rhythm · top tags · weekly Jess reflection
-Composer (full-screen)   type picker (12 types) · phase-tuned prompt · 4 modes (Write/Guided/One-line/Voice) · Save / Burn
-Reader (entry detail)    "the page is the screen" — serif, drop-cap, soft fade
-```
+### 1.4 Why this is a moat
+_"Nobody runs a phase-cohort, hold-only, mirror-your-own-history journal"_ with cross-phase sealed letters. Stardust mirrors nothing back; Clue/Flo publish stats not belonging; Day One is encrypted-then-revealed but not phase-anchored; Moody Month has phase voice but no real journal. Defensible because it needs the cycle engine FemWell already has. Jess follows the **"mirror-not-companion"** pattern (Mindsera precedent); the explicit anti-pattern is the 2025 "Vulnerability-Amplifying Interaction Loop" / sycophancy trap.
 
 ---
 
-## 2. FULL FEATURE INVENTORY (exhaustive — nothing omitted)
+## 2. THE PRIVATE vs PUBLIC / VISIBILITY MODEL  *(the major v1 gap — recovered in full)*
 
-Format per feature: **Purpose · IA placement · Components · States · Data wiring · Interactions · Edge cases · Phase (demo-now vs later).** "Demo-now" = already proven in `JournalDemo1.jsx`; "Phase N" = build milestone in §5.
+This is the part Halli flagged. Reconstructed from `femwell_journal_sharing_deep.html` (master), `_concepts.html`, `femwell_journal_community_v2.html`, `femwell_strategic_synthesis.md`, `femwell_future_features_brainstorm.md`. The journal is **not** a binary private/public switch — it is a **gradient the user positions each entry on, at the entry level, never by default.**
 
-### 2.1 Entries — create / read / edit / delete (the core object)
-- **Purpose.** The atomic unit: a private, phase-stamped piece of writing.
-- **IA.** Created via Composer; listed in the Ledger; opened in the Reader.
-- **Components.** `Ledger` (list/TOC), `Reader` (detail), `Composer` (create/edit).
-- **States.**
-  - _Empty_ (no entries ever): editorial empty-state — masthead + Jess's note + a single "Begin your first entry" line in the journal hand; the Ledger shows a one-line invitation, not a blank box.
-  - _Loading_: paper background renders immediately; entry rows fade in (skeleton hairlines, no spinner — spinners break the paper illusion).
-  - _Partial_ (1–4 entries): Ledger shows what exists; drop-initial on the latest only.
-  - _Populated_: full TOC with hanging dates + type stripe colour.
-  - _Error_ (fetch fails): quiet inline line "Couldn't open your journal just now — pull to retry," never a crash; production today had a `tags.split` crash on Insights (fixed in `cda3e96`) — guard all list parses.
-- **Data wiring.** Base44 `JournalEntries` entity. Fields in play: `body` (text), `type`/`entry_type`, `mood`, `phase`, `cycle_day`, `mode` (Write/Guided/One-line/Voice), `thread`, `created_at`, `is_burn`/`burn_at`, `affirmation` support, `lock` flag. **Note:** `created_at` was null on historical rows (pipeline bug, see memory `project_femwell_pipeline_hidden_bugs`); the Ledger must sort defensively (fallback to update time / id) and the migration must backfill.
-- **Interactions.** Tap a Ledger row → Reader. Long-press / overflow → edit, delete, change type/thread. Edit re-opens Composer seeded with the entry. Delete = confirm sheet ("This can't be undone") → cascade-safe remove.
-- **Edge cases.** Very long entries (Reader paginates by measure, not word count); entries with no type (default "Free write"); burn entries (render with crimson eyebrow + countdown, never in exports); entries created offline (queue + reconcile).
-- **Phase.** Read/list/create = **Phase 1**. Edit/delete polish = **Phase 1**. Threads = **Phase 1b**.
+### 2.1 "One entry, four lives" — the per-entry destiny model  *(community_v2)*
+> _"The same 4-sentence reflection can **stay locked, become an echo, be sealed for later, or be handed to one witness**. The user decides at the entry level — never by default."_
 
-### 2.2 Compose modes — Write · Guided · One-line · Voice
-- **Purpose.** Meet the writer where her energy is (luteal ≠ follicular): long-form, scaffolded, single-sentence, or spoken.
-- **IA.** Mode selector inside the full-screen Composer (above the type picker or as a small segmented row).
-- **Components.** `Composer` with a `mode` switch; `GuidedComposer` (prompt-step scaffold); `OneLineComposer` (single field, big type); `VoiceComposer` (record → on-device transcript).
-- **States.** Each mode has empty/typing/saving/saved. Voice adds: mic-permission-needed, recording, transcribing, transcript-editable, transcribe-failed (fall back to keep-audio + manual note).
-- **Data wiring.** `JournalEntries.mode`. Voice stores transcript as `body`; audio blob handling is a Phase-2 decision (on-device only; do not upload raw audio without explicit consent — privacy principle #1).
-- **Interactions.** Switching mode mid-write preserves text where possible (Write↔Guided↔One-line share the text buffer; Voice is additive).
-- **Edge cases.** Voice on unsupported browser → hide the mode, don't error. One-line enforces a soft length nudge, not a hard cap.
-- **Phase.** Write = **Phase 1** (demo-now). Guided = **Phase 1b** (demo shows the slot). One-line = **Phase 2**. Voice = **Phase 2** ("coming" affordance until then).
+| Destiny | What it is | Where it surfaces | Visibility |
+|---|---|---|---|
+| **Locked (default)** | Private by default; stays under your lock. | Journal. Feeds Cycle Mirror + pattern detection. | Only you, forever. |
+| **Sealed** | A letter to a future phase / future-you / anniversary. Client-side encrypted. | Returns to **you** in Journal (next follicular, anniversary, on-request) — **never Community**. | Only you, later. |
+| **Echo** | One scrubbed line shared anonymously. | **Community · Echo Wall.** | Anonymous; same-phase / circles / all (see 2.2). |
+| **Witness hand-off** | The whole entry handed to one matched sister, once. | **Community · Witness dock.** | One anonymous reader, one read, then re-sealed. |
 
-### 2.3 Entry types (12) + type-aware prompts
-- **Purpose.** Lightweight taxonomy that also tunes the prompt.
-- **Set (locked, from demo):** Free write · Reflection · Gratitude · Mood · Work · Relationships · Money · Creative · Grief · Joy · Identity · **Affirmation**. (Burn is a _mode_ on top of a type, not a 13th type.)
-- **Components.** Type picker row in Composer; `TYPE_COLOUR` stripe in the Ledger; `TYPE_PROMPTS` map drives the seeded prompt.
-- **Data wiring.** `JournalEntries.type`; **production filter pills are currently missing `Affirmation`** — adding it is a Phase-1 fix owed regardless (grand plan §B7).
-- **Edge cases.** Legacy entries with retired/typo types map to "Free write".
-- **Phase.** **Phase 1** (type set + Affirmation filter fix + type colours).
+Echo + Witness appear as **opt-in slots on individual entries — never defaults.** Most entries simply stay locked.
 
-### 2.4 Prompts — daily prompt + carousel + Jess's note
-- **Purpose.** The day's invitation in Jess's voice; not a form field, a voiced line.
-- **IA.** "Jess's note" block near the top of the page; a 3–5 prompt carousel; each prompt has a "Write to this" CTA that opens the Composer seeded with that prompt.
-- **Components.** `JessNote` (current carousel of `MOCK.prompts`), `PromptCarousel`.
-- **States.** Loading (show yesterday's cached prompt or a safe default); populated; error (fallback to a static phase-appropriate line).
-- **Data wiring.** Phase + cycle day → prompt selection. Production has a `JessJournalPrompt` wing (Feature 4, shipped `2359640`) already surfacing a daily phase prompt — **reuse/extend it**, don't duplicate. Prompts should be phase-tuned and, ideally, lightly personalised by Jess (LLM) with a deterministic fallback bank (cost-bounded, cache 24h — same pattern as Planner `RitualReframeShimmer`).
-- **Edge cases.** No phase data yet (new user) → neutral universal prompts.
-- **Phase.** Daily prompt + carousel = **Phase 1** (demo-now).
+### 2.2 The visibility spectrum — exact values  *(sharing_deep, Echo Wall settings "Who can see my echoes")*
+An entity field **`visibility (same_phase | circles | all)`**:
+- **Same-phase sisters only** — _"Women whose cycle is in the same phase as yours when you post."_ **Default.**
+- **My circles** — _"Sisters in the circles you belong to (e.g. Peri Watch, Luteal Softness)."_
+- **All sisters** — _"The whole wall. Widest reach, **least context**."_ (Discouraged, never default.)
 
-### 2.5 The Ledger (entries as an editorial table-of-contents)
-- **Purpose.** Recent writing presented like a literary contents page, not sticky notes. Replaces production's `JotterCard` sticky-note grid.
-- **IA.** Mid-page, the largest section.
-- **Components.** `Ledger`, row = hanging date + type stripe + serif preview line; drop-initial on the latest entry only.
-- **States.** Empty/partial/populated/error as §2.1. Burn rows show countdown ("burns in 4h").
-- **Data wiring.** `JournalEntries` sorted by `created_at` desc (with the null-safe fallback). Type colour from `TYPE_COLOUR`.
-- **Interactions.** Tap row → Reader. Filter pills (type/phase/thread) scope the list. Search (§2.13).
-- **Edge cases.** Mixed null dates; pagination/lazy-load beyond ~20 rows.
-- **Phase.** **Phase 1** (demo-now visual; wire to real data).
+There is **no "world / public-outside-the-app" level.** The widest any single piece travels is **one scrubbed line** to the in-app wall. The journal itself never becomes a public object. _"No public profile — Community is anonymous-first."_ (strategic_synthesis).
 
-### 2.6 Cycle Mirror — "On This Day" (the highest-value solo feature, the moat)
-- **Purpose.** Surface your own words from the **same cycle day last cycle** (and secondary lenses), so you _feel_ your body's consistency. The emotional hook competitors cannot copy. _"You've been here before. Your body is consistent. You're not imagining it."_
-- **IA.** Dedicated section under Jess's note.
-- **Components.** `Mirror` (past entry card + Jess gloss + "Reply to who you were" CTA). Secondary lens switcher: same cycle day / same phase / same thread / one year ago / same mood.
-- **States.**
-  - _No match_ (new user / no prior same-day entry): graceful — "No echo for day 26 yet. This becomes your first." Never blank.
-  - _Single match_: show it with Jess gloss.
-  - _Multiple matches_ (up to 5): show the most recent, with a "more echoes" affordance.
-  - _Loading_: hairline placeholder.
-- **Data wiring.** Query `JournalEntries` where `cycle_day == today's cycle_day` AND `created_at` in a prior cycle, scoped to the user. **Never leaves the device.** Jess gloss = LLM on the matched entry, generated on-device/handed-to-Jess only, with a deterministic fallback. Requires reliable `cycle_day` stamping (depends on the unified `computeCycleDay`, fixed `09839c2`).
-- **Interactions.** "Reply to past self" opens the Composer seeded ("Reflecting on what I wrote a cycle ago…"). Lens switch re-queries.
-- **Edge cases.** Irregular cycles (day numbers drift) → match on ±1 day window, like Planner's Cycle Mirror Sunday tile. Sparse history → secondary lenses or empty-state.
-- **Phase.** **Phase 1** (demo-now visual; the marquee wiring task).
+### 2.3 Circles  *(community_v2, sharing_deep)*
+Pre-existing Community primitive the sharing model plugs into (entity marked "existing · as-is"). Four kinds, with real examples from the demo:
+- **Phase** — "Luteal Softness · 1.4k · 23 today"
+- **Program** — "Sleep Reset cohort · 84 · starts tonight"
+- **Region** — "UK Women Wellness · 2.1k · 41 today"
+- **Life stage** — "Perimenopause Watch · 890 · 12 today"
 
-### 2.7 Tonight's Reflection (the dusk close-out ritual)
-- **Purpose.** Bookend the day with a ~90-second phase-aware reflection; the evening counterpart to the morning prompt.
-- **IA.** Lower on the page (a "close the day" card); time-aware (emphasised after dusk).
-- **Components.** `Tonight` (dusk card, `PRESS_DARK` letterpress on a darker stock).
-- **States.** Day (de-emphasised/teaser) vs evening (active); done-for-tonight state after a reflection is written.
-- **Data wiring.** Phase-tuned prompt; writes a normal `JournalEntries` row tagged as a reflection. Coordinates with Planner's existing `TonightCard` (avoid two competing "tonight" surfaces — decide one home or cross-link).
-- **Edge cases.** Timezone (UK default); user already reflected → confirm + offer "add more".
-- **Phase.** **Phase 1** (demo-now).
+Echoes can be scoped to circle audiences (Echo Wall feed has a "Your circles" tab alongside Same-phase / All phases / Held-by-you).
 
-### 2.8 Insights (the pattern engine — production's strongest existing surface)
-- **Purpose.** Show real patterns: mood by phase, writing rhythm, top tags, a weekly Jess reflection.
-- **IA.** A **tab** (`Journal | Insights`) — kept deep — plus a one-line teaser ("A line from the week") on the main page that opens it.
-- **Components.** `JournalInsightsTab` (existing; cycle×mood chart, 7-day rhythm, top tags, weekly LLM reflection), `InsightTeaser` (page strip), `Insights` modal (demo's Jess line + 28-day rhythm dot-grid + community line).
-- **States.** Empty (not enough entries → "Patterns appear after a few entries"), partial, populated, error (the historical `tags.split` crash must stay guarded).
-- **Data wiring.** Aggregates `JournalEntries` by phase/mood/tag/date; weekly reflection is an LLM call (cost-bounded, cached). Mood × cycle requires `mood` + `phase`/`cycle_day` on entries.
-- **Interactions.** Teaser → Insights tab. Chart tap → filtered Ledger (optional, Phase 2).
-- **Edge cases.** Tag strings that are null/comma-malformed; single-phase users.
-- **Phase.** Tab exists today (**keep**); teaser strip = **Phase 1**; deeper chart→ledger linking = **Phase 2**.
+### 2.4 Circle of Three — the PRIVATE named circle  *(future_features_brainstorm §2.2 — NOT in v1, distinct from public Circles)*
+> _"Some users want 2-3 chosen people (mother, sister, best friend) to have a narrow view. **Not public community — private circle.** Each member gets a narrow read of: current phase label + last week's felt-sense summary. No logs, no Jess notes."_
+- Entities: **Circles (new, private — distinct from public Circles on Community), CircleMembers, CircleDigests.**
+- Risk + rail: _"someone adds their mother, then regrets it. Build in **quarterly re-consent prompt.**"_
+- **Adjacent: Partner Sync** — narrow read-only share of phase + mood + what-helps, never raw symptoms; "no public profile, no chat bloat"; gentle voice notes.
+- **Decision owed (§7):** do Circle of Three + Partner Sync belong on the Journal's privacy roadmap, or stay Network/Community features? They materially change "who can see what."
 
-### 2.9 Sealed Letters (encrypted letters to future-you)
-- **Purpose.** Write a letter that even Jess can't read until a trigger — a **date / phase / anniversary**. Cross-phase letters are a cycle-app-only superpower.
-- **IA.** Locked card on the page → a vault surface with tabs: **sealed · opened · threads**. Unsealed letters surface on Today (a `UnsealedLetterCard`) when ready.
-- **Components.** `SealedLetters` (locked teaser, demo-now), `SealNewLetter` (compose + choose trigger), `Vault` (sealed/opened/threads), `UnsealedLetterCard` (Today + Journal).
-- **States.** None-yet (empty vault invite), sealed (count + next unlock "opens at your next follicular"), ready-to-unseal, opened, error.
-- **Data wiring.** Dedicated **`SealedLetters` entity** (separate from `JournalEntries`, by design). Known fields: `body` (text, required), `seal_date` (ISO string, required), `unsealed_at` (nullable), `unseal_seen_at` (nullable), `title` (optional); plus phase/anniversary trigger fields to add. Client-side encryption — "time + phase as the key." Indexes on `user_id` + `seal_date` for the "ready to unseal" query.
-- **Interactions.** Seal → choose trigger → confirm (irreversible until trigger). On trigger: a gentle reveal animation; mark `unsealed_at`; `unseal_seen_at` when actually read.
-- **Edge cases.** Trigger in the past at creation (block); device/key loss (document the recovery story — privacy vs recoverability tension is an open decision, §6); clock tampering.
-- **Phase.** Locked teaser = demo-now; **Sealed Letters v1 = Phase 2** (entity already specced in `lifestyle_sealed_letters_*`).
+### 2.5 Journal page vs Community page — the two-home architecture  *(community_v2)*
+> _"**Journal owns the writer** (cycle mirror, sealed letters, share-as-echo slot) — anything you make for yourself or future-you. **Community owns the peer shapes** (echo wall, witness mode, phase twin) — anything that involves another person, even anonymously. One entry can flow through both."_ LD call: **"Journal gets the depth. Community earns the proximity."**
 
-### 2.10 Burn Mode (the relief valve)
-- **Purpose.** Write something that auto-deletes — a pressure-release for things you need to say but not keep.
-- **IA.** A quiet option **inside the Composer** (not a top-level surface — it can read dark; keep it understated). Demo places a "Burn this entry" affordance with a `Moon` glyph.
-- **Components.** Burn toggle in Composer; burn rows in Ledger show a countdown; a `BurnConfirm`.
-- **States.** Composing-to-burn, burning-soon (countdown), burned (gone — no tombstone in exports).
-- **Data wiring.** `JournalEntries.is_burn` + `burn_at`; a cleanup job removes expired burns (deletion cascade). Burns are **excluded** from Insights, exports, Doctor handoff, and Cycle Mirror matches.
-- **Edge cases.** App closed before burn time (server-side cleanup must still fire); user wants to "un-burn" before expiry (allow within the window only).
-- **Phase.** Composer affordance demo-now; full lifecycle = **Phase 2**.
+- **Journal page (solo writer, "for you and future-you"):** kept — Jess prompt, Tonight's prompts, Threads, Pattern card, Privacy footer; new — **Cycle Mirror, Sealed Letters rail, Anniversary surfacing, Share-as-Echo slot.** "Sealed Letters and Cycle Mirror are first-class here because they have no other audience."
+- **Community page (peer shapes, "for sisters, near and anonymous"):** kept — Composer, Circles carousel, Gentle reactions, AMA card, Quiet mode; new — **Echo Wall feed, Witness dock, Phase Twin card, composer echo/witness tools**; shifted — **"Jess pick" → Echo Wall** (Echo Wall replaces "Jess pick" as the primary peer surface). "Witness Mode is a dock, not a page."
 
-### 2.11 Echo Wall (Q2 — first social step)
-- **Purpose.** Anonymous one-liners scoped by phase; you see you're not alone tonight without anyone seeing you.
-- **IA.** Its own quiet surface; on the main page only a single honest "Echo Wall — coming" teaser until it ships.
-- **Components.** `EchoComing` (teaser, demo-now), later `EchoWall` (feed of fading one-liners, hold-only).
-- **Rules (locked).** Anonymous; **hold-only** reactions (no like); fades ~48h; ≤5 posts/day; **Jess scrub** of names/places/dates/substances before anything leaves the device; on-device crisis intercept → Panic Mode + UK resources (Samaritans 116 123, Shout 85258, NHS); 3-strike removal; FLAG_SECURE screenshot block.
-- **Data wiring.** New anonymous-post entity (server-side, no author linkage), phase-scoped, TTL/expiry.
-- **Phase.** Teaser demo-now; **Echo Wall = Phase 3 (Q2)**.
+> **Scoping note for THIS build:** v2's production target is the **Journal page**. The Community-side surfaces (Echo Wall feed, Witness dock, Phase Twin card) are later phases and may live on a Community route; what the Journal page owns now is the **solo writer + the opt-in share slots that hand an entry off** to those surfaces.
 
-### 2.12 Witness (Q3) & Phase Twin (Q4) — the far end of the gradient
-- **Witness.** One entry handed to one matched sister; she returns one of 4 fixed responses **or passes**. No chat, no screenshot. Writer can cancel ≤2h; receiver opens ≤6h. **Phase 4.**
-- **Phase Twin.** 12-day pairing, same phase + life-stage; one shared daily prompt; the twin's answer is blurred until you write; closes at next period day 1. **Phase 5.**
-- Both are gated, one-shot, finite, anonymous, Jess-scrubbed, crisis-aware. Neither is an open inbox. Out of scope for the first production passes; specced here so the IA leaves room (a single far-future teaser at most).
+### 2.6 Anonymity mechanics  *(sharing_deep "under the hood" + appendix B)*
+- Echoes: _"No user_id on echo · UUID only · **hashed author token lets writer retract without deanonymising**."_ Author can retract via a **one-way hash the server can invalidate but not reverse.**
+- Holds: _"holder_hash is **daily-rotated, unlinkable to user**."_
+- Witness: _"no user_id pairing surface · **double-hashed anon tokens** · rotated per-cycle · never joined to Users in any exposed query path · **matching service runs in a separate VPC.**"_
+- Twin: _"**pair_id never joined to user_id at query time**."_
 
-### 2.13 Threads, tags, search & filter
-- **Threads.** Follow one life-strand across entries (work, money, mum, sleep, body, the-hard-stuff). `JournalEntries.thread`. Surfaces as a filter and as a Cycle Mirror lens. **Phase 1b.**
-- **Tags.** Free tags drive Insights "top tags." Parsing must be null/format-safe (historical crash). **Phase 1** (already in Insights).
-- **Search & filter.** Filter pills (type/phase/thread) on the Ledger — **add `Affirmation`** (owed fix). Text search across entry bodies (on-device). Filter = **Phase 1**; full-text search = **Phase 2**.
+### 2.7 Three-tier sensitivity model + SecureStore  *(strategic_synthesis §4.1)*
+- **Tier 1 — Public / platform-indexed:** ExploreItems, CommunityPosts (anonymous), Circles.
+- **Tier 2 — Private user data (server-stored, per-user-encrypted at rest):** CyclePatterns, TwinPairs, TwinEntries, EchoHolds, Echoes.
+- **Tier 3 — End-to-end encrypted (client-only keys):** **SealedLetters, Journal locked entries, WitnessRequests, WitnessStrikes.**
+- **Rule:** one E2E crypto primitive **"FemWell SecureStore"** shared across all Tier-3 entities. _"Build this once (**Sealed Letters first**), then everything else reuses it. If the crypto is wrong, we can't ship any E2E feature."_
+- **Per-tier deletion:** Tier 1 = 30-day soft-delete; **Tier 3 = instant hard-delete, no server copy exists; Jess can never read encrypted content, only metadata the user opts to share.**
 
-### 2.14 Privacy, on-device & safety rails (cross-cutting, non-negotiable)
-- On-device / E2E encryption; Sealed Letters keyed on time+phase. Jess reads only handed entries. On-device **crisis intercept** routes to Panic Mode + UK resources before any share; **Jess scrub** strips identifiers pre-share. Rate limits, screenshot block (FLAG_SECURE), 3-strike pool removal, fade/expiry defaults, deletion cascade. Post-Roe framing: **"visible privacy beats invisible privacy"** — make the lock _visible_ (the footer "Locked to you. Always." + lock glyph). The privacy footer is **Phase 1**; the scrub/intercept machinery lands with the social phases but the _copy/contract_ ships from day one.
-
-### 2.15 Export & Doctor handoff ties
-- **Purpose.** Let a woman hand a clean, clinical-register summary to her GP. FemWell already has `DoctorExport` / Doctor-Ready Diary (Planner C4, `generateDoctorReadyDiary`, NICE NG23-aligned, jsPDF A4).
-- **Wiring.** Journal entries (mood/phase patterns, _excluding burns and sealed letters_) can feed the Doctor-Ready Diary. Cross-link rather than rebuild. Decide what journal content is eligible (likely: mood/symptom-tagged reflections, never raw private prose without explicit opt-in).
-- **Phase.** Cross-link = **Phase 2**; deeper journal→diary synthesis = **Phase 3**.
-
-### 2.16 Notifications, streaks & rhythm
-- **Purpose.** Gentle return nudges (morning prompt, dusk reflection, "a letter is ready to open") — **never streak shame** (principle #8). Rhythm shows as cycle-count dots, not a fire streak.
-- **Components.** 28-day rhythm dot-grid (in Insights, demo-now); optional local notifications.
-- **Phase.** Rhythm grid demo-now; notification scheduling = **Phase 2+** (respect quiet hours / Planner Quiet Mode).
-
-### 2.17 Jess integration (observer, never companion)
-- **Role.** Jess **observes, never companions** — the explicit anti-pattern is the 2025 "Vulnerability-Amplifying Interaction Loop" / sycophancy trap. Jess: curates the daily prompt, writes the Cycle Mirror gloss, generates the weekly insight, runs the on-device scrub + crisis intercept before any share, and offers "unpack with Jess" **only on invitation**. **Jess never reads an entry unless it is handed to her.**
-- **Wiring.** All Jess LLM touches are cost-bounded + cached + have deterministic fallbacks (the Planner shimmer pattern). No background reading of private entries — ever.
-- **Phase.** Prompt + gloss + weekly insight = **Phase 1**; scrub/intercept = with social phases.
+### 2.8 Consent-on-surface (visibility made visible)  *(strategic_synthesis §2.2-2.4)*
+- _"Every sensitive feature shows its privacy state **inline, not in a settings screen.** 'Let Jess…' not 'Enable…'."_ Journal locked entries show a **padlock chip** on the entry card; Witness dock shows a **strike-count chip** ("3-strike policy · you have 3 left").
+- **Dark plum→night gradient** is reserved for fragile/private surfaces: consent gates, Panic Mode, **Sealed Letters, Witness dock**, Jess tool-consent, data-delete. It signals "this is fragile, we're being careful." (Ms Atelier: the dark "trust ink" card.)
+- Post-Roe framing: **"visible privacy beats invisible privacy."** The Journal footer "Locked to you. Always." + lock glyph is the public one-line promise.
 
 ---
 
-## 3. PRODUCTION MIGRATION PLAN (Editorial demo → real `Journal.jsx`)
+## 3. FULL FEATURE INVENTORY (exhaustive)
 
-### 3.1 What production `Journal.jsx` has today
-- A utilitarian header (plan wants it reframed to phase + cycle day + an italic seasonal line).
-- Tabs: **Journal | Insights**. `JournalInsightsTab` is the strong surface (cycle×mood chart, 7-day rhythm, top tags, weekly LLM reflection).
-- `JessJournalPrompt` wing (Feature 4) — daily phase prompt card.
-- `JotterCard` sticky-note entries (historically carried emoji — flagged for Lucide swap).
-- Filter pills (missing `Affirmation`).
-- Composer = type picker + type-aware form.
-- **Missing from production:** Cycle Mirror, Sealed Letters, Tonight's Reflection, prompt carousel, the whole social gradient.
-- The cycle-phase unification fix (`09839c2`) and the `cda3e96` Insights crash guard are already live — build on them.
+Per feature: purpose · IA · components · states · data wiring · interactions · edges · phase · **source**. "Demo-now" = proven in `JournalDemo1.jsx`.
 
-> **Action item for the build session:** before writing code, pull the real `src/pages/Journal.jsx` + `src/components/.../JournalInsightsTab.jsx` from `origin/main e6f1906` and confirm exact component names/props (the Cowork mount is a partial mirror; the demo lives at `journal_editorial/JournalDemo1.jsx`). This spec names the surfaces; the build confirms the symbols.
+### 3.1 Entries — create / read / edit / delete
+Atomic object: a private, phase-stamped piece of writing. Ledger lists them; Reader opens them; Composer creates/edits. States: empty (editorial invitation, never a blank box) · loading (paper renders first, hairline skeletons, **no spinner**) · partial · populated · error (guard all list parses — production had a `tags.split` crash, fixed `cda3e96`). Data: `JournalEntries` — `body, type/entry_type, mood, phase, cycle_day, mode, thread, created_at, is_burn/burn_at, affirmation, lock`. **`created_at` was null on historical rows** (pipeline bug) — sort defensively + backfill. Metadata chips per entry: **phase · mood · mode · thread · lock**; moods enum **soft / bright / heavy / steady**. **Phase 1.** _Source: BRIEF §3, journal_demo._
 
-### 3.2 What the Editorial demo proves (the design system to port)
-From `JournalDemo1.jsx` (demo-only, `/Ideas`):
-- **Palette `T`:** paper `#E8E3D5`, paperHi `#F1ECDD`, paperDeep `#D6CDBA`, ink `#15110C` (near-true-black), inkSoft `#463E33`, muted `#8C8273`, gold `#B89A55` (hairline accent only), **crimson `#C0322B` — the single colour pop (the heart)**, plus brand blush/sage.
-- **Type roles (4):** `SCRIPT` = Allura/Pinyon (large pointed-pen display voice — phase word, big pull-quotes only); `HAND` = Caveat (legible handwriting for smaller voice/accent/CTA lines); `SERIF` = Cormorant Garamond/Fraunces (**all long-form reading bodies** — Ledger previews, Reader, composer textarea); `UI` = Inter (eyebrows, dates, type-picker chrome).
-- **Letterpress depth:** `PRESS` (light lower-edge highlight + dark upper recess + soft drop = ink debossed into cream) and `PRESS_DARK` (inverted, for the dusk card) text-shadows on SCRIPT/HAND.
-- **Real paper:** a tileable cotton-paper PNG (procedural seamless grain), base64-embedded, multiplied over cream, with soft top-left light + edge vignette (replaced the earlier `feTurbulence` CSS).
-- **Components:** `Heart`, `Paper`, `Eyebrow`, `Rule`, `Script`, `Hand`, `Masthead`, `JessNote`, `Mirror`, `InsightTeaser`, `Ledger`, `Tonight`, `SealedLetters`, `EchoComing`, `Footer`, `Composer`, `Reader`, `Insights`.
-- **Composer:** full-screen; 12-type picker; type→prompt seed; serif textarea; Save + "Burn this entry."
-- **Reader:** centered modal, serif italic body, gold rule, "page is the screen."
-- **Insights modal:** Jess line (HAND) + 28-day rhythm dot-grid + community line.
+### 3.2 Compose modes — Write · Voice · One-line · Guided
+Meet the writer where her energy is. Composer mode switch. Write = free serif (Phase 1, demo-now). Guided = multi-prompt scaffold ("6 prompts", e.g. new-cycle intentions; Phase 1b). One-line = single big field (also a "one-line luteal journal" ritual; Phase 2). Voice = record → **auto-transcribed** transcript; on-device only, do not upload raw audio without explicit consent (Phase 2, "coming" until then; benchmarked vs Moody Month/Memoir voice journals). Switching Write↔Guided↔One-line preserves the text buffer; Voice is additive. **Source: BRIEF §3, journal_demo, GRAND_PLAN §B6.**
 
-### 3.3 The migration (what replaces what)
+### 3.3 Entry types (12) + type-aware prompts
+Free write · Reflection · Gratitude · Mood · Work · Relationships · Money · Creative · Grief · Joy · Identity · **Affirmation**. (Burn is a _mode_, not a 13th type.) Type picker drives `TYPE_PROMPTS`; `TYPE_COLOUR` stripes the Ledger. **Owed fix: production filter pills are missing `Affirmation`.** **Phase 1.** _Source: JournalDemo1, BRIEF §3._
+
+### 3.4 Prompts — daily prompt + carousel + Jess's note
+The day's invitation in Jess's voice — _"Not a form field — a voice."_ "Jess's note" block + 3–5 prompt carousel; each prompt's "Write to this" opens the Composer seeded with it. Reuse/extend the production `JessJournalPrompt` wing (Feature 4, shipped `2359640`). Phase-tuned; lightly personalised by Jess (LLM, cost-bounded, cached 24h, deterministic fallback bank — the Planner `RitualReframeShimmer` pattern). **Phase 1 (demo-now).** _Source: GRAND_PLAN §A, journal_demo, BRIEF §7._
+
+### 3.5 The Ledger
+Recent writing as a literary table-of-contents (hanging dates, type stripe, drop-initial on the latest only) — **replaces production's `JotterCard` sticky-note grid.** Sort `created_at` desc with null-safe fallback. Burn rows show a countdown. Tap → Reader; filter pills (type/phase/thread) scope it. **Phase 1 (demo-now visual; wire to real data).** _Source: GRAND_PLAN §C, BRIEF §7._
+
+### 3.6 Cycle Mirror — "On This Day" (the marquee solo feature, the moat)
+Your own words from the **same cycle day last cycle**, so you feel your body's consistency. _"You've been here before. Your body is consistent. You're not imagining it."_
+- **Up to 5 past-self entries** from the same cycle day, newest→oldest; each tap reopens the full entry ("past-self becomes a clickable archive").
+- **Five secondary lenses** (one-tap switch): **same cycle day · same phase · same thread · one year ago today · same mood.** *(v1 named the feature but not the lens set.)*
+- **Jess gloss / pattern overlay:** _"Pattern found — you wrote about sleep disruption on 4 of 5 luteal day 19s."_
+- **Pattern catalogue** ("7 patterns found"): recurring themes across ≥2 cycles, each with cycles-observed + strength + Jess insight + a **28-day heatmap**. Qualifies at ≥3 mentions across ≥2 cycles; "strong" at ≥4 cycles.
+- **First-cycle empty state:** _"Cycle Mirror needs at least 2 full cycles … If you've journaled elsewhere, I can **scaffold a mirror from photos of past entries**."_ + a 3-minute check-in catch-up.
+- **Anniversary view** auto-activates on hard dates (loss, diagnosis) if tagged: "Same date. Different you." + "Write a letter to 2025-you?" (feeds Sealed Letters).
+- **Data:** `JournalEntries` + new **`EntryTags`** (`id, entry_id, phase, cycle_day, mood, thread, body_signal[]`) + derived **`CyclePatterns`** view (`user_id, pattern_name, cycles_observed, strength, insight_text`, Jess-authored, refreshed weekly). **100% on-device computation; no server-side pattern extraction; nothing leaves the journal.** Irregular cycles → ±1-day match window.
+- **Phase 1** (the marquee wiring). **⚠ Tier conflict:** strategic_synthesis Free-vs-Pro gates Cycle Mirror behind **Pro**; this spec treats it as the free Phase-1 marquee — see §8. _Source: sharing_deep/concepts, BRIEF §3._
+
+### 3.7 Tonight's Reflection (dusk close-out ritual)
+~90-second phase-aware evening reflection; bookends the day. Time-aware "close the day" card (dark `PRESS_DARK` stock). Writes a normal reflection-type `JournalEntries` row. **⚠ Coordinate with Planner's existing `TonightCard`** — avoid two competing "tonight" surfaces (§7/§8). **Phase 1 (demo-now).** _Source: GRAND_PLAN §A, journal_demo, PLANNER_MASTER_PLAN._
+
+### 3.8 Insights (pattern engine — production's strongest existing surface)
+Mood × cycle chart, 7-day / 28-day rhythm, top tags, weekly Jess reflection. **A kept tab** (`Journal | Insights`) plus a one-line teaser ("A line from the week") on the page that opens it. Guard the historical `tags.split` crash. Empty state "Patterns appear after a few entries." **Tab exists today (keep); teaser = Phase 1; chart→filtered-Ledger linking = Phase 2.** _Source: BRIEF §3/§7, JournalDemo1 Insights modal._
+
+### 3.9 Sealed Letters (encrypted letters to future-you)  *(deep recovery — two source generations)*
+Write a letter even Jess can't read until a trigger. Cross-phase letters are a cycle-app-only superpower.
+- **Trigger model — conceptual (richer, the long-term target):** 4 types — **future-me (date) · cross-phase (phase switch) · anniversary (365d) · custom.** Cross-phase: "Luteal-you → follicular-you, unlocks on next phase switch." _"Sealed on save — you cannot open early. Friction is a feature."_
+- **Trigger model — production v1 (MP-Eng-2, narrowed):** **date-only** via `seal_date`; quick chips "In 1 month / In 6 months / In 1 year" + custom date. Deferred from v1: phase/anniversary triggers, AI-suggested dates.
+- **Library/vault tabs — conceptual:** sealed · opened · **drafts** · **threads**. **Production v1:** two sections only — "Ready to read" / "Still held"; no drafts, no threads.
+- **Letter threading (conceptual; deferred "v1 single-shot"):** a reply chains a correspondence — _"A thread is forming. Four phases, four letters. This is you becoming a witness to yourself."_ Self-referential via `replied_letter_id`.
+- **Break-seal ritual:** slow tap / long-press, **haptic thump, wax-crack animation**; "skip today → stays sealed, asks tomorrow; no nags after 3 attempts." 30-day grace on late unlock, then stored indefinitely until opened.
+- **Encryption — ⚠ conflict (§8):** conceptual = **client-side encrypted ciphertext, "not even Jess can peek," ghost-seals (account delete burns letters)**; production v1 MP stores `body` as **plaintext** with a client-side `unsealed_at`/`seal_date` gate only ("self-tamper harms only the author"). If marketing says "encrypted on-device," v1 must actually encrypt.
+- **Entity (production MP-Eng-2, authoritative build schema):** new **`SealedLetters`** entity (NOT extending JournalEntries — avoids `sealed_until: null` filters across ~9 query sites + leak risk into DoctorExport). Fields: `body` (text, req), `seal_date` (ISO date, req, > today), `unsealed_at` (datetime, null), `unseal_seen_at` (datetime, null), `title` (string, captured but **not rendered in v1**). Indexes `user_id`, `seal_date`. Mechanic = **Option A** client-side check on every mount (not a scheduled function). Today surfaces an **`UnsealedLetterCard`** (225° gradient; distinct from Daily Chapter 135° / Friend-6-Months 315°); `unseal_seen_at` set after a 500ms delay.
+- **⚠ Home conflict (§8):** the MP spec places Sealed Letters **OUTSIDE Journal**, as a stand-alone Lifestyle surface — _"Journal is daily and routine; letters are slow and ceremonial."_ This Journal spec folds a locked card → vault into the Journal page. Resolve with Halli.
+- **Excluded from DoctorExport** ("DoctorExport queries JournalEntries only"), burns, and Cycle-Mirror matches. Full locked copy exists (compose "A letter to a future you" / placeholder "Dear future me…" / "Seal it" / vault "Letters to yourself / Held in private until the date you picked").
+- **Phase:** locked teaser demo-now; **Sealed Letters v1 = Phase 2** (built on SecureStore). _Source: lifestyle_sealed_letters_spec + 2 base44 prompts, sharing_deep/concepts, BRIEF §3._
+
+### 3.10 Burn Mode  *(thinnest core feature — see §10)*
+Write something that auto-deletes; a pressure-release. A **quiet option inside the Composer** (not top-level — it can read dark), with a `Moon` glyph. Burn rows show a countdown; excluded from Insights, exports, Doctor handoff, Cycle Mirror. `is_burn`/`burn_at`; server-side cleanup must fire even if the app is closed. **⚠ No demo, copy, or entity spec exists anywhere — needs design (§10).** Composer affordance demo-now; full lifecycle = Phase 2. _Source: BRIEF §3, GRAND_PLAN §B5._
+
+### 3.11 Share-as-Echo slot (the composer bridge solo→social)  *(distinct surface, under-represented in v1)*
+After/within an entry, **Jess offers one line worth sharing**, scrubs PII/substances, and **rewrites it to a single sentence in the writer's voice**: _"There's one line in here that might help someone tonight. Share it — anonymously?"_ Buttons: **Share this line / Edit first / Keep private.** This is the hand-off that turns a private entry into an anonymous Echo — it lives in the Composer/entry card, the Echo Wall feed lives on Community. **Phase 3 (with Echo Wall); the slot UI can stub earlier.** _Source: community_v2, sharing_concepts/deep._
+
+### 3.12 Living Wisdom — Echo Wall × Jess flywheel (wisdom surfaced INTO the journal)  *(entirely new vs v1)*
+The inverse of sharing: collective wisdom surfaced **into your writing flow as company, not advice.**
+- _"Every Echo on Community is an atomic piece of collective wisdom. Jess surfaces one at the contextually right moment."_ Surfaces: **journal / today / panic_afterglow / jess_drawer.**
+- **Journal trigger:** 60s of sustained writing + phase/topic match ≥ threshold → **one faded wisdom card inline. Max 1 per writing session.** Framed "someone 19 days in wrote this."
+- **Ranking** = phase-match × topic-match × recency × holds. **90-day repeat lock** (won't re-show an Echo for 90 days). Topic signals derived from **your own words, never shared back.**
+- **Must NOT appear:** push notifications, Community main feed, Partner Sync, onboarding (first 14 days).
+- **Entities:** **`WisdomIndex`** (`phase_day, hold_count_snapshot, eligible = flag_state=clean AND hold_count ≥ 5 AND age_days ≤ 180`), **`JessWisdomSurfacings`** (log + `matched_on` for a transparency panel).
+- **You cannot screenshot/export a surfaced Echo** (respect for the writer).
+- **Phase:** depends on Echo Wall existing → **Phase 3+.** _Source: femwell_living_wisdom_demo, copy_deck._
+
+### 3.13 Echo Wall (Community, Q2/Q3 — first social step)
+Anonymous one-liners scoped by phase; **hold-only** (no like/comment/reply/DM); writer sees hold count **privately, never who held.** Phase chip is the only identifier and is **frozen at post time, not live.** Feed filters: Same phase / All phases / per-phase / **Your circles** / Held-by-you. **Fade:** demos say **7-day** (max 14); JournalPlanDoc reconciliation says **48h ships first** (§8). Caps: **≤5 echo posts/day.** Cold start: first 7 days seeded with Jess-curated prompts + past opt-in entries. Crisis keywords never enter the queue → Panic Mode. **Entities:** `Echoes` (`id, author_hash, phase, life_stage, line, source_entry_hash, fades_at, visibility(same_phase/circles/all), edited_at`), `EchoHolds` (`holder_hash daily-rotated`), `EchoFlags`. Settings: audience, Jess-scrub toggle, 10-min cooling pause, late-luteal block, fade window, holds-private, auto-unpost-after-48h-absence. **Phase 3.** _Source: sharing_deep appendix B, community_v2._
+
+### 3.14 Witness Mode (Community, Q3)  *(pay-it-forward gate + charter were missing in v1)*
+One entry → one matched sister; she replies with **one of 4 fixed Fraunces-italic lines or passes silently** (writer never knows she read it). The 4 lines: **"I'm holding this with you. / Me too. / You're not alone in this. / I hear you."** No DM, no thread, no follow-up — _"the thread closes on send."_ Match by phase (default) + life-stage + optional region/tag, 2–4h batch; **writer cancels before read.** Toggle **per-entry, not per-account.**
+- **Pay-it-forward gate (NEW):** _"To witness, first be witnessed."_ Must have been witnessed **≥3×** before acting as a witness. *(community_v2 variant: "received 2 + charter" — §8.)*
+- **Witness Charter** shown once (re-readable from Settings): read once with care / 4 lines or pass / **never screenshot** / never discuss / opt out anytime.
+- **Safety:** **FLAG_SECURE** screenshot block; **3 strikes** (screenshot, out-of-bounds reply, false crisis flag) → removed (90-day per one source); crisis interception routes to Panic Mode + UK resources before send.
+- **Entities:** `WitnessRequests` (`writer_hash, entry_ciphertext, match_criteria, matched_at, read_at, response_code(1–4|null)`), `WitnessStrikes`. Rate: **1 send/day, 3 receives/day**, no late-luteal d24–28 sends unless override.
+- **⚠ Reply-window conflict (§8):** sharing_deep = 2–4h match + immediate response; component_library says "**three days to reply**."
+- **Phase 4** ("ship only after Echo Wall moderation runbook is real"). _Source: sharing_deep, component_library._
+
+### 3.15 Phase Twin (Community, Q4)
+12-day container, **same phase + life stage**, one partner, ends with the cycle, **no re-entry until next cycle, max 1 active.** One Jess-authored phase-tuned shared prompt/day; **you see hers only after you've written yours** ("blurred until you write"); Jess posts **one bridging note/day** tying the two entries without forcing a takeaway. Re-match if twin goes quiet 4+ days (no blame). Closing ritual: stats + each picks one line from the other to carry forward (48h parting-line window), then pair archived read-only. **Entities:** `TwinPairs` (`cycle_start, cycle_end, partner_a_hash, partner_b_hash, shared_tags[], closed_at`), `TwinEntries` (deletes day 13), `TwinPrompts` (~40 prompts/phase, no repeat within 3 cycles). Reveal = server-side gate (returns both only after both `written_at` set). Shared/not-shared matrix: she sees phase+day, life stage, shared tag, today's entry; never name/handle, other entries, region/photo, past cycles. **Phase 5.** _Source: sharing_deep/concepts._
+
+### 3.16 Threads, tags, search & filter
+**Threads** — follow one life-strand (6 ongoing: Body listening, Work & me, Mum stuff, Sleep notes, Hard days, Money thoughts). `JournalEntries.thread`; a filter and a Cycle-Mirror lens. **Phase 1b.** **Tags** — drive Insights "top tags"; null/format-safe parsing. **Phase 1.** **Filter pills** (type/phase/thread) on the Ledger — **add `Affirmation`.** **Phase 1.** **Full-text search** across bodies, on-device — **Phase 2.** _Source: journal_demo, BRIEF._
+
+### 3.17 Privacy, on-device & safety rails (cross-cutting, non-negotiable)  *(specific mechanics recovered)*
+On-device / E2E (SecureStore, §2.7); Sealed Letters keyed time+phase. Jess reads only handed entries. Per-share machinery, recovered in full from `sharing_deep` Appendix A:
+- **Jess scrub** — regex + on-device LLM strips names, locations, dates, substances before anything leaves the device.
+- **Cooling pause** — **10-min hold** before any outgoing share, cancellable; off-by-default in follicular, **on-by-default in late luteal (d24–28)**.
+- **Night/late-luteal throttle** — "**30-min hold-to-share delay between 10pm and 6am on cycle days 22+**."
+- **Crisis intercept** — on-device keyword+context model → Panic Mode + UK resources (**Samaritans 116 123, Shout 85258, NHS**); _"Not for crisis."_ "Writer can still send to Witness after opening ≥1 resource card — Jess checks."
+- **Screenshot block** — FLAG_SECURE (Android) / iOS capture-prevention on Witness receiver + Twin reveal.
+- **Strikes** — 3 = removed (screenshot / out-of-bounds reply / false crisis flag).
+- **Rate limits** — 1 Witness send/day · 3 receives/day · 1 Twin pairing/cycle · 5 Echo posts/day.
+- **Retract / unpost** — by one-way hash the server can invalidate but not reverse; auto-unpost after 48h app absence.
+- **Fade by default**; **deletion cascade** — account delete **burns** sealed letters, echoes, twin entries; others' pair history kept as counts only. _"No trace."_
+- **6-rail first-time consent** gate per peer feature.
+- **Consent-on-surface** (§2.8): padlock chip on entries, strike-count chip on Witness, "Let Jess…" not "Enable…", dark trust-ink gradient.
+The privacy **footer + contract** ("Locked to you. Always.") ships **Phase 1**; the scrub/intercept/strike machinery lands with the social phases. _Source: BRIEF §5, sharing_deep Appendix A, strategic_synthesis §2._
+
+### 3.18 Reactions lexicon (the only "social" verbs)
+**same** (same phase/feeling) · **hold** (holding space, not fixing) · **hear you** (acknowledged) · **saved**. Counts **never ranked**; feed order phase + recency, **never engagement.** Echo Wall uses **"hold" as the only response.** Component: `GentleReactions`. _Source: component_library, community_v2, BRIEF §2._
+
+### 3.19 Export & Doctor handoff ties
+Journal mood/phase patterns (**excluding burns + sealed letters**) can feed the existing Doctor-Ready Diary (`generateDoctorReadyDiary`, NICE NG23-aligned, jsPDF A4). Related Today-page tracking (DRSP/PMDD daily severity, rage/mood granularity) also exports a GP PDF. Decide what journal content is eligible (likely mood/symptom-tagged reflections, never raw prose without explicit opt-in). **Cross-link = Phase 2; deeper synthesis = Phase 3.** _Source: BRIEF, sealed_letters_spec §9, research_first_feed, today_pillars._
+
+### 3.20 Crossovers (recovered — keep the journal aware of the rest of the app)
+- **Rituals ↔ Journal:** auto-infer "tend" events from entries ("had ginger tea" inferred) **only with explicit opt-in**; a "journal" ritual category; "one-line luteal journal" is itself a ritual; Jess's **season reflection** is "drafted from your Pulse + Journal · editable · **never shared**." The garden is private — "no share-your-garden feature, ever."
+- **Horoscope ↔ Journal:** **Sky Diary** (cycle×sky 12-cycle timeline, three-axis cycle+moon+chronotype overlay); **Sky-aware Smart Save on Journal** (deferred — depends on Lifestyle pipeline); **Void-of-Course Moon "VoC" pip** inside journal save actions ("the moon is void-of-course; finish old things, don't start new"); **Quiet Mode** shadow-language suppression (a tone control for journal-prompt voice); **Saturn Return Letter** (age 27–30 unlock — a sealed-letter-adjacent idea); **Moon Phase Diary** (lunar+cycle journal prompts — currently slotted to Lifestyle).
+- **Today ↔ Journal:** reflective stack **OnThisDay → Friend-6-Months → UnsealedLetter (past + future)**; affirmation story bubble; Mind pillar (gratitude/mood correlation + journaling-prompt suggestion).
+- **Daily Story ↔ Journal:** no feature crossover — but **shares the reading/craft engine** (§5.2) with the entry Reader and the Sealed-Letters reader.
+_Source: rituals/living_wisdom/today_pillars demos, horoscope_v2 specs, research_first_feed, daily_story_arc._
+
+### 3.21 Notifications, streaks & rhythm
+Gentle return nudges (morning prompt, dusk reflection, "a letter is ready") — **never streak shame.** Rhythm shows as **cycle-count dots**, not a fire streak (28-day dot-grid in Insights, demo-now). Respect Planner Quiet Mode / quiet hours. Notification scheduling = Phase 2+. **Owed copy fix:** reframe production "X-day streak" → "X entries this cycle — you're building a pattern." _Source: BRIEF §2 principle 8, STATUS item 0._
+
+### 3.22 Jess integration (observer, never companion)
+Jess curates the daily prompt, writes the Cycle Mirror gloss, generates the weekly insight, runs the on-device scrub + crisis intercept before any share, surfaces Living Wisdom, and offers **"unpack with Jess" only on invitation** — _"still locked, still yours."_ **Jess never reads an entry unless handed it.** All Jess LLM touches cost-bounded + cached + deterministic fallback. Prompt + gloss + weekly insight = **Phase 1**; scrub/intercept = with social phases. _Source: BRIEF §4, journal_demo._
+
+---
+
+## 4. PRODUCTION MIGRATION PLAN (Editorial demo → real `Journal.jsx`)
+
+### 4.1 Production today
+Utilitarian header · tabs `Journal | Insights` (`JournalInsightsTab` is the strong surface) · `JessJournalPrompt` wing · `JotterCard` sticky notes (historically emoji) · filter pills (no Affirmation) · Composer (type picker + form). **Missing:** Cycle Mirror, Sealed Letters, Tonight's Reflection, prompt carousel, Share-as-Echo, the social gradient. Already live to build on: cycle-phase unification (`09839c2`), Insights crash guard (`cda3e96`).
+
+### 4.2 Orphan files + "Now"-column cleanup (owed regardless)  *(STATUS item 0)*
+- **Three orphan files** named but unimported by the live route: `JournalEntrySheet.jsx`, `JournalEntryCard.jsx`, `JournalComposer.jsx` — **decide delete vs rewire.** Note: `JournalComposer` "has an LLM daily prompt + post-save reflection that the live `NewEntrySheet` lacks — worth keeping as the basis for Q1 work."
+- **Emoji strip:** `JotterCard` `TYPE_META` (✍️🙏💭✅🪞⚡🌙 → Lucide) and `NewEntrySheet` `MOOD_EMOJI` (😞😕😐🙂😊 → Lucide Frown/Meh/Smile).
+- **Affirmation filter pill** added.
+- **Header reframe:** → `LUTEAL · INNER AUTUMN · Day 9 of 12 — softness over speed`.
+- **Streak reframe:** "X-day streak" → "X entries this cycle."
+
+### 4.3 What the Editorial demo proves (the system to port)  *(JournalDemo1.jsx)*
+Palette `T`: paper `#E8E3D5`, paperHi `#F1ECDD`, paperDeep `#D6CDBA`, ink `#15110C`, inkSoft `#463E33`, muted `#8C8273`, gold `#B89A55`, **crimson `#C0322B` — the single colour pop**. Type roles: `SCRIPT` Allura (large voice), `HAND` Caveat (smaller voice/CTA), `SERIF` Cormorant/Fraunces (**all reading bodies**), `UI` Inter (chrome). `PRESS`/`PRESS_DARK` letterpress shadows. Real cotton-paper PNG multiplied over cream. Components: Masthead, JessNote, Mirror, InsightTeaser, Ledger, Tonight, SealedLetters, EchoComing, Footer, Composer (12 types, serif textarea, Burn), Reader, Insights modal.
+
+### 4.4 What replaces what
 | Production today | Becomes | How |
 |---|---|---|
-| Utilitarian header | **Masthead** | Phase as issue title + season + cycle day + date + one red heart + hairline rule. |
-| `JessJournalPrompt` card | **Jess's note + carousel** | Reuse the Feature-4 wing's data; re-skin to the journal voice; add 3–5 prompt carousel + "Write to this." |
-| _(none)_ | **Cycle Mirror** | New section; query same-cycle-day past entries; Jess gloss; "reply to past self." |
-| _(none)_ | **Insight teaser strip** | One line that opens the kept Insights tab. |
-| `JotterCard` sticky grid | **The Ledger** | Editorial TOC: hanging dates, type stripe, drop-initial on latest; tap → Reader. |
-| _(none)_ | **Tonight's Reflection** | Dusk card; coordinate with Planner `TonightCard`. |
-| _(none)_ | **Sealed Letters** locked card | Teaser now; vault in Phase 2 on the `SealedLetters` entity. |
-| _(none)_ | **Echo Wall "coming"** teaser | Single honest teaser; real surface Phase 3. |
-| _(none)_ | **Privacy footer** | "Locked to you. Always." + lock glyph. |
-| Filter pills (no Affirmation) | Filter pills **+ Affirmation** | Owed fix. |
-| Sticky-note emoji | Lucide/SVG only | Brand sweep (production may already be clean; verify). |
-| `JournalInsightsTab` | **kept**, lightly reskinned | Keep the deep tab; add the page teaser. |
-
-### 3.4 Routing & nav
-- Production route stays `/Journal` (the consumer page) with the `Journal | Insights` tab control. Composer + Reader are full-screen overlays (z-indexed), not routes, so the bottom nav stays consistent (one unified bottom nav, all viewports).
-- The Editorial demo at `/JournalDemo1` (`/Ideas`) **remains** as the reference/review surface until production sign-off, then can be retired or kept as the craft reference.
-- **Fonts in production:** the demo injects faces via a runtime `<link>`. In production, load Allura + Pinyon Script + Caveat + Cormorant Garamond through the app's existing font pipeline (the Fraunces/Inter loader) so there's no FOUT and no per-page injection. Keep ink near-black `#15110C`.
-
-### 3.5 Data & function dependencies to confirm/build
-- `JournalEntries`: confirm/add fields — `mode`, `thread`, `is_burn`/`burn_at`, `affirmation`, reliable `cycle_day` + `created_at` (backfill nulls).
-- `SealedLetters`: create per the existing schema spec (Phase 2).
-- Echo/Witness/Twin entities: Phase 3+.
-- Jess functions: reuse prompt wing; add Cycle-Mirror-gloss + weekly-insight (cost-bounded, cached, deterministic fallback). Confirm base44 schema changes go via the AI builder (schema viewer is read-only) — but **never type into the web editor for build points**; schema-only prompts, split per the prompt-size lesson.
-
----
-
-## 4. CRAFT BAR (the aesthetic standard)
-
-**Target feeling.** A private letterpress notebook on warm cotton paper, written in a human hand, with one small red heart. A reviewer should feel: _this is a private, beautiful place that remembers me_ — not "another notes app with a cycle tag."
-
-**Standards (Ms Atelier owns; Ms Verify gates every visual change against the reference IMG_9854 + this bar):**
-- **Paper.** Real textured cotton stock (the embedded PNG), multiplied over `#E8E3D5`, soft top-left light, edge vignette. No flat fills. No CSS-only noise as the final answer.
-- **Ink.** Near-true-black `#15110C`, **debossed** (PRESS/PRESS_DARK), so it reads pressed _into_ the paper.
-- **Type discipline.** SCRIPT (Allura) only for short large voiced moments (phase word, big pull-quote, the heart-line). HAND (Caveat) for smaller voice/accent/CTA lines. **All reading bodies stay SERIF** (Cormorant/Fraunces) at ~66 characters per line, line-height ≥1.5, reading column ≤~580px. Inter for chrome only. Script paragraphs are forbidden (beautiful but tiring).
-- **The red heart.** Crimson `#C0322B` is the **only** colour pop; appears only at emotional beats (Jess's signature, a "hold", a save). Scarcity makes it land.
-- **Reading craft ("the page is the screen").** Drop-cap on the latest/opened entry; `· · ·` ornaments; pull-quotes with thin rules; generous asymmetric margins; measured (not word-count) pagination; soft slide-fade page turns; `prefers-reduced-motion` respected. Optional reading themes: Cream `#FFFAF5`, Honey/sepia `#F5E6CD`, Plum Night `#2B1E26`.
-- **No emoji, ever** — Lucide + custom SVG (the hand-drawn `Heart`, `Lock`, `Moon`, `Feather`).
-
-**⚠ OPEN CRAFT PROBLEM — pen/ink depth not yet solved.** Across sessions d→f we iterated paper and ink three times (Allura hand → 4-layer paper → real-PNG paper + letterpress deboss), each Ms-Verify-approved against the reference, **but Halli is still not fully satisfied with the pen depth** (the sense of a real nib pressing ink into fibre). Treat letterpress/pen-depth as an **ongoing craft item**, not done. Every production pass on the journal voice should re-examine it; do not mark it "solved" without Halli's explicit sign-off on a phone live-walk.
-
----
-
-## 5. PHASED REVISION ROADMAP
-
-Each phase is independently shippable + verifiable (live-walk before "done"). Heavy iteration is expected within each phase; ship small, review on phone, iterate. **Every visual change: Ms Atelier crafts → Ms Verify checks vs reference/spec BEFORE ship.** Every landed commit gets a STATUS.md SHIP LOG line (commit + shipped/demo + bundle hash + verification).
-
-**Phase 0 — Scaffold the production page (shippable).**
-Port the Editorial shell onto production `Journal.jsx` behind the existing tab: Paper + Masthead + privacy Footer + the design tokens/fonts in the production font pipeline. Keep existing entries/Insights working underneath. _Exit:_ production `/Journal` renders the paper + masthead + footer, no regressions, fonts load with no FOUT. Pen-depth check #1.
-
-**Phase 1 — Solo core wired to real data (the big one; likely several sub-passes).**
-Ledger (real `JournalEntries`, null-safe sort) · Reader · Composer (Write mode, 12 types incl. **Affirmation filter fix**, type prompts) · Jess's note + carousel (reuse Feature-4 wing) · **Cycle Mirror "On This Day"** (the marquee wiring) · Tonight's Reflection · Insight teaser → kept Insights tab · emoji sweep. _Exit:_ a real user with cycle history sees her own past words mirrored; can write/read/list/delete; no crashes; phone live-walk + Ms Verify pass. Pen-depth check #2.
-
-**Phase 1b — Threads + Guided mode.**
-`thread` field + thread filter + thread as a Cycle Mirror lens; Guided composer scaffold. _Exit:_ threads filter the Ledger and lens the Mirror; Guided mode writes real entries.
-
-**Phase 2 — Sealed Letters v1 + Burn lifecycle + One-line/Voice + full-text search + Doctor cross-link.**
-Create `SealedLetters` entity (schema-only prompt first) → seal/vault/unseal + Today `UnsealedLetterCard`; Burn auto-delete lifecycle + cleanup job; One-line mode; Voice mode (on-device transcript); on-device full-text search; cross-link entries → Doctor-Ready Diary. _Exit:_ a sealed letter unlocks on trigger; a burn entry disappears on time; voice→transcript works or degrades gracefully. Pen-depth check #3.
-
-**Phase 3 — Echo Wall (Q2, first social step).**
-Anonymous phase-scoped one-liners; hold-only; ≤5/day; ~48h fade; **Jess scrub + crisis intercept** machinery; FLAG_SECURE; 3-strike. _Exit:_ a post is scrubbed, appears anonymously to same-phase users, fades, and crisis content is intercepted to UK resources.
-
-**Phase 4 — Witness (Q3).** One entry → one matched sister; 4 fixed responses or pass; cancel/open windows; no chat/screenshot.
-
-**Phase 5 — Phase Twin (Q4).** 12-day same-phase/life-stage pairing; one shared daily prompt; blurred-until-you-write; closes at next period.
-
-_(Paywall/Plus-tier gating is parked until the sale window per standing guidance — do not pre-build it into these phases.)_
-
----
-
-## 6. OPEN DECISIONS FOR HALLI (consolidated)
-
-The four earlier open questions plus everything surfaced building this spec. Each needs a yes/no or a pick.
-
-1. **Entry body font — serif or script?** Recommendation: **serif for reading, script/hand for voiced lines only** (script paragraphs are beautiful but tiring). Confirm prompts/quotes/phase-word are script/hand and the entries you _read back_ are elegant serif. _(Lead recommendation: confirm serif-for-reading.)_
-2. **Which display script?** Demo currently uses **Allura** (authentic connected pointed-pen) for the large voice + **Caveat** for smaller hand lines, after moving off Tangerine. Approve Allura+Caveat, or swap (Parisienne/Petit Formal Script were the earlier alternates).
-3. **Social tier in production now?** Default: a **single tasteful "Echo Wall — coming" teaser**, nothing deeper, until Phase 3. Confirm — or hide social entirely for an honestly-solo first ship.
-4. **Insights — tab or inline?** Recommendation: **keep the deep Insights tab**, add a one-line teaser on the page. Confirm (vs folding insights into the scroll).
-5. **Sealed Letters / Burn / Voice prominence.** Defaults: Burn = quiet option inside the Composer (not top-level); Sealed Letters = locked card → vault; Voice = "coming" until Phase 2. Confirm these stay understated, or raise any to a more prominent surface.
-6. **Tonight's Reflection home.** Planner already has a `TonightCard`. Should the dusk reflection live in the Journal, in the Planner, or both with a cross-link? (Avoid two competing "tonight" surfaces.)
-7. **Affirmation + emoji cleanup timing.** Fold the owed `Affirmation` filter fix + any remaining emoji sweep into Phase 0/1 of this build? _(Lead recommendation: yes, Phase 1.)_
-8. **Pen/ink depth — when is it "good enough"?** It's an open craft problem you're not yet satisfied with. Do we keep iterating it inside Phase 0/1, or freeze the current treatment and revisit before the sale demo? Need a phone live-walk sign-off to call it done.
-9. **Sealed Letters recovery story.** Client-side encryption keyed on time+phase means a lost device/key could mean lost letters. Pure-privacy (no recovery) vs a recoverable escrow — which side of the trade? (Affects Phase 2 design.)
-10. **Voice audio retention.** Store only the on-device transcript, or keep the audio blob (on-device only)? Privacy principle #1 leans transcript-only unless you want playback.
-11. **Demo retirement.** Once production sign-off lands, keep `/JournalDemo1` as the craft reference or retire it from `/Ideas`?
-
----
-
-_End of spec. Build per §5, confirm §6 with Halli first, gate every visual change through Ms Atelier → Ms Verify, and update STATUS.md per the baton rule on every landed commit._
+| Utilitarian header | **Masthead** | phase issue-title + season + cycle day + date + red heart + rule |
+| `JessJournalPrompt` | **Jess's note + carousel** | reuse wing data; reskin; add carousel + "Write to this" |
+| _(none)_ | **Cycle Mirror** | new; same-cycle-day query + 5 lenses + Jess gloss + pattern catalogue |
+| _(none)_ | **Insight teaser strip** | one line → kept Insights tab |
+| `JotterCard` grid | **The Ledger** | editorial TOC, drop-initial, tap → Reader |
+| _(none)_ | **Tonight's Reflection** | dusk card; coordinate with Planner `TonightCard` |
+| _(none)_ | **Sealed Letters** card | teaser now; vault Phase 2 (SecureStore) |
+| _(none)_ | **Share-as-Echo slot** | composer hand-off (Phase 3) |
+| _(none)_ | **Echo Wall "coming"** teaser | honest; 
