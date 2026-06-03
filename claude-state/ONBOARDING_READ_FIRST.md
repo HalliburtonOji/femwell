@@ -9,6 +9,7 @@ A UK women's wellness app — cycle / hormone / perimenopause-menopause tracking
 - **Cowork (desktop, this is usually where Halli talks to you):** planning, research, live-walks via Chrome, design demos, doc/baton upkeep, memory. Can deploy via the base44 deploy API.
 - **Code (CLI):** heavy code, base44 functions via `npx base44 exec`, schema work.
 - They coordinate **only** through `claude-state/STATUS.md`. Halli should never relay status between them.
+- **git push is the Code side's lane.** Cowork sandboxes often have NO git credentials — if `git push` fails with "could not read Username", that's expected: commit + export a patch (`git format-patch`) to the workspace and hand it to Code, who pushes. Cowork's lane is deploy-via-API + Chrome publish, not push.
 
 ## 3. Where state lives (and the anti-staleness rule)
 - **`claude-state/STATUS.md` top block = the single source of truth** for "where we are / what's next / what shipped." If anything else disagrees, STATUS wins.
