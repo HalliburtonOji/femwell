@@ -1,5 +1,16 @@
 # FemWell — STATUS (the shared baton) — SINGLE SOURCE OF TRUTH
 
+## ✅ DEPLOYED + LIVE 2026-06-03 (session c → shipped)
+- **origin/main = `30751cc`** (Code applied the 8 Cowork commits via `git am`, fast-forward from `2db4c0b`; SHAs recomputed, content/messages/order identical — original sandbox tip was `6fd9ef0`).
+- **Base44 synced to `30751cc`** (`last_git_commit_hash` confirmed) → **deploy API 200** → **live bundle flipped `index-CXIb5PJb.js` → `index-CoStN_6I.js`** on femwells.com.
+- **Verified live (grep of the live bundle):** Editorial demo present — `A publication of one` (1), `Locked to you. Always` (1), `The editing phase…` (2), `Tangerine` (1). `/ProgramsHub` link fix present (4); dead `/Programs` href gone. Phase-unification fix is in the same shipped tree (function name minified, so no string grep, but it's commit `09839c2` inside `30751cc`).
+- **What's live now:** the two bug fixes (cycle-phase unification on Today+Journal; Planner `/Programs`→`/ProgramsHub`), all 4 journal demos brand-swept, and **Demo 1 rebuilt to the Editorial direction** (cream paper + Tangerine script + red-heart accent) — at `/Ideas` (FoundersOS) → Journal Demos → Demo 1, or route `/JournalDemo1`. Production `Journal.jsx` untouched.
+- **Deploy path used:** push (Code, via GitHub) → `POST github/sync` (base44 auto-synced on push) → `POST deploy` (base44 token, Chrome) → bundle verified. Builder Publish click NOT needed (API flipped the bundle).
+- **Note:** the deploy/sync `fetch` promises wedged in the Chrome console but executed server-side; confirm via `last_git_commit_hash` / `last_deployed` GET and the live bundle hash, not the POST promise.
+- **THIS STATUS commit still needs Code to push** (Cowork sandbox has no push cred) so origin/main reflects the deploy record — it's in `femwell_session_2026-06-03.patch`.
+
+# FemWell — STATUS (the shared baton) — SINGLE SOURCE OF TRUTH
+
 ## UPDATE 2026-06-03 (session c) — Editorial journal build + deploy mechanics confirmed
 
 **Journal direction chosen = EDITORIAL.** Rebuilt `JournalDemo1` (FoundersOS /Ideas, demo-only — production `Journal.jsx` untouched) to the look-and-feel reference (cream textured paper, Tangerine script for the journal's voice, single red-heart accent). New sections: Masthead issue-title · Jess's note carousel · On-This-Day Cycle Mirror · week insight teaser · editorial Ledger w/ drop-initial · Tonight's Reflection dusk card · locked Sealed Letters · Echo-Wall "coming" teaser · "Locked to you. Always." footer. Commit `1bc9b7d`. Build + lint clean. Strategy docs in Cowork workspace: `journal_editorial/JOURNAL_BRIEF_everything_we_know.md`, `JOURNAL_GRAND_PLAN.md`. Phone preview: `journal_editorial/editorial_preview.html` (+ screenshots).
