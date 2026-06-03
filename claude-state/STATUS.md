@@ -1,5 +1,34 @@
 # FemWell — STATUS (the shared baton) — SINGLE SOURCE OF TRUTH
 
+## UPDATE 2026-06-03 (session b) — bug fixes + demo iteration (PATCH-READY, NOT YET DEPLOYED)
+
+> **PUSH BLOCKER:** this Cowork session's sandbox has NO git credentials (no token / gh / ssh — verified). The 4 commits below are committed locally and exported as a patch to the Cowork workspace (`femwell_session_2026-06-03.patch`). **They are NOT on origin/main and NOT deployed.** To land them: from a machine where git is authed to `HalliburtonOji/femwell` (i.e. the Code side), `git am < femwell_session_2026-06-03.patch` (or apply + commit), `git push`, then deploy via the API and record the new live bundle hash here per the BATON RULE. **Until pushed+deployed, live femwells.com is still bundle `CXIb5PJb` (HEAD `2db4c0b`).**
+
+### Commits this session (all build-clean, lint-clean, NOT deployed)
+| commit | shipped/demo | summary | verify |
+|--------|--------------|---------|--------|
+| `09839c2` | shipped(pending) | **fix(cycle): unify phase derivation onto computeCycleDay** — Today.jsx + Journal.jsx had their own divergent phase calcs (Today `*0.55`, Journal hard-coded day≤16) vs the canonical `useCycleDay`/`phaseForDay` (ovulatory ends floor(cycleLen*0.5)). Same day rendered different phases across screens. Both now delegate to `computeCycleDay`. | `npm run build` clean (`index-uotvBcx7`), 0 new lint |
+| `fc6a1bf` | shipped(pending) | **fix(planner): dead `/Programs` link → `/ProgramsHub`** — active-program card "Open" button 404'd. | build clean |
+| `50a8ff4` | demo | **Journal demos brand sweep** — removed all emoji/non-Lucide glyphs (✦→Sparkles, 🔥→Flame/SVG marker, ✏️→PenLine) from the 4 FoundersOS demos. Production Journal.jsx untouched. | build clean (`index-BCs-7tIv`), lint clean |
+| `7474a8c` | docs | baton refresh (this STATUS block + rules-only CLAUDE.md + ONBOARDING_READ_FIRST) | n/a |
+
+### Corrected diagnosis (supersedes the 2026-06-03 session-a live-walk note below)
+The phase/day discrepancy I reported earlier had the direction **backwards**. The **"Start my day" gate (MorningBriefSheet) was already CORRECT** — it uses the canonical `useCycleDay`, which returns **luteal** for day 15 (ovulatory ends at floor(cycleLen*0.5)=14). The divergent surfaces were **Today.jsx and Journal.jsx**, which had their own wider ovulatory windows (day 15 / day 16) and rendered "ovulatory" for the same day. Fixed in `09839c2` by routing both through `computeCycleDay`. Do **not** "fix" the gate.
+
+### Triage outcomes
+- ✅ FIXED (patch): phase/day inconsistency (the real correctness bug) — `09839c2`.
+- ✅ FIXED (patch): `/Programs` dead link 404 — `fc6a1bf`.
+- ✅ NOT A BUG — DELIBERATE: the **`/Ideas` (FoundersOS / "IDEAS" tab) being visible on production is INTENTIONAL while the app is in development.** Halli uses `/Ideas` as the single place to review and approve demos. Removed from the issues list. Do not "fix"/hide it.
+- ⏭️ SKIPPED (cosmetic/low-value): none outstanding worth shipping right now.
+
+### Still-open blockers (need Halli / Code)
+- **git push credentials** — Cowork sandbox can't push. Code side (authed git) must push the patch. This is expected: git push has historically been Code's lane; Cowork's lane is deploy-via-API + Chrome publish.
+- **auto-memory store is READ-ONLY this session** — mounted `ro` (FUSE) into the sandbox; the Write tool also can't reach it ("outside connected folders"). Neither bash nor Write can persist memory files. They're saved at `claude-state/memory_pending/` instead. Fix = the Cowork app must mount the space's `memory/` dir read-write (restart the session / report to Anthropic). The durable backbone meanwhile = these repo docs + the Cowork-workspace mirror.
+
+---
+
+# FemWell — STATUS (the shared baton) — SINGLE SOURCE OF TRUTH
+
 > **This file is the one authoritative answer to "where are we and what's next."**
 > Both Claudes (Cowork + Code) read this block FIRST on session start and update it after every ship.
 > Halli should never have to re-explain project state. If this block and any other doc disagree, THIS BLOCK WINS.
