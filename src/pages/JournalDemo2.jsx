@@ -2,6 +2,7 @@
 // The journal as a message thread between you and yourself across time.
 // iMessage-familiar interaction, journal-novel application.
 import { useState, useRef, useEffect } from "react";
+import { Sparkles, Flame } from "lucide-react";
 
 const T = {
   cream:    "#F4EDDB",
@@ -61,7 +62,7 @@ const THREAD = [
   { id: 4, kind: "user",  type: "burn",        body: "Things I'm not allowed to say out loud — even to myself.", time: "Wed 11:42pm", burn: true, burnIn: "6h 23m" },
   { id: 5, kind: "user",  type: "reflection",  body: "I keep editing myself before I speak. I don't think anyone asked me to.", time: "Today 9:42am" },
   { id: 6, kind: "jess",  body: "It's day 26. In your luteal phase. Last month on this day you wrote about feeling invisible.", time: "Today · On This Day", onThisDay: true },
-  { id: 7, kind: "jess",  body: "23 women in your phase wrote about boundaries this week. ✦", time: "Today · Community", community: true },
+  { id: 7, kind: "jess",  body: "23 women in your phase wrote about boundaries this week.", time: "Today · Community", community: true },
 ];
 
 function Avatar({ kind }) {
@@ -73,7 +74,7 @@ function Avatar({ kind }) {
         fontFamily: CORM, fontSize: 16, fontWeight: 700,
         display: "flex", alignItems: "center", justifyContent: "center",
         flexShrink: 0,
-      }}>✦</div>
+      }}><Sparkles size={14} /></div>
     );
   }
   return null;
@@ -123,7 +124,7 @@ function Bubble({ msg }) {
               <span style={{
                 position: "absolute", top: -6, right: -6,
                 fontSize: 16, lineHeight: 1,
-              }}>🔥</span>
+              }}><Flame size={13} style={{ display: "inline", verticalAlign: "-2px" }} /></span>
             )}
           </article>
           <div style={{
@@ -183,7 +184,7 @@ function PinnedInsightsBar({ expanded, onToggle }) {
           width: 18, height: 18, borderRadius: "50%",
           display: "inline-flex", alignItems: "center", justifyContent: "center",
           fontFamily: CORM, fontSize: 11, fontWeight: 700, flexShrink: 0,
-        }}>✦</span>
+        }}><Sparkles size={13} /></span>
         <div style={{
           flex: 1, fontFamily: UI, fontSize: 12.5, color: T.espresso, fontWeight: 600,
         }}>
@@ -268,7 +269,7 @@ function TypeSheet({ open, onClose, onPick, onBurn }) {
           border: `1px solid ${T.amber}`,
           borderRadius: 14, padding: "12px 14px",
           fontFamily: UI, fontSize: 13.5, fontWeight: 700, cursor: "pointer",
-        }}>🔥 Burn Mode — write knowing it will disappear</button>
+        }}><Flame size={13} style={{ display: "inline", verticalAlign: "-2px" }} /> Burn Mode — write knowing it will disappear</button>
       </div>
     </div>
   );
@@ -315,7 +316,7 @@ function ComposeBar({ type, burnOn, onPlus, onSendInit, onChange, value, onMicHo
           border: "none", cursor: "pointer",
           fontFamily: CORM, fontSize: 18, fontWeight: 700,
           display: "inline-flex", alignItems: "center", justifyContent: "center",
-        }}>✦</button>
+        }}><Sparkles size={13} /></button>
       </div>
     </div>
   );
@@ -336,7 +337,7 @@ function JessPromptBanner({ type, burnOn, onClose }) {
       padding: "10px 14px",
       display: "flex", alignItems: "flex-start", gap: 10,
     }}>
-      <span style={{ color: c, fontFamily: CORM, fontSize: 16, lineHeight: 1.2 }}>✦</span>
+      <span style={{ color: c, fontFamily: CORM, fontSize: 16, lineHeight: 1.2 }}><Sparkles size={13} /></span>
       <p style={{
         flex: 1, fontFamily: CORM, fontStyle: "italic", fontSize: 14.5,
         color: T.cream, lineHeight: 1.5, margin: 0,
@@ -358,7 +359,7 @@ function BurnTimerToast({ on, onClose }) {
       borderRadius: 9999, padding: "6px 14px",
       fontFamily: UI, fontSize: 12, fontWeight: 700, zIndex: 75,
       boxShadow: "0 6px 18px rgba(212,136,42,0.30)",
-    }} onClick={onClose}>🔥 Burns in 1h · tap to change</div>
+    }} onClick={onClose}><Flame size={12} style={{ display: "inline", verticalAlign: "-2px" }} /> Burns in 1h · tap to change</div>
   );
 }
 
@@ -405,7 +406,7 @@ export default function JournalDemo2() {
             background: T.gold, color: T.espresso,
             fontFamily: CORM, fontSize: 18, fontWeight: 700,
             display: "inline-flex", alignItems: "center", justifyContent: "center",
-          }}>✦</span>
+          }}><Sparkles size={13} /></span>
           <div>
             <div style={{ fontFamily: CORM, fontStyle: "italic", fontSize: 17, color: T.espresso, lineHeight: 1.2 }}>
               You & Jess

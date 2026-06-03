@@ -2,6 +2,7 @@
 // Entries plotted as dots on a 2D map: X = day of cycle, Y = mood.
 // Pan + zoom. Today pulses. Phase bands wash the background.
 import { useState, useRef } from "react";
+import { Sparkles, Flame, PenLine } from "lucide-react";
 
 const T = {
   cream:    "#F4EDDB",
@@ -202,7 +203,7 @@ function Dot({ e, onTap }) {
     <g style={{ cursor: "pointer" }} onClick={() => onTap(e)}>
       <circle cx={cx} cy={cy} r={r} fill={colour} opacity={0.78} />
       {e.burn && (
-        <text x={cx} y={cy + 3} textAnchor="middle" fontSize="9" fill={T.paperHi} fontFamily={UI} fontWeight="700">🔥</text>
+        <circle cx={cx} cy={cy} r="3.2" fill={T.paperHi} />
       )}
     </g>
   );
@@ -309,7 +310,7 @@ function PromptCard({ onWrite }) {
         background: T.gold, color: T.espresso, border: "none",
         borderRadius: 9999, padding: "7px 14px",
         fontFamily: UI, fontSize: 12.5, fontWeight: 700, cursor: "pointer",
-      }}>Write to this ✦</button>
+      }}>Write to this <Sparkles size={13} style={{ display: "inline", verticalAlign: "-2px" }} /></button>
     </div>
   );
 }
@@ -421,7 +422,7 @@ function Composer({ open, onClose }) {
             borderRadius: 9999, padding: "5px 12px",
             fontFamily: UI, fontSize: 12, fontWeight: 700, cursor: "pointer",
             whiteSpace: "nowrap",
-          }}>🔥 Burn</button>
+          }}><Flame size={13} style={{ display: "inline", verticalAlign: "-2px" }} /> Burn</button>
         </div>
 
         <p style={{
@@ -478,7 +479,7 @@ function Composer({ open, onClose }) {
           background: T.gold, color: T.espresso, border: "none",
           borderRadius: 9999, padding: "11px 18px",
           fontFamily: UI, fontSize: 14, fontWeight: 700, cursor: "pointer",
-        }}>Save entry · add to canvas ✦</button>
+        }}>Save entry · add to canvas <Sparkles size={13} style={{ display: "inline", verticalAlign: "-2px" }} /></button>
       </div>
     </div>
   );
@@ -593,7 +594,7 @@ export default function JournalDemo3() {
         background: T.gold, color: T.espresso, border: "none",
         boxShadow: "0 8px 22px rgba(212,175,55,0.45)",
         fontSize: 22, fontFamily: CORM, fontWeight: 700, cursor: "pointer",
-      }} aria-label="Write today">✏️</button>
+      }} aria-label="Write today"><PenLine size={18} /></button>
 
       {insOpen && <InsightsExpanded onClose={() => setInsOpen(false)} />}
       <Composer open={composer} onClose={() => setComposer(false)} />

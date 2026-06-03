@@ -3,6 +3,7 @@
 // pulse ring. Past entries fill segments with type colour. Centre = insights.
 // Only FemWell can do this — every other journal lacks cycle data.
 import { useState, useEffect } from "react";
+import { Sparkles, Flame } from "lucide-react";
 
 const T = {
   cream:    "#F4EDDB",
@@ -164,7 +165,7 @@ function Segment({ day, settle, onTap }) {
           const rMid = (R_INNER + R_OUTER) / 2;
           const [x, y] = polar(mid, rMid);
           return (
-            <text x={x} y={y + 4} textAnchor="middle" fontSize="10" fontFamily={UI}>🔥</text>
+            <circle cx={x} cy={y} r="3.2" fill={T.muted} />
           );
         })()
       )}
@@ -227,10 +228,10 @@ function WheelCentre({ onExpand }) {
       </text>
       <text x={CX} y={CY + 32} textAnchor="middle" fontFamily={UI} fontSize="9.5"
             fill={T.gold} style={{ letterSpacing: 1, textTransform: "uppercase" }}>
-        ✦ Jess
+        <Sparkles size={12} style={{ display: "inline", verticalAlign: "-1px" }} /> Jess
       </text>
       <text x={CX} y={CY + 48} textAnchor="middle" fontFamily={UI} fontSize="9"
-            fill={T.muted}>23 ✦ in luteal today</text>
+            fill={T.muted}>23 · in luteal today</text>
     </g>
   );
 }
@@ -279,7 +280,7 @@ function PromptCard({ onWrite }) {
           background: T.gold, color: T.espresso, border: "none",
           borderRadius: 9999, padding: "8px 16px",
           fontFamily: UI, fontSize: 13, fontWeight: 700, cursor: "pointer",
-        }}>Write to this ✦</button>
+        }}>Write to this <Sparkles size={13} style={{ display: "inline", verticalAlign: "-2px" }} /></button>
         <button onClick={() => setI(x => x + 1)} style={{
           background: "transparent", color: T.muted,
           border: `1px solid ${T.muted}`,
@@ -304,7 +305,7 @@ function CentreInsights({ open, onClose }) {
         borderRadius: 18, padding: "20px 22px 26px",
       }}>
         <div style={{ fontFamily: UI, fontSize: 11, color: T.gold, fontWeight: 700, letterSpacing: 1.4, marginBottom: 10, textTransform: "uppercase" }}>
-          ✦ The Cycle, Annotated
+          <Sparkles size={13} style={{ display: "inline", verticalAlign: "-2px" }} /> The Cycle, Annotated
         </div>
         {/* mini wheel reproduction */}
         <svg viewBox={`0 0 ${SIZE} ${SIZE}`} style={{ width: "100%", maxWidth: 280, display: "block", margin: "0 auto 14px" }}>
@@ -372,7 +373,7 @@ function SegmentDetail({ data, onClose, onWrite }) {
             </p>
             {entry.burn && (
               <div style={{ fontFamily: UI, fontSize: 11.5, color: T.amber, fontWeight: 700, marginBottom: 8 }}>
-                🔥 Burns in {entry.burnIn}
+                <Flame size={12} style={{ display: "inline", verticalAlign: "-2px" }} /> Burns in {entry.burnIn}
               </div>
             )}
             {isToday && <PromptCard onWrite={() => { onWrite(); onClose(); }} />}
@@ -386,7 +387,7 @@ function SegmentDetail({ data, onClose, onWrite }) {
               background: T.gold, color: T.espresso, border: "none",
               borderRadius: 9999, padding: "8px 16px",
               fontFamily: UI, fontSize: 13, fontWeight: 700, cursor: "pointer",
-            }}>Write for day {day} ✦</button>
+            }}>Write for day {day} <Sparkles size={13} style={{ display: "inline", verticalAlign: "-2px" }} /></button>
           </>
         )}
       </div>
@@ -440,7 +441,7 @@ function Composer({ open, onClose }) {
             borderRadius: 9999, padding: "5px 12px",
             fontFamily: UI, fontSize: 12, fontWeight: 700, cursor: "pointer",
             whiteSpace: "nowrap",
-          }}>🔥 Burn</button>
+          }}><Flame size={13} style={{ display: "inline", verticalAlign: "-2px" }} /> Burn</button>
         </div>
 
         <p style={{
@@ -479,7 +480,7 @@ function Composer({ open, onClose }) {
           background: T.gold, color: T.espresso, border: "none",
           borderRadius: 9999, padding: "11px 18px",
           fontFamily: UI, fontSize: 14, fontWeight: 700, cursor: "pointer",
-        }}>Save · fill segment ✦</button>
+        }}>Save · fill segment <Sparkles size={13} style={{ display: "inline", verticalAlign: "-2px" }} /></button>
       </div>
     </div>
   );
@@ -539,7 +540,7 @@ export default function JournalDemo4() {
           display: "flex", justifyContent: "space-between", gap: 10,
           fontFamily: UI, fontSize: 11, color: T.muted, padding: "0 6px",
         }}>
-          <span>✦ {MOCK.community}</span>
+          <span><Sparkles size={12} style={{ display: "inline", verticalAlign: "-1px" }} /> {MOCK.community}</span>
           <span>Dashed gold = last cycle echo</span>
         </div>
       </div>

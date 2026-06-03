@@ -1,6 +1,7 @@
 // JournalDemo1 — "Editorial" (dramatic serif, magazine layout)
 // Shared FemWell palette. Distinct via typography, layout, hierarchy.
 import { useState } from "react";
+import { Sparkles, Flame } from "lucide-react";
 
 const T = {
   cream:    "#F4EDDB",
@@ -123,7 +124,7 @@ function InsightsCard({ onExpand }) {
           fontFamily: CORM, fontStyle: "italic", fontSize: 18,
           color: T.espresso, margin: 0, lineHeight: 1.45, fontWeight: 400,
         }}>{MOCK.jessLine}</p>
-        <SmallCaps mb={0}>From Jess ✦</SmallCaps>
+        <SmallCaps mb={0}>From Jess <Sparkles size={11} style={{ display: "inline", verticalAlign: "-1px" }} /></SmallCaps>
       </div>
       <div style={{ display: "flex", gap: 6 }} aria-label="Writing rhythm">
         {MOCK.rhythm.slice(0, 5).map((on, i) => (
@@ -151,7 +152,7 @@ function InsightsExpanded({ onClose }) {
         padding: "40px 36px 36px", borderRadius: 4,
         boxShadow: "0 8px 40px rgba(58,44,26,0.18)",
       }}>
-        <SmallCaps mb={20}>From Jess ✦</SmallCaps>
+        <SmallCaps mb={20}>From Jess <Sparkles size={11} style={{ display: "inline", verticalAlign: "-1px" }} /></SmallCaps>
         <p style={{
           fontFamily: CORM, fontStyle: "italic", fontSize: 26,
           color: T.espresso, lineHeight: 1.45, margin: "0 0 26px", fontWeight: 400,
@@ -200,7 +201,7 @@ function PromptCard({ onWrite }) {
           background: "transparent", border: "none", cursor: "pointer",
           fontFamily: CORM, fontSize: 17, color: T.gold, fontStyle: "italic",
           padding: 0, borderBottom: `1px solid ${T.gold}`, paddingBottom: 2,
-        }}>Write to this ✦</button>
+        }}>Write to this <Sparkles size={13} style={{ display: "inline", verticalAlign: "-2px" }} /></button>
         <button onClick={() => setI(x => x + 1)} style={{
           background: "transparent", border: "none", cursor: "pointer",
           fontFamily: UI, fontSize: 13, color: T.muted, padding: 0,
@@ -231,7 +232,7 @@ function OnThisDayCard({ onReply }) {
         background: "transparent", border: "none", cursor: "pointer",
         fontFamily: CORM, fontSize: 16, color: T.gold, fontStyle: "italic",
         padding: 0, borderBottom: `1px solid ${T.gold}`, paddingBottom: 2,
-      }}>Reply to past self ✦</button>
+      }}>Reply to past self <Sparkles size={13} style={{ display: "inline", verticalAlign: "-2px" }} /></button>
     </div>
   );
 }
@@ -375,7 +376,7 @@ function Composer({ open, onClose, seedPrompt }) {
         <button style={{
           background: "transparent", border: "none", cursor: "pointer",
           fontFamily: UI, fontSize: 13, color: T.amber, padding: 0,
-        }}>✦ Burn this entry</button>
+        }}><Flame size={13} style={{ display: "inline", verticalAlign: "-2px" }} /> Burn this entry</button>
       </div>
     </div>
   );
@@ -431,7 +432,7 @@ export default function JournalDemo1() {
           background: "transparent", border: "none", cursor: "pointer",
           fontFamily: CORM, fontSize: 17, color: T.gold, fontStyle: "italic",
           padding: 0, borderBottom: `1px solid ${T.gold}`, paddingBottom: 2,
-        }}>+ Begin a new entry ✦</button>
+        }}>+ Begin a new entry <Sparkles size={13} style={{ display: "inline", verticalAlign: "-2px" }} /></button>
 
         <div style={{ marginTop: 48 }}>
           <InsightsCard onExpand={() => setInsOpen(true)} />
