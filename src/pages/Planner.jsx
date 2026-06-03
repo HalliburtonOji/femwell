@@ -1827,7 +1827,7 @@ export default function Planner() {
                       {activeProgram.total_days ? ` of ${activeProgram.total_days}` : ""}
                     </p>
                   </div>
-                  <a href="/Programs" style={programCtaStyle}>Open</a>
+                  <a href="/ProgramsHub" style={programCtaStyle}>Open</a>
                 </div>
                 {activeProgram.total_days && activeProgram.current_day && (
                   <div style={programProgressOuterStyle}>
