@@ -25,8 +25,8 @@ const T = {
   crimson:  "#BC2E27",   // THE heart — the single colour pop
   blush:    "#E8B4B8", sage: "#8FAF8F",
 };
-const SCRIPT = '"Allura","Pinyon Script",cursive';        // the journal's display voice — pointed-pen hand (large)
-const HAND   = '"Caveat","Allura",cursive';               // the journal's secondary hand — legible handwriting for smaller voice/accent lines
+const SCRIPT = '"Ephesis","Pinyon Script",cursive';        // display voice — MONOLINE roundhand matched to IMG_9854 (Ephesis: closest real web font)
+const HAND   = '"Parisienne","Ephesis",cursive';          // secondary hand — Parisienne, a companion monoline script (more legible than Ephesis at small sizes)
 const SERIF  = '"Cormorant Garamond","Fraunces",Georgia,serif'; // long-form reading bodies only
 const UI     = '"Inter",system-ui,sans-serif';            // editorial chrome (eyebrows, dates, type-picker)
 
@@ -146,13 +146,52 @@ function Carved({ family, weight, size, color = T.ink, lh = 1.2, ls = 0, blend =
     </span>
   );
 }
-function Script({ children, size = 40, color = T.ink, blend = "multiply", lip = CARVE_LIP, wall = CARVE_WALL, style }) {
-  // Display script (Allura): 400-weight only — never faux-bold. Carved + absorbed.
-  return <Carved family={SCRIPT} weight={400} size={size} lh={1.2} color={color} blend={blend} lip={lip} wall={wall} style={style}>{children}</Carved>;
+function Script({ children, size = 40, color = T.ink, carve = true, style }) {
+  // Display script (Ephesis monoline): 400 only. Pass-5 — REAL carved depth via an SVG
+  // lighting filter (url(#inkCarve)): the dark ink keeps its colour while feSpecularLighting
+  // + a flooded upper wall + feDisplacementMap give a matte groove whose highlight/shadow
+  // hug the actual stroke contours = ink physically pressed into the paper, not a flat shadow.
+  // On dark surfaces pass carve={false} (the deboss lighting is tuned for the light paper).
+  return (
+    <span style={{ fontFamily: SCRIPT, fontWeight: 400, fontSize: size, lineHeight: 1.2, color,
+      display: "block", filter: carve ? "url(#inkCarve)" : undefined,
+      textShadow: carve ? undefined : PRESS_DARK, ...style }}>{children}</span>
+  );
 }
 function Hand({ children, size = 20, color = T.ink, blend = "multiply", lip = CARVE_LIP, wall = CARVE_WALL, style }) {
   // Secondary handwriting (Caveat) for the smaller voice/accent lines — carved + absorbed too.
   return <Carved family={HAND} weight={500} size={size} lh={1.34} color={color} blend={blend} lip={lip} wall={wall} style={style}>{children}</Carved>;
+}
+
+
+// ── SVG carve filter — genuine "written-into-the-paper" relief for the display script ──
+// SourceAlpha -> blurred height field. feSpecularLighting (distant light from above-left)
+// gives a thin matte lower-lip catch-light that follows the stroke contour; a flooded,
+// upward-offset copy of the alpha paints the dark recessed upper wall; feDisplacementMap
+// against fractal noise roughens the stroke edges a hair so the ink reads soaked into the
+// paper fibre. The original dark ink (SourceGraphic) stays on top so colour is preserved.
+function InkFilter() {
+  return (
+    <svg width="0" height="0" style={{ position: "absolute", pointerEvents: "none" }} aria-hidden focusable="false">
+      <filter id="inkCarve" x="-30%" y="-30%" width="160%" height="160%" colorInterpolationFilters="sRGB">
+        <feTurbulence type="fractalNoise" baseFrequency="0.7 0.6" numOctaves="2" seed="4" result="noise" />
+        <feDisplacementMap in="SourceGraphic" in2="noise" scale="0.6" xChannelSelector="R" yChannelSelector="G" result="ink" />
+        <feGaussianBlur in="SourceAlpha" stdDeviation="0.7" result="bump" />
+        <feOffset in="bump" dx="0" dy="-1.1" result="up" />
+        <feFlood floodColor="#0b0805" floodOpacity="0.55" result="darkc" />
+        <feComposite in="darkc" in2="up" operator="in" result="wall" />
+        <feSpecularLighting in="bump" surfaceScale="1.6" specularConstant="0.4" specularExponent="42" lightingColor="#fcf7ed" result="spec">
+          <feDistantLight azimuth="258" elevation="48" />
+        </feSpecularLighting>
+        <feComposite in="spec" in2="SourceAlpha" operator="in" result="lip" />
+        <feMerge>
+          <feMergeNode in="wall" />
+          <feMergeNode in="ink" />
+          <feMergeNode in="lip" />
+        </feMerge>
+      </filter>
+    </svg>
+  );
 }
 
 // ── Masthead — the issue title ─────────────────────────────────────────────
@@ -282,7 +321,7 @@ function Tonight({ onWrite }) {
         <Moon size={14} style={{ color: T.blush }} />
         <Eyebrow color="#D3C3BB">Tonight's reflection · 90 seconds</Eyebrow>
       </div>
-      <Script size={30} color="#F6ECE0" blend="normal" lip="rgba(0,0,0,0)" wall={PRESS_DARK}>{MOCK.tonight}</Script>
+      <Script size={30} color="#F6ECE0" carve={false}>{MOCK.tonight}</Script>
       <button onClick={() => onWrite(MOCK.tonight)} style={{
         marginTop: 16, display: "inline-flex", alignItems: "center", gap: 6, background: "transparent",
         border: "none", cursor: "pointer", padding: 0, paddingBottom: 3,
@@ -423,7 +462,7 @@ export default function JournalDemo1() {
     if (document.getElementById(id)) return;
     const l = document.createElement("link");
     l.id = id; l.rel = "stylesheet";
-    l.href = "https://fonts.googleapis.com/css2?family=Allura&family=Pinyon+Script&family=Caveat:wght@400;500;600;700&family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,500;1,600&family=Inter:wght@400;600;700;800&display=swap";
+    l.href = "https://fonts.googleapis.com/css2?family=Ephesis&family=Parisienne&family=Pinyon+Script&family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,500;1,600&family=Inter:wght@400;600;700;800&display=swap";
     document.head.appendChild(l);
   }, []);
 
@@ -431,6 +470,7 @@ export default function JournalDemo1() {
   // mix-blend-mode ink can multiply into the paper grain beneath it.
   return (
     <div style={{ position: "relative", minHeight: "100vh", paddingBottom: 90, ...PAPER_BG }}>
+      <InkFilter />
       <div style={{ position: "relative", maxWidth: 680, margin: "0 auto", padding: "56px 30px 24px" }}>
         <Masthead onWrite={() => open()} />
         <JessNote onWrite={(p) => open(p)} />

@@ -4,6 +4,27 @@
 - **A. ALWAYS use the named agent roster** (`.claude/agents/*.md` + `TEAM.md`): Mr Lead Manager · Ms Deep Search · Ms Verify · Mr Fix-it · Ms Atelier (+ Mx Storyteller, Ms Accessibility, Mr Performance, Ms Data, Mr Tester, Ms Strategy; Mr Lucha paused). Dispatch by name on every relevant task; read the spec first. **Every visual change: Ms Atelier crafts → Ms Verify checks vs reference/spec BEFORE ship.**
 - **B. UPDATE STATUS.md CONSTANTLY** — immediately after every build/fix/ship (what changed + commit + bundle hash + verification), never batched to session end. State went stale before; this prevents Halli re-explaining.
 
+## UPDATE 2026-06-03 (session h) — Editorial pass 5: MATCHED font (Ephesis monoline) + REAL SVG carved depth (PATCH-READY, NOT DEPLOYED)
+
+> Base = origin/main **`cd0006b`** (pass-3: Allura + multiply embed + text-shadow carve), which Halli reviewed live as **IMG_9867** against the target **IMG_9854**. He asked to push two things further. Both done on `JournalDemo1.jsx` only (/Ideas demo; production `Journal.jsx` untouched).
+
+### 1. Matched the reference TYPEFACE (the prior Allura/Caveat "looked completely different")
+- **Key finding:** the reference (IMG_9854) is a **MONOLINE** roundhand — uniform stroke weight, no pointed-pen thick/thin contrast. Allura, Pinyon, Great Vibes, Petit Formal, Herr Von Muellerhoff are all CONTRAST scripts → fundamentally the wrong model. That mismatch was the real problem.
+- **Method:** rendered 15 candidates headless and compared letterforms side-by-side under a reference crop (`font_compare.png`/`font_compare2.png` in the Cowork workspace), then a finalist A/B (`ab.png`).
+- **Top candidates:** (1) **Ephesis** — monoline, refined, with the large open looped `y` descenders + long elegant `reason...` terminal that are the reference's most distinctive marks; (2) **Clicker Script** — monoline, more *upright + rounded*, arguably an equal match on stance; (3) Parisienne — monoline but faintly contrasted.
+- **Applied:** **SCRIPT = Ephesis** (display voice), **HAND = Parisienne** (secondary; more legible than Ephesis at small sizes). Honest ceiling: we can't perfectly clone an arbitrary hand sample, but this fixes the stroke model and is far closer than Allura. **Clicker Script is the one-line upright alternative** (`SCRIPT` const) if Halli prefers the more upright stance.
+- Dropped Allura/Caveat/Pinyon from the font-load; now loads Ephesis + Parisienne (+ Cormorant + Inter).
+
+### 2. REAL written-in depth via an SVG lighting filter (text-shadow had hit its ceiling)
+- New `InkFilter` (`<filter id="inkCarve">`) applied to the display script (`Script`): **feGaussianBlur(SourceAlpha)** -> height field; **feSpecularLighting + feDistantLight (az 258, el 48)** -> a thin matte lower-lip catch-light that follows the actual stroke contour; a **flooded, upward-offset alpha** paints the dark recessed upper wall; **feDisplacementMap** against fractal noise roughens stroke edges a hair (ink-into-fibre). Original dark **SourceGraphic** stays on top so ink colour is preserved (no metallic wash). Net: the script reads physically pressed/indented into the paper, with lighting that hugs the strokes — beyond any flat drop-shadow.
+- Tuned on a **headless render of the REAL component** (it only imports React + lucide-react, so it bundles standalone — `real_top.png`/`real_full.png`/`real_luteal2.png`), not a hand harness. Ms Verify caveat (faint metallic sheen on thick caps + hairline fuzz) addressed: specularConstant 0.5->0.4, surfaceScale 1.8->1.6, exponent 36->42, displacement 1->0.6.
+- Dark `Tonight` card passes `carve={false}` (the deboss lighting is tuned for the light paper; it keeps the PRESS_DARK letterpress there). `Hand` (secondary) keeps the pass-3 multiply+lip carve for legibility. Honest ceiling: CSS/SVG can't fully replicate real paper deformation/sub-surface scatter, but this is a clear realism step up.
+
+### Verification + status
+- **Ms Verify — APPROVE (3/3):** letterform match (monoline Ephesis clearly closer; Clicker noted as equal-or-closer alternative), depth realism (genuine carved relief, sheen tamed), legibility (labels + Parisienne CTAs readable, paper still light/calm).
+- **Build clean** (`inkCarve` + Ephesis + Parisienne present in the bundle), **eslint clean**, no emoji, reading bodies stay Cormorant serif.
+- **NOT deployed.** Patch-ready on `cd0006b`: **`femwell_craft5_2026-06-03.patch`** (JournalDemo1.jsx + this STATUS block; `git apply` clean on `cd0006b`). Halli deploys + records the new live bundle hash.
+
 ## UPDATE 2026-06-03 (session g) — Editorial pass 3: ink EMBEDDED in paper + carved deboss + legibility (PATCH-READY, NOT DEPLOYED)
 
 ### Ship-log bookkeeping the wedged session missed
