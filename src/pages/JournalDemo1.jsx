@@ -9,7 +9,7 @@
 // paper is lightened + calmed so the accent labels and secondary lines read clearly.
 // Brand-pure: no emoji, Lucide + custom SVG only. Demo-only mock data.
 import { useState, useEffect } from "react";
-import { Lock, Moon, ArrowRight, ChevronRight, Feather } from "lucide-react";
+import { Lock, Moon, ArrowRight, ChevronRight, Feather, Hash, Mic } from "lucide-react";
 
 // ── palette (brand cream + espresso; one restrained crimson for the heart) ──
 // Paper lifted lighter + cleaner toward the reference; secondary inks + accents
@@ -35,13 +35,9 @@ const UI     = '"Inter",system-ui,sans-serif';            // editorial chrome (e
 const PRESS      = "0 1px 0 rgba(255,253,247,0.9), 0 -1px 0 rgba(28,20,12,0.5), 0 2px 2px rgba(40,30,18,0.10)";
 const PRESS_DARK = "0 1px 1px rgba(0,0,0,0.55), 0 -1px 0 rgba(255,255,255,0.16)"; // light ink debossed into the dusk card
 
-// ── carve tokens for the BIG "voice" ink (Script/Hand) — used with mix-blend ──
-// CARVE_WALL: dark upper inner-wall shadow that SURVIVES multiply (multiply keeps darks)
-//             → the recessed top edge of the depression.
-// CARVE_LIP : colour of the duplicated lower-lip catch-light (screen-blended, offset down)
-//             → the lit bottom edge of the depression. Together = carved-in, not flat.
-const CARVE_WALL = "0 -0.6px 0 rgba(18,12,7,0.72), 0 1.5px 2px rgba(30,22,14,0.18)";
-const CARVE_LIP  = "rgba(255,254,249,0.95)";
+// ── pass-6 depth — pen pressed INTO the paper via the SVG #inkCarve / #inkCarveSm filters.
+// (research-led: inner-channel groove + lit burr + edge ink-pool + fibre bleed + outer
+//  paper-dent halo). Defined in <InkFilter/>. Script/Hand reference them by size.
 
 const MOCK = {
   phase: "Luteal", season: "Inner Autumn", cycleDay: 26, date: "Wednesday, 3 June",
@@ -53,12 +49,20 @@ const MOCK = {
   jessLine: "On cycle day 26 last month you wrote about feeling invisible. It is day 26 again — and you sound steadier.",
   weekLine: "You have written on 4 of the last 7 evenings. Your luteal entries lean honest.",
   community: "Five women in late luteal wrote one line each tonight.",
-  mirror: { text: "I felt invisible at the meeting. Like I had to make myself larger just to be heard. I am tired of it.", when: "Last cycle · Day 26" },
+  insight: {
+    weekly: "Your luteal entries this cycle lean honest and a little tired. You write most in the evenings, least mid-cycle. The word that keeps recurring is \"enough\".",
+    rhythm: [2, 1, 0, 3, 1, 2, 4], rhythmDays: ["M","T","W","T","F","S","S"],
+    tags: [["the hard stuff", 9], ["work", 7], ["rest", 5], ["mum", 4], ["body", 3]],
+    moodByPhase: [["Menstrual", 0.42], ["Follicular", 0.8], ["Ovulatory", 0.84], ["Luteal", 0.55]],
+  },
+  mirror: { text: "I felt invisible at the meeting. Like I had to make myself larger just to be heard. I am tired of it.", when: "Last cycle · Day 26",
+    gloss: "You wrote almost this line on Day 26 last cycle too. Your body keeps its own calendar — this is the luteal edit, not a verdict on you.",
+    more: 2, lenses: "same phase · one year ago" },
   tonight: "Before the day closes — name one thing today asked of you, and one thing you gave it.",
   sealed: { count: 2, next: "opens at your next follicular" },
   entries: [
-    { id: 1, type: "Reflection", body: "Today I noticed I keep editing myself before I speak. I do not think anyone asked me to.", date: "Today · 9:42", drop: true },
-    { id: 2, type: "Work",       body: "The deadline shifted again. I am not sure how to plan around this much uncertainty.", date: "Yesterday" },
+    { id: 1, type: "Reflection", body: "Today I noticed I keep editing myself before I speak. I do not think anyone asked me to.", date: "Today · 9:42", drop: true, thread: "The hard stuff" },
+    { id: 2, type: "Work",       body: "The deadline shifted again. I am not sure how to plan around this much uncertainty.", date: "Yesterday", thread: "Work" },
     { id: 3, type: "Burn",       body: "Things I am not allowed to say out loud — even to myself.", date: "2 days ago · burns in 4h", burn: true },
     { id: 4, type: "Joy",        body: "The coffee this morning. The exact angle of the sunlight on the table.", date: "3 days ago" },
     { id: 5, type: "Gratitude",  body: "Mum called for no reason. Just to say hello.", date: "4 days ago" },
@@ -73,6 +77,8 @@ const TYPE_COLOUR = {
   Creative: "#A56A18", Grief: "#6E5F4A", Identity: "#54407F", "Free write": "#2A2118",
 };
 const ENTRY_TYPES = ["Free write","Reflection","Gratitude","Mood","Work","Relationships","Money","Creative","Grief","Joy","Identity","Affirmation"];
+const THREADS = ["The hard stuff", "Work", "Money", "Mum", "Sleep", "Body", "Joy"];
+const COMPOSE_MODES = ["Write", "Guided", "One-line", "Voice"];
 const TYPE_PROMPTS = {
   "Free write": "Write freely.",
   Reflection: "What went well? What would you do differently?",
@@ -130,6 +136,17 @@ function Rule({ w = "100%", c = T.paperDeep, mt = 0, mb = 0 }) {
   return <div style={{ width: w, height: 1, background: c, marginTop: mt, marginBottom: mb }} />;
 }
 
+function Chip({ active, onClick, children }) {
+  return (
+    <button onClick={onClick} disabled={!onClick} style={{
+      background: active ? T.ink : "transparent", color: active ? T.paper : T.muted,
+      border: `1px solid ${active ? T.ink : T.paperDeep}`, borderRadius: 999, padding: "4px 11px",
+      fontFamily: UI, fontSize: 10.5, fontWeight: 700, letterSpacing: 0.6, textTransform: "uppercase",
+      cursor: onClick ? "pointer" : "default", lineHeight: 1.4,
+    }}>{children}</button>
+  );
+}
+
 // ── Carved ink: ink absorbed INTO the paper + pressed into it ───────────────
 // Two stacked copies of the glyphs:
 //  · a pale lower-lip catch-light (screen, offset +0.8px) = the lit bottom edge
@@ -137,32 +154,30 @@ function Rule({ w = "100%", c = T.paperDeep, mt = 0, mb = 0 }) {
 //  · the ink itself (mix-blend multiply) = soaks into the paper grain so the
 //    texture shows THROUGH the strokes, with a dark upper inner-wall shadow.
 // On dark surfaces pass blend="normal" + a dark lip so light ink stays light.
-function Carved({ family, weight, size, color = T.ink, lh = 1.2, ls = 0, blend = "multiply", lip = CARVE_LIP, wall = CARVE_WALL, style, children }) {
-  const glyph = { fontFamily: family, fontWeight: weight, fontSize: size, lineHeight: lh, letterSpacing: ls, margin: 0 };
-  return (
-    <span style={{ position: "relative", display: "block", ...style }}>
-      <span aria-hidden style={{ ...glyph, position: "absolute", left: 0, right: 0, top: 0, transform: "translateY(1px)", color: lip, mixBlendMode: "screen", pointerEvents: "none", userSelect: "none" }}>{children}</span>
-      <span style={{ ...glyph, position: "relative", display: "block", color, mixBlendMode: blend, textShadow: wall }}>{children}</span>
-    </span>
-  );
+// Pick the carve filter by size: big display gets the paper-dent halo (#inkCarve);
+// smaller voice lines get the crisper channel filter (#inkCarveSm). carve=false = none.
+function carveFilter(size, carve) {
+  if (!carve) return undefined;
+  return size >= 46 ? "url(#inkCarve)" : "url(#inkCarveSm)";
 }
+// Display script (Ephesis monoline). Pass-6: depth comes entirely from the SVG carve filter
+// — a real groove (inner-channel shadow) + lit burr + edge ink-pool + fibre bleed, plus an
+// outer paper-dent halo on the large sizes so the PAPER reads indented around the strokes.
 function Script({ children, size = 40, color = T.ink, carve = true, style }) {
-  // Display script (Ephesis monoline): 400 only. Pass-5 — REAL carved depth via an SVG
-  // lighting filter (url(#inkCarve)): the dark ink keeps its colour while feSpecularLighting
-  // + a flooded upper wall + feDisplacementMap give a matte groove whose highlight/shadow
-  // hug the actual stroke contours = ink physically pressed into the paper, not a flat shadow.
-  // On dark surfaces pass carve={false} (the deboss lighting is tuned for the light paper).
   return (
     <span style={{ fontFamily: SCRIPT, fontWeight: 400, fontSize: size, lineHeight: 1.2, color,
-      display: "block", filter: carve ? "url(#inkCarve)" : undefined,
+      display: "block", filter: carveFilter(size, carve),
       textShadow: carve ? undefined : PRESS_DARK, ...style }}>{children}</span>
   );
 }
-function Hand({ children, size = 20, color = T.ink, blend = "multiply", lip = CARVE_LIP, wall = CARVE_WALL, style }) {
-  // Secondary handwriting (Caveat) for the smaller voice/accent lines — carved + absorbed too.
-  return <Carved family={HAND} weight={500} size={size} lh={1.34} color={color} blend={blend} lip={lip} wall={wall} style={style}>{children}</Carved>;
+// Secondary hand (Parisienne). Same pressed-in treatment via the small carve filter so the
+// whole "voice" reads as ink on paper, not print. Pass carve={false} for muted-grey lines.
+function Hand({ children, size = 20, color = T.ink, carve = true, style }) {
+  return (
+    <span style={{ fontFamily: HAND, fontWeight: 500, fontSize: size, lineHeight: 1.34, color,
+      display: "block", filter: carve ? "url(#inkCarveSm)" : undefined, ...style }}>{children}</span>
+  );
 }
-
 
 // ── SVG carve filter — genuine "written-into-the-paper" relief for the display script ──
 // SourceAlpha -> blurred height field. feSpecularLighting (distant light from above-left)
@@ -171,29 +186,67 @@ function Hand({ children, size = 20, color = T.ink, blend = "multiply", lip = CA
 // against fractal noise roughens the stroke edges a hair so the ink reads soaked into the
 // paper fibre. The original dark ink (SourceGraphic) stays on top so colour is preserved.
 function InkFilter() {
+  // Two carved-ink filters (pass-6, research-led — Ms Deep Search). Pipeline per filter:
+  //  · feTurbulence + feDisplacementMap  -> ink edges bleed a hair into the paper fibre
+  //  · feMorphology(erode)+composite(out) -> a thin INNER perimeter band darkened = ink POOLING at the stroke edge
+  //  · SourceAlpha offset DOWN, blur, composite(out) vs alpha -> dark band on the TOP inner wall = the GROOVE shadow (lit from above)
+  //  · SourceAlpha offset UP, composite(out) -> light band on the BOTTOM inner edge = the raised BURR catch-light
+  //  · (#inkCarve only) blurred+offset alpha flooded dark OUTSIDE the glyph = the paper DENTING/sinking around the stroke,
+  //    plus a thin bright outer ring = the raised paper lip. So the PAPER itself reads pressed-in, not just the ink.
+  // The original dark ink (SourceGraphic, fibre-displaced) stays on top so colour is preserved (no metallic wash).
+  const channel = (
+    <>
+      <feTurbulence type="fractalNoise" baseFrequency="0.6 0.55" numOctaves="2" seed="4" result="nz" />
+      <feDisplacementMap in="SourceGraphic" in2="nz" scale="0.6" xChannelSelector="R" yChannelSelector="G" result="ink" />
+      <feMorphology in="SourceAlpha" operator="erode" radius="0.7" result="ero" />
+      <feComposite in="SourceAlpha" in2="ero" operator="out" result="ringIn" />
+      <feFlood floodColor="#000000" floodOpacity="0.42" result="pc" />
+      <feComposite in="pc" in2="ringIn" operator="in" result="pool" />
+      <feOffset in="SourceAlpha" dx="0" dy="1.4" result="d1" />
+      <feGaussianBlur in="d1" stdDeviation="1" result="d1b" />
+      <feComposite in="SourceAlpha" in2="d1b" operator="out" result="topband" />
+      <feFlood floodColor="#000000" floodOpacity="0.6" result="gc" />
+      <feComposite in="gc" in2="topband" operator="in" result="groove" />
+      <feOffset in="SourceAlpha" dx="0" dy="-1.2" result="u1" />
+      <feGaussianBlur in="u1" stdDeviation="0.7" result="u1b" />
+      <feComposite in="SourceAlpha" in2="u1b" operator="out" result="botband" />
+      <feFlood floodColor="#fff8ec" floodOpacity="0.72" result="bc" />
+      <feComposite in="bc" in2="botband" operator="in" result="burr" />
+    </>
+  );
   return (
     <svg width="0" height="0" style={{ position: "absolute", pointerEvents: "none" }} aria-hidden focusable="false">
-      <filter id="inkCarve" x="-30%" y="-30%" width="160%" height="160%" colorInterpolationFilters="sRGB">
-        <feTurbulence type="fractalNoise" baseFrequency="0.7 0.6" numOctaves="2" seed="4" result="noise" />
-        <feDisplacementMap in="SourceGraphic" in2="noise" scale="0.6" xChannelSelector="R" yChannelSelector="G" result="ink" />
-        <feGaussianBlur in="SourceAlpha" stdDeviation="0.7" result="bump" />
-        <feOffset in="bump" dx="0" dy="-1.1" result="up" />
-        <feFlood floodColor="#0b0805" floodOpacity="0.55" result="darkc" />
-        <feComposite in="darkc" in2="up" operator="in" result="wall" />
-        <feSpecularLighting in="bump" surfaceScale="1.6" specularConstant="0.4" specularExponent="42" lightingColor="#fcf7ed" result="spec">
-          <feDistantLight azimuth="258" elevation="48" />
-        </feSpecularLighting>
-        <feComposite in="spec" in2="SourceAlpha" operator="in" result="lip" />
+      {/* large display — includes the outer paper-dent halo + raised paper lip */}
+      <filter id="inkCarve" x="-45%" y="-45%" width="190%" height="190%" colorInterpolationFilters="sRGB">
+        {/* SYMMETRIC paper-dent: a soft dark ring hugging the stroke on ALL sides (no directional
+            offset) = the paper sloping down into the groove around the pen line, not a drop-shadow. */}
+        <feMorphology in="SourceAlpha" operator="dilate" radius="1.6" result="grown" />
+        <feGaussianBlur in="grown" stdDeviation="1.7" result="grownB" />
+        <feComposite in="grownB" in2="SourceAlpha" operator="out" result="ringSym" />
+        <feFlood floodColor="#2a2014" floodOpacity="0.16" result="dc" />
+        <feComposite in="dc" in2="ringSym" operator="in" result="dent" />
+        {/* a thin raised paper lip just outside the edge catching light (symmetric, tight) */}
+        <feMorphology in="SourceAlpha" operator="dilate" radius="0.9" result="dl" />
+        <feComposite in="dl" in2="SourceAlpha" operator="out" result="outring" />
+        <feGaussianBlur in="outring" stdDeviation="0.4" result="lipB" />
+        <feFlood floodColor="#fffdf6" floodOpacity="0.42" result="lc" />
+        <feComposite in="lc" in2="lipB" operator="in" result="plip" />
+        {channel}
         <feMerge>
-          <feMergeNode in="wall" />
-          <feMergeNode in="ink" />
-          <feMergeNode in="lip" />
+          <feMergeNode in="dent" /><feMergeNode in="plip" />
+          <feMergeNode in="ink" /><feMergeNode in="pool" /><feMergeNode in="groove" /><feMergeNode in="burr" />
+        </feMerge>
+      </filter>
+      {/* smaller voice lines — crisper, no outer halo */}
+      <filter id="inkCarveSm" x="-35%" y="-35%" width="170%" height="170%" colorInterpolationFilters="sRGB">
+        {channel}
+        <feMerge>
+          <feMergeNode in="ink" /><feMergeNode in="pool" /><feMergeNode in="groove" /><feMergeNode in="burr" />
         </feMerge>
       </filter>
     </svg>
   );
 }
-
 // ── Masthead — the issue title ─────────────────────────────────────────────
 function Masthead({ onWrite }) {
   return (
@@ -256,16 +309,25 @@ function Mirror({ onReply }) {
       <div aria-hidden style={{ position: "absolute", top: 2, left: 16, fontFamily: SERIF, fontSize: 110, color: T.gold, opacity: 0.16, lineHeight: 1, fontWeight: 600 }}>&ldquo;</div>
       <Eyebrow mb={8}>On this day · {MOCK.mirror.when}</Eyebrow>
       <Rule w={28} c={T.gold} mb={14} />
-      <Hand size={25} color={T.ink} style={{ margin: "0 0 18px", position: "relative" }}>{MOCK.mirror.text}</Hand>
-      <button onClick={onReply} style={{
-        display: "inline-flex", alignItems: "center", gap: 6, background: "transparent",
-        border: "none", cursor: "pointer", padding: 0, paddingBottom: 3,
-        fontFamily: HAND, fontWeight: 600, fontSize: 19, color: T.ink, textShadow: PRESS, borderBottom: `1px solid ${T.gold}`,
-      }}>Reply to who you were <ArrowRight size={13} /></button>
+      <Hand size={25} color={T.ink} style={{ margin: "0 0 16px", position: "relative" }}>{MOCK.mirror.text}</Hand>
+      {/* Jess's gloss — the observation that makes the mirror the moat */}
+      <div style={{ display: "flex", gap: 9, alignItems: "flex-start", marginBottom: 18, paddingLeft: 12, borderLeft: `2px solid ${T.gold}` }}>
+        <Heart size={13} style={{ marginTop: 4, flexShrink: 0 }} />
+        <Hand size={18} color={T.inkSoft}>{MOCK.mirror.gloss}</Hand>
+      </div>
+      <div style={{ display: "flex", alignItems: "center", gap: 14, flexWrap: "wrap" }}>
+        <button onClick={onReply} style={{
+          display: "inline-flex", alignItems: "center", gap: 6, background: "transparent",
+          border: "none", cursor: "pointer", padding: 0, paddingBottom: 3,
+          fontFamily: HAND, fontWeight: 600, fontSize: 19, color: T.ink, textShadow: PRESS, borderBottom: `1px solid ${T.gold}`,
+        }}>Reply to who you were <ArrowRight size={13} /></button>
+        <span style={{ fontFamily: UI, fontSize: 11, color: T.muted, letterSpacing: 0.4, fontWeight: 600 }}>
+          {MOCK.mirror.more} more from Day {MOCK.cycleDay} · {MOCK.mirror.lenses}
+        </span>
+      </div>
     </section>
   );
 }
-
 // ── A line from the week — insight teaser → opens Insights ─────────────────
 function InsightTeaser({ onOpen }) {
   return (
@@ -305,6 +367,11 @@ function Ledger({ onTap }) {
                 {e.drop ? <span style={{ float: "left", fontFamily: SERIF, fontSize: 52, lineHeight: 0.82, fontWeight: 600, color: T.gold, margin: "4px 10px 0 0" }}>{e.body.charAt(0)}</span> : null}
                 {e.drop ? e.body.slice(1) : e.body}
               </p>
+              {e.thread && (
+                <div style={{ display: "inline-flex", alignItems: "center", gap: 5, marginTop: 9, fontFamily: UI, fontSize: 10, fontWeight: 700, letterSpacing: 0.8, textTransform: "uppercase", color: T.muted }}>
+                  <Hash size={10} style={{ color: T.gold }} /> {e.thread}
+                </div>
+              )}
             </div>
           </article>
         );
@@ -373,18 +440,47 @@ function Footer() {
 // ── Composer (full-screen) ─────────────────────────────────────────────────
 function Composer({ open, onClose, seed }) {
   const [type, setType] = useState("Reflection");
+  const [mode, setMode] = useState("Write");
+  const [thread, setThread] = useState(null);
   const [text, setText] = useState("");
   if (!open) return null;
   const prompt = seed || TYPE_PROMPTS[type] || MOCK.prompts[0];
+  const oneLine = mode === "One-line";
+  const voice = mode === "Voice";
   return (
     <div style={{ position: "fixed", inset: 0, zIndex: 90, ...PAPER_BG, padding: "30px 28px 40px", overflowY: "auto" }}>
       <div style={{ maxWidth: 620, margin: "0 auto" }}>
-        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 24 }}>
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 16 }}>
           <Eyebrow>A new entry</Eyebrow>
           <button onClick={onClose} style={{ background: "transparent", border: "none", cursor: "pointer", fontFamily: UI, fontSize: 13, color: T.muted, fontWeight: 600 }}>Close</button>
         </div>
-        <Script size={46} style={{ marginBottom: 22 }}>{type}</Script>
-        <div style={{ display: "flex", gap: 16, flexWrap: "wrap", marginBottom: 24 }}>
+        <Script size={46} style={{ marginBottom: 14 }}>{type}</Script>
+
+        {/* compose modes — Write · Guided · One-line · Voice(coming) */}
+        <div style={{ display: "flex", gap: 16, marginBottom: 16, flexWrap: "wrap", alignItems: "center" }}>
+          {COMPOSE_MODES.map((m) => {
+            const coming = m === "Voice";
+            const on = m === mode;
+            return (
+              <button key={m} disabled={coming} onClick={() => !coming && setMode(m)} style={{
+                background: "transparent", border: "none", padding: "0 0 2px", cursor: coming ? "default" : "pointer",
+                fontFamily: UI, fontSize: 12.5, letterSpacing: 0.4, display: "inline-flex", alignItems: "center", gap: 5,
+                color: coming ? T.muted : (on ? T.ink : T.muted), opacity: coming ? 0.55 : 1,
+                fontWeight: on ? 800 : 600, borderBottom: on ? `1px solid ${T.gold}` : "none",
+              }}>{m === "Voice" && <Mic size={12} />}{m}{coming ? " · coming" : ""}</button>
+            );
+          })}
+        </div>
+
+        {/* metadata chips — phase · cycle day · thread (every entry is tagged at write time) */}
+        <div style={{ display: "flex", gap: 7, flexWrap: "wrap", alignItems: "center", marginBottom: 8 }}>
+          <Chip>{MOCK.phase} · Day {MOCK.cycleDay}</Chip>
+          <span style={{ fontFamily: UI, fontSize: 10, fontWeight: 700, letterSpacing: 0.8, textTransform: "uppercase", color: T.muted, marginLeft: 4 }}>Thread</span>
+          {THREADS.map((th) => (
+            <Chip key={th} active={thread === th} onClick={() => setThread(thread === th ? null : th)}>{th}</Chip>
+          ))}
+        </div>
+        <div style={{ display: "flex", flexWrap: "wrap", gap: 10, marginBottom: 22 }}>
           {ENTRY_TYPES.map((t) => (
             <button key={t} onClick={() => setType(t)} style={{
               background: "transparent", border: "none", cursor: "pointer", padding: 0, paddingBottom: 2,
@@ -394,23 +490,37 @@ function Composer({ open, onClose, seed }) {
             }}>{t}</button>
           ))}
         </div>
+
+        {/* the prompt — read out loud in Guided mode */}
         <div style={{ paddingLeft: 16, borderLeft: `1px solid ${T.gold}`, marginBottom: 22 }}>
+          {mode === "Guided" && <Eyebrow mb={6}>Guided · Jess walks you through it</Eyebrow>}
           <Hand size={22} color={T.inkSoft}>{prompt}</Hand>
         </div>
-        <textarea value={text} onChange={(e) => setText(e.target.value)} placeholder="Begin…" style={{
-          width: "100%", minHeight: 300, background: T.paperHi, border: "none", padding: "20px 22px", borderRadius: 3,
-          resize: "none", fontFamily: SERIF, fontSize: 21, lineHeight: 1.6, color: T.ink, outline: "none",
-          boxShadow: "0 0 0 1px rgba(51,41,28,0.05)",
-        }} />
+
+        {voice ? (
+          <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 12, background: T.paperHi, borderRadius: 3, padding: "40px 22px", boxShadow: "0 0 0 1px rgba(51,41,28,0.05)" }}>
+            <div style={{ width: 54, height: 54, borderRadius: "50%", display: "flex", alignItems: "center", justifyContent: "center", background: "#EFE3C9", border: `1px solid ${T.gold}` }}><Mic size={22} style={{ color: T.gold }} /></div>
+            <Hand size={20} color={T.inkSoft} style={{ textAlign: "center" }}>Voice journaling is coming. Speak your entry; Jess transcribes it on-device — nothing leaves your phone.</Hand>
+          </div>
+        ) : (
+          <textarea value={text} onChange={(e) => setText(e.target.value)} placeholder={oneLine ? "One line — just the truth of today." : "Begin…"} style={{
+            width: "100%", minHeight: oneLine ? 70 : 300, background: T.paperHi, border: "none", padding: "20px 22px", borderRadius: 3,
+            resize: "none", fontFamily: SERIF, fontSize: 21, lineHeight: 1.6, color: T.ink, outline: "none",
+            boxShadow: "0 0 0 1px rgba(51,41,28,0.05)",
+          }} />
+        )}
+
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginTop: 26 }}>
           <button onClick={onClose} style={{ background: "transparent", border: `1px solid ${T.gold}`, padding: "11px 26px", cursor: "pointer", fontFamily: HAND, fontWeight: 600, fontSize: 19, color: T.ink, textShadow: PRESS, borderRadius: 3 }}>Save entry</button>
           <button style={{ display: "inline-flex", alignItems: "center", gap: 6, background: "transparent", border: "none", cursor: "pointer", padding: 0, fontFamily: UI, fontSize: 12.5, color: T.crimson, letterSpacing: 0.4, fontWeight: 600 }}><Moon size={13} /> Burn this entry</button>
+        </div>
+        <div style={{ display: "inline-flex", alignItems: "center", gap: 6, marginTop: 18, fontFamily: UI, fontSize: 10.5, color: T.muted, letterSpacing: 0.6, fontWeight: 600 }}>
+          <Lock size={11} /> Encrypted on this device. Jess reads it only if you hand it to her.
         </div>
       </div>
     </div>
   );
 }
-
 // ── Entry reader — page is the screen ──────────────────────────────────────
 function Reader({ entry, onClose }) {
   if (!entry) return null;
@@ -430,24 +540,71 @@ function Reader({ entry, onClose }) {
 function Insights({ open, onClose }) {
   if (!open) return null;
   const wrote = [1,3,5,12,14,17,21,23,24,26];
+  const I = MOCK.insight;
+  const maxR = Math.max(...I.rhythm);
   return (
-    <div onClick={onClose} style={{ position: "fixed", inset: 0, zIndex: 80, background: "rgba(51,41,28,0.42)", display: "flex", alignItems: "center", justifyContent: "center", padding: "0 22px" }}>
-      <div onClick={(e) => e.stopPropagation()} style={{ background: T.paperHi, width: "100%", maxWidth: 580, padding: "38px 34px 34px", borderRadius: 3, boxShadow: "0 8px 40px rgba(51,41,28,0.20)" }}>
-        <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 18 }}><Heart size={14} /><Eyebrow>From Jess</Eyebrow></div>
-        <Hand size={27} color={T.ink} style={{ margin: "0 0 24px" }}>{MOCK.jessLine}</Hand>
+    <div onClick={onClose} style={{ position: "fixed", inset: 0, zIndex: 80, background: "rgba(51,41,28,0.42)", display: "flex", alignItems: "center", justifyContent: "center", padding: "26px 22px", overflowY: "auto" }}>
+      <div onClick={(e) => e.stopPropagation()} style={{ background: T.paperHi, width: "100%", maxWidth: 580, padding: "34px 34px 30px", borderRadius: 3, boxShadow: "0 8px 40px rgba(51,41,28,0.20)", maxHeight: "92vh", overflowY: "auto" }}>
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 18 }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 8 }}><Heart size={14} /><Eyebrow>Insights · From Jess</Eyebrow></div>
+          <button onClick={onClose} style={{ background: "transparent", border: "none", cursor: "pointer", fontFamily: UI, fontSize: 13, color: T.muted, fontWeight: 600 }}>Close</button>
+        </div>
+        <Hand size={26} color={T.ink} style={{ margin: "0 0 26px" }}>{MOCK.jessLine}</Hand>
+
+        {/* Cycle × mood — the pattern only a cycle-aware journal can show */}
+        <Eyebrow mb={12}>Mood by phase · this cycle</Eyebrow>
+        <div style={{ display: "flex", gap: 10, marginBottom: 28 }}>
+          {I.moodByPhase.map(([ph, v]) => (
+            <div key={ph} style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", gap: 8 }}>
+              <div style={{ width: "100%", height: 70, display: "flex", alignItems: "flex-end", justifyContent: "center" }}>
+                <div style={{ width: 14, height: `${Math.round(v * 100)}%`, background: ph === MOCK.phase ? T.crimson : T.sage, borderRadius: 2, opacity: ph === MOCK.phase ? 0.95 : 0.55 }} />
+              </div>
+              <span style={{ fontFamily: UI, fontSize: 9.5, color: ph === MOCK.phase ? T.ink : T.muted, fontWeight: ph === MOCK.phase ? 800 : 600, letterSpacing: 0.3, textAlign: "center" }}>{ph.slice(0, 4)}</span>
+            </div>
+          ))}
+        </div>
+
+        {/* 7-day writing rhythm */}
+        <Eyebrow mb={12}>Writing rhythm · last 7 days</Eyebrow>
+        <div style={{ display: "flex", gap: 10, marginBottom: 28 }}>
+          {I.rhythm.map((n, i) => (
+            <div key={i} style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", gap: 7 }}>
+              <div style={{ width: "100%", height: 46, display: "flex", alignItems: "flex-end", justifyContent: "center" }}>
+                <div style={{ width: "70%", height: `${maxR ? Math.round((n / maxR) * 100) : 0}%`, minHeight: n ? 4 : 0, background: T.ink, borderRadius: 2, opacity: 0.82 }} />
+              </div>
+              <span style={{ fontFamily: UI, fontSize: 9.5, color: T.muted, fontWeight: 600 }}>{I.rhythmDays[i]}</span>
+            </div>
+          ))}
+        </div>
+
+        {/* Top tags */}
+        <Eyebrow mb={12}>What you write about</Eyebrow>
+        <div style={{ display: "flex", flexWrap: "wrap", gap: 7, marginBottom: 28 }}>
+          {I.tags.map(([t, n]) => (
+            <span key={t} style={{ display: "inline-flex", alignItems: "center", gap: 6, border: `1px solid ${T.paperDeep}`, borderRadius: 999, padding: "5px 12px", fontFamily: UI, fontSize: 11.5, color: T.inkSoft, fontWeight: 600 }}>
+              {t} <span style={{ color: T.muted, fontSize: 10 }}>{n}</span>
+            </span>
+          ))}
+        </div>
+
+        {/* Cycle-count writing grid (rhythm, never streak) */}
         <Eyebrow mb={10}>This cycle · {wrote.length} entries</Eyebrow>
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(7,1fr)", gap: 7 }}>
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(7,1fr)", gap: 7, marginBottom: 26 }}>
           {Array.from({ length: 28 }).map((_, i) => {
             const d = i + 1, on = wrote.includes(d);
             return <div key={d} style={{ aspectRatio: "1", borderRadius: "50%", background: on ? T.ink : "transparent", border: `1px solid ${on ? T.ink : T.paperDeep}`, fontFamily: UI, fontSize: 9, color: on ? T.paper : T.muted, display: "flex", alignItems: "center", justifyContent: "center" }}>{d}</div>;
           })}
         </div>
-        <Hand size={19} color={T.muted} style={{ margin: "20px 0 0" }}>{MOCK.community}</Hand>
+
+        {/* Weekly reflection — Jess's longer read */}
+        <Eyebrow mb={8}>Jess's weekly reflection</Eyebrow>
+        <Hand size={20} color={T.inkSoft}>{I.weekly}</Hand>
+        <Rule c={T.paperDeep} mt={22} mb={12} />
+        <Hand size={18} color={T.muted} carve={false}>{MOCK.community}</Hand>
       </div>
     </div>
   );
 }
-
 // ── page ───────────────────────────────────────────────────────────────────
 export default function JournalDemo1() {
   const [composer, setComposer] = useState(false);

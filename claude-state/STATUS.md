@@ -4,6 +4,28 @@
 - **A. ALWAYS use the named agent roster** (`.claude/agents/*.md` + `TEAM.md`): Mr Lead Manager · Ms Deep Search · Ms Verify · Mr Fix-it · Ms Atelier (+ Mx Storyteller, Ms Accessibility, Mr Performance, Ms Data, Mr Tester, Ms Strategy; Mr Lucha paused). Dispatch by name on every relevant task; read the spec first. **Every visual change: Ms Atelier crafts → Ms Verify checks vs reference/spec BEFORE ship.**
 - **B. UPDATE STATUS.md CONSTANTLY** — immediately after every build/fix/ship (what changed + commit + bundle hash + verification), never batched to session end. State went stale before; this prevents Halli re-explaining.
 
+## UPDATE 2026-06-03 (session i) — Editorial pass 6: pen-pressed-into-paper depth (research-led) + grand-plan page completed (PATCH-READY, NOT DEPLOYED)
+
+> Base = origin/main **`93f547a`** (live bundle `index-CqpOacgQ.js`: Ephesis monoline + inkCarve filter), reviewed by Halli as "still looks printed". Two tracks, both on `JournalDemo1.jsx` only (/Ideas demo; production `Journal.jsx` untouched). Roster: Ms Deep Search (research) → Ms Atelier (build) → Ms Verify (APPROVE both axes).
+
+### TRACK 1 — REAL pen-on-paper depth (Ms Deep Search researched first, with sources)
+- **Research finding (Ms Deep Search):** the convincing primitives are (a) an **inner-channel groove** (offset+blur SourceAlpha, composite `out` vs alpha → dark band on the top inner wall) + a **lit burr** on the bottom inner edge; (b) **edge ink-pooling** (feMorphology erode → inner perimeter band darkened); (c) **fibre bleed** (feTurbulence + feDisplacementMap, low scale); (d) a **paper-dent** ring so the PAPER reads indented around the stroke. Pure SVG gives a convincing *baked 2.5D bas-relief*; true relightable depth needs Canvas/WebGL normal maps (overkill for a static headline). Sources: W3C filters spec, MDN feMorphology/feComposite/feTurbulence, Codrops feDisplacementMap/feMorphology/feTurbulence series, CSS-Tricks "SVG Filters on Text".
+- **Built (Ms Atelier):** rewrote `InkFilter` into two filters — **`#inkCarve`** (large display) and **`#inkCarveSm`** (smaller voice). Shared `channel` pipeline = fibre displacement → edge ink-pool (erode/out) → **inner-channel groove** (top inner wall dark) → **lit burr** (bottom inner edge) over the preserved dark ink. `#inkCarve` adds a **SYMMETRIC paper-dent ring** (dilate→blur→`out`→flood dark, NO directional offset) hugging the stroke on all sides + a thin raised outer lip — so the paper reads pressed-in, not a drop-shadow. `Script`/`Hand` now get depth purely from these filters (dropped the old multiply/text-shadow carve); `carve={false}` on the dark Tonight card + muted-grey lines.
+- **Ms Verify:** first pass flagged the outer halo reading as a directional drop-shadow + hairline fuzz; fixed by making the dent **symmetric** (no offset) and lowering displacement 1→0.6 + burr 0.85→0.72. Re-verified **APPROVE** — reads as paper indentation, fuzz gone. Honest ceiling logged: CSS/SVG can't photo-emboss; this is at the realistic limit.
+
+### TRACK 2 — Finished the grand-plan page end-to-end (audited vs JOURNAL_GRAND_PLAN.md + JOURNAL_BRIEF)
+- **Already present (verified):** full IA spine — Masthead · Jess's note (+carousel) · On-This-Day Cycle Mirror · insight teaser · The Ledger · Tonight's Reflection · Sealed Letters · Echo-Wall "coming" · privacy footer · Composer · Reader · Insights.
+- **Completed the thin/placeholder parts:**
+  - **Cycle Mirror** — added **Jess's gloss** (the observation that makes it the moat) + a "**2 more from Day 26 · same phase · one year ago**" lens line beside "reply to your past self".
+  - **Composer** — added the **4 compose modes** (Write · Guided · One-line · Voice"·coming") with mode-aware body (One-line shrinks; Voice shows an on-device "coming" card), **metadata chips** (phase · Day 26 · **thread picker** over the 7 threads), and an **on-device privacy line**.
+  - **The Ledger** — entries now show their **thread tag** (Hash glyph).
+  - **Insights** — enriched from a lone dot-grid to the planned surface: **mood-by-phase** mini-chart (luteal highlighted crimson), **7-day writing rhythm** bars, **top tags**, the cycle writing-grid, and **Jess's weekly reflection**.
+- **Ms Verify Axis-2: APPROVE** — every section present, non-placeholder, no emoji (Lucide/SVG only), legible, no layout breakage.
+
+### Status
+- **Build clean** (`inkCarve`/`inkCarveSm`/`Guided`/`Mood by phase` present in bundle), **eslint clean**, reading bodies stay Cormorant serif, no emoji.
+- **NOT deployed.** Patch-ready on `93f547a`: **`femwell_craft6_2026-06-03.patch`** (JournalDemo1.jsx + this STATUS block; base64 texture line unchanged → excluded; `git apply` clean on `93f547a`). Halli deploys + records the new live bundle hash.
+
 ## UPDATE 2026-06-03 (session h) — Editorial pass 5: MATCHED font (Ephesis monoline) + REAL SVG carved depth (PATCH-READY, NOT DEPLOYED)
 
 > Base = origin/main **`cd0006b`** (pass-3: Allura + multiply embed + text-shadow carve), which Halli reviewed live as **IMG_9867** against the target **IMG_9854**. He asked to push two things further. Both done on `JournalDemo1.jsx` only (/Ideas demo; production `Journal.jsx` untouched).
