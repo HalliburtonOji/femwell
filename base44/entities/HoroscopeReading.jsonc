@@ -13,7 +13,7 @@
     "reading_date": {
       "type": "string",
       "format": "date",
-      "description": "YYYY-MM-DD — local date the reading is for."
+      "description": "YYYY-MM-DD \u2014 local date the reading is for."
     },
     "headline": {
       "type": "string",
@@ -74,26 +74,10 @@
     },
     "transits_json": {
       "type": "array",
-      "description": "Array of { when: 'YYYY-MM-DD', glyph, title, desc } — 4 entries for the next 7 days.",
+      "description": "Array of { when: 'YYYY-MM-DD', glyph, title, desc } \u2014 4 entries for the next 7 days.",
       "items": {
         "type": "object"
       }
-    },
-    "goddess_read": {
-      "type": "string",
-      "description": "1-2 italic sentences naming TWO of the user's Goddess Bench placements (asteroid + sign) and the tension between them. UK English. No emoji."
-    },
-    "astra_signoff": {
-      "type": "string",
-      "description": "Short attribution line for the reading, e.g. 'Astra · 13 May'."
-    },
-    "weather_energy": {
-      "type": "number",
-      "description": "Integer 0-10. Today's energy score for the TodaysWeather card."
-    },
-    "weather_mood": {
-      "type": "string",
-      "description": "Two-word mood label for TodaysWeather, e.g. 'Open, decisive'."
     },
     "created_at": {
       "type": "string",

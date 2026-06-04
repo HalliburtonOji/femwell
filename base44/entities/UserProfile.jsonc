@@ -155,81 +155,21 @@
     "mature_confirmed_at": {
       "type": "string"
     },
-    // Sprint C C3 — under-18 flag. Mirrored from life_stage === "teen" by
-    // Profile.updateLifeStage. Components default-deny when reading consent
-    // flags (see src/utils/consent.js) so a missing field is treated safely.
-    "is_under_18": {
-      "type": "boolean",
-      "default": false
-    },
-    // Sprint C C2 — GDPR consent flags, default-deny. See src/utils/consent.js.
-    "consent_health_data": {
-      "type": "boolean",
-      "default": false
-    },
-    "consent_cycle_data": {
-      "type": "boolean",
-      "default": false
-    },
-    "consent_mood_data": {
-      "type": "boolean",
-      "default": false
-    },
-    "consent_location_data": {
-      "type": "boolean",
-      "default": false
-    },
-    "consent_ai_processing": {
-      "type": "boolean",
-      "default": false
-    },
-    "consent_marketing": {
-      "type": "boolean",
-      "default": false
-    },
     "life_stage": {
       "type": "string",
       "enum": [
         "none",
-        "teen",
-        "reproductive",
-        "pre-ttc",
-        "ttc",
-        "pregnant-t1",
-        "pregnant-t2",
-        "pregnant-t3",
-        "postpartum",
-        "perimenopause",
+        "pregnancy",
         "menopause",
-        "post-menopause",
-        "pregnancy"
+        "ttc"
       ],
-      "default": "reproductive"
+      "default": "none"
     },
     "life_stage_focus": {
       "type": "array",
       "items": {
         "type": "string"
       }
-    },
-    "conditions": {
-      "type": "array",
-      "description": "Cross-cutting conditions modifier — overrides ribbon and pillar behaviour across life stages. Spec values: pcos | endo | pmdd | fibroids | thyroid | hrt | cancer-survivor | ha | other.",
-      "items": {
-        "type": "string",
-        "enum": [
-          "pcos",
-          "endo",
-          "pmdd",
-          "fibroids",
-          "thyroid",
-          "hrt",
-          "cancer-survivor",
-          "ha",
-          "other"
-        ]
-      },
-      "default": []
     },
     "hydration_target_ml": {
       "type": "number",
@@ -370,47 +310,61 @@
       "type": "boolean",
       "default": false
     },
-    "partner_share_code": {
-      "type": "string",
-      "description": "6-char uppercase alphanumeric code that the partner-view route resolves against. Minted client-side on first /PartnerSync open."
-    },
-    "partner_sharing_settings": {
-      "type": "object",
-      "description": "Which of the three partner cards the share-code view should render.",
-      "properties": {
-        "show_mood_energy": { "type": "boolean", "default": true },
-        "show_phase":       { "type": "boolean", "default": true },
-        "show_tips":        { "type": "boolean", "default": true }
-      }
-    },
-    "analytics_consent": {
-      "type": "boolean",
-      "description": "Sprint 12 batch 1 — opt-in to anonymous analytics. Default true; surfaced in Settings.",
-      "default": true
-    },
-    "consent_flags": {
-      "type": "object",
-      "description": "Sprint 12 batch 2 — explicit GDPR consent checkboxes captured at signup or first banner.",
-      "properties": {
-        "health_data":   { "type": "boolean" },
-        "ai_companion":  { "type": "boolean" },
-        "age_confirmed": { "type": "boolean" },
-        "consented_at":  { "type": "string"  }
-      }
-    },
-    "is_minor": {
-      "type": "boolean",
-      "description": "Sprint 12 batch 3 — true when age_band is 13-17."
-    },
-    "age_band": {
-      "type": "string",
-      "description": "Sprint 12 batch 3 — under_13 | 13-17 | 18plus."
-    },
     "created_at": {
       "type": "string"
     },
     "updated_at": {
       "type": "string"
+    },
+    "partner_share_code": {
+      "type": "string",
+      "description": "6-char share code for /partner?code= view"
+    },
+    "partner_sharing_settings": {
+      "type": "object",
+      "description": "Partner-view toggle flags",
+      "properties": {
+        "show_mood_energy": {
+          "type": "boolean"
+        },
+        "show_phase": {
+          "type": "boolean"
+        },
+        "show_tips": {
+          "type": "boolean"
+        }
+      }
+    },
+    "analytics_consent": {
+      "type": "boolean",
+      "description": "Sprint 12 \u2014 opt-in to anonymous analytics",
+      "default": true
+    },
+    "consent_flags": {
+      "type": "object",
+      "description": "Sprint 12 batch 2 \u2014 explicit GDPR consent flags",
+      "properties": {
+        "health_data": {
+          "type": "boolean"
+        },
+        "ai_companion": {
+          "type": "boolean"
+        },
+        "age_confirmed": {
+          "type": "boolean"
+        },
+        "consented_at": {
+          "type": "string"
+        }
+      }
+    },
+    "is_minor": {
+      "type": "boolean",
+      "description": "Sprint 12 batch 3 \u2014 true when age_band is 13-17"
+    },
+    "age_band": {
+      "type": "string",
+      "description": "Sprint 12 batch 3 \u2014 under_13 | 13-17 | 18plus"
     }
   },
   "required": [

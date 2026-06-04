@@ -53,16 +53,6 @@
       "type": "boolean",
       "default": true
     },
-    "horoscope_quiet_mode": {
-      "type": "boolean",
-      "default": false,
-      "description": "When true, the horoscope LLMs avoid shadow-language (war/wound/trauma/crisis/doom/endings) and frame challenges as something-to-notice instead of something-to-fear."
-    },
-    "horoscope_soft_sky": {
-      "type": "boolean",
-      "default": false,
-      "description": "A3 Soft Sky sub-tier. When true (only meaningful when horoscope_quiet_mode is also true), the daily reading omits planetary retrogrades and 'storm windows'."
-    },
     "created_at": {
       "type": "string"
     },

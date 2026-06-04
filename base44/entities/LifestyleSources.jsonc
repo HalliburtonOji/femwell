@@ -78,14 +78,6 @@
     "feed_url": {
       "type": "string"
     },
-    "apple_collection_id": {
-      "type": "string",
-      "description": "iTunes collectionId for the show. Resolved at ingest via iTunes Search API. Empty if resolution failed or show isn't on Apple Podcasts."
-    },
-    "apple_collection_url": {
-      "type": "string",
-      "description": "Full https://podcasts.apple.com/.../id{collectionId} URL. Stored derived for convenience."
-    },
     "is_active": {
       "type": "boolean",
       "default": true

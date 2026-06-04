@@ -320,6 +320,7 @@ import ConsentSettingsCard from "@/components/compliance/ConsentSettingsCard";
 import AccountDeletionCard from "@/components/compliance/AccountDeletionCard";
 import DataExportCard from "@/components/DataExportCard";
 import RemindersCard from "@/components/RemindersCard";
+import AnalyticsConsentCard from "@/components/compliance/AnalyticsConsentCard";
 
 function PrivacySection({ user, profile, onProfileChange, onDownloadData }) {
   const [prefs, setPrefs] = useState({

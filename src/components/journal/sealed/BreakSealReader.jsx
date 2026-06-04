@@ -8,7 +8,7 @@
 import { useState } from "react";
 import { X, Lock } from "lucide-react";
 import { base44 } from "@/api/base44Client";
-import { T, UI, SERIF, HAND, PRESS, Eyebrow, Rule, Heart } from "../Editorial";
+import { T, UI, SERIF, HAND, PRESS, Eyebrow, Rule, Heart, Script, Hand } from "../Editorial";
 import { decryptText, isEncryptedEnvelope } from "@/utils/journalCrypto";
 import { formatLetterDate } from "@/utils/sealedLetters";
 

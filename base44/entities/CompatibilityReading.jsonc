@@ -29,7 +29,7 @@
     },
     "label": {
       "type": "string",
-      "description": "One-line element-meets-element label, e.g. 'Air meets Earth · easy but grounding'."
+      "description": "One-line element-meets-element label, e.g. 'Air meets Earth \u00b7 easy but grounding'."
     },
     "narrative": {
       "type": "string",
