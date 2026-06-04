@@ -1,5 +1,38 @@
 # FemWell — STATUS (the shared baton) — SINGLE SOURCE OF TRUTH
 
+## UPDATE 2026-06-03/04 — JOURNAL PHASE 0: Editorial shell on PRODUCTION Journal.jsx (PATCH-READY, NOT DEPLOYED)
+Real build of the Journal has begun on the production page (Target B), per `claude-state/JOURNAL_BUILD_SPEC.md` v3 §5 (Phase 0 = NOW + Editorial shell scaffold). Built on origin/main `2e80e7a`. Roster: **Ms Atelier crafted → Ms Verify APPROVE** (no-deploy gate: syntax + brand + demo-parity + no-lost-functionality).
+
+### LOCKED DECISIONS (permanent — honor on every future Journal pass)
+1. **Build target = PRODUCTION `src/pages/Journal.jsx`** (Target B), NOT the `/Ideas` demo. `JournalDemo1.jsx` (Editorial) is the visual basis only.
+2. **Fonts:** Ephesis (display script) + Caveat (secondary hand). _Caveat overrides the demo's Parisienne._ Cormorant Garamond for reading bodies; Inter for chrome.
+3. **Pen-depth = FROZEN** at the current `inkCarve`/`inkCarveSm` filters. Do NOT iterate depth — structure first. (Halli not fully satisfied with depth but explicitly parked it.)
+4. **Body text = serif (Cormorant)** for long reading; handwriting only for short voiced lines.
+5. **Tonight's Reflection lives in the JOURNAL** (not Planner).
+6. **NO PAYWALLS / no monetization anywhere for now** — Cycle Mirror + everything free; all monetization deferred until the app is finished. Build no Plus/Pro gating.
+7. **Phase 1** will include the emoji sweep (JotterCard/NewEntrySheet) + Affirmation fix.
+
+### What Phase 0 changed (commit on top of `2e80e7a`)
+- **NEW** `src/components/journal/Editorial.jsx` — shared Editorial shell kit, primitives extracted byte-for-byte from the signed-off demo `src/pages/JournalDemo1.jsx`: palette `T`, type roles (SCRIPT Ephesis / HAND **Caveat** / SERIF Cormorant / UI Inter), `PRESS`/`PRESS_DARK` letterpress, real cotton-paper `PAPER_TEX` PNG + `PAPER_BG` recipe, `Heart`, `Eyebrow`/`Rule`/`Chip`, `carveFilter`/`Script`/`Hand`, the frozen `InkFilter` (`#inkCarve` + `#inkCarveSm`), `EditorialFooter` ("Locked to you. Always."), and a `useEditorialFonts()` loader.
+- **EDIT** `src/pages/Journal.jsx` — applied the Editorial shell to the real page WITHOUT removing functionality:
+  - page root now paints `...PAPER_BG` (was `var(--ivory)`); renders `<InkFilter/>` once; `useEditorialFonts()` on mount.
+  - the old utilitarian header block replaced by a wired Editorial **`Masthead`**: eyebrow "The Journal · A publication of one", phase word in Ephesis script, Inner-Season in Caveat hand, "DAY {cycleDay} · {UK date}" + heart, the kept cycle-count rhythm line ("X entries this cycle — you're building a pattern"), and a "Begin a new entry" CTA → `setShowNewEntry(true)`. Null-phase falls back to "Journal".
+  - privacy footer `<EditorialFooter/>` added at the foot of the page.
+  - **PRESERVED:** all data hooks (base44 auth/JournalEntries/UserProfile), Journal/Insights tabs, JessJournalPrompt wing + error boundary, filter pills (incl. affirmation), empty state, pinned strip, JotterCard masonry, NewEntrySheet overlay, every handler (save/delete/pin/colour/todo), seedText flow. Ledger/Composer/Cycle-Mirror left for Phase 1.
+
+### Verification (no live walk — Halli deploys)
+- esbuild syntax clean on both files (Journal.jsx + Editorial.jsx).
+- Brand gates: zero emoji codepoints; Ephesis/Caveat/Cormorant/Inter in loader; `inkCarve`+`inkCarveSm` present; HAND=Caveat (not Parisienne); "A publication of one" + "Locked to you. Always." present.
+- No lost functionality: diff confirms the ONLY removal is the old header block; 33 functionality markers retained.
+- Demo parity by construction: PAPER_TEX base64 + InkFilter SVG + palette T + Script/Hand byte-identical to JournalDemo1.jsx (sole intentional divergence: HAND→Caveat).
+- Faithful render artifact for Halli's phone: `journal_editorial/journal_phase0_shell_preview.html` (rendered from the real primitives).
+
+### Patch + next
+- **Patch:** `femwell_journal_phase0_2026-06-03.patch` (workspace root) — plain `git diff 2e80e7a..HEAD` of `src/pages/Journal.jsx` + new `src/components/journal/Editorial.jsx` + this STATUS block. Applies via `git apply` on a pristine `2e80e7a` checkout.
+- **NOT deployed** (Halli handles deploy). After apply → push → deploy → record the new live bundle hash here (replaces `index-DA-OrqI_.js`), then Phase 1 (Q1: Phase Prompt Carousel · Cycle Mirror · Sealed Letters v1 · Tonight's Reflection · Unpack-with-Jess) + the emoji sweep + Affirmation fix.
+
+# FemWell — STATUS (the shared baton) — SINGLE SOURCE OF TRUTH
+
 ## 🧭 STANDING GOVERNANCE (permanent — also in CLAUDE.md)
 - **A. ALWAYS use the named agent roster** (`.claude/agents/*.md` + `TEAM.md`): Mr Lead Manager · Ms Deep Search · Ms Verify · Mr Fix-it · Ms Atelier (+ Mx Storyteller, Ms Accessibility, Mr Performance, Ms Data, Mr Tester, Ms Strategy; Mr Lucha paused). Dispatch by name on every relevant task; read the spec first. **Every visual change: Ms Atelier crafts → Ms Verify checks vs reference/spec BEFORE ship.**
 - **B. UPDATE STATUS.md CONSTANTLY** — immediately after every build/fix/ship (what changed + commit + bundle hash + verification), never batched to session end. State went stale before; this prevents Halli re-explaining.

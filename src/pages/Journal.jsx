@@ -2,12 +2,16 @@ import { useState, useEffect } from "react";
 import { base44 } from "@/api/base44Client";
 import { format, parseISO, differenceInDays } from "date-fns";
 import { computeCycleDay } from "@/hooks/useCycleDay";
-import { PenLine } from "lucide-react";
+import { PenLine, Feather } from "lucide-react";
 import JotterCard from "../components/journal/JotterCard";
 import NewEntrySheet from "../components/journal/NewEntrySheet";
 import JournalInsightsTab from "../components/journal/JournalInsightsTab";
 import JessJournalPrompt from "../components/journal/JessJournalPrompt";
 import JessErrorBoundary from "@/components/jess/JessErrorBoundary";
+import {
+  PAPER_BG, InkFilter, EditorialFooter, useEditorialFonts,
+  T, UI, HAND, PRESS, Script, Hand, Eyebrow, Rule, Heart,
+} from "../components/journal/Editorial";
 
 const FILTER_TYPES = [
   { id: "all",         label: "All" },
@@ -20,7 +24,7 @@ const FILTER_TYPES = [
   { id: "dream",       label: "Dream" },
 ];
 
-// Phase → Inner Season name + italic seasonal line.
+// Phase -> Inner Season name + italic seasonal line.
 const PHASE_SEASON = {
   menstrual:  { name: "Inner Winter",  line: "Soft pace. The body is doing the work." },
   follicular: { name: "Inner Spring",  line: "Something new wants to begin." },
@@ -77,7 +81,49 @@ function getCurrentPhase(profile) {
   return computeCycleDay(profile).phase;
 }
 
+
+// ── Editorial Masthead — the issue title, wired to real cycle data ──────────
+// The phase word in display script, the inner-season in the secondary hand, the
+// cycle day + UK date, the single heart, and the cycle-count rhythm line. Falls
+// back gracefully to "Journal" when there is no cycle data yet.
+function Masthead({ phase, season, cycleDay, cycleCount, onWrite }) {
+  const phaseWord = phase ? phase.charAt(0).toUpperCase() + phase.slice(1) : "Journal";
+  const dateLine = format(new Date(), "d MMMM").toUpperCase();
+  return (
+    <header style={{ paddingTop: 44, marginBottom: 36 }}>
+      <Eyebrow mb={10}>The Journal · A publication of one</Eyebrow>
+      <div style={{ display: "flex", alignItems: "baseline", gap: 14, flexWrap: "wrap" }}>
+        <Script size={64} style={{ width: "auto" }}>{phaseWord}</Script>
+        {phase && season ? (
+          <Hand size={29} color={T.inkSoft} style={{ width: "auto" }}>{season.name}</Hand>
+        ) : null}
+      </div>
+      <div style={{ display: "flex", alignItems: "center", gap: 10, marginTop: 10 }}>
+        <Rule w={28} c={T.gold} />
+        <span style={{ fontFamily: UI, fontSize: 11.5, color: T.muted, letterSpacing: 1.2, fontWeight: 600 }}>
+          {cycleDay ? `DAY ${cycleDay} · ` : ""}{dateLine}
+        </span>
+        <Heart size={15} style={{ marginLeft: 2 }} />
+      </div>
+      {cycleCount.count > 0 ? (
+        <Hand size={20} color={T.inkSoft} carve={false} style={{ marginTop: 12 }}>
+          {cycleCount.count} {cycleCount.label} — you\u2019re building a pattern.
+        </Hand>
+      ) : null}
+      <button onClick={onWrite} style={{
+        marginTop: 20, display: "inline-flex", alignItems: "center", gap: 8,
+        background: "transparent", border: "none", cursor: "pointer", padding: 0,
+        fontFamily: HAND, fontWeight: 600, fontSize: 22, color: T.ink, textShadow: PRESS,
+        borderBottom: `1px solid ${T.gold}`, paddingBottom: 3,
+      }}>
+        <Feather style={{ width: 15, height: 15 }} /> Begin a new entry
+      </button>
+    </header>
+  );
+}
+
 export default function Journal() {
+  useEditorialFonts();
   const [user, setUser] = useState(null);
   const [profile, setProfile] = useState(null);
   const [entries, setEntries] = useState([]);
@@ -158,14 +204,15 @@ export default function Journal() {
   };
 
   if (loading) return (
-    <div className="min-h-screen flex items-center justify-center" style={{ backgroundColor: "var(--ivory)" }}>
+    <div className="min-h-screen flex items-center justify-center" style={{ backgroundColor: T.paper }}>
       <div className="w-8 h-8 rounded-full border-2 border-t-transparent animate-spin"
         style={{ borderColor: "var(--rose-dust-light)", borderTopColor: "var(--rose-dust)" }} />
     </div>
   );
 
   return (
-    <div className="min-h-screen pb-28" style={{ backgroundColor: "var(--ivory)" }}>
+    <div className="min-h-screen pb-28" style={{ position: "relative", ...PAPER_BG }}>
+      <InkFilter />
 
       {/* New / Edit entry sheet */}
       {(showNewEntry || editEntry) && user && (
@@ -181,55 +228,14 @@ export default function Journal() {
 
       <div className="max-w-2xl mx-auto px-4">
 
-        {/* ── Header ── phase + cycle day + italic seasonal line + cycle-count rhythm */}
-        <div className="pt-10 pb-5">
-          <div className="flex items-start justify-between">
-            <div>
-              {phase && season ? (
-                <p style={{
-                  fontSize: 10, fontWeight: 700, letterSpacing: "0.18em",
-                  color: "var(--mauve)", fontFamily: "'Inter', sans-serif",
-                  textTransform: "uppercase", margin: 0, marginBottom: 4,
-                }}>
-                  {phase} · {season.name}{cycleDay ? ` · Day ${cycleDay}` : ""}
-                </p>
-              ) : null}
-              <div className="flex items-center gap-2 mb-1">
-                <h1 style={{ fontFamily: "'Fraunces', serif", color: "var(--plum)", fontSize: 26, fontWeight: 700, letterSpacing: "-0.02em", margin: 0 }}>
-                  Journal
-                </h1>
-              </div>
-              {season ? (
-                <p style={{
-                  fontFamily: "Georgia, serif", fontStyle: "italic",
-                  fontSize: 13, color: "var(--mauve)", margin: "0 0 4px",
-                  lineHeight: 1.5,
-                }}>
-                  {season.line}
-                </p>
-              ) : null}
-              <p style={{ fontSize: 12, color: "var(--mauve)", fontFamily: "'Inter', sans-serif", margin: 0 }}>
-                {cycleCount.count > 0
-                  ? <><strong style={{ color: "var(--plum)", fontWeight: 700 }}>{cycleCount.count}</strong> {cycleCount.label} — you&apos;re building a pattern.</>
-                  : <>{format(new Date(), "EEEE, MMMM d")}</>}
-              </p>
-            </div>
-            <button
-              onClick={() => setShowNewEntry(true)}
-              style={{
-                display: "flex", alignItems: "center", gap: 7,
-                backgroundColor: "var(--plum)", color: "white",
-                borderRadius: 9999, padding: "10px 18px",
-                border: "none", cursor: "pointer",
-                fontSize: 14, fontWeight: 600, fontFamily: "'Inter', sans-serif",
-                boxShadow: "0 4px 14px rgba(42,32,53,0.22)",
-              }}
-            >
-              <PenLine style={{ width: 14, height: 14 }} />
-              New entry
-            </button>
-          </div>
-        </div>
+        {/* ── Editorial Masthead ── phase word + inner-season + cycle day + UK date + rhythm + New entry */}
+        <Masthead
+          phase={phase}
+          season={season}
+          cycleDay={cycleDay}
+          cycleCount={cycleCount}
+          onWrite={() => setShowNewEntry(true)}
+        />
 
         {/* ── Top-level tabs: Journal / Insights ── */}
         <div className="flex gap-1 mb-5 p-1 rounded-2xl" style={{ backgroundColor: "var(--ivory-dark)", border: "1px solid var(--border)" }}>
@@ -395,6 +401,11 @@ export default function Journal() {
             )}
           </>
         )}
+
+        {/* ── Privacy footer ── */}
+        <div style={{ marginTop: 40 }}>
+          <EditorialFooter />
+        </div>
       </div>
     </div>
   );
