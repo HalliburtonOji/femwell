@@ -311,6 +311,8 @@ export default function Journal() {
       {/* Entry reader (open from the ledger) */}
       <EntryReader
         entry={readEntry}
+        profile={profile}
+        phase={phase}
         onClose={() => setReadEntry(null)}
         onEdit={handleEditFromReader}
         onDelete={handleDelete}

@@ -78,12 +78,19 @@ export function scrubToEcho(rawText) {
   const strip = (re, token, label) => {
     if (re.test(line)) { removed.add(label); line = line.replace(re, token); }
   };
+  // Hard identifiers are removed entirely (empty token), which can leave a
+  // dangling connector behind ("call me on <number>" -> "call me on"). Track
+  // that so we only run the trailing-fragment cleanup when it can actually help.
+  let hardRemoval = false;
+  const stripHard = (re, label) => {
+    if (re.test(line)) { removed.add(label); line = line.replace(re, ""); hardRemoval = true; }
+  };
 
   // Contact details + handles + links (hard identifiers).
-  strip(/\b[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}\b/gi, "", "an email");
-  strip(/\bhttps?:\/\/\S+|\bwww\.\S+/gi, "", "a link");
-  strip(/@[A-Za-z0-9_]{2,}/g, "", "a handle");
-  strip(/(\+?\d[\d\s().-]{8,}\d)/g, "", "a number");
+  stripHard(/\b[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}\b/gi, "an email");
+  stripHard(/\bhttps?:\/\/\S+|\bwww\.\S+/gi, "a link");
+  stripHard(/@[A-Za-z0-9_]{2,}/g, "a handle");
+  stripHard(/(\+?\d[\d\s().-]{8,}\d)/g, "a number");
 
   // Dates + weekdays + months.
   strip(new RegExp(`\\b(${MONTHS})\\b\\.?(\\s+\\d{1,4})?`, "gi"), "recently", "a date");
@@ -112,6 +119,22 @@ export function scrubToEcho(rawText) {
 
   // Tidy doubled spaces / stray punctuation left by removals.
   line = line.replace(/\s{2,}/g, " ").replace(/\s+([.,!?])/g, "$1").replace(/^[\s,;:-]+/, "").trim();
+
+  // Trailing-fragment cleanup — only after a hard identifier was removed. When
+  // a contact detail is stripped, the connector before it dangles at the end
+  // ("call me on <number>" -> "call me on." here). Drop a trailing run of
+  // prepositions / conjunctions / articles (NOT pronouns or phrasal-verb
+  // particles, which can legitimately end a clause), then restore a full stop
+  // if the line had ended one. Loop in case several connectors stack up.
+  if (hardRemoval) {
+    const DANGLE = "on|at|in|into|onto|to|with|for|of|by|from|about|via|near|off|and|or|but|the|a|an";
+    const endedSentence = /[.!?]\s*$/.test(line);
+    const tailRe = new RegExp(`[\\s,;:]+(?:${DANGLE})\\b[\\s.,;:!?]*$`, "i");
+    let prevLine;
+    do { prevLine = line; line = line.replace(tailRe, "").trim(); } while (line && line !== prevLine);
+    if (line && endedSentence && !/[.!?]$/.test(line)) line += ".";
+  }
+
   if (line.length > MAX_ECHO_LEN) line = line.slice(0, MAX_ECHO_LEN).replace(/\s+\S*$/, "").trim();
 
   // Final leak re-scan — if a hard identifier survived, block rather than post.

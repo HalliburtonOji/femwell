@@ -18,6 +18,19 @@ export function entryDateObj(entry) {
   return null;
 }
 
+// Best available *timestamped* Date for an entry — prefers the real ISO
+// timestamps (created_date / created_at) over session_date, which is date-only
+// (YYYY-MM-DD) and parses to midnight. Used for the time-of-day label so a
+// One-line entry shows its true time instead of "00:00".
+export function entryTimeObj(entry) {
+  if (!entry) return null;
+  try {
+    if (entry.created_date) return new Date(entry.created_date);
+    if (entry.created_at) return new Date(entry.created_at);
+  } catch { /* fall through */ }
+  return null;
+}
+
 // The cycle day a given calendar date falls on, given the profile's cycle.
 // Returns null when there is no period anchor yet.
 export function cycleDayForDate(dateObj, profile) {
@@ -46,8 +59,10 @@ export function relativeDate(entry) {
     const day = new Date(d); day.setHours(0, 0, 0, 0);
     const diff = differenceInDays(today, day);
     if (diff <= 0) {
-      const hasTime = entry.created_date || entry.created_at;
-      return hasTime ? `Today · ${format(d, "HH:mm")}` : "Today";
+      // Time must come from a real timestamp, not session_date (date-only ->
+      // midnight), otherwise a One-line entry reads "Today · 00:00".
+      const t = entryTimeObj(entry);
+      return t ? `Today · ${format(t, "HH:mm")}` : "Today";
     }
     if (diff === 1) return "Yesterday";
     if (diff < 7) return `${diff} days ago`;
