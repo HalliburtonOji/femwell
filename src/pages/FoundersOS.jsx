@@ -60,7 +60,7 @@ const ALLOWED = new Set([
   "ojihalliburton57@gmail.com",
 ]);
 
-const TABS = ["Lab", "Pages", "Roadmap", "Ideas", "Strategy", "Legal", "Decisions", "Journal", "Journal Demos", "Another You", "UX & Design", "Wholeness", "LGBTQ+", "🏥 Health Corner"];
+const TABS = ["Lab", "Pages", "Roadmap", "Ideas", "Strategy", "Legal", "Decisions", "Journal", "Journal Demos", "Community Demos", "Another You", "UX & Design", "Wholeness", "LGBTQ+", "🏥 Health Corner"];
 
 const IDEAS_KEY  = "femwell_ideas";
 const CHECKS_KEY = "femwell_founder_checks";
@@ -567,6 +567,7 @@ function FoundersInner({ user }) {
         {tab === "Decisions" && <DecisionsTab />}
         {tab === "Journal"        && <JournalTab />}
         {tab === "Journal Demos"  && <JournalDemosTab />}
+        {tab === "Community Demos" && <CommunityDemosTab />}
         {tab === "Another You"    && <AnotherYouTab />}
         {tab === "UX & Design" && <UxDesignTab />}
         {tab === "Wholeness"   && <WholenessTab />}
@@ -1913,6 +1914,133 @@ function JournalDemosTab() {
         Jess phase prompt · entry type chooser · entry list · Burn Mode indicator ·
         On This Day · community signal · full composer · writing rhythm dots.
         Every interaction is wired with useState; no real entities are queried.
+      </div>
+    </div>
+  );
+}
+
+// ════════════════════════════════════════════════════════════════════════════
+// Tab — Community Demos (5 peer-shape design concepts)
+// ════════════════════════════════════════════════════════════════════════════
+const COMMUNITY_DEMOS = [
+  {
+    n: 1, slug: "CommunityDemo1",
+    title: "Echo Wall",
+    subtitle: "A room of one-liners — anonymous, phase-weighted, fading",
+    accent: T.gold,
+    body: "The editorial iteration of the shipped Echo Wall. A phase-weighted feed of anonymous one-line entries with a live cohort line, a \"your phase\" chip on sister echoes, held / me-too reactions (non-transactional, one-way), a still-cooling \"Pull it back\" strip, a 48h fade label, and report → auto-hide. The Share-as-Echo flow is wired end to end: write → Jess scrubs identifying detail (and shows what was removed) → crisis intercept routes to UK resources, never to the wall → cooling notice.",
+    tags: ["Phase-weighted feed", "Held / me too", "Still-cooling pull-back", "Jess scrub + crisis intercept"],
+  },
+  {
+    n: 2, slug: "CommunityDemo2",
+    title: "Witness Mode",
+    subtitle: "Read this. Hold it. — one entry, one matched sister",
+    accent: T.blush,
+    body: "All three faces of the dock. Writer: a toggle → the 6-rail charter → a pulsing match (2–4h) → the held / cancel state. Receiver: a no-copy locked entry + the four fixed Fraunces lines (\"I'm holding this with you / Me too / You're not alone in this / I hear you\") or pass silently. Plus the held-3 gate (\"witnessed 2 times, one more to unlock\") that earns the right to be a witness. The dark plum trust-ink gradient is reserved for these fragile surfaces.",
+    tags: ["Writer toggle + match", "4 fixed responses", "Held-3 gate", "6-rail charter", "Trust-ink gradient"],
+  },
+  {
+    n: 3, slug: "CommunityDemo3",
+    title: "Phase Twin",
+    subtitle: "Twelve days. One shape. — a finite paired container",
+    accent: T.sage,
+    body: "The deepest peer surface. Match screen (shared tags, today's prompt), the 12-day contract with the shared / not-shared matrix, a day-in with the both-wrote reveal gate (her entry stays blurred until you write yours) plus Jess's one bridging note a day, and the day-12 closing ritual with the parting-line exchange. \"A 12-day container. Not a friendship.\" Opens at matching, closes at next period day 1, no re-entry that cycle.",
+    tags: ["12-day container", "Both-wrote reveal gate", "Jess bridging note", "Closing ritual"],
+  },
+  {
+    n: 4, slug: "CommunityDemo4",
+    title: "Circles + belonging",
+    subtitle: "Rooms you can belong to — plus who's here tonight",
+    accent: T.gold,
+    body: "The belonging layer. A browsable taxonomy of cohorts — Phase, Program, Region, Life stage, Condition — with join / joined states and circle-scoped echo visibility. Above it, the research-driven \"others in your phase\" aggregate card: a zero-moderation-cost belonging signal (\"you're one of 312 in your inner autumn tonight\") with a k-anonymity floor that suppresses the count rather than risk naming anyone when a cohort is too small.",
+    tags: ["5-key taxonomy", "Join / joined", "Aggregate belonging card", "k-anonymity floor"],
+  },
+  {
+    n: 5, slug: "CommunityDemo5",
+    title: "Community Home",
+    subtitle: "The two-home story — where the peer shapes connect",
+    accent: T.blush,
+    body: "The page that ties it together. \"Journal owns the writer. Community owns the peer shapes.\" The two-home split, \"one entry, four lives\" (stay locked · become an echo · be sealed · handed to a witness), the interactive solitude → witness gradient (Cycle Mirror → Sealed Letters → Echo Wall → Witness → Phase Twin; solo surfaces earn the paired ones), and link cards into all four peer surfaces. Footed by the no-scoreboard rules: no handles, threads, DMs, likes or leaderboards.",
+    tags: ["Two-home split", "One entry, four lives", "Solitude→witness gradient", "Links the four surfaces"],
+  },
+];
+
+function CommunityDemosTab() {
+  return (
+    <div>
+      <PageHeader
+        title="Community — 5 Peer-Shape Demos"
+        subtitle="The anonymous-first peer half of the system: Echo Wall → Witness → Phase Twin, plus Circles and the home that ties them together. Self-contained concepts on the Editorial kit; mock data, no entities queried."
+        badge="INTERACTIVE"
+        badgeTone="gold"
+      />
+      <div style={{ display: "flex", flexDirection: "column", gap: 14, marginBottom: 24 }}>
+        {COMMUNITY_DEMOS.map((d) => (
+          <article key={d.n} style={{
+            background: T.surface,
+            border: `1px solid ${T.border}`,
+            borderLeft: `4px solid ${d.accent}`,
+            borderRadius: 14,
+            padding: "18px 20px 16px",
+          }}>
+            <div style={{ display: "flex", alignItems: "flex-start", gap: 14, marginBottom: 10 }}>
+              <div style={{
+                width: 38, height: 38, borderRadius: "50%",
+                background: T.goldSoft, color: d.accent,
+                border: `1px solid ${d.accent}`,
+                display: "flex", alignItems: "center", justifyContent: "center",
+                fontFamily: '"Fraunces", Georgia, serif',
+                fontSize: 17, fontWeight: 700, flexShrink: 0,
+              }}>{d.n}</div>
+              <div style={{ flex: 1 }}>
+                <div style={{
+                  fontFamily: '"Fraunces", Georgia, serif',
+                  fontSize: 19, fontWeight: 700, color: T.textHi,
+                  letterSpacing: -0.1, lineHeight: 1.25,
+                }}>
+                  Demo {d.n} — {d.title}
+                </div>
+                <div style={{
+                  fontFamily: '"Fraunces", Georgia, serif',
+                  fontStyle: "italic", fontSize: 13.5, color: d.accent,
+                  marginTop: 2,
+                }}>{d.subtitle}</div>
+              </div>
+            </div>
+            <p style={{
+              fontSize: 13, color: T.textMid, lineHeight: 1.65, margin: "0 0 12px",
+            }}>{d.body}</p>
+            <div style={{ display: "flex", flexWrap: "wrap", gap: 6, marginBottom: 14 }}>
+              {d.tags.map((tag) => (
+                <span key={tag} style={{
+                  fontSize: 10.5, color: T.textMid,
+                  background: T.surfaceHi, border: `1px solid ${T.border}`,
+                  borderRadius: 9999, padding: "3px 9px",
+                  fontFamily: '"Inter", system-ui, sans-serif',
+                }}>{tag}</span>
+              ))}
+            </div>
+            <a href={`/${d.slug}`} style={{
+              display: "inline-block",
+              background: d.accent, color: T.bg,
+              border: "none", borderRadius: 9999,
+              padding: "8px 16px",
+              fontFamily: '"Inter", system-ui, sans-serif',
+              fontSize: 13, fontWeight: 700, cursor: "pointer",
+              textDecoration: "none",
+            }}>Open demo →</a>
+          </article>
+        ))}
+      </div>
+      <div style={{
+        background: T.surface, border: `1px dashed ${T.border}`,
+        borderRadius: 12, padding: "12px 16px",
+        fontSize: 12, color: T.textMid, lineHeight: 1.6,
+      }}>
+        All 5 demos reuse the shared Editorial kit (src/components/journal/Editorial.jsx) —
+        Ephesis script · Caveat hand · Cormorant serif · Inter chrome, the frozen carved-ink
+        treatment, no emoji. Every interaction is wired with useState; no real entities are
+        queried and no new entities are created. Drawn from claude-state/COMMUNITY_BUILD_SPEC.md.
       </div>
     </div>
   );

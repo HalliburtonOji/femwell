@@ -95,6 +95,14 @@ import JournalDemo1 from './pages/JournalDemo1';
 import JournalDemo2 from './pages/JournalDemo2';
 import JournalDemo3 from './pages/JournalDemo3';
 import JournalDemo4 from './pages/JournalDemo4';
+// 5 Community design demos (mounted at /CommunityDemo1..5). Linked from the
+// "Community Demos" tab in FoundersOS. Self-contained, mock data, NO entity
+// queries, no new entities — safe to deploy alongside production Community.
+import CommunityDemo1 from './pages/CommunityDemo1';
+import CommunityDemo2 from './pages/CommunityDemo2';
+import CommunityDemo3 from './pages/CommunityDemo3';
+import CommunityDemo4 from './pages/CommunityDemo4';
+import CommunityDemo5 from './pages/CommunityDemo5';
 // Sprint 10 — Partner Sync hub (user's share-code page). The
 // matching public /partner?code=… read-only view (Partner.jsx) is
 // wired separately in App.jsx OUTSIDE this PAGES map so it can run
@@ -153,6 +161,11 @@ export const PAGES = {
     "JournalDemo2": JournalDemo2,
     "JournalDemo3": JournalDemo3,
     "JournalDemo4": JournalDemo4,
+    "CommunityDemo1": CommunityDemo1,
+    "CommunityDemo2": CommunityDemo2,
+    "CommunityDemo3": CommunityDemo3,
+    "CommunityDemo4": CommunityDemo4,
+    "CommunityDemo5": CommunityDemo5,
     // HealthDashboard intentionally NOT registered — see import comment above.
     // "HealthDashboard": HealthDashboard,
 }
