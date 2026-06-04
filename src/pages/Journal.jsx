@@ -1,12 +1,16 @@
 import { useState, useEffect } from "react";
 import { base44 } from "@/api/base44Client";
-import { format, parseISO, differenceInDays } from "date-fns";
+import { format, parseISO } from "date-fns";
 import { computeCycleDay } from "@/hooks/useCycleDay";
-import { PenLine, Feather } from "lucide-react";
-import JotterCard from "../components/journal/JotterCard";
+import { Feather, Lock, ChevronRight } from "lucide-react";
 import NewEntrySheet from "../components/journal/NewEntrySheet";
 import JournalInsightsTab from "../components/journal/JournalInsightsTab";
-import JessJournalPrompt from "../components/journal/JessJournalPrompt";
+import PromptCarousel from "../components/journal/PromptCarousel";
+import CycleMirror from "../components/journal/CycleMirror";
+import JournalLedger from "../components/journal/JournalLedger";
+import EntryReader from "../components/journal/EntryReader";
+import TonightReflection from "../components/journal/TonightReflection";
+import InsightTeaser from "../components/journal/InsightTeaser";
 import JessErrorBoundary from "@/components/jess/JessErrorBoundary";
 import {
   PAPER_BG, InkFilter, EditorialFooter, useEditorialFonts,
@@ -52,40 +56,16 @@ function entriesThisCycle(entries, profile) {
 }
 
 function cycleDayOf(profile) {
-  // Single source of truth — same cycle-day math as computeCycleDay.
   if (!profile?.last_period_start_date) return null;
-  try {
-    return computeCycleDay(profile).cycleDay;
-  } catch { return null; }
-}
-
-function calcStreak(entries) {
-  if (!entries.length) return 0;
-  const dates = [...new Set(entries.map(e => e.session_date || e.created_date?.split("T")[0]).filter(Boolean))].sort((a,b) => b.localeCompare(a));
-  const today = new Date().toISOString().split("T")[0];
-  if (dates[0] !== today) return 0;
-  let streak = 1;
-  for (let i = 1; i < dates.length; i++) {
-    const prev = parseISO(dates[i - 1]);
-    const curr = parseISO(dates[i]);
-    if (differenceInDays(prev, curr) === 1) streak++;
-    else break;
-  }
-  return streak;
+  try { return computeCycleDay(profile).cycleDay; } catch { return null; }
 }
 
 function getCurrentPhase(profile) {
-  // Single source of truth — delegate to computeCycleDay (was hard-coded
-  // day<=13 / day<=16 thresholds that disagreed with Today + the gate).
   if (!profile?.last_period_start_date) return null;
   return computeCycleDay(profile).phase;
 }
 
-
 // ── Editorial Masthead — the issue title, wired to real cycle data ──────────
-// The phase word in display script, the inner-season in the secondary hand, the
-// cycle day + UK date, the single heart, and the cycle-count rhythm line. Falls
-// back gracefully to "Journal" when there is no cycle data yet.
 function Masthead({ phase, season, cycleDay, cycleCount, onWrite }) {
   const phaseWord = phase ? phase.charAt(0).toUpperCase() + phase.slice(1) : "Journal";
   const dateLine = format(new Date(), "d MMMM").toUpperCase();
@@ -107,7 +87,7 @@ function Masthead({ phase, season, cycleDay, cycleCount, onWrite }) {
       </div>
       {cycleCount.count > 0 ? (
         <Hand size={20} color={T.inkSoft} carve={false} style={{ marginTop: 12 }}>
-          {cycleCount.count} {cycleCount.label} — you\u2019re building a pattern.
+          {cycleCount.count} {cycleCount.label} — you{"’"}re building a pattern.
         </Hand>
       ) : null}
       <button onClick={onWrite} style={{
@@ -122,21 +102,50 @@ function Masthead({ phase, season, cycleDay, cycleCount, onWrite }) {
   );
 }
 
+// ── Sealed Letters — honest "coming" teaser (Q1+, not built this phase) ──────
+function SealedLettersComing() {
+  return (
+    <section style={{ marginBottom: 30, display: "flex", gap: 16, alignItems: "center",
+      background: T.paperHi, borderRadius: 3, padding: "20px 22px", boxShadow: "0 0 0 1px rgba(51,41,28,0.05)" }}>
+      <div style={{ width: 40, height: 40, borderRadius: "50%", flexShrink: 0, display: "flex", alignItems: "center", justifyContent: "center", background: "#EFE3C9", border: `1px solid ${T.gold}` }}>
+        <Lock size={17} style={{ color: T.gold }} />
+      </div>
+      <div style={{ flex: 1 }}>
+        <Eyebrow mb={4}>Sealed letters · Coming</Eyebrow>
+        <Hand size={19} color={T.inkSoft}>A letter to who you{"’"}ll be — sealed until a date you pick. Not even Jess can open it early.</Hand>
+      </div>
+      <ChevronRight size={18} style={{ color: T.muted }} />
+    </section>
+  );
+}
+
+// ── Echo Wall — honest "coming" teaser (Q2) ──────────────────────────────────
+function EchoComing() {
+  return (
+    <section style={{ marginBottom: 40, textAlign: "center" }}>
+      <Eyebrow mb={6}>Echo wall · Coming</Eyebrow>
+      <Hand size={18} color={T.inkSoft} style={{ display: "block" }}>
+        One day you{"’"}ll be able to leave one line for women in the same phase —{" "}
+        <span style={{ color: T.muted }}>anonymous, held, never replied to.</span>
+      </Hand>
+    </section>
+  );
+}
+
 export default function Journal() {
   useEditorialFonts();
   const [user, setUser] = useState(null);
   const [profile, setProfile] = useState(null);
   const [entries, setEntries] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(false);
   const [activeTab, setActiveTab] = useState("journal");
   const [filterType, setFilterType] = useState("all");
   const [showNewEntry, setShowNewEntry] = useState(false);
   const [editEntry, setEditEntry] = useState(null);
-  // Feature 4 — Jess prompt seed text. When the user taps "Use this
-  // prompt" in JessJournalPrompt we open the New Entry sheet with the
-  // prompt pre-filled. Cleared after the sheet closes so the next manual
-  // "New entry" starts blank.
+  const [readEntry, setReadEntry] = useState(null);
   const [seedText, setSeedText] = useState("");
+  const [seedType, setSeedType] = useState(null);
 
   useEffect(() => {
     (async () => {
@@ -147,10 +156,11 @@ export default function Journal() {
           base44.entities.JournalEntries.filter({ user_id: u.id }, "-created_date", 200).catch(() => []),
           base44.entities.UserProfile.filter({ user_id: u.id }).catch(() => []),
         ]);
-        setEntries(data);
+        setEntries(Array.isArray(data) ? data : []);
         setProfile(profiles[0] || null);
       } catch (err) {
         console.error("Journal page init failed:", err);
+        setError(true);
       } finally {
         setLoading(false);
       }
@@ -158,55 +168,67 @@ export default function Journal() {
   }, []);
 
   const phase = getCurrentPhase(profile);
-  const streak = calcStreak(entries);
   const cycleDay = cycleDayOf(profile);
   const season = phase ? PHASE_SEASON[phase] : null;
   const cycleCount = entriesThisCycle(entries, profile);
 
-  const pinnedEntries = entries.filter(e => e.is_pinned);
-  const unpinnedEntries = entries.filter(e => !e.is_pinned);
+  // Filter + pinned-first ordering for the ledger.
+  const matching = filterType === "all" ? entries : entries.filter((e) => e.card_type === filterType);
+  const ledgerEntries = [...matching.filter((e) => e.is_pinned), ...matching.filter((e) => !e.is_pinned)];
 
-  const filtered = (filterType === "all" ? unpinnedEntries : unpinnedEntries.filter(e => e.card_type === filterType));
-
-  // Split into 2 masonry columns
-  const col1 = filtered.filter((_, i) => i % 2 === 0);
-  const col2 = filtered.filter((_, i) => i % 2 === 1);
+  // ── seed helpers ──
+  const openBlank = () => { setSeedText(""); setSeedType(null); setShowNewEntry(true); };
+  const openSeeded = (text, type = null) => { setSeedText(text || ""); setSeedType(type); setShowNewEntry(true); };
+  const replyToPast = () => openSeeded("Replying to who I was…\n\n", "reflection");
+  const closeComposer = () => { setShowNewEntry(false); setEditEntry(null); setSeedText(""); setSeedType(null); };
 
   const handleSaved = (entry) => {
-    setEntries(prev => {
-      const idx = prev.findIndex(e => e.id === entry.id);
-      if (idx >= 0) {
-        const next = [...prev];
-        next[idx] = entry;
-        return next;
-      }
+    if (!entry) return;
+    setEntries((prev) => {
+      const idx = prev.findIndex((e) => e.id === entry.id);
+      if (idx >= 0) { const next = [...prev]; next[idx] = entry; return next; }
       return [entry, ...prev];
     });
   };
 
   const handleDelete = async (entry) => {
-    await base44.entities.JournalEntries.delete(entry.id);
-    setEntries(prev => prev.filter(e => e.id !== entry.id));
+    try {
+      await base44.entities.JournalEntries.delete(entry.id);
+      setEntries((prev) => prev.filter((e) => e.id !== entry.id));
+    } catch (err) { console.error("Delete entry failed:", err); }
   };
 
   const handlePin = async (entry) => {
-    const updated = await base44.entities.JournalEntries.update(entry.id, { is_pinned: !entry.is_pinned });
-    setEntries(prev => prev.map(e => e.id === entry.id ? { ...e, is_pinned: !e.is_pinned } : e));
+    const next = !entry.is_pinned;
+    setEntries((prev) => prev.map((e) => (e.id === entry.id ? { ...e, is_pinned: next } : e)));
+    setReadEntry((r) => (r && r.id === entry.id ? { ...r, is_pinned: next } : r));
+    try { await base44.entities.JournalEntries.update(entry.id, { is_pinned: next }); }
+    catch (err) { console.error("Pin toggle failed:", err); }
   };
 
-  const handleColorChange = async (entry, color) => {
-    await base44.entities.JournalEntries.update(entry.id, { card_color: color });
-    setEntries(prev => prev.map(e => e.id === entry.id ? { ...e, card_color: color } : e));
-  };
+  const handleEditFromReader = (entry) => { setReadEntry(null); setEditEntry(entry); };
 
-  const handleTodoToggle = (id, todo_items) => {
-    setEntries(prev => prev.map(e => e.id === id ? { ...e, todo_items } : e));
-  };
-
+  // ── loading ──
   if (loading) return (
-    <div className="min-h-screen flex items-center justify-center" style={{ backgroundColor: T.paper }}>
+    <div className="min-h-screen flex items-center justify-center" style={{ ...PAPER_BG }}>
       <div className="w-8 h-8 rounded-full border-2 border-t-transparent animate-spin"
-        style={{ borderColor: "var(--rose-dust-light)", borderTopColor: "var(--rose-dust)" }} />
+        style={{ borderColor: "rgba(168,137,63,0.25)", borderTopColor: T.gold }} />
+    </div>
+  );
+
+  // ── error ──
+  if (error && !user) return (
+    <div className="min-h-screen flex items-center justify-center px-6" style={{ ...PAPER_BG }}>
+      <InkFilter />
+      <div style={{ textAlign: "center", maxWidth: 360 }}>
+        <Eyebrow mb={10}>The Journal</Eyebrow>
+        <Script size={40} style={{ marginBottom: 10 }}>A quiet moment</Script>
+        <Hand size={20} color={T.inkSoft}>We couldn{"’"}t open your journal just now. Check your connection and try again.</Hand>
+        <button onClick={() => window.location.reload()} style={{
+          marginTop: 20, background: "transparent", border: `1px solid ${T.gold}`, padding: "10px 24px",
+          cursor: "pointer", fontFamily: HAND, fontWeight: 600, fontSize: 18, color: T.ink, textShadow: PRESS, borderRadius: 3,
+        }}>Try again</button>
+      </div>
     </div>
   );
 
@@ -214,195 +236,138 @@ export default function Journal() {
     <div className="min-h-screen pb-28" style={{ position: "relative", ...PAPER_BG }}>
       <InkFilter />
 
-      {/* New / Edit entry sheet */}
+      {/* Composer (full-screen editorial overlay) */}
       {(showNewEntry || editEntry) && user && (
         <NewEntrySheet
           user={user}
           phase={phase}
+          cycleDay={cycleDay}
           editEntry={editEntry}
           seedText={seedText}
-          onClose={() => { setShowNewEntry(false); setEditEntry(null); setSeedText(""); }}
+          seedCardType={seedType}
+          onClose={closeComposer}
           onSaved={handleSaved}
         />
       )}
 
+      {/* Entry reader (open from the ledger) */}
+      <EntryReader
+        entry={readEntry}
+        onClose={() => setReadEntry(null)}
+        onEdit={handleEditFromReader}
+        onDelete={handleDelete}
+        onPin={handlePin}
+      />
+
       <div className="max-w-2xl mx-auto px-4">
 
-        {/* ── Editorial Masthead ── phase word + inner-season + cycle day + UK date + rhythm + New entry */}
-        <Masthead
-          phase={phase}
-          season={season}
-          cycleDay={cycleDay}
-          cycleCount={cycleCount}
-          onWrite={() => setShowNewEntry(true)}
-        />
+        <Masthead phase={phase} season={season} cycleDay={cycleDay} cycleCount={cycleCount} onWrite={openBlank} />
 
-        {/* ── Top-level tabs: Journal / Insights ── */}
+        {/* Top-level tabs */}
         <div className="flex gap-1 mb-5 p-1 rounded-2xl" style={{ backgroundColor: "var(--ivory-dark)", border: "1px solid var(--border)" }}>
-          {[{ id: "journal", label: "Journal" }, { id: "insights", label: "Insights" }].map(tab => (
-            <button
-              key={tab.id}
-              onClick={() => setActiveTab(tab.id)}
+          {[{ id: "journal", label: "Journal" }, { id: "insights", label: "Insights" }].map((tab) => (
+            <button key={tab.id} onClick={() => setActiveTab(tab.id)}
               className="flex-1 py-2.5 rounded-xl text-sm font-semibold transition-all"
               style={{
                 backgroundColor: activeTab === tab.id ? "var(--plum)" : "transparent",
                 color: activeTab === tab.id ? "white" : "var(--mauve)",
                 fontFamily: "'Inter', sans-serif",
-              }}
-            >
-              {tab.label}
-            </button>
+              }}>{tab.label}</button>
           ))}
         </div>
 
-        {/* ── INSIGHTS TAB ── */}
+        {/* INSIGHTS TAB (unchanged) */}
         {activeTab === "insights" && user && (
           <JournalInsightsTab user={user} entries={entries} />
         )}
 
-        {/* ── JOURNAL TAB ── */}
+        {/* JOURNAL TAB */}
         {activeTab === "journal" && (
           <>
-            {/* Jess prompt card — Feature 4, Wing #1
-                Sprint 3 S3-3 — quiet error boundary so a crash in the
-                Jess prompt never breaks the Journal page around it. */}
+            {/* Prompt wing — Jess's live daily prompt + phase carousel */}
             {user && (
-              <JessErrorBoundary variant="quiet" label="JessJournalPrompt">
-                <JessJournalPrompt
+              <JessErrorBoundary variant="quiet" label="PromptCarousel">
+                <PromptCarousel
                   user={user}
                   profile={profile}
                   phase={phase}
+                  cycleDay={cycleDay}
                   lastEntry={entries[0] || null}
-                  onUsePrompt={(promptText) => {
-                    // Pre-fill the New Entry sheet with the prompt + a blank
-                    // line so the user lands on a fresh writing line below.
-                    setSeedText(`${promptText}\n\n`);
-                    setShowNewEntry(true);
-                  }}
+                  onWrite={(p) => openSeeded(`${p}\n\n`)}
                 />
               </JessErrorBoundary>
             )}
 
+            {/* On This Day — Cycle Mirror (free) */}
+            {entries.length > 0 && (
+              <CycleMirror
+                entries={entries}
+                profile={profile}
+                phase={phase}
+                todayCycleDay={cycleDay}
+                onReply={replyToPast}
+              />
+            )}
+
+            {/* Insight teaser → Insights tab */}
+            {entries.length > 0 && (
+              <InsightTeaser entries={entries} onOpen={() => setActiveTab("insights")} />
+            )}
+
             {/* Filter pills */}
             <style>{`.jfilter-scroll::-webkit-scrollbar{display:none}`}</style>
-            <div className="jfilter-scroll" style={{ display: "flex", gap: 6, overflowX: "auto", paddingBottom: 4, marginBottom: 16, scrollbarWidth: "none" }}>
-              {FILTER_TYPES.map(f => (
-                <button
-                  key={f.id}
-                  onClick={() => setFilterType(f.id)}
-                  style={{
-                    flexShrink: 0, borderRadius: 9999, padding: "6px 14px",
-                    fontSize: 12, fontWeight: 600, fontFamily: "'Inter', sans-serif",
-                    border: "none", cursor: "pointer",
-                    backgroundColor: filterType === f.id ? "var(--plum)" : "var(--surface)",
-                    color: filterType === f.id ? "white" : "var(--mauve)",
-                    boxShadow: filterType === f.id ? "0 2px 8px rgba(42,32,53,0.15)" : "0 1px 3px rgba(42,32,53,0.06)",
-                    transition: "all 0.15s",
-                  }}
-                >
-                  {f.label}
-                </button>
+            <div className="jfilter-scroll" style={{ display: "flex", gap: 6, overflowX: "auto", paddingBottom: 4, marginBottom: 18, scrollbarWidth: "none" }}>
+              {FILTER_TYPES.map((f) => (
+                <button key={f.id} onClick={() => setFilterType(f.id)} style={{
+                  flexShrink: 0, borderRadius: 9999, padding: "6px 14px", fontSize: 12, fontWeight: 700,
+                  fontFamily: UI, border: `1px solid ${filterType === f.id ? T.ink : T.paperDeep}`, cursor: "pointer",
+                  letterSpacing: 0.4, textTransform: "uppercase",
+                  backgroundColor: filterType === f.id ? T.ink : "transparent",
+                  color: filterType === f.id ? T.paper : T.muted,
+                }}>{f.label}</button>
               ))}
             </div>
 
             {/* Empty state */}
             {entries.length === 0 && (
-              <div style={{ textAlign: "center", paddingTop: 60, paddingBottom: 40 }}>
-                <div style={{ width: 56, height: 56, borderRadius: 18, backgroundColor: "var(--rose-dust-subtle)", display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 16px" }}>
-                  <PenLine style={{ width: 24, height: 24, color: "var(--rose-dust)" }} />
-                </div>
-                <h2 style={{ fontFamily: "'Fraunces', serif", fontSize: 22, color: "var(--plum)", marginBottom: 8 }}>
-                  Your journal is waiting
-                </h2>
-                <p style={{ fontSize: 14, color: "var(--mauve)", fontFamily: "'Inter', sans-serif", marginBottom: 28 }}>
-                  Tap new entry to write your first
-                </p>
-                <div style={{ display: "flex", gap: 10, justifyContent: "center", flexWrap: "wrap" }}>
-                  {[{ label: "Free write" }, { label: "Gratitude" }, { label: "Dream log" }].map(t => (
-                    <button
-                      key={t.label}
-                      onClick={() => setShowNewEntry(true)}
-                      style={{
-                        borderRadius: 14, padding: "12px 18px",
-                        backgroundColor: "var(--surface)", border: "1px solid var(--border)",
-                        cursor: "pointer", fontSize: 13, fontWeight: 600,
-                        color: "var(--plum)", fontFamily: "'Inter', sans-serif",
-                      }}
-                    >
-                      {t.label}
-                    </button>
+              <div style={{ textAlign: "center", paddingTop: 30, paddingBottom: 30 }}>
+                <Eyebrow mb={10}>Your first page</Eyebrow>
+                <Script size={36} style={{ marginBottom: 10 }}>A publication of one</Script>
+                <Hand size={20} color={T.inkSoft} style={{ marginBottom: 22 }}>
+                  Nothing here yet. Begin with a line — it is locked to you, always.
+                </Hand>
+                <div style={{ display: "flex", gap: 14, justifyContent: "center", flexWrap: "wrap" }}>
+                  {[{ label: "Free write" }, { label: "Gratitude" }, { label: "Reflection" }].map((t) => (
+                    <button key={t.label} onClick={openBlank} style={{
+                      background: "transparent", border: `1px solid ${T.gold}`, borderRadius: 3, padding: "10px 18px",
+                      cursor: "pointer", fontFamily: HAND, fontSize: 18, fontWeight: 600, color: T.ink, textShadow: PRESS,
+                    }}>{t.label}</button>
                   ))}
                 </div>
               </div>
             )}
 
-            {/* Pinned strip */}
-            {pinnedEntries.length > 0 && filterType === "all" && (
-              <div style={{ marginBottom: 20 }}>
-                <p style={{ fontSize: 11, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.1em", color: "var(--mauve)", fontFamily: "'Inter', sans-serif", marginBottom: 10 }}>
-                  Pinned
-                </p>
-                <style>{`.pinned-scroll::-webkit-scrollbar{display:none}`}</style>
-                <div className="pinned-scroll" style={{ display: "flex", gap: 12, overflowX: "auto", paddingBottom: 8, scrollbarWidth: "none" }}>
-                  {pinnedEntries.map(entry => (
-                    <div key={entry.id} style={{ flexShrink: 0, width: 200 }}>
-                      <JotterCard
-                        entry={entry}
-                        onEdit={e => setEditEntry(e)}
-                        onDelete={handleDelete}
-                        onPin={handlePin}
-                        onColorChange={handleColorChange}
-                        onTodoToggle={handleTodoToggle}
-                      />
-                    </div>
-                  ))}
-                </div>
+            {/* The ledger */}
+            {ledgerEntries.length > 0 && (
+              <JournalLedger entries={ledgerEntries} onTap={(e) => setReadEntry(e)} />
+            )}
+
+            {ledgerEntries.length === 0 && entries.length > 0 && (
+              <div style={{ textAlign: "center", padding: "30px 20px 46px" }}>
+                <Hand size={20} color={T.inkSoft}>No {filterType} entries yet.</Hand>
               </div>
             )}
 
-            {/* Masonry grid */}
-            {filtered.length > 0 && (
-              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12, alignItems: "start" }}>
-                <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
-                  {col1.map(entry => (
-                    <JotterCard
-                      key={entry.id}
-                      entry={entry}
-                      onEdit={e => setEditEntry(e)}
-                      onDelete={handleDelete}
-                      onPin={handlePin}
-                      onColorChange={handleColorChange}
-                      onTodoToggle={handleTodoToggle}
-                    />
-                  ))}
-                </div>
-                <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
-                  {col2.map(entry => (
-                    <JotterCard
-                      key={entry.id}
-                      entry={entry}
-                      onEdit={e => setEditEntry(e)}
-                      onDelete={handleDelete}
-                      onPin={handlePin}
-                      onColorChange={handleColorChange}
-                      onTodoToggle={handleTodoToggle}
-                    />
-                  ))}
-                </div>
-              </div>
-            )}
+            {/* Tonight's reflection */}
+            <TonightReflection phase={phase} onWrite={(p) => openSeeded(`${p}\n\n`, "reflection")} />
 
-            {filtered.length === 0 && entries.length > 0 && (
-              <div style={{ textAlign: "center", padding: "40px 20px" }}>
-                <p style={{ fontSize: 14, color: "var(--mauve)", fontFamily: "'Inter', sans-serif" }}>
-                  No {filterType} entries yet.
-                </p>
-              </div>
-            )}
+            {/* Honest "coming" teasers (next phases) */}
+            <SealedLettersComing />
+            <EchoComing />
           </>
         )}
 
-        {/* ── Privacy footer ── */}
+        {/* Privacy footer */}
         <div style={{ marginTop: 40 }}>
           <EditorialFooter />
         </div>

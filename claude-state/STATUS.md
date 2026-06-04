@@ -1,3 +1,23 @@
+> SNAPSHOT 2026-06-04 (session g) — Journal PHASE 1 (Q1 solo core) wired to REAL base44 data, on the Phase 0 Editorial shell. Commit c1c982b on bb9caa5. PATCH-READY, NOT deployed. Canonical = repo claude-state/STATUS.md.
+
+# FemWell — STATUS (the shared baton) — SINGLE SOURCE OF TRUTH
+
+## UPDATE 2026-06-04 (session g) — Journal Phase 1: the solo core (PATCH-READY)
+- **Commit `c1c982b`** (on top of origin/main `bb9caa5`) — Phase 1 = the master-plan Q1 solo core, built for real on **production `Journal.jsx`** atop the Phase 0 Editorial shell. Wired to live `JournalEntries` + `UserProfile`; production page (not /Ideas demo). **shipped(pending) — NOT deployed** (Cowork has no push cred; Halli deploys).
+- **What shipped (all wired to real data, all states empty/loading/error/populated):**
+  - **The LEDGER** (`JournalLedger.jsx`) — editorial table-of-contents of real entries (type-coloured rule, label, relative UK date, drop-initial, thread chip from first tag), pinned-first, respects the filter pills. Replaces the JotterCard masonry.
+  - **The READER** (`EntryReader.jsx`) — full-entry serif reading view; opens from a Ledger line. Preserves the old JotterCard actions: **Pin / Edit / Delete** (delete has a confirm). Handles gratitude (numbered) + todo (checklist) bodies.
+  - **The COMPOSER** — `NewEntrySheet.jsx` reskinned to editorial full-screen cream (Write mode). 4-mode strip (Write built; **Guided/One-line/Voice = "coming"** affordances, not built). Metadata chip (phase · Day n), on-device privacy line. **All existing save logic + types preserved verbatim** (free/gratitude/mood/todo/reflection/affirmation/dream, mood faces, tags, colour, todo items); payload unchanged.
+  - **PROMPTS** (`PromptCarousel.jsx`) — editorial "A note from Jess" carousel. **Reuses the live `jessAgentService`** (same daily-cached LLM prompt the old wing used) as the lead prompt + phase-tuned fallbacks; "Write to this" seeds the composer, "Another prompt" cycles. Replaces the raw sage `JessJournalPrompt` card (file kept, now orphaned). Wrapped in `JessErrorBoundary`.
+  - **CYCLE MIRROR** (`CycleMirror.jsx`) — "On This Day", **free, no paywall**, 100% on-device. Surfaces the user's own past words from the same cycle day (cycle day derived per-entry from date+profile via `journalDates.cycleDayForDate`, ±1 day), templated phase-aware Jess gloss, "Reply to who you were" seeds the composer. Needs-≥1-cycle empty affordance.
+  - **TONIGHT'S REFLECTION** (`TonightReflection.jsx`) — dusk close-out card in the Journal (locked decision), phase-aware 90s prompt; "Close the day" seeds a reflection.
+  - **INSIGHT TEASER** (`InsightTeaser.jsx`) — one line computed from real entries (this-week count + evening lean) that switches to the existing **Insights tab (kept untouched)**.
+  - **Cleanups:** emoji sweep confirmed zero across all journal surfaces (Lucide only); `affirmation` present in both the filter row and the composer type set. Honest "Sealed letters · Coming" + "Echo wall · Coming" teasers (next phases), not built.
+- **Locked decisions honoured:** production `Journal.jsx` is the target; Ephesis (script) + Caveat (hand) + Cormorant (reading) fonts; serif for long reading, hand for short voiced lines; Tonight's Reflection lives in the Journal; **pen-depth FROZEN (inkCarve untouched)**; **no paywalls anywhere (Cycle Mirror fully free)**; no emoji (Lucide only); UK.
+- **Roster:** Ms Atelier (craft, reusing the frozen Editorial atoms) → **Ms Verify GATE PASS** — `npm run build` clean, `eslint --quiet` clean on all 8 journal files, and a headless **server-render smoke test of 19 states** (each surface × empty/loading/error/populated/edit/seed + full page) all PASS with **zero emoji** in rendered output and no runtime crashes. Confirmed nothing existing broke: full app build compiles; `JotterCard`/`JessJournalPrompt` safely orphaned (files intact, no dangling imports); Insights tab unchanged.
+- **Patch:** `femwell_journal_phase1_2026-06-03.patch` (workspace root) — plain `git diff bb9caa5..c1c982b` of the 9 files (+ this STATUS). **`git apply --check` verified clean on a pristine `bb9caa5` checkout.** Apply → push → deploy → record the new live bundle hash here (replaces `index-5QN9EItH.js`).
+- **Not done (by design):** Sealed Letters (Q1, deferred to a later pass — needs SecureStore + real client-side encryption), Echo/Witness/Twin (Q2–Q4), voice/guided/one-line compose, schema additions (`mode`/`thread`/`cycle_day`/`is_burn` — Mirror derives cycle day instead so no schema change was needed this phase).
+
 # FemWell — STATUS (the shared baton) — SINGLE SOURCE OF TRUTH
 
 ## UPDATE 2026-06-03/04 — JOURNAL PHASE 0: Editorial shell on PRODUCTION Journal.jsx (PATCH-READY, NOT DEPLOYED)
