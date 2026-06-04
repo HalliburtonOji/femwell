@@ -10,6 +10,7 @@ import ErrorBoundary from "./components/common/ErrorBoundary";
 
 import { MilestoneEventListener } from "./components/programs/MilestoneCelebrationModal";
 import { PodcastPlayerProvider } from "./components/lifestyle/listen/PodcastPlayerProvider";
+import { PAPER_BG } from "./components/journal/Editorial";
 import MiniPlayer from "./components/lifestyle/listen/MiniPlayer";
 import ExpandedPlayer from "./components/lifestyle/listen/ExpandedPlayer";
 
@@ -52,7 +53,9 @@ export default function Layout({ children, currentPageName }) {
 
   return (
     <PodcastPlayerProvider>
-    <div className="min-h-screen" style={{ backgroundColor: "var(--ivory)" }}>
+    {/* App shell — the real cream paper texture is the base surface for every
+        page (the per-page cream backgrounds now sit seamlessly on top). */}
+    <div className="min-h-screen" style={{ ...PAPER_BG }}>
       <style>{`@media print { .no-print { display: none !important; } .print-only { display: block !important; } }`}</style>
       {showNav && <FloatingSidebar currentPageName={currentPageName} mode={navMode} openQuickLog={openQuickLog} />}
       <main

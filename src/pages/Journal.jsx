@@ -217,25 +217,9 @@ export default function Journal() {
     })();
   }, []);
 
-  // Full-height paper — paint the cream + grain onto html/body so no bare white
-  // shows on overscroll or past the end of the scroll. The page root alone
-  // leaves the document background visible when the content rubber-bands.
-  useEffect(() => {
-    const html = document.documentElement;
-    const body = document.body;
-    const prevHtmlBg = html.style.background;
-    const prevBodyCss = body.style.cssText;
-    html.style.background = T.paper;
-    Object.assign(body.style, {
-      backgroundColor: PAPER_BG.backgroundColor,
-      backgroundImage: PAPER_BG.backgroundImage,
-      backgroundSize: PAPER_BG.backgroundSize,
-      backgroundRepeat: PAPER_BG.backgroundRepeat,
-      backgroundAttachment: PAPER_BG.backgroundAttachment,
-      backgroundBlendMode: PAPER_BG.backgroundBlendMode,
-    });
-    return () => { html.style.background = prevHtmlBg; body.style.cssText = prevBodyCss; };
-  }, []);
+  // (The full-height paper fix is now global — html/body cream in index.css +
+  // PAPER_BG on the Layout shell — so the Journal-only body-paint hack was
+  // removed. The Journal root still carries PAPER_BG for its own surface.)
 
   const phase = getCurrentPhase(profile);
   const cycleDay = cycleDayOf(profile);

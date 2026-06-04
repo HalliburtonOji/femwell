@@ -1,4 +1,7 @@
 @import url('https://fonts.googleapis.com/css2?family=Fraunces:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400;1,500&family=Inter:wght@300;400;500;600;700&display=swap');
+/* Editorial type kit — loaded app-wide so the journal's look is the default
+   everywhere (Cormorant reading serif · Ephesis display script · Caveat hand). */
+@import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,500;1,600&family=Ephesis&family=Caveat:wght@400;500;600;700&display=swap');
 
 @tailwind base;
 @tailwind components;
@@ -18,19 +21,21 @@
        `min-height: var(--femwell-touch-min)`. */
     --femwell-touch-min: 44px;
 
-    /* FemWell Premium Palette */
-    --ivory: #FAF8F5;
-    --ivory-dark: #F3EFE9;
-    --surface: #FFFFFF;
-    --surface-raised: #FDFCFB;
-    --plum: #2A2035;
-    --plum-light: #3D3047;
+    /* FemWell Premium Palette — remapped to the EDITORIAL paper/ink system so
+       the whole app shares the journal's look through this token layer.
+       (Accent rose/sage/gold kept for contrast; only the neutrals shift.) */
+    --ivory: #ECE7DA;          /* page paper (was near-white) */
+    --ivory-dark: #E2DAC8;     /* hover / inset cream */
+    --surface: #F4EFE3;        /* cards = warm cream, not stark white */
+    --surface-raised: #F8F3E8;
+    --plum: #3A2C1A;           /* primary ink = espresso (was dark purple) */
+    --plum-light: #4A3826;
     --rose-dust: #C4849A;
     --rose-dust-light: #E8C4D0;
     --rose-dust-subtle: #F5ECF0;
-    --mauve: #8A7E88;
-    --mauve-light: #C5BAC3;
-    --mauve-subtle: #F0EBF0;
+    --mauve: #6E6557;          /* secondary ink — legible muted on cream */
+    --mauve-light: #9B8B7A;
+    --mauve-subtle: #EDE7DA;
     --sage: #7A9E8E;
     --sage-light: #B5CEC5;
     --sage-subtle: #EBF2EF;
@@ -44,9 +49,9 @@
     --amber-streak: #F59E0B;
     --font-serif-heading: 'Fraunces', 'DM Serif Display', Georgia, serif;
 
-    /* MP-A Lifestyle tokens (cream / rose family) */
-    --cream: #f7f0e6;
-    --cream-2: #f0e6d8;
+    /* MP-A Lifestyle tokens (cream / rose family) — aligned to editorial paper */
+    --cream: #ECE7DA;
+    --cream-2: #E2DAC8;
     --rose-primary: #D45E52;
     --rose-soft-bg: #FBE9E6;
     --rose-soft: #d4a5a0;
@@ -54,37 +59,39 @@
     --plum-deep: #2b1e16;
     --plum-accent: #4A2A3A;
     --plum-mute: #8a7768;
-    --gold: #C9A95C;
-    --ink-line: rgba(43,30,22,0.10);
+    --gold: #A8893F;
+    --ink-line: rgba(43,30,22,0.12);
     --shadow-card: 0 8px 22px -12px rgba(74,42,58,0.18);
     --shadow-card-hover: 0 20px 40px -16px rgba(74,42,58,0.28);
     --shadow-fab: 0 8px 22px -8px rgba(212,94,82,0.5);
 
-    --border: #EDE8E4;
-    --border-subtle: #F5F1EE;
+    --border: #D8CFBC;         /* deckle hairline (editorial paperDeep) */
+    --border-subtle: #E7DFCE;
     --shadow-sm: 0 1px 3px rgba(42,32,53,0.06), 0 1px 2px rgba(42,32,53,0.04);
     --shadow-md: 0 4px 16px rgba(42,32,53,0.08), 0 2px 6px rgba(42,32,53,0.04);
     --shadow-lg: 0 12px 40px rgba(42,32,53,0.10), 0 4px 12px rgba(42,32,53,0.06);
 
     /* shadcn compat */
-    --background: 40 30% 97%;
-    --foreground: 270 20% 17%;
-    --card: 0 0% 100%;
-    --card-foreground: 270 20% 17%;
-    --popover: 0 0% 100%;
-    --popover-foreground: 270 20% 17%;
+    /* shadcn neutrals remapped to editorial paper/ink (cream bg, warm-cream
+       cards, espresso foreground) so shadcn components share the look too. */
+    --background: 43 26% 89%;
+    --foreground: 33 38% 16%;
+    --card: 40 33% 93%;
+    --card-foreground: 33 38% 16%;
+    --popover: 40 33% 93%;
+    --popover-foreground: 33 38% 16%;
     --primary: 340 30% 64%;
     --primary-foreground: 0 0% 100%;
     --secondary: 300 8% 93%;
     --secondary-foreground: 270 20% 17%;
-    --muted: 30 20% 95%;
-    --muted-foreground: 270 8% 54%;
-    --accent: 300 8% 93%;
-    --accent-foreground: 270 20% 17%;
+    --muted: 43 22% 85%;
+    --muted-foreground: 35 12% 39%;
+    --accent: 43 22% 85%;
+    --accent-foreground: 33 38% 16%;
     --destructive: 0 72% 58%;
     --destructive-foreground: 0 0% 100%;
-    --border: 30 18% 91%;
-    --input: 30 18% 91%;
+    --border: 38 24% 79%;
+    --input: 38 24% 79%;
     --ring: 340 30% 64%;
     --radius: 0.75rem;
     --sidebar-background: 0 0% 100%;
@@ -155,8 +162,13 @@
     border: 0;
   }
 
+  /* Global end-of-scroll fix — paint the cream paper onto html AND body so no
+     bare white ever shows past the content or in the overscroll/rubber-band
+     area, on EVERY page (replaces the old Journal-only body-paint hack). */
   html, body {
     overscroll-behavior: none;
+    background-color: var(--ivory);
+    min-height: 100%;
   }
 
   button, a, [role="tab"], [role="button"], label {
