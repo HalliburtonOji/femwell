@@ -1,8 +1,9 @@
 import { useState, useEffect } from "react";
 import { base44 } from "@/api/base44Client";
 import { format, parseISO } from "date-fns";
+import { useNavigate } from "react-router-dom";
 import { computeCycleDay } from "@/hooks/useCycleDay";
-import { Feather, Lock, ChevronRight, Hash } from "lucide-react";
+import { Feather, ChevronRight, Hash, Stethoscope } from "lucide-react";
 import NewEntrySheet from "../components/journal/NewEntrySheet";
 import JournalInsightsTab from "../components/journal/JournalInsightsTab";
 import PromptCarousel from "../components/journal/PromptCarousel";
@@ -12,6 +13,8 @@ import ThreadView from "../components/journal/ThreadView";
 import EntryReader from "../components/journal/EntryReader";
 import TonightReflection from "../components/journal/TonightReflection";
 import InsightTeaser from "../components/journal/InsightTeaser";
+import JournalSearch from "../components/journal/JournalSearch";
+import SealedLettersSection from "../components/journal/sealed/SealedLettersSection";
 import { collectThreads, entriesInThread } from "../components/journal/threads";
 import JessErrorBoundary from "@/components/jess/JessErrorBoundary";
 import {
@@ -127,20 +130,24 @@ function ThreadsStrip({ threads, onOpen }) {
   );
 }
 
-// ── Sealed Letters — honest "coming" teaser (Q1+, not built this phase) ──────
-function SealedLettersComing() {
+// ── Doctor cross-link — turn entries into a doctor-ready summary (Phase 2) ────
+// Reuses the existing /DoctorExport surface (which already reads JournalEntries
+// over a 90-day window). Burn entries are never persisted and sealed letters are
+// a separate entity, so neither leaks into the export.
+function DoctorCrossLink({ onOpen }) {
   return (
-    <section style={{ marginBottom: 30, display: "flex", gap: 16, alignItems: "center",
-      background: T.paperHi, borderRadius: 3, padding: "20px 22px", boxShadow: "0 0 0 1px rgba(51,41,28,0.05)" }}>
+    <button onClick={onOpen} style={{
+      width: "100%", textAlign: "left", marginBottom: 30, display: "flex", gap: 16, alignItems: "center", cursor: "pointer",
+      background: T.paperHi, borderRadius: 3, padding: "18px 20px", border: "none", boxShadow: "0 0 0 1px rgba(51,41,28,0.05)" }}>
       <div style={{ width: 40, height: 40, borderRadius: "50%", flexShrink: 0, display: "flex", alignItems: "center", justifyContent: "center", background: "#EFE3C9", border: `1px solid ${T.gold}` }}>
-        <Lock size={17} style={{ color: T.gold }} />
+        <Stethoscope size={17} style={{ color: T.gold }} />
       </div>
       <div style={{ flex: 1 }}>
-        <Eyebrow mb={4}>Sealed letters · Coming</Eyebrow>
-        <Hand size={19} color={T.inkSoft}>A letter to who you{"’"}ll be — sealed until a date you pick. Not even Jess can open it early.</Hand>
+        <Eyebrow mb={4}>Bring this to your GP</Eyebrow>
+        <Hand size={19} color={T.inkSoft}>Turn your recent entries into a doctor-ready summary — patterns, moods and notes, ready to share.</Hand>
       </div>
       <ChevronRight size={18} style={{ color: T.muted }} />
-    </section>
+    </button>
   );
 }
 
@@ -159,6 +166,7 @@ function EchoComing() {
 
 export default function Journal() {
   useEditorialFonts();
+  const navigate = useNavigate();
   const [user, setUser] = useState(null);
   const [profile, setProfile] = useState(null);
   const [entries, setEntries] = useState([]);
@@ -173,6 +181,7 @@ export default function Journal() {
   const [seedText, setSeedText] = useState("");
   const [seedType, setSeedType] = useState(null);
   const [seedThread, setSeedThread] = useState("");
+  const [searching, setSearching] = useState(false);
 
   useEffect(() => {
     (async () => {
@@ -330,6 +339,17 @@ export default function Journal() {
         {/* JOURNAL TAB · MAIN */}
         {activeTab === "journal" && !threadFilter && (
           <>
+            {/* Full-text search across your own entries */}
+            {entries.length > 0 && (
+              <JournalSearch
+                entries={entries}
+                onTap={(e) => setReadEntry(e)}
+                onThread={(t) => setThreadFilter(t)}
+                onSearchingChange={setSearching}
+              />
+            )}
+            {!searching && (
+              <>
             {/* Prompt wing — Jess's live daily prompt + phase carousel */}
             {user && (
               <JessErrorBoundary variant="quiet" label="PromptCarousel">
@@ -407,12 +427,19 @@ export default function Journal() {
               </div>
             )}
 
+            {/* Doctor-ready summary cross-link */}
+            {entries.length > 0 && <DoctorCrossLink onOpen={() => navigate("/DoctorExport")} />}
+
             {/* Tonight's reflection */}
             <TonightReflection phase={phase} onWrite={(p) => openSeeded(`${p}\n\n`, "reflection")} />
 
-            {/* Honest "coming" teasers (next phases) */}
-            <SealedLettersComing />
+            {/* Sealed Letters — real, encrypted, inside the Journal (Phase 2) */}
+            <SealedLettersSection user={user} profile={profile} />
+
+            {/* Echo wall — honest "coming" teaser (Q2) */}
             <EchoComing />
+              </>
+            )}
           </>
         )}
 

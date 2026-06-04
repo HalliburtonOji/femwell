@@ -1,5 +1,5 @@
-import { useState, useEffect } from "react";
-import { Plus, Frown, Meh, Smile, Mic, Lock, Sparkles, ArrowLeft, ArrowRight } from "lucide-react";
+import { useState, useEffect, useRef, useMemo } from "react";
+import { Plus, Frown, Meh, Smile, Mic, Square, Moon, Lock, Sparkles, ArrowLeft, ArrowRight } from "lucide-react";
 import { base44 } from "@/api/base44Client";
 import { PAPER_BG, T, UI, HAND, SERIF, PRESS, Script, Hand, Eyebrow, Rule, Chip } from "./Editorial";
 
@@ -22,10 +22,9 @@ const CARD_TYPES = [
 ];
 const LABEL_OF = Object.fromEntries(CARD_TYPES.map((t) => [t.id, t.label]));
 
-// Compose modes — Write + Guided are built; One-line / Voice are honest
-// "coming" affordances (not wired this phase).
-const COMPOSE_MODES = ["Write", "Guided", "One-line", "Voice"];
-const COMING_MODES = new Set(["One-line", "Voice"]);
+// Compose modes — all five are built in Phase 2:
+//   Write · Guided · One-line · Voice (Web Speech transcription) · Burn (release, never saved).
+const COMPOSE_MODES = ["Write", "Guided", "One-line", "Voice", "Burn"];
 
 const PHASE_PROMPTS = {
   menstrual:  ["What do I need to release this cycle?", "How can I be gentler with myself today?", "What am I letting go of?"],
@@ -75,7 +74,7 @@ export default function NewEntrySheet({
     ? (Array.isArray(editEntry.tags) ? editEntry.tags : String(editEntry.tags).split(",").map((s) => s.trim()).filter(Boolean))
     : [];
 
-  const [mode, setMode] = useState("Write"); // Write + Guided built; others "coming"
+  const [mode, setMode] = useState("Write"); // all five modes built (Phase 2)
   const [cardType, setCardType] = useState(editEntry?.card_type || seedCardType || "free");
   const [color, setColor] = useState(editEntry?.card_color || randomColor());
   const [text, setText] = useState(editEntry?.text || seedText || "");
@@ -91,6 +90,20 @@ export default function NewEntrySheet({
   const [guidedStep, setGuidedStep] = useState(0);
   const [guidedAnswers, setGuidedAnswers] = useState([]);
 
+  // Burn state — the release lifecycle (write -> release -> gone, never saved)
+  const [burning, setBurning] = useState(false);
+
+  // Voice state — real on-device transcription via the Web Speech API
+  // (same engine the Planner's VoiceScheduler ships). Whisper-small on-device
+  // remains the master-plan upgrade; this is the honest interim real path.
+  const recRef = useRef(null);
+  const [listening, setListening] = useState(false);
+  const [voiceText, setVoiceText] = useState("");
+  const voiceSupported = useMemo(() => {
+    if (typeof window === "undefined") return false;
+    return !!(window.SpeechRecognition || window.webkitSpeechRecognition);
+  }, []);
+
   const prompts = PHASE_PROMPTS[phase] || PHASE_PROMPTS.default;
   const guidedSteps = GUIDED_FLOW[phase] || GUIDED_FLOW.default;
 
@@ -101,6 +114,9 @@ export default function NewEntrySheet({
       setGratitudes([parts[0] || "", parts[1] || "", parts[2] || ""]);
     }
   }, [editEntry]);
+
+  // Stop any live recognition when the sheet unmounts.
+  useEffect(() => () => { try { recRef.current && recRef.current.abort(); } catch { /* swallow */ } }, []);
 
   // ── save logic — payload shape UNCHANGED; tags rebuilt from thread + extras ──
   const handleSave = async () => {
@@ -168,14 +184,65 @@ export default function NewEntrySheet({
     setMode("Write"); // land on the normal form to add thread / mood / colour and save
   };
 
+  // ── Voice helpers (Web Speech API) ──
+  const startVoice = () => {
+    const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+    if (!SR) return;
+    const rec = new SR();
+    rec.lang = "en-GB";
+    rec.interimResults = true;
+    rec.continuous = true;
+    rec.maxAlternatives = 1;
+    let finalText = voiceText ? voiceText + " " : "";
+    rec.onresult = (e) => {
+      let interim = "";
+      for (let i = e.resultIndex; i < e.results.length; i++) {
+        const piece = e.results[i][0].transcript;
+        if (e.results[i].isFinal) finalText += piece + " ";
+        else interim += piece;
+      }
+      setVoiceText((finalText + interim).trim());
+    };
+    rec.onerror = () => { /* swallow — onend handles the transition */ };
+    rec.onend = () => setListening(false);
+    recRef.current = rec;
+    setListening(true);
+    try { rec.start(); } catch { /* re-entrant start is harmless */ }
+  };
+  const stopVoice = () => { try { recRef.current && recRef.current.stop(); } catch { /* swallow */ } setListening(false); };
+  const useVoice = () => {
+    stopVoice();
+    if (voiceText.trim()) setText((t) => (t ? t + "\n" : "") + voiceText.trim());
+    setVoiceText("");
+    setMode("Write");
+  };
+
+  // ── Burn helpers — release, never persisted (no entity is ever created) ──
+  const handleRelease = () => {
+    if (!text.trim()) { onClose(); return; }
+    setBurning(true);
+    setTimeout(() => { setText(""); onClose(); }, 720);
+  };
+
   const chooseMode = (m) => {
-    if (COMING_MODES.has(m)) return;
+    if (m === mode) return;
+    if (mode === "Voice" && m !== "Voice") stopVoice();
     setMode(m);
     if (m === "Guided") setGuidedStep(0);
+    if (m === "One-line") setCardType("free");
   };
 
   const guided = mode === "Guided";
   const oneLine = mode === "One-line";
+  const voice = mode === "Voice";
+  const burn = mode === "Burn";
+
+  const titleText = guided ? "A guided entry"
+    : oneLine ? "One line"
+    : voice ? "Say it"
+    : burn ? "Let it go"
+    : (LABEL_OF[cardType] || "Entry");
+
   const saveDisabled = saving
     || (cardType === "gratitude" && !gratitudes.some(Boolean))
     || (cardType === "todo" && todoItems.length === 0)
@@ -183,6 +250,10 @@ export default function NewEntrySheet({
 
   return (
     <div style={{ position: "fixed", inset: 0, zIndex: 90, ...PAPER_BG, overflowY: "auto", padding: "30px 26px 44px" }}>
+      <style>{`
+        @keyframes fwReleaseAway { 0% { opacity: 1; transform: translateY(0); filter: blur(0); } 100% { opacity: 0; transform: translateY(-14px); filter: blur(3px); } }
+        @media (prefers-reduced-motion: reduce) { .fw-burning { animation: none !important; opacity: 0.2 !important; } }
+      `}</style>
       <div style={{ maxWidth: 620, margin: "0 auto" }}>
         {/* header */}
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 16 }}>
@@ -190,20 +261,23 @@ export default function NewEntrySheet({
           <button onClick={onClose} style={{ background: "transparent", border: "none", cursor: "pointer", fontFamily: UI, fontSize: 13, color: T.muted, fontWeight: 600 }}>Close</button>
         </div>
 
-        <Script size={46} style={{ marginBottom: 14 }}>{guided ? "A guided entry" : (LABEL_OF[cardType] || "Entry")}</Script>
+        <Script size={46} style={{ marginBottom: 14 }}>{titleText}</Script>
 
-        {/* compose modes — Write + Guided built · One-line / Voice coming */}
+        {/* compose modes — all five built */}
         <div style={{ display: "flex", gap: 16, marginBottom: 18, flexWrap: "wrap", alignItems: "center" }}>
           {COMPOSE_MODES.map((m) => {
-            const coming = COMING_MODES.has(m);
             const on = m === mode;
             return (
-              <button key={m} disabled={coming} onClick={() => chooseMode(m)} style={{
-                background: "transparent", border: "none", padding: "0 0 2px", cursor: coming ? "default" : "pointer",
+              <button key={m} onClick={() => chooseMode(m)} style={{
+                background: "transparent", border: "none", padding: "0 0 2px", cursor: "pointer",
                 fontFamily: UI, fontSize: 12.5, letterSpacing: 0.4, display: "inline-flex", alignItems: "center", gap: 5,
-                color: coming ? T.muted : (on ? T.ink : T.muted), opacity: coming ? 0.5 : 1,
-                fontWeight: on ? 800 : 600, borderBottom: on ? `1px solid ${T.gold}` : "none",
-              }}>{m === "Voice" && <Mic size={12} />}{m === "Guided" && <Sparkles size={12} />}{m}{coming ? " · coming" : ""}</button>
+                color: on ? T.ink : T.muted, fontWeight: on ? 800 : 600, borderBottom: on ? `1px solid ${T.gold}` : "none",
+              }}>
+                {m === "Voice" && <Mic size={12} />}
+                {m === "Guided" && <Sparkles size={12} />}
+                {m === "Burn" && <Moon size={12} />}
+                {m}
+              </button>
             );
           })}
         </div>
@@ -272,8 +346,110 @@ export default function NewEntrySheet({
           </div>
         )}
 
-        {/* ══ WRITE MODE (and the normal form) ══ */}
-        {!guided && (
+        {/* ══ ONE-LINE MODE — a single quick line, saved as an ordinary entry ══ */}
+        {oneLine && (
+          <div style={{ marginBottom: 22 }}>
+            <Hand size={20} color={T.inkSoft} style={{ marginBottom: 10 }}>One line — just the truth of today.</Hand>
+            <textarea
+              value={text}
+              onChange={(e) => setText(e.target.value.replace(/\n/g, " "))}
+              onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); if (text.trim() && !saving) handleSave(); } }}
+              placeholder="Say it in a sentence…"
+              rows={2}
+              style={{
+                width: "100%", minHeight: 70, background: T.paperHi, border: `1px solid ${T.paperDeep}`,
+                padding: "14px 16px", borderRadius: 3, resize: "none", fontFamily: SERIF, fontSize: 22,
+                lineHeight: 1.5, color: T.ink, outline: "none", boxSizing: "border-box", marginBottom: 16,
+              }} />
+            <button onClick={handleSave} disabled={saving || !text.trim()} style={{
+              background: "transparent", border: `1px solid ${T.gold}`, padding: "11px 26px",
+              cursor: (saving || !text.trim()) ? "default" : "pointer", fontFamily: HAND, fontWeight: 600, fontSize: 19,
+              color: T.ink, textShadow: PRESS, borderRadius: 3, opacity: (saving || !text.trim()) ? 0.5 : 1,
+            }}>{saving ? "Saving…" : "Save line"}</button>
+            <div style={{ display: "inline-flex", alignItems: "center", gap: 6, marginTop: 18, marginLeft: 14, fontFamily: UI, fontSize: 10.5, color: T.muted, letterSpacing: 0.6, fontWeight: 600 }}>
+              <Lock size={11} /> Locked to you, always.
+            </div>
+          </div>
+        )}
+
+        {/* ══ VOICE MODE — real Web Speech transcription, reviewed before saving ══ */}
+        {voice && (
+          <div style={{ marginBottom: 22 }}>
+            {!voiceSupported ? (
+              <div style={{ background: T.paperHi, border: `1px solid ${T.paperDeep}`, borderRadius: 3, padding: "18px 20px" }}>
+                <Hand size={20} color={T.inkSoft} style={{ marginBottom: 8 }}>
+                  Voice capture isn{"’"}t available in this browser yet. You can still type — switch to Write.
+                </Hand>
+                <button onClick={() => chooseMode("Write")} style={{
+                  background: "transparent", border: `1px solid ${T.gold}`, padding: "9px 20px", cursor: "pointer",
+                  fontFamily: HAND, fontWeight: 600, fontSize: 18, color: T.ink, textShadow: PRESS, borderRadius: 3,
+                }}>Write instead</button>
+              </div>
+            ) : (
+              <>
+                <div style={{ display: "flex", alignItems: "center", gap: 14, marginBottom: 14 }}>
+                  <button onClick={listening ? stopVoice : startVoice} aria-label={listening ? "Stop" : "Start speaking"} style={{
+                    width: 56, height: 56, borderRadius: "50%", flexShrink: 0, cursor: "pointer",
+                    display: "flex", alignItems: "center", justifyContent: "center",
+                    background: listening ? T.crimson : "#EFE3C9", border: `1.5px solid ${listening ? T.crimson : T.gold}`,
+                    color: listening ? "#fff" : T.gold,
+                  }}>{listening ? <Square size={18} /> : <Mic size={20} />}</button>
+                  <Hand size={19} color={T.inkSoft}>{listening ? "Listening… tap to stop." : "Tap the mic and speak."}</Hand>
+                </div>
+                <textarea
+                  value={voiceText}
+                  onChange={(e) => setVoiceText(e.target.value)}
+                  placeholder="Your words will appear here as you speak — edit anything before you keep it."
+                  style={{
+                    width: "100%", minHeight: 160, background: T.paperHi, border: `1px solid ${T.paperDeep}`,
+                    padding: "16px 18px", borderRadius: 3, resize: "none", fontFamily: SERIF, fontSize: 20,
+                    lineHeight: 1.6, color: T.ink, outline: "none", boxSizing: "border-box", marginBottom: 14,
+                  }} />
+                <button onClick={useVoice} disabled={!voiceText.trim()} style={{
+                  background: "transparent", border: `1px solid ${T.gold}`, padding: "11px 26px",
+                  cursor: voiceText.trim() ? "pointer" : "default", fontFamily: HAND, fontWeight: 600, fontSize: 19,
+                  color: T.ink, textShadow: PRESS, borderRadius: 3, opacity: voiceText.trim() ? 1 : 0.5,
+                }}>Keep these words</button>
+                <div style={{ display: "inline-flex", alignItems: "center", gap: 6, marginTop: 18, marginLeft: 14, fontFamily: UI, fontSize: 10.5, color: T.muted, letterSpacing: 0.6, fontWeight: 600 }}>
+                  <Lock size={11} /> Transcribed on this device. Nothing is saved until you keep it.
+                </div>
+              </>
+            )}
+          </div>
+        )}
+
+        {/* ══ BURN MODE — write to release; never written down ══ */}
+        {burn && (
+          <div style={{ marginBottom: 22 }}>
+            <Hand size={20} color={T.inkSoft} style={{ marginBottom: 10 }}>
+              For the thing you need to say once and not keep. Write it, release it — it is never saved.
+            </Hand>
+            <textarea
+              className={burning ? "fw-burning" : undefined}
+              value={text}
+              onChange={(e) => setText(e.target.value)}
+              disabled={burning}
+              placeholder="Say it here. No one will ever read this — not even you."
+              style={{
+                width: "100%", minHeight: 240, background: T.paperHi, border: `1px solid ${T.paperDeep}`,
+                padding: "18px 20px", borderRadius: 3, resize: "none", fontFamily: SERIF, fontSize: 21,
+                lineHeight: 1.6, color: T.ink, outline: "none", boxSizing: "border-box", marginBottom: 16,
+                animation: burning ? "fwReleaseAway 700ms ease-in forwards" : "none",
+              }} />
+            <button onClick={handleRelease} disabled={burning} style={{
+              display: "inline-flex", alignItems: "center", gap: 7,
+              background: "transparent", border: `1px solid ${T.muted}`, padding: "11px 26px",
+              cursor: burning ? "default" : "pointer", fontFamily: HAND, fontWeight: 600, fontSize: 19,
+              color: T.inkSoft, textShadow: PRESS, borderRadius: 3, opacity: burning ? 0.5 : 1,
+            }}><Moon size={15} /> {burning ? "Letting go…" : "Release it"}</button>
+            <div style={{ display: "inline-flex", alignItems: "center", gap: 6, marginTop: 18, marginLeft: 14, fontFamily: UI, fontSize: 10.5, color: T.muted, letterSpacing: 0.6, fontWeight: 600 }}>
+              <Lock size={11} /> Never written down. It leaves no trace in your journal, insights, or exports.
+            </div>
+          </div>
+        )}
+
+        {/* ══ WRITE MODE (the normal form) ══ */}
+        {mode === "Write" && (
           <>
             {/* type picker — editorial underline row */}
             <div style={{ display: "flex", flexWrap: "wrap", gap: 12, marginBottom: 22 }}>
@@ -359,9 +535,9 @@ export default function NewEntrySheet({
                   </div>
                 )}
                 <textarea value={text} onChange={(e) => setText(e.target.value)}
-                  placeholder={oneLine ? "One line — just the truth of today." : "Begin…"}
+                  placeholder="Begin…"
                   style={{
-                    width: "100%", minHeight: oneLine ? 80 : 280, background: T.paperHi,
+                    width: "100%", minHeight: 280, background: T.paperHi,
                     border: `1px solid ${T.paperDeep}`, padding: "18px 20px", borderRadius: 3, resize: "none",
                     fontFamily: SERIF, fontSize: 21, lineHeight: 1.6, color: T.ink, outline: "none", boxSizing: "border-box",
                   }} />

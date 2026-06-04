@@ -1,10 +1,26 @@
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import { X, MailOpen } from "lucide-react";
 import { base44 } from "@/api/base44Client";
 import { formatLetterDate } from "@/utils/sealedLetters";
+import { decryptText, isEncryptedEnvelope } from "@/utils/journalCrypto";
 
 export default function UnsealedLetterReader({ letter, onClose, onMarkSeen }) {
   const timerRef = useRef(null);
+  const [bodyText, setBodyText] = useState(isEncryptedEnvelope(letter?.body) ? "" : (letter?.body || ""));
+  const [decryptErr, setDecryptErr] = useState(false);
+
+  useEffect(() => {
+    let cancelled = false;
+    if (isEncryptedEnvelope(letter?.body)) {
+      decryptText(letter.body)
+        .then((t) => { if (!cancelled) setBodyText(t); })
+        .catch(() => { if (!cancelled) setDecryptErr(true); });
+    } else {
+      setBodyText(letter?.body || "");
+      setDecryptErr(false);
+    }
+    return () => { cancelled = true; };
+  }, [letter?.id]);
 
   useEffect(() => {
     if (!letter?.unseal_seen_at) {
@@ -71,7 +87,7 @@ export default function UnsealedLetterReader({ letter, onClose, onMarkSeen }) {
         </div>
 
         <p style={{ fontFamily: "'Fraunces', serif", fontSize: 18, fontStyle: "italic", lineHeight: 1.7, color: "var(--plum-deep)", whiteSpace: "pre-wrap", padding: "16px 0" }}>
-          {letter.body}
+          {decryptErr ? "This letter was sealed on another device, so it can\u2019t be opened here." : bodyText}
         </p>
 
         <p style={{ fontFamily: "'Inter', sans-serif", fontSize: 11, color: "var(--mauve)", marginTop: 20 }}>

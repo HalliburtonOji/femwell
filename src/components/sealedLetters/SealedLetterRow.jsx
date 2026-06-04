@@ -1,12 +1,15 @@
 import { useState } from "react";
 import { Lock, MailOpen } from "lucide-react";
 import { formatCountdown, formatLetterDate } from "@/utils/sealedLetters";
+import { isEncryptedEnvelope } from "@/utils/journalCrypto";
 
 export default function SealedLetterRow({ letter, kind, onOpen }) {
   const [hovered, setHovered] = useState(false);
   const [showDate, setShowDate] = useState(false);
 
-  const preview = (letter.body || '').slice(0, 40) + ((letter.body || '').length > 40 ? '…' : '');
+  const preview = isEncryptedEnvelope(letter.body)
+    ? (letter.title?.trim() || 'A sealed letter')
+    : (letter.body || '').slice(0, 40) + ((letter.body || '').length > 40 ? '…' : '');
 
   const handleHoverEnter = () => {
     if (kind !== 'sealed') return;
