@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from "react";
 import { base44 } from "@/api/base44Client";
 import { Plus, X, Flag, MessageCircle } from "lucide-react";
+import EchoWall from "../components/journal/echo/EchoWall";
 
 const CATEGORIES = [
   { id: "all", label: "All" },
@@ -59,6 +60,7 @@ export default function Community() {
   const [newPost, setNewPost] = useState({ content: "", category: "general", anonymous: false });
   const [posting, setPosting] = useState(false);
   const [expandedIds, setExpandedIds] = useState(new Set());
+  const [view, setView] = useState("echo"); // "echo" (Echo Wall) | "posts" (legacy feed)
 
   useEffect(() => {
     (async () => {
@@ -146,7 +148,19 @@ export default function Community() {
         <div className="max-w-xl mx-auto">
           <p style={{ fontSize: "0.6rem", fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.12em", color: "var(--mauve)", fontFamily: "'Inter', sans-serif" }}>Safe space</p>
           <h1 style={{ fontSize: 24, fontWeight: 700, fontFamily: "'Fraunces', serif", color: "var(--plum)", letterSpacing: "-0.02em", marginBottom: 12 }}>Community</h1>
-          {/* Category filter pills */}
+          {/* View toggle — Echo Wall (editorial, anonymous one-liners) vs the Posts feed */}
+          <div style={{ display: "flex", gap: 6, marginBottom: 12 }}>
+            {[{ id: "echo", label: "Echo Wall" }, { id: "posts", label: "Posts" }].map((v) => (
+              <button key={v.id} onClick={() => setView(v.id)}
+                style={{ padding: "7px 16px", borderRadius: 9999, fontSize: 12, fontWeight: 700, cursor: "pointer", fontFamily: "'Inter', sans-serif", border: "none",
+                  backgroundColor: view === v.id ? "var(--plum)" : "var(--ivory-dark)",
+                  color: view === v.id ? "white" : "var(--mauve)" }}>
+                {v.label}
+              </button>
+            ))}
+          </div>
+          {/* Category filter pills (Posts feed only) */}
+          {view === "posts" && (
           <div style={{ display: "flex", gap: 6, overflowX: "auto", paddingBottom: 4 }} className="lf-scroll">
             <style>{`.lf-scroll::-webkit-scrollbar{display:none}`}</style>
             {CATEGORIES.map(cat => (
@@ -158,10 +172,15 @@ export default function Community() {
               </button>
             ))}
           </div>
+          )}
         </div>
       </div>
 
       <div className="max-w-xl mx-auto px-4 pt-5">
+        {view === "echo" ? (
+          <EchoWall user={user} profile={profile} phase={null} lifeStage={profile?.life_stage || null} />
+        ) : (
+        <>
         {loading ? (
           <div className="flex justify-center py-12">
             <div className="w-7 h-7 rounded-full border-2 border-t-transparent animate-spin" style={{ borderColor: "var(--rose-dust-light)", borderTopColor: "var(--rose-dust)" }} />
@@ -236,13 +255,17 @@ export default function Community() {
             )}
           </div>
         )}
+        </>
+        )}
       </div>
 
-      {/* FAB */}
+      {/* FAB — Posts feed only */}
+      {view === "posts" && (
       <button onClick={() => setShowNew(true)}
         style={{ position: "fixed", bottom: 96, right: 20, width: 52, height: 52, borderRadius: 9999, backgroundColor: "var(--rose-dust)", color: "white", border: "none", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", boxShadow: "0 4px 20px rgba(196,132,154,0.4)", zIndex: 30 }}>
         <Plus className="w-6 h-6" />
       </button>
+      )}
 
       {/* New post bottom sheet */}
       {showNew && (

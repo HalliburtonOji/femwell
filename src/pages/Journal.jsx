@@ -3,7 +3,7 @@ import { base44 } from "@/api/base44Client";
 import { format, parseISO } from "date-fns";
 import { useNavigate } from "react-router-dom";
 import { computeCycleDay } from "@/hooks/useCycleDay";
-import { Feather, ChevronRight, Hash, Stethoscope } from "lucide-react";
+import { Feather, ChevronRight, Hash, Stethoscope, Waves } from "lucide-react";
 import NewEntrySheet from "../components/journal/NewEntrySheet";
 import JournalInsightsTab from "../components/journal/JournalInsightsTab";
 import PromptCarousel from "../components/journal/PromptCarousel";
@@ -15,6 +15,7 @@ import TonightReflection from "../components/journal/TonightReflection";
 import InsightTeaser from "../components/journal/InsightTeaser";
 import JournalSearch from "../components/journal/JournalSearch";
 import SealedLettersSection from "../components/journal/sealed/SealedLettersSection";
+import ShareAsEchoSheet from "../components/journal/echo/ShareAsEchoSheet";
 import { collectThreads, entriesInThread } from "../components/journal/threads";
 import JessErrorBoundary from "@/components/jess/JessErrorBoundary";
 import {
@@ -151,15 +152,27 @@ function DoctorCrossLink({ onOpen }) {
   );
 }
 
-// ── Echo Wall — honest "coming" teaser (Q2) ──────────────────────────────────
-function EchoComing() {
+// ── Echo Wall · Share-as-Echo slot (Phase 3) ───────────────────────────
+// The Journal-side entry point into the Echo Wall (the wall itself lives on the
+// Community page). One scrubbed, anonymous line for women in the same phase.
+function ShareAsEchoSlot({ onShare }) {
   return (
-    <section style={{ marginBottom: 40, textAlign: "center" }}>
-      <Eyebrow mb={6}>Echo wall · Coming</Eyebrow>
-      <Hand size={18} color={T.inkSoft} style={{ display: "block" }}>
-        One day you{"’"}ll be able to leave one line for women in the same phase —{" "}
-        <span style={{ color: T.muted }}>anonymous, held, never replied to.</span>
-      </Hand>
+    <section style={{ marginBottom: 40 }}>
+      <Eyebrow mb={8}>The Echo Wall</Eyebrow>
+      <button onClick={onShare} style={{
+        width: "100%", textAlign: "left", display: "flex", gap: 16, alignItems: "center", cursor: "pointer",
+        background: T.paperHi, borderRadius: 3, padding: "18px 20px", border: "none", boxShadow: "0 0 0 1px rgba(51,41,28,0.05)" }}>
+        <div style={{ width: 40, height: 40, borderRadius: "50%", flexShrink: 0, display: "flex", alignItems: "center", justifyContent: "center", background: "#EFE3C9", border: `1px solid ${T.gold}` }}>
+          <Waves size={17} style={{ color: T.gold }} />
+        </div>
+        <div style={{ flex: 1 }}>
+          <Hand size={20} color={T.ink} carve={false}>Share one line as an echo</Hand>
+          <Hand size={17} color={T.inkSoft} style={{ marginTop: 2 }}>
+            Anonymous, held by women in the same phase — never replied to. Jess scrubs anything that could identify you. It fades in two days.
+          </Hand>
+        </div>
+        <ChevronRight size={18} style={{ color: T.muted }} />
+      </button>
     </section>
   );
 }
@@ -182,6 +195,7 @@ export default function Journal() {
   const [seedType, setSeedType] = useState(null);
   const [seedThread, setSeedThread] = useState("");
   const [searching, setSearching] = useState(false);
+  const [showShareEcho, setShowShareEcho] = useState(false);
 
   useEffect(() => {
     (async () => {
@@ -302,6 +316,19 @@ export default function Journal() {
         onDelete={handleDelete}
         onPin={handlePin}
       />
+
+      {/* Share-as-Echo composer (Echo Wall entry point, Phase 3) */}
+      {showShareEcho && user && (
+        <ShareAsEchoSheet
+          user={user}
+          profile={profile}
+          phase={phase}
+          cycleDay={cycleDay}
+          lifeStage={profile?.life_stage || null}
+          seedText=""
+          onClose={() => setShowShareEcho(false)}
+        />
+      )}
 
       <div className="max-w-2xl mx-auto px-4">
 
@@ -437,7 +464,7 @@ export default function Journal() {
             <SealedLettersSection user={user} profile={profile} />
 
             {/* Echo wall — honest "coming" teaser (Q2) */}
-            <EchoComing />
+            <ShareAsEchoSlot onShare={() => setShowShareEcho(true)} />
               </>
             )}
           </>

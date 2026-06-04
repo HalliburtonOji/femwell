@@ -1,7 +1,8 @@
 import { useState, useEffect, useRef, useMemo } from "react";
-import { Plus, Frown, Meh, Smile, Mic, Square, Moon, Lock, Sparkles, ArrowLeft, ArrowRight } from "lucide-react";
+import { Plus, Frown, Meh, Smile, Mic, Square, Moon, Lock, Sparkles, ArrowLeft, ArrowRight, Waves } from "lucide-react";
 import { base44 } from "@/api/base44Client";
 import { PAPER_BG, T, UI, HAND, SERIF, PRESS, Script, Hand, Eyebrow, Rule, Chip } from "./Editorial";
+import ShareAsEchoSheet from "./echo/ShareAsEchoSheet";
 
 // Card colours (kept — saved to card_color, used by pinned strip / future surfaces).
 const COLOR_MAP = {
@@ -75,6 +76,7 @@ export default function NewEntrySheet({
     : [];
 
   const [mode, setMode] = useState("Write"); // all five modes built (Phase 2)
+  const [showShareEcho, setShowShareEcho] = useState(false);
   const [cardType, setCardType] = useState(editEntry?.card_type || seedCardType || "free");
   const [color, setColor] = useState(editEntry?.card_color || randomColor());
   const [text, setText] = useState(editEntry?.text || seedText || "");
@@ -609,9 +611,33 @@ export default function NewEntrySheet({
             <div style={{ display: "inline-flex", alignItems: "center", gap: 6, marginTop: 18, fontFamily: UI, fontSize: 10.5, color: T.muted, letterSpacing: 0.6, fontWeight: 600 }}>
               <Lock size={11} /> Encrypted on this device. Jess reads it only if you hand it to her.
             </div>
+
+            {/* Share-as-Echo entry point — one scrubbed, anonymous line to the wall */}
+            {text.trim().length > 0 && (
+              <button onClick={() => setShowShareEcho(true)} style={{
+                display: "inline-flex", alignItems: "center", gap: 8, marginTop: 18,
+                background: "transparent", border: "none", cursor: "pointer", padding: 0,
+                fontFamily: HAND, fontWeight: 600, fontSize: 18, color: T.ink,
+                borderBottom: `1px solid ${T.gold}`, paddingBottom: 2,
+              }}>
+                <Waves size={14} style={{ color: T.gold }} /> Share a line from this as an echo
+              </button>
+            )}
           </>
         )}
       </div>
+
+      {/* Share-as-Echo composer overlay (Echo Wall entry point) */}
+      {showShareEcho && (
+        <ShareAsEchoSheet
+          user={user}
+          phase={phase}
+          cycleDay={cycleDay}
+          seedText={text}
+          sourceEntryId={editEntry?.id || null}
+          onClose={() => setShowShareEcho(false)}
+        />
+      )}
     </div>
   );
 }
