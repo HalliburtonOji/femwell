@@ -12,8 +12,8 @@ export const T = {
   paperHi:  "#F4EFE3",   // insets / cards
   paperDeep:"#D8CFBC",   // deckle / hairline wash
   ink:      "#15110C",   // near-true-black ink (reference handwriting)
-  inkSoft:  "#3C342A",   // darkened secondary ink (was #463E33) — legible on grain
-  muted:    "#6E6557",   // darkened muted (was #8C8273) — labels/dates readable
+  inkSoft:  "#2B2419",   // secondary ink — darkened further for legibility (was #3C342A)
+  muted:    "#4F473A",   // muted labels/dates — darkened further for legibility (was #6E6557)
   gold:     "#A8893F",   // deepened muted hairline accent
   crimson:  "#BC2E27",   // THE heart — the single colour pop
   blush:    "#E8B4B8", sage: "#8FAF8F",
