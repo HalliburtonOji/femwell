@@ -2,15 +2,17 @@ import { useState, useEffect } from "react";
 import { base44 } from "@/api/base44Client";
 import { format, parseISO } from "date-fns";
 import { computeCycleDay } from "@/hooks/useCycleDay";
-import { Feather, Lock, ChevronRight } from "lucide-react";
+import { Feather, Lock, ChevronRight, Hash } from "lucide-react";
 import NewEntrySheet from "../components/journal/NewEntrySheet";
 import JournalInsightsTab from "../components/journal/JournalInsightsTab";
 import PromptCarousel from "../components/journal/PromptCarousel";
 import CycleMirror from "../components/journal/CycleMirror";
 import JournalLedger from "../components/journal/JournalLedger";
+import ThreadView from "../components/journal/ThreadView";
 import EntryReader from "../components/journal/EntryReader";
 import TonightReflection from "../components/journal/TonightReflection";
 import InsightTeaser from "../components/journal/InsightTeaser";
+import { collectThreads, entriesInThread } from "../components/journal/threads";
 import JessErrorBoundary from "@/components/jess/JessErrorBoundary";
 import {
   PAPER_BG, InkFilter, EditorialFooter, useEditorialFonts,
@@ -102,6 +104,29 @@ function Masthead({ phase, season, cycleDay, cycleCount, onWrite }) {
   );
 }
 
+// ── Threads browse strip — discover/enter a series (Phase 1b) ────────────────
+function ThreadsStrip({ threads, onOpen }) {
+  if (!threads?.length) return null;
+  return (
+    <section style={{ marginBottom: 22 }}>
+      <Eyebrow mb={10}>Threads · Series you{"’"}re keeping</Eyebrow>
+      <style>{`.jthreads-scroll::-webkit-scrollbar{display:none}`}</style>
+      <div className="jthreads-scroll" style={{ display: "flex", gap: 8, overflowX: "auto", paddingBottom: 4, scrollbarWidth: "none" }}>
+        {threads.map((t) => (
+          <button key={t.name} onClick={() => onOpen(t.name)} style={{
+            flexShrink: 0, display: "inline-flex", alignItems: "center", gap: 6, cursor: "pointer",
+            background: T.paperHi, border: `1px solid ${T.paperDeep}`, borderRadius: 999, padding: "7px 13px",
+            fontFamily: UI, fontSize: 12, fontWeight: 700, letterSpacing: 0.3, color: T.ink,
+          }}>
+            <Hash size={11} style={{ color: T.gold }} /> {t.name}
+            <span style={{ color: T.muted, fontWeight: 600 }}>{t.count}</span>
+          </button>
+        ))}
+      </div>
+    </section>
+  );
+}
+
 // ── Sealed Letters — honest "coming" teaser (Q1+, not built this phase) ──────
 function SealedLettersComing() {
   return (
@@ -141,11 +166,13 @@ export default function Journal() {
   const [error, setError] = useState(false);
   const [activeTab, setActiveTab] = useState("journal");
   const [filterType, setFilterType] = useState("all");
+  const [threadFilter, setThreadFilter] = useState(null);
   const [showNewEntry, setShowNewEntry] = useState(false);
   const [editEntry, setEditEntry] = useState(null);
   const [readEntry, setReadEntry] = useState(null);
   const [seedText, setSeedText] = useState("");
   const [seedType, setSeedType] = useState(null);
+  const [seedThread, setSeedThread] = useState("");
 
   useEffect(() => {
     (async () => {
@@ -171,16 +198,22 @@ export default function Journal() {
   const cycleDay = cycleDayOf(profile);
   const season = phase ? PHASE_SEASON[phase] : null;
   const cycleCount = entriesThisCycle(entries, profile);
+  const threads = collectThreads(entries);
 
   // Filter + pinned-first ordering for the ledger.
   const matching = filterType === "all" ? entries : entries.filter((e) => e.card_type === filterType);
   const ledgerEntries = [...matching.filter((e) => e.is_pinned), ...matching.filter((e) => !e.is_pinned)];
 
+  // Thread view ordering — pinned first, then the thread's own recency.
+  const threadMatches = threadFilter ? entriesInThread(entries, threadFilter) : [];
+  const threadEntries = [...threadMatches.filter((e) => e.is_pinned), ...threadMatches.filter((e) => !e.is_pinned)];
+
   // ── seed helpers ──
-  const openBlank = () => { setSeedText(""); setSeedType(null); setShowNewEntry(true); };
-  const openSeeded = (text, type = null) => { setSeedText(text || ""); setSeedType(type); setShowNewEntry(true); };
+  const openBlank = () => { setSeedText(""); setSeedType(null); setSeedThread(""); setShowNewEntry(true); };
+  const openSeeded = (text, type = null) => { setSeedText(text || ""); setSeedType(type); setSeedThread(""); setShowNewEntry(true); };
+  const openInThread = (thread) => { setSeedText(""); setSeedType(null); setSeedThread(thread || ""); setShowNewEntry(true); };
   const replyToPast = () => openSeeded("Replying to who I was…\n\n", "reflection");
-  const closeComposer = () => { setShowNewEntry(false); setEditEntry(null); setSeedText(""); setSeedType(null); };
+  const closeComposer = () => { setShowNewEntry(false); setEditEntry(null); setSeedText(""); setSeedType(null); setSeedThread(""); };
 
   const handleSaved = (entry) => {
     if (!entry) return;
@@ -245,6 +278,8 @@ export default function Journal() {
           editEntry={editEntry}
           seedText={seedText}
           seedCardType={seedType}
+          seedThread={seedThread}
+          threads={threads.map((t) => t.name)}
           onClose={closeComposer}
           onSaved={handleSaved}
         />
@@ -281,8 +316,19 @@ export default function Journal() {
           <JournalInsightsTab user={user} entries={entries} />
         )}
 
-        {/* JOURNAL TAB */}
-        {activeTab === "journal" && (
+        {/* JOURNAL TAB · THREAD VIEW (one series, full) */}
+        {activeTab === "journal" && threadFilter && (
+          <ThreadView
+            thread={threadFilter}
+            entries={threadEntries}
+            onBack={() => setThreadFilter(null)}
+            onTap={(e) => setReadEntry(e)}
+            onWrite={openInThread}
+          />
+        )}
+
+        {/* JOURNAL TAB · MAIN */}
+        {activeTab === "journal" && !threadFilter && (
           <>
             {/* Prompt wing — Jess's live daily prompt + phase carousel */}
             {user && (
@@ -309,10 +355,13 @@ export default function Journal() {
               />
             )}
 
-            {/* Insight teaser → Insights tab */}
+            {/* Insight teaser -> Insights tab */}
             {entries.length > 0 && (
               <InsightTeaser entries={entries} onOpen={() => setActiveTab("insights")} />
             )}
+
+            {/* Threads browse strip */}
+            <ThreadsStrip threads={threads} onOpen={(t) => setThreadFilter(t)} />
 
             {/* Filter pills */}
             <style>{`.jfilter-scroll::-webkit-scrollbar{display:none}`}</style>
@@ -349,7 +398,7 @@ export default function Journal() {
 
             {/* The ledger */}
             {ledgerEntries.length > 0 && (
-              <JournalLedger entries={ledgerEntries} onTap={(e) => setReadEntry(e)} />
+              <JournalLedger entries={ledgerEntries} onTap={(e) => setReadEntry(e)} onThread={(t) => setThreadFilter(t)} />
             )}
 
             {ledgerEntries.length === 0 && entries.length > 0 && (

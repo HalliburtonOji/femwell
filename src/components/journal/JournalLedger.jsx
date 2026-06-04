@@ -3,7 +3,9 @@
 // Replaces the JotterCard masonry. Each entry is a ledger line: a thin
 // type-coloured rule, the type label + date, a serif preview (drop-initial
 // on the first line), and a thread chip from the entry's first tag. Tapping
-// a line opens the EntryReader. Wired to real JournalEntries.
+// a line opens the EntryReader. Phase 1b: the thread chip is tappable — it
+// filters into that thread's view (via onThread) without opening the entry.
+// Wired to real JournalEntries.
 
 import { Hash, Pin } from "lucide-react";
 import { T, UI, SERIF } from "./Editorial";
@@ -30,7 +32,7 @@ function preview(entry) {
   return t.length > 180 ? t.slice(0, 177).trimEnd() + "…" : t;
 }
 
-export default function JournalLedger({ entries, onTap }) {
+export default function JournalLedger({ entries, onTap, onThread }) {
   if (!entries?.length) return null;
   return (
     <section style={{ marginBottom: 46 }}>
@@ -60,9 +62,23 @@ export default function JournalLedger({ entries, onTap }) {
                 {drop ? body.slice(1) : body}
               </p>
               {thread && (
-                <div style={{ display: "inline-flex", alignItems: "center", gap: 5, marginTop: 9, fontFamily: UI, fontSize: 10, fontWeight: 700, letterSpacing: 0.8, textTransform: "uppercase", color: T.muted }}>
-                  <Hash size={10} style={{ color: T.gold }} /> {thread}
-                </div>
+                onThread ? (
+                  <button
+                    onClick={(ev) => { ev.stopPropagation(); onThread(thread); }}
+                    aria-label={`Open the ${thread} thread`}
+                    style={{
+                      display: "inline-flex", alignItems: "center", gap: 5, marginTop: 9,
+                      background: "transparent", border: "none", cursor: "pointer", padding: 0,
+                      fontFamily: UI, fontSize: 10, fontWeight: 700, letterSpacing: 0.8,
+                      textTransform: "uppercase", color: T.muted, borderBottom: `1px solid ${T.paperDeep}`, paddingBottom: 1,
+                    }}>
+                    <Hash size={10} style={{ color: T.gold }} /> {thread}
+                  </button>
+                ) : (
+                  <div style={{ display: "inline-flex", alignItems: "center", gap: 5, marginTop: 9, fontFamily: UI, fontSize: 10, fontWeight: 700, letterSpacing: 0.8, textTransform: "uppercase", color: T.muted }}>
+                    <Hash size={10} style={{ color: T.gold }} /> {thread}
+                  </div>
+                )
               )}
             </div>
           </article>
