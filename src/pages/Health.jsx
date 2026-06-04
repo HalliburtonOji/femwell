@@ -1179,7 +1179,7 @@ export default function Health() {
   const sendGpToExport = useCallback(() => {
     try { sessionStorage.setItem("gp_draft_questions", JSON.stringify(gpQuestions)); } catch (_) {}
     setGpSheetOpen(false);
-    navigate("/DoctorExport");
+    navigate("/DoctorExport?preset=full");
   }, [gpQuestions, navigate]);
 
   // (Relationship tier + preface are inlined above where the opener is
