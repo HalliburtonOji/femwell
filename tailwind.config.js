@@ -7,6 +7,10 @@ module.exports = {
   		fontFamily: {
   			playfair: ['Playfair Display', 'Georgia', 'serif'],
   			inter: ['Inter', '-apple-system', 'BlinkMacSystemFont', 'sans-serif'],
+  			// Editorial defaults — `font-serif` (and headings/body base) now
+  			// resolve to Cormorant; `font-sans` stays Inter for crisp chrome.
+  			sans: ['Inter', '-apple-system', 'BlinkMacSystemFont', 'Segoe UI', 'sans-serif'],
+  			serif: ['Cormorant Garamond', 'Fraunces', 'Georgia', 'serif'],
   		},
   		borderRadius: {
   			'4xl': '2rem',
