@@ -3,7 +3,7 @@ import { base44 } from "@/api/base44Client";
 import { format, parseISO } from "date-fns";
 import { useNavigate } from "react-router-dom";
 import { computeCycleDay } from "@/hooks/useCycleDay";
-import { Feather, ChevronRight, Hash, Stethoscope, Waves } from "lucide-react";
+import { Feather, ChevronRight, Hash, Stethoscope, Waves, X } from "lucide-react";
 import NewEntrySheet from "../components/journal/NewEntrySheet";
 import JournalInsightsTab from "../components/journal/JournalInsightsTab";
 import PromptCarousel from "../components/journal/PromptCarousel";
@@ -185,7 +185,7 @@ export default function Journal() {
   const [entries, setEntries] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
-  const [activeTab, setActiveTab] = useState("journal");
+  const [showInsights, setShowInsights] = useState(false);
   const [filterType, setFilterType] = useState("all");
   const [threadFilter, setThreadFilter] = useState(null);
   const [showNewEntry, setShowNewEntry] = useState(false);
@@ -215,6 +215,26 @@ export default function Journal() {
         setLoading(false);
       }
     })();
+  }, []);
+
+  // Full-height paper — paint the cream + grain onto html/body so no bare white
+  // shows on overscroll or past the end of the scroll. The page root alone
+  // leaves the document background visible when the content rubber-bands.
+  useEffect(() => {
+    const html = document.documentElement;
+    const body = document.body;
+    const prevHtmlBg = html.style.background;
+    const prevBodyCss = body.style.cssText;
+    html.style.background = T.paper;
+    Object.assign(body.style, {
+      backgroundColor: PAPER_BG.backgroundColor,
+      backgroundImage: PAPER_BG.backgroundImage,
+      backgroundSize: PAPER_BG.backgroundSize,
+      backgroundRepeat: PAPER_BG.backgroundRepeat,
+      backgroundAttachment: PAPER_BG.backgroundAttachment,
+      backgroundBlendMode: PAPER_BG.backgroundBlendMode,
+    });
+    return () => { html.style.background = prevHtmlBg; body.style.cssText = prevBodyCss; };
   }, []);
 
   const phase = getCurrentPhase(profile);
@@ -332,30 +352,35 @@ export default function Journal() {
         />
       )}
 
+      {/* Insights overlay — the deep insights (mood-by-phase, rhythm, tags,
+          Jess weekly) over the page, opened from the header insight card. */}
+      {showInsights && user && (
+        <div onClick={() => setShowInsights(false)} style={{ position: "fixed", inset: 0, zIndex: 75, background: "rgba(51,41,28,0.42)", display: "flex", alignItems: "flex-start", justifyContent: "center", overflowY: "auto", padding: "0" }}>
+          <div onClick={(e) => e.stopPropagation()} style={{ ...PAPER_BG, width: "100%", maxWidth: 680, minHeight: "100%", boxShadow: "0 8px 40px rgba(51,41,28,0.20)" }}>
+            <InkFilter />
+            <div style={{ position: "sticky", top: 0, zIndex: 2, display: "flex", alignItems: "center", justifyContent: "space-between", padding: "16px 20px", background: T.paper, borderBottom: `1px solid ${T.paperDeep}` }}>
+              <Eyebrow>Insights · The shape of your writing</Eyebrow>
+              <button onClick={() => setShowInsights(false)} aria-label="Close insights" style={{ background: "transparent", border: "none", cursor: "pointer", color: T.muted, padding: 0, display: "inline-flex" }}><X size={20} /></button>
+            </div>
+            <div style={{ padding: "8px 16px 40px" }}>
+              <JournalInsightsTab user={user} entries={entries} />
+            </div>
+          </div>
+        </div>
+      )}
+
       <div className="max-w-2xl mx-auto px-4">
 
         <Masthead phase={phase} season={season} cycleDay={cycleDay} cycleCount={cycleCount} onWrite={openBlank} />
 
-        {/* Top-level tabs */}
-        <div className="flex gap-1 mb-5 p-1 rounded-2xl" style={{ backgroundColor: "var(--ivory-dark)", border: "1px solid var(--border)" }}>
-          {[{ id: "journal", label: "Journal" }, { id: "insights", label: "Insights" }].map((tab) => (
-            <button key={tab.id} onClick={() => setActiveTab(tab.id)}
-              className="flex-1 py-2.5 rounded-xl text-sm font-semibold transition-all"
-              style={{
-                backgroundColor: activeTab === tab.id ? "var(--plum)" : "transparent",
-                color: activeTab === tab.id ? "white" : "var(--mauve)",
-                fontFamily: "'Inter', sans-serif",
-              }}>{tab.label}</button>
-          ))}
-        </div>
-
-        {/* INSIGHTS TAB (unchanged) */}
-        {activeTab === "insights" && user && (
-          <JournalInsightsTab user={user} entries={entries} />
+        {/* Insight card — a small, obvious card at the header. Tapping it opens
+            the deep insights as an OVERLAY over the page (no separate tab). */}
+        {!threadFilter && entries.length > 0 && (
+          <InsightTeaser entries={entries} onOpen={() => setShowInsights(true)} />
         )}
 
-        {/* JOURNAL TAB · THREAD VIEW (one series, full) */}
-        {activeTab === "journal" && threadFilter && (
+        {/* THREAD VIEW (one series, full) */}
+        {threadFilter && (
           <ThreadView
             thread={threadFilter}
             entries={threadEntries}
@@ -365,8 +390,8 @@ export default function Journal() {
           />
         )}
 
-        {/* JOURNAL TAB · MAIN */}
-        {activeTab === "journal" && !threadFilter && (
+        {/* MAIN — single scroll, no tabs */}
+        {!threadFilter && (
           <>
             {/* Full-text search across your own entries */}
             {entries.length > 0 && (
@@ -402,11 +427,6 @@ export default function Journal() {
                 todayCycleDay={cycleDay}
                 onReply={replyToPast}
               />
-            )}
-
-            {/* Insight teaser -> Insights tab */}
-            {entries.length > 0 && (
-              <InsightTeaser entries={entries} onOpen={() => setActiveTab("insights")} />
             )}
 
             {/* Threads browse strip */}
