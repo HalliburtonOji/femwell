@@ -159,7 +159,7 @@ function BabyThisWeekCard({ profile, trimester }) {
         }}>T{trimester || 1}</span>
       </div>
       <p style={{
-        fontFamily: "Georgia, serif", fontStyle: "italic",
+        fontFamily: "Cormorant Garamond, Georgia, serif", fontStyle: "italic",
         fontSize: 13, color: C.espresso, margin: "6px 0 0", lineHeight: 1.5,
       }}>Your baby is the size of {data.size}.</p>
       <ul style={{ listStyle: "none", padding: 0, margin: "8px 0 0", display: "flex", flexDirection: "column", gap: 4 }}>
@@ -1189,7 +1189,7 @@ function MenoWellbeingCard() {
         })}
       </div>
       <p style={{
-        fontFamily: "Georgia, serif", fontStyle: "italic",
+        fontFamily: "Cormorant Garamond, Georgia, serif", fontStyle: "italic",
         fontSize: 13, color: C.muted, margin: "8px 0 0", lineHeight: 1.5,
       }}>
         What's becoming clearer for you this week?
@@ -1240,7 +1240,7 @@ function CycleEducationCard({ phase }) {
         background: C.cream, border: `1px solid rgba(58,44,26,0.06)`,
       }}>
         <div style={{ fontSize: 9, fontWeight: 700, letterSpacing: "0.16em", color: C.goldDeep }}>DID YOU KNOW?</div>
-        <div style={{ fontFamily: "Georgia, serif", fontStyle: "italic", fontSize: 12.5, color: C.espresso, marginTop: 3, lineHeight: 1.45 }}>
+        <div style={{ fontFamily: "Cormorant Garamond, Georgia, serif", fontStyle: "italic", fontSize: 12.5, color: C.espresso, marginTop: 3, lineHeight: 1.45 }}>
           {copy.fact}
         </div>
       </div>
@@ -1350,7 +1350,7 @@ function TalkAboutItCard({ phase }) {
         </div>
       </div>
       <p style={{
-        fontFamily: "Georgia, serif", fontStyle: "italic",
+        fontFamily: "Cormorant Garamond, Georgia, serif", fontStyle: "italic",
         fontSize: 13, color: C.plum, margin: "6px 0 0", lineHeight: 1.5,
       }}>{PROMPTS[phase] || PROMPTS.follicular}</p>
       <p style={cardSub}>In this phase it's normal to feel a lot. You're not alone.</p>

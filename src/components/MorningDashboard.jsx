@@ -744,7 +744,7 @@ const insightKickerStyle = {
   color: T.goldDeep, fontWeight: 700,
 };
 const insightTextStyle = {
-  fontFamily: "Georgia, serif", fontStyle: "italic",
+  fontFamily: "Cormorant Garamond, Georgia, serif", fontStyle: "italic",
   fontSize: 12, color: T.plum, lineHeight: 1.5, margin: "4px 0 0",
 };
 

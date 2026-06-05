@@ -951,7 +951,7 @@ function LetterPaper({ profile, phase, cycle, stage, isMeno, tab, children }) {
         {/* Dateline */}
         <div style={{
           fontSize: 12.5, color: T.muted, fontStyle: "italic",
-          fontFamily: 'Georgia, serif',
+          fontFamily: 'Cormorant Garamond, Georgia, serif',
           textAlign: "right", marginTop: 18, marginBottom: 22,
           letterSpacing: 0.2,
         }}>
@@ -966,7 +966,7 @@ function LetterPaper({ profile, phase, cycle, stage, isMeno, tab, children }) {
 
         {/* Salutation */}
         <div style={{
-          fontFamily: 'Georgia, serif',
+          fontFamily: 'Cormorant Garamond, Georgia, serif',
           fontSize: 18, fontStyle: "italic",
           color: T.espresso, marginBottom: 18,
         }}>
@@ -977,14 +977,14 @@ function LetterPaper({ profile, phase, cycle, stage, isMeno, tab, children }) {
         <LetterTOC />
 
         {/* Body */}
-        <div className="hcdemo-letter-body" style={{ fontFamily: 'Georgia, serif', color: T.espresso, lineHeight: 1.75, fontSize: 15 }}>
+        <div className="hcdemo-letter-body" style={{ fontFamily: 'Cormorant Garamond, Georgia, serif', color: T.espresso, lineHeight: 1.75, fontSize: 15 }}>
           {children}
         </div>
 
         {/* Sign-off */}
         <BotanicalDivider />
         <div style={{
-          marginTop: 22, fontFamily: 'Georgia, serif', fontSize: 14.5,
+          marginTop: 22, fontFamily: 'Cormorant Garamond, Georgia, serif', fontSize: 14.5,
           color: T.espresso, lineHeight: 1.6,
         }}>
           <div style={{ fontStyle: "italic" }}>With care,</div>
@@ -1054,7 +1054,7 @@ function LetterSection({ id, title, category, keyFact, children }) {
           }}>Key insight</span>
           <span style={{
             fontSize: 13.5, color: T.espresso,
-            fontFamily: 'Georgia, serif', fontStyle: "italic",
+            fontFamily: 'Cormorant Garamond, Georgia, serif', fontStyle: "italic",
           }}>{keyFact}</span>
         </div>
       )}
@@ -1062,19 +1062,19 @@ function LetterSection({ id, title, category, keyFact, children }) {
       {/* Body — collapsed by default, with a discreet read-more link */}
       {isExpanded ? (
         <div>
-          <div style={{ color: T.espresso, fontFamily: 'Georgia, serif', lineHeight: 1.78, fontSize: 15 }}>
+          <div style={{ color: T.espresso, fontFamily: 'Cormorant Garamond, Georgia, serif', lineHeight: 1.78, fontSize: 15 }}>
             {children}
           </div>
           <button onClick={onToggle} style={{
             background: "none", border: "none", padding: 0, cursor: "pointer",
-            fontSize: 13, color: T.muted, fontFamily: "Georgia, serif", fontStyle: "italic",
+            fontSize: 13, color: T.muted, fontFamily: "Cormorant Garamond, Georgia, serif", fontStyle: "italic",
             display: "block", marginTop: 10,
           }}>— read less</button>
         </div>
       ) : (
         <button onClick={onToggle} style={{
           background: "none", border: "none", padding: 0, cursor: "pointer",
-          fontSize: 13, color: T.gold, fontFamily: "Georgia, serif", fontStyle: "italic",
+          fontSize: 13, color: T.gold, fontFamily: "Cormorant Garamond, Georgia, serif", fontStyle: "italic",
           display: "block", marginTop: 4,
         }}>— read more</button>
       )}
@@ -1131,7 +1131,7 @@ function LetterTOC() {
             style={{
               display: "flex", alignItems: "center", gap: 10,
               fontSize: 13.5, color: T.espresso,
-              fontFamily: 'Georgia, serif', fontStyle: "italic",
+              fontFamily: 'Cormorant Garamond, Georgia, serif', fontStyle: "italic",
               textDecoration: "none",
             }}
           >
@@ -1147,12 +1147,12 @@ function LetterTOC() {
       <div style={{ display: "flex", gap: 16, marginTop: 14, paddingTop: 12, borderTop: "1px solid rgba(232,220,200,0.7)" }}>
         <button onClick={expandAll} style={{
           background: "none", border: "none", padding: 0, cursor: "pointer",
-          fontSize: 12, color: T.gold, fontFamily: "Georgia, serif", fontStyle: "italic",
+          fontSize: 12, color: T.gold, fontFamily: "Cormorant Garamond, Georgia, serif", fontStyle: "italic",
         }}>Expand all sections</button>
         <span style={{ color: "#E8DCC8" }} aria-hidden="true">·</span>
         <button onClick={collapseAll} style={{
           background: "none", border: "none", padding: 0, cursor: "pointer",
-          fontSize: 12, color: T.muted, fontFamily: "Georgia, serif", fontStyle: "italic",
+          fontSize: 12, color: T.muted, fontFamily: "Cormorant Garamond, Georgia, serif", fontStyle: "italic",
         }}>Collapse all</button>
       </div>
     </div>
@@ -1607,7 +1607,7 @@ function GlanceCard({ layout, children }) {
     return (
       <p className="hcdemo-lede" style={{
         margin: "0 0 18px",
-        fontFamily: 'Georgia, serif',
+        fontFamily: 'Cormorant Garamond, Georgia, serif',
         fontSize: 17, lineHeight: 1.78,
         color: T.espresso,
       }}>{children}</p>
@@ -1767,7 +1767,7 @@ function NewsStrip({ layout, tab }) {
         <div style={{ fontSize: 10, letterSpacing: 3, textTransform: "uppercase", color: T.muted, fontWeight: 700, marginBottom: 8 }}>Further Reading</div>
         <ul style={{ margin: 0, padding: "0 0 0 0", listStyle: "none" }}>
           {items.map((item, i) => (
-            <li key={i} style={{ marginBottom: 8, fontFamily: 'Georgia, serif', fontSize: 14.5, lineHeight: 1.6, color: T.espresso }}>
+            <li key={i} style={{ marginBottom: 8, fontFamily: 'Cormorant Garamond, Georgia, serif', fontSize: 14.5, lineHeight: 1.6, color: T.espresso }}>
               <a href={item.url} target="_blank" rel="noopener noreferrer" className="hcdemo-letter-link">
                 {item.headline}
               </a>
@@ -1857,7 +1857,7 @@ function ExpertQuote({ layout, tab }) {
         margin: "22px 0 8px",
         padding: "4px 0 4px 18px",
         borderLeft: `3px solid ${T.gold}`,
-        fontFamily: 'Georgia, serif',
+        fontFamily: 'Cormorant Garamond, Georgia, serif',
         fontStyle: "italic",
         color: T.espresso,
         lineHeight: 1.7, fontSize: 15.5,

@@ -922,7 +922,7 @@ const phaseDay = {
   fontSize: 11, color: T.plumMute, fontWeight: 600,
 };
 const phaseLine = {
-  fontFamily: "Georgia, serif", fontStyle: "italic",
+  fontFamily: "Cormorant Garamond, Georgia, serif", fontStyle: "italic",
   fontSize: 12, color: T.plumSoft, margin: "2px 0 0", lineHeight: 1.4,
 };
 
@@ -1028,7 +1028,7 @@ const onThisDayBodyStyle = {
 };
 const onThisDayFullStyle = {
   fontSize: 13, color: T.plum, lineHeight: 1.55, margin: 0,
-  fontFamily: "Georgia, serif",
+  fontFamily: "Cormorant Garamond, Georgia, serif",
 };
 const onThisDayFootStyle = {
   display: "flex", alignItems: "center", gap: 8,
@@ -1150,7 +1150,7 @@ const voiceChipStyle = {
 };
 const entryPreviewStyle = {
   fontSize: 12, color: T.plumSoft, lineHeight: 1.4, margin: 0,
-  fontFamily: "Georgia, serif",
+  fontFamily: "Cormorant Garamond, Georgia, serif",
 };
 const entryFootRow = {
   display: "flex", justifyContent: "flex-end",
@@ -1236,7 +1236,7 @@ const modalTextareaStyle = {
   width: "100%", padding: "10px 12px 22px",
   borderRadius: 12, background: T.paperHi,
   border: "1px solid rgba(58,44,26,0.15)",
-  fontFamily: "Georgia, serif", fontSize: 14,
+  fontFamily: "Cormorant Garamond, Georgia, serif", fontSize: 14,
   color: T.plum, lineHeight: 1.55,
   outline: "none", resize: "vertical",
   boxSizing: "border-box",
@@ -1367,7 +1367,7 @@ const chartHeadStyle = {
   display: "flex", alignItems: "baseline",
 };
 const chartCaptionStyle = {
-  fontFamily: "Georgia, serif", fontStyle: "italic",
+  fontFamily: "Cormorant Garamond, Georgia, serif", fontStyle: "italic",
   fontSize: 12, color: T.plumSoft, margin: 0, lineHeight: 1.5,
 };
 

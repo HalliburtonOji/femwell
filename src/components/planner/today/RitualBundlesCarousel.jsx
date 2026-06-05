@@ -633,7 +633,7 @@ const forTodayChipStyle = {
   borderRadius: 9999,
 };
 const cardSubStyle = {
-  fontFamily: "Georgia, serif",
+  fontFamily: "Cormorant Garamond, Georgia, serif",
   fontStyle: "italic",
   fontSize: 12,
   color: "var(--plum-2, #6B4559)",
@@ -750,7 +750,7 @@ const createTitleStyle = {
   color: "var(--plum, #4A2A3A)",
 };
 const createSubStyle = {
-  fontFamily: "Georgia, serif",
+  fontFamily: "Cormorant Garamond, Georgia, serif",
   fontStyle: "italic",
   fontSize: 11,
   color: "var(--plum-mute, #8A7584)",

@@ -604,7 +604,7 @@ function HealthCornerRedirectCard() {
           marginBottom: 12, lineHeight: 1.3,
         }}>The Health hub now lives at its own page.</div>
         <p style={{
-          fontFamily: 'Georgia, serif',
+          fontFamily: 'Cormorant Garamond, Georgia, serif',
           fontSize: 15, lineHeight: 1.7, color: "#3A2C1A", marginBottom: 20,
         }}>
           The Letter-format Health page has replaced this preview, the old Skin &amp; Hair

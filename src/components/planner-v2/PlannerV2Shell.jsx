@@ -2265,7 +2265,7 @@ function YourDayCard({ slot, phase, loading, bucket, streaks, onRefresh }) {
                 if (!tip) return null;
                 return (
                   <p style={{
-                    fontFamily: "Georgia, serif", fontStyle: "italic",
+                    fontFamily: "Cormorant Garamond, Georgia, serif", fontStyle: "italic",
                     fontSize: 13, color: C.espresso, margin: 0,
                     lineHeight: 1.45, textAlign: "center", maxWidth: 240,
                   }}>
@@ -5927,14 +5927,14 @@ const weekPopText = {
 
 // Intention
 const intentionPromptStyle = {
-  fontFamily: "Georgia, serif", fontStyle: "italic",
+  fontFamily: "Cormorant Garamond, Georgia, serif", fontStyle: "italic",
   fontSize: 13, color: C.muted, margin: "4px 0",
 };
 const intentionTextarea = {
   width: "100%", padding: "10px 12px",
   borderRadius: 10, background: C.cream,
   border: "1px solid rgba(58,44,26,0.10)",
-  fontFamily: "Georgia, serif", fontSize: 13, color: C.espresso,
+  fontFamily: "Cormorant Garamond, Georgia, serif", fontSize: 13, color: C.espresso,
   lineHeight: 1.55, outline: "none", resize: "vertical",
   boxSizing: "border-box",
 };
@@ -5952,7 +5952,7 @@ const astraAvatar = {
   display: "inline-flex", alignItems: "center", justifyContent: "center",
 };
 const astraShort = {
-  fontFamily: "Georgia, serif",
+  fontFamily: "Cormorant Garamond, Georgia, serif",
   fontSize: 13, color: C.espresso, lineHeight: 1.55, margin: 0,
 };
 const astraOpenBtn = {
@@ -5962,7 +5962,7 @@ const astraOpenBtn = {
   color: C.espresso, fontSize: 12, fontWeight: 700, cursor: "pointer", padding: 0,
 };
 const astraSheetText = {
-  fontFamily: "Georgia, serif", fontSize: 14, color: C.espresso,
+  fontFamily: "Cormorant Garamond, Georgia, serif", fontSize: 14, color: C.espresso,
   lineHeight: 1.65, margin: 0,
 };
 
@@ -5991,7 +5991,7 @@ const hydroBtn = {
   cursor: "pointer", padding: 0,
 };
 const tipText = {
-  fontFamily: "Georgia, serif", fontStyle: "italic",
+  fontFamily: "Cormorant Garamond, Georgia, serif", fontStyle: "italic",
   fontSize: 12, color: C.muted, margin: "8px 0 0", lineHeight: 1.55,
 };
 

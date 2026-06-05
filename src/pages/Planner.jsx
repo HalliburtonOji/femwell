@@ -307,7 +307,7 @@ const stageRibbonBodyStyle = {
   color: "#6B5840", lineHeight: 1.55, margin: "0 0 8px",
 };
 const stageRibbonHintStyle = {
-  fontFamily: "Georgia, serif", fontStyle: "italic", fontSize: 12,
+  fontFamily: "Cormorant Garamond, Georgia, serif", fontStyle: "italic", fontSize: 12,
   color: "#4A2A3A", lineHeight: 1.5, margin: 0,
 };
 
@@ -1315,7 +1315,7 @@ export default function Planner() {
           {plannerConfig?.bannerText && (
             <p style={{
               fontSize: 11, fontWeight: 600, color: "var(--plum, #4A2A3A)",
-              fontFamily: "Georgia, serif", fontStyle: "italic",
+              fontFamily: "Cormorant Garamond, Georgia, serif", fontStyle: "italic",
               marginBottom: 6, lineHeight: 1.4,
               padding: "6px 10px",
               background: "rgba(168,134,75,0.12)",

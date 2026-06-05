@@ -757,7 +757,7 @@ const forTodayPillStyle = {
   padding: "2px 6px", borderRadius: 9999,
 };
 const bundleSubStyle = {
-  fontFamily: "Georgia, serif", fontStyle: "italic",
+  fontFamily: "Cormorant Garamond, Georgia, serif", fontStyle: "italic",
   fontSize: 11, color: T.plumSoft, margin: 0, lineHeight: 1.3,
 };
 const bundleRitualStyle = {
@@ -867,7 +867,7 @@ const insightKickerStyle = {
   color: T.goldDeep, fontWeight: 700,
 };
 const insightTextStyle = {
-  fontFamily: "Georgia, serif", fontStyle: "italic",
+  fontFamily: "Cormorant Garamond, Georgia, serif", fontStyle: "italic",
   fontSize: 13, color: T.plum, lineHeight: 1.55, margin: "4px 0 0",
 };
 

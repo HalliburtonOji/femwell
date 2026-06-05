@@ -351,7 +351,7 @@ const summaryLine = {
   margin: 0,
 };
 const emptyHint = {
-  fontFamily: "Georgia, serif",
+  fontFamily: "Cormorant Garamond, Georgia, serif",
   fontStyle: "italic",
   fontSize: 12.5,
   color: "#4A2A3A",

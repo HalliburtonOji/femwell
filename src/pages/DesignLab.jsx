@@ -136,7 +136,7 @@ function ConceptApothecary() {
         <p style={{ fontSize: 9.5, letterSpacing: "0.35em", textTransform: "uppercase", color: palette.brass, margin: 0, fontFamily: "'Inter', sans-serif", fontWeight: 600 }}>
           Apothecary · Vol. IX
         </p>
-        <h2 style={{ fontFamily: "Georgia, serif", fontStyle: "italic", fontSize: 38, color: palette.cream, margin: "10px 0 2px", letterSpacing: "0.005em", lineHeight: 1 }}>
+        <h2 style={{ fontFamily: "Cormorant Garamond, Georgia, serif", fontStyle: "italic", fontSize: 38, color: palette.cream, margin: "10px 0 2px", letterSpacing: "0.005em", lineHeight: 1 }}>
           The Luteal Tincture
         </h2>
         <div style={{ display: "flex", gap: 14, alignItems: "baseline", marginTop: 10 }}>
@@ -159,7 +159,7 @@ function ConceptApothecary() {
               return (
                 <div key={di} style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 4, position: "relative", padding: "6px 0" }}>
                   <span style={{ width: isToday ? 14 : 8, height: isToday ? 14 : 8, borderRadius: 9999, background: phaseHex[p] || palette.off, boxShadow: isToday ? `0 0 0 3px ${palette.brass}88, 0 0 16px ${palette.brass}66` : `0 0 6px ${phaseHex[p]}66`, opacity: isOff ? 0.35 : 1 }} />
-                  <span style={{ fontFamily: "Georgia, serif", fontStyle: "italic", fontSize: 10.5, color: isOff ? palette.off : isToday ? palette.brass : palette.mute }}>
+                  <span style={{ fontFamily: "Cormorant Garamond, Georgia, serif", fontStyle: "italic", fontSize: 10.5, color: isOff ? palette.off : isToday ? palette.brass : palette.mute }}>
                     {MOCK.monthGridNums[wi][di]}
                   </span>
                 </div>
@@ -180,8 +180,8 @@ function ConceptApothecary() {
       <SectionLabel theme="apothecary" palette={palette} num="02" title="Today's formula" />
       <div style={{ background: `linear-gradient(135deg, ${palette.surface} 0%, #321A2A 100%)`, borderRadius: 6, padding: "20px 22px", border: `1px solid ${palette.brass}55`, marginTop: 10, marginBottom: 24 }}>
         <p style={{ fontSize: 9.5, letterSpacing: "0.32em", textTransform: "uppercase", color: palette.brass, fontFamily: "'Inter', sans-serif", fontWeight: 700, margin: 0 }}>Formula No. 22</p>
-        <h3 style={{ fontFamily: "Georgia, serif", fontStyle: "italic", fontSize: 26, color: palette.cream, margin: "6px 0 6px", letterSpacing: "0.005em" }}>{MOCK.activeRhythm}</h3>
-        <p style={{ fontSize: 13, color: palette.mute, fontFamily: "Georgia, serif", margin: "0 0 14px", fontStyle: "italic" }}>{MOCK.activeRhythmCount} · prepared for the inward half</p>
+        <h3 style={{ fontFamily: "Cormorant Garamond, Georgia, serif", fontStyle: "italic", fontSize: 26, color: palette.cream, margin: "6px 0 6px", letterSpacing: "0.005em" }}>{MOCK.activeRhythm}</h3>
+        <p style={{ fontSize: 13, color: palette.mute, fontFamily: "Cormorant Garamond, Georgia, serif", margin: "0 0 14px", fontStyle: "italic" }}>{MOCK.activeRhythmCount} · prepared for the inward half</p>
         <div style={{ display: "flex", gap: 8, marginTop: 4 }}>
           {["warm meals","early nights","slow walks","reading","saying no","journaling"].map((r, i) => (
             <span key={i} style={{ fontSize: 9.5, letterSpacing: "0.18em", textTransform: "uppercase", color: palette.text, fontFamily: "'Inter', sans-serif", fontWeight: 600, padding: "5px 10px", border: `1px solid ${palette.brass}55`, borderRadius: 0, background: "transparent" }}>{r}</span>
@@ -196,14 +196,14 @@ function ConceptApothecary() {
       {/* Ahead card */}
       <SectionLabel theme="apothecary" palette={palette} num="03" title="Days ahead" />
       <div style={{ background: palette.surface, borderRadius: 6, padding: 20, border: `1px solid ${palette.brass}33`, marginTop: 10, marginBottom: 22 }}>
-        <p style={{ fontSize: 14, color: palette.text, fontFamily: "Georgia, serif", fontStyle: "italic", margin: "0 0 14px", lineHeight: 1.55 }}>
+        <p style={{ fontSize: 14, color: palette.text, fontFamily: "Cormorant Garamond, Georgia, serif", fontStyle: "italic", margin: "0 0 14px", lineHeight: 1.55 }}>
           The luteal half settles into a slower tempo. Period predicted <span style={{ color: palette.brass }}>{MOCK.nextPeriod}</span> · ±{MOCK.etaWindowDays}d.
         </p>
         <div style={{ display: "grid", gridTemplateColumns: "repeat(5, 1fr)", gap: 6 }}>
           {MOCK.ahead.map((c, i) => (
             <div key={i} style={{ borderTop: `1.5px solid ${phaseHex[c.phase]}`, padding: "8px 0 0", textAlign: "center" }}>
               <p style={{ fontSize: 9, letterSpacing: "0.3em", color: palette.mute, fontFamily: "'Inter', sans-serif", fontWeight: 700, margin: 0 }}>{c.day}</p>
-              <p style={{ fontSize: 22, fontFamily: "Georgia, serif", fontStyle: "italic", color: palette.cream, margin: 0 }}>{c.num}</p>
+              <p style={{ fontSize: 22, fontFamily: "Cormorant Garamond, Georgia, serif", fontStyle: "italic", color: palette.cream, margin: 0 }}>{c.num}</p>
             </div>
           ))}
         </div>
@@ -258,10 +258,10 @@ function ConceptMenu() {
         <p style={{ fontSize: 10, letterSpacing: "0.5em", textTransform: "uppercase", color: palette.inkSoft, fontFamily: "'Inter', sans-serif", fontWeight: 600, margin: 0 }}>
           {MOCK.todayLabel.toUpperCase()}
         </p>
-        <h2 style={{ fontFamily: "Georgia, serif", fontSize: 44, color: palette.ink, margin: "12px 0 4px", letterSpacing: "0.005em", lineHeight: 1, fontWeight: 500 }}>
+        <h2 style={{ fontFamily: "Cormorant Garamond, Georgia, serif", fontSize: 44, color: palette.ink, margin: "12px 0 4px", letterSpacing: "0.005em", lineHeight: 1, fontWeight: 500 }}>
           The luteal table
         </h2>
-        <p style={{ fontFamily: "Georgia, serif", fontStyle: "italic", fontSize: 16, color: palette.inkSoft, margin: "8px 0 0", letterSpacing: "0.01em" }}>
+        <p style={{ fontFamily: "Cormorant Garamond, Georgia, serif", fontStyle: "italic", fontSize: 16, color: palette.inkSoft, margin: "8px 0 0", letterSpacing: "0.01em" }}>
           A four-course menu for the inward half of the cycle.
         </p>
         <p style={{ fontSize: 11, color: palette.gold, margin: "20px 0 0", letterSpacing: "0.4em" }}>· · ·</p>
@@ -278,11 +278,11 @@ function ConceptMenu() {
           const isHere = c.phase === "luteal";
           return (
             <li key={i} style={{ display: "grid", gridTemplateColumns: "44px 1fr auto", gap: 18, alignItems: "baseline", padding: "14px 0", borderBottom: i < 3 ? `1px solid ${palette.gold}55` : "none", position: "relative" }}>
-              <span style={{ fontFamily: "Georgia, serif", fontStyle: "italic", fontSize: 18, color: isHere ? palette.rust : palette.gold }}>{c.num}.</span>
+              <span style={{ fontFamily: "Cormorant Garamond, Georgia, serif", fontStyle: "italic", fontSize: 18, color: isHere ? palette.rust : palette.gold }}>{c.num}.</span>
               <div>
                 <p style={{ fontSize: 9.5, letterSpacing: "0.32em", textTransform: "uppercase", color: palette.inkSoft, fontFamily: "'Inter', sans-serif", fontWeight: 600, margin: 0 }}>{c.course}</p>
-                <p style={{ fontFamily: "Georgia, serif", fontSize: 22, color: palette.ink, margin: "2px 0 6px", fontWeight: 500 }}>{c.name}</p>
-                <p style={{ fontFamily: "Georgia, serif", fontStyle: "italic", fontSize: 14, color: palette.inkSoft, margin: 0, lineHeight: 1.5 }}>{c.desc}</p>
+                <p style={{ fontFamily: "Cormorant Garamond, Georgia, serif", fontSize: 22, color: palette.ink, margin: "2px 0 6px", fontWeight: 500 }}>{c.name}</p>
+                <p style={{ fontFamily: "Cormorant Garamond, Georgia, serif", fontStyle: "italic", fontSize: 14, color: palette.inkSoft, margin: 0, lineHeight: 1.5 }}>{c.desc}</p>
               </div>
               {isHere && <span style={{ fontSize: 9, letterSpacing: "0.32em", textTransform: "uppercase", color: palette.rust, fontFamily: "'Inter', sans-serif", fontWeight: 700, alignSelf: "start", marginTop: 6 }}>· here today</span>}
             </li>
@@ -303,14 +303,14 @@ function ConceptMenu() {
           ))}
         </div>
         <div style={{ display: "flex", justifyContent: "space-between", marginTop: 10 }}>
-          <span style={{ fontFamily: "Georgia, serif", fontStyle: "italic", fontSize: 12, color: palette.inkSoft }}>1 May · begin</span>
-          <span style={{ fontFamily: "Georgia, serif", fontSize: 14, fontStyle: "italic", color: palette.rust, fontWeight: 600 }}>· today, 15 ·</span>
-          <span style={{ fontFamily: "Georgia, serif", fontStyle: "italic", fontSize: 12, color: palette.inkSoft }}>31 May · close</span>
+          <span style={{ fontFamily: "Cormorant Garamond, Georgia, serif", fontStyle: "italic", fontSize: 12, color: palette.inkSoft }}>1 May · begin</span>
+          <span style={{ fontFamily: "Cormorant Garamond, Georgia, serif", fontSize: 14, fontStyle: "italic", color: palette.rust, fontWeight: 600 }}>· today, 15 ·</span>
+          <span style={{ fontFamily: "Cormorant Garamond, Georgia, serif", fontStyle: "italic", fontSize: 12, color: palette.inkSoft }}>31 May · close</span>
         </div>
       </div>
 
       {/* Footer line */}
-      <p style={{ textAlign: "center", fontFamily: "Georgia, serif", fontStyle: "italic", fontSize: 13, color: palette.inkSoft, margin: "30px 0 6px", lineHeight: 1.6, maxWidth: 460, marginLeft: "auto", marginRight: "auto" }}>
+      <p style={{ textAlign: "center", fontFamily: "Cormorant Garamond, Georgia, serif", fontStyle: "italic", fontSize: 13, color: palette.inkSoft, margin: "30px 0 6px", lineHeight: 1.6, maxWidth: 460, marginLeft: "auto", marginRight: "auto" }}>
         Next period gently expected <span style={{ color: palette.rust, fontWeight: 600 }}>{MOCK.nextPeriod}</span>, give or take {MOCK.etaWindowDays} days. {MOCK.confidencePct}% sure — we've sat at this table {MOCK.cyclesObserved} times together.
       </p>
       <p style={{ textAlign: "center", fontSize: 11, color: palette.gold, margin: "20px 0 0", letterSpacing: "0.4em" }}>· · ·</p>
@@ -436,7 +436,7 @@ function ConceptAurora() {
       {/* Hero — phase as horizon */}
       <div style={{ position: "relative", zIndex: 1, marginBottom: 28 }}>
         <p style={{ fontSize: 10, letterSpacing: "0.32em", textTransform: "uppercase", color: palette.bone, opacity: 0.85, fontWeight: 600, margin: 0 }}>{MOCK.todayLabel}</p>
-        <h2 style={{ fontFamily: "Georgia, serif", fontSize: 56, fontWeight: 500, color: palette.cream, margin: "10px 0 0", letterSpacing: "-0.02em", lineHeight: 0.95, textShadow: "0 2px 24px rgba(0,0,0,0.35)" }}>Day 22<span style={{ fontSize: 22, color: palette.bone, opacity: 0.85, marginLeft: 8, letterSpacing: "0.04em" }}>· luteal</span></h2>
+        <h2 style={{ fontFamily: "Cormorant Garamond, Georgia, serif", fontSize: 56, fontWeight: 500, color: palette.cream, margin: "10px 0 0", letterSpacing: "-0.02em", lineHeight: 0.95, textShadow: "0 2px 24px rgba(0,0,0,0.35)" }}>Day 22<span style={{ fontSize: 22, color: palette.bone, opacity: 0.85, marginLeft: 8, letterSpacing: "0.04em" }}>· luteal</span></h2>
         <p style={{ fontSize: 14, color: palette.bone, opacity: 0.85, margin: "10px 0 0", maxWidth: 460, lineHeight: 1.55 }}>The sky is tipping toward the next dawn. You're a few days from the next period — slow rhythms tend to land well here.</p>
       </div>
 
@@ -465,7 +465,7 @@ function ConceptAurora() {
       <div style={{ position: "relative", zIndex: 1, display: "grid", gap: 14 }}>
         <div style={{ background: "rgba(255,255,255,0.08)", backdropFilter: "blur(14px)", WebkitBackdropFilter: "blur(14px)", border: "1px solid rgba(255,255,255,0.14)", borderRadius: 18, padding: "16px 18px" }}>
           <p style={{ fontSize: 10, letterSpacing: "0.28em", textTransform: "uppercase", color: palette.bone, opacity: 0.75, fontWeight: 600, margin: 0 }}>Your rhythm · active</p>
-          <h3 style={{ fontFamily: "Georgia, serif", fontSize: 28, color: palette.cream, margin: "6px 0 8px", fontWeight: 500 }}>{MOCK.activeRhythm}</h3>
+          <h3 style={{ fontFamily: "Cormorant Garamond, Georgia, serif", fontSize: 28, color: palette.cream, margin: "6px 0 8px", fontWeight: 500 }}>{MOCK.activeRhythm}</h3>
           <p style={{ fontSize: 13, color: palette.bone, margin: 0, opacity: 0.85 }}>{MOCK.activeRhythmCount} · slow walks, warm food, early candles</p>
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginTop: 14, paddingTop: 12, borderTop: "1px solid rgba(255,255,255,0.12)" }}>
             <span style={{ fontSize: 10.5, letterSpacing: "0.22em", textTransform: "uppercase", color: palette.bone, opacity: 0.8, fontWeight: 600 }}>{MOCK.weekHabitPct}% steady · this week</span>
@@ -479,7 +479,7 @@ function ConceptAurora() {
             {MOCK.ahead.map((c, i) => (
               <div key={i} style={{ textAlign: "center", padding: "6px 0" }}>
                 <p style={{ fontSize: 9, letterSpacing: "0.22em", color: palette.bone, opacity: 0.7, fontWeight: 700, margin: 0 }}>{c.day}</p>
-                <p style={{ fontFamily: "Georgia, serif", fontSize: 26, color: palette.cream, margin: "2px 0 4px", fontWeight: 500 }}>{c.num}</p>
+                <p style={{ fontFamily: "Cormorant Garamond, Georgia, serif", fontSize: 26, color: palette.cream, margin: "2px 0 4px", fontWeight: 500 }}>{c.num}</p>
                 <span style={{ display: "inline-block", width: 26, height: 3, borderRadius: 9999, background: c.phase === "menstrual" ? "#D55B5A" : "#7A5572", boxShadow: c.phase === "menstrual" ? "0 0 10px rgba(213,91,90,0.75)" : "0 0 8px rgba(122,85,114,0.6)" }} />
               </div>
             ))}
@@ -512,15 +512,15 @@ function ConceptRouge() {
   const phaseHex = { menstrual: palette.rust, follicular: palette.rose, ovulatory: palette.gold, luteal: palette.mauve, off: "#5A1A2A" };
 
   return (
-    <div style={{ background: palette.bg, padding: "32px 22px 56px", borderRadius: 24, color: palette.cream, fontFamily: "Georgia, serif" }}>
+    <div style={{ background: palette.bg, padding: "32px 22px 56px", borderRadius: 24, color: palette.cream, fontFamily: "Cormorant Garamond, Georgia, serif" }}>
       {/* Hero banner */}
       <div style={{ position: "relative", marginBottom: 28 }}>
         <p style={{ fontSize: 11, letterSpacing: "0.36em", textTransform: "uppercase", color: palette.gold, fontWeight: 700, margin: 0, fontFamily: "'Inter', sans-serif" }}>{MOCK.todayLabel} · Year of the Cycle</p>
-        <h2 style={{ fontFamily: "Georgia, serif", fontSize: 76, fontWeight: 700, color: palette.cream, margin: "12px 0 0", letterSpacing: "-0.03em", lineHeight: 0.88, textShadow: `0 0 36px ${palette.gold}55`, position: "relative" }}>
+        <h2 style={{ fontFamily: "Cormorant Garamond, Georgia, serif", fontSize: 76, fontWeight: 700, color: palette.cream, margin: "12px 0 0", letterSpacing: "-0.03em", lineHeight: 0.88, textShadow: `0 0 36px ${palette.gold}55`, position: "relative" }}>
           DAY <span style={{ color: palette.gold }}>22</span>
           <span style={{ fontFamily: "'IBM Plex Mono', monospace", position: "absolute", right: 0, top: 6, fontSize: 16, color: palette.bone, fontWeight: 400, letterSpacing: "0.04em" }}>/ 28</span>
         </h2>
-        <p style={{ fontFamily: "Georgia, serif", fontSize: 22, fontStyle: "italic", color: palette.rose, margin: "10px 0 0", letterSpacing: "0.01em" }}>The luteal half. Take the room.</p>
+        <p style={{ fontFamily: "Cormorant Garamond, Georgia, serif", fontSize: 22, fontStyle: "italic", color: palette.rose, margin: "10px 0 0", letterSpacing: "0.01em" }}>The luteal half. Take the room.</p>
       </div>
 
       {/* Hard-edge month — no gradients, just blocks */}
@@ -536,7 +536,7 @@ function ConceptRouge() {
                 const isToday = wi === MOCK.todayCell.week && di === MOCK.todayCell.day;
                 return (
                   <div key={di} style={{ position: "relative", aspectRatio: "1/1", background: phaseHex[p] || phaseHex.off, display: "flex", alignItems: "center", justifyContent: "center", boxShadow: isToday ? `0 0 0 3px ${palette.gold}, 0 0 24px ${palette.gold}AA` : "none", transform: isToday ? "scale(1.06)" : "none", transition: "transform 200ms ease", zIndex: isToday ? 2 : 1 }}>
-                    <span style={{ fontFamily: "Georgia, serif", fontSize: isToday ? 19 : 14, fontWeight: 700, color: p === "off" ? "rgba(255,255,255,0.35)" : palette.cream, textShadow: isToday ? "0 1px 2px rgba(0,0,0,0.45)" : "none" }}>{MOCK.monthGridNums[wi][di]}</span>
+                    <span style={{ fontFamily: "Cormorant Garamond, Georgia, serif", fontSize: isToday ? 19 : 14, fontWeight: 700, color: p === "off" ? "rgba(255,255,255,0.35)" : palette.cream, textShadow: isToday ? "0 1px 2px rgba(0,0,0,0.45)" : "none" }}>{MOCK.monthGridNums[wi][di]}</span>
                   </div>
                 );
               })}
@@ -556,8 +556,8 @@ function ConceptRouge() {
       <div style={{ background: "linear-gradient(135deg, #4A1226 0%, #2A0A1A 100%)", border: `2px solid ${palette.gold}`, padding: "26px 24px", marginBottom: 22, position: "relative" }}>
         <div style={{ position: "absolute", top: 14, right: 18, fontFamily: "'IBM Plex Mono', monospace", fontSize: 11, color: palette.gold, letterSpacing: "0.06em" }}>ACT III · OPUS 22</div>
         <p style={{ fontFamily: "'Inter', sans-serif", fontSize: 11, letterSpacing: "0.4em", textTransform: "uppercase", color: palette.gold, margin: 0, fontWeight: 700 }}>The Rhythm</p>
-        <h3 style={{ fontFamily: "Georgia, serif", fontSize: 44, fontWeight: 700, color: palette.cream, margin: "12px 0 4px", letterSpacing: "-0.02em", lineHeight: 1 }}>{MOCK.activeRhythm}</h3>
-        <p style={{ fontFamily: "Georgia, serif", fontStyle: "italic", fontSize: 16, color: palette.rose, margin: "0 0 18px" }}>{MOCK.activeRhythmCount} · for the inward half</p>
+        <h3 style={{ fontFamily: "Cormorant Garamond, Georgia, serif", fontSize: 44, fontWeight: 700, color: palette.cream, margin: "12px 0 4px", letterSpacing: "-0.02em", lineHeight: 1 }}>{MOCK.activeRhythm}</h3>
+        <p style={{ fontFamily: "Cormorant Garamond, Georgia, serif", fontStyle: "italic", fontSize: 16, color: palette.rose, margin: "0 0 18px" }}>{MOCK.activeRhythmCount} · for the inward half</p>
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", paddingTop: 16, borderTop: `1px solid ${palette.gold}33` }}>
           <span style={{ fontFamily: "'IBM Plex Mono', monospace", fontSize: 12, color: palette.gold, letterSpacing: "0.08em" }}>{MOCK.weekHabitPct}% / WEEK</span>
           <button style={{ padding: "9px 18px", background: palette.gold, color: palette.deeper, border: "none", fontFamily: "'Inter', sans-serif", fontSize: 12, fontWeight: 800, letterSpacing: "0.16em", textTransform: "uppercase", cursor: "pointer", boxShadow: `0 4px 18px ${palette.gold}66` }}>BUILD INTO WEEK ↗</button>
@@ -569,7 +569,7 @@ function ConceptRouge() {
         {MOCK.ahead.map((c, i) => (
           <div key={i} style={{ background: phaseHex[c.phase], padding: "12px 8px", textAlign: "center", boxShadow: `0 0 16px ${phaseHex[c.phase]}88`, position: "relative" }}>
             <p style={{ fontFamily: "'IBM Plex Mono', monospace", fontSize: 9, color: "rgba(255,255,255,0.8)", letterSpacing: "0.12em", margin: 0, fontWeight: 700 }}>{c.day}</p>
-            <p style={{ fontFamily: "Georgia, serif", fontSize: 34, fontWeight: 700, color: palette.cream, margin: 0, lineHeight: 1, textShadow: "0 1px 2px rgba(0,0,0,0.4)" }}>{c.num}</p>
+            <p style={{ fontFamily: "Cormorant Garamond, Georgia, serif", fontSize: 34, fontWeight: 700, color: palette.cream, margin: 0, lineHeight: 1, textShadow: "0 1px 2px rgba(0,0,0,0.4)" }}>{c.num}</p>
           </div>
         ))}
       </div>
@@ -633,7 +633,7 @@ const tabBtnStyle = {
   gap: 2,
 };
 const tabLabelStyle = {
-  fontFamily: "Georgia, serif",
+  fontFamily: "Cormorant Garamond, Georgia, serif",
   fontSize: 15,
   fontWeight: 500,
   letterSpacing: "-0.005em",

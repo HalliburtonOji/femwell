@@ -89,7 +89,7 @@ function Pull({ children }) {
       margin: "18px 0 0", padding: "14px 16px",
       background: J.cream, borderRadius: 10,
       borderLeft: `3px solid ${J.gold}`,
-      fontFamily: "Georgia, serif", fontStyle: "italic",
+      fontFamily: "Cormorant Garamond, Georgia, serif", fontStyle: "italic",
       fontSize: 14, color: J.plum, lineHeight: 1.55,
     }}>{children}</blockquote>
   );
@@ -436,7 +436,7 @@ export default function JournalPlanDoc() {
               marginTop: 2,
             }}>{d.file}</div>
             <p style={{
-              fontFamily: "Georgia, serif", fontStyle: "italic", fontSize: 13.5,
+              fontFamily: "Cormorant Garamond, Georgia, serif", fontStyle: "italic", fontSize: 13.5,
               color: J.plum, marginTop: 8, lineHeight: 1.5,
             }}>{d.one_line}</p>
             <p style={{
@@ -564,7 +564,7 @@ export default function JournalPlanDoc() {
                     fontWeight: 500, color: J.espresso, fontStyle: "italic",
                   }}>{c.label}</div>
                   <div style={{
-                    fontFamily: "Georgia, serif", fontStyle: "italic", fontSize: 12.5,
+                    fontFamily: "Cormorant Garamond, Georgia, serif", fontStyle: "italic", fontSize: 12.5,
                     color: J.plumMid, marginTop: 2,
                   }}>{c.one_line}</div>
                 </div>
@@ -591,7 +591,7 @@ export default function JournalPlanDoc() {
                   <div style={subEyebrow}>Voice</div>
                   <blockquote style={{
                     margin: 0, padding: "10px 12px", background: J.cream, borderRadius: 8,
-                    fontFamily: "Georgia, serif", fontStyle: "italic", fontSize: 13,
+                    fontFamily: "Cormorant Garamond, Georgia, serif", fontStyle: "italic", fontSize: 13,
                     color: J.plum, lineHeight: 1.5,
                   }}>{c.copy}</blockquote>
 
@@ -803,7 +803,7 @@ export default function JournalPlanDoc() {
         <ul style={{ listStyle: "none", margin: 0, padding: 0, display: "flex", flexDirection: "column", gap: 12 }}>
           {HERO_QUOTES.map((q, i) => (
             <li key={i} style={{
-              fontFamily: "Georgia, serif", fontStyle: "italic", fontSize: 14.5,
+              fontFamily: "Cormorant Garamond, Georgia, serif", fontStyle: "italic", fontSize: 14.5,
               color: J.cream, lineHeight: 1.5, opacity: 0.95,
             }}>&ldquo;{q}&rdquo;</li>
           ))}

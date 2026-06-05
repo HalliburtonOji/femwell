@@ -659,14 +659,14 @@ const exportBtn = {
 };
 const successHint = {
   marginTop: 8,
-  fontFamily: "Georgia, serif",
+  fontFamily: "Cormorant Garamond, Georgia, serif",
   fontStyle: "italic",
   fontSize: 12,
   color: "#6B8F5A",
 };
 const errorHint = {
   marginTop: 8,
-  fontFamily: "Georgia, serif",
+  fontFamily: "Cormorant Garamond, Georgia, serif",
   fontStyle: "italic",
   fontSize: 12,
   color: "#D45E52",

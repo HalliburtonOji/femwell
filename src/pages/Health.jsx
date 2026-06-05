@@ -238,7 +238,7 @@ const RosebudProgress = memo(function RosebudProgress({ scrollPct }) {
       {fullyBloomed && (
         <div style={{
           marginTop: 4,
-          fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
+          fontFamily: 'Cormorant Garamond, Georgia, serif',
           fontSize: 9, fontWeight: 700, letterSpacing: 1, textTransform: "uppercase",
           color: "#8FAF8F", whiteSpace: "nowrap",
         }}>
@@ -793,11 +793,11 @@ const JessObservationCard = memo(function JessObservationCard({ letterId, profil
         }}>✦</div>
         <div>
           <div style={{
-            fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
+            fontFamily: 'Cormorant Garamond, Georgia, serif',
             fontSize: 12, fontWeight: 700, color: "#3A2C1A", letterSpacing: 0.5,
           }}>Jess noticed</div>
           <div style={{
-            fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
+            fontFamily: 'Cormorant Garamond, Georgia, serif',
             fontSize: 10, color: "#9B8B7A",
           }}>Based on your recent activity</div>
         </div>
@@ -843,7 +843,7 @@ function Term({ word, definition }) {
           transform: "translateX(-50%)",
           background: "#3A2C1A", color: "#F4EDDB",
           borderRadius: 6, padding: "10px 12px",
-          fontSize: 12.5, fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
+          fontSize: 12.5, fontFamily: 'Cormorant Garamond, Georgia, serif',
           fontStyle: "normal", lineHeight: 1.5,
           width: 220, zIndex: 30,
           boxShadow: "0 4px 12px rgba(0,0,0,0.25)", textAlign: "left",
@@ -1253,7 +1253,7 @@ export default function Health() {
               <span aria-hidden="true">{currentLetter.icon}</span> {currentLetter.title}
             </div>
             <div style={{
-              fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
+              fontFamily: 'Cormorant Garamond, Georgia, serif',
               fontSize: 10, color: "rgba(244,237,219,0.55)",
               letterSpacing: 0.5, marginTop: 1,
             }}>
@@ -1298,7 +1298,7 @@ export default function Health() {
               <rect x="10" y="9" width="6" height="5" rx="1" fill="#3A2C1A"/>
             </svg>
             <span style={{
-              fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
+              fontFamily: 'Cormorant Garamond, Georgia, serif',
               fontSize: 13, fontWeight: 700, color: "#3A2C1A", letterSpacing: 0.3,
             }}>
               All letters
@@ -1312,7 +1312,7 @@ export default function Health() {
           display: "flex", alignItems: "center", justifyContent: "space-between",
         }}>
           <span style={{
-            fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
+            fontFamily: 'Cormorant Garamond, Georgia, serif',
             fontSize: 11, color: "rgba(244,237,219,0.7)", letterSpacing: 0.5,
           }}>
             {phaseLbl}{cycle?.cycleDay ? ` · Day ${cycle.cycleDay}` : ""} · {stageLbl}
@@ -1376,7 +1376,7 @@ export default function Health() {
             borderRadius: "50%", width: 44, height: 44,
             display: "flex", alignItems: "center", justifyContent: "center",
             cursor: "pointer", zIndex: 20, pointerEvents: "auto",
-            fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
+            fontFamily: 'Cormorant Garamond, Georgia, serif',
             fontSize: 22, color: "#3A2C1A", fontWeight: 600, paddingBottom: 2,
           }}>‹</button>
         )}
@@ -1388,7 +1388,7 @@ export default function Health() {
             borderRadius: "50%", width: 44, height: 44,
             display: "flex", alignItems: "center", justifyContent: "center",
             cursor: "pointer", zIndex: 20, pointerEvents: "auto",
-            fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
+            fontFamily: 'Cormorant Garamond, Georgia, serif',
             fontSize: 22, color: "#3A2C1A", fontWeight: 600, paddingBottom: 2,
           }}>›</button>
         )}
@@ -1458,13 +1458,13 @@ export default function Health() {
               margin: "8px auto 12px",
             }} />
             <div style={{ textAlign: "center", marginTop: 12 }}>
-              <div style={{ fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif', fontSize: 13, fontWeight: 600, letterSpacing: 2, color: "#9B8B7A", textTransform: "uppercase" }}>
+              <div style={{ fontFamily: 'Cormorant Garamond, Georgia, serif', fontSize: 13, fontWeight: 600, letterSpacing: 2, color: "#9B8B7A", textTransform: "uppercase" }}>
                 FemWell Health Letter
               </div>
               <div className="fw-heading" style={{ marginTop: 4 }}>
                 {tab.label}
               </div>
-              <div style={{ fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif', fontSize: 13, fontWeight: 600, color: "#9B8B7A", marginTop: 6 }}>
+              <div style={{ fontFamily: 'Cormorant Garamond, Georgia, serif', fontSize: 13, fontWeight: 600, color: "#9B8B7A", marginTop: 6 }}>
                 {formattedDate} · {stageLbl}
               </div>
             </div>
@@ -1514,7 +1514,7 @@ export default function Health() {
                   fontSize: 18, fontWeight: 700, color: "#3A2C1A", letterSpacing: 0.5,
                 }}>In this letter</span>
                 <span style={{
-                  fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
+                  fontFamily: 'Cormorant Garamond, Georgia, serif',
                   fontSize: 10, color: "#9B8B7A", letterSpacing: 0.3,
                 }}>
                   ~{Math.ceil(sections.length * 1.5)} min read
@@ -1523,7 +1523,7 @@ export default function Health() {
               <button onClick={toggleAll} style={{
                 background: "none", border: "1px solid rgba(58,44,26,0.2)",
                 borderRadius: 14, padding: "5px 14px", cursor: "pointer",
-                fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
+                fontFamily: 'Cormorant Garamond, Georgia, serif',
                 fontSize: 12, fontWeight: 600, color: "#3A2C1A", letterSpacing: 0.3,
               }}>
                 {allExpanded ? "Collapse all" : "Expand all"}
@@ -1600,7 +1600,7 @@ export default function Health() {
                 border: "1px solid #D4AF37",
                 borderRadius: 24, padding: "12px 20px",
                 cursor: "pointer",
-                fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
+                fontFamily: 'Cormorant Garamond, Georgia, serif',
                 fontSize: 13, fontWeight: 700, color: "#F4EDDB", letterSpacing: 0.3,
               }}
             >
@@ -1635,7 +1635,7 @@ export default function Health() {
             <div style={{ fontFamily: 'Cormorant Garamond, Georgia, serif', fontSize: 22, fontWeight: 700, color: "#3A2C1A", fontStyle: "italic" }}>
               {(SIGNATURES[activeTab] || SIGNATURES.overview).name}
             </div>
-            <div style={{ fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif', fontSize: 14, fontWeight: 600, color: "#9B8B7A", letterSpacing: 0.5, marginTop: 4, marginBottom: 20 }}>
+            <div style={{ fontFamily: 'Cormorant Garamond, Georgia, serif', fontSize: 14, fontWeight: 600, color: "#9B8B7A", letterSpacing: 0.5, marginTop: 4, marginBottom: 20 }}>
               {(SIGNATURES[activeTab] || SIGNATURES.overview).role}
             </div>
             {/* FW wax-seal mark — small circular gold monogram. */}
@@ -1661,7 +1661,7 @@ export default function Health() {
           </div>
 
           {/* ── In-paper disclaimer ── */}
-          <div style={{ marginTop: 16, fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif', fontSize: 10, color: "#9B8B7A", letterSpacing: 0.4, fontStyle: "italic", position: "relative" }}>
+          <div style={{ marginTop: 16, fontFamily: 'Cormorant Garamond, Georgia, serif', fontSize: 10, color: "#9B8B7A", letterSpacing: 0.4, fontStyle: "italic", position: "relative" }}>
             This letter is for informational purposes only and does not constitute medical advice. Always consult a qualified healthcare professional for personal health decisions.
           </div>
         </article>
@@ -1733,7 +1733,7 @@ export default function Health() {
                       marginBottom: 3, lineHeight: 1.2,
                     }}>{L.title}</div>
                     <div style={{
-                      fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
+                      fontFamily: 'Cormorant Garamond, Georgia, serif',
                       fontSize: 10, color: on ? "rgba(244,237,219,0.55)" : "#9B8B7A",
                       lineHeight: 1.4,
                     }}>{L.subtitle}</div>
@@ -1752,7 +1752,7 @@ export default function Health() {
       <div className="hc-no-print" style={{
         background: "#3A2C1A", color: "rgba(244,237,219,0.6)",
         padding: "12px 20px", textAlign: "center",
-        fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif', fontSize: 10, letterSpacing: 0.5,
+        fontFamily: 'Cormorant Garamond, Georgia, serif', fontSize: 10, letterSpacing: 0.5,
       }}>
         This content is for informational purposes only and does not constitute medical advice. Always consult a qualified healthcare professional for personalised health decisions.
       </div>
@@ -1788,7 +1788,7 @@ export default function Health() {
                   fontSize: 22, fontWeight: 700, color: "#3A2C1A",
                 }}>Your GP question list</div>
                 <div style={{
-                  fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
+                  fontFamily: 'Cormorant Garamond, Georgia, serif',
                   fontSize: 11, color: "#9B8B7A", marginTop: 2,
                 }}>
                   {gpQuestions.length} saved insight{gpQuestions.length === 1 ? "" : "s"} · {healthNotes.length} note{healthNotes.length === 1 ? "" : "s"}
@@ -1818,7 +1818,7 @@ export default function Health() {
             {gpQuestions.length > 0 && (
               <div style={{ marginBottom: 18 }}>
                 <div style={{
-                  fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
+                  fontFamily: 'Cormorant Garamond, Georgia, serif',
                   fontSize: 10, fontWeight: 700, letterSpacing: 1.5, textTransform: "uppercase",
                   color: "#9B8B7A", marginBottom: 8,
                 }}>Questions to ask</div>
@@ -1830,7 +1830,7 @@ export default function Health() {
                     borderRadius: 8, marginBottom: 8,
                   }}>
                     <div style={{
-                      fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
+                      fontFamily: 'Cormorant Garamond, Georgia, serif',
                       fontSize: 10, color: "#D4AF37", fontWeight: 700,
                       letterSpacing: 1, textTransform: "uppercase", marginBottom: 4,
                     }}>{q.letterTitle} · {q.sectionTitle}</div>
@@ -1845,7 +1845,7 @@ export default function Health() {
                       onClick={() => setGpQuestions((prev) => prev.filter((_, j) => j !== i))}
                       style={{
                         background: "none", border: "none", cursor: "pointer",
-                        fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
+                        fontFamily: 'Cormorant Garamond, Georgia, serif',
                         fontSize: 11, color: "#9B8B7A", padding: 0,
                       }}
                     >Remove</button>
@@ -1857,7 +1857,7 @@ export default function Health() {
             {healthNotes.length > 0 && (
               <div style={{ marginBottom: 18 }}>
                 <div style={{
-                  fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
+                  fontFamily: 'Cormorant Garamond, Georgia, serif',
                   fontSize: 10, fontWeight: 700, letterSpacing: 1.5, textTransform: "uppercase",
                   color: "#9B8B7A", marginBottom: 8,
                 }}>Your saved notes</div>
@@ -1869,7 +1869,7 @@ export default function Health() {
                     borderRadius: 8, marginBottom: 8,
                   }}>
                     <div style={{
-                      fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
+                      fontFamily: 'Cormorant Garamond, Georgia, serif',
                       fontSize: 10, color: "#9B8B7A", letterSpacing: 0.5, marginBottom: 4,
                     }}>{n.letterTitle} · {n.sectionTitle}</div>
                     <div style={{
@@ -1888,7 +1888,7 @@ export default function Health() {
                   width: "100%", padding: "14px 16px",
                   background: "#3A2C1A", color: "#F4EDDB",
                   border: "1px solid #D4AF37", borderRadius: 12,
-                  fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
+                  fontFamily: 'Cormorant Garamond, Georgia, serif',
                   fontSize: 14, fontWeight: 700, letterSpacing: 0.3,
                   cursor: "pointer",
                 }}
@@ -1908,7 +1908,7 @@ export default function Health() {
             transform: "translateX(-50%)",
             background: "#3A2C1A", color: "#F4EDDB",
             padding: "10px 18px", borderRadius: 999,
-            fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
+            fontFamily: 'Cormorant Garamond, Georgia, serif',
             fontSize: 13, fontWeight: 600, letterSpacing: 0.3,
             boxShadow: "0 4px 16px rgba(0,0,0,0.18)",
             zIndex: 120,
@@ -1962,7 +1962,7 @@ const LetterSection = memo(function LetterSection({ section, isExpanded, onToggl
           {section.title}
         </span>
         <span style={{
-          fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
+          fontFamily: 'Cormorant Garamond, Georgia, serif',
           fontSize: 20, color: "#D4AF37", marginLeft: 12, flexShrink: 0,
           display: "inline-block",
           transform: isExpanded ? "rotate(180deg)" : "rotate(0deg)",
@@ -1985,12 +1985,12 @@ const LetterSection = memo(function LetterSection({ section, isExpanded, onToggl
         }}>
           <div aria-hidden="true" style={{
             position: "absolute", top: -4, left: 14,
-            fontFamily: "Georgia, serif", fontSize: 48,
+            fontFamily: "Cormorant Garamond, Georgia, serif", fontSize: 48,
             color: "rgba(212,175,55,0.2)", lineHeight: 1,
             pointerEvents: "none", userSelect: "none",
           }}>&ldquo;</div>
           <div style={{
-            fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
+            fontFamily: 'Cormorant Garamond, Georgia, serif',
             fontSize: 9, fontWeight: 700, letterSpacing: 2,
             textTransform: "uppercase", color: "#D4AF37",
             marginBottom: 6,
@@ -2011,7 +2011,7 @@ const LetterSection = memo(function LetterSection({ section, isExpanded, onToggl
                 background: "rgba(58,44,26,0.06)",
                 border: "1px solid rgba(58,44,26,0.18)",
                 borderRadius: 999, padding: "4px 12px", cursor: "pointer",
-                fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
+                fontFamily: 'Cormorant Garamond, Georgia, serif',
                 fontSize: 11, fontWeight: 700, color: "#3A2C1A", letterSpacing: 0.3,
               }}
             >
@@ -2027,7 +2027,7 @@ const LetterSection = memo(function LetterSection({ section, isExpanded, onToggl
         background: isExpanded ? "rgba(58,44,26,0.06)" : "rgba(212,175,55,0.12)",
         border: `1px solid ${isExpanded ? "rgba(58,44,26,0.15)" : "rgba(212,175,55,0.4)"}`,
         borderRadius: 20, padding: "8px 16px", cursor: "pointer",
-        fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
+        fontFamily: 'Cormorant Garamond, Georgia, serif',
         fontSize: 13, fontWeight: 600,
         color: isExpanded ? "#9B8B7A" : "#3A2C1A",
         letterSpacing: 0.3, marginTop: 4, marginBottom: 4,
@@ -2067,7 +2067,7 @@ const LetterSection = memo(function LetterSection({ section, isExpanded, onToggl
                     color: "#3A2C1A", margin: "0 0 8px", lineHeight: 1.8,
                   }}>"{block.quote}"</p>
                   <div style={{
-                    fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif', fontSize: 14, fontWeight: 600, color: "#9B8B7A", letterSpacing: 0.4,
+                    fontFamily: 'Cormorant Garamond, Georgia, serif', fontSize: 14, fontWeight: 600, color: "#9B8B7A", letterSpacing: 0.4,
                   }}>— {block.attribution}</div>
                 </div>
               );
@@ -2092,7 +2092,7 @@ const LetterSection = memo(function LetterSection({ section, isExpanded, onToggl
                     fontFamily: 'Cormorant Garamond, Georgia, serif', fontSize: 48, fontWeight: 700, color: "#D4AF37",
                   }}>{block.number}</div>
                   <div style={{
-                    fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif', fontSize: 13, fontWeight: 600, color: "#9B8B7A",
+                    fontFamily: 'Cormorant Garamond, Georgia, serif', fontSize: 13, fontWeight: 600, color: "#9B8B7A",
                     letterSpacing: 1, textTransform: "uppercase", marginTop: 6,
                   }}>{block.label}</div>
                 </div>
@@ -2108,7 +2108,7 @@ const LetterSection = memo(function LetterSection({ section, isExpanded, onToggl
                 border: "1px solid rgba(212,175,55,0.35)",
                 borderRadius: 8, padding: "10px 18px",
                 cursor: "pointer", marginTop: 4,
-                fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
+                fontFamily: 'Cormorant Garamond, Georgia, serif',
                 fontSize: 13, fontWeight: 600, color: "#3A2C1A", letterSpacing: 0.3,
               }}>
                 <span aria-hidden="true" style={{
@@ -2144,7 +2144,7 @@ const LetterHistoryStrip = memo(function LetterHistoryStrip({ currentPhase }) {
       position: "sticky", top: 84, zIndex: 9,
     }}>
       <span style={{
-        fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
+        fontFamily: 'Cormorant Garamond, Georgia, serif',
         fontSize: 10, letterSpacing: 1.5, textTransform: "uppercase",
         color: "#9B8B7A", whiteSpace: "nowrap", marginRight: 6, fontWeight: 700,
       }}>Past letters</span>
@@ -2152,7 +2152,7 @@ const LetterHistoryStrip = memo(function LetterHistoryStrip({ currentPhase }) {
         const on = p === currentPhase;
         return (
           <div key={p} style={{
-            fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
+            fontFamily: 'Cormorant Garamond, Georgia, serif',
             fontSize: 11, fontWeight: 600,
             background: on ? "#3A2C1A" : "transparent",
             color: on ? "#F4EDDB" : "#9B8B7A",
@@ -2190,7 +2190,7 @@ const NewsSection = memo(function NewsSection({ tabId }) {
       {/* Cadence label so readers know news rotates monthly */}
       <div style={{
         textAlign: "center", marginBottom: 14,
-        fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
+        fontFamily: 'Cormorant Garamond, Georgia, serif',
         fontSize: 10, color: "#9B8B7A", letterSpacing: 1, textTransform: "uppercase",
       }}>Updated monthly</div>
       {/* Clipping-style cards with stable alternating tilt */}
@@ -2207,7 +2207,7 @@ const NewsSection = memo(function NewsSection({ tabId }) {
             boxShadow: "0 1px 2px rgba(58,44,26,0.06)",
           }}>
             <div style={{
-              fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
+              fontFamily: 'Cormorant Garamond, Georgia, serif',
               fontSize: 9, fontWeight: 700, letterSpacing: 1.5,
               textTransform: "uppercase", color: "#D4AF37", marginBottom: 6,
             }}>{item.source} · {item.date}</div>
@@ -2222,7 +2222,7 @@ const NewsSection = memo(function NewsSection({ tabId }) {
                 target="_blank"
                 rel="noopener noreferrer"
                 style={{
-                  fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
+                  fontFamily: 'Cormorant Garamond, Georgia, serif',
                   fontSize: 11, color: "#3A2C1A", letterSpacing: 0.3,
                   textDecoration: "none", fontWeight: 600,
                   display: "inline-flex", alignItems: "center", gap: 4,
@@ -2232,7 +2232,7 @@ const NewsSection = memo(function NewsSection({ tabId }) {
               </a>
             ) : (
               <div style={{
-                fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
+                fontFamily: 'Cormorant Garamond, Georgia, serif',
                 fontSize: 11, color: "#9B8B7A", letterSpacing: 0.3,
               }}>→ Read</div>
             )}
@@ -2252,7 +2252,7 @@ const TILE = {
   borderRadius: 8, padding: 18, marginBottom: 14,
 };
 const TILE_LABEL = {
-  fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
+  fontFamily: 'Cormorant Garamond, Georgia, serif',
   fontSize: 11, fontWeight: 700,
   letterSpacing: 1.5, textTransform: "uppercase",
   color: "#9B8B7A", marginBottom: 12,
@@ -2396,7 +2396,7 @@ function StoryDashboard({ profile, cycle, phase, recentCheckins, recentSymptoms,
         {/* Phase legend chips */}
         <div style={{
           display: "flex", flexWrap: "wrap", gap: 10, marginTop: 14,
-          fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
+          fontFamily: 'Cormorant Garamond, Georgia, serif',
           fontSize: 11, fontWeight: 600, color: "#9B8B7A",
         }}>
           {["menstrual","follicular","ovulatory","luteal"].map((p) => (
@@ -2426,7 +2426,7 @@ function StoryDashboard({ profile, cycle, phase, recentCheckins, recentSymptoms,
             <div style={{
               position: "absolute", top: -2, left: 0, bottom: 18,
               display: "flex", flexDirection: "column", justifyContent: "space-between",
-              fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
+              fontFamily: 'Cormorant Garamond, Georgia, serif',
               fontSize: 10, color: "#9B8B7A", paddingRight: 6,
             }}>
               <span>High</span>
@@ -2466,7 +2466,7 @@ function StoryDashboard({ profile, cycle, phase, recentCheckins, recentSymptoms,
             {/* x axis day markers */}
             <div style={{
               display: "flex", justifyContent: "space-between", marginTop: 4, paddingLeft: 28,
-              fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
+              fontFamily: 'Cormorant Garamond, Georgia, serif',
               fontSize: 10, color: "#9B8B7A",
             }}>
               <span>Day 1</span>
@@ -2478,7 +2478,7 @@ function StoryDashboard({ profile, cycle, phase, recentCheckins, recentSymptoms,
             No check-ins logged yet. Today is a good day to start.
           </div>
         )}
-        <div style={{ display: "flex", gap: 18, marginTop: 10, fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif', fontSize: 12, color: "#9B8B7A", fontWeight: 600 }}>
+        <div style={{ display: "flex", gap: 18, marginTop: 10, fontFamily: 'Cormorant Garamond, Georgia, serif', fontSize: 12, color: "#9B8B7A", fontWeight: 600 }}>
           <span><span style={{ display: "inline-block", width: 10, height: 10, borderRadius: "50%", background: "#E8B4B8", marginRight: 6, verticalAlign: "middle" }} />Mood</span>
           <span><span style={{ display: "inline-block", width: 10, height: 10, borderRadius: "50%", background: "#8FAF8F", marginRight: 6, verticalAlign: "middle" }} />Energy</span>
         </div>
@@ -2488,7 +2488,7 @@ function StoryDashboard({ profile, cycle, phase, recentCheckins, recentSymptoms,
       <div style={TILE}>
         <div style={TILE_LABEL}>Top symptoms</div>
         <div style={{
-          fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
+          fontFamily: 'Cormorant Garamond, Georgia, serif',
           fontSize: 11, color: "#9B8B7A", marginTop: -8, marginBottom: 12, letterSpacing: 0.3,
         }}>Most frequent in last 14 days</div>
         {topSx.length ? (
@@ -2498,7 +2498,7 @@ function StoryDashboard({ profile, cycle, phase, recentCheckins, recentSymptoms,
                 display: "inline-flex", alignItems: "center", gap: 6,
                 background: "#3A2C1A", color: "#F4EDDB",
                 padding: "6px 12px", borderRadius: 999,
-                fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
+                fontFamily: 'Cormorant Garamond, Georgia, serif',
                 fontSize: 13, fontWeight: 600,
               }}>
                 {String(name).replace(/_/g, " ")}
@@ -2533,7 +2533,7 @@ function StoryDashboard({ profile, cycle, phase, recentCheckins, recentSymptoms,
                       fontSize: 16, fontWeight: 600, color: "#3A2C1A",
                     }}>{String(h.name).replace(/_/g, " ")}</span>
                     <span style={{
-                      fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
+                      fontFamily: 'Cormorant Garamond, Georgia, serif',
                       fontSize: 12, fontWeight: 700, color: "#8FAF8F",
                       background: "rgba(143,175,143,0.15)",
                       padding: "3px 10px", borderRadius: 12,
@@ -2598,7 +2598,7 @@ function StoryDashboard({ profile, cycle, phase, recentCheckins, recentSymptoms,
                 </div>
                 <div style={{
                   marginTop: 6,
-                  fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
+                  fontFamily: 'Cormorant Garamond, Georgia, serif',
                   fontSize: 12, color: meetsTarget ? "#8FAF8F" : "#9B8B7A", fontWeight: 600, letterSpacing: 0.3,
                 }}>
                   {meetsTarget ? "Meeting your target ✓" : `${Math.round(pct * 100)}% of daily target`}

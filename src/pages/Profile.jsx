@@ -476,7 +476,7 @@ export default function Profile() {
                 margin: "0 0 10px",
               }}>{stage.hint}</p>
               <p style={{
-                fontFamily: "Georgia, serif",
+                fontFamily: "Cormorant Garamond, Georgia, serif",
                 fontStyle: "italic",
                 fontSize: 11.5,
                 color: "var(--plum-mute, #8A7584)",
