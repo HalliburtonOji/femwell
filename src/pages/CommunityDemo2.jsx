@@ -5,7 +5,7 @@
 // cancel before she reads. The receiver never uses her own words.
 //
 // Captures, from COMMUNITY_BUILD_SPEC §2.C: writer toggle + match (2–4h) ·
-// the Witness dock (receive one) · receiver view with the 4 fixed Fraunces/Caveat
+// the Witness dock (receive one) · receiver view with the 4 fixed Fraunces/Cormorant
 // lines + pass-silently · the held-3 gate ("witnessed 2 times, one more to
 // unlock") · the 6-rail charter. The dark plum "trust-ink" gradient is reserved
 // for these fragile surfaces (never an ordinary card).

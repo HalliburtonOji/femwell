@@ -12,8 +12,7 @@
   src: url(https://fonts.gstatic.com/s/cormorantgaramond/v21/co3ZmX5slCNuHLi8bLeY9MK7whWMhyjYrEtImSo.woff2) format('woff2'); }
 @font-face { font-family: 'Ephesis'; font-style: normal; font-weight: 400; font-display: swap;
   src: url(https://fonts.gstatic.com/s/ephesis/v11/uU9PCBUS8IerL2VG3xTR396EilM.woff2) format('woff2'); }
-@font-face { font-family: 'Caveat'; font-style: normal; font-weight: 400 700; font-display: swap;
-  src: url(https://fonts.gstatic.com/s/caveat/v23/Wnz6HAc5bAfYB2Q7ZjYYiAzcPA.woff2) format('woff2'); }
+/* Caveat REMOVED per Halli — palette is Ephesis + Cormorant only; no marker hand anywhere. */
 
 /* ── REMAP the two fonts non-journal pages actually reference → Cormorant ────
    ~all app content sets 'Inter' (body/chrome) or 'Fraunces' (headings) inline.
@@ -239,9 +238,11 @@
   h1 { line-height: 1.15; }
 
 
-  /* VOICED / accent lines → Caveat (the journal's hand), where the pattern fits. */
+  /* VOICED / quote lines → Cormorant Garamond ITALIC (the journal reading voice).
+     Caveat removed per Halli — palette is Ephesis + Cormorant only. */
   blockquote {
-    font-family: 'Caveat', 'Ephesis', cursive;
+    font-family: 'Cormorant Garamond', 'Fraunces', Georgia, serif;
+    font-style: italic;
     font-weight: 500;
   }
 

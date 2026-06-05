@@ -6,7 +6,7 @@
 // used), with phase-tuned fallbacks. "Another prompt" cycles the phase set;
 // "Write to this" opens the composer seeded with the current prompt.
 //
-// Brand: Ephesis script for the voiced prompt, Caveat hand for CTAs, gold
+// Brand: Ephesis script for the voiced prompt, Cormorant italic for CTAs, gold
 // hairline accent, the single crimson heart. No emoji. Not medical advice.
 
 import { useEffect, useMemo, useRef, useState } from "react";

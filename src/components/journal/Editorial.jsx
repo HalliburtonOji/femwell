@@ -1,7 +1,7 @@
 // FemWell Journal — Editorial shell kit (Phase 0)
 // Extracted byte-for-byte from the signed-off Editorial demo (src/pages/JournalDemo1.jsx,
 // origin/main 2e80e7a): paper texture, frozen inkCarve pen-depth, palette, type roles,
-// letterpress, masthead/footer primitives. Secondary hand overridden to Caveat per Halli.
+// letterpress, masthead/footer primitives. Secondary voice = Cormorant italic (Caveat removed per Halli; palette = Ephesis + Cormorant only).
 // Brand-pure: no emoji; Lucide + custom SVG only.
 import { useEffect } from "react";
 import { Lock } from "lucide-react";
@@ -21,7 +21,7 @@ export const T = {
 
 // ── type roles ──
 export const SCRIPT = '"Ephesis","Pinyon Script",cursive';        // display voice — MONOLINE roundhand matched to IMG_9854 (Ephesis: closest real web font)
-export const HAND   = '"Caveat","Ephesis",cursive';  // secondary hand — Caveat (Halli locked decision; demo used Parisienne)
+export const HAND   = '"Cormorant Garamond","Fraunces",Georgia,serif'; // secondary VOICE — Cormorant (rendered italic by <Hand>). Caveat REMOVED per Halli: palette = Ephesis + Cormorant only.
 export const SERIF  = '"Cormorant Garamond","Fraunces",Georgia,serif'; // long-form reading bodies only
 export const UI     = 'ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-serif'; // editorial chrome (eyebrows, dates) — system sans, NOT 'Inter' (which is app-remapped to Cormorant)
 
@@ -90,8 +90,10 @@ export function Script({ children, size = 40, color = T.ink, carve = true, style
   );
 }
 export function Hand({ children, size = 20, color = T.ink, carve = true, style }) {
+  // The journal "voice" — formerly Caveat handwriting (removed per Halli). Now the
+  // reading serif in ITALIC (Cormorant Garamond italic): legible, on-palette voice.
   return (
-    <span style={{ fontFamily: HAND, fontWeight: 500, fontSize: size, lineHeight: 1.34, color,
+    <span style={{ fontFamily: HAND, fontStyle: "italic", fontWeight: 500, fontSize: size, lineHeight: 1.34, color,
       display: "block", filter: carve ? "url(#inkCarveSm)" : undefined, ...style }}>{children}</span>
   );
 }
@@ -173,14 +175,14 @@ export function EditorialFooter() {
   );
 }
 
-// ── font loader: Ephesis (display) + Caveat (hand) + Cormorant (reading) + Inter (chrome) ──
+// ── font loader: Ephesis (display) + Cormorant (reading/voice) + Inter (chrome) ── (Caveat removed)
 export function useEditorialFonts() {
   useEffect(() => {
     const id = "journal-editorial-fonts";
     if (document.getElementById(id)) return;
     const l = document.createElement("link");
     l.id = id; l.rel = "stylesheet";
-    l.href = "https://fonts.googleapis.com/css2?family=Ephesis&family=Caveat:wght@400;500;600;700&family=Pinyon+Script&family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,500;1,600&family=Inter:wght@400;600;700;800&display=swap";
+    l.href = "https://fonts.googleapis.com/css2?family=Ephesis&family=Pinyon+Script&family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,500;1,600&family=Inter:wght@400;600;700;800&display=swap";
     document.head.appendChild(l);
   }, []);
 }

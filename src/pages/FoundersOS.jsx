@@ -2038,7 +2038,7 @@ function CommunityDemosTab() {
         fontSize: 12, color: T.textMid, lineHeight: 1.6,
       }}>
         All 5 demos reuse the shared Editorial kit (src/components/journal/Editorial.jsx) —
-        Ephesis script · Caveat hand · Cormorant serif · Inter chrome, the frozen carved-ink
+        Ephesis script · Cormorant serif (incl. italic voice) · Inter chrome, the frozen carved-ink
         treatment, no emoji. Every interaction is wired with useState; no real entities are
         queried and no new entities are created. Drawn from claude-state/COMMUNITY_BUILD_SPEC.md.
       </div>
