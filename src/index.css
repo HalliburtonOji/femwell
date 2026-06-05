@@ -285,14 +285,14 @@
    SAFETY: tier 1 (.fw-display) is SHORT page titles ONLY — never all-caps/long
    strings (they tangle in script). When unsure, use .fw-heading (tier 2). */
 
-/* TIER 1 — display: the Echo Wall demo's Ephesis script, BOLD with metallic 3D.
-   ROOT CAUSE of the live mismatch: the demo's 3D came from the #inkCarve SVG
-   filter (feTurbulence + feDisplacementMap), which iOS Safari / mobile browsers
-   do NOT render — so on a phone the title fell back to flat, thin Ephesis while
-   desktop looked carved. The bold 3D is now built with CSS that renders on EVERY
-   device: -webkit-text-stroke thickens the thin Ephesis to the bold/heavy weight
-   of the reference, and a layered text-shadow gives the metallic carved relief
-   (raised cream lip + dark pressed wall + cast depth). No SVG-filter dependency. */
+/* TIER 1 — display: the Echo Wall demo's Ephesis script with the metallic 3D
+   carve. The demo's bold/dimensional look comes ENTIRELY from the #inkCarve SVG
+   filter (feMorphology rings + feTurbulence/feDisplacementMap ink + carved
+   groove/burr). Verified 2026-06 on the Playwright WebKit engine (Safari 26.4,
+   390x844 @3x): iOS DOES render this filter — it is NOT a desktop-only effect.
+   So production tier-1 uses the EXACT demo treatment (plain Ephesis + #inkCarve,
+   no CSS stroke/shadow) to be pixel-identical to "A room of one-liners". The
+   global <InkFilter/> mounted in Layout.jsx supplies the #inkCarve <filter> def. */
 .fw-display {
   font-family: 'Ephesis', 'Pinyon Script', cursive;
   font-weight: 400;
@@ -300,12 +300,7 @@
   letter-spacing: 0;
   color: var(--plum);
   font-size: clamp(40px, 8.5vw, 54px);
-  -webkit-text-stroke: 0.8px var(--plum);
-  text-shadow:
-    1px 1px 0 rgba(255,253,247,0.7),
-    -1px -1px 0 rgba(18,12,6,0.5),
-    0 2px 1px rgba(40,30,18,0.5),
-    0 5px 9px rgba(40,30,18,0.34);
+  filter: url(#inkCarve);
 }
 
 /* TIER 2 — section/secondary headings: elegant Cormorant ITALIC with swash caps
