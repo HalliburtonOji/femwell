@@ -23,7 +23,7 @@ export const T = {
 export const SCRIPT = '"Ephesis","Pinyon Script",cursive';        // display voice — MONOLINE roundhand matched to IMG_9854 (Ephesis: closest real web font)
 export const HAND   = '"Caveat","Ephesis",cursive';  // secondary hand — Caveat (Halli locked decision; demo used Parisienne)
 export const SERIF  = '"Cormorant Garamond","Fraunces",Georgia,serif'; // long-form reading bodies only
-export const UI     = '"Inter",system-ui,sans-serif';            // editorial chrome (eyebrows, dates, type-picker)
+export const UI     = 'ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-serif'; // editorial chrome (eyebrows, dates) — system sans, NOT 'Inter' (which is app-remapped to Cormorant)
 
 // ── letterpress text-shadows ──
 export const PRESS      = "0 1px 0 rgba(255,253,247,0.9), 0 -1px 0 rgba(28,20,12,0.5), 0 2px 2px rgba(40,30,18,0.10)";

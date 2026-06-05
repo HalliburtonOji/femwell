@@ -7,9 +7,11 @@ module.exports = {
   		fontFamily: {
   			playfair: ['Playfair Display', 'Georgia', 'serif'],
   			inter: ['Inter', '-apple-system', 'BlinkMacSystemFont', 'sans-serif'],
-  			// Editorial defaults — `font-serif` (and headings/body base) now
-  			// resolve to Cormorant; `font-sans` stays Inter for crisp chrome.
-  			sans: ['Inter', '-apple-system', 'BlinkMacSystemFont', 'Segoe UI', 'sans-serif'],
+  			// Editorial defaults — BOTH `font-sans` and `font-serif` now resolve
+  			// to Cormorant so content text (incl. font-sans utilities) renders the
+  			// editorial serif. Dense chrome is exempted to a system sans in
+  			// index.css (and 'Inter' is remapped to Cormorant there too).
+  			sans: ['Cormorant Garamond', 'Fraunces', 'Georgia', 'serif'],
   			serif: ['Cormorant Garamond', 'Fraunces', 'Georgia', 'serif'],
   		},
   		borderRadius: {

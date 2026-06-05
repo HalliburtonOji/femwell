@@ -1,7 +1,30 @@
-@import url('https://fonts.googleapis.com/css2?family=Fraunces:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400;1,500&family=Inter:wght@300;400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Fraunces:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400;1,500&display=swap');
 /* Editorial type kit — loaded app-wide so the journal's look is the default
    everywhere (Cormorant reading serif · Ephesis display script · Caveat hand). */
 @import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,500;1,600&family=Ephesis&family=Caveat:wght@400;500;600;700&display=swap');
+
+/* ── Inter → Cormorant Garamond REMAP ──────────────────────────────────────
+   The real fix: ~half the app's text gets Inter via the Tailwind `font-sans`
+   utility OR an inline `font-family:'Inter'`. We redefine the 'Inter' family
+   itself to point at a real Cormorant Garamond woff2 (Google's CDN, so it loads
+   on mobile — not local()). Now EVERY element referencing 'Inter' renders the
+   editorial reading serif. Real Inter is no longer imported, so this wins.
+   Interactive/dense chrome is exempted back to a real system sans below, and the
+   journal kit's UI constant was repointed off 'Inter' so its chrome stays sans. */
+@font-face {
+  font-family: 'Inter';
+  font-style: normal;
+  font-weight: 100 900;
+  font-display: swap;
+  src: url(https://fonts.gstatic.com/s/cormorantgaramond/v21/co3bmX5slCNuHLi8bLeY9MK7whWMhyjYqXtK.woff2) format('woff2');
+}
+@font-face {
+  font-family: 'Inter';
+  font-style: italic;
+  font-weight: 100 900;
+  font-display: swap;
+  src: url(https://fonts.gstatic.com/s/cormorantgaramond/v21/co3ZmX5slCNuHLi8bLeY9MK7whWMhyjYrEtImSo.woff2) format('woff2');
+}
 
 @tailwind base;
 @tailwind components;
@@ -204,8 +227,13 @@
   /* Chrome legibility safeguard — dense interactive controls keep the clean
      sans (Inter), matching the journal's "Cormorant for reading, Inter for
      chrome" model. Inline component fonts (e.g. the Journal kit) still win. */
-  button, input, select, textarea, optgroup, [role="tab"], [role="menuitem"] {
-    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  /* Chrome exemption — dense/interactive controls and the bottom nav render a
+     REAL system sans (NOT 'Inter', which is now remapped to Cormorant), so they
+     stay crisp and legible. Matches the journal's "Cormorant for content, sans
+     for chrome" model. Inline component fonts still win where set. */
+  button, input, select, textarea, optgroup, [role="tab"], [role="menuitem"],
+  nav, .bottom-nav, .bottom-nav * {
+    font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
   }
 }
 
@@ -244,7 +272,7 @@
   padding: 0.75rem 1.75rem;
   font-weight: 600;
   font-size: 0.875rem;
-  font-family: 'Inter', sans-serif;
+  font-family: ui-sans-serif, system-ui, -apple-system, sans-serif;
   letter-spacing: 0.01em;
   border: none;
   cursor: pointer;
@@ -266,7 +294,7 @@
   padding: 0.75rem 1.75rem;
   font-weight: 600;
   font-size: 0.875rem;
-  font-family: 'Inter', sans-serif;
+  font-family: ui-sans-serif, system-ui, -apple-system, sans-serif;
   cursor: pointer;
   transition: all 0.2s ease;
 }
@@ -283,7 +311,7 @@
   padding: 0.75rem 1.75rem;
   font-weight: 600;
   font-size: 0.875rem;
-  font-family: 'Inter', sans-serif;
+  font-family: ui-sans-serif, system-ui, -apple-system, sans-serif;
   border: none;
   cursor: pointer;
   transition: all 0.2s ease;
@@ -351,7 +379,7 @@
   cursor: pointer;
   transition: all 0.18s;
   white-space: nowrap;
-  font-family: 'Inter', sans-serif;
+  font-family: ui-sans-serif, system-ui, -apple-system, sans-serif;
 }
 .sub-tab.active { background-color: var(--plum); color: white; }
 .sub-tab:not(.active) { color: var(--mauve); }
