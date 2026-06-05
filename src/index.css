@@ -274,17 +274,27 @@
    SAFETY: tier 1 (.fw-display) is SHORT page titles ONLY — never all-caps/long
    strings (they tangle in script). When unsure, use .fw-heading (tier 2). */
 
-/* TIER 1 — display: the journal's Ephesis script with the strong #inkCarve SVG
-   3D relief (same treatment as <Script size={52} carve> in the Echo Wall demo;
-   the carve needs <InkFilter/> in the DOM — mounted globally in Layout). */
+/* TIER 1 — display: the Echo Wall demo's Ephesis script, BOLD with metallic 3D.
+   ROOT CAUSE of the live mismatch: the demo's 3D came from the #inkCarve SVG
+   filter (feTurbulence + feDisplacementMap), which iOS Safari / mobile browsers
+   do NOT render — so on a phone the title fell back to flat, thin Ephesis while
+   desktop looked carved. The bold 3D is now built with CSS that renders on EVERY
+   device: -webkit-text-stroke thickens the thin Ephesis to the bold/heavy weight
+   of the reference, and a layered text-shadow gives the metallic carved relief
+   (raised cream lip + dark pressed wall + cast depth). No SVG-filter dependency. */
 .fw-display {
   font-family: 'Ephesis', 'Pinyon Script', cursive;
   font-weight: 400;
-  line-height: 1.12;
+  line-height: 1.14;
   letter-spacing: 0;
   color: var(--plum);
-  font-size: clamp(38px, 8vw, 52px);
-  filter: url(#inkCarve);
+  font-size: clamp(40px, 8.5vw, 54px);
+  -webkit-text-stroke: 0.8px var(--plum);
+  text-shadow:
+    1px 1px 0 rgba(255,253,247,0.7),
+    -1px -1px 0 rgba(18,12,6,0.5),
+    0 2px 1px rgba(40,30,18,0.5),
+    0 5px 9px rgba(40,30,18,0.34);
 }
 
 /* TIER 2 — section/secondary headings: elegant Cormorant ITALIC with swash caps
