@@ -74,7 +74,7 @@ export default function SealedLetters() {
         <p style={{ fontFamily: "'Inter', sans-serif", fontSize: 10, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.12em", color: "var(--mauve)", marginBottom: 4 }}>
           LETTERS
         </p>
-        <h1 style={{ fontFamily: "'Fraunces', serif", fontSize: 22, fontWeight: 500, color: "var(--plum-deep)", marginBottom: 4, lineHeight: 1.3 }}>
+        <h1 className="fw-display" style={{ marginBottom: 4 }}>
           Letters to yourself
         </h1>
         <p style={{ fontFamily: "'Inter', sans-serif", fontSize: 13, color: "var(--mauve)", lineHeight: 1.55, marginBottom: 24 }}>

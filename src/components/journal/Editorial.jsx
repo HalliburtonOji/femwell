@@ -182,7 +182,11 @@ export function useEditorialFonts() {
     if (document.getElementById(id)) return;
     const l = document.createElement("link");
     l.id = id; l.rel = "stylesheet";
-    l.href = "https://fonts.googleapis.com/css2?family=Ephesis&family=Pinyon+Script&family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,500;1,600&family=Inter:wght@400;600;700;800&display=swap";
+    // Palette = Ephesis + Cormorant ONLY. Real Inter is NOT loaded here: 'Inter' is
+    // an app-wide alias remapped to Cormorant (size-adjusted) in index.css; injecting
+    // real Inter here would override that remap and render off-palette Inter. Pinyon
+    // (an Ephesis fallback that never triggers) is likewise not loaded.
+    l.href = "https://fonts.googleapis.com/css2?family=Ephesis&family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,500;1,600&display=swap";
     document.head.appendChild(l);
   }, []);
 }

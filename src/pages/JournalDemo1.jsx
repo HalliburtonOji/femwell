@@ -26,7 +26,7 @@ const T = {
   blush:    "#E8B4B8", sage: "#8FAF8F",
 };
 const SCRIPT = '"Ephesis","Pinyon Script",cursive';        // display voice — MONOLINE roundhand matched to IMG_9854 (Ephesis: closest real web font)
-const HAND   = '"Parisienne","Ephesis",cursive';          // secondary hand — Parisienne, a companion monoline script (more legible than Ephesis at small sizes)
+const HAND   = '"Ephesis","Pinyon Script",cursive';       // secondary hand — Ephesis (Parisienne removed per Halli; palette = Ephesis + Cormorant only)
 const SERIF  = '"Cormorant Garamond","Fraunces",Georgia,serif'; // long-form reading bodies only
 const UI     = '"Inter",system-ui,sans-serif';            // editorial chrome (eyebrows, dates, type-picker)
 
@@ -170,7 +170,7 @@ function Script({ children, size = 40, color = T.ink, carve = true, style }) {
       textShadow: carve ? undefined : PRESS_DARK, ...style }}>{children}</span>
   );
 }
-// Secondary hand (Parisienne). Same pressed-in treatment via the small carve filter so the
+// Secondary hand (Ephesis). Same pressed-in treatment via the small carve filter so the
 // whole "voice" reads as ink on paper, not print. Pass carve={false} for muted-grey lines.
 function Hand({ children, size = 20, color = T.ink, carve = true, style }) {
   return (
@@ -619,7 +619,9 @@ export default function JournalDemo1() {
     if (document.getElementById(id)) return;
     const l = document.createElement("link");
     l.id = id; l.rel = "stylesheet";
-    l.href = "https://fonts.googleapis.com/css2?family=Ephesis&family=Parisienne&family=Pinyon+Script&family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,500;1,600&family=Inter:wght@400;600;700;800&display=swap";
+    // Palette = Ephesis + Cormorant ONLY (Parisienne + real Inter removed per Halli;
+    // 'Inter'/'Fraunces' are remapped to Cormorant in index.css).
+    l.href = "https://fonts.googleapis.com/css2?family=Ephesis&family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,500;1,600&display=swap";
     document.head.appendChild(l);
   }, []);
 

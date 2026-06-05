@@ -55,7 +55,7 @@ export default function Upgrade() {
           <div className="w-14 h-14 rounded-2xl mx-auto mb-5 flex items-center justify-center" style={{ backgroundColor: "var(--rose-dust-subtle)", border: "1px solid var(--rose-dust-light)" }}>
             <Sparkles className="w-6 h-6" style={{ color: "var(--rose-dust)" }} />
           </div>
-          <h1 style={{ fontFamily: "'Fraunces', serif", fontSize: 32, fontWeight: 700, color: "var(--plum)", letterSpacing: "-0.02em", lineHeight: 1.1 }}>FemWell Plus</h1>
+          <h1 className="fw-display">FemWell Plus</h1>
           <p style={{ fontSize: 15, color: "var(--mauve)", fontFamily: "'Inter', sans-serif", marginTop: 8 }}>Unlock the full picture of your health.</p>
         </div>
 

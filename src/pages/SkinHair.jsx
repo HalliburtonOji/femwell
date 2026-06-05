@@ -732,15 +732,7 @@ export default function SkinHair() {
       >
         <p style={sLabel} className="mb-1">Skin & Hair</p>
         <div className="flex items-center justify-between gap-3">
-          <h1
-            style={{
-              fontFamily: "'Fraunces', serif",
-              color: "var(--plum)",
-              fontSize: "22px",
-              fontWeight: 700,
-              letterSpacing: "-0.02em",
-            }}
-          >
+          <h1 className="fw-display">
             Your Glow Tracker
           </h1>
           {currentPhase && (

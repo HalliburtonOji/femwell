@@ -121,10 +121,7 @@ export default function Search() {
               color: C.espresso,
             }}
           ><ArrowLeft size={18} /></button>
-          <h1 style={{
-            fontFamily: "'Fraunces', Georgia, serif",
-            fontSize: 20, fontWeight: 600, color: C.espresso, margin: 0,
-          }}>Search your logs</h1>
+          <h1 className="fw-display" style={{ margin: 0 }}>Search your logs</h1>
         </div>
         <div style={{ display: "flex", alignItems: "center", gap: 8, paddingBottom: 4,
           borderBottom: `2px solid ${C.espresso}` }}>

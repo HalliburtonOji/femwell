@@ -1082,7 +1082,9 @@ function ReaderStyles({ reducedMotion }) {
 
   return (
     <style>{`
-      @import url('https://fonts.googleapis.com/css2?family=Fraunces:ital,wght@0,400;0,500;1,400&display=swap');
+      /* Real Fraunces is NOT imported: 'Fraunces' is an app-wide alias remapped to
+         Cormorant (size-adjusted) in index.css. Importing real Fraunces here would
+         override that remap and render off-palette Fraunces. Palette = Ephesis + Cormorant. */
 
       .ds-reader-root {
         position: relative;

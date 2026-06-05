@@ -68,7 +68,7 @@ export default function Saved() {
 
         <div style={{ ...card, padding: "20px", marginBottom: "16px" }}>
           <p style={{ ...sLabel, marginBottom: "8px" }}>Your library</p>
-          <h1 style={{ fontSize: "26px", fontWeight: 700, fontFamily: "'Fraunces', serif", color: "var(--plum)", letterSpacing: "-0.02em", lineHeight: 1.1 }}>
+          <h1 className="fw-display">
             Saved
           </h1>
           <p style={{ fontSize: "13px", color: "var(--mauve)", fontFamily: "'Inter', sans-serif", marginTop: "6px" }}>

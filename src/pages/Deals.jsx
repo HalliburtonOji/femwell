@@ -60,7 +60,7 @@ export default function Deals() {
         {/* Header */}
         <div style={{ marginBottom: 20 }}>
           <p style={sLabel}>Member perks</p>
-          <h1 style={{ fontSize: 26, fontWeight: 700, fontFamily: "'Fraunces', serif", color: "var(--plum)", letterSpacing: "-0.02em", marginTop: 4 }}>
+          <h1 className="fw-display" style={{ marginTop: 4 }}>
             Wellbeing picks
           </h1>
           <p style={{ fontSize: 13, color: "var(--mauve)", fontFamily: "'Inter', sans-serif", marginTop: 6 }}>
