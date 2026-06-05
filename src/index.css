@@ -7,19 +7,19 @@
 /* ── REMAP the two fonts non-journal pages actually reference → Cormorant ────
    ~all app content sets 'Inter' (body/chrome) or 'Fraunces' (headings) inline.
    We redefine BOTH families to render Cormorant Garamond (real woff2 from
-   Google's CDN — loads on mobile, not local()), with `size-adjust: 115%` so
+   Google's CDN — loads on mobile, not local()), with `size-adjust: 128%` so
    Cormorant's small x-height isn't tiny/faint at the app's existing UI sizes
    (scales glyphs up without changing any declared font-size → no layout break).
    This does NOT touch the journal: it uses 'Cormorant Garamond' directly (above,
    un-adjusted). Chrome is exempted to a system sans below; page titles (h1) are
    lifted to the Ephesis script. */
-@font-face { font-family: 'Inter'; font-style: normal; font-weight: 100 900; font-display: swap; size-adjust: 115%;
+@font-face { font-family: 'Inter'; font-style: normal; font-weight: 100 900; font-display: swap; size-adjust: 128%;
   src: url(https://fonts.gstatic.com/s/cormorantgaramond/v21/co3bmX5slCNuHLi8bLeY9MK7whWMhyjYqXtK.woff2) format('woff2'); }
-@font-face { font-family: 'Inter'; font-style: italic; font-weight: 100 900; font-display: swap; size-adjust: 115%;
+@font-face { font-family: 'Inter'; font-style: italic; font-weight: 100 900; font-display: swap; size-adjust: 128%;
   src: url(https://fonts.gstatic.com/s/cormorantgaramond/v21/co3ZmX5slCNuHLi8bLeY9MK7whWMhyjYrEtImSo.woff2) format('woff2'); }
-@font-face { font-family: 'Fraunces'; font-style: normal; font-weight: 100 900; font-display: swap; size-adjust: 115%;
+@font-face { font-family: 'Fraunces'; font-style: normal; font-weight: 100 900; font-display: swap; size-adjust: 128%;
   src: url(https://fonts.gstatic.com/s/cormorantgaramond/v21/co3bmX5slCNuHLi8bLeY9MK7whWMhyjYqXtK.woff2) format('woff2'); }
-@font-face { font-family: 'Fraunces'; font-style: italic; font-weight: 100 900; font-display: swap; size-adjust: 115%;
+@font-face { font-family: 'Fraunces'; font-style: italic; font-weight: 100 900; font-display: swap; size-adjust: 128%;
   src: url(https://fonts.gstatic.com/s/cormorantgaramond/v21/co3ZmX5slCNuHLi8bLeY9MK7whWMhyjYrEtImSo.woff2) format('woff2'); }
 
 @tailwind base;
@@ -196,34 +196,37 @@
     -webkit-tap-highlight-color: transparent;
   }
 
-  /* THE JOURNAL'S TYPE SYSTEM, app-wide.
-     Body/reading = Cormorant (the self-declared size-adjusted face → readable,
-     not tiny/faint); weight 500 + open line-height so it doesn't read cramped. */
+  /* THE JOURNAL'S TYPE SYSTEM, app-wide — readable, dark, with carved depth.
+     Body/reading = Cormorant via the size-adjusted 'Fraunces' face (so it's
+     clearly larger, not tiny/faint), near-black ink, weight 500, open line. */
   body {
-    font-family: 'Cormorant Garamond', 'Fraunces', Georgia, serif;
+    font-family: 'Fraunces', 'Cormorant Garamond', Georgia, serif;
     font-weight: 500;
     line-height: 1.55;
     background-color: var(--ivory);
-    color: var(--plum);
+    color: var(--plum);            /* near-black ink (#1A130C) */
   }
 
-  /* PAGE TITLES → the journal's DISPLAY SCRIPT (Ephesis, like "Luteal").
-     !important so it lifts the page <h1>s off their inline 'Fraunces'. h1 is the
-     page title (short) — exactly where the journal uses its script. */
-  h1 {
-    font-family: 'Ephesis', 'Pinyon Script', cursive !important;
-    font-weight: 400;
-    letter-spacing: 0;
-    line-height: 1.18;
-  }
-
-  /* SECTION HEADINGS → Cormorant (the journal's heading treatment). */
-  h2, h3, h4, h5, h6 {
-    font-family: 'Cormorant Garamond', 'Fraunces', Georgia, serif;
+  /* ALL HEADINGS → Cormorant (NOT script — the blunt global h1→Ephesis turned
+     all-caps/long titles into an unreadable script tangle, so it's removed).
+     Near-black, heavier, and carrying the journal's CARVED DEPTH via the PRESS
+     letterpress text-shadow (light lower lip + dark upper inner wall = debossed
+     ink, the journal's 3D feel) — done in CSS so it's light enough to run
+     app-wide without the heavy SVG filter. The size-adjusted 'Fraunces' face
+     makes them larger too. */
+  h1, h2, h3, h4, h5, h6 {
+    font-family: 'Fraunces', 'Cormorant Garamond', Georgia, serif;
     font-weight: 600;
-    letter-spacing: -0.01em;
+    color: var(--plum);
+    letter-spacing: -0.005em;
     line-height: 1.2;
+    /* Carved/letterpress depth — bright raised lower lip + dark pressed-in upper
+       inner wall + a soft contact shadow = ink debossed into the paper (the
+       journal's 3D feel), deepened so it's clearly visible app-wide. */
+    text-shadow: 0 1px 0 rgba(255,254,250,0.95), 0 -1px 1px rgba(18,12,6,0.6), 0 2px 3px rgba(40,30,18,0.22);
   }
+  h1 { line-height: 1.15; }
+
 
   /* VOICED / accent lines → Caveat (the journal's hand), where the pattern fits. */
   blockquote {
@@ -263,6 +266,22 @@
 }
 
 /* ── FemWell Shell Utilities ─────────────────────────────────────────────── */
+
+/* Opt-in display SCRIPT — the journal's Ephesis, for SHORT sentence-case display
+   titles ONLY (never all-caps or long strings, which tangle in script). Add
+   class="fw-script" where a flowing title genuinely fits; generic headings stay
+   readable Cormorant. Carries the carved-ink depth. (Plain CSS, outside @layer,
+   so it is never purged when not yet referenced.) */
+.fw-script {
+  font-family: 'Ephesis', 'Pinyon Script', cursive;
+  font-weight: 400;
+  letter-spacing: 0;
+  text-shadow: 0 1px 0 rgba(255,254,250,0.95), 0 -1px 1px rgba(18,12,6,0.6), 0 2px 3px rgba(40,30,18,0.22);
+}
+/* Reusable carved-ink letterpress depth for any display text. */
+.ink-deboss {
+  text-shadow: 0 1px 0 rgba(255,254,250,0.95), 0 -1px 1px rgba(18,12,6,0.6), 0 2px 3px rgba(40,30,18,0.22);
+}
 
 .fw-bg {
   background-color: var(--ivory);
