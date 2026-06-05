@@ -622,7 +622,7 @@ export default function Settings() {
           <p style={{ fontSize: "0.6rem", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.14em", color: "#E11D48", fontFamily: "'Inter', sans-serif" }}>
             Your account
           </p>
-          <h1 style={{ fontSize: 22, fontWeight: 700, fontFamily: "'Fraunces', serif", color: "var(--plum)", letterSpacing: "-0.02em", marginTop: 2 }}>
+          <h1 className="fw-display" style={{ marginTop: 2 }}>
             Settings
           </h1>
         </div>

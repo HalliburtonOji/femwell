@@ -1297,7 +1297,7 @@ export default function Planner() {
               : `Today · ${today.toLocaleDateString("en-GB", { weekday: "long", day: "numeric", month: "long" }).toUpperCase()}`}
           </p>
           <div style={{ display: "flex", alignItems: "baseline", gap: 10, flexWrap: "wrap", margin: "4px 0 4px" }}>
-            <h1 style={{ fontSize: 28, fontWeight: 500, fontFamily: "'Fraunces', Georgia, serif", color: "var(--plum, #4A2A3A)", letterSpacing: "-0.015em", margin: 0 }}>
+            <h1 className="fw-display" style={{ margin: 0 }}>
               {view === "cycle" ? (plannerConfig?.cycleTabName || "Cycle") : "Today"}
             </h1>
             {/* A2-4 (4): confidence pill lifted out of .ph-sub — always renders */}

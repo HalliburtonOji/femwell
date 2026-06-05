@@ -276,11 +276,7 @@ export default function Profile() {
         {/* Header */}
         <div style={{ paddingTop: "40px", paddingBottom: "20px" }}>
           <p style={sLabel}>Your account</p>
-          <h1 style={{
-            fontSize: "26px", fontWeight: 700, lineHeight: 1.1,
-            fontFamily: "'Fraunces', serif",
-            color: "var(--plum)", letterSpacing: "-0.02em", marginTop: "4px"
-          }}>Profile</h1>
+          <h1 className="fw-display" style={{ marginTop: "4px" }}>Profile</h1>
         </div>
 
         {/* Hero card */}

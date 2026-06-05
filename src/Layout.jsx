@@ -10,7 +10,7 @@ import ErrorBoundary from "./components/common/ErrorBoundary";
 
 import { MilestoneEventListener } from "./components/programs/MilestoneCelebrationModal";
 import { PodcastPlayerProvider } from "./components/lifestyle/listen/PodcastPlayerProvider";
-import { PAPER_BG } from "./components/journal/Editorial";
+import { PAPER_BG, InkFilter } from "./components/journal/Editorial";
 import MiniPlayer from "./components/lifestyle/listen/MiniPlayer";
 import ExpandedPlayer from "./components/lifestyle/listen/ExpandedPlayer";
 
@@ -56,6 +56,9 @@ export default function Layout({ children, currentPageName }) {
     {/* App shell — the real cream paper texture is the base surface for every
         page (the per-page cream backgrounds now sit seamlessly on top). */}
     <div className="min-h-screen" style={{ ...PAPER_BG }}>
+      {/* Carve-filter defs mounted once, so .fw-display (tier-1 script) can use
+          the journal's #inkCarve 3D relief on any page. */}
+      <InkFilter />
       <style>{`@media print { .no-print { display: none !important; } .print-only { display: block !important; } }`}</style>
       {showNav && <FloatingSidebar currentPageName={currentPageName} mode={navMode} openQuickLog={openQuickLog} />}
       <main

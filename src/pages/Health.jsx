@@ -1461,7 +1461,7 @@ export default function Health() {
               <div style={{ fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif', fontSize: 13, fontWeight: 600, letterSpacing: 2, color: "#9B8B7A", textTransform: "uppercase" }}>
                 FemWell Health Letter
               </div>
-              <div style={{ fontFamily: 'Cormorant Garamond, Georgia, serif', fontSize: 28, fontWeight: 700, color: "#3A2C1A", marginTop: 4 }}>
+              <div className="fw-heading" style={{ marginTop: 4 }}>
                 {tab.label}
               </div>
               <div style={{ fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif', fontSize: 13, fontWeight: 600, color: "#9B8B7A", marginTop: 6 }}>
