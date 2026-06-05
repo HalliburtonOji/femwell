@@ -5,6 +5,10 @@
     <link rel="icon" type="image/svg+xml" href="https://base44.com/logo_v2.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <link rel="manifest" href="/manifest.json" />
+    <!-- Establish the gstatic connection early so the editorial @font-face woff2
+         (Ephesis script, Cormorant italic) load fast on cold mobile, not after a
+         render-blocking @import chain. -->
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <title>Base44 APP</title>
   </head>
   <body>

@@ -1,8 +1,19 @@
-/* Journal type kit, loaded by name — Cormorant reading serif (pristine, exactly
-   as the journal uses it), Ephesis display script (page titles), Caveat hand
-   (accents). The journal's own Cormorant is UNCHANGED so the reference design
-   stays put. */
-@import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,500;1,600&family=Ephesis&family=Caveat:wght@400;500;600;700&display=swap');
+/* Journal type kit — declared as EXPLICIT @font-face (real gstatic woff2 +
+   font-display:swap) instead of an @import chain. The @import (browser fetches
+   the Google CSS, THEN the woff2) is render-blocking and flaky on cold mobile —
+   so the script/swash fonts could fail to load on a non-journal page and the
+   heading fell back to a generic cursive/serif lookalike. These explicit faces
+   load the SAME fonts the journal uses, on every page + mobile, so .fw-display
+   (Ephesis) and .fw-heading (Cormorant italic) render the real glyphs.
+   Cormorant Garamond stays un-adjusted = the journal's exact reading face. */
+@font-face { font-family: 'Cormorant Garamond'; font-style: normal; font-weight: 400 700; font-display: swap;
+  src: url(https://fonts.gstatic.com/s/cormorantgaramond/v21/co3bmX5slCNuHLi8bLeY9MK7whWMhyjYqXtK.woff2) format('woff2'); }
+@font-face { font-family: 'Cormorant Garamond'; font-style: italic; font-weight: 400 700; font-display: swap;
+  src: url(https://fonts.gstatic.com/s/cormorantgaramond/v21/co3ZmX5slCNuHLi8bLeY9MK7whWMhyjYrEtImSo.woff2) format('woff2'); }
+@font-face { font-family: 'Ephesis'; font-style: normal; font-weight: 400; font-display: swap;
+  src: url(https://fonts.gstatic.com/s/ephesis/v11/uU9PCBUS8IerL2VG3xTR396EilM.woff2) format('woff2'); }
+@font-face { font-family: 'Caveat'; font-style: normal; font-weight: 400 700; font-display: swap;
+  src: url(https://fonts.gstatic.com/s/caveat/v23/Wnz6HAc5bAfYB2Q7ZjYYiAzcPA.woff2) format('woff2'); }
 
 /* ── REMAP the two fonts non-journal pages actually reference → Cormorant ────
    ~all app content sets 'Inter' (body/chrome) or 'Fraunces' (headings) inline.
