@@ -1,3 +1,4 @@
+/* resync 2026-06-05b — marker to re-trigger base44 github sync + force a new CSS hash (no visual effect) */
 /* Journal type kit — declared as EXPLICIT @font-face (real gstatic woff2 +
    font-display:swap) instead of an @import chain. The @import (browser fetches
    the Google CSS, THEN the woff2) is render-blocking and flaky on cold mobile —
