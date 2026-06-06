@@ -557,7 +557,7 @@ export default function Today() {
                       boxShadow: `0 0 6px ${PHASE_INFO[cycleInfo.phase].color}55`,
                       flexShrink: 0,
                     }} />
-                    <span style={{ fontSize: 10, fontWeight: 700, color: PHASE_INFO[cycleInfo.phase].color, textTransform: "uppercase", letterSpacing: "0.1em", fontFamily: "'Inter', sans-serif" }}>
+                    <span style={{ fontSize: 11, fontWeight: 700, color: PHASE_INFO[cycleInfo.phase].color, textTransform: "uppercase", letterSpacing: "0.1em", fontFamily: "'Inter', sans-serif" }}>
                       {PHASE_INFO[cycleInfo.phase].label} · Day {cycleInfo.day}
                     </span>
                   </div>
@@ -590,7 +590,7 @@ export default function Today() {
                 {checkinSaved && <span style={{ fontSize: 11, color: "var(--sage)", fontFamily: "'Inter', sans-serif" }}>Saved</span>}
               </div>
               <div style={{ marginBottom: 10 }}>
-                <p style={{ fontSize: 11, color: "var(--mauve)", fontFamily: "'Inter', sans-serif", marginBottom: 5 }}>Mood</p>
+                <p style={{ fontSize: 11, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.1em", color: "var(--mauve)", fontFamily: "'Inter', sans-serif", marginBottom: 6 }}>Mood</p>
                 <div style={{ display: "flex", gap: 6 }}>
                   {MOOD_EMOJIS.map((e, i) => (
                     <button key={i} onClick={() => handleMoodSelect(i)}
@@ -601,7 +601,7 @@ export default function Today() {
                 </div>
               </div>
               <div>
-                <p style={{ fontSize: 11, color: "var(--mauve)", fontFamily: "'Inter', sans-serif", marginBottom: 5 }}>Energy</p>
+                <p style={{ fontSize: 11, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.1em", color: "var(--mauve)", fontFamily: "'Inter', sans-serif", marginBottom: 6 }}>Energy</p>
                 <div style={{ display: "flex", gap: 6 }}>
                   {ENERGY_EMOJIS.map((e, i) => (
                     <button key={i} onClick={() => handleEnergySelect(i)}

@@ -251,11 +251,9 @@ export default function MorningBriefSheet({ user, profile, onDismiss }) {
             letterSpacing: "0.18em", textTransform: "uppercase",
             color: C.muted,
           }}>{phaseLabel}{cycleDay ? ` · Day ${cycleDay}` : ""}</p>
-          <h1 style={{
-            margin: "8px 0 14px", fontSize: 28, fontWeight: 600,
-            fontFamily: "'Fraunces', Georgia, serif",
-            color: C.espressoDk, lineHeight: 1.15, letterSpacing: -0.4,
-          }}>{greeting}, {displayName}.</h1>
+          {/* Greeting → tier-1 carved Ephesis script (the editorial standard) —
+              was an old upright 28px Fraunces line, the duplicate Halli flagged. */}
+          <h1 className="fw-display" style={{ margin: "6px 0 14px" }}>{greeting}, {displayName}.</h1>
           <p style={{
             margin: 0, fontSize: 16, lineHeight: 1.55,
             fontFamily: "'Fraunces', Georgia, serif",
