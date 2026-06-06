@@ -11,9 +11,9 @@ export const T = {
   paper:    "#ECE7DA",   // light matte stationery cream (reference paper — lifted, cleaner)
   paperHi:  "#F4EFE3",   // insets / cards
   paperDeep:"#D8CFBC",   // deckle / hairline wash
-  ink:      "#15110C",   // near-true-black ink (reference handwriting)
-  inkSoft:  "#2B2419",   // secondary ink — darkened further for legibility (was #3C342A)
-  muted:    "#4F473A",   // muted labels/dates — darkened further for legibility (was #6E6557)
+  ink:      "#0B0805",   // primary ink — pushed to effectively black (Halli: really dark)
+  inkSoft:  "#1A140D",   // secondary ink — much darker
+  muted:    "#2E261B",   // muted labels/dates — much darker (Halli: darker x3)
   gold:     "#A8893F",   // deepened muted hairline accent
   crimson:  "#BC2E27",   // THE heart — the single colour pop
   blush:    "#E8B4B8", sage: "#8FAF8F",
@@ -93,7 +93,7 @@ export function Hand({ children, size = 20, color = T.ink, carve = true, style }
   // The journal "voice" — formerly Caveat handwriting (removed per Halli). Now the
   // reading serif in ITALIC (Cormorant Garamond italic): legible, on-palette voice.
   return (
-    <span style={{ fontFamily: HAND, fontStyle: "italic", fontWeight: 500, fontSize: size, lineHeight: 1.34, color,
+    <span style={{ fontFamily: HAND, fontStyle: "italic", fontWeight: 600, fontSize: size, lineHeight: 1.34, color,
       display: "block", filter: carve ? "url(#inkCarveSm)" : undefined, ...style }}>{children}</span>
   );
 }
