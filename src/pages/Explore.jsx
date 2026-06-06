@@ -383,7 +383,7 @@ export default function Explore() {
         <div className="flex items-center justify-between">
           <div>
             <p style={{ fontSize: "0.6rem", fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.12em", color: "var(--mauve)", }}>Discovery</p>
-            <h1 className="text-xl font-bold leading-tight" style={{ color: "var(--plum)", letterSpacing: "-0.02em" }}>Explore</h1>
+            <h1 className="fw-display leading-tight">Explore</h1>
           </div>
           <p className="text-xs" style={{ color: "var(--mauve)", }}>Sessions, videos &amp; guides</p>
         </div>

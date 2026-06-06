@@ -17,6 +17,7 @@
 
 import { memo, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { Circle, CircleDot, RefreshCw, Flower2, Leaf, PlusCircle, Sparkles, Check } from "lucide-react";
 import { base44 } from "@/api/base44Client";
 import { useCycleDay } from "@/hooks/useCycleDay";
 
@@ -27,13 +28,13 @@ import { useCycleDay } from "@/hooks/useCycleDay";
 // because the pill bar didn't scale on mobile. Navigation is now a slider
 // (arrows + dots + Library overlay) — see Health() component body.
 const LETTERS = [
-  { id: "story",       title: "Your Story",          subtitle: "Patterns only you can see",                icon: "◎", botanical: "story" },
-  { id: "cycle",       title: "Cycle & Life Stage",  subtitle: "Where you are, and what it means",         icon: "◯", botanical: "cycle" },
-  { id: "body",        title: "Body & Skin",         subtitle: "What your body is telling you",            icon: "◉", botanical: "body" },
-  { id: "mind",        title: "Mind & Sleep",        subtitle: "The cycling brain, and rest",              icon: "⟳", botanical: "mind" },
-  { id: "nourishment", title: "Nourishment & Gut",   subtitle: "Food, hormones, and your microbiome",       icon: "✿", botanical: "nourishment" },
-  { id: "intimacy",    title: "Intimacy",            subtitle: "The conversation most apps skip",          icon: "❧", botanical: "skin" },
-  { id: "care",        title: "Your Care",           subtitle: "Navigate the system like you own it",      icon: "⊕", botanical: "care" },
+  { id: "story",       title: "Your Story",          subtitle: "Patterns only you can see",                icon: Sparkles,   botanical: "story" },
+  { id: "cycle",       title: "Cycle & Life Stage",  subtitle: "Where you are, and what it means",         icon: Circle,     botanical: "cycle" },
+  { id: "body",        title: "Body & Skin",         subtitle: "What your body is telling you",            icon: CircleDot,  botanical: "body" },
+  { id: "mind",        title: "Mind & Sleep",        subtitle: "The cycling brain, and rest",              icon: RefreshCw,  botanical: "mind" },
+  { id: "nourishment", title: "Nourishment & Gut",   subtitle: "Food, hormones, and your microbiome",       icon: Flower2,    botanical: "nourishment" },
+  { id: "intimacy",    title: "Intimacy",            subtitle: "The conversation most apps skip",          icon: Leaf,       botanical: "skin" },
+  { id: "care",        title: "Your Care",           subtitle: "Navigate the system like you own it",      icon: PlusCircle, botanical: "care" },
 ];
 // Back-compat alias — older code paths still expect TABS.
 const TABS = LETTERS.map((L) => ({ id: L.id, label: L.title, icon: L.icon }));
@@ -240,8 +241,9 @@ const RosebudProgress = memo(function RosebudProgress({ scrollPct }) {
           marginTop: 4,
           fontSize: 9, fontWeight: 700, letterSpacing: 1, textTransform: "uppercase",
           color: "#8FAF8F", whiteSpace: "nowrap",
+          display: "inline-flex", alignItems: "center", gap: 4,
         }}>
-          You've read it all ✓
+          You've read it all <Check size={11} strokeWidth={2.5} aria-hidden="true" />
         </div>
       )}
     </div>
@@ -1198,8 +1200,7 @@ export default function Health() {
     <div
       className="health-page"
       style={{
-        background: "#E8DBC8", minHeight: "100vh", paddingBottom: 80,
-        boxShadow: "inset 0 0 60px rgba(58,44,26,0.08)",
+        background: "transparent", minHeight: "100vh", paddingBottom: 80,
         touchAction: "manipulation",
       }}
     >
@@ -1244,7 +1245,7 @@ export default function Health() {
               fontSize: 17, fontWeight: 700, color: "#F4EDDB",
               whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis",
             }}>
-              <span aria-hidden="true">{currentLetter.icon}</span> {currentLetter.title}
+              <span aria-hidden="true" style={{ display: "inline-flex", verticalAlign: "middle" }}>{(() => { const Ic = currentLetter.icon; return <Ic size={16} strokeWidth={1.75} />; })()}</span> {currentLetter.title}
             </div>
             <div style={{
               fontSize: 10, color: "rgba(244,237,219,0.55)",
@@ -1314,7 +1315,7 @@ export default function Health() {
         {/* calls goToLetter(i) directly so taps land. Active letter gets  */}
         {/* a gold underline + Cormorant 700, idle letters fade to mauve.  */}
         <div style={{
-          background: "#F0E6CE",
+          background: "var(--surface)",
           borderBottom: "1px solid rgba(58,44,26,0.10)",
           display: "flex",
           overflowX: "auto",
@@ -1324,6 +1325,7 @@ export default function Health() {
         }}>
           {LETTERS.map((L, i) => {
             const on = i === letterIndex;
+            const Ic = L.icon;
             return (
               <button
                 key={L.id}
@@ -1343,7 +1345,7 @@ export default function Health() {
                   flexShrink: 0,
                 }}
               >
-                <span aria-hidden="true">{L.icon}</span>
+                <span aria-hidden="true" style={{ display: "inline-flex" }}><Ic size={16} strokeWidth={1.75} /></span>
                 <span>{L.title}</span>
               </button>
             );
@@ -1385,18 +1387,7 @@ export default function Health() {
           onTouchStart={handleTouchStart}
           onTouchEnd={handleTouchEnd}
           style={{
-          background: `
-            repeating-linear-gradient(
-              transparent,
-              transparent 31px,
-              rgba(58,44,26,0.04) 31px,
-              rgba(58,44,26,0.04) 32px
-            ),
-            radial-gradient(ellipse at 50% 100%, rgba(180,140,80,0.06) 0%, transparent 70%),
-            radial-gradient(ellipse at 0% 50%, rgba(180,140,80,0.04) 0%, transparent 50%),
-            radial-gradient(ellipse at 100% 50%, rgba(180,140,80,0.04) 0%, transparent 50%),
-            #FAF5E8
-          `,
+          background: "var(--surface)",
           maxWidth: 680, margin: "0 auto",
           padding: "52px 56px 64px",
           borderRadius: 2,
@@ -1415,7 +1406,7 @@ export default function Health() {
           {/* Inner warm gradient overlay (visual texture only) */}
           <div aria-hidden="true" style={{
             position: "absolute", inset: 0, pointerEvents: "none",
-            background: "radial-gradient(ellipse at 50% 0%, transparent 60%, rgba(212,175,55,0.04) 100%)",
+            background: "transparent",
             borderRadius: 2,
           }} />
 
@@ -1532,7 +1523,7 @@ export default function Health() {
                   fontSize: 17, fontWeight: 600, color: "#3A2C1A",
                   flex: 1, lineHeight: 1.3,
                 }}>{s.title}</span>
-                {expanded[s.id] && <span style={{ fontSize: 12, color: "#8FAF8F", flexShrink: 0 }} aria-hidden="true">✓</span>}
+                {expanded[s.id] && <Check size={12} strokeWidth={2.5} style={{ color: "#8FAF8F", flexShrink: 0 }} aria-hidden="true" />}
               </a>
             ))}
           </div>
@@ -1650,7 +1641,7 @@ export default function Health() {
       {/* ─── Dot indicators ─── */}
       <div className="hc-no-print" style={{
         display: "flex", alignItems: "center", justifyContent: "center",
-        gap: 0, padding: "16px 12px 20px", background: "#E8DBC8",
+        gap: 0, padding: "16px 12px 20px", background: "var(--ivory)",
       }}>
         {LETTERS.map((L, i) => (
           <button
@@ -1685,7 +1676,7 @@ export default function Health() {
           <div
             onClick={(e) => e.stopPropagation()}
             style={{
-              background: "#F0E6CE", width: "100%", borderRadius: "16px 16px 0 0",
+              background: "var(--surface)", width: "100%", borderRadius: "16px 16px 0 0",
               padding: "24px 16px 40px", maxHeight: "75vh", overflowY: "auto",
             }}
           >
@@ -1696,15 +1687,16 @@ export default function Health() {
             <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
               {LETTERS.map((L, i) => {
                 const on = i === letterIndex;
+                const Ic = L.icon;
                 return (
                   <button key={L.id} onClick={() => { goToLetter(i); setShowLibrary(false); }} style={{
-                    background: on ? "#3A2C1A" : "#FEFAF2",
+                    background: on ? "#3A2C1A" : "var(--surface)",
                     border: `1.5px solid ${on ? "#D4AF37" : "rgba(212,175,55,0.3)"}`,
                     borderRadius: 10, padding: "16px 14px",
                     cursor: "pointer", textAlign: "left",
                     transition: "all 0.15s",
                   }}>
-                    <div style={{ fontSize: 22, marginBottom: 6 }} aria-hidden="true">{L.icon}</div>
+                    <div style={{ marginBottom: 6, color: on ? "#F4EDDB" : "#3A2C1A" }} aria-hidden="true"><Ic size={22} strokeWidth={1.75} /></div>
                     <div style={{
                       fontSize: 16, fontWeight: 700,
                       color: on ? "#F4EDDB" : "#3A2C1A",
@@ -2094,7 +2086,7 @@ const LetterHistoryStrip = memo(function LetterHistoryStrip({ currentPhase }) {
   const phases = ["Menstrual", "Follicular", "Ovulatory", "Luteal"];
   return (
     <div style={{
-      background: "#E8DBC8",
+      background: "var(--ivory)",
       borderBottom: "1px solid rgba(58,44,26,0.08)",
       padding: "10px 16px",
       display: "flex", alignItems: "center", gap: 8,

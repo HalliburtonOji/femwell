@@ -90,7 +90,7 @@ const PHASE_SCALES = { inhale: 1.25, hold1: 1.25, exhale: 0.85, hold2: 0.85 };
 // ── Per-card content builders ────────────────────────────────────────────
 function WelcomeCard() {
   return (
-    <CardShell accent="#C084FC">
+    <CardShell accent="var(--rose-dust)">
       <div style={{ fontSize: 48, textAlign: "center", marginBottom: 24 }}>🌿</div>
       <CardTitle>You're here. That's enough.</CardTitle>
       <CardBody>Take one slow breath before we begin. Breathe in through your nose… and out through your mouth.</CardBody>
@@ -136,7 +136,7 @@ function BreathCard() {
       <div style={{ display: "flex", justifyContent: "center", marginBottom: 24, marginTop: 8 }}>
         <div style={{
           width: 140, height: 140, borderRadius: "50%",
-          backgroundColor: "#EAD7FF",
+          backgroundColor: "var(--surface)",
           border: "3px solid #A78BFA",
           display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center",
           transform: `scale(${scale})`,
@@ -156,7 +156,7 @@ function BreathCard() {
       {!done && (
         <div style={{ display: "flex", justifyContent: "center", gap: 6, marginTop: 16 }}>
           {[0,1,2].map(i => (
-            <div key={i} style={{ width: 8, height: 8, borderRadius: "50%", backgroundColor: i < cycle ? "#A78BFA" : "#E9D5FF" }} />
+            <div key={i} style={{ width: 8, height: 8, borderRadius: "50%", backgroundColor: i < cycle ? "#A78BFA" : "var(--surface)" }} />
           ))}
         </div>
       )}
@@ -247,7 +247,7 @@ function TinyActionCard({ onDone }) {
 function ClosingCard({ onRate, onClose }) {
   const [rating, setRating] = useState(null);
   return (
-    <CardShell accent="#C084FC">
+    <CardShell accent="var(--rose-dust)">
       <div style={{ fontSize: 48, textAlign: "center", marginBottom: 16 }}>🌸</div>
       <CardTitle>How do you feel now?</CardTitle>
       <CardBody style={{ marginBottom: 24 }}>1 = still struggling · 5 = much better</CardBody>
@@ -255,8 +255,8 @@ function ClosingCard({ onRate, onClose }) {
         {[1, 2, 3, 4, 5].map(n => (
           <button key={n} onClick={() => setRating(n)}
             style={{ width: 52, height: 52, borderRadius: 14, border: "none", cursor: "pointer",
-              fontSize: 16, fontWeight: 700, backgroundColor: rating === n ? "#C084FC" : "#EAD7FF",
-              color: rating === n ? "white" : "#7C3AED",
+              fontSize: 16, fontWeight: 700, backgroundColor: rating === n ? "var(--rose-dust)" : "var(--surface)",
+              color: rating === n ? "white" : "var(--plum)",
               transition: "all 0.15s" }}>
             {n}
           </button>
@@ -316,7 +316,7 @@ function PillButton({ children, onClick, style }) {
   return (
     <button onClick={onClick} style={{
       display: "block", width: "100%", padding: "16px 24px", borderRadius: 9999,
-      backgroundColor: "#C084FC", color: "white", border: "none", cursor: "pointer",
+      backgroundColor: "var(--rose-dust)", color: "white", border: "none", cursor: "pointer",
       fontSize: 15, fontWeight: 700, transition: "opacity 0.15s",
       ...style,
     }}>
@@ -378,7 +378,7 @@ export default function CalmCards({ userId, sessionId, panicLogId, onClose }) {
   return (
     <>
       {/* Backdrop */}
-      <div style={{ position: "fixed", inset: 0, zIndex: 200, backgroundColor: "#FAF5FF" }} />
+      <div style={{ position: "fixed", inset: 0, zIndex: 200, backgroundColor: "var(--ivory)" }} />
 
       {/* Full-screen card */}
       <div style={{ position: "fixed", inset: 0, zIndex: 201, display: "flex", flexDirection: "column", overflow: "hidden" }}>
@@ -390,7 +390,7 @@ export default function CalmCards({ userId, sessionId, panicLogId, onClose }) {
             {Array.from({ length: TOTAL_CARDS }).map((_, i) => (
               <div key={i} style={{
                 width: i === cardIdx ? 20 : 7, height: 7, borderRadius: 9999,
-                backgroundColor: i <= cardIdx ? "#C084FC" : "#E9D5FF",
+                backgroundColor: i <= cardIdx ? "var(--rose-dust)" : "var(--surface)",
                 transition: "all 0.3s ease",
               }} />
             ))}
@@ -417,7 +417,7 @@ export default function CalmCards({ userId, sessionId, panicLogId, onClose }) {
               onDragEnd={handleDragEnd}
               style={{ position: "absolute", inset: 0, overflowY: "auto" }}
             >
-              <div style={{ background: "linear-gradient(160deg, #FAF5FF 0%, #FFF0FA 100%)", minHeight: "100%", borderRadius: 24, margin: "0 12px" }}>
+              <div style={{ background: "var(--ivory)", minHeight: "100%", borderRadius: 24, margin: "0 12px" }}>
                 {cards[cardIdx]}
               </div>
             </motion.div>
@@ -427,12 +427,12 @@ export default function CalmCards({ userId, sessionId, panicLogId, onClose }) {
         {/* Bottom nav */}
         <div style={{ flexShrink: 0, padding: "12px 24px 32px", display: "flex", gap: 10 }}>
           {cardIdx > 0 && (
-            <button onClick={goPrev} style={{ flex: 1, height: 50, borderRadius: 9999, backgroundColor: "#EAD7FF", color: "#7C3AED", border: "none", cursor: "pointer", fontSize: 14, fontWeight: 600, }}>
+            <button onClick={goPrev} style={{ flex: 1, height: 50, borderRadius: 9999, backgroundColor: "var(--surface)", color: "var(--plum)", border: "none", cursor: "pointer", fontSize: 14, fontWeight: 600, }}>
               ← Back
             </button>
           )}
           {cardIdx < TOTAL_CARDS - 1 && (
-            <button onClick={goNext} style={{ flex: 1, height: 50, borderRadius: 9999, backgroundColor: "#C084FC", color: "white", border: "none", cursor: "pointer", fontSize: 14, fontWeight: 600, }}>
+            <button onClick={goNext} style={{ flex: 1, height: 50, borderRadius: 9999, backgroundColor: "var(--rose-dust)", color: "white", border: "none", cursor: "pointer", fontSize: 14, fontWeight: 600, }}>
               Next →
             </button>
           )}

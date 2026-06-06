@@ -33,10 +33,10 @@ const inputStyle = {
   width: "100%",
   padding: "10px 12px",
   borderRadius: 10,
-  border: "1.5px solid #D8CFBC",
+  border: "1.5px solid var(--border)",
   fontSize: 14,
   color: "var(--plum)",
-  backgroundColor: "#F4EFE3",
+  backgroundColor: "var(--surface)",
   outline: "none",
   boxSizing: "border-box",
 };
@@ -52,7 +52,7 @@ const labelStyle = {
 const primaryBtn = {
   padding: "9px 18px",
   borderRadius: 9999,
-  backgroundColor: "#E11D48",
+  backgroundColor: "var(--rose-dust)",
   color: "white",
   fontSize: 13,
   fontWeight: 700,
@@ -64,9 +64,9 @@ const primaryBtn = {
 };
 const secondaryBtn = {
   ...primaryBtn,
-  backgroundColor: "#F4EFE3",
-  color: "#E11D48",
-  border: "1.5px solid #D8CFBC",
+  backgroundColor: "var(--surface)",
+  color: "var(--rose-dust)",
+  border: "1.5px solid var(--border)",
 };
 
 // ── Nav sidebar ──────────────────────────────────────────────────────────────
@@ -75,8 +75,8 @@ function SettingsSidebar({ active, onSelect }) {
     <nav
       aria-label="Settings sections"
       style={{
-        backgroundColor: "#F4EFE3",
-        border: "1px solid #D8CFBC",
+        backgroundColor: "var(--surface)",
+        border: "1px solid var(--border)",
         borderRadius: 16,
         padding: 8,
         boxShadow: "var(--shadow-sm)",
@@ -101,8 +101,8 @@ function SettingsSidebar({ active, onSelect }) {
               border: "none",
               cursor: "pointer",
               marginBottom: 2,
-              backgroundColor: isActive ? "#E11D48" : "transparent",
-              color: isActive ? "white" : "var(--plum)",
+              backgroundColor: isActive ? "var(--plum)" : "transparent",
+              color: isActive ? "var(--ivory)" : "var(--plum)",
               fontSize: 13,
               fontWeight: 600,
               textAlign: "left",
@@ -193,7 +193,7 @@ function AccountSection({ user, profile, onProfileChange }) {
             id="st-email"
             value={user?.email || ""}
             readOnly
-            style={{ ...inputStyle, backgroundColor: "#F4EFE3", color: "var(--mauve)", cursor: "not-allowed" }}
+            style={{ ...inputStyle, backgroundColor: "var(--surface)", color: "var(--mauve)", cursor: "not-allowed" }}
           />
         </div>
 
@@ -543,19 +543,19 @@ function AboutSection() {
         </div>
 
         <a href="/terms"
-          style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "12px 14px", borderRadius: 12, backgroundColor: "#F4EFE3", border: "1px solid #D8CFBC", textDecoration: "none" }}>
+          style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "12px 14px", borderRadius: 12, backgroundColor: "var(--surface)", border: "1px solid var(--border)", textDecoration: "none" }}>
           <span style={{ fontSize: 13, fontWeight: 600, color: "var(--plum)", }}>Terms of Service</span>
-          <ChevronRight className="w-4 h-4" style={{ color: "#E11D48" }} />
+          <ChevronRight className="w-4 h-4" style={{ color: "var(--rose-dust)" }} />
         </a>
 
         <a href="/privacy"
-          style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "12px 14px", borderRadius: 12, backgroundColor: "#F4EFE3", border: "1px solid #D8CFBC", textDecoration: "none" }}>
+          style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "12px 14px", borderRadius: 12, backgroundColor: "var(--surface)", border: "1px solid var(--border)", textDecoration: "none" }}>
           <span style={{ fontSize: 13, fontWeight: 600, color: "var(--plum)", }}>Privacy Policy</span>
-          <ChevronRight className="w-4 h-4" style={{ color: "#E11D48" }} />
+          <ChevronRight className="w-4 h-4" style={{ color: "var(--rose-dust)" }} />
         </a>
 
         <p style={{ fontSize: 12, color: "var(--mauve)", textAlign: "center", marginTop: 8, display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 5 }}>
-          Made with <Heart className="w-3.5 h-3.5" style={{ color: "#E11D48", fill: "#E11D48" }} /> for women everywhere
+          Made with <Heart className="w-3.5 h-3.5" style={{ color: "var(--rose-dust)", fill: "var(--rose-dust)" }} /> for women everywhere
         </p>
       </div>
     </SettingsCard>
@@ -615,7 +615,7 @@ export default function Settings() {
       <div className="sticky top-0 z-30 px-4 pt-10 pb-3"
         style={{ backgroundColor: "rgba(250,248,245,0.97)", backdropFilter: "blur(20px)", borderBottom: "1px solid var(--border)" }}>
         <div className="max-w-4xl mx-auto">
-          <p style={{ fontSize: "0.6rem", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.14em", color: "#E11D48", }}>
+          <p style={{ fontSize: "0.6rem", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.14em", color: "var(--rose-dust)", }}>
             Your account
           </p>
           <h1 className="fw-display" style={{ marginTop: 2 }}>
@@ -628,7 +628,7 @@ export default function Settings() {
         {loading ? (
           <div className="flex justify-center py-10">
             <div className="w-7 h-7 rounded-full border-2 border-t-transparent animate-spin"
-              style={{ borderColor: "#D8CFBC", borderTopColor: "#E11D48" }} />
+              style={{ borderColor: "var(--border)", borderTopColor: "var(--rose-dust)" }} />
           </div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-[220px,1fr] gap-4">

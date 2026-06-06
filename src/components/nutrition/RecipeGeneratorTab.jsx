@@ -90,7 +90,7 @@ function RecipeCard({ recipe, onSaveAsTemplate }) {
 
   const difficultyStyle = {
     Easy:     { backgroundColor: "var(--sage-subtle)",      color: "var(--sage)" },
-    Medium:   { backgroundColor: "#FFF8EE",                  color: "#A07830" },
+    Medium:   { backgroundColor: "rgba(168,137,63,0.12)",   color: "var(--gold)" },
     Advanced: { backgroundColor: "var(--rose-dust-subtle)", color: "var(--rose-dust)" },
   }[recipe.difficulty] || { backgroundColor: "var(--ivory)", color: "var(--mauve)" };
 
@@ -129,7 +129,7 @@ function RecipeCard({ recipe, onSaveAsTemplate }) {
         {recipe.nutritional_summary && (
           <div className="grid grid-cols-5 gap-1.5">
             {[
-              { label: "kcal",    val: recipe.nutritional_summary.calories,   bg: "#FFF8EE", fg: "#A07830" },
+              { label: "kcal",    val: recipe.nutritional_summary.calories,   bg: "rgba(168,137,63,0.12)", fg: "var(--gold)" },
               { label: "Protein", val: `${recipe.nutritional_summary.protein_g}g`, bg: "var(--rose-dust-subtle)", fg: "var(--rose-dust)" },
               { label: "Carbs",   val: `${recipe.nutritional_summary.carbs_g}g`,   bg: "var(--mauve-subtle)", fg: "var(--mauve)" },
               { label: "Fat",     val: `${recipe.nutritional_summary.fat_g}g`,     bg: "var(--ivory-dark)", fg: "var(--plum)" },
@@ -201,8 +201,8 @@ function RecipeCard({ recipe, onSaveAsTemplate }) {
                 </div>
               )}
               {recipe.tip && (
-                <div className="rounded-xl px-4 py-3" style={{ backgroundColor: "#FFF8EE", border: "1px solid #F5DFA8" }}>
-                  <p className="text-xs" style={{ color: "#7A5A20" }}>
+                <div className="rounded-xl px-4 py-3" style={{ backgroundColor: "rgba(168,137,63,0.12)", border: "1px solid rgba(168,137,63,0.3)" }}>
+                  <p className="text-xs" style={{ color: "var(--gold)" }}>
                     <span className="font-semibold">Chef tip: </span>{recipe.tip}
                   </p>
                 </div>
@@ -234,7 +234,7 @@ function RecipeCard({ recipe, onSaveAsTemplate }) {
             {[1,2,3,4,5].map((star) => (
               <button key={star} onClick={() => setRating(star)}
                 className="text-xl transition-transform hover:scale-110"
-                style={{ color: rating >= star ? "#C4954A" : "var(--border)" }}>
+                style={{ color: rating >= star ? "var(--gold)" : "var(--border)" }}>
                 ★
               </button>
             ))}
@@ -350,9 +350,9 @@ export default function RecipeGeneratorTab({ user }) {
               <button key={c} onClick={() => setCuisine(c)}
                 className="px-3 py-1.5 rounded-full text-xs font-semibold transition-all"
                 style={{
-                  backgroundColor: cuisine === c ? "#C4954A" : "var(--ivory)",
+                  backgroundColor: cuisine === c ? "var(--gold)" : "var(--ivory)",
                   color: cuisine === c ? "white" : "var(--mauve)",
-                  border: `1px solid ${cuisine === c ? "#C4954A" : "var(--border)"}`,
+                  border: `1px solid ${cuisine === c ? "var(--gold)" : "var(--border)"}`,
                 }}>
                 {c}
               </button>
@@ -389,7 +389,7 @@ export default function RecipeGeneratorTab({ user }) {
         <div className="flex gap-2 pt-1">
           <button onClick={() => generate(true)} disabled={generating}
             className="flex items-center justify-center gap-1.5 px-4 py-3 rounded-xl text-xs font-semibold transition-all disabled:opacity-50"
-            style={{ backgroundColor: "#FFF8EE", color: "#A07830", border: "1px solid #F5DFA8" }}>
+            style={{ backgroundColor: "rgba(168,137,63,0.12)", color: "var(--gold)", border: "1px solid rgba(168,137,63,0.3)" }}>
             <Shuffle className="w-4 h-4" /> Surprise Me
           </button>
           <button onClick={() => generate(false)} disabled={generating}

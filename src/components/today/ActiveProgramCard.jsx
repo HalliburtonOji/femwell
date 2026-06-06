@@ -30,7 +30,7 @@ export default function ActiveProgramCard({ activeProgramEntry, activeProgram })
         )}
       </div>
       {showProgramReminder && (
-        <div className="inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-medium mb-4" style={{ backgroundColor: "#FFF8EE", color: "#A07830" }}>
+        <div className="inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-medium mb-4" style={{ backgroundColor: "var(--surface)", color: "var(--gold)" }}>
           <Bell className="w-3 h-3" /> Day {activeProgramEntry.current_day || 1} is ready
         </div>
       )}

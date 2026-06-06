@@ -135,7 +135,7 @@ function EventCard({ item, saved, onSave }) {
         <div style={{ display: "flex", gap: 8 }}>
           <button
             onClick={() => window.open(`https://wa.me/?text=${encodeURIComponent((item.title || "") + " " + (item.link || ""))}`, "_blank")}
-            style={{ backgroundColor: "#25D366", color: "white", borderRadius: 9999, padding: "6px 12px", fontSize: 12, fontWeight: 600, border: "none", cursor: "pointer", }}
+            style={{ backgroundColor: "var(--sage)", color: "white", borderRadius: 9999, padding: "6px 12px", fontSize: 12, fontWeight: 600, border: "none", cursor: "pointer", }}
           >
             Share
           </button>

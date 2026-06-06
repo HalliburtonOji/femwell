@@ -100,12 +100,12 @@ function QuickCheckCard({ analysis, onDismiss }) {
   return (
     <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}
       className="rounded-[20px] p-4 mb-4 relative"
-      style={{ backgroundColor: "#F0FAF5", border: "1px solid #C3E6D4" }}>
+      style={{ backgroundColor: "rgba(122,158,142,0.12)", border: "1px solid rgba(122,158,142,0.3)" }}>
       <button onClick={onDismiss} className="absolute top-3 right-3" style={{ color: "var(--mauve)" }}>
         <X className="w-4 h-4" />
       </button>
       {insight?.headline && (
-        <p className="text-sm font-semibold mb-1.5" style={{ color: "#1A6645", }}>
+        <p className="text-sm font-semibold mb-1.5" style={{ color: "var(--sage)", }}>
           {insight.headline}
         </p>
       )}
@@ -116,25 +116,25 @@ function QuickCheckCard({ analysis, onDismiss }) {
       )}
       <ul className="space-y-1 mb-3">
         {bullets?.map((b, i) => (
-          <li key={i} className="text-xs flex gap-2" style={{ color: "#2D5540" }}>
-            <span className="flex-shrink-0 mt-0.5 w-1.5 h-1.5 rounded-full bg-emerald-400 block mt-1.5" />
+          <li key={i} className="text-xs flex gap-2" style={{ color: "var(--sage)" }}>
+            <span className="flex-shrink-0 mt-0.5 w-1.5 h-1.5 rounded-full block mt-1.5" style={{ backgroundColor: "var(--sage)" }} />
             {b}
           </li>
         ))}
       </ul>
       {insight?.smart_swap && (
-        <div className="rounded-xl px-3 py-2 mb-3" style={{ backgroundColor: "#FFF8EE", border: "1px solid #F5DFA8" }}>
-          <p className="text-xs" style={{ color: "#7A5A20" }}>
+        <div className="rounded-xl px-3 py-2 mb-3" style={{ backgroundColor: "rgba(168,137,63,0.12)", border: "1px solid rgba(168,137,63,0.3)" }}>
+          <p className="text-xs" style={{ color: "var(--gold)" }}>
             <span className="font-semibold">Smart swap: </span>{insight.smart_swap}
           </p>
         </div>
       )}
       {micro_action && (
         <div className="flex items-center justify-between mt-2">
-          <p className="text-xs font-medium" style={{ color: "#2D5540" }}>Try: {micro_action}</p>
+          <p className="text-xs font-medium" style={{ color: "var(--sage)" }}>Try: {micro_action}</p>
           {actionLink && (
             <a href={actionLink} className="text-xs px-3 py-1.5 rounded-full text-white font-medium flex items-center gap-1"
-              style={{ backgroundColor: "#2D9463" }}>
+              style={{ backgroundColor: "var(--sage)" }}>
               Go <ChevronRight className="w-3 h-3" />
             </a>
           )}
@@ -783,7 +783,7 @@ export default function NutritionTodayTab({ user, profile, nutritionProfile, day
             <div style={{ display: "flex", flexWrap: "wrap", gap: 8, marginBottom: 14 }}>
               {DRINK_TYPES.map((d) => {
                 const cals = DRINK_CALS[d.id];
-                const bg = d.id === "soft_drink" ? "#FFF8F0" : d.id === "alcohol" ? "#FFF0F0" : "var(--ivory)";
+                const bg = d.id === "soft_drink" ? "rgba(168,137,63,0.10)" : d.id === "alcohol" ? "rgba(196,132,154,0.10)" : "var(--ivory)";
                 return (
                   <button
                     key={d.id}
@@ -891,7 +891,7 @@ export default function NutritionTodayTab({ user, profile, nutritionProfile, day
                               )}
                               {analysis?.meal_score && typeof analysis.meal_score === "object" && (
                                 <>
-                                  <span className="text-[10px] px-2 py-0.5 rounded-full font-medium" style={{ backgroundColor: "#FFF8EE", color: "#A07830" }}>
+                                  <span className="text-[10px] px-2 py-0.5 rounded-full font-medium" style={{ backgroundColor: "rgba(168,137,63,0.12)", color: "var(--gold)" }}>
                                     Protein {Math.min(10, Math.round((analysis.meal_score.protein || 0) * 2))}/10
                                   </span>
                                   <span className="text-[10px] px-2 py-0.5 rounded-full font-medium" style={{ backgroundColor: "var(--sage-subtle)", color: "var(--sage)" }}>
@@ -932,10 +932,10 @@ export default function NutritionTodayTab({ user, profile, nutritionProfile, day
                         </button>
                       </div>
                       {mealInsight?.wellness_impact && (
-                        <div className="mt-3 rounded-xl px-3 py-2.5" style={{ backgroundColor: "#F0FAF5", border: "1px solid #C3E6D4" }}>
-                          <p className="text-[11px] leading-relaxed" style={{ color: "#2D5540" }}>{mealInsight.wellness_impact}</p>
+                        <div className="mt-3 rounded-xl px-3 py-2.5" style={{ backgroundColor: "rgba(122,158,142,0.12)", border: "1px solid rgba(122,158,142,0.3)" }}>
+                          <p className="text-[11px] leading-relaxed" style={{ color: "var(--sage)" }}>{mealInsight.wellness_impact}</p>
                           {mealInsight.action_items && (
-                            <p className="text-[10px] mt-1" style={{ color: "#4A8266" }}>
+                            <p className="text-[10px] mt-1" style={{ color: "var(--sage)" }}>
                               <span className="font-semibold">Next: </span>{mealInsight.action_items}
                             </p>
                           )}

@@ -1,15 +1,16 @@
 import { createPageUrl } from "@/utils";
 
+const CHIP = { backgroundColor: "rgba(168,137,63,0.12)", color: "var(--gold)" };
 const recommendationTypeStyles = {
-  BREATHWORK: { backgroundColor: "#EEE6FF", color: "#9B7FCC", label: "Audio" },
-  MEDITATION: { backgroundColor: "#FFE6F2", color: "#C96B9E", label: "Audio" },
-  PROGRAMME:  { backgroundColor: "#E6FFF8", color: "#4ABFA3", label: "Programme" },
-  NUTRITION:  { backgroundColor: "#FFF8E6", color: "#E8B84B", label: "Nutrition" },
-  BOOK:       { backgroundColor: "#FFF0E8", color: "#C4804A", label: "Story" },
-  LIFESTYLE:  { backgroundColor: "#F5ECF0", color: "#C4849A", label: "Article" },
-  EVENT:      { backgroundColor: "#E8F0FF", color: "#6B8AC4", label: "Event" },
-  READ:       { backgroundColor: "#F5ECF0", color: "#C4849A", label: "Article" },
-  default:    { backgroundColor: "#F0F0F8", color: "#8888A8", label: "Article" },
+  BREATHWORK: { ...CHIP, label: "Audio" },
+  MEDITATION: { ...CHIP, label: "Audio" },
+  PROGRAMME:  { ...CHIP, label: "Programme" },
+  NUTRITION:  { ...CHIP, label: "Nutrition" },
+  BOOK:       { ...CHIP, label: "Story" },
+  LIFESTYLE:  { ...CHIP, label: "Article" },
+  EVENT:      { ...CHIP, label: "Event" },
+  READ:       { ...CHIP, label: "Article" },
+  default:    { ...CHIP, label: "Article" },
 };
 
 function getTypeMeta(type) {

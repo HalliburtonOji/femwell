@@ -37,7 +37,7 @@ function DayDetailModal({ date, checkin, onClose }) {
       <div
         onClick={onClose}
         aria-hidden="true"
-        style={{ position: "fixed", inset: 0, zIndex: 80, backgroundColor: "rgba(15,23,42,0.5)", backdropFilter: "blur(6px)" }}
+        style={{ position: "fixed", inset: 0, zIndex: 80, backgroundColor: "rgba(11,8,5,0.5)", backdropFilter: "blur(6px)" }}
       />
       <div
         role="dialog"
@@ -53,7 +53,7 @@ function DayDetailModal({ date, checkin, onClose }) {
           borderRadius: "20px 20px 0 0",
           maxHeight: "80vh",
           padding: "16px 20px 32px",
-          boxShadow: "0 -8px 32px rgba(15,23,42,0.15)",
+          boxShadow: "0 -8px 32px rgba(11,8,5,0.15)",
         }}
       >
         <div style={{ display: "flex", justifyContent: "center", marginBottom: 10 }}>
@@ -70,7 +70,7 @@ function DayDetailModal({ date, checkin, onClose }) {
               width: 32, height: 32, minWidth: 44, minHeight: 44,
               border: "none", background: "transparent", cursor: "pointer",
               display: "flex", alignItems: "center", justifyContent: "center",
-              color: "var(--slate-500, #64748B)",
+              color: "var(--mauve)",
             }}
           >
             <X className="w-5 h-5" strokeWidth={1.5} />
@@ -78,14 +78,14 @@ function DayDetailModal({ date, checkin, onClose }) {
         </div>
 
         {!checkin ? (
-          <p style={{ fontSize: 13, color: "var(--slate-500, #64748B)", }}>
+          <p style={{ fontSize: 13, color: "var(--mauve)", }}>
             No check-in logged on this day.
           </p>
         ) : (
           <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
             {(checkin.symptoms || []).length > 0 && (
               <div>
-                <p style={{ fontSize: 11, fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.08em", color: "var(--slate-500, #64748B)", }}>Symptoms</p>
+                <p style={{ fontSize: 11, fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.08em", color: "var(--mauve)", }}>Symptoms</p>
                 <div style={{ display: "flex", flexWrap: "wrap", gap: 6, marginTop: 6 }}>
                   {checkin.symptoms.map(s => (
                     <span key={s} style={{ fontSize: 12, padding: "4px 10px", borderRadius: 9999, backgroundColor: "var(--blush-surface, #FCE7F3)", color: "var(--rose-deep, #E11D74)", }}>
@@ -94,7 +94,7 @@ function DayDetailModal({ date, checkin, onClose }) {
                   ))}
                 </div>
                 {checkin.symptom_severity != null && (
-                  <p style={{ fontSize: 11, color: "var(--slate-500, #64748B)", marginTop: 6 }}>
+                  <p style={{ fontSize: 11, color: "var(--mauve)", marginTop: 6 }}>
                     Overall severity: {checkin.symptom_severity}/5
                   </p>
                 )}
@@ -113,7 +113,7 @@ function DayDetailModal({ date, checkin, onClose }) {
             </div>
             {checkin.notes && (
               <div>
-                <p style={{ fontSize: 11, fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.08em", color: "var(--slate-500, #64748B)", }}>Notes</p>
+                <p style={{ fontSize: 11, fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.08em", color: "var(--mauve)", }}>Notes</p>
                 <p style={{ fontSize: 13, color: "var(--plum)", lineHeight: 1.55, marginTop: 4 }}>{checkin.notes}</p>
               </div>
             )}
@@ -127,7 +127,7 @@ function DayDetailModal({ date, checkin, onClose }) {
 function StatCell({ label, value }) {
   return (
     <div style={{ backgroundColor: "var(--ivory-dark)", borderRadius: 10, padding: "8px 10px", textAlign: "center" }}>
-      <p style={{ fontSize: 10, color: "var(--slate-500, #64748B)", }}>{label}</p>
+      <p style={{ fontSize: 10, color: "var(--mauve)", }}>{label}</p>
       <p style={{ fontSize: 14, fontWeight: 700, color: "var(--plum)", marginTop: 2 }}>{value}</p>
     </div>
   );
@@ -158,7 +158,7 @@ function EmptyState() {
       <h3 style={{ fontSize: 17, fontWeight: 700, color: "var(--plum)", marginBottom: 6 }}>
         Your insights live here
       </h3>
-      <p style={{ fontSize: 13, color: "var(--slate-500, #64748B)", lineHeight: 1.55, marginBottom: 18 }}>
+      <p style={{ fontSize: 13, color: "var(--mauve)", lineHeight: 1.55, marginBottom: 18 }}>
         Log 3+ days of symptoms, mood, or energy and we'll start surfacing patterns.
       </p>
       <Link
@@ -273,8 +273,8 @@ export default function Insights() {
               <ArrowLeft className="w-4 h-4" strokeWidth={1.8} />
             </Link>
             <div>
-              <p style={{ fontSize: "0.6rem", fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.12em", color: "var(--slate-500, #64748B)", }}>Discover patterns</p>
-              <h1 style={{ fontSize: 22, fontWeight: 700, color: "var(--plum)", letterSpacing: "-0.02em" }}>
+              <p style={{ fontSize: "0.6rem", fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.12em", color: "var(--mauve)", }}>Discover patterns</p>
+              <h1 className="fw-display">
                 Insights
               </h1>
             </div>
@@ -321,7 +321,7 @@ export default function Insights() {
             {/* 14-day heatmap header */}
             <div style={{ display: "flex", alignItems: "flex-end", justifyContent: "space-between", marginTop: 4 }}>
               <h2 style={{ fontSize: 14, fontWeight: 700, color: "var(--plum)", }}>Last 14 days</h2>
-              <span style={{ fontSize: 11, color: "var(--slate-500, #64748B)", }}>{dateRangeLabel(14)}</span>
+              <span style={{ fontSize: 11, color: "var(--mauve)", }}>{dateRangeLabel(14)}</span>
             </div>
             <SymptomHeatmap checkins={checkins} />
 

@@ -3,10 +3,10 @@ import { base44 } from "@/api/base44Client";
 import { ArrowLeft, Play, Lock, BookmarkCheck, Bookmark } from "lucide-react";
 
 const PHASE_ACCENTS = {
-  menstrual: "#C96B9E",
-  follicular: "#9B7FCC",
-  ovulatory: "#E8B84B",
-  luteal: "#4ABFA3",
+  menstrual: "var(--rose-dust)",
+  follicular: "var(--mauve)",
+  ovulatory: "var(--gold)",
+  luteal: "var(--sage)",
 };
 import { createPageUrl } from "@/utils";
 import { saveItem, removeSavedItem } from "@/lib/savedItems";
@@ -309,7 +309,7 @@ export default function ContentPlayer() {
         <div className="mt-5 space-y-3">
           <div>
             <div className="flex items-start justify-between gap-2">
-              <h1 className="text-xl font-bold leading-tight" style={{ color: "var(--plum)" }}>{item.title}</h1>
+              <h1 className="fw-heading leading-tight">{item.title}</h1>
               {item.access_tier && item.access_tier !== "free" && (
                 <span className="flex-shrink-0 text-xs font-bold px-2 py-1 rounded-full uppercase"
                   style={{ backgroundColor: "var(--rose-dust-subtle)", color: "var(--rose-dust)" }}>{item.access_tier}</span>

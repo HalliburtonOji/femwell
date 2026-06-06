@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { base44 } from "@/api/base44Client";
 import SavedItemCard from "@/components/saved/SavedItemCard";
-import { Bookmark } from "lucide-react";
+import { Bookmark, BookMarked } from "lucide-react";
 
 const BASE_TABS = [
   { id: "ADVICE",    label: "Advice"    },
@@ -103,7 +103,7 @@ export default function Saved() {
             <p style={{ fontSize: "15px", fontWeight: 600, color: "var(--plum)", }}>Nothing saved here yet</p>
             <p style={{ fontSize: "13px", color: "var(--mauve)", marginTop: "4px" }}>
               {tab === "LIFESTYLE"
-                ? "📚 Nothing saved yet — tap the bookmark icon on any article to save it here."
+                ? (<><BookMarked className="w-3.5 h-3.5" style={{ display: "inline", verticalAlign: "-2px", marginRight: 4 }} aria-hidden="true" />Nothing saved yet — tap the bookmark icon on any article to save it here.</>)
                 : "When you save something around the app, it appears here."}
             </p>
           </div>

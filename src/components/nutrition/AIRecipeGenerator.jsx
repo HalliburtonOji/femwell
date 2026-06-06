@@ -19,8 +19,8 @@ const DURATION_OPTIONS = [
 ];
 
 const DIFFICULTY_STYLES = {
-  Easy:     { backgroundColor: "#EDFAF1", color: "#3D9A5E" },
-  Medium:   { backgroundColor: "#FFF8EE", color: "#A07830" },
+  Easy:     { backgroundColor: "rgba(122,158,142,0.12)", color: "var(--sage)" },
+  Medium:   { backgroundColor: "rgba(168,137,63,0.12)", color: "var(--gold)" },
   Advanced: { backgroundColor: "var(--rose-dust-subtle)", color: "var(--rose-dust)" },
 };
 
@@ -109,11 +109,11 @@ function RecipeCard({ recipe, onSaveAsTemplate }) {
         {recipe.nutritional_summary && (
           <div className="grid grid-cols-5 gap-1.5">
             {[
-              { label: "Kcal",   val: recipe.nutritional_summary.calories,  bg: "#FFF8EE", fg: "#A07830" },
-              { label: "Protein",val: `${recipe.nutritional_summary.protein_g}g`, bg: "#EEF4FF", fg: "#3B5FC4" },
-              { label: "Carbs",  val: `${recipe.nutritional_summary.carbs_g}g`,   bg: "#FFF3EE", fg: "#A05A2C" },
-              { label: "Fat",    val: `${recipe.nutritional_summary.fat_g}g`,     bg: "#F5F0FF", fg: "#7C3AED" },
-              { label: "Fibre",  val: `${recipe.nutritional_summary.fiber_g}g`,   bg: "#EDFAF1", fg: "#2D7A4F" },
+              { label: "Kcal",   val: recipe.nutritional_summary.calories,  bg: "rgba(168,137,63,0.12)", fg: "var(--gold)" },
+              { label: "Protein",val: `${recipe.nutritional_summary.protein_g}g`, bg: "rgba(46,38,27,0.08)", fg: "var(--mauve)" },
+              { label: "Carbs",  val: `${recipe.nutritional_summary.carbs_g}g`,   bg: "rgba(168,137,63,0.12)", fg: "var(--gold)" },
+              { label: "Fat",    val: `${recipe.nutritional_summary.fat_g}g`,     bg: "rgba(46,38,27,0.08)", fg: "var(--mauve)" },
+              { label: "Fibre",  val: `${recipe.nutritional_summary.fiber_g}g`,   bg: "rgba(122,158,142,0.12)", fg: "var(--sage)" },
             ].map((n) => (
               <div key={n.label} style={{ backgroundColor: n.bg, borderRadius: 12, padding: "8px 4px", textAlign: "center" }}>
                 <p style={{ fontWeight: 700, fontSize: 12, color: n.fg, margin: 0 }}>{n.val}</p>
@@ -182,8 +182,8 @@ function RecipeCard({ recipe, onSaveAsTemplate }) {
 
               {/* Tip */}
               {recipe.tip && (
-                <div style={{ backgroundColor: "#FFF8EE", borderRadius: 12, padding: 12 }}>
-                  <p style={{ fontSize: 12, color: "#A07830", margin: 0 }}><span style={{ fontWeight: 700 }}>Chef tip:</span> {recipe.tip}</p>
+                <div style={{ backgroundColor: "rgba(168,137,63,0.12)", borderRadius: 12, padding: 12 }}>
+                  <p style={{ fontSize: 12, color: "var(--gold)", margin: 0 }}><span style={{ fontWeight: 700 }}>Chef tip:</span> {recipe.tip}</p>
                 </div>
               )}
             </motion.div>

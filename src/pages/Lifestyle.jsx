@@ -23,8 +23,8 @@ function todayStr() {
   return new Date().toISOString().split("T")[0];
 }
 
-const PRIMARY = "#D45E52";
-const PRIMARY_LIGHT = "#FBE9E6";
+const PRIMARY = "var(--plum)";
+const PRIMARY_LIGHT = "var(--surface)";
 
 // ── Shared spinner ────────────────────────────────────────────────────────────
 function Spinner() {
@@ -134,7 +134,7 @@ function ArticleSheet({ item, onClose }) {
           {/* Pills */}
           <div style={{ display: "flex", gap: 6, flexWrap: "wrap", marginBottom: 14 }}>
             {item.category && <Pill label={item.category} />}
-            {item.emotional_tag && <Pill label={item.emotional_tag} color="var(--rose-primary)" bg="var(--rose-soft-bg)" />}
+            {item.emotional_tag && <Pill label={item.emotional_tag} color="var(--plum)" bg="var(--surface)" />}
           </div>
           {/* Title */}
           <h2 style={{ fontSize: 22, fontWeight: 700, color: "var(--plum)", lineHeight: 1.3, marginBottom: 10 }}>{item.title}</h2>
@@ -200,7 +200,7 @@ const CAT_GRADIENTS = {
   "Self Care":       "linear-gradient(135deg, #F2E6FF 0%, #D5B8FF 100%)",
   "Lifestyle":       "linear-gradient(135deg, #FFF1E6 0%, #FFD3A8 100%)",
   "Culture":         "linear-gradient(135deg, #F4F1E8 0%, #D7CDB0 100%)",
-  "default":         "linear-gradient(135deg, var(--rose-soft-bg) 0%, var(--cream-2) 100%)",
+  "default":         "linear-gradient(135deg, var(--surface) 0%, var(--cream-2) 100%)",
 };
 
 function getCatGradient(category) {
@@ -407,12 +407,12 @@ function InlineChipRow({ tab, activeChip, onChange }) {
               fontSize: 12,
               fontWeight: active ? 600 : 500,
               cursor: "pointer",
-              border: active ? "1px solid var(--rose-primary)" : "1px solid var(--border)",
+              border: active ? "1px solid var(--plum)" : "1px solid var(--border)",
               whiteSpace: "nowrap",
               minHeight: 36,
               display: "inline-flex",
               alignItems: "center",
-              backgroundColor: active ? "var(--rose-primary)" : "var(--cream)",
+              backgroundColor: active ? "var(--plum)" : "var(--cream)",
               color: active ? "white" : "var(--plum-deep)",
               transition: "all 0.15s",
             }}
@@ -482,8 +482,8 @@ function CategoryFilterDropdown({ selected, onChange, followedCategories = [], i
           fontSize: 12, fontWeight: 600,
           minHeight: 36, cursor: "pointer",
           border: "1px solid var(--border)",
-          background: count ? "var(--rose-soft-bg)" : "var(--cream)",
-          color: count ? "var(--rose-primary)" : "var(--plum-deep)",
+          background: count ? "var(--surface)" : "var(--cream)",
+          color: count ? "var(--plum)" : "var(--plum-deep)",
           position: "relative",
         }}
       >
@@ -495,7 +495,7 @@ function CategoryFilterDropdown({ selected, onChange, followedCategories = [], i
             style={{
               marginLeft: 2, minWidth: 18, height: 18, padding: "0 5px",
               borderRadius: 9999,
-              background: "var(--rose-primary)", color: "white",
+              background: "var(--plum)", color: "white",
               font: "700 10px/18px 'Inter', sans-serif",
               textAlign: "center",
             }}
@@ -529,7 +529,7 @@ function CategoryFilterDropdown({ selected, onChange, followedCategories = [], i
               type="button" onClick={clear} disabled={count === 0}
               style={{
                 background: "none", border: "none",
-                color: count ? "var(--rose-primary)" : "var(--plum-mute)",
+                color: count ? "var(--plum)" : "var(--plum-mute)",
                 opacity: count ? 1 : 0.5,
                 cursor: count ? "pointer" : "default",
                 font: "500 11px/1 'Inter', sans-serif",
@@ -561,8 +561,8 @@ function CategoryFilterDropdown({ selected, onChange, followedCategories = [], i
                     aria-hidden="true"
                     style={{
                       width: 18, height: 18, borderRadius: 5,
-                      border: isActive ? "1px solid var(--rose-primary)" : "1px solid var(--border)",
-                      background: isActive ? "var(--rose-primary)" : "transparent",
+                      border: isActive ? "1px solid var(--plum)" : "1px solid var(--border)",
+                      background: isActive ? "var(--plum)" : "transparent",
                       display: "inline-flex", alignItems: "center", justifyContent: "center",
                       color: "white",
                     }}
@@ -696,9 +696,10 @@ export default function Lifestyle() {
               <button key={t.id} onClick={() => setTab(t.id)}
                 aria-label={`Switch to ${t.label} tab`}
                 aria-pressed={tab === t.id}
-                style={{ flexShrink: 0, padding: "7px 16px", borderRadius: 9999, fontSize: 12, fontWeight: 600, cursor: "pointer", border: "none", transition: "all 0.15s", whiteSpace: "nowrap", minHeight: 32,
-                  backgroundColor: tab === t.id ? PRIMARY : "var(--ivory-dark)",
-                  color: tab === t.id ? "white" : "var(--mauve)" }}>
+                style={{ flexShrink: 0, padding: "7px 16px", borderRadius: 9999, fontSize: 12, fontWeight: 600, cursor: "pointer", transition: "all 0.15s", whiteSpace: "nowrap", minHeight: 32,
+                  border: tab === t.id ? "1px solid var(--plum)" : "1px solid var(--border)",
+                  backgroundColor: tab === t.id ? PRIMARY : "transparent",
+                  color: tab === t.id ? "#F4EFE3" : "var(--mauve)" }}>
                 {t.label}
               </button>
             ))}

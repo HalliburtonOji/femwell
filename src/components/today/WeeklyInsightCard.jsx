@@ -314,12 +314,12 @@ Honour the STAGE GUARD above without exception. Highlight patterns, celebrate wi
           style={{
             width: "100%", marginBottom: 10, padding: "8px 12px",
             display: "flex", alignItems: "center", gap: 8,
-            background: "rgba(168,134,75,0.10)",
-            border: "1px solid rgba(168,134,75,0.32)",
+            background: "rgba(168,137,63,0.1)",
+            border: "1px solid var(--border)",
             borderRadius: 10, cursor: "pointer", textAlign: "left",
             }}
         >
-          <AlertCircle className="w-3.5 h-3.5" style={{ color: "#A6862B", flexShrink: 0 }} />
+          <AlertCircle className="w-3.5 h-3.5" style={{ color: "var(--gold)", flexShrink: 0 }} />
           <span style={{ fontSize: 11.5, fontWeight: 600, color: "var(--plum)" }}>
             Your stage has changed since this insight was written — tap to regenerate.
           </span>

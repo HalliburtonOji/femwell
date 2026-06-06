@@ -18,22 +18,22 @@ import ConditionPulseCards from "../components/conditions/ConditionPulseCards";
 import WearableWeekCard from "../components/pulse/WearableWeekCard";
 
 const PHASES = [
-  { key: "Menstrual",  label: "Menstrual",  color: "#f43f5e", days: "Days 1–5"  },
-  { key: "Follicular", label: "Follicular", color: "#fb923c", days: "Days 6–13" },
-  { key: "Ovulatory",  label: "Ovulatory",  color: "#a78bfa", days: "Days 14–16"},
-  { key: "Luteal",     label: "Luteal",     color: "#34d399", days: "Days 17+"  },
+  { key: "Menstrual",  label: "Menstrual",  color: "#0B0805", days: "Days 1–5"  },
+  { key: "Follicular", label: "Follicular", color: "#4A4030", days: "Days 6–13" },
+  { key: "Ovulatory",  label: "Ovulatory",  color: "#6B5D4A", days: "Days 14–16"},
+  { key: "Luteal",     label: "Luteal",     color: "#8C7B66", days: "Days 17+"  },
 ];
 
 const CHECKIN_METRICS = [
-  { id: "cramps",            label: "Cramps",             color: "#f43f5e" },
-  { id: "mood",              label: "Mood",               color: "#f472b6" },
-  { id: "energy",            label: "Energy",             color: "#fb923c" },
-  { id: "stress",            label: "Stress",             color: "#a78bfa" },
-  { id: "bloating",          label: "Bloating",           color: "#6ee7b7" },
-  { id: "headache",          label: "Headache",           color: "#93c5fd" },
-  { id: "breast_tenderness", label: "Breast Tenderness",  color: "#c084fc" },
-  { id: "sleep_quality",     label: "Sleep Quality",      color: "#34d399" },
-  { id: "pain",              label: "Pain",               color: "#ef4444" },
+  { id: "cramps",            label: "Cramps",             color: "#0B0805" },
+  { id: "mood",              label: "Mood",               color: "#2E261B" },
+  { id: "energy",            label: "Energy",             color: "#4A4030" },
+  { id: "stress",            label: "Stress",             color: "#6B5D4A" },
+  { id: "bloating",          label: "Bloating",           color: "#756450" },
+  { id: "headache",          label: "Headache",           color: "#B3A48E" },
+  { id: "breast_tenderness", label: "Breast Tenderness",  color: "#5A4C3A" },
+  { id: "sleep_quality",     label: "Sleep Quality",      color: "#8C7B66" },
+  { id: "pain",              label: "Pain",               color: "#1A140D" },
 ];
 
 function getPhase(dayOfCycle) {
@@ -201,7 +201,7 @@ export default function Pulse() {
   const currentLabel = dataSource === "checkins"
     ? (currentMetricMeta?.label || selectedMetric)
     : (selectedMetric?.replace(/_/g, " ") || "");
-  const currentColor = dataSource === "checkins" ? (currentMetricMeta?.color || "#f472b6") : "#f472b6";
+  const currentColor = dataSource === "checkins" ? (currentMetricMeta?.color || "#2E261B") : "#2E261B";
 
   const patternInsight = (() => {
     if (!hasPhaseData) return null;
@@ -273,9 +273,8 @@ export default function Pulse() {
               }}>
               Your health intelligence
             </p>
-            <h1 style={{
-              fontSize: "28px", fontWeight: 700, lineHeight: 1.1,
-              color: "var(--plum)", letterSpacing: "-0.02em", marginTop: "4px"
+            <h1 className="fw-display" style={{
+              lineHeight: 1.1, marginTop: "4px"
             }}>
               Pulse
             </h1>
@@ -601,7 +600,7 @@ export default function Pulse() {
         <div className="mb-5">
           <p style={{ fontSize: "12px", color: "var(--mauve)", marginBottom: "8px", }}>Select metric</p>
           <div className="flex gap-2 overflow-x-auto pb-1">
-            {(dataSource === "checkins" ? CHECKIN_METRICS : symptomTypes.map((t) => ({ id: t, label: t.replace(/_/g, " "), color: "#f472b6" }))).map((m) => (
+            {(dataSource === "checkins" ? CHECKIN_METRICS : symptomTypes.map((t) => ({ id: t, label: t.replace(/_/g, " "), color: "#2E261B" }))).map((m) => (
               <button
                 key={m.id}
                 onClick={() => setSelectedMetric(m.id)}
@@ -648,7 +647,7 @@ export default function Pulse() {
                   <YAxis tick={{ fontSize: 11, fill: "#999" }} domain={[0, 10]} />
                   <Tooltip
                     formatter={(val) => [val, currentLabel]}
-                    contentStyle={{ borderRadius: "12px", border: "1px solid #fce7ec", fontSize: 12 }}
+                    contentStyle={{ borderRadius: "12px", border: "1px solid #D8CFBC", fontSize: 12 }}
                   />
                   <Bar dataKey="avg" radius={[6, 6, 0, 0]}>
                     {phaseData.map((entry, i) => (
@@ -711,7 +710,7 @@ export default function Pulse() {
                 <YAxis tick={{ fontSize: 11, fill: "#999" }} domain={[0, 10]} />
                 <Tooltip
                   formatter={(val) => [val, currentLabel]}
-                  contentStyle={{ borderRadius: "12px", border: "1px solid #fce7ec", fontSize: 12 }}
+                  contentStyle={{ borderRadius: "12px", border: "1px solid #D8CFBC", fontSize: 12 }}
                 />
                 <Line
                   type="monotone"
@@ -790,14 +789,14 @@ export default function Pulse() {
                   <CartesianGrid strokeDasharray="3 3" stroke="#f0e4e8" />
                   <XAxis dataKey="label" tick={{ fontSize: 10, fill: "#999" }} interval="preserveStartEnd" />
                   <YAxis tick={{ fontSize: 11, fill: "#999" }} domain={[0, 10]} />
-                  <Tooltip contentStyle={{ borderRadius: "12px", border: "1px solid #fce7ec", fontSize: 12 }} />
-                  <Line type="monotone" dataKey="sleep" stroke="#34d399" strokeWidth={2} dot={false} name="Sleep" />
-                  <Line type="monotone" dataKey="mood" stroke="#f472b6" strokeWidth={2} dot={false} name="Mood" />
-                  <Line type="monotone" dataKey="energy" stroke="#fb923c" strokeWidth={2} dot={false} name="Energy" />
+                  <Tooltip contentStyle={{ borderRadius: "12px", border: "1px solid #D8CFBC", fontSize: 12 }} />
+                  <Line type="monotone" dataKey="sleep" stroke="#8C7B66" strokeWidth={2} dot={false} name="Sleep" />
+                  <Line type="monotone" dataKey="mood" stroke="#2E261B" strokeWidth={2} dot={false} name="Mood" />
+                  <Line type="monotone" dataKey="energy" stroke="#4A4030" strokeWidth={2} dot={false} name="Energy" />
                 </LineChart>
               </ResponsiveContainer>
               <div className="flex gap-4 mt-2 justify-center">
-                {[{c:"#34d399",l:"Sleep"},{c:"#f472b6",l:"Mood"},{c:"#fb923c",l:"Energy"}].map(x => (
+                {[{c:"#8C7B66",l:"Sleep"},{c:"#2E261B",l:"Mood"},{c:"#4A4030",l:"Energy"}].map(x => (
                   <div key={x.l} className="flex items-center gap-1">
                     <div className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: x.c }} />
                     <span style={{ fontSize: "10px", color: "var(--mauve)", }}>{x.l}</span>

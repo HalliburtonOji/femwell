@@ -278,7 +278,8 @@ export default function Profile() {
 
         {/* Hero card */}
         <div style={{
-          background: "linear-gradient(135deg, var(--plum) 0%, var(--plum-light) 100%)",
+          background: "var(--surface)",
+          border: "1px solid var(--border)",
           borderRadius: 24, padding: 24, marginBottom: 16,
           boxShadow: "var(--shadow-md)",
         }}>
@@ -287,14 +288,14 @@ export default function Profile() {
             <label style={{ cursor: uploadingPhoto ? "wait" : "pointer", position: "relative", display: "inline-block" }}>
               <div style={{
                 width: 72, height: 72, borderRadius: "50%", overflow: "hidden",
-                border: "2px solid rgba(255,255,255,0.35)",
-                backgroundColor: "rgba(255,255,255,0.15)",
+                border: "2px solid var(--border)",
+                backgroundColor: "var(--ivory)",
                 display: "flex", alignItems: "center", justifyContent: "center",
               }}>
                 {profile?.avatar_url ? (
                   <img src={profile.avatar_url} alt="" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
                 ) : (
-                  <span style={{ fontSize: 26, fontWeight: 700, color: "white" }}>
+                  <span style={{ fontSize: 26, fontWeight: 700, color: "var(--plum)" }}>
                     {user?.full_name?.[0]?.toUpperCase() || "?"}
                   </span>
                 )}
@@ -302,7 +303,7 @@ export default function Profile() {
               <div style={{
                 position: "absolute", bottom: 0, right: 0, width: 22, height: 22,
                 borderRadius: "50%", backgroundColor: "var(--rose-dust)",
-                border: "2px solid #2A2035",
+                border: "2px solid var(--surface)",
                 display: "flex", alignItems: "center", justifyContent: "center",
               }}>
                 <Camera style={{ width: 10, height: 10, color: "white" }} />
@@ -310,37 +311,37 @@ export default function Profile() {
               <input type="file" accept="image/*" style={{ display: "none" }} onChange={handlePhotoUpload} disabled={uploadingPhoto} />
             </label>
             <a href={createPageUrl("Upgrade")} style={{
-              background: "rgba(255,255,255,0.15)",
-              border: "1px solid rgba(255,255,255,0.25)",
+              background: "var(--ivory)",
+              border: "1px solid var(--border)",
               borderRadius: 9999, padding: "4px 12px",
-              fontSize: 11, fontWeight: 600, color: "white",
+              fontSize: 11, fontWeight: 600, color: "var(--plum)",
               textDecoration: "none",
             }}>
               {profile?.plan ? `${profile.plan} Plan` : "Free Plan"}
             </a>
           </div>
           {/* Name row */}
-          <p style={{ fontSize: 18, fontWeight: 700, color: "white", marginBottom: 2 }}>
+          <p style={{ fontSize: 18, fontWeight: 700, color: "var(--plum)", marginBottom: 2 }}>
             {user?.full_name}
           </p>
-          <p style={{ fontSize: 12, color: "rgba(255,255,255,0.6)", marginBottom: 0 }}>
+          <p style={{ fontSize: 12, color: "var(--mauve)", marginBottom: 0 }}>
             {user?.email}
           </p>
           {/* Phase chips */}
           {cycleInfo && (
-            <div style={{ borderTop: "1px solid rgba(255,255,255,0.12)", paddingTop: 16, marginTop: 16, display: "flex", gap: 8 }}>
+            <div style={{ borderTop: "1px solid var(--border)", paddingTop: 16, marginTop: 16, display: "flex", gap: 8 }}>
               {[
                 { label: "Phase", value: PHASE_LABELS_P[cycleInfo.phase] || cycleInfo.phase },
                 { label: "Cycle day", value: `Day ${cycleInfo.day}` },
                 ...(daysToNextPeriod != null ? [{ label: "Next period", value: `${daysToNextPeriod}d` }] : [{ label: "Streak", value: `${checkinStreak}d` }]),
               ].map(chip => (
                 <div key={chip.label} style={{
-                  flex: 1, background: "rgba(255,255,255,0.1)",
-                  border: "1px solid rgba(255,255,255,0.15)",
+                  flex: 1, background: "var(--ivory)",
+                  border: "1px solid var(--border)",
                   borderRadius: 12, padding: "10px 14px", textAlign: "center",
                 }}>
-                  <p style={{ fontSize: 10, fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.08em", color: "var(--rose-dust-light)", marginBottom: 3 }}>{chip.label}</p>
-                  <p style={{ fontSize: 14, fontWeight: 600, color: "white", }}>{chip.value}</p>
+                  <p style={{ fontSize: 10, fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.08em", color: "var(--rose-dust)", marginBottom: 3 }}>{chip.label}</p>
+                  <p style={{ fontSize: 14, fontWeight: 600, color: "var(--plum)", }}>{chip.value}</p>
                 </div>
               ))}
             </div>
@@ -440,9 +441,9 @@ export default function Profile() {
           const condCount = conds.filter(c => c && c !== "prefer_not").length;
           return (
             <div style={{
-              background: "linear-gradient(180deg, rgba(168,134,75,0.10), rgba(244,237,219,0.6))",
-              border: "1px solid rgba(58,44,26,0.12)",
-              borderLeft: "3px solid #A6862B",
+              background: "var(--surface)",
+              border: "1px solid var(--border)",
+              borderLeft: "3px solid var(--gold)",
               borderRadius: 20,
               padding: "18px 18px 20px",
               marginBottom: 16,

@@ -25,16 +25,16 @@ import { ChevronLeft, Copy, Share2, Check, Eye, X as XIcon, Moon, Calendar, Spar
 import PartnerPreviewBody from "../components/partner/PartnerPreviewBody";
 
 const C = {
-  cream:    "#F4EDDB",
-  paper:    "#FBF6E6",
-  paperHi:  "#EDE6D5",
-  espresso: "#3A2C1A",
-  espressoDk: "#2A1E0E",
-  muted:    "#9B8B7A",
-  gold:     "#D4AF37",
-  sage:     "#8FAF8F",
-  blush:    "#E8B4B8",
-  border:   "#D4C9B4",
+  cream:    "var(--ivory)",
+  paper:    "var(--ivory)",
+  paperHi:  "var(--surface)",
+  espresso: "var(--plum)",
+  espressoDk: "var(--plum)",
+  muted:    "var(--mauve)",
+  gold:     "var(--gold)",
+  sage:     "var(--sage)",
+  blush:    "var(--rose-dust)",
+  border:   "var(--border)",
 };
 
 function generateShareCode() {
@@ -298,11 +298,9 @@ export default function PartnerSync() {
           <p style={{ margin: 0, fontSize: 11, fontWeight: 700, letterSpacing: "0.2em", textTransform: "uppercase", color: C.blush }}>
             Together
           </p>
-          <h1 style={{
+          <h1 className="fw-display" style={{
             margin: "6px 0 6px",
-            fontSize: 30, fontWeight: 600,
-            color: C.espressoDk,
-            letterSpacing: -0.4, lineHeight: 1.1,
+            lineHeight: 1.1,
           }}>Partner Sync</h1>
           <p style={{ margin: 0, fontSize: 15, color: C.muted, lineHeight: 1.5 }}>
             Help your partner understand your world.

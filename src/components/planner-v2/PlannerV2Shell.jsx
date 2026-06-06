@@ -98,16 +98,23 @@ import { Layers as DevLayersIcon, X as DevXIcon } from "lucide-react";
 
 // ── Tokens ─────────────────────────────────────────────────────────────────
 const C = {
-  cream:    "#F4EDDB",
-  paper:    "#FBF6E6",
-  paperHi:  "#F4EFE3",
-  espresso: "#3A2C1A",
-  blush:    "#E8B4B8",
-  sage:     "#8FAF8F",
-  muted:    "#9B8B7A",
-  gold:     "#D4AF37",
+  // Editorial token remap — values now inherit the global design system.
+  cream:    "var(--ivory)",
+  paper:    "var(--ivory)",
+  paperHi:  "var(--surface)",
+  surface:  "var(--surface)",
+  card:     "var(--surface)",
+  espresso: "var(--plum)",
+  ink:      "var(--plum)",
+  espressoDk:"var(--plum)",
+  blush:    "var(--rose-dust)",
+  sage:     "var(--sage)",
+  muted:    "var(--mauve)",
+  border:   "var(--border)",
+  gold:     "var(--gold)",
   goldDeep: "#A6862B",
-  rose:     "#D45E52",
+  rose:     "var(--rose-dust)",
+  // Phase encodings — literal colours (data/chart strokes), left intact
   // Updated to match the reference cycle calendar image
   pMenstrual:  "#8B2635",
   pFollicular: "#C17B4E",
@@ -1034,7 +1041,7 @@ function Header({ greeting, onOpenPlan, onOpenSettings, onOpenVoice, lifeStage }
   return (
     <div style={headerStyle}>
       <div style={greetingRow}>
-        <h1 style={greetingText}>{greeting}, {profile.name}</h1>
+        <h1 className="fw-display">{greeting}, {profile.name}</h1>
         <Sun size={18} style={{ color: C.gold, flexShrink: 0 }} />
         {/* V3 sprint Task 4 — navigate to /Search from the Planner header. */}
         <a
@@ -1629,7 +1636,8 @@ function InsightsHeroRow({ phase: phaseProp, dayInCycle, profile: profileProp, u
               key={i}
               style={{
                 ...heroCard,
-                background: `linear-gradient(135deg, ${c.soft} 0%, ${C.cream} 100%)`,
+                background: "var(--surface)",
+                border: "1px solid var(--border)",
                 borderLeft: `4px solid ${c.accent}`,
                 // V3 Task 2: gold foil edge on active card only.
                 borderTop: isActive ? "2px solid rgba(212,175,55,0.30)" : "none",
@@ -1665,13 +1673,13 @@ function InsightsHeroRow({ phase: phaseProp, dayInCycle, profile: profileProp, u
                 <div style={{ display: "flex", flexDirection: "column", gap: 6, margin: "8px 0" }}>
                   <span aria-hidden style={{
                     display: "block", width: "92%", height: 12, borderRadius: 6,
-                    background: "linear-gradient(90deg, #EDE6D5 0%, #F4EDDB 50%, #EDE6D5 100%)",
+                    background: "var(--surface)",
                     backgroundSize: "200% 100%",
                     animation: "plannerJessShimmer 1.4s ease-in-out infinite",
                   }} />
                   <span aria-hidden style={{
                     display: "block", width: "70%", height: 12, borderRadius: 6,
-                    background: "linear-gradient(90deg, #EDE6D5 0%, #F4EDDB 50%, #EDE6D5 100%)",
+                    background: "var(--surface)",
                     backgroundSize: "200% 100%",
                     animation: "plannerJessShimmer 1.4s ease-in-out 0.2s infinite",
                   }} />
@@ -1753,7 +1761,8 @@ function HeroInsightCard({ eyebrow, title, body, footer, accent, soft }) {
   return (
     <article style={{
       ...heroCard,
-      background: `linear-gradient(135deg, ${soft} 0%, ${C.cream} 100%)`,
+      background: "var(--surface)",
+      border: "1px solid var(--border)",
       borderLeft: `4px solid ${accent}`,
     }}>
       <div style={heroCardRow}>
@@ -2965,7 +2974,7 @@ function CycleZoneCard({ onOpen, phase: phaseProp, dayInCycle, daysUntilPeriod }
 
   return (
     <article style={{ ...cardStyle, padding: 0, overflow: "hidden" }}>
-      <div style={{ ...cycleBanner, background: `linear-gradient(135deg, ${tone}22 0%, ${tone}08 100%)`, borderBottom: `1px solid ${tone}33` }}>
+      <div style={{ ...cycleBanner, background: "var(--surface)", borderBottom: "1px solid var(--border)" }}>
         <span style={cycleBannerLabel}>{phase.toUpperCase()}</span>
         <p style={cycleBannerSub}>{bannerSub}</p>
       </div>
@@ -5549,7 +5558,7 @@ const shell = {
 const headerStyle = { padding: "20px 16px 8px", background: C.cream };
 const greetingRow = { display: "flex", alignItems: "center", gap: 8 };
 const greetingText = {
-  fontSize: 22, fontWeight: 700, color: C.espresso, margin: 0, letterSpacing: "-0.01em",
+  margin: 0,
 };
 const greetingSub = { fontSize: 13, color: C.muted, marginTop: 4 };
 
@@ -5757,9 +5766,10 @@ const bulletDot = { width: 5, height: 5, borderRadius: 9999, background: C.gold,
 
 // Cycle zone banner
 const cycleBanner = {
-  background: `linear-gradient(135deg, ${C.gold}33 0%, ${C.gold}11 100%)`,
+  background: "var(--surface)",
+  border: "1px solid var(--border)",
   padding: "16px 14px 12px",
-  borderBottom: `1px solid ${C.gold}33`,
+  borderBottom: "1px solid var(--border)",
 };
 const cycleBannerLabel = {
   fontSize: 24, fontWeight: 500, color: C.espresso,

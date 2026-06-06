@@ -24,7 +24,7 @@ const PHASE_CONTENT = {
     body: "LH surge is imminent or happening — cervical mucus may change.",
     food: "Zinc and antioxidants: pumpkin seeds, berries, broccoli",
     move: "High intensity, HIIT, or anything ambitious",
-    color: "#B89E6A",
+    color: "var(--gold)",
     bg: "#FFF8EE",
     border: "#E8D8A0",
   },

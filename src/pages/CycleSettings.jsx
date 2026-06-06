@@ -74,7 +74,7 @@ export default function CycleSettings() {
             }}>
             <ArrowLeft className="w-4 h-4" style={{ color: "var(--plum)" }} />
           </button>
-          <h1 style={{ fontSize: "20px", fontWeight: 700, color: "var(--plum)", letterSpacing: "-0.01em" }}>
+          <h1 className="fw-display">
             Cycle Settings
           </h1>
         </div>

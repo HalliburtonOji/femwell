@@ -201,8 +201,7 @@ export default function ProgramsHub() {
       <div style={{ backgroundColor: "var(--surface)", borderBottom: "1px solid var(--border)" }}>
         <div className="mx-auto max-w-6xl px-4 pb-6 pt-10 md:px-6">
           <p style={sLabel} className="mb-1.5">Guided journeys</p>
-          <h1 className="text-3xl font-bold leading-tight md:text-4xl"
-            style={{ color: "var(--plum)", letterSpacing: "-0.02em" }}>
+          <h1 className="fw-display leading-tight">
             Programs
           </h1>
           <p className="mt-1.5 text-sm md:text-base" style={{ color: "var(--mauve)", }}>

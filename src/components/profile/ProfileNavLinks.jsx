@@ -105,7 +105,7 @@ export default function ProfileNavLinks({ profile, daysLoggedSkin, skinCondition
 
       {/* Settings */}
       <a href={createPageUrl("Settings")} style={{ ...card, padding: "16px", marginBottom: "16px", marginTop: "16px", display: "flex", alignItems: "center", gap: "12px", textDecoration: "none" }}>
-        <div style={iconBox("#FFF1F2")}><Settings className="w-4 h-4" style={{ color: "#E11D48" }} /></div>
+        <div style={iconBox("var(--surface)")}><Settings className="w-4 h-4" style={{ color: "var(--rose-dust)" }} /></div>
         <div className="flex-1">
           <p style={{ ...bodyText, fontWeight: 600 }}>Settings</p>
           <p style={mutedText}>Account, notifications, privacy & data</p>
@@ -125,7 +125,7 @@ export default function ProfileNavLinks({ profile, daysLoggedSkin, skinCondition
 
       {/* Footer legal links */}
       <div style={{ display: "flex", justifyContent: "center", gap: 14, marginBottom: 16, fontSize: 12 }}>
-        <a href={createPageUrl("Settings")} style={{ color: "#E11D48", fontWeight: 600, textDecoration: "none" }}>Settings</a>
+        <a href={createPageUrl("Settings")} style={{ color: "var(--rose-dust)", fontWeight: 600, textDecoration: "none" }}>Settings</a>
         <span style={{ color: "var(--border)" }}>·</span>
         <a href="/terms" style={{ color: "var(--mauve)", textDecoration: "none" }}>Terms</a>
         <span style={{ color: "var(--border)" }}>·</span>

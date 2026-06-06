@@ -104,8 +104,7 @@ export default function Nutrition() {
         <div className="pt-10 pb-5 flex items-end justify-between flex-wrap gap-4">
           <div>
             <p style={sLabel} className="mb-1.5">Wellness Studio</p>
-            <h1 className="text-2xl md:text-3xl font-bold leading-tight"
-              style={{ color: "var(--plum)", letterSpacing: "-0.02em" }}>
+            <h1 className="fw-display leading-tight">
               Nutrition
             </h1>
             <p className="text-sm mt-1" style={{ color: "var(--mauve)", }}>

@@ -268,8 +268,7 @@ export default function Track() {
         {/* ── Header ──────────────────────────────────────────────────── */}
         <div className="pt-10 pb-5">
           <p style={sLabel} className="mb-1.5">Daily Log</p>
-          <h1 className="text-2xl font-bold leading-tight"
-            style={{ color: "var(--plum)", letterSpacing: "-0.02em" }}>
+          <h1 className="fw-display leading-tight">
             Track
           </h1>
           <p className="text-sm mt-1" style={{ color: "var(--mauve)", }}>

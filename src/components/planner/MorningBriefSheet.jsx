@@ -24,16 +24,16 @@ import { useCycleDay } from "@/hooks/useCycleDay";
 import { Frown, Meh, Smile, Zap, Moon, Check, ArrowRight, ListChecks, Utensils } from "lucide-react";
 
 const C = {
-  cream:       "#F4EDDB",
-  paperHi:     "#EDE6D5",
-  paperSoft:   "#FBF6E6",
-  espresso:    "#3A2C1A",
-  espressoDk:  "#2A1E0E",
-  muted:       "#9B8B7A",
-  gold:        "#D4AF37",
-  sage:        "#8FAF8F",
-  blush:       "#E8B4B8",
-  border:      "#D4C9B4",
+  cream:       "var(--ivory)",
+  paperHi:     "var(--surface)",
+  paperSoft:   "var(--ivory)",
+  espresso:    "var(--plum)",
+  espressoDk:  "var(--plum)",
+  muted:       "var(--mauve)",
+  gold:        "var(--gold)",
+  sage:        "var(--sage)",
+  blush:       "var(--rose-dust)",
+  border:      "var(--border)",
 };
 
 function todayLocalISO() {
@@ -66,10 +66,10 @@ const PHASE_LABEL = {
 
 // Mood + energy tile scales — Lucide only, per brand rule.
 const MOOD_OPTIONS = [
-  { value: 1, Icon: Frown, tint: "#D45E52" },
-  { value: 2, Icon: Frown, tint: "#C17B4E" },
+  { value: 1, Icon: Frown, tint: "var(--rose-dust)" },
+  { value: 2, Icon: Frown, tint: "var(--gold)" },
   { value: 3, Icon: Meh,   tint: "#9B8B7A" },
-  { value: 4, Icon: Smile, tint: "#6B8F5A" },
+  { value: 4, Icon: Smile, tint: "var(--sage)" },
   { value: 5, Icon: Smile, tint: "#3A2C1A" },
 ];
 const ENERGY_OPTIONS = [1, 2, 3, 4, 5];

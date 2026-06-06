@@ -5,14 +5,14 @@ import StoryViewer from "./StoryViewer";
 const todayStr = new Date().toISOString().split("T")[0];
 
 const THEME_COLORS = {
-  calm:          { bg: "linear-gradient(135deg, #F5ECF0, #E8D5E0)", dot: "#C4849A" },
-  energy:        { bg: "linear-gradient(135deg, #FFF8E6, #FFE8A0)", dot: "#B89E6A" },
-  relationships: { bg: "linear-gradient(135deg, #F0EBF5, #DDD0FF)", dot: "#9B7FCC" },
-  nutrition:     { bg: "linear-gradient(135deg, #EBF2EF, #C5CEB0)", dot: "#7A9E8E" },
-  cycle:         { bg: "linear-gradient(135deg, #F5ECF0, #E8C4D0)", dot: "#C4849A" },
-  skin:          { bg: "linear-gradient(135deg, #FFF0F5, #FFD6E7)", dot: "#C4849A" },
-  growth:        { bg: "linear-gradient(135deg, #E8F4FF, #C8DEFF)", dot: "#5B9BD5" },
-  sleep:         { bg: "linear-gradient(135deg, #EBE8F5, #C8BEFF)", dot: "#7B6FCC" },
+  calm:          { bg: "var(--surface)", dot: "#C4849A" },
+  energy:        { bg: "var(--surface)", dot: "#B89E6A" },
+  relationships: { bg: "var(--surface)", dot: "#9B7FCC" },
+  nutrition:     { bg: "var(--surface)", dot: "#7A9E8E" },
+  cycle:         { bg: "var(--surface)", dot: "#C4849A" },
+  skin:          { bg: "var(--surface)", dot: "#C4849A" },
+  growth:        { bg: "var(--surface)", dot: "var(--rose-dust)" },
+  sleep:         { bg: "var(--surface)", dot: "var(--rose-dust)" },
 };
 
 function StorySkeleton() {

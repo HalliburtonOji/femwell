@@ -59,7 +59,7 @@ export default function LifeStageCare() {
           </a>
           <div>
             <p className="text-sm" style={{ color: "var(--mauve)" }}>Personalized care</p>
-            <h1 className="text-2xl font-bold" style={{ color: "var(--plum)" }}>Pregnancy & Menopause Support</h1>
+            <h1 className="fw-heading">Pregnancy & Menopause Support</h1>
           </div>
         </div>
 

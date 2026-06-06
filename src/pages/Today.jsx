@@ -41,10 +41,10 @@ const PHASE_INFO = {
 };
 
 const PHASE_GRADIENTS = {
-  menstrual:  "linear-gradient(135deg, #FFF0F0 0%, #FFE4E4 100%)",
-  follicular: "linear-gradient(135deg, #FFFBEB 0%, #FEF3C7 100%)",
-  ovulatory:  "linear-gradient(135deg, #ECFDF5 0%, #D1FAE5 100%)",
-  luteal:     "linear-gradient(135deg, #F5F3FF 0%, #EDE9FE 100%)",
+  menstrual:  "var(--surface)",
+  follicular: "var(--surface)",
+  ovulatory:  "var(--surface)",
+  luteal:     "var(--surface)",
 };
 
 function getCyclePhase(lastPeriodDate, cycleLength, periodLength) {
@@ -99,14 +99,14 @@ function HydrationRing({ glasses, target, onAdd, onRemove }) {
   return (
     <div style={{ backgroundColor: "var(--surface)", border: "1px solid var(--border)", borderRadius: 16, padding: "16px 18px", boxShadow: "var(--shadow-sm)" }}>
       <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 12 }}>
-        <Droplets className="w-3.5 h-3.5" style={{ color: "#60B4FA" }} />
+        <Droplets className="w-3.5 h-3.5" style={{ color: "var(--sage)" }} />
         <p style={{ fontSize: "0.6rem", fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.12em", color: "var(--mauve)", }}>Hydration</p>
       </div>
       <div style={{ display: "flex", alignItems: "center", gap: 20 }}>
         <div style={{ position: "relative", width: 80, height: 80, flexShrink: 0 }}>
           <svg width="80" height="80" style={{ transform: "rotate(-90deg)" }}>
             <circle cx="40" cy="40" r={r} fill="none" stroke="var(--border)" strokeWidth="6" />
-            <circle cx="40" cy="40" r={r} fill="none" stroke="#60B4FA" strokeWidth="6" strokeDasharray={circumference} strokeDashoffset={offset} strokeLinecap="round" style={{ transition: "stroke-dashoffset 0.4s ease" }} />
+            <circle cx="40" cy="40" r={r} fill="none" stroke="var(--sage)" strokeWidth="6" strokeDasharray={circumference} strokeDashoffset={offset} strokeLinecap="round" style={{ transition: "stroke-dashoffset 0.4s ease" }} />
           </svg>
           <div style={{ position: "absolute", inset: 0, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center" }}>
             <span style={{ fontSize: 17, fontWeight: 700, color: "var(--plum)", lineHeight: 1 }}>{glasses}</span>
@@ -117,7 +117,7 @@ function HydrationRing({ glasses, target, onAdd, onRemove }) {
           <p style={{ fontSize: 12, color: "var(--mauve)", marginBottom: 10 }}>{glasses >= target ? "Daily goal reached!" : `${target - glasses} more glasses to go`}</p>
           <div style={{ display: "flex", gap: 8 }}>
             <button onClick={onRemove} disabled={glasses <= 0} style={{ flex: 1, height: 34, borderRadius: 9999, border: "1.5px solid var(--border)", backgroundColor: "var(--ivory)", color: "var(--plum)", fontSize: 18, cursor: "pointer", fontWeight: 700, opacity: glasses <= 0 ? 0.3 : 1 }}>−</button>
-            <button onClick={onAdd} style={{ flex: 1, height: 34, borderRadius: 9999, border: "none", backgroundColor: "#60B4FA", color: "white", fontSize: 18, cursor: "pointer", fontWeight: 700 }}>+</button>
+            <button onClick={onAdd} style={{ flex: 1, height: 34, borderRadius: 9999, border: "none", backgroundColor: "var(--sage)", color: "white", fontSize: 18, cursor: "pointer", fontWeight: 700 }}>+</button>
           </div>
         </div>
       </div>
@@ -129,7 +129,7 @@ function HydrationRing({ glasses, target, onAdd, onRemove }) {
 function QuickActionsRow({ onAddWater }) {
   const actions = [
     { icon: UtensilsCrossed, label: "Log meal",    bg: "var(--sage-subtle)",       color: "var(--sage)",       href: createPageUrl("Nutrition") },
-    { icon: Droplets,        label: "Add water",   bg: "#EFF8FF",                  color: "#60B4FA",            onClick: onAddWater },
+    { icon: Droplets,        label: "Add water",   bg: "var(--surface)",           color: "var(--sage)",        onClick: onAddWater },
     { icon: BookOpen,        label: "Journal",     bg: "var(--rose-dust-subtle)",  color: "var(--rose-dust)",  href: createPageUrl("Journal") },
     { icon: Activity,        label: "Symptom",     bg: "var(--mauve-subtle)",      color: "var(--mauve)",       href: createPageUrl("Today?open_log=1") },
   ];
@@ -181,10 +181,10 @@ function TodayInsightCard({ userId }) {
     <div style={{ backgroundColor: "var(--surface)", border: "1px solid var(--border)", borderRadius: 16, padding: "14px 16px", boxShadow: "var(--shadow-sm)" }}>
       <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 8, marginBottom: 8 }}>
         <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
-          <div style={{ width: 28, height: 28, borderRadius: 8, backgroundColor: "#FEF3C7", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
-            <Lightbulb className="w-3.5 h-3.5" style={{ color: "#D97706" }} />
+          <div style={{ width: 28, height: 28, borderRadius: 8, backgroundColor: "var(--surface)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+            <Lightbulb className="w-3.5 h-3.5" style={{ color: "var(--gold)" }} />
           </div>
-          <p style={{ fontSize: "0.6rem", fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.12em", color: "#D97706", }}>Today's Insight</p>
+          <p style={{ fontSize: "0.6rem", fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.12em", color: "var(--gold)", }}>Today's Insight</p>
         </div>
         <button onClick={handleDismiss} style={{ background: "none", border: "none", cursor: "pointer", padding: 2, color: "var(--mauve)", flexShrink: 0 }}>
           <X className="w-3.5 h-3.5" />
@@ -241,7 +241,7 @@ function ThisWeekCard({ userId }) {
 // ── Recommendation card icons ────────────────────────────────────────────────
 const REC_ICONS = {
   session_recommendation: { icon: Zap,   bg: "var(--sage-subtle)",  color: "var(--sage)"  },
-  nutrition_nudge:        { icon: Salad, bg: "#FEF3C7",             color: "#D97706"       },
+  nutrition_nudge:        { icon: Salad, bg: "var(--surface)",      color: "var(--gold)"   },
   mental_tool:            { icon: Brain, bg: "var(--mauve-subtle)", color: "var(--mauve)"  },
 };
 
@@ -553,8 +553,7 @@ export default function Today() {
                   <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 3 }}>
                     <div style={{
                       width: 10, height: 10, borderRadius: 9999,
-                      background: `radial-gradient(circle at 35% 35%, white 0%, ${PHASE_INFO[cycleInfo.phase].color} 100%)`,
-                      boxShadow: `0 0 6px ${PHASE_INFO[cycleInfo.phase].color}55`,
+                      background: PHASE_INFO[cycleInfo.phase].color,
                       flexShrink: 0,
                     }} />
                     <span style={{ fontSize: 11, fontWeight: 700, color: PHASE_INFO[cycleInfo.phase].color, textTransform: "uppercase", letterSpacing: "0.1em", }}>
